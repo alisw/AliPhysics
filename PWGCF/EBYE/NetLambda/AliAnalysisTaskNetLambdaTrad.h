@@ -137,10 +137,10 @@ protected:
     TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut;
     
     //VO
-    TH3F*  f3fHistCentInvMassVsPtLambdaVOFourSigthree;
-    TH3F*  f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut;
+//    TH3F*  f3fHistCentInvMassVsPtLambdaVOFourSigthree;
+//    TH3F*  f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut;
+//    TH3F*  f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree;
+//    TH3F*  f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut;
     
 
     Float_t fCentrality;
@@ -158,21 +158,26 @@ protected:
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusChTruth;
+    
     THnSparse *fPtBinNplusNminusChTagFour;
-    THnSparse *fPtBinNplusNminusChTagThree;
-    THnSparse *fPtBinNplusNminusChTagTwo;
-    THnSparse *fPtBinNplusNminusChTagOne;
+//    THnSparse *fPtBinNplusNminusChTagThree;
+//    THnSparse *fPtBinNplusNminusChTagTwo;
+//    THnSparse *fPtBinNplusNminusChTagOne;
     
     THnSparse *fPtBinNplusNminusChTagFourSigThree;
-    THnSparse *fPtBinNplusNminusChTagThreeSigThree;
-    THnSparse *fPtBinNplusNminusChTagTwoSigThree;
-    THnSparse *fPtBinNplusNminusChTagOneSigThree;
+//    THnSparse *fPtBinNplusNminusChTagThreeSigThree;
+//    THnSparse *fPtBinNplusNminusChTagTwoSigThree;
+//    THnSparse *fPtBinNplusNminusChTagOneSigThree;
+  
     THnSparse *fPtBinNplusNminusChUnTagFour;
-    THnSparse *fPtBinNplusNminusChVOFour;
+    
+//    THnSparse *fPtBinNplusNminusChVOFour;
 
     
     THnSparse *fPtBinNplusNminusChBKGM;
     THnSparse *fPtBinNplusNminusChLF;
+    THnSparse *fPtBinNplusNminusChLFBIG;
+
     THnSparse *fPtBinNplusNminusChRT;
     
     

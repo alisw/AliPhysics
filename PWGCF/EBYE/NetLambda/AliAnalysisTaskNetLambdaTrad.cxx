@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Apr 5
+// Updated Apr 7
 
 
 #include "AliAnalysisManager.h"
@@ -129,10 +129,10 @@ f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut(0x0),
 f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut(0x0),
 
 //VO
-f3fHistCentInvMassVsPtLambdaVOFourSigthree(0x0),
-f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree(0x0),
-f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut(0x0),
-f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut(0x0),
+//f3fHistCentInvMassVsPtLambdaVOFourSigthree(0x0),
+//f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree(0x0),
+//f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut(0x0),
+//f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut(0x0),
 
 
 f3fHistLambdafromXiFourSigthree(0x0),
@@ -156,23 +156,24 @@ fNptBins(23),
 fIsMC(kTRUE),
 fEvSel(AliVEvent::kINT7),
 
-fPtBinNplusNminusChVOFour(NULL),
+//fPtBinNplusNminusChVOFour(NULL),
+
 fPtBinNplusNminusChUnTagFour(NULL),
 fPtBinNplusNminusChTagFour(NULL),
-fPtBinNplusNminusChTagThree(NULL),
-fPtBinNplusNminusChTagTwo(NULL),
-fPtBinNplusNminusChTagOne(NULL),
+//fPtBinNplusNminusChTagThree(NULL),
+//fPtBinNplusNminusChTagTwo(NULL),
+//fPtBinNplusNminusChTagOne(NULL),
 
 fPtBinNplusNminusChTagFourSigThree(NULL),
-fPtBinNplusNminusChTagThreeSigThree(NULL),
-fPtBinNplusNminusChTagTwoSigThree(NULL),
-fPtBinNplusNminusChTagOneSigThree(NULL),
+//fPtBinNplusNminusChTagThreeSigThree(NULL),
+//fPtBinNplusNminusChTagTwoSigThree(NULL),
+//fPtBinNplusNminusChTagOneSigThree(NULL),
 
 //BKG
 fPtBinNplusNminusChBKGM(NULL),
 fPtBinNplusNminusChLF(NULL),
 fPtBinNplusNminusChRT(NULL),
-
+fPtBinNplusNminusChLFBIG(NULL),
 
 fPtBinNplusNminusChTruth(NULL)
 
@@ -232,33 +233,33 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         
         fPtBinNplusNminusChTagFour = new THnSparseI("fPtBinNplusNminusChTagFour","fPtBinNplusNminusChTagFour", dim, bin, min, max);
         fListHist->Add(fPtBinNplusNminusChTagFour);
-        
-        fPtBinNplusNminusChTagThree = new THnSparseI("fPtBinNplusNminusChTagThree","fPtBinNplusNminusChTagThree", dim, bin, min, max);
-        fListHist->Add(fPtBinNplusNminusChTagThree);
-        
-        fPtBinNplusNminusChTagTwo = new THnSparseI("fPtBinNplusNminusChTagTwo","fPtBinNplusNminusChTagTwo", dim, bin, min, max);
-        fListHist->Add(fPtBinNplusNminusChTagTwo);
-        
-        fPtBinNplusNminusChTagOne = new THnSparseI("fPtBinNplusNminusChTagOne","fPtBinNplusNminusChTagOne", dim, bin, min, max);
-        fListHist->Add(fPtBinNplusNminusChTagOne);
+//
+//        fPtBinNplusNminusChTagThree = new THnSparseI("fPtBinNplusNminusChTagThree","fPtBinNplusNminusChTagThree", dim, bin, min, max);
+//        fListHist->Add(fPtBinNplusNminusChTagThree);
+//
+//        fPtBinNplusNminusChTagTwo = new THnSparseI("fPtBinNplusNminusChTagTwo","fPtBinNplusNminusChTagTwo", dim, bin, min, max);
+//        fListHist->Add(fPtBinNplusNminusChTagTwo);
+//
+//        fPtBinNplusNminusChTagOne = new THnSparseI("fPtBinNplusNminusChTagOne","fPtBinNplusNminusChTagOne", dim, bin, min, max);
+//        fListHist->Add(fPtBinNplusNminusChTagOne);
         
         fPtBinNplusNminusChTagFourSigThree = new THnSparseI("fPtBinNplusNminusChTagFourSigThree","fPtBinNplusNminusChTagFourSigThree", dim, bin, min, max);
         fListHist->Add(fPtBinNplusNminusChTagFourSigThree);
         
-        fPtBinNplusNminusChTagThreeSigThree = new THnSparseI("fPtBinNplusNminusChTagThreeSigThree","fPtBinNplusNminusChTagThreeSigThree", dim, bin, min, max);
-        fListHist->Add(fPtBinNplusNminusChTagThreeSigThree);
-        
-        fPtBinNplusNminusChTagTwoSigThree = new THnSparseI("fPtBinNplusNminusChTagTwoSigThree","fPtBinNplusNminusChTagTwoSigThree", dim, bin, min, max);
-        fListHist->Add(fPtBinNplusNminusChTagTwoSigThree);
-        
-        fPtBinNplusNminusChTagOneSigThree = new THnSparseI("fPtBinNplusNminusChTagOneSigThree","fPtBinNplusNminusChTagOneSigThree", dim, bin, min, max);
-        fListHist->Add(fPtBinNplusNminusChTagOneSigThree);
+//        fPtBinNplusNminusChTagThreeSigThree = new THnSparseI("fPtBinNplusNminusChTagThreeSigThree","fPtBinNplusNminusChTagThreeSigThree", dim, bin, min, max);
+//        fListHist->Add(fPtBinNplusNminusChTagThreeSigThree);
+//
+//        fPtBinNplusNminusChTagTwoSigThree = new THnSparseI("fPtBinNplusNminusChTagTwoSigThree","fPtBinNplusNminusChTagTwoSigThree", dim, bin, min, max);
+//        fListHist->Add(fPtBinNplusNminusChTagTwoSigThree);
+//
+//        fPtBinNplusNminusChTagOneSigThree = new THnSparseI("fPtBinNplusNminusChTagOneSigThree","fPtBinNplusNminusChTagOneSigThree", dim, bin, min, max);
+//        fListHist->Add(fPtBinNplusNminusChTagOneSigThree);
         
         fPtBinNplusNminusChUnTagFour = new THnSparseI("fPtBinNplusNminusChUnTagFour","fPtBinNplusNminusChUnTagFour", dim, bin, min, max);
         fListHist->Add(fPtBinNplusNminusChUnTagFour);
         
-        fPtBinNplusNminusChVOFour = new THnSparseI("fPtBinNplusNminusChVOFour","fPtBinNplusNminusChVOFour", dim, bin, min, max);
-        fListHist->Add(fPtBinNplusNminusChVOFour);
+//        fPtBinNplusNminusChVOFour = new THnSparseI("fPtBinNplusNminusChVOFour","fPtBinNplusNminusChVOFour", dim, bin, min, max);
+//        fListHist->Add(fPtBinNplusNminusChVOFour);
         
         //BKG
         fPtBinNplusNminusChBKGM= new THnSparseI("fPtBinNplusNminusChBKGM","fPtBinNplusNminusChBKGM", dim, bin, min, max);
@@ -266,6 +267,9 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         
         fPtBinNplusNminusChLF = new THnSparseI("fPtBinNplusNminusChLF","fPtBinNplusNminusChLF", dim, bin, min, max);
         fListHist->Add(fPtBinNplusNminusChLF);
+        
+        fPtBinNplusNminusChLFBIG = new THnSparseI("fPtBinNplusNminusChLFBIG","fPtBinNplusNminusChLFBIG", dim, bin, min, max);
+        fListHist->Add(fPtBinNplusNminusChLFBIG);
         
         fPtBinNplusNminusChRT = new THnSparseI("fPtBinNplusNminusChRT","fPtBinNplusNminusChRT", dim, bin, min, max);
         fListHist->Add(fPtBinNplusNminusChRT);
@@ -513,30 +517,30 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaRecOneSigthree);
         
         //Untagged
-        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag","f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag","f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag (deltaEta 1.6)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag);
         
-        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag (deltaEta 1.6)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag);
         
-        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut","f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut = new TH3F("f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut","f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut (deltaEta 1.6)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut);
         
-        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+        f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut = new TH3F("f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut","f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut (deltaEta 1.6)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
         fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut);
         
         //VO
-        f3fHistCentInvMassVsPtLambdaVOFourSigthree = new TH3F("f3fHistCentInvMassVsPtLambdaVOFourSigthree","f3fHistCentInvMassVsPtLambdaVOFourSigthree (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-        fListHist->Add(f3fHistCentInvMassVsPtLambdaVOFourSigthree);
-        
-        f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree = new TH3F("f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree","f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-        fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree);
-        
-        f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut = new TH3F("f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut","f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-        fListHist->Add(f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut);
-        
-        f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut = new TH3F("f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut","f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
-        fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut);
+//        f3fHistCentInvMassVsPtLambdaVOFourSigthree = new TH3F("f3fHistCentInvMassVsPtLambdaVOFourSigthree","f3fHistCentInvMassVsPtLambdaVOFourSigthree (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+//        fListHist->Add(f3fHistCentInvMassVsPtLambdaVOFourSigthree);
+//
+//        f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree = new TH3F("f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree","f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+//        fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree);
+//
+//        f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut = new TH3F("f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut","f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+//        fListHist->Add(f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut);
+//
+//        f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut = new TH3F("f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut","f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut (deltaEta 1.8)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+//        fListHist->Add(f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut);
         
     }
     
@@ -550,41 +554,50 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     
     const Int_t dim = fNptBins*2;
     
-    Int_t ptChVO[dim];
+//    Int_t ptChVO[dim];
+    
     Int_t ptChMC[dim];
-    Int_t ptChTagOne[dim];
-    Int_t ptChTagTwo[dim];
-    Int_t ptChTagThree[dim];
+//    Int_t ptChTagOne[dim];
+//    Int_t ptChTagTwo[dim];
+//    Int_t ptChTagThree[dim];
+    
     Int_t ptChTagFour[dim];
     Int_t ptChUnTagFour[dim];
     
-    Int_t ptChTagOneSigthree[dim];
-    Int_t ptChTagTwoSigthree[dim];
-    Int_t ptChTagThreeSigthree[dim];
+//    Int_t ptChTagOneSigthree[dim];
+//    Int_t ptChTagTwoSigthree[dim];
+//    Int_t ptChTagThreeSigthree[dim];
+    
     Int_t ptChTagFourSigthree[dim];
     
     Int_t ptChUnTagFourMatch[dim];
     Int_t ptChUnTagFourLF[dim];
     Int_t ptChUnTagFourRT[dim];
+    Int_t ptChUnTagFourLFBIG[dim];
 
+    
     for(Int_t idx = 0; idx < dim; idx++)
     {
-        ptChVO[idx] = 0;
+//        ptChVO[idx] = 0;
         ptChMC[idx] = 0;
-        ptChTagOne[idx] = 0.;
-        ptChTagTwo[idx] = 0.;
-        ptChTagThree[idx] = 0.;
+       
+//        ptChTagOne[idx] = 0.;
+//        ptChTagTwo[idx] = 0.;
+//        ptChTagThree[idx] = 0.;
+        
         ptChTagFour[idx] = 0.;
         ptChUnTagFour[idx] = 0.;
+//
+//        ptChTagOneSigthree[idx] = 0.;
+//        ptChTagTwoSigthree[idx] = 0.;
+//        ptChTagThreeSigthree[idx] = 0.;
         
-        ptChTagOneSigthree[idx] = 0.;
-        ptChTagTwoSigthree[idx] = 0.;
-        ptChTagThreeSigthree[idx] = 0.;
         ptChTagFourSigthree[idx] = 0.;
         
-        ptChUnTagFourMatch[dim] = 0.;
-        ptChUnTagFourLF[dim] = 0.;
-        ptChUnTagFourRT[dim] = 0.;
+        ptChUnTagFourMatch[idx] = 0.;
+        ptChUnTagFourLF[idx] = 0.;
+        ptChUnTagFourRT[idx] = 0.;
+         ptChUnTagFourLFBIG[idx] = 0.;
     }
     
     
@@ -818,35 +831,35 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
         if(v0Radius > 200.) continue;
-        Int_t iptbin = GetPtBin(V0pt);
+//        Int_t iptbin = GetPtBin(V0pt);
         
         if( ontheflystat == 0 )
         {
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
-            {
-                if(TMath::Abs(eta) < 0.8)
-                {
-                    f3fHistCentInvMassVsPtLambdaVOFourSigthree->Fill(fCentrality,invMassLambda,V0pt);
-                    if(invMassLambda > 1.11 && invMassLambda < 1.122)
-                    {
-                        ptChVO[iptbin] += 1;
-                        f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut->Fill(fCentrality,invMassLambda,V0pt);
-                    }
-                }
-            }
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.)
-            {
-                if(TMath::Abs(eta) < 0.8)
-                {
-                    f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree->Fill(fCentrality,invMassAntiLambda,V0pt);
-                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
-                    {
-                        ptChVO[iptbin+fNptBins] += 1;
-                        f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut->Fill(fCentrality,invMassAntiLambda,V0pt);
-                    }
-                }
-                
-            }
+//            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
+//            {
+//                if(TMath::Abs(eta) < 0.8)
+//                {
+//                    f3fHistCentInvMassVsPtLambdaVOFourSigthree->Fill(fCentrality,invMassLambda,V0pt);
+//                    if(invMassLambda > 1.11 && invMassLambda < 1.122)
+//                    {
+//                        ptChVO[iptbin] += 1;
+//                        f3fHistCentInvMassVsPtLambdaVOFourSigthreeCut->Fill(fCentrality,invMassLambda,V0pt);
+//                    }
+//                }
+//            }
+//            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.)
+//            {
+//                if(TMath::Abs(eta) < 0.8)
+//                {
+//                    f3fHistCentInvMassVsPtAntiLambdaVOFourSigthree->Fill(fCentrality,invMassAntiLambda,V0pt);
+//                    if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
+//                    {
+//                        ptChVO[iptbin+fNptBins] += 1;
+//                        f3fHistCentInvMassVsPtAntiLambdaVOFourSigthreeCut->Fill(fCentrality,invMassAntiLambda,V0pt);
+//                    }
+//                }
+//
+//            }
             
             
             
@@ -901,8 +914,6 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 }
                 
                 Int_t iptbinRecPRI = GetPtBin(mcpt);
-                Int_t iptbinRecUntag = GetPtBin(mcpt);
-                
                 if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 2. && TMath::Abs(negpion)  <= 2.)
                 {
                     if(TMath::Abs(eta) < 0.8)
@@ -944,7 +955,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtLambdaRecThree->Fill(fCentrality,invMassLambda,mcpt);
-                            ptChTagThree[iptbinRecPRI] += 1;
+//                            ptChTagThree[iptbinRecPRI] += 1;
                         }
                     }
                     
@@ -965,7 +976,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtLambdaRecTwo->Fill(fCentrality,invMassLambda,mcpt);
-                            ptChTagTwo[iptbinRecPRI] += 1;
+//                            ptChTagTwo[iptbinRecPRI] += 1;
                         }
                     }
                     
@@ -986,16 +997,20 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtLambdaRecOne->Fill(fCentrality,invMassLambda,mcpt);
-                            ptChTagOne[iptbinRecPRI] += 1;
+//                            ptChTagOne[iptbinRecPRI] += 1;
                         }
                     }
                 }
+                
+                Int_t iptbinRecUntag = GetPtBin(mcpt);
                 Int_t iptbinRec = GetPtBin(mcpt);
                 Int_t iptbinRecbkgM = GetPtBin(mcpt);
                 Int_t iptbinRecbkgLF = GetPtBin(mcpt);
                 Int_t iptbinRecbkgRT = GetPtBin(mcpt);
+                Int_t iptbinRecbkgLFBIG = GetPtBin(mcpt);
 
-
+                
+                
                 if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.)
                 {
                     if(TMath::Abs(eta) < 0.8)
@@ -1006,11 +1021,15 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                             ptChUnTagFour[iptbinRecUntag] += 1;
                             f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassLambda,mcpt);
                         }
+                        if(invMassLambda > 1.094 && invMassLambda < 1.106)
+                        {
+                            ptChUnTagFourLFBIG[iptbinRecbkgLFBIG] += 1;
+                        }
                         if(invMassLambda > 1.09 && invMassLambda < 1.1)
                         {
                             ptChUnTagFourMatch[iptbinRecbkgM] += 1;
                         }
-                        if(invMassLambda > 1.094 && invMassLambda < 1.106)
+                        if(invMassLambda > 1.094 && invMassLambda < 1.104)
                         {
                             ptChUnTagFourLF[iptbinRecbkgLF] += 1;
                         }
@@ -1057,7 +1076,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtLambdaRecThreeSigthree->Fill(fCentrality,invMassLambda,mcpt);
-                            ptChTagThreeSigthree[iptbinRec] += 1;
+//                            ptChTagThreeSigthree[iptbinRec] += 1;
                         }
                     }
                     
@@ -1078,7 +1097,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtLambdaRecTwoSigthree->Fill(fCentrality,invMassLambda,mcpt);
-                            ptChTagTwoSigthree[iptbinRec] += 1;
+//                            ptChTagTwoSigthree[iptbinRec] += 1;
                         }
                     }
                     
@@ -1099,7 +1118,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtLambdaRecOneSigthree->Fill(fCentrality,invMassLambda,mcpt);
-                            ptChTagOneSigthree[iptbinRec] += 1;
+//                            ptChTagOneSigthree[iptbinRec] += 1;
                         }
                     }
                 }
@@ -1143,7 +1162,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtAntiLambdaRecThree->Fill(fCentrality,invMassAntiLambda,mcpt);
-                            ptChTagThree[iptbinRecPRI+fNptBins] += 1;
+//                            ptChTagThree[iptbinRecPRI+fNptBins] += 1;
                         }
                     }
                     if(TMath::Abs(eta) < 0.3)
@@ -1163,7 +1182,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtAntiLambdaRecTwo->Fill(fCentrality,invMassAntiLambda,mcpt);
-                            ptChTagTwo[iptbinRecPRI+fNptBins] += 1;
+//                            ptChTagTwo[iptbinRecPRI+fNptBins] += 1;
                         }
                     }
                     if(TMath::Abs(eta) < 0.1)
@@ -1183,7 +1202,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtAntiLambdaRecOne->Fill(fCentrality,invMassAntiLambda,mcpt);
-                            ptChTagOne[iptbinRecPRI+fNptBins] += 1;
+//                            ptChTagOne[iptbinRecPRI+fNptBins] += 1;
                         }
                     }
                 }
@@ -1197,11 +1216,15 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                             ptChUnTagFour[iptbinRecUntag+fNptBins] += 1;
                             f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntagCut->Fill(fCentrality,invMassAntiLambda,mcpt);
                         }
+                        if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.106)
+                        {
+                            ptChUnTagFourLFBIG[iptbinRecbkgLFBIG+fNptBins] += 1;
+                        }
                         if(invMassAntiLambda > 1.09 && invMassAntiLambda < 1.1)
                         {
                             ptChUnTagFourMatch[iptbinRecbkgM+fNptBins] += 1;
                         }
-                        if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.106)
+                        if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
                         {
                             ptChUnTagFourLF[iptbinRecbkgLF+fNptBins] += 1;
                         }
@@ -1248,7 +1271,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtAntiLambdaRecThreeSigthree->Fill(fCentrality,invMassAntiLambda,mcpt);
-                            ptChTagThreeSigthree[iptbinRec+fNptBins] += 1;
+//                            ptChTagThreeSigthree[iptbinRec+fNptBins] += 1;
                         }
                     }
                     if(TMath::Abs(eta) < 0.3)
@@ -1268,7 +1291,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtAntiLambdaRecTwoSigthree->Fill(fCentrality,invMassAntiLambda,mcpt);
-                            ptChTagTwoSigthree[iptbinRec+fNptBins] += 1;
+//                            ptChTagTwoSigthree[iptbinRec+fNptBins] += 1;
                         }
                     }
                     if(TMath::Abs(eta) < 0.1)
@@ -1288,7 +1311,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                                 }
                             }
                             f3fHistCentInvMassVsPtAntiLambdaRecOneSigthree->Fill(fCentrality,invMassAntiLambda,mcpt);
-                            ptChTagOneSigthree[iptbinRec+fNptBins] += 1;
+//                            ptChTagOneSigthree[iptbinRec+fNptBins] += 1;
                         }
                     }
                 }
@@ -1308,29 +1331,29 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     }
     fPtBinNplusNminusChTagFour->Fill(ptContainerFour);
     //-------------------------------------------------
-    Double_t ptContainerThree[dim+1];
-    ptContainerThree[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainerThree[i] = ptChTagThree[i-1];
-    }
-    fPtBinNplusNminusChTagThree->Fill(ptContainerThree);
+//    Double_t ptContainerThree[dim+1];
+//    ptContainerThree[0] = (Double_t)fCentrality;
+//    for(Int_t i = 1; i <= dim; i++)
+//    {
+//        ptContainerThree[i] = ptChTagThree[i-1];
+//    }
+//    fPtBinNplusNminusChTagThree->Fill(ptContainerThree);
     //-------------------------------------------------
-    Double_t ptContainerTwo[dim+1];
-    ptContainerTwo[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainerTwo[i] = ptChTagTwo[i-1];
-    }
-    fPtBinNplusNminusChTagTwo->Fill(ptContainerTwo);
+//    Double_t ptContainerTwo[dim+1];
+//    ptContainerTwo[0] = (Double_t)fCentrality;
+//    for(Int_t i = 1; i <= dim; i++)
+//    {
+//        ptContainerTwo[i] = ptChTagTwo[i-1];
+//    }
+//    fPtBinNplusNminusChTagTwo->Fill(ptContainerTwo);
     //-------------------------------------------------
-    Double_t ptContainerOne[dim+1];
-    ptContainerOne[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainerOne[i] = ptChTagOne[i-1];
-    }
-    fPtBinNplusNminusChTagOne->Fill(ptContainerOne);
+//    Double_t ptContainerOne[dim+1];
+//    ptContainerOne[0] = (Double_t)fCentrality;
+//    for(Int_t i = 1; i <= dim; i++)
+//    {
+//        ptContainerOne[i] = ptChTagOne[i-1];
+//    }
+//    fPtBinNplusNminusChTagOne->Fill(ptContainerOne);
     //-------------------------------------------------
     
     //SIGTHREE
@@ -1343,29 +1366,29 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     }
     fPtBinNplusNminusChTagFourSigThree->Fill(ptContainerFourSigThree);
     //-------------------------------------------------
-    Double_t ptContainerThreeSigThree[dim+1];
-    ptContainerThreeSigThree[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainerThreeSigThree[i] = ptChTagThreeSigthree[i-1];
-    }
-    fPtBinNplusNminusChTagThreeSigThree->Fill(ptContainerThreeSigThree);
+//    Double_t ptContainerThreeSigThree[dim+1];
+//    ptContainerThreeSigThree[0] = (Double_t)fCentrality;
+//    for(Int_t i = 1; i <= dim; i++)
+//    {
+//        ptContainerThreeSigThree[i] = ptChTagThreeSigthree[i-1];
+//    }
+//    fPtBinNplusNminusChTagThreeSigThree->Fill(ptContainerThreeSigThree);
     //-------------------------------------------------
-    Double_t ptContainerTwoSigThree[dim+1];
-    ptContainerTwoSigThree[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainerTwoSigThree[i] = ptChTagTwoSigthree[i-1];
-    }
-    fPtBinNplusNminusChTagTwoSigThree->Fill(ptContainerTwoSigThree);
+//    Double_t ptContainerTwoSigThree[dim+1];
+//    ptContainerTwoSigThree[0] = (Double_t)fCentrality;
+//    for(Int_t i = 1; i <= dim; i++)
+//    {
+//        ptContainerTwoSigThree[i] = ptChTagTwoSigthree[i-1];
+//    }
+//    fPtBinNplusNminusChTagTwoSigThree->Fill(ptContainerTwoSigThree);
     //-------------------------------------------------
-    Double_t ptContainerOneSigThree[dim+1];
-    ptContainerOneSigThree[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainerOneSigThree[i] = ptChTagOneSigthree[i-1];
-    }
-    fPtBinNplusNminusChTagOneSigThree->Fill(ptContainerOneSigThree);
+//    Double_t ptContainerOneSigThree[dim+1];
+//    ptContainerOneSigThree[0] = (Double_t)fCentrality;
+//    for(Int_t i = 1; i <= dim; i++)
+//    {
+//        ptContainerOneSigThree[i] = ptChTagOneSigthree[i-1];
+//    }
+//    fPtBinNplusNminusChTagOneSigThree->Fill(ptContainerOneSigThree);
     //-------------------------------------------------
     Double_t ptContainerFourSigThreeUntag[dim+1];
     ptContainerFourSigThreeUntag[0] = (Double_t)fCentrality;
@@ -1375,14 +1398,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     }
     fPtBinNplusNminusChUnTagFour->Fill(ptContainerFourSigThreeUntag);
     //-------------------------------------------------
-    Double_t ptContainerFourSigThreeVO[dim+1];
-    ptContainerFourSigThreeVO[0] = (Double_t)fCentrality;
-    for(Int_t i = 1; i <= dim; i++)
-    {
-        ptContainerFourSigThreeVO[i] = ptChVO[i-1];
-    }
-    fPtBinNplusNminusChVOFour->Fill(ptContainerFourSigThreeVO);
-    //-------------------------------------------------
+//    Double_t ptContainerFourSigThreeVO[dim+1];
+//    ptContainerFourSigThreeVO[0] = (Double_t)fCentrality;
+//    for(Int_t i = 1; i <= dim; i++)
+//    {
+//        ptContainerFourSigThreeVO[i] = ptChVO[i-1];
+//    }
+//    fPtBinNplusNminusChVOFour->Fill(ptContainerFourSigThreeVO);
+//    //-------------------------------------------------
     
     //BKG
     //-------------------------------------------------
@@ -1401,6 +1424,15 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         ptContainerFourSigThreeLF[i] = ptChUnTagFourLF[i-1];
     }
     fPtBinNplusNminusChLF->Fill(ptContainerFourSigThreeLF);
+    //-------------------------------------------------
+    //-------------------------------------------------
+    Double_t ptContainerFourSigThreeLFBIG[dim+1];
+    ptContainerFourSigThreeLFBIG[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerFourSigThreeLFBIG[i] = ptChUnTagFourLFBIG[i-1];
+    }
+    fPtBinNplusNminusChLFBIG->Fill(ptContainerFourSigThreeLFBIG);
     //-------------------------------------------------
     Double_t ptContainerFourSigThreeRT[dim+1];
     ptContainerFourSigThreeRT[0] = (Double_t)fCentrality;
