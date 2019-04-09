@@ -34,8 +34,7 @@ void filterAOD_V0s()
   task->AddEvtCuts(evtCuts);
   
   // V0s
-//   task->SaveV0s(kTRUE, new AliAnalysisNanoAODV0Cuts);
-  task->SaveV0s(kTRUE);
+  task->SaveV0s(kTRUE, new AliAnalysisNanoAODV0Cuts);
   task->SaveCascades(kTRUE);
 
   mgr->SetDebugLevel(1); // enable debug printouts
