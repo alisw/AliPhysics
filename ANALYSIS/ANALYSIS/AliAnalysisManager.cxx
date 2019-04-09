@@ -2420,6 +2420,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    AliAnalysisTask *task;
    // Reset the analysis
    ResetAnalysis();
+
+   fBreakExecutionChain = false;
    // Check if the top tree is active.
    if (fTree) {
       if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
@@ -2469,7 +2471,11 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          gROOT->cd();
          if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
             AliSysInfo::AddStamp(task->ClassName(), fNcalls, itask, 1);
-         itask++;   
+         itask++;
+         if (fBreakExecutionChain) {
+            Info("ExecAnalysis","A break in the task execution chain has been requested by the task: %s", task->GetName());
+            break;
+         }
       }
       fCPUTimer->Stop();
       fCPUTime += fCPUTimer->RealTime();
@@ -2516,6 +2522,10 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       task->ExecuteTask(option);
       if (fStatistics) fStatistics->StopTimer();
       gROOT->cd();
+      if (fBreakExecutionChain) {
+         Info("ExecAnalysis","A break in the task execution chain has been requested by the task: %s", task->GetName());
+         break;
+      }
    }   
    fCPUTimer->Stop();
    fCPUTime += fCPUTimer->RealTime();
