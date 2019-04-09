@@ -39,11 +39,14 @@ void AddTask_GammaConvCalo_pPb(
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
-  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, separate with ;
+  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, separate with ;
+ // Material Budget Weights file for Run 2  
+  // FMAW:alien:///alice/cern.ch/user/a/amarin//MBW/MCInputFileMaterialBudgetWeightsLHC16_Pythia_00010103_0d000009266300008850404000_date181214.root
   TString   fileNameExternalInputs        = "",
   Int_t     doWeightingPart               = 0,        // enable Weighting
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
+  Int_t     enableMatBudWeightsPi0        = 0,        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
@@ -56,6 +59,7 @@ void AddTask_GammaConvCalo_pPb(
 
   TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
+  TString fileNameMatBudWeights       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
 
   TString addTaskName                 = "AddTask_GammaConvCalo_pPb";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -66,6 +70,10 @@ void AddTask_GammaConvCalo_pPb(
   TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
+
+  if(additionalTrainConfig.Contains("MaterialBudgetWeights"))
+    fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights, addTaskName);
+
 
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TString strTrackMatcherRunningMode  = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM", "", addTaskName);
@@ -2052,6 +2060,8 @@ void AddTask_GammaConvCalo_pPb(
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
 
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
+
   for(Int_t i = 0; i<numberOfCuts; i++){
     //create AliCaloTrackMatcher instance, if there is none present
     TString caloCutPos = cuts.GetClusterCut(i);
@@ -2098,6 +2108,16 @@ void AddTask_GammaConvCalo_pPb(
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisCuts[i] = new AliConversionPhotonCuts();
+
+    if (enableMatBudWeightsPi0 > 0){
+      if (isMC > 0){
+	if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+	  initializedMatBudWeigths_existing = kTRUE;}
+	else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+      }
+      else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
@@ -2139,6 +2159,11 @@ void AddTask_GammaConvCalo_pPb(
   task->SetDoTreeInvMassShowerShape(doTreeClusterShowerShape);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
+
+  if (initializedMatBudWeigths_existing) {
+      task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+  }
+
 
   //connect containers
   AliAnalysisDataContainer *coutput =

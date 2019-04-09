@@ -3591,7 +3591,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
     if(!PhotonCandidate) continue;
     fIsFromDesiredHeader = kTRUE;
 
-    Float_t weightMatBudgetGamma = 1.;
+    Double_t weightMatBudgetGamma = 1.;
     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
       weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
     }
@@ -3656,7 +3656,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
       if(!PhotonCandidate) continue;
       fIsFromDesiredHeader = kTRUE;
 
-      Float_t weightMatBudgetGamma = 1.;
+      Double_t weightMatBudgetGamma = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
 	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
       }
@@ -3708,7 +3708,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessPhotonCandidates()
       if(!PhotonCandidate) continue;
       fIsFromDesiredHeader = kTRUE;
 
-      Float_t weightMatBudgetGamma = 1.;
+      Double_t weightMatBudgetGamma = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
 	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(PhotonCandidate);
       }
@@ -3896,7 +3896,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidatesAOD(AliAODConversi
 
   // True Photon
 
-  Float_t weightMatBudgetGamma = 1.;
+  Double_t weightMatBudgetGamma = 1.;
   if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
     weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate);
   }
@@ -4017,7 +4017,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTruePhotonCandidates(AliAODConversionP
 
   // True Photon
 
-  Float_t weightMatBudgetGamma = 1.;
+  Double_t weightMatBudgetGamma = 1.;
   if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
     weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TruePhotonCandidate);
   }
@@ -5232,7 +5232,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
     }
 
     if(isTruePi0 || isTrueEta){// True Pion or Eta
-      Float_t weightMatBudgetGamma = 1.;
+      Double_t weightMatBudgetGamma = 1.;
       if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
 	weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0);
       }
@@ -5767,7 +5767,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
   }
 
   if(isTruePi0 || isTrueEta){// True Pion or Eta
-    Float_t weightMatBudgetGamma = 1.;
+    Double_t weightMatBudgetGamma = 1.;
     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
       weightMatBudgetGamma = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetCorrectingWeightForTrueGamma(TrueGammaCandidate0);
     }
