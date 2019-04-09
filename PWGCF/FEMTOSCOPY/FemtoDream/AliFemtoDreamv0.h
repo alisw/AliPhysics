@@ -95,6 +95,8 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   double DecayLengthV0(const double *DecayVtx, const double *point) const;
   double CosPointingAngle(const double *DecayVtx, const double *point) const;
   double DecayLengthXY(double const *DecayVtx, double const *point) const;
+  float GetArmenterosAlpha() const;
+  float GetArmenterosQt() const;
  private:
   AliFemtoDreamv0 &operator=(const AliFemtoDreamv0 &obj);
   AliFemtoDreamv0(const AliFemtoDreamv0&);
@@ -125,6 +127,19 @@ inline double AliFemtoDreamv0::DecayLengthV0(const double *DecayVtx,
   return ::sqrt(
       ::pow(DecayVtx[0] - point[0], 2) + ::pow(DecayVtx[1] - point[1], 2)
           + ::pow(DecayVtx[2] - point[2], 2));
+}
+
+inline float AliFemtoDreamv0::GetArmenterosAlpha() const {
+  TVector3 v0P = GetMomentum();
+  TVector3 posP = fpDaug->GetMomentum();
+  TVector3 negP = fnDaug->GetMomentum();
+  return 1. - 2. / (1. + posP.Dot(v0P) / negP.Dot(v0P));
+}
+
+inline float AliFemtoDreamv0::GetArmenterosQt() const {
+  TVector3 posP = fpDaug->GetMomentum();
+  TVector3 v0P = GetMomentum();
+  return posP.Perp(v0P);
 }
 
 #endif /* ALIFEMTODREAMV0_H_ */

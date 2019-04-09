@@ -179,8 +179,17 @@ class AliFemtoDreamv0Cuts {
     return "v0Cuts";
   }
   ;
+  void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
+                        float alphaUp) {
+    fDoArmenterosCut = true;
+    fArmenterosQtLow = qtLow;
+    fArmenterosQtUp = qtUp;
+    fArmenterosAlphaLow = alphaLow;
+    fArmenterosAlphaUp = alphaUp;
+  }
  private:
   bool RejectAsKaon(AliFemtoDreamv0 *v0);
+  bool ArmenterosSelection(AliFemtoDreamv0 *v0);
   bool DaughtersPassCuts(AliFemtoDreamv0 *v0);
   bool MotherPassCuts(AliFemtoDreamv0 *v0);
   bool CPAandMassCuts(AliFemtoDreamv0 *v0);
@@ -210,6 +219,11 @@ class AliFemtoDreamv0Cuts {
   bool fOnFlyStatus;                  //
   bool fCutCharge;                    //
   int fCharge;                        //
+  bool fDoArmenterosCut;              //
+  float fArmenterosQtLow;             //
+  float fArmenterosQtUp;              //
+  float fArmenterosAlphaLow;          //
+  float fArmenterosAlphaUp;           //
   bool fCutPt;                        //
   float fpTmin;                      //
   float fpTmax;                      //
@@ -238,7 +252,7 @@ class AliFemtoDreamv0Cuts {
   int fPDGv0;                         //
   int fPDGDaugP;                      //
   int fPDGDaugN;                      //
-ClassDef(AliFemtoDreamv0Cuts,4)
+ClassDef(AliFemtoDreamv0Cuts,5)
 };
 
 #endif /* ALIFEMTODREAMV0CUTS_H_ */

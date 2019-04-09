@@ -29,6 +29,11 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
       fOnFlyStatus(false),
       fCutCharge(false),
       fCharge(0),
+      fDoArmenterosCut(false),
+      fArmenterosQtLow(0),
+      fArmenterosQtUp(1),
+      fArmenterosAlphaLow(-1),
+      fArmenterosAlphaUp(1),
       fCutPt(false),
       fpTmin(0),
       fpTmax(0),
@@ -76,6 +81,11 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts)
       fOnFlyStatus(cuts.fOnFlyStatus),
       fCutCharge(cuts.fCutCharge),
       fCharge(cuts.fCharge),
+      fDoArmenterosCut(cuts.fDoArmenterosCut),
+      fArmenterosQtLow(cuts.fArmenterosQtLow),
+      fArmenterosQtUp(cuts.fArmenterosQtUp),
+      fArmenterosAlphaLow(cuts.fArmenterosAlphaLow),
+      fArmenterosAlphaUp(cuts.fArmenterosAlphaUp),
       fCutPt(cuts.fCutPt),
       fpTmin(cuts.fpTmin),
       fpTmax(cuts.fpTmax),
@@ -125,6 +135,11 @@ AliFemtoDreamv0Cuts& AliFemtoDreamv0Cuts::operator=(
     this->fOnFlyStatus = cuts.fOnFlyStatus;
     this->fCutCharge = cuts.fCutCharge;
     this->fCharge = cuts.fCharge;
+    this->fDoArmenterosCut = cuts.fDoArmenterosCut;
+    this->fArmenterosQtLow = cuts.fArmenterosQtLow;
+    this->fArmenterosQtUp = cuts.fArmenterosQtUp;
+    this->fArmenterosAlphaLow = cuts.fArmenterosAlphaLow;
+    this->fArmenterosAlphaUp = cuts.fArmenterosAlphaUp;
     this->fCutPt = cuts.fCutPt;
     this->fpTmin = cuts.fpTmin;
     this->fpTmax = cuts.fpTmax;
@@ -203,6 +218,11 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
     }
   }
   if (pass) {
+    if(fDoArmenterosCut  && !ArmenterosSelection(v0)) {
+      pass = false;
+    }
+  }
+  if (pass) {
     if (fKaonRejection && !RejectAsKaon(v0)) {
       pass = false;
     }
@@ -238,23 +258,23 @@ bool AliFemtoDreamv0Cuts::DaughtersPassCuts(AliFemtoDreamv0 *v0) {
       //at 1: Negative daughter, at 2: Positive Daughter should be the way it
       //was set, but sometimes it it stored in the wrong way
       if (!fMinimalBooking)
-        fHist->FillTrackCounter(13);
+        fHist->FillTrackCounter(14);
       v0->Setv0Mass(CalculateInvMass(v0, fPDGDaugP, fPDGDaugN));
       passD1 = fNegCuts->isSelected(v0->GetNegDaughter());
       passD2 = fPosCuts->isSelected(v0->GetPosDaughter());
       if (passD1 && passD2) {
         if (!fMinimalBooking)
-          fHist->FillTrackCounter(14);
+          fHist->FillTrackCounter(15);
       }
     } else {
       if (!fMinimalBooking)
-        fHist->FillTrackCounter(15);
+        fHist->FillTrackCounter(16);
       v0->Setv0Mass(CalculateInvMass(v0, fPDGDaugN, fPDGDaugP));
       passD1 = fPosCuts->isSelected(v0->GetNegDaughter());
       passD2 = fNegCuts->isSelected(v0->GetPosDaughter());
       if (passD1 && passD2) {
         if (!fMinimalBooking)
-          fHist->FillTrackCounter(16);
+          fHist->FillTrackCounter(17);
       }
     }
     if (!(passD1 && passD2)) {
@@ -353,7 +373,29 @@ bool AliFemtoDreamv0Cuts::RejectAsKaon(AliFemtoDreamv0 *v0) {
     pass = false;
   } else {
     if (!fMinimalBooking)
+      fHist->FillTrackCounter(11);
+  }
+  return pass;
+}
+
+bool AliFemtoDreamv0Cuts::ArmenterosSelection(AliFemtoDreamv0 *v0) {
+  bool pass = true;
+  float armQt = v0->GetArmenterosQt();
+  float armAlpha = v0->GetArmenterosAlpha();
+  if (fDoArmenterosCut) {
+    if (armQt > fArmenterosQtUp || armQt < fArmenterosQtLow) {
+      pass = false;
+    }
+    float prefactorAlpha = (fPDGv0 > 0) ? 1.f : -1.f;  // for anti-particles
+                                                       // negative to compensate
+                                                       // for sign change of qt
+    if (armAlpha * prefactorAlpha > fArmenterosAlphaUp ||
+        armAlpha * prefactorAlpha < fArmenterosAlphaLow)
+      pass = false;
+  } else {
+    if (!fMinimalBooking) {
       fHist->FillTrackCounter(10);
+    }
   }
   return pass;
 }
@@ -390,11 +432,11 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
   }
   if (massPass) {
     if (!fMinimalBooking)
-      fHist->FillTrackCounter(11);
+      fHist->FillTrackCounter(12);
   }
   if (massPass && cpaPass) {
     if (!fMinimalBooking)
-      fHist->FillTrackCounter(12);
+      fHist->FillTrackCounter(13);
   }
   bool pass = massPass && cpaPass;
   return pass;
@@ -468,6 +510,7 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
         fHist->FillDCANegDaugToPrimVtxCut(i, v0->GetDCADaugNegVtx());
         fHist->FillDCADaugTov0VtxCut(i, v0->GetDaugDCA());
         fHist->FillCPACut(i, v0->GetCPA());
+        fHist->FillArmenterosPodolandski(i, v0->GetArmenterosAlpha(), v0->GetArmenterosQt());
         fHist->FillInvMass(i, v0->Getv0Mass());
       }
     }
@@ -610,6 +653,12 @@ void AliFemtoDreamv0Cuts::BookTrackCuts() {
     }
     if (fCutCPA) {
       fHist->FillConfig(11, fMinCPA);
+    }
+    if(fDoArmenterosCut) {
+      fHist->FillConfig(12, fArmenterosQtLow);
+      fHist->FillConfig(13, fArmenterosQtUp);
+      fHist->FillConfig(14, fArmenterosAlphaLow);
+      fHist->FillConfig(15, fArmenterosAlphaUp);
     }
   }
 }
