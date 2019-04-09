@@ -48,7 +48,9 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fTRDnSlices(-1),	  
   fIsMuonTrack(-1),
   fTPCnclsS(-1),
-  fFilterMap(-1)
+  fFilterMap(-1),
+  fTOFBunchCrossing(-1),
+  fID(-1)
 { 
   /// default ctor
 
@@ -94,7 +96,9 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fTRDnSlices(-1),	  
   fIsMuonTrack(-1),
   fTPCnclsS(-1),
-  fFilterMap(-1)
+  fFilterMap(-1),
+  fTOFBunchCrossing(-1),
+  fID(-1)
 {
   /// ctor
 
@@ -110,8 +114,6 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   }
   fMappingString = mappingString;
 
-  static const char * validatorString[] = {"pt", "theta", "phi", "chi2perNDF", "posx", "posy", "posz", "covmat", "posDCAx","posDCAy", "pDCAx", "pDCAy", "pDCAz", "RAtAbsorberEnd", "TPCncls", "TPCnclsF", "TPCnclsS", "TPCNCrossedRows", "TrackPhiOnEMCal", "TrackEtaOnEMCal", "TrackPtOnEMCal", "ITSsignal", "TPCsignal", "TPCsignalTuned", "TPCsignalN", "TPCmomentum", "TPCTgl", "TOFsignal", "integratedLenght", "TOFsignalTuned", "HMPIDsignal", "HMPIDoccupancy", "TRDsignal", "TRDChi2", "TRDnSlices", "covmat", "FilterMap", "IsMuonTrack", 0};
-  
   // Tokenize list of variables
   TString varString(mappingString);
   TObjArray * vars = varString.Tokenize(",");
@@ -123,16 +125,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   Int_t index=0;
   while ((token = (TObjString*) it.Next())) {
     TString var = token->GetString().Strip(TString::kBoth, ' '); // remove trailing and leading spaces        
-    // Check if string  ...
-    // ... is in the allowed list
-    Bool_t isValid = kFALSE;
-    Int_t ivalidator = 0;
-    while (validatorString[ivalidator]) {
-      if(var == validatorString[ivalidator++]) isValid = kTRUE;
-    }
-    //... it is custom    
-    if (!( isValid || var.BeginsWith("cst") || var.BeginsWith("PID.")) ) AliFatal(Form("Invalid var [%s]", var.Data()));
-    // If the variable is valid, add it to the list. We have to create a new TObjstring because otherwise it is deleted with the tokens
+
     if     (var == "pt"               ) fPt                = index;
     else if(var == "phi"              ) fPhi               = index;
     else if(var == "theta"            ) fTheta             = index; // FIXME: consider adding a "eta" variable explicitly (possibly with a check for theta aldready there), so that you don't have to carry over also "theta" in case you only need eta.
@@ -170,6 +163,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "IsMuonTrack"      ) fIsMuonTrack       = index;
     else if(var == "TPCnclsS"         ) fTPCnclsS          = index;
     else if(var == "FilterMap"        ) fFilterMap         = index;
+    else if(var == "TOFBunchCrossing" ) fTOFBunchCrossing  = index;
+    else if(var == "ID"               ) fID                = index;
     else if(var == "covmat"           ) {
           
         for(Int_t i=0;i<21;i++){
@@ -177,11 +172,11 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
         }
           
     }
-    else {
+    else if (var.BeginsWith("cst") || var.BeginsWith("PID.")) {
       fMapCstVar[var] = index;
       std::cout << "ADDING " << index << " " << fMapCstVar[var] << " " << var.Data() << std::endl;
-      
-    }
+    } else
+       AliFatal(Form("Invalid var [%s]", var.Data()));
 
     // init kin vars to 0
     if (var == "covmat"){
@@ -236,6 +231,8 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "IsMuonTrack"      ) return fIsMuonTrack      ;
     else if(varName == "TPCnclsS"         ) return fTPCnclsS         ;
     else if(varName == "FilterMap"        ) return fFilterMap        ;
+    else if(varName == "TOFBunchCrossing" ) return fTOFBunchCrossing ;
+    else if(varName == "ID"               ) return fID               ;
     else if(varName == "covmat0"          ) return fcovmat[0]        ;
 
     std::map<TString,Int_t>::iterator it = fMapCstVar.find(varName); // FIXME: do I need to delete "it"?
@@ -288,6 +285,8 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
     else if(index == fIsMuonTrack      )  return "IsMuonTrack"      ;
     else if(index == fTPCnclsS         )  return "TPCnclsS"         ;
     else if(index == fFilterMap        )  return "FilterMap"        ;
+    else if(index == fTOFBunchCrossing )  return "TOFBunchCrossing" ;
+    else if(index == fID               )  return "ID"               ;
     for (Int_t i=0; i<21; i++){
         
         if(index == fcovmat[i]) return TString::Format("covmat%d",i).Data();
