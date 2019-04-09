@@ -51,6 +51,9 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   void SetCutOnSPDZDiff(Double_t cutz) {
     fSPDZDiffCut=cutz;
   }
+  void ApplyPbPbOutOfBunchPileupCut(Bool_t opt){
+    fApplyPbPbOutOfBunchPileupCut=opt;
+  }
 
  private:
 
@@ -103,10 +106,11 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   Double_t fMVCChi2Cut;               //  cut on MV pileup vertex
   Float_t  fMVWeiZDiffCut;            // cut on MV pileup vertex
   Bool_t  fMVCheckPlpFromDifferentBC; // cut on MV pileup vertex
+  Bool_t  fApplyPbPbOutOfBunchPileupCut; // switch for cut on TPC clus vs. V0
   Bool_t  fReadMC;                    // flag read/not-read MC truth info
 
 
-  ClassDef(AliAnalysisTaskCheckVertexAOD,4);
+  ClassDef(AliAnalysisTaskCheckVertexAOD,5);
 };
 
 

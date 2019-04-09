@@ -45,7 +45,7 @@
 ClassImp(AliAnalysisTaskCheckVertexAOD)
 //______________________________________________________________________________
 AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() : 
-  AliAnalysisTaskSE("ITSsa resolution"), 
+  AliAnalysisTaskSE("CheckAODVertex"), 
   fOutput{nullptr},
   fHistNEvents{nullptr},
   fHistAllVtxType{nullptr},
@@ -92,6 +92,7 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fMVCChi2Cut(5.),
   fMVWeiZDiffCut(15.),
   fMVCheckPlpFromDifferentBC(kFALSE),
+  fApplyPbPbOutOfBunchPileupCut(kFALSE),
   fReadMC{kFALSE}
 {
   //
@@ -158,9 +159,10 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"PhysSel"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"No TPC pileup"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Good vertex"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Pass zSPD-zTrk vert sel"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"|zvert|<10"); 
   fOutput->Add(fHistNEvents);
 
   fHistAllVtxType = new TH1F("hAllVtxType"," ; Vertex Type ; Entries",12,0.5,12.5);
@@ -304,6 +306,19 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   }
   fHistNEvents->Fill(1);
 
+  if(fApplyPbPbOutOfBunchPileupCut){
+    Int_t runNumber=aod->GetRunNumber();
+    if(runNumber>=295369 && runNumber<=297624){
+      AliAODVZERO* v0data=(AliAODVZERO*)aod->GetVZEROData();
+      Float_t mTotV0=v0data->GetMTotV0A()+v0data->GetMTotV0C();
+      Int_t nTPCcls=aod->GetNumberOfTPCClusters();
+      Float_t mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
+      if(mTotV0<mV0TPCclsCut) return;
+    }
+  }
+  fHistNEvents->Fill(2);
+
+  
   for(Int_t jv=0; jv<aod->GetNumberOfVertices(); jv++){
     AliAODVertex *v=(AliAODVertex*)aod->GetVertex(jv);
     Int_t typ=v->GetType();
@@ -455,7 +470,7 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   }
 
   if (ct<2 || cs<1) return; // one of vertices is missing
-  fHistNEvents->Fill(2);
+  fHistNEvents->Fill(3);
   
   double covPrim[6],covSPD[6];
   vtPrim->GetCovarianceMatrix(covPrim);
@@ -465,10 +480,10 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   double errPrim = TMath::Sqrt(covPrim[5]);
   double nsigTot = TMath::Abs(dz)/errTot, nsigPrim = TMath::Abs(dz)/errPrim;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigPrim>20) return; // bad vertexing
-  fHistNEvents->Fill(3);
+  fHistNEvents->Fill(4);
 
   if(TMath::Abs(vtPrim->GetZ())>10) return;
-  fHistNEvents->Fill(4);
+  fHistNEvents->Fill(5);
 
   PostData(1,fOutput);
   
