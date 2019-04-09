@@ -397,6 +397,9 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   // printf("event index = %i\n", fESD->GetEventNumberInFile());
 
   // leading particle
+  // printf("\n\nNew event!\n");
+
+  // printf("LP search\n");
   fEvInfo->FindLeadingParticle(fTracks);
   // shape
   fEvInfo->MakeDirectivity(fTracks);
@@ -490,15 +493,20 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     if(H) H->Fill(val);
 
     // define matching with ESD track array
+    // printf("New particle\n");
     for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
       if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
+      // printf("tmesRec->GetLabel() = %i \t ipart = %i\n", tmesRec->GetLabel(), ipart);
       if(tmesRec->GetLabel()!=ipart) continue;
       tmesRec->SetLabel(fMCtracks->GetEntries()-1);
       tmes->SetLabel(iesd);
+      // printf("tmesRec label = fMCtracks->GetEntries()-1 = %i \t pT = %f \n", fMCtracks->GetEntries()-1, tmesRec->Pt());
+      // printf("tmes label = iesd = %i \t pT = %f \n", iesd, tmes->Pt());
     }
   }
 
   // leading particle
+  // printf("generated LP search\n");
   fMCevInfo->FindLeadingParticle(fMCtracks);
   // shape
   fMCevInfo->MakeDirectivity(fMCtracks);
@@ -511,7 +519,19 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   val[3] = fMCevInfo->GetEventShape()->GetDirectivity(kFALSE);
   if(H) H->Fill(val);
 
-
+/*
+  for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
+    if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
+    if( !(tmes= (AliMEStrackInfo*)fMCtracks->At(tmesRec->GetLabel())) ) continue;
+    // if(TMath::Abs((tmes->Pt() - tmesRec->Pt())) > 0.05){
+        // printf("\n\nshit\n\n");
+        printf("tmesRec label = fMCtracks->GetEntries()-1 = %i \t pT = %f \n", tmesRec->GetLabel(), tmesRec->Pt());
+        printf("tmes label = iesd = %i \t pT = %f \n", tmes->GetLabel(), tmes->Pt());
+        // exit(1);
+    // }
+  }
+*/
+  
   // fill debug
   if(DebugLevel()>0){
 	  (*AliMESbaseTask::DebugStream()) << "evInfoMC"
