@@ -149,7 +149,6 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   // SetUsedForPrimVtxFit(usedForPrimVtxFit);// FIXME: what is this
   // //  if(covMatrix) SetCovMatrix(covMatrix);// FIXME: 
   // for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
-
 }
 
 //______________________________________________________________________________
@@ -595,4 +594,11 @@ Int_t AliNanoAODTrack::GetTOFBunchCrossing(Double_t /*b=0*/, Bool_t /*tpcPIDonly
   // TODO move to AliNanoAODTrackMapping
   static const Int_t cstIndex = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTOFBunchCrossing");
   return GetVar(cstIndex);
+};
+
+Int_t AliNanoAODTrack::GetID() const 
+{ 
+  // TODO move to AliNanoAODTrackMapping
+  static const Int_t cstIndex = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIntID");
+  return TMath::Nint(GetVar(cstIndex));
 };

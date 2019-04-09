@@ -82,7 +82,8 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(i);
     Printf("pt = %f   ITS cluster = %d %d %d %d %d %d", track->Pt(), track->HasPointOnITSLayer(0), track->HasPointOnITSLayer(1), 
            track->HasPointOnITSLayer(2), track->HasPointOnITSLayer(3), track->HasPointOnITSLayer(4), track->HasPointOnITSLayer(5));
-    //Printf("TOF BC = %d", track->GetTOFBunchCrossing());
+    //Printf("  TOF BC = %d", track->GetTOFBunchCrossing());
+    //Printf("  ID = %d", track->GetID());
     
     // for custom variables, cast to nano AOD track
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
@@ -91,21 +92,28 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
     static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
     if (nanoTrack && bPIDAvailable)
-      Printf("TPC_sigma_proton = %f  hasTOF = %d  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->HasTOFPID(), nanoTrack->GetVar(kcstNSigmaTOFPr));
+      Printf("  TPC_sigma_proton = %f  hasTOF = %d  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->HasTOFPID(), nanoTrack->GetVar(kcstNSigmaTOFPr));
   }
   
   // V0 access - as usual
   AliAODEvent* aod = dynamic_cast<AliAODEvent*> (fInputEvent);
   if (aod->GetV0s()) {
-    for (int i = 0; i < aod->GetNumberOfV0s(); i++)
-      Printf("V0 %d: dca = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex());
+    for (int i = 0; i < aod->GetNumberOfV0s(); i++) {
+      Printf("V0 %d: dca = %f   daughter pT = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex(), ((AliVTrack*) aod->GetV0(i)->GetDaughter(0))->Pt());
+    }
   }
 
   // cascade access - as usual
   
   // TODO in current AliRoot tag (v5-09-46), GetCascades() produces a SEGV if not filled
-  //if (aod->GetCascades()) {
-  //  for (int i = 0; i < aod->GetNumberOfCascades(); i++)
-  //    Printf("Cascade %d: xi mass = %f", i, aod->GetCascade(i)->MassXi());
-  //}
+  if (kFALSE && aod->GetCascades()) {
+    for (int i = 0; i < aod->GetNumberOfCascades(); i++) {
+      AliAODcascade* cascade = aod->GetCascade(i);
+      Printf("Cascade %d: xi mass = %f", i, cascade->MassXi());
+      for (int j=0; j<cascade->GetNDaughters(); j++)
+        Printf("  Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDaughter(j))->Pt());
+      for (int j=0; j<cascade->GetDecayVertexXi()->GetNDaughters(); j++)
+        Printf("  Xi Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDecayVertexXi()->GetDaughter(j))->Pt());
+    }
+  }
 }

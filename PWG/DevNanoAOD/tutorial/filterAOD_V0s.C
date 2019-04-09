@@ -34,7 +34,8 @@ void filterAOD_V0s()
   task->AddEvtCuts(evtCuts);
   
   // V0s
-  task->SaveV0s(kTRUE, new AliAnalysisNanoAODV0Cuts);
+//   task->SaveV0s(kTRUE, new AliAnalysisNanoAODV0Cuts);
+  task->SaveV0s(kTRUE);
   task->SaveCascades(kTRUE);
 
   mgr->SetDebugLevel(1); // enable debug printouts
@@ -47,5 +48,5 @@ void filterAOD_V0s()
   chain->Add("AliAOD.root");
 
   Printf("Starting Analysis....");
-  mgr->StartAnalysis("local", chain, 1000);
+  mgr->StartAnalysis("local", chain, 100);
 }
