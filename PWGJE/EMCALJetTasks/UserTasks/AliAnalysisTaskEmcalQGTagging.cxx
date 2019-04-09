@@ -1190,6 +1190,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    double nall=0;
    double flagSubjet=0;
    double z=0;
+   double delta_R=0;
     while(jj.has_parents(j1,j2) && z<fHardCutoff){
       nall=nall+1;
   
@@ -1201,7 +1202,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     
       
     
-    double delta_R=j1.delta_R(j2);
+     delta_R=j1.delta_R(j2);
    
     if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
     else z=j2.perp()/(j1.perp()+j2.perp());
@@ -1222,7 +1223,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
      fShapesVar[2]=ktaverage/nall;
      fShapesVar[3]=thetaverage/nall;
      fShapesVar[4]=z;
-     fShapesVar[5]=deltaR;
+     fShapesVar[5]=delta_R;
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -1275,16 +1276,17 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,
    double nall=0;
    double flagSubjet=0;
    double z=0;
+   double delta_R=0;
     while(jj.has_parents(j1,j2) && z<fHardCutoff){
       nall=nall+1;
       double area1 = j1.area();
       double area2 = j2.area();
-    if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
-      else  if(j1.perp() < j2.perp()) swap(j1,j2);
+
+      if(j1.perp() < j2.perp()) swap(j1,j2);
     
-   if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
-    else z=j2.perp()/(j1.perp()+j2.perp());
-    double delta_R=j1.delta_R(j2);
+   
+    z=j2.perp()/(j1.perp()+j2.perp());
+    delta_R=j1.delta_R(j2);
    
     double lnpt_rel=log(j2.perp()*delta_R);
       
