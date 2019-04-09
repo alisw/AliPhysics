@@ -86,6 +86,7 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistoNOfSelPileupVertSPD{nullptr},
   fHistoNOfPileupVertMV{nullptr},
   fHistoNOfSelPileupVertMV{nullptr},
+  fHistoV0MultVsNclsTPC{nullptr},
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAnyINT),
   fMaxMult(500.),
@@ -148,6 +149,7 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistoNOfSelPileupVertSPD;
     delete fHistoNOfPileupVertMV;
     delete fHistoNOfSelPileupVertMV;
+    delete fHistoV0MultVsNclsTPC;
   }
   delete fOutput;
 }
@@ -279,11 +281,13 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fHistoNOfSelPileupVertSPD = new TH1F("hNOfSelPileupVertSPD","",11,-0.5,10.5);
   fHistoNOfPileupVertMV = new TH1F("hNOfPileupVertMV","",11,-0.5,10.5);
   fHistoNOfSelPileupVertMV = new TH1F("hNOfSelPileupVertMV","",11,-0.5,10.5);
+  fHistoV0MultVsNclsTPC = new TH2F("hV0MultVsNclsTPC"," ; nTPCclusters ; V0 mult.",200,0.,10000000.,200,0.,60000.);
   fOutput->Add(fHistoNOfPileupVertSPD);
   fOutput->Add(fHistoNOfSelPileupVertSPD);
   fOutput->Add(fHistoNOfPileupVertMV);
   fOutput->Add(fHistoNOfSelPileupVertMV);
-
+  fOutput->Add(fHistoV0MultVsNclsTPC);
+  
   PostData(1,fOutput);
 
 }
@@ -318,15 +322,14 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
   }
   fHistNEvents->Fill(1);
 
-  if(fApplyPbPbOutOfBunchPileupCut){
-    Int_t runNumber=aod->GetRunNumber();
-    if(runNumber>=295369 && runNumber<=297624){
-      AliAODVZERO* v0data=(AliAODVZERO*)aod->GetVZEROData();
-      Float_t mTotV0=v0data->GetMTotV0A()+v0data->GetMTotV0C();
-      Int_t nTPCcls=aod->GetNumberOfTPCClusters();
-      Float_t mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
-      if(mTotV0<mV0TPCclsCut) return;
-    }
+  Int_t runNumber=aod->GetRunNumber();
+  if(runNumber>=295369 && runNumber<=297624){
+    AliAODVZERO* v0data=(AliAODVZERO*)aod->GetVZEROData();
+    Float_t mTotV0=v0data->GetMTotV0A()+v0data->GetMTotV0C();
+    Int_t nTPCcls=aod->GetNumberOfTPCClusters();
+    Float_t mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
+    if(fApplyPbPbOutOfBunchPileupCut && mTotV0<mV0TPCclsCut) return;
+    fHistoV0MultVsNclsTPC->Fill(nTPCcls,mTotV0);
   }
   fHistNEvents->Fill(2);
 
