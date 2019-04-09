@@ -100,6 +100,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH1F* fHistoNOfSelPileupVertSPD;    //!<! histo of SPD pileup
   TH1F* fHistoNOfPileupVertMV;        //!<! histo of SPD pileup
   TH1F* fHistoNOfSelPileupVertMV;     //!<! histo of SPD pileup
+  TH2F* fHistoV0MultVsNclsTPC;        //!<! contro histo for TPC pileup
   Bool_t  fUsePhysSel;                // flag use/not use phys sel
   Int_t   fTriggerMask;               // mask used in physics selection
   Double_t fMaxMult;                  // upper limit of multiplicity plots
@@ -113,7 +114,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   Bool_t  fReadMC;                    // flag read/not-read MC truth info
 
 
-  ClassDef(AliAnalysisTaskCheckVertexAOD,6);
+  ClassDef(AliAnalysisTaskCheckVertexAOD,7);
 };
 
 
