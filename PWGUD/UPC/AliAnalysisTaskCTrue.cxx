@@ -37,6 +37,7 @@
 #include <map>
 // #include <pair>
 #include <algorithm>
+#include <stdlib.h>
 
 // root headers
 #include <TMath.h>
@@ -52,7 +53,7 @@
 #include <TRandom.h>
 #include <TGraph.h>
 #include <TLegend.h>
-#include <TGraphErrors.h>
+// #include <TGraphErrors.h>
 #include <TPad.h>
 #include <TCanvas.h>
 #include <TStyle.h>
@@ -152,6 +153,20 @@ AliAnalysisTaskCTrue::AliAnalysisTaskCTrue()
       fRecurringVetoAtrackletsH(0),
       fRecurringVetoCH(0),
       fRecurringVetoCtrackletsH(0)
+      // // result TGraphErrors
+      // fOnlyTrackletsGE(0),
+      // fVbaGE(0),
+      // fVbaTrackletsGE(0),
+      // fVdaGE(0),
+      // fVdaTrackletsGE(0),
+      // fVbaAndVdaGE(0),
+      // fVbaAndVdaTrackletsGE(0),
+      // fVbcGE(0),
+      // fVbcTrackletsGE(0),
+      // fVdcGE(0),
+      // fVdcTrackletsGE(0),
+      // fVbcAndVdcGE(0),
+      // fVbcAndVdcTrackletsGE(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -222,6 +237,20 @@ AliAnalysisTaskCTrue::AliAnalysisTaskCTrue(const char* name)
       fRecurringVetoAtrackletsH(0),
       fRecurringVetoCH(0),
       fRecurringVetoCtrackletsH(0)
+      // // result TGraphErrors
+      // fOnlyTrackletsGE(0),
+      // fVbaGE(0),
+      // fVbaTrackletsGE(0),
+      // fVdaGE(0),
+      // fVdaTrackletsGE(0),
+      // fVbaAndVdaGE(0),
+      // fVbaAndVdaTrackletsGE(0),
+      // fVbcGE(0),
+      // fVbcTrackletsGE(0),
+      // fVdcGE(0),
+      // fVdcTrackletsGE(0),
+      // fVbcAndVdcGE(0),
+      // fVbcAndVdcTrackletsGE(0)
 {
     // fMapGoodRunsToMuAndWeight.insert( std::make_pair( 0, std::make_pair(0,0) ) );
     Set2018PbPb();
@@ -596,6 +625,40 @@ void AliAnalysisTaskCTrue::UserCreateOutputObjects()
     fOutputList->Add(fVBCandVDCTrackletsForRunNumberH);
 
 
+    //_______________________________
+    // TGRAPHERRORS results for the efficiency computation.
+    // fVbaGE = new TGraphErrors();
+    // fVbaGE->SetName("fVbaGE");
+    // fOutputList->Add(fVbaGE);
+    // fVbaGE->SetPoint(0,0,0);
+    //
+    // fVbaTrackletsGE = new TGraphErrors();
+    // fVbaTrackletsGE->SetName("fVbaTrackletsGE");
+    // fOutputList->Add(fVbaTrackletsGE);
+    // fVbaTrackletsGE->SetPoint(0,0,0);
+    //
+    //
+    // fVdaGE = new TGraphErrors();
+    // fVdaGE->SetName("fVdaGE");
+    // fOutputList->Add(fVdaGE);
+    // fVdaGE->SetPoint(0,0,0);
+    //
+    // fVdaTrackletsGE = new TGraphErrors();
+    // fVdaTrackletsGE->SetName("fVdaTrackletsGE");
+    // fOutputList->Add(fVdaTrackletsGE);
+    // fVdaTrackletsGE->SetPoint(0,0,0);
+    //
+    // fVbaAndVdaGE = new TGraphErrors();
+    // fVbaAndVdaGE->SetName("fVbaAndVdaGE");
+    // fOutputList->Add(fVbaAndVdaGE);
+    // fVbaAndVdaGE->SetPoint(0,0,0);
+    //
+    // fVbaAndVdaTrackletsGE = new TGraphErrors();
+    // fVbaAndVdaTrackletsGE->SetName("fVbaAndVdaTrackletsGE");
+    // fOutputList->Add(fVbaAndVdaTrackletsGE);
+    // fVbaAndVdaTrackletsGE->SetPoint(0,0,0);
+
+
     // post output
     PostData(1, fAnaTree);
     PostData(2, fOutputList);
@@ -964,180 +1027,228 @@ void AliAnalysisTaskCTrue::SetXeXe()
   inputId_0OM2 = 9;
 }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskCTrue::BinomialError(Double_t cut, Double_t CTRUE)
-// use Root formula for binomial error
-{
-  Double_t efficiency = cut/CTRUE;
-  // Double_t e1 = TMath::Sqrt(cut);   // seem unused. I commented them out!!
-  // Double_t e2 = TMath::Sqrt(ctrue); // seem unused. I commented them out!!
-  /* - If I did the math right this should be equivalent to the new method:
-     -
-   */
-  // return TMath::Sqrt(TMath::Abs( ((1.0-2.0*efficiency)*cut + efficiency*efficiency*ctrue)/(ctrue*ctrue) ));
-  return TMath::Sqrt(TMath::Abs( efficiency*(1-efficiency)/CTRUE ));
-}
+// Double_t AliAnalysisTaskCTrue::BinomialError(Double_t cut, Double_t CTRUE)
+// // use Root formula for binomial error
+// {
+//   Double_t efficiency = cut/CTRUE;
+//   // Double_t e1 = TMath::Sqrt(cut);   // seem unused. I commented them out!!
+//   // Double_t e2 = TMath::Sqrt(ctrue); // seem unused. I commented them out!!
+//   /* - If I did the math right this should be equivalent to the new method:
+//      -
+//    */
+//   // return TMath::Sqrt(TMath::Abs( ((1.0-2.0*efficiency)*cut + efficiency*efficiency*ctrue)/(ctrue*ctrue) ));
+//   return TMath::Sqrt(TMath::Abs( efficiency*(1-efficiency)/CTRUE ));
+// }
+// //_____________________________________________________________________________
+// Double_t AliAnalysisTaskCTrue::FitPolinomial(Double_t *x, Double_t *p)
+// // fit model of a pol1 passing through 0
+// {
+//   return p[0]+p[1]*x[0];
+// }
+// //_____________________________________________________________________________
+// void AliAnalysisTaskCTrue::ComputeEfficiency( Int_t n,
+//                                               Double_t *weight,
+//                                               Double_t *mu,
+// 	                                            Double_t p0,
+//                                               Double_t p0e,
+//                                               Double_t p1,
+//                                               Double_t p1e,
+// 	                                            Double_t *eff
+//                                               // std::vector<Double_t>* fVectorEfficiencyC
+//                                               )
+// {
+//   // Double_t w_tot = 0.0;
+//   // for(Int_t i=0;i<n;i++) {
+//   //   Double_t w = weight[i];
+//   //   w_tot += w;
+//   //   Double_t p = p0+p1*mu[i];
+//   //   eff[0] += (w*TMath::Exp(-p));
+//   //   Double_t pm = p0+(p1-p1e)*mu[i];
+//   //   eff[1] += (w*TMath::Exp(-pm));
+//   //   Double_t pp = p0+(p1+p1e)*mu[i];
+//   //   eff[2] += (w*TMath::Exp(-pp));
+//   //   //  cout << i << " w " << w << " p " << p << " eff " <<  (w*TMath::Exp(-p)) << endl;
+//   // }
+//   // if (w_tot < 1e-12) return;
+//   // for(Int_t i=0;i<3;i++) eff[i] = eff[i]/w_tot;
+//   /*
+//   cout << " efficiency  = " << eff[0]
+//        << " + " << (eff[1]-eff[0])
+//        << " - " << (eff[0]-eff[2])
+//        << endl;
+//   */
+//   for(Int_t i=0;i<n;i++) {
+//     TotalWeightForEfficiency += weight[i];
+//     Double_t p  = p0+      p1*mu[i];
+//     Double_t pm = p0+(p1-p1e)*mu[i];
+//     Double_t pp = p0+(p1+p1e)*mu[i];
+//
+//     fVectorEfficiency[0].push_back( weight[i]*TMath::Exp(-p ) );
+//     fVectorEfficiency[1].push_back( weight[i]*TMath::Exp(-pm) );
+//     fVectorEfficiency[2].push_back( weight[i]*TMath::Exp(-pp) );
+//   }
+// }
+// //_____________________________________________________________________________
+// Double_t* AliAnalysisTaskCTrue::NormalizeEfficiency()
+// {
+//   Double_t effInTheCycle[3];
+//   effInTheCycle[0] = effInTheCycle[1] = effInTheCycle[2] = 0;
+//   for ( Int_t iLoop = 0; iLoop < 3; iLoop++){
+//     effInTheCycle[iLoop] = 0;
+//     for ( auto it = fVectorEfficiency[0].begin(); it != fVectorEfficiency[0].end(); it ++ ) {
+//       effInTheCycle[iLoop] += (*it);
+//     }
+//     effInTheCycle[iLoop] /= TotalWeightForEfficiency;
+//   }
+//   Double_t* returningEff = new Double_t[3];
+//   returningEff[0] = effInTheCycle[0];
+//   returningEff[1] = effInTheCycle[1] - effInTheCycle[0];
+//   returningEff[1] = effInTheCycle[0] - effInTheCycle[2];
+//
+//   return returningEff;
+// }
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskCTrue::FitPolinomial(Double_t *x, Double_t *p)
-// fit model of a pol1 passing through 0
-{
-  return p[0]+p[1]*x[0];
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskCTrue::ComputeEfficiency( Int_t n,
-                                              Double_t *weight,
-                                              Double_t *mu,
-	                                            Double_t p0,
-                                              Double_t p0e,
-                                              Double_t p1,
-                                              Double_t p1e,
-	                                            Double_t *eff
-                                              // std::vector<Double_t>* fVectorEfficiencyC
-                                              )
-{
-  // Double_t w_tot = 0.0;
-  // for(Int_t i=0;i<n;i++) {
-  //   Double_t w = weight[i];
-  //   w_tot += w;
-  //   Double_t p = p0+p1*mu[i];
-  //   eff[0] += (w*TMath::Exp(-p));
-  //   Double_t pm = p0+(p1-p1e)*mu[i];
-  //   eff[1] += (w*TMath::Exp(-pm));
-  //   Double_t pp = p0+(p1+p1e)*mu[i];
-  //   eff[2] += (w*TMath::Exp(-pp));
-  //   //  cout << i << " w " << w << " p " << p << " eff " <<  (w*TMath::Exp(-p)) << endl;
-  // }
-  // if (w_tot < 1e-12) return;
-  // for(Int_t i=0;i<3;i++) eff[i] = eff[i]/w_tot;
-  /*
-  cout << " efficiency  = " << eff[0]
-       << " + " << (eff[1]-eff[0])
-       << " - " << (eff[0]-eff[2])
-       << endl;
-  */
-  for(Int_t i=0;i<n;i++) {
-    TotalWeightForEfficiency += weight[i];
-    Double_t p  = p0+      p1*mu[i];
-    Double_t pm = p0+(p1-p1e)*mu[i];
-    Double_t pp = p0+(p1+p1e)*mu[i];
-
-    fVectorEfficiency[0].push_back( weight[i]*TMath::Exp(-p ) );
-    fVectorEfficiency[1].push_back( weight[i]*TMath::Exp(-pm) );
-    fVectorEfficiency[2].push_back( weight[i]*TMath::Exp(-pp) );
-  }
-}
-//_____________________________________________________________________________
-Double_t* AliAnalysisTaskCTrue::NormalizeEfficiency()
-{
-  Double_t effInTheCycle[3];
-  effInTheCycle[0] = effInTheCycle[1] = effInTheCycle[2] = 0;
-  for ( Int_t iLoop = 0; iLoop < 3; iLoop++){
-    effInTheCycle[iLoop] = 0;
-    for ( auto it = fVectorEfficiency[0].begin(); it != fVectorEfficiency[0].end(); it ++ ) {
-      effInTheCycle[iLoop] += (*it);
-    }
-    effInTheCycle[iLoop] /= TotalWeightForEfficiency;
-  }
-  Double_t* returningEff = new Double_t[3];
-  returningEff[0] = effInTheCycle[0];
-  returningEff[1] = effInTheCycle[1] - effInTheCycle[0];
-  returningEff[1] = effInTheCycle[0] - effInTheCycle[2];
-
-  return returningEff;
-}
-//_____________________________________________________________________________
-void  AliAnalysisTaskCTrue::DoPlot( TH1F*         signal,
-                                    TH1F*         background,
-                                    TGraphErrors* graphToBeFilled
-                                    )
-{
-  //   // decide if constraint the origin of the line fit
-  // // to pass through the origin
-  // Bool_t fix_p0 = kFALSE;
-  //
-  // // prepare for fractions to store weights to total efficiency
-  // Double_t *weight = new Double_t [nRuns];
-  // for (Int_t i=0;i<nRuns;i++) weight[i]=0.0;
-  //
-  // // prepare graphs
-  // Double_t ymin =10;
-  // Double_t ymax =-10;
-  // TGraphErrors *gr = new TGraphErrors();
-  // for(Int_t i=0;i<nRuns;i++) {
-  //   // skip events without entries
-  //   if (empty[i]<0.5) continue;
-  //   if (signal[i]<0.5) continue;
-  //   // get the point
-  //   Double_t x = mu_all[i];
-  //   Double_t y = signal[i]/empty[i];
-  //   Double_t ye = berr(signal[i],empty[i]);
-  //   if (ymin>y-ye) ymin = y-ye;
-  //   if (ymax<y+ye) ymax = y+ye;
-  //   // if (y < 0.01) continue;
-  //   // fill graph
-  //   Int_t n = gr->GetN();
-  //   gr->SetPoint(n,x,y);
-  //   gr->SetPointError(n,0,ye);
-  //   weight[n]=w_all[i];
-  // }
-  //
-  //
-  // //plot graph
-  // // No stats and no titles
-  // gStyle->SetOptTitle(1);
-  // gStyle->SetOptStat(0);
-  // gStyle->SetOptFit(1);
-  //
-  //
-  // TCanvas *c = new TCanvas(title,title,1200,600);
-  // c->Divide(1,1);
-  // c->cd(1);
-  // gr->SetMarkerStyle(20);  gr->SetMarkerColor(kRed); gr->SetLineColor(kRed);
-  // // make some white space in the canvas
-  // ymin *= 0.5;
-  // if (ymin<0) ymin = 0.001;
-  // ymax *= 1.5;
-  // // define the histo
-  // Double_t mu_max = 0.0025;
-  // TH1F* frame1 = gPad->DrawFrame(0.,ymin,mu_max,ymax);
-  // frame1->GetYaxis()->SetTitleOffset(1.3);
-  // frame1->GetYaxis()->SetLabelSize(0.025);
-  // frame1->SetTitle(Form("%s;#mu;Prob.",title));
-  // TF1 *pol = new TF1("pol",fit_p1, 0, 1,2);
-  // if (gr->GetN()>0) {
-  //   gr->Draw("p,same");
-  //   pol->SetParNames("p0","p1");
-  //   pol->SetParameter(0,0.0);
-  //   pol->SetParameter(1,1.0);
-  //   if (fix_p0) pol->FixParameter(0,0.0);
-  //   gr->Fit("pol");
-  // } else { cout << " gr is empty " << endl;}
-  // gPad->Update();
-  //
-  // // compute efficiency
-  // Double_t eff[3]; // mean, minus, plus
-  // eff[0]=eff[1]=eff[2]=0.0;
-  // DoEff(gr->GetN(),weight,gr->GetX(),pol->GetParameter(0), pol->GetParError(0),
-	// pol->GetParameter(1), pol->GetParError(1), eff);
-  //
-  // // print eff in the canvas
-  // TLatex* l = new TLatex();
-  // l->SetTextFont(42);
-  // l->SetTextSize(0.045);
-  // l->DrawLatex(mu_max*0.05,ymax*0.9,Form("#varepsilon = %.5f + %.5f - %.5f",eff[0],(eff[1]-eff[0]),(eff[0]-eff[2])));
-  //
-  // // save
-  // c->Print(Form("Canvas_%s.pdf",title));
-  // // clean up
-  // delete [] weight;
-}
+// void  AliAnalysisTaskCTrue::DoPlot( TH1F*         signal,
+//                                     TH1F*         background,
+//                                     TGraphErrors* graphToBeFilled
+//                                     )
+// {
+//   // decide if constraint the origin of the line fit
+//   // to pass through the origin
+//   Bool_t fix_p0 = kFALSE;
+//
+//   Int_t nbinsx = signal->GetXaxis()->GetNbins();
+//   const char* binLabel;
+//   Double_t x, y, yError, weight = 0;
+//
+//
+//   /* - Firstly, we get the label of the bin.
+//      - This label is actually the run number!!
+//      - Then we look for this "key" inside the map.
+//      - Hence, we retrieve this information.
+//      - And now we can finish the analysis.
+//      -
+//    */
+//   for (Int_t iLoop = 1; iLoop < nbinsx+1; iLoop++) {
+//     binLabel = signal->GetXaxis()->GetBinLabel(iLoop);
+//     // cout << "binLabel:   " << binLabel << atoi(binLabel) << endl;
+//     if ( atoi(binLabel) == 0 ) continue;
+//     if ( signal    ->GetBinContent(iLoop) < 0.5 ) continue;
+//     if ( background->GetBinContent(iLoop) < 0.5 ) continue;
+//
+//     auto iterator = fMapGoodRunsToMuAndWeight.find( atoi(binLabel) );
+//     if ( iterator == fMapGoodRunsToMuAndWeight.end() ) {
+//         cout << "Missing run number: not a problem but be careful" << endl;
+//     } else {
+//         x      = (iterator->second).first;
+//         cout << "x      = " << x      << endl;
+//         weight = (iterator->second).second;
+//         cout << "weight = " << weight << endl;
+//     }
+//
+//     y      = (Double_t)signal->GetBinContent(iLoop) / (Double_t)background->GetBinContent(iLoop);
+//     cout << "y      = " << y      << endl;
+//     yError = BinomialError( (Double_t)signal->GetBinContent(iLoop), (Double_t)background->GetBinContent(iLoop) );
+//     cout << "yError = " << yError << endl;
+//
+//     fVbcGE->Draw();
+//     Int_t nOfPoints = fVbcGE->GetN();
+//     cout << "nOfPoints   " << nOfPoints << endl;
+//     fVbcGE->SetPoint     ( nOfPoints, x, y     );
+//     fVbcGE->SetPointError( nOfPoints, 0, yError);
+//
+//   }
+//   // // prepare for fractions to store weights to total efficiency
+//   // Double_t *weight = new Double_t [nRuns];
+//   // for (Int_t i=0;i<nRuns;i++) weight[i]=0.0;
+//   //
+//   // // prepare graphs
+//   // Double_t ymin =10;
+//   // Double_t ymax =-10;
+//   // TGraphErrors *gr = new TGraphErrors();
+//   // for(Int_t i=0;i<nRuns;i++) {
+//   //   Double_t ye = berr(signal[i],empty[i]);
+//   //   if (ymin>y-ye) ymin = y-ye;
+//   //   if (ymax<y+ye) ymax = y+ye;
+//   //   // if (y < 0.01) continue;
+//   //   // fill graph
+//   //   Int_t n = gr->GetN();
+//   //   gr->SetPoint(n,x,y);
+//   //   gr->SetPointError(n,0,ye);
+//   //   weight[n]=w_all[i];
+//   // }
+//   //
+//   //
+//   // //plot graph
+//   // // No stats and no titles
+//   // gStyle->SetOptTitle(1);
+//   // gStyle->SetOptStat(0);
+//   // gStyle->SetOptFit(1);
+//   //
+//   //
+//   // TCanvas *c = new TCanvas(title,title,1200,600);
+//   // c->Divide(1,1);
+//   // c->cd(1);
+//   // gr->SetMarkerStyle(20);  gr->SetMarkerColor(kRed); gr->SetLineColor(kRed);
+//   // // make some white space in the canvas
+//   // ymin *= 0.5;
+//   // if (ymin<0) ymin = 0.001;
+//   // ymax *= 1.5;
+//   // // define the histo
+//   // Double_t mu_max = 0.0025;
+//   // TH1F* frame1 = gPad->DrawFrame(0.,ymin,mu_max,ymax);
+//   // frame1->GetYaxis()->SetTitleOffset(1.3);
+//   // frame1->GetYaxis()->SetLabelSize(0.025);
+//   // frame1->SetTitle(Form("%s;#mu;Prob.",title));
+//   // TF1 *pol = new TF1("pol",fit_p1, 0, 1,2);
+//   // if (gr->GetN()>0) {
+//   //   gr->Draw("p,same");
+//   //   pol->SetParNames("p0","p1");
+//   //   pol->SetParameter(0,0.0);
+//   //   pol->SetParameter(1,1.0);
+//   //   if (fix_p0) pol->FixParameter(0,0.0);
+//   //   gr->Fit("pol");
+//   // } else { cout << " gr is empty " << endl;}
+//   // gPad->Update();
+//   //
+//   // // compute efficiency
+//   // Double_t eff[3]; // mean, minus, plus
+//   // eff[0]=eff[1]=eff[2]=0.0;
+//   // DoEff(gr->GetN(),weight,gr->GetX(),pol->GetParameter(0), pol->GetParError(0),
+// 	// pol->GetParameter(1), pol->GetParError(1), eff);
+//   //
+//   // // print eff in the canvas
+//   // TLatex* l = new TLatex();
+//   // l->SetTextFont(42);
+//   // l->SetTextSize(0.045);
+//   // l->DrawLatex(mu_max*0.05,ymax*0.9,Form("#varepsilon = %.5f + %.5f - %.5f",eff[0],(eff[1]-eff[0]),(eff[0]-eff[2])));
+//   //
+//   // // save
+//   // c->Print(Form("Canvas_%s.pdf",title));
+//   // // clean up
+//   // delete [] weight;
+// }
 //_____________________________________________________________________________
 void AliAnalysisTaskCTrue::Terminate(Option_t *)
 {
   // terminate
   // called at the END of the analysis (when all events are processed)
   // define hist and add it to the list
-  fCounterTryingH = new TH1I("fCounterTryingH", "fCounterTryingH", 100, 1, 101);
-  fOutputList->Add(fCounterTryingH);
+  // fCounterTryingH = new TH1I("fCounterTryingH", "fCounterTryingH", 100, 1, 101);
+  // fOutputList->Add(fCounterTryingH);
+  //
+  // DoPlot( fVBCforRunNumberH,                fRecurringVetoCH,          fVbcGE );
+  // DoPlot( fVDCforRunNumberH,                fRecurringVetoCH,          fVdcGE );
+  // DoPlot( fVBCTrackletsForRunNumberH,       fRecurringVetoCtrackletsH, fVbcTrackletsGE );
+  // DoPlot( fVDCTrackletsForRunNumberH,       fRecurringVetoCtrackletsH, fVdcTrackletsGE );
+  // DoPlot( fVBCandVDCforRunNumberH,          fRecurringVetoCH,          fVbcAndVdcGE );
+  // DoPlot( fVBCandVDCTrackletsForRunNumberH, fRecurringVetoCtrackletsH, fVbcAndVdcTrackletsGE );
+  // DoPlot( fVBAforRunNumberH,                fRecurringVetoAH,          fVbaGE );
+  // DoPlot( fVDAforRunNumberH,                fRecurringVetoAH,          fVdaGE );
+  // DoPlot( fVBATrackletsForRunNumberH,       fRecurringVetoAtrackletsH, fVbaTrackletsGE );
+  // DoPlot( fVDATrackletsForRunNumberH,       fRecurringVetoAtrackletsH, fVdaTrackletsGE );
+  // DoPlot( fVBAandVDAforRunNumberH,          fRecurringVetoAH,          fVbaAndVdaGE );
+  // DoPlot( fVBAandVDATrackletsForRunNumberH, fRecurringVetoAtrackletsH, fVbaAndVdaTrackletsGE );
 
 }
 //_____________________________________________________________________________
