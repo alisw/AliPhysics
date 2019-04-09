@@ -22,8 +22,13 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   void Setv0(AliAODEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
   void Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
              const int multiplicity = -1);
+  // the last two are switches to ignore the first entry in the phi, eta, ...
+  // vector in case one cases a V0 in this object, and only wants to keep the
+  // daughter information
   void Setv0(const AliFemtoDreamBasePart &posDaughter, const float posMass,
-             const AliFemtoDreamBasePart &negDaughter, const float negMass);
+             const AliFemtoDreamBasePart &negDaughter, const float negMass,
+             const bool ignoreFirstPos = false,
+             const bool ignoreFirstNeg = false);
   bool GetOnlinev0() const {
     return fOnlinev0;
   }

@@ -503,7 +503,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
 
     for (const auto &lambda : lambdaCandidates) {
       if (!lambda.UseParticle()) continue;
-      sigma.Setv0(lambda, lambdaMass, photon, photonMass);
+      sigma.Setv0(lambda, lambdaMass, photon, photonMass, true, true);
       const float invMass = sigma.GetInvMass();
       const float armAlpha = GetArmenterosAlpha(photon, lambda, sigma);
       const float armQt = GetArmenterosQt(photon, lambda, sigma);

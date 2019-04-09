@@ -110,7 +110,7 @@ class AliFemtoDreamBasePart {
     fPhiAtRadius.push_back(phiAtRad);
   }
   ;
-  std::vector<std::vector<float>> GetPhiAtRaidius() {
+  std::vector<std::vector<float>> GetPhiAtRaidius() const {
     return fPhiAtRadius;
   }
   ;
@@ -146,7 +146,7 @@ class AliFemtoDreamBasePart {
     fIDTracks.push_back(idTracks);
   }
   ;
-  std::vector<int> GetIDTracks() {
+  std::vector<int> GetIDTracks() const {
     return fIDTracks;
   }
   ;
