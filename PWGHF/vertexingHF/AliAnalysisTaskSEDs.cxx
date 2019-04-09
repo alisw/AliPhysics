@@ -878,9 +878,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
     if (fAnalysisCuts->GetUseCentrality() > 0 && fAnalysisCuts->IsEventSelectedInCentrality(aod) != 0)
       // events not passing the centrality selection can be removed immediately.
       return;
-    Double_t zMCVertex = mcHeader->GetVtxZ();
-    if (TMath::Abs(zMCVertex) > fAnalysisCuts->GetMaxVtxZ())
-      return;
     FillMCGenAccHistos(arrayMC, mcHeader, nTracklets);
   }
 
