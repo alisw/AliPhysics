@@ -114,8 +114,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
   //trigger 
-  task->UseESDTriggerMask(triggerMask); //ESD
-  //task->SelectCollisionCandidates(triggerMask); //AOD
+  //task->UseESDTriggerMask(triggerMask); //ESD
+  task->SelectCollisionCandidates(triggerMask); //AOD
   
   //-----------------------------------------------------------------------------------------------
   // -- MULTIPLICITY/CENTRALITY -------------------------------------------------------------------
@@ -131,34 +131,37 @@ AliRsnMiniAnalysisTask * AddTaskF0
   task->SetNMix(nmix);
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
-  ::Info("AddTaskF0", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+  //::Info("AddTaskF0", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
    
   //-----------------------------------------------------------------------------------------------
   // -- EVENT SELECTION ---------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-   if ((collSys==AliPIDResponse::kPP) && (!isMC)) cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup
-   cutVertex->SetCheckZResolutionSPD(); ::Info("AddTaskF0", Form("CheckZResolutionSPD:              ON"));
-  cutVertex->SetCheckDispersionSPD(); ::Info("AddTaskF0", Form("CheckDispersionSPD:               ON"));
-  cutVertex->SetCheckZDifferenceSPDTrack(); ::Info("AddTaskF0", Form("CheckZDifferenceSPDTrack:         ON"));
-  
+  AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
+  if ((collSys==AliPIDResponse::kPP) && (!isMC)) cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup
+  cutVertex->SetCheckZResolutionSPD(); 
+  Printf("AddTaskF0 - CheckZResolutionSPD:              ON");
+  cutVertex->SetCheckDispersionSPD(); 
+  Printf("AddTaskF0 - CheckDispersionSPD:               ON");
+  cutVertex->SetCheckZDifferenceSPDTrack(); 
+  Printf("AddTaskF0 - CheckZDifferenceSPDTrack:         ON");
+
   //set check for pileup in 2013
   AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", kFALSE, rejectPileUp);
   cutEventUtils->SetCheckIncompleteDAQ(kTRUE);
   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
-  ::Info("AddTaskF0", Form("CheckIncompleteDAQ:                  ON"));
-  ::Info("AddTaskF0", Form("SetCheckSPDClusterVsTrackletBG:      ON"));
+  Printf("AddTaskF0 - CheckIncompleteDAQ:                  ON");
+  Printf("AddTaskF0 - SetCheckSPDClusterVsTrackletBG:      ON");
   
   if (useMVPileUpSelection){
     cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
     cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
     cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-    ::Info("AddTaskF0", Form("Multiple-vtx Pile-up rejection:      ON \nSettings: MinPlpContribMV = %i, MinPlpContribSPD = %i", MinPlpContribMV, MinPlpContribSPD));
+    //::Info("AddTaskF0", Form("Multiple-vtx Pile-up rejection:      ON \nSettings: MinPlpContribMV = %i, MinPlpContribSPD = %i", MinPlpContribMV, MinPlpContribSPD));
   } else {
     cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-    ::Info("AddTaskF0", Form("SPD Pile-up rejection:                      ON \nSettings: MinPlpContribSPD = %i", MinPlpContribSPD));
+    Printf("AddTaskF0 - SPD Pile-up rejection:     ON \nSettings: MinPlpContribSPD = %i", MinPlpContribSPD);
   }
-  ::Info("AddTaskF0", Form("Pile-up rejection mode:                %s", (rejectPileUp?"ON":"OFF")));   
+  Printf("AddTaskF0 - Pile-up rejection mode:     %i", rejectPileUp);   
   
   AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
   eventCuts->AddCut(cutEventUtils);
