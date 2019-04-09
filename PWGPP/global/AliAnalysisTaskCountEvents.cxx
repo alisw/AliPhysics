@@ -73,17 +73,18 @@ AliAnalysisTaskCountEvents::~AliAnalysisTaskCountEvents(){
 }
 //___________________________________________________________________________
 void AliAnalysisTaskCountEvents::ConfigureXaxis(TH1* histo){
-  histo->GetXaxis()->SetBinLabel(1,"kAny");
-  histo->GetXaxis()->SetBinLabel(2,"kINT7");
-  histo->GetXaxis()->SetBinLabel(3,"kCentral");
-  histo->GetXaxis()->SetBinLabel(4,"kSemiCentral");
-  histo->GetXaxis()->SetBinLabel(5,"kMuonSingleLowPt7");
-  histo->GetXaxis()->SetBinLabel(6,"kMuonSingleHighPt7");
-  histo->GetXaxis()->SetBinLabel(7,"kMuonUnlikeLowPt7");
-  histo->GetXaxis()->SetBinLabel(8,"kMuonLikeLowPt7");
-  histo->GetXaxis()->SetBinLabel(9,"kEMC7");
-  histo->GetXaxis()->SetBinLabel(10,"kEMCEJE");
-  histo->GetXaxis()->SetBinLabel(11,"kEMCEGA");
+  histo->GetXaxis()->SetBinLabel(1,"Read");
+  histo->GetXaxis()->SetBinLabel(2,"kAny");
+  histo->GetXaxis()->SetBinLabel(3,"kINT7");
+  histo->GetXaxis()->SetBinLabel(4,"kCentral");
+  histo->GetXaxis()->SetBinLabel(5,"kSemiCentral");
+  histo->GetXaxis()->SetBinLabel(6,"kMuonSingleLowPt7");
+  histo->GetXaxis()->SetBinLabel(7,"kMuonSingleHighPt7");
+  histo->GetXaxis()->SetBinLabel(8,"kMuonUnlikeLowPt7");
+  histo->GetXaxis()->SetBinLabel(9,"kMuonLikeLowPt7");
+  histo->GetXaxis()->SetBinLabel(10,"kEMC7");
+  histo->GetXaxis()->SetBinLabel(11,"kEMCEJE");
+  histo->GetXaxis()->SetBinLabel(12,"kEMCEGA");
   return;
 }
 //___________________________________________________________________________
@@ -94,23 +95,23 @@ void AliAnalysisTaskCountEvents::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEventsPhysSel = new TH1F("hNEventsPhysSel", "Number of events after phys sel",11,-0.5,10.5);
+  fHistNEventsPhysSel = new TH1F("hNEventsPhysSel", "Number of events after phys sel",12,-0.5,11.5);
   ConfigureXaxis(fHistNEventsPhysSel);
   fOutput->Add(fHistNEventsPhysSel);
-  fHistNEventsSPDVert = new TH1F("hNEventsSPDVert", "Number of events after phys sel",11,-0.5,10.5);
+  fHistNEventsSPDVert = new TH1F("hNEventsSPDVert", "Number of events after phys sel",12,-0.5,11.5);
   ConfigureXaxis(fHistNEventsSPDVert);
   fOutput->Add(fHistNEventsSPDVert);
-  fHistNEventsTrackVert = new TH1F("hNEventsTrackVert", "Number of events after phys sel",11,-0.5,10.5);
+  fHistNEventsTrackVert = new TH1F("hNEventsTrackVert", "Number of events after phys sel",12,-0.5,11.5);
   ConfigureXaxis(fHistNEventsTrackVert);
   fOutput->Add(fHistNEventsTrackVert);
 
-  fHistNEventsPhysSelVsCent = new TH2F("hNEventsPhysSelVsCent","",11,-0.5,10.5,100,0.,100.);
+  fHistNEventsPhysSelVsCent = new TH2F("hNEventsPhysSelVsCent","",12,-0.5,11.5,100,0.,100.);
   ConfigureXaxis(fHistNEventsPhysSelVsCent);
   fOutput->Add(fHistNEventsPhysSelVsCent);
-  fHistNEventsSPDVertVsCent = new TH2F("hNEventsSPDVertVsCent","",11,-0.5,10.5,100,0.,100.);
+  fHistNEventsSPDVertVsCent = new TH2F("hNEventsSPDVertVsCent","",12,-0.5,11.5,100,0.,100.);
   ConfigureXaxis(fHistNEventsSPDVertVsCent);
   fOutput->Add(fHistNEventsSPDVertVsCent);
-  fHistNEventsTrackVertVsCent = new TH2F("hNEventsTrackVertVsCent","",11,-0.5,10.5,100,0.,100.);
+  fHistNEventsTrackVertVsCent = new TH2F("hNEventsTrackVertVsCent","",12,-0.5,11.5,100,0.,100.);
   ConfigureXaxis(fHistNEventsTrackVertVsCent);
   fOutput->Add(fHistNEventsTrackVertVsCent);
   
@@ -132,19 +133,20 @@ void AliAnalysisTaskCountEvents::UserExec(Option_t *)
 
   UInt_t isPhysSel = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
-  Bool_t TrigMaskOn[11];
-  for(Int_t j=0; j<11; j++) TrigMaskOn[j]=kFALSE;
-  if(isPhysSel & AliVEvent::kAny) TrigMaskOn[0]=kTRUE;
-  if(isPhysSel & AliVEvent::kINT7) TrigMaskOn[1]=kTRUE;
-  if(isPhysSel & AliVEvent::kCentral) TrigMaskOn[2]=kTRUE;
-  if(isPhysSel & AliVEvent::kSemiCentral) TrigMaskOn[3]=kTRUE;
-  if(isPhysSel & AliVEvent::kMUS7) TrigMaskOn[4]=kTRUE;
-  if(isPhysSel & AliVEvent::kMUSH7) TrigMaskOn[5]=kTRUE;
-  if(isPhysSel & AliVEvent::kMUU7) TrigMaskOn[6]=kTRUE;
-  if(isPhysSel & AliVEvent::kMUL7) TrigMaskOn[7]=kTRUE;
-  if(isPhysSel & AliVEvent::kEMC7) TrigMaskOn[8]=kTRUE;
-  if(isPhysSel & AliVEvent::kEMCEJE) TrigMaskOn[9]=kTRUE;
-  if(isPhysSel & AliVEvent::kEMCEGA) TrigMaskOn[10]=kTRUE;
+  Bool_t TrigMaskOn[12];
+  for(Int_t j=0; j<12; j++) TrigMaskOn[j]=kFALSE;
+  TrigMaskOn[0]=kTRUE; // counter for read events
+  if(isPhysSel & AliVEvent::kAny) TrigMaskOn[1]=kTRUE;
+  if(isPhysSel & AliVEvent::kINT7) TrigMaskOn[2]=kTRUE;
+  if(isPhysSel & AliVEvent::kCentral) TrigMaskOn[3]=kTRUE;
+  if(isPhysSel & AliVEvent::kSemiCentral) TrigMaskOn[4]=kTRUE;
+  if(isPhysSel & AliVEvent::kMUS7) TrigMaskOn[5]=kTRUE;
+  if(isPhysSel & AliVEvent::kMUSH7) TrigMaskOn[6]=kTRUE;
+  if(isPhysSel & AliVEvent::kMUU7) TrigMaskOn[7]=kTRUE;
+  if(isPhysSel & AliVEvent::kMUL7) TrigMaskOn[8]=kTRUE;
+  if(isPhysSel & AliVEvent::kEMC7) TrigMaskOn[9]=kTRUE;
+  if(isPhysSel & AliVEvent::kEMCEJE) TrigMaskOn[10]=kTRUE;
+  if(isPhysSel & AliVEvent::kEMCEGA) TrigMaskOn[11]=kTRUE;
   
   Int_t vertType=0;
   const AliVVertex* vtPrim = ev->GetPrimaryVertex();
@@ -176,7 +178,7 @@ void AliAnalysisTaskCountEvents::UserExec(Option_t *)
   if(multSelection) centr = multSelection->GetMultiplicityPercentile("V0M");
   else AliWarning("AliMultSelection could not be found in the list of objects");
 
-  for(Int_t iBin=0; iBin<11; iBin++){
+  for(Int_t iBin=0; iBin<12; iBin++){
     if(TrigMaskOn[iBin]){
       fHistNEventsPhysSel->Fill(iBin);
       fHistNEventsPhysSelVsCent->Fill(iBin,centr);
