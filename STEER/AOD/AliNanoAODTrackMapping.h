@@ -75,6 +75,8 @@ public:
   Int_t GetIsMuonTrack()      const { return fIsMuonTrack;      }
   Int_t GetTPCnclsS()         const { return fTPCnclsS;         }
   Int_t GetFilterMap()        const { return fFilterMap;        }
+  Int_t GetTOFBunchCrossing() const { return fTOFBunchCrossing; }
+  Int_t GetID()               const { return fID;               }
   Int_t GetCovMat(Int_t index)  const { return fcovmat[index];  }
 
   
@@ -125,6 +127,8 @@ private:
   Int_t fIsMuonTrack;     ///< Mapping variable
   Int_t fTPCnclsS;    ///< Mapping variable
   Int_t fFilterMap;      ///< Mapping variable
+  Int_t fTOFBunchCrossing;      ///< Mapping variable
+  Int_t fID;      ///< Mapping variable
   Int_t fcovmat[21];          ///< Mapping variables
 
   
