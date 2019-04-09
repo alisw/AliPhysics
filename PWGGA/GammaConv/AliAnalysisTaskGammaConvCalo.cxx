@@ -2857,7 +2857,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 5; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
+    AliCaloTrackMatcher* temp = 0x0;
+    if(!fCorrTaskSetting.CompareTo("")){
+      temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
+    } else {
+      temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i_%s",iMatcherTask,fTrackMatcherRunningMode,fCorrTaskSetting.Data())));
+    }
     if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
   }
 
