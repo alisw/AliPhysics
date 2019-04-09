@@ -231,6 +231,8 @@ enum EAliAnalysisFlags {
    void                 UnLock();
    void                 Changed();
    void                 InitInputData(AliVEvent* esdEvent, AliVfriendEvent* esdFriend);
+
+   void                 BreakExecutionChain(bool flag = true) { fBreakExecutionChain = flag; }
 protected:
    void                 CreateReadCache();
    void                 ImportWrappers(TList *source);
@@ -292,6 +294,8 @@ private:
    static TString          fgCommonFileName;     //!<! Common output file name (not streamed)
    static TString          fgMacroNames;         //!<! Loaded macro names
    static AliAnalysisManager *fgAnalysisManager; //!<! static pointer to object instance
-   ClassDef(AliAnalysisManager, 21)  // Analysis manager class
+
+   bool                    fBreakExecutionChain; // Break the chain of task execution (it can be triggered by one of the subtasks)
+   ClassDef(AliAnalysisManager, 22)  // Analysis manager class
 };   
 #endif
