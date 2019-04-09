@@ -72,6 +72,7 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
   fConfig->GetXaxis()->SetBinLabel(14, "Armenteros q_{T} up");
   fConfig->GetXaxis()->SetBinLabel(15, "Armenteros #alpha low");
   fConfig->GetXaxis()->SetBinLabel(16, "Armenteros #alpha up");
+  fConfig->GetXaxis()->SetBinLabel(17, "Pileup requirement");
 
   fHistList->Add(fConfig);
 
@@ -86,14 +87,15 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
   fCutCounter->GetXaxis()->SetBinLabel(8, "Transverse Radius");
   fCutCounter->GetXaxis()->SetBinLabel(9, "Daug PV");
   fCutCounter->GetXaxis()->SetBinLabel(10, "Daug Vtx");
-  fCutCounter->GetXaxis()->SetBinLabel(11, "Armenteros-Podolandski");
-  fCutCounter->GetXaxis()->SetBinLabel(12, "K0 Rejection");
-  fCutCounter->GetXaxis()->SetBinLabel(13, "Inv Mass Cut");
-  fCutCounter->GetXaxis()->SetBinLabel(14, "Cos Pointing Angle");
-  fCutCounter->GetXaxis()->SetBinLabel(15, "D1&D2 right");
-  fCutCounter->GetXaxis()->SetBinLabel(16, "D1&D2 pass cuts");
-  fCutCounter->GetXaxis()->SetBinLabel(17, "D1&D2 wrong");
-  fCutCounter->GetXaxis()->SetBinLabel(18, "D1&D2 pass cuts");
+  fCutCounter->GetXaxis()->SetBinLabel(11, "Pileup");
+  fCutCounter->GetXaxis()->SetBinLabel(12, "Armenteros-Podolandski");
+  fCutCounter->GetXaxis()->SetBinLabel(13, "K0 Rejection");
+  fCutCounter->GetXaxis()->SetBinLabel(14, "Inv Mass Cut");
+  fCutCounter->GetXaxis()->SetBinLabel(15, "Cos Pointing Angle");
+  fCutCounter->GetXaxis()->SetBinLabel(16, "D1&D2 right");
+  fCutCounter->GetXaxis()->SetBinLabel(17, "D1&D2 pass cuts");
+  fCutCounter->GetXaxis()->SetBinLabel(18, "D1&D2 wrong");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "D1&D2 pass cuts");
 
   fHistList->Add(fCutCounter);
 

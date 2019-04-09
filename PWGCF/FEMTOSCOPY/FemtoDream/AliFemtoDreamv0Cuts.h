@@ -14,6 +14,19 @@
 #include "AliFemtoDreamv0.h"
 class AliFemtoDreamv0Cuts {
  public:
+  enum PileUpRejectionMode {
+    BothDaughtersCombined = 0,  ///< Both daughters, ITS SPD/SSD or TOF
+    OneDaughterCombined = 1,    ///< One daughters, ITS SPD/SSD or TOF
+    BothDaughtersITSonly = 2,   ///< Both daughters, ITS SPD/SSD only
+    BothDaughtersTOFonly = 3,   ///< Both daughters, TOF only
+    OneDaughterITSonly = 4,     ///< One daughter, ITS SPD/SSD only
+    OneDaughterTOFonly = 5,     ///< One daughter, TOF only
+    BothDaughersSPDonly = 6,    ///< Both daughters, SPD only
+    OneDaugherSPDonly = 7,      ///< One daughter, SPD only
+    BothDaughersSPDTOF = 8,     ///< Both daughters, SPD or TOF
+    OneDaugherSPDTOF = 9        ///< One daughter, SPD or TOF
+  };
+
   AliFemtoDreamv0Cuts();
   AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts);
   AliFemtoDreamv0Cuts& operator=(const AliFemtoDreamv0Cuts& cuts);
@@ -187,7 +200,13 @@ class AliFemtoDreamv0Cuts {
     fArmenterosAlphaLow = alphaLow;
     fArmenterosAlphaUp = alphaUp;
   }
+  void SetDaughterTimingCut(PileUpRejectionMode mode) {
+    fDoCombinedTimingCut = true;
+    fCombinedTiming = mode;
+  }
+
  private:
+  bool TimingCut(AliFemtoDreamv0 *v0);
   bool RejectAsKaon(AliFemtoDreamv0 *v0);
   bool ArmenterosSelection(AliFemtoDreamv0 *v0);
   bool DaughtersPassCuts(AliFemtoDreamv0 *v0);
@@ -219,6 +238,8 @@ class AliFemtoDreamv0Cuts {
   bool fOnFlyStatus;                  //
   bool fCutCharge;                    //
   int fCharge;                        //
+  bool fDoCombinedTimingCut;          //
+  PileUpRejectionMode fCombinedTiming;//
   bool fDoArmenterosCut;              //
   float fArmenterosQtLow;             //
   float fArmenterosQtUp;              //
