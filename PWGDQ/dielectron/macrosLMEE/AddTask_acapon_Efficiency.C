@@ -145,7 +145,6 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   std::vector<Double_t> massBins;
   if(!useRun1binning){
     for(Int_t j = 0; j < sizeof(massBinsArr)/sizeof(massBinsArr[0]); j++){
-      std::cout << "Bin: " << j << ": " << massBinsArr[j] << std::endl;
       massBins.push_back(massBinsArr[j]);
     }
   }else{
