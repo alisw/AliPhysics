@@ -205,6 +205,31 @@ AliFemtoDreamv0Cuts* AliFemtoDreamv0Cuts::LambdaCuts(bool isMC, bool CPAPlots,
   return LambdaCuts;
 }
 
+AliFemtoDreamv0Cuts *AliFemtoDreamv0Cuts::LambdaSigma0Cuts(bool isMC,
+                                                           bool CPAPlots,
+                                                           bool SplitContrib) {
+  AliFemtoDreamv0Cuts *LambdaCuts = new AliFemtoDreamv0Cuts();
+  LambdaCuts->SetIsMonteCarlo(isMC);
+  LambdaCuts->SetPlotCPADist(CPAPlots);
+  LambdaCuts->SetPlotContrib(SplitContrib);
+
+  LambdaCuts->SetCheckOnFlyStatus(false);  //online = kTRUE, offline = kFALSE
+  LambdaCuts->SetCutCharge(0);
+  LambdaCuts->SetPtRange(0.3, 999.);
+  LambdaCuts->SetKaonRejection(0., 0.);
+  LambdaCuts->SetCutMaxDecayVtx(100);
+  LambdaCuts->SetCutTransverseRadius(0.2, 100);
+  LambdaCuts->SetCutDCADaugToPrimVtx(0.05);
+  LambdaCuts->SetCutDCADaugTov0Vtx(1.5);
+  LambdaCuts->SetCutCPA(0.99);
+  LambdaCuts->SetCutInvMass(0.006);
+  LambdaCuts->SetAxisInvMassPlots(400, 1.0, 1.2);
+  LambdaCuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  LambdaCuts->SetDaughterTimingCut(OneDaughterCombined);
+
+  return LambdaCuts;
+}
+
 bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
   bool pass = true;
   if (!v0->IsSet()) {

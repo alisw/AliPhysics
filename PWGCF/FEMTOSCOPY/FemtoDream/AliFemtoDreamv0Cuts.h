@@ -33,6 +33,8 @@ class AliFemtoDreamv0Cuts {
   virtual ~AliFemtoDreamv0Cuts();
   static AliFemtoDreamv0Cuts* LambdaCuts(bool isMC, bool CPAPlots,
                                          bool SplitContrib);
+  static AliFemtoDreamv0Cuts *LambdaSigma0Cuts(bool isMC, bool CPAPlots,
+                                               bool SplitContrib);
   //Setters for plots
   void SetMinimalBooking(bool doIt) {
     fMinimalBooking = doIt;

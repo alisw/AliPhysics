@@ -168,70 +168,85 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoAOD(bool isMC = false, bool MomRes = false,
 
   // Lambda Cuts
   AliFemtoDreamv0Cuts *v0Cuts =
-      AliFemtoDreamv0Cuts::LambdaCuts(isMC, false, false);
+      AliFemtoDreamv0Cuts::LambdaSigma0Cuts(isMC, false, false);
   AliFemtoDreamTrackCuts *Posv0Daug =
-      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
+      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, false, false);
+  Posv0Daug->SetEtaRange(-0.9, 0.9);
   AliFemtoDreamTrackCuts *Negv0Daug =
-      AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
+      AliFemtoDreamTrackCuts::DecayPionCuts(isMC, false, false);
+  Negv0Daug->SetEtaRange(-0.9, 0.9);
+
+  AliFemtoDreamv0Cuts *antiv0Cuts =
+      AliFemtoDreamv0Cuts::LambdaSigma0Cuts(isMC, false, false);
+  AliFemtoDreamTrackCuts *PosAntiv0Daug =
+      AliFemtoDreamTrackCuts::DecayPionCuts(isMC, false, false);
+  PosAntiv0Daug->SetCutCharge(1);
+  PosAntiv0Daug->SetEtaRange(-0.9, 0.9);
+  AliFemtoDreamTrackCuts *NegAntiv0Daug =
+      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, false, false);
+  NegAntiv0Daug->SetCutCharge(-1);
+  NegAntiv0Daug->SetEtaRange(-0.9, 0.9);
+
+  if (suffix != "0") {
+    v0Cuts->SetMinimalBooking(true);
+    antiv0Cuts->SetMinimalBooking(true);
+  }
+  if (suffix == "10") {
+    v0Cuts->SetPtRange(0.24, 999.9);
+    antiv0Cuts->SetPtRange(0.24, 999.9);
+  } else if (suffix == "11") {
+    v0Cuts->SetPtRange(0.36, 999.9);
+    antiv0Cuts->SetPtRange(0.36, 999.9);
+  } else if (suffix == "12") {
+    v0Cuts->SetCutCPA(0.995);
+    antiv0Cuts->SetCutCPA(0.995);
+  } else if (suffix == "13") {
+    v0Cuts->SetCutCPA(0.98);
+    antiv0Cuts->SetCutCPA(0.998);
+  } else if (suffix == "14") {
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 3);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 3);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+  } else if (suffix == "15") {
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 6);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 6);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 6);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 6);
+  } else if (suffix == "16") {
+    v0Cuts->SetArmenterosCut(0., 0.15, 0.2, 1);
+    antiv0Cuts->SetArmenterosCut(0, 0.15, 0.2, 1);
+  } else if (suffix == "17") {
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+  } else if (suffix == "18") {
+    Posv0Daug->SetNClsTPC(60);
+    Negv0Daug->SetNClsTPC(60);
+    PosAntiv0Daug->SetNClsTPC(60);
+    NegAntiv0Daug->SetNClsTPC(60);
+  } else if (suffix == "19") {
+    Posv0Daug->SetEtaRange(-0.8, 0.8);
+    Negv0Daug->SetEtaRange(-0.8, 0.8);
+    PosAntiv0Daug->SetEtaRange(-0.8, 0.8);
+    NegAntiv0Daug->SetEtaRange(-0.8, 0.8);
+  } else if (suffix == "20") {
+    v0Cuts->SetCutInvMass(0.008);
+    antiv0Cuts->SetCutInvMass(0.008);
+  }
+
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  // Proton
   v0Cuts->SetPDGCodeNegDaug(211);   // Pion
   v0Cuts->SetPDGCodev0(3122);       // Lambda
+  antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
+  antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
+  antiv0Cuts->SetPDGCodePosDaug(211);   // Pion
+  antiv0Cuts->SetPDGCodeNegDaug(2212);  // Proton
+  antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
 
-  AliFemtoDreamv0Cuts *Antiv0Cuts =
-      AliFemtoDreamv0Cuts::LambdaCuts(isMC, false, false);
-  AliFemtoDreamTrackCuts *PosAntiv0Daug =
-      AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
-  PosAntiv0Daug->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *NegAntiv0Daug =
-      AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
-  NegAntiv0Daug->SetCutCharge(-1);
-  Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
-  Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
-  Antiv0Cuts->SetPDGCodePosDaug(211);   // Pion
-  Antiv0Cuts->SetPDGCodeNegDaug(2212);  // Proton
-  Antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
-
-  //  if (suffix != "0") {
-  //    v0Cuts->SetLightweight(true);
-  //    antiv0Cuts->SetLightweight(true);
-  //  }
-  //  if (suffix == "10") {
-  //    v0Cuts->SetV0PtMin(0.24);
-  //    antiv0Cuts->SetV0PtMin(0.24);
-  //  } else if (suffix == "11") {
-  //    v0Cuts->SetV0PtMin(0.36);
-  //    antiv0Cuts->SetV0PtMin(0.36);
-  //  } else if (suffix == "12") {
-  //    v0Cuts->SetV0CosPAMin(0.995);
-  //    antiv0Cuts->SetV0CosPAMin(0.995);
-  //  } else if (suffix == "13") {
-  //    v0Cuts->SetV0CosPAMin(0.98);
-  //    antiv0Cuts->SetV0CosPAMin(0.98);
-  //  } else if (suffix == "14") {
-  //    v0Cuts->SetPIDnSigma(3);
-  //    antiv0Cuts->SetPIDnSigma(3);
-  //  } else if (suffix == "15") {
-  //    v0Cuts->SetPIDnSigma(6);
-  //    antiv0Cuts->SetPIDnSigma(6);
-  //  } else if (suffix == "16") {
-  //    v0Cuts->SetArmenterosCut(0., 0.15, 0.2, 1);
-  //    antiv0Cuts->SetArmenterosCut(0, 0.15, 0.2, 1);
-  //  } else if (suffix == "17") {
-  //    v0Cuts->SetTPCclusterMin(80);
-  //    antiv0Cuts->SetTPCclusterMin(80);
-  //  } else if (suffix == "18") {
-  //    v0Cuts->SetTPCclusterMin(60);
-  //    antiv0Cuts->SetTPCclusterMin(60);
-  //  } else if (suffix == "19") {
-  //    v0Cuts->SetEtaMax(0.8);
-  //    antiv0Cuts->SetEtaMax(0.8);
-  //  } else if (suffix == "20") {
-  //    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-  //    antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
-  //  }
-  //
   AliSigma0AODPhotonMotherCuts *sigmaCuts =
       AliSigma0AODPhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
@@ -442,7 +457,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoAOD(bool isMC = false, bool MomRes = false,
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetV0Cuts(v0Cuts);
-  task->SetAntiV0Cuts(Antiv0Cuts);
+  task->SetAntiV0Cuts(antiv0Cuts);
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
   task->SetCollectionConfig(config);
