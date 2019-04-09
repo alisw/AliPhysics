@@ -97,15 +97,22 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   // V0 access - as usual
   AliAODEvent* aod = dynamic_cast<AliAODEvent*> (fInputEvent);
   if (aod->GetV0s()) {
-    for (int i = 0; i < aod->GetNumberOfV0s(); i++)
-      Printf("V0 %d: dca = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex());
+    for (int i = 0; i < aod->GetNumberOfV0s(); i++) {
+      Printf("V0 %d: dca = %f   daughter pT = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex(), ((AliVTrack*) aod->GetV0(i)->GetDaughter(0))->Pt());
+    }
   }
 
   // cascade access - as usual
   
   // TODO in current AliRoot tag (v5-09-46), GetCascades() produces a SEGV if not filled
-  //if (aod->GetCascades()) {
-  //  for (int i = 0; i < aod->GetNumberOfCascades(); i++)
-  //    Printf("Cascade %d: xi mass = %f", i, aod->GetCascade(i)->MassXi());
-  //}
+  if (kFALSE && aod->GetCascades()) {
+    for (int i = 0; i < aod->GetNumberOfCascades(); i++) {
+      AliAODcascade* cascade = aod->GetCascade(i);
+      Printf("Cascade %d: xi mass = %f", i, cascade->MassXi());
+      for (int j=0; j<cascade->GetNDaughters(); j++)
+        Printf("  Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDaughter(j))->Pt());
+      for (int j=0; j<cascade->GetDecayVertexXi()->GetNDaughters(); j++)
+        Printf("  Xi Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDecayVertexXi()->GetDaughter(j))->Pt());
+    }
+  }
 }

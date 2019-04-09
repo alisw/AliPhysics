@@ -149,8 +149,6 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   // SetUsedForPrimVtxFit(usedForPrimVtxFit);// FIXME: what is this
   // //  if(covMatrix) SetCovMatrix(covMatrix);// FIXME: 
   // for (Int_t i=0;i<3;i++) {fTOFLabel[i]=-1;}
-
-  SetUniqueID(aodTrack->GetUniqueID()); // TODO copy consrtuctor?
 }
 
 //______________________________________________________________________________
