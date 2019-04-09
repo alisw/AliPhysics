@@ -1237,7 +1237,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
   
 }
 //_________________________________________________________________________
-void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &average1, Double_t &average2){
+void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &average1, Double_t &average2, Double_t &average3, Double_t &average4){
   AliJetContainer *jetCont = GetJetContainer(km);
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
@@ -1274,10 +1274,16 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,
    double thetaverage=0;
    double nall=0;
    double flagSubjet=0;
-    while(jj.has_parents(j1,j2)){
+   double z=0;
+    while(jj.has_parents(j1,j2) && z<fHardCutoff){
       nall=nall+1;
-    if(j1.perp() < j2.perp()) swap(j1,j2);
-   
+      double area1 = j1.area();
+      double area2 = j2.area();
+    if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
+      else  if(j1.perp() < j2.perp()) swap(j1,j2);
+    
+   if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
+    else z=j2.perp()/(j1.perp()+j2.perp());
     double delta_R=j1.delta_R(j2);
    
     double lnpt_rel=log(j2.perp()*delta_R);
@@ -1286,11 +1292,12 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,
       thetaverage=thetaverage+delta_R;
    
     jj=j1;} 
-
+     
    
      average1=ktaverage/nall;
      average2=thetaverage/nall;
- 
+     average3=z;
+     average4=delta_R;
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");

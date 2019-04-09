@@ -103,7 +103,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
   Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
   void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);
-  void                                RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &aver1, Double_t &aver2);
+  void                                RecursiveParentsMCAverage(AliEmcalJet *fJet,Int_t km, Double_t &aver1, Double_t &aver2, Double_t &aver3, Double_t &aver4);
   void                               CheckSubjetResolution(AliEmcalJet *fJet,AliJetContainer *fJetCont, AliEmcalJet *fJetM,AliJetContainer *fJetContM);
   Bool_t                              CheckClosePartner(Int_t index, AliEmcalJet *fJet,AliVParticle *fTrack, AliParticleContainer *fTrackCont);
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
