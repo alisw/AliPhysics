@@ -53,6 +53,7 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistXspdVsContrib{nullptr},
   fHistYspdVsContrib{nullptr},
   fHistZspdVsContrib{nullptr},
+  fHistZspdOnlyZVsContrib{nullptr},
   fHistXtrkVsContrib{nullptr},
   fHistYtrkVsContrib{nullptr},
   fHistZtrkVsContrib{nullptr},
@@ -62,6 +63,7 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistXspdVsMult{nullptr},
   fHistYspdVsMult{nullptr},
   fHistZspdVsMult{nullptr},
+  fHistZspdOnlyZVsMult{nullptr},
   fHistXtrkVsMult{nullptr},
   fHistYtrkVsMult{nullptr},
   fHistZtrkVsMult{nullptr},
@@ -72,6 +74,7 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistXspdVsCent{nullptr},
   fHistYspdVsCent{nullptr},
   fHistZspdVsCent{nullptr},
+  fHistZspdOnlyZVsCent{nullptr},
   fHistXtrkVsCent{nullptr},
   fHistYtrkVsCent{nullptr},
   fHistZtrkVsCent{nullptr},
@@ -112,6 +115,7 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistXspdVsContrib;
     delete fHistYspdVsContrib;
     delete fHistZspdVsContrib;
+    delete fHistZspdOnlyZVsContrib;
     delete fHistXtrkVsContrib;
     delete fHistYtrkVsContrib;
     delete fHistZtrkVsContrib;
@@ -121,6 +125,7 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistXspdVsMult;
     delete fHistYspdVsMult;
     delete fHistZspdVsMult;
+    delete fHistZspdOnlyZVsMult;
     delete fHistXtrkVsMult;
     delete fHistYtrkVsMult;
     delete fHistZtrkVsMult;
@@ -131,6 +136,7 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistXspdVsCent;
     delete fHistYspdVsCent;
     delete fHistZspdVsCent;
+    delete fHistZspdOnlyZVsCent;
     delete fHistXtrkVsCent;
     delete fHistYtrkVsCent;
     delete fHistZtrkVsCent;
@@ -194,6 +200,7 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fHistXspdVsContrib=new TH2F("hXspdVsContrib"," ; n_{Contributors} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistYspdVsContrib=new TH2F("hYspdVsContrib"," ; n_{Contributors} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZspdVsContrib=new TH2F("hZspdVsContrib"," ; n_{Contributors} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
+  fHistZspdOnlyZVsContrib=new TH2F("hZspdOnlyZVsContrib"," ; n_{Contributors} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
   fHistXtrkVsContrib=new TH2F("hXtrkVsContrib"," ; n_{Contributors} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistYtrkVsContrib=new TH2F("hYtrkVsContrib"," ; n_{Contributors} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZtrkVsContrib=new TH2F("hZtrkVsContrib"," ; n_{Contributors} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
@@ -203,6 +210,7 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistXspdVsContrib);
   fOutput->Add(fHistYspdVsContrib);
   fOutput->Add(fHistZspdVsContrib);
+  fOutput->Add(fHistZspdOnlyZVsContrib);
   fOutput->Add(fHistXtrkVsContrib);
   fOutput->Add(fHistYtrkVsContrib);
   fOutput->Add(fHistZtrkVsContrib);
@@ -213,6 +221,7 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fHistXspdVsMult=new TH2F("hXspdVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistYspdVsMult=new TH2F("hYspdVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZspdVsMult=new TH2F("hZspdVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
+  fHistZspdOnlyZVsMult=new TH2F("hZspdOnlyZVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
   fHistXtrkVsMult=new TH2F("hXtrkVsMult"," ; n_{Tracklets} ; x_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistYtrkVsMult=new TH2F("hYtrkVsMult"," ; n_{Tracklets} ; y_{Vertex} (cm)",100,0.,fMaxMult,1000,-1.,1.);
   fHistZtrkVsMult=new TH2F("hZtrkVsMult"," ; n_{Tracklets} ; z_{Vertex} (cm)",100,0.,fMaxMult,300,-20.,20.);
@@ -222,6 +231,7 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistXspdVsMult);
   fOutput->Add(fHistYspdVsMult);
   fOutput->Add(fHistZspdVsMult);
+  fOutput->Add(fHistZspdOnlyZVsMult);
   fOutput->Add(fHistXtrkVsMult);
   fOutput->Add(fHistYtrkVsMult);
   fOutput->Add(fHistZtrkVsMult);
@@ -244,6 +254,7 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fHistXspdVsCent=new TH2F("hXspdVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistYspdVsCent=new TH2F("hYspdVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistZspdVsCent=new TH2F("hZspdVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
+  fHistZspdOnlyZVsCent=new TH2F("hZspdOnlyZVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
   fHistXtrkVsCent=new TH2F("hXtrkVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistYtrkVsCent=new TH2F("hYtrkVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistZtrkVsCent=new TH2F("hZtrkVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
@@ -253,6 +264,7 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistXspdVsCent);
   fOutput->Add(fHistYspdVsCent);
   fOutput->Add(fHistZspdVsCent);
+  fOutput->Add(fHistZspdOnlyZVsCent);
   fOutput->Add(fHistXtrkVsCent);
   fOutput->Add(fHistYtrkVsCent);
   fOutput->Add(fHistZtrkVsCent);
@@ -407,6 +419,14 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
 	fHistXspdVsCent->Fill(centr,xs);
 	fHistYspdVsCent->Fill(centr,ys);
 	fHistZspdVsCent->Fill(centr,zs);
+      }
+    }else if(spdtitle.Contains("ertexer: Z")){
+      zs=vtSPD->GetZ();
+      cs=vtSPD->GetNContributors();
+      fHistZspdOnlyZVsContrib->Fill(cs,zs);
+      if(cs>=1){
+	fHistZspdOnlyZVsMult->Fill(ntracklets,zs);
+	fHistZspdOnlyZVsCent->Fill(centr,zs);
       }
     }
   }
