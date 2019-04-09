@@ -1639,8 +1639,8 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
 	  return kFALSE;
 	}
       }
-      cutIndex++;
     }
+    cutIndex++;
 
     // High Pt Pion rej
     if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLine ){
