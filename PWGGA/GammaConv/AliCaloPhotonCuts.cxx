@@ -865,7 +865,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     } else if( fClusterType == 4 ){
       Int_t nMaxCellsEMCAL      = fNMaxEMCalModules*48*24;
       Int_t nMaxCellsDCAL       = fNMaxDCalModules*32*24;
-      fBadChannels              = new TProfile("EMCAL+DCAL - Bad Channels","EMCAL+DCAL - Bad Channels",nMaxCellsDCAL,-0.5,nMaxCellsEMCAL+nMaxCellsDCAL-0.5);
+      fBadChannels              = new TProfile("EMCAL+DCAL - Bad Channels","EMCAL+DCAL - Bad Channels",nMaxCellsEMCAL+nMaxCellsDCAL,-0.5,nMaxCellsEMCAL+nMaxCellsDCAL-0.5);
       fBadChannels->GetXaxis()->SetTitle("channel ID");
       fHistExtQA->Add(fBadChannels);
     }

@@ -127,7 +127,10 @@ void AliCaloTrackMatcher::UserCreateOutputObjects(){
   if(fListHistos == NULL){
     fListHistos = new TList();
     fListHistos->SetOwner(kTRUE);
-    fListHistos->SetName(Form("CaloTrackMatcher_%i_%i",fClusterType,fRunningMode));
+    if(!fCorrTaskSetting.CompareTo(""))
+      fListHistos->SetName(Form("CaloTrackMatcher_%i_%i",fClusterType,fRunningMode));
+    else
+      fListHistos->SetName(Form("CaloTrackMatcher_%i_%i_%s",fClusterType,fRunningMode,fCorrTaskSetting.Data()));
   }
 
   // Create User Output Objects
