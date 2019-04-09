@@ -528,8 +528,12 @@ public:
     kQnFMDCrpH2,               // FMDA eventplane from QnCorrections framework
     kQnFMDCxH2,
     kQnFMDCyH2,
-    kQnZDCArpH1,               // ZDCA eventplane from QnCorrections framework (1st harmonic)
-    kQnZDCCrpH1,               // ZDCC eventplane from QnCorrections framework (1st harmonic)
+    kQnZDCArpH1,               // ZDCA eventplane from QnCorrections framework or ZDC Event plane task (1st harmonic)
+    kQnZDCCrpH1,               // ZDCC eventplane from QnCorrections framework or ZDC Event plane task (1st harmonic)
+    kQnZDCAX,                  // ZDCA Q vector, X component from ZDC Event plane task
+    kQnZDCAY,                  // ZDCA Q vector, Y component from ZDC Event plane task
+    kQnZDCCX,                  // ZDCC Q vector, X component from ZDC Event plane task
+    kQnZDCCY,                  // ZDCC Q vector, Y component from ZDC Event plane task
  
     // Average Eventplane differences for 2nd harmonics from QnCorrections framework est. 2016 - as input for 3 sub-detector method
     // Returns cos(2(psi_DetA-psi_DetB))
@@ -4234,6 +4238,12 @@ inline void AliDielectronVarManager::FillZDCEventPlane(Double_t * const values){
   values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(vQarray[0].Phi())/2;
   values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(vQarray[1].Phi())/2;
 
+  // for QA store also components
+  values[AliDielectronVarManager::kQnZDCCX] = vQarray[0].X();
+  values[AliDielectronVarManager::kQnZDCCY] = vQarray[0].Y();
+  values[AliDielectronVarManager::kQnZDCAX] = vQarray[1].X();
+  values[AliDielectronVarManager::kQnZDCAY] = vQarray[1].Y();
+  
   return;
 }
 
