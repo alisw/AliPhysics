@@ -34,12 +34,37 @@ private:
 class AliAnalysisNanoAODV0Cuts : public AliAnalysisCuts
 {
 public:
-  AliAnalysisNanoAODV0Cuts() {}
+  AliAnalysisNanoAODV0Cuts();
   virtual ~AliAnalysisNanoAODV0Cuts() {}
-  virtual Bool_t IsSelected(TObject* obj); // TObject should be an AliAODv0
+  virtual Bool_t IsSelected(TObject* obj);  // TObject should be an AliAODv0
   virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
 
+  void SetOnFlyStatus(Bool_t flyStat)                { fSelectOnFly = true; fOnFlyStatus = flyStat; }
+  void Setv0pTMin(Float_t pTMin)                     { fv0pTMin = pTMin;  }
+  void Setv0EtaMax(Float_t EtaMax)                   { fv0EtaMax = EtaMax; }
+  void SetTransverseRadius(Float_t min, Float_t max) { fTransverseRadiusMin = min; fTransverseRadiusMax = max; }
+  void SetCPAMin(Float_t CPAMin)                     { fCPAMin = CPAMin; }
+  void SetMaxDCADaughtersToV0Vtx(Float_t MaxDCA)     { fDCADaugv0VtxMax = MaxDCA; }
+  void SetMinDCADaughtersToPrimVtx(Float_t MinDCA)   { fDCADaugPrimVtxMin = MinDCA; }
+  void SetDaughterEtaMax(Float_t EtaMax)             { fDaughEtaMax = EtaMax; }
+  void SetMinClsTPCDaughters(int minCls)             { fDaugMinClsTPC = minCls; }
+  void SetLambdaDaugnSigTPCMax(Float_t maxnSig)      { fLambdaDaugnSigTPCMax = maxnSig; }
+  void SetRequireTimingDaughters(Bool_t require)     { fCheckDaughterPileup = require; }
+  
 private:
+  Bool_t fSelectOnFly;
+  Bool_t fOnFlyStatus;
+  Float_t fv0pTMin;
+  Float_t fv0EtaMax;
+  Float_t fTransverseRadiusMin;
+  Float_t fTransverseRadiusMax;
+  Float_t fCPAMin;
+  Float_t fDCADaugv0VtxMax;
+  Float_t fDCADaugPrimVtxMin;
+  Float_t fDaughEtaMax;
+  Int_t fDaugMinClsTPC;
+  Float_t fLambdaDaugnSigTPCMax;
+  Bool_t fCheckDaughterPileup;
 
   ClassDef(AliAnalysisNanoAODV0Cuts, 1); // track cut object for nano AOD filtering
 };
