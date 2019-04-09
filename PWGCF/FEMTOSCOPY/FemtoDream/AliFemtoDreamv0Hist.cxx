@@ -68,6 +68,11 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
   fConfig->GetXaxis()->SetBinLabel(10, "Max Distance Daug to Vertex");
   fConfig->GetXaxis()->SetBinLabel(11, "Inv Mass Cut");
   fConfig->GetXaxis()->SetBinLabel(12, "Min Cos Pointing Angle");
+  fConfig->GetXaxis()->SetBinLabel(13, "Armenteros q_{T} low");
+  fConfig->GetXaxis()->SetBinLabel(14, "Armenteros q_{T} up");
+  fConfig->GetXaxis()->SetBinLabel(15, "Armenteros #alpha low");
+  fConfig->GetXaxis()->SetBinLabel(16, "Armenteros #alpha up");
+  fConfig->GetXaxis()->SetBinLabel(17, "Pileup requirement");
 
   fHistList->Add(fConfig);
 
@@ -82,13 +87,15 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
   fCutCounter->GetXaxis()->SetBinLabel(8, "Transverse Radius");
   fCutCounter->GetXaxis()->SetBinLabel(9, "Daug PV");
   fCutCounter->GetXaxis()->SetBinLabel(10, "Daug Vtx");
-  fCutCounter->GetXaxis()->SetBinLabel(11, "K0 Rejection");
-  fCutCounter->GetXaxis()->SetBinLabel(12, "Inv Mass Cut");
-  fCutCounter->GetXaxis()->SetBinLabel(13, "Cos Pointing Angle");
-  fCutCounter->GetXaxis()->SetBinLabel(14, "D1&D2 right");
-  fCutCounter->GetXaxis()->SetBinLabel(15, "D1&D2 pass cuts");
-  fCutCounter->GetXaxis()->SetBinLabel(16, "D1&D2 wrong");
-  fCutCounter->GetXaxis()->SetBinLabel(16, "D1&D2 pass cuts");
+  fCutCounter->GetXaxis()->SetBinLabel(11, "Pileup");
+  fCutCounter->GetXaxis()->SetBinLabel(12, "Armenteros-Podolandski");
+  fCutCounter->GetXaxis()->SetBinLabel(13, "K0 Rejection");
+  fCutCounter->GetXaxis()->SetBinLabel(14, "Inv Mass Cut");
+  fCutCounter->GetXaxis()->SetBinLabel(15, "Cos Pointing Angle");
+  fCutCounter->GetXaxis()->SetBinLabel(16, "D1&D2 right");
+  fCutCounter->GetXaxis()->SetBinLabel(17, "D1&D2 pass cuts");
+  fCutCounter->GetXaxis()->SetBinLabel(18, "D1&D2 wrong");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "D1&D2 pass cuts");
 
   fHistList->Add(fCutCounter);
 
@@ -187,6 +194,13 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
                        1.001);
     fCPA[i]->GetXaxis()->SetTitle("Cos Pointing Angle");
     fv0CutQA[i]->Add(fCPA[i]);
+
+    TString armenterosName = Form("ArmenterosPodolandski_%s", sName[i].Data());
+    fArmenterosPodolandski[i] = new TH2F(
+        armenterosName.Data(), armenterosName.Data(), 200, -1, 1, 100, 0, 0.25);
+    fArmenterosPodolandski[i]->GetXaxis()->SetTitle("#alpha");
+    fArmenterosPodolandski[i]->GetYaxis()->SetTitle("#it{q}_{T} (GeV/#it{c})");
+    fv0CutQA[i]->Add(fArmenterosPodolandski[i]);
 
     TString invMassName = Form("InvariantMass_%s", sName[i].Data());
     fInvMass[i] = new TH1F(invMassName.Data(), invMassName.Data(), MassNBins,

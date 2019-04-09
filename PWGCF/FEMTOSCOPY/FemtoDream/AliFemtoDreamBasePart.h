@@ -21,6 +21,7 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
   AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent);
   AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent);
+  AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma, const AliVEvent *inputEvent);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,
@@ -40,6 +41,7 @@ class AliFemtoDreamBasePart {
     return fP;
   }
   ;
+  float GetP() const { return fP.Mag(); }
   void SetMCMomentum(float px, float py, float pz) {
     fMCP.SetXYZ(px, py, pz);
   }
@@ -108,10 +110,22 @@ class AliFemtoDreamBasePart {
     fPhiAtRadius.push_back(phiAtRad);
   }
   ;
-  std::vector<std::vector<float>> GetPhiAtRaidius() {
+  std::vector<std::vector<float>> GetPhiAtRaidius() const {
     return fPhiAtRadius;
   }
   ;
+  float GetAveragePhiAtRadius(size_t iPart) {
+    if (iPart > fPhiAtRadius.size()) {
+      std::cout << "ERROR - AliFemtoDreamBasePart::GetAveragePhiAtRadius\n";
+      return 999.f;
+    }
+    float nCounts = fPhiAtRadius[iPart].size();
+    float avPhi = 0.f;
+    for (size_t i = 0; i < nCounts; ++i) {
+      avPhi += fPhiAtRadius[iPart][i];
+    }
+    return avPhi / nCounts;
+  }
   void SetXYZAtRadius(TVector3 XYZAtRad) {
     fXYZAtRadius.push_back(XYZAtRad);
   }
@@ -132,7 +146,7 @@ class AliFemtoDreamBasePart {
     fIDTracks.push_back(idTracks);
   }
   ;
-  std::vector<int> GetIDTracks() {
+  std::vector<int> GetIDTracks() const {
     return fIDTracks;
   }
   ;
@@ -152,6 +166,8 @@ class AliFemtoDreamBasePart {
     return fCPA;
   }
   ;
+  void SetInvMass(float invMass) { fInvMass = invMass; }
+  float GetInvMass() const { return fInvMass; }
   void SetParticleOrigin(PartOrigin org) {
     fOrigin = org;
   }
@@ -254,6 +270,7 @@ class AliFemtoDreamBasePart {
   std::vector<int> fIDTracks;
   std::vector<int> fCharge;
   float fCPA;
+  float fInvMass;
   PartOrigin fOrigin;
   // pdg code as set by the track cuts, used for invariant mass calculation/mc matching in v0s
   int fPDGCode;
@@ -268,9 +285,10 @@ class AliFemtoDreamBasePart {
   bool fIsSet;  //has all the attributes set properly
   int fEvtMultiplicity;
  private:
-//  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart,3)
-  ;
+  void PhiAtRadii(const AliVTrack *track, const float bfield,
+                  std::vector<float> &tmpVec);
+  //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
+  ClassDef(AliFemtoDreamBasePart, 4);
 };
 
 #endif /* ALIFEMTODREAMBASEPART_H_ */

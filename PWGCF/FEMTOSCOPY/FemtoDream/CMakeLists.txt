@@ -57,6 +57,7 @@ set(SRCS
   AliFemtoDreamAnalysis.cxx 
   AliAnalysisTaskFemtoDream.cxx
   AliAnalysisTaskSigma0Femto.cxx
+  AliAnalysisTaskAODSigma0Femto.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx

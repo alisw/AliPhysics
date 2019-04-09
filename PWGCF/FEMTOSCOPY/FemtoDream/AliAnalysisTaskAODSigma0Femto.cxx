@@ -1,4 +1,4 @@
-#include "AliAnalysisTaskSigma0Femto.h"
+#include "AliAnalysisTaskAODSigma0Femto.h"
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -6,18 +6,16 @@
 #include "AliMultSelection.h"
 #include "AliPIDResponse.h"
 
-ClassImp(AliAnalysisTaskSigma0Femto)
+ClassImp(AliAnalysisTaskAODSigma0Femto)
 
     //____________________________________________________________________________________________________
-    AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto()
-    : AliAnalysisTaskSE("AliAnalysisTaskSigma0Femto"),
+    AliAnalysisTaskAODSigma0Femto::AliAnalysisTaskAODSigma0Femto()
+    : AliAnalysisTaskSE("AliAnalysisTaskAODSigma0Femto"),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fV0Reader(nullptr),
       fV0ReaderName("NoInit"),
-      fV0Cuts(nullptr),
-      fAntiV0Cuts(nullptr),
-      fPhotonQA(nullptr),
+      //      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
       fRandom(nullptr),
@@ -26,16 +24,19 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fProtonTrack(nullptr),
       fTrackCutsPartProton(nullptr),
       fTrackCutsPartAntiProton(nullptr),
+      fLambda(nullptr),
+      fV0Cuts(nullptr),
+      fAntiV0Cuts(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(false),
       fIsLightweight(false),
-      fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
-      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
+      fTrackBufferSize(2500),
+      fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
       fTrackCutHistList(nullptr),
@@ -43,7 +44,9 @@ ClassImp(AliAnalysisTaskSigma0Femto)
       fAntiTrackCutHistList(nullptr),
       fAntiTrackCutHistMCList(nullptr),
       fLambdaHistList(nullptr),
+      fLambdaHistMCList(nullptr),
       fAntiLambdaHistList(nullptr),
+      fAntiLambdaHistMCList(nullptr),
       fPhotonHistList(nullptr),
       fSigmaHistList(nullptr),
       fAntiSigmaHistList(nullptr),
@@ -53,34 +56,35 @@ ClassImp(AliAnalysisTaskSigma0Femto)
 }
 
 //____________________________________________________________________________________________________
-AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
-                                                       const bool isMC)
+AliAnalysisTaskAODSigma0Femto::AliAnalysisTaskAODSigma0Femto(const char *name,
+                                                             const bool isMC)
     : AliAnalysisTaskSE(name),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
       fV0Reader(nullptr),
       fV0ReaderName("NoInit"),
-      fV0Cuts(nullptr),
-      fAntiV0Cuts(nullptr),
-      fPhotonQA(nullptr),
+      //      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
-      fEvent(nullptr),
       fRandom(nullptr),
+      fEvent(nullptr),
       fEvtCuts(nullptr),
       fProtonTrack(nullptr),
       fTrackCutsPartProton(nullptr),
       fTrackCutsPartAntiProton(nullptr),
+      fLambda(nullptr),
+      fV0Cuts(nullptr),
+      fAntiV0Cuts(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
       fIsMC(isMC),
       fIsLightweight(false),
-      fPhotonLegPileUpCut(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
-      fMultMode(AliVEvent::kINT7),
       fGammaArray(nullptr),
+      fTrackBufferSize(2500),
+      fGTI(nullptr),
       fQA(nullptr),
       fEvtHistList(nullptr),
       fTrackCutHistList(nullptr),
@@ -88,7 +92,9 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
       fAntiTrackCutHistList(nullptr),
       fAntiTrackCutHistMCList(nullptr),
       fLambdaHistList(nullptr),
+      fLambdaHistMCList(nullptr),
       fAntiLambdaHistList(nullptr),
+      fAntiLambdaHistMCList(nullptr),
       fPhotonHistList(nullptr),
       fSigmaHistList(nullptr),
       fAntiSigmaHistList(nullptr),
@@ -111,18 +117,21 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
   if (fIsMC) {
     DefineOutput(12, TList::Class());
     DefineOutput(13, TList::Class());
+    DefineOutput(14, TList::Class());
+    DefineOutput(15, TList::Class());
   }
 }
 
 //____________________________________________________________________________________________________
-AliAnalysisTaskSigma0Femto::~AliAnalysisTaskSigma0Femto() {
+AliAnalysisTaskAODSigma0Femto::~AliAnalysisTaskAODSigma0Femto() {
   delete fPartColl;
   delete fPairCleaner;
   delete fProtonTrack;
+  delete fLambda;
 }
 
 //____________________________________________________________________________________________________
-void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
+void AliAnalysisTaskAODSigma0Femto::UserExec(Option_t * /*option*/) {
   AliVEvent *fInputEvent = InputEvent();
   if (fIsMC) fMCEvent = MCEvent();
 
@@ -152,96 +161,90 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
     return;
   }
 
-  fV0Reader =
-      (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
-          fV0ReaderName.Data());
-  if (!fV0Reader) {
-    AliError("No V0 reader");
-    return;
-  }
-
   if (!fSigmaCuts || !fAntiSigmaCuts) {
     AliError("Sigma0 Cuts missing");
     return;
   }
 
   // EVENT SELECTION
-  AliESDEvent *evt = static_cast<AliESDEvent *>(fInputEvent);
+  AliAODEvent *evt = static_cast<AliAODEvent *>(fInputEvent);
   fEvent->SetEvent(evt);
   if (!fEvtCuts->isSelected(fEvent)) return;
 
   // PROTON SELECTION
-  const int multiplicity = fEvent->GetMultiplicity();
-  UInt_t filterBitProton = fTrackCutsPartProton->GetFilterBit();
-  bool useTPConlyTrack = (filterBitProton == 128);
-  static std::vector<AliFemtoDreamBasePart> particles;
-  particles.clear();
-  static std::vector<AliFemtoDreamBasePart> antiParticles;
-  antiParticles.clear();
+  ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
-    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fProtonTrack->SetTrack(esdTrack, fMCEvent, multiplicity, useTPConlyTrack);
+    AliAODTrack *track = static_cast<AliAODTrack *>(evt->GetTrack(iTrack));
+    if (!track) {
+      AliFatal("No Standard AOD");
+      return;
+    }
+    StoreGlobalTrackReference(track);
+  }
+  std::vector<AliFemtoDreamBasePart> Particles;
+  std::vector<AliFemtoDreamBasePart> AntiParticles;
+  const int multiplicity = fEvent->GetMultiplicity();
+  fProtonTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
+    AliAODTrack *track = static_cast<AliAODTrack *>(evt->GetTrack(iTrack));
+    fProtonTrack->SetTrack(track, multiplicity);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      particles.push_back(*fProtonTrack);
+      Particles.push_back(*fProtonTrack);
     }
     if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      antiParticles.push_back(*fProtonTrack);
+      AntiParticles.push_back(*fProtonTrack);
     }
   }
 
   // LAMBDA SELECTION
-  fV0Cuts->SelectV0(fInputEvent, fMCEvent);
-
-  // LAMBDA SELECTION
-  fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent);
+  std::vector<AliFemtoDreamBasePart> Decays;
+  std::vector<AliFemtoDreamBasePart> AntiDecays;
+  fLambda->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  for (int iv0 = 0;
+       iv0 < static_cast<TClonesArray *>(evt->GetV0s())->GetEntriesFast();
+       iv0++) {
+    AliAODv0 *v0 = evt->GetV0(iv0);
+    fLambda->Setv0(evt, v0, multiplicity);
+    if (fV0Cuts->isSelected(fLambda)) {
+      Decays.push_back(*fLambda);
+    }
+    if (fAntiV0Cuts->isSelected(fLambda)) {
+      AntiDecays.push_back(*fLambda);
+    }
+  }
 
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
-  if (!fIsLightweight) {
-    fPhotonQA->PhotonQA(fInputEvent, fMCEvent, fGammaArray);
-  }
-  std::vector<AliSigma0ParticleV0> gammaConvContainer;
-  CastToVector(gammaConvContainer, fInputEvent);
+  std::vector<AliFemtoDreamBasePart> Gammas;
+  CastToVector(Gammas, fInputEvent);
+  //  if (!fIsLightweight) {
+  //    fPhotonQA->PhotonQA(fInputEvent, fMCEvent, fGammaArray);
+  //  }
 
   // Sigma0 selection
-  fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
-                                 fV0Cuts->GetV0s());
+  fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, Decays);
 
   // Sigma0 selection
-  fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
-                                     fAntiV0Cuts->GetV0s());
+  fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, AntiDecays);
 
-  // Convert the Sigma0 into Femto particles
-  static std::vector<AliFemtoDreamBasePart> sigma0particles;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0particles;
-  static std::vector<AliFemtoDreamBasePart> sigma0sidebandUp;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0sidebandUp;
-  static std::vector<AliFemtoDreamBasePart> sigma0sidebandLow;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0sidebandLow;
+  auto sigma0particles = fSigmaCuts->GetSigma();
+  auto sigma0sidebandUp = fSigmaCuts->GetSidebandUp();
+  auto sigma0sidebandLow = fSigmaCuts->GetSidebandDown();
 
-  static std::vector<AliFemtoDreamBasePart> sigma0lambda;
-  static std::vector<AliFemtoDreamBasePart> sigma0photon;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0lambda;
-  static std::vector<AliFemtoDreamBasePart> antiSigma0photon;
+  auto antiSigma0particles = fAntiSigmaCuts->GetSigma();
+  auto antiSigma0sidebandUp = fAntiSigmaCuts->GetSidebandUp();
+  auto antiSigma0sidebandLow = fAntiSigmaCuts->GetSidebandDown();
 
-  CastToVector(fSigmaCuts->GetSigma(), sigma0particles, fMCEvent);
-  CastToVector(fAntiSigmaCuts->GetSigma(), antiSigma0particles, fMCEvent);
-  CastToVector(fSigmaCuts->GetSidebandUp(), sigma0sidebandUp, fMCEvent);
-  CastToVector(fAntiSigmaCuts->GetSidebandUp(), antiSigma0sidebandUp, fMCEvent);
-  CastToVector(fSigmaCuts->GetSidebandDown(), sigma0sidebandLow, fMCEvent);
-  CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow,
-               fMCEvent);
-
-  fPairCleaner->CleanTrackAndDecay(&particles, &sigma0particles, 0);
-  fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0particles, 1);
-  fPairCleaner->CleanTrackAndDecay(&particles, &sigma0sidebandUp, 2);
-  fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0sidebandUp, 3);
-  fPairCleaner->CleanTrackAndDecay(&particles, &sigma0sidebandLow, 4);
-  fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0sidebandLow, 5);
+  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
+  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandUp, 2);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandUp, 3);
+  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandLow, 4);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandLow, 5);
 
   fPairCleaner->ResetArray();
-  fPairCleaner->StoreParticle(particles);
-  fPairCleaner->StoreParticle(antiParticles);
+  fPairCleaner->StoreParticle(Particles);
+  fPairCleaner->StoreParticle(AntiParticles);
   fPairCleaner->StoreParticle(sigma0particles);
   fPairCleaner->StoreParticle(antiSigma0particles);
   fPairCleaner->StoreParticle(sigma0sidebandUp);
@@ -267,63 +270,83 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   if (fIsMC) {
     PostData(12, fTrackCutHistMCList);
     PostData(13, fAntiTrackCutHistMCList);
+    PostData(14, fLambdaHistMCList);
+    PostData(15, fAntiLambdaHistMCList);
   }
 }
 
 //____________________________________________________________________________________________________
-void AliAnalysisTaskSigma0Femto::CastToVector(
-    std::vector<AliSigma0ParticleV0> &container, const AliVEvent *inputEvent) {
+void AliAnalysisTaskAODSigma0Femto::CastToVector(
+    std::vector<AliFemtoDreamBasePart> &container,
+    const AliVEvent *inputEvent) {
   for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
-
-    auto pos =
-        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel1());
-    auto neg =
-        (AliESDtrack *)inputEvent->GetTrack(PhotonCandidate->GetLabel2());
-    if (!pos || !neg) continue;
-
-    // pile up check
-    if (fPhotonLegPileUpCut) {
-      bool posTrackITS =
-          (pos->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
-           pos->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
-      bool negTrackITS =
-          (neg->HasPointOnITSLayer(0) || pos->HasPointOnITSLayer(1) ||
-           neg->HasPointOnITSLayer(4) || pos->HasPointOnITSLayer(5));
-      bool posTrackTOF = pos->GetTOFBunchCrossing() == 0;
-      bool negTrackTOF = neg->GetTOFBunchCrossing() == 0;
-
-      bool posTrackCombined = (posTrackITS || posTrackTOF);
-      bool negTrackCombined = (negTrackITS || negTrackTOF);
-
-      if (!posTrackCombined || !negTrackCombined) continue;
-    }
-
-    AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);
-    if (fIsMC) {
-      const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
-    }
-    container.push_back(phot);
+    container.push_back({PhotonCandidate, inputEvent});
   }
 }
 
 //____________________________________________________________________________________________________
-void AliAnalysisTaskSigma0Femto::CastToVector(
-    std::vector<AliSigma0ParticlePhotonMother> &sigmaContainer,
-    std::vector<AliFemtoDreamBasePart> &particles, const AliMCEvent *mcEvent) {
-  particles.clear();
-
-  // Randomly pick one of the particles in the container
-  if (sigmaContainer.size() > 0) {
-    particles.push_back(
-        {sigmaContainer[fRandom->Rndm() * sigmaContainer.size()], mcEvent});
+void AliAnalysisTaskAODSigma0Femto::ResetGlobalTrackReference() {
+  // see AliFemtoDreamAnalysis for details
+  for (UShort_t i = 0; i < fTrackBufferSize; i++) {
+    fGTI[i] = 0;
   }
 }
 
 //____________________________________________________________________________________________________
-void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
+void AliAnalysisTaskAODSigma0Femto::StoreGlobalTrackReference(
+    AliAODTrack *track) {
+  // see AliFemtoDreamAnalysis for details
+  const int trackID = track->GetID();
+  if (trackID < 0) {
+    return;
+  }
+  if (trackID >= fTrackBufferSize) {
+    printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n", trackID,
+           fTrackBufferSize);
+    return;
+  }
+
+  if (fGTI[trackID]) {
+    if ((!track->GetFilterMap()) && (!track->GetTPCNcls())) {
+      return;
+    }
+    if (fGTI[trackID]->GetFilterMap() || fGTI[trackID]->GetTPCNcls()) {
+      printf("Warning! global track info already there!");
+      printf("         TPCNcls track1 %u track2 %u",
+             (fGTI[trackID])->GetTPCNcls(), track->GetTPCNcls());
+      printf("         FilterMap track1 %u track2 %u\n",
+             (fGTI[trackID])->GetFilterMap(), track->GetFilterMap());
+    }
+  }
+  (fGTI[trackID]) = track;
+}
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskAODSigma0Femto::UserCreateOutputObjects() {
+  fGTI = new AliAODTrack *[fTrackBufferSize];
+
+  fEvent = new AliFemtoDreamEvent(true, !fIsLightweight, fTrigger);
+
+  fProtonTrack = new AliFemtoDreamTrack();
+  fProtonTrack->SetUseMCInfo(fIsMC);
+
+  fLambda = new AliFemtoDreamv0();
+  fLambda->SetUseMCInfo(fIsMC);
+  fLambda->SetPDGCode(fV0Cuts->GetPDGv0());
+  fLambda->SetPDGDaughterPos(fV0Cuts->GetPDGPosDaug());
+  fLambda->GetPosDaughter()->SetUseMCInfo(fIsMC);
+  fLambda->SetPDGDaughterNeg(fV0Cuts->GetPDGNegDaug());
+  fLambda->GetNegDaughter()->SetUseMCInfo(fIsMC);
+
+  const int nPairs = 6;
+  fPairCleaner =
+      new AliFemtoDreamPairCleaner(nPairs, 0, fConfig->GetMinimalBookingME());
+  fPartColl =
+      new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
+
   fQA = new TList();
   fQA->SetName("QA");
   fQA->SetOwner(kTRUE);
@@ -343,8 +366,6 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     }
   }
 
-  fEvent = new AliFemtoDreamEvent(true, !fIsLightweight, fTrigger);
-
   if (fEvtCuts) {
     fEvtCuts->InitQA();
     fQA->Add(fEvent->GetEvtCutList());
@@ -359,8 +380,10 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     AliWarning("Event cuts are missing! \n");
   }
 
-  fProtonTrack = new AliFemtoDreamTrack();
-  fProtonTrack->SetUseMCInfo(fIsMC);
+  if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
+      fPairCleaner->GetHistList()) {
+    fQA->Add(fPairCleaner->GetHistList());
+  }
 
   fTrackCutsPartProton->Init("Proton");
   // necessary for the non-min booking case
@@ -386,33 +409,59 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
     }
   }
 
-  if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
-  if (fAntiV0Cuts) fAntiV0Cuts->InitCutHistograms(TString("AntiLambda"));
+  fV0Cuts->Init();
+  fAntiV0Cuts->Init();
+
+  if (fV0Cuts->GetQAHists()) {
+    fLambdaHistList = fV0Cuts->GetQAHists();
+  } else {
+    fLambdaHistList = new TList();
+    fLambdaHistList->SetName("v0Cuts");
+    fLambdaHistList->SetOwner();
+  }
+  if (fAntiV0Cuts->GetQAHists()) {
+    fAntiLambdaHistList = fAntiV0Cuts->GetQAHists();
+  } else {
+    fAntiLambdaHistList = new TList();
+    fAntiLambdaHistList->SetName("Antiv0Cuts");
+    fAntiLambdaHistList->SetOwner();
+  }
+  if (!fV0Cuts->GetMinimalBooking()) {
+    if (fV0Cuts->GetIsMonteCarlo()) {
+      fLambdaHistMCList = fV0Cuts->GetMCQAHists();
+    }
+  } else {
+    fLambdaHistMCList = new TList();
+    fLambdaHistMCList->SetName("MCv0Cuts");
+    fLambdaHistMCList->SetOwner();
+  }
+  if (!fAntiV0Cuts->GetMinimalBooking()) {
+    if (fAntiV0Cuts->GetIsMonteCarlo()) {
+      fAntiLambdaHistMCList = fAntiV0Cuts->GetMCQAHists();
+    }
+  } else {
+    fAntiLambdaHistMCList = new TList();
+    fAntiLambdaHistMCList->SetName("MCAntiv0Cuts");
+    fAntiLambdaHistMCList->SetOwner();
+  }
+
   if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
   if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
 
-  if (fV0Cuts && fV0Cuts->GetCutHistograms()) {
-    fLambdaHistList = fV0Cuts->GetCutHistograms();
-  }
-
-  if (fAntiV0Cuts && fAntiV0Cuts->GetCutHistograms()) {
-    fAntiLambdaHistList = fAntiV0Cuts->GetCutHistograms();
-  }
-
-  if (!fIsLightweight) {
-    fPhotonQA = new AliSigma0V0Cuts();
-    fPhotonQA->SetIsMC(fIsMC);
-    fPhotonQA->SetLightweight(false);
-    fPhotonQA->SetPID(22);
-    fPhotonQA->SetPosPID(AliPID::kElectron, 11);
-    fPhotonQA->SetNegPID(AliPID::kElectron, -11);
-    fPhotonQA->InitCutHistograms(TString("Photon"));
-    fPhotonHistList = fPhotonQA->GetCutHistograms();
-  } else {
-    fPhotonHistList = new TList();
-    fPhotonHistList->SetName("V0_Photon");
-    fPhotonHistList->SetOwner(true);
-  }
+  //  if (!fIsLightweight) {
+  //    fPhotonQA = new AliSigma0V0Cuts();
+  //    fPhotonQA->SetIsMC(fIsMC);
+  //    fPhotonQA->SetLightweight(false);
+  //    fPhotonQA->SetPID(22);
+  //    fPhotonQA->SetPosPID(AliPID::kElectron, 11);
+  //    fPhotonQA->SetNegPID(AliPID::kElectron, -11);
+  //    fPhotonQA->InitCutHistograms(TString("Photon"));
+  //    fPhotonHistList = fPhotonQA->GetCutHistograms();
+  //  } else {
+  //    fPhotonHistList = new TList();
+  //    fPhotonHistList->SetName("V0_Photon");
+  //    fPhotonHistList->SetOwner(true);
+  //  }
 
   if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
     fSigmaHistList = fSigmaCuts->GetCutHistograms();
@@ -420,17 +469,6 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
 
   if (fAntiSigmaCuts && fAntiSigmaCuts->GetCutHistograms()) {
     fAntiSigmaHistList = fAntiSigmaCuts->GetCutHistograms();
-  }
-
-  const int nPairs = 6;
-  fPairCleaner =
-      new AliFemtoDreamPairCleaner(nPairs, 0, fConfig->GetMinimalBookingME());
-  fPartColl =
-      new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
-
-  if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
-      fPairCleaner->GetHistList()) {
-    fQA->Add(fPairCleaner->GetHistList());
   }
 
   if (fPartColl && fPartColl->GetHistList()) {
@@ -458,5 +496,7 @@ void AliAnalysisTaskSigma0Femto::UserCreateOutputObjects() {
   if (fIsMC) {
     PostData(12, fTrackCutHistMCList);
     PostData(13, fAntiTrackCutHistMCList);
+    PostData(14, fLambdaHistMCList);
+    PostData(15, fAntiLambdaHistMCList);
   }
 }

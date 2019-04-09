@@ -17,7 +17,6 @@ AliFemtoDreamv0::AliFemtoDreamv0()
       fHasDaughter(false),
       fpDaug(new AliFemtoDreamTrack()),
       fnDaug(new AliFemtoDreamTrack()),
-      fv0Mass(0),
       fdcav0Daug(0),
       fdcaPrim(0),
       fdcaPrimPos(0),
@@ -91,7 +90,8 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
 void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
                             const float posMass,
                             const AliFemtoDreamBasePart &negDaughter,
-                            const float negMass) {
+                            const float negMass, const bool ignoreFirstPos,
+                            const bool ignoreFirstNeg) {
   Reset();
   SetEventMultiplicity(posDaughter.GetEventMultiplicity());
   fIsReset = false;
@@ -110,6 +110,62 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   this->SetTheta(trackSum.Theta());
   this->Setv0Mass(trackSum.M());
   this->fIsSet = true;
+
+  // track IDs
+  auto IDpos = posDaughter.GetIDTracks();
+  for (const auto &itID : IDpos) {
+    this->SetIDTracks(itID);
+  }
+  auto IDneg = negDaughter.GetIDTracks();
+  for (const auto &itID : IDneg) {
+    this->SetIDTracks(itID);
+  }
+
+  // Phi
+  auto Phipos = posDaughter.GetPhi();
+  for (size_t i = 0; i < Phipos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetPhi(Phipos[i]);
+  }
+  auto Phineg = negDaughter.GetPhi();
+  for (size_t i = 0; i < Phineg.size(); ++i) {
+    if (i == 0 && ignoreFirstNeg) continue;
+    this->SetPhi(Phineg[i]);
+  }
+
+  // Eta
+  auto Etapos = posDaughter.GetEta();
+  for (size_t i = 0; i < Etapos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetEta(Etapos[i]);
+  }
+  auto Etaneg = negDaughter.GetEta();
+  for (size_t i = 0; i < Etaneg.size(); ++i) {
+    if (i == 0 && ignoreFirstNeg) continue;
+    this->SetEta(Etaneg[i]);
+  }
+
+  // Eta
+  auto Thetapos = posDaughter.GetTheta();
+  for (size_t i = 0; i < Thetapos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetTheta(Thetapos[i]);
+  }
+  auto Thetaneg = negDaughter.GetTheta();
+  for (size_t i = 0; i < Thetaneg.size(); ++i) {
+    if (i == 0 && ignoreFirstNeg) continue;
+    this->SetTheta(Thetaneg[i]);
+  }
+
+  // Phi At Radii
+  auto PhiAtRadiipos = posDaughter.GetPhiAtRaidius();
+  for (const auto &itPhiAtRadius : PhiAtRadiipos) {
+    this->SetPhiAtRadius(itPhiAtRadius);
+  }
+  auto PhiAtRadiineg = negDaughter.GetPhiAtRaidius();
+  for (const auto &itPhiAtRadius : PhiAtRadiineg) {
+    this->SetPhiAtRadius(itPhiAtRadius);
+  }
 }
 
 void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
@@ -383,7 +439,6 @@ void AliFemtoDreamv0::Reset() {
     fOnlinev0 = false;
     fHasDaughter = false;
     //daughters don't need to be reset, are reset while setting a new track
-    fv0Mass = 0;
     fv0Vtx[0] = 99;
     fv0Vtx[1] = 99;
     fv0Vtx[2] = 99;

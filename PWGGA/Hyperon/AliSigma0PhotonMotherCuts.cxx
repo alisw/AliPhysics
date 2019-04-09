@@ -410,7 +410,7 @@ void AliSigma0PhotonMotherCuts::CleanUpClones(
       if (hasSameLabels) {
         const float cpaPhoton = photon->GetCosineAlpha();
         const float cpaLambda = lambda->GetCosineAlpha();
-        ++nPhotonKilledLabel;
+        ++nPhotonLambdaKilledLabel;
         if (cpaPhoton > cpaLambda) {
           lambda->SetUse(false);
         } else {
