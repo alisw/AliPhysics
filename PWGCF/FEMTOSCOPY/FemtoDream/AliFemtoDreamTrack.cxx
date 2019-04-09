@@ -320,6 +320,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformationOmega() {
     //loop over the 6 ITS Layrs and check for a hit!
     for (int i = 0; i < 6; ++i) {
       fITSHit.push_back(fESDTrack->HasPointOnITSLayer(i));
+      if (i == 2 || i == 3) continue;
       if (fESDTrack->HasPointOnITSLayer(i)) {
         this->fHasITSHit = true;
       }
