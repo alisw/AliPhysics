@@ -271,5 +271,7 @@ void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliN
   if (cstTPCClusterInfo21 != -1)
     nanoTrack->SetVar(cstTPCClusterInfo21, aodTrack->GetTPCClusterInfo(2,1));
 
-
+  static const Int_t cstIntID = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIntID");
+  if (cstIntID != -1)
+    nanoTrack->SetVar(cstIntID, aodTrack->GetID());
 }

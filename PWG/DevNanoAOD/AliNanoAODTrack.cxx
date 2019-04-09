@@ -595,3 +595,10 @@ Int_t AliNanoAODTrack::GetTOFBunchCrossing(Double_t /*b=0*/, Bool_t /*tpcPIDonly
   static const Int_t cstIndex = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTOFBunchCrossing");
   return GetVar(cstIndex);
 };
+
+Int_t AliNanoAODTrack::GetID() const 
+{ 
+  // TODO move to AliNanoAODTrackMapping
+  static const Int_t cstIndex = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIntID");
+  return TMath::Nint(GetVar(cstIndex));
+};

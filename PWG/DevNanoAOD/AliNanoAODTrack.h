@@ -144,8 +144,7 @@ public:
   ULong64_t GetStatus() const { AliFatal("Not implemented"); return 0; }
   // ULong_t GetFlags() const { return fFlags; }
 
-  //  Int_t   GetID() const { return (Int_t)fID; } // FIXME another int (short)
-  Int_t   GetID() const { AliFatal("Not Implemented"); return 0; } // FIXME another int (short)
+  Int_t   GetID() const;
   Int_t   GetLabel() const { return fLabel; }  // 
   // void    GetTOFLabel(Int_t *p) const;
 
