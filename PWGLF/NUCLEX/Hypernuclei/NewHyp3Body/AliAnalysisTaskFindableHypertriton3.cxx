@@ -126,55 +126,58 @@ bool IsHyperTriton3Daughter(AliMCEvent *mcEvent, const AliVParticle *vPart) {
   return true;
 }
 
-bool IsFakeCandidate(AliMCEvent *mcEvent, CandidateMC *vCand) {
-  AliVParticle *vMother = vCand->mother;
+bool IsFakeCandidate(AliMCEvent *mcEvent, int mId, AliVParticle *p1, AliVParticle *p2, AliVParticle *p3) {
 
-  bool clone = false;
+  AliVParticle *vMother = mcEvent->GetTrack(mId);
+
+  bool fake = false;
   for (int iD = vMother->GetDaughterFirst(); iD <= vMother->GetDaughterLast(); iD++) {
 
     AliVParticle *dPart = mcEvent->GetTrack(iD);
     int dPartPDG        = dPart->PdgCode();
     if (vMother->PdgCode() == 1010010030) {
       if (dPartPDG == 1000010020) {
-        if (dPart->GetLabel() != vCand->part1->GetLabel()) {
-          clone = true;
+        if (dPart->GetLabel() != p1->GetLabel()) {
+          fake = true;
           break;
         }
       }
       if (dPartPDG == 2212) {
-        if (dPart->GetLabel() != vCand->part2->GetLabel()) {
-          clone = true;
+        if (dPart->GetLabel() != p2->GetLabel()) {
+          fake = true;
           break;
         }
       }
       if (dPartPDG == -221) {
-        if (dPart->GetLabel() != vCand->part3->GetLabel()) {
-          clone = true;
+        if (dPart->GetLabel() != p3->GetLabel()) {
+          fake = true;
           break;
         }
       }
     }
+
     if (vMother->PdgCode() == -1010010030) {
       if (dPartPDG == -1000010020) {
-        if (dPart->GetLabel() != vCand->part1->GetLabel()) {
-          clone = true;
+        if (dPart->GetLabel() != p1->GetLabel()) {
+          fake = true;
           break;
         }
       }
       if (dPartPDG == -2212) {
-        if (dPart->GetLabel() != vCand->part2->GetLabel()) {
-          clone = true;
+        if (dPart->GetLabel() != p2->GetLabel()) {
+          fake = true;
           break;
         }
       }
       if (dPartPDG == +221) {
-        if (dPart->GetLabel() != vCand->part3->GetLabel()) {
-          clone = true;
+        if (dPart->GetLabel() != p3->GetLabel()) {
+          fake = true;
           break;
         }
       }
     }
   }
+  return fake;
 }
 } // namespace
 
@@ -286,7 +289,7 @@ void AliAnalysisTaskFindableHypertriton3::UserCreateOutputObjects() {
   fFindableTree->Branch("fTreeHyp3BodyVarEventId", &fTreeHyp3BodyVarEventId, "fTreeHyp3BodyVarEventId/l");
   fFindableTree->Branch("fTreeHyp3BodyVarMotherId", &fTreeHyp3BodyVarMotherId, "fTreeHyp3BodyVarMotherId/I");
 
-  fFindableTree->Branch("fTreeHyp3BodyVarIsFakeCand", &fTreeHyp3BodyVarIsFakeCand, "fTreeHyp3BodyVarIsFakeCand/o");
+  fFindableTree->Branch("fTreeHyp3BodyVarIsFakeCand", &fTreeHyp3BodyVarIsFakeCand, "fTreeHyp3BodyVarIsFakeCand/O");
 
   fFindableTree->Branch("fTreeHyp3BodyVarTruePx", &fTreeHyp3BodyVarTruePx, "fTreeHyp3BodyVarTruePx/F");
   fFindableTree->Branch("fTreeHyp3BodyVarTruePy", &fTreeHyp3BodyVarTruePy, "fTreeHyp3BodyVarTruePy/F");
@@ -338,13 +341,10 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
 
   // total number of analyzed events
   fHistEventCounter->Fill(0.5);
-  // event selction here
-  fHistEventCounter->Fill(1.5); // selected events
 
   //------------------------------------------------
   // Multiplicity Information Acquistion
   //------------------------------------------------
-
   float vCentrality               = 500;
   int lEvSelCode                  = 100;
   AliMultSelection *MultSelection = (AliMultSelection *)esdEvent->FindListObject("MultSelection");
@@ -374,21 +374,12 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
     return;
   }
 
+  // number of selected events
+  fHistEventCounter->Fill(1.5); // selected events
+
   //--------------------------------------------------------------------------------
   // Part 1: fill the vector of the MC hypertritons
   //--------------------------------------------------------------------------------
-
-  // TODO: confrontarmi con max per capire qual'è il modo giusto di calcolare il denominatore
-  // devo prendere solo gli ipertrizi del 3 body!
-
-  std::unordered_map<int, int> mcMap;
-
-  std::vector<int> mcHypertriton3Label;
-  mcHypertriton3Label.reserve(50);
-
-  // std::vector<std::pair<int, std::array<int, 3>>> mcHyperDaughterLabel;
-  // std::map<int, int> mcMap;
-  // mcHyperDaughterLabel.reserve(50);
   for (Long_t iPart = 0; iPart < mcEvent->GetNumberOfTracks(); iPart++) {
     AliVParticle *vPart = mcEvent->GetTrack(iPart);
     if (!vPart) {
@@ -404,15 +395,7 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
     double vPartRap = ComputeRapidity(vPart->E(), vPart->Pz());
     if (vPartPDG == 1010010030) fHistGeneratedPtVsYVsCentralityHypTrit->Fill(vPartPt, vPartRap, vCentrality);
     if (vPartPDG == -1010010030) fHistGeneratedPtVsYVsCentralityAntiHypTrit->Fill(vPartPt, vPartRap, vCentrality);
-
-    if (IsHyperTriton3(mcEvent, vPart)) {
-      // fill the vector of the hypertriton labels
-      mcMap[iPart] = mcHypertriton3Label.size();
-      mcHypertriton3Label.push_back(iPart);
-    }
   }
-
-  cout << "Hyp3 MC size: " << mcHypertriton3Label.size() << endl;
 
   //--------------------------------------------------------------------------------
   // Part 2: establish list of tracks coming from hypertriton in the 3 body channel
@@ -432,21 +415,11 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
     AliVParticle *vPart = mcEvent->GetTrack(lLabel);
 
     if (IsHyperTriton3Daughter(mcEvent, vPart)) {
-
-      int lLabelMother = vPart->GetMother();
-      // if (lLabelMother < 0 || !mcEvent->IsPhysicalPrimary(lLabelMother)) continue;
-
+      int lLabelMother          = vPart->GetMother();
       AliVParticle *vMotherPart = mcEvent->GetTrack(lLabelMother);
-      // int lMotherPDG            = vMotherPart->PdgCode();
-      // if (std::abs(lMotherPDG) != 1010010030) continue;
-      // int lNDaughters = lRemoveDeltaRayFromDaughters(mcEvent, vMotherPart);
-      // if (lNDaughters != 3) continue;
-
       lTrackOfInterest.push_back({esdTrack, vMotherPart, vPart, lLabelMother});
     }
   }
-  cout << "Track of Interest size: " << lTrackOfInterest.size() << endl;
-  cout << endl;
 
   //--------------------------------------------------------------------------------
   // Part 3: find the triplets of reconstructed daughters and fill the tree
@@ -475,11 +448,8 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
         index[1] = {pdg2, jTrack};
         for (size_t zTrack = jTrack + 1; zTrack < lTrackOfInterest.size(); zTrack++) {
           if (lTrackOfInterest[iTrack].motherId != lTrackOfInterest[zTrack].motherId) continue;
-          /// Reject all the triplets with +++ and ---
-          // if (lTrackOfInterest[iTrack].track->GetSign() != lTrackOfInterest[jTrack].track->GetSign() ||
-          //     lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[zTrack].track->GetSign())
-          //   continue;
-          if (lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[jTrack].track->GetSign() &&
+          /// Reject all the triplets with wrong charge
+          if (lTrackOfInterest[iTrack].track->GetSign() != lTrackOfInterest[jTrack].track->GetSign() ||
               lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[zTrack].track->GetSign())
             continue;
           int pdg3 = lTrackOfInterest[zTrack].particle->PdgCode();
@@ -487,50 +457,34 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
           std::sort(index.begin(), index.end(), [](const std::pair<int, int> &a, const std::pair<int, int> &b) {
             return std::abs(a.first) > std::abs(b.first);
           });
-          CandidateMC c;
-          c.track_deu = lTrackOfInterest[index[0].second].track;
-          c.track_p   = lTrackOfInterest[index[1].second].track;
-          c.track_pi  = lTrackOfInterest[index[2].second].track;
-          c.part1     = lTrackOfInterest[index[0].second].particle;
-          c.part2     = lTrackOfInterest[index[1].second].particle;
-          c.part3     = lTrackOfInterest[index[2].second].particle;
-          c.mother    = lTrackOfInterest[index[0].second].mother;
-          c.motherId  = lTrackOfInterest[index[0].second].motherId;
-          c.recoIndex = mcMap[lTrackOfInterest[index[0].second].motherId];
-          candidate.push_back(c);
+
+          fTreeHyp3BodyVarTracks[0] = lTrackOfInterest[index[0].second].track;
+          fTreeHyp3BodyVarTracks[1] = lTrackOfInterest[index[1].second].track;
+          fTreeHyp3BodyVarTracks[2] = lTrackOfInterest[index[2].second].track;
+
+          fTreeHyp3BodyVarPDGcodes[0] = index[0].first;
+          fTreeHyp3BodyVarPDGcodes[1] = index[1].first;
+          fTreeHyp3BodyVarPDGcodes[2] = index[2].first;
+
+          AliVParticle *vHyperTriton = lTrackOfInterest[index[0].second].mother;
+          fTreeHyp3BodyVarTruePx     = vHyperTriton->Px();
+          fTreeHyp3BodyVarTruePy     = vHyperTriton->Py();
+          fTreeHyp3BodyVarTruePz     = vHyperTriton->Pz();
+
+          AliVParticle *vProng    = lTrackOfInterest[index[0].second].particle;
+          fTreeHyp3BodyVarDecayVx = vProng->Xv();
+          fTreeHyp3BodyVarDecayVy = vProng->Yv();
+          fTreeHyp3BodyVarDecayVz = vProng->Zv();
+          fTreeHyp3BodyVarDecayT  = vProng->Tv();
+
+          fTreeHyp3BodyVarMotherId = lTrackOfInterest[index[0].second].motherId;
+
+          fTreeHyp3BodyVarIsFakeCand = IsFakeCandidate(
+              mcEvent, lTrackOfInterest[index[0].second].motherId, lTrackOfInterest[index[0].second].particle,
+              lTrackOfInterest[index[1].second].particle, lTrackOfInterest[index[2].second].particle);
+          fFindableTree->Fill();
         }
       }
-    }
-
-    /// sorting hypertriton candidates respect the motherId
-    std::sort(candidate.begin(), candidate.end(),
-              [](const CandidateMC &a, const CandidateMC &b) { return a.motherId > b.motherId; });
-
-    // fill the tree and tag the fake candidates
-    for (size_t iCand = 0; iCand < candidate.size(); iCand++) {
-      fTreeHyp3BodyVarTracks[0]   = candidate[iCand].track_deu;
-      fTreeHyp3BodyVarTracks[1]   = candidate[iCand].track_p;
-      fTreeHyp3BodyVarTracks[2]   = candidate[iCand].track_pi;
-      fTreeHyp3BodyVarPDGcodes[0] = candidate[iCand].part1->PdgCode();
-      fTreeHyp3BodyVarPDGcodes[1] = candidate[iCand].part2->PdgCode();
-      fTreeHyp3BodyVarPDGcodes[2] = candidate[iCand].part3->PdgCode();
-
-      AliVParticle *vHyperTriton = candidate[iCand].mother;
-      fTreeHyp3BodyVarTruePx     = vHyperTriton->Px();
-      fTreeHyp3BodyVarTruePy     = vHyperTriton->Py();
-      fTreeHyp3BodyVarTruePz     = vHyperTriton->Pz();
-
-      AliVParticle *vProng    = candidate[iCand].part1;
-      fTreeHyp3BodyVarDecayVx = vProng->Xv();
-      fTreeHyp3BodyVarDecayVy = vProng->Yv();
-      fTreeHyp3BodyVarDecayVz = vProng->Zv();
-      fTreeHyp3BodyVarDecayT  = vProng->Tv();
-
-      fTreeHyp3BodyVarMotherId = candidate[iCand].motherId;
-
-      if (IsFakeCandidate(mcEvent, &candidate[iCand])) fTreeHyp3BodyVarIsFakeCand = true;
-
-      fFindableTree->Fill();
     }
   }
 
