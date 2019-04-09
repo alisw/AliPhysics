@@ -80,6 +80,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void SetDoTreeConvGammaShowerShape  ( Bool_t flag )                                     { fDoConvGammaShowerShapeTree = flag          ;}
     void SetDoTreeInvMassShowerShape    ( Bool_t flag )                                     { fDoInvMassShowerShapeTree = flag            ;}
     void SetAllowOverlapHeaders         ( Bool_t allowOverlapHeader )                       { fAllowOverlapHeaders = allowOverlapHeader   ;}
+    void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag)                     { fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
 
     // Setting the cut lists for the conversion photons
     void SetEventCutList                ( Int_t nCuts,
@@ -550,6 +551,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
     Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries
     Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
+    Bool_t                  fDoMaterialBudgetWeightingOfGammasForTrueMesons;    // flag to set the usage of material budget weights
     TTree*                  tBrokenFiles;                                       // tree for keeping track of broken files
     TObjString*             fFileNameBroken;                                    // string object for broken file name
     Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
@@ -559,7 +561,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 49);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 50);
 };
 
 #endif
