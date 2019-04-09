@@ -1174,7 +1174,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    
   
   fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
-  fastjet::AreaDefinition fAreaDef(fastjet::passive_area,ghostSpec); 
+  fastjet::AreaDefinition fAreaDef(fastjet::passive_area,ghost_spec); 
   try {
     fastjet::ClusterSequenceArea fClustSeqSA(fInputVectors, fJetDef, fAreaDef);
     std::vector<fastjet::PseudoJet>   fOutputJets;
