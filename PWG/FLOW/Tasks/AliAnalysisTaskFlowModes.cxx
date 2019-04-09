@@ -964,7 +964,7 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
         
         if(fFillQA)
         {
-            fh2PIDPionPt = new TH2D("fh2PIDPionPt","PID: #pi: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+            fh2PIDPionPt = new TH2D("fh2PIDPionPt","PID: #pi: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,300,0.,30.);
             fQAPID->Add(fh2PIDPionPt);
             fh2PIDPionPhi = new TH2D("fh2PIDPionPhi","PID: #pi: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
             fQAPID->Add(fh2PIDPionPhi);
@@ -972,7 +972,7 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
             fQAPID->Add(fh2PIDPionEta);
             fhPIDPionCharge = new TH1D("fhPIDPionCharge","PID: #pi: charge; charge", 3,-1.5,1.5);
             fQAPID->Add(fhPIDPionCharge);
-            fh2PIDKaonPt = new TH2D("fh2PIDKaonPt","PID: K: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+            fh2PIDKaonPt = new TH2D("fh2PIDKaonPt","PID: K: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,300,0.,30.);
             fQAPID->Add(fh2PIDKaonPt);
             fh2PIDKaonPhi = new TH2D("fh2PIDKaonPhi","PID: K: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
             fQAPID->Add(fh2PIDKaonPhi);
@@ -980,7 +980,7 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
             fQAPID->Add(fh2PIDKaonEta);
             fhPIDKaonCharge = new TH1D("fhPIDKaonCharge","PID: K: charge; charge", 3,-1.5,1.5);
             fQAPID->Add(fhPIDKaonCharge);
-            fh2PIDProtonPt = new TH2D("fh2PIDProtonPt","PID: p: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,150,0.,30.);
+            fh2PIDProtonPt = new TH2D("fh2PIDProtonPt","PID: p: centrality vs. #it{p}_{T}; centrality; #it{p}_{T}", fFlowCentNumBins,0,fFlowCentNumBins,300,0.,30.);
             fQAPID->Add(fh2PIDProtonPt);
             fh2PIDProtonPhi = new TH2D("fh2PIDProtonPhi","PID: p: centrality vs. #varphi; centrality; #varphi", fFlowCentNumBins,0,fFlowCentNumBins,100,0,TMath::TwoPi());
             fQAPID->Add(fh2PIDProtonPhi);
