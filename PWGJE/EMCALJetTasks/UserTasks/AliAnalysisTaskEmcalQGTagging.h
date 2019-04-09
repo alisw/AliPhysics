@@ -71,7 +71,8 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
    void SetCheckResolution(Bool_t t)                       {fCheckResolution = t;} 
    void SetSubjetCutoff(Float_t t)                            {fSubjetCutoff = t;}
    void SetHardCutoff(Float_t t)                            {fHardCutoff = t;}
-   void SetDoTwoTrack(Bool_t t)                             {fDoTwoTrack = t;} 
+   void SetDoTwoTrack(Bool_t t)                             {fDoTwoTrack = t;}
+   void SetDoAreaIterative(Bool_t t)                        {fDoAreaIterative =t;}
    void SetMagFieldPol(Float_t t)                           {fMagFieldPolarity=t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
@@ -110,7 +111,7 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[8];                  // jet shapes used for the tagging
+  Float_t                             fShapesVar[12];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Int_t                                 fSelectedShapes;                //chose set of shapes 
@@ -129,7 +130,8 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fSubjetCutoff;                 //angular cutoff for subjets at det/gen level
   Float_t                             fMinPtConst;                   //constituent pt cutoff   
   Float_t                             fHardCutoff;                   //hard cutoff in the iterative declustering 
-  Bool_t                              fDoTwoTrack;                    //switch to consider 2 track effects 
+  Bool_t                              fDoTwoTrack;                    //switch to consider 2 track effects
+  Bool_t                              fDoAreaIterative;               //subtract the area in the declustering
   Float_t                             fPhiCutValue;                  //cuts from HBT
   Float_t                             fEtaCutValue;                  //cuts from HBT
   Float_t                             fMagFieldPolarity;             //polarity, to calculate phimin 
