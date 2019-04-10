@@ -47,9 +47,11 @@ AliAnalysisTaskCountEvents::AliAnalysisTaskCountEvents() :
   fHistNEventsPhysSel{nullptr},
   fHistNEventsSPDVert{nullptr},
   fHistNEventsTrackVert{nullptr},
+  fHistNEventsZvert10cm{nullptr},
   fHistNEventsPhysSelVsCent{nullptr},
   fHistNEventsSPDVertVsCent{nullptr},
-  fHistNEventsTrackVertVsCent{nullptr}
+  fHistNEventsTrackVertVsCent{nullptr},
+  fHistNEventsZvert10cmVsCent{nullptr}
 {
   //
   DefineInput(0, TChain::Class());
@@ -65,9 +67,11 @@ AliAnalysisTaskCountEvents::~AliAnalysisTaskCountEvents(){
     delete fHistNEventsPhysSel;
     delete fHistNEventsSPDVert;
     delete fHistNEventsTrackVert;
+    delete fHistNEventsZvert10cm;
     delete fHistNEventsPhysSelVsCent;
     delete fHistNEventsSPDVertVsCent;
     delete fHistNEventsTrackVertVsCent;
+    delete fHistNEventsZvert10cmVsCent;
   }
   delete fOutput;
 }
@@ -104,6 +108,9 @@ void AliAnalysisTaskCountEvents::UserCreateOutputObjects() {
   fHistNEventsTrackVert = new TH1F("hNEventsTrackVert", "Number of events after phys sel",12,-0.5,11.5);
   ConfigureXaxis(fHistNEventsTrackVert);
   fOutput->Add(fHistNEventsTrackVert);
+  fHistNEventsZvert10cm = new TH1F("hNEventsZvert10cm", "Number of events after phys sel",12,-0.5,11.5);
+  ConfigureXaxis(fHistNEventsZvert10cm);
+  fOutput->Add(fHistNEventsZvert10cm);
 
   fHistNEventsPhysSelVsCent = new TH2F("hNEventsPhysSelVsCent","",12,-0.5,11.5,100,0.,100.);
   ConfigureXaxis(fHistNEventsPhysSelVsCent);
@@ -114,6 +121,9 @@ void AliAnalysisTaskCountEvents::UserCreateOutputObjects() {
   fHistNEventsTrackVertVsCent = new TH2F("hNEventsTrackVertVsCent","",12,-0.5,11.5,100,0.,100.);
   ConfigureXaxis(fHistNEventsTrackVertVsCent);
   fOutput->Add(fHistNEventsTrackVertVsCent);
+  fHistNEventsZvert10cmVsCent = new TH2F("hNEventsZvert10cmVsCent","",12,-0.5,11.5,100,0.,100.);
+  ConfigureXaxis(fHistNEventsZvert10cmVsCent);
+  fOutput->Add(fHistNEventsZvert10cmVsCent);
   
   PostData(1,fOutput);
 
@@ -189,6 +199,10 @@ void AliAnalysisTaskCountEvents::UserExec(Option_t *)
       if(vertType==4){
 	fHistNEventsTrackVert->Fill(iBin);
 	fHistNEventsTrackVertVsCent->Fill(iBin,centr);
+      }
+      if(vertType>=2 && TMath::Abs(vtPrim->GetZ())<10){
+	fHistNEventsZvert10cm->Fill(iBin);
+	fHistNEventsZvert10cmVsCent->Fill(iBin,centr);
       }
     }
   }

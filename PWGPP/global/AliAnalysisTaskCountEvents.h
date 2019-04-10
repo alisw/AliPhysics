@@ -43,11 +43,13 @@ class AliAnalysisTaskCountEvents : public AliAnalysisTaskSE {
   TH1F* fHistNEventsPhysSel;          //!<!  histo with N of events  
   TH1F* fHistNEventsSPDVert;          //!<!  histo with N of events  
   TH1F* fHistNEventsTrackVert;        //!<!  histo with N of events  
+  TH1F* fHistNEventsZvert10cm;        //!<!  histo with N of events  
   TH2F* fHistNEventsPhysSelVsCent;    //!<!  histo with N of events vs. centr.  
   TH2F* fHistNEventsSPDVertVsCent;    //!<!  histo with N of events vs. centr.  
   TH2F* fHistNEventsTrackVertVsCent;  //!<!  histo with N of events vs. centr.  
+  TH2F* fHistNEventsZvert10cmVsCent;  //!<!  histo with N of events vs. centr.  
 
-  ClassDef(AliAnalysisTaskCountEvents,1);
+  ClassDef(AliAnalysisTaskCountEvents,2);
 };
 
 
