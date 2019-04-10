@@ -973,6 +973,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200089267300008210404000", "0152103500000000"); // Psi pair 0.1  1D
     cuts.AddCutPCM("00010113", "0d200089267300008260404000", "0152103500000000"); // Psi pair 0.05 2D
     cuts.AddCutPCM("00010113", "0d200089267300008280404000", "0152103500000000"); // Psi pair 0.2  2D
+  } else if (trainConfig == 614) { // ITS area with large weights split in two
+    cuts.AddCutPCM("00010113", "0dh00089267300008250404000", "0152103500000000"); // eta < 0.8   5-13
+    cuts.AddCutPCM("00010113", "0di00089267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5
 
  // Low B Field to be used with MBW
   } else if (trainConfig == 652) {
@@ -1022,6 +1025,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200089267300008210404000", "0152103500000000"); // Psi pair 0.1  1D
     cuts.AddCutPCM("00010113", "0d200089267300008260404000", "0152103500000000"); // Psi pair 0.05 2D
     cuts.AddCutPCM("00010113", "0d200089267300008280404000", "0152103500000000"); // Psi pair 0.2  2D
+  } else if (trainConfig == 664) { // asymetry cut removed from configs 702-703-704  and 753-754-755 on 14.06.2018 (cuts low pT)
+    cuts.AddCutPCM("00010113", "0dh00089267300008250404000", "0152103500000000"); // eta < 0.8
+    cuts.AddCutPCM("00010113", "0di00089267300008250404000", "0152103500000000"); // eta < 0.8
 
 
   // Material studies Ana-----nomB
@@ -1083,6 +1089,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009267300008210404000", "0152103500000000"); // Psi pair 0.1  1D
     cuts.AddCutPCM("00010113", "0d200009267300008260404000", "0152103500000000"); // Psi pair 0.05 2D
     cuts.AddCutPCM("00010113", "0d200009267300008280404000", "0152103500000000"); // Psi pair 0.2  2D
+  } else if (trainConfig == 714) { // RBins studies, ITS with large weights spplited 
+    cuts.AddCutPCM("00010113", "0dh00009267300008250404000", "0152103500000000"); // eta < 0.8   5-13 cm
+    cuts.AddCutPCM("00010113", "0di00009267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5 cm
 
     // config like 70X but to be used with weights +50
   } else if (trainConfig == 752) { // as iConfig 702 to be used with MBW
@@ -1133,8 +1142,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009267300008210404000", "0152103500000000"); // Psi pair 0.1  1D
     cuts.AddCutPCM("00010113", "0d200009267300008260404000", "0152103500000000"); // Psi pair 0.05 2D
     cuts.AddCutPCM("00010113", "0d200009267300008280404000", "0152103500000000"); // Psi pair 0.2  2D
-
-
+  } else if (trainConfig == 764) { // RBins studies, ITS with large weights spplited 
+    cuts.AddCutPCM("00010113", "0dh00009267300008250404000", "0152103500000000"); // eta < 0.8   5-13 cm
+    cuts.AddCutPCM("00010113", "0di00009267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5
 
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
   } else if (trainConfig == 1001){
