@@ -77,13 +77,12 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
   fV0ReaderName("V0ReaderV1"),
   fElecSelector(NULL),
   fBGHandler(NULL),
-  fESDEvent(NULL),
-  fAODEvent(NULL),
   fDataEvent(NULL),
   fAODESDEvent(NULL),
-  fAODESDEventMC(NULL),
-  //fAODEvent(NULL),
+  fESDEvent(NULL),
   fMCEvent(NULL),
+  fAODEvent(NULL),
+  fAODESDEventMC(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -303,13 +302,12 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
   fV0ReaderName("V0ReaderV1"),
   fElecSelector(NULL),
   fBGHandler(NULL),
-  fESDEvent(NULL),
-  fAODEvent(NULL),
   fDataEvent(NULL),
   fAODESDEvent(NULL),
-  fAODESDEventMC(NULL),
-  //fAODEvent(NULL),
+  fESDEvent(NULL),
   fMCEvent(NULL),
+  fAODEvent(NULL),
+  fAODESDEventMC(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -3064,12 +3062,14 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessMCParticles(){
         hMCPi0WOWeightPt[fiCut]->Fill(particle->PtG());
       }
 
-      if(particle->GetPdgCodeG() == 221)hMCEtaPt[fiCut]->Fill(particle->PtG(), weighted); // All MC Eta
+      if(particle->GetPdgCodeG() == 221){
+          hMCEtaPt[fiCut]->Fill(particle->PtG(), weighted); // All MC Eta
+      }
         // Check the acceptance for gamma and electrons
         std::unique_ptr<AliDalitzAODESDMC> gamma    = std::unique_ptr<AliDalitzAODESDMC>(fAODESDEventMC->Particle(labelgamma));
         std::unique_ptr<AliDalitzAODESDMC> electron = std::unique_ptr<AliDalitzAODESDMC>(fAODESDEventMC->Particle(labelelectron));
         std::unique_ptr<AliDalitzAODESDMC> positron = std::unique_ptr<AliDalitzAODESDMC>(fAODESDEventMC->Particle(labelpositron));
-
+      //  cout<< "Error" <<positron->PxG()<<endl;
         if(((AliConversionPhotonCuts*)fCutGammaArray->At(fiCut))->PhotonIsSelectedMCAODESD(gamma.get(),fAODESDEventMC,kFALSE) &&
         ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->ElectronIsSelectedMC(labelelectron,fMCEvent,fAODESDEventMC) &&
         ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->ElectronIsSelectedMC(labelpositron,fMCEvent,fAODESDEventMC) ) {
@@ -3101,7 +3101,8 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessMCParticles(){
         }
 
         if(particle->GetPdgCodeG() == 111){
-
+            //Error Histogram not full
+            //NOTE 8 April
           hMCPi0InAccPt[fiCut]->Fill(particle->PtG() , weighted); // MC Pi0Dalitz with gamma and e+e- in acc
           hMCPi0WOWeightInAccPt[fiCut]->Fill(particle->PtG()); // MC Pi0 with gamma in acc NOT weighted
           hMCPi0DalitzGammaPt[fiCut]->Fill( gamma->PtG() );
