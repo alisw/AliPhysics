@@ -481,12 +481,13 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         {
            // Just to fill the motherpT
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
-          //CorrCharm3050 = 15.8864*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(MotherPt*(2.09819*TMath::Exp(-MotherPt*0.739794)+0.0396785*TMath::Exp(-MotherPt*0.169834))) / (15.8864*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(pTEdgeOfBin*(2.09819*TMath::Exp(-pTEdgeOfBin*0.739794)+0.0396785*TMath::Exp(-pTEdgeOfBin*0.169834)))); // 11h
-          CorrCharm3050 = 15.1975*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)) / (15.1975*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          //CorrCharm3050 = 15.1975*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)) / (15.1975*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519))); // previous
+          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          
           //CorrCharm3050 = 1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153)) // old (10h)
           //      /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
-          IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159+1);
-          OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159);
+          IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159+1);
+          OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159);
           fDCACharm->Fill(pt, IP);
           if(rndm < CorrCharm3050) fDCACharm3050->Fill(pt, IP);
           if(rndm < CorrCharm3050*IPCorrection) fDCACharm3050IP->Fill(pt, IP);
@@ -495,17 +496,17 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         if(Source == 1)
         {
           fDCABeauty->Fill(pt, IP);
-          //BasicBeautyCorrection = (0.940489/(1.+TMath::Power((MotherPt-0.860907)/4.84045,2.))+0.230487*TMath::Gaus(MotherPt,8.47677,4.75503)); // 11h
-          BasicBeautyCorrection = (0.88686*TMath::Power(MotherPt,0.430499)*TMath::Exp(-MotherPt*0.133517)+-3.87792e-08*TMath::Power(MotherPt,8.05593)*TMath::Exp(-MotherPt*0.472494));
-          CorrBeautyHalfRAA = 1.05*BasicBeautyCorrection*(1.+(0.5/(1. + TMath::Exp((MotherPt-7.)*0.7)) + 0.5 + (MotherPt-15.)/300.))/2.;
-          BeautyIPCorrection = CorrBeautyHalfRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*0.95;
-          BeautyOOPCorrection = CorrBeautyHalfRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*1.05;
+          //BasicBeautyCorrection = (0.88686*TMath::Power(MotherPt,0.430499)*TMath::Exp(-MotherPt*0.133517)+-3.87792e-08*TMath::Power(MotherPt,8.05593)*TMath::Exp(-MotherPt*0.472494));  // previous
+          BasicBeautyCorrection = 0.818137*TMath::Power(MotherPt,0.602011)*TMath::Exp(-MotherPt*0.163487)+1.77121e-08*TMath::Power(MotherPt,11.7204)*TMath::Exp(-MotherPt*1.15383);
+          CorrBeautyHalfRAA = BasicBeautyCorrection * (0.5+0.5*0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
+          BeautyIPCorrection = CorrBeautyHalfRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
+          BeautyOOPCorrection = CorrBeautyHalfRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyHalfRAA) fDCABeautyHalfRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyHalfRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyHalfRAAOOP->Fill(pt, IP);
-          CorrBeautyRAA = 1.1*BasicBeautyCorrection*(0.5/(1. + TMath::Exp((MotherPt-7.)*0.7)) + 0.5 + (MotherPt-15.)/300.);
-          BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*0.95;
-          BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*1.05;
+          CorrBeautyRAA = BasicBeautyCorrection*(0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
+          BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
+          BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyRAA) fDCABeautyRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyRAAOOP->Fill(pt, IP);
@@ -517,12 +518,9 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         if(SourceNew == 0)
         {
           pTEdgeOfBin = fDCABeauty->GetXaxis()->GetBinLowEdge(fDCABeauty->GetXaxis()->FindBin(pt));
-          //CorrCharm3050 = 15.8864*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(MotherPt*(2.09819*TMath::Exp(-MotherPt*0.739794)+0.0396785*TMath::Exp(-MotherPt*0.169834))) / (15.8864*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(pTEdgeOfBin*(2.09819*TMath::Exp(-pTEdgeOfBin*0.739794)+0.0396785*TMath::Exp(-pTEdgeOfBin*0.169834))));
-          CorrCharm3050 = 15.1975*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)) / (15.1975*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
-          //1410.16*(TMath::Exp(-1.16759*MotherPt)+0.00498538*TMath::Exp(-0.357565*MotherPt))/(TMath::Exp(-MotherPt*0.11023)+234.578*TMath::Exp(-MotherPt*0.439153)) // old
-          //      /(1410.16*(TMath::Exp(-1.16759*pTEdgeOfBin)+0.00498538*TMath::Exp(-0.357565*pTEdgeOfBin))/(TMath::Exp(-pTEdgeOfBin*0.11023)+234.578*TMath::Exp(-pTEdgeOfBin*0.439153)));
-          IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159+1);
-          OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.8*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.8*4/3.14159);
+          CorrCharm3050 = 0.98*(1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*MotherPt)*TMath::Power(MotherPt+2.50009,-7.69859)))/(1.63014*TMath::Gaus(MotherPt,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(MotherPt)*1.14519)))   /   (1./(1./3.5416 + 1. /(216398*TMath::Exp(0.17633*pTEdgeOfBin)*TMath::Power(pTEdgeOfBin+2.50009,-7.69859)))/(1.63014*TMath::Gaus(pTEdgeOfBin,-0.556635, 2.17658) + 1.48821 * TMath::Exp(-TMath::Sqrt(pTEdgeOfBin)*1.14519)));
+          IPCorrection = ((MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159+1) / ((pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159+1);
+          OOPCorrection = (1-(MotherPt*TMath::Exp(-0.3*MotherPt)/6.)*0.76*4/3.14159) / (1-(pTEdgeOfBin*TMath::Exp(-0.3*pTEdgeOfBin)/6.)*0.76*4/3.14159);
           fDCACharmNew->Fill(pt, IP);
           if(rndm < CorrCharm3050) fDCACharmNew3050->Fill(pt, IP);
           if(rndm < CorrCharm3050*IPCorrection) fDCACharmNew3050IP->Fill(pt, IP);
@@ -531,17 +529,16 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
         if(SourceNew == 1)
         {
           fDCABeautyNew->Fill(pt, IP);
-          //BasicBeautyCorrection = (0.940489/(1.+TMath::Power((MotherPt-0.860907)/4.84045,2.))+0.230487*TMath::Gaus(MotherPt,8.47677,4.75503)); // 11h
-          BasicBeautyCorrection = (0.88686*TMath::Power(MotherPt,0.430499)*TMath::Exp(-MotherPt*0.133517)+-3.87792e-08*TMath::Power(MotherPt,8.05593)*TMath::Exp(-MotherPt*0.472494));
-          CorrBeautyHalfRAA = 1.05*BasicBeautyCorrection*(1.+(0.5/(1. + TMath::Exp((MotherPt-7.)*0.7)) + 0.5 + (MotherPt-15.)/300.))/2.;
-          BeautyIPCorrection = CorrBeautyHalfRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*0.95;
-          BeautyOOPCorrection = CorrBeautyHalfRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*1.05;
+          BasicBeautyCorrection = 0.818137*TMath::Power(MotherPt,0.602011)*TMath::Exp(-MotherPt*0.163487)+1.77121e-08*TMath::Power(MotherPt,11.7204)*TMath::Exp(-MotherPt*1.15383);
+          CorrBeautyHalfRAA = BasicBeautyCorrection * (0.5+0.5*0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
+          BeautyIPCorrection = CorrBeautyHalfRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
+          BeautyOOPCorrection = CorrBeautyHalfRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyHalfRAA) fDCABeautyNewHalfRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyNewHalfRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyNewHalfRAAOOP->Fill(pt, IP);
-          CorrBeautyRAA = 1.1*BasicBeautyCorrection*(0.5/(1. + TMath::Exp((MotherPt-7.)*0.7)) + 0.5 + (MotherPt-15.)/300.);
-          BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*0.95;
-          BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.8*4/3.14159+1)*1.05;
+          CorrBeautyRAA = BasicBeautyCorrection*(0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
+          BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
+          BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyRAA) fDCABeautyNewRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyNewRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyNewRAAOOP->Fill(pt, IP);
