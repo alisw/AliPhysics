@@ -763,18 +763,6 @@ void AliESDtrackCuts::SetCutGeoNcrNcl(Float_t deadZoneWidth,Float_t cutGeoNcrNcl
   fCutGeoNcrNclFractionNcl=cutGeoNcrNclFractionNcl;
 }
 
-void AliESDtrackCuts::SetMinNClustersTPCPtDep(TFormula *f1, Float_t ptmax)
-{
-  /// Sets the pT dependent NClustersTPC cut
-
-  if(f1){
-    delete f1CutMinNClustersTPCPtDep;
-    f1CutMinNClustersTPCPtDep = (TFormula*)f1->Clone("f1CutMinNClustersTPCPtDep");
-  }
-  fCutMaxPtDepNClustersTPC=ptmax;
-}
-
-
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
 {
