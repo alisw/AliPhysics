@@ -109,7 +109,6 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   Double_t directivity = -2;
 
-  /*
   // select events with both dirs in the same interval
   const Int_t lenght = 4;
   Double_t intervals[lenght] = {0., 0.3, 0.6, 1.0};
@@ -129,13 +128,12 @@ void AliMESpidTask::UserExec(Option_t *opt)
           directivity =  (directivity_plus + directivity_minus) / 2.0;
       }
   }
-*/
+/*
   // select events with both dirs close
   if(TMath::Abs(directivity_plus - directivity_minus) < 0.2){
     directivity = (directivity_plus + directivity_minus) / 2.0;
   }
 
-/*
   // select events using only dir plus
   Double_t directivity = directivity_plus;
 */
@@ -273,13 +271,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
 	}
 
 
-	Double_t vec_hAllESD[13];    	// vector used to fill hAllESD
+	Double_t vec_hAllESD[14];    	// vector used to fill hAllESD
   Double_t vec_hDeltaPhi[8];		// vector used to fill hDeltaPhi
 
 
 	THnSparseD *hAllESD = (THnSparseD*)fHistosQA->At(slot_AllESD);
   // enum axis_hAllESD {l_comb08, l_V0M, l_comb0408, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
-	enum axis_hAllESD {l_comb08, l_V0M, l_directivity, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_delta_phi, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
+	enum axis_hAllESD {l_comb08, l_V0M, l_directivity, l_pT, l_charge, l_pidTPC, l_pidTOF, l_rapidity, l_TOFmatching, l_delta_phi, l_delta_y, l_MCPID, l_yMCPID, l_MCprimary};  // labels for the hAllESD axis
 
 	// ---------------------------
 	// get ESD multiplicity
@@ -367,6 +365,10 @@ void AliMESpidTask::UserExec(Option_t *opt)
     // ---------------------------
     // get the delta phi angle
     vec_hAllESD[l_delta_phi] = ComputeDeltaPhi(t->Phi(), phi_LP);
+
+    // ---------------------------
+    // compute delta y
+    // vec_hAllESD[l_delta_phi_y] = 
 
 
     // fill the deltaPhi sparse
@@ -577,7 +579,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 		  if( !(tMC->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
 		  // add this as a extra dimension on the sparse
       // if(TMath::Abs(tMC->Eta()) > 0.9) continue;
-		  if(TMath::Abs(tMC->Y()) > 1.) continue;    
+		  if(TMath::Abs(tMC->Y()) > 1.) continue;
     	//  !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     	Double_t vec_hGen[9];  // vector used to fill hGen
@@ -682,12 +684,12 @@ Bool_t AliMESpidTask::BuildQAHistos()
   Double_t binLimits[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
 
   // used for raw spectra and a lot of corrections
-  const Int_t ndimAllESD(13);
-  const Int_t cldNbinsAllESD[ndimAllESD]   = {150, 102, 21, 52, 2, 5, 5, 20, 2, 80, 5, 20, 2};
-  const Double_t cldMinAllESD[ndimAllESD]  = {0.5, 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -0.5, -1., -0.5},
-  cldMaxAllESD[ndimAllESD]  = {150.5, 100., 1.05, 5., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 4.5, 1.,1.5};
+  const Int_t ndimAllESD(14);
+  const Int_t cldNbinsAllESD[ndimAllESD]   = {150, 102, 21, 52, 2, 5, 5, 20, 2, 80, 20, 5, 20, 2};
+  const Double_t cldMinAllESD[ndimAllESD]  = {0.5, 0., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -2., -0.5, -1., -0.5},
+  cldMaxAllESD[ndimAllESD]  = {150.5, 100., 1.05, 5., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2., 4.5, 1.,1.5};
   // THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;combined0408;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
-  THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
+  THnSparseD *hAllESD = new THnSparseD("AllESD","AllESD;combined08;V0M;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;delta_y;MCPID;yMCPID;MCprimary;",ndimAllESD, cldNbinsAllESD, cldMinAllESD, cldMaxAllESD);
   hAllESD->GetAxis(1)->Set(102, binLimitsV0M);
   hAllESD->GetAxis(3)->Set(52, binLimits);
   fHistosQA->AddAt(hAllESD, slot_AllESD);
