@@ -80,15 +80,35 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
   return Reader;
 }
 
+
+AliFemtoEventReaderAODMultSelection* GetReaderFB128(bool mcAnalysis)
+{
+  AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
+  Reader->SetFilterBit(7);
+  //Reader->SetReadV0(1);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
+  Reader->SetEPVZERO(kTRUE);
+  Reader->SetCentralityFlattening(kTRUE);
+  //Reader->SetReadCascade(kTRUE);
+  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+
+  Reader->SetUseAliEventCuts(kTRUE);
+  Reader->SetTrackPileUpRemoval(kTRUE);
+  
+  if(mcAnalysis) Reader->SetReadMC(kTRUE);
+  
+  return Reader;
+}
+
 AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis)
 {
   AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
   Reader->SetFilterBit(7);
-  Reader->SetReadV0(1);
-  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+  //Reader->SetReadV0(1);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
   Reader->SetEPVZERO(kTRUE);
   Reader->SetCentralityFlattening(kTRUE);
-  Reader->SetReadCascade(kTRUE);
+  //Reader->SetReadCascade(kTRUE);
   Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
   if(mcAnalysis) Reader->SetReadMC(kTRUE);
   
@@ -142,6 +162,11 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
     AliFemtoEventReaderAODChain* Reader2011 = GetReader2011(kFALSE);
     Manager->SetEventReader(Reader2011);
   }
+  else if(year==128)
+    {
+      AliFemtoEventReaderAODChain* Reader128 = GetReaderFB128(kFALSE);
+      Manager->SetEventReader(Reader128);
+    }
   
 
   /*
