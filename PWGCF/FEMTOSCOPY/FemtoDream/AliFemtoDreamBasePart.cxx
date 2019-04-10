@@ -299,7 +299,8 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
 }
 
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(
-    const AliAODConversionPhoton *gamma, const AliVEvent *inputEvent)
+    const AliAODConversionPhoton *gamma, const AliAODTrack *posTrack,
+    const AliAODTrack *negTrack, const AliVEvent *inputEvent)
     : fIsReset(false),
       fGTI(0),
       fTrackBufferSize(0),
@@ -356,16 +357,6 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   const int negLabel = gamma->GetTrackLabelNegative();
   fIDTracks.push_back(posLabel);
   fIDTracks.push_back(negLabel);
-
-  const AliVTrack *posTrack =
-      static_cast<AliVTrack *>(inputEvent->GetTrack(posLabel));
-  const AliVTrack *negTrack =
-      static_cast<AliVTrack *>(inputEvent->GetTrack(negLabel));
-
-  if (!posTrack || !negTrack) {
-    fUse = false;
-    return;
-  }
 
   fEta.push_back(gamma->GetPhotonEta());
   fEta.push_back(posTrack->Eta());

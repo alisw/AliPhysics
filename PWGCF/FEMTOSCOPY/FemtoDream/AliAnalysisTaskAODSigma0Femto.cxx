@@ -216,7 +216,7 @@ void AliAnalysisTaskAODSigma0Femto::UserExec(Option_t * /*option*/) {
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
   std::vector<AliFemtoDreamBasePart> Gammas;
-  CastToVector(Gammas, fInputEvent);
+  CastToVector(Gammas, evt);
   //  if (!fIsLightweight) {
   //    fPhotonQA->PhotonQA(fInputEvent, fMCEvent, fGammaArray);
   //  }
@@ -278,19 +278,33 @@ void AliAnalysisTaskAODSigma0Femto::UserExec(Option_t * /*option*/) {
 //____________________________________________________________________________________________________
 void AliAnalysisTaskAODSigma0Femto::CastToVector(
     std::vector<AliFemtoDreamBasePart> &container,
-    const AliVEvent *inputEvent) {
+    const AliAODEvent *inputEvent) {
   for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
     auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!PhotonCandidate) continue;
-    container.push_back({PhotonCandidate, inputEvent});
+
+    auto pos = GetTrack(inputEvent, PhotonCandidate->GetTrackLabelPositive());
+    auto neg = GetTrack(inputEvent, PhotonCandidate->GetTrackLabelNegative());
+    if (!pos || !neg) continue;
+    container.push_back({PhotonCandidate, pos, neg, inputEvent});
+  }
+}
+
+//____________________________________________________________________________________________________
+AliAODTrack *AliAnalysisTaskAODSigma0Femto::GetTrack(const AliAODEvent *event,
+                                                     int label) const {
+  if (fV0Reader->AreAODsRelabeled()) {
+    return dynamic_cast<AliAODTrack *>(event->GetTrack(label));
+  } else {
+    return fGTI[label];
   }
 }
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskAODSigma0Femto::ResetGlobalTrackReference() {
   // see AliFemtoDreamAnalysis for details
-  for (UShort_t i = 0; i < fTrackBufferSize; i++) {
+  for (int i = 0; i < fTrackBufferSize; i++) {
     fGTI[i] = 0;
   }
 }
