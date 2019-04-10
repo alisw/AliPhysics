@@ -843,7 +843,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 11);
+        ClassDef(AliAnalysisTaskUPCforward, 12);
 };
 
 #endif
