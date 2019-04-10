@@ -76,6 +76,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   void SetTrackCuts(AliAnalysisCuts* cuts) { fTrackCuts = cuts; }
   void SetV0Cuts(AliAnalysisCuts* cuts) { fV0Cuts = cuts; }
   void SetCascadeCuts(AliAnalysisCuts* cuts) { fCascadeCuts = cuts; }
+  void SetConversionPhotonCuts(AliAnalysisCuts* cuts) { fConversionPhotonCuts = cuts; }
 
   void AddCustomSetter(AliNanoAODCustomSetter * var) { fCustomSetters.push_back(var);  }
     
@@ -83,6 +84,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   void SetSaveZDC(Bool_t b)    { fSaveZDC = b; }
   void SetSaveV0s(Bool_t b)    { fSaveV0s = b; }
   void SetSaveCascades(Bool_t b) { fSaveCascades = b; }
+  void SetSaveConversionPhotons(Bool_t b) { fSaveConversionPhotons = b; }
   
   void SetMCMode(Int_t mode)  { fMCMode = mode; }
   
@@ -102,6 +104,7 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   AliAnalysisCuts* fTrackCuts; // decides which tracks to keep
   AliAnalysisCuts* fV0Cuts;    // decides which V0s to keep
   AliAnalysisCuts* fCascadeCuts; // decides which cascades to keep
+  AliAnalysisCuts* fConversionPhotonCuts; // decides which conversion photons to keep
   
   mutable TClonesArray* fTracks; //! internal array of arrays of NanoAOD tracks
   mutable AliNanoAODHeader* fHeader; //! internal array of headers
@@ -127,11 +130,13 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   mutable AliAODZDC* fAodZDC; //! internal array of AliAODZDCs
   mutable TClonesArray* fV0s;    //! internal array of AliAODv0
   mutable TClonesArray* fCascades;    //! internal array of AliAODcascade
+  mutable TClonesArray* fConversionPhotons;    //! internal array of AliAODConversionPhoton
     
   Bool_t fSaveZDC;    // if kTRUE AliAODZDC will be saved in AliAODEvent
   Bool_t fSaveVzero;  // if kTRUE AliAODVZERO will be saved in AliAODEvent
   Bool_t fSaveV0s;    // if kTRUE AliAODv0 will be saved in AliAODEvent
   Bool_t fSaveCascades; // if kTRUE AliAODcascade will be saved in AliAODEvent
+  Bool_t fSaveConversionPhotons; // If kTRUE gamme conversions are stored (needs delta AOD)
 
   TString fInputArrayName; // name of array if tracks are stored in a TObjectArray
   TString fOutputArrayName; // name of the output array, where the NanoAODTracks are stored

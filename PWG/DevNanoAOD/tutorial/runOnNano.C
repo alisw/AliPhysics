@@ -6,8 +6,7 @@ void runOnNano()
   AliAODInputHandler* iH = new AliAODInputHandler();
   mgr->SetInputEventHandler(iH);
 
-  gROOT->LoadMacro("AddTaskSimple.C");
-  AliAnalysisTaskSE* task = AddTaskSimple();
+  AliAnalysisTaskSE* task = (AliAnalysisTaskSE*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/tutorial/AddTaskSimple.C");
   task->SelectCollisionCandidates(AliVEvent::kINT7);
   
   mgr->InitAnalysis();

@@ -52,9 +52,6 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fMCMode(0),
   fReplicator(0),
   fEvtCuts(),
-  fTrkCuts(0),
-  fV0Cuts(0),
-  fCascadeCuts(0),
   fQAOutput(0),
   fSaveCutsFlag(kFALSE),
   fInputArrayName(""),
@@ -69,9 +66,6 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fMCMode(0),
    fReplicator(0),
    fEvtCuts(0),
-   fTrkCuts(0),
-   fV0Cuts(0),
-   fCascadeCuts(0),
    fQAOutput(0),
    fSaveCutsFlag(saveCutsFlag),
    fInputArrayName(""),
@@ -81,6 +75,8 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
   // Constructor
 
   fReplicator = new AliNanoAODReplicator("NanoAODReplicator", "remove non interesting tracks, writes special tracks array tracks");
+  fQAOutput = new TList();
+  fQAOutput->SetOwner(kTRUE); 
   
   DefineOutput(1, TList::Class());
 }
@@ -102,21 +98,11 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
   // Create histograms
   // Called once (on the worker node)
       
-  fQAOutput = new TList();
-  fQAOutput->SetOwner(kTRUE); 
-
   if (fSaveCutsFlag) {
     for (std::list<AliAnalysisCuts*>::iterator it = fEvtCuts.begin(); it != fEvtCuts.end(); ++it)
       fQAOutput->Add(*it);
-    if (fTrkCuts)
-      fQAOutput->Add(fTrkCuts);
-    if (fV0Cuts)
-      fQAOutput->Add(fV0Cuts);
-    if (fCascadeCuts)
-      fQAOutput->Add(fCascadeCuts);
+    PostData(1, fQAOutput);
   }
-  
-  PostData(1, fQAOutput);
 }
 
 void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const char* title)
@@ -131,7 +117,6 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
     AliFatal("Cannot get extension");
   }
   
-  fReplicator->SetTrackCuts(fTrkCuts);
   fReplicator->SetMCMode(fMCMode);
      
   if (!fInputArrayName.IsNull()) fReplicator->SetInputArrayName(fInputArrayName);

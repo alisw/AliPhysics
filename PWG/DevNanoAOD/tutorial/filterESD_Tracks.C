@@ -16,6 +16,9 @@ void filterESD_Tracks()
   // Multiplicity selection
   gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
   
+  // PID response
+  gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+
   // OCDB
   gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskConfigOCDB.C(\"raw://\")");
   
@@ -24,6 +27,7 @@ void filterESD_Tracks()
   
   AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/AddTaskNanoAODFilter.C(0, kFALSE)");
   task->AddSetter(new AliNanoAODSimpleSetter);
+  task->SelectCollisionCandidates(AliVEvent::kAny);
   
   // Event selection
   AliAnalysisNanoAODEventCuts* evtCuts = new AliAnalysisNanoAODEventCuts;

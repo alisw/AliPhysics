@@ -10,6 +10,8 @@
 #include "AliNanoAODHeader.h"
 #include "AliNanoAODTrack.h"
 
+#include "AliAODConversionPhoton.h"
+
 #include "AliLog.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
@@ -73,9 +75,13 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   
   // for custom variables, cast to nano AOD header
   AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
-  const Int_t kRefMult = nanoHeader->GetVarIndex("MultSelection.RefMult08");
+  static const Int_t kRefMult = nanoHeader->GetVarIndex("MultSelection.RefMult08");
   if (kRefMult != -1)
     Printf("Ref Mult = %f", nanoHeader->GetVar(kRefMult));
+
+  static const Int_t kV0MCentrality = nanoHeader->GetCentrIndex();
+  if (kV0MCentrality != -1)
+    Printf("V0M centrality = %f", nanoHeader->GetVar(kV0MCentrality));
   
   unsigned int nTracks = fInputEvent->GetNumberOfTracks();
   for (unsigned int i = 0; i < nTracks; i++) {
@@ -104,9 +110,7 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   }
 
   // cascade access - as usual
-  
-  // TODO in current AliRoot tag (v5-09-46), GetCascades() produces a SEGV if not filled
-  if (kFALSE && aod->GetCascades()) {
+  if (aod->GetCascades()) {
     for (int i = 0; i < aod->GetNumberOfCascades(); i++) {
       AliAODcascade* cascade = aod->GetCascade(i);
       Printf("Cascade %d: xi mass = %f", i, cascade->MassXi());
@@ -114,6 +118,15 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
         Printf("  Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDaughter(j))->Pt());
       for (int j=0; j<cascade->GetDecayVertexXi()->GetNDaughters(); j++)
         Printf("  Xi Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDecayVertexXi()->GetDaughter(j))->Pt());
+    }
+  }
+  
+  // Photon conversions: other way to get the list (no AliV0ReaderV1 needed), but identical objects
+  static TClonesArray* conversionPhotons = dynamic_cast<TClonesArray*> (fInputEvent->FindListObject("conversionphotons"));
+  if (conversionPhotons) {
+    for (int i = 0; i < conversionPhotons->GetEntries(); i++) {
+      auto photon = dynamic_cast<AliAODConversionPhoton*> (conversionPhotons->At(i));
+      Printf("Conversion photon candidate %d: mass = %e \t pT = %f", i, photon->GetPhotonMass(), photon->GetPhotonPt());
     }
   }
 }

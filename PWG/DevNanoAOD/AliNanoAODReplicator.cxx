@@ -68,6 +68,8 @@ class AliAODRecoDecay;
 #include "TCanvas.h"
 #include "AliNanoAODHeader.h"
 #include "AliNanoAODCustomSetter.h"
+#include "AliV0ReaderV1.h"
+#include "AliAODConversionPhoton.h"
 
 using std::cout;
 using std::endl;
@@ -80,6 +82,7 @@ AliAODBranchReplicator(),
   fTrackCuts(0), 
   fV0Cuts(0), 
   fCascadeCuts(0), 
+  fConversionPhotonCuts(0),
   fTracks(0x0), 
   fHeader(0x0), 
   fVertices(0x0), 
@@ -97,10 +100,12 @@ AliAODBranchReplicator(),
   fAodZDC(0x0),
   fV0s(0x0),
   fCascades(0x0),
+  fConversionPhotons(0x0),
   fSaveZDC(0),
   fSaveVzero(0),
   fSaveV0s(0),
   fSaveCascades(kFALSE),
+  fSaveConversionPhotons(kFALSE),
   fInputArrayName(""),
   fOutputArrayName("tracks")
   {
@@ -112,6 +117,7 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) 
   fTrackCuts(0), 
   fV0Cuts(0), 
   fCascadeCuts(0), 
+  fConversionPhotonCuts(0),
   fTracks(0x0), 
   fHeader(0x0), 
   fVertices(0x0), 
@@ -129,10 +135,12 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) 
   fAodZDC(0x0),
   fV0s(0x0),
   fCascades(0x0),
+  fConversionPhotons(0x0),
   fSaveZDC(0),
   fSaveVzero(0),
   fSaveV0s(0),
   fSaveCascades(kFALSE),
+  fSaveConversionPhotons(kFALSE),
   fInputArrayName(""),
   fOutputArrayName("tracks")
 {
@@ -432,6 +440,9 @@ TList* AliNanoAODReplicator::GetList() const
           if (fVarListHeader.Data()[i] == ',') numberOfHeaderParam++;
       }
       
+      if (fVarListHeader.Contains("T0Spread"))
+        numberOfHeaderParam+=3;
+      
       if (fVarListHeader.CompareTo("")==0) 
         numberOfHeaderParam = 2;
       else 
@@ -440,12 +451,6 @@ TList* AliNanoAODReplicator::GetList() const
       numberOfHeaderParamInt = AliNanoAODHeader::GetIntParameters(fVarListHeader);
       numberOfHeaderParam -= numberOfHeaderParamInt;
       fHeader = new AliNanoAODHeader(numberOfHeaderParam, numberOfHeaderParamInt);
-
-      // HACK for missing initializing upstream in AliRoot (v5-09-46). Wait for next tag.
-      fHeader->SetFiredTriggerClassesIndex(-1);
-      fHeader->SetBunchCrossNumberIndex(-1);
-      fHeader->SetOrbitNumberIndex(-1);
-      fHeader->SetPeriodNumberIndex(-1);
 
       fHeader->SetName("header"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
       fList->Add(fHeader);    
@@ -470,6 +475,12 @@ TList* AliNanoAODReplicator::GetList() const
           fCascades = new TClonesArray("AliAODcascade",2);
           fCascades->SetName("cascades");
           fList->Add(fCascades);
+      }
+      
+      if(fSaveConversionPhotons){
+          fConversionPhotons = new TClonesArray("AliAODConversionPhoton",2);
+          fConversionPhotons->SetName("conversionphotons");
+          fList->Add(fConversionPhotons);
       }
 
       fVertices = new TClonesArray("AliAODVertex",2);
@@ -503,6 +514,9 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     
   if (fCascades)
     fCascades->Clear("C");
+  
+  if (fConversionPhotons)
+    fConversionPhotons->Clear("C");
   
   if (fMCMode > 0){
     if(!fMCHeader) {
@@ -651,6 +665,21 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
 
     for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
       (*it)->SetNanoAODTrack(aodtrack, nanoTrack);
+  }
+  
+  // Photons
+  if (fSaveConversionPhotons) {
+    Int_t nConvPhotons = 0;
+    static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("PhotonReader");
+    if (!photonReader)
+      AliFatal("No V0 reader but photon conversion requested");
+    TClonesArray* gammaArray = photonReader->GetReconstructedGammas();
+    for (int iGamma = 0; iGamma < gammaArray->GetEntriesFast(); ++iGamma) {
+      auto *photonCandidate = dynamic_cast<AliAODConversionPhoton *>(gammaArray->At(iGamma));
+      if (fConversionPhotonCuts && !fConversionPhotonCuts->IsSelected(photonCandidate))
+        continue;
+      new((*fConversionPhotons)[nConvPhotons++]) AliAODConversionPhoton(*photonCandidate);
+    }
   }
   
   AliDebug(1,Form("tracks=%d vertices=%d", fTracks->GetEntries(),fVertices->GetEntries())); 
