@@ -90,6 +90,7 @@ class AliEventCuts : public TList {
     void   SetupRun2PbPb();
     void   SetupLHC17n();
     void   SetupRun2pp();
+    void   SetupRun1pp();
     void   SetupRun1pA(int iPeriod);
     void   SetupRun2pA(int iPeriod);
     void   UseMultSelectionEventSelection(bool useIt = true);
@@ -121,6 +122,7 @@ class AliEventCuts : public TList {
     float         fMaxDeltaSpdTrackNsigmaSPD;     ///<
     float         fMaxDeltaSpdTrackNsigmaTrack;   ///<
     float         fMaxResolutionSPDvertex;        ///<
+    float         fMaxDispersionSPDvertex;        ///<
     bool          fCheckAODvertex;                ///< if true it rejects the AOD primary vertices coming from TPC ESD vertices or SPD placeholder vertices
 
     bool          fRejectDAQincomplete;           ///< Reject events that have incomplete information
@@ -209,7 +211,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts,8)
+    ClassDef(AliEventCuts,9)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
