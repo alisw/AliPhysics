@@ -31,7 +31,8 @@ class AliAnalysisTaskAODSigma0Femto : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
 
   void CastToVector(std::vector<AliFemtoDreamBasePart> &container,
-                    const AliVEvent *inputEvent);
+                    const AliAODEvent *inputEvent);
+  AliAODTrack *GetTrack(const AliAODEvent *event, int label) const;
 
   void SetV0ReaderName(TString name) { fV0ReaderName = name; }
   void SetIsMC(bool isMC) { fIsMC = isMC; }

@@ -10,6 +10,7 @@
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
+#include "AliAODEvent.h"
 #include "Rtypes.h"
 #include "TVector3.h"
 #include "AliSigma0ParticlePhotonMother.h"
@@ -21,7 +22,9 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
   AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent);
   AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent);
-  AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma, const AliVEvent *inputEvent);
+  AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma,
+                        const AliAODTrack *pos, const AliAODTrack *neg,
+                        const AliVEvent *inputEvent);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,
