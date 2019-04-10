@@ -415,7 +415,11 @@ void AliHFSystErr::Init(Int_t decay){
         else InitDstoKKpi2010pp();
       }
       else if (fCollisionType==1) {
-        if (fRunNumber == 15){
+        if (fRunNumber == 18 || fRunNumber == 2018){
+          if (fCentralityClass=="3050") InitDstoKKpi2018PbPb3050();
+          else AliFatal("Not yet implemented");
+        }
+        else if (fRunNumber == 15){
           if (fCentralityClass=="010") InitDstoKKpi2015PbPb010();
           else if (fCentralityClass=="3050") InitDstoKKpi2015PbPb3050();
           else if (fCentralityClass=="6080") InitDstoKKpi2015PbPb6080();
@@ -8837,6 +8841,60 @@ void AliHFSystErr::InitDstoKKpi2015PbPb6080() {
   for(Int_t i=7;i<=8;i++) fMCPtShape->SetBinContent(i,0.02);
   for(Int_t i=9;i<=12;i++) fMCPtShape->SetBinContent(i,0.01);
   for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,0.01);
+
+  return;
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstoKKpi2018PbPb3050() {
+  // D+s->Kpipi syst. errors. (DUMMY)
+  // 2018 PbPb sample, 30-50% CC
+  // Responsible: F. Catalano
+
+  AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions at 5 TeV for 30-50 CC - 2018 runs (LHC18qr)");
+  SetNameTitle("AliHFSystErr","SystErrDstoKKpi2018PbPb3050");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",36,0,36);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",36,0,36);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.035); // 0.08/2.27 PDG2017
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
+  for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.065);
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.075);
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.075);
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.075);
+  for(Int_t i=13;i<=36;i++) fTrackingEff->SetBinContent(i,0.070);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  for(Int_t i=1;i<=4;i++) fRawYield->SetBinContent(i,0.12);
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.09);
+  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.07);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=13;i<=36;i++) fRawYield->SetBinContent(i,0.05);
+
+
+  // Cuts efficiency (from cuts variation + phi selection cuts)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+  for(Int_t i=1;i<=6;i++) fCutsEff->SetBinContent(i,0.15);
+  for(Int_t i=7;i<=36;i++) fCutsEff->SetBinContent(i,0.10);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.00);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  for(Int_t i=1;i<=4;i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=5;i<=6;i++) fMCPtShape->SetBinContent(i,0.04);
+  for(Int_t i=7;i<=8;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=9;i<=12;i++) fMCPtShape->SetBinContent(i,0.02);
+  for(Int_t i=13;i<=36;i++) fMCPtShape->SetBinContent(i,0.01);
 
   return;
 }
