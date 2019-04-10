@@ -85,6 +85,7 @@ set(SRCS
 
 # Headers from sources
   string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+  set(HDRS ${HDRS} AliJConst.h) #add the remaining headers
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
