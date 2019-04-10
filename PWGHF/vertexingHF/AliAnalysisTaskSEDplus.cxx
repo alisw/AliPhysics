@@ -123,6 +123,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
   fNtrcklMin(0),
   fNtrcklMax(10000),
   fCutOnTrckl(kFALSE),
+  fFillOnlySignalSparses(kFALSE),
   fUseFinPtBinsForSparse(kFALSE)
 {
   /// Default constructor
@@ -211,6 +212,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fNtrcklMin(0),
   fNtrcklMax(10000),
   fCutOnTrckl(kFALSE),
+  fFillOnlySignalSparses(kFALSE),
   fUseFinPtBinsForSparse(kFALSE)
 {
   //
