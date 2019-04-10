@@ -656,10 +656,10 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fCosThetaCollinsSoperFrameJPsiH = new TH1F("fCosThetaCollinsSoperFrameJPsiH", "fCosThetaCollinsSoperFrameJPsiH", 1000, -1., 1.);
   fOutputList->Add(fCosThetaCollinsSoperFrameJPsiH);
 
-  fPhiHelicityFrameJPsiH = new TH1F("fPhiHelicityFrameJPsiH", "fPhiHelicityFrameJPsiH", 10000, -10., 10.);
+  fPhiHelicityFrameJPsiH = new TH1F("fPhiHelicityFrameJPsiH", "fPhiHelicityFrameJPsiH", 4000, -4., 4.);
   fOutputList->Add(fPhiHelicityFrameJPsiH);
 
-  fPhiCollinsSoperFrameJPsiH = new TH1F("fPhiCollinsSoperFrameJPsiH", "fPhiCollinsSoperFrameJPsiH", 10000, -10., 10.);
+  fPhiCollinsSoperFrameJPsiH = new TH1F("fPhiCollinsSoperFrameJPsiH", "fPhiCollinsSoperFrameJPsiH", 4000, -4., 4.);
   fOutputList->Add(fPhiCollinsSoperFrameJPsiH);
 
   for(Int_t iRapidityBin = 0; iRapidityBin < 8; iRapidityBin++ ){
@@ -684,7 +684,7 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
     fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
                 Form("fPhiHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
                 Form("fPhiHelicityFrameJPsiRapidityBinsH_%d", iRapidityBin),
-                10000, -10., 10.
+                4000, -4., 4.
               );
     fOutputList->Add(fPhiHelicityFrameJPsiRapidityBinsH[iRapidityBin]);
   }
@@ -693,7 +693,7 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
     fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin] = new TH1F(
                 Form("fPhiCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
                 Form("fPhiCollinsSoperFrameJPsiRapidityBinsH_%d", iRapidityBin),
-                10000, -10., 10.
+                4000, -4., 4.
               );
     fOutputList->Add(fPhiCollinsSoperFrameJPsiRapidityBinsH[iRapidityBin]);
   }
@@ -720,7 +720,7 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
     fPhiHelicityFrameJPsiTenRapidityBinsH[iRapidityBin] = new TH1F(
                 Form("fPhiHelicityFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
                 Form("fPhiHelicityFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
-                10000, -10., 10.
+                4000, -4., 4.
               );
     fOutputList->Add(fPhiHelicityFrameJPsiTenRapidityBinsH[iRapidityBin]);
   }
@@ -729,7 +729,7 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
     fPhiCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin] = new TH1F(
                 Form("fPhiCollinsSoperFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
                 Form("fPhiCollinsSoperFrameJPsiTenRapidityBinsH_%d", iRapidityBin),
-                10000, -10., 10.
+                4000, -4., 4.
               );
     fOutputList->Add(fPhiCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin]);
   }
