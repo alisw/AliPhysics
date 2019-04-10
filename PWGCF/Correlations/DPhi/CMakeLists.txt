@@ -51,6 +51,7 @@ set(SRCS
     AliAnalysisTaskLeadingTrackUE.cxx
     AliAnalysisTaskLongRangeCorrelations.cxx
     AliAnalysisTaskMinijet.cxx
+    AliAnalysisTaskMinijetV2.cxx
     AliAnalysisTaskPhiCorrelations.cxx
     AliAnalysisTaskCorrelationsDev.cxx
     AliAnalysisTaskpxpx.cxx
