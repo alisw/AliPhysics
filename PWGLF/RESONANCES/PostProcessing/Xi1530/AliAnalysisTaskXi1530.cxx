@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/04/09
+//  Last Modified Date: 2019/04/10
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -74,9 +74,15 @@ enum {
     kINEL10,
     kINEL,
     kAllType
-};                                                 // for Physicsl Results
-enum { kIsSelected = 1, kPS, kAllNone };           // for V0M signal QA plot
-enum { kTrueINELg0 = 1, kTrig, kReco, kGoodVtx };  // for Trigger Efficiency
+};                                        // for Physicsl Results
+enum { kIsSelected = 1, kPS, kAllNone };  // for V0M signal QA plot
+enum {
+    kTrueINELg0 = 1,
+    kTrig,
+    kReco,
+    kGoodVtx,
+    kTrigtZERO
+};  // for Trigger Efficiency
 enum {
     kDefaultOption = 1,
     kTPCNsigmaXi1530PionLoose,
@@ -249,8 +255,8 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         AxisVar("nTrklet", {0, 5, 10, 15, 20, 25, 30, 35, 40, 100});
     if (IsMC) {
         // To get Trigger efficiency in each trk/V0M Multiplicity region
-        auto MCType =
-            AxisStr("Type", {"TrueINELg0", "Triggered", "Reco", "GoodVtx"});
+        auto MCType = AxisStr("Type", {"TrueINELg0", "Triggered", "Reco",
+                                       "GoodVtx", "kTrigtZERO"});
         // auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
         CreateTHnSparse("htriggered_CINT7", "", 3, {MCType, binCent, binTrklet},
                         "s");  // inv mass distribution of Xi
@@ -639,7 +645,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
                           {(double)kTrig, (double)fCent, ftrackmult});
             fHistos->FillTH1("htriggered_CINT7_trig", centbin);
         }
-        if (IsPS) {
+        if (IsINEL0True && IsPS) {
             FillTHnSparse("htriggered_CINT7",
                           {(double)kReco, (double)fCent, ftrackmult});
             fHistos->FillTH1("htriggered_CINT7_reco", centbin);
@@ -649,6 +655,11 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             FillTHnSparse("htriggered_CINT7",
                           {(double)kGoodVtx, (double)fCent, ftrackmult});
             fHistos->FillTH1("htriggered_CINT7_GoodVtx", centbin);
+        }
+        if (IsINEL0True && IsSelectedTrig) {
+            FillTHnSparse("htriggered_CINT7",
+                          {(double)kTrigtZERO, (double)fCent, ftrackmult});
+            fHistos->FillTH1("htriggered_CINT7_trig", centbin);
         }
     }
     // -----------------------------------------------------------------------
