@@ -15,90 +15,115 @@
 #include "AliESDtrackCuts.h"
 #include "AlidNdPtTools.h"
 #include "AliAnalysisTaskMKBase.h"
-#include "AliAnalysisTaskMKTest.h"
+#include "AliAnalysisTaskPtResStudy.h"
 
-class AliAnalysisTaskMKTest;
+class AliAnalysisTaskPtResStudy;
 
 using namespace std;
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskMKTest)
+ClassImp(AliAnalysisTaskPtResStudy)
 /// \endcond
 //_____________________________________________________________________________
 
-AliAnalysisTaskMKTest::AliAnalysisTaskMKTest() 
+AliAnalysisTaskPtResStudy::AliAnalysisTaskPtResStudy() 
     : AliAnalysisTaskMKBase()
-    , fHistPt(0)
+    , fHistPtResCov(0)
+    , fHistPtResMC(0)
+    , fHistPtRes(0)
 {
     // default contructor
 }
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskMKTest::AliAnalysisTaskMKTest(const char* name) 
+AliAnalysisTaskPtResStudy::AliAnalysisTaskPtResStudy(const char* name) 
     : AliAnalysisTaskMKBase(name)
-    , fHistPt(0)    
+    , fHistPtResCov(0)    
 {
     // constructor
 }
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskMKTest::~AliAnalysisTaskMKTest()
+AliAnalysisTaskPtResStudy::~AliAnalysisTaskPtResStudy()
 {
     // destructor
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKTest::AddOutput()
+void AliAnalysisTaskPtResStudy::AddOutput()
 {    
-    AddAxis("pT","pt");    
-    AddAxis("pT,inner","pt");    
-    AddAxis("pT,TPCinner","pt");    
-    AddAxis("pT,MC","pt");    
-    fHistPt = CreateHist("fHistPt");
-    fOutputList->Add(fHistPt);
+    // data histogram for covariance matrix entries at high pt
+    // signed 1p/pt : sigma(1/pt) : ntracks
+    AddAxis("signed1pt","1/pT",200,-1,1);    
+    AddAxis("sigma1pt","#sigma(1/pT)",1000,0,0.1);    
+    AddAxis("nTracks","mult6kcoarse");
+    fHistPtResCov = CreateHist("fHistPtResCov");
+    fOutputList->Add(fHistPtResCov);
+
+    // pt response in small pT bins for low pt
+    // pt : ptMC : nTracks
+    AddAxis("pt",1000,0,10);    
+    AddAxis("ptMC",1000,0,10);    
+    AddAxis("nTracks","mult6kcoarse");
+    fHistPtResMC = CreateHist("fHistPtResMC");
+    fOutputList->Add(fHistPtResMC);
+    
+    // mc histogram for covariance matrix entries
+    // pt : ptmc : ntracks
+    AddAxis("pt","pt");    
+    AddAxis("ptMC","ptMC");
+    AddAxis("sigmapt","#sigma(1/pT)*pT",100,0,10);
+    AddAxis("deltapt","(ptmc/pt-1)",200,-10,10);
+    AddAxis("nTracks","mult6kcoarse");
+    fHistPtRes = CreateHist("fHistPtRes");
+    fOutputList->Add(fHistPtRes);
+    
     
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKTest::AnaEvent()
+void AliAnalysisTaskPtResStudy::AnaEvent()
 {
    InitEvent();
-   InitMCEvent();
-   if (!fEventCutsPassed)  return; 
-   LoopOverAllTracks();
+   InitEventMult();
+   InitEventCent();
+   InitMCEvent();   
+   if (fEventCutsPassed) LoopOverAllTracks();
    
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKTest::AnaTrack()
+void AliAnalysisTaskPtResStudy::AnaTrack()
 {
     if (!fESDtrackCuts[0]->AcceptTrack(fESDTrack)) return;
     InitTrack();
     InitMCTrack();
     InitTrackIP();
     InitTrackTPC();
-    FillHist(fHistPt, fPt, fPtInner, fPtInnerTPC, fMCPt);
+    FillHist(fHistPtResCov, fSigned1Pt, fSigma1Pt, fNTracksAcc); 
+    FillHist(fHistPtResMC, fPt, fPtMC, fNTracksAcc); 
+    FillHist(fHistPtRes,   fPt, fPtMC, fSigma1Pt*fPt, fPtMC/fPt-1, fNTracksAcc); 
 }
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name, const char* outfile) 
+AliAnalysisTaskPtResStudy* AliAnalysisTaskPtResStudy::AddTaskPtResStudy(const char* name, const char* outfile) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        ::Error("AddTaskMKTest", "No analysis manager to connect to.");
+        ::Error("AddTaskPtResStudy", "No analysis manager to connect to.");
         return 0;
     }
 
     // Check the analysis type using the event handlers connected to the analysis manager.
     //==============================================================================
     if (!mgr->GetInputEventHandler()) {
-        ::Error("AddTaskMKTest", "This task requires an input event handler");
+        ::Error("AddTaskPtResStudy", "This task requires an input event handler");
         return NULL;
     }
     
@@ -114,14 +139,14 @@ AliAnalysisTaskMKTest* AliAnalysisTaskMKTest::AddTaskMKTest(const char* name, co
 
     // create the task
     //===========================================================================
-    AliAnalysisTaskMKTest *task = new AliAnalysisTaskMKTest(name);  
+    AliAnalysisTaskPtResStudy *task = new AliAnalysisTaskPtResStudy(name);  
     if (!task) { return 0; }
     
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("default"));
-    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("default"));
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("default"));    
+    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("default"));        
     
     // attach the task to the manager and configure in and ouput
     //===========================================================================

@@ -27,6 +27,7 @@
 #pragma link C++ class AliAnalysisTaskMKTest+;
 #pragma link C++ class AliAnalysisTaskTPCMatchEff+;
 #pragma link C++ class AliAnalysisTaskDCArStudy+;
+#pragma link C++ class AliAnalysisTaskPtResStudy+;
 #pragma link C++ class AlidNdPtTrackDumpTask+;
 #pragma link C++ class AliPtResolAnalysis+;
 #pragma link C++ class AliPtResolAnalysisPbPb+;

@@ -55,17 +55,17 @@ AliAnalysisTaskDCArStudy::~AliAnalysisTaskDCArStudy()
 void AliAnalysisTaskDCArStudy::AddOutput()
 {    
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",10000,-1,1);
+    AddAxis("DCAxy",5000,-1,1);
     AddAxis("pt");    
-    AddAxis("nTracks","mult6kfine");
+    AddAxis("nTracks","mult6kcoarse");
     AddAxis("MCinfo",3,-0.5,2.5); // 0=prim, 1=decay 2=material
     fHistDCA = CreateHist("fHistDCA");
     fOutputList->Add(fHistDCA);
     
     //dcar:pt:mult:mcinfo
-    AddAxis("DCAxy",10000,-20,20); 
+    AddAxis("DCAxy",5000,-20,20); 
     AddAxis("TPCpt","pt");    
-    AddAxis("nTracks","mult6kfine");
+    AddAxis("nTracks","mult6kcoarse");
     AddAxis("MCinfo",3,-0.5,2.5); // 0=prim, 1=decay 2=material
     fHistDCATPC = CreateHist("fHistDCATPC");
     fOutputList->Add(fHistDCATPC);
@@ -81,8 +81,8 @@ void AliAnalysisTaskDCArStudy::AnaEvent()
    InitEvent();
    InitEventMult();
    InitEventCent();
-   InitMCEvent();
-   LoopOverAllTracks();
+   InitMCEvent();   
+   if (fEventCutsPassed) LoopOverAllTracks();
    
 }
 
