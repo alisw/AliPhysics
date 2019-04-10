@@ -68,7 +68,6 @@ set(SRCS
     AliAODZDC.cxx
     AliNanoAODHeader.cxx
     AliNanoAODStorage.cxx
-    AliNanoAODTrackMapping.cxx
    )
 
 # Sources from headers

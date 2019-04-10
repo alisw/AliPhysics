@@ -71,7 +71,6 @@
 #pragma link C++ class AliAODHMPIDrings+;
 #pragma link C++ class AliAODTrdTrack+;
 #pragma link C++ class AliAODTrdTracklet+;
-#pragma link C++ class AliNanoAODTrackMapping+;
 #pragma link C++ class AliNanoAODStorage+;
 #pragma link C++ class AliNanoAODHeader+;
 
