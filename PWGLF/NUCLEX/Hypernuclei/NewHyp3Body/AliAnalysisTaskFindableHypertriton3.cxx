@@ -448,8 +448,8 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
         index[1] = {pdg2, jTrack};
         for (size_t zTrack = jTrack + 1; zTrack < lTrackOfInterest.size(); zTrack++) {
           if (lTrackOfInterest[iTrack].motherId != lTrackOfInterest[zTrack].motherId) continue;
-          /// Reject all the triplets with wrong charge
-          if (lTrackOfInterest[iTrack].track->GetSign() != lTrackOfInterest[jTrack].track->GetSign() ||
+          /// Reject all the triplets with +++ and ---
+          if (lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[jTrack].track->GetSign() &&
               lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[zTrack].track->GetSign())
             continue;
           int pdg3 = lTrackOfInterest[zTrack].particle->PdgCode();
