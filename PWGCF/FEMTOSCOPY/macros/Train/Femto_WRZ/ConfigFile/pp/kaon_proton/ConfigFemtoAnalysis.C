@@ -65,12 +65,12 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
 {
   AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
   Reader->SetFilterMask(96);
-  //Reader->SetReadV0(1);
-  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
-  Reader->SetEPVZERO(kTRUE);
-  Reader->SetCentralityFlattening(kTRUE);
-  //Reader->SetReadCascade(kTRUE);
-  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+  // Reader->SetReadV0(1);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
+  // Reader->SetEPVZERO(kTRUE);
+  // Reader->SetCentralityFlattening(kTRUE);
+  // Reader->SetReadCascade(kTRUE);
+  // Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
 
   Reader->SetUseAliEventCuts(kTRUE);
   Reader->SetTrackPileUpRemoval(kTRUE);
@@ -108,7 +108,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   const int numOfkTbins = 2;
 
   int runmults[numOfMultBins] = {runcentrality0, runcentrality1, runcentrality2, runcentrality3, runcentrality4, runcentrality5, runcentrality6};
-  int multbins[numOfMultBins + 1] = {0, 50, 100, 200, 300, 400, 500, 900};
+  int multbins[numOfMultBins + 1] = {0, 50000, 100, 200, 300, 400, 500, 900};
   
   int runch[numOfChTypes] = {1, 1, 1, 1};
   const char *chrgs[numOfChTypes] = { "KpPro", "KmAPro", "KpAPro","KmPro"};
