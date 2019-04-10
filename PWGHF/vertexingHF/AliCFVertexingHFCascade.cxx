@@ -487,7 +487,7 @@ Bool_t AliCFVertexingHFCascade::CheckMCChannelDecay() const
   AliAODMCParticle* mcPartDaughterNeutrDaugh = NULL;
 
   // for D* the D0 (the neutral) is the first daughter, while for Lc the V0 is the second, so we check the 
-  // charge of teh daughters to decide which is which
+  // charge of the daughters to decide which is which
   AliDebug(3, Form("Charge0 = %d, Charge1 = %d", mcPartDaughter0->Charge()/3, mcPartDaughter1->Charge()/3));
   if (mcPartDaughter0->Charge()/3 != 0){
     mcPartDaughterNeutrDaugh = mcPartDaughter1;
@@ -673,8 +673,8 @@ void AliCFVertexingHFCascade::SetAccCut()
   if(!mcMother) return;
   
   if (TMath::Abs(mcPartDaughter->GetPdgCode()) != fPDGbachelor || TMath::Abs(mcMother->GetPdgCode()) != fPDGcascade){
-    AliError(Form("Apparently the expected bachelor is not in the third position, causing an error (pdg expected = %d, actual = %d)!!", fPDGbachelor, mcPartDaughter->GetPdgCode()));
-    AliError("This should be fixed when checking the MC part family in the CF task...");
+    AliDebug(2, Form("Apparently the expected bachelor is not in the third position, causing an error (pdg expected = %d, actual = %d)!!", fPDGbachelor, mcPartDaughter->GetPdgCode()));
+    AliDebug(2, "This should be fixed when checking the MC part family in the CF task...");
     return;  
   }	         
   if (fProngs>0){
@@ -714,6 +714,11 @@ Double_t AliCFVertexingHFCascade::GetEtaProng(Int_t iProng) const
     if (iProng==0) etaProng = neutrDaugh->EtaProng(0);
     if (iProng==1) etaProng = neutrDaugh->EtaProng(1);
     if (iProng==2) etaProng = cascade->EtaProng(ibachelor);
+    if (fPDGcascade == 4122){
+      if (iProng==2) etaProng = neutrDaugh->EtaProng(0);
+      if (iProng==1) etaProng = neutrDaugh->EtaProng(1);
+      if (iProng==0) etaProng = cascade->EtaProng(ibachelor);
+    }
     
     return etaProng;
     
@@ -742,7 +747,11 @@ Double_t AliCFVertexingHFCascade::GetPtProng(Int_t iProng) const
     if (iProng == 0) ptProng = neutrDaugh->PtProng(0);
     if (iProng == 1) ptProng = neutrDaugh->PtProng(1);
     if (iProng == 2) ptProng = cascade->PtProng(ibachelor);
-    
+    if (fPDGcascade == 4122) {
+      if (iProng == 2) ptProng = neutrDaugh->PtProng(0);
+      if (iProng == 1) ptProng = neutrDaugh->PtProng(1);
+      if (iProng == 0) ptProng = cascade->PtProng(ibachelor);
+    }    
     //	Double_t ptProng = fRecoCandidate->PtProng(iProng);  
     return ptProng;
     
