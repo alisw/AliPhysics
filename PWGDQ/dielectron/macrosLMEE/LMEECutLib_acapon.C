@@ -1800,7 +1800,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       varCutsFilter->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 4.);
       varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,        3. , 10.);
       varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,      0.0, 5.5);
-      trackCuts->AddCut(varCutsFilter);
+      varCutsFilter->AddCut(AliDielectronVarManager::kNclsSITS,       1.0, 6.0, kTRUE);
+      trackCuts->AddCut(trackCutsFilter);
       trackCuts->AddCut(varCutsFilter);
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
       trackCuts->Print();
