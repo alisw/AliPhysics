@@ -36,6 +36,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/JPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/LMEE
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                    )
 

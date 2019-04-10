@@ -14,57 +14,68 @@
 # **************************************************************************
 
 # Module
-set(MODULE PWGGAHyperon)
+set(MODULE PWGGAGammaConvBase)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
-                    ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Tasks # what target here
-                    ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
-                    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
-                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
                    )
+
 # Sources in alphabetical order
 set(SRCS
-        AliAnalysisTaskSigma0Corr.cxx
-        AliAnalysisTaskSigma0.cxx
-        AliAnalysisTaskSigma0Spectra.cxx
-        AliCaloParticle.cxx
-        AliSigma0ParticleBase.cxx
-        AliSigma0ParticlePhotonMother.cxx
-        AliSigma0ParticleV0.cxx
-        AliSigma0V0Cuts.cxx
-        AliSigma0PhotonMotherCuts.cxx
-        AliSigma0AODPhotonMotherCuts.cxx
-        AliAnalysisTaskSigma0Run2.cxx
+    AliAODConversionMother.cxx
+    AliAODConversionParticle.cxx
+    AliAODConversionPhoton.cxx
+    AliCaloPhotonCuts.cxx
+    AliCaloTrackMatcher.cxx
+    AliConversionAODBGHandlerRP.cxx
+    AliConversionCuts.cxx
+    AliConversionMesonCuts.cxx
+    AliConversionPhotonBase.cxx
+    AliConversionPhotonCuts.cxx
+    AliConversionSelection.cxx
+    AliConversionTrackCuts.cxx
+    AliConvEventCuts.cxx
+    AliDalitzElectronCuts.cxx
+    AliDalitzElectronSelector.cxx
+    AliKFConversionMother.cxx
+    AliKFConversionPhoton.cxx
+    AliPhotonIsolation.cxx
+    AliV0ReaderV1.cxx
+    AliDalitzAODESD.cxx
+    AliDalitzAODESDMC.cxx
+    AliDalitzEventMC.cxx
+    AliDalitzData.cxx
    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
-
+set(HDRS ${HDRS})
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGEMCALbase PWGEMCALtrigger PWGflowTasks PWGGAGammaConvBase PWGGAGammaConv)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD)
+set(ALIPHYSICS_DECPENDENCIES EMCALbase PWGCaloTrackCorrBase PWGEMCALtasks PWGCaloTrackCorrBase)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DECPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -105,15 +116,9 @@ set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS "${MODULE_COMPIL
 # Setting the linking flags for the library
 set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 
-
-# generate_par("Hyperon")
-
 # Installation
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
-
-# install macros
-install(DIRECTORY macros DESTINATION PWGGA/Hyperon)

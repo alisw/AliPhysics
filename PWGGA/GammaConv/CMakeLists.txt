@@ -38,6 +38,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
                    )
 
 # Sources in alphabetical order
@@ -79,35 +80,11 @@ set(SRCS
     AliAnalysisTaskGammaCocktailMC.cxx
     AliAnalysisTaskGammaTriggerQA.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx
-    AliAODConversionMother.cxx
-    AliAODConversionParticle.cxx
-    AliAODConversionPhoton.cxx
-    AliCaloPhotonCuts.cxx
-    AliCaloTrackMatcher.cxx
-    AliConversionAODBGHandlerRP.cxx
-    AliConversionCuts.cxx
-    AliConversionMesonCuts.cxx
-    AliConversionPhotonBase.cxx
-    AliConversionPhotonCuts.cxx
-    AliConversionSelection.cxx
-    AliConversionTrackCuts.cxx
-    AliConvEventCuts.cxx
-    AliDalitzElectronCuts.cxx
-    AliDalitzElectronSelector.cxx
     AliGammaConversionAODBGHandler.cxx
-    AliKFConversionMother.cxx
-    AliKFConversionPhoton.cxx
-    AliPhotonIsolation.cxx
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
-    AliV0ReaderV1.cxx
     AliConversionCutHandler.cxx
     AliCutHandlerPCM.cxx
-    AliDalitzData.cxx
-    AliDalitzAODESD.cxx
-    AliDalitzAODESDMC.cxx
-    AliDalitzEventMC.cxx
-
    )
 
 # Headers from sources
@@ -120,7 +97,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils PWGJETFW )
-set(ALIPHYSICS_DECPENDENCIES PWGCocktail)
+set(ALIPHYSICS_DECPENDENCIES PWGCocktail PWGGAGammaConvBase)
 
 # Generate the ROOT map
 # Dependecies
