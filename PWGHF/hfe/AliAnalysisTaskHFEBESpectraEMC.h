@@ -54,6 +54,11 @@ public:
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
     
+    void    SetM02Cut(Double_t m02Min, Double_t m02Max1, Double_t m02Max2) {fM02Min = m02Min; fM02Max1 = m02Max1; fM02Max2 = m02Max2;};
+    void    SetM20Cut(Double_t m20Min, Double_t m20Max) {fM20Min = m20Min; fM20Max = m20Max;};
+    void    SetEovPCut(Double_t eovpMin, Double_t eovpMax) {fEovPMin = eovpMin; fEovPMax = eovpMax;};
+
+    
     Bool_t  PassEIDCuts(AliVTrack *track, AliVCluster *clust, Bool_t &Hadtrack);
     
     Bool_t  GetNMCPartProduced();
@@ -68,7 +73,17 @@ public:
     
     void    SwitchPi0EtaWeightCalc(Bool_t fSwitch) {fCalculateWeight = fSwitch;};
     void    SetNonHFEEffi(Bool_t fSwitch) {fCalculateNonHFEEffi = fSwitch;};
+    void    SetElecRecoEffi(Bool_t fSwitch) {fCalculateElecRecoEffi = fSwitch;};
+    void    SwitchMCTemplateWeightCalc(Bool_t fSwitch) {fCalculateMCTemplWeightCalc = fSwitch;};
+    void    SwitchFillMCTemplate(Bool_t fSwitch) {fFillMCTemplates = fSwitch;};
 
+    void    GetElectronFromStack();
+    void    GetTrackHFStatus(AliVTrack *track, Bool_t &IsMCEle, Bool_t &IsMCHFEle, Bool_t &IsMCBEle, Bool_t &IsMCDEle);
+    void    GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
+
+    void    GetMCTemplateWeight();
+    void    GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
+    
 private:
     enum{
         kAODanalysis = BIT(20),
@@ -116,6 +131,9 @@ private:
     
     Bool_t              fCalculateWeight;//
     Bool_t              fCalculateNonHFEEffi;//
+    Bool_t              fCalculateElecRecoEffi;//
+    Bool_t              fCalculateMCTemplWeightCalc;//
+    Bool_t              fFillMCTemplates;//
     Int_t               fNTotMCpart; //! N of total MC particles produced by generator
     Int_t               fNpureMC;//! N of particles from main generator (MB/Enhanced)
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
@@ -242,6 +260,47 @@ private:
     TH1F                *fRecoPi0ULSeEmbWeightTrkPt;//!
     TH1F                *fRecoEtaULSeEmbWeightTrkPt;//!
     
+    TH1F                *fInclElePhysPriAll;//!
+    TH1F                *fHFEPhysPriAll;//!
+    TH1F                *fBEPhysPriAll;//!
+    TH1F                *fDEPhysPriAll;//!
+    TH1F                *fInclElePhysPriTrkCuts;//!
+    TH1F                *fHFEPhysPriTrkCuts;//!
+    TH1F                *fBEPhysPriTrkCuts;//!
+    TH1F                *fDEPhysPriTrkCuts;//!
+    TH1F                *fInclElePhysPriEMCMatch;//!
+    TH1F                *fHFEPhysPriEMCMatch;//!
+    TH1F                *fBEPhysPriEMCMatch;//!
+    TH1F                *fDEPhysPriEMCMatch;//!
+    TH1F                *fInclElePhysPriTPCnsig;//!
+    TH1F                *fHFEPhysPriTPCnsig;//!
+    TH1F                *fBEPhysPriTPCnsig;//!
+    TH1F                *fDEPhysPriTPCnsig;//!
+    TH1F                *fInclElePhysPriEovPBfrSS;//!
+    TH1F                *fHFEPhysPriEovPBfrSS;//!
+    TH1F                *fBEPhysPriEovPBfrSS;//!
+    TH1F                *fDEPhysPriEovPBfrSS;//!
+    TH1F                *fInclElePhysPriSS;//!
+    TH1F                *fHFEPhysPriSS;//!
+    TH1F                *fBEPhysPriSS;//!
+    TH1F                *fDEPhysPriSS;//!
+    TH1F                *fInclElePhysPriEovP;//!
+    TH1F                *fHFEPhysPriEovP;//!
+    TH1F                *fBEPhysPriEovP;//!
+    TH1F                *fDEPhysPriEovP;//!
+    
+    TH1F                *fBHadpT;//!
+    TH1F                *fBMesonpT;//!
+    TH1F                *fBDHadpT;//!
+    TH1F                *fDHadpT;//!
+    TH1F                *fDMesonpT;//!
+    TH1F                *fD0pT;//!
+    TH1F                *fLambdaCpT;//!
+    
+    TH2F                *fDElecDCA;//!
+    TH2F                *fBElecDCA;//!
+
+
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     
