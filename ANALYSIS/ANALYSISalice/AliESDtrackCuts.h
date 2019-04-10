@@ -118,6 +118,7 @@ public:
   void SetMaxCovDiagonalElements(Float_t c1=1e10, Float_t c2=1e10, Float_t c3=1e10, Float_t c4=1e10, Float_t c5=1e10) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
   void SetMaxRel1PtUncertainty(Float_t max=1e10)      {fCutMaxRel1PtUncertainty=max;}
+  void SetMaxRel1PtUncertaintyPtDep(const char *dist="");
 
 
   // track to vertex cut setters
@@ -159,6 +160,7 @@ public:
   void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) const
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
   Float_t GetMaxRel1PtUncertainty()  const   { return fCutMaxRel1PtUncertainty;}
+  const char* GetMaxRel1PtUncertaintyPtDep() const   { return fCutMaxRel1PtUncertaintyPtDep;}
   Float_t GetMaxNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
   Float_t GetMaxDCAToVertexXY()      const   { return fCutMaxDCAToVertexXY;}
   Float_t GetMaxDCAToVertexZ()       const   { return fCutMaxDCAToVertexZ;}
@@ -220,7 +222,10 @@ protected:
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2);
   Bool_t CheckPtDepDCA(TString dist,Bool_t print=kFALSE) const;
   void SetPtDepDCACuts(Double_t pt);
-
+  
+  Bool_t CheckPtDepUncertainty(TString dist,Bool_t print=kFALSE) const;
+  void SetPtDepUncertaintyCuts(Double_t pt);
+  
   enum { kNCuts = 45 }; 
 
   //######################################################
@@ -258,8 +263,11 @@ protected:
   Float_t fCutMaxC33;                 ///< max cov. matrix diag. elements (res. sin(phi)^2)
   Float_t fCutMaxC44;                 ///< max cov. matrix diag. elements (res. tan(theta_dip)^2)
   Float_t fCutMaxC55;                 ///< max cov. matrix diag. elements (res. 1/pt^2)
-
-  Float_t fCutMaxRel1PtUncertainty;   ///< max relative uncertainty of 1/pt
+  
+  //cut on relative pt resolution
+  Float_t fCutMaxRel1PtUncertainty;           ///< max relative uncertainty of 1/pt
+  TString fCutMaxRel1PtUncertaintyPtDep;      ///< pt-dep max relative uncertainty of 1/pt
+  TFormula *f1CutMaxRel1PtUncertaintyPtDep;   ///< only internal use (pt-dep max relative uncertainty of 1/pt)
 
   Bool_t  fCutAcceptKinkDaughters;    ///< accepting kink daughters?
   Bool_t  fCutAcceptSharedTPCClusters;///< accepting shared clusters in TPC?
@@ -382,7 +390,7 @@ protected:
   /// TOF signal distance dx vs dz
   TH2F* fhTOFdistance[2];            //->
 
-  ClassDef(AliESDtrackCuts, 23)
+  ClassDef(AliESDtrackCuts, 24)
 };
 
 
