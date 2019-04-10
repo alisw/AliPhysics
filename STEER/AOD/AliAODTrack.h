@@ -479,6 +479,13 @@ class AliAODTrack : public AliVTrack {
 
   // Dummy
   Int_t    PdgCode() const {return 0;}
+
+  void     SetTOFchi2(Double_t chi2) { fTOFchi2 = chi2; }
+  Double_t GetTOFchi2() const {return fTOFchi2;};
+  void     SetTOFsignalDz(Double_t dz) { fTOFsignalDz = dz; }
+  Double_t GetTOFsignalDz() const { return fTOFsignalDz; }
+  void     SetTOFsignalDx(Double_t dx) { fTOFsignalDx = dx; }
+  Double_t GetTOFsignalDx() const { return fTOFsignalDx; }
   
  private :
 
@@ -519,6 +526,10 @@ class AliAODTrack : public AliVTrack {
 
   UShort_t      fTPCnclsF;          ///< findable clusters
   UShort_t      fTPCNCrossedRows;   ///< n crossed rows
+
+  Double32_t    fTOFchi2;           //[0,25.6,10] chi2 in the TOF
+  Double32_t    fTOFsignalDx;       //[-10,10,11] local x  of track's impact on the TOF pad [cm]
+  Double32_t    fTOFsignalDz;       //[-10,10,11] local z  of track's impact on the TOF pad [cm]
 
   Short_t       fID;                ///< unique track ID, points back to the ESD track
 
@@ -565,7 +576,7 @@ class AliAODTrack : public AliVTrack {
   Int_t GetNumberOfTPCClusters() const { return GetTPCncls();}  
   Int_t GetNumberOfTRDClusters() const { return GetTRDncls();}  
 
-  ClassDef(AliAODTrack, 27);
+  ClassDef(AliAODTrack, 28);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

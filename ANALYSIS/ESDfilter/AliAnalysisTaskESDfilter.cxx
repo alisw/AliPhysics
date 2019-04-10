@@ -1549,6 +1549,9 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     aodTrack->SetTPCNCrossedRows(UShort_t(esdTrack->GetTPCCrossedRows()));
     aodTrack->SetIntegratedLength(esdTrack->GetIntegratedLength());
     aodTrack->SetTOFLabel(tofLabel);
+    aodTrack->SetTOFchi2(esdTrack->GetTOFchi2());
+    aodTrack->SetTOFsignalDx(esdTrack->GetTOFsignalDx());
+    aodTrack->SetTOFsignalDz(esdTrack->GetTOFsignalDz());
     CopyChi2TPCConstrainedVsGlobal(esdTrack, aodTrack);
     CopyCaloProps(esdTrack,aodTrack);
     fAODTrackRefs->AddAt(aodTrack, nTrack);
