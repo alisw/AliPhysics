@@ -2209,7 +2209,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   //
   // New strategy: Fully analyze correlation
   //
-  for(Int_t iv=0;iv<15;iv++){
+  for(Int_t iv=0;iv<19;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 	Double_t cont_cor_nd[7];
@@ -2311,6 +2311,10 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
     }
   }
   if(fUseMCInfo) fCorrelationVariables[14] = mcpdgele_array[1];
+	fCorrelationVariables[15] = casc->MassXi();
+	fCorrelationVariables[16] = casc->MassLambda();
+	fCorrelationVariables[17] = casc->CosPointingAngleXi(posVtx[0],posVtx[1],posVtx[2]);
+	fCorrelationVariables[18] = casc->CosPointingAngle(casc->GetDecayVertexXi());
 
   if(fAnalCuts->IsSelected(exobj,AliRDHFCuts::kCandidate) && fAnalCuts->IsPeakRegion(casc))
   {
@@ -2559,7 +2563,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   //
   // New strategy: Fully analyze correlation
   //
-  for(Int_t iv=0;iv<15;iv++){
+  for(Int_t iv=0;iv<16;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 
@@ -5190,7 +5194,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
 
   const char* nameoutput = GetOutputSlot(12)->GetContainer()->GetName();
   fCorrelationVariablesTree = new TTree(nameoutput,"Correlation variables tree");
-  Int_t nVar = 15;
+   Int_t nVar = 19;
   fCorrelationVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
 
@@ -5209,6 +5213,10 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
   fCandidateVariableNames[12] = "EleXiMass";
   fCandidateVariableNames[13] = "EleXiCosOA";
   fCandidateVariableNames[14] = "MCEleMother";
+  fCandidateVariableNames[15] = "MassXi";
+  fCandidateVariableNames[16] = "MassLambda";
+  fCandidateVariableNames[17] = "CosPointingAngleXi";
+  fCandidateVariableNames[18] = "CosPointingAngleV0";
 
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
