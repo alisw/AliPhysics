@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
