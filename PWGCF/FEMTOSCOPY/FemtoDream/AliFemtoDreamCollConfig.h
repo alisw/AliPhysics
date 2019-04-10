@@ -36,6 +36,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     fmTBinning = doIt;
   }
   ;
+  void SetPtQA(bool doIt) {
+    fPtQA = doIt;
+  }
   void SetMomentumResolution(bool doIt) {
     fMomentumResolution = doIt;
   }
@@ -119,6 +122,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fmTBinning;
   }
   ;
+  bool GetDoPtQA() {
+    return fPtQA;
+  }
   bool GetDoMomResolution() {
     return fMomentumResolution;
   }
@@ -228,6 +234,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fCentBinning;            //
   bool fkTBinning;              //
   bool fmTBinning;              //
+  bool fPtQA;                   //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   bool fdPhidEtaPlots;          //
@@ -258,7 +265,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
 
-ClassDef(AliFemtoDreamCollConfig,10)
+ClassDef(AliFemtoDreamCollConfig,11)
   ;
 };
 

@@ -37,6 +37,9 @@ class AliFemtoDreamCorrHists {
     return fDomTBinning;
   }
   ;
+  bool GetDoPtQA() const {
+    return fPtQA;
+  }
   bool GetObtainMomentumResolution() {
     return fMomentumResolution;
   }
@@ -83,6 +86,12 @@ class AliFemtoDreamCorrHists {
     fMixedEventDist[i]->Fill(RelK);
   }
   ;
+  void FillPtQADist(int i, float kstar, float pt1, float pt2) {
+    // TODO for the moment the threshold is hardcoded to 200 MeV/c
+    if(fPtQADist[i] && kstar < 0.2) {
+      fPtQADist[i]->Fill(pt1, pt2);
+    }
+  }
   void FillMixedEventMultDist(int i, int iMult, float RelK) {
     if (fMixedEventMultDist[i])
       fMixedEventMultDist[i]->Fill(RelK, iMult);
@@ -185,6 +194,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventmTDist;
   TH2F **fSameEventkTDist;
   TH2F ***fSameEventkTCentDist;
+  TH2F **fPtQADist;
   TH2F **fPairCounterSE;
   TH1F **fMixedEventDist;
   TH2F **fMixedEventMultDist;
@@ -212,13 +222,14 @@ class AliFemtoDreamCorrHists {
   bool fDoCentBinning;
   bool fDokTBinning;
   bool fDomTBinning;
+  bool fPtQA;
   bool fDokTCentralityBins;
   bool fdPhidEtaPlots;
   bool fPhiEtaPlotsSmallK;
   bool fmTDetaDPhi;
   std::vector<float> fmTdEtadPhiBins;
   std::vector<unsigned int> fWhichPairs;
-  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,5)
+  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,6)
   ;
 };
 

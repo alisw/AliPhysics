@@ -146,6 +146,10 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                                itPart2->GetMomentum(), *itPDGPar2),
                 RelativeK);
           }
+          if (fillHists && ResultsHist->GetDoPtQA()) {
+            ResultsHist->FillPtQADist(HistCounter, RelativeK, itPart1->GetPt(),
+                                      itPart2->GetPt());
+          }
           ++itPart2;
         }
       }

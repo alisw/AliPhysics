@@ -25,6 +25,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fSameEventmTDist(nullptr),
       fSameEventkTDist(nullptr),
       fSameEventkTCentDist(nullptr),
+      fPtQADist(nullptr),
       fPairCounterSE(nullptr),
       fMixedEventDist(nullptr),
       fMixedEventMultDist(nullptr),
@@ -52,6 +53,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fDoCentBinning(false),
       fDokTBinning(false),
       fDomTBinning(false),
+      fPtQA(false),
       fDokTCentralityBins(false),
       fdPhidEtaPlots(false),
       fPhiEtaPlotsSmallK(false),
@@ -77,6 +79,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fSameEventmTDist(hists.fSameEventmTDist),
       fSameEventkTDist(hists.fSameEventkTDist),
       fSameEventkTCentDist(hists.fSameEventkTCentDist),
+      fPtQADist(hists.fPtQADist),
       fPairCounterSE(hists.fPairCounterSE),
       fMixedEventDist(hists.fMixedEventDist),
       fMixedEventMultDist(hists.fMixedEventMultDist),
@@ -104,6 +107,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fDoCentBinning(hists.fDoCentBinning),
       fDokTBinning(hists.fDokTBinning),
       fDomTBinning(hists.fDomTBinning),
+      fPtQA(hists.fPtQA),
       fDokTCentralityBins(hists.fDokTCentralityBins),
       fdPhidEtaPlots(hists.fdPhidEtaPlots),
       fPhiEtaPlotsSmallK(hists.fPhiEtaPlotsSmallK),
@@ -129,6 +133,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventmTDist(nullptr),
       fSameEventkTDist(nullptr),
       fSameEventkTCentDist(nullptr),
+      fPtQADist(nullptr),
       fPairCounterSE(nullptr),
       fMixedEventDist(nullptr),
       fMixedEventMultDist(nullptr),
@@ -156,6 +161,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fDoCentBinning(false),
       fDokTBinning(false),
       fDomTBinning(false),
+      fPtQA(false),
       fDokTCentralityBins(false),
       fdPhidEtaPlots(false),
       fPhiEtaPlotsSmallK(false),
@@ -170,6 +176,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fDokTBinning = conf->GetDokTBinning();
   fDokTCentralityBins = conf->GetDokTCentralityBinning();
   fDomTBinning = conf->GetDomTBinning();
+  fPtQA = conf->GetDoPtQA();
   fPhiEtaPlots = conf->GetDoPhiEtaBinning();
   fdPhidEtaPlots = conf->GetdPhidEtaPlots();
   fPhiEtaPlotsSmallK = conf->GetdPhidEtaPlotsSmallK();
@@ -310,6 +317,11 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   } else {
     fSameEventmTDist = nullptr;
     fMixedEventmTDist = nullptr;
+  }
+  if (fPtQA) {
+    fPtQADist = new TH2F*[nHists];
+  } else {
+    fPtQADist = nullptr;
   }
   if (fdPhidEtaPlots) {
     if (!fmTDetaDPhi) {
@@ -467,6 +479,14 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                               *itKMin, *itKMax, *itNBins / 10,
                                               *itKMin, *itKMax * 1.5);
         fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
+      }
+
+      if (fillHists && fPtQA) {
+        TString PtQAName = Form("PtQA_Particle%d_Particle%d", iPar1, iPar2);
+        fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 50, 0, 1, 50, 0, 1);
+        fPtQADist[Counter]->GetXaxis()->SetTitle(Form("#it{p}_{T} Particle %d (GeV/#it{c})", iPar1));
+        fPtQADist[Counter]->GetYaxis()->SetTitle(Form("#it{p}_{T} Particle %d (GeV/#it{c})", iPar2));
+        fPairs[Counter]->Add(fPtQADist[Counter]);
       }
 
       if (fillHists && fdPhidEtaPlots) {
@@ -742,6 +762,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fSameEventCentDist = hists.fSameEventCentDist;
     this->fSameEventmTDist = hists.fSameEventmTDist;
     this->fSameEventkTDist = hists.fSameEventkTDist;
+    this->fPtQADist = hists.fPtQADist;
     this->fSameEventkTCentDist = hists.fSameEventkTCentDist;
     this->fPairCounterSE = hists.fPairCounterSE;
     this->fMixedEventDist = hists.fMixedEventDist;
@@ -768,6 +789,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fDoCentBinning = hists.fDoCentBinning;
     this->fDokTBinning = hists.fDokTBinning;
     this->fDomTBinning = hists.fDomTBinning;
+    this->fPtQA = hists.fPtQA;
     this->fDokTCentralityBins = hists.fDokTCentralityBins;
     this->fdPhidEtaPlots = hists.fdPhidEtaPlots;
     this->fCentBins = hists.fCentBins;
@@ -790,6 +812,9 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fSameEventmTDist) {
     delete[] fSameEventmTDist;
     delete fSameEventmTDist;
+  }
+  if(fPtQADist) {
+    delete[] fPtQADist;
   }
   if (fSameEventkTDist) {
     delete[] fSameEventkTDist;
