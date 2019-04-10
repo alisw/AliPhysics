@@ -235,12 +235,13 @@ void AliNanoAODSimpleSetter::Init(AliNanoAODHeader* head, TString varListHeader)
     else if(var == "CentrCL0"   ) head->SetCentrCL0Index   (index++);
     else if(var == "CentrCL1"   ) head->SetCentrCL1Index   (index++);
     else if(var == "MagField"   ) head->SetMagFieldIndex   (index++);
-    else if(var == "OfflineTrigger"   ) head->SetOfflineTriggerIndex   (index++); // TODO should be int
-    else if(var == "RunNumber"  ) head->SetRunNumberIndex  (index++);  // TODO should be int
-//     else if(var == "T0Spread" ) {
-//       for (int i=0; i<4; i++)
-//         head->SetT0SpreadIndex(i, index++);
-//     }
+    else if(var == "OfflineTrigger"   ) head->SetOfflineTriggerIndex   (indexInt++);
+    else if(var == "RunNumber"  ) head->SetRunNumberIndex  (indexInt++);
+    else if(var == "T0Spread" ) {
+      for (int i=0; i<4; i++)
+        head->SetT0SpreadIndex(i, index++);
+    }
+    else if(var == "NumberOfESDTracks"  ) head->SetNumberOfESDTracksIndex  (indexInt++);
     else if(var.BeginsWith("cst") || var.BeginsWith("MultSelection.")) {
       cstMap[var] = index;
       if (var.BeginsWith("MultSelection."))
@@ -311,11 +312,12 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent* event, AliNanoA
   if ((head->GetCentrCL1Index())!=-1)  head->SetVar(head->GetCentrCL1Index() ,           centrCL1 );
   if ((head->GetCentrCL0Index())!=-1)  head->SetVar(head->GetCentrCL0Index() ,           centrCL0 );
   if ((head->GetMagFieldIndex())!=-1)  head->SetVar(head->GetMagFieldIndex() ,           magfield );
-  if ((head->GetOfflineTriggerIndex())!=-1)  head->SetVar(head->GetOfflineTriggerIndex() , Double_t(offlineTrigger));
-  if ((head->GetRunNumberIndex())!=-1) head->SetVar(head->GetRunNumberIndex(), Double_t(runNumber));
-//   if (head->GetT0SpreadIndex(0) != -1)
-//     for (int i=0; i<4; i++)
-//       head->SetVar(head->GetT0SpreadIndex(i), header->GetT0spread(i));
+  if ((head->GetOfflineTriggerIndex())!=-1)  head->SetVarInt(head->GetOfflineTriggerIndex(), offlineTrigger);
+  if ((head->GetRunNumberIndex())!=-1) head->SetVar(head->GetRunNumberIndex(), runNumber);
+  if (head->GetT0SpreadIndex(0) != -1)
+    for (int i=0; i<4; i++)
+      head->SetVar(head->GetT0SpreadIndex(i), header->GetT0spread(i));
+  if ((head->GetNumberOfESDTracksIndex())!=-1) head->SetVarInt(head->GetNumberOfESDTracksIndex(), header->GetNumberOfESDTracks());
 }
 
 void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * nanoTrack) 

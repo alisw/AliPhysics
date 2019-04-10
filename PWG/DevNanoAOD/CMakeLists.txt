@@ -37,6 +37,7 @@ set(SRCS
   AliNanoAODTrack.cxx
   AliAnalysisNanoAODCutsCRCZDC.cxx
   AliAnalysisNanoAODCutsJet.cxx
+  AliNanoAODTrackMapping.cxx
   tutorial/AliAnalysisTaskNanoSimple.cxx
   )
 
