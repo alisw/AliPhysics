@@ -272,7 +272,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t GetFillMinimumSteps() const {return fFillMinimumSteps;}
 
   void SetCutOnMomConservation(Float_t cut) {fCutOnMomConservation = cut;}
-  Bool_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
+  Float_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
 
   Double_t ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
 
