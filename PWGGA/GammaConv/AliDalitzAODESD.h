@@ -46,19 +46,27 @@ public:
       // virtual ~AliDalitzAODESD();
     
     AliDalitzAODESD(AliESDtrack* lESDtrack):
-        TObject()
+        TObject(),
+	fIsESD(kTRUE),
+	fESDtrack(lESDtrack),
+	fAODtrack(NULL)
         {
-        fIsESD=kTRUE;
-        fESDtrack=lESDtrack;
+      //  fIsESD=kTRUE;
+      //  fESDtrack=lESDtrack;
     };
             AliDalitzAODESD(AliAODTrack* lAODtrack):
-        TObject()
+        TObject(),
+	fIsESD(kFALSE),
+	fESDtrack(NULL),
+	fAODtrack(lAODtrack)
     {
-        fIsESD=kFALSE;
-        fAODtrack=lAODtrack;
+        //fIsESD=kFALSE;
+        //fAODtrack=lAODtrack;
     };
      virtual ~AliDalitzAODESD() {}
     //ESD
+     AliDalitzAODESD(const AliDalitzAODESD & );//Copy constructor
+     AliDalitzAODESD & operator = (const AliDalitzAODESD & );//Overwrite
      void ComputeImpactParameter();
      void ComputeImpactParameter(const AliVVertex* vx,Double_t bmag);
      Double_t GetPtG();
@@ -95,9 +103,9 @@ public:
      
 private:
     
+    Bool_t fIsESD;
     AliESDtrack* fESDtrack;
     AliAODTrack* fAODtrack;
-    Bool_t fIsESD;
     Double_t b[2];
     Double_t bCov[3];
     ClassDef( AliDalitzAODESD, 1 );

@@ -31,18 +31,26 @@ class AliDalitzAODESDMC: public TObject{
 public:
     
     AliDalitzAODESDMC(TParticle* ltparticle):
-        TObject()
+	TObject(),
+	fIsESDMC(kTRUE),
+	tparticle(ltparticle),
+	aliaodmcparticle(NULL)
     {
-        fIsESDMC=kTRUE;
-        tparticle=ltparticle;
+//        fIsESDMC=kTRUE;
+  //      tparticle=ltparticle;
     };
     AliDalitzAODESDMC(AliAODMCParticle* laliaodmcparticle):
-        TObject()
+	TObject(),
+        fIsESDMC(kFALSE),
+        tparticle(NULL),
+        aliaodmcparticle(laliaodmcparticle)
     {
-        fIsESDMC=kFALSE;
-        aliaodmcparticle=laliaodmcparticle;
+    //    fIsESDMC=kFALSE;
+      //  aliaodmcparticle=laliaodmcparticle;
     };
     virtual ~AliDalitzAODESDMC() {}
+    AliDalitzAODESDMC(const AliDalitzAODESDMC & );//Copy constructor
+    AliDalitzAODESDMC & operator = (const AliDalitzAODESDMC & );//Overwrite
     Int_t GetMotherG();
     Int_t GetFirstDaughterG();
     Int_t GetLastDaughterG();
