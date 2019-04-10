@@ -118,12 +118,11 @@ AliAnalysisTaskSEDmesonPIDSysProp::~AliAnalysisTaskSEDmesonPIDSysProp()
     
     delete fHistPtDauVsD;
     delete fHistSystPIDEffD;
-    delete fOutput;
   }
   if(fPIDresp) delete fPIDresp;
   if(fAnalysisCuts) delete fAnalysisCuts;
   if(fPtLimits) delete[] fPtLimits; 
-  fOutput = nullptr;
+  delete fOutput;
 }
 
 //________________________________________________________________________
