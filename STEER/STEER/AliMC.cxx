@@ -22,7 +22,7 @@
 //         Federico.Carminati@cern.ch
 
 #include <string.h>
-
+#include <fstream>
 #include <RVersion.h>
 #include <TArrayI.h>
 #include <TClonesArray.h>
@@ -199,13 +199,23 @@ void  AliMC::ConstructGeometry()
     TIter next(gAlice->Modules());
     AliModule *detector;
     AliDebug(1, "Geometry creation:");
+    std::ofstream voltomodulefile("MCStepLoggerVolMap.dat");
     while((detector = dynamic_cast<AliModule*>(next()))) {
       stw.Start();
       // Initialise detector materials and geometry
+      auto NVolumesBefore=gGeoManager->GetListOfVolumes()->GetEntriesFast();
+
       detector->CreateMaterials();
       detector->CreateGeometry();
+
+      auto NVolumesNow=gGeoManager->GetListOfVolumes()->GetEntriesFast();
       AliInfo(Form("%10s R:%.2fs C:%.2fs",
 		   detector->GetName(),stw.RealTime(),stw.CpuTime()));
+
+      for (Int_t n = NVolumesBefore; n < NVolumesNow; n++) {
+        TGeoVolume* v = (TGeoVolume*) gGeoManager->GetListOfVolumes()->At(n);
+        voltomodulefile << v->GetName() << ":" << detector->GetName() << "\n";
+      }
     }
   }
 
@@ -1116,7 +1126,30 @@ void  AliMC::GeneratePrimaries()
   // Generate primary particles and fill them in the stack.
   //
 
+  // optionally, with this option, we can decouple seeding for primary generation
+  // and transport; This mode is convenient to force same event sequence for benchmarking
+  char* det_event_seed = getenv("ALIROOT_DETERMINISTIC_EVENT_SEED");
+  static Int_t seedcounter = 1234;
+  ULong_t current_seed;
+  if (det_event_seed) {
+    // backup normal seed
+    current_seed = gRandom->GetSeed();
+
+    // use something deterministic for event generation
+    ULong_t eventseed = 13 * seedcounter;
+
+    cout << "Setting seed to generate next event to " << eventseed << "\n";
+
+    gRandom->SetSeed(eventseed);
+  }
+
   Generator()->Generate();
+
+  if (det_event_seed) {
+    gRandom->SetSeed(current_seed);
+  }
+
+  seedcounter++;
 }
 
 //_______________________________________________________________________
