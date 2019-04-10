@@ -1,11 +1,18 @@
 AliAnalysisTask *AddTaskHFEBESpectraEMC(
+                                 TString ContNameExt = "",
                                  Bool_t UseTender=kTRUE,
                                  Bool_t FillElecSparse=kFALSE,
                                  Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
                                  Bool_t SwitchPi0EtaWeightCalc = kTRUE,
                                  Bool_t SwitchNHFEeffi = kTRUE,
+                                 Bool_t SwitchEleRecoEffi = kTRUE,
+                                 Bool_t SwitchMCTempWeightCalc = kTRUE,
+                                 Bool_t SwitchFillMCTemp = kTRUE,
+                                 Double_t m02Min=0.05, Double_t m02Max1=0.9, Double_t m02Max2=0.7,
+                                 Double_t m20Min=0.0, Double_t m20Max=20000,
+                                 Double_t eovpMin=0.9, Double_t eovpMax=1.2,
                                  Int_t MimCent = -1, Int_t MaxCent = -1,
-                                 TString ContNameExt = "", TString centrality="V0M",
+                                 TString centrality="V0M",
                                  Bool_t hasTwoEMCTrigThres=kFALSE, Int_t thEG1ADC=140, Int_t thEG2ADC=89)
 {
     //get the current analysis manager
@@ -44,7 +51,7 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     {
         if(MimCent==-1)
         {
-            sprintf(calib,"woTender");
+            sprintf(calib,"woTender_");
         }
         else
         {
@@ -68,6 +75,13 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     hfecalqa7->SetCentralityEstimator(centrality.Data());
     hfecalqa7->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
     hfecalqa7->SetNonHFEEffi(SwitchNHFEeffi);
+    hfecalqa7->SetElecRecoEffi(SwitchEleRecoEffi);
+    hfecalqa7->SwitchMCTemplateWeightCalc(SwitchMCTempWeightCalc);
+    hfecalqa7->SwitchFillMCTemplate(SwitchFillMCTemp);
+    
+    hfecalqa7->SetM02Cut(m02Min,m02Max1,m02Max2);
+    hfecalqa7->SetM20Cut(m20Min,m20Max);
+    hfecalqa7->SetEovPCut(eovpMin,eovpMax);
     
     TString containerName7 = mgr->GetCommonFileName();
     containerName7 += ":PWGHF_HFEBESpectraEMC";
