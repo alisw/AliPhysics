@@ -17,5 +17,6 @@
 #pragma link C++ class AliNanoAODSimpleSetterJet+;
 #pragma link C++ class AliNanoAODTrackMapping+;
 #pragma link C++ class AliAnalysisTaskNanoSimple;
+#pragma link C++ class AliAnalysisTaskNanoValidator;
 
 #endif

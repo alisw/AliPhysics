@@ -230,7 +230,7 @@ void AliNanoAODSimpleSetter::Init(AliNanoAODHeader* head, TString varListHeader)
     else if(var == "BunchCrossNumber"  ){ head->SetBunchCrossNumberIndex(indexInt); indexInt++; continue;}
     else if(var == "OrbitNumber"       ){ head->SetOrbitNumberIndex(indexInt); indexInt++; continue;}
     else if(var == "PeriodNumber"      ){ head->SetPeriodNumberIndex(indexInt); indexInt++; continue;}
-    else if(var == "Centr"      ) head->SetCentrIndex      (index++);
+    else if(var == "CentrV0M"   ) head->SetCentrIndex      (index++);
     else if(var == "CentrTRK"   ) head->SetCentrTRKIndex   (index++);
     else if(var == "CentrCL0"   ) head->SetCentrCL0Index   (index++);
     else if(var == "CentrCL1"   ) head->SetCentrCL1Index   (index++);
@@ -313,7 +313,7 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent* event, AliNanoA
   if ((head->GetCentrCL0Index())!=-1)  head->SetVar(head->GetCentrCL0Index() ,           centrCL0 );
   if ((head->GetMagFieldIndex())!=-1)  head->SetVar(head->GetMagFieldIndex() ,           magfield );
   if ((head->GetOfflineTriggerIndex())!=-1)  head->SetVarInt(head->GetOfflineTriggerIndex(), offlineTrigger);
-  if ((head->GetRunNumberIndex())!=-1) head->SetVar(head->GetRunNumberIndex(), runNumber);
+  if ((head->GetRunNumberIndex())!=-1) head->SetRunNumber(runNumber);
   if (head->GetT0SpreadIndex(0) != -1)
     for (int i=0; i<4; i++)
       head->SetVar(head->GetT0SpreadIndex(i), header->GetT0spread(i));
