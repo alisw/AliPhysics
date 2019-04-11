@@ -680,35 +680,44 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 					// If index is minus then particle has no mother particle
 					// Otherwise, begin search for original particle
 					Int_t gFirstMotherIndex = motherMCtrack->GetMother();
-					if(gFirstMotherIndex != -1){
+					if(gFirstMotherIndex != -1){   
 
 						// Retreive grandmother particle of track
 						AliMCParticle* firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gFirstMotherIndex));
 						// Scan down decay chain until a negative index is returned
 						// I.e. first particle in decay is found
+						//std::cout << "next while start!!" << std::endl;
 						while(gFirstMotherIndex > 0){
 
 							gLabelFirstMother = gFirstMotherIndex; // Use label as temp. index storage
 							firstMotherTrack  = (AliMCParticle*)(fMCevent->GetTrack(gLabelFirstMother));
 							gFirstMotherIndex = firstMotherTrack->GetMother();
+							//	std::cout << firstMotherTrack->PdgCode() << "  " << gLabelFirstMother << "  "  << gFirstMotherIndex << std::endl;
 						}
-
+						//std::cout << "while is finished!!" << std::endl;
 						// If greatgrand-mother (etc) was found, store pdg code
 						// Otherwise, grandmother was already primary
 						if(gLabelFirstMother != -1) {
 							iPdgFirstMother = firstMotherTrack->PdgCode();
+							//std::cout << iPdgFirstMother << "   " << gLabelFirstMother << std::endl;
 						}
 						else{
 							gLabelFirstMother = gFirstMotherIndex; // set mother to first mother
 							iPdgFirstMother   = iPdgMother;
+							//std::cout << iPdgFirstMother << "   " << gLabelFirstMother << std::endl;
 						}
-
+						
+						//std::cout << iPdgFirstMother << " pdgFirstMother" << std::endl;
+						//std::cout << gLabelFirstMother << "LabelFirstMother" << std::endl;
+						
 						Int_t nParticles = fMCevent->GetNumberOfTracks();
+							if (iPdgFirstMother != 1000822080)
+						  {
 						//Needed for HIJING....
 						// find range of -1 - minimum
 						gLabelMinFirstMother = gLabelFirstMother;
 						while(gFirstMotherIndex < 0){
-							gLabelMinFirstMother--;
+						  gLabelMinFirstMother--;  
 							if(gLabelMinFirstMother < 0){
 								gFirstMotherIndex = 0;
 							}
@@ -734,7 +743,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 							}
 						}
 						gLabelMaxFirstMother --; // set back by one
-					}
+						  }  //  end if (iPdgFirstMother != 1000822080)
+									}
 				}
 			}// End if(hasMC)
 
