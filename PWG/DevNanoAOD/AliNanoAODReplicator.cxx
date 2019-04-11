@@ -645,7 +645,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   std::list<Int_t> trackIDs;
   if (fSaveConversionPhotons) {
     Int_t nConvPhotons = 0;
-    static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("PhotonReader");
+    static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("ConvGammaAODProduction");
     if (!photonReader)
       AliFatal("No V0 reader but photon conversion requested");
     if (photonReader->AreAODsRelabeled() != kFALSE)
