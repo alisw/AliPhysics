@@ -17,6 +17,8 @@ class TObjArray;
 class AliESDVertex;
 class AliVVertex;
 
+class TNtuple;
+
 class AliAnalysisTaskSEImproveITS:public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskSEImproveITS();
@@ -112,6 +114,142 @@ private:
   TGraph *fPt1ResPiUpgSA ; /// new standalone pt dep. 1/pt res. for pions
   TGraph *fPt1ResEUpgSA ; /// new standalone pt dep. 1/pt res. for electrons
 
+  /////////////////////////////////////////////////////////////////////////////
+  //                                                                         //
+  //  Specific stuff for PbPb 2018 periods                                   //
+  //                                                                         //
+  //  The correction is supposed to be different for tracks                  //
+  //  satisfying the following SPD requirements:                             //
+  //    1) kFirst                                                            //
+  //    2) kOnlySecond                                                       //
+  //  The correction for the mean is then performed in 24 bins of φ,         //
+  //  instead of quarters.                                                   //
+  //                                                                         //
+  /////////////////////////////////////////////////////////////////////////////
+  Bool_t fIsPbPb2018;  // flag declaring wheter the PbPb 2018 periods are analysed
+  // kFirst
+  TGraph *fD0ZResPCur_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResKCur_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResPiCur_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResECur_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResPCur_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResKCur_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResPiCur_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResECur_PbPb2018_kFirst; ///
+  TGraph *fD0RPSigmaPullRatioP_PbPb2018_kFirst; /// 
+  TGraph *fD0RPSigmaPullRatioK_PbPb2018_kFirst; /// 
+  TGraph *fD0RPSigmaPullRatioPi_PbPb2018_kFirst; /// 
+  TGraph *fD0RPSigmaPullRatioE_PbPb2018_kFirst; ///
+  TGraph *fD0RPMeanPCur_PbPb2018_kFirst[2][24]; ///
+  TGraph *fD0RPMeanKCur_PbPb2018_kFirst[2][24]; ///
+  TGraph *fD0RPMeanPiCur_PbPb2018_kFirst[2][24]; ///
+  TGraph *fD0RPMeanECur_PbPb2018_kFirst[2][24]; ///
+  TGraph *fPt1ResPCur_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResKCur_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResPiCur_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResECur_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResPUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResKUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResPiUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResEUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResPUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResKUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResPiUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResEUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0RPMeanPUpg_PbPb2018_kFirst[2][24]; ///
+  TGraph *fD0RPMeanKUpg_PbPb2018_kFirst[2][24]; ///
+  TGraph *fD0RPMeanPiUpg_PbPb2018_kFirst[2][24]; ///
+  TGraph *fD0RPMeanEUpg_PbPb2018_kFirst[2][24]; ///
+  TGraph *fPt1ResPUpg_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResKUpg_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResPiUpg_PbPb2018_kFirst; ///
+  TGraph *fPt1ResEUpg_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResPCurSA_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResKCurSA_PbPb2018_kFirst; ///
+  TGraph *fD0ZResPiCurSA_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResECurSA_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResPCurSA_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResKCurSA_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResPiCurSA_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResECurSA_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResPCurSA_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResKCurSA_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResPiCurSA_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResECurSA_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResPUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResKUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResPiUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fD0ZResEUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResPUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResKUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResPiUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fD0RPResEUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResPUpgSA_PbPb2018_kFirst; ///
+  TGraph *fPt1ResKUpgSA_PbPb2018_kFirst; /// 
+  TGraph *fPt1ResPiUpgSA_PbPb2018_kFirst; ///
+  TGraph *fPt1ResEUpgSA_PbPb2018_kFirst; /// 
+  // kOnlySecond
+  TGraph *fD0ZResPCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResKCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResPiCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResECur_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResPCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResKCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResPiCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResECur_PbPb2018_kOnlySecond; ///
+  TGraph *fD0RPSigmaPullRatioP_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPSigmaPullRatioK_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPSigmaPullRatioPi_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPSigmaPullRatioE_PbPb2018_kOnlySecond; ///
+  TGraph *fD0RPMeanPCur_PbPb2018_kOnlySecond[2][24]; ///
+  TGraph *fD0RPMeanKCur_PbPb2018_kOnlySecond[2][24]; ///
+  TGraph *fD0RPMeanPiCur_PbPb2018_kOnlySecond[2][24]; ///
+  TGraph *fD0RPMeanECur_PbPb2018_kOnlySecond[2][24]; ///
+  TGraph *fPt1ResPCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResKCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResPiCur_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResECur_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResPUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResKUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResPiUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResEUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResPUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResKUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResPiUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResEUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPMeanPUpg_PbPb2018_kOnlySecond[2][24]; ///
+  TGraph *fD0RPMeanKUpg_PbPb2018_kOnlySecond[2][24]; ///
+  TGraph *fD0RPMeanPiUpg_PbPb2018_kOnlySecond[2][24]; ///
+  TGraph *fD0RPMeanEUpg_PbPb2018_kOnlySecond[2][24]; ///
+  TGraph *fPt1ResPUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResKUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResPiUpg_PbPb2018_kOnlySecond; ///
+  TGraph *fPt1ResEUpg_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResPCurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResKCurSA_PbPb2018_kOnlySecond; ///
+  TGraph *fD0ZResPiCurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResECurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResPCurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResKCurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResPiCurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResECurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResPCurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResKCurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResPiCurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResECurSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResPUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResKUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResPiUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0ZResEUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResPUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResKUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResPiUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fD0RPResEUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResPUpgSA_PbPb2018_kOnlySecond; ///
+  TGraph *fPt1ResKUpgSA_PbPb2018_kOnlySecond; /// 
+  TGraph *fPt1ResPiUpgSA_PbPb2018_kOnlySecond; ///
+  TGraph *fPt1ResEUpgSA_PbPb2018_kOnlySecond; /// 
+
   Bool_t fRunInVertexing; /// flag to run hybrid task before the vertexingHF task or in standard mode
   Bool_t fImproveTracks; /// this is always kTRUE. kFALSE only if re-running on already improved AODs
   Bool_t fUpdateSecVertCovMat; /// flag to swicth on/off the modification of the sec vert cov matrix
@@ -126,7 +264,7 @@ private:
   Int_t   fNDebug;       /// Max number of debug entries into Ntuple
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITS,10);
+  ClassDef(AliAnalysisTaskSEImproveITS,11);
   /// \endcond
 };
 
