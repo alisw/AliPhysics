@@ -72,7 +72,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD)
-set(ALIPHYSICS_DECPENDENCIES EMCALbase PWGCaloTrackCorrBase PWGEMCALtasks PWGCaloTrackCorrBase OADB)
+set(ALIPHYSICS_DEPENDENCIES EMCALbase PWGCaloTrackCorrBase PWGEMCALtasks PWGCaloTrackCorrBase OADB)
 
 # Generate the ROOT map
 # Dependecies
