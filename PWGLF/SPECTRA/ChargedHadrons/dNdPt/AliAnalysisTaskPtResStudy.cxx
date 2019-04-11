@@ -39,7 +39,9 @@ AliAnalysisTaskPtResStudy::AliAnalysisTaskPtResStudy()
 
 AliAnalysisTaskPtResStudy::AliAnalysisTaskPtResStudy(const char* name) 
     : AliAnalysisTaskMKBase(name)
-    , fHistPtResCov(0)    
+    , fHistPtResCov(0)  
+    , fHistPtResMC(0)
+    , fHistPtRes(0)
 {
     // constructor
 }
