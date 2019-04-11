@@ -106,8 +106,8 @@ void AliAnalysisTaskPtResStudy::AnaTrack()
     InitTrackIP();
     InitTrackTPC();
     FillHist(fHistPtResCov, fSigned1Pt, fSigma1Pt, fNTracksAcc); 
-    FillHist(fHistPtResMC, fPt, fPtMC, fNTracksAcc); 
-    FillHist(fHistPtRes,   fPt, fPtMC, fSigma1Pt*fPt, fPtMC/fPt-1, fNTracksAcc); 
+    FillHist(fHistPtResMC, fPt, fMCPt, fNTracksAcc); 
+    FillHist(fHistPtRes,   fPt, fMCPt, fSigma1Pt*fPt, fMCPt/fPt-1, fNTracksAcc); 
 }
 
 //_____________________________________________________________________________
