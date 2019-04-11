@@ -73,7 +73,7 @@ void filterAOD_GammaConversions()
   // Note: vertices are kept by default
   task->SetVarListHeader("OfflineTrigger,MagField");
   // track level
-  task->SetVarListTrack("pt,theta,phi");
+  task->SetVarListTrack("pt,theta,phi,id");
 
   task->SetTrkCuts(trkCuts);
   task->AddEvtCuts(evtCuts);
