@@ -1185,28 +1185,41 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    fastjet::PseudoJet j1;
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
-   double ktaverage=0;
-   double thetaverage=0;
+   double ktaverage=-20;
+   double thetaverage=-20;
    double nall=0;
    double flagSubjet=0;
-   double z=0;
-   double delta_R=0;
+   double z=-20;
+   double delta_R=-20;
+   double area1=0;
+   double area2=0;
     while(jj.has_parents(j1,j2) && z<fHardCutoff){
       nall=nall+1;
   
     flagSubjet=0;
-      double area1 = j1.area();
-      double area2 = j2.area();
-    if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
-      else  if(j1.perp() < j2.perp()) swap(j1,j2);
-    
+      area1 = j1.area();
+      area2 = j2.area();
+      if(fJetShapeSub!=kNoSub) if(j1.perp() < j2.perp()) swap(j1,j2);
       
+      if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE){
+	
+	if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
+        area1 = j1.area();
+        area2 = j2.area();
+        if(j1.perp()-area1*GetRhoVal(0)<0 && j2.perp()-area2*GetRhoVal(0)<0) break;
+       
+      }
+
+      
+      if(j2.perp()-area2*GetRhoVal(0)>0){
+       
     
      delta_R=j1.delta_R(j2);
    
-    if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
-    else z=j2.perp()/(j1.perp()+j2.perp());
-   
+     if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) {z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
+      }
+     if(fJetShapeSub!=kNoSub) z=j2.perp()/(j1.perp()+j2.perp());
+  
     double y =log(1.0/delta_R);
     double lnpt_rel=log(j2.perp()*delta_R);
     double yh=j1.e()+j2.e();
@@ -1216,7 +1229,8 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
       ktaverage=ktaverage+lnpt_rel;
       thetaverage=thetaverage+delta_R;
     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,yh,flagSubjet};  
-    fHLundIterative->Fill(LundEntries);
+    fHLundIterative->Fill(LundEntries);}
+      
     jj=j1;} 
 
    
@@ -1274,13 +1288,12 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParentsMCAverage(AliEmcalJet *fJet,
    double ktaverage=0;
    double thetaverage=0;
    double nall=0;
-   double flagSubjet=0;
+ 
    double z=0;
    double delta_R=0;
     while(jj.has_parents(j1,j2) && z<fHardCutoff){
       nall=nall+1;
-      double area1 = j1.area();
-      double area2 = j2.area();
+ 
 
       if(j1.perp() < j2.perp()) swap(j1,j2);
     
