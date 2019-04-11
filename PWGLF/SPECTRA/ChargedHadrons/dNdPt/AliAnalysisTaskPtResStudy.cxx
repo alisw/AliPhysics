@@ -76,7 +76,7 @@ void AliAnalysisTaskPtResStudy::AddOutput()
     AddAxis("pt","pt");    
     AddAxis("ptMC","ptMC");
     AddAxis("sigmapt","#sigma(1/pT)*pT",100,0,0.1);
-    AddAxis("deltapt","(ptmc/pt-1)",200,-10,10);
+    AddAxis("deltapt","(ptmc/pt-1)",200,-0.1,0.1);
     AddAxis("nTracks","mult6kcoarse");
     fHistPtRes = CreateHist("fHistPtRes");
     fOutputList->Add(fHistPtRes);
