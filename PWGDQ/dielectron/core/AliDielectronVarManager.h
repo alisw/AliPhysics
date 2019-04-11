@@ -2140,12 +2140,13 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	det2 = dcaRes2[0]*dcaRes2[2] - dcaRes2[1]*dcaRes2[1];
 	if(det1>0.) {
 	  chi21 = (dca1[0]*dca1[0]*dcaRes1[2] + dca1[1]*dca1[1]*dcaRes1[0] - 2*dca1[0]*dca1[1]*dcaRes1[1])/det1;
-	  tmp_leg1dcaXYZsig = TMath::Sqrt(TMath::Abs(chi21));
+	  tmp_leg1dcaXYZsig = TMath::Sqrt(TMath::Abs(chi21/2.));
 	}
 	if(det2>0.) {
 	  chi22 = (dca2[0]*dca2[0]*dcaRes2[2] + dca2[1]*dca2[1]*dcaRes2[0] - 2*dca2[0]*dca2[1]*dcaRes2[1])/det2;
-	  tmp_leg2dcaXYZsig = TMath::Sqrt(TMath::Abs(chi22));
+	  tmp_leg2dcaXYZsig = TMath::Sqrt(TMath::Abs(chi22/2.));
 	}
+	// dcaxyz is Sqrt(chi2/NDF) with NDF = 2 for xyz and 1 for xy or z
 
 	
         // set first daughter variables for cross-checks
