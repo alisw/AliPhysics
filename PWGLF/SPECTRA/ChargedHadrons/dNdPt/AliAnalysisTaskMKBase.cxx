@@ -80,6 +80,9 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fDCACov{0,0,0}
     , fDCAr(0)
     , fDCAz(0)
+    , fSigma1Pt2(0)
+    , fSigma1Pt(0)
+    , fSigned1Pt(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -103,6 +106,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fDCArTPC(0)
     , fDCAzTPC(0)
     , fEventCuts(0)
+    , fUseEventCuts(kFALSE)
     , fESDtrackCutsM(0)
     , fESDtrackCuts{0,0,0,0,0,0,0,0,0,0}
     , fAcceptTrack{kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE}
@@ -173,6 +177,9 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fDCACov{0,0,0}
     , fDCAr(0)
     , fDCAz(0)
+    , fSigma1Pt2(0)
+    , fSigma1Pt(0)
+    , fSigned1Pt(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -196,6 +203,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fDCArTPC(0)
     , fDCAzTPC(0)
     , fEventCuts(0)
+    , fUseEventCuts(kFALSE)    
     , fESDtrackCutsM(0)
     , fESDtrackCuts{0,0,0,0,0,0,0,0,0,0}
     , fAcceptTrack{kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE}
@@ -317,7 +325,7 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
         Err("noAliAnalysisManager");  
         fInputEventHandler = 0;
     } else {
-        fInputEventHandler = dynamic_cast<AliInputEventHandler*>(fAnalysisManager->GetInputEventHandler());        
+        fInputEventHandler = dynamic_cast<AliInputEventHandler*>(fAnalysisManager->GetInputEventHandler());
     }
     if (fInputEventHandler) { 
         fEventSelected = fInputEventHandler->IsEventSelected();
@@ -528,6 +536,12 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
     fESDTrack->GetImpactParameters(fDCA,fDCACov);
     fDCAr = fDCA[0];
     fDCAz = fDCA[1];
+    fSigma1Pt2 = fESDTrack->GetSigma1Pt2();
+    if (fSigma1Pt2 < 0) { 
+        Err("Sigma1Pt2<0");        
+    }
+    fSigma1Pt =  TMath::Sqrt(fSigma1Pt2);
+    fSigned1Pt = fESDTrack->GetSigned1Pt();
     return kTRUE;
 }
 

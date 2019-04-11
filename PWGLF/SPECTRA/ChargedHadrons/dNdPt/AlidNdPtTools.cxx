@@ -95,7 +95,12 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, const char* o
         const Int_t nbins = 5;
         Double_t xbins[6] = {0.0, 0.5, 1.0, 1.5, 2.0, 200.0};
         return AddAxis(label, title, nbins, xbins);    
-    }    
+    }
+    if (o.Contains("ptmario")) {   
+        const Int_t nbins = 52;
+        Double_t xbins[53] = {0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,20.0,30.0,40.0,50.0,60.0};
+        return AddAxis(label, title, nbins, xbins);   
+    }
     if (o.Contains("pt")) {
         const Int_t nbins = 81;
         Double_t xbins[82] = {0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0, 32.0, 34.0, 36.0, 40.0, 45.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0, 180.0, 200.0};
@@ -124,7 +129,23 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, const char* o
         for (; i<=100+90; i++) { xbins[i+1] = xbins[i]+10; }
         for (; i<=100+90+50; i++) { xbins[i+1] = xbins[i]+100; }
         return AddAxis(label, title, nbins, xbins);
-    }       
+    }  
+    if (o.Contains("mult6kcoarse")) {
+        // variable mult binning total 0-6000
+        // 1-width 0-10              11
+        // 10-width 10-100            9
+        // 100-width 100-1000         9
+        // 200-width 1000-6000       25
+        const Int_t nbins = 54;
+        Double_t xbins[55];
+        xbins[0] = -0.5;
+        int i =0;
+        for (; i<=10; i++) { xbins[i+1] = xbins[i]+1; }
+        for (; i<=10+9; i++) { xbins[i+1] = xbins[i]+10; }
+        for (; i<=10+9+9; i++) { xbins[i+1] = xbins[i]+100; }
+        for (; i<=10+9+9+25; i++) { xbins[i+1] = xbins[i]+200; }
+        return AddAxis(label, title, nbins, xbins);
+    }      
     if (o.Contains("mult100kcoarse")) {
         // variable mult binning total 0-100000
         // 1-width 0-10             11

@@ -46,7 +46,13 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         virtual void           FinishTaskOutput();        
         
         virtual void           SetESDtrackCutsM(AliESDtrackCuts* cut) { fESDtrackCutsM = cut; }
-        virtual Bool_t         SetESDtrackCuts(Int_t i, AliESDtrackCuts* cut) { if (i<10) fESDtrackCuts[i] = cut; return (i<10); }
+        virtual Bool_t         SetESDtrackCuts(Int_t i, AliESDtrackCuts* cut) { if (i<10) fESDtrackCuts[i] = cut; return (i<10); }        
+        virtual void           SetTriggerMaskRequired(UInt_t trigger) { fTriggerMaskRequired = trigger; }
+        virtual void           SetTriggerMaskRejected(UInt_t trigger) { fTriggerMaskRejected = trigger; }        
+        virtual void           SetUseEventCuts(Bool_t use = kTRUE) { fUseEventCuts = use; }
+        
+        AliESDtrackCuts*       GetESDtrackCutsM() { return fESDtrackCutsM; }
+        AliESDtrackCuts*       GetESDtrackCuts(Int_t i) { return (i < 10) ? fESDtrackCuts[i] : 0; }
         
         static Long64_t        FillHist(THnSparseD* s, Double_t x1, Double_t x2=0, Double_t x3=0, Double_t x4=0, Double_t x5=0, Double_t x6=0, Double_t x7 =0, Double_t x8 =0, Double_t x9 =0, Double_t x10 =0, Double_t x11 =0, Double_t x12 =0) { return AlidNdPtTools::FillHist(s, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12); }
         static Int_t           AddAxis(const char* label, Int_t nbins, Double_t xmin, Double_t xmax, const char* option = 0) { return AlidNdPtTools::AddAxis(label, nbins, xmin, xmax, option); }
@@ -97,8 +103,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         virtual Bool_t          InitTrackIP();  //initialize inner params 
         virtual Bool_t          InitTrackTPC();  //initialize inner params tpc
         
-        virtual void         LoopOverAllTracks();    // loops over all tracks in the event, calls AnaTrack() and AnaMCTrack() for each track
-        virtual void         LoopOverAllParticles(); // loops over all MC particles in the event, calls AnaMCParticle() for each particle
+        virtual void            LoopOverAllTracks();    // loops over all tracks in the event, calls AnaTrack() and AnaMCTrack() for each track
+        virtual void            LoopOverAllParticles(); // loops over all MC particles in the event, calls AnaMCParticle() for each particle
         
         virtual void          FillTriggerLog();   // fill the trigger histogram
         virtual void          CheckEvent();      // check if the event is ok
@@ -153,6 +159,9 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Float_t                 fDCACov[3];             //!<! impat parameter (DCA) covariance
         Double_t                fDCAr;                  //!<! impact parameter (DCA) in xy-direction
         Double_t                fDCAz;                  //!<! impact parameter (DCA) in z-direction
+        Double_t                fSigma1Pt2;             //!<! sigma(1/pT)**2
+        Double_t                fSigma1Pt;              //!<! sigma(1/pT)
+        Double_t                fSigned1Pt;             //!<! signed 1/pT
         
         AliMCParticle*          fMCParticle;            //!<! mc particle
         Int_t                   fMCLabel;               //!<! mc label
@@ -176,9 +185,10 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Float_t                 fDCATPC[2];             //!<! TPC impact parameter (DCA)
         Float_t                 fDCACovTPC[3];          //!<! TPC impat parameter (DCA) covariance
         Double_t                fDCArTPC;               //!<! TPC impact parameter (DCA) in xy-direction 
-        Double_t                fDCAzTPC;               //!<! TPC impact parameter (DCA) in z-direction
+        Double_t                fDCAzTPC;               //!<! TPC impact parameter (DCA) in z-direction        
 
-        AliEventCuts            fEventCuts;             /// event cuts
+        AliEventCuts            fEventCuts;             /// event cuts        
+        Bool_t                  fUseEventCuts;          /// use event cuts?
         AliESDtrackCuts*        fESDtrackCutsM;         //-> trackcuts used for mult estimate
         Bool_t                  fAcceptTrackM;          //-> is track accepted by fESDtrackCutsM
         AliESDtrackCuts*        fESDtrackCuts[10];      //-> several track cuts that can be used in the analysis
@@ -202,7 +212,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         
     /// \cond CLASSIMP      
-    ClassDef(AliAnalysisTaskMKBase, 1);
+    ClassDef(AliAnalysisTaskMKBase, 2);
     /// \endcond
     
 };
