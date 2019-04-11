@@ -197,7 +197,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCCosThetaHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCCosThetaCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+      fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -320,7 +322,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCCosThetaHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCCosThetaCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+      fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0)
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -764,6 +768,18 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
               );
     fOutputList->Add(fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH[iRapidityBin]);
   }
+
+  fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
+        new TH2F( "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
+                  "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
+                  80, -4, 4, 80, -1, 1);
+  fOutputList->Add(fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
+
+  fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
+        new TH2F( "fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
+                  "fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
+                  80, -4, 4, 80, -1, 1);
+  fOutputList->Add(fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
 
   //_______________________________
   // - End of the function
@@ -1326,6 +1342,26 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
           break;
         }
     }
+
+
+    /* - What we do here is very similar.
+       - This time we divide firstly in bins of CosTheta.
+       - As many as needed.
+       - And then we divide again in terms of Phi.
+       - Then we fill.
+       - This way we should be able to obtain some kind of map...
+       -
+     */
+    fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                               muonsCopy2[1],
+                                                                                               possibleJPsiCopy
+                                                                                               ),
+                                                                        CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                             muonsCopy2[1],
+                                                                                             possibleJPsiCopy
+                                                                                             )
+                                                                        );
+
   }
 
   // fVectorCosThetaReconstructed.push_back(cosThetaMuonsRestFrame[0]);
@@ -1580,6 +1616,23 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                         break;
                       }
                   }
+                  /* - What we do here is very similar.
+                     - This time we divide firstly in bins of CosTheta.
+                     - As many as needed.
+                     - And then we divide again in terms of Phi.
+                     - Then we fill.
+                     - This way we should be able to obtain some kind of map...
+                     -
+                   */
+                  fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                                               muonsMCcopy[1],
+                                                                                                               possibleJPsiMC
+                                                                                                               ),
+                                                                                        CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                                             muonsMCcopy[1],
+                                                                                                             possibleJPsiMC
+                                                                                                             )
+                                                                                        );
           } else  {
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
@@ -1674,6 +1727,23 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                         break;
                       }
                   }
+                  /* - What we do here is very similar.
+                     - This time we divide firstly in bins of CosTheta.
+                     - As many as needed.
+                     - And then we divide again in terms of Phi.
+                     - Then we fill.
+                     - This way we should be able to obtain some kind of map...
+                     -
+                   */
+                  fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                                               muonsMCcopy[0],
+                                                                                                               possibleJPsiMC
+                                                                                                               ),
+                                                                                        CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                                             muonsMCcopy[0],
+                                                                                                             possibleJPsiMC
+                                                                                                             )
+                                                                                        );
 
           }
       }
