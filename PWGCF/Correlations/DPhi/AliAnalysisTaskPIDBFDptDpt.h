@@ -48,6 +48,7 @@ public:
   Float_t TPC_EventPlane(AliAODEvent *event);
   Bool_t Is2015PileUpEvent();
   Bool_t StoreEventMultiplicities(AliVEvent *event);
+  Double_t CalculateSharedFraction(const TBits *triggerClusterMap,const TBits *assocClusterMap,const TBits *triggerShareMap,const TBits *assocShareMap);
     
 private:
     Double_t fnsigmas[4][2]; //nsigma values
@@ -58,6 +59,7 @@ private:
     Double_t ptTOFlowerBoundary; // pt value which is the boundary between TPC & TOF.
     Double_t electronNSigmaVeto;
     Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
+    Double_t fSharedfraction_Pair_cut;
 
     AliAnalysisUtils *fUtils; //!
     AliEventCuts *   fEventCut;  //!
@@ -190,7 +192,7 @@ public:
     void SetElectronNSigmaVetoCut( double electronVeto )   { electronNSigmaVeto = electronVeto; }
     void SetfRemoveTracksT0Fill( bool tof )     { fRemoveTracksT0Fill = tof; }    //fRemoveTracksT0Fill
     //void SetAliEventCuts(AliEventCuts * Event_Cut)     { fEventCut = Event_Cut; }
-
+    void SetSharedFractionPairCut( double v )   { fSharedfraction_Pair_cut = v; }
     
 protected:
     
@@ -299,6 +301,7 @@ protected:
     //float*  _eta_1;             //!
     float  *_correction_1;           //!
     float  *_dedx_1;           //!
+    AliAODTrack ** _TrackArray;  //!
     
     //particle 2
     int    *_id_2;              //!
@@ -529,6 +532,10 @@ protected:
     TH1F     * _invMassKaon;
     TH1F     * _invMassKaonSq;
     TH1F     * _invMassElec;
+    TH1F     * _ClusterSharedFraction_beforeCut;
+    TH1F     * _ClusterSharedFraction_afterCut;
+    TH1F     * _ClusterSharedFraction_3by3Bins_beforeCut;
+    TH1F     * _ClusterSharedFraction_3by3Bins_afterCut;
     
     TString n1Name;
     TString n1NwName;
