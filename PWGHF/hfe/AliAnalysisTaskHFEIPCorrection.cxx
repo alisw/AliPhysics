@@ -3,6 +3,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TRandom3.h"
 #include "TFile.h"
 #include "THnSparse.h"
 #include "TCanvas.h"
@@ -46,7 +47,7 @@ ClassImp(AliAnalysisTaskHFEIPCorrection)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // default Constructor
   // Define input and output slots here
@@ -75,7 +76,7 @@ AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -169,6 +170,8 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     
     fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
     fAODV0Cuts = new AliAODv0KineCuts();
+    
+    fRd = new TRandom3(0);
     
     fOutputContainer = new TObjArray(1);
     fOutputContainer->SetName(GetName());
@@ -583,6 +586,9 @@ if(!MultSelection){
   bool analyzeEvent=(TMath::Sqrt(vcov[5]) < 0.25 && TMath::Abs(vtx[2])<10. && TMath::Abs(vtx[2] - vtxSPD[2]) < 0.5 && centrality <= 100.);
   //hfetrackCuts->SetRecEvent(aodEvent);
 
+   
+
+
    if(centrality>=20.0 && centrality<=40.0)
    {
       EventSelectionSteps->Fill(0);
@@ -612,20 +618,44 @@ if(!MultSelection){
   Double_t IPCorrectedChField = 0.;
   Int_t RunBin = ReturnRunBin(aodEvent->GetRunNumber());
 
+  bool EPFlatteningReject = false;
+  Float_t V0PlanePhi;
+  Float_t V0APlanePhi;
+  Float_t V0CPlanePhi;
+
   if(analyzeEvent)
+  {
+    vEPa = fInputEvent->GetEventplane();
+    V0PlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,10,2,qVx,qVy));
+    if(V0PlanePhi>TMath::Pi()) V0PlanePhi -=TMath::Pi();
+    V0APlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,8,2,qVx,qVy));
+    if(V0APlanePhi > TMath::Pi()) V0APlanePhi = V0APlanePhi - TMath::Pi();
+    V0CPlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,9,2,qVx,qVy));
+    if(V0CPlanePhi > TMath::Pi()) V0CPlanePhi = V0CPlanePhi - TMath::Pi();
+    double rndm = fRd->Rndm();
+    if(centrality>=20.0 && centrality<=50.0)
+    {
+        if(V0PlanePhi<0) V0PlanePhi+= 3.14159;
+        if(V0PlanePhi>3.14159) V0PlanePhi-= 3.14159; // Just to be safe
+        if(rndm>0.884154+0.171683*TMath::Gaus(V0PlanePhi,0.609013, 0.705609)+0.0634041*TMath::Erf((V0PlanePhi-1.99791)/0.492068)) EPFlatteningReject = true;
+    }
+  }
+
+  if(analyzeEvent && !EPFlatteningReject)
   {
       //correctedVertex = CorrectVertex(aodEvent, vtx[2]); // created without problematic ITS regions
       //madecorvtx = true;
       //Double_t vtxcorr[3];
       //correctedVertex->GetXYZ(vtxcorr);
-      vEPa = fInputEvent->GetEventplane();
+      /*vEPa = fInputEvent->GetEventplane();
       Float_t V0PlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,10,2,qVx,qVy));
       if(V0PlanePhi>TMath::Pi()) V0PlanePhi -=TMath::Pi();
       Float_t V0APlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,8,2,qVx,qVy));
       if(V0APlanePhi > TMath::Pi()) V0APlanePhi = V0APlanePhi - TMath::Pi();
       Float_t V0CPlanePhi = TVector2::Phi_0_2pi(vEPa->CalculateVZEROEventPlane(fInputEvent,9,2,qVx,qVy));
-      if(V0CPlanePhi > TMath::Pi()) V0CPlanePhi = V0CPlanePhi - TMath::Pi();
+      if(V0CPlanePhi > TMath::Pi()) V0CPlanePhi = V0CPlanePhi - TMath::Pi();*/
     
+
       EPCent->Fill(V0PlanePhi, centrality);
       EPCentV0A->Fill(V0APlanePhi, centrality);
       EPCentV0C->Fill(V0CPlanePhi, centrality);
