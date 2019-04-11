@@ -38,7 +38,7 @@ AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi", Bool_t isMC = kFA
     // We will add RSN config file
     TString macroArgs = TString::Format("(AliRsnMiniAnalysisTask *)%p", task);
     TMacro cfg(gSystem->ExpandPathName(TString::Format("%s%s", path.Data(), configName.Data()).Data()));
-    Bool_t rc = reinterpret_cast<Bool_t>(cfg.Exec(macroArgs.Data()));
+    Long_t rc = reinterpret_cast<Long_t>(cfg.Exec(macroArgs.Data()));
     if (!rc)
         return 0;
 
