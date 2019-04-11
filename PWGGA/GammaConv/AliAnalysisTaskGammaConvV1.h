@@ -14,6 +14,8 @@
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include "TMVA/Tools.h"
+#include "TMVA/Reader.h"
 #include <vector>
 #include <map>
 
@@ -44,6 +46,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void SetDoTHnSparse(Bool_t flag)                              { fDoTHnSparse                = flag    ;}
     void SetDoCentFlattening(Int_t flag)                          { fDoCentralityFlat           = flag    ;}
     void ProcessPhotonCandidates();
+    void SetFileNameBDT(TString filename) { fFileNameBDT = filename.Data() ;}
+    void InitializeBDT();
+    void ProcessPhotonBDT();
     void ProcessClusters();
     void CalculatePi0Candidates();
     void CalculateBackground();
@@ -258,12 +263,19 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH2F**                            fHistoV0MultVsNumberTPCoutTracks;           //! correlation V=Mult vs number TPC out Tracks
     TH1F**                            fHistoNV0Tracks;                            //!
+    TH1F**                            fHistoBDToutput;                            //!
+    TH1F**                            fHistoBDToutputMCTrue;                      //!
+    TH1F**                            fHistoBDToutputPt;                          //!
     TProfile**                        fProfileEtaShift;                           //! array of profiles with eta shift
     TProfile**                        fProfileJetJetXSection;                     //! array of profiles with xsection for jetjet
     TH1F**                            fhJetJetNTrials;                            //! array of histos with ntrials for jetjet
     TProfile**                        fHistoEtaShift;                             //!
     TTree**                           tESDMesonsInvMassPtDcazMinDcazMaxFlag;      //!
     Float_t                           fInvMass;                                   //!
+    Float_t*                          fBDTvariable;                               //!
+    TMVA::Reader*                     fBDTreader;                                 //!
+    TString                           fFileNameBDT;                               //!
+    Bool_t                            fEnableBDT;                                 //!
     Float_t                           fPt;                                        //!
     Float_t                           fDCAzGammaMin;                              //!
     Float_t                           fDCAzGammaMax;                              //!
@@ -310,7 +322,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 43);
+    ClassDef(AliAnalysisTaskGammaConvV1, 44);
 };
 
 #endif

@@ -65,6 +65,12 @@ void AddTask_GammaConvV1_PbPb(
   TString fileNameMatBudWeights       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
   TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
   TString fileNameCentFlattening      = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FCEF:");
+  TString fileNameBDT                 = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FBDT:");
+  Bool_t enableBDT = kFALSE;
+  if(fileNameBDT.CompareTo("")!= 0){
+    enableBDT = kTRUE;
+    cout << "enabling BDT !!!! " << fileNameBDT.Data() << endl;
+  }
 
   TString addTaskName                 = "AddTask_GammaConvV1_PbPb";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -142,6 +148,7 @@ void AddTask_GammaConvV1_PbPb(
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(enableLightOutput);
+  if(enableBDT) task->SetFileNameBDT(fileNameBDT.Data());
 
   if (trainConfig == 1){ // Standard cuts
     cuts.AddCutPCM("60100013", "04200009297002003220000000", "0152204500900000"); // 0-5%
@@ -2726,6 +2733,10 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("10410113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
   } else if (trainConfig == 1142){
     cuts.AddCutPCM("10410113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+  } else if (trainConfig == 2000){
+    cuts.AddCutPCM("10910a13","40200009327000008250400000","0163103100000000"); // BDT test
+
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
