@@ -282,7 +282,7 @@ public:
   Double_t  GetTPCmomentum()     const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCmomentum()); }
   Double_t  GetTPCTgl()          const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCTgl());      } // FIXME: what is this?
   Double_t  GetTOFsignal()       const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignal());   } 
-  Double_t  GetIntegratedLength() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetintegratedLenght()); } 
+  Double_t  GetIntegratedLength() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetintegratedLength()); } 
   void      SetIntegratedLength(Double_t/* l*/) {AliFatal("Not implemented");}
   Double_t  GetTOFsignalTunedOnData() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned());}
   void      SetTOFsignalTunedOnData(Double_t signal) {fVars[AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned()] = signal;}

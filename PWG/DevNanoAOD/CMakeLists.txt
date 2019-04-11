@@ -32,9 +32,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   AliAnalysisNanoAODCuts.cxx
   AliAnalysisTaskNanoAODFilter.cxx
+  AliAnalysisTaskNanoAODskimming.cxx
   AliNanoAODCustomSetter.cxx
   AliNanoAODReplicator.cxx
   AliNanoAODTrack.cxx
+  AliNanoFilterNormalisation.cxx
   AliAnalysisNanoAODCutsCRCZDC.cxx
   AliAnalysisNanoAODCutsJet.cxx
   AliNanoAODTrackMapping.cxx
