@@ -90,9 +90,6 @@ private:
   Float_t fTreeHyp3BodyVarPVt;
 
   Float_t fTreeHyp3BodyVarMagneticField;
-  
-
-  // TODO: chiedere a Max quali sono i plot di controllo dei Findable di david da mettere qui
 
   TH1D *fHistEventCounter; //!
   TH1D *fHistCentrality;   //!

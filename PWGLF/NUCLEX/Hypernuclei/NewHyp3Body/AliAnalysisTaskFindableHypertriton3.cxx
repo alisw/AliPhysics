@@ -75,18 +75,6 @@ struct TrackMC {
   int motherId;
 };
 
-struct CandidateMC {
-  AliESDtrack *track_deu;
-  AliESDtrack *track_p;
-  AliESDtrack *track_pi;
-  AliVParticle *part1;
-  AliVParticle *part2;
-  AliVParticle *part3;
-  AliVParticle *mother;
-  int motherId;
-  int recoIndex;
-};
-
 bool IsHyperTriton3(AliMCEvent *mcEvent, const AliVParticle *vPart) {
   bool returnValue = false;
   int nDaughters   = 0;
@@ -436,7 +424,6 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
     std::sort(lTrackOfInterest.begin(), lTrackOfInterest.end(),
               [](const TrackMC &a, const TrackMC &b) { return a.motherId > b.motherId; });
 
-    std::vector<CandidateMC> candidate;
     for (size_t iTrack = 0; iTrack < lTrackOfInterest.size(); iTrack++) {
       std::array<std::pair<int, int>, 3> index;
       int pdg1 = lTrackOfInterest[iTrack].particle->PdgCode();
