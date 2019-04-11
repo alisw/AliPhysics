@@ -1189,7 +1189,7 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    double thetaverage=-20;
    double nall=0;
    double flagSubjet=0;
-   double z=-20;
+   double z=0.;
    double delta_R=-20;
    double area1=0;
    double area2=0;
@@ -1231,9 +1231,9 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,yh,flagSubjet};  
     fHLundIterative->Fill(LundEntries);}
       
-    jj=j1;} 
+      jj=j1;} 
 
-   
+    cout<<"a z"<<z<<endl;
      fShapesVar[2]=ktaverage/nall;
      fShapesVar[3]=thetaverage/nall;
      fShapesVar[4]=z;
