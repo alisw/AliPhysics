@@ -61,21 +61,16 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   //create task and add it to the manager
   AliAnalysisTaskMultiDielectron *task=new AliAnalysisTaskMultiDielectron("MultiDiEData_miweber_PbPb_woCutLib");
 
-  // for MC no  need for physics selection and for Nano AODs this has been done already  
-  if (!hasMC && !isNano) task->UsePhysicsSelection();
-
-  //Add event filter
-  Int_t triggerNames = AliVEvent::kINT7;//PbPb Min Bias, can be set also from outside
-
-  // for Nano AODs this has been done already  
-  if(!isNano){
-    task->SelectCollisionCandidates(triggerNames);
-    task->SetTriggerMask(triggerNames);
+  // for MC no  need for physics selection and for Nano AODs this has been done already
+  Int_t triggerNames = AliVEvent::kINT7;//PbPb Min Bias
+  if (!hasMC && !isNano){
+    task->UsePhysicsSelection();
+    task->SetTriggerMask(triggerNames); //PbPb Min Bias, can be set also from outside
+    // task->SelectCollisionCandidates(triggerNames); // not needed, since UsePhysicsSelection::UsePhysicsSelection is called; but can be set also from outside
     // task->SetRejectPileup(); // to be done differently (too strong cuts at the moment in dielectron framework) 
   }
 
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-
   //Add event filter
   task->SetEventFilter( GetEventCuts() );
 
