@@ -8,6 +8,9 @@
 ClassImp( AliDalitzAODESDMC )
 //-----------------------------------------------------------------------------------------------
 
+AliDalitzAODESDMC::~AliDalitzAODESDMC() 
+{
+}
 
     Int_t AliDalitzAODESDMC::GetMotherG(){
         if (fIsESDMC==kTRUE) return tparticle->GetMother(0);

@@ -50,7 +50,7 @@
 #include "AliStack.h"
 #include "AliTrackerBase.h"
 #include "AliTriggerAnalysis.h"
-#include "../GammaConv/AliAODConversionPhoton.h"
+#include "AliAODConversionPhoton.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
