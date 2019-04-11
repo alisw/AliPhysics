@@ -588,19 +588,19 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//   THn Sparse for the Pi0 Candidates
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Int_t dimThnPi0 = 0;
-    TString titleThnPi0[10];
-    Int_t nBinsThnPi0[10] = {0};
-    Double_t minThnPi0[10] = {0.};
-    Double_t maxThnPi0[10] = {0.};
-    Double_t *binEdgesThnPi0[10] = {0};
+    TString titleThnPi0[11];
+    Int_t nBinsThnPi0[11] = {0};
+    Double_t minThnPi0[11] = {0.};
+    Double_t maxThnPi0[11] = {0.};
+    Double_t *binEdgesThnPi0[11] = {0};
 
     titleThnPi0[dimThnPi0] = "p_{T}^{#gamma#gamma}";
-    nBinsThnPi0[dimThnPi0] = 100;
-    Double_t pTArray[100+1];
+    nBinsThnPi0[dimThnPi0] = 60;
+    Double_t pTArray[60+1];
     binEdgesThnPi0[dimThnPi0] = pTArray;
-    GenerateFixedBinArray(100,0,50,pTArray);
+    GenerateFixedBinArray(60,0,30,pTArray);
     minThnPi0[dimThnPi0] = 0;
-    maxThnPi0[dimThnPi0] = 50;
+    maxThnPi0[dimThnPi0] = 30;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "M_{#gamma#gamma}";
@@ -619,8 +619,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Opening Angle [rad]";
-    nBinsThnPi0[dimThnPi0] = 29;
-    Double_t openAngleArray[29+1] = {0,0.009,0.011,0.013,0.015,0.017,0.019,0.021,0.023,0.025,0.027,0.029,0.031,0.033,0.035,0.037,0.04,0.044,0.048,0.055,0.07,0.08,0.09,0.1,0.125,0.15,pi/16.,pi/8.,pi/4.,pi};
+    nBinsThnPi0[dimThnPi0] = 6;
+    // Small Range
+    Double_t openAngleArray[6+1] = {0,0.015,0.017,0.019,0.021,0.23,pi};
+    // Large Scan
+//    Double_t openAngleArray[29+1] = {0,0.009,0.011,0.013,0.015,0.017,0.019,0.021,0.023,0.025,0.027,0.029,0.031,0.033,0.035,0.037,0.04,0.044,0.048,0.055,0.07,0.08,0.09,0.1,0.125,0.15,pi/16.,pi/8.,pi/4.,pi};
     binEdgesThnPi0[dimThnPi0] = openAngleArray;
   //  GenerateFixedBinArray(20,0,TMath::Pi(),openAngleArray);
     minThnPi0[dimThnPi0] = 0;
@@ -650,16 +653,18 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Asymmetry";
-    nBinsThnPi0[dimThnPi0] = 5;
-    Double_t asymmetryArray[5+1];
+    nBinsThnPi0[dimThnPi0] = 4;
+    Double_t asymmetryArray[4+1] = {0.,0.7,0.8,0.9,1.0};
     binEdgesThnPi0[dimThnPi0] = asymmetryArray;
-    GenerateFixedBinArray(5,0,1,asymmetryArray);
+    // More useful range
+    // Old Range
+    //GenerateFixedBinArray(5,0,1,asymmetryArray);
     minThnPi0[dimThnPi0] = 0;
     maxThnPi0[dimThnPi0] = 1;
     dimThnPi0++;
 
     //..ID array -  0 - real, 1 - rotated, 2 - mixed event, 3 - pos-swapped
-    titleThnPi0[dimThnPi0] = "Rotation Status";
+    titleThnPi0[dimThnPi0] = "Type";
     nBinsThnPi0[dimThnPi0] = 4;
     Double_t mRotArray[4+1];
     binEdgesThnPi0[dimThnPi0] = mRotArray;
@@ -1781,7 +1786,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 {
   if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack()"<<endl;
 
-//	Double_t pi = TMath::Pi();
+	Double_t pi = TMath::Pi();
 	//...........................................
 	//--Do cluster loop.
 	AliClusterContainer* clusters  = GetClusterContainer(0);
@@ -1936,24 +1941,46 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                 // Do energy swap  on cluster first, before getting momentum
                 TLorentzVector CaloClusterVecSwap;
                 TLorentzVector CaloClusterVecPi0Swap;
-                clusters->GetMomentum(CaloClusterVecPi0Swap, cluster3); //recycling pi0swap
-                // Set swap cluster to have energy of cluster2
+                TLorentzVector CaloClusterVec3; // The third cluster
+                clusters->GetMomentum(CaloClusterVec3, cluster3);
+//                clusters->GetMomentum(CaloClusterVecPi0Swap, cluster3); //recycling pi0swap
+
+                // ======================================================================
+                // Set swap cluster to have energy of cluster2 (swapping pos 2 with pos 1)
                 CaloClusterVecSwap = CaloClusterVec2;
-                CaloClusterVecSwap.SetPhi(CaloClusterVecPi0Swap.Phi());
-                CaloClusterVecSwap.SetTheta(CaloClusterVecPi0Swap.Theta());
+                CaloClusterVecSwap.SetPhi(CaloClusterVec3.Phi());
+                CaloClusterVecSwap.SetTheta(CaloClusterVec3.Theta());
+//                CaloClusterVecSwap.SetPhi(CaloClusterVecPi0Swap.Phi());
+//                CaloClusterVecSwap.SetTheta(CaloClusterVecPi0Swap.Theta());
 
                 CaloClusterVecPi0Swap = CaloClusterVec + CaloClusterVecSwap;
 
                 // for MC, fill once with energy match MC index and once with position match index (0.5 weight each time)
                 if (fIsMC) {
-                  // Keeping the MC indices of the original pair (E_A, E_B)
+                  // Keeping the MC indices of the original pair (A,B) (Energy pair conserved for MC Info)
                   FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus1,iMCIndexClus2);
                   // Alternate, use index of 3rd cluster
-                  // MC id for (X_A, X_B)
+                  // MC id for (A,C) (Position pair conserved)
                   FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus1,iMCIndexClus3);
                 } else {
                   FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,Weight,2,iMCIndexClus1,iMCIndexClus2);
                 }
+                // ======================================================================
+                // Now, do it again using the energy of cluster 1 (swapping pos 3 with pos 1)
+                CaloClusterVecSwap = CaloClusterVec;
+                CaloClusterVecSwap.SetPhi(CaloClusterVec3.Phi());
+                CaloClusterVecSwap.SetTheta(CaloClusterVec3.Theta());
+
+                CaloClusterVecPi0Swap = CaloClusterVec + CaloClusterVecSwap;
+                if (fIsMC) {
+                  // MC info for energy pair (A,B)
+                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus1,iMCIndexClus2);
+                  // Now use MC id (C,B) for Position Pair
+                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus2,iMCIndexClus3);
+                } else {
+                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,Weight,2,iMCIndexClus1,iMCIndexClus2);
+                }
+
               }
             }
 
@@ -2081,7 +2108,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 			if(AccClusPairForAna(cluster,cluster2,aliCaloClusterVecpi0))
 			{
-				fEtaPhiPionAcc->Fill(aliCaloClusterVecpi0.Eta(),aliCaloClusterVecpi0.Phi());
+        Double_t fLocalPhi = aliCaloClusterVecpi0.Phi();
+        if (fLocalPhi < 0) fLocalPhi += 2*pi;
+				fEtaPhiPionAcc->Fill(aliCaloClusterVecpi0.Eta(),fLocalPhi);
 				fMassPtPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt());
 				fMassPtCentPionAcc->Fill(aliCaloClusterVecpi0.M(),aliCaloClusterVecpi0.Pt(),fCent);
 				nAccPi0Clusters++;
