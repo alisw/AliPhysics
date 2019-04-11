@@ -2239,7 +2239,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessDstar(TClonesArray *arrayDstar, AliA
                         labDstar = d->MatchToMC(413,421,pdgDgDStartoD0pi, pdgDgD0toKpi, arrMC);
                         if(labDstar>=0){
                             partDstar = (AliAODMCParticle*)arrMC->At(labDstar);
-                            pdgDstar = partDstar->GetPdgCode();
+                            pdgDstar = TMath::Abs(partDstar->GetPdgCode());
                             origin = AliVertexingHFUtils::CheckOrigin(arrMC,partDstar,kTRUE);
                         }
                     }
@@ -2377,7 +2377,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessCasc(TClonesArray *arrayCasc, AliAOD
             labLc2V0bachelor = d->MatchToMC(4122,310,pdgDgLc2K0Spr, pdgDgK0stoDaughters, arrMC, kTRUE);
             if(labLc2V0bachelor>=0){
               partLc2V0bachelor = (AliAODMCParticle*)arrMC->At(labLc2V0bachelor);
-              pdgLc2V0bachelor = partLc2V0bachelor->GetPdgCode();
+              pdgLc2V0bachelor = TMath::Abs(partLc2V0bachelor->GetPdgCode());
               origin = AliVertexingHFUtils::CheckOrigin(arrMC,partLc2V0bachelor,kTRUE);
             }
           }
@@ -2512,7 +2512,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
         else if(absPDG == 4122 && fWriteVariableTreeLc2V0bachelor) {
           deca = AliVertexingHFUtils::CheckLcV0bachelorDecay(arrayMC,mcPart,labDau2);
           if(deca!=1 || labDau2[0]<0 || labDau2[1]<0) continue;
-          isDaugInAcc = CheckDaugAcc(arrayMC,2,labDau2);
+          isDaugInAcc = CheckDaugAcc(arrayMC,3,labDau2);
           fTreeHandlerGenLc2V0bachelor->SetDauInAcceptance(isDaugInAcc);
           fTreeHandlerGenLc2V0bachelor->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
           fTreeHandlerGenLc2V0bachelor->SetMCGenVariables(fRunNumber,fEventID, mcPart);
