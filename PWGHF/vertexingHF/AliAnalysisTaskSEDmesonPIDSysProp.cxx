@@ -387,24 +387,40 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
     
     bool recVtx=false;
     AliAODVertex *origownvtx = nullptr;
-    
+    if(fAnalysisCuts->GetIsPrimaryWithoutDaughters()){
+	    if(d->GetOwnPrimaryVtx()) 
+        origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
+	    if(fAnalysisCuts->RecalcOwnPrimaryVtx(d,aod))
+        recVtx = true;
+	    else fAnalysisCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
+    }
+
     double ptD = d->Pt();
     double rapid  = d->Y(pdgcode);
     bool isFidAcc = fAnalysisCuts->IsInFiducialAcceptance(ptD,rapid);
     
     if(isFidAcc){
       int retCodeAnalysisCuts = fAnalysisCuts->IsSelectedPID(d);
-      if(retCodeAnalysisCuts==0) continue;
+      if(retCodeAnalysisCuts==0) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       fHistNEvents->Fill(12);
 
       int mcLabel=-1;
       int orig = 0;
       if(!isDStarCand) mcLabel = d->MatchToMC(pdgcode,arrayMC,nprongs,pdgDaughter);
       else mcLabel = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdgcode,421,pdgDaughter,pdg2Daughter,arrayMC);
-      if(mcLabel<0) continue;
+      if(mcLabel<0) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       AliAODMCParticle* partD = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcLabel));
-      if(partD) orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partD,kTRUE);
-      if(orig<4) continue;
+      if(partD) orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partD,true);
+      if(orig<4) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       
       const int nDau = d->GetNDaughters();
       AliAODTrack* dautrack[nDau];
@@ -415,6 +431,7 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       else {
         AliAODRecoDecayHF2Prong* D0prong = dynamic_cast<AliAODRecoDecayHF2Prong*>((dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong());
         if(!D0prong) {
+          if(unsetvtx) d->UnsetOwnPrimaryVtx();
           continue;
         }
         for(int iDau=0; iDau<nDau; iDau++) {
@@ -423,9 +440,14 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       }
 
       double syst = GetDmesonPIDuncertainty(dautrack,nDau,arrayMC,ptD);
-      if(syst==-999. || syst==0.) continue;
+      if(syst==-999. || syst==0.) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       fHistSystPIDEffD->Fill(ptD,syst);
     }
+
+    if(recVtx) fAnalysisCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
