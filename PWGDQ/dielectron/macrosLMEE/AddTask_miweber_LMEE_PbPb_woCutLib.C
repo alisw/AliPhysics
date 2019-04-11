@@ -70,18 +70,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
     // task->SetRejectPileup(); // to be done differently (too strong cuts at the moment in dielectron framework) 
   }
 
-  //Add event filter
-  Int_t triggerNames = AliVEvent::kINT7;//PbPb Min Bias, can be set also from outside
-
-  // for Nano AODs this has been done already  
-  if(!isNano){
-  // task->SelectCollisionCandidates(triggerNames);
-    task->SetTriggerMask(triggerNames);
-    
-  }
-
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-
   //Add event filter
   task->SetEventFilter( GetEventCuts() );
 
