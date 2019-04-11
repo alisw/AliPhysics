@@ -1108,72 +1108,72 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fDCAxy_pt_BaryonBD_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_BaryonBD_beautybef);
 
-  fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA_WoPID);
 
-  fDCAxy_pt_had_onlyDCA = new TH2F("fDCAxy_pt_had_onlyDCA",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_onlyDCA = new TH2F("fDCAxy_pt_had_onlyDCA",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA);
 
-  fDCAxy_pt_had_onlyDCA_Hijing = new TH2F("fDCAxy_pt_had_onlyDCA_Hijing",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_onlyDCA_Hijing = new TH2F("fDCAxy_pt_had_onlyDCA_Hijing",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA_Hijing);
 
-  fDCAxy_pt_had_onlyDCA_Phytia = new TH2F("fDCAxy_pt_had_onlyDCA_Phytia",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_onlyDCA_Phytia = new TH2F("fDCAxy_pt_had_onlyDCA_Phytia",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA_Phytia);
 
-  fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAz_pt_had);
 
-  fDCAxy_pt_had_onlyDCA_phi1 = new TH2F("fDCAxy_pt_had_onlyDCA_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_onlyDCA_phi1 = new TH2F("fDCAxy_pt_had_onlyDCA_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi1);
 
-  fDCAxy_pt_had_phi1_ChB = new TH2F("fDCAxy_pt_had_phi1_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_phi1_ChB = new TH2F("fDCAxy_pt_had_phi1_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_phi1_ChB);
 
-  fDCAxy_pt_had_phi1_B = new TH2F("fDCAxy_pt_had_phi1_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_phi1_B = new TH2F("fDCAxy_pt_had_phi1_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_phi1_B);
 
-  fDCAxy_pt_had_onlyDCA_phi2 = new TH2F("fDCAxy_pt_had_onlyDCA_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_onlyDCA_phi2 = new TH2F("fDCAxy_pt_had_onlyDCA_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi2);
 
-  fDCAxy_pt_had_phi2_ChB = new TH2F("fDCAxy_pt_had_phi2_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_phi2_ChB = new TH2F("fDCAxy_pt_had_phi2_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_phi2_ChB);
 
-  fDCAxy_pt_had_phi2_B = new TH2F("fDCAxy_pt_had_phi2_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_phi2_B = new TH2F("fDCAxy_pt_had_phi2_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_phi2_B);
 
-  fDCAxy_pt_had_onlyDCA_phi3 = new TH2F("fDCAxy_pt_had_onlyDCA_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_onlyDCA_phi3 = new TH2F("fDCAxy_pt_had_onlyDCA_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi3);
 
-  fDCAxy_pt_had_phi3_ChB = new TH2F("fDCAxy_pt_had_phi3_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_phi3_ChB = new TH2F("fDCAxy_pt_had_phi3_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_phi3_ChB);
 
-  fDCAxy_pt_had_phi3_B = new TH2F("fDCAxy_pt_had_phi3_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_phi3_B = new TH2F("fDCAxy_pt_had_phi3_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_phi3_B);
 
-  fDCAxy_pt_had_onlyDCA_phi4 = new TH2F("fDCAxy_pt_had_onlyDCA_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_onlyDCA_phi4 = new TH2F("fDCAxy_pt_had_onlyDCA_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi4);
 
-  fDCAxy_pt_had_phi4_ChB = new TH2F("fDCAxy_pt_had_phi4_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_phi4_ChB = new TH2F("fDCAxy_pt_had_phi4_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_phi4_ChB);
 
-  fDCAxy_pt_had_phi4_B = new TH2F("fDCAxy_pt_had_phi4_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_phi4_B = new TH2F("fDCAxy_pt_had_phi4_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_phi4_B);
 
 
-  fDCAxy_pt_had_ResCorr_phi1 = new TH2F("fDCAxy_pt_had_ResCorr_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_ResCorr_phi1 = new TH2F("fDCAxy_pt_had_ResCorr_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_ResCorr_phi1);
 
-  fDCAxy_pt_had_ResCorr_phi2 = new TH2F("fDCAxy_pt_had_ResCorr_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_ResCorr_phi2 = new TH2F("fDCAxy_pt_had_ResCorr_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_ResCorr_phi2);
 
-  fDCAxy_pt_had_ResCorr_phi3 = new TH2F("fDCAxy_pt_had_ResCorr_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_ResCorr_phi3 = new TH2F("fDCAxy_pt_had_ResCorr_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_ResCorr_phi3);
 
-  fDCAxy_pt_had_ResCorr_phi4 = new TH2F("fDCAxy_pt_had_ResCorr_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  fDCAxy_pt_had_ResCorr_phi4 = new TH2F("fDCAxy_pt_had_ResCorr_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_ResCorr_phi4);
 
 
-  fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,8000,-0.5,0.5);
+  fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAz_pt_had_WoPID);
 
   fDCAxy_pt_ele = new TH2F("fDCAxy_pt_ele",";p_{t} (GeV/c);DCAxy ",300,0,30,8000,-0.5,0.5);
