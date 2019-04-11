@@ -81,7 +81,7 @@ AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
 }
 
 
-AliFemtoEventReaderAODMultSelection* GetReaderFB128(bool mcAnalysis)
+AliFemtoEventReaderAODChain* GetReaderFB128(bool mcAnalysis)
 {
   AliFemtoEventReaderAODChain* Reader = new AliFemtoEventReaderAODChain();
   Reader->SetFilterBit(7);
