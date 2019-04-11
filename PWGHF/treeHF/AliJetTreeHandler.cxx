@@ -103,9 +103,9 @@ TTree* AliJetTreeHandler::BuildJetTree(TString name, TString title)
   
   // Create branches for each jet variable
   
-  fTreeJet->Branch("RunNumber", &fRunNumber);
-  fTreeJet->Branch("EventID",&fEventID);
-  fTreeJet->Branch("JetID",&fJetID);
+  fTreeJet->Branch("run_number", &fRunNumber);
+  fTreeJet->Branch("ev_id",&fEventID);
+  fTreeJet->Branch("jet_id",&fJetID);
 
   if (fFillJetEtaPhi) {
     fTreeJet->Branch("Eta",&fEta);
@@ -164,9 +164,9 @@ TTree* AliJetTreeHandler::BuildJetConstituentTree(TString name, TString title)
   fTreeJetConstituent = new TTree(name.Data(),title.Data());
   
   // Create branches for each jet variable
-  fTreeJetConstituent->Branch("RunNumber", &fRunNumber);
-  fTreeJetConstituent->Branch("EventID",&fEventID);
-  fTreeJetConstituent->Branch("JetID",&fJetID);
+  fTreeJetConstituent->Branch("run_number", &fRunNumber);
+  fTreeJetConstituent->Branch("ev_id",&fEventID);
+  fTreeJetConstituent->Branch("jet_id",&fJetID);
   fTreeJetConstituent->Branch("TrackPt",&fTrackPt);
   fTreeJetConstituent->Branch("TrackEta",&fTrackEta);
   fTreeJetConstituent->Branch("TrackPhi",&fTrackPhi);
