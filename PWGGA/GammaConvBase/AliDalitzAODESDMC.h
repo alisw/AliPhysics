@@ -48,7 +48,7 @@ public:
     //    fIsESDMC=kFALSE;
       //  aliaodmcparticle=laliaodmcparticle;
     };
-    virtual ~AliDalitzAODESDMC() {}
+    virtual ~AliDalitzAODESDMC();
     AliDalitzAODESDMC(const AliDalitzAODESDMC & );//Copy constructor
     AliDalitzAODESDMC & operator = (const AliDalitzAODESDMC & );//Overwrite
     Int_t GetMotherG();
