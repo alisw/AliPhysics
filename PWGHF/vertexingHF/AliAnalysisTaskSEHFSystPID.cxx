@@ -223,9 +223,9 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
     fPIDtree->Branch(PIDbranchnames[iVar].Data(),&fPIDNsigma[iVar],Form("%s/S",PIDbranchnames[iVar].Data()));
   }
   fPIDtree->Branch("pT",&fPt,"pT/s");
+  fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
+  fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
   if(!fFillTreeWithNsigmaPIDOnly) {
-    fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
-    fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
     fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
     fPIDtree->Branch("ToF",&fToF,"ToF/s");
     fPIDtree->Branch("NclusterTPC",&fTPCNcls,"NclusterTPC/b");
@@ -324,21 +324,21 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     if(!fESDtrackCuts->IsSelected(track)) continue;
 
     if(fEnabledDownSampling && track->Pt()<fPtMaxDownSampling) {
-      double pseudoRand = track->Pt()*1000.-(long)(track->Pt()*1000.);
+      double pseudoRand = track->Pt()*1000.-(long)(track->Pt()*1000);
       if(pseudoRand>fFracToKeepDownSampling) continue;
     }
 
     fPt = ConvertFloatToUnsignedShort(track->Pt()*1000);
+    fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
+    fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
 
     if(!fFillTreeWithNsigmaPIDOnly) {
       //TPC variables
       fTPCNcls = static_cast<unsigned char>(track->GetTPCNcls());
-      fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
       fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*100);
       fTPCNclsPID = static_cast<unsigned char>(track->GetTPCsignalN());
       
       //TOF variables
-      fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
       fTrackLength = ConvertFloatToUnsignedShort(track->GetIntegratedLength()*10);
       fStartTimeRes = ConvertFloatToUnsignedShort(fPIDresp->GetTOFResponse().GetStartTimeRes(track->P())*100);
 
