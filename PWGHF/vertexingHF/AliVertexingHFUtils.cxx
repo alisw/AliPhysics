@@ -613,7 +613,7 @@ Int_t AliVertexingHFUtils::CheckOrigin(AliMCEvent* mcEvent, AliMCParticle *mcPar
   Int_t abspdgGranma =0;
   Bool_t isFromB=kFALSE;
   Bool_t isQuarkFound=kFALSE;
-  while (mother >0 ){
+  while (mother >=0 ){
     istep++;
     AliMCParticle* mcGranma = (AliMCParticle*)mcEvent->GetTrack(mother);
     if (mcGranma){
@@ -646,7 +646,7 @@ Int_t AliVertexingHFUtils::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *
   Int_t abspdgGranma =0;
   Bool_t isFromB=kFALSE;
   Bool_t isQuarkFound=kFALSE;
-  while (mother >0 ){
+  while (mother >=0 ){
     istep++;
     AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
     if (mcGranma){
@@ -674,7 +674,7 @@ Bool_t AliVertexingHFUtils::IsTrackFromCharm(AliAODTrack* tr, TClonesArray* arra
   AliAODMCParticle* mcPart=dynamic_cast<AliAODMCParticle*>(arrayMC->At(absLabel));
   Int_t mother = mcPart->GetMother();
   Int_t istep = 0;
-  while (mother >0 ){
+  while (mother >=0 ){
     istep++;
     AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
     if (mcGranma){
@@ -695,7 +695,7 @@ Bool_t AliVertexingHFUtils::IsTrackFromBeauty(AliAODTrack* tr, TClonesArray* arr
   AliAODMCParticle* mcPart=dynamic_cast<AliAODMCParticle*>(arrayMC->At(absLabel));
   Int_t mother = mcPart->GetMother();
   Int_t istep = 0;
-  while (mother >0 ){
+  while (mother >=0 ){
     istep++;
     AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
     if (mcGranma){
@@ -717,7 +717,7 @@ Bool_t AliVertexingHFUtils::IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* t
   AliAODMCParticle* mcPart=dynamic_cast<AliAODMCParticle*>(arrayMC->At(absLabel));
   Int_t mother = mcPart->GetMother();
   Int_t istep = 0;
-  while (mother >0 ){
+  while (mother >=0 ){
     istep++;
     AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
     if (mcGranma){
@@ -740,7 +740,7 @@ Double_t AliVertexingHFUtils::GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCP
   mother = mcPart->GetMother();
   Int_t istep = 0;
   Int_t abspdgGranma =0;
-  while (mother >0 ){
+  while (mother >=0 ){
     istep++;
     AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
     if (mcGranma){
