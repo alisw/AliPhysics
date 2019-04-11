@@ -18,6 +18,7 @@ class AliAODTrack;
 class AliHFEcollection;
 class TArrayD;
 class AliAODVertex;
+class TRandom3;
 
 
 
@@ -108,7 +109,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   //AliHFEcuts * hfetrackCuts;           // Track cuts
   AliHFEextraCuts * fExtraCuts;
   AliAODv0KineCuts * fAODV0Cuts;
-  
+  TRandom3 * fRd;
   
   ClassDef(AliAnalysisTaskHFEIPCorrection, 1); // example of analysis
 };
