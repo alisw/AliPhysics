@@ -680,36 +680,28 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
     // Select only -> Dalitz decay channel
     if( fMCMother->GetNDaughtersG() != 3 )return kFALSE;
 
-    AliDalitzAODESDMC* positron;
-    AliDalitzAODESDMC* electron;
-    AliDalitzAODESDMC* gamma;
-//NOTE Working Now!!
+    Bool_t flagpositron=kFALSE;
+    Bool_t flagelectron=kFALSE;
+    Bool_t flaggamma=kFALSE;
     for(Int_t index= fMCMother->GetFirstDaughterG();index<= fMCMother->GetLastDaughterG();index++){
         if(index < 0) continue;
         std::unique_ptr<AliDalitzAODESDMC> temp = std::unique_ptr<AliDalitzAODESDMC>(mcEvent->Particle(index));
-        //TParticle* temp = (TParticle*)mcEvent->Particle( index );
         switch( temp->GetPdgCodeG() ) {
         case ::kPositron:{
-           // std::unique_ptr<AliDalitzAODESDMC> positron = std::make_unique<AliDalitzAODESDMC>(*temp);
-          //  auto positron      =  std::make_shared(temp);
-            //auto positron = std::move(temp);
-           // flagpositron=kTRUE
-              positron      =  temp.get();
+            flagpositron=kTRUE;
             labelpositron = index; }
             break;
         case ::kElectron:{
-            electron      =  temp.get();
-          //  std::unique_ptr<AliDalitzAODESDMC> electron = std::make_unique<AliDalitzAODESDMC>(*temp);
-      //   auto electron      =  std::move(temp);
+            flagelectron=kTRUE;
             labelelectron = index;}
             break;
         case ::kGamma:{
-            gamma         =  temp.get();
+            flaggamma=kTRUE;
             labelgamma    = index;}
             break;
         }
     }
-   // if( positron.get() && electron.get() && gamma.get()) return kTRUE;
+    if( flagelectron && flagpositron && flaggamma) return kTRUE;
     return kFALSE;
 }
 //________________________________________________________________________
@@ -1355,10 +1347,10 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiCAODESD(AliDalitzAODESDMC* fM
         // Select only -> ChiC radiative (JPsi+gamma) decay channel
         if(fMCMother->GetNDaughtersG()!=2)return kFALSE;
 
-            AliDalitzAODESDMC* jpsi   ;
-            AliDalitzAODESDMC* gamma  ;
-            AliDalitzAODESDMC* positron ;
-            AliDalitzAODESDMC* electron ;
+            AliDalitzAODESDMC* jpsi=0x0;
+            AliDalitzAODESDMC* gamma=0x0;
+            AliDalitzAODESDMC* positron=0x0;
+            AliDalitzAODESDMC* electron=0x0;
 
         //Int_t labeljpsiChiC = -1;
 

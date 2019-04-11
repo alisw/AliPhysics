@@ -62,8 +62,9 @@ ClassImp( AliDalitzAODESD )
         else return fAODtrack->GetLabel();
      }
      Bool_t AliDalitzAODESD::GetPxPyPzG(Double_t* p) const{
-        if (fIsESD==kTRUE) return fESDtrack->GetPxPyPz(p);
-        else return fAODtrack->GetPxPyPz(p);
+        if (fIsESD==kTRUE) return fESDtrack->GetConstrainedPxPyPz(p);//NOTE debe ir GetConstrainedParam
+        //else return fAODtrack->GetPxPyPz(p);
+        else return fAODtrack->PxPyPzAtDCA(p);
      };
      void AliDalitzAODESD::GetImpactParametersG(Float_t* p,Float_t* cov) const{
         p[0]=b[0];

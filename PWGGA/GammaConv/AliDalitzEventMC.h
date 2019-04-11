@@ -45,8 +45,10 @@ class AliDalitzEventMC{
 public:
 
     
-        AliDalitzEventMC();
+    AliDalitzEventMC();
     virtual ~AliDalitzEventMC();
+    AliDalitzEventMC(const AliDalitzEventMC & );//Copy constructor
+    AliDalitzEventMC & operator = (const AliDalitzEventMC & );//Overwrite
     
     AliDalitzEventMC(AliMCEvent* lESDMCEvent);
     AliDalitzEventMC(AliAODEvent* lAODMCEvent);

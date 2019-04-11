@@ -43,15 +43,19 @@ class AliDalitzData{
 public:
 
     AliDalitzData();
-   virtual ~AliDalitzData();
+    virtual ~AliDalitzData();
+    AliDalitzData(const AliDalitzData & );//Copy constructor
+    AliDalitzData & operator = (const AliDalitzData & );//Overwrite
     
     AliDalitzData(AliESDEvent* lESDEvent);
     AliDalitzData(AliAODEvent* lAODEvent);
+        //fIsESD(kFALSE),
+       // fAODEvent(lAODEvent)
     //ESD
        void SetInputEvent(AliESDEvent* lESDEvent){
-        fIsESD=kTRUE;
-        fESDEvent=lESDEvent;
-    };
+            fIsESD=kTRUE;
+            fESDEvent=lESDEvent;
+        };
        void SetInputEvent(AliAODEvent* lAODEvent){
         fIsESD=kFALSE;
         fAODEvent=lAODEvent;
@@ -73,6 +77,7 @@ public:
      
 private:
     
+    //Bool_t fIsESD;
     AliESDEvent* fESDEvent;
     AliAODEvent* fAODEvent;
     Bool_t fIsESD;

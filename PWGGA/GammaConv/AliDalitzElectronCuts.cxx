@@ -163,13 +163,6 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
 }
 //NOTE work here Edgar New function.
 Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) {
-    //SetMaxChi2TPCConstrainedGlobal
-    //fesdTrackCuts->SetMaxChi2TPCConstrainedGlobal(1e10);
-  //  if (!(aliaodtrack->GetDalitzAODTrack()->TestFilterBit(28))){
-    //    return kFALSE;
-        //56
-    //}
-
     if(!(aliaodtrack->GetDalitzAODTrack()->IsHybridGlobalConstrainedGlobal())){//GlobalConstrained
       return kFALSE;
     }
@@ -215,7 +208,7 @@ Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) 
         if ((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1))) return kFALSE;
     }
     if(fITSCut==9){//At list on hit any layer of SPD point
-        if ((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<4)) return kFALSE;
+        if ((!aliaodtrack->HasPointOnITSLayerG(0))||((!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<4))) return kFALSE;
     }
 
     //DCAcut
@@ -225,31 +218,14 @@ Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) 
          fMaxDCAVertexxy=DCAPtCutsForm->Eval(aliaodtrack->GetPtG());
          delete DCAPtCutsForm;
     }
-  //  cout<<" Datos DCAz "<<aliaodtrack->GetDCAz()<<" Datos DCAxy "<<aliaodtrack->GetDCAxy()<<endl;
-    //cout<<" CorteDCAz "<<fMaxDCAVertexz<<" CorteDCAxy "<<fMaxDCAVertexxy<<endl;
-  //cout<<dcaCut<<endl;
     if (TMath::Abs(aliaodtrack->GetDCAxy())>fMaxDCAVertexxy){
      return kFALSE;
     }
-    //cout<<fMaxDCAVertexxy<<" xy and z "<<fMaxDCAVertexz<<endl;
     if (TMath::Abs(aliaodtrack->GetDCAz())>fMaxDCAVertexz){
         cout<<fMaxDCAVertexz<<endl;
      return kFALSE;
     }
-
-  //  if(dcaCut==1){//At list on hit any layer of SPD point
-    //    if ((!aliaodtrack->HasPointOnITSLayerG(0))||(!aliaodtrack->HasPointOnITSLayerG(1))&&(aliaodtrack->GetITSclsG()<4)) return kFALSE;
-    //}
-  //  Bool_t PxPyPzAtDCA(Double_t* p) const
-//{ p[0] = PxAtDCA(); p[1] = PyAtDCA(); p[2] = PzAtDCA(); return kTRUE; }
-  //  Bool_t XYZAtDCA(Double_t* x) const
-//{ x[0] = XAtDCA(); x[1] = YAtDCA(); x[2] = ZAtDCA(); return kTRUE; }
-
     return kTRUE;
-    //Filtro que quiero
-    //minimo de cluster TPC y ITS
-    //DCA x and y
-    //Constrained global
 }
 //________________________________________________________________________
 AliDalitzElectronCuts::~AliDalitzElectronCuts() {
@@ -470,6 +446,7 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelectedMC(Int_t labelParticle,AliMCEven
 Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
 {
     //Dummy Function
+    return kFALSE;//Warnings suggest
 }
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliDalitzAODESD* lTrack)
@@ -1401,6 +1378,29 @@ Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
         fUseCorrectedTPCClsInfo=1;
       }
       break;
+     case 10: fMinClsTPC = 60;
+       fMinClsTPCToF = 0.60;
+       if( fUseCrossedRows ){
+         fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+         fesdTrackCuts->SetMinNClustersTPC(0);
+       } else {
+         fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+         fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+         fUseCorrectedTPCClsInfo=0;
+       }
+       break;
+     case 11: fMinClsTPC = 80;
+       fMinClsTPCToF = 0.60;
+       if( fUseCrossedRows ){
+         fesdTrackCuts->SetMinNCrossedRowsTPC(fMinClsTPC);
+         fesdTrackCuts->SetMinNClustersTPC(0);
+       } else {
+         fesdTrackCuts->SetMinNCrossedRowsTPC(0);
+         fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+         fUseCorrectedTPCClsInfo=0;
+       }
+       break;
+
 
     default:
       cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
@@ -1579,6 +1579,20 @@ Bool_t AliDalitzElectronCuts::SetDCACut(Int_t dcaCut)
       fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fDCAVertexPt.Data()); //Standard 2011
       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
       break;
+    case 9:
+         fMaxDCAVertexxy=1.;
+         fMaxDCAVertexz=2.;
+         fDCAVertexPt="no";
+       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
+       fesdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAVertexxy);
+       break;
+     case 10:
+         fMaxDCAVertexxy=1.;
+         fMaxDCAVertexz=2.;
+         fDCAVertexPt="no";
+       fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAVertexz);
+       fesdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAVertexxy);
+       break;
     default:
       cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
       return kFALSE;
@@ -1609,7 +1623,7 @@ Bool_t AliDalitzElectronCuts::SetMaxMomPiondEdxTPCCut(Int_t piMaxMomdedxSigmaCut
       fPIDMaxPnSigmaAbovePionLineTPC=3.;
       break;
     case 6:  // 2. GeV
-      fPIDMaxPnSigmaAbovePionLineTPC=3.;
+      fPIDMaxPnSigmaAbovePionLineTPC=2.;
       break;
     default:
       cout<<"Warning: piMaxMomdedxSigmaCut not defined "<<piMaxMomdedxSigmaCut<<endl;
