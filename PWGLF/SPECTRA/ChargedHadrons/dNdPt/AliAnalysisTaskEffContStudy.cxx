@@ -2,6 +2,8 @@
 #include "TChain.h"
 #include "TH1F.h"
 #include "TList.h"
+#include "TRandom.h"
+#include "TRandom3.h"
 #include "TGeoGlobalMagField.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -103,10 +105,13 @@ void AliAnalysisTaskEffContStudy::AnaTrack()
     
     Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt); 
     
-    
-    if (s==1) return;
-    if (s<1) {}
-    //scaling to be implemented FillHist(fHistCont, fMCPt, fMCParticleType, fMCProdcutionType, fNTracksAcc);
+    while (s >= 1) {
+        FillHist(fHistEffContScaled, fMCPt, fMCParticleType, fMCProdcutionType, fMCChargeSign, fNTracksAcc); 
+        s--;
+    }
+    if (s > 0) {
+        if (gRandom->Rndm() < s) { FillHist(fHistEffContScaled, fMCPt, fMCParticleType, fMCProdcutionType, fMCChargeSign, fNTracksAcc); }
+    }
 }
 
 //_____________________________________________________________________________
@@ -116,15 +121,20 @@ void AliAnalysisTaskEffContStudy::AnaMCParticle()
     InitMCParticle();
     if (!fMCisPrim) return;    
     if (!fMCIsCharged) return;    
-    if (TMath::Abs(fMCEta) > 0.8) return;
-    FillHist(fHistEffCont, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc);
+    if (TMath::Abs(fMCEta) > 0.8) return;    
     
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("GenPrim.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("GenPrim.Q>1.PDG.",fMCPDGCode); }
     
     Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);
     
-    // scaling to be implemented FillHist(fHistCont, fMCPt, fMCParticleType, fMCProdcutionType, fNTracksAcc);
+    while (s >= 1) {
+        FillHist(fHistEffContScaled, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc); 
+        s--;
+    }
+    if (s > 0) {
+        if (gRandom->Rndm() < s) { FillHist(fHistEffContScaled, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc); }
+    }
 }
 
 //_____________________________________________________________________________
