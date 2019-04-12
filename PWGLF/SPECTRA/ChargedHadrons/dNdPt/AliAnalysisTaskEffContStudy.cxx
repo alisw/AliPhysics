@@ -104,7 +104,6 @@ void AliAnalysisTaskEffContStudy::AnaTrack()
     if (TMath::Abs(fMCQ > 1)) { Log("RecTrack.Q>1.PDG.",fMCPDGCode); }
     
     Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt); 
-    
     while (s >= 1) {
         FillHist(fHistEffContScaled, fMCPt, fMCParticleType, fMCProdcutionType, fMCChargeSign, fNTracksAcc); 
         s--;
@@ -126,8 +125,9 @@ void AliAnalysisTaskEffContStudy::AnaMCParticle()
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("GenPrim.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("GenPrim.Q>1.PDG.",fMCPDGCode); }
     
-    Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);
+    FillHist(fHistEffCont, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc); 
     
+    Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);
     while (s >= 1) {
         FillHist(fHistEffContScaled, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc); 
         s--;
