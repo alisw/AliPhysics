@@ -782,6 +782,30 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH[10];       //!
 
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 5 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: This histogram how this thing in 2D.
+                                 * IT is shown the same distribution in terms of
+                                 * CosTheta and Phi bins. Let's see the results!
+                                 */
+        TH2F*                   fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH;  //!
 
         //_______________________________
         // CUTS
@@ -843,7 +867,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 12);
+        ClassDef(AliAnalysisTaskUPCforward, 13);
 };
 
 #endif
