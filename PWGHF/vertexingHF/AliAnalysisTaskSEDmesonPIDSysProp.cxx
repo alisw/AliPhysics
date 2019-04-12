@@ -165,7 +165,7 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserCreateOutputObjects()
   }
   if(fPtLimits[fNPtBins]>100) fPtLimits[fNPtBins] = 100.;
   
-  fHistSystPIDEffD = new TH2F("fHistSystPIDEffD","PID efficiency systematic uncertainty; #it{p}_{T}^{D} (GeV/#it{c}); relative systematic uncertainty",fNPtBins,fPtLimits,150,0.,0.15);
+  fHistSystPIDEffD = new TH2F("fHistSystPIDEffD","PID efficiency systematic uncertainty; #it{p}_{T}^{D} (GeV/#it{c}); relative systematic uncertainty",fNPtBins,fPtLimits,500,0.,0.5);
   fHistPtDauVsD = new TH2F("fHistPtDauVsD","#it{p}_{T} Dau vs #it{p}_{T} D; #it{p}_{T}^{D} (GeV/#it{c}); #it{p}_{T}^{daugh} (GeV/#it{c})",static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins],static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins]);
   fOutput->Add(fHistSystPIDEffD);
   fOutput->Add(fHistPtDauVsD);
@@ -401,7 +401,8 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
     
     if(isFidAcc){
       int retCodeAnalysisCuts = fAnalysisCuts->IsSelectedPID(d);
-      if(retCodeAnalysisCuts==0) {
+      int retCodeAnalysisTrackCuts = fAnalysisCuts->IsSelected(d,AliRDHFCuts::kTracks,aod); //reject also 
+      if(retCodeAnalysisCuts==0 || retCodeAnalysisTrackCuts==0) {
         if(unsetvtx) d->UnsetOwnPrimaryVtx();
         continue;
       }
