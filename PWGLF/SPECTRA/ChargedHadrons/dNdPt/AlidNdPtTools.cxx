@@ -376,9 +376,9 @@ AlidNdPtTools::ParticleType AlidNdPtTools::ParticleTypeFromPDG(Int_t pdgCode)
 {
     if ( pdgCode == kElectron   || pdgCode == kPositron )      { return kEl; }
     if ( pdgCode == kMuonMinus  || pdgCode == kMuonPlus )      { return kMu; }
-    if ( pdgCode == kPiPlus     || pdgCode == kPiMinus )       { return kPion; }
-    if ( pdgCode == kProton     || pdgCode == kProtonBar )     { return kProton; }
-    if ( pdgCode == kKPlus      || pdgCode == kKMinus )        { return kKaon; }
+    if ( pdgCode == kPiPlus     || pdgCode == kPiMinus )       { return kPi; }
+    if ( pdgCode == kProton     || pdgCode == kProtonBar )     { return kPr; }
+    if ( pdgCode == kKPlus      || pdgCode == kKMinus )        { return kKa; }
     if ( pdgCode == kSigmaPlus  || pdgCode == kSigmaBarMinus ) { return kSigmaP; }
     if ( pdgCode == kSigmaMinus || pdgCode == kSigmaBarPlus )  { return kSigmaM; }
     if ( pdgCode == kXiMinus    || pdgCode == kXiPlusBar )     { return kXi; }

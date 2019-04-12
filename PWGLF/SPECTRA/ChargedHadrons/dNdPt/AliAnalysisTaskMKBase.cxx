@@ -607,12 +607,12 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
         fMCIsCharged = kTRUE;
         fMCChargeSign = (fMCCharge > 0)? +1 : -1;
     }
-        
-    if (TMath::Abs(fMCQ > 1)) { Log("Particle with Q>1)"); }
-    if (TMath::Abs(fMCQ > 2)) { Log("Particle with Q>2)"); }
-    if (TMath::Abs(fMCQ > 3)) { Log("Particle with Q>3)"); }
     
     fMCisPrim     = fMC->IsPhysicalPrimary(fMCLabel);
+    
+    Bool_t isPhysPrimStack = fMCStack->IsPhysicalPrimary(fMCLabel);
+    if (fMCisPrim != isPhysPrimStack) { Log("PhysPrimMismatch"); }
+    
     fMCisSecDecay = fMC->IsSecondaryFromWeakDecay(fMCLabel);
     fMCisSecMat   = fMC->IsSecondaryFromMaterial(fMCLabel);        
     fMCisSec      = fMCisSecMat || fMCisSecDecay;    

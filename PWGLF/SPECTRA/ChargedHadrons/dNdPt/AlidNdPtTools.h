@@ -11,7 +11,7 @@ class AlidNdPtTools : public TObject
         virtual                 ~AlidNdPtTools() = 0;
 
     public: 
-        enum ParticleType      { kUndefined = -1, kEl = 0, kMu = 1, kPion = 2, kKaon = 3, kProton = 4, kOther = 5, kSigmaP = 6, kSigmaM = 7, kXi = 8, kOmega = 9};
+        enum ParticleType      { kUndefined = -1, kEl = 0, kMu = 1, kPi = 2, kKa = 3, kPr = 4, kOther = 5, kSigmaP = 6, kSigmaM = 7, kXi = 8, kOmega = 9};
         enum ProductionType    { kUnknown = -1, kPrim = 0, kSecDecay = 1, kSecMaterial = 2};
         
         static Long64_t        FillHist(THnSparseD* s, Double_t x1, Double_t x2=0, Double_t x3=0, Double_t x4=0, Double_t x5=0, Double_t x6=0, Double_t x7 =0, Double_t x8 =0, Double_t x9 =0, Double_t x10 =0, Double_t x11 =0, Double_t x12 =0);

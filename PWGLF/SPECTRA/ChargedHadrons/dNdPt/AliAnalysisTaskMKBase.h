@@ -71,10 +71,16 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
 
     protected:
         
-        virtual void          Log(const char* name) { Log(fLogHist,name); }
-        virtual void          Err(const char* name) { Log(fLogErr,name); }
+        virtual void          Log(const char* name) { Log(fLogHist,name); }        
+        virtual void          Err(const char* name) { Log(fLogErr,name); }        
         virtual void          LogEvent(const char* name) { Log(fLogEvent,name); }
+        
+        virtual void          Log(const char* name, Int_t n)    { Log(fLogHist,name,n); }
+        virtual void          Log(const char* name, Double_t n) { Log(fLogHist,name,n); }
+        
         virtual void          Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
+        virtual void          Log(TH1D* h, const char* name, Int_t n)    { TString s(name); s+=n; Log(h,s.Data()); }
+        virtual void          Log(TH1D* h, const char* name, Double_t n) { TString s(name); s+=n; Log(h,s.Data()); }
         
         virtual Bool_t        ReadEvent(); // read the event info
         virtual Bool_t        ReadMCEvent(); // read the mc event info
