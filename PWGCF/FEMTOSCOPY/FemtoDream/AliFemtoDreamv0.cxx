@@ -91,10 +91,12 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
                             const float posMass,
                             const AliFemtoDreamBasePart &negDaughter,
                             const float negMass, const bool ignoreFirstPos,
-                            const bool ignoreFirstNeg) {
+                            const bool ignoreFirstNeg, const bool setDaughter) {
   Reset();
   SetEventMultiplicity(posDaughter.GetEventMultiplicity());
   fIsReset = false;
+
+  if (setDaughter) SetDaughter(posDaughter, negDaughter);
 
   float posP[3], negP[3];
   posDaughter.GetMomentum().GetXYZ(posP);
@@ -145,7 +147,7 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
     this->SetEta(Etaneg[i]);
   }
 
-  // Eta
+  // Theta
   auto Thetapos = posDaughter.GetTheta();
   for (size_t i = 0; i < Thetapos.size(); ++i) {
     if (i == 0 && ignoreFirstPos) continue;
@@ -157,6 +159,19 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
     this->SetTheta(Thetaneg[i]);
   }
 
+  // Charge
+  auto Chargepos = posDaughter.GetCharge();
+  auto Chargeneg = negDaughter.GetCharge();
+  this->SetCharge(Chargepos.at(0) + Chargeneg.at(0));
+  for (size_t i = 0; i < Chargepos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetCharge(Chargepos[i]);
+  }
+  for (size_t i = 0; i < Chargeneg.size(); ++i) {
+    if (i == 0 && ignoreFirstNeg) continue;
+    this->SetCharge(Chargeneg[i]);
+  }
+
   // Phi At Radii
   auto PhiAtRadiipos = posDaughter.GetPhiAtRaidius();
   for (const auto &itPhiAtRadius : PhiAtRadiipos) {
@@ -165,6 +180,38 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   auto PhiAtRadiineg = negDaughter.GetPhiAtRaidius();
   for (const auto &itPhiAtRadius : PhiAtRadiineg) {
     this->SetPhiAtRadius(itPhiAtRadius);
+  }
+}
+
+void AliFemtoDreamv0::SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter) {
+  const int negID = negDaughter.GetIDTracks().at(0);
+  const int posID = posDaughter.GetIDTracks().at(0);
+  if (negID >= fTrackBufferSize
+      || posID >= fTrackBufferSize) {
+    std::cout << "fGTI too small, no Global Tracks to work with, PosID:  "
+              << posID << " and NegID: " << negID
+              << std::endl;
+    this->fHasDaughter = false;
+  } else {
+    fpDaug->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+    fnDaug->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+    if (fGTI[posID] && fGTI[negID]) {
+      if (fGTI[posID]->Charge() > 0
+          && fGTI[negID]->Charge() < 0) {
+        fnDaug->SetTrack(fGTI[negID]);
+        fpDaug->SetTrack(fGTI[posID]);
+        this->fHasDaughter = true;
+      } else if (fGTI[posID]->Charge() < 0
+          && fGTI[negID]->Charge() > 0) {
+        fnDaug->SetTrack(fGTI[posID]);
+        fpDaug->SetTrack(fGTI[negID]);
+        this->fHasDaughter = true;
+      } else {
+        this->fHasDaughter = false;
+      }
+    } else {
+      this->fHasDaughter = false;
+    }
   }
 }
 
