@@ -72,12 +72,11 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Int_t fCurrSystFlag;
   Bool_t fAddQA; // Add AliEventSelection QA plots
   TList *fQAList;
-  Int_t AcceptedEventCount; 
+  Int_t AcceptedEventCount;
   Int_t GetVtxBit(AliAODEvent *mev);
   Int_t GetParticleBit(AliVParticle *mpa);
   Int_t GetTrackBit(AliAODTrack *mtr, Double_t *lDCA);
   Int_t CombineBits(Int_t VtxBit, Int_t TrkBit);
-  Bool_t AcceptAODTrack(AliAODTrack *lTr, TClonesArray *tca=0);
   Bool_t AcceptParticle(AliVParticle *mPa);
   Bool_t InitRun();
   Bool_t LoadWeights(Int_t runno);
@@ -86,4 +85,3 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
 };
 
 #endif
-
