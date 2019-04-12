@@ -11,17 +11,20 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #endif
 
 AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
-						    TString outputFileName = "AnalysisResult.root",
-						    TString directoryBaseName = "miweber_LMEE_PbPb",
-						    Bool_t isNano = kFALSE,
-						    Bool_t bCutQA = kTRUE,
-						    Bool_t useTPCCorr=kFALSE,
-						    Bool_t useRotation=kFALSE,
-						    Bool_t useMixing=kTRUE,
-						    Bool_t noPairing=kFALSE,
-						    Bool_t bUsePileUpCutsTPCClusters = kFALSE,
+						      TString outputFileName = "AnalysisResult.root",
+						      TString directoryBaseName = "miweber_LMEE_PbPb",
+						      Bool_t isNano = kFALSE,
+						      Bool_t bCutQA = kTRUE,
+						      Bool_t useTPCCorr=kFALSE,
+						      Bool_t useRotation=kFALSE,
+						      Bool_t useMixing=kTRUE,
+						      Bool_t noPairing=kFALSE,
+						      Bool_t bUsePileUpCutsTPCClusters = kFALSE,
 						      Float_t pileUpCutsTPCClustersMin = 0.,
-						      Float_t pileUpCutsTPCClustersMax = 0.
+						      Float_t pileUpCutsTPCClustersMax = 0.,
+						      
+						      Double_t centMin = -1.,
+						      Double_t centMax = -1.
 						    ){
 
 
@@ -72,7 +75,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
 
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
   //Add event filter
-  task->SetEventFilter( GetEventCuts() );
+  task->SetEventFilter( GetEventCuts(centMin, centMax) );
 
   // Add the task to the manager
   mgr->AddTask(task);
