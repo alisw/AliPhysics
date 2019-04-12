@@ -1,6 +1,6 @@
 class AliAnalysisTaskSELc2V0bachelorTMVAApp;
 
-AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBin = "_6_12", TString finname="Lc2V0bachelorCuts.root",
+AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString library = "_6_12", TString finname="Lc2V0bachelorCuts.root",
 								    Float_t ptMin=0, Float_t ptMax=24,
 								    Bool_t theMCon=kTRUE,
 								    Bool_t fillTree=kFALSE,
@@ -64,7 +64,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
   //  task->SetMVReader(fBDTReader);
   task->SetNamesTMVAVariables(namesTMVAvars);
   task->SetTMVAlibName("libvertexingHFTMVA.so");
-  task->SetTMVAlibPtBin(ptBin);
+  task->SetTMVAlibPtBin(library);
   task->SetFillTree(fillTree);
   task->SetMC(theMCon);
   task->SetKeepingOnlyHIJINGBkg(keepingOnlyHIJINGbkd);
@@ -76,16 +76,17 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString ptBi
   // Create and connect containers for input/output  
   //TString outputfile = AliAnalysisManager::GetCommonFileName();
   //TString outputfile = Form("Lc2K0Sp_tree_pA%s.root", suffixName.Data());
-  TString outputfile = Form("Lc2K0Sp_tree_pA%s%s.root", ptBin.Data(), suffixName.Data());
+  //TString outputfile = Form("Lc2K0Sp_tree_pA%s%s.root", ptBin.Data(), suffixName.Data());
+  TString outputfile = "AnalysisResults.root";
   TString output1name="", output2name="", output3name="", output4name="", output5name="", output6name="", output7name="";
 
-  output1name = Form("treeList%s", suffixName.Data());
-  output2name = Form("Lc2pK0Scounter%s", suffixName.Data());
-  output3name = Form("Lc2pK0SCuts%s", suffixName.Data());
-  output4name = Form("treeSgn%s", suffixName.Data());
-  output5name = Form("treeBkg%s", suffixName.Data());
-  output6name = Form("listHistoKF%s", suffixName.Data());
-  output7name = Form("listWeights%s", suffixName.Data());
+  output1name = Form("treeList%s%s", suffixName.Data(), library.Data());
+  output2name = Form("Lc2pK0Scounter%s%s", suffixName.Data(), library.Data());
+  output3name = Form("Lc2pK0SCuts%s%s", suffixName.Data(), library.Data());
+  output4name = Form("treeSgn%s%s", suffixName.Data(), library.Data());
+  output5name = Form("treeBkg%s%s", suffixName.Data(), library.Data());
+  output6name = Form("listHistoKF%s%s", suffixName.Data(), library.Data());
+  output7name = Form("listWeights%s%s", suffixName.Data(), library.Data());
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   AliAnalysisDataContainer *coutput1   = mgr->CreateContainer(output1name, TList::Class(), AliAnalysisManager::kOutputContainer, outputfile.Data()); // trees
