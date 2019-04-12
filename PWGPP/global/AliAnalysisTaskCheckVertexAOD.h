@@ -89,12 +89,15 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH2F* fHistYspdVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZspdVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZspdOnlyZVsCent;         //!<!  histo of vtx coord.
+  TH2F* fHistContrSpdVsCent;          //!<!  histo of vtx contrib
   TH2F* fHistXtrkVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistYtrkVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZtrkVsCent;              //!<!  histo of vtx coord.
+  TH2F* fHistContrTrkVsCent;          //!<!  histo of vtx contrib
   TH2F* fHistXtpcVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistYtpcVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZtpcVsCent;              //!<!  histo of vtx coord.
+  TH2F* fHistContrTpcVsCent;          //!<!  histo of vtx contrib
   TH2F* fHistNtracklVsZtrue;          //!<!  histo of vtx coord.
   TH1F* fHistoNOfPileupVertSPD;       //!<! histo of SPD pileup
   TH1F* fHistoNOfSelPileupVertSPD;    //!<! histo of SPD pileup
@@ -114,7 +117,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   Bool_t  fReadMC;                    // flag read/not-read MC truth info
 
 
-  ClassDef(AliAnalysisTaskCheckVertexAOD,7);
+  ClassDef(AliAnalysisTaskCheckVertexAOD,8);
 };
 
 
