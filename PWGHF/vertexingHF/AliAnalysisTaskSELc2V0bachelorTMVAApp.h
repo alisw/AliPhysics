@@ -147,6 +147,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   void SetDebugHistograms(Bool_t flag) {fDebugHistograms = flag;}
   Bool_t GetDebugHistograms() const {return fDebugHistograms;}
 
+  void SetAODMismatchProtection(Int_t opt = 1) {fAODProtection = opt;}
+  Int_t GetAODMismatchProtection() const {return fAODProtection;}
+  
  private:
   
   EBachelor CheckBachelor(AliAODRecoCascadeHF *part, AliAODTrack* bachelor, TClonesArray *mcArray);
@@ -167,7 +170,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TList *fOutput;             //!<! User output1: list of trees
 
   // define the histograms
-  TH1F *fCEvents;                     //!<! Histogram to check selected events
   AliPIDResponse *fPIDResponse;       //!<! PID response object
   AliPIDCombined *fPIDCombined;       //!<! combined PID response object
   Bool_t fIsK0sAnalysis;              /// switch between Lpi and K0sp
@@ -321,9 +323,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fHistoNsigmaTOF;               //!<! 
 
   Bool_t fDebugHistograms;             /// flag to decide whether or not to have extra histograms (useful mainly for debug)
-  
+
+  Int_t fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
+                                  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 3); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 4); /// class for Lc->p K0
   /// \endcond    
 };
 
