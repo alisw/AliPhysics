@@ -12,6 +12,7 @@
 
 ClassImp(AliAnalysisNanoAODTrackCuts)
 ClassImp(AliAnalysisNanoAODV0Cuts)
+ClassImp(AliAnalysisNanoAODCascadeCuts)
 ClassImp(AliAnalysisNanoAODEventCuts)
 ClassImp(AliNanoAODSimpleSetter)
 
@@ -153,26 +154,165 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
   return kTRUE;
 }
 
-// Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) 
-// {
-//   // cascade selection
-//   
-//   AliAODcascade* cascade = dynamic_cast<AliAODcascade*>(obj);
-//   if (!cascade)
-//     AliFatal("Did not pass a Cascade");
-//   
-//   // check V0
-//   if (!v0Cuts->IsSelected(cascade))
-//     return kFALSE;
-//   
-//   // check Xi
-//   if (!xiCuts->IsSelected(cascade->GetDecayVertexXi())
-//     return kFALSE
-//   
-//   // TODO remaining cuts on Xi DCA and bachelor momentum
-//   
-//   return kTRUE;
-// }
+AliAnalysisNanoAODCascadeCuts::AliAnalysisNanoAODCascadeCuts()
+    : AliAnalysisCuts(),
+      fCascpTMin(0.),
+      fDCADaugPrimVtxMin(0.),
+      fCPACascMin(0.),
+      fTransverseRadiusCasc(0.),
+      fCPAv0Min(0.),
+      fTransverseRadiusv0(0.),
+      fDCAv0PrimVtxMin(0.),
+      fDaughEtaMax(0.),
+      fCascDaugnSigTPCMax(0.),
+      fCheckDaughterPileup(false) {
+}
+
+Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
+  AliAODcascade* cascade = dynamic_cast<AliAODcascade*>(obj);
+  if (!cascade)
+    AliFatal("Did not pass a Cascade");
+  TVector3 pCasc(cascade->MomXiX(), cascade->MomXiY(), cascade->MomXiZ());
+  if (fCascpTMin > 0. && pCasc.Pt() < fCascpTMin) {
+    return false;
+  }
+  if (fDCADaugPrimVtxMin > 0.
+      && cascade->DcaBachToPrimVertex() > fDCADaugPrimVtxMin) {
+    return false;
+  }
+
+  if (fDCADaugPrimVtxMin > 0.
+      && cascade->DcaNegToPrimVertex() > fDCADaugPrimVtxMin) {
+    return false;
+  }
+
+  if (fDCADaugPrimVtxMin > 0.
+      && cascade->DcaPosToPrimVertex() > fDCADaugPrimVtxMin) {
+    return false;
+  }
+  if (fCPACascMin > 0. || fCPAv0Min > 0.) {
+    const AliAODEvent* evt =
+        static_cast<const AliAODEvent*>(static_cast<AliAODTrack *>(cascade
+            ->GetDaughter(0))->GetEvent());
+    if (!evt)
+      AliFatal("No event but cut pointing angles requested");
+    Float_t xvP = evt->GetPrimaryVertex()->GetX();
+    Float_t yvP = evt->GetPrimaryVertex()->GetY();
+    Float_t zvP = evt->GetPrimaryVertex()->GetZ();
+    Double_t vecTarget[3] = { xvP, yvP, zvP };
+    if (fCPACascMin > 0.
+        && cascade->CosPointingAngleXi(xvP, yvP, zvP) < fCPACascMin) {
+      return false;
+    }
+    if (fCPAv0Min > 0.
+        && cascade->CosPointingAngle(evt->GetPrimaryVertex()) < fCPAv0Min) {
+      return false;
+    }
+  }
+  if (fTransverseRadiusCasc > 0.
+      && cascade->DecayVertexXiX() > fTransverseRadiusCasc) {
+    return false;
+  }
+  if (fTransverseRadiusCasc > 0.
+      && cascade->DecayVertexXiY() > fTransverseRadiusCasc) {
+    return false;
+  }
+  if (fTransverseRadiusv0 > 0.
+      && cascade->DecayVertexV0X() > fTransverseRadiusv0) {
+    return false;
+  }
+  if (fTransverseRadiusv0 > 0.
+      && cascade->DecayVertexV0Y() > fTransverseRadiusv0) {
+    return false;
+  }
+  if (fDCAv0PrimVtxMin > 0. && cascade->DcaV0ToPrimVertex()) {
+    return false;
+  }
+  AliAODTrack *pTrack = static_cast<AliAODTrack*>(cascade->GetDaughter(0));
+  AliAODTrack *nTrack = static_cast<AliAODTrack*>(cascade->GetDaughter(1));
+  AliAODTrack *bachTrack = static_cast<AliAODTrack*>(cascade->GetDecayVertexXi()
+      ->GetDaughter(0));
+  if (fDaughEtaMax > 0.) {
+    if (TMath::Abs(pTrack->Eta()) > fDaughEtaMax) {
+      return false;
+    }
+    if (TMath::Abs(nTrack->Eta()) > fDaughEtaMax) {
+      return false;
+    }
+    if (TMath::Abs(nTrack->Eta()) > fDaughEtaMax) {
+      return false;
+    }
+  }
+
+  if (fCascDaugnSigTPCMax > 0) {
+    static AliPIDResponse* pidResponse = 0;
+    if (!pidResponse) {
+      AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
+          ->GetInputEventHandler());
+      pidResponse = inputHandler->GetPIDResponse();
+      if (!pidResponse)
+        AliFatal("No PID response but PID selection requested");
+    }
+    AliPIDResponse::EDetPidStatus statusPosTPC = pidResponse->CheckPIDStatus(
+        AliPIDResponse::kTPC, pTrack);
+    AliPIDResponse::EDetPidStatus statusNegTPC = pidResponse->CheckPIDStatus(
+        AliPIDResponse::kTPC, nTrack);
+    AliPIDResponse::EDetPidStatus statusBachTPC = pidResponse->CheckPIDStatus(
+        AliPIDResponse::kTPC, bachTrack);
+    if (!(statusPosTPC == AliPIDResponse::kDetPidOk
+        && statusNegTPC == AliPIDResponse::kDetPidOk
+        && statusBachTPC == AliPIDResponse::kDetPidOk))
+      return false;
+
+    Float_t nSigPosPion = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                      pTrack, AliPID::kPion);
+    Float_t nSigPosProton = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                        pTrack,
+                                                        AliPID::kProton);
+    Float_t nSigNegPion = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                      nTrack, AliPID::kPion);
+    Float_t nSigNegProton = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                        nTrack,
+                                                        AliPID::kProton);
+    Float_t nSigBachPion = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                        nTrack,
+                                                        AliPID::kPion);
+
+    // if the Bachelor is not a pion, the candidate can go
+    if (!nSigBachPion < fCascDaugnSigTPCMax) {
+      return false;
+    }
+    // if the daughter tracks are not a proton or a pion within loose cuts, the candidate can be rejected
+    if (!((nSigPosPion < fCascDaugnSigTPCMax
+        && nSigNegProton < fCascDaugnSigTPCMax)
+        || (nSigNegPion < fCascDaugnSigTPCMax
+            && nSigPosProton < fCascDaugnSigTPCMax)))
+      return false;
+  }
+
+  if (fCheckDaughterPileup) {
+    if (!((pTrack->GetTOFBunchCrossing() == 0)
+        || (nTrack->GetTOFBunchCrossing() == 0)
+        || (bachTrack->GetTOFBunchCrossing() == 0))) {
+      Bool_t PileUpPass = false;
+      for (Int_t iLay = 0; iLay < 6; ++iLay) {
+        //do not use SDD for Pile Up Rejection since detector is too slow
+        if (iLay == 2 || iLay == 3)
+          continue;
+
+        if (pTrack->HasPointOnITSLayer(iLay) || nTrack->HasPointOnITSLayer(iLay)
+            || bachTrack->HasPointOnITSLayer(iLay)) {
+          PileUpPass = true;
+          break;
+        }
+      }
+      if (!PileUpPass)
+        return false;
+    }
+  }
+  return true;
+}
 
 
 AliAnalysisNanoAODEventCuts::AliAnalysisNanoAODEventCuts():
