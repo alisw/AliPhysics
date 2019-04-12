@@ -1971,14 +1971,14 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                 CaloClusterVecSwap.SetPhi(CaloClusterVec3.Phi());
                 CaloClusterVecSwap.SetTheta(CaloClusterVec3.Theta());
 
-                CaloClusterVecPi0Swap = CaloClusterVec + CaloClusterVecSwap;
+                CaloClusterVecPi0Swap = CaloClusterVecSwap + CaloClusterVec2;
                 if (fIsMC) {
                   // MC info for energy pair (A,B)
-                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus1,iMCIndexClus2);
+                  FillPi0CandsHist(CaloClusterVecSwap,CaloClusterVec2,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus2,iMCIndexClus1);
                   // Now use MC id (C,B) for Position Pair
-                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus2,iMCIndexClus3);
+                  FillPi0CandsHist(CaloClusterVecSwap,CaloClusterVec2,CaloClusterVecPi0Swap,fMaxClusM02,0.5*Weight,2,iMCIndexClus3,iMCIndexClus2);
                 } else {
-                  FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,Weight,2,iMCIndexClus1,iMCIndexClus2);
+                  FillPi0CandsHist(CaloClusterVecSwap,CaloClusterVec2,CaloClusterVecPi0Swap,fMaxClusM02,Weight,2,iMCIndexClus2,iMCIndexClus1);
                 }
 
               }
