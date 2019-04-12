@@ -1437,8 +1437,11 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       printf ("Exceeding buffer size!!");
       continue;
     }
+    if(fFilterBit == 128)
+      vtrackg = fAODevent->GetTrack(farrGT[-track->GetID()-1]);
+    else
+      vtrackg = track;
 
-    vtrackg = fAODevent->GetTrack(farrGT[-track->GetID()-1]);
     if (!vtrackg) {
       printf ("No global info! iTrack %d, ID %d\n",ip,track->GetID());
       continue;
@@ -1447,7 +1450,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     globaltrack = dynamic_cast<AliAODTrack*>(vtrackg); 
     if(!globaltrack) AliFatal("Not a standard AOD");
 
-    //    cout<<" Filter map for the global track "<<globaltrack->GetFilterMap()<<endl;
+    //    cout<<" Filter map for the global track "<<globaltrack->GetFilterMap()<<" "<<globaltrack<<endl;
      
     // IP to PV of tracks
     dz[0] = -999.; dz[1]  = -999.;
@@ -1513,12 +1516,15 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       rapiditySecond = 0.5*TMath::Log((energyDeuteron + track->Pz())/(energyDeuteron - track->Pz()));
     }
     
-    // cout<<"Firt particle: "<<fFirstpart<<" "<<rapidityFirst<<" second particle: "<<fSecondpart<<" "<<rapiditySecond<<endl;
+    //cout<<"Firt particle: "<<fFirstpart<<" "<<rapidityFirst<<" second particle: "<<fSecondpart<<" "<<rapiditySecond<<endl;
+
     //  if(fFirstpart == kKaon){
 
     nsigmaTPCf = fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)fFirstpart); 
     nsigmaTPCs = fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)fSecondpart); 
-
+    
+    //cout<<"Firt particle ns: "<<nsigmaTPCf<<" "<<nsigmaTPCs<<endl;
+   
     // //pulls TPC
     // pullsTPC[0] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kElectron)); 
     // pullsTPC[1] = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(globaltrack, (AliPID::EParticleType)kPion)); 
@@ -1658,15 +1664,28 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       // if(fFirstpart == 3){ //electron veto in K
       // 	  if(track->Pt()>0.3 && track->Pt()<0.4)continue;
       // 	}
+      
+      // // //cout<<"Qui ???"<<endl;
+      // cout<<fkCutOnTPCIP<<endl;
+      // cout<<TMath::Abs(dz[0]) <<" "<<fIPCutxyPrim <<endl;
+      // cout<<TMath::Abs(dz[1]) <<" "<<fIPCutzPrim  <<endl;
+      // cout<<TMath::Abs(dzg[0])<<" "<<fIPCutxyPrim<<endl;
+      // cout<<TMath::Abs(dzg[1])<<" "<<fIPCutzPrim <<endl;
 
       if (fkCutOnTPCIP) {
 	if (TMath::Abs(dz[0])>fIPCutxyPrim ) continue;  // 2.4 proton 1. pion 
 	if (TMath::Abs(dz[1])>fIPCutzPrim ) continue;  // 3.2  proton 1. pion
       } else {
-	if (TMath::Abs(dzg[0])>fIPCutxyPrim ) continue;  // 0.1 proton/pion
-	if (TMath::Abs(dzg[1])>fIPCutzPrim ) continue; // 0.15 proton/pion
+	   dz[0] = dzg[0];
+	   dz[1] = dzg[1];
+	   if (TMath::Abs(dz[0])>fIPCutxyPrim ) continue;  // 0.1 proton/pion
+	   if (TMath::Abs(dz[1])>fIPCutzPrim ) continue;   // 0.15 proton/pion
+	  // if (TMath::Abs(dzg[0])>fIPCutxyPrim ) continue;  // 0.1 proton/pion
+	  // if (TMath::Abs(dzg[1])>fIPCutzPrim ) continue; // 0.15 proton/pion
       }
       
+      //cout<<"ORA?"<<endl;
+
       if (track->Pt()>fMinPtForPrim  && track->Pt()< fMomemtumLimitForTOFPIDfirst){
 	
 	if(fReadMCTruth == kTRUE)
@@ -1677,7 +1696,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	//------------------ Save first particle information
 	fEvt->fReconstructedFirst[fCount].fCharge = charge;
 
-	//      cout<<"Charge of pion "<<fEvt->fReconstructedFirst[fCount].fCharge<<endl;
+	//	cout<<"Charge of pion "<<fEvt->fReconstructedFirst[fCount].fCharge<<endl;
+	
 	if(fReadMCTruth == kTRUE){
 	  fEvt->fReconstructedFirst[fCount].fMomentumTruth[0]  = tparticle->Px();
 	  fEvt->fReconstructedFirst[fCount].fMomentumTruth[1]  = tparticle->Py();
