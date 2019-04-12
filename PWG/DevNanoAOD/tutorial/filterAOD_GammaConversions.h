@@ -85,10 +85,10 @@ void filterAOD_GammaConversions()
   chain->Add("AliAOD.root");
   
   // For conversions
-  TChain* friend = new TChain("aodTree", "AliAODGammaConversion.root");
-  friend->Add("AliAODGammaConversion.root");
-  chain->AddFriend(friend);
+  TChain* friendChain = new TChain("aodTree", "AliAODGammaConversion.root");
+  friendChain->Add("AliAODGammaConversion.root");
+  chain->AddFriend(friendChain);
 
   Printf("Starting Analysis....");
-  mgr->StartAnalysis("local", chain, 100);
+  mgr->StartAnalysis("local", chain, 1000);
 }
