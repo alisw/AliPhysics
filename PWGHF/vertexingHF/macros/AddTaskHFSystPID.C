@@ -1,7 +1,7 @@
 AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
                                             bool readMC = false,
                                             TString trigClass = "",
-                                            AliVEvent::EOfflineTriggerTypes trigMask = AliVEvent::kINT7,
+                                            unsigned long long trigMask = AliVEvent::kINT7,
                                             TString outputSuffix = "_ppMB_kINT7",
                                             float nsigmafortag = 0.02,
                                             double fracdownsampl = 1.,
