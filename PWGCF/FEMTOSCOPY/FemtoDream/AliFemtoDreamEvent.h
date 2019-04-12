@@ -28,6 +28,7 @@ class AliFemtoDreamEvent {
   AliFemtoDreamEvent &operator=(const AliFemtoDreamEvent &obj);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
+  void SetEvent(AliVEvent *evt);
   void SetEvent(AliESDEvent *evt);
   TList *GetEvtCutList() const {
     return fEvtCutList;

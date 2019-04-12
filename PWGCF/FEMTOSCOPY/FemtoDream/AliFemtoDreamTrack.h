@@ -18,6 +18,8 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliFemtoDreamTrack();
   virtual ~AliFemtoDreamTrack();
   void SetTrack(AliAODTrack *track, const int multiplicity = -1);
+  void SetTrack(AliVTrack *track, AliVEvent *event,
+                const int multiplicity = -1);
   void SetTrack(AliESDtrack *track, AliMCEvent *mcEvent = nullptr,
                 const int multiplicity = -1, const bool TPCOnlyTrack = true,
                 const bool IsOmegaTrack = false);
@@ -73,6 +75,9 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
     return fTPCClsS;
   }
   ;
+  std::vector<bool> GetSharedClusterITS() const {
+    return fSharedClsITSLayer;
+  }
   bool GetSharedClusterITS(int i) const {
     return fSharedClsITSLayer.at(i);
   }
@@ -89,6 +94,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
     return fHasITSHit;
   }
   ;
+  std::vector<bool> GetITSHits() const { return fITSHit; }
   bool GetITSHit(int i) const {
     return fITSHit.at(i);
   }
@@ -145,7 +151,9 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float GetBeta(AliAODTrack *track);
   float GetBeta(AliESDtrack *track);
   bool CheckGlobalTrack(const Int_t TrackID);
+  bool CheckGlobalVTrack(const Int_t TrackID);
   void SetAODTrackingInformation();
+  void SetVInformation(AliVEvent *event);
   void ApplyESDtoAODFilter(const bool TPCOnlyTrack = true);
   void SetESDTrackingInformation(const bool TPCOnlyTrack = true);
   void SetESDTrackingInformationOmega();
@@ -191,8 +199,10 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliESDtrack *fESDTrack;
   AliESDtrack *fESDTPCOnlyTrack;
   AliESDtrackCuts *fESDTrackCuts;
+  AliVTrack *fVTrack;
+  AliVTrack *fVGlobalTrack;
   AliAODTrack *fAODTrack;
-  AliAODTrack *fAODGlobalTrack;ClassDef(AliFemtoDreamTrack,3)
+  AliAODTrack *fAODGlobalTrack;ClassDef(AliFemtoDreamTrack,4)
 };
 
 #endif /* ALIFEMTODREAMTRACK_H_ */

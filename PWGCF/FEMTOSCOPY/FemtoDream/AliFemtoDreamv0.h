@@ -20,6 +20,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   AliFemtoDreamv0();
   virtual ~AliFemtoDreamv0();
   void Setv0(AliAODEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
+  void Setv0(AliVEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
   void Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
              const int multiplicity = -1);
   // the last two are switches to ignore the first entry in the phi, eta, ...
@@ -107,6 +108,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   AliFemtoDreamv0(const AliFemtoDreamv0&);
   void Reset();
   void SetDaughter(AliAODv0 *v0);
+  void SetDaughter(AliAODv0 *v0, AliVEvent *evt);
   void SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter);
   void SetDaughter(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0);
   void SetDaughterInfo(AliAODv0 *v0);
