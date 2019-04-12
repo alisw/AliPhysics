@@ -205,6 +205,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
 
     AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&); // not implemented
     AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
+
     /// \cond CLASSIMP
     ClassDef(AliMultDepSpecAnalysisTask, 1); // example of analysis
     /// \endcond
