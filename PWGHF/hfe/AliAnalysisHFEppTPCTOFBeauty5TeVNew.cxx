@@ -1105,7 +1105,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_BaryonB_beautybef);
 
   fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_BaryonBD_beautybef->Sumw2();
+  //fDCAxy_pt_BaryonBD_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_BaryonBD_beautybef);
 
   fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,2000,-0.5,0.5);
@@ -1262,35 +1262,35 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fMCEnhPtEleEtaGeneratedAft);
 
   fMCPtEleGammaGenerated = new TH1F("fMCPtEleGammaGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fMCPtEleGammaGenerated->Sumw2();
+  //fMCPtEleGammaGenerated->Sumw2();
   fOutputList->Add(fMCPtEleGammaGenerated);
 
   fPtBeautyGenerated = new TH1F("fPtBeautyGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fPtBeautyGenerated->Sumw2();
+  //fPtBeautyGenerated->Sumw2();
   fOutputList->Add(fPtBeautyGenerated);
 
   fPtGeneratedBmesons = new TH1F("fPtGeneratedBmesons","; p_{T} [GeV/c]; Count",1000,0,200);
-  fPtGeneratedBmesons->Sumw2();
+  //fPtGeneratedBmesons->Sumw2();
   fOutputList->Add(fPtGeneratedBmesons);
 
   fPtBeautyReconstructedAll = new TH1F("fPtBeautyReconstructedAll","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fPtBeautyReconstructedAll->Sumw2();
+  //fPtBeautyReconstructedAll->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedAll);
 
   fPtBeautyReconstructedTracks = new TH1F("fPtBeautyReconstructedTracks","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fPtBeautyReconstructedTracks->Sumw2();
+  //fPtBeautyReconstructedTracks->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedTracks);
 
   fPtBeautyReconstructedTracksPID = new TH1F("fPtBeautyReconstructedTracksPID","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fPtBeautyReconstructedTracksPID->Sumw2();
+  //fPtBeautyReconstructedTracksPID->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedTracksPID);
 
   fPtBeautyReconstructedTracksPIDTPC = new TH1F("fPtBeautyReconstructedTracksPIDTPC","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fPtBeautyReconstructedTracksPIDTPC->Sumw2();
+  //fPtBeautyReconstructedTracksPIDTPC->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedTracksPIDTPC);
 
   fPtBeautyReconstructedTracksPIDTOF = new TH1F("fPtBeautyReconstructedTracksPIDTOF","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fPtBeautyReconstructedTracksPIDTOF->Sumw2();
+  //fPtBeautyReconstructedTracksPIDTOF->Sumw2();
   fOutputList->Add(fPtBeautyReconstructedTracksPIDTOF);
 
     fRealInclsElecPt = new TH1F("fRealInclsElecPt","; p_{T} [GeV/c]; Count",32,ptbinning);
