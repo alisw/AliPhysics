@@ -75,12 +75,15 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistYspdVsCent{nullptr},
   fHistZspdVsCent{nullptr},
   fHistZspdOnlyZVsCent{nullptr},
+  fHistContrSpdVsCent{nullptr},
   fHistXtrkVsCent{nullptr},
   fHistYtrkVsCent{nullptr},
   fHistZtrkVsCent{nullptr},
+  fHistContrTrkVsCent{nullptr},
   fHistXtpcVsCent{nullptr},
   fHistYtpcVsCent{nullptr},
   fHistZtpcVsCent{nullptr},
+  fHistContrTpcVsCent{nullptr},
   fHistNtracklVsZtrue{nullptr},
   fHistoNOfPileupVertSPD{nullptr},
   fHistoNOfSelPileupVertSPD{nullptr},
@@ -138,12 +141,15 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistYspdVsCent;
     delete fHistZspdVsCent;
     delete fHistZspdOnlyZVsCent;
+    delete fHistContrSpdVsCent;
     delete fHistXtrkVsCent;
     delete fHistYtrkVsCent;
     delete fHistZtrkVsCent;
+    delete fHistContrTrkVsCent;
     delete fHistXtpcVsCent;
     delete fHistYtpcVsCent;
     delete fHistZtpcVsCent;
+    delete fHistContrTpcVsCent;
     delete fHistNtracklVsZtrue;
     delete fHistoNOfPileupVertSPD;
     delete fHistoNOfSelPileupVertSPD;
@@ -257,22 +263,28 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fHistYspdVsCent=new TH2F("hYspdVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistZspdVsCent=new TH2F("hZspdVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
   fHistZspdOnlyZVsCent=new TH2F("hZspdOnlyZVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
+  fHistContrSpdVsCent=new TH2F("hContrSpdVsCent","  ; V0M centrality ; nContributors",100,0.,100.,100,0.,fMaxMult);
   fHistXtrkVsCent=new TH2F("hXtrkVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistYtrkVsCent=new TH2F("hYtrkVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistZtrkVsCent=new TH2F("hZtrkVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
+  fHistContrTrkVsCent=new TH2F("hContrTrkVsCent","  ; V0M centrality ; nContributors",100,0.,100.,100,0.,fMaxMult);
   fHistXtpcVsCent=new TH2F("hXtpcVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistYtpcVsCent=new TH2F("hYtpcVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistZtpcVsCent=new TH2F("hZtpcVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
+  fHistContrTpcVsCent=new TH2F("hContrTpcVsCent","  ; V0M centrality ; nContributors",100,0.,100.,100,0.,fMaxMult);
   fOutput->Add(fHistXspdVsCent);
   fOutput->Add(fHistYspdVsCent);
   fOutput->Add(fHistZspdVsCent);
   fOutput->Add(fHistZspdOnlyZVsCent);
+  fOutput->Add(fHistContrSpdVsCent);
   fOutput->Add(fHistXtrkVsCent);
   fOutput->Add(fHistYtrkVsCent);
   fOutput->Add(fHistZtrkVsCent);
+  fOutput->Add(fHistContrTrkVsCent);
   fOutput->Add(fHistXtpcVsCent);
   fOutput->Add(fHistYtpcVsCent);
   fOutput->Add(fHistZtpcVsCent);
+  fOutput->Add(fHistContrTpcVsCent);
 
   fHistNtracklVsZtrue=new TH2F("hNtracklVsZtrue"," ; z_{TrueVertex} (cm), n_{Tracklets}",300,-20.,20.,100,0.,fMaxMult);
   fOutput->Add(fHistNtracklVsZtrue);
@@ -401,6 +413,7 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       fHistXtrkVsCent->Fill(centr,xt);
       fHistYtrkVsCent->Fill(centr,yt);
       fHistZtrkVsCent->Fill(centr,zt);
+      fHistContrTrkVsCent->Fill(centr,ct);
     }
   }
   Int_t cs=0;
@@ -422,6 +435,7 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
 	fHistXspdVsCent->Fill(centr,xs);
 	fHistYspdVsCent->Fill(centr,ys);
 	fHistZspdVsCent->Fill(centr,zs);
+	fHistContrSpdVsCent->Fill(centr,cs);
       }
     }else if(spdtitle.Contains("ertexer: Z")){
       zs=vtSPD->GetZ();
@@ -430,6 +444,7 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       if(cs>=1){
 	fHistZspdOnlyZVsMult->Fill(ntracklets,zs);
 	fHistZspdOnlyZVsCent->Fill(centr,zs);
+	fHistContrSpdVsCent->Fill(centr,cs);
       }
     }
   }
@@ -448,6 +463,7 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       fHistXtpcVsCent->Fill(centr,xtpc);
       fHistYtpcVsCent->Fill(centr,ytpc);
       fHistZtpcVsCent->Fill(centr,ztpc);
+      fHistContrTpcVsCent->Fill(centr,ctpc);
     }
   }
 
