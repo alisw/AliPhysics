@@ -177,6 +177,10 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AlidNdPtTools::ParticleType   fMCParticleType;  //!<! which particle is it
         AlidNdPtTools::ProductionType fMCProdcutionType;//!<! production mechanism (prim,material,decay)
         Int_t                   fMCPDGCode;             //!<! PDG code
+        Short_t                 fMCCharge;              //!<! charge in units of 1/3e
+        Double_t                fMCQ;                   //!<! charge in units of e
+        Bool_t                  fMCIsCharged;           //!<! charged particle
+        Short_t                 fMCChargeSign;          //!<! Sign of the charge
         
         const AliExternalTrackParam*  fInnerP;          //!<! innerparams
         const AliExternalTrackParam*  fTPCinnerP;       //!<! tpc inner params

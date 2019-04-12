@@ -58,13 +58,15 @@ void AliAnalysisTaskEffContStudy::AddOutput()
     AddAxis("MCpT","pt");
     AddAxis("MCpid",10,-0.5,9.5);  // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
     AddAxis("MCinfo",4,-0.5,3.5); // 0=prim, 1=decay 2=material, 3=genprim
-    AddAxis("nTracks","mult6kcoarse");
+    AddAxis("MCQ",3,-1.5,1.5);
+    AddAxis("nTracks","mult6kcoarse");    
     fHistEffCont = CreateHist("fHistEffCont");
     fOutputList->Add(fHistEffCont);
     
     AddAxis("MCpT","pt");
     AddAxis("MCpid",10,-0.5,9.5);  // 0=e, 1=mu, 2=pi, 3=K, 4=p, 6=sigmaP, 7=sigmaM, 8=xi, 9=omega, 5=other
     AddAxis("MCinfo",4,-0.5,3.5); // 0=prim, 1=decay 2=material, 3=genprim
+    AddAxis("MCQ",3,-1.5,1.5);
     AddAxis("nTracks","mult6kcoarse");
     fHistEffContScaled = CreateHist("fHistEffContScaled");
     fOutputList->Add(fHistEffContScaled);
@@ -89,14 +91,12 @@ void AliAnalysisTaskEffContStudy::AnaEvent()
 
 void AliAnalysisTaskEffContStudy::AnaTrack()
 {
-    Log("AnaTrack()");
     if (!fESDtrackCuts[0]->AcceptTrack(fESDTrack)) return;
     InitTrack();
     InitMCTrack();
     InitTrackIP();
     InitTrackTPC();
-    FillHist(fHistEffCont, fMCPt, fMCParticleType, fMCProdcutionType, fNTracksAcc);
-    Log("AnaTrack():FillHist()");
+    FillHist(fHistEffCont, fMCPt, fMCParticleType, fMCProdcutionType, fMCChargeSign, fNTracksAcc);    
     Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);    
     
     //scaling to be implemented FillHist(fHistCont, fMCPt, fMCParticleType, fMCProdcutionType, fNTracksAcc);
@@ -105,14 +105,13 @@ void AliAnalysisTaskEffContStudy::AnaTrack()
 //_____________________________________________________________________________
 
 void AliAnalysisTaskEffContStudy::AnaMCParticle()
-{    
-    Log("AnaMCParticle()");
+{        
     InitMCParticle();
-    if (!fMCisPrim) return;
+    if (!fMCisPrim) return;    
+    if (!fMCIsCharged) return;
     if (TMath::Abs(fMCEta) < 0.8) return;
-    FillHist(fHistEffCont, fMCPt, fMCParticleType, 3, fNTracksAcc);
-    Log("AnaMCParticle():FillHist()");
-    Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);
+    FillHist(fHistEffCont, fMCPt, fMCParticleType, 3, fNTracksAcc);    
+    Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCChargeSign, fMCPt);
     
     // scaling to be implemented FillHist(fHistCont, fMCPt, fMCParticleType, fMCProdcutionType, fNTracksAcc);
 }

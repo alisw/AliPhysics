@@ -97,6 +97,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fMCParticleType(AlidNdPtTools::kUndefined)
     , fMCProdcutionType(AlidNdPtTools::kUnknown)
     , fMCPDGCode(0)
+    , fMCCharge(-9999)
+    , fMCQ(-9999)
+    , fMCIsCharged(kFALSE)
+    , fMCChargeSign(-9999)
     , fInnerP(0)
     , fTPCinnerP(0)
     , fPtInner(0)
@@ -198,6 +202,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fMCParticleType(AlidNdPtTools::kUndefined)
     , fMCProdcutionType(AlidNdPtTools::kUnknown)    
     , fMCPDGCode(0)
+    , fMCCharge(-9999)
+    , fMCQ(-9999)
+    , fMCIsCharged(kFALSE)
+    , fMCChargeSign(-9999)
     , fInnerP(0)
     , fTPCinnerP(0)
     , fPtInner(0)
@@ -590,6 +598,19 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
     fMCPt  = fMCParticle->Pt(); 
     fMCEta = fMCParticle->Eta(); 
     fMCPhi = fMCParticle->Phi(); 
+    fMCCharge =  fMCParticle->Charge();
+    fMCQ =  fMCCharge/3.0;    
+    if (fMCCharge == 0) {
+        fMCIsCharged = kFALSE;
+        fMCChargeSign = 0;
+    } else {
+        fMCIsCharged = kTRUE;
+        fMCChargeSign = (fMCCharge > 0)? +1 : -1;
+    }
+        
+    if (TMath::Abs(fMCQ > 1)) { Log("Particle with Q>1)"); }
+    if (TMath::Abs(fMCQ > 2)) { Log("Particle with Q>2)"); }
+    if (TMath::Abs(fMCQ > 3)) { Log("Particle with Q>3)"); }
     
     fMCisPrim     = fMC->IsPhysicalPrimary(fMCLabel);
     fMCisSecDecay = fMC->IsSecondaryFromWeakDecay(fMCLabel);
