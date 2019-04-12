@@ -748,7 +748,7 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
         new TH2F( "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
                   "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
-                  80, -4, 4, 80, -1, 1);
+                  80, -1, 1, 80, -4, 4);
   fOutputList->Add(fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
 
 
