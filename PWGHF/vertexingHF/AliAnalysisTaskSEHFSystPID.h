@@ -63,6 +63,7 @@ public:
   void SetKinksSelections(float qtmin=0.15, float Rmin=120, float Rmax=210)   {fQtMinKinks=qtmin; fRMinKinks=Rmin; fRMaxKinks=Rmax;}
   void SetfFillTreeWithNsigmaPIDOnly(bool fillonlyNsigma=true)                {fFillTreeWithNsigmaPIDOnly=fillonlyNsigma;}
   void EnableDownSampling(double fractokeep=0.1, double ptmax=1.5)            {fEnabledDownSampling=true; fFracToKeepDownSampling=fractokeep; fPtMaxDownSampling=ptmax;}
+  void SetAODMismatchProtection(int opt=1)                                    {fAODProtection=opt;}
   
 private:
 
@@ -131,7 +132,9 @@ private:
   double fFracToKeepDownSampling;                  /// fraction to keep when downsampling activated
   double fPtMaxDownSampling;                       /// pT max of tracks to downsample
   
-  ClassDef(AliAnalysisTaskSEHFSystPID, 1);
+  int fAODProtection;                              /// flag to activate protection against AOD-dAOD mismatch
+
+  ClassDef(AliAnalysisTaskSEHFSystPID, 2);
 };
 
 #endif

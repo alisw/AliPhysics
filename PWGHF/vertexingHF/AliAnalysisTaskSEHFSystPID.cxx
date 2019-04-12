@@ -20,6 +20,7 @@
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
 #include "AliESDtrack.h"
+#include "AliRDHFCuts.h"
 
 ClassImp(AliAnalysisTaskSEHFSystPID)
 
@@ -63,7 +64,8 @@ fV0cuts(nullptr),
 fFillTreeWithNsigmaPIDOnly(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
-fPtMaxDownSampling(1.5)
+fPtMaxDownSampling(1.5),
+fAODProtection(1)
 {
   //
   // default constructur
@@ -117,7 +119,8 @@ fV0cuts(nullptr),
 fFillTreeWithNsigmaPIDOnly(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
-fPtMaxDownSampling(1.5)
+fPtMaxDownSampling(1.5),
+fAODProtection(1)
 {
   //
   // standard constructur
@@ -177,13 +180,14 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"Pass Phys. Sel. + Trig");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"No vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Vertex contributors < 1");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"Without SPD vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"Error on zVertex>0.5");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"|zVertex|>10");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"Good Z vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"Mismatch AOD");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"Pass Phys. Sel. + Trig");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"No vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Vertex contributors < 1");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Without SPD vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Error on zVertex>0.5");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"|zVertex|>10");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"Good Z vertex");
   fOutputList->Add(fHistNEvents);
 
   TString armenteronames[5] = {"All","K0s","Lambda","AntiLambda","Gamma"};
@@ -258,6 +262,18 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   }
   fHistNEvents->Fill(-1);
 
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    int matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fHistNEvents->Fill(0);
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+
   if(TMath::Abs(fAOD->GetMagneticField())<0.001) return;
 
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -278,10 +294,10 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     return;
   }
 
-  fHistNEvents->Fill(0);
+  fHistNEvents->Fill(1);
 
   if (!IsVertexAccepted()) {
-    fHistNEvents->Fill(1);
+    fHistNEvents->Fill(2);
     PostData(1, fOutputList);
     return;
   }
@@ -437,27 +453,27 @@ bool AliAnalysisTaskSEHFSystPID::IsVertexAccepted()
   // function to check if a proper vertex is reconstructed and write z-position in vertexZ
   const AliAODVertex *vertex = fAOD->GetPrimaryVertex();
   if(!vertex){
-    fHistNEvents->Fill(1);
+    fHistNEvents->Fill(2);
     return false;
   }
   else{
     TString title=vertex->GetTitle();
     if(title.Contains("Z") || title.Contains("3D")) return false;
     if(vertex->GetNContributors()<1) {
-      fHistNEvents->Fill(2);
+      fHistNEvents->Fill(3);
       return false;
     }
   }
 
   const AliVVertex *vSPD = fAOD->GetPrimaryVertexSPD();
   if(!vSPD || (vSPD && vSPD->GetNContributors()<1)){
-    fHistNEvents->Fill(3);
+    fHistNEvents->Fill(4);
     return false;
   }
   else{
     double dz = vSPD->GetZ()-vertex->GetZ();
     if(TMath::Abs(dz)>0.5) {
-      fHistNEvents->Fill(4);
+      fHistNEvents->Fill(5);
       return false;
     }
     double covTrc[6],covSPD[6];
@@ -467,16 +483,16 @@ bool AliAnalysisTaskSEHFSystPID::IsVertexAccepted()
     double errTrc = TMath::Sqrt(covTrc[5]);
     double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
     if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) {
-      fHistNEvents->Fill(4);
+      fHistNEvents->Fill(5);
       return false;
     }
   }
 
   if(TMath::Abs(vertex->GetZ())>10.) {
-    fHistNEvents->Fill(5);
+    fHistNEvents->Fill(6);
     return false;
   }
-  fHistNEvents->Fill(6);
+  fHistNEvents->Fill(7);
 
   return true;
 }
