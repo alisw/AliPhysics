@@ -71,10 +71,16 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
 
     protected:
         
-        virtual void          Log(const char* name) { Log(fLogHist,name); }
-        virtual void          Err(const char* name) { Log(fLogErr,name); }
+        virtual void          Log(const char* name) { Log(fLogHist,name); }        
+        virtual void          Err(const char* name) { Log(fLogErr,name); }        
         virtual void          LogEvent(const char* name) { Log(fLogEvent,name); }
+        
+        virtual void          Log(const char* name, Int_t n)    { Log(fLogHist,name,n); }
+        virtual void          Log(const char* name, Double_t n) { Log(fLogHist,name,n); }
+        
         virtual void          Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
+        virtual void          Log(TH1D* h, const char* name, Int_t n)    { TString s(name); s+=n; Log(h,s.Data()); }
+        virtual void          Log(TH1D* h, const char* name, Double_t n) { TString s(name); s+=n; Log(h,s.Data()); }
         
         virtual Bool_t        ReadEvent(); // read the event info
         virtual Bool_t        ReadMCEvent(); // read the mc event info
@@ -138,6 +144,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                fMCb;                   //!<! impact parameter in MC
         Int_t                   fMCnPrim;               //!<! number of primary particles according to mc
         Int_t                   fMCnPrimV0M;            //!<! number of primary particles in the v0 acceptance
+        Int_t                   fMCnTracks;             //!<! number of "tracks" i.e. particles in MCevent
         Bool_t                  fIsTrigger;             //!<! is event triggered?
         Bool_t                  fHasVertex;             //!<! has the event a vertex?
         Bool_t                  fIsIncompleteDAQ;           //!<! incomplete daq event
@@ -173,6 +180,13 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Bool_t                  fMCisSecDecay;          //!<! is secondary from decay?
         Bool_t                  fMCisSecMat;            //!<! is secondary from material?
         Int_t                   fMCPrimSec;             //!<! status of mc track: 0=prim, 1=decay 2=material
+        AlidNdPtTools::ParticleType   fMCParticleType;  //!<! which particle is it
+        AlidNdPtTools::ProductionType fMCProdcutionType;//!<! production mechanism (prim,material,decay)
+        Int_t                   fMCPDGCode;             //!<! PDG code
+        Short_t                 fMCCharge;              //!<! charge in units of 1/3e
+        Double_t                fMCQ;                   //!<! charge in units of e
+        Bool_t                  fMCIsCharged;           //!<! charged particle
+        Short_t                 fMCChargeSign;          //!<! Sign of the charge
         
         const AliExternalTrackParam*  fInnerP;          //!<! innerparams
         const AliExternalTrackParam*  fTPCinnerP;       //!<! tpc inner params
@@ -212,7 +226,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         
     /// \cond CLASSIMP      
-    ClassDef(AliAnalysisTaskMKBase, 2);
+    ClassDef(AliAnalysisTaskMKBase, 3);
     /// \endcond
     
 };

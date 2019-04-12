@@ -1,3 +1,4 @@
+#include "TPDGCode.h"
 #include "THnSparse.h"
 #include "TH1.h"
 #include "AliESDtrackCuts.h"
@@ -350,6 +351,39 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
     }
 
     return cuts;
+}
+
+//____________________________________________________________________________
+
+Double_t AlidNdPtTools::MCScalingFactor(ProductionType prod, ParticleType part, Double_t pt) 
+{
+    //if prod or part type not set return scaling of 1
+    if (prod == kUnknown || part  == kUndefined) return 1.0;
+    //dummy function for testing, scaling sigmas up by a factor two
+    //secondaries from decay by factor 1.5
+    //and leaves the rest unchanged
+    if (prod == kSecDecay) return 1.5;
+    if (prod == kPrim) {
+        if ( (part == kSigmaP) || (part == kSigmaM) ) return 2.0;        
+    }
+    // in other case return scaling factor 1
+    return 1.0;
+}
+
+//____________________________________________________________________________
+
+AlidNdPtTools::ParticleType AlidNdPtTools::ParticleTypeFromPDG(Int_t pdgCode)
+{
+    if ( pdgCode == kElectron   || pdgCode == kPositron )      { return kEl; }
+    if ( pdgCode == kMuonMinus  || pdgCode == kMuonPlus )      { return kMu; }
+    if ( pdgCode == kPiPlus     || pdgCode == kPiMinus )       { return kPi; }
+    if ( pdgCode == kProton     || pdgCode == kProtonBar )     { return kPr; }
+    if ( pdgCode == kKPlus      || pdgCode == kKMinus )        { return kKa; }
+    if ( pdgCode == kSigmaPlus  || pdgCode == kSigmaBarMinus ) { return kSigmaP; }
+    if ( pdgCode == kSigmaMinus || pdgCode == kSigmaBarPlus )  { return kSigmaM; }
+    if ( pdgCode == kXiMinus    || pdgCode == kXiPlusBar )     { return kXi; }
+    if ( pdgCode == kOmegaMinus || pdgCode == kOmegaPlusBar )  { return kOmega; }
+    return kOther;    
 }
 
 //____________________________________________________________________________
