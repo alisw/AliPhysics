@@ -1604,7 +1604,7 @@ AliVTrack *AliConversionCuts::GetTrack(AliVEvent * event, Int_t label){
 
    } else {
       AliVTrack * track = 0x0;
-      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+      if(AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1") && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
          track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
          return track;
       }
