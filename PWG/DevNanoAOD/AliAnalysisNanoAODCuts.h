@@ -69,6 +69,39 @@ private:
   ClassDef(AliAnalysisNanoAODV0Cuts, 1); // track cut object for nano AOD filtering
 };
 
+
+class AliAnalysisNanoAODCascadeCuts : public AliAnalysisCuts
+{
+ public:
+  AliAnalysisNanoAODCascadeCuts();
+  virtual ~AliAnalysisNanoAODCascadeCuts() {};
+  virtual Bool_t IsSelected(TObject* obj);  // TObject should be an AliAODCascade
+  virtual Bool_t IsSelected(TList*   /* list */ )   { return kTRUE; }
+  void SetCascpTMin(Float_t pTMin)                  { fCascpTMin = pTMin;  }
+  void SetMinDCADaughtersToPrimVtx(Float_t MinDCA)  { fDCADaugPrimVtxMin = MinDCA; }
+  void SetCPACascMin(Float_t CPAMin)                { fCPACascMin = CPAMin; }
+  void SetCascTransverseRadiusMax(Float_t Max)      { fTransverseRadiusCasc = Max; }
+  void SetCPAv0Min(Float_t CPAMin)                  { fCPAv0Min = CPAMin; }
+  void Setv0TransverseRadiusMax(Float_t Max)        { fTransverseRadiusv0 = Max; }
+  void SetMinDCAv0ToPrimVtx(Float_t MinDCA)         { fDCAv0PrimVtxMin = MinDCA; }
+  void SetDaughterEtaMax(Float_t EtaMax)            { fDaughEtaMax = EtaMax; }
+  void SetLambdaDaugnSigTPCMax(Float_t maxnSig)     { fCascDaugnSigTPCMax = maxnSig; }
+  void SetRequireTimingDaughters(Bool_t require)    { fCheckDaughterPileup = require; }
+ private:
+  Float_t fCascpTMin;
+  Float_t fDCADaugPrimVtxMin;
+  Float_t fCPACascMin;
+  Float_t fTransverseRadiusCasc;
+  Float_t fCPAv0Min;
+  Float_t fTransverseRadiusv0;
+  Float_t fDCAv0PrimVtxMin;
+  Float_t fDaughEtaMax;
+  Float_t fCascDaugnSigTPCMax;
+  bool fCheckDaughterPileup;
+
+  ClassDef(AliAnalysisNanoAODCascadeCuts, 1); // track cut object for nano AOD filtering
+};
+
 class AliAnalysisNanoAODEventCuts : public AliAnalysisCuts
 {
 public:

@@ -29,7 +29,7 @@ void filterAOD_PID()
   // Fields to store
   // event level
   // vertices kept by default
-  task->SetVarListHeader("OfflineTrigger,MagField,T0Spread");
+  task->SetVarListHeader("OfflineTrigger,MagField,T0Spread,NumberOfESDTracks");
   // track level
   task->SetVarListTrack("pt,theta,phi");
   task->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kPion);

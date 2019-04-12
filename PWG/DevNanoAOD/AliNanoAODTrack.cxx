@@ -92,7 +92,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
     else if(varString == "pDCAz"                  ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAZ()            , aodTrack->PzAtDCA()                 );
     else if(varString == "RAtAbsorberEnd"         ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()   , aodTrack->GetRAtAbsorberEnd()       );
     else if(varString == "TPCncls"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()          , aodTrack->GetTPCNcls()              );
-    else if(varString == "id"                     ) SetVar(AliNanoAODTrackMapping::GetInstance()->Getid()               , aodTrack->GetID()                   );
+    else if(varString == "ID"                     ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetID()               , aodTrack->GetID()                   );
     else if(varString == "TPCnclsF"               ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsF()         , aodTrack->GetTPCNclsF()             );
     else if(varString == "TPCNCrossedRows"        ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows()  , aodTrack->GetTPCNCrossedRows()      );
     else if(varString == "TrackPhiOnEMCal"        ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTrackPhiOnEMCal()  , aodTrack->GetTrackPhiOnEMCal()      );
@@ -118,6 +118,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
     }
     else if(varString == "TPCnclsS"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsS()         , aodTrack->GetTPCnclsS()             );
     else if(varString == "FilterMap"               ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()        , aodTrack->GetFilterMap()            );
+    else if(varString == "TOFBunchCrossing"        ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFBunchCrossing() , aodTrack->GetTOFBunchCrossing()     );
     else if(varString == "covmat0"                 ) {
         Double_t covMatrix[21];
         aodTrack->GetCovarianceXYZPxPyPz(covMatrix);
@@ -582,23 +583,10 @@ Bool_t AliNanoAODTrack::InitPIDIndex()
     for (Int_t p = 0; p<AliPID::kSPECIESC; p++) {
       Int_t index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex(GetPIDVarName((ENanoPIDResponse) r, (AliPID::EParticleType) p));
       fgPIDIndexes[r][p] = index;
+      Printf("%s %d", GetPIDVarName((ENanoPIDResponse) r, (AliPID::EParticleType) p), index);
       if (index != -1)
         anyFilled = kTRUE;
     }
   }
   return anyFilled;
 }
-
-Int_t AliNanoAODTrack::GetTOFBunchCrossing(Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const 
-{ 
-  // TODO move to AliNanoAODTrackMapping
-  static const Int_t cstIndex = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTOFBunchCrossing");
-  return GetVar(cstIndex);
-};
-
-Int_t AliNanoAODTrack::GetID() const 
-{ 
-  // TODO move to AliNanoAODTrackMapping
-  static const Int_t cstIndex = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIntID");
-  return TMath::Nint(GetVar(cstIndex));
-};

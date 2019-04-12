@@ -17,17 +17,12 @@ void filterAOD_GammaConversions()
   TString cutnumberPhoton = "00200078400000001240820000";
   TString cutnumberEvent = "00000000";
   Bool_t fillHistos = kTRUE;
-  TString V0ReaderName = TString::Format("PhotonReader");
+  TString V0ReaderName = TString::Format("ConvGammaAODProduction");
 
   AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
   fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
   fV0ReaderV1->SetCreateAODs(kFALSE);  // AOD Output
   fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-
-  if (!mgr) {
-    Error("AddTask_V0ReaderV1", "No analysis manager found.");
-    return NULL;
-  }
 
   if (cutnumberEvent != "") {
     AliConvEventCuts *fEventCuts = new AliConvEventCuts(cutnumberEvent.Data(), cutnumberEvent.Data());
@@ -73,7 +68,7 @@ void filterAOD_GammaConversions()
   // Note: vertices are kept by default
   task->SetVarListHeader("OfflineTrigger,MagField");
   // track level
-  task->SetVarListTrack("pt,theta,phi");
+  task->SetVarListTrack("pt,theta,phi,ID");
 
   task->SetTrkCuts(trkCuts);
   task->AddEvtCuts(evtCuts);
@@ -90,10 +85,10 @@ void filterAOD_GammaConversions()
   chain->Add("AliAOD.root");
   
   // For conversions
-  TChain* friend = new TChain("aodTree", "AliAODGammaConversion.root");
-  friend->Add("AliAODGammaConversion.root");
-  chain->AddFriend(friend);
+  TChain* friendChain = new TChain("aodTree", "AliAODGammaConversion.root");
+  friendChain->Add("AliAODGammaConversion.root");
+  chain->AddFriend(friendChain);
 
   Printf("Starting Analysis....");
-  mgr->StartAnalysis("local", chain, 100);
+  mgr->StartAnalysis("local", chain, 1000);
 }

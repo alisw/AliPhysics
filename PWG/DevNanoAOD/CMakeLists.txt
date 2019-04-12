@@ -37,7 +37,9 @@ set(SRCS
   AliNanoAODTrack.cxx
   AliAnalysisNanoAODCutsCRCZDC.cxx
   AliAnalysisNanoAODCutsJet.cxx
+  AliNanoAODTrackMapping.cxx
   tutorial/AliAnalysisTaskNanoSimple.cxx
+  validation/AliAnalysisTaskNanoValidator.cxx
   )
 
 # Headers from sources

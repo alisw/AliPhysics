@@ -427,6 +427,14 @@ TList* AliNanoAODReplicator::GetList() const
   
   if (!fList)
     {
+      // sanity checks
+      if (fSaveConversionPhotons) {
+        // check if id field is in fVarList
+        AliNanoAODTrackMapping::GetInstance(fVarList);
+        if (AliNanoAODTrackMapping::GetInstance()->GetVarIndex("ID") == -1)
+          AliFatal("Conversion Photons requested but field 'id' missing in track variables");
+      }
+      
       fList = new TList;
       fList->SetOwner(kTRUE);
 
@@ -452,7 +460,7 @@ TList* AliNanoAODReplicator::GetList() const
       numberOfHeaderParam -= numberOfHeaderParamInt;
       fHeader = new AliNanoAODHeader(numberOfHeaderParam, numberOfHeaderParamInt);
 
-      fHeader->SetName("header"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
+      fHeader->SetName("header");
       fList->Add(fHeader);    
         
       if(fSaveVzero){
@@ -633,6 +641,27 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     entries = source.GetNumberOfTracks();
   }
 
+  // Photons
+  std::list<Int_t> trackIDs;
+  if (fSaveConversionPhotons) {
+    Int_t nConvPhotons = 0;
+    static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("ConvGammaAODProduction");
+    if (!photonReader)
+      AliFatal("No V0 reader but photon conversion requested");
+    if (photonReader->AreAODsRelabeled() != kFALSE)
+      AliFatal("This requires not relabled tracks");
+    TClonesArray* gammaArray = photonReader->GetReconstructedGammas();
+    for (int iGamma = 0; iGamma < gammaArray->GetEntriesFast(); ++iGamma) {
+      auto *photonCandidate = dynamic_cast<AliAODConversionPhoton *>(gammaArray->At(iGamma));
+      if (fConversionPhotonCuts && !fConversionPhotonCuts->IsSelected(photonCandidate))
+        continue;
+      trackIDs.push_back(photonCandidate->GetTrackLabelPositive());
+      trackIDs.push_back(photonCandidate->GetTrackLabelNegative());
+      new((*fConversionPhotons)[nConvPhotons++]) AliAODConversionPhoton(*photonCandidate);
+    }
+  }
+  
+  // Tracks
   Int_t ntracks(0);
   for(Int_t j=0; j<entries; j++) {
     AliVTrack *track = 0x0;
@@ -651,6 +680,10 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
         selected = kTRUE;
     }
     
+    // store tracks needed for conversions
+    if (std::find(trackIDs.begin(), trackIDs.end(), aodtrack->GetID()) != trackIDs.end())
+      selected = kTRUE;
+    
     if (!selected)
       continue;
 
@@ -665,21 +698,6 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
 
     for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
       (*it)->SetNanoAODTrack(aodtrack, nanoTrack);
-  }
-  
-  // Photons
-  if (fSaveConversionPhotons) {
-    Int_t nConvPhotons = 0;
-    static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("PhotonReader");
-    if (!photonReader)
-      AliFatal("No V0 reader but photon conversion requested");
-    TClonesArray* gammaArray = photonReader->GetReconstructedGammas();
-    for (int iGamma = 0; iGamma < gammaArray->GetEntriesFast(); ++iGamma) {
-      auto *photonCandidate = dynamic_cast<AliAODConversionPhoton *>(gammaArray->At(iGamma));
-      if (fConversionPhotonCuts && !fConversionPhotonCuts->IsSelected(photonCandidate))
-        continue;
-      new((*fConversionPhotons)[nConvPhotons++]) AliAODConversionPhoton(*photonCandidate);
-    }
   }
   
   AliDebug(1,Form("tracks=%d vertices=%d", fTracks->GetEntries(),fVertices->GetEntries())); 
