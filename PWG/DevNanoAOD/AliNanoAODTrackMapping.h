@@ -52,7 +52,7 @@ public:
   Int_t GetPosDCAy()          const { return fPosDCAy;          }
   Int_t GetRAtAbsorberEnd()   const { return fRAtAbsorberEnd;   }
   Int_t GetTPCncls()          const { return fTPCncls;          }
-  Int_t Getid()               const { return fid;               }
+  Int_t GetID()               const { return fID;               }
   Int_t GetTPCnclsF()         const { return fTPCnclsF;         }
   Int_t GetTPCNCrossedRows()  const { return fTPCNCrossedRows;  }
   Int_t GetTrackPhiOnEMCal()  const { return fTrackPhiOnEMCal;  }
@@ -76,11 +76,9 @@ public:
   Int_t GetTPCnclsS()         const { return fTPCnclsS;         }
   Int_t GetFilterMap()        const { return fFilterMap;        }
   Int_t GetTOFBunchCrossing() const { return fTOFBunchCrossing; }
-  Int_t GetID()               const { return fID;               }
   Int_t GetCovMat(Int_t index)  const { return fcovmat[index];  }
 
   
-  // TODO: implement custom variables
 
 
 private:
@@ -104,7 +102,7 @@ private:
   Int_t fPosDCAy;	  ///< Mapping variable
   Int_t fRAtAbsorberEnd;  ///< Mapping variable
   Int_t fTPCncls;	  ///< Mapping variable
-  Int_t fid;		  ///< Mapping variable
+  Int_t fID;		  ///< Mapping variable
   Int_t fTPCnclsF;	  ///< Mapping variable
   Int_t fTPCNCrossedRows; ///< Mapping variable
   Int_t fTrackPhiOnEMCal; ///< Mapping variable
@@ -128,50 +126,7 @@ private:
   Int_t fTPCnclsS;    ///< Mapping variable
   Int_t fFilterMap;      ///< Mapping variable
   Int_t fTOFBunchCrossing;      ///< Mapping variable
-  Int_t fID;      ///< Mapping variable
   Int_t fcovmat[21];          ///< Mapping variables
-
-  
-  // Setters are private because we don't want the mapping to change once the class has been instantiated 
-  void  SetPt               (Int_t var) { fPt = var;               }
-  void  SetPhi              (Int_t var) { fPhi = var;              }  
-  void  SetTheta            (Int_t var) { fTheta = var;            }
-  void  SetChi2PerNDF       (Int_t var) { fChi2PerNDF = var;       }  
-  void  SetPosX             (Int_t var) { fPosX = var;             }
-  void  SetPosY             (Int_t var) { fPosY = var;             }
-  void  SetPosZ             (Int_t var) { fPosZ = var;             }
-  void  SetPDCAX            (Int_t var) { fPDCAX = var;            }
-  void  SetPDCAY            (Int_t var) { fPDCAY = var;            }
-  void  SetPDCAZ            (Int_t var) { fPDCAZ = var;            }
-  void  SetPosDCAx          (Int_t var) { fPosDCAx = var;          }
-  void  SetPosDCAy          (Int_t var) { fPosDCAy = var;          }
-  void  SetRAtAbsorberEnd   (Int_t var) { fRAtAbsorberEnd = var;   }
-  void  SetTPCncls          (Int_t var) { fTPCncls = var;          }
-  void  Setid               (Int_t var) { fid = var;               }
-  void  SetTPCnclsF         (Int_t var) { fTPCnclsF = var;         }
-  void  SetTPCNCrossedRows  (Int_t var) { fTPCNCrossedRows = var;  }
-  void  SetTrackPhiOnEMCal  (Int_t var) { fTrackPhiOnEMCal = var;  }
-  void  SetTrackEtaOnEMCal  (Int_t var) { fTrackEtaOnEMCal = var;  }
-  void  SetTrackPtOnEMCal   (Int_t var) { fTrackPtOnEMCal = var;   }
-  void  SetITSsignal        (Int_t var) { fITSsignal = var;        }
-  void  SetTPCsignal        (Int_t var) { fTPCsignal = var;        }
-  void  SetTPCsignalTuned   (Int_t var) { fTPCsignalTuned = var;   }
-  void  SetTPCsignalN       (Int_t var) { fTPCsignalN = var;       }
-  void  SetTPCmomentum      (Int_t var) { fTPCmomentum = var;      }
-  void  SetTPCTgl           (Int_t var) { fTPCTgl = var;           }
-  void  SetTOFsignal        (Int_t var) { fTOFsignal = var;        }
-  void  SetintegratedLenght (Int_t var) { fintegratedLenght = var; }
-  void  SetTOFsignalTuned   (Int_t var) { fTOFsignalTuned = var;   }
-  void  SetHMPIDsignal      (Int_t var) { fHMPIDsignal = var;      }
-  void  SetHMPIDoccupancy   (Int_t var) { fHMPIDoccupancy = var;   }
-  void  SetTRDsignal        (Int_t var) { fTRDsignal = var;        }
-  void  SetTRDChi2          (Int_t var) { fTRDChi2 = var;          }
-  void  SetTRDnSlices       (Int_t var) { fTRDnSlices = var;       }
-  void  SetIsMuonTrack      (Int_t var) { fIsMuonTrack = var;      }
-  void  SetTPCnclsS         (Int_t var) { fTPCnclsS = var;         }
-  void  SetFilterMap        (Int_t var) { fFilterMap = var;        }
-  void  SetCovMat           (Int_t var, Int_t index) { fcovmat[index] = var; }
-
 
   static AliNanoAODTrackMapping * fInstance; ///< instance, needed for the singleton implementation
   static TString fMappingString; ///< the string which this class was initialized with

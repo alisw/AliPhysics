@@ -122,5 +122,5 @@ void  AliAnalysisTaskNanoValidator::UserExec(Option_t */*option*/)
   Printf("Base: %d \t %d \t %d \t %d \t %f \t %d \t %d", BunchCrossNumber, OrbitNumber, PeriodNumber, RunNumber, MagField, NumberOfESDTracks, OfflineTrigger);
   Printf("T0: %f \t %f \t %f \t %f", T0Spread[0], T0Spread[1], T0Spread[2], T0Spread[3]);
   Printf("Centrality: %f \t %f \t %f \t %f \t %f", CentrV0M, CentrCL0, CentrCL1, CentrTRK, RefMult08);
-  Printf("");
+  Printf(" ");
 }

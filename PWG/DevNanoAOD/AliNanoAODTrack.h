@@ -144,7 +144,7 @@ public:
   ULong64_t GetStatus() const { AliFatal("Not implemented"); return 0; }
   // ULong_t GetFlags() const { return fFlags; }
 
-  Int_t   GetID() const;
+  Int_t   GetID() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetID()); }
   Int_t   GetLabel() const { return fLabel; }  // 
   // void    GetTOFLabel(Int_t *p) const;
 
@@ -301,7 +301,7 @@ public:
   //  Bool_t GetOuterHmpPxPyPz(Double_t *p) const;
   //  Int_t     GetHMPIDcluIdx()     const;// FIXME: array of ints?
   //   void      GetITSdEdxSamples(Double_t s[4]) const; // FIXME: To be reimplemented. Use one kin var for each sample
-  Int_t   GetTOFBunchCrossing(Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const;
+  Int_t   GetTOFBunchCrossing (Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFBunchCrossing()); }
   UChar_t   GetTRDncls(Int_t /*layer*/)                           const {AliFatal("Not Implemented"); return 0;}; 
   Double_t  GetTRDslice(Int_t /*plane*/, Int_t /*slice*/)         const {AliFatal("Not Implemented"); return 0;};
   Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {AliFatal("Not Implemented"); return 0;};
@@ -390,7 +390,7 @@ void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInsta
 
   // PID access functions
   static Int_t GetPIDIndex(ENanoPIDResponse r, AliPID::EParticleType p)  { return fgPIDIndexes[r][p]; }
-  static const char* GetPIDVarName(ENanoPIDResponse r, AliPID::EParticleType p) {  return Form("cstPID.%d.%s", r, AliPID::ParticleShortName(p)); }
+  static const char* GetPIDVarName(ENanoPIDResponse r, AliPID::EParticleType p) {  return Form("PID.%d.%s", r, AliPID::ParticleShortName(p)); }
   static Bool_t InitPIDIndex();
 
 

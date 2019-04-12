@@ -431,7 +431,7 @@ TList* AliNanoAODReplicator::GetList() const
       if (fSaveConversionPhotons) {
         // check if id field is in fVarList
         AliNanoAODTrackMapping::GetInstance(fVarList);
-        if (AliNanoAODTrackMapping::GetInstance()->GetVarIndex("id") == -1)
+        if (AliNanoAODTrackMapping::GetInstance()->GetVarIndex("ID") == -1)
           AliFatal("Conversion Photons requested but field 'id' missing in track variables");
       }
       

@@ -53,7 +53,7 @@ void filterESD_GammaConversions()
   // Note: vertices are kept by default
   task->SetVarListHeader("OfflineTrigger,MagField,MultSelection.RefMult08");
   // track level
-  task->SetVarListTrack("pt,theta,phi,id");
+  task->SetVarListTrack("pt,theta,phi,ID");
 
   task->SetTrkCuts(trkCuts);
   task->AddEvtCuts(evtCuts);

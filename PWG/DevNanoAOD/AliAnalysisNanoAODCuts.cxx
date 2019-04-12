@@ -360,16 +360,8 @@ void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliN
   }
 
   // additional fields which are to be moved to AliNanoAODTrack
-  static const Int_t cstTOFBunchCrossing = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTOFBunchCrossing");
-  if (cstTOFBunchCrossing != -1)
-    nanoTrack->SetVar(cstTOFBunchCrossing, aodTrack->GetTOFBunchCrossing());
-
   // TPC clusters
   static const Int_t cstTPCClusterInfo21 = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTPCClusterInfo21");
   if (cstTPCClusterInfo21 != -1)
     nanoTrack->SetVar(cstTPCClusterInfo21, aodTrack->GetTPCClusterInfo(2,1));
-
-  static const Int_t cstIntID = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstIntID");
-  if (cstIntID != -1)
-    nanoTrack->SetVar(cstIntID, aodTrack->GetID());
 }

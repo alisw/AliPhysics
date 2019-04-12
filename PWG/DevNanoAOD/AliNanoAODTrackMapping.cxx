@@ -29,7 +29,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fPosDCAy(-1),	  
   fRAtAbsorberEnd(-1),  
   fTPCncls(-1),	  
-  fid(-1),		  
+  fID(-1),		  
   fTPCnclsF(-1),	  
   fTPCNCrossedRows(-1), 
   fTrackPhiOnEMCal(-1), 
@@ -51,8 +51,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fIsMuonTrack(-1),
   fTPCnclsS(-1),
   fFilterMap(-1),
-  fTOFBunchCrossing(-1),
-  fID(-1)
+  fTOFBunchCrossing(-1)
 { 
   /// default ctor
 
@@ -77,7 +76,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fPosDCAy(-1),	  
   fRAtAbsorberEnd(-1),  
   fTPCncls(-1),	  
-  fid(-1),		  
+  fID(-1),		  
   fTPCnclsF(-1),	  
   fTPCNCrossedRows(-1), 
   fTrackPhiOnEMCal(-1), 
@@ -99,8 +98,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fIsMuonTrack(-1),
   fTPCnclsS(-1),
   fFilterMap(-1),
-  fTOFBunchCrossing(-1),
-  fID(-1)
+  fTOFBunchCrossing(-1)
 {
   /// ctor
 
@@ -142,7 +140,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "posDCAy"          ) fPosDCAy           = index;
     else if(var == "RAtAbsorberEnd"   ) fRAtAbsorberEnd    = index;
     else if(var == "TPCncls"          ) fTPCncls           = index;
-    else if(var == "id"               ) fid                = index;
+    else if(var == "ID"               ) fID                = index;
     else if(var == "TPCnclsF"         ) fTPCnclsF          = index;
     else if(var == "TPCNCrossedRows"  ) fTPCNCrossedRows   = index;
     else if(var == "TrackPhiOnEMCal"  ) fTrackPhiOnEMCal   = index;
@@ -166,7 +164,6 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "TPCnclsS"         ) fTPCnclsS          = index;
     else if(var == "FilterMap"        ) fFilterMap         = index;
     else if(var == "TOFBunchCrossing" ) fTOFBunchCrossing  = index;
-    else if(var == "ID"               ) fID                = index;
     else if(var == "covmat"           ) {
           
         for(Int_t i=0;i<21;i++){
@@ -210,7 +207,7 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "posDCAy"          ) return fPosDCAy          ;
     else if(varName == "RAtAbsorberEnd"   ) return fRAtAbsorberEnd   ;
     else if(varName == "TPCncls"          ) return fTPCncls          ;
-    else if(varName == "id"               ) return fid               ;
+    else if(varName == "ID"               ) return fID               ;
     else if(varName == "TPCnclsF"         ) return fTPCnclsF         ;
     else if(varName == "TPCNCrossedRows"  ) return fTPCNCrossedRows  ;
     else if(varName == "TrackPhiOnEMCal"  ) return fTrackPhiOnEMCal  ;
@@ -234,7 +231,6 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "TPCnclsS"         ) return fTPCnclsS         ;
     else if(varName == "FilterMap"        ) return fFilterMap        ;
     else if(varName == "TOFBunchCrossing" ) return fTOFBunchCrossing ;
-    else if(varName == "ID"               ) return fID               ;
     else if(varName == "covmat0"          ) return fcovmat[0]        ;
 
     std::map<TString,Int_t>::iterator it = fMapCstVar.find(varName); // FIXME: do I need to delete "it"?
@@ -264,7 +260,7 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
     else if(index == fPosDCAy          )  return "posDCAy"          ;
     else if(index == fRAtAbsorberEnd   )  return "RAtAbsorberEnd"   ;
     else if(index == fTPCncls          )  return "TPCncls"          ;
-    else if(index == fid               )  return "id"               ;
+    else if(index == fID               )  return "ID"               ;
     else if(index == fTPCnclsF         )  return "TPCnclsF"         ;
     else if(index == fTPCNCrossedRows  )  return "TPCNCrossedRows"  ;
     else if(index == fTrackPhiOnEMCal  )  return "TrackPhiOnEMCal"  ;
@@ -288,7 +284,6 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
     else if(index == fTPCnclsS         )  return "TPCnclsS"         ;
     else if(index == fFilterMap        )  return "FilterMap"        ;
     else if(index == fTOFBunchCrossing )  return "TOFBunchCrossing" ;
-    else if(index == fID               )  return "ID"               ;
     for (Int_t i=0; i<21; i++){
         
         if(index == fcovmat[i]) return TString::Format("covmat%d",i).Data();
