@@ -150,8 +150,30 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
     }
   }
   
-  return true;
+  return kTRUE;
 }
+
+// Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) 
+// {
+//   // cascade selection
+//   
+//   AliAODcascade* cascade = dynamic_cast<AliAODcascade*>(obj);
+//   if (!cascade)
+//     AliFatal("Did not pass a Cascade");
+//   
+//   // check V0
+//   if (!v0Cuts->IsSelected(cascade))
+//     return kFALSE;
+//   
+//   // check Xi
+//   if (!xiCuts->IsSelected(cascade->GetDecayVertexXi())
+//     return kFALSE
+//   
+//   // TODO remaining cuts on Xi DCA and bachelor momentum
+//   
+//   return kTRUE;
+// }
+
 
 AliAnalysisNanoAODEventCuts::AliAnalysisNanoAODEventCuts():
   AliAnalysisCuts(), 
@@ -208,22 +230,26 @@ void AliNanoAODSimpleSetter::Init(AliNanoAODHeader* head, TString varListHeader)
     else if(var == "BunchCrossNumber"  ){ head->SetBunchCrossNumberIndex(indexInt); indexInt++; continue;}
     else if(var == "OrbitNumber"       ){ head->SetOrbitNumberIndex(indexInt); indexInt++; continue;}
     else if(var == "PeriodNumber"      ){ head->SetPeriodNumberIndex(indexInt); indexInt++; continue;}
-    else if(var == "Centr"      ) head->SetCentrIndex      (index);
-    else if(var == "CentrTRK"   ) head->SetCentrTRKIndex   (index);
-    else if(var == "CentrCL0"   ) head->SetCentrCL0Index   (index);
-    else if(var == "CentrCL1"   ) head->SetCentrCL1Index   (index);
-    else if(var == "MagField"   ) head->SetMagFieldIndex   (index);
-    else if(var == "OfflineTrigger"   ) head->SetOfflineTriggerIndex   (index);
-    else if(var == "RunNumber"  ) head->SetRunNumberIndex  (index);
+    else if(var == "Centr"      ) head->SetCentrIndex      (index++);
+    else if(var == "CentrTRK"   ) head->SetCentrTRKIndex   (index++);
+    else if(var == "CentrCL0"   ) head->SetCentrCL0Index   (index++);
+    else if(var == "CentrCL1"   ) head->SetCentrCL1Index   (index++);
+    else if(var == "MagField"   ) head->SetMagFieldIndex   (index++);
+    else if(var == "OfflineTrigger"   ) head->SetOfflineTriggerIndex   (index++); // TODO should be int
+    else if(var == "RunNumber"  ) head->SetRunNumberIndex  (index++);  // TODO should be int
+//     else if(var == "T0Spread" ) {
+//       for (int i=0; i<4; i++)
+//         head->SetT0SpreadIndex(i, index++);
+//     }
     else if(var.BeginsWith("cst") || var.BeginsWith("MultSelection.")) {
       cstMap[var] = index;
-      fMultMap[var(14, var.Length())] = index;
+      if (var.BeginsWith("MultSelection."))
+        fMultMap[var(14, var.Length())] = index;
       std::cout << "ADDING " << index << " " << cstMap[var] << " " << var.Data() << std::endl;
+      index++;
     }
     else 
       AliFatal(Form("Invalid var [%s]", var.Data()));
-
-    index++;
   }
 
   vars->Delete();
@@ -287,6 +313,9 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent* event, AliNanoA
   if ((head->GetMagFieldIndex())!=-1)  head->SetVar(head->GetMagFieldIndex() ,           magfield );
   if ((head->GetOfflineTriggerIndex())!=-1)  head->SetVar(head->GetOfflineTriggerIndex() , Double_t(offlineTrigger));
   if ((head->GetRunNumberIndex())!=-1) head->SetVar(head->GetRunNumberIndex(), Double_t(runNumber));
+//   if (head->GetT0SpreadIndex(0) != -1)
+//     for (int i=0; i<4; i++)
+//       head->SetVar(head->GetT0SpreadIndex(i), header->GetT0spread(i));
 }
 
 void AliNanoAODSimpleSetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * nanoTrack) 
