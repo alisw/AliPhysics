@@ -138,6 +138,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                fMCb;                   //!<! impact parameter in MC
         Int_t                   fMCnPrim;               //!<! number of primary particles according to mc
         Int_t                   fMCnPrimV0M;            //!<! number of primary particles in the v0 acceptance
+        Int_t                   fMCnTracks;             //!<! number of "tracks" i.e. particles in MCevent
         Bool_t                  fIsTrigger;             //!<! is event triggered?
         Bool_t                  fHasVertex;             //!<! has the event a vertex?
         Bool_t                  fIsIncompleteDAQ;           //!<! incomplete daq event
@@ -173,6 +174,9 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Bool_t                  fMCisSecDecay;          //!<! is secondary from decay?
         Bool_t                  fMCisSecMat;            //!<! is secondary from material?
         Int_t                   fMCPrimSec;             //!<! status of mc track: 0=prim, 1=decay 2=material
+        AlidNdPtTools::ParticleType   fMCParticleType;  //!<! which particle is it
+        AlidNdPtTools::ProductionType fMCProdcutionType;//!<! production mechanism (prim,material,decay)
+        Int_t                   fMCPDGCode;             //!<! PDG code
         
         const AliExternalTrackParam*  fInnerP;          //!<! innerparams
         const AliExternalTrackParam*  fTPCinnerP;       //!<! tpc inner params
@@ -212,7 +216,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         
     /// \cond CLASSIMP      
-    ClassDef(AliAnalysisTaskMKBase, 2);
+    ClassDef(AliAnalysisTaskMKBase, 3);
     /// \endcond
     
 };

@@ -61,6 +61,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fMCb(-1)
     , fMCnPrim(-1)
     , fMCnPrimV0M(-1)
+    , fMCnTracks(-1)
     , fIsTrigger(kFALSE)
     , fHasVertex(kFALSE)
     , fIsIncompleteDAQ(kFALSE)
@@ -93,6 +94,9 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fMCisSecDecay(kFALSE)
     , fMCisSecMat(kFALSE)
     , fMCPrimSec(-1)
+    , fMCParticleType(AlidNdPtTools::kUndefined)
+    , fMCProdcutionType(AlidNdPtTools::kUnknown)
+    , fMCPDGCode(0)
     , fInnerP(0)
     , fTPCinnerP(0)
     , fPtInner(0)
@@ -158,6 +162,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fMCb(-1)
     , fMCnPrim(-1)
     , fMCnPrimV0M(-1)
+    , fMCnTracks(-1)
     , fIsTrigger(kFALSE)
     , fHasVertex(kFALSE)
     , fIsIncompleteDAQ(kFALSE)
@@ -190,6 +195,9 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fMCisSecDecay(kFALSE)
     , fMCisSecMat(kFALSE)
     , fMCPrimSec(-1)
+    , fMCParticleType(AlidNdPtTools::kUndefined)
+    , fMCProdcutionType(AlidNdPtTools::kUnknown)    
+    , fMCPDGCode(0)
     , fInnerP(0)
     , fTPCinnerP(0)
     , fPtInner(0)
@@ -507,7 +515,7 @@ void AliAnalysisTaskMKBase::FillTriggerLog()
 Bool_t AliAnalysisTaskMKBase::InitMCEvent() 
 {
     if (!fIsMC) return kFALSE;
-    // set things related to mc like true multiplcities etc.
+    fMCnTracks = fMC->GetNumberOfTracks();
     return kTRUE;
 }
 
@@ -520,8 +528,6 @@ Bool_t AliAnalysisTaskMKBase::InitVZERO()
         Log("noVZEROData");
         return kFALSE;
     }
-    
-    
     return kTRUE;
 }
 
@@ -563,28 +569,15 @@ Bool_t AliAnalysisTaskMKBase::InitMCTrack()
     if (!fESDTrack) return kFALSE;
     if (!fMC) return kFALSE;
     
-    fMCLabel = TMath::Abs(fESDTrack->GetLabel());            
-    AliMCParticle* fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(fMCLabel));
+    fMCLabel = TMath::Abs(fESDTrack->GetLabel());
+    if (fMCLabel < 0) { Log("tracklabel<0"); }
+    fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(fMCLabel));
     if (!fMCParticle) { 
         Err("particleNOTinStack"); 
         return kFALSE;
     }    
     
-    fMCPt  = fMCParticle->Pt(); 
-    fMCEta = fMCParticle->Eta(); 
-    fMCPhi = fMCParticle->Phi(); 
-    
-    fMCisPrim     = fMC->IsPhysicalPrimary(fMCLabel);
-    fMCisSecDecay = fMC->IsSecondaryFromWeakDecay(fMCLabel);
-    fMCisSecMat   = fMC->IsSecondaryFromMaterial(fMCLabel);        
-    fMCisSec      = fMCisSecMat || fMCisSecDecay;
-    if (fMCisPrim)     { fMCPrimSec = 0; }
-    if (fMCisSecDecay) { fMCPrimSec = 1; }
-    if (fMCisSecMat)   { fMCPrimSec = 2; }
-    if (fMCPrimSec == -1)             { Err("NOTprimORsec"); }
-    if (fMCisPrim && fMCisSec)        { Err("primANDsec"); }    
-    if (fMCisSecDecay && fMCisSecMat) { Err("decayANDmat"); }   
-    return kTRUE;
+    return InitMCParticle();
 }
 
 //_____________________________________________________________________________
@@ -593,7 +586,25 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
 { 
      if (!fIsMC) return kFALSE;
     // set all mc particle related things
-     return kTRUE;
+     
+    fMCPt  = fMCParticle->Pt(); 
+    fMCEta = fMCParticle->Eta(); 
+    fMCPhi = fMCParticle->Phi(); 
+    
+    fMCisPrim     = fMC->IsPhysicalPrimary(fMCLabel);
+    fMCisSecDecay = fMC->IsSecondaryFromWeakDecay(fMCLabel);
+    fMCisSecMat   = fMC->IsSecondaryFromMaterial(fMCLabel);        
+    fMCisSec      = fMCisSecMat || fMCisSecDecay;    
+    if (fMCisPrim)     { fMCPrimSec = 0; fMCProdcutionType = AlidNdPtTools::kPrim; }
+    if (fMCisSecDecay) { fMCPrimSec = 1; fMCProdcutionType = AlidNdPtTools::kSecDecay; }
+    if (fMCisSecMat)   { fMCPrimSec = 2; fMCProdcutionType = AlidNdPtTools::kSecMaterial; }
+    if (fMCPrimSec == -1)             { Err("NOTprimORsec"); }
+    if (fMCisPrim && fMCisSec)        { Err("primANDsec"); }
+    if (fMCisSecDecay && fMCisSecMat) { Err("decayANDmat"); }
+    fMCPDGCode = fMCParticle->PdgCode();
+    fMCParticleType = AlidNdPtTools::ParticleTypeFromPDG(fMCPDGCode);
+    
+    return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -723,8 +734,15 @@ void AliAnalysisTaskMKBase::LoopOverAllTracks()
 
 void AliAnalysisTaskMKBase::LoopOverAllParticles()
 {    
-    //to be implemented
+    fMCnTracks = fMC->GetNumberOfTracks();
+    for (Int_t i = 0; i < fMCnTracks; i++) {
+        fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(i));
+        if (!fMCParticle) { Err("noMCParticle"); continue; }         
+        fMCLabel = i;
+        AnaMCParticle();        
+    }
 }
+
 
 //_____________________________________________________________________________
 
