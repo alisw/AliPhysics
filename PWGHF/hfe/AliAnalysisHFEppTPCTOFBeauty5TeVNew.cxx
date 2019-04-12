@@ -934,7 +934,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(hCharmMotherPt_corr2);
 
   hBeautyMotherPtbef = new TH1F("hBeautyMotherPtbef","; p_{T} [GeV/c]; Count",14,ptbinningHF2);
-  hBeautyMotherPtbef->Sumw2();
+ // hBeautyMotherPtbef->Sumw2();
   fOutputList->Add(hBeautyMotherPtbef);
 
   hBeautyMotherPtaft = new TH1F("hBeautyMotherPtaft","; p_{T} [GeV/c]; Count",14,ptbinningHF2);
@@ -1000,12 +1000,12 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_had_WoPID);
 
   fDCAxy_pt_charmbef = new TH2F("fDCAxy_pt_charmbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_charmbef->Sumw2();
+  //fDCAxy_pt_charmbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_charmbef);
   
   
   fDCAxy_pt_DstarDplusbef = new TH2F("fDCAxy_pt_DstarDplusbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_DstarDplusbef->Sumw2();
+  //fDCAxy_pt_DstarDplusbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDplusbef);
   
   fDCAxy_pt_DstarDplusAft = new TH2F("fDCAxy_pt_DstarDplusAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1013,7 +1013,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_DstarDplusAft);
   
   fDCAxy_pt_DstarDzerobef = new TH2F("fDCAxy_pt_DstarDzerobef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_DstarDzerobef->Sumw2();
+  //fDCAxy_pt_DstarDzerobef->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDzerobef);
   
   fDCAxy_pt_DstarDzeroAft = new TH2F("fDCAxy_pt_DstarDzeroAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1021,7 +1021,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_DstarDzeroAft);
   
   fDCAxy_pt_DstarDsbef = new TH2F("fDCAxy_pt_DstarDsbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_DstarDsbef->Sumw2();
+  //fDCAxy_pt_DstarDsbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_DstarDsbef);
   
   fDCAxy_pt_DstarDsAft = new TH2F("fDCAxy_pt_DstarDsAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1029,15 +1029,15 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_DstarDsAft);
   
   fDCAxy_pt_Dplusbef = new TH2F("fDCAxy_pt_Dplusbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_Dplusbef->Sumw2();
+  //fDCAxy_pt_Dplusbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_Dplusbef);
   
   fDCAxy_pt_Dzerobef = new TH2F("fDCAxy_pt_Dzerobef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_Dzerobef->Sumw2();
+  //fDCAxy_pt_Dzerobef->Sumw2();
   fOutputList->Add(fDCAxy_pt_Dzerobef);
   
   fDCAxy_pt_Dsbef = new TH2F("fDCAxy_pt_Dsbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_Dsbef->Sumw2();
+  //fDCAxy_pt_Dsbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_Dsbef);
   
   fDCAxy_pt_DplusAft = new TH2F("fDCAxy_pt_DplusAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1053,7 +1053,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_DsAft);
   
   fDCAxy_pt_charmmesonsbef = new TH2F("fDCAxy_pt_charmmesonsbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_charmmesonsbef->Sumw2();
+  //fDCAxy_pt_charmmesonsbef->Sumw2();
   fOutputList->Add(fDCAxy_pt_charmmesonsbef);
   
   fDCAxy_pt_charmmesonsAft = new TH2F("fDCAxy_pt_charmmesonsAft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1061,15 +1061,15 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_charmmesonsAft);
   
   fDCAxy_pt_Lc = new TH2F("fDCAxy_pt_Lc",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_Lc->Sumw2();
+  //fDCAxy_pt_Lc->Sumw2();
   fOutputList->Add(fDCAxy_pt_Lc);
   
   fDCAxy_pt_charmbaryons = new TH2F("fDCAxy_pt_charmbaryons",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_charmbaryons->Sumw2();
+  //fDCAxy_pt_charmbaryons->Sumw2();
   fOutputList->Add(fDCAxy_pt_charmbaryons);
   
   fDCAxy_pt_beautybaryons = new TH2F("fDCAxy_pt_beautybaryons",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_beautybaryons->Sumw2();
+  //fDCAxy_pt_beautybaryons->Sumw2();
   fOutputList->Add(fDCAxy_pt_beautybaryons);
 
   fDCAxy_pt_charmaft = new TH2F("fDCAxy_pt_charmaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1077,7 +1077,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_charmaft);
 
   fDCAxy_pt_beautybef = new TH2F("fDCAxy_pt_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_beautybef->Sumw2();
+  //fDCAxy_pt_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_beautybef);
 
   fDCAxy_pt_beautyaft = new TH2F("fDCAxy_pt_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1085,7 +1085,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_beautyaft); 
 
   fDCAxy_pt_MesonB_beautybef = new TH2F("fDCAxy_pt_MesonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_MesonB_beautybef->Sumw2();
+  //fDCAxy_pt_MesonB_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_MesonB_beautybef);
 
   fDCAxy_pt_MesonB_beautyaft = new TH2F("fDCAxy_pt_MesonB_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1093,7 +1093,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_MesonB_beautyaft);
 
   fDCAxy_pt_MesonBD_beautybef = new TH2F("fDCAxy_pt_MesonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_MesonBD_beautybef->Sumw2();
+  //fDCAxy_pt_MesonBD_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_MesonBD_beautybef);
 
   fDCAxy_pt_MesonBD_beautyaft = new TH2F("fDCAxy_pt_MesonBD_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1101,7 +1101,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fDCAxy_pt_MesonBD_beautyaft);
 
   fDCAxy_pt_BaryonB_beautybef = new TH2F("fDCAxy_pt_BaryonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
-  fDCAxy_pt_BaryonB_beautybef->Sumw2();
+ // fDCAxy_pt_BaryonB_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_BaryonB_beautybef);
 
   fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -1219,11 +1219,11 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fMCEnhPtElePi0FoundAft);
 
   fMCPtEleEtaFoundBef = new TH1F("fMCPtEleEtaFoundBef","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fMCPtEleEtaFoundBef->Sumw2();
+  //fMCPtEleEtaFoundBef->Sumw2();
   fOutputList->Add(fMCPtEleEtaFoundBef);
 
   fMCPtElePi0FoundBef = new TH1F("fMCPtElePi0FoundBef","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fMCPtElePi0FoundBef->Sumw2();
+  //fMCPtElePi0FoundBef->Sumw2();
   fOutputList->Add(fMCPtElePi0FoundBef);
 
   fMCMBPtEleEtaFoundAft = new TH1F("fMCMBPtEleEtaFoundAft","; p_{T} [GeV/c]; Count",32,ptbinning);
@@ -1238,11 +1238,11 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fOutputList->Add(fMCPtEleGammaFound);
 
   fMCPtElePi0GeneratedBef = new TH1F("fMCPtElePi0GeneratedBef","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fMCPtElePi0GeneratedBef->Sumw2();
+  //fMCPtElePi0GeneratedBef->Sumw2();
   fOutputList->Add(fMCPtElePi0GeneratedBef);
 
   fMCPtEleEtaGeneratedBef = new TH1F("fMCPtEleEtaGeneratedBef","; p_{T} [GeV/c]; Count",32,ptbinning);
-  fMCPtEleEtaGeneratedBef->Sumw2();
+  //fMCPtEleEtaGeneratedBef->Sumw2();
   fOutputList->Add(fMCPtEleEtaGeneratedBef);
 
   fMCMBPtElePi0GeneratedAft = new TH1F("fMCMBPtElePi0GeneratedAft","; p_{T} [GeV/c]; Count",32,ptbinning);
