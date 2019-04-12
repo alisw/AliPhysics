@@ -2,7 +2,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void SetTPCCorr(AliDielectron *die);
 void SetupMCsignals(AliDielectron* die);
 void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA);
-AliDielectronEventCuts *GetEventCuts();
+AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax);
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
 AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition);
 AliESDtrackCuts *SetupPreFilterESDtrackCuts(Int_t cutDefinition);
@@ -1614,7 +1614,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 }
 
-AliDielectronEventCuts *GetEventCuts(){
+AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax){
 
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
   eventCuts->SetRequireVertex();
@@ -1622,10 +1622,12 @@ AliDielectronEventCuts *GetEventCuts(){
   eventCuts->SetVertexZ(-10.,10.);
   eventCuts->SetMinVtxContributors(1); 
 
-  //no centrality cuts for the moment
-  //Bool_t isRun2 = kTRUE;
-  //eventCuts->SetCentralityRange(0,80,isRun2);
-
+  //centrality cuts if required
+  if(centMin > -1 && centMax > -1 && centMin < centMax){
+    Bool_t isRun2 = kTRUE;
+    eventCuts->SetCentralityRange(centMin,centMax,isRun2);
+  }
+  
   return eventCuts;
 }
 
