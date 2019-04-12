@@ -1,7 +1,6 @@
 
 //ERRORs: no member SetCutIsCowboy(int i)
 
-
 #include <stdio.h>
 
 #include <Riostream.h>

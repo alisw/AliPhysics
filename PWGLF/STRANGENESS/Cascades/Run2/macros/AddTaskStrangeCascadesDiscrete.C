@@ -1,9 +1,8 @@
 
 //Want to see output in gskorod folder.
-
 AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete( Bool_t lSaveEventTree = kTRUE,
-                                                                       Bool_t lSaveV0 = kTRUE,
-                                                                       Bool_t lSaveCascade = kTRUE,
+                                                                       Bool_t lSaveV0Tree = kTRUE,
+                                                                       Bool_t lSaveCascadeTree = kTRUE,
                                                                        Bool_t lRunVertexers = kFALSE,
                                                                        Bool_t lUseLightVertexer = kFALSE,
                                                                        Double_t lCascaderMaxChi2 = 33.,
@@ -41,12 +40,21 @@ AliAnalysisTaskStrangeCascadesDiscrete *AddTaskStrangeCascadesDiscrete( Bool_t l
     // Create and configure the task
     AliAnalysisTaskStrangeCascadesDiscrete *taskAuxiliary =
     new AliAnalysisTaskStrangeCascadesDiscrete(lSaveEventTree,
-                                                         lSaveV0,
-                                                         
-                                                         lSaveCascade,
-                                                         "taskAuxiliary",
-                                                         
-                                                         lExtraOptions);  // const*charname =  Form("taskAuxiliary%s",lExtraOutputName.Data())
+                                               lSaveV0Tree,
+                                               lSaveCascadeTree,
+                                               lRunVertexers,
+                                               lUseLightVertexer,
+                                               lCascaderMaxChi2,
+                                               lCascaderV0MinImpactParam,
+                                               lCascaderV0MassWindow,
+                                               lCascaderBachMinImpactParam,
+                                               lCascaderMaxDCAV0andBach,
+                                               lCascaderMinCosAngle,
+                                               lCascaderMinRadius,
+                                               lCascaderMaxRadius,
+                                               "taskAuxiliary",
+                                               lExtraOptions
+                                               );  // const*charname =  Form("taskAuxiliary%s",lExtraOutputName.Data())
     
     mgr->AddTask(taskAuxiliary);
     
