@@ -113,7 +113,9 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fCentralityEstimator(0)
   , fLowPtTrackDownscaligF(0)
   , fLowPtV0DownscaligF(0)
-  , fFriendDownscaling(-3.)   
+  , fFriendDownscaling(-3.)
+  , fSqrtS(5020)
+  , fChargedMass(0.2)
   , fProcessAll(kFALSE)
   , fProcessCosmics(kFALSE)
   , fProcessITSTPCmatchOut(kFALSE)  // swittch to process ITS/TPC standalone tracks
@@ -695,7 +697,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       ///    downscaleF *= fLowPtTrackDownscaligF;
       ///    if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
       /// New code using flat pt and flat q/pt mixture
-      Int_t selectionPtMask=PtSelectionMask(track->Pt(), fLowPtTrackDownscaligF, 0.2*fLowPtTrackDownscaligF);
+      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedMass);
       if( downscaleCounter>0 && selectionPtMask==0) continue;
 
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
@@ -979,25 +981,27 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
     Int_t mult = vtxESD->GetNContributors();
     Int_t numberOfTracks=esdEvent->GetNumberOfTracks();
     // high pT tracks
-    for (Int_t iTrack = 0; iTrack < numberOfTracks; iTrack++)
-    {
+    for (Int_t iTrack = 0; iTrack < numberOfTracks; iTrack++) {
       AliESDtrack *track = esdEvent->GetTrack(iTrack);
-      AliESDfriendTrack* friendTrack=NULL;
-      Int_t numberOfFriendTracks=0;
-      if (esdFriend) numberOfFriendTracks=esdFriend->GetNumberOfTracks();
-      if (esdFriend && iTrack<numberOfFriendTracks) {
-	if (!esdFriend->TestSkipBit()) friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
+      AliESDfriendTrack *friendTrack = NULL;
+      Int_t numberOfFriendTracks = 0;
+      if (esdFriend) numberOfFriendTracks = esdFriend->GetNumberOfTracks();
+      if (esdFriend && iTrack < numberOfFriendTracks) {
+        if (!esdFriend->TestSkipBit()) friendTrack = (AliESDfriendTrack *) track->GetFriendTrack();
       } //this guy can be NULL
-      if(!track) continue;
-      if(track->Charge()==0) continue;
-      if(!esdTrackCuts->AcceptTrack(track)) continue;
-      if(!accCuts->AcceptTrack(track)) continue;
+      if (!track) continue;
+      if (track->Charge() == 0) continue;
+      if (!esdTrackCuts->AcceptTrack(track)) continue;
+      if (!accCuts->AcceptTrack(track)) continue;
 
       // downscale low-pT tracks
-      Double_t scalempt= TMath::Min(track->Pt(),10.);
-      Double_t downscaleF = gRandom->Rndm();
-      downscaleF *= fLowPtTrackDownscaligF;
-      if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
+      // Double_t scalempt = TMath::Min(track->Pt(), 10.);
+      // Double_t downscaleF = gRandom->Rndm();
+      // downscaleF *= fLowPtTrackDownscaligF;
+      // if (downscaleCounter > 0 && TMath::Exp(2 * scalempt) < downscaleF) continue;
+      /// New code using flat pt and flat q/pt mixture
+      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedMass);
+      if( downscaleCounter>0 && selectionPtMask==0) continue;
 
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
 
@@ -1012,18 +1016,20 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       // chi2 distance between ITSout and InnerParams tracks
       // MC information
 
-      Double_t x[3]; track->GetXYZ(x);
-      Double_t b[3]; AliTracker::GetBxByBz(x,b);
+      Double_t x[3];
+      track->GetXYZ(x);
+      Double_t b[3];
+      AliTracker::GetBxByBz(x, b);
 
       //
       // Transform TPC inner params to track reference frame
       //
       Bool_t isOKtpcInner = kFALSE;
-      AliExternalTrackParam * tpcInner = (AliExternalTrackParam *)(track->GetTPCInnerParam());
+      AliExternalTrackParam *tpcInner = (AliExternalTrackParam *) (track->GetTPCInnerParam());
       if (tpcInner) {
         // transform to the track reference frame 
         isOKtpcInner = tpcInner->Rotate(track->GetAlpha());
-        isOKtpcInner = tpcInner->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
+        isOKtpcInner = tpcInner->PropagateTo(track->GetX(), esdEvent->GetMagneticField());
       }
 
       //
@@ -1031,11 +1037,11 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       // clone TPCinner has to be deleted
       //
       Bool_t isOKtpcInnerC = kFALSE;
-      AliExternalTrackParam * tpcInnerC = new AliExternalTrackParam(*(track->GetTPCInnerParam()));
+      AliExternalTrackParam *tpcInnerC = new AliExternalTrackParam(*(track->GetTPCInnerParam()));
       if (tpcInnerC) {
-        isOKtpcInnerC = ConstrainTPCInner(tpcInnerC,vtxESD,b);
+        isOKtpcInnerC = ConstrainTPCInner(tpcInnerC, vtxESD, b);
         isOKtpcInnerC = tpcInnerC->Rotate(track->GetAlpha());
-        isOKtpcInnerC = tpcInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
+        isOKtpcInnerC = tpcInnerC->PropagateTo(track->GetX(), esdEvent->GetMagneticField());
       }
 
       //
@@ -1043,55 +1049,54 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       // Clone track InnerParams has to be deleted
       //
       Bool_t isOKtrackInnerC = kTRUE;
-      AliExternalTrackParam * trackInnerC = NULL; 
-      AliExternalTrackParam * trackInnerV =  new AliExternalTrackParam(*(track->GetInnerParam()));
-      isOKtrackInnerC=AliTracker::PropagateTrackToBxByBz(trackInnerV,3,track->GetMass(),3,kFALSE);
-      isOKtrackInnerC&= trackInnerV->Rotate(track->GetAlpha());
-      isOKtrackInnerC&= trackInnerV->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
+      AliExternalTrackParam *trackInnerC = NULL;
+      AliExternalTrackParam *trackInnerV = new AliExternalTrackParam(*(track->GetInnerParam()));
+      isOKtrackInnerC = AliTracker::PropagateTrackToBxByBz(trackInnerV, 3, track->GetMass(), 3, kFALSE);
+      isOKtrackInnerC &= trackInnerV->Rotate(track->GetAlpha());
+      isOKtrackInnerC &= trackInnerV->PropagateTo(track->GetX(), esdEvent->GetMagneticField());
 
       if (isOKtrackInnerC) {
-	trackInnerC =  new AliExternalTrackParam(*trackInnerV);
-        isOKtrackInnerC&= ConstrainTrackInner(trackInnerC,vtxESD,track->GetMass(),b);
-        isOKtrackInnerC&= trackInnerC->Rotate(track->GetAlpha());
-        isOKtrackInnerC&= trackInnerC->PropagateTo(track->GetX(),esdEvent->GetMagneticField());
-      }       
+        trackInnerC = new AliExternalTrackParam(*trackInnerV);
+        isOKtrackInnerC &= ConstrainTrackInner(trackInnerC, vtxESD, track->GetMass(), b);
+        isOKtrackInnerC &= trackInnerC->Rotate(track->GetAlpha());
+        isOKtrackInnerC &= trackInnerC->PropagateTo(track->GetX(), esdEvent->GetMagneticField());
+      }
       //
       // calculate chi2 between vi and vj vectors
       // with covi and covj covariance matrices
       // chi2ij = (vi-vj)^(T)*(covi+covj)^(-1)*(vi-vj)
       //
-      TMatrixD deltaT(5,1), deltaTtrackC(5,1);
-      TMatrixD delta(1,5),  deltatrackC(1,5);
-      TMatrixD covarM(5,5), covarMtrackC(5,5);
-      TMatrixD chi2(1,1);
-      TMatrixD chi2trackC(1,1);
+      TMatrixD deltaT(5, 1), deltaTtrackC(5, 1);
+      TMatrixD delta(1, 5), deltatrackC(1, 5);
+      TMatrixD covarM(5, 5), covarMtrackC(5, 5);
+      TMatrixD chi2(1, 1);
+      TMatrixD chi2trackC(1, 1);
 
-      if(isOKtpcInnerC && isOKtrackInnerC) 
-      {
-        for (Int_t ipar=0; ipar<5; ipar++) {
-          deltaT(ipar,0)=tpcInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
-          delta(0,ipar)=tpcInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
+      if (isOKtpcInnerC && isOKtrackInnerC) {
+        for (Int_t ipar = 0; ipar < 5; ipar++) {
+          deltaT(ipar, 0) = tpcInnerC->GetParameter()[ipar] - track->GetParameter()[ipar];
+          delta(0, ipar) = tpcInnerC->GetParameter()[ipar] - track->GetParameter()[ipar];
 
-          deltaTtrackC(ipar,0)=trackInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
-          deltatrackC(0,ipar)=trackInnerC->GetParameter()[ipar]-track->GetParameter()[ipar];
+          deltaTtrackC(ipar, 0) = trackInnerC->GetParameter()[ipar] - track->GetParameter()[ipar];
+          deltatrackC(0, ipar) = trackInnerC->GetParameter()[ipar] - track->GetParameter()[ipar];
 
-          for (Int_t jpar=0; jpar<5; jpar++) {
-            Int_t index=track->GetIndex(ipar,jpar);
-            covarM(ipar,jpar)=track->GetCovariance()[index]+tpcInnerC->GetCovariance()[index];
-            covarMtrackC(ipar,jpar)=track->GetCovariance()[index]+trackInnerC->GetCovariance()[index];
+          for (Int_t jpar = 0; jpar < 5; jpar++) {
+            Int_t index = track->GetIndex(ipar, jpar);
+            covarM(ipar, jpar) = track->GetCovariance()[index] + tpcInnerC->GetCovariance()[index];
+            covarMtrackC(ipar, jpar) = track->GetCovariance()[index] + trackInnerC->GetCovariance()[index];
           }
         }
 
         // chi2 distance TPC constrained and TPC+ITS
         TMatrixD covarMInv = covarM.Invert();
-        TMatrixD mat2 = covarMInv*deltaT;
-        chi2 = delta*mat2; 
+        TMatrixD mat2 = covarMInv * deltaT;
+        chi2 = delta * mat2;
         //chi2.Print();
 
         // chi2 distance TPC refitted constrained and TPC+ITS
         TMatrixD covarMInvtrackC = covarMtrackC.Invert();
-        TMatrixD mat2trackC = covarMInvtrackC*deltaTtrackC;
-        chi2trackC = deltatrackC*mat2trackC; 
+        TMatrixD mat2trackC = covarMInvtrackC * deltaTtrackC;
+        chi2trackC = deltatrackC * mat2trackC;
         //chi2trackC.Print();
       }
       //
@@ -1099,12 +1104,14 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       AliExternalTrackParam paramITS;     // nearest ITS track  -   chi2 distance at vertex
       AliExternalTrackParam paramITSC;    // nearest ITS track  -   to constrained track   chi2 distance at vertex
       AliExternalTrackParam paramComb;    // nearest comb. tack -   chi2 distance at inner wall
-      Int_t indexNearestITS   = GetNearestTrack((trackInnerV!=NULL)? trackInnerV:track, iTrack, esdEvent,0,0,paramITS); 
-      if (indexNearestITS<0)  indexNearestITS   = GetNearestTrack((trackInnerV!=NULL)? trackInnerV:track, iTrack, esdEvent,2,0,paramITS);
-      Int_t indexNearestITSC  = GetNearestTrack((trackInnerC!=NULL)? trackInnerC:track, iTrack, esdEvent,0,0,paramITSC);  
-      if (indexNearestITSC<0)  indexNearestITS   = GetNearestTrack((trackInnerC!=NULL)? trackInnerC:track, iTrack, esdEvent,2,0,paramITSC);
-      Int_t indexNearestComb  = GetNearestTrack(track->GetInnerParam(), iTrack, esdEvent,1,1,paramComb);  
-      
+      Int_t indexNearestITS, indexNearestITSC, indexNearestComb;
+      if (0) { /// TODO -parameterize the usage for the high multiplicity events
+        indexNearestITS = GetNearestTrack((trackInnerV != NULL) ? trackInnerV : track, iTrack, esdEvent, 0, 0, paramITS);
+        if (indexNearestITS < 0) indexNearestITS = GetNearestTrack((trackInnerV != NULL) ? trackInnerV : track, iTrack, esdEvent, 2, 0, paramITS);
+        indexNearestITSC = GetNearestTrack((trackInnerC != NULL) ? trackInnerC : track, iTrack, esdEvent, 0, 0, paramITSC);
+        if (indexNearestITSC < 0) indexNearestITS = GetNearestTrack((trackInnerC != NULL) ? trackInnerC : track, iTrack, esdEvent, 2, 0, paramITSC);
+        indexNearestComb = GetNearestTrack(track->GetInnerParam(), iTrack, esdEvent, 1, 1, paramComb);
+      }
       //
       // Propagate ITSout to TPC inner wall 
       // and calculate chi2 distance to track (InnerParams)
@@ -1444,7 +1451,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         if(fTreeSRedirector && dumpToTree && fFillTree) {
 	  downscaleCounter++;
           (*fTreeSRedirector)<<"highPt"<<
-	    "downscaleCounter="<<downscaleCounter<<   
+	    "downscaleCounter="<<downscaleCounter<<
+	    "fLowPtTrackDownscaligF="<<fLowPtTrackDownscaligF<<
+	    "selectionPtMask="<<selectionPtMask<<          // high pt trigger mask
             "gid="<<gid<<
             "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
             "runNumber="<<runNumber<<                // runNumber
@@ -1543,7 +1552,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           AliInfo("writing tree highPt");
           (*fTreeSRedirector)<<"highPt"<<"\n";
         }
-        AliSysInfo::AddStamp("filteringTask",iTrack,numberOfTracks,numberOfFriendTracks,(friendTrackStore)?0:1);
+        //AliSysInfo::AddStamp("filteringTask",iTrack,numberOfTracks,numberOfFriendTracks,(friendTrackStore)?0:1);
         delete tpcInnerC;
         delete trackInnerC;
         delete trackInnerC2;
@@ -2016,8 +2025,12 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       }
 
       //
-      Bool_t isDownscaled = IsV0Downscaled(v0);
-      if (downscaleCounter>0 && isDownscaled) continue;
+      // Bool_t isDownscaled = IsV0Downscaled(v0);                   // old selection mask
+      // if (downscaleCounter>0 && isDownscaled) continue;
+      if (v0->Pt()<0.01) continue; ///TODO -THIS line should be used configured value
+      Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedMass);
+      if( downscaleCounter>0 && selectionPtMask==0) continue;
+
       AliKFParticle kfparticle; //
       Int_t type=GetKFParticle(v0,esdEvent,kfparticle);
       if (type==0) continue;   
@@ -2058,7 +2071,9 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       downscaleCounter++;
       (*fTreeSRedirector)<<"V0s"<<
         "gid="<<gid<<                         //  global id of event
-        "isDownscaled="<<isDownscaled<<       //  
+        "fLowPtV0DownscaligF="<<fLowPtV0DownscaligF<<
+        "selectionPtMask="<<selectionPtMask<< // selection pt mask
+//        "isDownscaled="<<isDownscaled<<       //
         "triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<                           //
         "fileName.="<<&fCurrentFileName<<     //  full path - file name with ESD
@@ -2370,19 +2385,6 @@ Bool_t AliAnalysisTaskFilteredTree::IsV0Downscaled(AliESDv0 *const v0)
   //printf("V0 TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
   if (TMath::Exp(2*scalempt)<downscaleF) return kTRUE;
   return kFALSE;
-
-  /*
-     TH1F his1("his1","his1",100,0,10);
-     TH1F his2("his2","his2",100,0,10);
-     {for (Int_t i=0; i<10000; i++){
-     Double_t rnd=gRandom->Exp(1);
-     Bool_t isDownscaled =TMath::Exp(rnd)<100*gRandom->Rndm();
-     his1->Fill(rnd); 
-     if (!isDownscaled) his2->Fill(rnd); 
-     }}
-
-*/
-
 }
 
 
@@ -3376,23 +3378,43 @@ void AliAnalysisTaskFilteredTree::ProcessMC(){
   }
 }
 
-/// Pt based track downsampling (flat in pt and q/pt)
-///    - previously used approximation - exponential downscaling valid only in limitted range of the pt
-///    - landau approximation very good in long pt range (0.2-8 GeV)
-///    - to test tsallis function - PWGLF/CommonUtils/AdditionalFunctions.h
-/// \param pt           - track pt
-/// \param downscalePt  - downsampling fraction Pt
-/// \param downscaleQPt  - downsampling fraction Pt
-/// \param ptMPV        - landau most pronable pt value
-/// \param sigma        - landau sigma of most probable value
-/// \return             -  selection mask
-///                     -  bit 1 selected - pt flat downsampling
-///                     -  bit 2 selected - q/pt flat downsampling
-Int_t AliAnalysisTaskFilteredTree::PtSelectionMask(Double_t pt, Double_t downscalePt, Double_t downscaleQPt , Double_t ptMPV, Double_t sigma){
-  /// spectra approximated by landau distribution
-  //Double_t probNorm=TMath::Exp(-pt*ptSlope)/TMath::Exp(-ptSlope); /// normalized to 1 at 1 GeV
-  Double_t probNorm=TMath::Landau(pt,ptMPV,sigma)/TMath::Landau(1,ptMPV,sigma);
-  Bool_t ptSelected=probNorm*gRandom->Rndm()<downscalePt;
-  Bool_t qptSelected=probNorm*gRandom->Rndm()*(0.001+pt)<downscaleQPt;
-  return ptSelected+2*qptSelected;
+
+
+
+/// Tsalis/Hagedorn function describing charged pt spectra (m s = 62.4 GeV to 13 TeV) as in https://iopscience.iop.org/article/10.1088/2399-6528/aab00f/pdf
+/// \param pt     - transverse momentum
+/// \param mass   -
+/// \param sqrts  -
+/// \return       - invariant yields of the charged particle
+///    n(sqrts)= a + b/sqrt(s)                             - formula 6
+///    T(sqrts)= c + d/sqrt(s)                             - formula 7
+///    a = 6.81 ± 0.06       and b = 59.24 ± 3.53 GeV      - for charged particles page 3
+///    c = 0.082 ± 0.002 GeV and d = 0.151 ± 0.048 (GeV)   - for charged particles page 4
+Double_t AliAnalysisTaskFilteredTree::TsalisCharged(Double_t pt, Double_t mass, Double_t sqrts){
+  const Double_t a=6.81,   b=59.24;
+  const Double_t c=0.082,  d=0.151;
+  Double_t mt=TMath::Sqrt(mass*mass+pt*pt);
+  Double_t n=a+b/sqrts;
+  Double_t T=c+d/sqrts;
+  Double_t p0 = n*T;
+  Double_t result=TMath::Power((1.+mt/p0),-n);
+  return result;
+}
+
+/// Random downsampling trigger function using Tsalis/Hagedorn spectra fit (sqrt(s) = 62.4 GeV to 13 TeV) as in https://iopscience.iop.org/article/10.1088/2399-6528/aab00f/pdf
+/// \param pt
+/// \param mass
+/// \param sqrts
+/// \param factorPt
+/// \param factor1Pt
+/// \return trigger bitmask
+///         bit 1 - flat pt   trigger
+///         bit 2 - flat q/pt trigger
+Int_t  AliAnalysisTaskFilteredTree::DownsampleTsalisCharged(Double_t pt, Double_t factorPt, Double_t factor1Pt, Double_t sqrts, Double_t mass){
+  Double_t prob=TsalisCharged(pt,mass,sqrts)*pt;
+  Double_t probNorm=TsalisCharged(1.,mass,sqrts);
+  Int_t triggerMask=0;
+  if (gRandom->Rndm()*prob/probNorm<factorPt) triggerMask|=1;
+  if ((gRandom->Rndm()*((prob/probNorm)*pt*pt))<factor1Pt) triggerMask|=2;
+  return triggerMask;
 }
