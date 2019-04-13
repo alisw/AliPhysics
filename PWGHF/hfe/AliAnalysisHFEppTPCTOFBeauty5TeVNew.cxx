@@ -1303,30 +1303,30 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     fOutputList->Add(fPtElePi0EtaGeneratedAft_NewNoWeight);
     
     fMCMBPtElePi0EtaGeneratedAft_New = new TH1F("fMCMBPtElePi0EtaGeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCMBPtElePi0EtaGeneratedAft_New->Sumw2();
+    //fMCMBPtElePi0EtaGeneratedAft_New->Sumw2();
     fOutputList->Add(fMCMBPtElePi0EtaGeneratedAft_New);
     
     fMCEnhPtElePi0EtaGeneratedAft_New = new TH1F("fMCEnhPtElePi0EtaGeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCEnhPtElePi0EtaGeneratedAft_New->Sumw2();
+    //fMCEnhPtElePi0EtaGeneratedAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtElePi0EtaGeneratedAft_New);
     
     fMCMBPtElePi0GeneratedAft_New = new TH1F("fMCMBPtElePi0GeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCMBPtElePi0GeneratedAft_New->Sumw2();
+   // fMCMBPtElePi0GeneratedAft_New->Sumw2();
     fOutputList->Add(fMCMBPtElePi0GeneratedAft_New);
     
     fMCEnhPtElePi0GeneratedAft_New = new TH1F("fMCEnhPtElePi0GeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCEnhPtElePi0GeneratedAft_New->Sumw2();
+   // fMCEnhPtElePi0GeneratedAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtElePi0GeneratedAft_New);
     
     fPtEleEtaGeneratedAft_NewNoWeight = new TH1F("fPtEleEtaGeneratedAft_NewNoWeight","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtEleEtaGeneratedAft_NewNoWeight);
     
     fMCMBPtEleEtaGeneratedAft_New = new TH1F("fMCMBPtEleEtaGeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCMBPtEleEtaGeneratedAft_New->Sumw2();
+    //fMCMBPtEleEtaGeneratedAft_New->Sumw2();
     fOutputList->Add(fMCMBPtEleEtaGeneratedAft_New);
     
     fMCEnhPtEleEtaGeneratedAft_New = new TH1F("fMCEnhPtEleEtaGeneratedAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCEnhPtEleEtaGeneratedAft_New->Sumw2();
+    //fMCEnhPtEleEtaGeneratedAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtEleEtaGeneratedAft_New);
     
     fPtElePi0FoundAft_NewNoWeight = new TH1F("fPtElePi0FoundAft_NewNoWeight","; p_{T} [GeV/c]; Count",32,ptbinning);
@@ -1336,30 +1336,30 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     fOutputList->Add(fPtElePi0EtaFoundAft_NewNoWeight);
     
     fMCMBPtElePi0EtaFoundAft_New = new TH1F("fMCMBPtElePi0EtaFoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCMBPtElePi0EtaFoundAft_New->Sumw2();
+    //fMCMBPtElePi0EtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCMBPtElePi0EtaFoundAft_New);
     
     fMCEnhPtElePi0EtaFoundAft_New = new TH1F("fMCEnhPtElePi0EtaFoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCEnhPtElePi0EtaFoundAft_New->Sumw2();
+   // fMCEnhPtElePi0EtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtElePi0EtaFoundAft_New);
     
     fMCMBPtElePi0FoundAft_New = new TH1F("fMCMBPtElePi0FoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCMBPtElePi0FoundAft_New->Sumw2();
+    //fMCMBPtElePi0FoundAft_New->Sumw2();
     fOutputList->Add(fMCMBPtElePi0FoundAft_New);
     
     fMCEnhPtElePi0FoundAft_New = new TH1F("fMCEnhPtElePi0FoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCEnhPtElePi0FoundAft_New->Sumw2();
+    //fMCEnhPtElePi0FoundAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtElePi0FoundAft_New);
     
     fPtEleEtaFoundAft_NewNoWeight = new TH1F("fPtEleEtaFoundAft_NewNoWeight","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtEleEtaFoundAft_NewNoWeight);
     
     fMCMBPtEleEtaFoundAft_New = new TH1F("fMCMBPtEleEtaFoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCMBPtEleEtaFoundAft_New->Sumw2();
+    //fMCMBPtEleEtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCMBPtEleEtaFoundAft_New);
     
     fMCEnhPtEleEtaFoundAft_New = new TH1F("fMCEnhPtEleEtaFoundAft_New","; p_{T} [GeV/c]; Count",32,ptbinning);
-    fMCEnhPtEleEtaFoundAft_New->Sumw2();
+   // fMCEnhPtEleEtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtEleEtaFoundAft_New);
     
     
