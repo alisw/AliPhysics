@@ -9,7 +9,9 @@
 #pragma link C++ class AliNanoAODCustomSetter+;
 #pragma link C++ class AliAnalysisNanoAODTrackCuts+;
 #pragma link C++ class AliAnalysisNanoAODV0Cuts+;
+#pragma link C++ class AliAnalysisNanoAODV0ParametricCuts+;
 #pragma link C++ class AliAnalysisNanoAODCascadeCuts+;
+#pragma link C++ class AliAnalysisNanoAODCascadeParametricCuts+;
 #pragma link C++ class AliAnalysisNanoAODEventCuts+;
 #pragma link C++ class AliNanoAODSimpleSetter+;
 #pragma link C++ class AliAnalysisNanoAODTrackCutsCRCZDC+;

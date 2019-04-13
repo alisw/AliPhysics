@@ -157,6 +157,10 @@ fMaxPtToSave( 100.00 ) ,
 //---> Flags controlling sandbox mode (cascade)
 fkSandboxMode( kFALSE ),
 
+//---> Fill tree with specific config
+fkSaveSpecificConfig(kFALSE),
+fkConfigToSave(""),
+
 //---> Variables for Sibling Tagging
 fSibCutDcaV0ToPrimVertex       ( 0.8    ),
 fSibCutDcaV0Daughters          ( 0.15   ),
@@ -680,6 +684,10 @@ fMaxPtToSave( 100.00 ) ,
 
 //---> Flags controlling sandbox mode (cascade)
 fkSandboxMode( kFALSE ),
+
+//---> Fill tree with specific config
+fkSaveSpecificConfig(kFALSE),
+fkConfigToSave(""),
 
 //---> Variables for Sibling Tagging
 fSibCutDcaV0ToPrimVertex       ( 0.8    ),
@@ -5183,7 +5191,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                                                   )
            )
         {
-            fTreeCascade->Fill();
+            if(!fkSaveSpecificConfig) fTreeCascade->Fill();
         }
         //------------------------------------------------
         // Fill tree over.
@@ -5225,6 +5233,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         for(Int_t lcfg=0; lcfg<lValidConfigurations; lcfg++){
             lCascadeResult = lPointers[lcfg];
+            Bool_t lTheOne = fkConfigToSave.EqualTo( lCascadeResult->GetName() );
             histoout  = lCascadeResult->GetHistogram();
             histoProtonProfile  = lCascadeResult->GetProtonProfile();
             
@@ -5555,6 +5564,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             {
                 
                 //This satisfies all my conditionals! Fill histogram
+                if( lTheOne && fkSaveSpecificConfig ) fTreeCascade->Fill();
+                
                 if( !lCascadeResult -> GetCutMCUseMCProperties() ){
                     histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
                     if(histoProtonProfile)
