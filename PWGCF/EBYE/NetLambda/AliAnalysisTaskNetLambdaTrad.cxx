@@ -889,7 +889,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     ptContainerThreeSigtwo[0] = (Double_t)fCentrality;
     for(Int_t i = 1; i <= dim; i++)
     {
-        ptContainerThreeSigtwo[i] = ptChEta1point0[i-1];
+        ptContainerThreeSigtwo[i] = ptChEta1point0Sigtwo[i-1];
     }
     fPtBinNplusNminusChEtaThreeSigTwo->Fill(ptContainerThreeSigtwo);
     //-------------------------------------------------
