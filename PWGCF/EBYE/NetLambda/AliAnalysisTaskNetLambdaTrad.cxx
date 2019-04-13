@@ -245,7 +245,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //THNSPARSE BINNING
-    const Int_t dim = 47; //31 pt bins*2 + 1 cent bin
+    const Int_t dim = 47; //23 pt bins*2 + 1 cent bin
     Int_t bin[dim];
     bin[0] = 81;
     for(Int_t ibin = 1; ibin < dim; ibin++) bin[ibin] = 500;
