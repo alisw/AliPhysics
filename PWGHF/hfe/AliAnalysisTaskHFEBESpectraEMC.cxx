@@ -26,6 +26,8 @@
 #include "TH1F.h"
 #include "TCanvas.h"
 #include "THnSparse.h"
+#include "TFile.h"
+#include "TString.h"
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -120,6 +122,14 @@ fPi0Weight(0),
 fEtaWeight(0),
 fnBinsDCAHisto(400),
 fTrkDCA(-999.0),
+fDcent(0),
+fDUp(0),
+fDDown(0),
+fBcent(0),
+fBMin(0),
+fBMax(0),
+fWeightB(0),
+fWeightD(0),
 fOutputList(0),
 fNevents(0),
 fCent(0),
@@ -264,9 +274,21 @@ fD0pT(0),
 fLambdaCpT(0),
 fDElecDCA(0),
 fBElecDCA(0),
+fBHadElecDCA(0),
+fBMesonElecDCA(0),
+fBBaryonElecDCA(0),
+fDHadElecDCA(0),
+fDMesonElecDCA(0),
+fDBaryonElecDCA(0),
+fLambdaCElecDCA(0),
+fD0ElecDCA(0),
 fSparseElectron(0),
 fvalueElectron(0),
-fSprsPi0EtaWeightCal(0)
+fSprsPi0EtaWeightCal(0),
+fSprsTemplatesNoWeight(0),
+fSprsTemplatesWeight(0),
+fSprsTemplatesWeightVar1(0),
+fSprsTemplatesWeightVar2(0)
 {
     // Constructor
     
@@ -332,6 +354,14 @@ fPi0Weight(0),
 fEtaWeight(0),
 fnBinsDCAHisto(400),
 fTrkDCA(-999.0),
+fDcent(0),
+fDUp(0),
+fDDown(0),
+fBcent(0),
+fBMin(0),
+fBMax(0),
+fWeightB(0),
+fWeightD(0),
 fOutputList(0),
 fNevents(0),
 fCent(0),
@@ -476,9 +506,21 @@ fD0pT(0),
 fLambdaCpT(0),
 fDElecDCA(0),
 fBElecDCA(0),
+fBHadElecDCA(0),
+fBMesonElecDCA(0),
+fBBaryonElecDCA(0),
+fDHadElecDCA(0),
+fDMesonElecDCA(0),
+fDBaryonElecDCA(0),
+fLambdaCElecDCA(0),
+fD0ElecDCA(0),
 fSparseElectron(0),
 fvalueElectron(0),
-fSprsPi0EtaWeightCal(0)
+fSprsPi0EtaWeightCal(0),
+fSprsTemplatesNoWeight(0),
+fSprsTemplatesWeight(0),
+fSprsTemplatesWeightVar1(0),
+fSprsTemplatesWeightVar2(0)
 {
     //Default constructor
     
@@ -502,6 +544,17 @@ AliAnalysisTaskHFEBESpectraEMC::~AliAnalysisTaskHFEBESpectraEMC()
     delete fSparseElectron;
     delete []fvalueElectron;
     delete fSprsPi0EtaWeightCal;
+    delete fSprsTemplatesNoWeight;
+    delete fSprsTemplatesWeight;
+    delete fSprsTemplatesWeightVar1;
+    delete fSprsTemplatesWeightVar2;
+    
+    if(fDcent) {delete fDcent; fDcent=0;}
+    if(fDUp)   {delete fDUp; fDUp=0;}
+    if(fDDown) {delete fDDown; fDDown=0;}
+    if(fBcent) {delete fBcent; fBcent=0;}
+    if(fBMin)  {delete fBMin; fBMin=0;}
+    if(fBMax)  {delete fBMax; fBMax=0;}
 }
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
@@ -515,6 +568,11 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     fEtaWeight = new TF1("fEtaWeight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
     fPi0Weight->SetParameters(3.72558e+02,-4.25395e-02,2.18681e-03,1.59658e+00,5.60917e+00);
     fEtaWeight->SetParameters(3.34121e+02,-7.09185e-02,2.04493e-03,1.59842e+00,5.43861e+00);
+    
+    ///////////////////////////
+    //Histos for MC templates//
+    ///////////////////////////
+    if(fFillMCTemplates) InputWeightCorrectionMaps();
     
     /////////////////////////////////////////////////
     //Automatic determination of the analysis mode//
@@ -1021,6 +1079,51 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
         
         fBElecDCA = new TH2F("fBElecDCA","B meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
         fOutputList->Add(fBElecDCA);
+        
+        fBHadElecDCA = new TH2F("fBHadElecDCA","B hadron -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+        fOutputList->Add(fBHadElecDCA);
+        
+        fBMesonElecDCA = new TH2F("fBMesonElecDCA","B meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+        fOutputList->Add(fBMesonElecDCA);
+        
+        fBBaryonElecDCA = new TH2F("fBBaryonElecDCA","B baryon -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+        fOutputList->Add(fBBaryonElecDCA);
+        
+        fDHadElecDCA = new TH2F("fDHadElecDCA","D hadron -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+        fOutputList->Add(fDHadElecDCA);
+        
+        fDMesonElecDCA = new TH2F("fDMesonElecDCA","D meson -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+        fOutputList->Add(fDMesonElecDCA);
+        
+        fDBaryonElecDCA  = new TH2F("fDBaryonElecDCA","D baryon -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+        fOutputList->Add(fDBaryonElecDCA);
+        
+        fLambdaCElecDCA = new TH2F("fLambdaCElecDCA","Lambda_c -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+        fOutputList->Add(fLambdaCElecDCA);
+        
+        fD0ElecDCA = new TH2F("fD0ElecDCA","D0 -> electron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., fnBinsDCAHisto,-0.4,0.4);
+        fOutputList->Add(fD0ElecDCA);
+        
+        Int_t binTemp[3] = {60,fnBinsDCAHisto,19}; //pT, DCA, Mom PID, Mom Gen, mompT
+        Double_t xminTemp[3] = {0.,-0.4,0.5};
+        Double_t xmaxTemp[3] = {30.,0.4,19.5};
+
+        fSprsTemplatesNoWeight = new THnSparseD("fSprsTemplatesNoWeight","Sparse for DCA Templates, No weight applied;p_{T};DCA;MomPID",3,binTemp,xminTemp,xmaxTemp);
+        fSprsTemplatesNoWeight->Sumw2();
+        fOutputList->Add(fSprsTemplatesNoWeight);
+        
+        fSprsTemplatesWeight = new THnSparseD("fSprsTemplatesWeight","Sparse for DCA Templates,With weight applied;p_{T};DCA;MomPID",3,binTemp,xminTemp,xmaxTemp);
+        fSprsTemplatesWeight->Sumw2();
+        fOutputList->Add(fSprsTemplatesWeight);
+        
+        fSprsTemplatesWeightVar1 = new THnSparseD("fSprsTemplatesWeightVar1","Sparse for DCA Templates,With weight variation 1 applied;p_{T};DCA;MomPID",3,binTemp,xminTemp,xmaxTemp);
+        fSprsTemplatesWeightVar1->Sumw2();
+        fOutputList->Add(fSprsTemplatesWeightVar1);
+        
+        fSprsTemplatesWeightVar2= new THnSparseD("fSprsTemplatesWeightVar2","Sparse for DCA Templates,With weight variation 2 applied;p_{T};DCA;MomPID",3,binTemp,xminTemp,xmaxTemp);
+        fSprsTemplatesWeightVar2->Sumw2();
+        fOutputList->Add(fSprsTemplatesWeightVar2);
+        
     }
     PostData(1,fOutputList);
 }
@@ -1277,9 +1380,10 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             if(IsMCDEle) fDEPhysPriTrkCuts->Fill(TrkPt);
         }
         
+        Bool_t fFillTem = kFALSE;
         if(fFillMCTemplates)
         {
-            GetMCDCATemplates(track, fTrkDCA);
+           fFillTem = GetMCDCATemplates(track, fTrkDCA);
         }
         
         ///////////////////////////
@@ -2333,7 +2437,7 @@ void AliAnalysisTaskHFEBESpectraEMC::GetMCTemplateWeight()
     }
 }
 //________________________________________________________________________
-void AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA)
+Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA)
 {
     //Fill MC template histograms
     
@@ -2347,55 +2451,234 @@ void AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Double_
     
     Int_t iMCmom = -999, iMCgmom = -999, iMCggmom = -999, iMCgggmom = -999;
     Int_t MomPDG = -999, GMomPDG=-999, GGMomPDG=-999, GGGMomPDG=-999;
+    Double_t fvalue[3] = {-999,-999,-999};
+    Int_t fpidSort = -99;
+
     Bool_t IsEle = kFALSE, IsHFEle=kFALSE, IsBEle=kFALSE, IsDEle=kFALSE;
     
-    if(iTrklabel > 0){
-        MCPart = (AliAODMCParticle*)fMCArray->At(iTrklabel);
-        if(MCPart->IsPhysicalPrimary()){
-            if(TMath::Abs(MCPart->GetPdgCode())==11){
-                IsEle = kTRUE;
+    fWeightB=1.0, fWeightBMin=1.0, fWeightBMax=1.0;
+    fWeightD=1.0, fWeightDUp=1.0, fWeightDDown=1.0;
+    
+    if(iTrklabel < 0) return kFALSE;
+    MCPart = (AliAODMCParticle*)fMCArray->At(iTrklabel);
+    
+    if(!(MCPart->IsPhysicalPrimary())) return kFALSE;
+    
+    if(TMath::Abs(MCPart->GetPdgCode())!=11) return kFALSE;
+    IsEle = kTRUE;
+    
+    iMCmom = MCPart->GetMother();
+    if(iMCmom < 0) return kFALSE;
+    
+    MCPartMom = (AliAODMCParticle*)fMCArray->At(iMCmom);
+    MomPDG = TMath::Abs(MCPartMom->GetPdgCode());
+    
+    if((MomPDG>400 && MomPDG<600) || (MomPDG>4000 && MomPDG<6000)){ //D,B ->e
+        IsHFEle = kTRUE;
+        
+        if((MomPDG>500 && MomPDG<600) || (MomPDG>5000 && MomPDG<6000)){ //B->e
+            IsBEle = kTRUE;
+            fBHadElecDCA->Fill(TrkPt,TrkDCA);
+            
+            if(MomPDG>500 && MomPDG<600) {
+                fBMesonElecDCA->Fill(TrkPt,TrkDCA);
+                fpidSort = 1; //Mom is B
+                GetBWeight(MCPartMom, fWeightB, fWeightBMin, fWeightBMax);
+            }
+            if(MomPDG>5000 && MomPDG<6000){
+                fBBaryonElecDCA->Fill(TrkPt,TrkDCA);
+                fpidSort = 10; //Mom is b Baryon
+            }
+        }
+        else{
+            iMCgmom = MCPartMom->GetMother();
+            if(iMCgmom > 0){
+                MCPartGMom = (AliAODMCParticle*)fMCArray->At(iMCgmom);
+                GMomPDG = TMath::Abs(MCPartGMom->GetPdgCode());
                 
-                iMCmom = MCPart->GetMother();
-                if(iMCmom > 0){
-                    MCPartMom = (AliAODMCParticle*)fMCArray->At(iMCmom);
-                    MomPDG = TMath::Abs(MCPartMom->GetPdgCode());
+                if((GMomPDG>500 && GMomPDG<600) || (GMomPDG>5000 && GMomPDG<6000)){ //B->D->e
+                    IsBEle = kTRUE;
+                    fBHadElecDCA->Fill(TrkPt,TrkDCA);
                     
-                    iMCgmom = MCPartMom->GetMother();
-                    if(iMCgmom > 0){
-                        MCPartGMom = (AliAODMCParticle*)fMCArray->At(iMCgmom);
-                        GMomPDG = TMath::Abs(MCPartGMom->GetPdgCode());
-                        
-                        iMCggmom = MCPartGMom->GetMother();
-                        if(iMCggmom > 0){
-                            MCPartGGMom = (AliAODMCParticle*)fMCArray->At(iMCggmom);
-                            GGMomPDG = TMath::Abs(MCPartGGMom->GetPdgCode());
-                        }
+                    if(GMomPDG>500 && GMomPDG<600){
+                        fBMesonElecDCA->Fill(TrkPt,TrkDCA);
+                        fpidSort = 1; //Mom is B
+                        GetBWeight(MCPartMom, fWeightB, fWeightBMin, fWeightBMax);
+                    }
+                    if(GMomPDG>5000 && GMomPDG<6000){
+                        fBBaryonElecDCA->Fill(TrkPt,TrkDCA);
+                        fpidSort = 10; //Mom is b Baryon
                     }
                 }
-                
-                if((MomPDG>400 && MomPDG<600) || (MomPDG>4000 && MomPDG<6000)){
-                    IsHFEle = kTRUE;
-                    
-                    if((MomPDG>500 && MomPDG<600) || (MomPDG>5000 && MomPDG<6000))
-                        IsBEle = kTRUE;
-                    
-                    if((GMomPDG>500 && GMomPDG<600) || (GMomPDG>5000 && GMomPDG<6000))
-                        IsBEle = kTRUE;
-                    
-                    if((GGMomPDG>500 && GGMomPDG<600) || (GGMomPDG>5000 && GGMomPDG<6000))
-                        IsBEle = kTRUE;
-                    
-                    if(IsBEle){
-                        fBElecDCA->Fill(TrkPt,TrkDCA);
-                    }
-                    if(!IsBEle){
-                        IsDEle = kTRUE;
-                        fDElecDCA->Fill(TrkPt,TrkDCA);
+                else{
+                    iMCggmom = MCPartGMom->GetMother();
+                    if(iMCggmom > 0){
+                        MCPartGGMom = (AliAODMCParticle*)fMCArray->At(iMCggmom);
+                        GGMomPDG = TMath::Abs(MCPartGGMom->GetPdgCode());
+                        
+                        if((GGMomPDG>500 && GGMomPDG<600) || (GGMomPDG>5000 && GGMomPDG<6000)){ //B->D->D->e
+                            IsBEle = kTRUE;
+                            fBHadElecDCA->Fill(TrkPt,TrkDCA);
+                            
+                            if(GGMomPDG>500 && GGMomPDG<600){
+                                fBMesonElecDCA->Fill(TrkPt,TrkDCA);
+                                fpidSort = 1; //Mom is B
+                                GetBWeight(MCPartMom, fWeightB, fWeightBMin, fWeightBMax);
+                            }
+                            if(GGMomPDG>5000 && GGMomPDG<6000){
+                                fBBaryonElecDCA->Fill(TrkPt,TrkDCA);
+                                fpidSort = 10; //Mom is b Baryon
+                            }
+                        }
                     }
                 }
             }
         }
+        
+        if(!IsBEle){
+            IsDEle = kTRUE;
+            fDHadElecDCA->Fill(TrkPt,TrkDCA);
+            
+            if(MomPDG>400 && MomPDG<500) {
+                fDMesonElecDCA->Fill(TrkPt,TrkDCA);
+                fpidSort = 2; //Mom is D
+                GetDWeight(MCPartMom, fWeightD, fWeightDUp, fWeightDDown);
+            }
+            if(MomPDG>4000 && MomPDG<5000) {
+                fDBaryonElecDCA->Fill(TrkPt,TrkDCA);
+                fpidSort = 9; //Mom is c Baryon
+            }
+            if(MomPDG == 411) fpidSort = 11; //Mom is D+
+            if(MomPDG == 421) fpidSort = 12; //Mom is D0
+            if(MomPDG == 413) fpidSort = 14; //Mom is D*+
+            if(MomPDG == 431) fpidSort = 15; //Mom is Ds
+            if(MomPDG > 430 && MomPDG < 436) fpidSort = 16; //Mom is other Ds
+            if(MomPDG == 4122) fpidSort = 17; //Mom is Lambda c
+            if(MomPDG == 443) fpidSort = 6; //Mom is J/Psi
+            
+            if(MomPDG == 4122) fLambdaCElecDCA->Fill(TrkPt,TrkDCA);
+            if(MomPDG == 421) fD0ElecDCA->Fill(TrkPt,TrkDCA);
+        }
+  
+        fvalue[0] = TrkPt;
+        fvalue[1] = TrkDCA;
+        fvalue[2] = fpidSort;
+        fSprsTemplatesNoWeight->Fill(fvalue);
+        
+        if(IsBEle) {
+            fSprsTemplatesWeight->Fill(fvalue, fWeightB);
+            fSprsTemplatesWeightVar1->Fill(fvalue, fWeightBMin);
+            fSprsTemplatesWeightVar2->Fill(fvalue, fWeightBMax);
+        }
+        if(IsDEle) {
+            fSprsTemplatesWeight->Fill(fvalue, fWeightD);
+            fSprsTemplatesWeightVar1->Fill(fvalue, fWeightDUp);
+            fSprsTemplatesWeightVar2->Fill(fvalue, fWeightDDown);
+        }
     }
+    return kTRUE;
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::InputWeightCorrectionMaps()
+{
+    //Get the input files for D and B meson pT weight
+    
+    TString DMesonWeightMaps, BMesonWeightMaps;
+    
+     DMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root";
+     BMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/BMesonpTWeight.root";
+    
+    //   printf("\n### reading file %s ...\n",DMesonWeightMaps.Data());
+    //   printf("\n### reading file %s ...\n",BMesonWeightMaps.Data());
+    
+    TFile* f2 = TFile::Open(DMesonWeightMaps.Data());
+    if(f2){
+        fDcent = (TH1D*)f2->Get("RatD0");
+        fDUp = (TH1D*)f2->Get("RatD0Up");
+        fDDown = (TH1D*)f2->Get("RatD0Down");
+    }
+    f2->Close();
+    TFile* f3 = TFile::Open(BMesonWeightMaps.Data());
+    if(f3){
+        fBcent = (TH1D*)f3->Get("RatBMes");
+        fBMin = (TH1D*)f3->Get("RatBMesMin");
+        fBMax = (TH1D*)f3->Get("RatBMesMax");
+    }
+    f3->Close();
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight)
+{
+    //B meson weight
+    
+    Int_t bin = -999;
+    Int_t binLast = -999;
+    
+    if(!fBcent){
+        BCentWeight = 1.0;
+        BMinWeight = 1.0;
+        BMaxWeight = 1.0;
+        return;
+    }
+    
+    bin = fBcent->FindBin(Part->Pt());
+    binLast = fBcent->FindBin(49.9);
+    
+    if(fBcent->IsBinUnderflow(bin)){
+        BCentWeight = 1.0;
+        BMinWeight = 1.0;
+        BMaxWeight = 1.0;
+        return;
+    }
+    if(Part->Pt() > 49.9) {
+        BCentWeight = fBcent->GetBinContent(binLast);
+        BMinWeight = fBMin->GetBinContent(binLast);
+        BMaxWeight = fBMax->GetBinContent(binLast);
+        return;
+    }
+    
+    BCentWeight = fBcent->GetBinContent(bin);
+    BMinWeight = fBMin->GetBinContent(bin);
+    BMaxWeight = fBMax->GetBinContent(bin);
+    
+    return;
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::GetDWeight(AliAODMCParticle *Part, Double_t &DCentWeight, Double_t &DMinWeight, Double_t &DMaxWeight)
+{
+    //D meson weight
+    
+    Int_t bin = -999;
+    Int_t binLast = -999;
+    
+    if(!fDcent){
+        DCentWeight = 1.0;
+        DMinWeight = 1.0;
+        DMaxWeight = 1.0;
+        return;
+    }
+    
+    bin = fDcent->FindBin(Part->Pt());
+    binLast = fDcent->FindBin(49.9);
+    
+    if(fDcent->IsBinUnderflow(bin)){
+        DCentWeight = 1.0;
+        DMinWeight = 1.0;
+        DMaxWeight = 1.0;
+        return;
+    }
+    if(Part->Pt() > 49.9) {
+        DCentWeight = fDcent->GetBinContent(binLast);
+        DMinWeight = fDUp->GetBinContent(binLast);
+        DMaxWeight = fDDown->GetBinContent(binLast);
+        return;
+    }
+    
+    DCentWeight = fDcent->GetBinContent(bin);
+    DMinWeight = fDUp->GetBinContent(bin);
+    DMaxWeight = fDDown->GetBinContent(bin);
+    
+    return;
 }
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::Terminate(Option_t *)

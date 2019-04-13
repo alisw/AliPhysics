@@ -82,7 +82,12 @@ public:
     void    GetEIDRecoEffi(AliVTrack *track, AliVCluster *clust, Bool_t IsMCEle, Bool_t IsMCHFEle, Bool_t IsMCBEle, Bool_t IsMCDEle);
 
     void    GetMCTemplateWeight();
-    void    GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
+    Bool_t  GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
+    
+    void    InputWeightCorrectionMaps();
+    void    GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight);
+    void    GetDWeight(AliAODMCParticle *Part, Double_t &DCentWeight, Double_t &DMinWeight, Double_t &DMaxWeight);
+
     
 private:
     enum{
@@ -150,6 +155,19 @@ private:
     Int_t               fnBinsDCAHisto;//!
     Double_t            fTrkDCA;//!
     
+    TH1D                *fDcent;//
+    TH1D                *fDUp;//
+    TH1D                *fDDown;//
+    TH1D                *fBcent;//
+    TH1D                *fBMin;//
+    TH1D                *fBMax;//
+    Double_t            fWeightB;//!
+    Double_t            fWeightBMin;//!
+    Double_t            fWeightBMax;//!
+    Double_t            fWeightD;//!
+    Double_t            fWeightDUp;//!
+    Double_t            fWeightDDown;//!
+
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fCent;//! centrality
@@ -299,13 +317,24 @@ private:
     
     TH2F                *fDElecDCA;//!
     TH2F                *fBElecDCA;//!
-
+    TH2F                *fBHadElecDCA;//!
+    TH2F                *fBMesonElecDCA;//!
+    TH2F                *fBBaryonElecDCA;//!
+    TH2F                *fDHadElecDCA;//!
+    TH2F                *fDMesonElecDCA;//!
+    TH2F                *fDBaryonElecDCA;//!
+    TH2F                *fLambdaCElecDCA;//!
+    TH2F                *fD0ElecDCA;//!
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     
     THnSparse           *fSprsPi0EtaWeightCal;//!
-    
+    THnSparse           *fSprsTemplatesNoWeight;//!
+    THnSparse           *fSprsTemplatesWeight;//!
+    THnSparse           *fSprsTemplatesWeightVar1;//!
+    THnSparse           *fSprsTemplatesWeightVar2;//!
+
     AliAnalysisTaskHFEBESpectraEMC(const AliAnalysisTaskHFEBESpectraEMC&); // not implemented
     AliAnalysisTaskHFEBESpectraEMC& operator=(const AliAnalysisTaskHFEBESpectraEMC&); // not implemented
     
