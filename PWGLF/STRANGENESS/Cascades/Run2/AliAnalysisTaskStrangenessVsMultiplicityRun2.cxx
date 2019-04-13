@@ -168,6 +168,10 @@ fMaxPtToSave( 100.00 ),
 //---> Sandbox switch
 fkSandboxMode ( kFALSE ),
 
+//---> Fill tree with specific config
+fkSaveSpecificConfig(kFALSE),
+fkConfigToSave(""),
+
 //---> Variables for fTreeEvent
 fCentrality(0),
 fMVPileupFlag(kFALSE),
@@ -517,6 +521,10 @@ fMaxPtToSave( 100.00 ),
 
 //---> Sandbox switch
 fkSandboxMode ( kFALSE ),
+
+//---> Fill tree with specific config
+fkSaveSpecificConfig(kFALSE),
+fkConfigToSave(""),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
@@ -3141,7 +3149,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         if( fkSelectCharge !=0 && fkSelectCharge !=  fTreeCascVarCharge ) lKeepCascade = kFALSE;
         
-        if( fkSaveCascadeTree && lKeepCascade &&
+        if( fkSaveCascadeTree && lKeepCascade && (!fkSaveSpecificConfig) &&
            (
             (//START XI SELECTIONS
              (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075)
@@ -3194,6 +3202,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         for(Int_t lcfg=0; lcfg<lValidConfigurations; lcfg++){
             lCascadeResult = lPointers[lcfg];
+            Bool_t lTheOne = fkConfigToSave.EqualTo( lCascadeResult->GetName() );
             histoout  = lCascadeResult->GetHistogram();
             
             Float_t lMass = 0;
@@ -3531,6 +3540,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 )//end major if
             {
                 //This satisfies all my conditionals! Fill histogram
+                if( lTheOne && fkSaveSpecificConfig ) fTreeCascade->Fill();
                 histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
             }
         }
