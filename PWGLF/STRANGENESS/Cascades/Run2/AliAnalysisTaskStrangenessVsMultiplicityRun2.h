@@ -119,6 +119,10 @@ public:
     }
 //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
+    void SetDownScaleEvent ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
+        fkDownScaleEvent = lOpt;
+        fDownScaleFactorEvent = lVal;
+    }
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
         fkDownScaleV0 = lOpt;
         fDownScaleFactorV0 = lVal;
@@ -255,6 +259,8 @@ private:
 
     //Objects Controlling Task Behaviour
     Bool_t fkSaveEventTree;           //if true, save Event TTree
+    Bool_t fkDownScaleEvent;
+    Double_t fDownScaleFactorEvent;
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
@@ -278,8 +284,6 @@ private:
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
     
-    
-
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related

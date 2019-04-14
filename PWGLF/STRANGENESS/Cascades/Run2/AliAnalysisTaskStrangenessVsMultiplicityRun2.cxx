@@ -132,11 +132,13 @@ fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
+fkDownScaleEvent      ( kTRUE  ),
+fDownScaleFactorEvent      ( 0.0  ),
 
 //---> Flags controlling V0 TTree output
 fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
-fDownScaleFactorV0 ( 0.001  ),
+fDownScaleFactorV0 ( 0.0 ),
 fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
@@ -486,11 +488,13 @@ fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
+fkDownScaleEvent      ( kTRUE  ),
+fDownScaleFactorEvent      ( 0.0  ),
 
 //---> Flags controlling V0 TTree output
 fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
-fDownScaleFactorV0 ( 0.001  ),
+fDownScaleFactorV0 ( 0.0  ),
 fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
@@ -1735,8 +1739,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     //Fill centrality histogram
     fHistCentrality->Fill(fCentrality);
     
-    //Event-level fill
-    if ( fkSaveEventTree ) fTreeEvent->Fill() ;
+    //Random denial
+    Bool_t lKeepEventEntry = kTRUE;
+    if(fkDownScaleEvent && ( fRand->Uniform() > fDownScaleFactorEvent )) lKeepEventEntry = kFALSE;
+    if ( fkSaveEventTree && lKeepEventEntry ) fTreeEvent->Fill() ;
     
     //STOP HERE if skipping event selections (no point in doing the rest...)
     
@@ -5524,6 +5530,79 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         //Add result to pool
         lN++;
     }
+    
+    //===========================================================================
+    //
+    //   All cuts @ loose configuration
+    //
+    //===========================================================================
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        //Central result, customized binning: the one to use, usually
+        lCascadeResult[lN] = new AliCascadeResult( Form("%s_AllLoose",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
+        
+        //This is MC: generate profile for G3/F (if ever needed)
+        lCascadeResult[lN] -> InitializeProtonProfile();
+        
+        //Setters for V0 Cuts
+        lCascadeResult[lN]->SetCutDCANegToPV            ( lcuts[i][0][ 0] ) ;
+        lCascadeResult[lN]->SetCutDCAPosToPV            ( lcuts[i][0][ 1] ) ;
+        lCascadeResult[lN]->SetCutDCAV0Daughters        ( lcuts[i][0][ 2] ) ;
+        lCascadeResult[lN]->SetCutV0Radius              ( lcuts[i][0][ 3] ) ;
+        //Setters for Cascade Cuts
+        lCascadeResult[lN]->SetCutDCAV0ToPV             ( lcuts[i][0][ 4] ) ;
+        lCascadeResult[lN]->SetCutV0Mass                ( lcuts[i][0][ 5] ) ;
+        lCascadeResult[lN]->SetCutDCABachToPV           ( lcuts[i][0][ 6] ) ;
+        lCascadeResult[lN]->SetCutDCACascDaughters      ( lcuts[i][0][ 7] ) ;
+        lCascadeResult[lN]->SetCutVarDCACascDau ( TMath::Exp(0.0470076), -0.917006, 0, 1, 0.5 );
+        lCascadeResult[lN]->SetCutCascRadius            ( lcuts[i][0][ 8] ) ;
+        //Miscellaneous
+        lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][0][ 9] ) ;
+        lCascadeResult[lN]->SetCutMaxV0Lifetime         ( lcuts[i][0][10] ) ;
+        lCascadeResult[lN]->SetCutTPCdEdx               ( lcuts[i][0][12] ) ;
+        lCascadeResult[lN]->SetCutXiRejection           ( lcuts[i][0][13] ) ;
+        //        lCascadeResult[lN]->SetCutDCACascadeToPV        ( lcuts[i][1][14] ) ;
+        //Track Quality
+        lCascadeResult[lN]->SetCutMinTrackLength        ( lcuts[i][0][11] ) ;
+        
+        //Use Nclusters = Ncrossedrows cuts (matters only for 2.76 TeV Pb-Pb, old data)
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters   ( lcuts[i][0][15] ); //not a typo: 15
+        lCascadeResult[lN]->SetCutLeastNumberOfCrossedRows( lcuts[i][0][15] ); //not a typo: 15
+        lCascadeResult[lN]->SetCutMinCrossedRowsOverLength( lcuts[i][0][16] );
+        
+        //Parametric angle cut initializations
+        //V0 cosine of pointing angle
+        lCascadeResult[lN]->SetCutV0CosPA               ( 0.95 ) ; //+variable
+        lCascadeResult[lN]->SetCutVarV0CosPA(TMath::Exp(  -1.77429),
+                                             -0.692453,
+                                             TMath::Exp( -2.01938),
+                                             -0.201574,
+                                             0.0776465);
+        
+        //Cascade cosine of pointing angle
+        lCascadeResult[lN]->SetCutCascCosPA             ( 0.95 ) ; //+variable
+        if(i < 2){
+            lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(  -1.77429),
+                                                   -0.692453,
+                                                   TMath::Exp( -2.01938),
+                                                   -0.201574,
+                                                   0.0776465);
+        }
+        if(i >= 2){
+            lCascadeResult[lN]->SetCutVarCascCosPA(TMath::Exp(4.86664),
+                                                   -10.786,
+                                                   TMath::Exp(-1.33411),
+                                                   -0.729825,
+                                                   0.0695724);
+        }
+        
+        //BB cosine of pointing angle
+        lCascadeResult[lN]->SetCutBachBaryonCosPA       ( 2 ) ; //+variable
+        
+        //Add result to pool
+        lN++;
+    }
+    //===========================================================================
+    
     if ( lUseFull ) {
         //Central Full results: Stored in indices 4, 5, 6, 7 (careful!)
         for(Int_t i = 0 ; i < 4 ; i ++){
