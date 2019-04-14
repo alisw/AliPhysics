@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/04/14
+//  Last Modified Date: 2019/04/15
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -78,11 +78,16 @@ enum {
 enum { kIsSelected = 1, kPS, kAllNone };  // for V0M signal QA plot
 enum {
     kTrueINELg0 = 1,
+    kTrig_TrueINELg0,
+    kGoodVtx_TrueINELg0,
+    kVzCutted_TrueINELg0,
+    kSelected_TrueINELg0,
+    kTrue,
     kTrig,
-    kReco,
     kGoodVtx,
-    kTrigtZERO
-};  // for Trigger Efficiency
+    kVzCutted,
+    kSelected,
+};  // for Trigger Efficiency, Vertext Correction
 enum {
     kDefaultOption = 1,
     kTPCNsigmaXi1530PionLoose,
@@ -255,11 +260,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         AxisVar("nTrklet", {0, 5, 10, 15, 20, 25, 30, 35, 40, 100});
     if (IsMC) {
         // To get Trigger efficiency in each trk/V0M Multiplicity region
-        auto MCType = AxisStr("Type", {"TrueINELg0", "Triggered", "Reco",
-                                       "GoodVtx", "kTrigtZERO"});
-        // auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
+        auto MCType = AxisStr(
+            "Type", {"kTrueINELg0", "kTrig_TrueINELg0", "kGoodVtx_TrueINELg0",
+                     "kVzCutted_TrueINELg0", "kSelected_TrueINELg0", "kTrue",
+                     "kTrig", "kGoodVtx", "kVzCutted", "kSelected"});
         CreateTHnSparse("htriggered_CINT7", "", 3, {MCType, binCent, binTrklet},
-                        "s");  // inv mass distribution of Xi
+                        "s");
     }
 
     std::vector<TString> ent = {"All",         "Trigger",    "InCompleteDAQ",
@@ -442,12 +448,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     fHistos->CreateTH1("hTotalInvMass_LS", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_Mix", "", 2000, 0.5, 2.5, "s");
 
-    if (IsMC) {
-        fHistos->CreateTH1("htriggered_CINT7_true", "", 1000, 0, 1000, "s");
-        fHistos->CreateTH1("htriggered_CINT7_trig", "", 1000, 0, 1000, "s");
-        fHistos->CreateTH1("htriggered_CINT7_reco", "", 1000, 0, 1000, "s");
-        fHistos->CreateTH1("htriggered_CINT7_GoodVtx", "", 1000, 0, 1000, "s");
-    }
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -633,34 +633,37 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
 
     //  Missing Vetex and Trriger Efficiency ---------------------------------
     if (IsMC) {
-        // Int_t trklbin = binTrklet.FindBin(ftrackmult) -1; // # of tracklet
         // bin
         if (IsINEL0True) {
             FillTHnSparse("htriggered_CINT7",
                           {(double)kTrueINELg0, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_true", centbin);
+            if (IsSelectedTrig)
+                FillTHnSparse("htriggered_CINT7", {(double)kTrig_TrueINELg0,
+                                                   (double)fCent, ftrackmult});
+            if (IsPS && IsGoodVertex)
+                FillTHnSparse("htriggered_CINT7", {(double)kGoodVtx_TrueINELg0,
+                                                   (double)fCent, ftrackmult});
+            if (IsPS && IsGoodVertex && IsVtxInZCut)
+                FillTHnSparse("htriggered_CINT7", {(double)kVzCutted_TrueINELg0,
+                                                   (double)fCent, ftrackmult});
+            if (IsINEL0Rec && IsMultSelcted)
+                FillTHnSparse("htriggered_CINT7", {(double)kSelected_TrueINELg0,
+                                                   (double)fCent, ftrackmult});
         }
-        if (IsSelectedTrig) {
+        FillTHnSparse("htriggered_CINT7",
+                      {(double)kTrue, (double)fCent, ftrackmult});
+        if (IsSelectedTrig)
             FillTHnSparse("htriggered_CINT7",
                           {(double)kTrig, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_trig", centbin);
-        }
-        if (IsINEL0True && IsPS) {
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kReco, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_reco", centbin);
-        }
-        if (IsINEL0True && IsINEL0Rec && IsMultSelcted) {  // N of event used.
-            // Used event from IsINEL0True.
+        if (IsPS && IsGoodVertex)
             FillTHnSparse("htriggered_CINT7",
                           {(double)kGoodVtx, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_GoodVtx", centbin);
-        }
-        if (IsINEL0True && IsSelectedTrig) {
+        if (IsPS && IsGoodVertex && IsVtxInZCut)
             FillTHnSparse("htriggered_CINT7",
-                          {(double)kTrigtZERO, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_trig", centbin);
-        }
+                          {(double)kVzCutted, (double)fCent, ftrackmult});
+        if (IsINEL0Rec && IsMultSelcted)
+            FillTHnSparse("htriggered_CINT7",
+                          {(double)kSelected, (double)fCent, ftrackmult});
     }
     // -----------------------------------------------------------------------
 
