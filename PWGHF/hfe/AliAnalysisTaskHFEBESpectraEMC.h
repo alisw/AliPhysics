@@ -84,7 +84,9 @@ public:
     void    GetMCTemplateWeight();
     Bool_t  GetMCDCATemplates(AliVTrack *track, Double_t TrkDCA);
     
-    void    InputWeightCorrectionMaps();
+   // void    InputWeightCorrectionMaps();
+    void SetDmesonWeightHist(TH1 *D1, TH1 *D2, TH1 *D3);
+    void SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *B3);
     void    GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight);
     void    GetDWeight(AliAODMCParticle *Part, Double_t &DCentWeight, Double_t &DMinWeight, Double_t &DMaxWeight);
 

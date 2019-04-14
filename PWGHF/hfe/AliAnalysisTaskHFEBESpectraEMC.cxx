@@ -572,7 +572,34 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     ///////////////////////////
     //Histos for MC templates//
     ///////////////////////////
-    if(fFillMCTemplates) InputWeightCorrectionMaps();
+    if(fFillMCTemplates){
+        TString DMesonWeightMaps, BMesonWeightMaps;
+        
+        DMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root";
+        BMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/BMesonpTWeight.root";
+        
+        //   printf("\n### reading file %s ...\n",DMesonWeightMaps.Data());
+        //   printf("\n### reading file %s ...\n",BMesonWeightMaps.Data());
+        
+        TFile* f2 = TFile::Open(DMesonWeightMaps.Data());
+        if(f2){
+            TH1D *D1 = (TH1D*)f2->Get("RatD0");
+            TH1D *D2 = (TH1D*)f2->Get("RatD0Up");
+            TH1D *D3 = (TH1D*)f2->Get("RatD0Down");
+            
+            SetDmesonWeightHist(D1,D2,D3);
+        }
+        f2->Close();
+        TFile* f3 = TFile::Open(BMesonWeightMaps.Data());
+        if(f3){
+            TH1D *B1 = (TH1D*)f3->Get("RatBMes");
+            TH1D *B2 = (TH1D*)f3->Get("RatBMesMin");
+            TH1D *B3 = (TH1D*)f3->Get("RatBMesMax");
+            
+            SetBmesonWeightHist(B1,B2,B3);
+        }
+        f3->Close();
+    }
     
     /////////////////////////////////////////////////
     //Automatic determination of the analysis mode//
@@ -2579,6 +2606,21 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
     return kTRUE;
 }
 //________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::SetDmesonWeightHist(TH1 *D1, TH1 *D2, TH1 *D3)
+{
+    fDcent = (TH1D*)D1->Clone();
+    fDUp = (TH1D*)D2->Clone();
+    fDDown = (TH1D*)D3->Clone();
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *B3)
+{
+    fBcent = (TH1D*)B1->Clone();
+    fBMin = (TH1D*)B2->Clone();
+    fBMax = (TH1D*)B3->Clone();
+}
+/*
+//________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::InputWeightCorrectionMaps()
 {
     //Get the input files for D and B meson pT weight
@@ -2606,6 +2648,7 @@ void AliAnalysisTaskHFEBESpectraEMC::InputWeightCorrectionMaps()
     }
     f3->Close();
 }
+ */
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight)
 {
