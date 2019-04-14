@@ -132,11 +132,13 @@ fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
+fkDownScaleEvent      ( kTRUE  ),
+fDownScaleFactorEvent      ( 0.0  ),
 
 //---> Flags controlling V0 TTree output
 fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
-fDownScaleFactorV0 ( 0.001  ),
+fDownScaleFactorV0 ( 0.0 ),
 fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
@@ -486,11 +488,13 @@ fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
+fkDownScaleEvent      ( kTRUE  ),
+fDownScaleFactorEvent      ( 0.0  ),
 
 //---> Flags controlling V0 TTree output
 fkSaveV0Tree       ( kTRUE ),
 fkDownScaleV0      ( kTRUE  ),
-fDownScaleFactorV0 ( 0.001  ),
+fDownScaleFactorV0 ( 0.0  ),
 fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
@@ -1735,8 +1739,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     //Fill centrality histogram
     fHistCentrality->Fill(fCentrality);
     
-    //Event-level fill
-    if ( fkSaveEventTree ) fTreeEvent->Fill() ;
+    //Random denial
+    Bool_t lKeepEventEntry = kTRUE;
+    if(fkDownScaleEvent && ( fRand->Uniform() > fDownScaleFactorEvent )) lKeepEventEntry = kFALSE;
+    if ( fkSaveEventTree && lKeepEventEntry ) fTreeEvent->Fill() ;
     
     //STOP HERE if skipping event selections (no point in doing the rest...)
     
