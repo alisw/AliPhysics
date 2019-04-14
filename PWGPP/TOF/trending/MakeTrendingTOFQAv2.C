@@ -79,6 +79,10 @@ TH1F* GetTH1F(TList* l, TString name);
 TH2F* GetTH2F(TList* l, TString name);
 
 ///
+/// Function to get a Profile from a TH2F
+TProfile* MakeProfileX(TH2F* h, TString name, Float_t minY, Float_t maxY, Int_t color = 1, Int_t width = 3);
+
+///
 ///Function to setup the histogram style
 void MakeUpHisto(TH1* histo, TString titleX = "", TString titleY = "", Int_t marker = 20, Color_t color = kBlue + 2, Int_t lineWidth = 1);
 void MakeUpHisto(TH2* histo, TString titleX = "", TString titleY = "", TString titleZ = "", Int_t marker = 20, Color_t color = kBlue + 2, Int_t lineWidth = 1);
@@ -648,82 +652,36 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   TList* ListOfOutput_T0 = new TList(); ///List of output for all plots related to T0
 
   TH2F* hT0TOFvsNtracks = GetTH2F(timeZeroList, "hT0TOFvsNtrk");
-  TProfile* hT0TOFProfile = 0x0;
-  if (!hT0TOFvsNtracks)
-    cout << "Cannot find TH2F hT0TOFvsNtrk in the input list" << endl;
-  else {
-    Int_t binmin1 = hT0TOFvsNtracks->GetYaxis()->FindBin(-50.);
-    Int_t binmax1 = hT0TOFvsNtracks->GetYaxis()->FindBin(50.);
-    hT0TOFProfile = (TProfile*)hT0TOFvsNtracks->ProfileX("hT0TOFProfile", binmin1, binmax1);
-    hT0TOFProfile->SetLineWidth(3);
-    hT0TOFProfile->SetLineColor(1);
-
-    //Add result to output list
+  TProfile* hT0TOFProfile = MakeProfileX(hT0TOFvsNtracks, "hT0TOFProfile", -50., 50.);
+  if (hT0TOFvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0TOFvsNtracks);
     ListOfOutput_T0->Add(hT0TOFProfile);
   }
 
   TH2F* hT0ACvsNtracks = GetTH2F(timeZeroList, "hT0ACvsNtrk");
-  TProfile* hT0ACProfile = 0x0;
-  if (!hT0ACvsNtracks)
-    cout << "Cannot find TH2F hT0ACvsNtrk in the input list" << endl;
-  else {
-    Int_t binmin2 = hT0ACvsNtracks->GetYaxis()->FindBin(-50.);
-    Int_t binmax2 = hT0ACvsNtracks->GetYaxis()->FindBin(50.);
-    hT0ACProfile = (TProfile*)hT0ACvsNtracks->ProfileX("hT0ACProfile", binmin2, binmax2);
-    hT0ACProfile->SetLineWidth(3);
-    hT0ACProfile->SetLineColor(1);
-
-    //Add result to output list
+  TProfile* hT0ACProfile = MakeProfileX(hT0ACvsNtracks, "hT0ACProfile", -50., 50.);
+  if (hT0ACvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0ACvsNtracks);
     ListOfOutput_T0->Add(hT0ACProfile);
   }
 
   TH2F* hT0AvsNtracks = GetTH2F(timeZeroList, "hT0AvsNtrk");
-  TProfile* hT0AProfile = 0x0;
-  if (!hT0AvsNtracks)
-    cout << "Cannot find TH2F hT0AvsNtrk in the input list" << endl;
-  else {
-    Int_t binmin3 = hT0AvsNtracks->GetYaxis()->FindBin(-50.);
-    Int_t binmax3 = hT0AvsNtracks->GetYaxis()->FindBin(50.);
-    hT0AProfile = (TProfile*)hT0AvsNtracks->ProfileX("hT0AProfile", binmin3, binmax3);
-    hT0AProfile->SetLineWidth(3);
-    hT0AProfile->SetLineColor(1);
-
-    //Add result to output list
+  TProfile* hT0AProfile = MakeProfileX(hT0AvsNtracks, "hT0AProfile", -50., 50.);
+  if (hT0AvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0AvsNtracks);
     ListOfOutput_T0->Add(hT0AProfile);
   }
 
   TH2F* hT0CvsNtracks = GetTH2F(timeZeroList, "hT0CvsNtrk");
-  TProfile* hT0CProfile = 0x0;
-  if (!hT0CvsNtracks)
-    cout << "Cannot find TH2F hT0CvsNtrk in the input list" << endl;
-  else {
-    Int_t binmin4 = hT0CvsNtracks->GetYaxis()->FindBin(-50.);
-    Int_t binmax4 = hT0CvsNtracks->GetYaxis()->FindBin(50.);
-    hT0CProfile = (TProfile*)hT0CvsNtracks->ProfileX("hT0CProfile", binmin4, binmax4);
-    hT0CProfile->SetLineWidth(3);
-    hT0CProfile->SetLineColor(1);
-
-    //Add result to output list
+  TProfile* hT0CProfile = MakeProfileX(hT0CvsNtracks, "hT0CProfile", -50., 50.);
+  if (hT0CvsNtracks) { //Add result to output list
     ListOfOutput_T0->Add(hT0CvsNtracks);
     ListOfOutput_T0->Add(hT0CProfile);
   }
 
   TH2F* hStartTime = GetTH2F(timeZeroList, "hStartTime");
-  TProfile* hStartTimeProfile = 0x0;
-  if (!hStartTime)
-    cout << "Cannot find TH2F hStartTime in the input list" << endl;
-  else {
-    Int_t binminst = hStartTime->GetXaxis()->FindBin(-600.);
-    Int_t binmaxst = hStartTime->GetXaxis()->FindBin(600.);
-    hStartTimeProfile = (TProfile*)hStartTime->ProfileY("hStartTimeProfile", binminst, binmaxst);
-    hStartTimeProfile->SetFillStyle(0);
-    hStartTimeProfile->SetLineWidth(3);
-    hStartTimeProfile->SetLineColor(1);
-
-    //Add result to output list
+  TProfile* hStartTimeProfile = MakeProfileX(hStartTime, "hStartTimeProfile", -600., 600.);
+  if (hStartTime) { //Add result to output list
     ListOfOutput_T0->Add(hStartTime);
     ListOfOutput_T0->Add(hStartTimeProfile);
 
@@ -745,18 +703,8 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   }
 
   TH2F* hStartTimeRes = GetTH2F(timeZeroList, "hStartTimeRes");
-  TProfile* hStartTimeResProfile = 0x0;
-  if (!hStartTimeRes)
-    cout << "Cannot find TH2F hStartTimeRes in the input list" << endl;
-  else {
-    Int_t binminstRes = hStartTimeRes->GetXaxis()->FindBin(-600.);
-    Int_t binmaxstRes = hStartTimeRes->GetXaxis()->FindBin(600.);
-    hStartTimeResProfile = (TProfile*)hStartTimeRes->ProfileY("hStartTimeResProfile", binminstRes, binmaxstRes);
-    hStartTimeResProfile->SetFillStyle(0);
-    hStartTimeResProfile->SetLineWidth(3);
-    hStartTimeResProfile->SetLineColor(1);
-
-    //Add result to output list
+  TProfile* hStartTimeResProfile = MakeProfileX(hStartTime, "hStartTimeResProfile", -600., 600.);
+  if (hStartTimeRes) { //Add result to output list
     ListOfOutput_T0->Add(hStartTimeRes);
     ListOfOutput_T0->Add(hStartTimeResProfile);
 
@@ -1031,10 +979,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   TCanvas* cProfile = new TCanvas("cProfile", "cProfile", 50, 50, 750, 550);
   gPad->SetLogz();
   hTOFmatchedDzVsStrip->Draw("colz");
-  Int_t binmin = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(-3);
-  Int_t binmax = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(3);
-  TProfile* hDzProfile = (TProfile*)hTOFmatchedDzVsStrip->ProfileX("hDzProfile", binmin, binmax);
-  hDzProfile->SetLineWidth(3);
+  TProfile* hDzProfile = MakeProfileX(hTOFmatchedDzVsStrip, "hDzProfile", -3, 3);
   hDzProfile->Draw("same");
 
   TCanvas* cMatchingPerformance = new TCanvas("cMatchingPerformance", "summary of matching performance", 1200, 500);
@@ -1267,6 +1212,18 @@ TH2F* GetTH2F(TList* l, TString name)
     return 0x0;
   }
   return h;
+}
+
+//----------------------------------------------------------
+TProfile* MakeProfileX(TH2F* h, TString name, Float_t minY, Float_t maxY, Int_t color, Int_t width)
+{
+  if (!h)
+    return nullptr;
+  TProfile* p = h->ProfileX(name, h->GetYaxis()->FindBin(minY), h->GetYaxis()->FindBin(maxY));
+  p->SetLineWidth(width);
+  p->SetLineColor(color);
+  p->SetFillStyle(0);
+  return p;
 }
 
 //----------------------------------------------------------
