@@ -708,10 +708,10 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
     ListOfOutput_T0->Add(hStartTimeRes);
     ListOfOutput_T0->Add(hStartTimeResProfile);
 
-    //Set Start Time Resolution information
+//Set Start Time Resolution information
 #define GetT0Info(Label, Tz)                                                \
-  Tzbin = hStartTime->GetYaxis()->FindBin(Label);                           \
-  if (Tzbin <= 0 || Tzbin > hStartTime->GetNbinsY())                        \
+  Tzbin = hStartTimeRes->GetYaxis()->FindBin(Label);                        \
+  if (Tzbin <= 0 || Tzbin > hStartTimeRes->GetNbinsY())                     \
     ::Error("MakeTrendingTOFQAv2", "cannot find start time bin %s", Label); \
   Tz = hStartTimeResProfile->GetBinContent(Tzbin);
     Int_t Tzbin = -1;
