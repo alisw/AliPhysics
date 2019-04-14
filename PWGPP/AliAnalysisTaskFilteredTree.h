@@ -110,6 +110,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   // v0s selection
   Int_t  GetKFParticle(AliESDv0 *const v0, AliESDEvent * const event, AliKFParticle & kfparticle);
   Bool_t IsV0Downscaled(AliESDv0 *const v0);
+  Int_t  V0DownscaledMask(AliESDv0 *const v0);
   Bool_t IsHighDeDxParticle(AliESDtrack * const track);
 
   void SetLowPtTrackDownscaligF(Double_t fact) { fLowPtTrackDownscaligF = fact; }
@@ -166,7 +167,8 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Double_t fLowPtV0DownscaligF;    // low pT V0 downscaling factor
   Double_t fFriendDownscaling;     // friend info downscaling )absolute value used), Modes>=1 downscaling in respect to the amount of tracks, Mode<=-1 (downscaling in respect to the data volume)
   Double_t fSqrtS;                 // sqrt(s) used for downsampling to approximate spectra function
-  Double_t fChargedMass;           // mass used for downsampling to approximate spectra function
+  Double_t fChargedEffectiveMass;           // mass used for downsampling to approximate spectra function (pion,Kaon,prootn)
+  Double_t fV0EffectiveMass;           // mass used for downsampling to approximate spectra function for V0 (K0s,Lambda)
   Double_t fProcessAll; // Calculate all track properties including MC
   
   Bool_t fProcessCosmics; // look for cosmic pairs from random trigger

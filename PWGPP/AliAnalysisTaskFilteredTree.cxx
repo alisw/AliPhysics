@@ -115,7 +115,8 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fLowPtV0DownscaligF(0)
   , fFriendDownscaling(-3.)
   , fSqrtS(5020)
-  , fChargedMass(0.2)
+  , fChargedEffectiveMass(0.2)
+  , fV0EffectiveMass(0.9)
   , fProcessAll(kFALSE)
   , fProcessCosmics(kFALSE)
   , fProcessITSTPCmatchOut(kFALSE)  // swittch to process ITS/TPC standalone tracks
@@ -697,7 +698,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       ///    downscaleF *= fLowPtTrackDownscaligF;
       ///    if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
       /// New code using flat pt and flat q/pt mixture
-      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedMass);
+      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
       if( downscaleCounter>0 && selectionPtMask==0) continue;
 
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
@@ -1000,7 +1001,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       // downscaleF *= fLowPtTrackDownscaligF;
       // if (downscaleCounter > 0 && TMath::Exp(2 * scalempt) < downscaleF) continue;
       /// New code using flat pt and flat q/pt mixture
-      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedMass);
+      Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
       if( downscaleCounter>0 && selectionPtMask==0) continue;
 
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
@@ -2028,7 +2029,8 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       // Bool_t isDownscaled = IsV0Downscaled(v0);                   // old selection mask
       // if (downscaleCounter>0 && isDownscaled) continue;
       if (v0->Pt()<0.01) continue; ///TODO -THIS line should be used configured value
-      Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedMass);
+      //Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass);
+      Int_t selectionPtMask=V0DownscaledMask(v0);
       if( downscaleCounter>0 && selectionPtMask==0) continue;
 
       AliKFParticle kfparticle; //
@@ -2073,6 +2075,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
         "gid="<<gid<<                         //  global id of event
         "fLowPtV0DownscaligF="<<fLowPtV0DownscaligF<<
         "selectionPtMask="<<selectionPtMask<< // selection pt mask
+        "downscaleCounter="<<downscaleCounter<< // downscaleCounter
 //        "isDownscaled="<<isDownscaled<<       //
         "triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<                           //
@@ -2385,6 +2388,32 @@ Bool_t AliAnalysisTaskFilteredTree::IsV0Downscaled(AliESDv0 *const v0)
   //printf("V0 TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
   if (TMath::Exp(2*scalempt)<downscaleF) return kTRUE;
   return kFALSE;
+}
+
+
+/// V0DownsampleMask flatening spectra - assuming spectra described by Tsallis with Effective V0 mass
+/// \param v0       - v0
+/// \return         - triggers mask based on the flat p, qpt spectra
+///                   bit 0 - flat pt MB
+///                   bit 1 - flat qpt MB
+///                   bit 2 - flat pt Gamma candidate
+///                   bit 3 - flat q/pt Gamma candidate
+Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
+{
+  //
+  // Downscale randomly low pt V0
+  // Special treatment of the gamma conversion pt spectra is softer
+  const Double_t cutGammaMass=0.1;
+  const Double_t cutAlpha=1.1;
+  if (TMath::Abs(v0->AlphaV0())>cutAlpha) return 0;
+  Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtTrackDownscaligF, 1./fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass);
+  Double_t mass00=  v0->GetEffMass(0,0);
+  Bool_t gammaCandidate= TMath::Abs(mass00-0)<cutGammaMass;
+  if (gammaCandidate){
+    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), 10./fLowPtTrackDownscaligF, 10./fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass)*4;
+    selectionPtMask+=selectionPtMaskGamma;
+  }
+  return selectionPtMask;
 }
 
 
