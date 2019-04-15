@@ -431,8 +431,8 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[0][8] = 2.5;
     fCutValues[0][9] = 1.5; // tight selection of DCA p-pi less then 0.95 (0.1) loose (1.5)
     fCutValues[0][10] = 1.5; // tight selection of DCA L-pi less then 0.275 (0.3) loose (1.5)
-    fCutValues[0][11] = 0.997; //tight selection of CPA L (0.998) loose (0.95)
-    fCutValues[0][12] = 0.997; //tight selection of CPA Xi (0.9992) loose (0.95)
+    fCutValues[0][11] = 0.998; //tight selection of CPA L (0.998) loose (0.95)
+    fCutValues[0][12] = 0.9992; //tight selection of CPA Xi (0.9992) loose (0.95)
     
     
     
@@ -464,8 +464,8 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[16][8] = 2.5;
     fCutValues[17][9] = 1.0;
     fCutValues[18][10] = 0.5;
-    fCutValues[19][11] = 0.998;  //checking t CPA V0
-    fCutValues[20][12] = 0.998; //checking t CPA Xi
+    fCutValues[19][11] = 0.997;  //checking t CPA V0
+    fCutValues[20][12] = 0.997; //checking t CPA Xi
     
     /*
      //systematic variation// Loose
