@@ -39,8 +39,8 @@ void AliNanoFilterPID::TriggerOnSpecies(AliPID::EParticleType sp,
 bool AliNanoFilterPID::IsSelected(TObject *obj) {
   fSelected = false;
   fFilterMask = 0u;
-  AliVEvent *ev = dynamic_cast<AliVEvent *>(obj);
-  if (!ev) {
+  AliVTrack *trk = dynamic_cast<AliVTrack *>(obj);
+  if (!trk) {
     return fSelected;
   }
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -48,31 +48,28 @@ bool AliNanoFilterPID::IsSelected(TObject *obj) {
       (AliInputEventHandler *)mgr->GetInputEventHandler();
   AliPIDResponse *pid = handl->GetPIDResponse();
   
-  for (int iTrack{0}; iTrack < ev->GetNumberOfTracks(); ++iTrack) {
-    AliVTrack* trk = (AliVTrack*)ev->GetTrack(iTrack);
-    for (int iSpecies{0}; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
-      if (!fTrackCuts[iSpecies] && fTPCpidTriggerNsigma[iSpecies] < 0. &&
-          fTOFpidTriggerNsigma[iSpecies] < 0.)
-        continue;
+  for (int iSpecies{0}; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
+    if (!fTrackCuts[iSpecies] && fTPCpidTriggerNsigma[iSpecies] < 0. &&
+        fTOFpidTriggerNsigma[iSpecies] < 0.)
+      continue;
 
-      if (!fTrackCuts[iSpecies]->AcceptVTrack(trk))
-        continue;
+    if (!fTrackCuts[iSpecies]->AcceptVTrack(trk))
+      continue;
 
-      double pt = trk->Pt() * AliPID::ParticleCharge(iSpecies);
-      double nTPCsigma =
-          std::abs(pid->NumberOfSigmasTPC(trk, AliPID::EParticleType(iSpecies)));
-      double nTOFsigma =
-          std::abs(pid->NumberOfSigmasTOF(trk, AliPID::EParticleType(iSpecies)));
-      if ((nTPCsigma < fTPCpidTriggerNsigma[iSpecies] &&
-          pt > fTPCpidTriggerPtRange[iSpecies][0] &&
-          pt < fTPCpidTriggerPtRange[iSpecies][1]) ||
-          (nTOFsigma < fTOFpidTriggerNsigma[iSpecies] &&
-          nTPCsigma < fTPCpidTriggerNsigma[iSpecies] &&
-          pt > fTOFpidTriggerPtRange[iSpecies][0] &&
-          pt < fTOFpidTriggerPtRange[iSpecies][1])) {
-        SETBIT(fFilterMask,iSpecies);
-        fSelected = true;
-      }
+    double pt = trk->Pt() * AliPID::ParticleCharge(iSpecies);
+    double nTPCsigma =
+        std::abs(pid->NumberOfSigmasTPC(trk, AliPID::EParticleType(iSpecies)));
+    double nTOFsigma =
+        std::abs(pid->NumberOfSigmasTOF(trk, AliPID::EParticleType(iSpecies)));
+    if ((nTPCsigma < fTPCpidTriggerNsigma[iSpecies] &&
+        pt > fTPCpidTriggerPtRange[iSpecies][0] &&
+        pt < fTPCpidTriggerPtRange[iSpecies][1]) ||
+        (nTOFsigma < fTOFpidTriggerNsigma[iSpecies] &&
+        nTPCsigma < fTPCpidTriggerNsigma[iSpecies] &&
+        pt > fTOFpidTriggerPtRange[iSpecies][0] &&
+        pt < fTOFpidTriggerPtRange[iSpecies][1])) {
+      SETBIT(fFilterMask,iSpecies);
+      fSelected = true;
     }
   }
 
