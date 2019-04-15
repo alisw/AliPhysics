@@ -27,6 +27,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fPDCAZ(-1),		  
   fPosDCAx(-1),	  
   fPosDCAy(-1),	  
+  fPosDCAz(-1),	  
+  fDCA(-1),	  
   fRAtAbsorberEnd(-1),  
   fTPCncls(-1),	  
   fID(-1),		  
@@ -48,7 +50,6 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fTRDsignal(-1),	  
   fTRDChi2(-1),	  
   fTRDnSlices(-1),	  
-  fIsMuonTrack(-1),
   fTPCnclsS(-1),
   fFilterMap(-1),
   fTOFBunchCrossing(-1),
@@ -78,6 +79,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fPDCAZ(-1),		  
   fPosDCAx(-1),	  
   fPosDCAy(-1),	  
+  fPosDCAz(-1),	  
+  fDCA(-1),	  
   fRAtAbsorberEnd(-1),  
   fTPCncls(-1),	  
   fID(-1),		  
@@ -99,7 +102,6 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fTRDsignal(-1),	  
   fTRDChi2(-1),	  
   fTRDnSlices(-1),	  
-  fIsMuonTrack(-1),
   fTPCnclsS(-1),
   fFilterMap(-1),
   fTOFBunchCrossing(-1),
@@ -146,6 +148,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "pDCAz"            ) fPDCAZ             = index++;
     else if(var == "posDCAx"          ) fPosDCAx           = index++;
     else if(var == "posDCAy"          ) fPosDCAy           = index++;
+    else if(var == "posDCAz"          ) fPosDCAz           = index++;
+    else if(var == "DCA"              ) fDCA               = index++;
     else if(var == "RAtAbsorberEnd"   ) fRAtAbsorberEnd    = index++;
     else if(var == "TPCncls"          ) fTPCncls           = index++;
     else if(var == "ID"               ) fID                = index++;
@@ -168,7 +172,6 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "TRDsignal"        ) fTRDsignal         = index++;
     else if(var == "TRDChi2"          ) fTRDChi2           = index++;
     else if(var == "TRDnSlices"       ) fTRDnSlices        = index++;
-    else if(var == "IsMuonTrack"      ) fIsMuonTrack       = index++;
     else if(var == "TPCnclsS"         ) fTPCnclsS          = index++;
     else if(var == "FilterMap"        ) fFilterMap         = index++;
     else if(var == "TOFBunchCrossing" ) fTOFBunchCrossing  = index++;
@@ -208,6 +211,8 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "pDCAz"            ) return fPDCAZ            ;
     else if(varName == "posDCAx"          ) return fPosDCAx          ;
     else if(varName == "posDCAy"          ) return fPosDCAy          ;
+    else if(varName == "posDCAz"          ) return fPosDCAz          ;
+    else if(varName == "DCA"              ) return fDCA              ;
     else if(varName == "RAtAbsorberEnd"   ) return fRAtAbsorberEnd   ;
     else if(varName == "TPCncls"          ) return fTPCncls          ;
     else if(varName == "ID"               ) return fID               ;
@@ -230,7 +235,6 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "TRDsignal"        ) return fTRDsignal        ;
     else if(varName == "TRDChi2"          ) return fTRDChi2          ;
     else if(varName == "TRDnSlices"       ) return fTRDnSlices       ;
-    else if(varName == "IsMuonTrack"      ) return fIsMuonTrack      ;
     else if(varName == "TPCnclsS"         ) return fTPCnclsS         ;
     else if(varName == "FilterMap"        ) return fFilterMap        ;
     else if(varName == "TOFBunchCrossing" ) return fTOFBunchCrossing ;
@@ -264,6 +268,8 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
     else if(index == fPDCAZ            )  return "pDCAz"            ;
     else if(index == fPosDCAx          )  return "posDCAx"          ;
     else if(index == fPosDCAy          )  return "posDCAy"          ;
+    else if(index == fPosDCAz          )  return "posDCAz"          ;
+    else if(index == fDCA              )  return "DCA"          ;
     else if(index == fRAtAbsorberEnd   )  return "RAtAbsorberEnd"   ;
     else if(index == fTPCncls          )  return "TPCncls"          ;
     else if(index == fID               )  return "ID"               ;
@@ -286,7 +292,6 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
     else if(index == fTRDsignal        )  return "TRDsignal"        ;
     else if(index == fTRDChi2          )  return "TRDChi2"          ;
     else if(index == fTRDnSlices       )  return "TRDnSlices"       ;
-    else if(index == fIsMuonTrack      )  return "IsMuonTrack"      ;
     else if(index == fTPCnclsS         )  return "TPCnclsS"         ;
     else if(index == fFilterMap        )  return "FilterMap"        ;
     else if(index == fTOFBunchCrossing )  return "TOFBunchCrossing" ;

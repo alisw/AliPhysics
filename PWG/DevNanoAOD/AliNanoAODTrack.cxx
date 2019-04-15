@@ -69,7 +69,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   // constructor
 
   Double_t position[3];
-  Bool_t isPosAvailable = !(aodTrack->GetXYZ(position)); // GetXYZ() returns kTRUE, if it's DCA information
+  aodTrack->GetXYZ(position); // GetXYZ() returns kTRUE, if it's DCA information
   AliNanoAODTrackMapping::GetInstance(vars);
 
   // Create internal structure
@@ -82,14 +82,16 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
     else if(varString == "phi"                    ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPhi()              , aodTrack->Phi()                     );
     else if(varString == "theta"                  ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTheta()            , aodTrack->Theta()                   );
     else if(varString == "chi2perNDF"             ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetChi2PerNDF()       , aodTrack->Chi2perNDF()              );  
-    else if(varString == "posx" && isPosAvailable ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX()             , position[0]                         );
-    else if(varString == "posy" && isPosAvailable ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY()             , position[1]                         );
-    else if(varString == "posz" && isPosAvailable ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ()             , position[2]                         );
+    else if(varString == "posx"                   ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX()             , position[0]                         );
+    else if(varString == "posy"                   ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY()             , position[1]                         );
+    else if(varString == "posz"                   ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ()             , position[2]                         );
     else if(varString == "posDCAx"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAx()          , aodTrack->XAtDCA()                  );
     else if(varString == "posDCAy"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAy()          , aodTrack->YAtDCA()                  );
+    else if(varString == "posDCAy"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAz()          , aodTrack->ZAtDCA()                  );
     else if(varString == "pDCAx"                  ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAX()            , aodTrack->PxAtDCA()                 );
     else if(varString == "pDCAy"                  ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAY()            , aodTrack->PyAtDCA()                 );
     else if(varString == "pDCAz"                  ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAZ()            , aodTrack->PzAtDCA()                 );
+    else if(varString == "DCA"                    ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetDCA()              , aodTrack->DCA()                     );
     else if(varString == "RAtAbsorberEnd"         ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()   , aodTrack->GetRAtAbsorberEnd()       );
     else if(varString == "TPCncls"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()          , aodTrack->GetTPCNcls()              );
     else if(varString == "ID"                     ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetID()               , aodTrack->GetID()                   );
@@ -112,10 +114,6 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
     else if(varString == "TRDsignal"              ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDsignal()        , aodTrack->GetTRDsignal()            );
     else if(varString == "TRDChi2"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDChi2()          , aodTrack->GetTRDchi2()              );
     else if(varString == "TRDnSlices"             ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDnSlices()       , aodTrack->GetNumberOfTRDslices()    );  
-    else if(varString == "IsMuonTrack"             ) {
-        if (aodTrack->IsMuonTrack()) SetVar(AliNanoAODTrackMapping::GetInstance()->GetIsMuonTrack(), 1.);
-        else SetVar(AliNanoAODTrackMapping::GetInstance()->GetIsMuonTrack(), 0.);
-    }
     else if(varString == "TPCnclsS"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsS()         , aodTrack->GetTPCnclsS()             );
     else if(varString == "FilterMap"               ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()        , aodTrack->GetFilterMap()            );
     else if(varString == "TOFBunchCrossing"        ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFBunchCrossing() , aodTrack->GetTOFBunchCrossing()     );
@@ -144,6 +142,13 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   for (int i=0; i<6; i++)
     if (aodTrack->HasPointOnITSLayer(i))
       SETBIT(fNanoFlags, kNanoClusterITS0+i);
+  
+  if (aodTrack->IsMuonTrack())
+    SETBIT(fNanoFlags, kIsMuonTrack);
+  
+  // AOD bits
+  for (int i=AliAODTrack::kIsDCA; i<=AliAODTrack::kIsHybridGCG; i++) // See AliAODTrack.h AODTrkBits_t
+    SetBit(i, aodTrack->TestBit(i));
     
   fProdVertex = aodTrack->GetProdVertex();
   // SetUsedForVtxFit(usedForVtxFit);// FIXME: what is this
@@ -578,15 +583,21 @@ void  AliNanoAODTrack::Clear(Option_t * /*opt*/) {
 
 Bool_t AliNanoAODTrack::InitPIDIndex()
 {
-  Bool_t anyFilled = kFALSE;
+  AliWarningClass("Intializing PID tables. Please call this only once (e.g. by using a static member)!");
+  static Bool_t initialized = kFALSE;
+  static Bool_t anyFilled = kFALSE;
+  if (initialized)
+    return anyFilled;
+  initialized = kTRUE;
+
   for (Int_t r = 0; r<kLAST; r++) {
     for (Int_t p = 0; p<AliPID::kSPECIESC; p++) {
       Int_t index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex(GetPIDVarName((ENanoPIDResponse) r, (AliPID::EParticleType) p));
       fgPIDIndexes[r][p] = index;
-      Printf("%s %d", GetPIDVarName((ENanoPIDResponse) r, (AliPID::EParticleType) p), index);
       if (index != -1)
         anyFilled = kTRUE;
     }
   }
   return anyFilled;
 }
+
