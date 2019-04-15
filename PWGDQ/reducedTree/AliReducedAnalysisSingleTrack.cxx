@@ -39,6 +39,7 @@ using std::endl;
 #include "AliReducedBaseTrack.h"
 #include "AliReducedTrackInfo.h"
 #include "AliReducedPairInfo.h"
+#include "AliReducedCaloClusterInfo.h"
 #include "AliHistogramManager.h"
 
 ClassImp(AliReducedAnalysisSingleTrack);
@@ -48,10 +49,13 @@ AliReducedAnalysisSingleTrack::AliReducedAnalysisSingleTrack() :
   AliReducedAnalysisTaskSE(),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fOptionRunOverMC(kTRUE),
+  fOptionRunOverCaloCluster(kFALSE),
   fEventCuts(),
   fTrackCuts(),
+  fClusterCuts(),
   fMCSignalCuts(),
-  fTracks()
+  fTracks(),
+  fClusters()
 {
   //
   // default constructor
@@ -63,18 +67,23 @@ AliReducedAnalysisSingleTrack::AliReducedAnalysisSingleTrack(const Char_t* name,
   AliReducedAnalysisTaskSE(name,title),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fOptionRunOverMC(kTRUE),
+  fOptionRunOverCaloCluster(kFALSE),
   fEventCuts(),
   fTrackCuts(),
+  fClusterCuts(),
   fMCSignalCuts(),
-  fTracks()
+  fTracks(),
+  fClusters()
 {
   //
   // named constructor
   //
   fEventCuts.SetOwner(kTRUE);
   fTrackCuts.SetOwner(kTRUE);
+  fClusterCuts.SetOwner(kTRUE);
   fMCSignalCuts.SetOwner(kTRUE);
   fTracks.SetOwner(kFALSE);
+  fClusters.SetOwner(kFALSE);
 }
 
 //___________________________________________________________________________
@@ -85,8 +94,10 @@ AliReducedAnalysisSingleTrack::~AliReducedAnalysisSingleTrack()
   //
   fEventCuts.Clear("C");
   fTrackCuts.Clear("C");
+  fClusterCuts.Clear("C");
   fMCSignalCuts.Clear("C");
   fTracks.Clear("C");
+  fClusters.Clear("C");
   if (fHistosManager) delete fHistosManager;
 }
 
@@ -118,6 +129,21 @@ Bool_t AliReducedAnalysisSingleTrack::IsTrackSelected(AliReducedBaseTrack* track
     else { if (cut->IsSelected(track)) track->SetFlag(i); }
   }
   return (track->GetFlags()>0 ? kTRUE : kFALSE);
+}
+
+//___________________________________________________________________________
+Bool_t AliReducedAnalysisSingleTrack::IsClusterSelected(AliReducedCaloClusterInfo* cluster, Float_t* values/*=0x0*/) {
+  //
+  // apply cluster cuts
+  //
+  if (fClusterCuts.GetEntries()==0) return kTRUE;
+  cluster->ResetFlags();
+  for (Int_t i=0; i<fClusterCuts.GetEntries(); ++i) {
+    AliReducedInfoCut* cut = (AliReducedInfoCut*)fClusterCuts.At(i);
+    if (values) { if (cut->IsSelected(cluster, values)) cluster->SetFlag(i); }
+    else { if (cut->IsSelected(cluster)) cluster->SetFlag(i); }
+  }
+  return (cluster->GetFlags()>0 ? kTRUE : kFALSE);
 }
 
 //___________________________________________________________________________
@@ -310,6 +336,55 @@ void AliReducedAnalysisSingleTrack::FillTrackHistograms(AliReducedBaseTrack* tra
 }
 
 //___________________________________________________________________________
+void AliReducedAnalysisSingleTrack::RunClusterSelection() {
+  //
+  // select cluster
+  //
+  fClusters.Clear("C");
+
+  if (fEvent->IsA() == AliReducedBaseEvent::Class()) return;
+  Int_t nCaloCluster = ((AliReducedEventInfo*)fEvent)->GetNCaloClusters();
+  if (!nCaloCluster) return;
+
+  AliReducedCaloClusterInfo* cluster = NULL;
+  for (Int_t icl=0; icl<nCaloCluster; ++icl) {
+    cluster = ((AliReducedEventInfo*)fEvent)->GetCaloCluster(icl);
+
+    for (Int_t i=AliReducedVarManager::kEMCALclusterEnergy; i<=AliReducedVarManager::kEMCALnMatchedTracks; ++i) fValues[i] = -9999.;
+
+    AliReducedVarManager::FillCaloClusterInfo(cluster, fValues);
+    fHistosManager->FillHistClass("CaloCluster_BeforeCuts", fValues);
+
+    if (IsClusterSelected(cluster, fValues)) fClusters.Add(cluster);
+  }
+}
+
+//___________________________________________________________________________
+void AliReducedAnalysisSingleTrack::FillClusterHistograms(TString clusterClass/*="CaloCluster"*/) {
+  //
+  // fill cluster histograms
+  //
+  AliReducedCaloClusterInfo* cluster = NULL;
+  TIter nextCluster(&fClusters);
+  for (Int_t i=0; i<fClusters.GetEntries(); ++i) {
+    cluster = (AliReducedCaloClusterInfo*)nextCluster();
+    for (Int_t i=AliReducedVarManager::kEMCALclusterEnergy; i<=AliReducedVarManager::kEMCALnMatchedTracks; ++i) fValues[i] = -9999.;
+    AliReducedVarManager::FillCaloClusterInfo(cluster, fValues);
+    FillClusterHistograms(cluster, clusterClass);
+  }
+}
+
+//___________________________________________________________________________
+void AliReducedAnalysisSingleTrack::FillClusterHistograms(AliReducedCaloClusterInfo* cluster, TString clusterClass/*="CaloCluster"*/) {
+  //
+  // fill cluster histograms
+  //
+  for (Int_t icut=0; icut<fClusterCuts.GetEntries(); ++icut) {
+    if (cluster->TestFlag(icut)) fHistosManager->FillHistClass(Form("%s_%s", clusterClass.Data(), fClusterCuts.At(icut)->GetName()), fValues);
+  }
+}
+
+//___________________________________________________________________________
 void AliReducedAnalysisSingleTrack::Init() {
   //
   // initialize stuff
@@ -358,6 +433,12 @@ void AliReducedAnalysisSingleTrack::Process() {
   
   // fill MC truth histograms
   if (fOptionRunOverMC) FillMCTruthHistograms();
+
+  // select cluster and fill histograms
+  if (fOptionRunOverCaloCluster) {
+    RunClusterSelection();
+    FillClusterHistograms();
+  }
 
   // select tracks
   RunTrackSelection();
