@@ -129,4 +129,5 @@
 #pragma link C++ class AliAnalysisCODEXtask+;
 /// * NanoAOD
 #pragma link C++ class AliNanoFilterPID+;
+#pragma link C++ class AliNanoSkimmingPID+;
 #endif
