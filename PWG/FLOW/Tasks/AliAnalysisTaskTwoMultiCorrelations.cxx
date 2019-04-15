@@ -90,6 +90,16 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fVertexMinZ(-10.),
   fVertexMaxZ(10.),
   fNumberOfTracksMin(6),
+  fCutOnTracksMax(kFALSE),
+  fNumberOfTracksMaxZero(0),
+  fNumberOfTracksMaxFive(0),
+  fNumberOfTracksMaxTen(0),
+  fNumberOfTracksMaxTwenty(0),
+  fNumberOfTracksMaxThirty(0),
+  fNumberOfTracksMaxForty(0),
+  fNumberOfTracksMaxFifty(0),
+  fNumberOfTracksMaxSixty(0),
+  fNumberOfTracksMaxSeventy(0),
 // Track selection.
   fCutOnPt(kFALSE),
   fPtMin(0.2),
@@ -187,6 +197,16 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fVertexMinZ(-10.),
   fVertexMaxZ(10.),
   fNumberOfTracksMin(6),
+  fCutOnTracksMax(kFALSE),
+  fNumberOfTracksMaxZero(0),
+  fNumberOfTracksMaxFive(0),
+  fNumberOfTracksMaxTen(0),
+  fNumberOfTracksMaxTwenty(0),
+  fNumberOfTracksMaxThirty(0),
+  fNumberOfTracksMaxForty(0),
+  fNumberOfTracksMaxFifty(0),
+  fNumberOfTracksMaxSixty(0),
+  fNumberOfTracksMaxSeventy(0),
 // Track selection.
   fCutOnPt(kFALSE),
   fPtMin(0.2),
@@ -420,7 +440,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookQAListBeforeSelection()
   fQAListBeforeSelection->Add(fHistoPtBeforeSelection);
 
 // Distribution of the pseudorapidity.
-  fHistoEtaBeforeSelection = new TH1D("fHistoEtaBeforeSelection", "Distribution of #eta before the track selection", 1000, -1., 1.);
+  fHistoEtaBeforeSelection = new TH1D("fHistoEtaBeforeSelection", "Distribution of #eta before the track selection", 1000, -5.5, 5.5);
   fHistoEtaBeforeSelection->SetStats(kTRUE);
   fHistoEtaBeforeSelection->GetXaxis()->SetTitle("#eta");
   fQAListBeforeSelection->Add(fHistoEtaBeforeSelection);
@@ -497,7 +517,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookQAListAfterSelection()
   fQAListAfterSelection->Add(fHistoPtAfterSelection);
 
 // Distribution of the pseudorapidity.
-  fHistoEtaAfterSelection = new TH1D("fHistoEtaAfterSelection", "Distribution of #eta after the full selection", 1000, -1., 1.);
+  fHistoEtaAfterSelection = new TH1D("fHistoEtaAfterSelection", "Distribution of #eta after the full selection", 1000, -5.5, 5.5);
   fHistoEtaAfterSelection->SetStats(kTRUE);
   fHistoEtaAfterSelection->GetXaxis()->SetTitle("#eta");
   fQAListAfterSelection->Add(fHistoEtaAfterSelection);
@@ -709,8 +729,25 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
     else {IsTrackSelected[iTrack] = 0;}  // The track failed the selection.
   }
 
-// Remove the events with not enough tracks for the event weight.
+// Remove the events with too few or too many tracks.
+  Int_t cutValueMaxNumberOfTracks = 0;  // Value of the cut on the maximum number of tracks.
   if (finalNumberOfTracks <= fNumberOfTracksMin) {return;}
+  if (fCutOnTracksMax)  // If the cuts on the maximum numbers of tracks are enabled.
+  {
+  // Determine the value to cut depending on the centrality.
+    if ((aCentrality >= 0.) && (aCentrality < 5.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxZero;}
+    else if ((aCentrality >= 5.) && (aCentrality < 10.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxFive;}
+    else if ((aCentrality >= 10.) && (aCentrality < 20.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxTen;}
+    else if ((aCentrality >= 20.) && (aCentrality < 30.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxTwenty;}
+    else if ((aCentrality >= 30.) && (aCentrality < 40.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxThirty;}
+    else if ((aCentrality >= 40.) && (aCentrality < 50.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxForty;}
+    else if ((aCentrality >= 50.) && (aCentrality < 60.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxFifty;}
+    else if ((aCentrality >= 60.) && (aCentrality < 70.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxSixty;}
+    else if ((aCentrality >= 70.) && (aCentrality < 80.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxSeventy;}
+
+  // Apply the cut.
+    if (finalNumberOfTracks >= cutValueMaxNumberOfTracks) {return;}
+  }
 
 // Fill all the event histograms after the full selection.
   fHistoFinalNumberOfTracks->Fill(finalNumberOfTracks);
@@ -771,6 +808,7 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
 
 // Reset everything to zero for the next event.
   numberOfTracksBeforeTrackSelection = 0;
+  cutValueMaxNumberOfTracks = 0;
   finalNumberOfTracks = 0;
   delete [] IsTrackSelected;
   pT = 0.;
@@ -806,11 +844,12 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
   else if (fCentralityFromSPD) {centralityEstimator = "CL1";}
 
 // Determine if the event belongs to this centrality range (for reconstructed particles only).
+  Double_t aCentrality = 0.;  // Centrality of the given event.
   if (!fProcessOnlyMC)
   {
     AliMultSelection *ams = (AliMultSelection*)aMCevent->FindListObject("MultSelection");
     if (!ams) {return;} // Protection against NULL pointer.
-    Double_t aCentrality = ams->GetMultiplicityPercentile(Form("%s", centralityEstimator.Data()));  // Centrality of the given event.
+    aCentrality = ams->GetMultiplicityPercentile(Form("%s", centralityEstimator.Data()));
     if ((aCentrality >= fCentralityMin) && (aCentrality < fCentralityMax))
     {
       fHistoCentrality->Fill(aCentrality);
@@ -887,8 +926,25 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
     else {IsTrackSelected[iTrack] = 0;}  // The track failed the selection.
   }
 
-// Remove the events with not enough tracks for the event weight.
+// Remove the events with too few or too many tracks.
+  Int_t cutValueMaxNumberOfTracks = 0;  // Value of the cut on the maximum number of tracks.
   if (finalNumberOfTracks <= fNumberOfTracksMin) {return;}
+  if (fCutOnTracksMax)  // If the cuts on the maximum numbers of tracks are enabled.
+  {
+  // Determine the value to cut depending on the centrality.
+    if ((aCentrality >= 0.) && (aCentrality < 5.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxZero;}
+    else if ((aCentrality >= 5.) && (aCentrality < 10.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxFive;}
+    else if ((aCentrality >= 10.) && (aCentrality < 20.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxTen;}
+    else if ((aCentrality >= 20.) && (aCentrality < 30.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxTwenty;}
+    else if ((aCentrality >= 30.) && (aCentrality < 40.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxThirty;}
+    else if ((aCentrality >= 40.) && (aCentrality < 50.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxForty;}
+    else if ((aCentrality >= 50.) && (aCentrality < 60.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxFifty;}
+    else if ((aCentrality >= 60.) && (aCentrality < 70.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxSixty;}
+    else if ((aCentrality >= 70.) && (aCentrality < 80.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxSeventy;}
+
+  // Apply the cut.
+    if (finalNumberOfTracks >= cutValueMaxNumberOfTracks) {return;}
+  }
 
 // Fill all the event histograms after the full selection.
   fHistoFinalNumberOfTracks->Fill(finalNumberOfTracks);
@@ -937,7 +993,9 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
   ComputeMultiparticleCorrelations(finalNumberOfTracks, phiArray, particleWeightArray);
 
 // Reset everything to zero for the next event.
+  aCentrality = 0.;
   numberOfTracksBeforeTrackSelection = 0;
+  cutValueMaxNumberOfTracks = 0;
   finalNumberOfTracks = 0;
   delete [] IsTrackSelected;
   pT = 0.;
