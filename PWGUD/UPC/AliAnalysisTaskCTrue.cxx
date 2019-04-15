@@ -152,7 +152,9 @@ AliAnalysisTaskCTrue::AliAnalysisTaskCTrue()
       fRecurringVetoAH(0),
       fRecurringVetoAtrackletsH(0),
       fRecurringVetoCH(0),
-      fRecurringVetoCtrackletsH(0)
+      fRecurringVetoCtrackletsH(0),
+      fCTRUEBfV0CDecisionVSfADCDecisionH(0),
+      fCTRUEBfV0ADecisionVSfADADecisionH(0)
       // // result TGraphErrors
       // fOnlyTrackletsGE(0),
       // fVbaGE(0),
@@ -236,7 +238,9 @@ AliAnalysisTaskCTrue::AliAnalysisTaskCTrue(const char* name)
       fRecurringVetoAH(0),
       fRecurringVetoAtrackletsH(0),
       fRecurringVetoCH(0),
-      fRecurringVetoCtrackletsH(0)
+      fRecurringVetoCtrackletsH(0),
+      fCTRUEBfV0CDecisionVSfADCDecisionH(0),
+      fCTRUEBfV0ADecisionVSfADADecisionH(0)
       // // result TGraphErrors
       // fOnlyTrackletsGE(0),
       // fVbaGE(0),
@@ -624,6 +628,22 @@ void AliAnalysisTaskCTrue::UserCreateOutputObjects()
     fVBCandVDCTrackletsForRunNumberH->LabelsDeflate();
     fOutputList->Add(fVBCandVDCTrackletsForRunNumberH);
 
+    fCTRUEBfV0CDecisionVSfADCDecisionH = new TH2F(
+            "fCTRUEBfV0CDecisionVSfADCDecisionH",
+            "fCTRUEBfV0CDecisionVSfADCDecisionH",
+            2000, -10, 10,
+            2000, -10, 10
+            );
+    fOutputList->Add(fCTRUEBfV0CDecisionVSfADCDecisionH);
+
+    fCTRUEBfV0ADecisionVSfADADecisionH = new TH2F(
+            "fCTRUEBfV0ADecisionVSfADADecisionH",
+            "fCTRUEBfV0ADecisionVSfADADecisionH",
+            2000, -10, 10,
+            2000, -10, 10
+            );
+    fOutputList->Add(fCTRUEBfV0ADecisionVSfADADecisionH);
+
 
     //_______________________________
     // TGRAPHERRORS results for the efficiency computation.
@@ -907,6 +927,32 @@ void AliAnalysisTaskCTrue::UserExec(Option_t *)
   if ( fCtrue == 1 ) {
       fCTrueBEventsPerRunNumberH->Fill( Form("%d", fRunNum) , 1 );
 
+      /* - First steps towards a OCDB integration...
+         - What I would like to do is to retrieve the
+         - L0 inforamtion from the OCDB during runtime.
+         - This way even if the Trigger Bit String changes
+         - between runs it would be possible to keep track
+         - of it and have more realistic results.
+         - Until now this had been fixed once for all runs.
+         - This is not a bad assumption, considering
+         - that 2018 data have been taken right before the
+         - end of Run2, meaning that there should not be that
+         - much variation between triggers in two consecutive
+         - runs!
+         -
+         -
+         -
+         - gROOT->Reset();
+         - AliCDBManager *man = AliCDBManager::Instance();
+         - man->Init();
+         - // man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+         - man->SetDefaultStorage("alien://folder=/alice/data/2009/OCDB/");
+         - man->SetRun(104065);
+         - AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
+         - AliTriggerConfiguration* rc = dynamic_cast<AliTriggerConfiguration*>(entry->GetObject());
+         - rc->Print();
+        */
+
       // get L0 trigger flags
       f0VBA = fL0inputs & 1 << (inputId_0VBA-1);
       f0VBC = fL0inputs & 1 << (inputId_0VBC-1);
@@ -914,13 +960,33 @@ void AliAnalysisTaskCTrue::UserExec(Option_t *)
       f0UBC = fL0inputs & 1 << (inputId_0UBC-1);
 
 
-      // study tracklets
-     //  if ( !f0UBA && !f0UBC && fADCDecision == 0 && fADCDecision == 0
-     // && !f0VBA && fV0ADecision == 0&& !f0VBC && fV0CDecision == 0 )
-     //    no_UBA_UBC_UDA_UDC_VBA_VDA_VBC_VDC[run_idx] += 1.0;
-     //  if (fTracklets>0 && !f0UBA && !f0UBC && fADCDecision == 0 && fADCDecision == 0
-     // && !f0VBA && fV0ADecision == 0&& !f0VBC && fV0CDecision == 0 )
-     //    Tlets_no_UBA_UBC_UDA_UDC_VBA_VDA_VBC_VDC[run_idx] += 1.0;
+      /* - Truth table for fV0CDecision vs fADCDecision
+         - (and the same for the other side).
+         - This shoudl show the various cells. So True-True and
+         - the many configurations.
+         -
+       */
+      fCTRUEBfV0CDecisionVSfADCDecisionH->Fill( fV0CDecision, fADCDecision );
+      fCTRUEBfV0ADecisionVSfADADecisionH->Fill( fV0ADecision, fADADecision );
+
+      /* - The raw signal goes down right before it counts. 20ns maybe
+         - with -500V. The trigger comes with a discriminator and this tells
+         - you when you go more than the threshold value.
+         - fV0CDecision tells you when you went over threshold!
+         -
+         - ADC instead has a reasonably wide timing window, and it
+         - measures the charge collected. It measures the integral
+         - of the voltage in time, so the overall charge that was
+         - deposited and THIS is what is digitized.
+         -
+         - We can then check offline ONLY if the number in ADC is
+         - greater than some random number!!
+         -
+         -
+         - Try to do a plot fV0CDecision vs fADCDecision!
+         - Like a truth table...
+         -
+       */
 
       if ( !f0UBA && !f0UBC && fADCDecision == 0 && !f0VBC && fV0CDecision == 0 ) {
 

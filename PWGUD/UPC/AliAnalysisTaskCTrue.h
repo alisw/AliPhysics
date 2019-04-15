@@ -532,6 +532,24 @@ private:
                                  */
     TH1F*                       fVBCandVDCTrackletsForRunNumberH;         //!
 
+                                /**
+                                 * This histogram shows the distribution of
+                                 * fV0CDecision VS fADCDecision. This should
+                                 * behave like some kind of Truth Table, with
+                                 * most data points focused on the True-True
+                                 * and False-False cells.
+                                 */
+    TH2F*                       fCTRUEBfV0CDecisionVSfADCDecisionH;
+
+                                /**
+                                 * This histogram shows the distribution of
+                                 * fV0ADecision VS fADADecision. This should
+                                 * behave like some kind of Truth Table, with
+                                 * most data points focused on the True-True
+                                 * and False-False cells.
+                                 */
+    TH2F*                       fCTRUEBfV0ADecisionVSfADADecisionH;
+
 
 
     //__________________________________________________________________________
@@ -750,7 +768,7 @@ private:
      * If I happen to encounter it again in the future, I will make sure to
      * record it!
      */
-    ClassDef(AliAnalysisTaskCTrue, 5);
+    ClassDef(AliAnalysisTaskCTrue, 6);
 };
 
 #endif
