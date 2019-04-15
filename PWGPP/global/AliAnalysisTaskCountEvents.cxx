@@ -185,7 +185,11 @@ void AliAnalysisTaskCountEvents::UserExec(Option_t *)
   }
   Double_t centr=0.1; // default = all in first bin
   AliMultSelection *multSelection = (AliMultSelection*)ev->FindListObject("MultSelection");
-  if(multSelection) centr = multSelection->GetMultiplicityPercentile("V0M");
+  if(multSelection){
+    Int_t runNumb = ev->GetRunNumber();
+    if(runNumb>=264896 && runNumb<=267166) centr = multSelection->GetMultiplicityPercentile("ZNA");
+    else centr = multSelection->GetMultiplicityPercentile("V0M");
+  }
   else AliWarning("AliMultSelection could not be found in the list of objects");
 
   for(Int_t iBin=0; iBin<12; iBin++){
