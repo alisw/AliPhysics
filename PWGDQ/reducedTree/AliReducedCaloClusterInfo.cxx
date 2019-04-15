@@ -14,6 +14,7 @@ ClassImp(AliReducedCaloClusterInfo)
 
 //_____________________________________________________________________________
 AliReducedCaloClusterInfo::AliReducedCaloClusterInfo() :
+ fClusterID(-999),
  fType(kUndefined),
  fEnergy(-999.),
  fTrackDx(-999.),
@@ -23,7 +24,8 @@ AliReducedCaloClusterInfo::AliReducedCaloClusterInfo() :
  fDispersion(-999.),
  fPosition(),
  fTOF(-999.),
- fNCells(0)
+ fNCells(0),
+ fNMatchedTracks(0)
 {
   //
   // default constructor

@@ -19,7 +19,8 @@ class AliReducedCaloClusterInfo : public TObject {
    
   AliReducedCaloClusterInfo();
   virtual ~AliReducedCaloClusterInfo();
-  
+
+  Int_t   ClusterID()  const {return fClusterID;}
   Bool_t  IsEMCAL()    const {return (fType==kEMCAL ? kTRUE : kFALSE);}
   Bool_t  IsPHOS()     const {return (fType==kPHOS ? kTRUE : kFALSE);}
   Float_t Energy()     const {return fEnergy;}
@@ -33,8 +34,10 @@ class AliReducedCaloClusterInfo : public TObject {
   Float_t Z()          const {return fPosition[2];}
   Float_t TOF()        const {return fTOF;}
   Short_t NCells()     const {return fNCells;}
-  
+  Short_t NMatchedTracks() const {return fNMatchedTracks;}
+
  protected:
+  Int_t   fClusterID;    // calo cluster ID
   Char_t  fType;         // cluster type (EMCAL/PHOS)
   Float_t fEnergy;       // cluster energy
   Float_t fTrackDx;      // distance to closest track in phi
@@ -45,12 +48,13 @@ class AliReducedCaloClusterInfo : public TObject {
   Float_t fPosition[3];  // cluster position
   Float_t fTOF;          // time of flight
   Short_t fNCells;       // number of cells
+  Short_t fNMatchedTracks;  // number of matched tracks
   //---------------------------------------------------
   
   AliReducedCaloClusterInfo(const AliReducedCaloClusterInfo &c);
   AliReducedCaloClusterInfo& operator= (const AliReducedCaloClusterInfo &c);
 
-  ClassDef(AliReducedCaloClusterInfo, 1);
+  ClassDef(AliReducedCaloClusterInfo, 2);
 };
 
 #endif
