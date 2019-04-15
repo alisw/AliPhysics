@@ -583,15 +583,21 @@ void  AliNanoAODTrack::Clear(Option_t * /*opt*/) {
 
 Bool_t AliNanoAODTrack::InitPIDIndex()
 {
-  Bool_t anyFilled = kFALSE;
+  AliWarningClass("Intializing PID tables. Please call this only once (e.g. by using a static member)!");
+  static Bool_t initialized = kFALSE;
+  static Bool_t anyFilled = kFALSE;
+  if (initialized)
+    return anyFilled;
+  initialized = kTRUE;
+
   for (Int_t r = 0; r<kLAST; r++) {
     for (Int_t p = 0; p<AliPID::kSPECIESC; p++) {
       Int_t index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex(GetPIDVarName((ENanoPIDResponse) r, (AliPID::EParticleType) p));
       fgPIDIndexes[r][p] = index;
-      Printf("%s %d", GetPIDVarName((ENanoPIDResponse) r, (AliPID::EParticleType) p), index);
       if (index != -1)
         anyFilled = kTRUE;
     }
   }
   return anyFilled;
 }
+
