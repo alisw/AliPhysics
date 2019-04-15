@@ -269,6 +269,25 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
         cuts->SetEtaRange(-0.8,0.8);
         
+    } else if (o.EqualTo("tpcitsfordcarstudy")) {
+        cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr and Chi2 TPCc vs. Global");
+        cuts->SetRequireTPCRefit(kTRUE);    
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);        
+        cuts->SetRequireITSRefit(kTRUE);
+        cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+        cuts->SetMaxChi2PerClusterITS(36.);
+        cuts->SetDCAToVertex2D(kFALSE);
+        cuts->SetRequireSigmaToVertex(kFALSE);
+        cuts->SetMaxDCAToVertexZ(2.0);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        // tpcc cut
+        // cuts->SetMaxChi2TPCConstrainedGlobal(36.);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+        cuts->SetEtaRange(-0.8,0.8);        
+        
     } else if (o.EqualTo("tpcgeo")) { 
         cuts = new AliESDtrackCuts("TPConly with geo L");
         cuts->SetRequireTPCRefit(kTRUE);
