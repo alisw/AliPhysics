@@ -83,6 +83,35 @@ AliAnalysisTask *AddTaskHFEBESpectraEMC(
     hfecalqa7->SetM20Cut(m20Min,m20Max);
     hfecalqa7->SetEovPCut(eovpMin,eovpMax);
     
+    if(SwitchFillMCTemp){
+        TString DMesonWeightMaps, BMesonWeightMaps;
+        
+        DMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root";
+        BMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/BMesonpTWeight.root";
+        
+        printf("\n### reading file %s ...\n",DMesonWeightMaps.Data());
+        printf("\n### reading file %s ...\n",BMesonWeightMaps.Data());
+        
+        TFile* f2 = TFile::Open(DMesonWeightMaps.Data());
+        if(f2){
+            TH1 *D1 = (TH1*)f2->Get("RatD0");
+            TH1 *D2 = (TH1*)f2->Get("RatD0Up");
+            TH1 *D3 = (TH1*)f2->Get("RatD0Down");
+            
+            hfecalqa7->SetDmesonWeightHist(D1,D2,D3);
+        }
+        //  f2->Close();
+        TFile* f3 = TFile::Open(BMesonWeightMaps.Data());
+        if(f3){
+            TH1 *B1 = (TH1*)f3->Get("RatBMes");
+            TH1 *B2 = (TH1*)f3->Get("RatBMesMin");
+            TH1 *B3 = (TH1*)f3->Get("RatBMesMax");
+            
+            hfecalqa7->SetBmesonWeightHist(B1,B2,B3);
+        }
+        //  f3->Close();
+    }
+    
     TString containerName7 = mgr->GetCommonFileName();
     containerName7 += ":PWGHF_HFEBESpectraEMC";
     containerName7 += ContNameExt;

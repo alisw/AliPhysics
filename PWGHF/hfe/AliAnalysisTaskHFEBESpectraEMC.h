@@ -157,12 +157,12 @@ private:
     Int_t               fnBinsDCAHisto;//!
     Double_t            fTrkDCA;//!
     
-    TH1D                *fDcent;//
-    TH1D                *fDUp;//
-    TH1D                *fDDown;//
-    TH1D                *fBcent;//
-    TH1D                *fBMin;//
-    TH1D                *fBMax;//
+    TH1F                *fDcent;//
+    TH1F                *fDUp;//
+    TH1F                *fDDown;//
+    TH1F                *fBcent;//
+    TH1F                *fBMin;//
+    TH1F                *fBMax;//
     Double_t            fWeightB;//!
     Double_t            fWeightBMin;//!
     Double_t            fWeightBMax;//!

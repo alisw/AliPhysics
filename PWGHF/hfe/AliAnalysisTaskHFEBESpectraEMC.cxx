@@ -572,7 +572,7 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
     ///////////////////////////
     //Histos for MC templates//
     ///////////////////////////
-    if(fFillMCTemplates){
+   /* if(fFillMCTemplates){
         TString DMesonWeightMaps, BMesonWeightMaps;
         
         DMesonWeightMaps = "alien:///alice/cern.ch/user/d/dthomas/DandBmesonpTweightCorrectionFiles/DMesonpTWeight.root";
@@ -600,7 +600,7 @@ void AliAnalysisTaskHFEBESpectraEMC::UserCreateOutputObjects()
         }
         f3->Close();
     }
-    
+    */
     /////////////////////////////////////////////////
     //Automatic determination of the analysis mode//
     ////////////////////////////////////////////////
@@ -2608,16 +2608,16 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::SetDmesonWeightHist(TH1 *D1, TH1 *D2, TH1 *D3)
 {
-    fDcent = (TH1D*)D1->Clone();
-    fDUp = (TH1D*)D2->Clone();
-    fDDown = (TH1D*)D3->Clone();
+    fDcent = (TH1F*)D1->Clone();
+    fDUp = (TH1F*)D2->Clone();
+    fDDown = (TH1F*)D3->Clone();
 }
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::SetBmesonWeightHist(TH1 *B1, TH1 *B2, TH1 *B3)
 {
-    fBcent = (TH1D*)B1->Clone();
-    fBMin = (TH1D*)B2->Clone();
-    fBMax = (TH1D*)B3->Clone();
+    fBcent = (TH1F*)B1->Clone();
+    fBMin = (TH1F*)B2->Clone();
+    fBMax = (TH1F*)B3->Clone();
 }
 /*
 //________________________________________________________________________
