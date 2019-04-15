@@ -17,7 +17,7 @@ class AliNanoFilterNormalisation : public TNamed {
     kAnalysisEvent
   };
 
-  AliNanoFilterNormalisation(TString name = "NanoFilterNormalisation", TString title = "NanoFilterNormalisation", int nMultBins = 100);
+  AliNanoFilterNormalisation(TString name = "NanoFilterNormalisation", TString title = "NanoFilterNormalisation", int nMultBins = 100, float multBegin = 0, float multEnd = 100);
   ~AliNanoFilterNormalisation();
 
   void FillCandidate(bool triggered, bool nonVertexRelatedSel, bool recoVertex, bool allCuts, float mult = -.5);
@@ -25,9 +25,9 @@ class AliNanoFilterNormalisation : public TNamed {
 
   Long64_t Merge(TCollection* col);
 
-  double GetScalingFactor(NormBin bin, float mult = -.5);
-  double GetNcanditateEvents(NormBin bin, float mult = -.5);
-  double GetNselectedEvents(NormBin bin, float mult = -.5);
+  double GetScalingFactor(NormBin bin, float mult = 0.5);
+  double GetNcanditateEvents(NormBin bin, float mult = 0.5);
+  double GetNselectedEvents(NormBin bin, float mult = 0.5);
 
   const TH2D*  GetCandidateEventsHistogram() const { return fCandidateEvents; }
   const TH2D*  GetSelectedEventsHistogram() const { return fSelectedEvents; }

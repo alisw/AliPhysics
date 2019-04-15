@@ -42,6 +42,7 @@
 #include "AliNanoAODReplicator.h"
 #include "AliNanoAODTrackMapping.h"
 #include "AliNanoAODTrack.h"
+#include "AliNanoFilterNormalisation.h"
 
 ClassImp(AliAnalysisTaskNanoAODFilter)
 
@@ -54,6 +55,7 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fEvtCuts(),
   fQAOutput(0),
   fSaveCutsFlag(kFALSE),
+  fNormalisation(0x0),
   fInputArrayName(""),
   fOutputArrayName("")
 {
@@ -68,6 +70,7 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fEvtCuts(0),
    fQAOutput(0),
    fSaveCutsFlag(saveCutsFlag),
+  fNormalisation(0x0),
    fInputArrayName(""),
    fOutputArrayName("")
 
@@ -90,6 +93,7 @@ AliAnalysisTaskNanoAODFilter::~AliAnalysisTaskNanoAODFilter()
   delete fReplicator;
   if (fQAOutput) 
     delete fQAOutput;
+  delete fNormalisation;
 }
 
 //________________________________________________________________________
@@ -103,6 +107,9 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
       fQAOutput->Add(*it);
     PostData(1, fQAOutput);
   }
+  
+  std::string normName = std::string(fName) + "_scaler";
+  fNormalisation = new AliNanoFilterNormalisation(normName.data(), normName.data());
 }
 
 void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const char* title)
@@ -158,10 +165,14 @@ void AliAnalysisTaskNanoAODFilter::UserExec(Option_t *)
     lAODevent = AODEvent(); // On the fly ESD filtering
   if (!lAODevent)
     AliFatal("No input event");
+
+  fNormalisation->FillCandidate(kTRUE, kTRUE, kTRUE, kTRUE, 0);
   
   for (std::list<AliAnalysisCuts*>::iterator it = fEvtCuts.begin(); it != fEvtCuts.end(); ++it)
     if (!((*it)->IsSelected(lAODevent))) 
       return;
+
+  fNormalisation->FillSelected(kTRUE, kTRUE, kTRUE, kTRUE, 0);
 
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   if ( handler ){
@@ -185,6 +196,7 @@ void AliAnalysisTaskNanoAODFilter::FinishTaskOutput() {
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   AliAODExtension *extNanoAOD = handler->GetFilteredAOD("AliAOD.NanoAOD.root");
   extNanoAOD->GetTree()->GetUserInfo()->Add(AliNanoAODTrackMapping::GetInstance(fReplicator->GetVarListTrack()));
+  extNanoAOD->GetTree()->GetUserInfo()->Add(fNormalisation);
 }
 
 void AliAnalysisTaskNanoAODFilter::AddPIDField(AliNanoAODTrack::ENanoPIDResponse response, AliPID::EParticleType particle)
