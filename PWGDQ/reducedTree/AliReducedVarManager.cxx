@@ -1785,6 +1785,8 @@ void AliReducedVarManager::FillCaloClusterInfo(CLUSTER* cl, Float_t* values) {
   values[kEMCALm02] = cl->M02();
   values[kEMCALm20] = cl->M20();
   values[kEMCALdispersion] = cl->Dispersion();
+  values[kEMCALnCells] = cl->NCells();
+  values[kEMCALnMatchedTracks] = cl->NMatchedTracks();
 }
 
 //_________________________________________________________________
