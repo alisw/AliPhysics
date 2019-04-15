@@ -364,6 +364,9 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
 		if(!fFillEventPlaneInfo) {
 			fTree->SetBranchStatus("fEventPlane.*", 0);
 		}
+
+    // if calorimeter cluster is filled, switch on cluster ID branch
+    if (fFillCaloClusterInfo) fTree->SetBranchStatus("fCaloClusters.fClusterID", 1);
 	}
 
   /*if(fFillBayesianPIDInfo) {
