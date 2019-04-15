@@ -22,4 +22,7 @@
 #pragma link C++ class AliAnalysisTaskNanoSimple;
 #pragma link C++ class AliAnalysisTaskNanoValidator;
 
+#pragma link C++ class AliAnalysisTaskNanoAODskimming+;
+#pragma link C++ class AliNanoFilterNormalisation+;
+
 #endif

@@ -346,7 +346,7 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
     Float_t xvP = evt->GetPrimaryVertex()->GetX();
     Float_t yvP = evt->GetPrimaryVertex()->GetY();
     Float_t zvP = evt->GetPrimaryVertex()->GetZ();
-    Double_t vecTarget[3] = { xvP, yvP, zvP };
+    // Double_t vecTarget[3] = { xvP, yvP, zvP };
     if (fCPACascMin > 0.
         && cascade->CosPointingAngleXi(xvP, yvP, zvP) < fCPACascMin) {
       return false;
@@ -427,7 +427,7 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
                                                         AliPID::kPion);
 
     // if the Bachelor is not a pion, the candidate can go
-    if (!nSigBachPion < fCascDaugnSigTPCMax) {
+    if (!(nSigBachPion < fCascDaugnSigTPCMax)) {
       return false;
     }
     // if the daughter tracks are not a proton or a pion within loose cuts, the candidate can be rejected
@@ -539,7 +539,7 @@ Bool_t AliAnalysisNanoAODCascadeParametricCuts::IsSelected(TObject* obj) {
         Float_t xvP = evt->GetPrimaryVertex()->GetX();
         Float_t yvP = evt->GetPrimaryVertex()->GetY();
         Float_t zvP = evt->GetPrimaryVertex()->GetZ();
-        Double_t vecTarget[3] = { xvP, yvP, zvP };
+        // Double_t vecTarget[3] = { xvP, yvP, zvP };
         //======== casc cosPA =========================
         Float_t lCascCosPACut = fCPACascMin;
         Float_t lVarCascCosPA = TMath::Cos(

@@ -65,7 +65,7 @@ public:
   Int_t GetTPCmomentum()      const { return fTPCmomentum;      }
   Int_t GetTPCTgl()           const { return fTPCTgl;           }
   Int_t GetTOFsignal()        const { return fTOFsignal;        }
-  Int_t GetintegratedLenght() const { return fintegratedLenght; }
+  Int_t GetintegratedLength() const { return fintegratedLength; }
   Int_t GetTOFsignalTuned()   const { return fTOFsignalTuned;   }
   Int_t GetHMPIDsignal()      const { return fHMPIDsignal;      }
   Int_t GetHMPIDoccupancy()   const { return fHMPIDoccupancy;   }
@@ -77,7 +77,9 @@ public:
   Int_t GetFilterMap()        const { return fFilterMap;        }
   Int_t GetTOFBunchCrossing() const { return fTOFBunchCrossing; }
   Int_t GetCovMat(Int_t index)  const { return fcovmat[index];  }
-
+  Int_t GetTOFchi2()          const { return fTOFchi2;          }
+  Int_t GetTOFsignalDz()      const { return fTOFsignalDz;      }
+  Int_t GetTOFsignalDx()      const { return fTOFsignalDx;      }
   
 
 
@@ -115,7 +117,7 @@ private:
   Int_t fTPCmomentum;	  ///< Mapping variable
   Int_t fTPCTgl;	  ///< Mapping variable
   Int_t fTOFsignal;	  ///< Mapping variable
-  Int_t fintegratedLenght;///< Mapping variable
+  Int_t fintegratedLength;///< Mapping variable
   Int_t fTOFsignalTuned;  ///< Mapping variable
   Int_t fHMPIDsignal;	  ///< Mapping variable
   Int_t fHMPIDoccupancy;  ///< Mapping variable
@@ -127,6 +129,9 @@ private:
   Int_t fFilterMap;      ///< Mapping variable
   Int_t fTOFBunchCrossing;      ///< Mapping variable
   Int_t fcovmat[21];          ///< Mapping variables
+  Int_t fTOFchi2;  ///< Mapping variables
+  Int_t fTOFsignalDz;  ///< Mapping variables 
+  Int_t fTOFsignalDx;  ///< Mapping variables 
 
   static AliNanoAODTrackMapping * fInstance; ///< instance, needed for the singleton implementation
   static TString fMappingString; ///< the string which this class was initialized with

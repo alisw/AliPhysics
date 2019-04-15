@@ -100,7 +100,7 @@ set(SRCS
   Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
-  Utils/NucleiSkimAOD/AliAnalysisTaskNucleiSkimAOD.cxx
+  Utils/NanoAOD/AliNanoFilterPID.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
