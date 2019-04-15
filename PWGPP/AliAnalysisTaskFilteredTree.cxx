@@ -1002,7 +1002,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       // if (downscaleCounter > 0 && TMath::Exp(2 * scalempt) < downscaleF) continue;
       /// New code using flat pt and flat q/pt mixture
       Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
-      if( downscaleCounter>0 && selectionPtMask==0) continue;
+      Int_t selectionPIDMask=PIDSelection(track);
+      if( downscaleCounter>0 && selectionPtMask==0 && selectionPIDMask==0) continue;
 
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
 
@@ -1455,6 +1456,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	    "downscaleCounter="<<downscaleCounter<<
 	    "fLowPtTrackDownscaligF="<<fLowPtTrackDownscaligF<<
 	    "selectionPtMask="<<selectionPtMask<<          // high pt trigger mask
+	    "selectionPIDMask="<<selectionPIDMask<<         // selection PIDmask
             "gid="<<gid<<
             "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
             "runNumber="<<runNumber<<                // runNumber
@@ -2414,6 +2416,44 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
     selectionPtMask+=selectionPtMaskGamma;
   }
   return selectionPtMask;
+}
+
+/// Create PID trigger mask for particle with mass> proton
+/// \param track - track paraemeters
+/// \return trigger mask
+///        bit 0.) ITS PID trigger
+///        bit 1.) TPC PID trigger
+/// TODO  - for the moment cuts are hardwired - assuming ITS/TPC is calibrated and stable. Should parameterize
+/// TODO      - we should get "Robust PID" before filtering - currently using Aleph default
+Int_t AliAnalysisTaskFilteredTree::PIDSelection(AliESDtrack *track){
+  ///
+  if (track== nullptr) return 0;
+  if (track->GetInnerParam() == nullptr) return 0;
+  if (track->GetTPCClusterInfo(3,1)<100) return 0;
+  if (TMath::Abs(track->GetInnerParam()->P()/track->P()-1)>0.3) return 0;
+  Int_t triggerMask=0;
+  static Double_t mass[5]={TDatabasePDG::Instance()->GetParticle("e+")->Mass(), TDatabasePDG::Instance()->GetParticle("mu+")->Mass(), TDatabasePDG::Instance()->GetParticle("pi+")->Mass(),
+                           TDatabasePDG::Instance()->GetParticle("K+")->Mass(), TDatabasePDG::Instance()->GetParticle("proton")->Mass()};
+  if (track->GetITSNcls()>3&&track->GetITSsignal()>0&&track->P()>0.5){
+    //cacheTree->SetAlias("pidCutITS","log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massProton))>11.2&&log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massPion))>11.5&&log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massKaon))>11.2");
+    Int_t isOK=1;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[4]))>11.2;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[3]))>11.2;
+    isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[2]))>11.3;
+    isOK&=(track->GetTPCsignal()/(-0.3+1.3*AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[2])))>60.0;
+    //isOK&=(track->GetTPCsignal()/(-0.3+1.3*AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[4])))>60.0;
+    triggerMask|=isOK;
+  }
+  if (track->GetTPCClusterInfo(3,1)>100&&track->GetTPCsignalN()>60&&track->GetTPCsignal()>0&&track->P()>0.5&&track->GetITSNcls()>0){
+    //cacheTree->SetAlias("pidCutITS","log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massProton))>11.2&&log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massPion))>11.5&&log(itsSignal/AliExternalTrackParam::BetheBlochSolid(p/massKaon))>11.2");
+    Int_t isOK=1;
+    isOK&=(track->GetTPCsignal()/(-0.3+1.3*AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[4])))>75.0;
+    isOK&=(track->GetTPCsignal()/AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[3]))>75.0;
+    isOK&=(track->GetTPCsignal()/AliExternalTrackParam::BetheBlochAleph(track->GetInnerParam()->P()/mass[2]))>75.0;
+    if (track->GetITSsignal()>0) isOK&=TMath::Log(track->GetITSsignal()/AliExternalTrackParam::BetheBlochSolid(track->P()/mass[4]))>10.5;
+    triggerMask|=2*isOK;
+  }
+  return triggerMask;
 }
 
 
