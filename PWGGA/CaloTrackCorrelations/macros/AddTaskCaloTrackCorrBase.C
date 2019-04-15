@@ -101,15 +101,21 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   // In case of Pythia pt Hard bin simulations (jet-jet, gamma-jet)
   // reject some special events that bother the cross section
   //
-  if ( simulation )
+  if ( simulation && cutsString.Contains("PtHardCut"))
   {
     // Event rejection cuts for jet-jet simulations, do not use in other
-    reader->SetPtHardAndJetPtComparison(kTRUE);
-    reader->SetPtHardAndJetPtFactor(2);
+    if (  cutsString.Contains("JetJet")  )
+    {
+      reader->SetPtHardAndJetPtComparison(kTRUE);
+      reader->SetPtHardAndJetPtFactor(2);
+    }
     
     // Event rejection more suitable for gamma-jet simulations, do not use in other
-    // reader->SetPtHardAndClusterPtComparison(kTRUE);
-    // reader->SetPtHardAndClusterPtFactor(1.5);
+    if (  cutsString.Contains("GamJet")  )
+    {    
+      reader->SetPtHardAndClusterPtComparison(kTRUE);
+      reader->SetPtHardAndClusterPtFactor(1.5);
+    }
     
     // Set here generator name, default pythia
     //reader->GetMCAnalysisUtils()->SetMCGenerator("");
@@ -560,6 +566,17 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 /// \param debug : An int to define the debug level of all the tasks
 /// \param trigSuffix :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
 ///
+/// Options of cutsString:
+///    * Smearing: Smear shower shape long axis in cluster, just this parameter. Not to be used
+///    * SPDPileUp: Remove events tagged as pile-up by SPD
+///    * MCWeight: Apply weight on histograms and calculate sumw2
+///    * MCEvtHeadW: Get the cross section from the event header
+///    * MCEnScale: Scale the cluster energy by a factor, depending SM number  and period
+///    * ITSonly: Select tracks with only ITS information
+///    * PtHardCut: Select events with jet or cluster photon energy not too large or small with respect the generated partonic energy 
+///       * JetJet: Compare generated (reconstructed generator level) jet pT with parton pT  
+///       * GamJet: Compare cluster pt and generated parton pt, careful, test before using
+///
 AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
  TString  calorimeter   = "EMCAL", // "DCAL", "PHOS"
@@ -569,7 +586,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
  TString  period        = "", // LHC11d
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
- TString  cutsString    = "", // "Smearing","SPDPileUp"
+ TString  cutsString    = "", 
  Bool_t   calibrate     = kFALSE,
  Bool_t   nonLinOn      = kFALSE,
  Int_t    minCen        = -1,

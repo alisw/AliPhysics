@@ -313,7 +313,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
   
   // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDEtaCut(0.020);
   caloPID->SetEMCALDPhiCut(0.030);
   
   // pT track dependent cuts
@@ -589,7 +589,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
     
     // tm = 1, fixed cuts
-    caloPID->SetEMCALDEtaCut(0.025);
+    caloPID->SetEMCALDEtaCut(0.020);
     caloPID->SetEMCALDPhiCut(0.030);
     
     // pT track dependent cuts
@@ -833,9 +833,9 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   if( leading == 2 ||
      leading == 4)   ana->SwitchOnCheckNeutralClustersForLeading();
   
-  // MC
-  ana->SwitchOnPrimariesInConeSelection();
-  ana->SwitchOnPrimariesPi0DecayStudy() ;
+  // Do at generation level detector cuts and effects
+  ana->SwitchOffPrimariesInConeSelection();
+  ana->SwitchOffPrimariesPi0DecayStudy() ;
   
   ana->SwitchOffSSHistoFill();
 
@@ -997,7 +997,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     {
       // tm = 1, fixed cuts
       
-      caloPID->SetEMCALDEtaCut(0.025);
+      caloPID->SetEMCALDEtaCut(0.020);
       caloPID->SetEMCALDPhiCut(0.030);
     }
     else
@@ -1240,7 +1240,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   if ( kAnaCutsString.Contains("TMEoP1.5") ) caloPID->SetEOverP(0,1.5);
   
   // tm = 1, fixed cuts
-  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDEtaCut(0.020);
   caloPID->SetEMCALDPhiCut(0.030);
   
   // pT track dependent cuts
@@ -1384,7 +1384,7 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   {
     // Fix
     caloPID->SwitchOffEMCTrackPtDepResMatching();
-    caloPID->SetEMCALDEtaCut(0.025);
+    caloPID->SetEMCALDEtaCut(0.020);
     caloPID->SetEMCALDPhiCut(0.030);
     
     // Begining of histograms name
