@@ -50,6 +50,8 @@ public:
   Int_t GetPDCAZ()            const { return fPDCAZ;            }
   Int_t GetPosDCAx()          const { return fPosDCAx;          }
   Int_t GetPosDCAy()          const { return fPosDCAy;          }
+  Int_t GetPosDCAz()          const { return fPosDCAz;          }
+  Int_t GetDCA()              const { return fDCA;              }
   Int_t GetRAtAbsorberEnd()   const { return fRAtAbsorberEnd;   }
   Int_t GetTPCncls()          const { return fTPCncls;          }
   Int_t GetID()               const { return fID;               }
@@ -72,7 +74,6 @@ public:
   Int_t GetTRDsignal()        const { return fTRDsignal;        }
   Int_t GetTRDChi2()          const { return fTRDChi2;          }
   Int_t GetTRDnSlices()       const { return fTRDnSlices;       }
-  Int_t GetIsMuonTrack()      const { return fIsMuonTrack;      }
   Int_t GetTPCnclsS()         const { return fTPCnclsS;         }
   Int_t GetFilterMap()        const { return fFilterMap;        }
   Int_t GetTOFBunchCrossing() const { return fTOFBunchCrossing; }
@@ -102,6 +103,8 @@ private:
   Int_t fPDCAZ;		  ///< Mapping variable
   Int_t fPosDCAx;	  ///< Mapping variable
   Int_t fPosDCAy;	  ///< Mapping variable
+  Int_t fPosDCAz;	  ///< Mapping variable
+  Int_t fDCA;	  ///< Mapping variable
   Int_t fRAtAbsorberEnd;  ///< Mapping variable
   Int_t fTPCncls;	  ///< Mapping variable
   Int_t fID;		  ///< Mapping variable
@@ -124,7 +127,6 @@ private:
   Int_t fTRDsignal;	  ///< Mapping variable
   Int_t fTRDChi2;	  ///< Mapping variable
   Int_t fTRDnSlices;	  ///< Mapping variable
-  Int_t fIsMuonTrack;     ///< Mapping variable
   Int_t fTPCnclsS;    ///< Mapping variable
   Int_t fFilterMap;      ///< Mapping variable
   Int_t fTOFBunchCrossing;      ///< Mapping variable

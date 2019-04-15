@@ -84,6 +84,7 @@ public:
     kNanoClusterITS3,
     kNanoClusterITS4,
     kNanoClusterITS5,
+    kIsMuonTrack
   };
   
   UInt_t GetNanoFlags() const { return fNanoFlags; }
@@ -193,25 +194,15 @@ public:
 
   // void RemoveCovMatrix() {delete fCovMatrix; fCovMatrix=NULL;}
 
-  Bool_t IsMuonTrack() const {
-  if (GetVar(AliNanoAODTrackMapping::GetInstance()->GetIsMuonTrack())==1) return kTRUE ; 
-  else return kFALSE;
-  } 
+  Bool_t IsMuonTrack() const { return TESTBIT(fNanoFlags, kIsMuonTrack); }
 
   Double_t XAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAx()); }
   Double_t YAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAy()); }
-  Double_t ZAtDCA() const { 
-    if (IsMuonTrack())  return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ());
-    else if (TestBit(AliAODTrack::kIsDCA)) return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY());
-     else return -999.; }
+  Double_t ZAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAz()); }
 
   Bool_t   XYZAtDCA(Double_t x[3]) const { x[0] = XAtDCA(); x[1] = YAtDCA(); x[2] = ZAtDCA(); return kTRUE; }
   
-  Double_t DCA() const { 
-    if (IsMuonTrack()) return TMath::Sqrt(XAtDCA()*XAtDCA() + YAtDCA()*YAtDCA());
-    else if (TestBit(AliAODTrack::kIsDCA)) return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX()); // FIXME: Why does this return posX?
-    else return -999.; }
-
+  Double_t DCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetDCA()); }
   
   Double_t PxAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAX()); }
   Double_t PyAtDCA() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAY()); }

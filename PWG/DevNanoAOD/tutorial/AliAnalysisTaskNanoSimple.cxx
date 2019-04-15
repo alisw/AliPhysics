@@ -100,6 +100,8 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
     if (nanoTrack && bPIDAvailable)
       Printf("  TPC_sigma_proton = %f  hasTOF = %d  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->HasTOFPID(), nanoTrack->GetVar(kcstNSigmaTOFPr));
+
+//     Printf("  DCA = %f", nanoTrack->DCA());
   }
   
   // V0 access - as usual
