@@ -14,6 +14,7 @@ ClassImp(AliReducedCaloClusterInfo)
 
 //_____________________________________________________________________________
 AliReducedCaloClusterInfo::AliReducedCaloClusterInfo() :
+ fFlags(0),
  fClusterID(-999),
  fType(kUndefined),
  fEnergy(-999.),
