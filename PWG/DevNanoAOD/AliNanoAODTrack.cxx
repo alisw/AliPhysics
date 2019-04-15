@@ -541,7 +541,7 @@ Bool_t AliNanoAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
   Double_t param1 = ver.Z();
   Double_t param2 = TMath::Sin(mom.Phi());
   Double_t param3 = mom.Pz()/mom.Pt();
-  Double_t param4 = TMath::Sign(1/mom.Pt(),(Double_t)fCharge);
+  Double_t param4 = TMath::Sign(1/mom.Pt(),(Double_t)Charge());
 
   //calculate the propagated coordinates
   //this is based on AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r)
