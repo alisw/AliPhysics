@@ -132,4 +132,6 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
       Printf("Conversion photon candidate %d: mass = %e \t pT = %f", i, photon->GetPhotonMass(), photon->GetPhotonPt());
     }
   }
+  
+  Printf("Event had: %d tracks   %d V0s   %d cascades   %d conversion photons", nTracks, (aod->GetV0s()) ? aod->GetNumberOfV0s() : 0, (aod->GetCascades()) ? aod->GetNumberOfCascades() : 0, (conversionPhotons) ? conversionPhotons->GetEntries() : 0);
 }

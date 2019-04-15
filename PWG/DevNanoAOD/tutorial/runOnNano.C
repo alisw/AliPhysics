@@ -1,4 +1,4 @@
-void runOnNano()
+void runOnNano(const char* filePath = "AliAOD.NanoAOD.root")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("train");
@@ -14,7 +14,7 @@ void runOnNano()
   
   // Create chain of input files
   TChain * chain = new TChain("aodTree");
-  chain->Add("AliAOD.NanoAOD.root");
+  chain->Add(filePath);
 
   TStopwatch watch;
   mgr->StartAnalysis("local", chain, 1000);

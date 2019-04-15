@@ -136,7 +136,7 @@ public:
   Double_t Y(Double_t m) const;
   
   virtual Double_t Eta() const { return -TMath::Log(TMath::Tan(0.5 * Theta())); }
-  virtual Double_t GetSign() const {return fCharge; }
+  virtual Double_t GetSign() const {return Charge(); }
   virtual Bool_t   PropagateToDCA(const AliVVertex *vtx, 
 				  Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3]);
 
@@ -344,10 +344,8 @@ public:
   void SetXYAtDCA(Double_t x, Double_t y) {fVars[AliNanoAODTrackMapping::GetInstance()->GetPosDCAx()] = x;  fVars[AliNanoAODTrackMapping::GetInstance()->GetPosDCAy()]= y;}
   void SetPxPyPzAtDCA(Double_t pX, Double_t pY, Double_t pZ) {fVars[AliNanoAODTrackMapping::GetInstance()->GetPDCAX()] = pX; fVars[AliNanoAODTrackMapping::GetInstance()->GetPDCAY()] = pY; fVars[AliNanoAODTrackMapping::GetInstance()->GetPDCAZ()] = pZ;}
   
-void SetRAtAbsorberEnd(Double_t r) { fVars[AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()] = r; }
-  
-  void SetCharge(Short_t q) { fCharge = q; }
-void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInstance()->GetChi2PerNDF()] = chi2perNDF; }
+  void SetRAtAbsorberEnd(Double_t r) { fVars[AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()] = r; }
+  void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInstance()->GetChi2PerNDF()] = chi2perNDF; }
 
   // void SetITSClusterMap(UChar_t itsClusMap)                 { fITSMuonClusterMap = (fITSMuonClusterMap&0xffffff00)|(((UInt_t)itsClusMap)&0xff); }
   // void SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) { fITSMuonClusterMap = (fITSMuonClusterMap&0xffff00ff)|((((UInt_t)hitsPatternInTrigCh)&0xff)<<8); }
@@ -394,7 +392,6 @@ private :
   //  Double32_t    fPosition[3];       // position of first point on track or dca
   Int_t         fLabel;             // track label, points back to MC track
   TRef          fProdVertex;        // vertex of origin
-  Short_t       fCharge; // track charge
   UInt_t        fNanoFlags;  // nano flags
   
   static Int_t fgPIDIndexes[ENanoPIDResponse::kLAST][AliPID::kSPECIESC];
