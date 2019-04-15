@@ -563,7 +563,7 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
         fcutDCAxy->SetParameter(2,1.1);
 
         fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+TMath::Pi()/18.0-0.025", 0, 50);
-        fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x++TMath::Pi()/18.0+0.035", 0, 50);
+        fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x+TMath::Pi()/18.0+0.035", 0, 50);
 
 
 	fEtaCalibrationNeg = new TF1("fDeDxVsEtaNeg", "pol7", -1.0, 0.0);
