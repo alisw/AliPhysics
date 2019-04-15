@@ -60,7 +60,7 @@
 #endif
 
 //_
-AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid) {
+AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int runcentrality2, int runcentrality3, int runcentrality4,int runcentrality5, int runcentrality6, int runSHCorrFctn, int runNonIdCorrFctn, int run3DPRF, int paircutantigammaon, int paircutmergedfractionon, double distance, double fraction1, int runDPhiStarKStarMergedFraction, int runDPhiStarKStarAverageMergedPointsFraction, int runDPhiStarDEta, int turnOnMonitors, int turnOnBetaTMonitor, int runbetatdep, int runbetatylm, int runbetatnonid) {
 
 
   double PionMass = 0.13957018;//0.13956995;
@@ -144,6 +144,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   //AliFemtoModelGausLCMSFreezeOutGenerator *gausLCMSFreezeOutGenerator[size];
   //AliFemtoModelWeightGeneratorBasic      *weightGeneratorLednicky[size];
   //AliFemtoModelManager          *tModelManager[size];
+  AliFemtoCorrFctn3DPRF         *ck3dprftpc[size];
   AliFemtoCorrFctnNonIdDR       *cnonidtpc[size];
   AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta08[size];
   AliFemtoCorrFctnDPhiStarDEta  *cdphistardeta12[size];
@@ -345,7 +346,14 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	    cnonidtpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("cnonid%stpcM%i", chrgs[ichg], imult), nbinssh, 0.0, shqmax);
 	    anetaphitpc[aniter]->AddCorrFctn(cnonidtpc[aniter]);
 	  }
-
+	  
+	  //correlation function in kstarout, kstarside, kstarlong (run3DPRF)
+	  	  if(run3DPRF == 1) {
+		    ck3dprftpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("ck3dPRF%stpcM%i", chrgs[ichg], imult),200,1.0);
+		    //ck3dprfkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+		    anetaphitpc[aniter]->AddCorrFctn(ck3dprftpc[aniter]);
+		  }
+		  
 	  if(runDPhiStarKStarMergedFraction == 1) {
 	    dphistarkstarmftpc[aniter] = new AliFemtoCorrFctnDPhiStarKStarMergedFraction(Form("cdphistarkstarmergedfraction%stpcM%iD%lfF%lf", chrgs[ichg], imult, distance, fraction1), 0.8, 2.5, distance, fraction1, 0.01, 51, 0.0, 0.5, 127, -1.0, 1.0);
 	    anetaphitpc[aniter]->AddCorrFctn(dphistarkstarmftpc[aniter]);
