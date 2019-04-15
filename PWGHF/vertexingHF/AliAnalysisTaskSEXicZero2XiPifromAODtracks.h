@@ -18,12 +18,19 @@
 
 /* $Id$ */ 
 
+//*************************************************************************
+//
+//Modified by Jianhui Zhu, zjh@mail.ccnu.edu.cn
+//
+//*************************************************************************
+
 #include "TROOT.h"
 #include "TSystem.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
 #include "AliPID.h"
+#include <AliAODRecoCascadeHF.h>
 #include "AliRDHFCutsXicZerotoXiPifromAODtracks.h"
 
 /// \class AliAnalysisTaskSEXicZero2XiPifromAODtracks
@@ -41,7 +48,7 @@ class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE
 {
  public:
   AliAnalysisTaskSEXicZero2XiPifromAODtracks();
-  AliAnalysisTaskSEXicZero2XiPifromAODtracks(const Char_t* name, AliRDHFCutsXicZerotoXiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE);
+  AliAnalysisTaskSEXicZero2XiPifromAODtracks(const Char_t* name, AliRDHFCutsXicZerotoXiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE, Bool_t anaOmegacZero=kFALSE);
   virtual ~AliAnalysisTaskSEXicZero2XiPifromAODtracks();
 
   /// Implementation of interface methods
@@ -63,7 +70,7 @@ class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE
   void SetFillBkgOnly(Bool_t bkgOnly) {fFillBkgOnly = bkgOnly;}
   Bool_t GetFillBkgOnly() const {return fFillBkgOnly;}
   
-  void   SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
+  void SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
   void SelectCascade( const AliVEvent *event,Int_t nCascades,Int_t &nSeleCasc, Bool_t *seleCascFlags);
   void SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
   
@@ -93,6 +100,7 @@ class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fUseMCInfo;          /// Use MC info
   Bool_t fFillSignalOnly;     /// Fill only the signal in MC
   Bool_t fFillBkgOnly;        /// Fill only the bkg in MC
+  Bool_t fAnaOmegacZero;      /// flag to decide analysis OmegacZero
   TList *fOutput;             //!<! User output slot 1 // general histos
   TList *fOutputAll;          //!<! User output slot 3 // Analysis histos
   TList *fListCuts;           //!<! User output slot 2 // Cuts 
@@ -150,7 +158,7 @@ class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistoPiPtRef;                      //!<! Reference pi spectra 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicZero2XiPifromAODtracks,1); /// class for XicZero->Xipi
+  ClassDef(AliAnalysisTaskSEXicZero2XiPifromAODtracks,2); /// class for XicZero->Xipi
   /// \endcond
 };
 #endif
