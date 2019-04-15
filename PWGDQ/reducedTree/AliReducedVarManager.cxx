@@ -3178,7 +3178,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALdetector]         = "Calo detector";           fgVariableUnits[kEMCALdetector] = "";  
   fgVariableNames[kEMCALm20]              = "Cluster short axis M20";  fgVariableUnits[kEMCALm20] = "";  
   fgVariableNames[kEMCALm02]              = "Cluster short axis M02";  fgVariableUnits[kEMCALm02] = "";  
-  fgVariableNames[kEMCALdispersion]       = "Cluster dispersion";      fgVariableUnits[kEMCALdispersion] = "";  
+  fgVariableNames[kEMCALdispersion]       = "Cluster dispersion";      fgVariableUnits[kEMCALdispersion] = "";
+  fgVariableNames[kEMCALnCells]           = "Cluster No. cells";       fgVariableUnits[kEMCALnCells] = "";
+  fgVariableNames[kEMCALnMatchedTracks]   = "Cluster No. matched tracks"; fgVariableUnits[kEMCALnMatchedTracks] = "";
   fgVariableNames[kTrackingFlag] = "Tracking flag";  fgVariableUnits[kTrackingFlag] = "";  
   fgVariableNames[kTrackingStatus] = "Tracking status";  fgVariableUnits[kTrackingStatus] = "";  
   fgVariableNames[kDeltaPhi]              = "#Delta #varphi";             fgVariableUnits[kDeltaPhi]              = "rad.";
