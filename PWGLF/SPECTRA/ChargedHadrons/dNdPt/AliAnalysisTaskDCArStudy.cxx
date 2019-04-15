@@ -134,7 +134,7 @@ AliAnalysisTaskDCArStudy* AliAnalysisTaskDCArStudy::AddTaskDCArStudy(const char*
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("default"));
     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("TPCgeoNoDCAr"));    
-    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCITSgeoNoDCAr"));    
+    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCITSforDCArStudy"));    
         
     // attach the task to the manager and configure in and ouput
     //===========================================================================
