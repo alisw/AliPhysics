@@ -373,19 +373,29 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
 
 
     //  7XX for NomB,    75X  nomB and MBW
-  } else if (trainConfig == 706) {   // Nominal eta<0.8 for primactronsry and secondary ele
-    cuts.AddCutPCMDalitz("00010113", "0d200009266300008854404000", "20475400254202321710", "0263103100900000");
+  } else if (trainConfig == 706) {   // Nominal eta<0.8 for primactronsry and secondary ele   //  gamma asymmetry cut removed on 15.04.2019
+    cuts.AddCutPCMDalitz("00010113", "0d200009266300008850404000", "20475400254202321710", "0263103100900000");
   } else if (trainConfig == 707) {    // R scan
-    cuts.AddCutPCMDalitz("00010113", "0da00009266300008854404000", "20475400254202321710", "0263103100900000");
-    cuts.AddCutPCMDalitz("00010113", "0db00009266300008854404000", "20475400254202321710", "0263103100900000");
-    cuts.AddCutPCMDalitz("00010113", "0dc00009266300008854404000", "20475400254202321710", "0263103100900000");
+    cuts.AddCutPCMDalitz("00010113", "0da00009266300008850404000", "20475400254202321710", "0263103100900000");
+    cuts.AddCutPCMDalitz("00010113", "0db00009266300008850404000", "20475400254202321710", "0263103100900000");
+    cuts.AddCutPCMDalitz("00010113", "0dc00009266300008850404000", "20475400254202321710", "0263103100900000");
+  } else if (trainConfig == 714) {    // R scan
+    cuts.AddCutPCMDalitz("00010113", "0dh00009266300008850404000", "20475400254202321710", "0263103100900000");
+    cuts.AddCutPCMDalitz("00010113", "0di00009266300008850404000", "20475400254202321710", "0263103100900000");
+
+
     // to be used with weights equal to 70X +50
-  } else if (trainConfig == 756) {   // Nominal eta<0.8 for primactronsry and secondary ele
-    cuts.AddCutPCMDalitz("00010113", "0d200009266300008854404000", "20475400254202321710", "0263103100900000");
+  } else if (trainConfig == 756) {   // Nominal eta<0.8 for primactronsry and secondary ele   //  gamma asymmetry cut removed on 15.04.2019
+    cuts.AddCutPCMDalitz("00010113", "0d200009266300008850404000", "20475400254202321710", "0263103100900000");
   } else if (trainConfig == 757) {    // R scan
-    cuts.AddCutPCMDalitz("00010113", "0da00009266300008854404000", "20475400254202321710", "0263103100900000");
-    cuts.AddCutPCMDalitz("00010113", "0db00009266300008854404000", "20475400254202321710", "0263103100900000");
-    cuts.AddCutPCMDalitz("00010113", "0dc00009266300008854404000", "20475400254202321710", "0263103100900000");
+    cuts.AddCutPCMDalitz("00010113", "0da00009266300008850404000", "20475400254202321710", "0263103100900000");
+    cuts.AddCutPCMDalitz("00010113", "0db00009266300008850404000", "20475400254202321710", "0263103100900000");
+    cuts.AddCutPCMDalitz("00010113", "0dc00009266300008850404000", "20475400254202321710", "0263103100900000");
+
+  } else if (trainConfig == 764) {    // R scan
+    cuts.AddCutPCMDalitz("00010113", "0dh00009266300008850404000", "20475400254202321710", "0263103100900000");
+    cuts.AddCutPCMDalitz("00010113", "0di00009266300008850404000", "20475400254202321710", "0263103100900000");
+
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
