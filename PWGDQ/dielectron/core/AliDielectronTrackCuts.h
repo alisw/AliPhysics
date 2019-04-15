@@ -56,6 +56,8 @@ public:
   void SetAODFilterBit(EFilterBit type) { fAODFilterBit = type; }
   void SetMaxWaivedITSNcls(Int_t max) { fWaiveITSNcls = max; }
 
+  void SetRequireCaloClusterMatch(Bool_t req, Short_t caloType) { fRequireCaloClusterMatch=req; fClusterMatchCaloType=caloType; }
+
   //
   //Analysis cuts interface
   //
@@ -86,10 +88,13 @@ private:
   Int_t fAODFilterBit;                                 // Filter bit for AOD analysis
   Int_t fWaiveITSNcls;                                 // max number of waived ITS clusters after first hit
 
+  Bool_t  fRequireCaloClusterMatch;                    // require calo cluster matched to track
+  Short_t fClusterMatchCaloType;                       // calo type for track match: AliDielectronClusterCuts::Detector
+
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   Bool_t CheckITSClusterCut(UChar_t itsBits) const;
 
-  ClassDef(AliDielectronTrackCuts,3)         // Dielectron TrackCuts
+  ClassDef(AliDielectronTrackCuts,4)         // Dielectron TrackCuts
 };
 
 
