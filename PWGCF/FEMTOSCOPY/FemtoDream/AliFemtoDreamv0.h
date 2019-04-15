@@ -28,7 +28,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   void Setv0(const AliFemtoDreamBasePart &posDaughter, const float posMass,
              const AliFemtoDreamBasePart &negDaughter, const float negMass,
              const bool ignoreFirstPos = false,
-             const bool ignoreFirstNeg = false);
+             const bool ignoreFirstNeg = false, const bool setDaughter = true);
   bool GetOnlinev0() const {
     return fOnlinev0;
   }
@@ -107,6 +107,7 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   AliFemtoDreamv0(const AliFemtoDreamv0&);
   void Reset();
   void SetDaughter(AliAODv0 *v0);
+  void SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter);
   void SetDaughter(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0);
   void SetDaughterInfo(AliAODv0 *v0);
   void SetDaughterInfo(AliESDv0 *v0);

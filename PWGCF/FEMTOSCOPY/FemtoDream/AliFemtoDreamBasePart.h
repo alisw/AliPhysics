@@ -14,6 +14,7 @@
 #include "Rtypes.h"
 #include "TVector3.h"
 #include "AliSigma0ParticlePhotonMother.h"
+#include "AliAODConversionPhoton.h"
 
 class AliFemtoDreamBasePart {
  public:
@@ -36,6 +37,7 @@ class AliFemtoDreamBasePart {
   };
   void SetMCParticle(AliAODMCParticle *mcPart, AliMCEvent *evt);
   void ResetMCInfo();
+  void SetMomentum(TVector3 mom) { fP = mom; }
   void SetMomentum(float px, float py, float pz) {
     fP.SetXYZ(px, py, pz);
   }

@@ -21,6 +21,9 @@ class AliFemtoDreamTrackCuts {
   static AliFemtoDreamTrackCuts *PrimProtonCuts(bool isMC, bool DCAPlots,
                                                 bool CombSigma,
                                                 bool ContribSplitting);
+  static AliFemtoDreamTrackCuts *PrimKaonCuts(bool isMC, bool DCAPlots = false,
+                                              bool CombSigma = false,
+                                              bool ContribSplitting = false);
   static AliFemtoDreamTrackCuts *DecayProtonCuts(bool isMC, bool PileUpRej,
                                                  bool ContribSplitting);
   static AliFemtoDreamTrackCuts *DecayPionCuts(bool isMC, bool PileUpRej,

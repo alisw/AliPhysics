@@ -376,6 +376,10 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   PhiAtRadii(negTrack, inputEvent->GetMagneticField(), phiAtRadiiNeg);
   fPhiAtRadius.push_back(phiAtRadiiPos);
   fPhiAtRadius.push_back(phiAtRadiiNeg);
+
+  fCharge.push_back(posTrack->Charge() + negTrack->Charge());
+  fCharge.push_back(posTrack->Charge());
+  fCharge.push_back(negTrack->Charge());
 }
 
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {}

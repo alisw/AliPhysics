@@ -947,6 +947,30 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimProtonCuts(
   return trackCuts;
 }
 
+AliFemtoDreamTrackCuts *AliFemtoDreamTrackCuts::PrimKaonCuts(
+    bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting) {
+  AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
+  trackCuts->SetPlotDCADist(DCAPlots);
+  trackCuts->SetPlotCombSigma(CombSigma);
+  trackCuts->SetPlotContrib(ContribSplitting);
+  trackCuts->SetIsMonteCarlo(isMC);
+
+  trackCuts->SetFilterBit(96);
+  trackCuts->SetPtRange(0.15, 999);
+  trackCuts->SetEtaRange(-0.8, 0.8);
+  trackCuts->SetNClsTPC(80);
+  trackCuts->SetDCAReCalculation(true);
+  trackCuts->SetDCAVtxZ(0.2);
+  trackCuts->SetDCAVtxXY(0.1);
+  trackCuts->SetCutSharedCls(true);
+  trackCuts->SetCutTPCCrossedRows(true, 70, 0.80);
+  trackCuts->SetPID(AliPID::kKaon, 0.5);
+  // trackCuts->SetRejLowPtPionsTOF(false);
+  trackCuts->SetCutSmallestSig(true);
+
+  return trackCuts;
+}
+
 AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::DecayProtonCuts(
     bool isMC, bool PileUpRej, bool ContribSplitting) {
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
