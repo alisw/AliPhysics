@@ -299,25 +299,17 @@ else()
   include(CMakeALICE)
 
   # If no Fortran, i.e on Windows
-  # We need to specify ROOT fortran
-  # (f95 comes before gfortran in default module)
   include(CheckLanguage)
 
   if(DISABLE_FORTRAN)
     message(STATUS "Fortran support disabled by user")
   else(DISABLE_FORTRAN)
-    if(ROOT_FORTRAN)
-      message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
-      set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
-    else()
-      message(STATUS "Using default system Fortran compiler")
-    endif(ROOT_FORTRAN)
-
     check_language(Fortran)
     if(CMAKE_Fortran_COMPILER)
       enable_language(Fortran OPTIONAL)
+      message(STATUS "Fortran compiler is ${CMAKE_Fortran_COMPILER}")
     else()
-      set(DISABLE_FORTRAN FALSE)
+      set(DISABLE_FORTRAN TRUE)
     endif()
   endif(DISABLE_FORTRAN)
 
