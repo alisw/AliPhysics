@@ -2579,7 +2579,7 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
             if(MomPDG == 421) fpidSort = 12; //Mom is D0
             if(MomPDG == 413) fpidSort = 14; //Mom is D*+
             if(MomPDG == 431) fpidSort = 15; //Mom is Ds
-            if(MomPDG > 430 && MomPDG < 436) fpidSort = 16; //Mom is other Ds
+            if(MomPDG > 431 && MomPDG < 436) fpidSort = 16; //Mom is other Ds
             if(MomPDG == 4122) fpidSort = 17; //Mom is Lambda c
             if(MomPDG == 443) fpidSort = 6; //Mom is J/Psi
             
