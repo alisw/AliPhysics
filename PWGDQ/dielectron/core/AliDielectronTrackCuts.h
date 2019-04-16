@@ -56,7 +56,9 @@ public:
   void SetAODFilterBit(EFilterBit type) { fAODFilterBit = type; }
   void SetMaxWaivedITSNcls(Int_t max) { fWaiveITSNcls = max; }
 
-  void SetRequireCaloClusterMatch(Bool_t req, Short_t caloType) { fRequireCaloClusterMatch=req; fClusterMatchCaloType=caloType; }
+  void    SetRequireCaloClusterMatch(Bool_t req, Short_t caloType) { fRequireCaloClusterMatch=req; fClusterMatchCaloType=caloType; }
+  Bool_t  GetRequireCaloClusterMatch() { return fRequireCaloClusterMatch; }
+  Short_t GetCaloClusterMatchDetector() { return fClusterMatchCaloType; }
 
   //
   //Analysis cuts interface
@@ -94,7 +96,7 @@ private:
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   Bool_t CheckITSClusterCut(UChar_t itsBits) const;
 
-  ClassDef(AliDielectronTrackCuts,4)         // Dielectron TrackCuts
+  ClassDef(AliDielectronTrackCuts,5)         // Dielectron TrackCuts
 };
 
 
