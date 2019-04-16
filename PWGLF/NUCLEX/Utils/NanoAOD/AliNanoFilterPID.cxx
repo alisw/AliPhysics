@@ -3,6 +3,7 @@
 #include <TObject.h>
 
 #include <AliAnalysisManager.h>
+#include <AliAODTrack.h>
 #include <AliESDtrackCuts.h>
 #include <AliInputEventHandler.h>
 #include <AliPIDResponse.h>
@@ -10,10 +11,12 @@
 #include <AliVEvent.h>
 
 AliNanoFilterPID::AliNanoFilterPID()
-    : AliAnalysisCuts{}, fTrackCuts{}, fTOFpidTriggerNsigma{},
+    : AliAnalysisCuts{}, fTriggerOnSpecies{}, fTrackCuts{}, fFilterBits{}, fTOFpidTriggerNsigma{},
       fTOFpidTriggerPtRange{}, fTPCpidTriggerNsigma{}, fTPCpidTriggerPtRange{} {
   for (int iSpecies{0}; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
+    fTriggerOnSpecies[iSpecies] = false;
     fTrackCuts[iSpecies] = nullptr;
+    fFilterBits[iSpecies] = 0ul;
     fTOFpidTriggerNsigma[iSpecies] = -1.;
     fTOFpidTriggerPtRange[iSpecies][0] = 0.;
     fTOFpidTriggerPtRange[iSpecies][1] = 1000.;
@@ -24,10 +27,12 @@ AliNanoFilterPID::AliNanoFilterPID()
 }
 
 void AliNanoFilterPID::TriggerOnSpecies(AliPID::EParticleType sp,
-                                        AliESDtrackCuts *cuts, double nsigmaTPC,
-                                        double ptRangeTPC[2], double nsigmaTOF,
-                                        double ptRangeTOF[2]) {
+                                        AliESDtrackCuts *cuts, ULong_t fb,
+                                        double nsigmaTPC, double ptRangeTPC[2],
+                                        double nsigmaTOF, double ptRangeTOF[2]) {
+  fTriggerOnSpecies[sp] = true;
   fTrackCuts[sp] = cuts;
+  fFilterBits[sp] = fb;
   fTOFpidTriggerNsigma[sp] = nsigmaTOF;
   fTOFpidTriggerPtRange[sp][0] = ptRangeTOF[0];
   fTOFpidTriggerPtRange[sp][1] = ptRangeTOF[1];
@@ -43,18 +48,24 @@ bool AliNanoFilterPID::IsSelected(TObject *obj) {
   if (!trk) {
     return fSelected;
   }
+  AliAODTrack* aodTrk = dynamic_cast<AliAODTrack *>(obj);
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *handl =
       (AliInputEventHandler *)mgr->GetInputEventHandler();
   AliPIDResponse *pid = handl->GetPIDResponse();
   
   for (int iSpecies{0}; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
-    if (!fTrackCuts[iSpecies] && fTPCpidTriggerNsigma[iSpecies] < 0. &&
-        fTOFpidTriggerNsigma[iSpecies] < 0.)
+    if (!fTriggerOnSpecies[iSpecies])
       continue;
 
-    if (!fTrackCuts[iSpecies]->AcceptVTrack(trk))
-      continue;
+    if (fTrackCuts[iSpecies])
+      if (!fTrackCuts[iSpecies]->AcceptVTrack(trk))
+        continue;
+
+    if (aodTrk && fFilterBits[iSpecies])
+      if (!aodTrk->TestFilterBit(fFilterBits[iSpecies]))
+        continue;
 
     double pt = trk->Pt() * AliPID::ParticleCharge(iSpecies);
     double nTPCsigma =
