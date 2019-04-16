@@ -47,12 +47,6 @@ public:
     kCentCL1
   };
 
-  enum SystemForNsigmaDataCorr {
-    kNone=-1,
-    kPbPb010,
-    kPbPb3050
-  };
-
   AliAnalysisTaskSEHFSystPID();
   AliAnalysisTaskSEHFSystPID(const char *name, int system=0);
   virtual ~AliAnalysisTaskSEHFSystPID();

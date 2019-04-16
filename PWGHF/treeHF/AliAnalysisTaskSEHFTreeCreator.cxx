@@ -77,6 +77,7 @@
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
 #include "AliAnalysisTaskSEHFTreeCreator.h"
+#include "AliAODPidHF.h"
 
 using std::cout;
 using std::endl;
@@ -196,7 +197,7 @@ fFillpTD(false),
 fFillMass(false),
 fFillMatchingJetID(false),
 fEnableNsigmaTPCDataCorr(false),
-fSystemForNsigmaTPCDataCorr(AliHFTreeHandler::kNone)
+fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
 {
 
 /// Default constructor
@@ -315,7 +316,7 @@ fFillpTD(false),
 fFillMass(false),
 fFillMatchingJetID(false),
 fEnableNsigmaTPCDataCorr(false),
-fSystemForNsigmaTPCDataCorr(AliHFTreeHandler::kNone)
+fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
 {
     /// Standard constructor
   

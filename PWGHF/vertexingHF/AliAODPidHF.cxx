@@ -131,6 +131,16 @@ fNPbinsNsigmaTPCDataCorr(0)
     }
   }
   
+  for(int iP=0; iP<100; iP++) {
+    fMeanNsigmaTPCPionData[iP] = 0.;
+    fMeanNsigmaTPCKaonData[iP] = 0.;
+    fMeanNsigmaTPCProtonData[iP] = 0.;
+    fSigmaNsigmaTPCPionData[iP] = 1.;
+    fSigmaNsigmaTPCKaonData[iP] = 1.;
+    fSigmaNsigmaTPCProtonData[iP] = 1.;
+    fPlimitsNsigmaTPCDataCorr[iP] = 0.;
+  }
+  fPlimitsNsigmaTPCDataCorr[100] = 0.;
 }
 //----------------------
 AliAODPidHF::~AliAODPidHF()
@@ -650,7 +660,7 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
     if(okTPC) {
       nSigmaTPC = fPidResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)specie);
       if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) { 
-        Double_t mean=0., sigma=1.; 
+        Float_t mean=0., sigma=1.; 
         GetNsigmaTPCMeanSigmaData(mean, sigma, (AliPID::EParticleType)specie, track->GetTPCmomentum());
         nSigmaTPC = (nSigmaTPC-mean)/sigma;
       }
@@ -938,7 +948,7 @@ Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &nsi
     AliPID::EParticleType type=AliPID::EParticleType(species);
     nsigmaTPC = fPidResponse->NumberOfSigmasTPC(track,type);
     if(fApplyNsigmaTPCDataCorr && nsigmaTPC>-990.) {
-      Double_t mean=0., sigma=1.; 
+      Float_t mean=0., sigma=1.; 
       GetNsigmaTPCMeanSigmaData(mean, sigma, type, track->GetTPCmomentum());
       nsigmaTPC = (nsigmaTPC-mean)/sigma;
     }
@@ -1328,7 +1338,7 @@ Float_t AliAODPidHF::NumberOfSigmas(AliPID::EParticleType specie, AliPIDResponse
     {
       Double_t nsigmaTPC = fPidResponse->NumberOfSigmasTPC(track, specie);
       if(fApplyNsigmaTPCDataCorr && nsigmaTPC>-990.) {
-        Double_t mean=0., sigma=1.; 
+        Float_t mean=0., sigma=1.; 
         GetNsigmaTPCMeanSigmaData(mean, sigma, specie, track->GetTPCmomentum());
         nsigmaTPC = (nsigmaTPC-mean)/sigma;
       }
@@ -1586,86 +1596,14 @@ void AliAODPidHF::SetIdCompAsymmetricPID() {
 }
 
 //------------------
-void AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(Int_t run, Int_t system) {
+void AliAODPidHF::EnableNsigmaTPCDataCorr(Int_t run, Int_t system) {
 
   fApplyNsigmaTPCDataCorr = kTRUE;
-
-  if(run>=295585 && run<=296623 && system==kPbPb010) { //LHC18q 0-10%
-    fNPbinsNsigmaTPCDataCorr = 8;
-    array<Double_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
-    array<Double_t,8> meanPion = {-0.476642, -0.611512, -0.70491, -0.785863, -0.858335, -0.913384, -0.926733, -1.03424};
-    array<Double_t,8> meanKaon = {-0.376284, -0.689586, -0.752243, -0.922438, -0.95792, -0.958785, -1.00629, -1.10473};
-    array<Double_t,8> meanProton = {-0.162057, -0.222369, -0.517459, -0.874908, -0.961924, -1.01193, -0.839815, -0.691694};
-    array<Double_t,8> sigmaPion = {0.98579, 0.962247, 0.945548, 0.920657, 0.909255, 0.957158, 0.907777, 0.954516};
-    array<Double_t,8> sigmaKaon = {0.851531, 0.909522, 0.96582, 0.900314, 0.887377, 0.880861, 0.848008, 0.916044};
-    array<Double_t,8> sigmaProton = {0.748482, 0.79806, 0.852967, 0.979616, 0.997911, 0.860067, 0.883535, 0.929892};
-    std::copy(pTPClims.begin(),pTPClims.end(),fPlimitsNsigmaTPCDataCorr);
-    std::copy(meanPion.begin(),meanPion.end(),fMeanNsigmaTPCPionData);
-    std::copy(meanKaon.begin(),meanKaon.end(),fMeanNsigmaTPCKaonData);
-    std::copy(meanProton.begin(),meanProton.end(),fMeanNsigmaTPCProtonData);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),fSigmaNsigmaTPCPionData);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),fSigmaNsigmaTPCKaonData);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),fSigmaNsigmaTPCProtonData);
-  }
-  else if(run>=295585 && run<=296623 && system==kPbPb3050) { //LHC18q 30-50%
-    fNPbinsNsigmaTPCDataCorr = 8;
-    array<Double_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
-    array<Double_t,8> meanPion = {-0.282783, -0.351074, -0.370549, -0.368398, -0.37546, -0.332551, -0.304001, -0.329724};
-    array<Double_t,8> meanKaon = {-0.147986, -0.26169, -0.339263, -0.566137, -0.619671, -0.586758, -0.430222, -0.243858};
-    array<Double_t,8> meanProton = {-0.116342, -0.204619, -0.18317, -0.288015, -0.431383, -0.496598, -0.476154, -0.464085};
-    array<Double_t,8> sigmaPion = {1.15354, 1.1191, 1.11418, 1.11474, 1.11121, 1.10621, 1.05918, 1.05666};
-    array<Double_t,8> sigmaKaon = {1.07676, 1.11978, 1.14182, 1.09804, 1.09674, 1.08182, 1.07091, 1.00419};
-    array<Double_t,8> sigmaProton = {1.07493, 1.11953, 1.14044, 1.14904, 1.12158, 1.09405, 1.06465, 1.11152};
-    std::copy(pTPClims.begin(),pTPClims.end(),fPlimitsNsigmaTPCDataCorr);
-    std::copy(meanPion.begin(),meanPion.end(),fMeanNsigmaTPCPionData);
-    std::copy(meanKaon.begin(),meanKaon.end(),fMeanNsigmaTPCKaonData);
-    std::copy(meanProton.begin(),meanProton.end(),fMeanNsigmaTPCProtonData);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),fSigmaNsigmaTPCPionData);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),fSigmaNsigmaTPCKaonData);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),fSigmaNsigmaTPCProtonData);
-  }
-  else if(run>296690 && run<297595 && system==kPbPb010) { //LHC18r 0-10%
-    fNPbinsNsigmaTPCDataCorr = 8;
-    array<Double_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
-    array<Double_t,8> meanPion = {-0.4669, -0.651889, -0.731293, -0.750849, -0.767918, -0.769948, -0.729383, -0.7741};
-    array<Double_t,8> meanKaon = {-0.420412, -0.656824, -0.728482, -0.99377, -1.11258, -1.04111, -1.05214, -0.778762};
-    array<Double_t,8> meanProton = {-0.346431, -0.445263, -0.504456, -0.80259, -0.971442, -1.00859, -0.853291, -0.595747};
-    array<Double_t,8> sigmaPion = {1.31686, 1.24606, 1.21786, 1.21274, 1.21565, 1.29167, 1.26293, 1.27201};
-    array<Double_t,8> sigmaKaon = {1.1904, 1.27156, 1.27005, 1.15127, 1.09914, 1.12193, 1.07542, 1.27068};
-    array<Double_t,8> sigmaProton = {1.10662, 1.18216, 1.25083, 1.3166, 1.25666, 1.12755, 1.12149, 1.20881};
-    std::copy(pTPClims.begin(),pTPClims.end(),fPlimitsNsigmaTPCDataCorr);
-    std::copy(meanPion.begin(),meanPion.end(),fMeanNsigmaTPCPionData);
-    std::copy(meanKaon.begin(),meanKaon.end(),fMeanNsigmaTPCKaonData);
-    std::copy(meanProton.begin(),meanProton.end(),fMeanNsigmaTPCProtonData);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),fSigmaNsigmaTPCPionData);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),fSigmaNsigmaTPCKaonData);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),fSigmaNsigmaTPCProtonData);
-  }
-  else if(run>296690 && run<297595 && system==kPbPb3050) { //LHC18r 30-50%
-    fNPbinsNsigmaTPCDataCorr = 8;
-    array<Double_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
-    array<Double_t,8> meanPion = {-0.298388, -0.342664, -0.396873, -0.462451, -0.538392, -0.58011, -0.612805, -0.642393};
-    array<Double_t,8> meanKaon = {-0.152114, -0.00548698, -0.425063, -0.546696, -0.530307, -0.599359, -0.605992, -0.774291};
-    array<Double_t,8> meanProton = {-0.0368995, -0.0849347, -0.30911, -0.479177, -0.584153, -0.578737, -0.568087, -0.489077};
-    array<Double_t,8> sigmaPion = {0.878966, 0.88176, 0.883022, 0.873402, 0.859262, 0.847664, 0.828672, 0.800194};
-    array<Double_t,8> sigmaKaon = {0.775762, 1.00624, 0.886505, 0.885096, 0.91232, 0.867032, 0.833827, 0.987321};
-    array<Double_t,8> sigmaProton = {0.751132, 0.788041, 0.81738, 0.862206, 0.876342, 0.863609, 0.825849, 0.937087};
-    std::copy(pTPClims.begin(),pTPClims.end(),fPlimitsNsigmaTPCDataCorr);
-    std::copy(meanPion.begin(),meanPion.end(),fMeanNsigmaTPCPionData);
-    std::copy(meanKaon.begin(),meanKaon.end(),fMeanNsigmaTPCKaonData);
-    std::copy(meanProton.begin(),meanProton.end(),fMeanNsigmaTPCProtonData);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),fSigmaNsigmaTPCPionData);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),fSigmaNsigmaTPCKaonData);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),fSigmaNsigmaTPCProtonData);
-  }
-  else { //default: no correction applied
-    fApplyNsigmaTPCDataCorr = kFALSE;
-    fNPbinsNsigmaTPCDataCorr = 0;
-  }
+  SetNsigmaTPCDataDrivenCorrection(run, system, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
 }
 
 //------------------
-void AliAODPidHF::GetNsigmaTPCMeanSigmaData(Double_t &mean, Double_t &sigma, AliPID::EParticleType species, Double_t pTPC) const {
+void AliAODPidHF::GetNsigmaTPCMeanSigmaData(Float_t &mean, Float_t &sigma, AliPID::EParticleType species, Float_t pTPC) const {
     
   Int_t bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
   if(bin<0) bin=0; //underflow --> equal to min value
@@ -1696,5 +1634,95 @@ void AliAODPidHF::GetNsigmaTPCMeanSigmaData(Double_t &mean, Double_t &sigma, Ali
       sigma = 1.;
       break;
     }
+  }
+}
+
+//___________________________________________________________________________________//
+void AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(Int_t run, Int_t system, Int_t &nPbins, Float_t Plims[], Float_t meanNsigmaTPCpion[], Float_t meanNsigmaTPCkaon[], Float_t meanNsigmaTPCproton[], Float_t sigmaNsigmaTPCpion[], Float_t sigmaNsigmaTPCkaon[], Float_t sigmaNsigmaTPCproton[]) {
+
+  if(run>=295585 && run<=296623 && system==kPbPb010) { //LHC18q 0-10%
+    nPbins = 8;
+    array<Float_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
+    array<Float_t,8> meanPion = {-0.476642, -0.611512, -0.70491, -0.785863, -0.858335, -0.913384, -0.926733, -1.03424};
+    array<Float_t,8> meanKaon = {-0.376284, -0.689586, -0.752243, -0.922438, -0.95792, -0.958785, -1.00629, -1.10473};
+    array<Float_t,8> meanProton = {-0.162057, -0.222369, -0.517459, -0.874908, -0.961924, -1.01193, -0.839815, -0.691694};
+    array<Float_t,8> sigmaPion = {0.98579, 0.962247, 0.945548, 0.920657, 0.909255, 0.957158, 0.907777, 0.954516};
+    array<Float_t,8> sigmaKaon = {0.851531, 0.909522, 0.96582, 0.900314, 0.887377, 0.880861, 0.848008, 0.916044};
+    array<Float_t,8> sigmaProton = {0.748482, 0.79806, 0.852967, 0.979616, 0.997911, 0.860067, 0.883535, 0.929892};
+    std::copy(pTPClims.begin(),pTPClims.end(),Plims);
+    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
+    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
+    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
+    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
+    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
+    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+  }
+  else if(run>=295585 && run<=296623 && system==kPbPb3050) { //LHC18q 30-50%
+    nPbins = 8;
+    array<Float_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
+    array<Float_t,8> meanPion = {-0.282783, -0.351074, -0.370549, -0.368398, -0.37546, -0.332551, -0.304001, -0.329724};
+    array<Float_t,8> meanKaon = {-0.147986, -0.26169, -0.339263, -0.566137, -0.619671, -0.586758, -0.430222, -0.243858};
+    array<Float_t,8> meanProton = {-0.116342, -0.204619, -0.18317, -0.288015, -0.431383, -0.496598, -0.476154, -0.464085};
+    array<Float_t,8> sigmaPion = {1.15354, 1.1191, 1.11418, 1.11474, 1.11121, 1.10621, 1.05918, 1.05666};
+    array<Float_t,8> sigmaKaon = {1.07676, 1.11978, 1.14182, 1.09804, 1.09674, 1.08182, 1.07091, 1.00419};
+    array<Float_t,8> sigmaProton = {1.07493, 1.11953, 1.14044, 1.14904, 1.12158, 1.09405, 1.06465, 1.11152};
+    std::copy(pTPClims.begin(),pTPClims.end(),Plims);
+    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
+    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
+    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
+    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
+    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
+    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+  }
+  else if(run>=296690 && run<=297595 && system==kPbPb010) { //LHC18r 0-10%
+    nPbins = 8;
+    array<Float_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
+    array<Float_t,8> meanPion = {-0.4669, -0.651889, -0.731293, -0.750849, -0.767918, -0.769948, -0.729383, -0.7741};
+    array<Float_t,8> meanKaon = {-0.420412, -0.656824, -0.728482, -0.99377, -1.11258, -1.04111, -1.05214, -0.778762};
+    array<Float_t,8> meanProton = {-0.346431, -0.445263, -0.504456, -0.80259, -0.971442, -1.00859, -0.853291, -0.595747};
+    array<Float_t,8> sigmaPion = {1.31686, 1.24606, 1.21786, 1.21274, 1.21565, 1.29167, 1.26293, 1.27201};
+    array<Float_t,8> sigmaKaon = {1.1904, 1.27156, 1.27005, 1.15127, 1.09914, 1.12193, 1.07542, 1.27068};
+    array<Float_t,8> sigmaProton = {1.10662, 1.18216, 1.25083, 1.3166, 1.25666, 1.12755, 1.12149, 1.20881};
+    std::copy(pTPClims.begin(),pTPClims.end(),Plims);
+    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
+    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
+    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
+    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
+    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
+    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+  }
+  else if(run>=296690 && run<=297595 && system==kPbPb3050) { //LHC18r 30-50%
+    nPbins = 8;
+    array<Float_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
+    array<Float_t,8> meanPion = {-0.298388, -0.342664, -0.396873, -0.462451, -0.538392, -0.58011, -0.612805, -0.642393};
+    array<Float_t,8> meanKaon = {-0.152114, -0.00548698, -0.425063, -0.546696, -0.530307, -0.599359, -0.605992, -0.774291};
+    array<Float_t,8> meanProton = {-0.0368995, -0.0849347, -0.30911, -0.479177, -0.584153, -0.578737, -0.568087, -0.489077};
+    array<Float_t,8> sigmaPion = {0.878966, 0.88176, 0.883022, 0.873402, 0.859262, 0.847664, 0.828672, 0.800194};
+    array<Float_t,8> sigmaKaon = {0.775762, 1.00624, 0.886505, 0.885096, 0.91232, 0.867032, 0.833827, 0.987321};
+    array<Float_t,8> sigmaProton = {0.751132, 0.788041, 0.81738, 0.862206, 0.876342, 0.863609, 0.825849, 0.937087};
+    std::copy(pTPClims.begin(),pTPClims.end(),Plims);
+    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
+    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
+    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
+    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
+    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
+    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+  }
+  else { //default: no correction applied
+    nPbins = 1;
+    array<Float_t,2> pTPClims = {0.,1000.};    
+    array<Float_t,1> meanPion = {0.};
+    array<Float_t,1> meanKaon = {0.};
+    array<Float_t,1> meanProton = {0.};
+    array<Float_t,1> sigmaPion = {1.};
+    array<Float_t,1> sigmaKaon = {1.};
+    array<Float_t,1> sigmaProton = {1.};
+    std::copy(pTPClims.begin(),pTPClims.end(),Plims);
+    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
+    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
+    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
+    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
+    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
+    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
   }
 }

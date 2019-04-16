@@ -523,7 +523,7 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
     }
 
     if(fEnableNsigmaTPCDataCorr) {
-      fPidHF->SetNsigmaTPCDataDrivenCorrection(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr);
+      fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr);
     }
   }
 }

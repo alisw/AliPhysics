@@ -66,12 +66,6 @@ class AliHFTreeHandler : public TObject
       kAllSingleTrackVars // all single-track vars
     };
 
-    enum systemforNsigmadatacorr {
-      kNone=-1,
-      kPbPb010,
-      kPbPb3050
-    };
-
     AliHFTreeHandler();
     AliHFTreeHandler(int PIDopt);
 
@@ -178,7 +172,6 @@ class AliHFTreeHandler : public TObject
     float GetTOFmomentum(AliAODTrack* track, AliPIDResponse* pidrespo);
   
     void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC);
-    void SetNsigmaTPCDataCorr();
 
     TTree* fTreeVar; /// tree with variables
     unsigned int fNProngs; /// number of prongs
