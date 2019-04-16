@@ -101,6 +101,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH3D * fDCAPhipTKaonsC;
   TH3D * fpTPhiZHadrons;
   TH3D * fDCAWErrHadrons;
+  TH2D * fDCAHadrons;
   TH3D * fDCAHadronsFineBins;
   TH2D * fDCAKaons; // Should have less contamination, but have higher mass
   TH3D * fDCAWErrKaons;
