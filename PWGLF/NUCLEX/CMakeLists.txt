@@ -26,9 +26,6 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${ALIROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/EVENTMIX
-                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
-                    ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
 		                ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
@@ -39,9 +36,6 @@ set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
-  Exotica/NOmega/AliAnalysisTaskNOmegaLPK.cxx
-  Exotica/NOmega/AliAnalysisTaskOmegaOmegaOX.cxx
-  Exotica/NOmega/AliAnalysisTaskNOmegaLX.cxx
   Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx
   Exotica/dStar/AliAnalysisTaskdStar.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
@@ -120,7 +114,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGHFvertexingHF PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils)
+set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils)
 
 # Generate the ROOT map
 # Dependecies
