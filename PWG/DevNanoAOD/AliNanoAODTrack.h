@@ -85,7 +85,8 @@ public:
     kNanoClusterITS4,
     kNanoClusterITS5,
     kIsMuonTrack,
-    kTRDrefit
+    kTRDrefit,
+    kIsDCA
   };
   
   UInt_t GetNanoFlags() const { return fNanoFlags; }
@@ -174,7 +175,7 @@ public:
   
   template <typename T> Bool_t GetPosition(T *x) const {
     x[0]=GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX()); x[1]=GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY()); x[2]=GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ());
-    return TestBit(AliAODTrack::kIsDCA);}
+    return TESTBIT(fNanoFlags, ENanoFlags::kIsDCA);}
 
   // FIXME: only allocate if listed?
   // template <typename T> void SetCovMatrix(const T *covMatrix) {
@@ -434,20 +435,20 @@ void AliNanoAODTrack::SetPosition(const T *x, const Bool_t dca)
 
   if (x) {
     if (!dca) {
-      ResetBit(AliAODTrack::kIsDCA);
+      fNanoFlags &= ~ENanoFlags::kIsDCA;
 
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosX()] = x[0];
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosY()] = x[1];
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosZ()] = x[2];
     } else {
-      SetBit(AliAODTrack::kIsDCA);
+      fNanoFlags |= ENanoFlags::kIsDCA;
       // don't know any better yet
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosX()] = -999.;
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosY()] = -999.;
       fVars[AliNanoAODTrackMapping::GetInstance()->GetPosZ()] = -999.;
     }
   } else {
-    ResetBit(AliAODTrack::kIsDCA);
+    fNanoFlags &= ~ENanoFlags::kIsDCA;
 
     fVars[AliNanoAODTrackMapping::GetInstance()->GetPosX()] = -999.;
     fVars[AliNanoAODTrackMapping::GetInstance()->GetPosY()] = -999.;
