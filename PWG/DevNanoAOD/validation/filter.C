@@ -1,4 +1,4 @@
-void filter_Header(TString from)
+void filter(TString from)
 {
   AliAnalysisManager* mgr = new AliAnalysisManager("NanoAOD Filter", "NanoAOD filter for nanoAOD production");
     
@@ -50,21 +50,15 @@ void filter_Header(TString from)
   task->AddSetter(new AliNanoAODSimpleSetter);
   
   // No event selection here to get identical events in nano and AOD
+  // No track selection here to get identical events in nano and AOD
 
-  // Track selection
-  AliAnalysisNanoAODTrackCuts* trkCuts = new AliAnalysisNanoAODTrackCuts;
-  trkCuts->SetBitMask((1 << 8) | (1 << 9)); // hybrid 2011
-  trkCuts->SetMaxEta(0.9);
-  trkCuts->SetMinPt(1.0);
-  
   // Fields to store
   // event level
   // Note: vertices are kept by default
   task->SetVarListHeader("BunchCrossNumber,OrbitNumber,PeriodNumber,CentrV0M,CentrTRK,CentrCL0,CentrCL1,MagField,OfflineTrigger,RunNumber,T0Spread,NumberOfESDTracks,MultSelection.RefMult08");
   // track level
-  task->SetVarListTrack("pt,theta,phi");
+  task->SetVarListTrack("pt,phi,theta,chi2perNDF,posx,posy,posz,pDCAx,pDCAy,pDCAz,posDCAx,posDCAy,posDCAz,DCA,RAtAbsorberEnd,TPCncls,ID,TPCnclsF,TPCNCrossedRows,TrackPhiOnEMCal,TrackEtaOnEMCal,TrackPtOnEMCal,ITSsignal,TPCsignal,TPCsignalTuned,TPCsignalN,TPCmomentum,TPCTgl,TOFsignal,integratedLength,TOFsignalTuned,HMPIDsignal,HMPIDoccupancy,TRDsignal,TRDChi2,TRDnSlices,TPCnclsS,FilterMap,TOFBunchCrossing,TOFchi2,TOFsignalDz,TOFsignalDx");
 
-  task->SetTrkCuts(trkCuts);
 
   mgr->SetDebugLevel(1); // enable debug printouts
   if (!mgr->InitAnalysis()) 
@@ -72,5 +66,5 @@ void filter_Header(TString from)
   mgr->PrintStatus();
   
   Printf("Starting Analysis....");
-  mgr->StartAnalysis("local", chain, 1000);
+  mgr->StartAnalysis("local", chain, 10);
 }

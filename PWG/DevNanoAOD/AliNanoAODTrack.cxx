@@ -87,7 +87,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
     else if(varString == "posz"                   ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ()             , position[2]                         );
     else if(varString == "posDCAx"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAx()          , aodTrack->XAtDCA()                  );
     else if(varString == "posDCAy"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAy()          , aodTrack->YAtDCA()                  );
-    else if(varString == "posDCAy"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAz()          , aodTrack->ZAtDCA()                  );
+    else if(varString == "posDCAz"                ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAz()          , aodTrack->ZAtDCA()                  );
     else if(varString == "pDCAx"                  ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAX()            , aodTrack->PxAtDCA()                 );
     else if(varString == "pDCAy"                  ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAY()            , aodTrack->PyAtDCA()                 );
     else if(varString == "pDCAz"                  ) SetVar(AliNanoAODTrackMapping::GetInstance()->GetPDCAZ()            , aodTrack->PzAtDCA()                 );
