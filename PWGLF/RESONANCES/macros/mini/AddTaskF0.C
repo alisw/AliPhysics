@@ -121,8 +121,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
   // -- MULTIPLICITY/CENTRALITY -------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
   if (collSys==AliPIDResponse::kPP) task->UseMultiplicity("AliMultSelection_V0M");
-  if (collSys==AliPIDResponse::kPPB) task->UseCentrality("AliMultSelection_V0A");
-  if (collSys==AliPIDResponse::kPBPB) task->UseCentrality("AliMultSelection_V0M");
+  if (collSys==AliPIDResponse::kPPB) task->UseMultiplicity("AliMultSelection_V0A");
+  if (collSys==AliPIDResponse::kPBPB) task->UseMultiplicity("AliMultSelection_V0M");
   
   //-----------------------------------------------------------------------------------------------
   // -- EVENT MIXING CONFIG -----------------------------------------------------------------------
