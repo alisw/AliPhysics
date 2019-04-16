@@ -614,6 +614,8 @@ class AliReducedVarManager : public TObject {
     kEMCALm20,
     kEMCALm02,
     kEMCALdispersion,
+    kEMCALnCells,
+    kEMCALnMatchedTracks,
     // Track flags -----------------------------------------------------
     kTrackingFlag,
     kTrackQualityFlag,
@@ -807,7 +809,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 8);
+  ClassDef(AliReducedVarManager, 9);
 };
 
 #endif
