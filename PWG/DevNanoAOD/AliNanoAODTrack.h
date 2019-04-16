@@ -75,7 +75,7 @@ public:
     kLAST = 2
   };
   
-  enum {
+  enum ENanoFlags {
     kNanoCharge = 0, // (0 -> negative | 1 -> positive)
     kNanoHasTOFPID,
     kNanoClusterITS0,
@@ -84,7 +84,8 @@ public:
     kNanoClusterITS3,
     kNanoClusterITS4,
     kNanoClusterITS5,
-    kIsMuonTrack
+    kIsMuonTrack,
+    kTRDrefit
   };
   
   UInt_t GetNanoFlags() const { return fNanoFlags; }
@@ -293,7 +294,7 @@ public:
   //  Int_t     GetHMPIDcluIdx()     const;// FIXME: array of ints?
   //   void      GetITSdEdxSamples(Double_t s[4]) const; // FIXME: To be reimplemented. Use one kin var for each sample
   Int_t   GetTOFBunchCrossing (Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFBunchCrossing()); }
-  UChar_t   GetTRDncls(Int_t /*layer*/)                           const {AliFatal("Not Implemented"); return 0;}; 
+  UChar_t   GetTRDncls(Int_t /*layer*/)                           const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDnClusters()); }; 
   Double_t  GetTRDslice(Int_t /*plane*/, Int_t /*slice*/)         const {AliFatal("Not Implemented"); return 0;};
   Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {AliFatal("Not Implemented"); return 0;};
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -368,7 +369,7 @@ public:
   //  needed  to inherit from VTrack, but not implemented
   virtual void  SetDetectorPID(const AliDetectorPID */*pid*/)  {AliFatal("Not Implemented"); return ;}; 
   virtual const AliDetectorPID* GetDetectorPID() const {AliFatal("Not Implemented"); return 0;}; 
-  virtual UChar_t  GetTRDntrackletsPID() const  {AliFatal("Not Implemented"); return 0;}; 
+  virtual UChar_t  GetTRDntrackletsPID() const  { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDntrackletsPID()); }; 
   virtual void      GetHMPIDpid(Double_t */*p*/) const  {AliFatal("Not Implemented"); return;}; 
   virtual Double_t GetBz() const  {AliFatal("Not Implemented"); return 0;}; 
   virtual void     GetBxByBz(Double_t [3]/*b[3]*/) const  {AliFatal("Not Implemented"); return;}; 
@@ -382,6 +383,9 @@ public:
   static const char* GetPIDVarName(ENanoPIDResponse r, AliPID::EParticleType p) {  return Form("PID.%d.%s", r, AliPID::ParticleShortName(p)); }
   static Bool_t InitPIDIndex();
 
+
+  /// NanoAOD information that cannot be retrieved with the same interface of AliAODtrack
+  bool   IsTRDrefit() { return fNanoFlags & ENanoFlags::kTRDrefit; }
 
 private :
 

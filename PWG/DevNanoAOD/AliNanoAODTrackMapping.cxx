@@ -50,6 +50,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fTRDsignal(-1),	  
   fTRDChi2(-1),	  
   fTRDnSlices(-1),	  
+  fTRDntrackletsPID(-1),
+  fTRDnClusters(-1),
   fTPCnclsS(-1),
   fFilterMap(-1),
   fTOFBunchCrossing(-1),
@@ -102,6 +104,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fTRDsignal(-1),	  
   fTRDChi2(-1),	  
   fTRDnSlices(-1),	  
+  fTRDntrackletsPID(-1),
+  fTRDnClusters(-1),
   fTPCnclsS(-1),
   fFilterMap(-1),
   fTOFBunchCrossing(-1),
@@ -172,6 +176,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "TRDsignal"        ) fTRDsignal         = index++;
     else if(var == "TRDChi2"          ) fTRDChi2           = index++;
     else if(var == "TRDnSlices"       ) fTRDnSlices        = index++;
+    else if(var == "TRDntrackletsPID" ) fTRDntrackletsPID  = index++;
+    else if(var == "TRDnClusters"     ) fTRDnClusters      = index++;
     else if(var == "TPCnclsS"         ) fTPCnclsS          = index++;
     else if(var == "FilterMap"        ) fFilterMap         = index++;
     else if(var == "TOFBunchCrossing" ) fTOFBunchCrossing  = index++;
@@ -235,6 +241,8 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "TRDsignal"        ) return fTRDsignal        ;
     else if(varName == "TRDChi2"          ) return fTRDChi2          ;
     else if(varName == "TRDnSlices"       ) return fTRDnSlices       ;
+    else if(varName == "TRDntrackletsPID" ) return fTRDntrackletsPID ;
+    else if(varName == "TRDnClusters"     ) return fTRDnClusters     ;
     else if(varName == "TPCnclsS"         ) return fTPCnclsS         ;
     else if(varName == "FilterMap"        ) return fFilterMap        ;
     else if(varName == "TOFBunchCrossing" ) return fTOFBunchCrossing ;
@@ -292,6 +300,8 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
     else if(index == fTRDsignal        )  return "TRDsignal"        ;
     else if(index == fTRDChi2          )  return "TRDChi2"          ;
     else if(index == fTRDnSlices       )  return "TRDnSlices"       ;
+    else if(index == fTRDntrackletsPID )  return "TRDntrackletsPID" ;
+    else if(index == fTRDnClusters     )  return "TRDnClusters"     ;
     else if(index == fTPCnclsS         )  return "TPCnclsS"         ;
     else if(index == fFilterMap        )  return "FilterMap"        ;
     else if(index == fTOFBunchCrossing )  return "TOFBunchCrossing" ;

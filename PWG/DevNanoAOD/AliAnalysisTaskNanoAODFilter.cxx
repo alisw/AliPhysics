@@ -55,9 +55,10 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fEvtCuts(),
   fQAOutput(0),
   fSaveCutsFlag(kFALSE),
-  fNormalisation(0x0),
   fInputArrayName(""),
-  fOutputArrayName("")
+  fOutputArrayName(""),
+  fNormalisation(0x0)
+
 {
   // Dummy constructor ALWAYS needed for I/O.
 }
@@ -70,9 +71,9 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fEvtCuts(0),
    fQAOutput(0),
    fSaveCutsFlag(saveCutsFlag),
-  fNormalisation(0x0),
    fInputArrayName(""),
-   fOutputArrayName("")
+   fOutputArrayName(""),
+   fNormalisation(0x0)
 
 {
   // Constructor
