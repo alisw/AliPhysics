@@ -29,6 +29,7 @@ public:
   AliDielectronClusterCuts(const char*name, const char* title);
   virtual ~AliDielectronClusterCuts();
 
+  // setters
   void SetCaloType(Short_t type) { fCaloType=type; }
   void SetNCellsMinCut(Short_t val) { fMinNCells=val; }
   void SetRejectExotics() { fRejectExotics=kTRUE; }
@@ -37,6 +38,16 @@ public:
   void SetM20Cut(Float_t min, Float_t max) { fM20Min=min; fM20Max=max; }
   void SetTrackDxCut(Float_t min, Float_t max) { fTrackDxMin=min; fTrackDxMax=max; }
   void SetTrackDzCut(Float_t min, Float_t max) { fTrackDzMin=min; fTrackDzMax=max; }
+
+  // getters
+  Short_t GetCaloType() { return fCaloType; }
+  Short_t GetNCellsMinCut() { return fMinNCells; }
+  Bool_t  GetRejectExotics() { return fRejectExotics; }
+  Bool_t  GetRequireTrackMatch() { return fRequireTrackMatch; }
+  void    GetM02Cut(Float_t &min, Float_t &max) { min=fM02Min; max=fM02Max; }
+  void    GetM20Cut(Float_t &min, Float_t &max) { min=fM20Min; max=fM20Max; }
+  void    GetTrackDxCut(Float_t &min, Float_t &max) { min=fTrackDxMin; max=fTrackDxMax; }
+  void    GetTrackDzCut(Float_t &min, Float_t &max) { min=fTrackDzMin; max=fTrackDzMax; }
 
   //
   //Analysis cuts interface
@@ -62,7 +73,7 @@ private:
   Float_t fTrackDzMin;        // min track Dz
   Float_t fTrackDzMax;        // max track Dz
   
-  ClassDef(AliDielectronClusterCuts,1);
+  ClassDef(AliDielectronClusterCuts,2);
 };
 
 #endif
