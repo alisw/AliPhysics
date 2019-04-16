@@ -409,7 +409,7 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
   //--------------------------------------------------------------------------------
   // Part 1: fill the vector of the MC hypertritons
   //--------------------------------------------------------------------------------
-  for (Long_t iPart = 0; iPart < mcEvent->GetNumberOfTracks(); iPart++) {
+  for (Int_t iPart = 0; iPart < mcEvent->GetNumberOfTracks(); iPart++) {
     AliVParticle *vPart = mcEvent->GetTrack(iPart);
     if (!vPart) {
       ::Warning("AliAnalysisTaskHyperTriton2He3piML::UserExec",
@@ -442,7 +442,7 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
   vPionP.reserve(vNTracks);
   vPionM.reserve(vNTracks);
 
-  for (Long_t iTrack = 0; iTrack < vNTracks; iTrack++) {
+  for (Int_t iTrack = 0; iTrack < vNTracks; iTrack++) {
     AliESDtrack *esdTrack = esdEvent->GetTrack(iTrack);
     if (!esdTrack) continue;
 
