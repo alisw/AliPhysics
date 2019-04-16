@@ -420,6 +420,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   header->SetDAQAttributes(esd.GetDAQAttributes());
   header->SetNumberOfTPCClusters(esd.GetNumberOfTPCClusters());
   header->SetNumberOfTPCTracks(esd.GetNumberOfTPCTracks());
+  header->SetTPCTrackBeforeClean(esd.GetNTPCTrackBeforeClean());
 
   TTree* tree = fInputHandler->GetTree();
   if (tree) {

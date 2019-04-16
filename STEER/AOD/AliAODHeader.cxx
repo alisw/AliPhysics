@@ -75,6 +75,7 @@ AliAODHeader::AliAODHeader() :
   fEventNumberESDFile(-1),
   fNumberESDTracks(-1),
   fNumberTPCTracks(-1),
+  fNTPCTrackBeforeClean(-1),
   fNumberTPCClusters(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
@@ -149,6 +150,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fEventNumberESDFile(-1),
   fNumberESDTracks(-1),
   fNumberTPCTracks(-1),
+  fNTPCTrackBeforeClean(-1),
   fNumberTPCClusters(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
@@ -248,6 +250,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fEventNumberESDFile(-1),
   fNumberESDTracks(-1),
   fNumberTPCTracks(-1),
+  fNTPCTrackBeforeClean(-1),
   fNumberTPCClusters(-1),
   fL0TriggerInputs(0),
   fL1TriggerInputs(0),
@@ -328,6 +331,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fEventNumberESDFile(hdr.fEventNumberESDFile),
   fNumberESDTracks(hdr.fNumberESDTracks),
   fNumberTPCTracks(hdr.fNumberTPCTracks),
+  fNTPCTrackBeforeClean(hdr.fNTPCTrackBeforeClean),
   fNumberTPCClusters(hdr.fNumberTPCClusters),
   fL0TriggerInputs(hdr.fL0TriggerInputs),
   fL1TriggerInputs(hdr.fL1TriggerInputs),
@@ -417,6 +421,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fEventNumberESDFile = hdr.fEventNumberESDFile;
     fNumberESDTracks    = hdr.fNumberESDTracks;
     fNumberTPCTracks    = hdr.fNumberTPCTracks;
+    fNTPCTrackBeforeClean = hdr.fNTPCTrackBeforeClean;
     fNumberTPCClusters  = hdr.fNumberTPCClusters;
 
     fL0TriggerInputs    = hdr.fL0TriggerInputs;
