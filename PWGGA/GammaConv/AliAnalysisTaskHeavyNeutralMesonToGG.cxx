@@ -404,7 +404,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::InitBack(){
   const Int_t nDim = 4;
   Int_t nBins[nDim] = {800,300,7,4};
   Double_t xMin[nDim] = {0,0, 0,0};
-  Double_t xMax[nDim] = {0.8,30,7,4};
+  Double_t xMax[nDim] = {1.2,30,7,4};
 
   if(fDoTHnSparse){
     fSparseMotherInvMassPtZM      = new THnSparseF*[fnCuts];
