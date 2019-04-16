@@ -84,6 +84,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fSigma1Pt2(0)
     , fSigma1Pt(0)
     , fSigned1Pt(0)
+    , f1Pt(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -189,6 +190,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fSigma1Pt2(0)
     , fSigma1Pt(0)
     , fSigned1Pt(0)
+    , f1Pt(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -556,6 +558,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
     }
     fSigma1Pt =  TMath::Sqrt(fSigma1Pt2);
     fSigned1Pt = fESDTrack->GetSigned1Pt();
+    f1Pt = TMath::Abs(fSigned1Pt);
     return kTRUE;
 }
 

@@ -29,6 +29,7 @@ ClassImp(AliAnalysisTaskPtResStudy)
 AliAnalysisTaskPtResStudy::AliAnalysisTaskPtResStudy() 
     : AliAnalysisTaskMKBase()
     , fHistPtResCov(0)
+    , fHistPtResCovHighPt(0)
     , fHistPtResMC(0)
     , fHistPtRes(0)
 {
@@ -40,6 +41,7 @@ AliAnalysisTaskPtResStudy::AliAnalysisTaskPtResStudy()
 AliAnalysisTaskPtResStudy::AliAnalysisTaskPtResStudy(const char* name) 
     : AliAnalysisTaskMKBase(name)
     , fHistPtResCov(0)  
+    , fHistPtResCovHighPt(0)
     , fHistPtResMC(0)
     , fHistPtRes(0)
 {
@@ -58,13 +60,22 @@ AliAnalysisTaskPtResStudy::~AliAnalysisTaskPtResStudy()
 void AliAnalysisTaskPtResStudy::AddOutput()
 {    
     // data histogram for covariance matrix entries at high pt
-    // signed 1p/pt : sigma(1/pt) : ntracks
+    // signed 1/pt : sigma(1/pt) : ntracks
     AddAxis("signed1pt","1/pT",200,-1,1);    
     AddAxis("sigma1pt","#sigma(1/pT)",1000,0,0.1);    
     AddAxis("nTracks","mult6kcoarse");
     fHistPtResCov = CreateHist("fHistPtResCov");
     fOutputList->Add(fHistPtResCov);
 
+    // data histogram for covariance matrix entries at high pt
+    // 1/pt : sigma(1/pt) : ntracks
+    AddAxis("1pt","1/pT",200,0,0.2);    
+    AddAxis("sigma1pt","#sigma(1/pT)",2000,0,0.02);    
+    AddAxis("nTracks","mult6kcoarse");
+    fHistPtResCovHighPt = CreateHist("fHistPtResCovHighPt");
+    fOutputList->Add(fHistPtResCovHighPt);
+    
+    
     // pt response in small pT bins for low pt
     // pt : ptMC : nTracks
     AddAxis("pt",1000,0,10);    
@@ -107,9 +118,10 @@ void AliAnalysisTaskPtResStudy::AnaTrack()
     InitMCTrack();
     InitTrackIP();
     InitTrackTPC();
-    FillHist(fHistPtResCov, fSigned1Pt, fSigma1Pt, fNTracksAcc); 
-    FillHist(fHistPtResMC, fPt, fMCPt, fNTracksAcc); 
-    FillHist(fHistPtRes,   fPt, fMCPt, fSigma1Pt*fPt, fMCPt/fPt-1, fNTracksAcc); 
+    if (f1Pt<1.0)  { FillHist(fHistPtResCov,       fSigned1Pt, fSigma1Pt, fNTracksAcc); }
+    if (f1Pt<0.2)  { FillHist(fHistPtResCovHighPt, f1Pt, fSigma1Pt, fNTracksAcc); }
+    if (fMCPt<10.) { FillHist(fHistPtResMC,        fPt, fMCPt, fNTracksAcc); }
+    FillHist(fHistPtRes,          fPt, fMCPt, fSigma1Pt*fPt, fMCPt/fPt-1, fNTracksAcc);
 }
 
 //_____________________________________________________________________________

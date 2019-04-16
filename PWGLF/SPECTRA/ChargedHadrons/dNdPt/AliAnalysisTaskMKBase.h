@@ -169,6 +169,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                fSigma1Pt2;             //!<! sigma(1/pT)**2
         Double_t                fSigma1Pt;              //!<! sigma(1/pT)
         Double_t                fSigned1Pt;             //!<! signed 1/pT
+        Double_t                f1Pt;                   //!<! 1/pT
         
         AliMCParticle*          fMCParticle;            //!<! mc particle
         Int_t                   fMCLabel;               //!<! mc label
