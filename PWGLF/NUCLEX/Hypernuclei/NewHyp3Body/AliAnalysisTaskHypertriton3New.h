@@ -16,7 +16,10 @@
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// New class for the analysis of the hypertriton 3 prongs decay.
+// New class generating the tree of findable hypertritons in the 3 body
+// channel. This class reimplements the hypertriton 3 case of the
+// PWGLF/STRANGENESS/Cascades/Run2/AliAnalysisTaskStrEffStudy class
+// with some improvements for this specific analysis.
 //
 // Author:
 // P. Fecchio,  pfecchio@cern.ch
@@ -27,69 +30,78 @@
 #include "AliPID.h"
 #include "AliVertexerTracks.h"
 
-#include "Math/Vector3D.h"
-#include "Math/Vector4D.h"
 #include <TMath.h>
 
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float>> FourVector_t;
-
 class AliPIDResponse;
-class AliESDEvent;
+class AliESDtrackCuts;
 class AliESDtrack;
 class TTree;
+class TH1D;
+class TH3D;
+class TList;
+class TTree;
 
-// class HyperTritonCandidate {
-
-// private:
-//   short mass;
-// };
+/// Define bit flags for datacompression
+const unsigned char g = 0x1; // on if is a good candidate
+const unsigned char r = 0x2; // on if is reflection candidate
+/// if is not good and not reflection is a fake
 
 class AliAnalysisTaskHypertriton3New : public AliAnalysisTaskSE {
 
 public:
-  AliAnalysisTaskHypertriton3New();
-  AliAnalysisTaskHypertriton3New(bool isMC, TString taskname);
+  AliAnalysisTaskHypertriton3New(TString taskname = "Hypertriton3TaskNew");
   virtual ~AliAnalysisTaskHypertriton3New();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
 
-  AliEventCuts fEventCuts;     /// event cuts class
-  AliESDtrackCuts *fTrackCuts; /// ESD track cuts
+  AliEventCuts fEventCuts; /// event cuts class
 
 private:
   AliAnalysisTaskHypertriton3New(const AliAnalysisTaskHypertriton3New &);            // not implemented
   AliAnalysisTaskHypertriton3New &operator=(const AliAnalysisTaskHypertriton3New &); // not implemented
 
-  bool PassPIDSelection(AliESDtrack *track, AliPID::EParticleType specie, float nSigmaCut);
+  AliPIDResponse *fPIDResponse;   // PID response object
+  AliESDtrackCuts *fESDtrackCuts; // ESD track cuts
+  AliESDVertex *fPrimaryVertex;   // Primary vertex of the current event
 
-  // settings
-  bool fIsMC;                  ///<  Switch between MC and data
-  float fNSigma[3];            ///<
-  float fCosPoiningAngleLimit; ///<
+  // Settings
+  float fCosPoiningAngleLimit;
 
-  // support objects
-  AliESDEvent *fESDevent;             ///< ESD event
-  const AliESDVertex *fPrimaryVertex; //! Primary vertex of the current event
-  AliPIDResponse *fPIDResponse;       //! PID response object
+  // output object
+  TList *fOutputList;   //! Output list
+  TTree *fTree; //!
 
-  std::vector<AliESDtrack *> fParticles[3]; ///<
+  // Findable Tree
+  AliESDtrack *fTreeHyp3BodyVarTracks[3];
+  Int_t fTreeHyp3BodyVarPDGcodes[3];
 
-  // output list object
-  TList *fOutputList; //! Output list
-  TTree *fHypTree;    //! Output tree
+  ULong64_t fTreeHyp3BodyVarEventId;
+  Int_t fTreeHyp3BodyVarMotherId;
+  UChar_t fTreeHyp3BodyVarCandStat;
 
-  // objects in the tree
-  float fMagneticField;
+  Float_t fTreeHyp3BodyVarTruePx;
+  Float_t fTreeHyp3BodyVarTruePy;
+  Float_t fTreeHyp3BodyVarTruePz;
 
-  TH1D *fMInvBackgroundStd;  //!<!
-  TH1D *fMInvBackgroundCuts; //!<!
-  TH1D *fHistPtStd[3];       //!<!
-  TH1D *fHistPtCuts[3];      //!<!
-  TH1D *fHistDCAXY[3];       //!<!
-  TH1D *fHistDCAZ[3];        //!<!
-  TH1D *fHistCosPAngle;      //!<!
+  Float_t fTreeHyp3BodyVarDecayVx;
+  Float_t fTreeHyp3BodyVarDecayVy;
+  Float_t fTreeHyp3BodyVarDecayVz;
+  Float_t fTreeHyp3BodyVarDecayT;
+
+  Float_t fTreeHyp3BodyVarPVx;
+  Float_t fTreeHyp3BodyVarPVy;
+  Float_t fTreeHyp3BodyVarPVz;
+  Float_t fTreeHyp3BodyVarPVt;
+
+  Float_t fTreeHyp3BodyVarMagneticField;
+
+  TH1D *fHistEventCounter; //!
+  TH1D *fHistCentrality;   //!
+
+  TH3D *fHistGeneratedPtVsYVsCentralityHypTrit;     //!
+  TH3D *fHistGeneratedPtVsYVsCentralityAntiHypTrit; //!
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskHypertriton3New, 1); // analysisclass

@@ -1,14 +1,8 @@
-AliAnalysisTask *AddTaskHypertriton3New(Bool_t readMC = kFALSE, TString tskname = "Hypertriton3body", TString suffix = "") {
-
-  // Creates, configures and attaches to the train the task hyper-triton 3 body 
-  // decay study
-  // Get the pointer to the existing analysis manager via the static access method.
-  //==============================================================================
-  ::Info("AddTaskHypertriton3New", "Adding a new task with this settings readMC = %i", readMC);
+AliAnalysisTask *AddTaskHypertriton3New(TString suffix = "") {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskHypertriton3New", "No analysis manager to connect to.");
+    ::Error("AddTaskHypertriton3New", "No analysis manager found.");
     return 0x0;
   }
 
@@ -19,27 +13,24 @@ AliAnalysisTask *AddTaskHypertriton3New(Bool_t readMC = kFALSE, TString tskname 
     return 0x0;
   }
 
-  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if (type.Contains("AOD")) {
-    ::Error("AddTaskHypertriton3New", "This task requires to run on ESD");
-    return 0x0;
-  }
-
   // Create and configure the task
+  TString tskname = "AliAnalysisTaskHypertriton3New";
   tskname.Append(suffix.Data());
-  AliAnalysisTaskHypertriton3New *taskhyp = new AliAnalysisTaskHypertriton3New(true, tskname.Data());
-  
-  mgr->AddTask(taskhyp);
+  AliAnalysisTaskHypertriton3New *task = new AliAnalysisTaskHypertriton3New(tskname.Data());
+  mgr->AddTask(task);
+
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  TString outputFileNameTree = outputFileName + ":FindableTree";
 
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  AliAnalysisDataContainer *hypCont1 = mgr->CreateContainer(Form("%s_summary", tskname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
-  AliAnalysisDataContainer *hypCont2 = mgr->CreateContainer(Form("Hyp3Tree%s", suffix.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("Hyp3Tree.root:%s",suffix.Data()));
+  AliAnalysisDataContainer *hypCont1 = mgr->CreateContainer("Hyp3FindTask_summary", TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+  AliAnalysisDataContainer *hypCont2 = mgr->CreateContainer("cTreeHyperTriton", TTree::Class(), AliAnalysisManager::kOutputContainer, outputFileNameTree);
 
-  mgr->ConnectInput(taskhyp, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskhyp, 1, hypCont1);
-  mgr->ConnectOutput(taskhyp, 2, hypCont2);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, hypCont1);
+  mgr->ConnectOutput(task, 2, hypCont2);
 
-  return taskhyp;
+  return task;
 }
