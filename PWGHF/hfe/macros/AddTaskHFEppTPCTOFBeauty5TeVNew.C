@@ -2,7 +2,7 @@
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 R__ADD_INCLUDE_PATH($ALICE_ROOT)
 
-AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr, Int_t IsDcorr);
+AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr, Int_t IsDcorr, Int_t IsPi0EtaWeights);
 
 #endif
 
@@ -334,7 +334,9 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
      if(IsDcorr == 1){
 		/*TF1 *fDmesonShape = new TF1("fDmesonShape","(1.63798e-03/(TMath::Power(TMath::Exp( - 5.59031e-01*x[0] + 9.65659e-03 * x[0] * x[0] ) + x[0] / 3.60055e+00, 4.65766e+00)))/(3.58038e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69999e+00, 4.20266e+00)))",0.0,36);  
 		*/
-		TF1 *fDmesonShape = new TF1("fDmesonShape","(1.90645e-03/(TMath::Power(TMath::Exp( - 5.38981e-01*x[0] + 9.6566e-03 * x[0] * x[0] ) + x[0] / 3.47003e+00, 4.65766e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",0.0,36);  
+		/*TF1 *fDmesonShape = new TF1("fDmesonShape","(1.90645e-03/(TMath::Power(TMath::Exp( - 5.38981e-01*x[0] + 9.6566e-03 * x[0] * x[0] ) + x[0] / 3.47003e+00, 4.65766e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",0.0,36);
+		*/
+		TF1 *fDmesonShape = new TF1("fDmesonShape","(1.90461e-03/(TMath::Power(TMath::Exp( - 5.46431e-01*x[0] + 9.6566e-03 * x[0] * x[0] ) + x[0] / 3.48355e+00, 4.65766e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",0.0,36);  
 		task->SetDcorrFunction(fDmesonShape);
 		
 		
@@ -412,7 +414,9 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
 		/*TF1 *fDmesonShape = new TF1("fDmesonShape","(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08516e-01*x[0] - 1.38420e-02 * x[0] * x[0] ) + x[0] / 3.44002e+00, 4.24401e+00)))/(3.58038e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69999e+00, 4.20266e+00)))",0.0,36);
 		*/
 		
-		TF1 *fDmesonShape = new TF1("fDmesonShape","(1.31660e-03/(TMath::Power(TMath::Exp( - 6.15357e-01*x[0] + 3.10365e-04 * x[0] * x[0] ) + x[0] / 3.44338e+00, 4.24401e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",0.0,36);  
+		/*TF1 *fDmesonShape = new TF1("fDmesonShape","(1.31660e-03/(TMath::Power(TMath::Exp( - 6.15357e-01*x[0] + 3.10365e-04 * x[0] * x[0] ) + x[0] / 3.44338e+00, 4.24401e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",0.0,36);
+		*/
+		TF1 *fDmesonShape = new TF1("fDmesonShape","(1.31660e-03/(TMath::Power(TMath::Exp( - 6.08297e-01*x[0] + 1.91774e-03 * x[0] * x[0] ) + x[0] / 3.43194e+00, 4.24401e+00)))/(3.53468e-03 / (TMath::Power(TMath::Exp( - 6.05066e-01*x[0] + 1.62296e-02 * x[0] * x[0] ) + x[0] / 4.69154e+00, 4.20266e+00)))",0.0,36);  
 		task->SetDcorrFunction(fDmesonShape);
 		
 		
