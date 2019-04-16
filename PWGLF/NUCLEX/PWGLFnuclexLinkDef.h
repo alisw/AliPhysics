@@ -103,6 +103,7 @@
 /// * New Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3New+;
+#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
 
 /// Hypertriton Selector
 #ifdef __CLING__

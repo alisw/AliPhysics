@@ -1,6 +1,5 @@
 #define AliSelectorFindableHyperTriton3Body_cxx
 
-#include "AliSelectorFindableHyperTriton3Body.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
@@ -14,6 +13,9 @@
 #include <TStyle.h>
 #include <TVector3.h>
 #include <cmath>
+
+#include "AliAnalysisTaskHypertriton3New.h"
+#include "AliSelectorFindableHyperTriton3Body.h"
 
 AliSelectorFindableHyperTriton3Body::AliSelectorFindableHyperTriton3Body(TString outputName, TString outputPath,
                                                                          TTree *)
@@ -49,77 +51,111 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   const char *lSpecies[3]{"d", "p", "pi"};
   const char *lSpeciesPair[3]{"dp", "ppi", "pid"};
   const char *lCuts[4]{"ref", "std", "cuts", "hard"};
-  const char *lFake[2]{"", "_fake"};
+  const char *lStat[3]{"", "_fake", "_reflection'"};
   const char lCoords[4]{"xyz"};
 
+  /// invariant mass distributions
   for (int iMatter = 0; iMatter < 2; iMatter++) {
     for (int iCuts = 0; iCuts < 4; iCuts++) {
-      for (int iFake = 0; iFake < 2; iFake++) {
-        fHistInvMass[iMatter][iCuts][iFake] =
-            new TH2D(Form("fHistInvMass_%c_%s%s", lAM[iMatter], lCuts[iCuts], lFake[iFake]),
+      for (int iStat = 0; iStat < 3; iStat++) {
+        fHistInvMass[iMatter][iCuts][iStat] =
+            new TH2D(Form("fHistInvMass_%c_%s%s", lAM[iMatter], lCuts[iCuts], lStat[iStat]),
                      ";m (dp#pi) [GeV/#it{c}^{2}];Counts", 200, 2.95, 3.35, 20, 0, 10);
-        fHistPt[iMatter][iCuts][iFake] = new TH1D(Form("fHistPt_%c_%s%s", lAM[iMatter], lCuts[iCuts], lFake[iFake]),
-                                                  ";#it{p}_{T} [GeV/#it{c}];Counts", 100, 0, 10);
-        GetOutputList()->Add(fHistInvMass[iMatter][iCuts][iFake]);
-        GetOutputList()->Add(fHistPt[iMatter][iCuts][iFake]);
+        GetOutputList()->Add(fHistInvMass[iMatter][iCuts][iStat]);
       }
     }
   }
 
-  /// track check histograms
-  fHistTrackCheck[0] = new TH1D("fHistAllTrackCheck", "", 2, -1, 1);
-  GetOutputList()->Add(fHistTrackCheck[0]);
-  fHistTrackCheck[1] = new TH1D("fHistDeuTrackCheck", "", 2, -1, 1);
-  GetOutputList()->Add(fHistTrackCheck[1]);
-  fHistTrackCheck[2] = new TH1D("fHistPTrackCheck", "", 2, -1, 1);
-  GetOutputList()->Add(fHistTrackCheck[2]);
-  fHistTrackCheck[3] = new TH1D("fHistPiTrackCheck", "", 2, -1, 1);
-  GetOutputList()->Add(fHistTrackCheck[3]);
+  /// transverse momentum distributions
+  // for (int iMatter = 0; iMatter < 2; iMatter++) {
+  //   for (int iCuts = 0; iCuts < 4; iCuts++) {
+  //     for (int iFake = 0; iFake < 2; iFake++) {
+  //       fHistPt[iMatter][iCuts][iFake] = new TH1D(Form("fHistPt_%c_%s%s", lAM[iMatter], lCuts[iCuts], lFake[iFake]),
+  //                                                 ";#it{p}_{T} [GeV/#it{c}];Counts", 100, 0, 10);
+  //       GetOutputList()->Add(fHistPt[iMatter][iCuts][iFake]);
+  //     }
+  //   }
+  // }
+
+  /// daughters transverse momentum distributions
+  // for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
+  //   for (int iCuts = 0; iCuts < 4; iCuts++) {
+  //     for (int iFake = 0; iFake < 2; iFake++) {
+  //       fHistDaughterPt[iSpecies][iCuts][iFake] =
+  //           new TH1D(Form("fHistPt_%s_%s%s", lSpecies[iSpecies], lCuts[iCuts], lFake[iFake]),
+  //                    ";#it{p}_{T} [GeV/#it{c}];Counts", 100, 0, 10);
+  //       GetOutputList()->Add(fHistDaughterPt[iSpecies][iCuts][iFake]);
+  //     }
+  //   }
+  // }
+
+  /// daughter N Cluster TPC distribution
+  // for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
+  //   for (int iCuts = 0; iCuts < 4; iCuts++) {
+  //     for (int iFake = 0; iFake < 2; iFake++) {
+  //       fHistNClsTPC[iSpecies][iCuts][iFake] =
+  //           new TH1D(Form("fHistNClsTPC_%s_%s%s", lSpecies[iSpecies], lCuts[iCuts], lFake[iFake]), ":N_{cluster
+  //           TPC}",
+  //                    100, 0, 200);
+  //       GetOutputList()->Add(fHistNClsTPC[iSpecies][iCuts][iFake]);
+  //     }
+  //   }
+  // }
 
   /// track check histograms
-  fHistCheckPID[0] = new TH1D("fHistAllCheckPID", "", 2, -1, 1);
-  GetOutputList()->Add(fHistCheckPID[0]);
-  fHistCheckPID[1] = new TH1D("fHistDeuCheckPID", "", 2, -1, 1);
-  GetOutputList()->Add(fHistCheckPID[1]);
-  fHistCheckPID[2] = new TH1D("fHistPCheckPID", "", 2, -1, 1);
-  GetOutputList()->Add(fHistCheckPID[2]);
-  fHistCheckPID[3] = new TH1D("fHistPiCheckPID", "", 2, -1, 1);
-  GetOutputList()->Add(fHistCheckPID[3]);
+  // fHistTrackCheck[0] = new TH1D("fHistAllTrackCheck", "", 2, -1, 1);
+  // GetOutputList()->Add(fHistTrackCheck[0]);
+  // fHistTrackCheck[1] = new TH1D("fHistDeuTrackCheck", "", 2, -1, 1);
+  // GetOutputList()->Add(fHistTrackCheck[1]);
+  // fHistTrackCheck[2] = new TH1D("fHistPTrackCheck", "", 2, -1, 1);
+  // GetOutputList()->Add(fHistTrackCheck[2]);
+  // fHistTrackCheck[3] = new TH1D("fHistPiTrackCheck", "", 2, -1, 1);
+  // GetOutputList()->Add(fHistTrackCheck[3]);
 
-  // fHistPDGCheck[0] = new TH1D("fHistPDG_all", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistPDGCheck[0]);
-  // fHistPDGCheck[1] = new TH1D("fHistPDG_deu", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistPDGCheck[1]);
-  // fHistPDGCheck[2] = new TH1D("fHistPDG_p", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistPDGCheck[2]);
-  // fHistPDGCheck[3] = new TH1D("fHistPDG_pi", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistPDGCheck[3]);
+  /// PID check histograms
+  // for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
+  //   for (int iFake = 0; iFake < 2; iFake++) {
+  //     fHistNSigma[iSpecies][iFake] =
+  //         new TH1D(Form("fHistNSigma_%s%s", lSpecies[iSpecies], lFake[iFake]), "n#sigma", 10, 0, 10);
+  //     fHistCheckPID[iSpecies][iFake] =
+  //         new TH1D(Form("fHistCheckPID_%s%s", lSpecies[iSpecies], lFake[iFake]), "", 2, -1, 1);
+  //     GetOutputList()->Add(fHistNSigma[iSpecies][iFake]);
+  //     GetOutputList()->Add(fHistCheckPID[iSpecies][iFake]);
+  //   }
+  // }
+  // fHistCheckPID[3][0] = new TH1D("fHistNSigmaCheckAll", "", 2, -1, 1);
+  // fHistCheckPID[3][1] = new TH1D("fHistNSigmaCheckAll_Fake", "", 2, -1, 1);
+  // GetOutputList()->Add(fHistCheckPID[3][0]);
+  // GetOutputList()->Add(fHistCheckPID[3][1]);
+
+  // PDG of the reco tracks histogram
   // fHistPDG = new TH2D("fHistDaughterPDG", "", 8, 0, 8, 3, 0, 3);
   // GetOutputList()->Add(fHistPDG);
 
+  /// check on the reco tracks charge
   fHistChargeCheck = new TH1D("fHistChargeCheck", "", 2, -1, 1);
   GetOutputList()->Add(fHistChargeCheck);
 
-  fHistPassCheck[0] = new TH1D("fHistCheckPass", "", 6, -1, 5);
-  GetOutputList()->Add(fHistPassCheck[0]);
-  fHistPassCheck[1] = new TH1D("fHistCheckFakePass", "", 6, -1, 5);
-  GetOutputList()->Add(fHistPassCheck[1]);
+  // pass selections histogram
+  // fHistPassCheck[0] = new TH1D("fHistCheckPass", "", 6, 0, 6);
+  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(1, "no selection");
+  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(2, "track and charge");
+  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(3, "PID");
+  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(4, "good decay vertex");
+  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(5, "#it{cos#theta_{pointing}} selection");
+  // fHistPassCheck[0]->GetXaxis()->LabelsOption("v");
+  // GetOutputList()->Add(fHistPassCheck[0]);
 
-  // fHistClonesCheck = new TH1D("fHistCheckCVSizeTrack", "", 6, -1, 5);
-  // GetOutputList()->Add(fHistClonesCheck);
+  // fHistPassCheck[1] = new TH1D("fHistCheckFakePass", "", 6, 0, 6);
+  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(1, "no selection");
+  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(2, "track and charge");
+  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(3, "PID");
+  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(4, "good decay vertex");
+  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(5, "#it{cos#theta_{pointing}} selection");
+  // fHistPassCheck[1]->GetXaxis()->LabelsOption("v");
+  // GetOutputList()->Add(fHistPassCheck[1]);
 
-  // fHistSameTrackCheck[0] = new TH1D("fHistSameTrackDeu", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistSameTrackCheck[0]);
-  // fHistSameTrackCheck[1] = new TH1D("fHistSameTrackP", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistSameTrackCheck[1]);
-  // fHistSameTrackCheck[2] = new TH1D("fHistSameTrackPi", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistSameTrackCheck[2]);
-  // fHistSameTrackCheck[3] = new TH1D("fHistSameTrackAll", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistSameTrackCheck[3]);
-
-  // fHistCheckPDGTrackPID = new TH1D("fHistPDGTrackPID", "", 2, -1, 1);
-  // GetOutputList()->Add(fHistCheckPDGTrackPID);
-
+  /// Chi2 vertex and cos(theta_pointing) distributions
   // for (int iFake = 0; iFake < 2; iFake++) {
   //   fHistVertexChi2[iFake] = new TH1D(Form("fHistVertexChi2%s", lFake[iFake]), "", 100, 0, 200);
   //   fHistCosPAngle[iFake] =
@@ -128,6 +164,7 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   //   GetOutputList()->Add(fHistCosPAngle[iFake]);
   // }
 
+  /// decay vertex resolution histo
   // for (int iCoord = 0; iCoord < 3; iCoord++) {
   //   fHistResDecayVtx[iCoord] =
   //       new TH2D(Form("fHistResDecayVtx%c", lCoords[iCoord]),
@@ -135,42 +172,40 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   //   GetOutputList()->Add(fHistResDecayVtx[iCoord]);
   // }
 
+  /// DCA to primary vertex
+  // for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
+  //   for (int iFake = 0; iFake < 2; iFake++) {
+  //     fHistDCA2pV[iSpecies][iFake] = new TH2D(Form("fDCA2Primaryvtx_%s%s", lSpecies[iSpecies], lFake[iFake]),
+  //                                             ";mm ;#it{p}_{T} [GeV/#it{c}]", 600, 0, 30, 10, 0, 10);
+  //     GetOutputList()->Add(fHistDCA2pV[iSpecies][iFake]);
+  //   }
+  // }
+
+  /// DCA to secondary vertex
+  // for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
+  //   for (int iFake = 0; iFake < 2; iFake++) {
+  //     fHistDCA2dV[iSpecies][iFake] = new TH2D(Form("fDCA2Decayvtx_%s%s", lSpecies[iSpecies], lFake[iFake]),
+  //                                             ";mm ;#it{p}_{T} [GeV/#it{c}]", 600, 0, 30, 10, 0, 10);
+  //     GetOutputList()->Add(fHistDCA2dV[iSpecies][iFake]);
+  //   }
+  // }
+
+  /// track distance to decay vertex histo
   // for (int iCoord = 0; iCoord < 3; iCoord++) {
   //   for (int iFake = 0; iFake < 2; iFake++) {
   //     fHistTrackDistance[iCoord][iFake] =
   //         new TH1D(Form("fTrackDistance%s_%s-%s", lSpeciesPair[iCoord], lSpeciesPair[(iCoord + 1) % 3],
-  //         lKafe[iFake]),
+  //         lFake[iFake]),
   //                  ";distance [mm]", 500, 0, 2000);
   //     GetOutputList()->Add(fHistTrackDistance[iCoord][iFake]);
   //   }
   // }
 
-  // for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-  //   fHistDCA2pV[iSpecies] =
-  //       new TH2D(Form("fDCA2Primaryvtx_%s", lSpecies[iSpecies]), ";mm ;#it{p}_{T} [GeV/#it{c}]", 600, 0, 30, 10, 0,
-  //       10);
-  //   fHistDCA2dV[iSpecies] =
-  //       new TH2D(Form("fDCA2Decayvtx_%s", lSpecies[iSpecies]), ";mm ;#it{p}_{T} [GeV/#it{c}]", 600, 0, 30, 10, 0,
-  //       10);
-  //   GetOutputList()->Add(fHistDCA2pV[iSpecies]);
-  //   GetOutputList()->Add(fHistDCA2dV[iSpecies]);
+  /// decay length distribution
+  // for (int iFake = 0; iFake < 2; iFake++) {
+  //   fHistDecayLenght[iFake] = new TH1D(Form("fHistDecayLenght%s", lFake[iFake]), "", 100, 0, 200);
+  //   GetOutputList()->Add(fHistDecayLenght[iFake]);
   // }
-
-  for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-    fHistNSigma[iSpecies]      = new TH1D(Form("fHistNSigma_%s", lSpecies[iSpecies]), "n#sigma", 10, 0, 10);
-    fHistNSigmaCheck[iSpecies] = new TH1D(Form("fHistNSigmaCheck_%s", lSpecies[iSpecies]), "", 2, -1, 1);
-    GetOutputList()->Add(fHistNSigma[iSpecies]);
-    GetOutputList()->Add(fHistNSigmaCheck[iSpecies]);
-  }
-  fHistNSigmaCheck[3] = new TH1D("fHistNSigmaCheckAll", "", 2, -1, 1);
-  GetOutputList()->Add(fHistNSigmaCheck[3]);
-
-  for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
-    fHistNSigmaFakeCheck[iSpecies] = new TH1D(Form("fHistNSigmaFakeCheck_%s", lSpecies[iSpecies]), "", 2, -1, 1);
-    GetOutputList()->Add(fHistNSigmaFakeCheck[iSpecies]);
-  }
-  fHistNSigmaFakeCheck[3] = new TH1D("fHistNSigmaFakeCheckAll", "", 2, -1, 1);
-  GetOutputList()->Add(fHistNSigmaFakeCheck[3]);
 }
 
 //______________________________________________________________________________
@@ -197,13 +232,12 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   bool lIsGoodTrack[4] = {false};
   bool lIsGoodCharge   = false;
   bool lIsGoodPID[4]   = {false};
-  bool lIsGoodPDG[4]   = {false};
-  // bool lIsGoodVertex        = false;
-  // bool lIsGoodPAngle        = false;
-  // bool lIsGoodCandidate     = false;
-  // bool lIsGoodVertexHard    = false;
-  // bool lIsGoodPAngleHard    = false;
-  // bool lIsGoodCandidateHard = false;
+
+  bool lIsGoodDCApi      = false;
+  bool lIsGoodVertex     = false;
+  bool lIsGoodPAngle     = false;
+  bool lIsGoodVertexHard = false;
+  bool lIsGoodPAngleHard = false;
 
   float nSigma[3] = {0., 0., 0.};
 
@@ -217,59 +251,44 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   double fDCA2pv[3][3]          = {{0.}};
   double fDCA2dvcov[3][6]       = {{0.}};
   double fDCA2pvcov[3][6]       = {{0.}};
-  TLorentzVector fHypertriton   = {0., 0., 0., 0.};
+
+  TLorentzVector fHypertriton = {0., 0., 0., 0.};
   TLorentzVector fLVDaughter[3];
 
-  AliExternalTrackParam fParamTrack[3] = {*fTreeHyp3BodyVarTracks[0], *fTreeHyp3BodyVarTracks[1],
-                                          *fTreeHyp3BodyVarTracks[2]};
   const float lMasses[3]{AliPID::ParticleMass(AliPID::kDeuteron), AliPID::ParticleMass(AliPID::kProton),
                          AliPID::ParticleMass(AliPID::kPion)};
+
   const int pdgCodes[7]{AliPID::ParticleCode(AliPID::kElectron), AliPID::ParticleCode(AliPID::kMuon),
                         AliPID::ParticleCode(AliPID::kPion),     AliPID::ParticleCode(AliPID::kKaon),
                         AliPID::ParticleCode(AliPID::kProton),   AliPID::ParticleCode(AliPID::kDeuteron),
                         AliPID::ParticleCode(AliPID::kHe3)};
+
   AliPID::EParticleType lSpecNum[3]{AliPID::kDeuteron, AliPID::kProton, AliPID::kPion};
 
-  AliESDtrack *t1 = new AliESDtrack(*fTreeHyp3BodyVarTracks[0]);
-  AliESDtrack *t2 = new AliESDtrack(*fTreeHyp3BodyVarTracks[1]);
-  AliESDtrack *t3 = new AliESDtrack(*fTreeHyp3BodyVarTracks[2]);
-  AliESDtrack *t[3]{t1, t2, t3};
+  //------------------------------------------------------------
+  /// Get stuff from tree
+  //------------------------------------------------------------
+  float lMagField      = *fTreeHyp3BodyVarMagneticField;
+  unsigned char status = *fTreeHyp3BodyVarCandStat;
 
-  //______________________________________________
-  /// clones check
-  bool lIsFake = *fTreeHyp3BodyVarIsFakeCand;
+  bool lIsGood       = (status & g);
+  bool lIsReflection = (status & r);
+  bool lIsFake       = (!lIsGood && !lIsReflection);
 
-  // create candidate object
-  // HyperTritonCandidate fCand(t1, t2, t3);
-  // fCand.fPDG[0]          = *fTreeHyp3BodyVarPDGcodes[0];
-  // fCand.fPDG[1]          = *fTreeHyp3BodyVarPDGcodes[1];
-  // fCand.fPDG[2]          = *fTreeHyp3BodyVarPDGcodes[2];
-  // fCand.fPrimaryVtx[0]   = *fTreeHyp3BodyVarPVtx[0];
-  // fCand.fPrimaryVtx[1]   = *fTreeHyp3BodyVarPVtx[1];
-  // fCand.fPrimaryVtx[2]   = *fTreeHyp3BodyVarPVtx[2];
-  // fCand.fPrimaryVtx[3]   = *fTreeHyp3BodyVarPVtx[3];
-  // fCand.fTrueDecayVtx[0] = *fTreeHyp3BodyVarDecayVtx[0];
-  // fCand.fTrueDecayVtx[1] = *fTreeHyp3BodyVarDecayVtx[1];
-  // fCand.fTrueDecayVtx[2] = *fTreeHyp3BodyVarDecayVtx[2];
-  // fCand.fTrueDecayVtx[3] = *fTreeHyp3BodyVarDecayVtx[3];
-  // fCand.fTrueP[0]        = *fTreeHyp3BodyVarTrueP[0];
-  // fCand.fTrueP[1]        = *fTreeHyp3BodyVarTrueP[1];
-  // fCand.fTrueP[2]        = *fTreeHyp3BodyVarTrueP[2];
-  // fCand.fMagField        = *fTreeHyp3BodyVarMagneticField;
+  AliExternalTrackParam fParamTrack[3] = {*fTreeHyp3BodyVarTracks[0], *fTreeHyp3BodyVarTracks[1],
+                                          *fTreeHyp3BodyVarTracks[2]};
+  AliESDtrack t[3]{*fTreeHyp3BodyVarTracks[0], *fTreeHyp3BodyVarTracks[1], *fTreeHyp3BodyVarTracks[2]};
 
-  /// pdg check
-  // for (int iS = 0; iS < 3; iS++) {
-  //   lIsGoodPDG[iS] = (std::abs(*fTreeHyp3BodyVarPDGcodes[iS]) == AliPID::ParticleCode(lSpecNum[iS]));
-  //   fHistPDGCheck[iS + 1]->Fill(lIsGoodPDG[iS] - 0.5);
-  // }
-  bool lIsHyp = (*fTreeHyp3BodyVarPDGcodes[0] == 1000010020) && (*fTreeHyp3BodyVarPDGcodes[1] == 2212) &&
-                (*fTreeHyp3BodyVarPDGcodes[2] == -211);
-  bool lIsAntiHyp = (*fTreeHyp3BodyVarPDGcodes[0] == -1000010020) && (*fTreeHyp3BodyVarPDGcodes[1] == -2212) &&
-                    (*fTreeHyp3BodyVarPDGcodes[2] == 211);
-  lIsGoodPDG[3] = (lIsHyp || lIsAntiHyp);
-  // fHistPDGCheck[0]->Fill(lIsGoodPDG[3] - 0.5);
+  // bool lIsHyp = (*fTreeHyp3BodyVarPDGcodes[0] == 1000010020) && (*fTreeHyp3BodyVarPDGcodes[1] == 2212) &&
+  //               (*fTreeHyp3BodyVarPDGcodes[2] == -211);
+  // bool lIsAntiHyp = (*fTreeHyp3BodyVarPDGcodes[0] == -1000010020) && (*fTreeHyp3BodyVarPDGcodes[1] == -2212) &&
+  //                   (*fTreeHyp3BodyVarPDGcodes[2] == 211);
+  // lIsGoodPDG = (lIsHyp || lIsAntiHyp);
 
-  // // findalble fake pdg check
+  /// charge of the candidate
+  bool lCharge = t[0].GetSign() < 0;
+
+  /// findalble fake pdg check
   // for (int iD = 0; iD < 3; iD++) {
   //   for (int iP = 0; iP < 7; iP++) {
   //     if (std::abs(*fTreeHyp3BodyVarPDGcodes[iD]) == pdgCodes[iP]) fHistPDG->Fill(iP, iD);
@@ -277,47 +296,31 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   // }
 
   /// track cuts check
-  int trk_sum = 0;
-  for (int iS = 0; iS < 3; iS++) {
-    lIsGoodTrack[iS] = IsTrackCutsGood(t[iS]);
-    fHistTrackCheck[iS + 1]->Fill(lIsGoodTrack[iS] - 0.5);
-    trk_sum += lIsGoodTrack[iS];
-  }
-  lIsGoodTrack[3] = (trk_sum == 3);
-  fHistTrackCheck[0]->Fill(lIsGoodTrack[3] - 0.5);
+  // int trk_sum = 0;
+  // for (int iS = 0; iS < 3; iS++) {
+  //   lIsGoodTrack[iS] = IsTrackCutsGood(&t[iS]);
+  //   fHistTrackCheck[iS + 1]->Fill(lIsGoodTrack[iS] - 0.5);
+  //   trk_sum += lIsGoodTrack[iS];
+  // }
+  // lIsGoodTrack[3] = (trk_sum == 3);
+  // fHistTrackCheck[0]->Fill(lIsGoodTrack[3] - 0.5);
 
   /// PID selection on candidates
-  if (lIsGoodTrack[3]) {
-    int pid_sum = 0;
-    for (int iS = 0; iS < 3; iS++) {
-      nSigma[iS]     = std::abs(fPIDResponse->NumberOfSigmasTPC(t[iS], lSpecNum[iS]));
-      lIsGoodPID[iS] = nSigma[iS] < 3.;
-      fHistNSigmaCheck[iS]->Fill(lIsGoodPID[iS] - 0.5);
-      fHistNSigma[iS]->Fill(nSigma[iS]);
-      pid_sum += lIsGoodPID[iS];
-    }
-    lIsGoodPID[3] = (pid_sum == 3);
-    fHistNSigmaCheck[3]->Fill(lIsGoodPID[3] - 0.5);
-  }
-  // // PID selection on fake candidates
-  // if (!lIsGoodPDG[3] && lIsGoodTrack[3]) {
-  //   int sum                = 0;
-  //   bool lIsGoodPIDFake[3] = {false};
+  // if (lIsGoodTrack[3]) {
+  //   int pid_sum = 0;
   //   for (int iS = 0; iS < 3; iS++) {
-  //     if (std::abs(*fTreeHyp3BodyVarPDGcodes[iS]) != AliPID::ParticleCode(lSpecNum[iS])) {
-  //       nSigma[iS]         = std::abs(fPIDResponse->NumberOfSigmasTPC(t[iS], lSpecNum[iS]));
-  //       lIsGoodPIDFake[iS] = nSigma[iS] < 3.;
-  //       fHistNSigmaFakeCheck[iS]->Fill(lIsGoodPIDFake[iS] - 0.5);
-  //       sum += lIsGoodPIDFake[iS];
-  //     }
+  //     nSigma[iS]     = std::abs(fPIDResponse->NumberOfSigmasTPC(&t[iS], lSpecNum[iS]));
+  //     lIsGoodPID[iS] = nSigma[iS] < 3.;
+  //     fHistNSigma[iS][lIsFake]->Fill(nSigma[iS]);
+  //     fHistCheckPID[iS][lIsFake]->Fill(lIsGoodPID[iS] - 0.5);
+  //     pid_sum += lIsGoodPID[iS];
   //   }
-  //   bool rejectedCandidate = (sum < 3);
-  //   fHistNSigmaFakeCheck[3]->Fill(rejectedCandidate - 0.5);
+  //   lIsGoodPID[3] = (pid_sum == 3);
+  //   fHistCheckPID[3][lIsFake]->Fill(lIsGoodPID[3] - 0.5);
   // }
 
-  /// charge check
-  if ((t1->Charge() == 1) && (t2->Charge() == 1) && (t3->Charge() == -1)) lIsGoodCharge = true;
-  if ((t1->Charge() == -1) && (t2->Charge() == -1) && (t3->Charge() == 1)) lIsGoodCharge = true;
+  /// charge check TODO: strano che non vengano già selezionati tutti dal task
+  if (!(t[0].GetSign() != t[1].GetSign() || t[1].GetSign() == t[2].GetSign())) lIsGoodCharge = true;
   fHistChargeCheck->Fill(lIsGoodCharge - 0.5);
 
   // create the TLorentzVector of the hyper-triton candidate
@@ -329,151 +332,139 @@ Bool_t AliSelectorFindableHyperTriton3Body::Process(Long64_t entry) {
   double hypMass = fHypertriton.M();
   double hypPt   = fHypertriton.Pt();
 
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3]) {
+  if (lIsGoodCharge) {
+    // reconstruct the decay vertex with the dedicated vertexer
+    bool recoVertex     = fHypertritonVertexer.FindDecayVertex(&t[0], &t[1], &t[2], *fTreeHyp3BodyVarMagneticField);
+    bool recoVertexHard = fHypertritonVertexerHard.FindDecayVertex(&t[0], &t[1], &t[2], *fTreeHyp3BodyVarMagneticField);
+    AliESDVertex *fDecayVertex     = dynamic_cast<AliESDVertex *>(fHypertritonVertexer.GetCurrentVertex());
+    AliESDVertex *fDecayVertexHard = dynamic_cast<AliESDVertex *>(fHypertritonVertexerHard.GetCurrentVertex());
+    if (recoVertex) {
+      double vertexChi2NDF = fDecayVertex->GetChi2perNDF() * 1.;
+      // fHistVertexChi2[lIsFake]->Fill(vertexChi2NDF);
+    }
+    /// possibility to constraint the goodness of the reconstructed decay vertex
+    /// lIsGoodVertex = recoVertex && (fDecayVertex->GetChi2perNDF() < 20.);
+    lIsGoodVertex     = recoVertex;
+    lIsGoodVertexHard = recoVertexHard;
+
+    /// compute decay vertex position and compute cos(pointingangle)
+    if (lIsGoodVertex) {
+      fDecayVertex->GetXYZ(fDecayVertexPos);
+      for (int iTrack = 0; iTrack < 3; iTrack++) {
+        // fHistResDecayVtx[iTrack]->Fill((fDecayVertexPos[iTrack] - *fTreeHyp3BodyVarDecayVtx[iTrack]) * 10., hypPt);
+        fDecayLenght[iTrack] = fDecayVertexPos[iTrack] - *fTreeHyp3BodyVarPVtx[iTrack];
+      }
+      TVector3 v(fDecayLenght[0], fDecayLenght[1], fDecayLenght[2]);
+      float pointAngle = fHypertriton.Angle(v);
+      float cospa      = std::cos(pointAngle);
+      // fHistCosPAngle[lIsFake]->Fill(cospa);
+      lIsGoodPAngle = (cospa > 0.80);
+
+      // fHistDecayLenght[lIsFake]->Fill(v.Mag());
+
+      /// compute the DCA of the 3 tracks from the primary and decay vertex
+      fPrimaryVertexPos[0] = *fTreeHyp3BodyVarPVtx[0] * 1.;
+      fPrimaryVertexPos[1] = *fTreeHyp3BodyVarPVtx[1] * 1.;
+      fPrimaryVertexPos[2] = *fTreeHyp3BodyVarPVtx[2] * 1.;
+      AliESDVertex fPV(fPrimaryVertexPos, fPrimaryVertexCov, 1., 1000);
+      for (int iTrack = 0; iTrack < 3; iTrack++) {
+        fParamTrack[iTrack].PropagateToDCA(fDecayVertex, lMagField, 1000., fDCA2dv[iTrack], fDCA2dvcov[iTrack]);
+        fParamTrack[iTrack].PropagateToDCA(&fPV, lMagField, 1000., fDCA2pv[iTrack], fDCA2pvcov[iTrack]);
+        float ddv = std::sqrt(fDCA2dv[iTrack][0] * fDCA2dv[iTrack][0] + fDCA2dv[iTrack][1] * fDCA2dv[iTrack][1] +
+                              fDCA2dv[iTrack][2] * fDCA2dv[iTrack][2]);
+        float dpv = std::sqrt(fDCA2pv[iTrack][0] * fDCA2pv[iTrack][0] + fDCA2pv[iTrack][1] * fDCA2pv[iTrack][1] +
+                              fDCA2pv[iTrack][2] * fDCA2pv[iTrack][2]);
+        // fHistDCA2dV[iTrack][lIsFake]->Fill(ddv * 10., hypPt);
+        // fHistDCA2pV[iTrack][lIsFake]->Fill(dpv * 10., hypPt);
+        if (iTrack == 2) lIsGoodDCApi = dpv > 0.1;
+      }
+
+      /// compute the track2track distance used in the vertexer
+      float pPM[3][3];
+      for (int iTrack = 0; iTrack < 3; iTrack++) {
+        fHypertritonVertexer.Find2ProngClosestPoint(&fParamTrack[iTrack], &fParamTrack[(iTrack + 1) % 3], lMagField,
+                                                    pPM[iTrack]);
+      }
+
+      // for (int iPerm = 0; iPerm < 3; iPerm++) {
+      //   float d = 0.;
+      //   for (int iDim = 0; iDim < 3; ++iDim) {
+      //     d += (pPM[iPerm][iDim] - pPM[(iPerm + 1) % 3][iDim]) * (pPM[iPerm][iDim] - pPM[(iPerm + 1) % 3][iDim]);
+      //   }
+      //   fHistTrackDistance[iPerm][lIsFake]->Fill(std::sqrt(d) * 10.);
+      // }
+
+      /// again with harder selections
+      if (lIsGoodVertexHard) {
+        fDecayVertexHard->GetXYZ(fDecayVertexPosHard);
+        for (int iTrack = 0; iTrack < 3; iTrack++) {
+          fDecayLenghtHard[iTrack] = fDecayVertexPosHard[iTrack] - *fTreeHyp3BodyVarPVtx[iTrack];
+        }
+        TVector3 v(fDecayLenghtHard[0], fDecayLenghtHard[1], fDecayLenghtHard[2]);
+        float pointAngle  = fHypertriton.Angle(v);
+        float cospa       = std::cos(pointAngle);
+        lIsGoodPAngleHard = (cospa > 0.997);
+      }
+    }
+  }
+
+  /// invariant mass distribution for efficiency
+  if (lIsGood) fHistInvMass[lCharge][1][0]->Fill(hypMass, hypPt);
+  if (lIsFake) fHistInvMass[lCharge][1][1]->Fill(hypMass, hypPt);
+  if (lIsReflection) fHistInvMass[lCharge][1][2]->Fill(hypMass, hypPt);
+  /// track and PID selections
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3]) fHistInvMass[lCharge][1][lIsFake]->Fill(hypMass, hypPt);
+  /// vertex and cos(PA) selections
+  if (lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngle) {
+    if (lIsGood) fHistInvMass[lCharge][2][0]->Fill(hypMass, hypPt);
+    if (lIsFake) fHistInvMass[lCharge][2][1]->Fill(hypMass, hypPt);
+    if (lIsReflection) fHistInvMass[lCharge][2][2]->Fill(hypMass, hypPt);
+  }
+  /// hard vertex and cos(PA) selections
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngleHard)
+  //   fHistInvMass[lCharge][3][lIsFake]->Fill(hypMass, hypPt);
+
+  // transverse momentum distribution
+  // fHistPt[lCharge][0][lIsFake]->Fill(hypPt);
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3]) fHistPt[lCharge][1][lIsFake]->Fill(hypPt);
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngle)
+  //   fHistPt[lCharge][2][lIsFake]->Fill(hypPt);
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngleHard)
+  //   fHistPt[lCharge][3][lIsFake]->Fill(hypPt);
+
+  /// daughter transverse momentum distribution
+  // for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
+  //   double pt = t[iSpecies].Pt() * 1.;
+  //   fHistDaughterPt[iSpecies][0][lIsFake]->Fill(pt);
+  //   if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3]) fHistDaughterPt[iSpecies][1][lIsFake]->Fill(pt);
+  //   if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngle)
+  //     fHistDaughterPt[iSpecies][2][lIsFake]->Fill(pt);
+  //   if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngleHard)
+  //     fHistDaughterPt[iSpecies][3][lIsFake]->Fill(pt);
+  // }
+
+  /// daughter N Cluster TPC distribution
+  // for (int iSpecies = 0; iSpecies < 3; iSpecies++) {
+  //   int ncls = (int)t[iSpecies].GetTPCNcls();
+  //   fHistNClsTPC[iSpecies][0][lIsFake]->Fill(ncls);
+  //   if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3]) fHistNClsTPC[iSpecies][1][lIsFake]->Fill(ncls);
+  //   if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngle)
+  //     fHistNClsTPC[iSpecies][2][lIsFake]->Fill(ncls);
+  //   if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngleHard)
+  //     fHistNClsTPC[iSpecies][3][lIsFake]->Fill(ncls);
+  // }
+
   // total number of findable candidates and clones
-  fHistPassCheck[lIsFake]->Fill(0.5);
-  if (lIsGoodTrack[3]) fHistPassCheck[lIsFake]->Fill(1.5);
-  if (lIsGoodPID[3]) fHistPassCheck[lIsFake]->Fill(2.5);
-  if (lIsGoodPID[3] && lIsGoodCharge) fHistPassCheck[lIsFake]->Fill(3.5);
-
-  // if (lIsGoodTrack[3] && lIsGoodPID[3] && lIsGoodCharge) {
-  //   fHistPassCheck[lIsFake]->Fill(0.5);
-  //   // reconstruct the decay vertex with the dedicated vertexer
-  //   bool recoVertex     = fHypertritonVertexer.FindDecayVertex(&fCand.fDaughterTrack[0], &fCand.fDaughterTrack[1],
-  //                                                          &fCand.fDaughterTrack[2], fCand.fMagField);
-  //   bool recoVertexHard = fHypertritonVertexerHard.FindDecayVertex(&fCand.fDaughterTrack[0],
-  //   &fCand.fDaughterTrack[1],
-  //                                                                  &fCand.fDaughterTrack[2], fCand.fMagField);
-  //   AliESDVertex *fDecayVertex     = dynamic_cast<AliESDVertex *>(fHypertritonVertexer.GetCurrentVertex());
-  //   AliESDVertex *fDecayVertexHard = dynamic_cast<AliESDVertex *>(fHypertritonVertexerHard.GetCurrentVertex());
-  //   if (recoVertex) {
-  //     double vertexChi2NDF = fDecayVertex->GetChi2perNDF() * 1.;
-  //     fHistVertexChi2[lIsFake]->Fill(vertexChi2NDF);
-  //   }
-  //   // possibility to constraint the goodness of the reconstructed decay vertex
-  //   // lIsGoodVertex = recoVertex && (fDecayVertex->GetChi2perNDF() < 20.);
-  //   lIsGoodVertex     = recoVertex;
-  //   lIsGoodVertexHard = recoVertexHard;
-
-  //   // compute decay vertex position and compute cos(pointingangle)
-  //   if (lIsGoodVertex) {
-  //     fHistPassCheck[lIsFake]->Fill(1.5);
-  //     fDecayVertex->GetXYZ(fDecayVertexPos);
-  //     for (int iTrack = 0; iTrack < 3; iTrack++) {
-  //       fHistResDecayVtx[iTrack]->Fill((fDecayVertexPos[iTrack] - *fTreeHyp3BodyVarDecayVtx[iTrack]) * 10., hypPt);
-  //       fDecayLenght[iTrack] = fDecayVertexPos[iTrack] - fCand.fPrimaryVtx[iTrack];
-  //     }
-  //     TVector3 v(fDecayLenght[0], fDecayLenght[1], fDecayLenght[2]);
-  //     float pointAngle = fHypertriton.Angle(v);
-  //     float cospa      = std::cos(pointAngle);
-  //     fHistCosPAngle[lIsFake]->Fill(cospa);
-  //     lIsGoodPAngle    = (cospa > 0.80);
-  //     lIsGoodCandidate = lIsGoodPAngle;
-  //     if (lIsGoodPAngle) fHistPassCheck[lIsFake]->Fill(2.5);
-
-  // compute the DCA of the 3 tracks from the primary and decay vertex
-  // fPrimaryVertexPos[0] = *fTreeHyp3BodyVarPVtx[0] * 1.;
-  // fPrimaryVertexPos[1] = *fTreeHyp3BodyVarPVtx[1] * 1.;
-  // fPrimaryVertexPos[2] = *fTreeHyp3BodyVarPVtx[2] * 1.;
-  // AliESDVertex fPV(fPrimaryVertexPos, fPrimaryVertexCov, 1., 1000);
-  // for (int iTrack = 0; iTrack < 3; iTrack++) {
-  //   fParamTrack[iTrack].PropagateToDCA(fDecayVertex, fCand.fMagField, 1000., fDCA2dv[iTrack],
-  // fDCA2dvcov[iTrack]);
-  //   fParamTrack[iTrack].PropagateToDCA(&fPV, fCand.fMagField, 1000., fDCA2pv[iTrack], fDCA2pvcov[iTrack]);
-  //   float ddv = std::sqrt(fDCA2dv[iTrack][0] * fDCA2dv[iTrack][0] + fDCA2dv[iTrack][1] * fDCA2dv[iTrack][1] +
-  //                         fDCA2dv[iTrack][2] * fDCA2dv[iTrack][2]);
-  //   float dpv = std::sqrt(fDCA2pv[iTrack][0] * fDCA2pv[iTrack][0] + fDCA2pv[iTrack][1] * fDCA2pv[iTrack][1] +
-  //                         fDCA2pv[iTrack][2] * fDCA2pv[iTrack][2]);
-  //   fHistDCA2dV[iTrack]->Fill(ddv * 10., hypPt);
-  //   fHistDCA2pV[iTrack]->Fill(dpv * 10., hypPt);
-  // }
-
-  // compute the track2track distance used in the vertexer
-  // float pPM[3][3];
-  // for (int iTrack = 0; iTrack < 3; iTrack++) {
-  //   fHypertritonVertexer.Find2ProngClosestPoint(&fParamTrack[iTrack], &fParamTrack[(iTrack + 1) % 3],
-  //                                               fCand.fMagField, pPM[iTrack]);
-  // }
-
-  // for (int iPerm = 0; iPerm < 3; iPerm++) {
-  //   float d = 0.;
-  //   for (int iDim = 0; iDim < 3; ++iDim) {
-  //     d += (pPM[iPerm][iDim] - pPM[(iPerm + 1) % 3][iDim]) * (pPM[iPerm][iDim] - pPM[(iPerm + 1) % 3][iDim]);
-  //   }
-  //   fHistTrackDistance[iPerm]->Fill(std::sqrt(d) * 10.);
-  // }
-  // }
-  // again with harder selections
-  // if (lIsGoodVertexHard) {
-  //   fDecayVertexHard->GetXYZ(fDecayVertexPosHard);
-  //   for (int iTrack = 0; iTrack < 3; iTrack++) {
-  //     fDecayLenghtHard[iTrack] = fDecayVertexPosHard[iTrack] - fCand.fPrimaryVtx[iTrack];
-  //   }
-  //   TVector3 v(fDecayLenghtHard[0], fDecayLenghtHard[1], fDecayLenghtHard[2]);
-  //   float pointAngle     = fHypertriton.Angle(v);
-  //   float cospa          = std::cos(pointAngle);
-  //   lIsGoodPAngleHard    = (cospa > 0.98);
-  //   lIsGoodCandidateHard = lIsGoodPAngleHard;
-  // }
-  // }
-
-  // check if wrong pdg candidates are rejected by selections
-  // if (lIsGoodTrack[3] && lIsGoodPID[3] && lIsGoodCharge && lIsGoodCandidate) {
-  //   fHistCheckPDGTrackPID->Fill(lIsGoodPDG[3] - 0.5);
-  // }
-
-  // if (lIsGoodPDG[3] && lIsGoodCharge && !lIsFake) {
-  //   // invariant mass distribution for efficiency
-  //   if (lIsAntiHyp) fHistInvMass[0][0]->Fill(hypMass, hypPt);
-  //   if (lIsHyp) fHistInvMass[1][0]->Fill(hypMass, hypPt);
-  //   if (lIsGoodTrack[3] && lIsGoodPID[3] && lIsAntiHyp) fHistInvMass[0][1]->Fill(hypMass, hypPt);
-  //   if (lIsGoodCandidate && lIsAntiHyp) fHistInvMass[0][2]->Fill(hypMass, hypPt);
-  //   if (lIsGoodCandidateHard && lIsAntiHyp) fHistInvMass[0][3]->Fill(hypMass, hypPt);
-  //   if (lIsGoodTrack[3] && lIsGoodPID[3] && lIsHyp) fHistInvMass[1][1]->Fill(hypMass, hypPt);
-  //   if (lIsGoodCandidate && lIsHyp) fHistInvMass[1][2]->Fill(hypMass, hypPt);
-  //   if (lIsGoodCandidateHard && lIsHyp) fHistInvMass[1][3]->Fill(hypMass, hypPt);
-
-  //   // transverse momentum distribution
-  //   fHistPt[lIsHyp][0]->Fill(hypPt);
-  //   if (lIsGoodTrack[3 && lIsGoodPID[3]]) fHistPt[lIsHyp][1]->Fill(hypPt);
-  //   if (lIsGoodCandidate) fHistPt[lIsHyp][2]->Fill(hypPt);
-  //   if (lIsGoodCandidateHard) fHistPt[lIsHyp][3]->Fill(hypPt);
-  // }
-
-  // clones check
-  // if (fClonesVector.size() == 0) {
-  //   if (lIsGoodCandidate && lIsGoodPDG[3] && lIsGoodTrack[3] && lIsGoodCharge) fClonesVector.push_back(fCand);
-  // } else {
-  // if (lIsFake) {
-  //   if (lIsGoodTrack[3] && lIsGoodPID[3] && lIsGoodCharge && lIsGoodCandidate) fClonesVector.push_back(fCand);
-  // } else {
-  //   fHistClonesCheck->Fill(fClonesVector.size() - 0.5);
-  //   // loop sul vettore qui
-  //   std::vector<AliESDtrack> fDeuTrack;
-  //   std::vector<AliESDtrack> fProTrack;
-  //   std::vector<AliESDtrack> fPioTrack;
-  //   for (const auto cand : fClonesVector) {
-  //     AliESDtrack d(cand.fDaughterTrack[0]);
-  //     AliESDtrack p(cand.fDaughterTrack[1]);
-  //     AliESDtrack pi(cand.fDaughterTrack[2]);
-  //     fDeuTrack.push_back(d);
-  //     fProTrack.push_back(p);
-  //     fPioTrack.push_back(pi);
-  //   }
-  //   if (fClonesVector.size() == 2) {
-  //     bool sameAll = IsSameTrack(&fDeuTrack[0], &fDeuTrack[1]) && IsSameTrack(&fProTrack[0], &fProTrack[1]) &&
-  //                    IsSameTrack(&fPioTrack[0], &fPioTrack[1]);
-  //     bool sameDeu = IsSameTrack(&fDeuTrack[0], &fDeuTrack[1]);
-  //     bool sameP   = IsSameTrack(&fProTrack[0], &fProTrack[1]);
-  //     bool samePi  = IsSameTrack(&fPioTrack[0], &fPioTrack[1]);
-  //     fHistSameTrackCheck[0]->Fill(sameDeu - 0.5);
-  //     fHistSameTrackCheck[1]->Fill(sameP - 0.5);
-  //     fHistSameTrackCheck[2]->Fill(samePi - 0.5);
-  //     fHistSameTrackCheck[3]->Fill(sameAll - 0.5);
-  //   }
-  //   fClonesVector.clear();
-  //   if (lIsGoodTrack[3] && lIsGoodPID[3] && lIsGoodCharge && lIsGoodCandidate) fClonesVector.push_back(fCand);
-  // }
-  // }
+  // fHistPassCheck[lIsFake]->Fill(0.5);
+  // if (lIsGoodTrack[3] && lIsGoodCharge) fHistPassCheck[lIsFake]->Fill(1.5);
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3]) fHistPassCheck[lIsFake]->Fill(2.5);
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex)
+  //   fHistPassCheck[lIsFake]->Fill(3.5);
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngle)
+  //   fHistPassCheck[lIsFake]->Fill(4.5);
+  // if (lIsGoodTrack[3] && lIsGoodCharge && lIsGoodPID[3] && lIsGoodDCApi && lIsGoodVertex && lIsGoodPAngleHard)
+  //   fHistPassCheck[lIsFake]->Fill(5.5);
 
   return kTRUE;
 }
@@ -511,9 +502,4 @@ bool AliSelectorFindableHyperTriton3Body::IsSameTrack(AliESDtrack *track1, AliES
   return ((std::fabs(track1->GetTPCchi2() - track2->GetTPCchi2()) < 1.e-10) &&
           (track1->GetTPCNcls() == track2->GetTPCNcls()) && (track1->GetITSNcls() == track2->GetITSNcls()) &&
           (track1->GetStatus() == track2->GetStatus()));
-}
-
-//______________________________________________________________________________
-HyperTritonCandidate::HyperTritonCandidate(AliESDtrack *track1, AliESDtrack *track2, AliESDtrack *track3)
-    : fDaughterTrack{*track1, *track2, *track3}, fPDG(), fMId(), fTrueP(), fTrueDecayVtx(), fPrimaryVtx(), fMagField() {
 }
