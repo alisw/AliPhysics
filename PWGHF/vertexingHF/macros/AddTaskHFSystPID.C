@@ -50,7 +50,7 @@ AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
     mgr->AddTask(task);
 
     TString outputfile = AliAnalysisManager::GetCommonFileName();
-    outputfile += ":PWGHF_D2H_SystNsigmaPID";
+    outputfile += Form(":PWGHF_D2H_SystNsigmaPID%s",outputSuffix.Data());
 
     //define input container
     AliAnalysisDataContainer *cinput = mgr->CreateContainer("cinputPID",TChain::Class(),AliAnalysisManager::kInputContainer);
