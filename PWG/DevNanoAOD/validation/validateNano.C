@@ -1,4 +1,4 @@
-void validateNano_Header(TString runOn)
+void validateNano(TString runOn)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("train");
@@ -45,6 +45,6 @@ void validateNano_Header(TString runOn)
   mgr->PrintStatus();
     
   TStopwatch watch;
-  mgr->StartAnalysis("local", chain, 10);
+  mgr->StartAnalysis("local", chain, 3);
   watch.Print();
 }

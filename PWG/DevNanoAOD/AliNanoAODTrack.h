@@ -124,7 +124,8 @@ public:
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 
   Double_t Chi2perNDF()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetChi2PerNDF()); }  
-  UShort_t GetTPCNcls()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()); } // FIXME: should this be short?
+  virtual UShort_t GetTPCncls(Int_t /*row0*/=0, Int_t /*row1*/=159)  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()); }
+  virtual UShort_t GetTPCNcls()  const { return GetTPCncls(); }
 
   virtual Double_t M() const { AliFatal("Not Implemented"); return -1; }
   Double_t M(AliAODTrack::AODTrkPID_t pid) const;
@@ -213,9 +214,8 @@ public:
   Double_t GetRAtAbsorberEnd() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetRAtAbsorberEnd()); }
   
   // For this whole block of cluster maps I could simply define a cluster map in the int array. For the moment comment all maps. Maybe not neede 
-  UChar_t  GetITSClusterMap() const       { AliFatal("Not Implemented"); return 0;};
+  UChar_t  GetITSClusterMap() const       { AliFatal("Not Implemented. Use HasPointOnITSLayer!"); return 0;};
   // Int_t    GetITSNcls() const; 
-  // Bool_t   HasPointOnITSLayer(Int_t i) const { return TESTBIT(GetITSClusterMap(),i); }
   // UShort_t GetHitsPatternInTrigCh() const { return (UShort_t)((fITSMuonClusterMap&0xff00)>>8); }// Fixme: array of uchars or of int?
   // UInt_t   GetMUONClusterMap() const      { return (fITSMuonClusterMap&0x3ff0000)>>16; } // 
   // UInt_t   GetITSMUONClusterMap() const   { return fITSMuonClusterMap; }
