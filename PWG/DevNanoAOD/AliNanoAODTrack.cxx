@@ -146,12 +146,11 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   if (aodTrack->IsMuonTrack())
     SETBIT(fNanoFlags, kIsMuonTrack);
   
-  // AOD bits
-  //for (int i=AliAODTrack::kIsDCA; i<=AliAODTrack::kIsHybridGCG; i++) // See AliAODTrack.h AODTrkBits_t
-  //  SetBit(i, aodTrack->TestBit(i));
-
   if (aodTrack->GetStatus() & AliVTrack::kTRDrefit)
     SETBIT(fNanoFlags, ENanoFlags::kTRDrefit);
+  
+  if (aodTrack->TestBit(AliAODTrack::kIsDCA))
+    SETBIT(fNanoFlags, ENanoFlags::kIsDCA);
     
   fProdVertex = aodTrack->GetProdVertex();
   // SetUsedForVtxFit(usedForVtxFit);// FIXME: what is this
@@ -416,14 +415,8 @@ void AliNanoAODTrack::SetDCA(Double_t d, Double_t z)
 {
   // set the dca 
 
-  // FIXME: this is a hack which was taken over from the AliAODtrack,
-  // where the same variable is used to store DCA or position,
-  // according to the value of the bit kIsDCA. We can probably get rid
-  // of this in the special track.
-  SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX(), d);
-  SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosY(), z);
-  SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ(), 0);
-  SetBit(AliAODTrack::kIsDCA);
+  SetVar(AliNanoAODTrackMapping::GetInstance()->GetDCA(), d);
+  SetVar(AliNanoAODTrackMapping::GetInstance()->GetPosDCAz(), z);
 }
 
 //______________________________________________________________________________
