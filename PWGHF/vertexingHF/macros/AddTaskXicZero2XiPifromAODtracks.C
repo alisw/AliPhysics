@@ -1,7 +1,7 @@
 AliAnalysisTaskSEXicZero2XiPifromAODtracks *AddTaskXicZero2XiPifromAODtracks(TString finname="",
 									     TString outputFileName="",
-										 Bool_t theMCon=kTRUE,
-                     Bool_t anaOmegacZero=kFALSE,
+										 Bool_t theMCon=kFALSE,
+                     Bool_t anaOmegacZero=kTRUE,
 										 Bool_t writeVariableTree=kTRUE,
 										 Bool_t reconstructPrimVert=kFALSE,
 									         Bool_t fillOnlySig = kFALSE,
@@ -9,9 +9,6 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks *AddTaskXicZero2XiPifromAODtracks(TSt
 										 )
 
 {
-
-  if (anaOmegacZero) finname = "OmegacZeroCutsLoose.root";
-  else finname = "XicZeroCutsLoose.root";
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
