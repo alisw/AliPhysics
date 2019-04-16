@@ -63,8 +63,14 @@ void AliAnalysisTaskNanoAODskimming::FinishTaskOutput() {
   // We save here the user info
 
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+  if (!handler) return;
   AliAODExtension *extNanoAOD = handler->GetFilteredAOD("AliAOD.NanoAOD.root");
-  extNanoAOD->GetTree()->GetUserInfo()->Add(fNormalisation);
+  if (!extNanoAOD) return;
+  TTree* nanoTree = extNanoAOD->GetTree();
+  if (!nanoTree) return;
+  TList* userInfo = nanoTree->GetUserInfo();
+  if (!userInfo) return;
+  userInfo->Add(fNormalisation);
 }
 
 AliAnalysisTaskNanoAODskimming* AliAnalysisTaskNanoAODskimming::AddTask(std::string name) {
