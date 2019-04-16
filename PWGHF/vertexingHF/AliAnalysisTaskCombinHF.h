@@ -39,7 +39,10 @@ public:
   
   void SetReadMC(Bool_t read){fReadMC=read;}
   void UseOnlySignalInMC(Bool_t opt){fSignalOnlyMC=opt;}
-    
+  void UseMBTrigMaskInMC(){fEnforceMBTrigMaskInMC=kTRUE;}
+  void UseTrigMaskFromCutFileInMC(){fEnforceMBTrigMaskInMC=kFALSE;}
+
+  
   void SetEventMixingWithCuts(Double_t maxDeltaVz, Double_t maxDeltaMult){
     fDoEventMixing=2; fMaxzVertDistForMix=maxDeltaVz; fMaxMultDiffForMix=maxDeltaMult;
   }
@@ -213,6 +216,7 @@ private:
   
   Int_t fMeson;          /// mesonSpecies (see enum)
   Bool_t  fReadMC;       ///  flag for access to MC
+  Bool_t  fEnforceMBTrigMaskInMC;  /// if true force the MC to use
   Bool_t fGoUpToQuark;   /// flag for definition of c,b origin
   Int_t fFullAnalysis;   /// flag to set analysis level (0 is the fastest)
   Bool_t fSignalOnlyMC;  /// flag to speed up the MC 
@@ -246,7 +250,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,18); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,19); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
