@@ -7,6 +7,7 @@ class TH2D;
 class TList;
 class TTree;
 
+#include <TObjString.h>
 #include <TString.h>
 #include <string>
 #include <vector>
@@ -64,8 +65,16 @@ struct RCollision {
   float fCent;
 };
 
+struct RTracklet {
+  float fTheta;
+  float fPhi;
+  Double32_t fDeltaTheta;    //[8,-0.12,0.12]
+  Double32_t fDeltaPhi;      //[8,-0.12,0.12]
+};
+
 struct SHyperTritonHe3pi {
   int   fRecoIndex;  /// To connect with the reconstructed information
+  int   fRecoTracklet; /// To connect with the reconstructed information of the tracklets
   int   fPdgCode;
   float fDecayX;
   float fDecayY;
@@ -121,8 +130,14 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
     fMinTPCclusters = minCl;
   }
 
+  void SetMaxDeltaTheta(float maxDeltaTheta) { fMaxDeltaTheta = maxDeltaTheta; }
+  void SetMaxDeltaPhi(float maxDeltaPhi) { fMaxDeltaPhi = maxDeltaPhi; }
+  void SetMinTrackletCosP(float minTrackletCosP) { fMinTrackletCosP = minTrackletCosP; }
+
   AliEventCuts fEventCuts;  /// Event cuts class
   bool fFillGenericV0s;
+  bool fFillTracklet;
+  bool fSaveFileNames;
 
  private:
   TList* fListHist;  //! List of Cascade histograms
@@ -142,6 +157,9 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   TH2D* fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D* fHistInvMass;            //! # Invariant mass histogram
   TH2D* fHistTPCdEdx[2];         //! # TPC dE/dx for V0s
+  TH2D* fHistTrackletThetaPhi;   //! # tracklet theta vs phi
+  TH2D* fHistTrackletDThetaDPhi;   //! # tracklet delta_theta vs delta_phi
+  TH1D* fHistTrackletCosP;       //! # tracklet-V0 cosine of pointing angle
 
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
@@ -150,9 +168,17 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   float fMinHe3pt;
   unsigned char fMinTPCclusters;
 
+  float fMaxDeltaPhi;
+  float fMaxDeltaTheta;
+  float fMinTrackletCosP;
+
+  TTree*     fFileNameTree;
+  TObjString fCurrentFileName;
+
   std::vector<SHyperTritonHe3pi> fSHyperTriton;
   std::vector<SGenericV0> fSGenericV0;
   std::vector<RHyperTritonHe3pi> fRHyperTriton;
+  std::vector<RTracklet> fRTracklets;
   RCollision fRCollision;
 
   AliAnalysisTaskHyperTriton2He3piML(
