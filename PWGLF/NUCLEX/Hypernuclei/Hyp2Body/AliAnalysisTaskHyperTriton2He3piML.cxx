@@ -448,6 +448,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     v0part.fDcaPi2PrimaryVertex = piDCA;
     v0part.fDcaV0daughters = v0->GetDcaV0Daughters();
     v0part.fLeastXedOverFindable = minXedRowsOverFindable;
+    v0part.fChi2V0 = v0->GetChi2V0();
     v0part.fMaxChi2PerCluster = maxChi2PerCluster;
     v0part.fTPCnSigmaHe3 = (pTrack == he3Track) ? nSigmaPosHe3 : nSigmaNegHe3;
     v0part.fTPCnSigmaPi = (pTrack == piTrack) ? nSigmaPosPi : nSigmaNegPi;
