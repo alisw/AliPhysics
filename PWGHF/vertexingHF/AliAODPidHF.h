@@ -31,6 +31,12 @@ public:
     kTPCITS
   };
   
+  enum SystemForNsigmaDataCorr {
+    kNone=-1,
+    kPbPb010,
+    kPbPb3050
+  };
+
   AliAODPidHF();
   AliAODPidHF(const AliAODPidHF& pid);
   virtual ~AliAODPidHF();
@@ -224,12 +230,17 @@ public:
   void SetIdAsymmetricPID();
   void SetIdCompAsymmetricPID();
   
+  ///Set Nsigma data-driven correction
+  void SetNsigmaTPCDataDrivenCorrection(Int_t run, Int_t system);
+
 protected:
   
   
 private:
 
   AliAODPidHF& operator=(const AliAODPidHF& pid);
+
+  void GetNsigmaTPCMeanSigmaData(Double_t &mean, Double_t &sigma, AliPID::EParticleType species, Double_t pTPC) const;
 
   Int_t fnNSigma; /// number of sigmas
   /// sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
@@ -290,8 +301,18 @@ private:
   TF1 *fCompBandMin[AliPID::kSPECIES][4];
   TF1 *fCompBandMax[AliPID::kSPECIES][4];
 
+  Bool_t fApplyNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
+  Double_t fMeanNsigmaTPCPionData[100]; /// array of NsigmaTPC pion mean in data 
+  Double_t fMeanNsigmaTPCKaonData[100]; /// array of NsigmaTPC kaon mean in data 
+  Double_t fMeanNsigmaTPCProtonData[100]; /// array of NsigmaTPC proton mean in data 
+  Double_t fSigmaNsigmaTPCPionData[100]; /// array of NsigmaTPC pion mean in data 
+  Double_t fSigmaNsigmaTPCKaonData[100]; /// array of NsigmaTPC kaon mean in data 
+  Double_t fSigmaNsigmaTPCProtonData[100]; /// array of NsigmaTPC proton mean in data 
+  Double_t fPlimitsNsigmaTPCDataCorr[101]; /// array of p limits for data-driven NsigmaTPC correction
+  Int_t fNPbinsNsigmaTPCDataCorr;/// number of p bins for data-driven NsigmaTPC correction
+
   /// \cond CLASSIMP
-  ClassDef(AliAODPidHF,24); /// AliAODPid for heavy flavor PID
+  ClassDef(AliAODPidHF,25); /// AliAODPid for heavy flavor PID
   /// \endcond
 
 };
