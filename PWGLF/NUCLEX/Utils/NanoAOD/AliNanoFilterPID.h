@@ -18,12 +18,14 @@ public:
   virtual bool IsSelected(TObject *obj);
   virtual bool IsSelected(TList *);
 
-  void TriggerOnSpecies(AliPID::EParticleType sp, AliESDtrackCuts *cuts,
+  void TriggerOnSpecies(AliPID::EParticleType sp, AliESDtrackCuts *cuts, ULong_t fb,
                         double nsigmaTPC, double ptRangeTPC[2],
                         double nsigmaTOF, double ptRangeTOF[2]);
 
 private:
+  bool fTriggerOnSpecies[AliPID::kSPECIESC];
   AliESDtrackCuts *fTrackCuts[AliPID::kSPECIESC];
+  ULong_t fFilterBits[AliPID::kSPECIESC];
   double fTOFpidTriggerNsigma[AliPID::kSPECIESC];
   double fTOFpidTriggerPtRange[AliPID::kSPECIESC][2];
   double fTPCpidTriggerNsigma[AliPID::kSPECIESC];
