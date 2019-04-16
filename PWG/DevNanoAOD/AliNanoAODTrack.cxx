@@ -149,6 +149,9 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   // AOD bits
   for (int i=AliAODTrack::kIsDCA; i<=AliAODTrack::kIsHybridGCG; i++) // See AliAODTrack.h AODTrkBits_t
     SetBit(i, aodTrack->TestBit(i));
+
+  if (aodTrack->GetStatus() & AliVTrack::kTRDrefit)
+    SETBIT(fNanoFlags, ENanoFlags::kTRDrefit);
     
   fProdVertex = aodTrack->GetProdVertex();
   // SetUsedForVtxFit(usedForVtxFit);// FIXME: what is this
