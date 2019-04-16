@@ -418,6 +418,11 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetZcutOnSPDvtx() { fApplyZcutOnSPDvtx=kTRUE; }
 
+  void EnableNsigmaDataDrivenCorrection(Bool_t enableNsigmaCorr, Int_t system) {
+    fEnableNsigmaTPCDataCorr = enableNsigmaCorr;
+    fSystemForNsigmaTPCDataCorr = system;
+  }
+
  protected:
 
   void SetNPtBins(Int_t nptBins){fnPtBins=nptBins;}
@@ -509,8 +514,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fApplyPbPbOutOfBunchPileupCuts; /// switch for additional correlation cuts for out-of-bunch pileup (0=no cut, 1=AliEVentCuts, 2=Ionut cut vs. nTPC cls)
   Bool_t fUseAliEventCuts;  /// flag for using AliEventCuts 
   
+  Bool_t fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
+  Int_t fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
+
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,47);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,48);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

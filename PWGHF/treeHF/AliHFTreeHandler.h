@@ -85,6 +85,7 @@ class AliHFTreeHandler : public TObject
       else {      
         fTreeVar->Fill(); 
         fCandType=0;
+        fRunNumberPrevCand = fRunNumber;
       }
     } 
     
@@ -144,6 +145,11 @@ class AliHFTreeHandler : public TObject
         return false;
     }
 
+    void EnableNsigmaTPCDataDrivenCorrection(int syst) {
+      fApplyNsigmaTPCDataCorr=true;
+      fSystNsigmaTPCDataCorr=syst;
+    }
+
   protected:  
     //constant variables
     static const unsigned int knMaxProngs   = 3;
@@ -165,6 +171,8 @@ class AliHFTreeHandler : public TObject
     float ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF* cand, float bfield);
     float GetTOFmomentum(AliAODTrack* track, AliPIDResponse* pidrespo);
   
+    void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC);
+
     TTree* fTreeVar; /// tree with variables
     unsigned int fNProngs; /// number of prongs
     unsigned int fNCandidates; /// number of candidates in one fill (event)
@@ -205,9 +213,20 @@ class AliHFTreeHandler : public TObject
     bool fDauInAcceptance; ///flag to know if the daughter are in acceptance in case of MC gen
     unsigned int fEvID; ///event ID corresponding to the one set in fTreeEvChar
     int fRunNumber; ///run number
-  
+    int fRunNumberPrevCand; ///run number of previous candidate
+    bool fApplyNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
+    int fSystNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
+    float fMeanNsigmaTPCPionData[100]; /// array of NsigmaTPC pion mean in data 
+    float fMeanNsigmaTPCKaonData[100]; /// array of NsigmaTPC kaon mean in data 
+    float fMeanNsigmaTPCProtonData[100]; /// array of NsigmaTPC proton mean in data 
+    float fSigmaNsigmaTPCPionData[100]; /// array of NsigmaTPC pion mean in data 
+    float fSigmaNsigmaTPCKaonData[100]; /// array of NsigmaTPC kaon mean in data 
+    float fSigmaNsigmaTPCProtonData[100]; /// array of NsigmaTPC proton mean in data 
+    float fPlimitsNsigmaTPCDataCorr[101]; /// array of p limits for data-driven NsigmaTPC correction
+    int fNPbinsNsigmaTPCDataCorr;/// number of p bins for data-driven NsigmaTPC correction
+
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,5); ///
+  ClassDef(AliHFTreeHandler,6); ///
   /// \endcond
 };
 #endif

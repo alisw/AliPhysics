@@ -65,6 +65,11 @@ public:
   void EnableDownSampling(double fractokeep=0.1, double ptmax=1.5)            {fEnabledDownSampling=true; fFracToKeepDownSampling=fractokeep; fPtMaxDownSampling=ptmax;}
   void SetAODMismatchProtection(int opt=1)                                    {fAODProtection=opt;}
   
+  void EnableNsigmaDataDrivenCorrection(int syst) {
+    fEnableNsigmaTPCDataCorr = true;
+    fSystNsigmaTPCDataCorr = syst;
+  }
+
 private:
 
   bool IsVertexAccepted();
@@ -77,6 +82,8 @@ private:
   float GetTOFmomentum(AliAODTrack* track);
   short ConvertFloatToShort(float num);
   unsigned short ConvertFloatToUnsignedShort(float num);
+  void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC);
+  void SetNsigmaTPCDataCorr(int run);
 
   enum hypos{kPion,kKaon,kProton};
   static const int kNHypo = 3;
@@ -134,7 +141,19 @@ private:
   
   int fAODProtection;                              /// flag to activate protection against AOD-dAOD mismatch
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 2);
+  int fRunNumberPrevEvent;                         /// run number of previous event
+  bool fEnableNsigmaTPCDataCorr;                   /// flag to enable data-driven NsigmaTPC correction
+  int fSystNsigmaTPCDataCorr;                      /// system for data-driven NsigmaTPC correction
+  float fMeanNsigmaTPCPionData[100];               /// array of NsigmaTPC pion mean in data 
+  float fMeanNsigmaTPCKaonData[100];               /// array of NsigmaTPC kaon mean in data 
+  float fMeanNsigmaTPCProtonData[100];             /// array of NsigmaTPC proton mean in data 
+  float fSigmaNsigmaTPCPionData[100];              /// array of NsigmaTPC pion mean in data 
+  float fSigmaNsigmaTPCKaonData[100];              /// array of NsigmaTPC kaon mean in data 
+  float fSigmaNsigmaTPCProtonData[100];            /// array of NsigmaTPC proton mean in data 
+  float fPlimitsNsigmaTPCDataCorr[101];            /// array of p limits for data-driven NsigmaTPC correction
+  int fNPbinsNsigmaTPCDataCorr;                    /// number of p bins for data-driven NsigmaTPC correction
+
+  ClassDef(AliAnalysisTaskSEHFSystPID, 3);
 };
 
 #endif

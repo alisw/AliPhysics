@@ -137,7 +137,9 @@ fUsePreselect(0),
 fAliEventCuts(0x0),
 fApplyCentralityCorrCuts(kFALSE),
 fApplyPbPbOutOfBunchPileupCuts(0),
-fUseAliEventCuts(kFALSE)
+fUseAliEventCuts(kFALSE),
+fEnableNsigmaTPCDataCorr(kFALSE),
+fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
 {
   //
   // Default Constructor
@@ -223,7 +225,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fAliEventCuts(source.fAliEventCuts),
   fApplyCentralityCorrCuts(source.fApplyCentralityCorrCuts),
   fApplyPbPbOutOfBunchPileupCuts(source.fApplyPbPbOutOfBunchPileupCuts),
-  fUseAliEventCuts(source.fUseAliEventCuts)
+  fUseAliEventCuts(source.fUseAliEventCuts),
+  fEnableNsigmaTPCDataCorr(source.fEnableNsigmaTPCDataCorr),
+  fSystemForNsigmaTPCDataCorr(source.fSystemForNsigmaTPCDataCorr)
 {
   //
   // Copy constructor
@@ -333,6 +337,9 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fApplyCentralityCorrCuts=source.fApplyCentralityCorrCuts;
   fApplyPbPbOutOfBunchPileupCuts=source.fApplyPbPbOutOfBunchPileupCuts;
   fUseAliEventCuts=source.fUseAliEventCuts;
+  fEnableNsigmaTPCDataCorr=source.fEnableNsigmaTPCDataCorr;
+  fSystemForNsigmaTPCDataCorr=source.fSystemForNsigmaTPCDataCorr;
+
   PrintAll();
 
   return *this;
@@ -513,6 +520,10 @@ void AliRDHFCuts::SetupPID(AliVEvent *event) {
     }else{
       // check that AliPIDResponse object was properly set in case of using OADB
       if(fPidHF->GetPidResponse()==0x0) AliFatal("AliPIDResponse object not set");
+    }
+
+    if(fEnableNsigmaTPCDataCorr) {
+      fPidHF->EnableNsigmaTPCDataCorr(event->GetRunNumber(),fSystemForNsigmaTPCDataCorr);
     }
   }
 }
