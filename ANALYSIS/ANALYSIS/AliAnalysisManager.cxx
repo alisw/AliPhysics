@@ -2473,7 +2473,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
             AliSysInfo::AddStamp(task->ClassName(), fNcalls, itask, 1);
          itask++;
          if (fBreakExecutionChain) {
-            Info("ExecAnalysis","A break in the task execution chain has been requested by the task: %s", task->GetName());
+            if (fDebug > 1)
+               cout << "    A break in the task execution chain has been requested by the task: " << task->GetName() << endl;
             break;
          }
       }
@@ -2523,7 +2524,8 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       if (fStatistics) fStatistics->StopTimer();
       gROOT->cd();
       if (fBreakExecutionChain) {
-         Info("ExecAnalysis","A break in the task execution chain has been requested by the task: %s", task->GetName());
+         if (fDebug > 1)
+            cout << "    A break in the task execution chain has been requested by the task: " << task->GetName() << endl;
          break;
       }
    }   
