@@ -226,5 +226,12 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
     }
   }
 
+  // Monte Carlo
+  if(bIsMC) {
+    AliAnalysisDataContainer* cOutMC = mgr->CreateContainer(TString("MC_")+taskName, TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+    mgr->ConnectOutput(task,15,cOutMC);
+
+  }
+
   return task;
 }
