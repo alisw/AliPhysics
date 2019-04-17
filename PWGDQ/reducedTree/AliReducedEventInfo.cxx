@@ -341,9 +341,10 @@ AliReducedCaloClusterInfo* AliReducedEventInfo::GetCaloClusterFromID(Int_t clust
   //
   // get calorimeter cluster from ID
   //
+  TIter nextCluster(fCaloClusters);
   AliReducedCaloClusterInfo* cluster = NULL;
-  for (Int_t i=0; i<fNCaloClusters; ++i) {
-    cluster = (AliReducedCaloClusterInfo*)fCaloClusters->At(i);
+  for (Int_t i=0; i<fCaloClusters->GetEntries(); ++i) {
+    cluster = (AliReducedCaloClusterInfo*)nextCluster();
     if (clusterID==cluster->ClusterID()) return cluster;
   }
   return NULL;
