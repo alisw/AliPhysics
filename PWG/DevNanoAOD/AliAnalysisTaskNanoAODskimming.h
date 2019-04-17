@@ -19,6 +19,7 @@ class AliAnalysisTaskNanoAODskimming : public AliAnalysisTaskSE {
 
   virtual void UserExec(Option_t* /*option*/);
   virtual void UserCreateOutputObjects();
+  virtual void Terminate(Option_t *);
   virtual void FinishTaskOutput();
 
   void AddEventCut(AliAnalysisCuts* cut) { fOtherEventCuts.Add(cut); }
