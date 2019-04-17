@@ -48,7 +48,7 @@ void AliNanoFilterNormalisation::FillCandidate(bool triggered, bool nonVertexRel
   fCandidateEvents->Fill(mult, kAnyEvent);
   if (triggered) fCandidateEvents->Fill(mult, kTriggeredEvent);
   if (nonVertexRelatedSel) fCandidateEvents->Fill(mult, kTriggeredEventWithQualityCuts);
-  if (recoVertex) fCandidateEvents->Fill(mult, kTriggeredEventWithQualityCuts);
+  if (recoVertex) fCandidateEvents->Fill(mult, kTriggeredEventWithQualityCutsAndRecoVertex);
   if (allCuts) fCandidateEvents->Fill(mult, kAnalysisEvent);
 }
 
@@ -56,7 +56,7 @@ void AliNanoFilterNormalisation::FillSelected(bool triggered, bool nonVertexRela
   fSelectedEvents->Fill(mult, kAnyEvent);
   if (triggered) fSelectedEvents->Fill(mult, kTriggeredEvent);
   if (nonVertexRelatedSel) fSelectedEvents->Fill(mult, kTriggeredEventWithQualityCuts);
-  if (recoVertex) fSelectedEvents->Fill(mult, kTriggeredEventWithQualityCuts);
+  if (recoVertex) fSelectedEvents->Fill(mult, kTriggeredEventWithQualityCutsAndRecoVertex);
   if (allCuts) fSelectedEvents->Fill(mult, kAnalysisEvent);
 }
 
