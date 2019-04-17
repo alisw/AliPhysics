@@ -40,14 +40,14 @@ public:
   void SetTrackDzCut(Float_t min, Float_t max) { fTrackDzMin=min; fTrackDzMax=max; }
 
   // getters
-  Short_t GetCaloType() { return fCaloType; }
-  Short_t GetNCellsMinCut() { return fMinNCells; }
-  Bool_t  GetRejectExotics() { return fRejectExotics; }
-  Bool_t  GetRequireTrackMatch() { return fRequireTrackMatch; }
-  void    GetM02Cut(Float_t &min, Float_t &max) { min=fM02Min; max=fM02Max; }
-  void    GetM20Cut(Float_t &min, Float_t &max) { min=fM20Min; max=fM20Max; }
-  void    GetTrackDxCut(Float_t &min, Float_t &max) { min=fTrackDxMin; max=fTrackDxMax; }
-  void    GetTrackDzCut(Float_t &min, Float_t &max) { min=fTrackDzMin; max=fTrackDzMax; }
+  Short_t GetCaloType() const { return fCaloType; }
+  Short_t GetNCellsMinCut() const { return fMinNCells; }
+  Bool_t  GetRejectExotics() const { return fRejectExotics; }
+  Bool_t  GetRequireTrackMatch() const { return fRequireTrackMatch; }
+  void    GetM02Cut(Float_t &min, Float_t &max) const { min=fM02Min; max=fM02Max; }
+  void    GetM20Cut(Float_t &min, Float_t &max) const { min=fM20Min; max=fM20Max; }
+  void    GetTrackDxCut(Float_t &min, Float_t &max) const { min=fTrackDxMin; max=fTrackDxMax; }
+  void    GetTrackDzCut(Float_t &min, Float_t &max) const { min=fTrackDzMin; max=fTrackDzMax; }
 
   //
   //Analysis cuts interface
