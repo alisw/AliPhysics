@@ -1,8 +1,9 @@
 /***************************************************************************
-              fbellini@cern.ch - last modified on 28/11/2013
+// fbellini@cern.ch - last modified on 17/04/2019
 //
-//Lauches KStar analysis with rsn mini package
+//Launches f0(980) analysis with rsn mini package for pp, p-Pb and Pb-Pb analysis
 //Allows basic configuration of pile-up check and event cuts
+//Rsn output is instead configured in the ConfigF0.C macro
 //
 ****************************************************************************/
 #ifdef __CLING__
@@ -38,7 +39,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
  Float_t     masslow       = 0.3,   //inv mass range lower boundary
  Float_t     massup        = 1.3,   //inv mass range upper boundary
  Int_t       nbins         = 1000,  //inv mass: N bins
- Bool_t      enableMonitor = kTRUE) //enable single track QA
+ Bool_t      enableTrackQA = kTRUE, //enable single track QA
+ Bool_t      enableAdvEvtQA = kFALSE) //enable advanced QA for multiplicity and event properties
 {  
 
   //-------------------------------------------
@@ -98,7 +100,7 @@ AliRsnMiniAnalysisTask * AddTaskF0
   Int_t       nmix = 5;
   Float_t     maxDiffVzMix = 1.0;
   Float_t     maxDiffMultMix = 5.0;
-
+  if (collSys==AliPIDResponse::kPBPB) maxDiffMultMix = 10.0;
   //
   // -- INITIALIZATION ----------------------------------------------------------------------------
   //
@@ -180,43 +182,39 @@ AliRsnMiniAnalysisTask * AddTaskF0
   AliRsnMiniOutput *outVtx = task->CreateOutput("eventVtx", "HIST", "EVENT");
   outVtx->AddAxis(vtxID, 500, -50.0, 50.0);
   
-  //multiplicity or centrality monitoring -- if enabled
-  if (enaMultSel){
-
-    //multiplicity or centrality with forward estimator from AliMulSelectionTask 
-    Int_t multID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
-    //reference multiplicity (default with global tracks with good quality, if not available uses tracklets)
-    Int_t multRefID = task->CreateValue(AliRsnMiniValue::kRefMult, kFALSE);
+  //multiplicity or centrality monitoring 
+  //multiplicity or centrality with forward estimator from AliMulSelectionTask 
+  Int_t multID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
+  //reference multiplicity (default with global tracks with good quality, if not available uses tracklets)
+  Int_t multRefID = task->CreateValue(AliRsnMiniValue::kRefMult, kFALSE);
     
-    AliRsnMiniOutput *outMult = task->CreateOutput("eventMult", "HIST", "EVENT");
-    outMult->AddAxis(multID, 100, 0.0, 100.0);
+  AliRsnMiniOutput *outMult = task->CreateOutput("eventMult", "HIST", "EVENT");
+  outMult->AddAxis(multID, 100, 0.0, 100.0);
     
-    AliRsnMiniOutput *outRefMult = task->CreateOutput("eventRefMult", "HIST", "EVENT");
-    outRefMult->AddAxis(multRefID, 400, 0.0, 400.0);
+  AliRsnMiniOutput *outRefMult = task->CreateOutput("eventRefMult", "HIST", "EVENT");
+  outRefMult->AddAxis(multRefID, 400, 0.0, 400.0);
     
-    TH2F* hvz = new TH2F("hVzVsCent",Form("Vertex position vs centrality"), 101, 0., 101., 500, -50.0, 50.0);
+  if (enaMultSel) { 
+    TH2F* hvz = new TH2F("hVzVsCent",Form("Vertex position vs centrality; multiplicity (%); z_{vtx} (cm); Counts"), 101, 0., 101., 240, -12.0, 12.0);
     if (collSys==AliPIDResponse::kPPB) 
       hvz->GetXaxis()->SetTitle("V0A");
     else
       hvz->GetXaxis()->SetTitle("V0M");
-    hvz->GetYaxis()->SetTitle("z_{vtx} (cm)");
     task->SetEventQAHist("vz", hvz);
     
-    TH2F* hRefMultiVsCent = new TH2F("hRefMultiVsCent",Form("Reference multiplicity vs centrality"), 101, 0., 101., 400, 0., 400.);
+    TH2F* hRefMultiVsCent = new TH2F("hRefMultiVsCent",Form("Reference multiplicity vs centrality; multiplicity (%); GLOBAL; Counts"), 101, 0., 101., 400, 0., 400.);
     if (collSys==AliPIDResponse::kPPB) 
       hRefMultiVsCent->GetXaxis()->SetTitle("V0A");
     else 
       hRefMultiVsCent->GetXaxis()->SetTitle("V0M");
-    hRefMultiVsCent->GetYaxis()->SetTitle("GLOBAL");
-    task->SetEventQAHist("refmulti",hRefMultiVsCent);
+    if (enableAdvEvtQA) task->SetEventQAHist("refmulti",hRefMultiVsCent);
   
-    TH2F* hMultiVsCent = new TH2F("hMultiVsCent",Form("Multiplicity vs centrality"), 101, 0., 101., 400, 0., 400.);
+    TH2F* hMultiVsCent = new TH2F("hMultiVsCent",Form("Multiplicity vs centrality; multiplicity (%); QUALITY (%); Counts"), 101, 0., 101., 400, 0., 400.);
     if (collSys==AliPIDResponse::kPPB) 
       hMultiVsCent->GetXaxis()->SetTitle("V0A");
     else 
       hMultiVsCent->GetXaxis()->SetTitle("V0M");
-    hMultiVsCent->GetYaxis()->SetTitle("QUALITY");
-    task->SetEventQAHist("multicent",hMultiVsCent);
+    if (enableAdvEvtQA) task->SetEventQAHist("multicent",hMultiVsCent);
   }
 
   //-----------------------------------------------------------------------------------------------
@@ -235,7 +233,7 @@ AliRsnMiniAnalysisTask * AddTaskF0
 #ifdef __CINT__
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigF0.C");
 #endif 
-  if (!ConfigF0(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, aodFilterBit, cutPiPid, nsigma, enableMonitor) ) return 0x0;
+  if (!ConfigF0(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, aodFilterBit, cutPiPid, nsigma, enableTrackQA) ) return 0x0;
   
   //-----------------------------------------------------------------------------------------------
   // -- CONTAINERS --------------------------------------------------------------------------------
