@@ -279,7 +279,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       const Double_t          fPDGMassK0s; // [DPGMass] DPG mass of K0s
       const Double_t          fPDGMassLambda; // [DPGMass] DPG mass of (Anti)Lambda
 
-      const Int_t             fPDGCode[kUnknown] = {0,0,211,321,2212,310,3122,333};
+      const Int_t             fPDGCode[kUnknown] = {0,0,211,321,2212,310,3122,333}; //
 
       AliAODEvent*            fEventAOD; //! AOD event countainer
       Double_t                fPVz; // PV z-coordinate used for weights
@@ -500,10 +500,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*                   fhQAEventsNumSPDContrPV[QAindex::kNumQA]; //!
       TH1D*                   fhQAEventsDistPVSPD[QAindex::kNumQA]; //!
       TH1D*                   fhQAEventsSPDresol[QAindex::kNumQA]; //!
-      TH2D*                   fhQAEventsfMult32vsCentr;
-      TH2D*                   fhQAEventsMult128vsCentr;
-      TH2D*                   fhQAEventsfMultTPCvsTOF;
-      TH2D*                   fhQAEventsfMultTPCvsESD;
+      TH2D*                   fhQAEventsfMult32vsCentr; //!
+      TH2D*                   fhQAEventsMult128vsCentr; //!
+      TH2D*                   fhQAEventsfMultTPCvsTOF; //!
+      TH2D*                   fhQAEventsfMultTPCvsESD; //!
       // QA: charged tracks
       TH1D*                   fhQAChargedMult[QAindex::kNumQA];       //! number of AOD charged tracks distribution
       TH1D*                   fhQAChargedPt[QAindex::kNumQA];         //! pT dist of charged tracks
