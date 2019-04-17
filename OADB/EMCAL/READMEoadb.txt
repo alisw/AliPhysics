@@ -79,5 +79,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20190411: Update of EMCALBadChannels.root with additional bad channels for LHC18o
 - 20190412: Update of EMCALBadChannels.root with new maps for LHC18q and LHC18r
 - 20190415: Update of EMCALBadChannels.root with additional bad channels for LHC18c (low B)
+- 20190417: Update of EMCALBadChannels.root with additional bad channels for LHC18p
 
 */
