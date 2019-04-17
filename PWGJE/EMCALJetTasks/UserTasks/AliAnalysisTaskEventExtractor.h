@@ -43,15 +43,11 @@ class AliAnalysisTaskEventExtractor : public AliAnalysisTaskEmcal {
 
   Bool_t                      fSaveTracks;                              ///< save arrays of tracks for each particle
   Double_t                    fEventPercentage;                         ///< percentage (0, 1] which will be extracted
-  TString                     fMCParticleArrayName;                     ///< Array name of MC particles in event (mcparticles)
-  TString                     fTrackArrayName;                          ///< Array name of tracks in event (tracks)
   ULong_t                     fRandomSeed;                              ///< random seed
   TString                     fCustomStartupScript;                     ///< startup script
   // ################## BUFFERS: Variables set during execution time
   AliEventTree*               fTree;
   Int_t                       fMultiplicity;                            ///< Multiplicity (number tracks, also for multiple containers)
-  TClonesArray*               fMCParticleArray;                         //!<! Array of MC particles in event (usually mcparticles)
-  TClonesArray*               fTrackArray;                              //!<! Array of tracks in event (usually tracks)
   TRandom3*                   fRandomGenerator;                         //!<! Random number generator, used for event + jet efficiency
 
   // ################## HELPER FUNCTIONS
@@ -94,7 +90,7 @@ class AliEventTree : public TNamed
     AliEventTree();
     AliEventTree(const char* name);
     void            InitializeTree(Bool_t saveTracks);
-    Bool_t          AddEventToTree(Long64_t eventID, std::vector<AliVParticle*> particles, std::vector<AliVTrack*> tracks);
+    Bool_t          AddEventToTree(Long64_t eventID, std::vector<Double_t> vertex, std::vector<AliVParticle*> particles, std::vector<AliVTrack*> tracks);
     TTree*          GetTreePointer() {return fTree;}
   protected:
     TTree*          fTree;                                //!<! tree structure
@@ -104,6 +100,9 @@ class AliEventTree : public TNamed
     Long64_t        fBuffer_Event_ID;                     //!<! array buffer
     Int_t           fBuffer_Event_Number_Particles;       //!<! array buffer
     Int_t           fBuffer_Event_Number_Tracks;          //!<! array buffer
+    Float_t         fBuffer_Event_Vertex_X;               //!<! array buffer
+    Float_t         fBuffer_Event_Vertex_Y;               //!<! array buffer
+    Float_t         fBuffer_Event_Vertex_Z;               //!<! array buffer
 
     Float_t*        fBuffer_Particles_Pt;                 //!<! array buffer
     Float_t*        fBuffer_Particles_Eta;                //!<! array buffer
@@ -112,12 +111,14 @@ class AliEventTree : public TNamed
     Int_t*          fBuffer_Particles_Label;              //!<! array buffer
     Int_t*          fBuffer_Particles_PdgCode;            //!<! array buffer
     Float_t*        fBuffer_Particles_E;                  //!<! array buffer
+    Bool_t*         fBuffer_Particles_IsPrimary;          //!<! array buffer
 
     Float_t*        fBuffer_Tracks_Pt;                    //!<! array buffer
     Float_t*        fBuffer_Tracks_Eta;                   //!<! array buffer
     Float_t*        fBuffer_Tracks_Phi;                   //!<! array buffer
     Int_t*          fBuffer_Tracks_Charge;                //!<! array buffer
-    Int_t  *        fBuffer_Tracks_Label;                 //!<! array buffer
+    Int_t*          fBuffer_Tracks_Label;                 //!<! array buffer
+    Bool_t*         fBuffer_Tracks_IsGlobal;              //!<! array buffer
 
     /// \cond CLASSIMP
     ClassDef(AliEventTree, 1) // Event tree class

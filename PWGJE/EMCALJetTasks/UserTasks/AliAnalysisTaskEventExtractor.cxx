@@ -34,6 +34,7 @@
 #include "AliESDVertex.h"
 #include "AliAODVertex.h"
 
+#include "AliAODTrack.h"
 #include "AliVTrack.h"
 #include "AliVHeader.h"
 #include "AliLog.h"
@@ -64,12 +65,14 @@ AliEventTree::AliEventTree() : TNamed("EventTree", "EventTree"), fTree(0), fInit
   fBuffer_Particles_Label   = new Int_t[50000];
   fBuffer_Particles_PdgCode = new Int_t[50000];
   fBuffer_Particles_E       = new Float_t[50000];
+  fBuffer_Particles_IsPrimary = new Bool_t[50000];
 
   fBuffer_Tracks_Pt         = new Float_t[50000];
   fBuffer_Tracks_Eta        = new Float_t[50000];
   fBuffer_Tracks_Phi        = new Float_t[50000];
   fBuffer_Tracks_Charge     = new Int_t[50000];
   fBuffer_Tracks_Label      = new Int_t[50000];
+  fBuffer_Tracks_IsGlobal   = new Bool_t[50000];
 }
 
 //________________________________________________________________________
@@ -83,12 +86,15 @@ AliEventTree::AliEventTree(const char* name) : TNamed(name, name), fTree(0), fIn
   fBuffer_Particles_Label   = new Int_t[50000];
   fBuffer_Particles_PdgCode = new Int_t[50000];
   fBuffer_Particles_E       = new Float_t[50000];
+  fBuffer_Particles_IsPrimary = new Bool_t[50000];
 
   fBuffer_Tracks_Pt         = new Float_t[50000];
   fBuffer_Tracks_Eta        = new Float_t[50000];
   fBuffer_Tracks_Phi        = new Float_t[50000];
   fBuffer_Tracks_Charge     = new Int_t[50000];
   fBuffer_Tracks_Label      = new Int_t[50000];
+  fBuffer_Tracks_IsGlobal   = new Bool_t[50000];
+
 }
 
 //________________________________________________________________________
@@ -103,7 +109,11 @@ void AliEventTree::InitializeTree(Bool_t saveTracks)
   fTree = new TTree(Form("EventTree_%s", GetName()), "");
   fTree->Branch("Event_Number_Particles",&fBuffer_Event_Number_Particles,"Event_Number_Particles/I");
   fTree->Branch("Event_Number_Tracks",&fBuffer_Event_Number_Tracks,"Event_Number_Tracks/I");
+  fTree->Branch("Event_Vertex_X",&fBuffer_Event_Vertex_X,"Event_Vertex_X/F");
+  fTree->Branch("Event_Vertex_Y",&fBuffer_Event_Vertex_Y,"Event_Vertex_Y/F");
+  fTree->Branch("Event_Vertex_Z",&fBuffer_Event_Vertex_Z,"Event_Vertex_Z/F");
   fTree->Branch("Event_ID",&fBuffer_Event_ID,"Event_ID/L");
+  
 
   fTree->Branch("Particles_Pt",fBuffer_Particles_Pt,"Particles_Pt[Event_Number_Particles]/F");
   fTree->Branch("Particles_Eta",fBuffer_Particles_Eta,"Particles_Eta[Event_Number_Particles]/F");
@@ -112,6 +122,8 @@ void AliEventTree::InitializeTree(Bool_t saveTracks)
   fTree->Branch("Particles_Label",fBuffer_Particles_Label,"Particles_Label[Event_Number_Particles]/I");
   fTree->Branch("Particles_PdgCode",fBuffer_Particles_PdgCode,"Particles_PdgCode[Event_Number_Particles]/I");
   fTree->Branch("Particles_E",fBuffer_Particles_E,"Particles_E[Event_Number_Particles]/F");
+  fTree->Branch("Particles_IsPrimary",fBuffer_Particles_IsPrimary,"Particles_IsPrimary[Event_Number_Particles]/O");
+
   if(saveTracks)
   {
     fTree->Branch("Tracks_Pt",fBuffer_Tracks_Pt,"Tracks_Pt[Event_Number_Tracks]/F");
@@ -119,13 +131,15 @@ void AliEventTree::InitializeTree(Bool_t saveTracks)
     fTree->Branch("Tracks_Phi",fBuffer_Tracks_Phi,"Tracks_Phi[Event_Number_Tracks]/F");
     fTree->Branch("Tracks_Charge",fBuffer_Tracks_Charge,"Tracks_Charge[Event_Number_Tracks]/S");
     fTree->Branch("Tracks_Label",fBuffer_Tracks_Label,"Tracks_Label[Event_Number_Tracks]/I");
+    fTree->Branch("Tracks_IsGlobal",fBuffer_Tracks_IsGlobal,"Tracks_IsGlobal[Event_Number_Tracks]/O");
+    
   }
 
   fInitialized = kTRUE;
 }
 
 //________________________________________________________________________
-Bool_t AliEventTree::AddEventToTree(Long64_t eventID, std::vector<AliVParticle*> particles, std::vector<AliVTrack*> tracks)
+Bool_t AliEventTree::AddEventToTree(Long64_t eventID, std::vector<Double_t> vertex, std::vector<AliVParticle*> particles, std::vector<AliVTrack*> tracks)
 {
   if(!fInitialized)
     AliFatal("Tree is not initialized.");
@@ -134,19 +148,24 @@ Bool_t AliEventTree::AddEventToTree(Long64_t eventID, std::vector<AliVParticle*>
   fBuffer_Event_Number_Particles  = 0;
   fBuffer_Event_Number_Tracks     = 0;
   fBuffer_Event_ID                = eventID;
+  fBuffer_Event_Vertex_X          = vertex[0];
+  fBuffer_Event_Vertex_Y          = vertex[1];
+  fBuffer_Event_Vertex_Z          = vertex[2];
 
   // Fill buffer tracks & particles
-  for(Int_t i = 0; i < tracks.size(); i++)
+  for(Size_t i = 0; i < tracks.size(); i++)
   {
     if(!tracks[i]) continue;
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*>(tracks[i]);
     fBuffer_Tracks_Pt[fBuffer_Event_Number_Tracks]     = tracks[i]->Pt();
     fBuffer_Tracks_Eta[fBuffer_Event_Number_Tracks]    = tracks[i]->Eta();
     fBuffer_Tracks_Phi[fBuffer_Event_Number_Tracks]    = tracks[i]->Phi();
     fBuffer_Tracks_Charge[fBuffer_Event_Number_Tracks] = tracks[i]->Charge();
     fBuffer_Tracks_Label[fBuffer_Event_Number_Tracks]  = tracks[i]->GetLabel();
+    fBuffer_Tracks_IsGlobal[fBuffer_Event_Number_Tracks] = (aodTrack) ? aodTrack->IsGlobalConstrained() : kFALSE;
     fBuffer_Event_Number_Tracks++;
   }
-  for(Int_t i = 0; i < particles.size(); i++)
+  for(Size_t i = 0; i < particles.size(); i++)
   {
     if(!particles[i]) continue;
     fBuffer_Particles_Pt[fBuffer_Event_Number_Particles]       = particles[i]->Pt();
@@ -156,6 +175,7 @@ Bool_t AliEventTree::AddEventToTree(Long64_t eventID, std::vector<AliVParticle*>
     fBuffer_Particles_Label[fBuffer_Event_Number_Particles]    = particles[i]->GetLabel();
     fBuffer_Particles_PdgCode[fBuffer_Event_Number_Particles]  = particles[i]->PdgCode();
     fBuffer_Particles_E[fBuffer_Event_Number_Particles]        = particles[i]->E();
+    fBuffer_Particles_IsPrimary[fBuffer_Event_Number_Particles]= particles[i]->IsPhysicalPrimary();
     fBuffer_Event_Number_Particles++;
   }
 
@@ -170,14 +190,10 @@ AliAnalysisTaskEventExtractor::AliAnalysisTaskEventExtractor() :
   AliAnalysisTaskEmcal("AliAnalysisTaskEventExtractor", kTRUE),
   fSaveTracks(kTRUE),
   fEventPercentage(1.0),
-  fMCParticleArrayName("mcparticles"),
-  fTrackArrayName("tracks"),
   fRandomSeed(0),
   fCustomStartupScript(),
   fTree(0),
   fMultiplicity(0),
-  fMCParticleArray(0),
-  fTrackArray(0),
   fRandomGenerator(0)
 {
   fRandomGenerator = new TRandom3();
@@ -192,14 +208,10 @@ AliAnalysisTaskEventExtractor::AliAnalysisTaskEventExtractor(const char *name) :
   AliAnalysisTaskEmcal(name, kTRUE),
   fSaveTracks(kTRUE),
   fEventPercentage(1.0),
-  fMCParticleArrayName("mcparticles"),
-  fTrackArrayName("tracks"),
   fRandomSeed(0),
   fCustomStartupScript(),
   fTree(0),
   fMultiplicity(0),
-  fMCParticleArray(0),
-  fTrackArray(0),
   fRandomGenerator(0)
 {
   fRandomGenerator = new TRandom3();
@@ -233,15 +245,17 @@ void AliAnalysisTaskEventExtractor::ExecOnce()
 {
   AliAnalysisTaskEmcal::ExecOnce();
 
-  if (fMCParticleArrayName != "")
-    fMCParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticleArrayName.Data()));
-  if (fTrackArrayName != "")
-    fTrackArray      = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTrackArrayName.Data()));
+  if(!GetParticleContainer(0))
+    AliFatal(Form("MC particle container not valid"));
+  if(!GetTrackContainer(1) && fSaveTracks)
+    AliFatal(Form("Track container not valid, but demanded"));
 
-  if(!fMCParticleArray)
-    AliFatal(Form("MC particle array not valid"));
-  if((fTrackArrayName != "") && !fTrackArray)
-    AliFatal(Form("Track array not valid, but demanded"));
+  GetParticleContainer(0)->SetEtaLimits(-10, 10);
+
+  if(fSaveTracks)
+  {
+    GetTrackContainer(1)->SetEtaLimits(-2, 2);
+  }
 
   // ### Execute shell script at startup
   if(!fCustomStartupScript.IsNull())
@@ -266,10 +280,10 @@ Bool_t AliAnalysisTaskEventExtractor::Run()
   const AliVVertex* myVertex = InputEvent()->GetPrimaryVertex();
   if(!myVertex && MCEvent())
     myVertex = MCEvent()->GetPrimaryVertex();
-  Double_t vtx[3] = {0, 0, 0};
+  std::vector<Double_t> vtx;
   if(myVertex)
   {
-    vtx[0] = myVertex->GetX(); vtx[1] = myVertex->GetY(); vtx[2] = myVertex->GetZ();
+    vtx.push_back(myVertex->GetX()); vtx.push_back(myVertex->GetY()); vtx.push_back(myVertex->GetZ());
   }
 
   // Get event ID from header
@@ -280,20 +294,18 @@ Bool_t AliAnalysisTaskEventExtractor::Run()
   // Now save particles + tracks to std vectors and add them to the tree
   std::vector<AliVParticle*> particles;
   std::vector<AliVTrack*>    tracks;
-  for(Int_t iPart=0; iPart<fMCParticleArray->GetEntries();iPart++)
-  {
-    AliVParticle* part = (AliVParticle*)fMCParticleArray->At(iPart);
-    if(!part) continue;
-    if(!part->IsPhysicalPrimary()) continue;
+
+  GetParticleContainer(0)->ResetCurrentID();
+  while(AliVParticle *part = static_cast<AliVParticle*>(GetParticleContainer(0)->GetNextAcceptParticle()))
     particles.push_back(part);
-  }
-  for(Int_t iTrack=0; iTrack<fTrackArray->GetEntries();iTrack++)
+
+  if(GetParticleContainer(1) && fSaveTracks)
   {
-    AliVTrack* track = (AliVTrack*)fTrackArray->At(iTrack);
-    if(!track) continue;
-    tracks.push_back(track);
+    GetParticleContainer(1)->ResetCurrentID();
+    while(AliVTrack *track = static_cast<AliVTrack*>(GetParticleContainer(1)->GetNextAcceptParticle()))
+      tracks.push_back(track);
   }
-  fTree->AddEventToTree(eventID, particles, tracks);
+  fTree->AddEventToTree(eventID, vtx, particles, tracks);
 
   return kTRUE;
 }
@@ -436,6 +448,11 @@ AliAnalysisTaskEventExtractor* AliAnalysisTaskEventExtractor::AddTaskEventExtrac
   AliAnalysisTaskEventExtractor* myTask = new AliAnalysisTaskEventExtractor(name);
   myTask->SetNeedEmcalGeom(kFALSE);
   myTask->SetVzRange(-10.,10.);
+
+  myTask->AddMCParticleContainer(particleArray);
+  myTask->AddTrackContainer(trackArray);
+
+  
   mgr->AddTask(myTask);
 
   // ###### Connect inputs/outputs
