@@ -18,7 +18,7 @@ AliNanoAODHeader::AliNanoAODHeader():
   fMagField(-1),
   fOfflineTrigger(-1),
   fRunNumber(-1),
-  fNumberOfESDTracks(0)
+  fNumberOfESDTracks(-1)
 {
 
   // default ctor
@@ -42,7 +42,7 @@ AliNanoAODHeader::AliNanoAODHeader(Int_t size):
   fMagField(-1),
   fOfflineTrigger(-1),
   fRunNumber(-1),
-  fNumberOfESDTracks(0)
+  fNumberOfESDTracks(-1)
 {
   for (int i=0; i<4; i++)
     fT0Spread[i] = -1;
@@ -65,7 +65,7 @@ AliNanoAODHeader::AliNanoAODHeader(Int_t size, Int_t sizeInt):
   fMagField(-1),
   fOfflineTrigger(-1),
   fRunNumber(-1),
-  fNumberOfESDTracks(0)
+  fNumberOfESDTracks(-1)
 {
   for (int i=0; i<4; i++)
     fT0Spread[i] = -1;
