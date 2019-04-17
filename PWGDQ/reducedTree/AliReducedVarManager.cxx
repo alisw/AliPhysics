@@ -3195,8 +3195,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALmatchedEOverP]    = "Calo E/p";                fgVariableUnits[kEMCALmatchedEOverP] = "";  
   fgVariableNames[kEMCALmatchedM02]       = "Calo M02";                fgVariableUnits[kEMCALmatchedM02] = "";
   fgVariableNames[kEMCALmatchedM20]       = "Calo M20";                fgVariableUnits[kEMCALmatchedM20] = "";
-  fgVariableNames[kEMCALmatchedNCells]          = "Calo No. cells";           fgVariableUnits[kEMCALmatchedM20] = "";
-  fgVariableNames[kEMCALmatchedNMatchedTracks]  = "Calo No. matched tracks";  fgVariableUnits[kEMCALmatchedM20] = "";
+  fgVariableNames[kEMCALmatchedNCells]          = "Calo No. cells";           fgVariableUnits[kEMCALmatchedNCells] = "";
+  fgVariableNames[kEMCALmatchedNMatchedTracks]  = "Calo No. matched tracks";  fgVariableUnits[kEMCALmatchedNMatchedTracks] = "";
   fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";
   fgVariableNames[kEMCALclusterDx]        = "Calo cls. dx";            fgVariableUnits[kEMCALclusterDx] = "";  
   fgVariableNames[kEMCALclusterDz]        = "Calo cls. dz";            fgVariableUnits[kEMCALclusterDz] = "";  
