@@ -1782,9 +1782,11 @@ void AliReducedVarManager::FillClusterMatchedTrackInfo(AliReducedTrackInfo* pinf
     } else {
       cluster = ((EVENT*)fgEvent)->GetCaloClusterFromID(pinfo->CaloClusterId());
     }
-    if (fgUsedVars[kEMCALmatchedEnergy])  values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -9999.);
-    if (fgUsedVars[kEMCALmatchedM02])     values[kEMCALmatchedM02]    = (cluster ? cluster->M02() : -9999.);
-    if (fgUsedVars[kEMCALmatchedM20])     values[kEMCALmatchedM20]    = (cluster ? cluster->M20() : -9999.);
+    if (fgUsedVars[kEMCALmatchedEnergy])          values[kEMCALmatchedEnergy]         = (cluster ? cluster->Energy() : -9999.);
+    if (fgUsedVars[kEMCALmatchedM02])             values[kEMCALmatchedM02]            = (cluster ? cluster->M02() : -9999.);
+    if (fgUsedVars[kEMCALmatchedM20])             values[kEMCALmatchedM20]            = (cluster ? cluster->M20() : -9999.);
+    if (fgUsedVars[kEMCALmatchedNCells])          values[kEMCALmatchedNCells]         = (cluster ? cluster->NCells() : -9999.);
+    if (fgUsedVars[kEMCALmatchedNMatchedTracks])  values[kEMCALmatchedNMatchedTracks] = (cluster ? cluster->NMatchedTracks() : -9999.);
     if (fgUsedVars[kEMCALmatchedEOverP]) {
       Float_t               mom = 0.0;
       if (pinfo->PonCalo()) mom = pinfo->PonCalo();
@@ -3193,6 +3195,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALmatchedEOverP]    = "Calo E/p";                fgVariableUnits[kEMCALmatchedEOverP] = "";  
   fgVariableNames[kEMCALmatchedM02]       = "Calo M02";                fgVariableUnits[kEMCALmatchedM02] = "";
   fgVariableNames[kEMCALmatchedM20]       = "Calo M20";                fgVariableUnits[kEMCALmatchedM20] = "";
+  fgVariableNames[kEMCALmatchedNCells]          = "Calo No. cells";           fgVariableUnits[kEMCALmatchedM20] = "";
+  fgVariableNames[kEMCALmatchedNMatchedTracks]  = "Calo No. matched tracks";  fgVariableUnits[kEMCALmatchedM20] = "";
   fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";
   fgVariableNames[kEMCALclusterDx]        = "Calo cls. dx";            fgVariableUnits[kEMCALclusterDx] = "";  
   fgVariableNames[kEMCALclusterDz]        = "Calo cls. dz";            fgVariableUnits[kEMCALclusterDz] = "";  

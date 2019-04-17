@@ -606,6 +606,8 @@ class AliReducedVarManager : public TObject {
     kEMCALmatchedEOverP,
     kEMCALmatchedM02,
     kEMCALmatchedM20,
+    kEMCALmatchedNCells,
+    kEMCALmatchedNMatchedTracks,
     kNTrackVars,            // variable to mark end of track vars, introduce new tracks vars before this one
     // Calorimeter cluster variables --------------------------------------
     kEMCALclusterEnergy,        
