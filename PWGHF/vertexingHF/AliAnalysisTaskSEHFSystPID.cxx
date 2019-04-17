@@ -66,6 +66,7 @@ fFillTreeWithNsigmaPIDOnly(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
 fPtMaxDownSampling(1.5),
+fDownSamplingOpt(0),
 fAODProtection(1),
 fRunNumberPrevEvent(-1),
 fEnableNsigmaTPCDataCorr(false),
@@ -143,6 +144,7 @@ fFillTreeWithNsigmaPIDOnly(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
 fPtMaxDownSampling(1.5),
+fDownSamplingOpt(0),
 fAODProtection(1),
 fRunNumberPrevEvent(-1),
 fEnableNsigmaTPCDataCorr(false),
@@ -391,9 +393,10 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     //applying ESDtrackCut
     if(!fESDtrackCuts->IsSelected(track)) continue;
 
-    if(fEnabledDownSampling && track->Pt()<fPtMaxDownSampling) {
+    if(fEnabledDownSampling && fFracToKeepDownSampling<1. && track->Pt()<fPtMaxDownSampling) {
       double pseudoRand = track->Pt()*1000.-(long)(track->Pt()*1000);
-      if(pseudoRand>fFracToKeepDownSampling) continue;
+      if(fDownSamplingOpt==0 && pseudoRand>fFracToKeepDownSampling) continue; //keep tracks with pseudorand < fFracToKeepDownSampling
+      else if(fDownSamplingOpt==1 && pseudoRand<(1-fFracToKeepDownSampling)) continue; //keep tracks with pseudorand > 1-fFracToKeepDownSampling
     }
 
     fPt = ConvertFloatToUnsignedShort(track->Pt()*1000);

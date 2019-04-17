@@ -62,9 +62,10 @@ public:
   void SetNsigmaKaonForTagging(float nsigmamax = 0.02)                        {fNsigmaMaxForTag=nsigmamax;}
   void SetKinksSelections(float qtmin=0.15, float Rmin=120, float Rmax=210)   {fQtMinKinks=qtmin; fRMinKinks=Rmin; fRMaxKinks=Rmax;}
   void SetfFillTreeWithNsigmaPIDOnly(bool fillonlyNsigma=true)                {fFillTreeWithNsigmaPIDOnly=fillonlyNsigma;}
-  void EnableDownSampling(double fractokeep=0.1, double ptmax=1.5)            {fEnabledDownSampling=true; fFracToKeepDownSampling=fractokeep; fPtMaxDownSampling=ptmax;}
+  void EnableDownSampling(double fractokeep=0.1, double ptmax=1.5, int opt=0) {fEnabledDownSampling=true; fFracToKeepDownSampling=fractokeep; fPtMaxDownSampling=ptmax; fDownSamplingOpt=opt;}
   void SetAODMismatchProtection(int opt=1)                                    {fAODProtection=opt;}
-  
+  void SetDownSamplingOption(int opt=0)                                       {fDownSamplingOpt=opt;}
+
   void EnableNsigmaDataDrivenCorrection(int syst) {
     fEnableNsigmaTPCDataCorr = true;
     fSystNsigmaTPCDataCorr = syst;
@@ -138,6 +139,7 @@ private:
   bool fEnabledDownSampling;                       /// flag to enable/disable downsampling
   double fFracToKeepDownSampling;                  /// fraction to keep when downsampling activated
   double fPtMaxDownSampling;                       /// pT max of tracks to downsample
+  int fDownSamplingOpt;                            /// option for downsampling 
   
   int fAODProtection;                              /// flag to activate protection against AOD-dAOD mismatch
 
@@ -153,7 +155,7 @@ private:
   float fPlimitsNsigmaTPCDataCorr[101];            /// array of p limits for data-driven NsigmaTPC correction
   int fNPbinsNsigmaTPCDataCorr;                    /// number of p bins for data-driven NsigmaTPC correction
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 3);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 4);
 };
 
 #endif
