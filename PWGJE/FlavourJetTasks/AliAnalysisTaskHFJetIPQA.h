@@ -34,12 +34,17 @@ class AliPID;
 class TGraph;
 class AliVParticle;
 class AliPIDCombined;
+class AliEmcalJetFinder;
+#include "AliFJWrapper.h"
+
+
 #include "TMatrixD.h"
 #include "TF1.h"
 #include "AliESDtrackCuts.h"
 #include <vector>
 #include <utility>
 #include <map>
+
 //Define helper classes to cleanup analysis
 
 class AliAnalysisTaskHFJetIPQA: public AliAnalysisTaskEmcalJet
@@ -85,6 +90,13 @@ public:
         Int_t trackLabel=-1 ;
         Double_t trackpt=-99;
     };
+    struct SQuarks {
+        SQuarks(Double_t pt, int label, int pdg, double deta): first(pt),second(label),HasPDG(pdg),HasDETA(deta){}
+        Double_t first; // to be compatible with std::pair
+        int second;// to be compatible with std::pair
+        int HasPDG; // added for electron contribution check
+        double HasDETA;
+    };
     //FUNCTION DEFINITIONS
     AliAnalysisTaskHFJetIPQA();
     AliAnalysisTaskHFJetIPQA(const char *name);
@@ -129,6 +141,12 @@ public:
     {
         fProductionNumberPtHard = value;
     }
+    void RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont);   //Based on AliAnalysisTaskEmcalQGTagging::RecursiveParents
+    void StoreDaughters(AliAODMCParticle* part, int kFirstMotherLabel);
+    int DoJetPartonMatching(const AliEmcalJet *jet, int partonlabel);
+    void DoFlavourVectorFill(int kJetOrigin, double partonpt, double jetpt, int kPartonsInJet, double deta);
+    int DoFlavourDecision();
+    Bool_t IsParton(int pdg);
     Double_t CalculateJetProb(AliEmcalJet *jet);
     Double_t CalculatePSTrack(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass);
     Double_t CalculatePSTrackPID(Double_t sign, Double_t significance, Double_t trackPt, Int_t trclass, Int_t species);
@@ -141,6 +159,7 @@ public:
     void setfDoFlavourMatching(Bool_t value){fDoFlavourMatching=value;}
     void setfDaughterRadius(Double_t value){fDaughtersRadius=value;}
     void setfNoJetConstituents(Int_t value){fNoJetConstituents=value;}
+    void setIsPythia(int i=0){if(i==6)fPythia6=kTRUE;if(i==8)fPythia8=kTRUE;}
 
 
 
@@ -184,10 +203,27 @@ public:
     void FillCorrelations(bool bn[3], double v[3], double jetpt);
     void setFFillCorrelations(const Bool_t &value);
     virtual void SetPtHardBin(Int_t b){ fSelectPtHardBin = b;}
+    void SetHardCutoff(Double_t t)                            {fHardCutOff = t;}
+
+
 
 protected:
     TH1D *fh1dEventRejectionRDHFCuts; //!
     TH1D *fh1dTracksAccepeted; //!
+    TH1D *fh1dCuts; //!
+    TH2D *fh2dManifoldParton; //!
+    TH2D *fh2dLightNotContrib; //!
+    TH2D *fh2dCharmNotContrib; //!
+    TH2D *fh2dBottomNotContrib; //!
+    TH2D *fh2dLightNMatch; //!
+    TH2D *fh2dCharmNMatch; //!
+    TH2D *fh2dBottomNMatch; //!
+    TH2D *fh2dLightDeta; //!
+    TH2D *fh2dCharmDeta; //!
+    TH2D *fh2dBottomDeta; //!
+
+    THnSparse *fHLundIterative;//       iterative declustering
+
 
 private:
     THistManager         fHistManager    ;///< Histogram manager
@@ -222,6 +258,7 @@ private:
     Bool_t IsPromptBMeson(AliVParticle * part );
     Double_t GetValImpactParameter(TTypeImpPar type, Double_t *impar, Double_t *cov);
     static Bool_t mysort(const SJetIpPati& i, const SJetIpPati& j);
+    static Bool_t myquarksort(const SQuarks& i, const SQuarks& j);
     Int_t IsMCJetPartonFast(const AliEmcalJet *jet,  Double_t radius,Bool_t &is_udg);
     Int_t GetRunNr(AliVEvent * event){return event->GetRunNumber();}
     Double_t GetPtCorrected(const AliEmcalJet* jet);
@@ -244,6 +281,8 @@ private:
     Bool_t   fDoMCCorrection;//  Bool to turn on/off MC correction. Take care: some histograms may still be influenced by weighting.
     Bool_t   fDoUnderlyingEventSub;//
     Bool_t   fDoFlavourMatching;//
+    Bool_t   fPythia6;//
+    Bool_t   fPythia8;//
 
     Bool_t   fFillCorrelations;//
     Double_t fParam_Smear_Sigma;//
@@ -278,6 +317,8 @@ private:
     std::vector <Double_t > fPCJet;//!
     std::vector <Double_t > fPBJet;//!
     std::vector <Double_t > fJetCont;//!
+    std::vector <SQuarks > fHardProcess;//!
+    std::vector <SQuarks > fQuarkVec;//!
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
@@ -291,6 +332,7 @@ private:
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
     Double_t fVertexRecalcMinPt;//
+    Double_t fHardCutOff;//
 //Event mixing for correlation study
     Double_t fn1_mix ;
     Double_t fn2_mix ;
@@ -307,8 +349,8 @@ private:
     Float_t  fTREE_n2;
     Float_t  fTREE_n3;
     Float_t  fTREE_pt;
-    
-    
+
+
     void SetMixDCA(int n , Double_t v){
     if(n==1){
             if(fIsMixSignalReady_n1) return;
@@ -357,7 +399,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 33)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 34)
 };
 
 #endif

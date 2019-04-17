@@ -85,6 +85,11 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     }
     // Load and setup Monte Carlo composition correction factors from file
     //==============================================================================
+    if (!TGrid::Connect("alien://"))  {
+        printf("NoGridConnectionAvailable!\n");
+        return 0x0;
+    }
+
     TFile* fileMCoverDataWeights;
     if(isMC){
         if(PathToWeights.EqualTo("") ) {
@@ -198,7 +203,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         // Setup initial ESD track cuts
         //==============================================================================
       //  jetTask->SetRunESD();
-        AliESDtrackCuts * trackCuts = new AliESDtrackCuts();
+        /*AliESDtrackCuts * trackCuts = new AliESDtrackCuts();
         // trackCuts->SetMaxFractionSharedTPCClusters(0.4);
         // TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
         //trackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep, 100);
@@ -218,7 +223,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         // trackCuts->SetMaxDCAToVertexXY(1E10);
         trackCuts->SetHistogramsOn(kTRUE);
         trackCuts->DefineHistograms();
-        jetTask->SetESDCuts(new AliESDtrackCuts(*trackCuts));
+        jetTask->SetESDCuts(new AliESDtrackCuts(*trackCuts));*/
     }
 
     //  Final settings, pass to manager and set the containers
