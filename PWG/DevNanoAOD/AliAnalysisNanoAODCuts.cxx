@@ -724,6 +724,9 @@ void AliNanoAODSimpleSetter::Init(AliNanoAODHeader* head, TString varListHeader)
   Int_t index=0;
   Int_t indexInt=0;
   
+  // HACK workaround for bug in initializer of AliNanoAODHeader in AliRoot v5-09-47b
+  head->SetNumberOfESDTracksIndex(-1);
+  
   std::map<TString,int> cstMap = head->GetMapCstVar();
 
   while ((token = (TObjString*) it.Next())) {
