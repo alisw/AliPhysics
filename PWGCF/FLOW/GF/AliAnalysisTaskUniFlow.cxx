@@ -90,6 +90,7 @@
 #include "AliLog.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliVParticle.h"
 #include "AliVTrack.h"
 #include "AliPicoTrack.h"
 #include "AliAODv0.h"
