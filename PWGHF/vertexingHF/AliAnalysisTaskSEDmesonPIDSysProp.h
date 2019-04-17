@@ -25,6 +25,8 @@ public:
   enum KaonTOFhisto {kKaonTPCtag,kSamePionV0tag};
   enum KaonTPChisto {kKaonTOFtag,kKaonKinkstag};
 
+  enum VarForProp {kPt, kP};
+
   AliAnalysisTaskSEDmesonPIDSysProp();
   AliAnalysisTaskSEDmesonPIDSysProp(int ch, AliRDHFCuts* cuts, TString systfilename);
   virtual ~AliAnalysisTaskSEDmesonPIDSysProp();
@@ -37,6 +39,7 @@ public:
   void SetPIDEffSystFileName(TString filename) {fSystFileName=filename;}
   void SetPIDStrategy(int PIDst=kStrongPID) {fPIDstrategy=PIDst;}
   void SetKaonHistoOptions(int tpcopt, int tofopt) {fKaonTPCHistoOpt=tpcopt; fKaonTOFHistoOpt=tofopt;}
+  void SetVariableForUncProp(int var=kPt) {fVarForProp=var;}
 
   int GetDecayChannel()const {return fDecayChannel;}
   
@@ -76,9 +79,11 @@ private:
   int fNPtBins;                   /// number of pT bins
   double *fPtLimits;              //! limits of pT bins
   
-  AliRDHFCuts* fAnalysisCuts;   /// cuts
+  AliRDHFCuts* fAnalysisCuts;     /// cuts
   
-  ClassDef(AliAnalysisTaskSEDmesonPIDSysProp, 1);
+  int fVarForProp;                /// variable used for propagation (p or pT)
+
+  ClassDef(AliAnalysisTaskSEDmesonPIDSysProp, 2);
 };
 
 #endif
