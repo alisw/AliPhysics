@@ -260,7 +260,8 @@ void AliReducedAnalysisSingleTrack::FillTrackHistograms(TString trackClass/*="Tr
     // reset track variables
     for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i] = -9999.;
     
-    AliReducedVarManager::FillTrackInfo(track, fValues);
+    if (fOptionRunOverCaloCluster)  AliReducedVarManager::FillTrackInfo(track, fValues, &fClusters);
+    else                            AliReducedVarManager::FillTrackInfo(track, fValues);
     FillTrackHistograms(track, trackClass);
   }
 }
