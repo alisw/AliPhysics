@@ -46,6 +46,7 @@
 #pragma link C++ class AliAnalysisTaskSEDs+;
 #pragma link C++ class AliAnalysisTaskSELambdac+;
 #pragma link C++ class AliAnalysisTaskSED0Mass+;
+#pragma link C++ class AliAnalysisTaskSED0MassTMVA+;
 #pragma link C++ class AliAnalysisTaskSED0MassCutVarFDSub+;
 #pragma link C++ class AliAnalysisTaskSECharmFraction+;
 #pragma link C++ class AliAnalysisTaskSED0MassNonPromptFraction+;
