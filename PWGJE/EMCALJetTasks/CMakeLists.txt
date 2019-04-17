@@ -200,6 +200,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalTmpSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
+    UserTasks/AliAnalysisTaskEventExtractor.cxx
     UserTasks/AliAnalysisTaskHJetEmbed.cxx
     UserTasks/AliAnalysisTaskJetJTJT.cxx
     UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
