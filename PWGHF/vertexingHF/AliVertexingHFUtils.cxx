@@ -588,7 +588,7 @@ Bool_t AliVertexingHFUtils::HasCascadeCandidateAnyDaughInjected(AliAODRecoCascad
 
   AliAODTrack* bach = cand->GetBachelor();
   if(IsTrackInjected(bach, header, arrayMC)) {
-    AliDebug(2, "Bachelor is injected, the whole candidate is then injected");
+    //    printf("Bachelor is injected, the whole candidate is then injected\n");
     return kTRUE;
   }
   AliAODv0* v0 = cand->Getv0();
@@ -596,7 +596,7 @@ Bool_t AliVertexingHFUtils::HasCascadeCandidateAnyDaughInjected(AliAODRecoCascad
   for(Int_t i = 0; i < nprongs; i++){
     AliAODTrack *daugh = (AliAODTrack*)v0->GetDaughter(i);
     if(IsTrackInjected(daugh,header,arrayMC)) {
-      AliDebug(2, Form("V0 daughter number %d is injected, the whole candidate is then injected", i));
+      //      printf("V0 daughter number %d is injected, the whole candidate is then injected\n", i);
       return kTRUE;
     }
   }
