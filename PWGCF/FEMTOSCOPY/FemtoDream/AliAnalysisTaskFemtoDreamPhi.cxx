@@ -145,10 +145,14 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   static std::vector<AliFemtoDreamBasePart> V0Particles;
   V0Particles.clear();
 
+  static float massKaon =
+      TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
+
   for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(iTrack));
     if (!track) continue;
     fTrack->SetTrack(track);
+    fTrack->SetInvMass(massKaon);
     if (fPosKaonCuts->isSelected(fTrack)) {
       Particles.push_back(*fTrack);
     }
@@ -157,12 +161,10 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     }
   }
 
-  static float massKaon =
-      TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
   fPhiParticle->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (const auto &posK : Particles) {
     for (const auto &negK : AntiParticles) {
-      fPhiParticle->Setv0(posK, massKaon, negK, massKaon);
+      fPhiParticle->Setv0(posK, negK);
       if (fPhiCuts->isSelected(fPhiParticle)) {
         V0Particles.push_back(*fPhiParticle);
       }

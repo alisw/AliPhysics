@@ -25,8 +25,8 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   // the last two are switches to ignore the first entry in the phi, eta, ...
   // vector in case one cases a V0 in this object, and only wants to keep the
   // daughter information
-  void Setv0(const AliFemtoDreamBasePart &posDaughter, const float posMass,
-             const AliFemtoDreamBasePart &negDaughter, const float negMass,
+  void Setv0(const AliFemtoDreamBasePart &posDaughter,
+             const AliFemtoDreamBasePart &negDaughter,
              const bool ignoreFirstPos = false,
              const bool ignoreFirstNeg = false, const bool setDaughter = true);
   bool GetOnlinev0() const {

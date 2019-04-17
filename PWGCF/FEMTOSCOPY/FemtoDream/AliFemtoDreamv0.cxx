@@ -88,9 +88,8 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
 }
 
 void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
-                            const float posMass,
                             const AliFemtoDreamBasePart &negDaughter,
-                            const float negMass, const bool ignoreFirstPos,
+                            const bool ignoreFirstPos,
                             const bool ignoreFirstNeg, const bool setDaughter) {
   Reset();
   SetEventMultiplicity(posDaughter.GetEventMultiplicity());
@@ -102,8 +101,8 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   posDaughter.GetMomentum().GetXYZ(posP);
   negDaughter.GetMomentum().GetXYZ(negP);
   TLorentzVector trackPos, trackNeg;
-  trackPos.SetXYZM(posP[0], posP[1], posP[2], posMass);
-  trackNeg.SetXYZM(negP[0], negP[1], negP[2], negMass);
+  trackPos.SetXYZM(posP[0], posP[1], posP[2], posDaughter.GetInvMass());
+  trackNeg.SetXYZM(negP[0], negP[1], negP[2], negDaughter.GetInvMass());
   TLorentzVector trackSum = trackPos + trackNeg;
   this->SetPt(trackSum.Pt());
   this->SetMomentum(trackSum.Px(), trackSum.Py(), trackSum.Pz());
