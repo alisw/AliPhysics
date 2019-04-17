@@ -98,7 +98,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE {
     void CalculateBackground();
     void UpdateEventByEventData();
     void FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const;
-    Double_t GetPsiPair( const AliDalitzAODESD *trackPos, const AliDalitzAODESD *trackNeg ) const;
+    Double_t GetPsiPair(AliDalitzAODESD *trackPos, AliDalitzAODESD *trackNeg ) const;
     Double_t GetPsiPairMC( AliDalitzAODESDMC *fMCPosParticle, AliDalitzAODESDMC *fMCNegParticle) const;
 
     Bool_t IsDalitz(AliDalitzAODESDMC *fMCMother) const;
