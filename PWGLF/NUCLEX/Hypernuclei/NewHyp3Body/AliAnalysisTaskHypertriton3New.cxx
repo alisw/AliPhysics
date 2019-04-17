@@ -463,9 +463,9 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
       AliVParticle *vMotherPart = mcEvent->GetTrack(lLabelMother);
 
       /// PID for hypertriton daughter tracks
-      float nSigmaDeu = fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kDeuteron);
-      float nSigmaP   = fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kProton);
-      float nSigmaPi  = fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kPion);
+      float nSigmaDeu = std::abs(fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kDeuteron));
+      float nSigmaP   = std::abs(fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kProton));
+      float nSigmaPi  = std::abs(fPIDResponse->NumberOfSigmasTPC(esdTrack, AliPID::kPion));
 
       TrackMC tmc{esdTrack, vMotherPart, vPart, lLabelMother, iTrack};
 
