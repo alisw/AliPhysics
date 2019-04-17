@@ -1495,7 +1495,7 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* leg1, TRACK* leg2, Float_t* va
 
 
 //_________________________________________________________________
-void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
+void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values, TList* clusterList/*=0x0*/) {
   //
   // fill track information
   //
@@ -1730,20 +1730,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   values[kTRDGTUsagitta]     = pinfo->TRDGTUsagitta();
   values[kTRDGTUPID]         = pinfo->TRDGTUPID();
 
-
-  if(fgUsedVars[kEMCALmatchedEnergy] || fgUsedVars[kEMCALmatchedEOverP] || fgUsedVars[kEMCALmatchedM02] || fgUsedVars[kEMCALmatchedM20]) {
-    values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
-    if(fgEvent && (fgEvent->IsA()==EVENT::Class())){
-      CLUSTER* cluster = ((EVENT*)fgEvent)->GetCaloClusterFromID(pinfo->CaloClusterId());
-      values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -9999.);
-      values[kEMCALmatchedM02]    = (cluster ? cluster->M02() : -9999.);
-      values[kEMCALmatchedM20]    = (cluster ? cluster->M20() : -9999.);
-      Float_t               mom = 0.0;
-      if (pinfo->PonCalo()) mom = pinfo->PonCalo();
-      else                  mom = pinfo->P();
-      values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -9999.);
-    }
-  }  
+  FillClusterMatchedTrackInfo(pinfo, values, clusterList);
 
   FillTrackingStatus(pinfo,values);
   //FillTrackingFlags(pinfo,values);
@@ -1772,6 +1759,40 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   }
 }
 
+//_________________________________________________________________
+void AliReducedVarManager::FillClusterMatchedTrackInfo(AliReducedTrackInfo* pinfo, Float_t* values, TList* clusterList/*=0x0*/) {
+  //
+  // fill calorimeter cluster matched track info
+  //
+  if (!fgUsedVars[kEMCALmatchedEnergy] &&
+      !fgUsedVars[kEMCALmatchedEOverP] &&
+      !fgUsedVars[kEMCALmatchedM02] &&
+      !fgUsedVars[kEMCALmatchedM20] &&
+      !fgUsedVars[kEMCALmatchedClusterId]) return;
+
+  if (fgUsedVars[kEMCALmatchedClusterId]) values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
+  if (fgEvent && (fgEvent->IsA()==EVENT::Class())) {
+    CLUSTER* cluster = NULL;
+    if (clusterList) {
+      for (Int_t i=0; i<clusterList->GetEntries(); ++i) {
+        cluster = (AliReducedCaloClusterInfo*)clusterList->At(i);
+        if (cluster->ClusterID()==pinfo->CaloClusterId()) break;
+        cluster = NULL;
+      }
+    } else {
+      cluster = ((EVENT*)fgEvent)->GetCaloClusterFromID(pinfo->CaloClusterId());
+    }
+    if (fgUsedVars[kEMCALmatchedEnergy])  values[kEMCALmatchedEnergy] = (cluster ? cluster->Energy() : -9999.);
+    if (fgUsedVars[kEMCALmatchedM02])     values[kEMCALmatchedM02]    = (cluster ? cluster->M02() : -9999.);
+    if (fgUsedVars[kEMCALmatchedM20])     values[kEMCALmatchedM20]    = (cluster ? cluster->M20() : -9999.);
+    if (fgUsedVars[kEMCALmatchedEOverP]) {
+      Float_t               mom = 0.0;
+      if (pinfo->PonCalo()) mom = pinfo->PonCalo();
+      else                  mom = pinfo->P();
+      values[kEMCALmatchedEOverP] = (TMath::Abs(mom)>1.e-8 && cluster ? values[kEMCALmatchedEnergy]/mom : -9999.);
+    }
+  }
+}
 
 //_________________________________________________________________
 void AliReducedVarManager::FillCaloClusterInfo(CLUSTER* cl, Float_t* values) {
