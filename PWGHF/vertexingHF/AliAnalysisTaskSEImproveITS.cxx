@@ -1989,9 +1989,8 @@ Int_t AliAnalysisTaskSEImproveITS::PhiBin(Double_t phi) const {
   }
   else{ // correction performed in 24 φ bins for PbPb 2018 periods
     Double_t width = 2.*pi/24;
-    for(UInt_t i = 0; i < 24; i++){
-      if(phi>i*width && phi<=(i+1)*width)    return i;
-    }
+    Int_t jBin=TMath::Floor(phi/width);
+    return jBin; // by construction is 0<=jBin<23 since phi is in 0-2pi
   }
   
   return -1;
