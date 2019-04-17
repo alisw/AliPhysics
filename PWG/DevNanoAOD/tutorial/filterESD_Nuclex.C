@@ -9,6 +9,8 @@
 #include "AliESDInputHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliNanoAODTrack.h"
+#include "AliNanoFilterPID.h"
+#include "AliNanoSkimmingPID.h"
 #include "AliAnalysisTaskNanoAODskimming.h"
 
 #include <TChain.h>
@@ -39,27 +41,19 @@ void filterESD_Nuclex()
   // PID response
   AliAnalysisTaskSE* pidRespTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
   
-  AliAnalysisTaskNanoAODskimming* myFilterTask = AliAnalysisTaskNanoAODskimming::AddTask();
-  
-  ///TODO: put these cuts in a separate AliAnalysisCut class, the AliAnalysisTaskNanoAODskimming should just apply some generic track cuts (maybe a list)
-  AliNanoFilterPID* myFilterCuts = new AliNanoFilterPID;
-  double nucleiTPCpt[4][2]{{10.6,1.4},{10.,1.8},{1.,10.},{1.,10.}};
-  double nucleiTOFpt[4][2]{{10.6,10.},{10.,10.},{1.,10.},{1.,10.}};
+  AliAnalysisTaskNanoAODskimming* mySkimmingTask = AliAnalysisTaskNanoAODskimming::AddTask();
+  AliNanoSkimmingPID* mySkimmingCuts = new AliNanoSkimmingPID;
+  double nucleiTPCpt[4][2]{{0.6,1.4},{1.,1.8},{1.,10.},{1.,10.}};
+  double nucleiTOFpt[4][2]{{1.4,10.},{1.8,10.},{1.,10.},{1.,10.}};
   double nucleiTOFsigma[4]{10.,10.,-1.,-1.};
-  AliESDtrackCuts* nucleiCuts[4]{AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false),AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false), AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false),AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false)};
-
-  for (int iN{2}; iN < 4; ++iN) {
-    myFilterCuts->TriggerOnSpecies(AliPID::EParticleType(AliPID::kDeuteron+iN), nucleiCuts[iN], 5., nucleiTPCpt[iN], nucleiTOFsigma[iN], nucleiTOFpt[iN]);
-  }
-  myFilterTask->AddEventCut(myFilterCuts);
+  AliESDtrackCuts* nucleiCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(false);
+    nucleiCuts->SetEtaRange(-0.8,0.8);
+  for (int iN{0}; iN < 4; ++iN)
+    mySkimmingCuts->fTrackFilter.TriggerOnSpecies(AliPID::EParticleType(AliPID::kDeuteron+iN), nucleiCuts, 1 << 4,  5., nucleiTPCpt[iN], nucleiTOFsigma[iN], nucleiTOFpt[iN]);
+  mySkimmingTask->AddEventCut(mySkimmingCuts);
 
   // OCDB
   AliAnalysisTaskSE* ocdbTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskConfigOCDB.C(\"raw://\")"));
-  
-  // V0 finder
-  AliAnalysisTaskWeakDecayVertexer* v0Finder = (AliAnalysisTaskWeakDecayVertexer*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C");
-  v0Finder->SetUseImprovedFinding();
-  // v0Finder->SetTrackTriggerCuts(nucleiCuts[2], AliPID::kHe3, 5.); ///TODO: fix this, it's buggy.
   
   // ESD filter
   AliAnalysisTaskSE* aodFilterTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C(kFALSE, kFALSE, kFALSE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, 1500, 3, kTRUE, kFALSE, kFALSE, kFALSE)"));
@@ -69,40 +63,28 @@ void filterESD_Nuclex()
   nanoFilterTask->SelectCollisionCandidates(AliVEvent::kAny);  
   nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
   
-  // Track selection
-  AliAnalysisNanoAODTrackCuts* trkCuts = new AliAnalysisNanoAODTrackCuts;
-  
-  // TODO adapt settings
-  trkCuts->SetBitMask(1 << 4); // hybrid 2011
-  trkCuts->SetMaxEta(0.9);
-  trkCuts->SetMinPt(0.6);
-  
-  // Fields to store
-  // event level
-  // Note: vertices are kept by default
-  // TODO add other fields
-  nanoFilterTask->SetVarListHeader("CentrV0M,OfflineTrigger,MagField");
-  // track level
-  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kPion);
+  AliNanoFilterPID* myFilterCuts = new AliNanoFilterPID;
+  for (int iN{0}; iN < 4; ++iN)
+    myFilterCuts->TriggerOnSpecies(AliPID::EParticleType(AliPID::kDeuteron+iN), nullptr, 1 << 4,  5., nucleiTPCpt[iN], nucleiTOFsigma[iN], nucleiTOFpt[iN]);
+
+  nanoFilterTask->SelectCollisionCandidates(AliVEvent::kAny);
+
+  // NOTE no event cuts. Those are in the Skimming task! nanoFilterTask->AddEvtCuts(evtCuts);
+
+  nanoFilterTask->SetTrkCuts(myFilterCuts);
+  nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
+
+  nanoFilterTask->SetVarListTrack("pt,theta,phi,TPCsignalN,chi2perNDF,TRDntrackletsPID,TPCmomentum,TOFsignal,integratedLength,posx,posy,posz");
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kDeuteron);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kTriton);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kHe3);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kAlpha);
-  nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kPion);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kDeuteron);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kTriton);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kHe3);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kAlpha);
-  // TODO add other fields
-  nanoFilterTask->SetVarListTrack("pt,theta,phi");
 
-  nanoFilterTask->SetTrkCuts(trkCuts);
-
-  AliAnalysisNanoAODEventCuts* evtCuts = new AliAnalysisNanoAODEventCuts;
-
-  // V0s
-  nanoFilterTask->SaveV0s(kTRUE, new AliAnalysisNanoAODV0Cuts);
-  nanoFilterTask->SaveCascades(kTRUE);
+  nanoFilterTask->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,RunNumber");
 
   mgr->SetDebugLevel(1); // enable debug printouts
   if (!mgr->InitAnalysis()) 
