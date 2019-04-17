@@ -180,7 +180,7 @@ void AliReducedAnalysisSingleTrack::FillMCTruthHistograms() {
     if (!mcDecisionMap) continue;
     
     // reset track variables and fill info
-    for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedM20; ++i) fValues[i]=-9999.;
+    for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i] = -9999.;
     AliReducedVarManager::FillMCTruthInfo(track, fValues);
     
     // loop over track selections and fill histograms
@@ -213,7 +213,7 @@ void AliReducedAnalysisSingleTrack::RunTrackSelection() {
     if (fOptionRunOverMC && track->IsMCTruth()) continue;
     
     // reset track variables
-    for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedM20; ++i) fValues[i] = -9999.;
+    for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i] = -9999.;
     
     AliReducedVarManager::FillTrackInfo(track, fValues);
     fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
@@ -258,7 +258,7 @@ void AliReducedAnalysisSingleTrack::FillTrackHistograms(TString trackClass/*="Tr
     fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
     
     // reset track variables
-    for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedM20; ++i) fValues[i] = -9999.;
+    for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i] = -9999.;
     
     AliReducedVarManager::FillTrackInfo(track, fValues);
     FillTrackHistograms(track, trackClass);

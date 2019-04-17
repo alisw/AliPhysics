@@ -356,7 +356,7 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(TString trackClass /*= "Trac
       //Int_t tpcSector = TMath::FloorNint(18.*track->Phi()/TMath::TwoPi());
       fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       // reset track variables
-      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedM20; ++i) fValues[i]=-9999.;
+      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
       
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, trackClass);
@@ -367,7 +367,7 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(TString trackClass /*= "Trac
       //Int_t tpcSector = TMath::FloorNint(18.*track->Phi()/TMath::TwoPi());
       fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       // reset track variables
-      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedM20; ++i) fValues[i]=-9999.;
+      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
       
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, trackClass);
@@ -496,7 +496,7 @@ void AliReducedAnalysisJpsi2ee::LoopOverTracks(Int_t arrayOption /*=1*/) {
       // NOTE: this can be also handled via AliReducedTrackCut::SetRejectPureMC()
       if(fOptionRunOverMC && track->IsMCTruth()) continue;     
       // reset track variables
-      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedM20; ++i) fValues[i]=-9999.;
+      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
 
       AliReducedVarManager::FillTrackInfo(track, fValues);
       fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
@@ -858,7 +858,7 @@ void AliReducedAnalysisJpsi2ee::LoopOverMCTracks(Int_t trackArray /*=1*/) {
       daughter2 = FindMCtruthTrackByLabel(daughter2Label);
       
       // reset track variables and fill info
-      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedM20; ++i) fValues[i]=-9999.;
+      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
       AliReducedVarManager::FillMCTruthInfo(mother, fValues, daughter1, daughter2);
       
       // loop over jpsi mother selections and fill histograms before the kine cuts on electrons
@@ -913,7 +913,7 @@ void AliReducedAnalysisJpsi2ee::LoopOverMCTracks(Int_t trackArray /*=1*/) {
          
          if(daughter1 && daughter2) {
             daughterDecisions = daughter1Decisions & daughter2Decisions;
-            for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedM20; ++i) fValues[i]=-9999.;
+            for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
             AliReducedVarManager::FillMCTruthInfo(daughter1, daughter2, fValues);
             
             // loop over cuts and fill histograms
