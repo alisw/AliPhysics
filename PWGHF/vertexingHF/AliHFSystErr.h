@@ -379,7 +379,7 @@ class AliHFSystErr : public TNamed
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,10);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,11);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 
