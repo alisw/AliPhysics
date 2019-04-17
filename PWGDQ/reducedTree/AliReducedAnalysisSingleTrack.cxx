@@ -350,7 +350,7 @@ void AliReducedAnalysisSingleTrack::RunClusterSelection() {
   for (Int_t icl=0; icl<nCaloCluster; ++icl) {
     cluster = ((AliReducedEventInfo*)fEvent)->GetCaloCluster(icl);
 
-    for (Int_t i=AliReducedVarManager::kEMCALclusterEnergy; i<=AliReducedVarManager::kEMCALnMatchedTracks; ++i) fValues[i] = -9999.;
+    for (Int_t i=AliReducedVarManager::kEMCALclusterEnergy; i<=AliReducedVarManager::kNEMCALvars; ++i) fValues[i] = -9999.;
 
     AliReducedVarManager::FillCaloClusterInfo(cluster, fValues);
     fHistosManager->FillHistClass("CaloCluster_BeforeCuts", fValues);
@@ -368,7 +368,7 @@ void AliReducedAnalysisSingleTrack::FillClusterHistograms(TString clusterClass/*
   TIter nextCluster(&fClusters);
   for (Int_t i=0; i<fClusters.GetEntries(); ++i) {
     cluster = (AliReducedCaloClusterInfo*)nextCluster();
-    for (Int_t i=AliReducedVarManager::kEMCALclusterEnergy; i<=AliReducedVarManager::kEMCALnMatchedTracks; ++i) fValues[i] = -9999.;
+    for (Int_t i=AliReducedVarManager::kEMCALclusterEnergy; i<=AliReducedVarManager::kNEMCALvars; ++i) fValues[i] = -9999.;
     AliReducedVarManager::FillCaloClusterInfo(cluster, fValues);
     FillClusterHistograms(cluster, clusterClass);
   }
