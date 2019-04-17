@@ -77,11 +77,9 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
   }
 
   if (trigger != AliVEvent::kINT7) {
-    fEvtCuts->SetManualMode();
-    fEvtCuts->SetupRun2pp();
     std::cout << "Setting up Track Cuts correspondingly for pp trigger: "
               << trigger << std::endl;
-    fEvtCuts->fTriggerMask = trigger;
+    fEvtCuts->OverrideAutomaticTriggerSelection(trigger);
   }
   if (EvtCutQA) {
     fEvtCutList = new TList();

@@ -316,9 +316,7 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
   fQA->SetOwner(true);
 
   if (fTrigger != AliVEvent::kINT7) {
-    fAliEventCuts.SetManualMode();
-    if (!fIsHeavyIon) fAliEventCuts.SetupRun2pp();
-    fAliEventCuts.fTriggerMask = fTrigger;
+    fAliEventCuts.OverrideAutomaticTriggerSelection(fTrigger);
   }
 
   fV0Reader =
