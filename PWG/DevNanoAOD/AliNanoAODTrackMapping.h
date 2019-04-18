@@ -30,6 +30,7 @@ public:
   
 
   const char * GetVarName(Int_t index) const;
+  const char * GetVarNameInt(Int_t index) const;
   Int_t GetVarIndex(TString varName); // cannot be const (uses stl map)
 
   //TODO: implement custom variables
@@ -37,6 +38,7 @@ public:
   // Getters
   //  Internal
   Int_t GetSize()             const { return fSize;             }  
+  Int_t GetSizeInt()          const { return fSizeInt;          }  
   //  Kin vars
   Int_t GetPt()               const { return fPt;               }
   Int_t GetPhi()              const { return fPhi;              }
@@ -91,8 +93,8 @@ private:
   static void  LoadInstance() ;
   
   Int_t fSize; ///< Number of variables actually allocated
-  void  SetSize (Int_t var) { fSize = var;}
-  // FIXME: should this be static?
+  Int_t fSizeInt; ///< Number of int variables actually allocated
+  
   Int_t fPt;      	  ///< Mapping variable
   Int_t fPhi;		  ///< Mapping variable
   Int_t fTheta;		  ///< Mapping variable
@@ -142,7 +144,7 @@ private:
   static AliNanoAODTrackMapping * fInstance; ///< instance, needed for the singleton implementation
   static TString fMappingString; ///< the string which this class was initialized with
   std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
-  ClassDef(AliNanoAODTrackMapping, 2)
+  ClassDef(AliNanoAODTrackMapping, 3)
   
 };
 

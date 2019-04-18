@@ -126,7 +126,7 @@ public:
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 
   Double_t Chi2perNDF()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetChi2PerNDF()); }  
-  virtual UShort_t GetTPCncls(Int_t /*row0*/=0, Int_t /*row1*/=159)  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()); }
+  virtual UShort_t GetTPCncls(Int_t /*row0*/=0, Int_t /*row1*/=159)  const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCncls()); }
   virtual UShort_t GetTPCNcls()  const { return GetTPCncls(); }
 
   virtual Double_t M() const { AliFatal("Not Implemented"); return -1; }
@@ -222,10 +222,10 @@ public:
   // UInt_t   GetMUONClusterMap() const      { return (fITSMuonClusterMap&0x3ff0000)>>16; } // 
   // UInt_t   GetITSMUONClusterMap() const   { return fITSMuonClusterMap; }
   
-   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & UInt_t(GetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()))) != 0);}
+   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & GetFilterMap()) != 0);}
   // Bool_t  TestFilterMask(UInt_t filterMask) const {return (Bool_t) ((filterMask & fFilterMap) == filterMask);}
   // void    SetFilterMap(UInt_t i){fFilterMap = i;}
-   UInt_t  GetFilterMap() const {return UInt_t(GetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()));}
+   UInt_t  GetFilterMap() const {return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetFilterMap());}
 
   // const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   // const TBits* GetTPCClusterMapPtr() const {return &fTPCClusterMap;}
@@ -243,9 +243,9 @@ public:
   void    SetTPCPointsF(UShort_t  findable){fVars[AliNanoAODTrackMapping::GetInstance()->GetTPCnclsF()] = findable;}
   void    SetTPCNCrossedRows(UInt_t n)     {fVars[AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows()] = n;}
 
-  UShort_t GetTPCNclsF() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsF());}
-  UShort_t GetTPCnclsS() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsS());}
-  UShort_t GetTPCNCrossedRows()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows());}
+  UShort_t GetTPCNclsF() const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsF());}  
+  UShort_t GetTPCnclsS() const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCnclsS());}  
+  UShort_t GetTPCNCrossedRows()  const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCNCrossedRows());}  
   Float_t  GetTPCFoundFraction() const { return GetTPCNCrossedRows()>0 ? float(GetTPCNcls())/GetTPCNCrossedRows() : 0;}
 
   // Calorimeter Cluster
@@ -270,7 +270,7 @@ public:
   Double_t  GetTPCsignal()       const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCsignal());}
   Double_t  GetTPCsignalTunedOnData() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCsignalTuned());}
   void      SetTPCsignalTunedOnData(Double_t signal) {fVars[AliNanoAODTrackMapping::GetInstance()->GetTPCsignalTuned()] = signal;}
-  UShort_t  GetTPCsignalN()      const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCsignalN());}// FIXME: what is this?
+  UShort_t  GetTPCsignalN()      const { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTPCsignalN());}// FIXME: what is this? 
   //  virtual AliTPCdEdxInfo* GetTPCdEdxInfo() const {return fDetPid?fDetPid->GetTPCdEdxInfo():0;} // FIXME: is this needed?
   Double_t  GetTPCmomentum()     const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCmomentum()); }
   Double_t  GetTPCTgl()          const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCTgl());      } // FIXME: what is this?
@@ -294,8 +294,8 @@ public:
   //  Bool_t GetOuterHmpPxPyPz(Double_t *p) const;
   //  Int_t     GetHMPIDcluIdx()     const;// FIXME: array of ints?
   //   void      GetITSdEdxSamples(Double_t s[4]) const; // FIXME: To be reimplemented. Use one kin var for each sample
-  Int_t   GetTOFBunchCrossing (Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFBunchCrossing()); }
-  UChar_t   GetTRDncls(Int_t /*layer*/)                           const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDnClusters()); }; 
+  Int_t   GetTOFBunchCrossing (Double_t /*b=0*/, Bool_t /*tpcPIDonly=kFALSE*/) const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFBunchCrossing()); }  
+  UChar_t   GetTRDncls(Int_t /*layer*/)                           const {AliFatal("Not Implemented"); return 0;}; 
   Double_t  GetTRDslice(Int_t /*plane*/, Int_t /*slice*/)         const {AliFatal("Not Implemented"); return 0;};
   Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {AliFatal("Not Implemented"); return 0;};
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -303,7 +303,7 @@ public:
   Double_t  GetTRDsignal()         const {return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDsignal());}
   Double_t  GetTRDchi2()           const {return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDChi2());}
   UChar_t   GetTRDncls()           const {return GetTRDncls(-1);}
-  Int_t     GetNumberOfTRDslices() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDnSlices()); }
+  Int_t     GetNumberOfTRDslices() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDnSlices()); }  
 
   const AliAODEvent* GetAODEvent() const {return fAODEvent;}// FIXME: change to special event type
   void SetAODEvent(const AliAODEvent* ptr){fAODEvent = ptr;}
@@ -370,7 +370,7 @@ public:
   //  needed  to inherit from VTrack, but not implemented
   virtual void  SetDetectorPID(const AliDetectorPID */*pid*/)  {AliFatal("Not Implemented"); return ;}; 
   virtual const AliDetectorPID* GetDetectorPID() const {AliFatal("Not Implemented"); return 0;}; 
-  virtual UChar_t  GetTRDntrackletsPID() const  { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTRDntrackletsPID()); }; 
+  virtual UChar_t  GetTRDntrackletsPID() const  { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTRDntrackletsPID()); }; 
   virtual void      GetHMPIDpid(Double_t */*p*/) const  {AliFatal("Not Implemented"); return;}; 
   virtual Double_t GetBz() const  {AliFatal("Not Implemented"); return 0;}; 
   virtual void     GetBxByBz(Double_t [3]/*b[3]*/) const  {AliFatal("Not Implemented"); return;}; 

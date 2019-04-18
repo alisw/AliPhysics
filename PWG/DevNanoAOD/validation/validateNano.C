@@ -45,6 +45,6 @@ void validateNano(TString runOn)
   mgr->PrintStatus();
     
   TStopwatch watch;
-  mgr->StartAnalysis("local", chain, 3);
+  mgr->StartAnalysis("local", chain, 20);
   watch.Print();
 }
