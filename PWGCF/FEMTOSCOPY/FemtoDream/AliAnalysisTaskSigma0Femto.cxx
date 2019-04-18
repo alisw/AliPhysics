@@ -65,8 +65,8 @@ AliAnalysisTaskSigma0Femto::AliAnalysisTaskSigma0Femto(const char *name,
       fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
-      fEvent(nullptr),
       fRandom(nullptr),
+      fEvent(nullptr),
       fEvtCuts(nullptr),
       fProtonTrack(nullptr),
       fTrackCutsPartProton(nullptr),
@@ -303,7 +303,7 @@ void AliAnalysisTaskSigma0Femto::CastToVector(
 
     AliSigma0ParticleV0 phot(PhotonCandidate, pos, neg, inputEvent);
     if (fIsMC) {
-      const int label = phot.MatchToMC(fMCEvent, 22, {{11, -11}});
+      phot.MatchToMC(fMCEvent, 22, {{11, -11}});
     }
     container.push_back(phot);
   }

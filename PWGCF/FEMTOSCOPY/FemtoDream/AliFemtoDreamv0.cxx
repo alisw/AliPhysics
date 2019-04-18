@@ -65,6 +65,34 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt, AliAODv0* v0,
   }
 }
 
+void AliFemtoDreamv0::Setv0(AliVEvent *evt, AliAODv0* v0,
+                            const int multiplicity) {
+  if (!fVGTI) {
+    AliFatal("no GTI Array set");
+  }
+  if (!v0) {
+    AliFatal("SetProng No v0 to work with");
+  }
+  SetEventMultiplicity(multiplicity);
+  Reset();
+  if (v0->GetNProngs() == 2 && v0->GetNDaughters() == 2) {
+    fIsReset = false;
+    if (v0->GetOnFlyStatus()) {
+      this->fOnlinev0 = true;
+    } else {
+      this->fOnlinev0 = false;
+    }
+    this->SetMotherInfo(static_cast<AliAODEvent*>(evt), v0);
+    this->SetEvtNumber(evt->GetRunNumber());
+    if (fIsMC) {
+//      this->SetMCMotherInfo(evt, v0);
+    }
+    this->SetDaughter(v0, evt);
+  } else {
+    this->SetUse(false);
+  }
+}
+
 void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
                             const int multiplicity) {
   if (!v0) {
@@ -88,9 +116,8 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
 }
 
 void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
-                            const float posMass,
                             const AliFemtoDreamBasePart &negDaughter,
-                            const float negMass, const bool ignoreFirstPos,
+                            const bool ignoreFirstPos,
                             const bool ignoreFirstNeg, const bool setDaughter) {
   Reset();
   SetEventMultiplicity(posDaughter.GetEventMultiplicity());
@@ -102,8 +129,8 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   posDaughter.GetMomentum().GetXYZ(posP);
   negDaughter.GetMomentum().GetXYZ(negP);
   TLorentzVector trackPos, trackNeg;
-  trackPos.SetXYZM(posP[0], posP[1], posP[2], posMass);
-  trackNeg.SetXYZM(negP[0], negP[1], negP[2], negMass);
+  trackPos.SetXYZM(posP[0], posP[1], posP[2], posDaughter.GetInvMass());
+  trackNeg.SetXYZM(negP[0], negP[1], negP[2], negDaughter.GetInvMass());
   TLorentzVector trackSum = trackPos + trackNeg;
   this->SetPt(trackSum.Pt());
   this->SetMomentum(trackSum.Px(), trackSum.Py(), trackSum.Pz());
@@ -236,6 +263,38 @@ void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
           && fGTI[v0->GetNegID()]->Charge() > 0) {
         fnDaug->SetTrack(fGTI[v0->GetPosID()]);
         fpDaug->SetTrack(fGTI[v0->GetNegID()]);
+        this->SetDaughterInfo(v0);
+        this->fHasDaughter = true;
+      } else {
+        this->fHasDaughter = false;
+      }
+    } else {
+      this->fHasDaughter = false;
+    }
+  }
+}
+
+void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0, AliVEvent *evt) {
+  if (v0->GetPosID() >= fTrackBufferSize
+      || v0->GetNegID() >= fTrackBufferSize) {
+    std::cout << "fVGTI too small, no Global Tracks to work with, PosID:  "
+              << v0->GetPosID() << " and NegID: " << v0->GetNegID()
+              << std::endl;
+    this->fHasDaughter = false;
+  } else {
+    fpDaug->SetGlobalTrackInfo(fVGTI, fTrackBufferSize);
+    fnDaug->SetGlobalTrackInfo(fVGTI, fTrackBufferSize);
+    if (fVGTI[v0->GetPosID()] && fVGTI[v0->GetNegID()]) {
+      if (fVGTI[v0->GetPosID()]->Charge() > 0
+          && fVGTI[v0->GetNegID()]->Charge() < 0) {
+        fnDaug->SetTrack(fVGTI[v0->GetNegID()], evt);
+        fpDaug->SetTrack(fVGTI[v0->GetPosID()], evt);
+        this->SetDaughterInfo(v0);
+        this->fHasDaughter = true;
+      } else if (fVGTI[v0->GetPosID()]->Charge() < 0
+          && fVGTI[v0->GetNegID()]->Charge() > 0) {
+        fnDaug->SetTrack(fVGTI[v0->GetPosID()], evt);
+        fpDaug->SetTrack(fVGTI[v0->GetNegID()], evt);
         this->SetDaughterInfo(v0);
         this->fHasDaughter = true;
       } else {

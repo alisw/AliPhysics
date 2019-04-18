@@ -610,7 +610,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         fHists->FillTPCCrossedRowCut(i, Track->GetTPCCrossedRows());
         fHists->FillTPCRatioCut(i, Track->GetRatioCr());
         fHists->FillTPCClsS(i, Track->GetTPCClsC());
-        for (int j = 0; j < 6; ++j) {
+        for (size_t j = 0; j < Track->GetITSHits().size(); ++j) {
           if (Track->GetITSHit(j)) {
             fHists->FillTPCClsCPileUp(i, j, Track->GetTPCClsC());
           } else if (Track->GetHasITSHit()
@@ -626,7 +626,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
           fHists->FillTPCClsCPileUp(i, 14, Track->GetTPCClsC());
         }
 
-        for (int j = 0; j < 6; ++j) {
+        for (size_t j = 0; j < Track->GetSharedClusterITS().size(); ++j) {
           if (Track->GetSharedClusterITS(j)) {
             fHists->FillHasSharedClsITS(i, j + 1, 0);
           } else {
