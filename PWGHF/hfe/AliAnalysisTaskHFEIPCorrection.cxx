@@ -639,7 +639,7 @@ if(!MultSelection){
     {
         if(V0PlanePhi<0) V0PlanePhi+= 3.14159;
         if(V0PlanePhi>3.14159) V0PlanePhi-= 3.14159; // Just to be safe
-        if(rndm>0.884154+0.171683*TMath::Gaus(V0PlanePhi,0.609013, 0.705609)+0.0634041*TMath::Erf((V0PlanePhi-1.99791)/0.492068)) EPFlatteningReject = true;
+        if(rndm>0.888359/(0.884154+0.171683*TMath::Gaus(V0PlanePhi,0.609013, 0.705609)+0.0634041*TMath::Erf((V0PlanePhi-1.99791)/0.492068))) EPFlatteningReject = true;
     }
   }
 
