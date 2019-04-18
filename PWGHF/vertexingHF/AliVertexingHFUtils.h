@@ -85,9 +85,12 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k=1);
   static Double_t GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k=1);
   static TString  GetGenerator(Int_t label, AliAODMCHeader* header); 
+  static Bool_t IsTrackInjected(Int_t label,AliAODMCHeader *header,TClonesArray *arrayMC);
   static Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
   static void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
+  static void GetTrackPrimaryGenerator(Int_t label,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
   static Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
+  static Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODEvent* aod, AliAODMCHeader *header,TClonesArray *arrayMC);
   static Bool_t HasCascadeCandidateAnyDaughInjected(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   /// Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
