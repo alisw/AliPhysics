@@ -410,7 +410,7 @@ void AliXiStarPbPb::XiStarInit()
     
     
     fMaxDecayLength = 100.;
-    fMassWindow = 0.007;
+    fMassWindow = 0.006;
     
     /////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////
@@ -428,12 +428,11 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[0][5] = 0.11;
     fCutValues[0][6] = 0.035;
     fCutValues[0][7] = 0.06;
-    fCutValues[0][8] = 2.5;
-    fCutValues[0][9] = 1.5; // tight selection of DCA p-pi less then 0.95 (0.1) loose (1.5)
-    fCutValues[0][10] = 1.5; // tight selection of DCA L-pi less then 0.275 (0.3) loose (1.5)
-    fCutValues[0][11] = 0.998; //tight selection of CPA L (0.998) loose (0.95)
-    fCutValues[0][12] = 0.9992; //tight selection of CPA Xi (0.9992) loose (0.95)
-    
+    fCutValues[0][8] = 0.5;
+    fCutValues[0][9] = 0.8; //  selection of DCA p-pi
+    fCutValues[0][10] = 0.6; //  selection of DCA L-pi
+    fCutValues[0][11] = 0.997; // selection of CPA L
+    fCutValues[0][12] = 0.996; // selection of CPA Xi
     
     
     for(int cv=1; cv<kNCutVariations; cv++){
@@ -442,30 +441,29 @@ void AliXiStarPbPb::XiStarInit()
         }
     }
     
+    // Loose
+    fCutValues[1][0] = 60; fCutValues[1][1] = 60; fCutValues[1][2] = 60; fCutValues[1][3] = 60;
+    fCutValues[2][4] = 0.1;
+    fCutValues[3][5] = 0.1;
+    fCutValues[4][6] = 0.03;
+    fCutValues[5][7] = 0.05;
+    fCutValues[6][8] = 0.6;
+    fCutValues[7][9] = 0.9;
+    fCutValues[8][10] = 0.7;
+    fCutValues[9][11] = 0.995;
+    fCutValues[10][12] = 0.995;
     
-    // Open CPA L only
-    fCutValues[1][0] = 70; fCutValues[1][1] = 70; fCutValues[1][2] = 70; fCutValues[1][3] = 70;
-    fCutValues[2][4] = 0.05; //checking for loose PV-DCA
-    fCutValues[3][5] = 0.05; //checking for loose PV-DCA
-    fCutValues[4][6] = 0.035;
-    fCutValues[5][7] = 0.06;
-    fCutValues[6][8] = 2.5;
-    fCutValues[7][9] = 1.25;
-    fCutValues[8][10] = 1.0;
-    fCutValues[9][11] = 0.995; //checking t CPA V0
-    fCutValues[10][12] = 0.995; //checking t CPA Xi
-    
-    // Open CPA L and Xi
-    fCutValues[11][0] = 70; fCutValues[11][1] = 70; fCutValues[11][2] = 70; fCutValues[11][3] = 70;// 80
-    fCutValues[12][4] = 0.11;
-    fCutValues[13][5] = 0.11;
-    fCutValues[14][6] = 0.035;
-    fCutValues[15][7] = 0.06;
-    fCutValues[16][8] = 2.5;
-    fCutValues[17][9] = 1.0;
+    // Tight
+    fCutValues[11][0] = 80; fCutValues[11][1] = 80; fCutValues[11][2] = 80; fCutValues[11][3] = 80;
+    fCutValues[12][4] = 0.12;
+    fCutValues[13][5] = 0.12;
+    fCutValues[14][6] = 0.04;
+    fCutValues[15][7] = 0.07;
+    fCutValues[16][8] = 0.4;
+    fCutValues[17][9] = 0.7;
     fCutValues[18][10] = 0.5;
-    fCutValues[19][11] = 0.997;  //checking t CPA V0
-    fCutValues[20][12] = 0.997; //checking t CPA Xi
+    fCutValues[19][11] = 0.998;
+    fCutValues[20][12] = 0.998;
     
     /*
      //systematic variation// Loose
@@ -693,8 +691,8 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     
     /* DCA xy distiribution with pT dependent cut*/
-    TH1F *fDCADist_3rd_pi_pT = new TH1F("fDCADist_3rd_pi_pT","DCA distribution 3rd pion",300,0,3);
-    fOutputList->Add(fDCADist_3rd_pi_pT);
+    //TH1F *fDCADist_3rd_pi_pT = new TH1F("fDCADist_3rd_pi_pT","DCA distribution 3rd pion",300,0,3);
+    //fOutputList->Add(fDCADist_3rd_pi_pT);
     
     
     TH1F *fDCADist_lambda = new TH1F("fDCADist_lambda","DCA distribution Lambda",200,0,0.5);
@@ -1261,6 +1259,9 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(fTempStruct[myTracks].fNclusTPC < 60) continue;
         if(fTempStruct[myTracks].fDCAZ > 2.) continue;
         if(fTempStruct[myTracks].fEta > 0.8) continue;
+        if(fTempStruct[myTracks].fDCAXY > .5) continue;
+
+        
         myTracks++;
     }
     
@@ -1739,7 +1740,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                 
                 ((TH1F*)fOutputList->FindObject("fQAXiStarYDist"))->Fill(xiStarY);
                 
-                if(fDecayParameters[8]<(0.026 + 0.05/pow((fEvt+EN)->fTracks[l].fPt,1.01))) ((TH1F*)fOutputList->FindObject("fDCADist_3rd_pi_pT"))->Fill(fDecayParameters[8]); // 10 sigma cut
+                //if(fDecayParameters[8]<(0.026 + 0.05/pow((fEvt+EN)->fTracks[l].fPt,1.01))) ((TH1F*)fOutputList->FindObject("fDCADist_3rd_pi_pT"))->Fill(fDecayParameters[8]); // 10 sigma cut
                 
                 
                 for(int cv=0; cv<kNCutVariations; cv++){
