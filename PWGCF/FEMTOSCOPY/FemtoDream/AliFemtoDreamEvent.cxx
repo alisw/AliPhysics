@@ -134,7 +134,6 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
 void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   AliAODVertex *vtx = evt->GetPrimaryVertex();
   AliAODVZERO *vZERO = evt->GetVZEROData();
-  AliAODHeader *header = dynamic_cast<AliAODHeader*>(evt->GetHeader());
   if (!vtx) {
     this->fHasVertex = false;
   } else {
@@ -338,8 +337,6 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
     double pt = aodtrack->Pt();
     double px = aodtrack->Px();
     double py = aodtrack->Py();
-    double pz = aodtrack->Pz();
-    double eta = aodtrack->Eta();
 
     ptTot += pt;
 

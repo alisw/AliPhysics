@@ -493,7 +493,6 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
   fSidebandDown.clear();
   int nSigma = 0;
   const float lambdaMass = fDataBasePDG.GetParticle(fPDGDaughter1)->Mass();
-  const float photonMass = fDataBasePDG.GetParticle(fPDGDaughter2)->Mass();
   // SAME EVENT
   AliFemtoDreamv0 sigma;
   for (const auto &photon : photonCandidates) {
@@ -526,10 +525,11 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
         fHistArmenterosAfter->Fill(armAlpha, armQt);
       }
 
-      int label = -10;
-      int pdgLambdaMother = 0;
-      int pdgPhotonMother = 0;
-      //      if (fIsMC) {
+      // TODO Implement MC handling
+      // int label = -10;
+      // int pdgLambdaMother = 0;
+      // int pdgPhotonMother = 0;
+      // if (fIsMC) {
       //        label =
       //            sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1,
       //            fPDGDaughter2}},
