@@ -426,8 +426,13 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
                                                         nTrack,
                                                         AliPID::kPion);
 
+    Float_t nSigBachKaon = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                        nTrack,
+                                                        AliPID::kKaon);
+
     // if the Bachelor is not a pion, the candidate can go
-    if (!(nSigBachPion < fCascDaugnSigTPCMax)) {
+    if (!((nSigBachPion < fCascDaugnSigTPCMax)||
+        (nSigBachKaon < fCascDaugnSigTPCMax))) {
       return false;
     }
     // if the daughter tracks are not a proton or a pion within loose cuts, the candidate can be rejected
