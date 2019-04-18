@@ -219,7 +219,7 @@ void AliAnalysisTaskUEStudy::AnaMCParticle()
     
     if (fLoopCount==2) {
         //pt:ptmax:ntracksaway:cosdphi:ntracksaway:ntrackstransverse:ntrackstowards
-        FillHist(fHistUETracks,fMCPt,fMCPtMax,cosdphi,fMCNChAway,fMCNChTransverse,fMCNChTowards);        
+        FillHist(fHistUETracksMC,fMCPt,fMCPtMax,cosdphi,fMCNChAway,fMCNChTransverse,fMCNChTowards);        
     }
 }
 

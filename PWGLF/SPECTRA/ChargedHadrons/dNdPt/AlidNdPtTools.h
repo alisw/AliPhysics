@@ -29,6 +29,8 @@ class AlidNdPtTools : public TObject
         static void            Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
         static Double_t        MCScalingFactor(ProductionType prod, ParticleType part, Double_t pt);  // this is a temp solution, to be replace by MCSpectraWeights       
         static ParticleType    ParticleTypeFromPDG(Int_t pdgCode);
+        static void            Range2Pi(Double_t &val) {while (val>=2*TMath::Pi()) val-=2*TMath::Pi(); while (val<0) val+=2*TMath::Pi(); } // change range: 0 <= val < 2Pi
+        static void            Range1Pi(Double_t &val) {while (val>=TMath::Pi()) val-=2*TMath::Pi(); while (val<-TMath::Pi()) val+=2*TMath::Pi(); }  // change range: -Pi <= val < Pi
         
         static AliESDtrackCuts* CreateESDtrackCuts(const char* option); // options   
 
