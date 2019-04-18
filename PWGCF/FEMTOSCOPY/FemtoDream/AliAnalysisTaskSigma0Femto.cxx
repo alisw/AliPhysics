@@ -170,25 +170,6 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   fEvent->SetEvent(evt);
   if (!fEvtCuts->isSelected(fEvent)) return;
 
-  // PROTON SELECTION
-  const int multiplicity = fEvent->GetMultiplicity();
-  UInt_t filterBitProton = fTrackCutsPartProton->GetFilterBit();
-  bool useTPConlyTrack = (filterBitProton == 128);
-  static std::vector<AliFemtoDreamBasePart> particles;
-  particles.clear();
-  static std::vector<AliFemtoDreamBasePart> antiParticles;
-  antiParticles.clear();
-  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
-    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(evt->GetTrack(iTrack));
-    fProtonTrack->SetTrack(esdTrack, fMCEvent, multiplicity, useTPConlyTrack);
-    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
-      particles.push_back(*fProtonTrack);
-    }
-    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
-      antiParticles.push_back(*fProtonTrack);
-    }
-  }
-
   // LAMBDA SELECTION
   fV0Cuts->SelectV0(fInputEvent, fMCEvent);
 
@@ -231,6 +212,25 @@ void AliAnalysisTaskSigma0Femto::UserExec(Option_t * /*option*/) {
   CastToVector(fSigmaCuts->GetSidebandDown(), sigma0sidebandLow, fMCEvent);
   CastToVector(fAntiSigmaCuts->GetSidebandDown(), antiSigma0sidebandLow,
                fMCEvent);
+
+  // PROTON SELECTION
+  const int multiplicity = fEvent->GetMultiplicity();
+  UInt_t filterBitProton = fTrackCutsPartProton->GetFilterBit();
+  bool useTPConlyTrack = (filterBitProton == 128);
+  static std::vector<AliFemtoDreamBasePart> particles;
+  particles.clear();
+  static std::vector<AliFemtoDreamBasePart> antiParticles;
+  antiParticles.clear();
+  for (int iTrack = 0; iTrack < evt->GetNumberOfTracks(); ++iTrack) {
+    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(evt->GetTrack(iTrack));
+    fProtonTrack->SetTrack(esdTrack, fMCEvent, multiplicity, useTPConlyTrack);
+    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
+      particles.push_back(*fProtonTrack);
+    }
+    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
+      antiParticles.push_back(*fProtonTrack);
+    }
+  }
 
   fPairCleaner->CleanTrackAndDecay(&particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&antiParticles, &antiSigma0particles, 1);
