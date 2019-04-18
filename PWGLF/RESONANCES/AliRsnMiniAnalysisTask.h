@@ -68,7 +68,7 @@ public:
    void                SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
    void                SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
    void                SetDselection(UShort_t originDselection);
-   void 	           SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+   void 	              SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
    void                SetMotherAcceptanceCutMinPt(Float_t minPt)  {fMotherAcceptanceCutMinPt = minPt;}
    void                SetMotherAcceptanceCutMaxEta(Float_t maxEta){fMotherAcceptanceCutMaxEta = maxEta;}
    void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
@@ -112,9 +112,7 @@ private:
    void     FillTrueMotherAOD(AliRsnMiniEvent *event);
    void     StoreTrueMother(AliRsnMiniPair *pair, AliRsnMiniEvent *event);
    Bool_t   EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2);
-   AliQnCorrectionsQnVector * GetQnVectorFromList(const TList *list,
-                                                        const char *subdetector,
-                                                        const char *expectedstep) const;
+   AliQnCorrectionsQnVector * GetQnVectorFromList(const TList *list, const char *subdetector, const char *expectedstep) const;
 
    Bool_t               fUseMC;           //  use or not MC info
    Int_t                fEvNum;           //! absolute event counter
@@ -128,33 +126,31 @@ private:
    AliQnCorrectionsManager *fFlowQnVectorMgr; // Qn vector manager
    TString              fFlowQnVectorSubDet;
    TString              fFlowQnVectorExpStep;
-
    Bool_t               fContinuousMix;   //  mixing --> technique chosen (continuous or binned)
    Int_t                fNMix;            //  mixing --> required number of mixes
    Double_t             fMaxDiffMult;     //  mixing --> max difference in multiplicity
    Double_t             fMaxDiffVz;       //  mixing --> max difference in Vz of prim vert
    Double_t             fMaxDiffAngle;    //  mixing --> max difference in reaction plane angle
 
-   TList               *fOutput;          //  output list
+   TList               *fOutput;          //!>!  output list
    TClonesArray         fHistograms;      //  list of histogram definitions
    TClonesArray         fValues;          //  list of values to be computed
-   TH1F                *fHEventStat;      //  histogram of event statistics
-   TH1F                *fHAEventsVsMulti; //  histogram of event statistics
-   TH1F                *fHAEventsVsTracklets; //  histogram of event statistics
-   TH2F                *fHAEventVzCent;       //  histogram of vertex-z vs. multiplicity/centrality
-   TH2F                *fHAEventSpherocityCent; //  histogram of spherocity vs. multiplicity/centrality
-   TH2F                *fHAEventMultiCent;//  histogram of multiplicity vs. centrality
-   TH2F                *fHAEventRefMultiCent;//  histogram of reference multiplicity vs. centrality
-   TH2F                *fHAEventPlane;    //  histogram of event plane vs. multiplicity/centrality
-   AliAnalysisFilter   *fTrackFilter;
+   TH1F                *fHEventStat;      //!>!  histogram of event statistics
+   TH1F                *fHAEventsVsMulti; //!>!  histogram of event statistics
+   TH1F                *fHAEventsVsTracklets; //!>!  histogram of event statistics
+   TH2F                *fHAEventVzCent;       //!>!  histogram of vertex-z vs. multiplicity/centrality
+   TH2F                *fHAEventSpherocityCent; //!>!  histogram of spherocity vs. multiplicity/centrality
+   TH2F                *fHAEventMultiCent;    //!>!  histogram of multiplicity vs. centrality
+   TH2F                *fHAEventRefMultiCent; //!>!  histogram of reference multiplicity vs. centrality
+   TH2F                *fHAEventPlane;        //!>!  histogram of event plane vs. multiplicity/centrality
 
    AliRsnCutSet        *fEventCuts;       //  cuts on events
    TObjArray            fTrackCuts;       //  list of single track cuts
-   AliRsnEvent          fRsnEvent;        //! interface object to the event
-   TTree               *fEvBuffer;        //! mini-event buffer
-   AliTriggerAnalysis  *fTriggerAna;      //! trigger analysis
-   AliESDtrackCuts     *fESDtrackCuts;    //! quality cut for ESD tracks
-   AliRsnMiniEvent     *fMiniEvent;       //! mini-event cursor
+   AliRsnEvent          fRsnEvent;        //!>! interface object to the event
+   TTree               *fEvBuffer;        //!>! mini-event buffer
+   AliTriggerAnalysis  *fTriggerAna;      //!>! trigger analysis
+   AliESDtrackCuts     *fESDtrackCuts;    //!>! quality cut for ESD tracks
+   AliRsnMiniEvent     *fMiniEvent;       //!>! mini-event cursor
    Bool_t               fBigOutput;       // flag if open file for output list
    Int_t                fMixPrintRefresh; // how often info in mixing part is printed
    Bool_t               fCheckDecay;      // check if the mother decayed via the requested channel
@@ -162,19 +158,20 @@ private:
    Bool_t               fCheckP;          // flag to set in order to check the momentum conservation for mothers
    
    Bool_t               fCheckFeedDown;      // flag to set in order to check the particle feed down (specific for D meson analysis)
-   UShort_t 		    fOriginDselection;   // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty (specific for D meson analysis)
-   Bool_t   		    fKeepDfromB;  	     // flag for the feed down from b quark decay (specific for D meson analysis)
-   Bool_t   		    fKeepDfromBOnly;     // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
-   Bool_t 		        fRejectIfNoQuark;    // flag to remove events not generated with PYTHIA
-   Float_t              fMotherAcceptanceCutMinPt;              // cut value to apply when selecting the mothers inside a defined acceptance
-   Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
-   Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
-   Bool_t               fRsnTreeInFile;  // flag rsn tree should be saved in file instead of memory
+   UShort_t 		      fOriginDselection;   // flag to select D0 origins. 0 Only from charm 1 only from beauty 2 both from charm and beauty (specific for D meson analysis)
+   Bool_t   		      fKeepDfromB;  	     // flag for the feed down from b quark decay (specific for D meson analysis)
+   Bool_t   		      fKeepDfromBOnly;     // flag to keep only the charm particles that comes from beauty decays (specific for D meson analysis)
+   Bool_t 		         fRejectIfNoQuark;    // flag to remove events not generated with PYTHIA
+   Float_t              fMotherAcceptanceCutMinPt;  // cut value to apply when selecting the mothers inside a defined acceptance
+   Float_t              fMotherAcceptanceCutMaxEta; // cut value to apply when selecting the mothers inside a defined acceptance
+   Bool_t               fKeepMotherInAcceptance;    // flag to keep also mothers in acceptance
+   Bool_t               fRsnTreeInFile;     // flag rsn tree should be saved in file instead of memory
    Bool_t               fComputeSpherocity; // compute spherocity, false by default since spherocity calculation is time-consuming
-   Double_t             fSpherocity; // stores value of spherocity
-   TObjArray            fResonanceFinders; // list of AliRsnMiniResonanceFinder objects
+   AliAnalysisFilter   *fTrackFilter;       //!>! track filter for spherocity estimator 
+   Double_t             fSpherocity;        // stores value of spherocity
+   TObjArray            fResonanceFinders;  // list of AliRsnMiniResonanceFinder objects
 
-   ClassDef(AliRsnMiniAnalysisTask, 18);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 19);     
 };
 
 
