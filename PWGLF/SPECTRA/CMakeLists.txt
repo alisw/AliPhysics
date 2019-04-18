@@ -70,6 +70,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AlimPtMatrix.cxx
   ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
+  ChargedHadrons/AliMCSpectraWeights/AliMCSpectraWeightsAnalysisTask.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx

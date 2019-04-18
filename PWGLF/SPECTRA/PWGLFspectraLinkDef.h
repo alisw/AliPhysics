@@ -35,6 +35,7 @@
 #pragma link C++ class AlimPtAnalysis+;
 #pragma link C++ class AlimPtMatrix+;
 #pragma link C++ class AlimPtMatrixZDC+;
+#pragma link C++ class AliMCSpectraWeightsAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxTest+;
 #pragma link C++ class AliAnalysisTaskPPvsMult+;
