@@ -19,10 +19,8 @@
 // P. Fecchio, pfecchio@cern.ch
 ///////////////////////////////////////////////////////////////////////////
 
-#include <array>
 #include <climits>
 #include <numeric>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -209,6 +207,14 @@ bool IsReflectionCandidate(AliMCEvent *mcEvent, int mId, AliVParticle *p1, AliVP
   }
   return (n_deu == 1 && n_p == 1 && n_pi == 1);
 }
+
+bool HasTOF(AliVTrack *track) {
+  const bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  const bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  const float len       = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime && (len > 350.);
+}
+
 } // namespace
 
 //________________________________________________________________________
@@ -225,6 +231,12 @@ AliAnalysisTaskHypertriton3New::AliAnalysisTaskHypertriton3New(TString taskname)
       fOutputList{nullptr},                            //
       fTree{nullptr},                                  //
       fTreeHyp3BodyVarTracks{nullptr},                 //
+      fTreeHyp3BodyVarNclsTPC{0},                      //
+      fTreeHyp3BodyVarNclsITS{0},                      //
+      fTreeHyp3BodyVarGlobalChi2{0},                   //
+      fTreeHyp3BodyVarNsigmaTPC{0},                    //
+      fTreeHyp3BodyVarNsigmaTOF{0},                    //
+      fTreeHyp3BodyVarFlags{0},                        //
       fTreeHyp3BodyVarPDGcodes{0},                     //
       fTreeHyp3BodyVarEventId{0},                      //
       fTreeHyp3BodyVarMotherId{0},                     //
@@ -311,6 +323,30 @@ void AliAnalysisTaskHypertriton3New::UserCreateOutputObjects() {
   fTree->Branch("fTreeHyp3BodyVarTrack0", &fTreeHyp3BodyVarTracks[0], 16000, 99);
   fTree->Branch("fTreeHyp3BodyVarTrack1", &fTreeHyp3BodyVarTracks[1], 16000, 99);
   fTree->Branch("fTreeHyp3BodyVarTrack2", &fTreeHyp3BodyVarTracks[2], 16000, 99);
+
+  fTree->Branch("fTreeHyp3BodyVarNclsTPC0", &fTreeHyp3BodyVarNclsTPC[0], "fTreeHyp3BodyVarNclsTPC0/I");
+  fTree->Branch("fTreeHyp3BodyVarNclsTPC1", &fTreeHyp3BodyVarNclsTPC[1], "fTreeHyp3BodyVarNclsTPC1/I");
+  fTree->Branch("fTreeHyp3BodyVarNclsTPC2", &fTreeHyp3BodyVarNclsTPC[2], "fTreeHyp3BodyVarNclsTPC2/I");
+
+  fTree->Branch("fTreeHyp3BodyVarNclsITS0", &fTreeHyp3BodyVarNclsITS[0], "fTreeHyp3BodyVarNclsITS0/I");
+  fTree->Branch("fTreeHyp3BodyVarNclsITS1", &fTreeHyp3BodyVarNclsITS[1], "fTreeHyp3BodyVarNclsITS1/I");
+  fTree->Branch("fTreeHyp3BodyVarNclsITS2", &fTreeHyp3BodyVarNclsITS[2], "fTreeHyp3BodyVarNclsITS2/I");
+
+  fTree->Branch("fTreeHyp3BodyVarGlobalChi20", &fTreeHyp3BodyVarGlobalChi2[0], "fTreeHyp3BodyVarGlobalChi20/F");
+  fTree->Branch("fTreeHyp3BodyVarGlobalChi21", &fTreeHyp3BodyVarGlobalChi2[1], "fTreeHyp3BodyVarGlobalChi21/F");
+  fTree->Branch("fTreeHyp3BodyVarGlobalChi22", &fTreeHyp3BodyVarGlobalChi2[2], "fTreeHyp3BodyVarGlobalChi22/F");
+
+  fTree->Branch("fTreeHyp3BodyVarNsigmaTPC0", &fTreeHyp3BodyVarNsigmaTPC[0], "fTreeHyp3BodyVarNsigmaTPC0/F");
+  fTree->Branch("fTreeHyp3BodyVarNsigmaTPC1", &fTreeHyp3BodyVarNsigmaTPC[1], "fTreeHyp3BodyVarNsigmaTPC1/F");
+  fTree->Branch("fTreeHyp3BodyVarNsigmaTPC2", &fTreeHyp3BodyVarNsigmaTPC[2], "fTreeHyp3BodyVarNsigmaTPC2/F");
+
+  fTree->Branch("fTreeHyp3BodyVarNsigmaTOF0", &fTreeHyp3BodyVarNsigmaTOF[0], "fTreeHyp3BodyVarNsigmaTOF0/F");
+  fTree->Branch("fTreeHyp3BodyVarNsigmaTOF1", &fTreeHyp3BodyVarNsigmaTOF[1], "fTreeHyp3BodyVarNsigmaTOF1/F");
+  fTree->Branch("fTreeHyp3BodyVarNsigmaTOF2", &fTreeHyp3BodyVarNsigmaTOF[2], "fTreeHyp3BodyVarNsigmaTOF2/F");
+
+  fTree->Branch("fTreeHyp3BodyVarFlags0", &fTreeHyp3BodyVarFlags[0], "fTreeHyp3BodyVarFlags0/l");
+  fTree->Branch("fTreeHyp3BodyVarFlags1", &fTreeHyp3BodyVarFlags[1], "fTreeHyp3BodyVarFlags1/l");
+  fTree->Branch("fTreeHyp3BodyVarFlags2", &fTreeHyp3BodyVarFlags[2], "fTreeHyp3BodyVarFlags2/l");
 
   fTree->Branch("fTreeHyp3BodyVarPDGcode0", &fTreeHyp3BodyVarPDGcodes[0], "fTreeHyp3BodyVarPDGcode0/I");
   fTree->Branch("fTreeHyp3BodyVarPDGcode1", &fTreeHyp3BodyVarPDGcodes[1], "fTreeHyp3BodyVarPDGcode1/I");
@@ -447,8 +483,6 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
     if (!esdTrack) continue;
 
     /// quality track selections
-    // if (((esdTrack->GetStatus() & AliVTrack::kTPCrefit) == 0 && (esdTrack->GetStatus() & AliVTrack::kITSrefit) == 0)
-    // ||
     if (((esdTrack->GetStatus() & AliVTrack::kTPCrefit) == 0) || esdTrack->GetKinkIndex(0) > 0 ||
         esdTrack->GetTPCNcls() < 70 || esdTrack->GetTPCchi2() > 4 * esdTrack->GetTPCNcls() ||
         std::fabs(esdTrack->Eta()) > 0.9)
@@ -472,15 +506,15 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
       float trackSign = esdTrack->GetSign();
 
       if (trackSign > 0) {
-        if (nSigmaDeu < 3.) vDeuteronP.push_back(tmc);
-        if (nSigmaP < 3.) vProtonP.push_back(tmc);
-        if (nSigmaPi < 3.) vPionP.push_back(tmc);
+        if (nSigmaDeu < 5.) vDeuteronP.push_back(tmc);
+        if (nSigmaP < 5.) vProtonP.push_back(tmc);
+        if (nSigmaPi < 5.) vPionP.push_back(tmc);
       }
 
       if (trackSign < 0) {
-        if (nSigmaDeu < 3.) vDeuteronM.push_back(tmc);
-        if (nSigmaP < 3.) vProtonM.push_back(tmc);
-        if (nSigmaPi < 3.) vPionM.push_back(tmc);
+        if (nSigmaDeu < 5.) vDeuteronM.push_back(tmc);
+        if (nSigmaP < 5.) vProtonM.push_back(tmc);
+        if (nSigmaPi < 5.) vPionM.push_back(tmc);
       }
     }
   }
@@ -591,9 +625,39 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
 
   for (auto cand : candidates) {
     /// fill the tree of findable
-    fTreeHyp3BodyVarTracks[0] = cand.track_deu;
-    fTreeHyp3BodyVarTracks[1] = cand.track_p;
-    fTreeHyp3BodyVarTracks[2] = cand.track_pi;
+    fTreeHyp3BodyVarTracks[0] = static_cast<AliExternalTrackParam *>(cand.track_deu);
+    fTreeHyp3BodyVarTracks[1] = static_cast<AliExternalTrackParam *>(cand.track_p);
+    fTreeHyp3BodyVarTracks[2] = static_cast<AliExternalTrackParam *>(cand.track_pi);
+
+    fTreeHyp3BodyVarNclsTPC[0] = (Int_t)cand.track_deu->GetTPCNcls();
+    fTreeHyp3BodyVarNclsTPC[1] = (Int_t)cand.track_p->GetTPCNcls();
+    fTreeHyp3BodyVarNclsTPC[2] = (Int_t)cand.track_pi->GetTPCNcls();
+
+    fTreeHyp3BodyVarNclsITS[0] = (Int_t)cand.track_deu->GetITSNcls();
+    fTreeHyp3BodyVarNclsITS[1] = (Int_t)cand.track_p->GetITSNcls();
+    fTreeHyp3BodyVarNclsITS[2] = (Int_t)cand.track_pi->GetITSNcls();
+
+    fTreeHyp3BodyVarGlobalChi2[0] = (Float_t)cand.track_deu->GetGlobalChi2();
+    fTreeHyp3BodyVarGlobalChi2[1] = (Float_t)cand.track_p->GetGlobalChi2();
+    fTreeHyp3BodyVarGlobalChi2[2] = (Float_t)cand.track_pi->GetGlobalChi2();
+
+    fTreeHyp3BodyVarNsigmaTPC[0] = std::abs(fPIDResponse->NumberOfSigmasTPC(cand.track_deu, AliPID::kDeuteron));
+    fTreeHyp3BodyVarNsigmaTPC[1] = std::abs(fPIDResponse->NumberOfSigmasTPC(cand.track_p, AliPID::kProton));
+    fTreeHyp3BodyVarNsigmaTPC[2] = std::abs(fPIDResponse->NumberOfSigmasTPC(cand.track_pi, AliPID::kPion));
+
+    HasTOF(cand.track_deu)
+        ? fTreeHyp3BodyVarNsigmaTOF[0] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_deu, AliPID::kDeuteron))
+        : fTreeHyp3BodyVarNsigmaTOF[0] = -1.0;
+    HasTOF(cand.track_p)
+        ? fTreeHyp3BodyVarNsigmaTOF[0] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_p, AliPID::kProton))
+        : fTreeHyp3BodyVarNsigmaTOF[0] = -1.0;
+    HasTOF(cand.track_pi)
+        ? fTreeHyp3BodyVarNsigmaTOF[0] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_pi, AliPID::kPion))
+        : fTreeHyp3BodyVarNsigmaTOF[0] = -1.0;
+
+    fTreeHyp3BodyVarFlags[0] = (ULong64_t)cand.track_deu->GetStatus();
+    fTreeHyp3BodyVarFlags[1] = (ULong64_t)cand.track_p->GetStatus();
+    fTreeHyp3BodyVarFlags[2] = (ULong64_t)cand.track_pi->GetStatus();
 
     fTreeHyp3BodyVarPDGcodes[0] = cand.part1->PdgCode();
     fTreeHyp3BodyVarPDGcodes[1] = cand.part2->PdgCode();
