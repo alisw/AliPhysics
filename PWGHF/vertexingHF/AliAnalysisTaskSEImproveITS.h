@@ -42,6 +42,7 @@ public:
   void SetUpdatePulls(Bool_t opt=kTRUE){fUpdatePulls=opt;}
   void SetMimicData(Bool_t opt=kFALSE){fMimicData=opt;}
   void SetAOD(Bool_t flag=kTRUE) { fIsAOD=flag; return; }
+  void SetSmearOnlySignal(Bool_t opt=kTRUE) {fSmearOnlySignal=opt;}
 
 private:
   AliAnalysisTaskSEImproveITS(const AliAnalysisTaskSEImproveITS&);
@@ -256,7 +257,8 @@ private:
   Bool_t fUpdateSTCovMatrix; /// flag to switch on/off the update of the single track covariance matrix
   Bool_t fUpdatePulls; /// flag to switch on/off the correction of the pulls
   Bool_t fMimicData;
-  Bool_t fIsAOD;          // flag to run on AOD 
+  Bool_t fIsAOD;          /// flag to run on AOD
+  Bool_t fSmearOnlySignal;  /// flag to control whether to smear only injected signal 
   TClonesArray *fMCs;      // pointer to AOD MC info
   TList   *fDebugOutput; //!<! collection of debug output
   TNtuple *fDebugNtuple; //!<! debug send on output slot 1
@@ -264,7 +266,7 @@ private:
   Int_t   fNDebug;       /// Max number of debug entries into Ntuple
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITS,11);
+  ClassDef(AliAnalysisTaskSEImproveITS,12);
   /// \endcond
 };
 
