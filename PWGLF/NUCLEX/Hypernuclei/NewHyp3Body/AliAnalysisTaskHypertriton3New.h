@@ -34,7 +34,7 @@
 
 class AliPIDResponse;
 class AliESDtrackCuts;
-class AliESDtrack;
+class AliExternalTrackParam;
 class TTree;
 class TH1D;
 class TH3D;
@@ -70,11 +70,19 @@ private:
   float fCosPoiningAngleLimit;
 
   // output object
-  TList *fOutputList;   //! Output list
-  TTree *fTree; //!
+  TList *fOutputList; //! Output list
+  TTree *fTree;       //!
 
   // Findable Tree
-  AliESDtrack *fTreeHyp3BodyVarTracks[3];
+  AliExternalTrackParam *fTreeHyp3BodyVarTracks[3];
+  
+  Int_t fTreeHyp3BodyVarNclsTPC[3];
+  Int_t fTreeHyp3BodyVarNclsITS[3];
+  Float_t fTreeHyp3BodyVarGlobalChi2[3];
+  Float_t fTreeHyp3BodyVarNsigmaTPC[3];
+  Float_t fTreeHyp3BodyVarNsigmaTOF[3];
+  ULong64_t fTreeHyp3BodyVarFlags[3];
+
   Int_t fTreeHyp3BodyVarPDGcodes[3];
 
   ULong64_t fTreeHyp3BodyVarEventId;
