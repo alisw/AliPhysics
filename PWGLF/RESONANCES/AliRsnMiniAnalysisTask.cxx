@@ -104,8 +104,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fKeepMotherInAcceptance(kFALSE),
    fRsnTreeInFile(kFALSE),
    fComputeSpherocity(kFALSE),
-   fSpherocity(-10),
    fTrackFilter(0x0),
+   fSpherocity(-10),
    fResonanceFinders(0)
 {
 //
@@ -166,8 +166,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fKeepMotherInAcceptance(kFALSE),
    fRsnTreeInFile(saveRsnTreeInFile),
    fComputeSpherocity(kFALSE),
-   fSpherocity(-10),
    fTrackFilter(0x0),
+   fSpherocity(-10),
    fResonanceFinders(0)
 {
 //
@@ -234,8 +234,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
    fRsnTreeInFile(copy.fRsnTreeInFile),
    fComputeSpherocity(copy.fComputeSpherocity),
-   fSpherocity(copy.fSpherocity),
    fTrackFilter(copy.fTrackFilter),
+   fSpherocity(copy.fSpherocity),
    fResonanceFinders(copy.fResonanceFinders)
 {
 //
@@ -303,8 +303,8 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fKeepMotherInAcceptance = copy.fKeepMotherInAcceptance;
    fRsnTreeInFile = copy.fRsnTreeInFile;
    fComputeSpherocity = copy.fComputeSpherocity;
-   fSpherocity = copy.fSpherocity;
    fTrackFilter = copy.fTrackFilter;
+   fSpherocity = copy.fSpherocity;
    fResonanceFinders = copy.fResonanceFinders;
 
    return (*this);
@@ -406,7 +406,6 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(14, "Not Accepted - Past/Future");
    fHEventStat->GetXaxis()->SetBinLabel(15, "Not Accepted - Cluster-Tracklets Correlation");
    fHEventStat->GetXaxis()->SetBinLabel(16, "Not Accepted - All local cuts");
-   
    
    fOutput->Add(fHEventStat);
 
@@ -1302,6 +1301,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
   }
   spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
   if (GoodTracks > 2) return spherocity;
+  else return -10.0;
 }
 
 //__________________________________________________________________________________________________
