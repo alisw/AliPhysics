@@ -33,10 +33,11 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoCascadeHF.h"
+#include "AliAODMCHeader.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliNeutralTrackParam.h"
 #include "AliAnalysisTaskSEImproveITS.h"
-
+#include "AliVertexingHFUtils.h"
 //
 // Implementation of the "hybrid-approach" for ITS upgrade studies.
 // The tastk smears the track parameters according to estimations
@@ -216,6 +217,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fUpdatePulls(kTRUE),
    fMimicData(kFALSE),
    fIsAOD        (kTRUE),
+   fSmearOnlySignal(kFALSE),
    fMCs         (0),
    fDebugOutput (0),
    fDebugNtuple (0),
@@ -434,6 +436,7 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fUpdatePulls(kTRUE),
    fMimicData(kFALSE),
    fIsAOD        (kTRUE),
+   fSmearOnlySignal(kFALSE),
    fMCs         (0),
    fDebugOutput (0),
    fDebugNtuple (0),
@@ -1302,6 +1305,10 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
   if(fIsAOD) {
     
+    fMCs=static_cast<TClonesArray*>(ev->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(ev->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!fMCs || !mcHeader) return;
+
     // first loop on candidates to fill them in case of reduced AODs
     // this is done to have the same behaviour of the improver with full (pp, p-Pb) and recuced (Pb-Pb) candidates
     AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
@@ -1311,6 +1318,8 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     if (array2Prong) {
       for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
 	AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+	vHF->GetProng(ev,decay,0); // needed to fill fAODMap in AliAnalysisVertexingHF
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay);
       }
     }
@@ -1319,6 +1328,8 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     if (arrayCascade) {
       for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
 	AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+	vHF->GetProng(ev,decayDstar,0); // needed to fill fAODMap in AliAnalysisVertexingHF
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decayDstar,ev,mcHeader,fMCs)==kFALSE) continue;
 	vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE);
       }
     }
@@ -1327,18 +1338,19 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     if (array3Prong) {
       for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
 	AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+	vHF->GetProng(ev,decay,0); // needed to fill fAODMap in AliAnalysisVertexingHF
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay);
       }
     }
-    
+  
     
     // Smear all tracks
-    fMCs=static_cast<TClonesArray*>(ev->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-    if (!fMCs) return;
     if (fImproveTracks) {
       for(Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack) {
 	AliAODTrack * trk = dynamic_cast<AliAODTrack*>(ev->GetTrack(itrack));
 	if(!trk) AliFatal("Not a standard AOD");
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsTrackInjected(trk,mcHeader,fMCs)==kFALSE) continue;
 	SmearTrack(trk,bz);
       }
     }
@@ -1351,6 +1363,8 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     if (array2Prong) {
       for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
 	AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+	
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay))continue;
 	
 	// recalculate vertices
@@ -1414,6 +1428,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     if (arrayCascade) {
       for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
 	AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decayDstar,ev,mcHeader,fMCs)==kFALSE) continue;
 	if(!vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE))continue;
 	//Get D0 from D*
 	AliAODRecoDecayHF2Prong* decay=(AliAODRecoDecayHF2Prong*)decayDstar->Get2Prong();
@@ -1464,6 +1479,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     if (array3Prong) {
       for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
 	AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay))continue;
 	
 	// recalculate vertices
