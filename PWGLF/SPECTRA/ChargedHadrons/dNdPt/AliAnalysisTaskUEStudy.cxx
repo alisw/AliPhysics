@@ -199,7 +199,10 @@ void AliAnalysisTaskUEStudy::AnaTrack()
 
 void AliAnalysisTaskUEStudy::AnaMCParticle()
 {
-    if (TMath::Abs(fMCEta) > 0.8) return;       
+    if (!fMCisPrim) return;    
+    if (!fMCIsCharged) return;    
+    if (TMath::Abs(fMCEta) > 0.8) return;  
+    
         
     if (fLoopCount==0) {        
         if (fMCPt>fMCPtMax) { fMCPtMax = fMCPt; fMCPtMaxPhi = fMCPhi; }
