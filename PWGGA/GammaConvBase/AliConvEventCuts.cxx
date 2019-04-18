@@ -3977,7 +3977,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       Double_t threshold = thresholdEMCalL1[binRun];
 
       if (isMC && spreadEMCalL1[binRun] != 0.){
-        threshold = fRandom.Gaus(thresholdEMCalL0[binRun], spreadEMCalL0[binRun]);
+        threshold = fRandom.Gaus(thresholdEMCalL1[binRun], spreadEMCalL1[binRun]);
       }
 
 //       cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
@@ -4044,7 +4044,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       if (binRun==19) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
       if (isMC && spreadEMCalL1G2[binRun] != 0.){
-        threshold = fRandom.Gaus(thresholdEMCalL0[binRun], spreadEMCalL0[binRun]);
+        threshold = fRandom.Gaus(thresholdEMCalL1G2[binRun], spreadEMCalL1G2[binRun]);
       }
 //       cout << "\t L2 mod\t"<< threshold << endl;
 
