@@ -45,6 +45,7 @@ fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fEta(-9999),
 fPDGcode(-1),
 fTag(0),
 fNsigmaMaxForTag(0.02),
@@ -123,6 +124,7 @@ fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fEta(-9999),
 fPDGcode(-1),
 fTag(0),
 fNsigmaMaxForTag(0.02),
@@ -276,6 +278,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fPIDtree->Branch("pT",&fPt,"pT/s");
   fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
   fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
+  fPIDtree->Branch("eta",&fEta,"eta/S");
   if(!fFillTreeWithNsigmaPIDOnly) {
     fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
     fPIDtree->Branch("ToF",&fToF,"ToF/s");
@@ -402,6 +405,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     fPt = ConvertFloatToUnsignedShort(track->Pt()*1000);
     fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
     fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
+    fEta = ConvertFloatToShort(track->Eta()*1000);
 
     if(!fFillTreeWithNsigmaPIDOnly) {
       //TPC variables

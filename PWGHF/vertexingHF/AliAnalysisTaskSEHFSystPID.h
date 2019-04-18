@@ -115,6 +115,7 @@ private:
   unsigned char fTPCNclsPID;                       /// number of PID clusters in TPC to fill the tree
   unsigned short fTrackLength;                     /// track length for TOF PID
   unsigned short fStartTimeRes;                    /// start time resolution for TOF PID
+  short fEta;                                      /// pseudorapidity of the track
   short fPDGcode;                                  /// PDG code in case of MC to fill the tree
   unsigned char fTag;                              /// bit map for tag (see enum above)
   float fNsigmaMaxForTag;                          /// max nSigma value to tag kaons
@@ -155,7 +156,7 @@ private:
   float fPlimitsNsigmaTPCDataCorr[101];            /// array of p limits for data-driven NsigmaTPC correction
   int fNPbinsNsigmaTPCDataCorr;                    /// number of p bins for data-driven NsigmaTPC correction
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 4);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 5);
 };
 
 #endif
