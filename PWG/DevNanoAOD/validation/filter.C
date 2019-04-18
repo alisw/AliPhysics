@@ -66,5 +66,5 @@ void filter(TString from)
   mgr->PrintStatus();
   
   Printf("Starting Analysis....");
-  mgr->StartAnalysis("local", chain, 10);
+  mgr->StartAnalysis("local", chain, 20);
 }
