@@ -769,7 +769,7 @@ void AliAnalysisTaskMKBase::LoopOverAllTracks()
 
 void AliAnalysisTaskMKBase::LoopOverAllParticles()
 {    
-    if (!fMC) return;
+    if (!fIsMC) return;
     fMCnTracks = fMC->GetNumberOfTracks();
     for (Int_t i = 0; i < fMCnTracks; i++) {
         fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(i));
