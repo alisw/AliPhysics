@@ -379,6 +379,8 @@ public:
   virtual Int_t    GetNcls(Int_t /*idet*/) const {AliFatal("Not Implemented"); return 0;}; 
   virtual const Double_t *PID() const {AliFatal("Not Implemented"); return 0;}; 
 
+  virtual void GetImpactParameters(Float_t &xy,Float_t &z) const;  
+
   // PID access functions
   static Int_t GetPIDIndex(ENanoPIDResponse r, AliPID::EParticleType p)  { return fgPIDIndexes[r][p]; }
   static const char* GetPIDVarName(ENanoPIDResponse r, AliPID::EParticleType p) {  return Form("PID.%d.%s", r, AliPID::ParticleShortName(p)); }
