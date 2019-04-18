@@ -155,7 +155,9 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Bool_t                  fIsPileUpEvent;             //!<! is pileup event
         Bool_t                  fIsPileUpSPD;               //!<! is pileup from spd
         Bool_t                  fNOTIsVertexSelected2013pA; //!<! vertex 2013 pA rejected
-        Bool_t                  fIsPileupFromSPD508;        //!<! is pileup from spd(5,0,8)        
+        Bool_t                  fIsPileupFromSPD508;        //!<! is pileup from spd(5,0,8)     
+        
+        
         
         // track related properties
         AliESDtrack*            fESDTrack;              //!<! current esd track

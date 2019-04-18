@@ -78,10 +78,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
 
 void AliAnalysisTaskDCArStudy::AnaEvent()
 {
-   InitEvent();
-   InitEventMult();
-   InitEventCent();
-   InitMCEvent();   
+
    if (fEventCutsPassed) LoopOverAllTracks();
    
 }
@@ -89,13 +86,9 @@ void AliAnalysisTaskDCArStudy::AnaEvent()
 //_____________________________________________________________________________
 
 void AliAnalysisTaskDCArStudy::AnaTrack()
-{    
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
-    if (fESDtrackCuts[0]->AcceptTrack(fESDTrack)) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
-    if (fESDtrackCuts[1]->AcceptTrack(fESDTrack)) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
+{
+    if (!fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
+    if (!fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
 }
 
 //_____________________________________________________________________________

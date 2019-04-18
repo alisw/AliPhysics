@@ -66,8 +66,6 @@ void AliAnalysisTaskMKTest::AddOutput()
 
 void AliAnalysisTaskMKTest::AnaEvent()
 {
-   InitEvent();
-   InitMCEvent();
    if (!fEventCutsPassed)  return; 
    LoopOverAllTracks();
    
@@ -77,11 +75,7 @@ void AliAnalysisTaskMKTest::AnaEvent()
 
 void AliAnalysisTaskMKTest::AnaTrack()
 {
-    if (!fESDtrackCuts[0]->AcceptTrack(fESDTrack)) return;
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
+    if (!fAcceptTrack[0]) return;
     FillHist(fHistPt, fPt, fPtInner, fPtInnerTPC, fMCPt);
 }
 

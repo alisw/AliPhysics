@@ -89,9 +89,6 @@ void AliAnalysisTaskTPCMatchEff::AddOutput()
 
 void AliAnalysisTaskTPCMatchEff::AnaEvent()
 {
-   InitEvent();
-   InitMCEvent();
-   InitEventMult();
    LoopOverAllTracks();
    
 }
@@ -99,13 +96,8 @@ void AliAnalysisTaskTPCMatchEff::AnaEvent()
 //_____________________________________________________________________________
 
 void AliAnalysisTaskTPCMatchEff::AnaTrack()
-{    
-    InitTrackCuts();    
+{     
     if (!fAcceptTrack[0]) return;    
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
     if (fIsMC) {  
         FillHist(fHistMCMatchEff, fMultPercentileV0M, fPt, fPtInnerTPC, fEtaInnerTPC, fPhiInnerTPC, fAcceptTrack[1], fAcceptTrack[2], fAcceptTrack[3], fAcceptTrack[4], fMCPrimSec, fMCPt);
     } else { 

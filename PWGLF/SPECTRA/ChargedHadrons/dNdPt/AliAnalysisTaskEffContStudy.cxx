@@ -79,10 +79,7 @@ void AliAnalysisTaskEffContStudy::AddOutput()
 
 void AliAnalysisTaskEffContStudy::AnaEvent()
 {
-   InitEvent();
-   InitEventMult();
-   InitEventCent();
-   InitMCEvent();   
+
    if (!fEventCutsPassed)  return; 
    LoopOverAllTracks();
    LoopOverAllParticles();
@@ -94,10 +91,6 @@ void AliAnalysisTaskEffContStudy::AnaEvent()
 void AliAnalysisTaskEffContStudy::AnaTrack()
 {
     if (!fESDtrackCuts[0]->AcceptTrack(fESDTrack)) return;
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
     FillHist(fHistEffCont, fMCPt, fMCParticleType, fMCProdcutionType, fMCChargeSign, fNTracksAcc);    
     
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("RecTrack.PDG.",fMCPDGCode); }
@@ -116,8 +109,7 @@ void AliAnalysisTaskEffContStudy::AnaTrack()
 //_____________________________________________________________________________
 
 void AliAnalysisTaskEffContStudy::AnaMCParticle()
-{        
-    InitMCParticle();
+{            
     if (!fMCisPrim) return;    
     if (!fMCIsCharged) return;    
     if (TMath::Abs(fMCEta) > 0.8) return;    
