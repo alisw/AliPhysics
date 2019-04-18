@@ -160,14 +160,14 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     TrackCuts->SetPID(AliPID::kProton, 0.75, 5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 5);
   } else if (suffix == "7") {
-    TrackCuts->SetFilterBit(96);
-    AntiTrackCuts->SetFilterBit(96);
-  } else if (suffix == "8") {
     TrackCuts->SetNClsTPC(70);
     AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "9") {
+  } else if (suffix == "8") {
     TrackCuts->SetNClsTPC(90);
     AntiTrackCuts->SetNClsTPC(90);
+  } else if (suffix == "9") {
+    TrackCuts->SetFilterBit(96);
+    AntiTrackCuts->SetFilterBit(96);
   }
 
   AliSigma0V0Cuts *v0Cuts = AliSigma0V0Cuts::LambdaCuts();

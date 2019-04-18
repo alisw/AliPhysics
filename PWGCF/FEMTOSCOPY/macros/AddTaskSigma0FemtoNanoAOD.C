@@ -158,14 +158,14 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     TrackCuts->SetPID(AliPID::kProton, 0.75, 5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 5);
   } else if (suffix == "7") {
-    TrackCuts->SetFilterBit(96);
-    AntiTrackCuts->SetFilterBit(96);
-  } else if (suffix == "8") {
     TrackCuts->SetNClsTPC(70);
     AntiTrackCuts->SetNClsTPC(70);
-  } else if (suffix == "9") {
+  } else if (suffix == "8") {
     TrackCuts->SetNClsTPC(90);
     AntiTrackCuts->SetNClsTPC(90);
+  } else if (suffix == "9") {
+    TrackCuts->SetFilterBit(96);
+    AntiTrackCuts->SetFilterBit(96);
   }
 
   // Lambda Cuts
