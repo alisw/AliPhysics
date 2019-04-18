@@ -101,20 +101,8 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResKUpgSA  (0),
    fPt1ResPiUpgSA (0),
    fPt1ResEUpgSA (0),
-   fRunInVertexing(kFALSE),
-   fImproveTracks(kTRUE),
-   fUpdateSecVertCovMat(kTRUE),
-   fUpdateSTCovMatrix(kTRUE),
-   fUpdatePulls(kTRUE),
-   fMimicData(kFALSE),
-   fIsAOD        (kTRUE),
-   fMCs         (0),
-   fDebugOutput (0),
-   fDebugNtuple (0),
-   fDebugVars   (0), 
-   fNDebug      (0)
    // specific stuff for PbPb 2018
-  ,fIsPbPb2018(kFALSE)
+   fIsPbPb2018(kFALSE)
    // kFirst
   ,fD0ZResPCur_PbPb2018_kFirst(0)
   ,fD0ZResKCur_PbPb2018_kFirst(0) 
@@ -220,7 +208,19 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
   ,fPt1ResPUpgSA_PbPb2018_kOnlySecond(0) 
   ,fPt1ResKUpgSA_PbPb2018_kOnlySecond(0) 
   ,fPt1ResPiUpgSA_PbPb2018_kOnlySecond(0) 
-  ,fPt1ResEUpgSA_PbPb2018_kOnlySecond(0) 
+  ,fPt1ResEUpgSA_PbPb2018_kOnlySecond(0),
+   fRunInVertexing(kFALSE),
+   fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kTRUE),
+   fUpdateSTCovMatrix(kTRUE),
+   fUpdatePulls(kTRUE),
+   fMimicData(kFALSE),
+   fIsAOD        (kTRUE),
+   fMCs         (0),
+   fDebugOutput (0),
+   fDebugNtuple (0),
+   fDebugVars   (0), 
+   fNDebug      (0)
 {
   //
   // Default constructor.
@@ -319,20 +319,8 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResKUpgSA  (0),
    fPt1ResPiUpgSA (0),
    fPt1ResEUpgSA (0),
-   fRunInVertexing(isRunInVertexing),
-   fImproveTracks(kTRUE),
-   fUpdateSecVertCovMat(kTRUE),
-   fUpdateSTCovMatrix(kTRUE),
-   fUpdatePulls(kTRUE),
-   fMimicData(kFALSE),
-   fIsAOD        (kTRUE),
-   fMCs         (0),
-   fDebugOutput (0),
-   fDebugNtuple (0),
-   fDebugVars   (0),
-   fNDebug      (ndebug)
    // specific stuff for PbPb 2018
-  ,fIsPbPb2018(kFALSE)
+   fIsPbPb2018(kFALSE)
    // kFirst
   ,fD0ZResPCur_PbPb2018_kFirst(0)
   ,fD0ZResKCur_PbPb2018_kFirst(0) 
@@ -438,7 +426,19 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
   ,fPt1ResPUpgSA_PbPb2018_kOnlySecond(0) 
   ,fPt1ResKUpgSA_PbPb2018_kOnlySecond(0) 
   ,fPt1ResPiUpgSA_PbPb2018_kOnlySecond(0) 
-  ,fPt1ResEUpgSA_PbPb2018_kOnlySecond(0) 
+  ,fPt1ResEUpgSA_PbPb2018_kOnlySecond(0),
+   fRunInVertexing(isRunInVertexing),
+   fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kTRUE),
+   fUpdateSTCovMatrix(kTRUE),
+   fUpdatePulls(kTRUE),
+   fMimicData(kFALSE),
+   fIsAOD        (kTRUE),
+   fMCs         (0),
+   fDebugOutput (0),
+   fDebugNtuple (0),
+   fDebugVars   (0),
+   fNDebug      (ndebug)
 {
   //
   // Constructor to be used to create the task.
