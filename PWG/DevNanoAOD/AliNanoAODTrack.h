@@ -387,6 +387,7 @@ public:
 
   /// NanoAOD information that cannot be retrieved with the same interface of AliAODtrack
   bool   IsTRDrefit() { return fNanoFlags & ENanoFlags::kTRDrefit; }
+  bool   HasTOFpid() { return fNanoFlags & ENanoFlags::kNanoHasTOFPID; }
 
 private :
 
