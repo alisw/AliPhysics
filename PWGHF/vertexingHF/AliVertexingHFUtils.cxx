@@ -531,30 +531,28 @@ TString AliVertexingHFUtils::GetGenerator(Int_t label, AliAODMCHeader* header){
 }
 //_____________________________________________________________________
 void AliVertexingHFUtils::GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen){
+  GetTrackPrimaryGenerator(track->GetLabel(),header,arrayMC,nameGen);
+}
+//_____________________________________________________________________
+void AliVertexingHFUtils::GetTrackPrimaryGenerator(Int_t label, AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen){
 
   /// method to check if a track comes from a given generator
 
-  Int_t lab=TMath::Abs(track->GetLabel());
+  Int_t lab=TMath::Abs(label);
   nameGen=GetGenerator(lab,header);
 
   //  Int_t countControl=0;
 
   while(nameGen.IsWhitespace()){
     AliAODMCParticle *mcpart= (AliAODMCParticle*)arrayMC->At(lab);
-    if(!mcpart){
-      printf("AliVertexingHFUtils::IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
-      break;
-    }
+    if(!mcpart) break;
     Int_t mother = mcpart->GetMother();
-    if(mother<0){
-      printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
-      break;
-    }
+    if(mother<0) break;
     lab=mother;
     nameGen=GetGenerator(mother,header);
     // countControl++;
     // if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
-    //   printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Protection from infinite loop active\n");
+    //   printf("AliVertexingHFUtils::GetTrackPrimaryGenerator - BREAK: Protection from infinite loop active\n");
     //   break;
     // }
   }
@@ -564,8 +562,16 @@ void AliVertexingHFUtils::GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHe
 //----------------------------------------------------------------------
 Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC){
   /// method to check if a track comes from the signal event or from the underlying Hijing event
+
+  return IsTrackInjected(track->GetLabel(),header,arrayMC);
+}
+//----------------------------------------------------------------------
+Bool_t AliVertexingHFUtils::IsTrackInjected(Int_t label, AliAODMCHeader *header,TClonesArray *arrayMC){
+  /// method to check if a track comes from the signal event or from the underlying Hijing event
   TString nameGen;
-  GetTrackPrimaryGenerator(track,header,arrayMC,nameGen);
+  Int_t lab=TMath::Abs(label);
+
+  GetTrackPrimaryGenerator(lab,header,arrayMC,nameGen);
 
   if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
 
@@ -574,10 +580,23 @@ Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *h
 //____________________________________________________________________________
 Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC){
   /// method to check if a D meson candidate comes from the signal event or from the underlying Hijing event
-
+  /// works only for refilled candidates!
   Int_t nprongs=cand->GetNProngs();
   for(Int_t i=0;i<nprongs;i++){
     AliAODTrack *daugh=(AliAODTrack*)cand->GetDaughter(i);
+    if(IsTrackInjected(daugh,header,arrayMC)) return kTRUE;
+  }
+  return kFALSE;
+}
+//____________________________________________________________________________
+Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODEvent* aod, AliAODMCHeader *header,TClonesArray *arrayMC){
+  /// method to check if a D meson candidate comes from the signal event or from the underlying Hijing event
+  /// works also with not-refilled candidates of reduced AODs
+
+  Int_t nprongs=cand->GetNProngs();
+  for(Int_t i=0;i<nprongs;i++){
+    Int_t idDau=cand->GetProngID(i);
+    AliAODTrack *daugh=(AliAODTrack*)aod->GetTrack(idDau);
     if(IsTrackInjected(daugh,header,arrayMC)) return kTRUE;
   }
   return kFALSE;
