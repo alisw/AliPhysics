@@ -63,6 +63,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AliAnalysisTaskDCArStudy.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskPtResStudy.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskEffContStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskUEStudy.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx

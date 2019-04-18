@@ -101,10 +101,6 @@ void AliAnalysisTaskPtResStudy::AddOutput()
 
 void AliAnalysisTaskPtResStudy::AnaEvent()
 {
-   InitEvent();
-   InitEventMult();
-   InitEventCent();
-   InitMCEvent();   
    if (fEventCutsPassed) LoopOverAllTracks();
    
 }
@@ -113,11 +109,7 @@ void AliAnalysisTaskPtResStudy::AnaEvent()
 
 void AliAnalysisTaskPtResStudy::AnaTrack()
 {
-    if (!fESDtrackCuts[0]->AcceptTrack(fESDTrack)) return;
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
+    if (!fAcceptTrack[0]) return;
     if (f1Pt<1.0)  { FillHist(fHistPtResCov,       fSigned1Pt, fSigma1Pt, fNTracksAcc); }
     if (f1Pt<0.2)  { FillHist(fHistPtResCovHighPt, f1Pt, fSigma1Pt, fNTracksAcc); }
     if (fMCPt<10.) { FillHist(fHistPtResMC,        fPt, fMCPt, fNTracksAcc); }

@@ -366,6 +366,8 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
     if (!fESD) { Err("noESD"); return kFALSE; } // for now analyse only ESD
     if (fESD)  { LogEvent("ESD"); }
     
+    ReadMCEvent();
+    
     CheckEvent();
     
     UInt_t fEventSpecie = fESD->GetEventSpecie();
@@ -375,6 +377,12 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
     fRunNumberString += fRunNumber;
     
     Log(fRunHist,fRunNumberString.Data());
+    
+    InitEvent();       
+    InitEventMult();
+    InitEventCent();
+    InitMCEvent(); 
+    InitVZERO();
           
     return kTRUE;
         
@@ -450,7 +458,7 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
           for (Int_t i = 0; i < fNTracksESD; i++) {
               AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
               if (!track) continue;
-              if (fESDtrackCutsM->AcceptTrack(track) ) { fNTracksAcc++; }
+              if (fESDtrackCutsM->AcceptTrack(track) ) { fNTracksAcc++; }              
           }
       } else {
           fNTracksAcc = fNTracksESD;
@@ -725,8 +733,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrackTPC()
 void AliAnalysisTaskMKBase::UserExec(Option_t *)
 {   
     // call analysis for data and mc
-    ReadEvent();
-    ReadMCEvent();
+    ReadEvent();    
     
     AnaEvent();
     if (fIsMC) {
@@ -747,7 +754,11 @@ void AliAnalysisTaskMKBase::LoopOverAllTracks()
     for (Int_t i = 0; i < fNTracksESD; i++) {
         fESDTrack = static_cast<AliESDtrack*>(fESD->GetTrack(i));
         if (!fESDTrack) { Err("noESDtrack"); continue; }
-        
+        InitTrack();
+        InitTrackCuts();
+        InitMCTrack();
+        InitTrackIP();
+        InitTrackTPC();
         AnaTrack();
         if (fIsMC) AnaMCTrack();
     }
@@ -758,11 +769,13 @@ void AliAnalysisTaskMKBase::LoopOverAllTracks()
 
 void AliAnalysisTaskMKBase::LoopOverAllParticles()
 {    
+    if (!fIsMC) return;
     fMCnTracks = fMC->GetNumberOfTracks();
     for (Int_t i = 0; i < fMCnTracks; i++) {
         fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(i));
         if (!fMCParticle) { Err("noMCParticle"); continue; }         
         fMCLabel = i;
+        InitMCParticle();
         AnaMCParticle();        
     }
 }
