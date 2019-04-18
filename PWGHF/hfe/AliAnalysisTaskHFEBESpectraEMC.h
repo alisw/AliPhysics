@@ -90,6 +90,9 @@ public:
     void    GetBWeight(AliAODMCParticle *Part, Double_t &BCentWeight, Double_t &BMinWeight, Double_t &BMaxWeight);
     void    GetDWeight(AliAODMCParticle *Part, Double_t &DCentWeight, Double_t &DMinWeight, Double_t &DMaxWeight);
 
+    void    SwitchRecalImpPar(Bool_t fSwitch) {fRecalIP = fSwitch;};
+    void    RecalImpactParam(const AliVTrack * const track, Double_t dz[2], Double_t covar[3]);
+    AliAODVertex*   RemoveDaughtersFromPrimaryVtx(const AliVTrack * const track);
     
 private:
     enum{
@@ -120,6 +123,8 @@ private:
     Int_t   fcentMim; // mim. centrality
     Int_t   fcentMax; // max. centrality
     TString fCentralityEstimator;         // Centrality Estimator
+    
+    Bool_t              fRecalIP;//
     
     Double_t            fTPCnSigma;//!
     Double_t            fTPCnSigmaMin;//!
