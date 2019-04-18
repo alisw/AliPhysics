@@ -44,6 +44,7 @@ class TTree;
 class TTreeSRedirector;
 class TParticle;
 class TH3D;
+class AliESDtools;
 #include <string>
 
 #include "AliTriggerAnalysis.h"
@@ -145,9 +146,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   AliESDEvent *fESD;    //! ESD event
   AliMCEvent *fMC;      //! MC event
   AliESDfriend *fESDfriend; //! ESDfriend event
+  AliESDtools *fESDtool;      /// tools to calculate derived variables from the ESD
   TList* fOutput;       //! list send on output slot 0
-  TIterator *fPitList;  //! iterator over the output objetcs  
-
+  TIterator *fPitList;  //! iterator over the output objetcs
   Bool_t fUseMCInfo;        // use MC information
   Bool_t fUseESDfriends;    // use esd friends
   Bool_t fReducePileUp;     // downscale the information for the pile-up TPC tracks

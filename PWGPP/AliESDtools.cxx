@@ -27,12 +27,12 @@
 /*   
   /// 0.) Initialize tool e.g:
   tree = AliXRDPROOFtoolkit::MakeChainRandom("esd.list","esdTree",0,10)
-  .L $AliPhysics_SRC/PWGPP/AliESDtools.cxx+
+  //.L $AliPhysics_SRC/PWGPP/AliESDtools.cxx+
   AliESDtools tools;
   tools.Init(tree);
 
   /// 1.) Exercise example : trigger exceptional pileup - and check them
-  tree->Draw(">>entryList","SPDVertex.fNContributors>100&&Tracks@.GetEntries()/PrimaryVertex.fNContributors>10","entrylist");
+  tree->Draw(">>entryList","SPDVertex.fNContributors>100&&Tracks@.GetEntries()/PrimaryVertex.fNContributors>6","entrylist");
   tree->SetEntryList(entryList)
   tree->Scan("AliESDtools::GetTrackMatchEff(0,0):AliESDtools::GetTrackCounters(0,0):AliESDtools::GetTrackCounters(4,0):AliESDtools::GetMeanHisTPCVertexA():AliESDtools::GetMeanHisTPCVertexC():Entry$",\
       "AliESDtools::SCalculateEventVariables(Entry$)")
@@ -83,6 +83,7 @@ AliESDtools::AliESDtools():
   fHisTPCVertex(nullptr),         // helper histogram phi counters
   fHisTPCVertexACut(nullptr),
   fHisTPCVertexCCut(nullptr),
+  fTPCVertexInfo(nullptr),
   fHistPhiTPCCounterA(nullptr),
   fHistPhiTPCCounterC(nullptr),
   fHistPhiTPCCounterAITS(nullptr),      // helper histogram for TIdentity tree
@@ -120,6 +121,7 @@ void AliESDtools::Init(TTree *tree) {
     tools.fHisTPCVertexC->SetLineColor(4);
     tools.fHisTPCVertexACut->SetLineColor(3);
     tools.fHisTPCVertexCCut->SetLineColor(6);
+    tools.fTPCVertexInfo = new TVectorF(6);
     tools.fCacheTrackCounters = new TVectorF(20);
     tools.fCacheTrackTPCCountersZ = new TVectorF(8);
     tools.fCacheTrackdEdxRatio = new TVectorF(27);
@@ -736,6 +738,50 @@ Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose) {
   fgInstance->fEvent->ConnectTracks();
   return 2;
 }
+/// Find pile-up TPC vertex  - working for the PbPb
+Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
+  static Int_t oldEntry = -1;
+  if (oldEntry != entry) {
+    LoadESD(entry);
+    oldEntry = entry;
+    Int_t nNumberOfTracks = fEvent->GetNumberOfTracks();
+    const Int_t bufSize = 20000;
+    const Float_t kMinDCA = 3;
+    const Float_t kMinDCAZ = 4;
+    Float_t bufferP[bufSize], bufferM[bufSize];
+    Int_t counterP = 0, counterM = 0;
+    Float_t dcaXY, dcaZ;
+    for (Int_t iTrack = 0; iTrack < nNumberOfTracks; iTrack++) {
+      AliESDtrack *track = fEvent->GetTrack(iTrack);
+      if (track == nullptr) continue;
+      if (track->IsOn(0x1)) continue;
+      track->GetImpactParameters(dcaXY, dcaZ);
+      if (TMath::Abs(dcaXY) > kMinDCA) continue;
+      if (TMath::Abs(dcaZ) < kMinDCAZ) continue;
+      Double_t tgl = track->Pz() / track->Pt();
+      if (tgl > 0.1) {
+        bufferP[++counterP] = track->GetZ();
+        fHisTPCVertexA->Fill(track->GetZ());
+      }
+      if (tgl < -0.1) {
+        bufferM[++counterM] = track->GetZ();
+        fHisTPCVertexC->Fill(track->GetZ());
+      }
+    }
+    Double_t posZA = (counterP > 0) ? TMath::Median(counterP, bufferP) : 0;
+    Double_t posZC = (counterM > 0) ? TMath::Median(counterM, bufferM) : 0;
+    (*fTPCVertexInfo)[0] = posZA;
+    (*fTPCVertexInfo)[1] = -posZC;
+    (*fTPCVertexInfo)[2] = (posZC+posZA)*0.5;
+    (*fTPCVertexInfo)[3] = counterP;
+    (*fTPCVertexInfo)[4] = counterM;
+    (*fTPCVertexInfo)[5] = (counterP+counterM);
+    if (verbose > 0) {
+      ::Info("AliESDtools::CachePileupVertexTPC", "%f\t%f\t%f\t%f\t", counterP, counterM, posZA, posZC);
+    }
+  }
+  return 1;
+}
 
 
 //________________________________________________________________________
@@ -853,6 +899,50 @@ Int_t AliESDtools::DumpEventVariables() {
 /// \return
 Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
   if (!tree) return 0;
+  tree->SetAlias("phiInner","atan2(Tracks[].fIp.Py(),Tracks[].fIp.Px()+0)");
+  tree->SetAlias("secInner","9*(atan2(Tracks[].fIp.Py(),Tracks[].fIp.Px()+0)/pi)+18*(Tracks[].fIp.Py()<0)");
+  tree->SetAlias("tgl","Tracks[].fP[3]");
+  tree->SetAlias("alphaV","Tracks[].fAlpha");
+  tree->SetAlias("qPt","Tracks[].fP[4]");
+  tree->SetAlias("dalphaQ","sign(Tracks[].fP[4])*(Tracks[].fIp.fP[0]/Tracks[].fIp.fX)");
+  TStatToolkit::AddMetadata(tree,"phiInner.Title","#phi_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"secInner.Title","sector_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"tgl.Title","#it{p_{z}}/#it{p}_{T}");
+  TStatToolkit::AddMetadata(tree,"alphaV.Title","#phi_{vertex}");
+  TStatToolkit::AddMetadata(tree,"qPt.Title","q/#it{p}_{T}");
+  TStatToolkit::AddMetadata(tree,"phiInner.AxisTitle","#it{#phi}_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"secInner.AxisTitle","sector_{TPCin}");
+  TStatToolkit::AddMetadata(tree,"tgl.AxisTitle","#it{p}_{z}/#it{p}_{t}");
+  TStatToolkit::AddMetadata(tree,"alphaV.AxisTitle","#it{#phi}_{vertex}");
+  TStatToolkit::AddMetadata(tree,"qPt.AxisTitle","q/#it{p}_{T} (1/GeV)");
+  //
+  tree->SetAlias("normChi2ITS","sqrt(Tracks[].fITSchi2/Tracks[].fITSncls)");
+  tree->SetAlias("normChi2TPC","Tracks[].fTPCchi2/Tracks[].fTPCncls");
+  tree->SetAlias("normChi2TRD","Tracks[].fTRDchi2/Tracks[].fTRDncls");
+  tree->SetAlias("normDCAR","Tracks[].fdTPC/sqrt(1+Tracks[].fP[4]**2)");
+  tree->SetAlias("normDCAZ","Tracks[].fzTPC/sqrt(1+Tracks[].fP[4]**2)");
+  TStatToolkit::AddMetadata(tree,"normChi2ITS.Title","#sqrt{#chi2_{ITS}/N_{clITS}}");
+  TStatToolkit::AddMetadata(tree,"normChi2TPC.Title","#chi2_{TPC}/N_{clTPC}");
+  TStatToolkit::AddMetadata(tree,"normChi2ITS.AxisTitle","#sqrt{#chi2_{ITS}/N_{clITS}}");
+  TStatToolkit::AddMetadata(tree,"normChi2TPC.AxisTitle","#chi2_{TPC}/N_{clTPC}");
+  //
+  tree->SetAlias("TPCASide","Tracks[].fIp.fP[1]>0");
+  tree->SetAlias("TPCCSide","Tracks[].fIp.fP[1]<0");
+  tree->SetAlias("TPCCross","Tracks[].fIp.fP[1]*Tracks[].fIp.fP[3]<0");
+  tree->SetAlias("ITSOn","((Tracks[].fFlags&0x1)>0)");
+  tree->SetAlias("TPCOn","((Tracks[].fFlags&0x10)>0)");
+  tree->SetAlias("ITSRefit","((Tracks[].fFlags&0x4)>0)");
+  tree->SetAlias("TPCRefit","((Tracks[].fFlags&0x40)>0)");
+  tree->SetAlias("TOFOn","((Tracks[].fFlags&0x2000)>0)");
+  tree->SetAlias("TRDOn","((Tracks[].fFlags&0x400)>0)");
+  tree->SetAlias("ITSOn0","Tracks[].fITSncls>4&&Tracks[].HasPointOnITSLayer(0)&&Tracks[].HasPointOnITSLayer(1)");
+  tree->SetAlias("ITSOn01","Tracks[].fITSncls>3&&(Tracks[].HasPointOnITSLayer(0)||Tracks[].HasPointOnITSLayer(1))");
+  tree->SetAlias("nclCut","(Tracks[].GetTPCClusterInfo(3,1)+Tracks[].fTRDncls)>140-5*(abs(Tracks[].fP[4]))");
+  tree->SetAlias("IsPrim4","sqrt((Tracks[].fD**2)/Tracks[].fCdd+(Tracks[].fZ**2)/Tracks[].fCzz)<4");
+  tree->SetAlias("IsPrim4TPC","sqrt((Tracks[].fdTPC**2)/Tracks[].fCddTPC+(Tracks[].fzTPC**2)/Tracks[].fCzzTPC)<4");
+
+
+  ///
   /// FLAGS
   tree->SetAlias("hasTPC", "((Tracks[].fFlags&0x10)>0)&&Tracks[].fTPCncls>20");
   tree->SetAlias("hasITS", "((Tracks[].fFlags&0x1)>0)&&Tracks[].fITSncls>2");
@@ -894,17 +984,17 @@ Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
   tree->SetAlias("nclFractionROC1", "(Tracks[].GetTPCClusterInfo(3,0,64,128)+0)");
   tree->SetAlias("nclFractionROC2", "(Tracks[].GetTPCClusterInfo(3,0,129,159)+0)");
   tree->SetAlias("nclFractionROC3", "(Tracks[].GetTPCClusterInfo(3,0)+0)");
-  tree->SetAlias("nCross0", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(0)");
-  tree->SetAlias("nCross1", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(1)");
-  tree->SetAlias("nCross2", "esdTrack.fTPCdEdxInfo.GetNumberOfCrossedRows(2)");
-  tree->SetAlias("nFraction0", "esdTrack.GetTPCClusterInfo(1,0,0,62)");
-  tree->SetAlias("nFraction1", "esdTrack.GetTPCClusterInfo(1,0,63,127)");
-  tree->SetAlias("nFraction2", "esdTrack.GetTPCClusterInfo(1,0,127,159)");
-  tree->SetAlias("nFraction3", "esdTrack.GetTPCClusterInfo(1,0,0,159)");
-  tree->SetAlias("n3Fraction0", "esdTrack.GetTPCClusterInfo(3,0,0,62)");
-  tree->SetAlias("n3Fraction1", "esdTrack.GetTPCClusterInfo(3,0,63,127)");
-  tree->SetAlias("n3Fraction2", "esdTrack.GetTPCClusterInfo(3,0,127,159)");
-  tree->SetAlias("n3Fraction3", "esdTrack.GetTPCClusterInfo(3,0,0,159)");
+  tree->SetAlias("nCross0", "Tracks[].fTPCdEdxInfo.GetNumberOfCrossedRows(0)");
+  tree->SetAlias("nCross1", "Tracks[].fTPCdEdxInfo.GetNumberOfCrossedRows(1)");
+  tree->SetAlias("nCross2", "Tracks[].fTPCdEdxInfo.GetNumberOfCrossedRows(2)");
+  tree->SetAlias("nFraction0", "Tracks[].GetTPCClusterInfo(1,0,0,62)");
+  tree->SetAlias("nFraction1", "Tracks[].GetTPCClusterInfo(1,0,63,127)");
+  tree->SetAlias("nFraction2", "Tracks[].GetTPCClusterInfo(1,0,127,159)");
+  tree->SetAlias("nFraction3", "Tracks[].GetTPCClusterInfo(1,0,0,159)");
+  tree->SetAlias("n3Fraction0", "Tracks[].GetTPCClusterInfo(3,0,0,62)");
+  tree->SetAlias("n3Fraction1", "Tracks[].GetTPCClusterInfo(3,0,63,127)");
+  tree->SetAlias("n3Fraction2", "Tracks[].GetTPCClusterInfo(3,0,127,159)");
+  tree->SetAlias("n3Fraction3", "Tracks[].GetTPCClusterInfo(3,0,0,159)");
   //
   for (Int_t i = 0; i < 3; i++) {
     TStatToolkit::AddMetadata(tree, Form("nCross%d.AxisTitle", i), Form("# crossed (ROC%d)", i));
@@ -924,5 +1014,7 @@ Int_t AliESDtools::SetDefaultAliases(TTree* tree) {
       TStatToolkit::AddMetadata(tree, Form("logRatioTot%d%d.AxisTitle", i, j), Form("log(Q_{TotRPC%d}/Q_{TotROC%d})", i, j));
     }
   }
+  /// mass and PID aliases
+
   return 1;
 }
