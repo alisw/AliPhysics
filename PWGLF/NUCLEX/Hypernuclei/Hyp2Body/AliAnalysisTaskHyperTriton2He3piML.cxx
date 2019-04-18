@@ -530,13 +530,18 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     for (const auto& v0 : fRHyperTriton) {
       const double cosp = (v0.fDecayX * cx + v0.fDecayY * cy + v0.fDecayY * cz) / std::sqrt(v0.fDecayX * v0.fDecayX + v0.fDecayY * v0.fDecayY + v0.fDecayZ * v0.fDecayZ);
-        fHistTrackletCosP->Fill(cosp);
-        if (cosp > fMinTrackletCosP) {
+      fHistTrackletCosP->Fill(cosp);
+      if (cosp > fMinTrackletCosP) {
         RTracklet trkl;
         trkl.fDeltaPhi = deltaPhi;
         trkl.fDeltaTheta = deltaTheta;
         trkl.fPhi = phi;
         trkl.fTheta = theta;
+        if (tracklets->GetLabel(iTracklet,0) == tracklets->GetLabel(iTracklet,1) && fMC && tracklets->GetLabel(iTracklet,0) >= 0) {
+          int ilab = tracklets->GetLabel(iTracklet,0);
+          if (std::abs(mcEvent->GetTrack(ilab)->PdgCode()) == 1010010030)
+            fSHyperTriton[mcMap[ilab]].fRecoTracklet = fRTracklets.size();
+        }
         fRTracklets.push_back(trkl);
         break;
       }
