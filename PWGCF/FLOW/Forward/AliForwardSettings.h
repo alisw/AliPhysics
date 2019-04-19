@@ -81,6 +81,8 @@ class AliForwardSettings : public TObject {
   Double_t fCutChargedDCAxyMax;
   Double_t fCutChargedDCAzMax;
   Bool_t doPt;
+  Bool_t stdQC;
+  Bool_t sec_corr;
   // return true if good event
 
   // flags used for method of cumulant
@@ -121,32 +123,8 @@ class AliForwardSettings : public TObject {
     kGlobalComb = 96,
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
+
   // definition of different variables to save
-  enum {
-    //kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    //kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    //kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
-    kW2 = 1,               // <w2>
-    //k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
-    kW2Two,            // <w2*two>
-    kW4,               // <w4>
-    kW4Four           // <w4*four>
-    /*
-    kCosphi1A,         // <cos(phi1)> for subevent A
-    kSinphi1A,         // <sin(phi1)> for subevent A
-    kCosphi1B,         // <cos(phi1)> for subevent B
-    kSinphi1B,         // <sin(phi1)> for subevent B
-    kCosphi1phi2p,     // <cos(phi1+phi2)>
-    kCosphi1phi2m,     // <cos(phi1-phi2)>
-    kSinphi1phi2p,     // <sin(phi1+phi2)>
-    kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
-    kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
-    kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
-    kSinphi1phi2phi3p,  // <sin(phi1+phi2-phi3)>
-    */
-  };
-
-
   enum {
     kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
     kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
@@ -162,9 +140,56 @@ class AliForwardSettings : public TObject {
     kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
     kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
     kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
-    kSinphi1phi2phi3p  // <sin(phi1+phi2-phi3)>
+    kSinphi1phi2phi3p,  // <sin(phi1+phi2-phi3)>
   };
 
+
+  // definition of different variables to save
+  // enum {
+  //   kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  //   kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+  //   kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+  //   kW2,               // <w2>
+  //   k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
+  //   kW2Two,            // <w2*two>
+  //   kW4,               // <w4>
+  //   kW4Four,           // <w4*four>
+  //   kCosphi1A,         // <cos(phi1)> for subevent A
+  //   kSinphi1A,         // <sin(phi1)> for subevent A
+  //   kCosphi1B,         // <cos(phi1)> for subevent B
+  //   kSinphi1B,         // <sin(phi1)> for subevent B
+  //   kCosphi1phi2p,     // <cos(phi1+phi2)>
+  //   kCosphi1phi2m,     // <cos(phi1-phi2)>
+  //   kSinphi1phi2p,     // <sin(phi1+phi2)>
+  //   kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
+  //   kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
+  //   kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
+  //   kSinphi1phi2phi3p,  // <sin(phi1+phi2-phi3)>
+  // };
+
+  enum {
+    kW2A =1,               // <w2>
+    kW2B,               // <w2>
+    kW2TwoA,            // <w2*two>
+    kW2TwoB,            // <w2*two>
+    kW4A,               // <w4>
+    kW4B,               // <w4>
+    kW4FourA,           // <w4*four>
+    kW4FourB,           // <w4*four>
+    kW4FourTwoA,
+    kW4FourTwoB,
+    kW4ThreeTwoA,
+    kW4ThreeTwoB
+  };
+
+  enum {
+    kW2 =1,               // <w2>
+    kW2Two,             // <w2*two>
+    kW4,               // <w4>
+    kW4Four,           // <w4*four>
+    kW4FourTwo,
+    kW4ThreeTwo
+  };
   // definition of different variables to save
   enum {
     kN2 = 1,

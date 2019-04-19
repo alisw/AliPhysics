@@ -205,9 +205,7 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
     case EventValidation::kIsAODEvent:
       discardedEvtsAx->SetBinLabel(idx + 1, "AOD event"); break;
     case EventValidation::kTrigger:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Trigger"); break;
-    case EventValidation::kHasTracklets:
-      discardedEvtsAx->SetBinLabel(idx + 1, "Has Tracklets"); break;      
+      discardedEvtsAx->SetBinLabel(idx + 1, "Trigger"); break;   
     case EventValidation::kHasFMD:
       discardedEvtsAx->SetBinLabel(idx + 1, "Has FMD"); break;
     case EventValidation::kHasEntriesFMD:
@@ -366,8 +364,6 @@ void AliForwardTaskValidation::UserExec(Option_t *)
       this->fIsValidEvent = this->IsAODEvent(); break;
     case EventValidation::kTrigger:
       this->fIsValidEvent = this->AcceptTrigger(AliVEvent::kINT7); break;
-    case EventValidation::kHasTracklets:
-      this->fIsValidEvent = this->HasTracklets(); break;      
     case EventValidation::kHasFMD:
       this->fIsValidEvent = this->HasFMD(); break;
     case EventValidation::kHasEntriesFMD:

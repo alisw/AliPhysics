@@ -56,6 +56,35 @@ AliAnalysisDataContainer* makeWeightContainer(TString nua_file, TString ref_nua_
 }
 
 
+AliAnalysisDataContainer* makeWeightContainerSec(TString sec_file, TString containerName){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer* weights;
+  if (sec_file.Contains("alien:") ) TGrid::Connect("alien:");
+  TFile* file;
+  if (sec_file.Contains(containerName))
+    file = TFile::Open(sec_file.Data(), "READ");
+
+  if(!file) { printf("E-AddTaskForwardFlowRun2: Input file with secondary weights not found!\n"); return NULL; }
+
+  TList* weights_list = new TList();
+  weights_list->SetName("sec_corr");
+  
+  TH3F* sechist = new TH3F();
+  TH3F* nuaforward = new TH3F();
+
+  file->GetObject("correction", sechist);
+  sechist->SetDirectory(0);
+  sechist->SetNameTitle("sec_corr","sec_corr");
+
+  file->Close();
+
+  weights_list->Add(sechist);
+
+  weights = mgr->CreateContainer(containerName,TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
+  weights->SetData(weights_list);
+  return weights;
+}
+
 
 AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, 
                                           TString nua_file, TString ref_nua_file, 
@@ -153,12 +182,59 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
    mgr->GetCommonFileName());
   mgr->ConnectOutput(task, 1, coutput_recon);
 
-  AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
-  task->ConnectInput(1,valid);
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
-  if (task->fSettings.doNUA){
+  AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
+  task->ConnectInput(1,valid);
+
+
+/*
+if (task->fSettings.doNUA){
+    if (nua_file.Contains("alien:")) TGrid::Connect("alien:");
+
+
+    TFile *file = TFile::Open(nua_file);//new TFile(nua_file);
+
+
+    // if (nua_mode == AliForwardSettings::kInterpolate)
+    //   resName += "_NUA_interpolate";
+    // if (nua_mode == AliForwardSettings::kFill)
+    //   resName += "_NUA_fill";
+    // if (nua_mode == AliForwardSettings::kNormal)
+    //   resName += "_NUA_normal";
+
+    task->fSettings.nua_mode = nua_mode; 
+
+    file->GetObject("nuacentral", task->fSettings.nuacentral);
+    task->fSettings.nuacentral->SetDirectory(0);
+    file->GetObject("nuaforward", task->fSettings.nuaforward);
+    task->fSettings.nuaforward->SetDirectory(0);
+    file->Close();
+
+
+    TFile *file_ref = TFile::Open(ref_nua_file);
+    file_ref->GetObject("nuacentral", task->fSettings.nuacentral_ref);
+    task->fSettings.nuacentral_ref->SetDirectory(0);
+    file_ref->GetObject("nuaforward", task->fSettings.nuaforward_ref);
+    task->fSettings.nuaforward_ref->SetDirectory(0);
+
+    file_ref->Close();
+    if (sec_file_fwd != ""){
+
+    TFile *file_sec = TFile::Open(sec_file_fwd);
+    file_sec->GetObject("correction", task->fSettings.seccorr_fwd);
+    task->fSettings.seccorr_fwd->SetDirectory(0);
+
+    file_sec->Close();
+   
+    }
+}*/
+
+
+
+
+  if (doNUA){
 
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* weights;
@@ -177,6 +253,8 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
       if (nua_file.Contains("prim")) task->ConnectInput(2,weights);
       if (ref_nua_file.Contains("prim")) task->ConnectInput(3,weights);         
     }
+
+    // ITS NUA
     if (nua_file.Contains("ITS") || ref_nua_file.Contains("ITS")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("ITSclusters");
@@ -189,6 +267,8 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
       if (nua_file.Contains("ITS")) task->ConnectInput(2,weights);
       if (ref_nua_file.Contains("ITS")) task->ConnectInput(3,weights);
     }
+
+    // SPD NUA
     if  (nua_file.Contains("SPD")||ref_nua_file.Contains("SPD")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("SPDtracklets");
@@ -201,6 +281,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
       if (ref_nua_file.Contains("SPD")) task->ConnectInput(3,weights);
     }
 
+    // global tracks NUA
     if  (nua_file.Contains("global")||ref_nua_file.Contains("global")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("globaltracks");
@@ -212,8 +293,52 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
       if (nua_file.Contains("global")) task->ConnectInput(2,weights);
       if (ref_nua_file.Contains("global")) task->ConnectInput(3,weights);
     }
-    //else printf("E-AddTaskForwardFlowRun2: Invalid central detector for NUA weights!\n");
+
+    // hybrid tracks NUA
+    if  (nua_file.Contains("hybrid")||ref_nua_file.Contains("hybrid")) 
+    {
+      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("hybridtracks");
+    
+      if (!weights){
+        std::cout << "I-AddTaskForwardFlowRun2: Global tracks weights not defined - reading now. " << std::endl;
+        weights = makeWeightContainer(nua_file,ref_nua_file,"hybridtracks");
+      }  
+      if (nua_file.Contains("hybrid")) task->ConnectInput(2,weights);
+      if (ref_nua_file.Contains("hybrid")) task->ConnectInput(3,weights);
+    }
+    //else printf("E-AddTaskForwardFlowRun2: Invalid detector for NUA weights!\n");
   }
+  
+
+/*
+  if (sec_file_fwd != ""){
+    TObjArray* taskContainers = mgr->GetContainers();
+    AliAnalysisDataContainer* sec_weights;
+    
+    sec_weights = (AliAnalysisDataContainer*) taskContainers->FindObject("ft_fft");
+
+    if (!sec_weights) sec_weights = makeWeightContainerSec(sec_file_fwd,"ft_fft");   
+    task->ConnectInput(4,sec_weights);
+  }
+*/
+  //if (task->fSettings.doNUA){
+
+    // task->fSettings.nuacentral = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(2))->FindObject("nuacentral") );
+    // task->fSettings.nuaforward = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(2))->FindObject("nuaforward") );
+    // task->fSettings.nuacentral_ref = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(3))->FindObject("nuacentral") );
+    // task->fSettings.nuaforward_ref = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(3))->FindObject("nuaforward") );
+    // task->fSettings.nuacentral->SetDirectory(0);
+    // task->fSettings.nuaforward->SetDirectory(0);
+    // task->fSettings.nuacentral_ref->SetDirectory(0);
+    // task->fSettings.nuaforward_ref->SetDirectory(0);
+
+    // if (task->fSettings.sec_corr){
+    //   task->fSettings.seccorr_fwd = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(4))->FindObject("sec_corr") );
+    //   task->fSettings.seccorr_fwd->SetDirectory(0);
+    // }
+  //}
+
+
   return task;
 }
 /*

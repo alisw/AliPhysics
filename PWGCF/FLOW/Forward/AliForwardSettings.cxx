@@ -29,7 +29,7 @@ AliForwardSettings::AliForwardSettings() :
   gap(0.0),
   minpt(0.2),
   maxpt(5),
-  mc(kFALSE),
+  mc(kTRUE),
   esd(kFALSE),
   tracktype(kHybrid),
   nua_mode(kNormal),
@@ -40,13 +40,15 @@ AliForwardSettings::AliForwardSettings() :
   use_primaries(kFALSE),
   use_primaries_cen(kFALSE),
   use_primaries_fwd(kFALSE),
-  useEventcuts(kTRUE),
+  useEventcuts(kFALSE),
   centrality_estimator("V0M"),//CL0, V0M
   etagap(kTRUE),
   makeFakeHoles(kFALSE),
   fnoClusters(70),
   fCutChargedDCAxyMax(0.),
   fCutChargedDCAzMax(0.),
-  doPt(kFALSE)
+  doPt(kFALSE),
+  stdQC(kFALSE),
+  sec_corr(kFALSE)
 {
 }
