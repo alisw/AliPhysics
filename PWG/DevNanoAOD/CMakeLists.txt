@@ -103,3 +103,5 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install(DIRECTORY . DESTINATION PWG/DevNanoAOD FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY macros DESTINATION PWG/DevNanoAOD)
+
