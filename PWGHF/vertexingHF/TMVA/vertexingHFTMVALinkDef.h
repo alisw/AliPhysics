@@ -8,10 +8,13 @@
 #pragma link C++ class BDT_DefaultNode+;
 #pragma link C++ class ReadBDT_Default_6_12+;
 #pragma link C++ class ReadBDT_Default_4_6+;
+#pragma link C++ class ReadBDT_Default_LHC19c2b_3_4+;
 #pragma link C++ class ReadBDT_Default_LHC19c2b_4_5+;
 #pragma link C++ class ReadBDT_Default_LHC19c2b_5_6+;
 #pragma link C++ class ReadBDT_Default_LHC19c2b_4_6+;
 #pragma link C++ class ReadBDT_Default_LHC19c2b_6_12+;
+#pragma link C++ class ReadBDT_Default_LHC19c2b_6_8+;
+#pragma link C++ class ReadBDT_Default_LHC19c2b_8_12+;
 #pragma link C++ class ReadBDT_Default_LHC19c2b_12_25+;
 
 #endif
