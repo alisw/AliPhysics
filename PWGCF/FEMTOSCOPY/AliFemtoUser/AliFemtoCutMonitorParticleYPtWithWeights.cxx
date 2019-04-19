@@ -12,6 +12,8 @@
 #include <TMath.h>
 
 AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeights(TH2D *filter, int calculateWeights = 1):
+  filterHist(filter),
+  fCalcWeights(calculateWeights),
   fYPt(0),
   fYPhi(0),
   fPtPhi(0),
@@ -21,9 +23,7 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
   fEtaPtW(0),
   fDCARPt(0),
   fDCAZPt(0),
-  fMass(0.13957),
-  filterHist(filter),
-  fCalcWeights(calculateWeights)
+  fMass(0.13957)
 {
   // Default constructor
   fYPt = new TH2D("YPt", "Rapidity vs Pt",              100, 0.0, 6.0, 100, 0.0, 3.0);
@@ -40,6 +40,8 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
 }
 
 AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeights(const char *aName, float aMass, TH2D *filter, int calculateWeights=1):
+  filterHist(filter),
+  fCalcWeights(calculateWeights),
   fYPt(0),
   fYPhi(0),
   fPtPhi(0),
@@ -49,10 +51,8 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
   fEtaPtW(0),
   fDCARPt(0),
   fDCAZPt(0),
-  fMass(aMass),
-  filterHist(filter),
-  fCalcWeights(calculateWeights)
-  {
+  fMass(aMass)
+{
   // Normal constructor
   char name[200];
   snprintf(name, 200, "YPt%s", aName);
@@ -73,11 +73,11 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
   fDCARPt = new TH2D(name, "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,3.0);
   snprintf(name, 200, "DCAZPt%s", aName);
   fDCAZPt = new TH2D(name, "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,3.0);
-
-
 }
 
 AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeights(const AliFemtoCutMonitorParticleYPtWithWeights &aCut):
+  filterHist(0),
+  fCalcWeights(aCut.fCalcWeights),
   fYPt(0),
   fYPhi(0),
   fPtPhi(0),
@@ -87,8 +87,7 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
   fEtaPtW(0),
   fDCARPt(0),
   fDCAZPt(0),
-  fMass(0.13957),
-  filterHist(0)
+  fMass(aCut.fMass)
 {
   // copy constructor
   fYPt = new TH2D(*aCut.fYPt);
@@ -101,8 +100,6 @@ AliFemtoCutMonitorParticleYPtWithWeights::AliFemtoCutMonitorParticleYPtWithWeigh
   fDCARPt = new TH2D(*aCut.fDCARPt);
   fDCAZPt = new TH2D(*aCut.fDCAZPt);
   filterHist = new TH2D(*aCut.filterHist);
-  fMass = aCut.fMass;
-  fCalcWeights = aCut.fCalcWeights; 
 }
 
 AliFemtoCutMonitorParticleYPtWithWeights::~AliFemtoCutMonitorParticleYPtWithWeights()
