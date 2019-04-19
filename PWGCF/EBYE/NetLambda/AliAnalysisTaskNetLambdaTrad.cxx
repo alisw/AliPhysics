@@ -356,7 +356,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     fListHist->Add(fPtBinNplusNminusChBproxyLF0point6);
     fPtBinNplusNminusChBproxyLF0point2 = new THnSparseI("fPtBinNplusNminusChBproxyLF0point2","cent-nlambda-nantilambda masscut", dim, bin, min, max);
     fListHist->Add(fPtBinNplusNminusChBproxyLF0point2);
-
+    
     //bkg sig 2
     fPtBinNplusNminusChBproxyLF1point6SigTwo = new THnSparseI("fPtBinNplusNminusChBproxyLF1point6SigTwo","cent-nlambda-nantilambda masscut", dim, bin, min, max);
     fListHist->Add(fPtBinNplusNminusChBproxyLF1point6SigTwo);
@@ -366,7 +366,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     fListHist->Add(fPtBinNplusNminusChBproxyLF0point6SigTwo);
     fPtBinNplusNminusChBproxyLF0point2SigTwo = new THnSparseI("fPtBinNplusNminusChBproxyLF0point2SigTwo","cent-nlambda-nantilambda masscut", dim, bin, min, max);
     fListHist->Add(fPtBinNplusNminusChBproxyLF0point2SigTwo);
-
+    
     
     
     PostData(1,fListHist);
@@ -400,7 +400,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     Int_t ptChEta0point6LF[dim];
     Int_t ptChEta1point0LF[dim];
     Int_t ptChEta1point6LF[dim];
-
+    
     Int_t ptChEta0point2LFSigtwo[dim];
     Int_t ptChEta0point6LFSigtwo[dim];
     Int_t ptChEta1point0LFSigtwo[dim];
@@ -427,12 +427,12 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         ptChEta0point6LF[idx] = 0.;
         ptChEta1point0LF[idx] = 0.;
         ptChEta1point6LF[idx] = 0.;
-
+        
         ptChEta0point2LFSigtwo[idx] = 0.;
         ptChEta0point6LFSigtwo[idx] = 0.;
         ptChEta1point0LFSigtwo[idx] = 0.;
         ptChEta1point6LFSigtwo[idx] = 0.;
- 
+        
         
     }
     
@@ -603,11 +603,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta1point6[iptbin] += 1;
                         f3fHistCentVsInvMassLambda1point6Masscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
-                    if(invMassLambda > 1.094 && invMassLambda < 1.104)
+                    if(invMassLambda > 1.1 && invMassLambda < 1.106)
                     {
                         ptChEta1point6LF[iptbin] += 1;
                     }
-                   
+                    
                 }
                 if(TMath::Abs(eta) < 0.5)
                 {
@@ -617,7 +617,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta1point0[iptbin] += 1;
                         f3fHistCentVsInvMassLambda1point0Masscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
-                    if(invMassLambda > 1.094 && invMassLambda < 1.104)
+                    if(invMassLambda > 1.1 && invMassLambda < 1.106)
                     {
                         ptChEta1point0LF[iptbin] += 1;
                     }
@@ -630,7 +630,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta0point6[iptbin] += 1;
                         f3fHistCentVsInvMassLambda0point6Masscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
-                    if(invMassLambda > 1.094 && invMassLambda < 1.104)
+                    if(invMassLambda > 1.1 && invMassLambda < 1.106)
                     {
                         ptChEta0point6LF[iptbin] += 1;
                     }
@@ -643,7 +643,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta0point2[iptbin] += 1;
                         f3fHistCentVsInvMassLambda0point2Masscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
-                    if(invMassLambda > 1.094 && invMassLambda < 1.104)
+                    if(invMassLambda > 1.1 && invMassLambda < 1.106)
                     {
                         ptChEta0point2LF[iptbin] += 1;
                     }
@@ -659,9 +659,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     {
                         ptChEta1point6[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda1point6Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
-
+                        
                     }
-                    if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
+                    if(invMassAntiLambda > 1.1 && invMassAntiLambda < 1.106)
                     {
                         ptChEta1point6LF[iptbin+fNptBins] += 1;
                     }
@@ -674,11 +674,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta1point0[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
-                    if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
+                    if(invMassAntiLambda > 1.1 && invMassAntiLambda < 1.106)
                     {
                         ptChEta1point0LF[iptbin+fNptBins] += 1;
                     }
-            
+                    
                 }
                 if(TMath::Abs(eta) < 0.3)
                 {
@@ -687,9 +687,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     {
                         ptChEta0point6[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda0point6Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
-
+                        
                     }
-                    if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
+                    if(invMassAntiLambda > 1.1 && invMassAntiLambda < 1.106)
                     {
                         ptChEta0point6LF[iptbin+fNptBins] += 1;
                     }
@@ -701,9 +701,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     {
                         ptChEta0point2[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda0point2Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
-
+                        
                     }
-                    if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
+                    if(invMassAntiLambda > 1.1 && invMassAntiLambda < 1.106)
                     {
                         ptChEta0point2LF[iptbin+fNptBins] += 1;
                     }
@@ -723,7 +723,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta1point6Sigtwo[iptbin] += 1;
                         f3fHistCentVsInvMassLambda1point6SigtwoMasscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
-                    if(invMassLambda > 1.094 && invMassLambda < 1.104)
+                    if(invMassLambda > 1.1 && invMassLambda < 1.106)
                     {
                         ptChEta1point6LFSigtwo[iptbin] += 1;
                     }
@@ -736,7 +736,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta1point0Sigtwo[iptbin] += 1;
                         f3fHistCentVsInvMassLambda1point0SigtwoMasscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
-                    if(invMassLambda > 1.094 && invMassLambda < 1.104)
+                    if(invMassLambda > 1.1 && invMassLambda < 1.106)
                     {
                         ptChEta1point0LFSigtwo[iptbin] += 1;
                     }
@@ -749,7 +749,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta0point6Sigtwo[iptbin] += 1;
                         f3fHistCentVsInvMassLambda0point6SigtwoMasscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
-                    if(invMassLambda > 1.094 && invMassLambda < 1.104)
+                    if(invMassLambda > 1.1 && invMassLambda < 1.106)
                     {
                         ptChEta0point6LFSigtwo[iptbin] += 1;
                     }
@@ -762,7 +762,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta0point2Sigtwo[iptbin] += 1;
                         f3fHistCentVsInvMassLambda0point2SigtwoMasscut->Fill(fCentrality,invMassLambda,V0pt);
                     }
-                    if(invMassLambda > 1.094 && invMassLambda < 1.104)
+                    if(invMassLambda > 1.1 && invMassLambda < 1.106)
                     {
                         ptChEta0point2LFSigtwo[iptbin] += 1;
                     }
@@ -779,11 +779,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta1point6Sigtwo[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda1point6SigtwoMasscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
-                    if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
+                    if(invMassAntiLambda > 1.1 && invMassAntiLambda < 1.106)
                     {
                         ptChEta1point6LFSigtwo[iptbin+fNptBins] += 1;
                     }
-          
+                    
                 }
                 if(TMath::Abs(eta) < 0.5)
                 {
@@ -793,7 +793,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta1point0Sigtwo[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda1point0SigtwoMasscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
-                    if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
+                    if(invMassAntiLambda > 1.1 && invMassAntiLambda < 1.106)
                     {
                         ptChEta1point0LFSigtwo[iptbin+fNptBins] += 1;
                     }
@@ -806,7 +806,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta0point6Sigtwo[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda0point6SigtwoMasscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
-                    if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
+                    if(invMassAntiLambda > 1.1 && invMassAntiLambda < 1.106)
                     {
                         ptChEta0point6LFSigtwo[iptbin+fNptBins] += 1;
                     }
@@ -819,7 +819,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         ptChEta0point2Sigtwo[iptbin+fNptBins] += 1;
                         f3fHistCentVsInvMassAntiLambda0point2SigtwoMasscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
-                    if(invMassAntiLambda > 1.094 && invMassAntiLambda < 1.104)
+                    if(invMassAntiLambda > 1.1 && invMassAntiLambda < 1.106)
                     {
                         ptChEta0point2LFSigtwo[iptbin+fNptBins] += 1;
                     }
@@ -962,7 +962,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     }
     fPtBinNplusNminusChBproxyLF0point2->Fill(ptContainerOneLF);
     //-------------------------------------------------
-   
+    
     
     //sig two
     Double_t ptContainerFourLFSigtwo[dim+1];  //4
@@ -997,7 +997,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     }
     fPtBinNplusNminusChBproxyLF0point2SigTwo->Fill(ptContainerOneLFSigtwo);
     //-------------------------------------------------
-
+    
     PostData(1,fListHist);
 }
 
