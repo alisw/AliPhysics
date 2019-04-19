@@ -1,4 +1,4 @@
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
+/* Copyright(c) 2016, ALICE Experiment at CERN, All rights reserved. */
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
@@ -29,6 +29,8 @@ class AliPicoTrack;
 class AliAODv0;
 class AliAODMCParticle;
 
+class AliUniFlowCorrTask;
+
 //_____________________________________________________________________________
 
 class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
@@ -41,32 +43,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       enum    PartSpecies {kRefs = 0, kCharged, kPion, kKaon, kProton, kK0s, kLambda, kPhi, kUnknown}; // list of all particle species of interest; NB: kUknown last as counter
       enum    SparseCand {kInvMass = 0, kCent, kPt, kEta, kDim}; // reconstructed candidates dist. dimensions
       enum    QAindex { kBefore = 0, kAfter, kNumQA}; // index for filling QA status
-
-      class CorrTask
-      {
-        public:
-                      CorrTask(); // default ctor
-                      CorrTask( // actual ctor
-                          Bool_t doRFPs,
-                          Bool_t doPOIs,
-                          std::vector<Int_t> harms,
-                          std::vector<Double_t> gaps = std::vector<Double_t>());
-                      ~CorrTask() { fiHarm.clear(); fdGaps.clear(); }
-
-          Bool_t      HasGap() const { return (Bool_t) fiNumGaps; }; // check if Gap
-          void        Print() const; // print CorrTask properties
-
-          Bool_t                fbDoRefs; // which particles are procesed (RFPs / POIs / both )
-          Bool_t                fbDoPOIs; // which particles are procesed (RFPs / POIs / both )
-          Int_t                 fiNumHarm; // correlation order <M>
-          Int_t                 fiNumGaps; // number of subevents
-          std::vector<Int_t>    fiHarm; // harmonics n1,n2,...,nM
-          std::vector<Double_t> fdGaps; // gaps between subevents (standard GF notation)
-          TString               fsName; // automatically generated name: see Init() for format
-          TString               fsLabel; // automatically generated label see Init() for format
-        protected:
-        private:
-      };
 
                               AliAnalysisTaskUniFlow(); // constructor
                               AliAnalysisTaskUniFlow(const char *name, ColSystem colSys, Bool_t bUseWeights = kFALSE, Bool_t bIsMC = kFALSE); // named (primary) constructor
@@ -89,7 +65,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       void                    SetProcessV0s(Bool_t use = kTRUE) { fProcessSpec[kK0s] = use; fProcessSpec[kLambda] = use; }
       void                    SetProcessPhi(Bool_t use = kTRUE) { fProcessSpec[kPhi] = use; }
       // flow related setters
-      void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new CorrTask(doRFPs, doPOIs, harms, gaps)); }
+      void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE);
+      // void                    AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps = std::vector<Double_t>(), Bool_t doRFPs = kTRUE, Bool_t doPOIs = kTRUE) { fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps)); }
       void                    AddTwo(Int_t n1, Int_t n2, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2},{},refs,pois); }
       void                    AddTwoGap(Int_t n1, Int_t n2, Double_t gap, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2},{gap},refs,pois); }
       void                    AddThree(Int_t n1, Int_t n2, Int_t n3, Bool_t refs = kTRUE, Bool_t pois = kTRUE) { AddCorr({n1,n2,n3},{},refs,pois); }
@@ -174,15 +151,15 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
 
       AliEventCuts            fEventCuts; //
 
-
-
     private:
       static const Int_t      fPIDNumSpecies = 5; // Number of considered species for PID
       static const Int_t      fFlowNumHarmonicsMax = 7; // maximum harmonics length of flow vector array
       static const Int_t      fFlowNumWeightPowersMax = 5; // maximum weight power length of flow vector array
 
       const char*             GetSpeciesName(PartSpecies species) const;
+      const char*             GetSpeciesName(Int_t species) const { return GetSpeciesName(PartSpecies(species)); }
       const char*             GetSpeciesLabel(PartSpecies species) const;
+      const char*             GetSpeciesLabel(Int_t species) const { return GetSpeciesLabel(PartSpecies(species)); }
       const char*             GetEtaGapName(Double_t dEtaGap) const { return Form("%02.2g",10.0*dEtaGap); }
 
       Bool_t                  sortPt(const AliVTrack* t1, const AliVTrack* t2) { return (t1->Pt() < t2->Pt()); } // function for std::sort
@@ -202,8 +179,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   GetCentralityIndex() const; // returns centrality index based centrality estimator or number of selected tracks
       const char*             GetCentEstimatorLabel(CentEst est) const; // returns mult/cent estimator string with label or 'n/a' if not available
 
-      void                    CalculateCorrelations(const CorrTask* task, PartSpecies species, Double_t dPt = -1.0, Double_t dMass = -1.0) const; // wrapper for correlations methods
-      Bool_t                  ProcessCorrTask(const CorrTask* task); // procesisng of CorrTask
+      void                    CalculateCorrelations(const AliUniFlowCorrTask* task, PartSpecies species, Double_t dPt = -1.0, Double_t dMass = -1.0) const; // wrapper for correlations methods
+      Bool_t                  ProcessCorrTask(const AliUniFlowCorrTask* task); // procesisng of AliUniFlowCorrTask
       Bool_t                  CalculateFlow(); // main (envelope) method for flow calculations in selected events
 
       void                    FilterCharged() const; // charged tracks filtering
@@ -216,7 +193,8 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Bool_t                  HasMass(PartSpecies spec) const { return (spec == kK0s || spec == kLambda || spec == kPhi); }
       Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
       Bool_t                  HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?
-      Bool_t                  IsWithinRefs(const AliAODTrack* track) const; // check if track fulfill requirements for Refs (used for refs selection & autocorelations)
+      Bool_t                  IsWithinRefs(const AliVParticle* track) const; // check if track is in (pt,eta) acceptance for Refs (used for refs selection & autocorelations)
+      Bool_t                  IsWithinPOIs(const AliVParticle* track) const; // check if track is in (pt,eta) acceptance for POIs
       Bool_t                  IsChargedSelected(const AliAODTrack* track) const; // charged track selection
       PartSpecies             IsPIDSelected(const AliAODTrack* track) const; // PID tracks selections
       Bool_t                  IsV0Selected(const AliAODv0* v0) const; // general (common) V0 selection
@@ -295,7 +273,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                fFlowVecSpos[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
       TComplex                fFlowVecSneg[fFlowNumHarmonicsMax][fFlowNumWeightPowersMax]; // flow vector array for flow calculation
 
-      std::vector<CorrTask*>  fVecCorrTask; //
+      std::vector<AliUniFlowCorrTask*>  fVecCorrTask; //
       std::vector<AliVTrack*>* fVector[kUnknown]; //! container for selected Refs charged particles
 
       //cuts & selection: analysis
