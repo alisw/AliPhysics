@@ -1,5 +1,5 @@
 /**************************************************************************
-* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+* Copyright(c) 2016, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
 * Contributors are mentioned in the code where appropriate.              *
@@ -63,6 +63,7 @@
 #define ALIANALYSISTASKUNIFLOW_CXX
 
 #include <algorithm>
+#include <vector>
 #include <TDatabasePDG.h>
 #include <TPDGCode.h>
 
@@ -97,6 +98,7 @@
 #include "AliAODMCParticle.h"
 
 #include "AliAnalysisTaskUniFlow.h"
+#include "AliUniFlowCorrTask.h"
 
 ClassImp(AliAnalysisTaskUniFlow);
 
@@ -1424,14 +1426,14 @@ void AliAnalysisTaskUniFlow::FilterCharged() const
     AliAODTrack* track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
     if(!track) { continue; }
 
+    // passing reconstruction criteria
     if(!IsChargedSelected(track)) { continue; }
 
-    // Checking if selected track is eligible for Ref. flow
+    // Checking if selected track is within Refs pt,eta acceptance
     if(IsWithinRefs(track)) { fVector[kRefs]->push_back(track); }
 
-    // pt-acceptance check for POIs (NB: due to different cuts for Refs & POIs)
-    if(fFlowPOIsPtMin > 0. && track->Pt() < fFlowPOIsPtMin) { continue; }
-    if(fFlowPOIsPtMax > 0. && track->Pt() > fFlowPOIsPtMax) { continue; }
+    // Checking if selected track is within POIs pt,eta acceptance
+    if(!IsWithinPOIs(track)) { continue; }
 
     fVector[kCharged]->push_back(track);
 
@@ -1458,12 +1460,6 @@ Bool_t AliAnalysisTaskUniFlow::IsChargedSelected(const AliAODTrack* track) const
   // *************************************************************
   if(!track) { return kFALSE; }
   fhChargedCounter->Fill("Input",1);
-
-  // NB: pt moved out to FilterCharged due to different cuts for potentially overlapping POIs & RFPs
-
-  // pseudorapidity (eta)
-  if(fFlowEtaMax > 0. && TMath::Abs(track->Eta()) > fFlowEtaMax) { return kFALSE; }
-  fhChargedCounter->Fill("Eta",1);
 
   // filter bit
   if( !track->TestFilterBit(fCutChargedTrackFilterBit) ) { return kFALSE; }
@@ -1500,15 +1496,29 @@ Bool_t AliAnalysisTaskUniFlow::IsChargedSelected(const AliAODTrack* track) const
   return kTRUE;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlow::IsWithinRefs(const AliAODTrack* track) const
+Bool_t AliAnalysisTaskUniFlow::IsWithinRefs(const AliVParticle* track) const
 {
-  // Checking if (preselected) track fulfills criteria for RFPs
-  // NOTE: This is not a standalone selection, but complementary check for IsChargedSelected()
+  // Checking if (preselected) track fulfills acceptance criteria for RFPs
+  // NOTE: This is not a standalone selection, but additional check for IsChargedSelected()
   // It is used to selecting RFPs out of selected charged tracks
   // OR for estimating autocorrelations for Charged & PID particles
   // *************************************************************
+
+  if(fFlowEtaMax > 0.0 && TMath::Abs(track->Eta()) > fFlowEtaMax) { return kFALSE; }
   if(fFlowRFPsPtMin > 0.0 && track->Pt() < fFlowRFPsPtMin) { return kFALSE; }
   if(fFlowRFPsPtMax > 0.0 && track->Pt() > fFlowRFPsPtMax) { return kFALSE; }
+
+  return kTRUE;
+}
+// ============================================================================
+Bool_t AliAnalysisTaskUniFlow::IsWithinPOIs(const AliVParticle* track) const
+{
+  // Checking if (preselected) track fulfills acceptance criteria for POIs
+  // *************************************************************
+
+  if(fFlowEtaMax > 0.0 && TMath::Abs(track->Eta()) > fFlowEtaMax) { return kFALSE; }
+  if(fFlowPOIsPtMin > 0.0 && track->Pt() < fFlowPOIsPtMin) { return kFALSE; }
+  if(fFlowPOIsPtMax > 0.0 && track->Pt() > fFlowPOIsPtMax) { return kFALSE; }
 
   return kTRUE;
 }
@@ -1925,9 +1935,7 @@ Bool_t AliAnalysisTaskUniFlow::IsV0Selected(const AliAODv0* v0) const
   fhV0sCounter->Fill("Daughters OK",1);
 
   // acceptance checks
-  if(fFlowEtaMax > 0. && TMath::Abs(v0->Eta()) > fFlowEtaMax) { return kFALSE; }
-  if(fFlowPOIsPtMin > 0. && v0->Pt() < fFlowPOIsPtMin) { return kFALSE; }
-  if(fFlowPOIsPtMax > 0. && v0->Pt() > fFlowPOIsPtMax) { return kFALSE; }
+  if(!IsWithinPOIs(v0)) { return kFALSE; }
   fhV0sCounter->Fill("Mother acceptance",1);
 
   if(fCutV0sDaughterPtMin > 0. && (daughterPos->Pt() <= fCutV0sDaughterPtMin  || daughterNeg->Pt() <= fCutV0sDaughterPtMin) ) return kFALSE;
@@ -2252,12 +2260,8 @@ void AliAnalysisTaskUniFlow::FilterPhi() const
       if(fCutPhiInvMassMax > 0. && mother->M() > fCutPhiInvMassMax) { delete mother; continue; }
       fhPhiCounter->Fill("InvMass",1);
 
-      if(fFlowPOIsPtMin > 0. && mother->Pt() < fFlowPOIsPtMin) { delete mother; continue; }
-      if(fFlowPOIsPtMax > 0. && mother->Pt() > fFlowPOIsPtMax) { delete mother; continue; }
-      fhPhiCounter->Fill("Pt",1);
-
-      if(fFlowEtaMax > 0. && TMath::Abs(mother->Eta()) > fFlowEtaMax) { delete mother; continue; }
-      fhPhiCounter->Fill("Eta",1);
+      if(!IsWithinPOIs(mother))  { delete mother; continue; }
+      fhPhiCounter->Fill("Acceptance",1);
 
       // mother (phi) candidate passing all criteria (except for charge)
       fhPhiCounter->Fill("Before charge",1);
@@ -2653,9 +2657,9 @@ void AliAnalysisTaskUniFlow::FillQAPID(const QAindex iQAindex, const AliAODTrack
   return;
 }
 // ============================================================================
-Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const CorrTask* task)
+Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const AliUniFlowCorrTask* task)
 {
-    if(!task) { AliError("CorrTask does not exists!"); return kFALSE; }
+    if(!task) { AliError("AliUniFlowCorrTask does not exists!"); return kFALSE; }
     // task->Print();
 
     Int_t iNumHarm = task->fiNumHarm;
@@ -2757,9 +2761,9 @@ Bool_t AliAnalysisTaskUniFlow::ProcessCorrTask(const CorrTask* task)
     return kTRUE;
 }
 // ============================================================================
-void AliAnalysisTaskUniFlow::CalculateCorrelations(const CorrTask* const task, const PartSpecies species, const Double_t dPt, const Double_t dMass) const
+void AliAnalysisTaskUniFlow::CalculateCorrelations(const AliUniFlowCorrTask* const task, const PartSpecies species, const Double_t dPt, const Double_t dMass) const
 {
-  if(!task) { AliError("CorrTask does not exists!"); return; }
+  if(!task) { AliError("AliUniFlowCorrTask does not exists!"); return; }
   if(species >= kUnknown) { AliError(Form("Invalid species: %s!", GetSpeciesName(species))); return; }
 
   Bool_t bHasGap = task->HasGap();
@@ -2950,13 +2954,13 @@ Bool_t AliAnalysisTaskUniFlow::CalculateFlow()
   // if running in kSkipFlow mode, skip the remaining part
   if(fRunMode == kSkipFlow) { fEventCounter++; return kTRUE; }
 
-  // >>>> Using CorrTask <<<<<
+  // >>>> Using AliUniFlowCorrTask <<<<<
 
   Int_t iNumTasks = fVecCorrTask.size();
   for(Int_t iTask(0); iTask < iNumTasks; ++iTask)
   {
     Bool_t process = ProcessCorrTask(fVecCorrTask.at(iTask));
-    if(!process) { AliError("CorrTask processing failed!\n"); fVecCorrTask.at(iTask)->Print(); return kFALSE; }
+    if(!process) { AliError("AliUniFlowCorrTask processing failed!\n"); fVecCorrTask.at(iTask)->Print(); return kFALSE; }
   }
 
   fEventCounter++; // counter of processed events
@@ -3233,8 +3237,9 @@ Int_t AliAnalysisTaskUniFlow::GetCentralityIndex() const
   Int_t iCentralityIndex = -1;
 
   // assigning centrality based on number of selected charged tracks
-  if(fCentEstimator == kRFP) { iCentralityIndex = fVector[kRefs]->size(); }
-  else {
+  if(fCentEstimator == kRFP) {
+      iCentralityIndex = fVector[kRefs]->size();
+  } else {
     AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
     if(!multSelection) {
       AliError("AliMultSelection object not found! Returning -1");
@@ -3262,8 +3267,8 @@ const char* AliAnalysisTaskUniFlow::GetCentEstimatorLabel(const CentEst est) con
     case kV0A: return "V0A";
     case kV0C: return "V0C";
     case kV0M: return "V0M";
-    case kCL0: return "CL1";
-    case kCL1: return "CL2";
+    case kCL0: return "CL0";
+    case kCL1: return "CL1";
     case kZNA: return "ZNA";
     case kZNC: return "ZNC";
     default: return "n/a";
@@ -3287,6 +3292,11 @@ Bool_t AliAnalysisTaskUniFlow::HasTrackPIDTOF(const AliAODTrack* track) const
   if(!track || !fPIDResponse) return kFALSE;
   AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
   return ((pidStatusTOF == AliPIDResponse::kDetPidOk) && (track->GetStatus()& AliVTrack::kTOFout) && (track->GetStatus()& AliVTrack::kTIME));
+}
+// ============================================================================
+void AliAnalysisTaskUniFlow::AddCorr(std::vector<Int_t> harms, std::vector<Double_t> gaps, Bool_t doRFPs, Bool_t doPOIs)
+{
+    fVecCorrTask.push_back(new AliUniFlowCorrTask(doRFPs, doPOIs, harms, gaps));
 }
 // ============================================================================
 void AliAnalysisTaskUniFlow::Terminate(Option_t* option)
@@ -3540,8 +3550,8 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
   {
     for(Int_t iTask(0); iTask < iNumTasks; ++iTask)
     {
-      CorrTask* task = fVecCorrTask.at(iTask);
-      if(!task) { fInit = kFALSE; AliError(Form("CorrTask %d does not exists\n",iTask)); return; }
+      AliUniFlowCorrTask* task = fVecCorrTask.at(iTask);
+      if(!task) { fInit = kFALSE; AliError(Form("AliUniFlowCorrTask %d does not exists\n",iTask)); return; }
 
       Bool_t bHasGap = task->HasGap();
       const char* corName = task->fsName.Data();
@@ -3549,7 +3559,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
       for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec)
       {
-        // check if CorrTask should be done for all flow particles (RFP/POI/Both)
+        // check if AliUniFlowCorrTask should be done for all flow particles (RFP/POI/Both)
         if(!task->fbDoRefs && iSpec == kRefs) { continue; }
         if(!task->fbDoPOIs && iSpec != kRefs) { continue; }
 
@@ -3631,7 +3641,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
           // check if same profile does not exists already
           if(fListFlow[iSpec]->FindObject(profile->GetName())) {
-            AliError(Form("CorrTask %d : Profile '%s' already exists! Please check run macro for CorrTask duplicates!",iTask,profile->GetName()));
+            AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
             fInit = kFALSE;
             task->Print();
             delete profile;
@@ -3647,7 +3657,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
             // same for Neg
             if(fListFlow[iSpec]->FindObject(profileNeg->GetName())) {
-              AliError(Form("CorrTask %d : Profile '%s' already exists! Please check run macro for CorrTask duplicates!",iTask,profile->GetName()));
+              AliError(Form("AliUniFlowCorrTask %d : Profile '%s' already exists! Please check run macro for AliUniFlowCorrTask duplicates!",iTask,profile->GetName()));
               fInit = kFALSE;
               task->Print();
               delete profileNeg;
@@ -3785,7 +3795,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
   }
 
   {
-    TString sChargedCounterLabel[] = {"Input","Eta","FB","#TPC-Cls","DCA-z","DCA-xy","Selected","POIs","Refs"};
+    TString sChargedCounterLabel[] = {"Input","FB","#TPC-Cls","DCA-z","DCA-xy","Selected","POIs","Refs"};
     const Int_t iNBinsChargedCounter = sizeof(sChargedCounterLabel)/sizeof(sChargedCounterLabel[0]);
     fhChargedCounter = new TH1D("fhChargedCounter","Charged tracks: Counter",iNBinsChargedCounter,0,iNBinsChargedCounter);
     for(Int_t i(0); i < iNBinsChargedCounter; i++) fhChargedCounter->GetXaxis()->SetBinLabel(i+1, sChargedCounterLabel[i].Data() );
@@ -3803,7 +3813,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
   if(fProcessSpec[kPhi])
   {
-    TString sPhiCounterLabel[] = {"Input","InvMass","Pt","Eta","Before charge","Unlike-sign","BG"};
+    TString sPhiCounterLabel[] = {"Input","InvMass","Acceptance","Before charge","Unlike-sign","BG"};
     const Int_t iNBinsPhiCounter = sizeof(sPhiCounterLabel)/sizeof(sPhiCounterLabel[0]);
     fhPhiCounter = new TH1D("fhPhiCounter","#phi: Counter",iNBinsPhiCounter,0,iNBinsPhiCounter);
     for(Int_t i(0); i < iNBinsPhiCounter; ++i) { fhPhiCounter->GetXaxis()->SetBinLabel(i+1, sPhiCounterLabel[i].Data() ); }
@@ -4177,74 +4187,6 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
   DumpTObjTable("UserCreateOutputObjects: end");
 
   return;
-}
-// ============================================================================
-AliAnalysisTaskUniFlow::CorrTask::CorrTask() :
-  fbDoRefs{0},
-  fbDoPOIs{0},
-  fiNumHarm{0},
-  fiNumGaps{0},
-  fiHarm{},
-  fdGaps{},
-  fsName{},
-  fsLabel{}
-{}
-// ============================================================================
-AliAnalysisTaskUniFlow::CorrTask::CorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> harms, std::vector<Double_t> gaps) :
-  fbDoRefs{doRFPs},
-  fbDoPOIs{doPOIs},
-  fiNumHarm{0},
-  fiNumGaps{0},
-  fiHarm{harms},
-  fdGaps{gaps},
-  fsName{},
-  fsLabel{}
-{
-  // constructor of CorrTask
-
-  fiNumHarm = harms.size();
-  fiNumGaps = gaps.size();
-
-  if(fiNumHarm < 2) { return; }
-
-  // generating name
-  TString sName = Form("<<%d>>(%d",fiNumHarm,fiHarm[0]);
-  for(Int_t i(1); i < fiNumHarm; ++i) { sName += Form(",%d",fiHarm[i]); }
-  sName += ")";
-
-  if(fiNumGaps > 0) {
-    sName += Form("_%dsub(%.2g",fiNumGaps+1,fdGaps[0]);
-    for(Int_t i(1); i < fiNumGaps; ++i) { sName += Form(",%.2g",fdGaps[i]); }
-    sName += ")";
-  }
-
-  // generating label
-  TString sLabel = Form("<<%d>>_{%d",fiNumHarm,fiHarm[0]);
-  for(Int_t i(1); i < fiNumHarm; ++i) { sLabel += Form(",%d",fiHarm[i]); }
-  sLabel += "}";
-
-  if(fiNumGaps > 0) {
-    sLabel += Form(" %dsub(|#Delta#eta| > %.2g",fiNumGaps+1,fdGaps[0]);
-    for(Int_t i(1); i < fiNumGaps; ++i) { sLabel += Form(", |#Delta#eta| > %.2g",fdGaps[i]); }
-    sLabel += ")";
-  }
-
-  fsName = sName;
-  fsLabel = sLabel;
-}
-// ============================================================================
-void AliAnalysisTaskUniFlow::CorrTask::Print() const
-{
-  printf("CorrTask::Print():\n");
-  printf("# fsName:\t %s\n", fsName.Data());
-  printf("# fsLabel:\t %s\n", fsLabel.Data());
-  printf("# fbDoRefs:\t %d\n", fbDoRefs);
-  printf("# fbDoPOIs:\t %d\n", fbDoPOIs);
-  printf("# fiNumHarm:\t %d\n", fiNumHarm);
-  printf("# fiHarm:\t { "); for(Int_t i(0); i < fiNumHarm; ++i) { printf("%d ",fiHarm[i]); }  printf("}\n");
-  printf("# fiNumGaps:\t %d\n", fiNumGaps);
-  printf("# fdGaps:\t { "); for(Int_t i(0); i < fiNumGaps; ++i) { printf("%f ",fdGaps[i]); } printf("}\n");
-  printf("############################################\n");
 }
 
 #endif

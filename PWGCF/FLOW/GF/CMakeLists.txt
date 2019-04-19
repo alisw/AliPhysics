@@ -39,6 +39,7 @@ set(SRCS
   AliGFWFlowContainer.cxx
   AliProfileSubset.cxx
   AliGFWWeights.cxx
+  AliUniFlowCorrTask.cxx
   )
 
 # Headers from sources
