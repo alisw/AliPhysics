@@ -5553,7 +5553,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lCascadeResult[lN]->SetCutV0Mass                ( lcuts[i][0][ 5] ) ;
         lCascadeResult[lN]->SetCutDCABachToPV           ( lcuts[i][0][ 6] ) ;
         lCascadeResult[lN]->SetCutDCACascDaughters      ( lcuts[i][0][ 7] ) ;
-        lCascadeResult[lN]->SetCutVarDCACascDau ( TMath::Exp(0.0470076), -0.917006, 0, 1, 0.5 );
+        lCascadeResult[lN]->SetCutVarDCACascDau ( 1.2 * TMath::Exp(0.0470076), -0.917006, 0, 1, 1.2 * 0.5 );
         lCascadeResult[lN]->SetCutCascRadius            ( lcuts[i][0][ 8] ) ;
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lcuts[i][0][ 9] ) ;
