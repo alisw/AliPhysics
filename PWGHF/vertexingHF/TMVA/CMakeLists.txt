@@ -37,6 +37,11 @@ set(HDRS
   LHC19c2b_TMVAClassification_BDT_6_12.class.C
   LHC19c2b_TMVAClassification_BDT_6_8.class.C
   LHC19c2b_TMVAClassification_BDT_8_12.class.C
+  LHC19c2a_TMVAClassification_BDT_4_6.class.C
+  LHC19c2a_TMVAClassification_BDT_6_8.class.C
+  LHC19c2a_TMVAClassification_BDT_8_12.class.C
+  LHC19c2a_TMVAClassification_BDT_6_12.class.C
+  LHC19c2a_TMVAClassification_BDT_12_25.class.C
   BDT_DefaultNode.C
   )
 
