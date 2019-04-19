@@ -106,7 +106,7 @@ centrality                    centrality                    centrality          
 
 ============================================================================ */
 
-#include <array>
+
 #include <vector>
 #include <cmath>
 #include <string>
