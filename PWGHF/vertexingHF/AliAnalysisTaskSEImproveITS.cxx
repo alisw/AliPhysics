@@ -1184,7 +1184,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   if(fIsAOD) {
     
     fMCs=static_cast<TClonesArray*>(ev->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(ev->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    AliAODMCHeader *mcHeader = (AliAODMCHeader*)ev->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if (!fMCs || !mcHeader) return;
 
     // first loop on candidates to fill them in case of reduced AODs
@@ -1194,7 +1194,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     // D0->Kpi
     TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
     if (array2Prong) {
-      for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+      for (Int_t icand=0;icand<array2Prong->GetEntriesFast();++icand) {
 	AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
 	vHF->GetProng(ev,decay,0); // needed to fill fAODMap in AliAnalysisVertexingHF
 	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
@@ -1204,7 +1204,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     // Dstar->Kpipi
     TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
     if (arrayCascade) {
-      for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+      for (Int_t icand=0;icand<arrayCascade->GetEntriesFast();++icand) {
 	AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
 	vHF->GetProng(ev,decayDstar,0); // needed to fill fAODMap in AliAnalysisVertexingHF
 	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decayDstar,ev,mcHeader,fMCs)==kFALSE) continue;
@@ -1214,7 +1214,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     // Three prong
     TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
     if (array3Prong) {
-      for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+      for (Int_t icand=0;icand<array3Prong->GetEntriesFast();++icand) {
 	AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
 	vHF->GetProng(ev,decay,0); // needed to fill fAODMap in AliAnalysisVertexingHF
 	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
@@ -1226,7 +1226,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     // Smear all tracks
     if (fImproveTracks) {
       for(Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack) {
-	AliAODTrack * trk = dynamic_cast<AliAODTrack*>(ev->GetTrack(itrack));
+	AliAODTrack * trk = static_cast<AliAODTrack*>(ev->GetTrack(itrack));
 	if(!trk) AliFatal("Not a standard AOD");
 	if(fSmearOnlySignal && AliVertexingHFUtils::IsTrackInjected(trk,mcHeader,fMCs)==kFALSE) continue;
 	SmearTrack(trk,bz);
@@ -1239,7 +1239,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     // Recalculate all candidates
     // D0->Kpi
     if (array2Prong) {
-      for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+      for (Int_t icand=0;icand<array2Prong->GetEntriesFast();++icand) {
 	AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
 	
 	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
@@ -1304,7 +1304,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     
     // Dstar->Kpipi
     if (arrayCascade) {
-      for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+      for (Int_t icand=0;icand<arrayCascade->GetEntriesFast();++icand) {
 	AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
 	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decayDstar,ev,mcHeader,fMCs)==kFALSE) continue;
 	if(!vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE))continue;
@@ -1355,7 +1355,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     
     // Three prong
     if (array3Prong) {
-      for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+      for (Int_t icand=0;icand<array3Prong->GetEntriesFast();++icand) {
 	AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
 	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay))continue;
@@ -1443,7 +1443,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     if (!fMCEvent) return;
     if (fImproveTracks) {
       for(Int_t itrack=0;itrack<evesd->GetNumberOfTracks();++itrack) {
-	AliESDtrack * trk = dynamic_cast<AliESDtrack*>(evesd->GetTrack(itrack));
+	AliESDtrack * trk = static_cast<AliESDtrack*>(evesd->GetTrack(itrack));
 	if(!trk) AliFatal("No a standard ESD");
 	SmearTrack(trk,bz);
       }
@@ -1491,10 +1491,10 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliVTrack *track,Double_t bz) {
   Short_t  mcc;
   const AliVParticle *mc= 0x0;
   if(fIsAOD) {
-    mc = dynamic_cast<AliVParticle*>(fMCs->At(imc));
+    mc = static_cast<AliVParticle*>(fMCs->At(imc));
   }
   else {
-    mc = dynamic_cast<AliVParticle*>(fMCEvent->GetTrack(imc));
+    mc = static_cast<AliVParticle*>(fMCEvent->GetTrack(imc));
   }
   if(!mc) return;
   mc->XvYvZv(mcx);
