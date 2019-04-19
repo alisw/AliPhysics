@@ -210,7 +210,7 @@ class ReadBDT_Default_LHC19c2b_3_4 : public IClassifierReader {
    // the classifier response
    // "inputValues" is a vector of input values in the same order as the
    // variables given to the constructor
-   double GetMvaValue( const std::vector<double>& inputValues ) const override;
+   double GetMvaValue( const std::vector<double>& inputValues ) const;
 
  private:
 
