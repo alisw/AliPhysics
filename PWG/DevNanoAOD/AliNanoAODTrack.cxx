@@ -561,3 +561,11 @@ Bool_t AliNanoAODTrack::InitPIDIndex()
   return anyFilled;
 }
 
+//_______________________________________________________
+void  AliNanoAODTrack::GetImpactParameters(Float_t &xy,Float_t &z) const {
+  if (fNanoFlags & ENanoFlags::kIsDCA) {
+    xy = GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosX());
+    z = GetVar(AliNanoAODTrackMapping::GetInstance()->GetPosZ());
+  } else
+    AliFatal("DCA requested for NanoTracks not propagated to the vertex");
+}
