@@ -60,7 +60,6 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
   , fDenominatorReconstructed(nullptr)
   , fDenominatorGenWeighted(nullptr)
   , fDenominatorRecWeighted(nullptr)
-  , fRng(new TRandom2())
 {
 
   auto new_th3 = [&] (const TString &name, const TString &title)
@@ -127,7 +126,6 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
   , fDenominatorReconstructed(nullptr)
   , fDenominatorGenWeighted(nullptr)
   , fDenominatorRecWeighted(nullptr)
-  , fRng(new TRandom2())
 {
   fNumeratorGenerated = new TH3F(*orig.fNumeratorGenerated);
   fNumeratorReconstructed = new TH3F(*orig.fNumeratorReconstructed);
@@ -190,7 +188,6 @@ AliFemtoModelCorrFctnTrueQ3D::~AliFemtoModelCorrFctnTrueQ3D()
   delete fNumeratorRecUnweighted;
   delete fDenominatorGenWeighted;
   delete fDenominatorRecWeighted;
-  delete fRng;
 }
 
 
@@ -344,16 +341,11 @@ AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
   const AliFemtoParticle *p1 = pair->Track1(),
                          *p2 = pair->Track2();
 
-  // randomize to avoid ordering biases
-  if (fRng->Uniform() >= 0.5) {
-    std::swap(p1, p2);
-  }
-
   AddPair(*p1, *p2,
-          fNumeratorGenUnweighted,
-          fNumeratorRecUnweighted,
           fNumeratorGenerated,
           fNumeratorReconstructed,
+          fNumeratorGenUnweighted,
+          fNumeratorRecUnweighted,
           fManager->GetWeight(pair));
 }
 
@@ -363,11 +355,6 @@ AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
 {
   const AliFemtoParticle *p1 = pair->Track1(),
                          *p2 = pair->Track2();
-
-  // randomize to avoid ordering biases
-  if (fRng->Uniform() >= 0.5) {
-    std::swap(p1, p2);
-  }
 
   AddPair(*p1, *p2,
           fDenominatorGenWeighted,

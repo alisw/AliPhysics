@@ -56,6 +56,7 @@ set(SRCS
   AliFemtoEventReaderESDChain.cxx
   AliFemtoEventReaderESDChainKine.cxx
   AliFemtoEventReaderESDChainKineKK.cxx
+  AliFemtoEventReaderAlt.cxx
   AliFemtoModelHiddenInfo.cxx
   AliFemtoModelGlobalHiddenInfo.cxx
   AliFemtoModelGausLCMSFreezeOutGenerator.cxx

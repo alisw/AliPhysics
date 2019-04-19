@@ -231,8 +231,6 @@ protected:
   TH3F *fDenominatorGenWeighted;
   TH3F *fDenominatorRecWeighted;
 
-  /// Random number generator used for randomizing order of pair momentums
-  TRandom *fRng;
 };
 
 inline
