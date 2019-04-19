@@ -75,23 +75,23 @@ struct TrackMC {
   int motherId;
 };
 
-bool IsHyperTriton3(AliMCEvent *mcEvent, const AliVParticle *vPart) {
-  bool returnValue = false;
-  int nDaughters   = 0;
-  int vPartPDG     = vPart->PdgCode();
-  int vPartLabel   = vPart->GetLabel();
-  if (mcEvent->IsPhysicalPrimary(vPartLabel)) {
-    if (std::abs(vPartPDG) == 1010010030) {
-      for (int iD = vPart->GetDaughterFirst(); iD <= vPart->GetDaughterLast(); iD++) {
-        AliVParticle *dPart = mcEvent->GetTrack(iD);
-        int dPartPDG        = dPart->PdgCode();
-        if (std::abs(dPartPDG) != 11) nDaughters++;
-      }
-    }
-    if (nDaughters == 3) returnValue = true;
-  }
-  return returnValue;
-}
+// bool IsHyperTriton3(AliMCEvent *mcEvent, const AliVParticle *vPart) {
+//   bool returnValue = false;
+//   int nDaughters   = 0;
+//   int vPartPDG     = vPart->PdgCode();
+//   int vPartLabel   = vPart->GetLabel();
+//   if (mcEvent->IsPhysicalPrimary(vPartLabel)) {
+//     if (std::abs(vPartPDG) == 1010010030) {
+//       for (int iD = vPart->GetDaughterFirst(); iD <= vPart->GetDaughterLast(); iD++) {
+//         AliVParticle *dPart = mcEvent->GetTrack(iD);
+//         int dPartPDG        = dPart->PdgCode();
+//         if (std::abs(dPartPDG) != 11) nDaughters++;
+//       }
+//     }
+//     if (nDaughters == 3) returnValue = true;
+//   }
+//   return returnValue;
+// }
 
 bool IsHyperTriton3Daughter(AliMCEvent *mcEvent, const AliVParticle *vPart) {
 
@@ -368,11 +368,11 @@ void AliAnalysisTaskFindableHypertriton3::UserExec(Option_t *) {
   //--------------------------------------------------------------------------------
   // Part 1: fill the vector of the MC hypertritons
   //--------------------------------------------------------------------------------
-  for (Long_t iPart = 0; iPart < mcEvent->GetNumberOfTracks(); iPart++) {
+  for (Int_t iPart = 0; iPart < mcEvent->GetNumberOfTracks(); iPart++) {
     AliVParticle *vPart = mcEvent->GetTrack(iPart);
     if (!vPart) {
       ::Warning("AliAnalysisTaskHyperTriton2He3piML::UserExec",
-                "Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skipping.", iPart);
+                "Generated loop %i - MC TParticle pointer to current stack particle = 0x0 ! Skipping.", iPart);
       continue;
     }
     if (mcEvent->IsPhysicalPrimary(iPart) != true) continue;

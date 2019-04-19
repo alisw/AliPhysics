@@ -87,24 +87,6 @@ struct CandidateMC {
   unsigned char status;
 };
 
-bool IsHyperTriton3(AliMCEvent *mcEvent, const AliVParticle *vPart) {
-  bool returnValue = false;
-  int nDaughters   = 0;
-  int vPartPDG     = vPart->PdgCode();
-  int vPartLabel   = vPart->GetLabel();
-  if (mcEvent->IsPhysicalPrimary(vPartLabel)) {
-    if (std::abs(vPartPDG) == 1010010030) {
-      for (int iD = vPart->GetDaughterFirst(); iD <= vPart->GetDaughterLast(); iD++) {
-        AliVParticle *dPart = mcEvent->GetTrack(iD);
-        int dPartPDG        = dPart->PdgCode();
-        if (std::abs(dPartPDG) != 11) nDaughters++;
-      }
-    }
-    if (nDaughters == 3) returnValue = true;
-  }
-  return returnValue;
-}
-
 bool IsHyperTriton3Daughter(AliMCEvent *mcEvent, const AliVParticle *vPart) {
 
   int nDaughters = 0;
@@ -450,7 +432,7 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
     AliVParticle *vPart = mcEvent->GetTrack(iPart);
     if (!vPart) {
       ::Warning("AliAnalysisTaskHyperTriton2He3piML::UserExec",
-                "Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skipping.", iPart);
+                "Generated loop %i - MC TParticle pointer to current stack particle = 0x0 ! Skipping.", iPart);
       continue;
     }
     if (mcEvent->IsPhysicalPrimary(iPart) != true) continue;
@@ -534,20 +516,17 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
   fTreeHyp3BodyVarPVz = vDeuteronP.back().mother->Zv();
 
   for (size_t iTrack = 0; iTrack < vDeuteronP.size(); iTrack++) {
-    int pdg0 = vDeuteronP[iTrack].particle->PdgCode();
     for (size_t jTrack = 0; jTrack < vProtonP.size(); jTrack++) {
       /// consider tracks from the same mother only: part 1
       if (vDeuteronP[iTrack].motherId != vProtonP[jTrack].motherId) continue;
       /// reject candidates with the same track: part 1
       if (vDeuteronP[iTrack].partId == vProtonP[jTrack].partId) continue;
-      int pdg1 = vProtonP[jTrack].particle->PdgCode();
       for (size_t zTrack = 0; zTrack < vPionM.size(); zTrack++) {
         /// consider tracks from the same mother only: part 2
         if (vDeuteronP[iTrack].motherId != vPionM[zTrack].motherId) continue;
         /// reject candidates with the same track: part 2
         if (vDeuteronP[iTrack].partId == vPionM[zTrack].partId || vProtonP[jTrack].partId == vPionM[zTrack].partId)
           continue;
-        int pdg2 = vPionM[zTrack].particle->PdgCode();
 
         /// define the status of the reconstructed candidate
         unsigned char stat  = 0u;
