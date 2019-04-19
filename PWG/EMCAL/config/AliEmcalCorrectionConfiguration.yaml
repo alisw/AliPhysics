@@ -156,7 +156,7 @@ CellCombineCollections:                             # Utility task to combine tw
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
-    clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
+    clusterizer: kClusterizerv3                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
     unfold: false                                   # Activate cluster unfolding
     unfoldRejectBelowThreshold: false               #  split (false-default) or reject (true) cell energy below threshold after UF
     unfoldMinCellE: 0.015                           #  apply an energy cut on the cells after unfolding
