@@ -369,7 +369,7 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
         fHistNtrklVsqnVsCentr = new TH3F("fHistNtrklVsqnVsCentr",Form("#it{N}_{tracklets} vs. %s vs. centrality;centrality (%%);%s;#it{N}_{tracklets}",qnpercaxisname.Data(),qnpercaxisname.Data()),ncentbins,fMinCentr,fMaxCentr,nqnbins,qnmin,qnmax,500,-0.5,4999.5);
         fOutput->Add(fHistNtrklVsqnVsCentr);
         if(fPercentileqn) {
-            fHistPercqnVsqnVsCentr = new TH3F("fHistPercqnVsqnVsCentr",Form("%s vs. %s vs. centrality;centrality (%%);%s;%s",qnpercaxisname.Data(),qnaxisname.Data(),qnaxisname.Data(),qnpercaxisname.Data()),ncentbins,fMinCentr,fMaxCentr,500,0,10,nqnbins,qnmin,qnmax);
+            fHistPercqnVsqnVsCentr = new TH3F("fHistPercqnVsqnVsCentr",Form("%s vs. %s vs. centrality;centrality (%%);%s;%s",qnpercaxisname.Data(),qnaxisname.Data(),qnaxisname.Data(),qnpercaxisname.Data()),ncentbins,fMinCentr,fMaxCentr,300,0,15,nqnbins,qnmin,qnmax);
             fOutput->Add(fHistPercqnVsqnVsCentr);
         }
     }
@@ -413,8 +413,8 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
         mindeltaphi      = -fScalProdLimit*fScalProdLimit;
         maxdeltaphi      = fScalProdLimit*fScalProdLimit;
         deltaphiname     = Form("u_{%d,D}Q_{%d,A}",fHarmonic,fHarmonic);
-        double fphimin   = -fScalProdLimit*fScalProdLimit;
-        double fphimax   = fScalProdLimit*fScalProdLimit;
+        fphimin          = -fScalProdLimit*fScalProdLimit;
+        fphimax          = fScalProdLimit*fScalProdLimit;
         nfphiname1       = Form("Cos(%d#varphi_{D})Q_{%d,y,A}",fHarmonic,fHarmonic);
         nfphiname2       = Form("Sin(%d#varphi_{D})Q_{%d,y,A}",fHarmonic,fHarmonic);
     }
