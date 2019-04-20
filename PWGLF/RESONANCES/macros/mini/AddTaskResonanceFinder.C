@@ -7083,11 +7083,11 @@ Bool_t Config_Kstar0Lambda(
     Int_t CutTypePi=(TrackCutsPi/10000)%100;//0=TPC+TOFveto (default), 1=TPC only, 2=TOF only, 3 TPC+TOFcut
     Int_t SidebandKstar=(TrackCutsKstar/1000000)%10;
     
-    Int_t TrackCutsKx=TrackCutsK%100000;
+    Int_t TrackCutsKx=TrackCutsK%10000;
     if(!(TrackCutsKx)) TrackCutsKx+=3020;//default settings
     Float_t nsigmaKTPC=0.1*(TrackCutsKx%100);
     Float_t nsigmaKTOF=0.1*((TrackCutsKx/100)%100);
-    Int_t pairRotate=((TrackCutsKx/10000)%10);
+    Int_t pairRotate=((TrackCutsK/10000)%10);
     
     AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
