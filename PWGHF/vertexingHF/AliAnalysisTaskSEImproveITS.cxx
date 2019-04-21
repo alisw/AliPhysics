@@ -1802,7 +1802,7 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliVTrack *track,Double_t bz) {
 
 
   // write out debug infos
-  if (fDebugNtuple->GetEntries()<fNDebug) {
+  if (fDebugNtuple->GetEntriesFast()<fNDebug) {
     Int_t idbg=0;
     fDebugVars[idbg++]=pdgcode;
     fDebugVars[idbg++]=ptmc  ;
