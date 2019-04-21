@@ -1060,6 +1060,76 @@ void AliRsnCutSetDaughterParticle::Init()
 			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
 			 iCutTPCNSigma->GetName()) ) ;
       break;
+
+    case AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFneed_2018:
+      
+      /* 
+	 20/04/2019: Neelima Agrawal
+	 Roberto Preghenella (preghenella@bo.infn.it)
+	 
+	 Pb-Pb for pions, kaons and protons
+	 tuned for Pb-Pb 2010 data
+	 
+	 - TPC PID with progressive Nsigma
+	 Nsigma:       4      3      3      2
+	 kaons:   0.00 - 0.20 - 0.30 - 0.40 - 0.60 GeV/c
+	 protons: 0.00 - 0.25 - 0.50 - 0.70 - 1.10  GeV/c
+	 
+	 - TOF PID veto for
+	 pions   > 0.40 GeV/c
+	 kaon    > 0.45 GeV/c
+	 protons > 0.80 GeV
+	 
+	 - TOF PID required for
+	 kaons   > 0.60 GeV/c
+	 protons > 1.10 GeV/c
+      */
+      
+      /* pion cuts */
+      if (fPID == AliPID::kPion) {
+	iCutTPCNSigma->SinglePIDRange(fNsigmaTPC);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00,       0.00, 0.40);  
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.40, 1.e6);  
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      /* kaon cuts */
+      if (fPID == AliPID::kKaon) {
+	iCutTPCNSigma->AddPIDRange(4.00, 0.00, 0.20);
+	iCutTPCNSigma->AddPIDRange(3.00, 0.20, 0.40);
+	iCutTPCNSigma->AddPIDRange(2.00, 0.40, 0.60);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00, 0.00, 0.45);  
+	iCutTOFNSigma->AddPIDRange(3.00, 0.45, 1.e6);  
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      /* proton cuts */
+      if (fPID == AliPID::kProton) {
+	iCutTPCNSigma->AddPIDRange(4.00, 0.00, 0.25);
+	iCutTPCNSigma->AddPIDRange(3.00, 0.25, 0.70);
+	iCutTPCNSigma->AddPIDRange(2.00, 0.70, 1.10);
+	//
+	iCutTOFNSigma->AddPIDRange(0.00, 0.00, 0.80);  
+	iCutTOFNSigma->AddPIDRange(3.00, 0.80, 1.e6);
+	//
+	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+      }
+      
+      AddCut(fCutQuality);
+      AddCut(iCutTOFMatch);
+      AddCut(iCutTPCNSigma);
+      AddCut(iCutTPCTOFNSigma);
+      AddCut(iCutTOFNSigma);
+      
+      // scheme:
+      // quality & [ ( TOFmatch & TOF & TPCTOF ) || ( TPConly ) ]
+      SetCutScheme( Form(" %s & ( ( %s & %s & %s ) | ( %s ) )",
+			 fCutQuality->GetName(),
+			 iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName(),
+			 iCutTPCNSigma->GetName()) ) ;
+      break;
       
     case AliRsnCutSetDaughterParticle::kTPCTOFpidTunedPbPbTOFveto:
       
