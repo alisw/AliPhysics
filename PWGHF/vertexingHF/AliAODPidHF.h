@@ -37,8 +37,10 @@ public:
     kPbPb3050
   };
 
-  static const int kMaxEtaBins = 5;
-  static const int kMaxPBins = 100;
+  enum MaxBinsForNsigmaDataCorr {
+    kMaxEtaBins=5,
+    kMaxPBins=100
+  };
 
   AliAODPidHF();
   AliAODPidHF(const AliAODPidHF& pid);
