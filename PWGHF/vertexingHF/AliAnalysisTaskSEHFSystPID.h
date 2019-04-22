@@ -21,6 +21,7 @@
 #include "AliAODEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
+#include "AliAODPidHF.h"
 
 using namespace std;
 
@@ -83,7 +84,7 @@ private:
   float GetTOFmomentum(AliAODTrack* track);
   short ConvertFloatToShort(float num);
   unsigned short ConvertFloatToUnsignedShort(float num);
-  void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC);
+  void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta);
   void SetNsigmaTPCDataCorr(int run);
 
   enum hypos{kPion,kKaon,kProton};
@@ -92,71 +93,73 @@ private:
 
   const float kCSPEED = 2.99792457999999984e-02; // cm / ps
 
-  TList *fOutputList;                              //!<! output list for histograms
+  TList *fOutputList;                                                                //!<! output list for histograms
 
-  TH1F *fHistNEvents;                              //!<! histo with number of events
-  TH2F *fHistArmenteroPlot[5];                     //!<! histo for armenteros-podolanski plot
-  TH2F *fHistQtVsMassKinks;                        //!<! histo for mother-kink qt vs. mass distribution
-  TH2F *fHistPDaughterVsMotherKink;                //!<! histo for pT daughter vs. pT mother kink
-  TH2F *fHistdEdxVsPMotherKink;                    //!<! histo for mother kink TPC dEdx vs. p
-  TH2F *fHistOpeningAngleVsPMotherKink;            //!<! histo for opening angle vs. pT mother kink
-  TH2F *fHistNTPCclsVsRadius;                      //!<! histo for nTPC clusters vs. R mother kink
-  TH2F *fHistNsigmaTPCvsPt[kNHypo];                //!<! array of histos for nsigmaTPC vs pt (MC truth)
-  TH2F *fHistNsigmaTOFvsPt[kNHypo];                //!<! array of histos for nsigmaTPC vs pt (MC truth)
-  TTree* fPIDtree;                                 //!<! tree with PID info
+  TH1F *fHistNEvents;                                                                //!<! histo with number of events
+  TH2F *fHistArmenteroPlot[5];                                                       //!<! histo for armenteros-podolanski plot
+  TH2F *fHistQtVsMassKinks;                                                          //!<! histo for mother-kink qt vs. mass distribution
+  TH2F *fHistPDaughterVsMotherKink;                                                  //!<! histo for pT daughter vs. pT mother kink
+  TH2F *fHistdEdxVsPMotherKink;                                                      //!<! histo for mother kink TPC dEdx vs. p
+  TH2F *fHistOpeningAngleVsPMotherKink;                                              //!<! histo for opening angle vs. pT mother kink
+  TH2F *fHistNTPCclsVsRadius;                                                        //!<! histo for nTPC clusters vs. R mother kink
+  TH2F *fHistNsigmaTPCvsPt[kNHypo];                                                  //!<! array of histos for nsigmaTPC vs pt (MC truth)
+  TH2F *fHistNsigmaTOFvsPt[kNHypo];                                                  //!<! array of histos for nsigmaTPC vs pt (MC truth)
+  TTree* fPIDtree;                                                                   //!<! tree with PID info
 
-  short fPIDNsigma[6];                             /// Nsigma PID to fill the tree
-  unsigned short fPTPC;                            /// TPC momentum to fill the tree
-  unsigned short fPTOF;                            /// TOF momentum to fill the tree
-  unsigned short fdEdxTPC;                         /// TPC dEdX to fill the tree
-  unsigned short fToF;                             /// ToF signal to fill the tree
-  unsigned short fPt;                              /// transverse momentum to fill the tree
-  unsigned char fTPCNcls;                          /// number of clusters in TPC to fill the tree
-  unsigned char fTPCNclsPID;                       /// number of PID clusters in TPC to fill the tree
-  unsigned short fTrackLength;                     /// track length for TOF PID
-  unsigned short fStartTimeRes;                    /// start time resolution for TOF PID
-  short fEta;                                      /// pseudorapidity of the track
-  short fPDGcode;                                  /// PDG code in case of MC to fill the tree
-  unsigned char fTag;                              /// bit map for tag (see enum above)
-  float fNsigmaMaxForTag;                          /// max nSigma value to tag kaons
-  float fQtMinKinks;                               /// min qt for kinks
-  float fRMinKinks;                                /// min radius in XY for kinks
-  float fRMaxKinks;                                /// max radius in XY for kinks
+  short fPIDNsigma[6];                                                               /// Nsigma PID to fill the tree
+  unsigned short fPTPC;                                                              /// TPC momentum to fill the tree
+  unsigned short fPTOF;                                                              /// TOF momentum to fill the tree
+  unsigned short fdEdxTPC;                                                           /// TPC dEdX to fill the tree
+  unsigned short fToF;                                                               /// ToF signal to fill the tree
+  unsigned short fPt;                                                                /// transverse momentum to fill the tree
+  unsigned char fTPCNcls;                                                            /// number of clusters in TPC to fill the tree
+  unsigned char fTPCNclsPID;                                                         /// number of PID clusters in TPC to fill the tree
+  unsigned short fTrackLength;                                                       /// track length for TOF PID
+  unsigned short fStartTimeRes;                                                      /// start time resolution for TOF PID
+  short fEta;                                                                        /// pseudorapidity of the track
+  short fPDGcode;                                                                    /// PDG code in case of MC to fill the tree
+  unsigned char fTag;                                                                /// bit map for tag (see enum above)
+  float fNsigmaMaxForTag;                                                            /// max nSigma value to tag kaons
+  float fQtMinKinks;                                                                 /// min qt for kinks
+  float fRMinKinks;                                                                  /// min radius in XY for kinks
+  float fRMaxKinks;                                                                  /// max radius in XY for kink
 
-  float fCentMin;                                  /// min centrality
-  float fCentMax;                                  /// max centrality
-  int fCentEstimator;                              /// centrality estimator
-  TString fTriggerClass;                           /// trigger class
-  unsigned long long fTriggerMask;                 /// trigger mask
-  bool fIsMC;                                      /// flag to switch on the MC analysis for the efficiency estimation
-  int fSystem;                                     /// system: 0->pp,pPb 1->PbPb
+  float fCentMin;                                                                    /// min centrality
+  float fCentMax;                                                                    /// max centrality
+  int fCentEstimator;                                                                /// centrality estimator
+  TString fTriggerClass;                                                             /// trigger class
+  unsigned long long fTriggerMask;                                                   /// trigger mask
+  bool fIsMC;                                                                        /// flag to switch on the MC analysis for the efficiency estimation
+  int fSystem;                                                                       /// system: 0->pp,pPb 1->PbPb
 
-  AliESDtrackCuts * fESDtrackCuts;                 /// single-track cut set 
-  AliAODEvent *fAOD;                               /// AOD object
-  AliPIDResponse *fPIDresp;                        /// basic pid object
-  AliAODv0KineCuts *fV0cuts;                       /// AOD V0 cuts
+  AliESDtrackCuts * fESDtrackCuts;                                                   /// single-track cut set 
+  AliAODEvent *fAOD;                                                                 /// AOD object
+  AliPIDResponse *fPIDresp;                                                          /// basic pid object
+  AliAODv0KineCuts *fV0cuts;                                                         /// AOD V0 cuts
 
-  bool fFillTreeWithNsigmaPIDOnly;                 /// flag to enable filling of the tree with only Nsigma variables for the PID
-  bool fEnabledDownSampling;                       /// flag to enable/disable downsampling
-  double fFracToKeepDownSampling;                  /// fraction to keep when downsampling activated
-  double fPtMaxDownSampling;                       /// pT max of tracks to downsample
-  int fDownSamplingOpt;                            /// option for downsampling 
-  
-  int fAODProtection;                              /// flag to activate protection against AOD-dAOD mismatch
+  bool fFillTreeWithNsigmaPIDOnly;                                                   /// flag to enable filling of the tree with only Nsigma variables for the PID
+  bool fEnabledDownSampling;                                                         /// flag to enable/disable downsampling
+  double fFracToKeepDownSampling;                                                    /// fraction to keep when downsampling activated
+  double fPtMaxDownSampling;                                                         /// pT max of tracks to downsample
+  int fDownSamplingOpt;                                                              /// option for downsampling 
 
-  int fRunNumberPrevEvent;                         /// run number of previous event
-  bool fEnableNsigmaTPCDataCorr;                   /// flag to enable data-driven NsigmaTPC correction
-  int fSystNsigmaTPCDataCorr;                      /// system for data-driven NsigmaTPC correction
-  float fMeanNsigmaTPCPionData[100];               /// array of NsigmaTPC pion mean in data 
-  float fMeanNsigmaTPCKaonData[100];               /// array of NsigmaTPC kaon mean in data 
-  float fMeanNsigmaTPCProtonData[100];             /// array of NsigmaTPC proton mean in data 
-  float fSigmaNsigmaTPCPionData[100];              /// array of NsigmaTPC pion mean in data 
-  float fSigmaNsigmaTPCKaonData[100];              /// array of NsigmaTPC kaon mean in data 
-  float fSigmaNsigmaTPCProtonData[100];            /// array of NsigmaTPC proton mean in data 
-  float fPlimitsNsigmaTPCDataCorr[101];            /// array of p limits for data-driven NsigmaTPC correction
-  int fNPbinsNsigmaTPCDataCorr;                    /// number of p bins for data-driven NsigmaTPC correction
+  int fAODProtection;                                                                /// flag to activate protection against AOD-dAOD mismatch
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 5);
+  int fRunNumberPrevEvent;                                                           /// run number of previous event
+  bool fEnableNsigmaTPCDataCorr;                                                     /// flag to enable data-driven NsigmaTPC correction
+  int fSystNsigmaTPCDataCorr;                                                        /// system for data-driven NsigmaTPC correction
+  float fMeanNsigmaTPCPionData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];    /// array of NsigmaTPC pion mean in data 
+  float fMeanNsigmaTPCKaonData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];    /// array of NsigmaTPC kaon mean in data 
+  float fMeanNsigmaTPCProtonData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];  /// array of NsigmaTPC proton mean in data 
+  float fSigmaNsigmaTPCPionData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];   /// array of NsigmaTPC pion mean in data 
+  float fSigmaNsigmaTPCKaonData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];   /// array of NsigmaTPC kaon mean in data 
+  float fSigmaNsigmaTPCProtonData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins]; /// array of NsigmaTPC proton mean in data 
+  float fPlimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxPBins+1];                         /// array of p limits for data-driven NsigmaTPC correction
+  int fNPbinsNsigmaTPCDataCorr;                                                      /// number of p bins for data-driven NsigmaTPC correction
+  float fEtalimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxEtaBins+1];                     /// vector of eta limits for data-driven NsigmaTPC correction
+  int fNEtabinsNsigmaTPCDataCorr;                                                    /// number of eta bins for data-driven NsigmaTPC correction
+
+  ClassDef(AliAnalysisTaskSEHFSystPID, 6);
 };
 
 #endif
