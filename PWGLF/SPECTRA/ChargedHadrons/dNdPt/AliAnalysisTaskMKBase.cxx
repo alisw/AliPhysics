@@ -59,7 +59,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fMultMB(-1)
     , fMultV0M(-1)
     , fMCb(-1)
-    , fMCnPrim(-1)
+    , fMCnPrimPtCut(-1)
+    , fMCnPrim10(-1)
+    , fMCnPrim08(-1)
+    , fMCnPrim05(-1)
     , fMCnPrimV0M(-1)
     , fMCnTracks(-1)
     , fIsTrigger(kFALSE)
@@ -165,7 +168,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fMultMB(-1)
     , fMultV0M(-1)
     , fMCb(-1)
-    , fMCnPrim(-1)
+    , fMCnPrimPtCut(-1)
+    , fMCnPrim10(-1)
+    , fMCnPrim08(-1)
+    , fMCnPrim05(-1)
     , fMCnPrimV0M(-1)
     , fMCnTracks(-1)
     , fIsTrigger(kFALSE)
@@ -534,6 +540,27 @@ Bool_t AliAnalysisTaskMKBase::InitMCEvent()
 {
     if (!fIsMC) return kFALSE;
     fMCnTracks = fMC->GetNumberOfTracks();
+    
+    fMCnPrimPtCut = 0;
+    fMCnPrim10 = 0;
+    fMCnPrim08 = 0;
+    fMCnPrim05 = 0;
+    fMCnPrimV0M = 0;
+    
+    for (Int_t i = 0; i < fMCnTracks; i++) {
+        fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(i));
+        if (!fMCParticle) { Err("noMCParticle"); continue; }   
+        fMCLabel = i;
+        InitMCParticle();
+        if (fMCIsCharged && fMCisPrim) {
+            if (TMath::Abs(fMCEta)<1.) { fMCnPrim10++; }
+            if (TMath::Abs(fMCEta)<0.8) { fMCnPrim08++; } 
+            if (TMath::Abs(fMCEta)<0.5) { fMCnPrim05++; }
+            if ( ( 2.8 < fMCEta) && (fMCEta <  5.1) ) { fMCnPrimV0M++; } //V0A
+            if ( (-3.7 < fMCEta) && (fMCEta < -1.7) ) { fMCnPrimV0M++; } //V0C 
+            if ( (TMath::Abs(fMCEta) < 0.8) && (fMCPt > 0.15) ) { fMCnPrimPtCut++; }
+        }
+    }    
     return kTRUE;
 }
 

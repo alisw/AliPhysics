@@ -62,6 +62,8 @@ void AliAnalysisTaskEffContStudy::AddOutput()
     AddAxis("MCinfo",4,-0.5,3.5); // 0=prim, 1=decay 2=material, 3=genprim
     AddAxis("MCQ",3,-1.5,1.5);
     AddAxis("nTracks","mult6kcoarse");    
+    AddAxis("nPrimMCpT150","mult6kcoarse");   
+    AddAxis("nPrimMCallpT","mult6kcoarse");   
     fHistEffCont = CreateHist("fHistEffCont");
     fOutputList->Add(fHistEffCont);
     
@@ -91,7 +93,7 @@ void AliAnalysisTaskEffContStudy::AnaEvent()
 void AliAnalysisTaskEffContStudy::AnaTrack()
 {
     if (!fESDtrackCuts[0]->AcceptTrack(fESDTrack)) return;
-    FillHist(fHistEffCont, fMCPt, fMCParticleType, fMCProdcutionType, fMCChargeSign, fNTracksAcc);    
+    FillHist(fHistEffCont, fMCPt, fMCParticleType, fMCProdcutionType, fMCChargeSign, fNTracksAcc, fMCnPrimPtCut, fMCnPrim08); 
     
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("RecTrack.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("RecTrack.Q>1.PDG.",fMCPDGCode); }
@@ -117,7 +119,7 @@ void AliAnalysisTaskEffContStudy::AnaMCParticle()
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("GenPrim.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("GenPrim.Q>1.PDG.",fMCPDGCode); }
     
-    FillHist(fHistEffCont, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc); 
+    FillHist(fHistEffCont, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc, fMCnPrimPtCut, fMCnPrim08); 
     
     Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);
     while (s >= 1) {
