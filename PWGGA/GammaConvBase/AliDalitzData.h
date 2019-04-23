@@ -71,7 +71,9 @@ public:
     Int_t GetNumberOfITSClustersG(Int_t i);
    const AliVVertex* GetPrimaryVertex();
      Int_t GetNumberOfV0s();
-     
+     Bool_t GetIsESD(){
+      return fIsESD;
+     }
 
      
      
