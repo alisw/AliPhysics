@@ -20,6 +20,9 @@
 #include "AliPIDCombined.h"
 #include "AliPID.h"
 
+#include "vector"
+using std::vector;
+
 class AliAODPidHF : public TObject{
   
 public:
@@ -36,6 +39,9 @@ public:
     kPbPb010,
     kPbPb3050
   };
+
+  static const int kMaxEtaBins=5;
+  static const int kMaxPBins=10;
 
   AliAODPidHF();
   AliAODPidHF(const AliAODPidHF& pid);
@@ -234,7 +240,9 @@ public:
   void EnableNsigmaTPCDataCorr(Int_t run, Int_t system);
 
   //method to get parameters for NsigmaTPC correction
-  static void SetNsigmaTPCDataDrivenCorrection(Int_t run, Int_t system, Int_t &nPbins, Float_t Plims[], Float_t meanNsigmaTPCpion[], Float_t meanNsigmaTPCkaon[], Float_t meanNsigmaTPCproton[], Float_t sigmaNsigmaTPCpion[], Float_t sigmaNsigmaTPCkaon[], Float_t sigmaNsigmaTPCproton[]);
+  static void SetNsigmaTPCDataDrivenCorrection(Int_t run, Int_t system, Int_t &nPbins, Float_t Plims[kMaxPBins+1], Int_t &nEtabins, Float_t absEtalims[kMaxEtaBins+1], 
+  vector<vector<Float_t> > &meanNsigmaTPCpion, vector<vector<Float_t> > &meanNsigmaTPCkaon, vector<vector<Float_t> > &meanNsigmaTPCproton, 
+  vector<vector<Float_t> > &sigmaNsigmaTPCpion, vector<vector<Float_t> > &sigmaNsigmaTPCkaon, vector<vector<Float_t> > &sigmaNsigmaTPCproton);
 
 protected:
   
@@ -243,7 +251,7 @@ private:
 
   AliAODPidHF& operator=(const AliAODPidHF& pid);
 
-  void GetNsigmaTPCMeanSigmaData(Float_t &mean, Float_t &sigma, AliPID::EParticleType species, Float_t pTPC) const;
+  void GetNsigmaTPCMeanSigmaData(Float_t &mean, Float_t &sigma, AliPID::EParticleType species, Float_t pTPC, Float_t eta) const;
 
   Int_t fnNSigma; /// number of sigmas
   /// sigma for the raw signal PID: 0-2 for TPC, 3 for TOF, 4 for ITS
@@ -305,17 +313,19 @@ private:
   TF1 *fCompBandMax[AliPID::kSPECIES][4];
 
   Bool_t fApplyNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
-  Float_t fMeanNsigmaTPCPionData[100]; /// array of NsigmaTPC pion mean in data 
-  Float_t fMeanNsigmaTPCKaonData[100]; /// array of NsigmaTPC kaon mean in data 
-  Float_t fMeanNsigmaTPCProtonData[100]; /// array of NsigmaTPC proton mean in data 
-  Float_t fSigmaNsigmaTPCPionData[100]; /// array of NsigmaTPC pion mean in data 
-  Float_t fSigmaNsigmaTPCKaonData[100]; /// array of NsigmaTPC kaon mean in data 
-  Float_t fSigmaNsigmaTPCProtonData[100]; /// array of NsigmaTPC proton mean in data 
-  Float_t fPlimitsNsigmaTPCDataCorr[101]; /// array of p limits for data-driven NsigmaTPC correction
+  vector<vector<Float_t> > fMeanNsigmaTPCPionData; /// array of NsigmaTPC pion mean in data for different eta bins
+  vector<vector<Float_t> > fMeanNsigmaTPCKaonData; /// array of NsigmaTPC kaon mean in data for different eta bins
+  vector<vector<Float_t> > fMeanNsigmaTPCProtonData; /// array of NsigmaTPC proton mean in data for different eta bins 
+  vector<vector<Float_t> > fSigmaNsigmaTPCPionData; /// array of NsigmaTPC pion mean in data for different eta bins 
+  vector<vector<Float_t> > fSigmaNsigmaTPCKaonData; /// array of NsigmaTPC kaon mean in data for different eta bins 
+  vector<vector<Float_t> > fSigmaNsigmaTPCProtonData; /// array of NsigmaTPC proton mean in data for different eta bins 
+  Float_t fPlimitsNsigmaTPCDataCorr[kMaxPBins+1]; /// array of p limits for data-driven NsigmaTPC correction
   Int_t fNPbinsNsigmaTPCDataCorr;/// number of p bins for data-driven NsigmaTPC correction
+  Float_t fEtalimitsNsigmaTPCDataCorr[kMaxEtaBins+1]; /// array of eta limits for data-driven NsigmaTPC correction
+  Int_t fNEtabinsNsigmaTPCDataCorr;/// number of eta bins for data-driven NsigmaTPC correction
 
   /// \cond CLASSIMP
-  ClassDef(AliAODPidHF,25); /// AliAODPid for heavy flavor PID
+  ClassDef(AliAODPidHF,26); /// AliAODPid for heavy flavor PID
   /// \endcond
 
 };

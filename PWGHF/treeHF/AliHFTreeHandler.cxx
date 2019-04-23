@@ -20,16 +20,12 @@
 
 #include <cmath>
 #include <limits>
-#include <array>
 #include "AliHFTreeHandler.h"
 #include "AliPID.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliPIDResponse.h"
 #include "AliESDtrack.h"
 #include "TMath.h"
-#include "AliAODPidHF.h"
-
-using std::array;
 
 /// \cond CLASSIMP
 ClassImp(AliHFTreeHandler);
@@ -70,7 +66,9 @@ AliHFTreeHandler::AliHFTreeHandler():
   fSigmaNsigmaTPCKaonData{},
   fSigmaNsigmaTPCProtonData{},
   fPlimitsNsigmaTPCDataCorr{},
-  fNPbinsNsigmaTPCDataCorr(0)
+  fNPbinsNsigmaTPCDataCorr(0),
+  fEtalimitsNsigmaTPCDataCorr{},
+  fNEtabinsNsigmaTPCDataCorr(0)
 {
   //
   // Default constructor
@@ -99,16 +97,12 @@ AliHFTreeHandler::AliHFTreeHandler():
     }
   }
 
-  for(int iP=0; iP<100; iP++) {
-    fMeanNsigmaTPCPionData[iP] = 0.;
-    fMeanNsigmaTPCKaonData[iP] = 0.;
-    fMeanNsigmaTPCProtonData[iP] = 0.;
-    fSigmaNsigmaTPCPionData[iP] = 1.;
-    fSigmaNsigmaTPCKaonData[iP] = 1.;
-    fSigmaNsigmaTPCProtonData[iP] = 1.;
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
   }
-  fPlimitsNsigmaTPCDataCorr[100] = 0.;
+  for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
+  }
 }
 
 //________________________________________________________________
@@ -146,7 +140,9 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fSigmaNsigmaTPCKaonData{},
   fSigmaNsigmaTPCProtonData{},
   fPlimitsNsigmaTPCDataCorr{},
-  fNPbinsNsigmaTPCDataCorr(0)
+  fNPbinsNsigmaTPCDataCorr(0),
+  fEtalimitsNsigmaTPCDataCorr{},
+  fNEtabinsNsigmaTPCDataCorr(0)
 {
   //
   // Standard constructor
@@ -173,6 +169,13 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
         fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999999;      
       }
     }
+  }
+
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
+    fPlimitsNsigmaTPCDataCorr[iP] = 0.;
+  }
+  for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
 }
 
@@ -403,7 +406,7 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
           float nSigmaTPC = pidrespo->NumberOfSigmasTPC(prongtracks[iProng],parthypo[iPartHypo]);
             if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) {
               float sigma=1., mean=0.;
-              GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum());
+              GetNsigmaTPCMeanSigmaData(mean, sigma, parthypo[iPartHypo], prongtracks[iProng]->GetTPCmomentum(), prongtracks[iProng]->Eta());
               nSigmaTPC = (nSigmaTPC-mean)/sigma;
             }
             sig[iProng][kTPC][iPartHypo] = nSigmaTPC;
@@ -584,32 +587,36 @@ float AliHFTreeHandler::GetTOFmomentum(AliAODTrack* track, AliPIDResponse* pidre
 }
 
 //________________________________________________________________
-void AliHFTreeHandler::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC) {
+void AliHFTreeHandler::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta) {
     
   if(fRunNumber!=fRunNumberPrevCand)
-    AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fRunNumber, fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
+    AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fRunNumber, fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
 
   int bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
   if(bin<0) bin=0; //underflow --> equal to min value
   else if(bin>fNPbinsNsigmaTPCDataCorr-1) bin=fNPbinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
 
+  int etabin = TMath::BinarySearch(fNEtabinsNsigmaTPCDataCorr,fEtalimitsNsigmaTPCDataCorr,TMath::Abs(eta));
+  if(etabin<0) etabin=0; //underflow --> equal to min value
+  else if(etabin>fNEtabinsNsigmaTPCDataCorr-1) etabin=fNEtabinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
+
   switch(species) {
     case AliPID::kPion: 
     {
-      mean = fMeanNsigmaTPCPionData[bin];
-      sigma = fSigmaNsigmaTPCPionData[bin];
+      mean = fMeanNsigmaTPCPionData[etabin][bin];
+      sigma = fSigmaNsigmaTPCPionData[etabin][bin];
       break;
     }
     case AliPID::kKaon: 
     {
-      mean = fMeanNsigmaTPCKaonData[bin];
-      sigma = fSigmaNsigmaTPCKaonData[bin];
+      mean = fMeanNsigmaTPCKaonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCKaonData[etabin][bin];
       break;
     }
     case AliPID::kProton: 
     {
-      mean = fMeanNsigmaTPCProtonData[bin];
-      sigma = fSigmaNsigmaTPCProtonData[bin];
+      mean = fMeanNsigmaTPCProtonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCProtonData[etabin][bin];
       break;
     }
     default: 

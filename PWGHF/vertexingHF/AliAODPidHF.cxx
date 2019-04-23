@@ -34,9 +34,6 @@
 #include "AliAODpidUtil.h"
 #include "AliESDtrack.h"
 
-#include "array"
-using std::array;
-
 /// \cond CLASSIMP
 ClassImp(AliAODPidHF);
 /// \endcond
@@ -93,7 +90,9 @@ fSigmaNsigmaTPCPionData{},
 fSigmaNsigmaTPCKaonData{},
 fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
-fNPbinsNsigmaTPCDataCorr(0)
+fNPbinsNsigmaTPCDataCorr(0),
+fEtalimitsNsigmaTPCDataCorr{},
+fNEtabinsNsigmaTPCDataCorr(0)
 {
   ///
   /// Default constructor
@@ -130,17 +129,13 @@ fNPbinsNsigmaTPCDataCorr(0)
       fCompBandMax[s][d] = NULL;
     }
   }
-  
-  for(int iP=0; iP<100; iP++) {
-    fMeanNsigmaTPCPionData[iP] = 0.;
-    fMeanNsigmaTPCKaonData[iP] = 0.;
-    fMeanNsigmaTPCProtonData[iP] = 0.;
-    fSigmaNsigmaTPCPionData[iP] = 1.;
-    fSigmaNsigmaTPCKaonData[iP] = 1.;
-    fSigmaNsigmaTPCProtonData[iP] = 1.;
+
+  for(int iP=0; iP<=kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
   }
-  fPlimitsNsigmaTPCDataCorr[100] = 0.;
+  for(int iEta=0; iEta<=kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta]=0;
+  }
 }
 //----------------------
 AliAODPidHF::~AliAODPidHF()
@@ -210,7 +205,8 @@ fCombDetectors(pid.fCombDetectors),
 fUseCombined(pid.fUseCombined),
 fDefaultPriors(pid.fDefaultPriors),
 fApplyNsigmaTPCDataCorr(pid.fApplyNsigmaTPCDataCorr),
-fNPbinsNsigmaTPCDataCorr(pid.fNPbinsNsigmaTPCDataCorr)
+fNPbinsNsigmaTPCDataCorr(pid.fNPbinsNsigmaTPCDataCorr),
+fNEtabinsNsigmaTPCDataCorr(pid.fNEtabinsNsigmaTPCDataCorr)
 {
   
   fnSigmaCompat=new Double_t[fnNSigmaCompat];
@@ -258,15 +254,20 @@ fNPbinsNsigmaTPCDataCorr(pid.fNPbinsNsigmaTPCDataCorr)
   }
   
   for(Int_t iBin=0; iBin<fNPbinsNsigmaTPCDataCorr; iBin++) {
-    fMeanNsigmaTPCPionData[iBin] = pid.fMeanNsigmaTPCPionData[iBin];
-    fMeanNsigmaTPCKaonData[iBin] = pid.fMeanNsigmaTPCKaonData[iBin];
-    fMeanNsigmaTPCProtonData[iBin] = pid.fMeanNsigmaTPCProtonData[iBin];
-    fSigmaNsigmaTPCPionData[iBin] = pid.fSigmaNsigmaTPCPionData[iBin];
-    fSigmaNsigmaTPCKaonData[iBin] = pid.fSigmaNsigmaTPCKaonData[iBin];
-    fSigmaNsigmaTPCProtonData[iBin] = pid.fSigmaNsigmaTPCProtonData[iBin];
+    for(Int_t iEta=0; iEta<fNEtabinsNsigmaTPCDataCorr; iEta++) {
+      fMeanNsigmaTPCPionData[iEta][iBin] = pid.fMeanNsigmaTPCPionData[iEta][iBin];
+      fMeanNsigmaTPCKaonData[iEta][iBin] = pid.fMeanNsigmaTPCKaonData[iEta][iBin];
+      fMeanNsigmaTPCProtonData[iEta][iBin] = pid.fMeanNsigmaTPCProtonData[iEta][iBin];
+      fSigmaNsigmaTPCPionData[iEta][iBin] = pid.fSigmaNsigmaTPCPionData[iEta][iBin];
+      fSigmaNsigmaTPCKaonData[iEta][iBin] = pid.fSigmaNsigmaTPCKaonData[iEta][iBin];
+      fSigmaNsigmaTPCProtonData[iEta][iBin] = pid.fSigmaNsigmaTPCProtonData[iEta][iBin];
+    }
     fPlimitsNsigmaTPCDataCorr[iBin] = pid.fPlimitsNsigmaTPCDataCorr[iBin];
   }
   fPlimitsNsigmaTPCDataCorr[fNPbinsNsigmaTPCDataCorr] = pid.fPlimitsNsigmaTPCDataCorr[fNPbinsNsigmaTPCDataCorr];
+  for(int iEta=0; iEta<=fNEtabinsNsigmaTPCDataCorr; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = pid.fEtalimitsNsigmaTPCDataCorr[iEta];
+  }
 }
 //----------------------
 Int_t AliAODPidHF::RawSignalPID(AliAODTrack *track, TString detector) const{
@@ -661,7 +662,7 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
       nSigmaTPC = fPidResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)specie);
       if(fApplyNsigmaTPCDataCorr && nSigmaTPC>-990.) { 
         Float_t mean=0., sigma=1.; 
-        GetNsigmaTPCMeanSigmaData(mean, sigma, (AliPID::EParticleType)specie, track->GetTPCmomentum());
+        GetNsigmaTPCMeanSigmaData(mean, sigma, (AliPID::EParticleType)specie, track->GetTPCmomentum(),track->Eta());
         nSigmaTPC = (nSigmaTPC-mean)/sigma;
       }
       if(nSigmaTPC<-990.) nSigmaTPC=0.;
@@ -949,7 +950,7 @@ Int_t AliAODPidHF::GetnSigmaTPC(AliAODTrack *track, Int_t species, Double_t &nsi
     nsigmaTPC = fPidResponse->NumberOfSigmasTPC(track,type);
     if(fApplyNsigmaTPCDataCorr && nsigmaTPC>-990.) {
       Float_t mean=0., sigma=1.; 
-      GetNsigmaTPCMeanSigmaData(mean, sigma, type, track->GetTPCmomentum());
+      GetNsigmaTPCMeanSigmaData(mean, sigma, type, track->GetTPCmomentum(), track->Eta());
       nsigmaTPC = (nsigmaTPC-mean)/sigma;
     }
     nsigma=nsigmaTPC;
@@ -1339,7 +1340,7 @@ Float_t AliAODPidHF::NumberOfSigmas(AliPID::EParticleType specie, AliPIDResponse
       Double_t nsigmaTPC = fPidResponse->NumberOfSigmasTPC(track, specie);
       if(fApplyNsigmaTPCDataCorr && nsigmaTPC>-990.) {
         Float_t mean=0., sigma=1.; 
-        GetNsigmaTPCMeanSigmaData(mean, sigma, specie, track->GetTPCmomentum());
+        GetNsigmaTPCMeanSigmaData(mean, sigma, specie, track->GetTPCmomentum(), track->Eta());
         nsigmaTPC = (nsigmaTPC-mean)/sigma;
       }
       return nsigmaTPC;
@@ -1599,33 +1600,37 @@ void AliAODPidHF::SetIdCompAsymmetricPID() {
 void AliAODPidHF::EnableNsigmaTPCDataCorr(Int_t run, Int_t system) {
 
   fApplyNsigmaTPCDataCorr = kTRUE;
-  SetNsigmaTPCDataDrivenCorrection(run, system, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
+  SetNsigmaTPCDataDrivenCorrection(run, system, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
 }
 
 //------------------
-void AliAODPidHF::GetNsigmaTPCMeanSigmaData(Float_t &mean, Float_t &sigma, AliPID::EParticleType species, Float_t pTPC) const {
+void AliAODPidHF::GetNsigmaTPCMeanSigmaData(Float_t &mean, Float_t &sigma, AliPID::EParticleType species, Float_t pTPC, Float_t eta) const {
     
   Int_t bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
   if(bin<0) bin=0; //underflow --> equal to min value
   else if(bin>fNPbinsNsigmaTPCDataCorr-1) bin=fNPbinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
 
+  Int_t etabin = TMath::BinarySearch(fNEtabinsNsigmaTPCDataCorr,fEtalimitsNsigmaTPCDataCorr,TMath::Abs(eta));
+  if(etabin<0) etabin=0; //underflow --> equal to min value
+  else if(etabin>fNEtabinsNsigmaTPCDataCorr-1) etabin=fNEtabinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
+
   switch(species) {
     case AliPID::kPion: 
     {
-      mean = fMeanNsigmaTPCPionData[bin];
-      sigma = fSigmaNsigmaTPCPionData[bin];
+      mean = fMeanNsigmaTPCPionData[etabin][bin];
+      sigma = fSigmaNsigmaTPCPionData[etabin][bin];
       break;
     }
     case AliPID::kKaon: 
     {
-      mean = fMeanNsigmaTPCKaonData[bin];
-      sigma = fSigmaNsigmaTPCKaonData[bin];
+      mean = fMeanNsigmaTPCKaonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCKaonData[etabin][bin];
       break;
     }
     case AliPID::kProton: 
     {
-      mean = fMeanNsigmaTPCProtonData[bin];
-      sigma = fSigmaNsigmaTPCProtonData[bin];
+      mean = fMeanNsigmaTPCProtonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCProtonData[etabin][bin];
       break;
     }
     default: 
@@ -1638,91 +1643,254 @@ void AliAODPidHF::GetNsigmaTPCMeanSigmaData(Float_t &mean, Float_t &sigma, AliPI
 }
 
 //___________________________________________________________________________________//
-void AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(Int_t run, Int_t system, Int_t &nPbins, Float_t Plims[], Float_t meanNsigmaTPCpion[], Float_t meanNsigmaTPCkaon[], Float_t meanNsigmaTPCproton[], Float_t sigmaNsigmaTPCpion[], Float_t sigmaNsigmaTPCkaon[], Float_t sigmaNsigmaTPCproton[]) {
+void AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(Int_t run, Int_t system, Int_t &nPbins, Float_t Plims[kMaxPBins+1], Int_t &nEtabins, Float_t absEtalims[kMaxEtaBins+1], 
+  vector<vector<Float_t> > &meanNsigmaTPCpion, vector<vector<Float_t> > &meanNsigmaTPCkaon, vector<vector<Float_t> > &meanNsigmaTPCproton, 
+  vector<vector<Float_t> > &sigmaNsigmaTPCpion, vector<vector<Float_t> > &sigmaNsigmaTPCkaon, vector<vector<Float_t> > &sigmaNsigmaTPCproton) 
+  {
+
+  meanNsigmaTPCpion.resize(kMaxEtaBins,vector<Float_t>(kMaxPBins,0.));
+  meanNsigmaTPCkaon.resize(kMaxEtaBins,vector<Float_t>(kMaxPBins,0.));
+  meanNsigmaTPCproton.resize(kMaxEtaBins,vector<Float_t>(kMaxPBins,0.));
+  sigmaNsigmaTPCpion.resize(kMaxEtaBins,vector<Float_t>(kMaxPBins,1.));
+  sigmaNsigmaTPCkaon.resize(kMaxEtaBins,vector<Float_t>(kMaxPBins,1.));
+  sigmaNsigmaTPCproton.resize(kMaxEtaBins,vector<Float_t>(kMaxPBins,1.));
 
   if(run>=295585 && run<=296623 && system==kPbPb010) { //LHC18q 0-10%
     nPbins = 8;
-    array<Float_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
-    array<Float_t,8> meanPion = {-0.476642, -0.611512, -0.70491, -0.785863, -0.858335, -0.913384, -0.926733, -1.03424};
-    array<Float_t,8> meanKaon = {-0.376284, -0.689586, -0.752243, -0.922438, -0.95792, -0.958785, -1.00629, -1.10473};
-    array<Float_t,8> meanProton = {-0.162057, -0.222369, -0.517459, -0.874908, -0.961924, -1.01193, -0.839815, -0.691694};
-    array<Float_t,8> sigmaPion = {0.98579, 0.962247, 0.945548, 0.920657, 0.909255, 0.957158, 0.907777, 0.954516};
-    array<Float_t,8> sigmaKaon = {0.851531, 0.909522, 0.96582, 0.900314, 0.887377, 0.880861, 0.848008, 0.916044};
-    array<Float_t,8> sigmaProton = {0.748482, 0.79806, 0.852967, 0.979616, 0.997911, 0.860067, 0.883535, 0.929892};
+    vector<Float_t> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
+    nEtabins = 5;
+    vector<Float_t> absetalims = {0.,0.1,0.2,0.4,0.6,0.8};
+
+    vector<vector<Float_t> > meanPion = { {-0.656082, -0.604754, -0.63195, -0.669819, -0.708323, -0.746162, -0.800557, -0.893548},
+                                         {-0.711512, -0.686848, -0.711177, -0.752377, -0.781678, -0.838341, -0.80682, -0.917012},
+                                         {-0.650884, -0.706274, -0.752449, -0.798673, -0.835543, -0.859084, -0.823375, -0.854207},
+                                         {-0.479705, -0.700093, -0.815494, -0.895986, -0.958185, -0.980633, -0.967819, -0.996364},
+                                         {-0.264033, -0.637537, -0.828537, -0.952223, -1.06091, -1.10456, -1.09789, -1.15579} };
+
+    vector<vector<Float_t> > meanKaon = { {-0.48114, -0.672897, -0.625657, -0.776678, -0.786824, -0.708909, -0.822472, -0.491422},
+                                         {-0.432004, -0.71966, -0.708949, -0.870034, -0.856239, -0.825942, -0.871391, -1.17962},
+                                         {-0.336167, -0.71892, -0.735327, -0.93073, -0.864011, -0.891611, -0.924604, -0.735026},
+                                         {-0.391054, -0.716122, -0.796868, -1.0208, -0.984637, -0.998813, -1.01377, -1.06832},
+                                         {-0.551251, -0.696801, -0.815058, -1.05691, -1.06688, -1.06648, -1.07023, -1.05183} };
+
+    vector<vector<Float_t> > meanProton = { {-0.200581, -0.16751, -0.451043, -0.952266, -0.852847, -0.760682, -0.676723, -0.603716},
+                                           {-0.123522, -0.128086, -0.444873, -0.846087, -0.988114, -1.05446, -0.761678, -0.785548},
+                                           {-0.100534, -0.1431, -0.448783, -0.8385, -0.843197, -1.05925, -0.878891, -0.69573},
+                                           {-0.233023, -0.317509, -0.598837, -0.945108, -1.01043, -1.21354, -0.99634, -0.915479},
+                                           {-0.391233, -0.516667, -0.768414, -1.00696, -1.03589, -1.26272, -1.02806, -0.994112} };
+
+    vector<vector<Float_t> > sigmaPion = { {0.986692, 1.01991, 1.00333, 0.986744, 0.981785, 1.04139, 1.0638, 1.09162},
+                                          {0.968236, 0.999018, 0.984673, 0.963658, 0.963348, 0.991749, 1.00931, 1.07714},
+                                          {0.948544, 0.971808, 0.957514, 0.938766, 0.936994, 0.987149, 0.957657, 0.994133},
+                                          {0.92104, 0.931385, 0.916291, 0.896921, 0.890271, 0.926601, 0.891902, 0.905638},
+                                          {0.909424, 0.89589, 0.881729, 0.860767, 0.842961, 0.873783, 0.83704, 0.758586} };
+
+    vector<vector<Float_t> > sigmaKaon = { {0.891168, 1.00326, 1.04053, 0.952367, 0.919632, 0.951424, 0.902434, 1.07759},
+                                          {0.853805, 0.968212, 1.01839, 0.930692, 0.918841, 0.92428, 0.913715, 0.929855},
+                                          {0.830364, 0.911894, 0.987625, 0.912264, 0.939659, 0.906548, 0.893721, 1.00634},
+                                          {0.718803, 0.882484, 0.959253, 0.870302, 0.907273, 0.881795, 0.867757, 0.906373},
+                                          {0.688955, 0.855596, 0.932222, 0.839553, 0.867639, 0.855212, 0.845177, 0.90448} };
+
+    vector<vector<Float_t> > sigmaProton = { {0.771648, 0.841043, 0.917283, 1.12449, 1.0023, 0.952976, 0.963016, 1.01111},
+                                            {0.752951, 0.825488, 0.883897, 1.02998, 1.07061, 0.866346, 0.952794, 0.916068},
+                                            {0.72623, 0.799905, 0.860896, 0.996524, 1.02278, 0.866737, 0.834891, 0.988606},
+                                            {0.70374, 0.759504, 0.811721, 0.944681, 0.96305, 0.81128, 0.85648, 0.900749},
+                                            {0.702538, 0.723393, 0.781419, 0.83867, 0.940137, 0.785817, 0.841202, 0.859564} };
+    
     std::copy(pTPClims.begin(),pTPClims.end(),Plims);
-    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
-    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
-    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+    std::copy(absetalims.begin(),absetalims.end(),absEtalims);
+    
+    for(int iEta=0; iEta<nEtabins; iEta++) {
+      meanNsigmaTPCpion[iEta] = meanPion[iEta];
+      meanNsigmaTPCkaon[iEta] = meanKaon[iEta];
+      meanNsigmaTPCproton[iEta] = meanProton[iEta];
+      sigmaNsigmaTPCpion[iEta] = sigmaPion[iEta];
+      sigmaNsigmaTPCkaon[iEta] = sigmaKaon[iEta];
+      sigmaNsigmaTPCproton[iEta] = sigmaProton[iEta];
+    }
   }
   else if(run>=295585 && run<=296623 && system==kPbPb3050) { //LHC18q 30-50%
     nPbins = 8;
-    array<Float_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
-    array<Float_t,8> meanPion = {-0.282783, -0.351074, -0.370549, -0.368398, -0.37546, -0.332551, -0.304001, -0.329724};
-    array<Float_t,8> meanKaon = {-0.147986, -0.26169, -0.339263, -0.566137, -0.619671, -0.586758, -0.430222, -0.243858};
-    array<Float_t,8> meanProton = {-0.116342, -0.204619, -0.18317, -0.288015, -0.431383, -0.496598, -0.476154, -0.464085};
-    array<Float_t,8> sigmaPion = {1.15354, 1.1191, 1.11418, 1.11474, 1.11121, 1.10621, 1.05918, 1.05666};
-    array<Float_t,8> sigmaKaon = {1.07676, 1.11978, 1.14182, 1.09804, 1.09674, 1.08182, 1.07091, 1.00419};
-    array<Float_t,8> sigmaProton = {1.07493, 1.11953, 1.14044, 1.14904, 1.12158, 1.09405, 1.06465, 1.11152};
+    vector<Float_t> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
+    nEtabins = 5;
+    vector<Float_t> absetalims = {0.,0.1,0.2,0.4,0.6,0.8};
+
+    vector<vector<Float_t> > meanPion = { {-0.537046, -0.427744, -0.411915, -0.42242, -0.445157, -0.423209, -0.403354, -0.39011},
+                                         {-0.451747, -0.358803, -0.347827, -0.360332, -0.379419, -0.373067, -0.309076, -0.201842},
+                                         {-0.37701, -0.342516, -0.352131, -0.375476, -0.397523, -0.380363, -0.348125, -0.334354},
+                                         {-0.340843, -0.438716, -0.504516, -0.554322, -0.614602, -0.624125, -0.612949, -0.616095},
+                                         {-0.273705, -0.510522, -0.643307, -0.739041, -0.830935, -0.860098, -0.885069, -0.956967} };
+
+    vector<vector<Float_t> > meanKaon = { {-0.226216, -0.427422, -0.414774, -0.562412, -0.521969, -0.467143, -0.414713, -0.330372},
+                                         {-0.16309, -0.36387, -0.436445, -0.395585, -0.452207, -0.408419, -0.30696, -0.323571},
+                                         {-0.106973, -0.382832, -0.361131, -0.402223, -0.452784, -0.400874, -0.342613, -0.185365},
+                                         {-0.252347, -0.480454, -0.500724, -0.573321, -0.642967, -0.616602, -0.546648, -0.482116},
+                                         {-0.5916, -0.593699, -0.6563, -0.683526, -0.807421, -0.815922, -0.785543, -0.842433} };
+
+    vector<vector<Float_t> > meanProton = { {0.00677222, 0.0347718, -0.211127, -0.466866, -0.323172, -0.53392, -0.504211, -0.334974},
+                                           {0.0935506, 0.0970568, -0.138627, -0.392521, -0.399267, -0.43474, -0.200821, -0.23501},
+                                           {0.075394, 0.0609517, -0.170246, -0.409987, -0.420188, -0.448851, -0.267424, -0.313302},
+                                           {-0.133011, -0.210294, -0.42431, -0.562203, -0.459603, -0.673718, -0.649959, -0.520375},
+                                           {-0.324865, -0.495658, -0.69697, -0.814164, -0.710279, -0.778491, -0.80033, -0.76221} };
+
+    vector<vector<Float_t> > sigmaPion = { {0.915632, 0.93365, 0.932587, 0.931425, 0.922551, 0.92571, 0.881836, 0.796746},
+                                          {0.906096, 0.925435, 0.924713, 0.919556, 0.906064, 0.911215, 0.866192, 0.773724},
+                                          {0.881485, 0.902513, 0.901312, 0.893701, 0.89239, 0.875522, 0.825261, 0.764695},
+                                          {0.835562, 0.850935, 0.853431, 0.846889, 0.834667, 0.819543, 0.798447, 0.774576},
+                                          {0.809872, 0.807042, 0.80727, 0.799673, 0.785673, 0.757604, 0.74583, 0.726052} };
+
+    vector<vector<Float_t> > sigmaKaon = { {0.814089, 0.877054, 0.944152, 0.90886, 0.92537, 0.931201, 0.926482, 0.722974},
+                                          {0.798753, 0.841944, 0.952407, 0.952185, 0.929863, 0.921988, 0.932327, 0.828574},
+                                          {0.733393, 0.821445, 0.903447, 0.928461, 0.917579, 0.921567, 0.923788, 0.727546},
+                                          {0.694873, 0.772357, 0.864553, 0.886463, 0.866449, 0.86353, 0.872874, 0.990303},
+                                          {0.687564, 0.747428, 0.792902, 0.87729, 0.824179, 0.814195, 0.813793, 0.901867} };
+
+    vector<vector<Float_t> > sigmaProton = { {0.758072, 0.796573, 0.838565, 0.942299, 0.990804, 0.914681, 0.900297, 0.872938},
+                                            {0.733353, 0.776217, 0.823004, 0.922272, 1.00522, 0.91665, 0.986521, 1.05648},
+                                            {0.715624, 0.75819, 0.79931, 0.897033, 0.972885, 0.920213, 0.942288, 0.978577},
+                                            {0.691934, 0.724153, 0.7582, 0.793117, 0.879233, 0.832657, 0.8289, 0.932063},
+                                            {0.695097, 0.694242, 0.719957, 0.790272, 0.855222, 0.820038, 0.789541, 0.834146} };
+    
     std::copy(pTPClims.begin(),pTPClims.end(),Plims);
-    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
-    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
-    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+    std::copy(absetalims.begin(),absetalims.end(),absEtalims);
+    
+    for(int iEta=0; iEta<nEtabins; iEta++) {
+      meanNsigmaTPCpion[iEta] = meanPion[iEta];
+      meanNsigmaTPCkaon[iEta] = meanKaon[iEta];
+      meanNsigmaTPCproton[iEta] = meanProton[iEta];
+      sigmaNsigmaTPCpion[iEta] = sigmaPion[iEta];
+      sigmaNsigmaTPCkaon[iEta] = sigmaKaon[iEta];
+      sigmaNsigmaTPCproton[iEta] = sigmaProton[iEta];
+    }
   }
   else if(run>=296690 && run<=297595 && system==kPbPb010) { //LHC18r 0-10%
     nPbins = 8;
-    array<Float_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
-    array<Float_t,8> meanPion = {-0.4669, -0.651889, -0.731293, -0.750849, -0.767918, -0.769948, -0.729383, -0.7741};
-    array<Float_t,8> meanKaon = {-0.420412, -0.656824, -0.728482, -0.99377, -1.11258, -1.04111, -1.05214, -0.778762};
-    array<Float_t,8> meanProton = {-0.346431, -0.445263, -0.504456, -0.80259, -0.971442, -1.00859, -0.853291, -0.595747};
-    array<Float_t,8> sigmaPion = {1.31686, 1.24606, 1.21786, 1.21274, 1.21565, 1.29167, 1.26293, 1.27201};
-    array<Float_t,8> sigmaKaon = {1.1904, 1.27156, 1.27005, 1.15127, 1.09914, 1.12193, 1.07542, 1.27068};
-    array<Float_t,8> sigmaProton = {1.10662, 1.18216, 1.25083, 1.3166, 1.25666, 1.12755, 1.12149, 1.20881};
+    vector<Float_t> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
+    nEtabins = 5;
+    vector<Float_t> absetalims = {0.,0.1,0.2,0.4,0.6,0.8};
+
+    vector<vector<Float_t> > meanPion = { {-0.744242, -0.715713, -0.69801, -0.696472, -0.717912, -0.767909, -0.822175, -0.883157},
+                                         {-0.976407, -0.964248, -0.976588, -0.969265, -1.00251, -1.04185, -1.08507, -1.02488},
+                                         {-0.938573, -1.02253, -1.0532, -1.06874, -1.09608, -1.11066, -1.07855, -1.06274},
+                                         {-0.462091, -0.766549, -0.875959, -0.918783, -0.979887, -0.984493, -0.945828, -0.954307},
+                                         {0.154123, -0.361271, -0.568491, -0.667592, -0.782836, -0.751772, -0.732903, -0.749} };
+
+    vector<vector<Float_t> > meanKaon = { {-0.468947, -0.636701, -0.601858, -0.806051, -0.94714, -0.842379, -0.955165, -0.898824},
+                                         {-0.588647, -0.883708, -0.894757, -1.09769, -1.11786, -1.08056, -1.15336, -1.44054},
+                                         {-0.462369, -0.900829, -0.959231, -1.19209, -1.17182, -1.21788, -1.26831, -1.46315},
+                                         {-0.28288, -0.585668, -0.942842, -1.13897, -1.18188, -1.1556, -1.20724, -1.06756},
+                                         {-0.0830475, -0.129884, -0.40388, -0.905485, -1.03586, -0.963208, -0.95807, -0.591766} };
+
+    vector<vector<Float_t> > meanProton = { {-0.43448, -0.41261, -0.468653, -0.766399, -0.906529, -0.87423, -0.925983, -0.834281},
+                                           {-0.439377, -0.510631, -0.648086, -0.99403, -1.09146, -1.14373, -1.19123, -0.993241},
+                                           {-0.400341, -0.54514, -0.649413, -0.979681, -1.22253, -1.27323, -1.27736, -1.12044},
+                                           {-0.295184, -0.441872, -0.470702, -0.910766, -1.04581, -1.17824, -1.17277, -0.978326},
+                                           {-0.169806, -0.33929, -0.309714, -0.680191, -0.862101, -0.972894, -0.951602, -0.676351} };
+
+    vector<vector<Float_t> > sigmaPion = { {1.19971, 1.20244, 1.19018, 1.18674, 1.19735, 1.27442, 1.31886, 1.35234},
+                                          {1.17433, 1.18271, 1.16982, 1.17218, 1.17712, 1.26327, 1.33523, 1.30084},
+                                          {1.16732, 1.17134, 1.16173, 1.15583, 1.16336, 1.24219, 1.23569, 1.24103},
+                                          {1.1773, 1.16117, 1.14767, 1.14647, 1.19338, 1.22358, 1.21504, 1.20365},
+                                          {1.21022, 1.17586, 1.16182, 1.15354, 1.15374, 1.22138, 1.19871, 1.20838} };
+
+    vector<vector<Float_t> > sigmaKaon = { {1.2537, 1.29365, 1.27439, 1.1386, 1.06835, 1.10702, 1.03569, 1.12542},
+                                          {1.20352, 1.25335, 1.24745, 1.12229, 1.12846, 1.11836, 1.0746, 1.33407},
+                                          {1.17982, 1.21396, 1.23344, 1.13316, 1.15827, 1.10607, 1.06816, 1.14628},
+                                          {1.10113, 1.23381, 1.30511, 1.11268, 1.11029, 1.1049, 1.02285, 1.26782},
+                                          {1.09653, 1.23731, 1.28769, 1.10684, 1.09593, 1.11015, 1.04836, 1.12603} };
+
+    vector<vector<Float_t> > sigmaProton = { {1.13405, 1.18163, 1.24085, 1.27282, 1.12543, 1.0912, 1.04366, 1.10697},
+                                            {1.09801, 1.16854, 1.22617, 1.26278, 1.25383, 1.07191, 1.04581, 1.11811},
+                                            {1.11623, 1.17665, 1.22384, 1.24119, 1.23884, 1.04855, 1.05348, 1.11713},
+                                            {1.08417, 1.16621, 1.22578, 1.34172, 1.24733, 1.04892, 1.05745, 1.14111},
+                                            {1.07421, 1.15563, 1.23173, 1.33796, 1.18478, 1.07793, 1.05178, 1.18215} };
+    
     std::copy(pTPClims.begin(),pTPClims.end(),Plims);
-    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
-    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
-    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+    std::copy(absetalims.begin(),absetalims.end(),absEtalims);
+    
+    for(int iEta=0; iEta<nEtabins; iEta++) {
+      meanNsigmaTPCpion[iEta] = meanPion[iEta];
+      meanNsigmaTPCkaon[iEta] = meanKaon[iEta];
+      meanNsigmaTPCproton[iEta] = meanProton[iEta];
+      sigmaNsigmaTPCpion[iEta] = sigmaPion[iEta];
+      sigmaNsigmaTPCkaon[iEta] = sigmaKaon[iEta];
+      sigmaNsigmaTPCproton[iEta] = sigmaProton[iEta];
+    }
   }
   else if(run>=296690 && run<=297595 && system==kPbPb3050) { //LHC18r 30-50%
     nPbins = 8;
-    array<Float_t,9> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
-    array<Float_t,8> meanPion = {-0.298388, -0.342664, -0.396873, -0.462451, -0.538392, -0.58011, -0.612805, -0.642393};
-    array<Float_t,8> meanKaon = {-0.152114, -0.00548698, -0.425063, -0.546696, -0.530307, -0.599359, -0.605992, -0.774291};
-    array<Float_t,8> meanProton = {-0.0368995, -0.0849347, -0.30911, -0.479177, -0.584153, -0.578737, -0.568087, -0.489077};
-    array<Float_t,8> sigmaPion = {0.878966, 0.88176, 0.883022, 0.873402, 0.859262, 0.847664, 0.828672, 0.800194};
-    array<Float_t,8> sigmaKaon = {0.775762, 1.00624, 0.886505, 0.885096, 0.91232, 0.867032, 0.833827, 0.987321};
-    array<Float_t,8> sigmaProton = {0.751132, 0.788041, 0.81738, 0.862206, 0.876342, 0.863609, 0.825849, 0.937087};
+    vector<Float_t> pTPClims = {0.3,0.5,0.75,1.,1.5,2.,3.,5.,10.};    
+    nEtabins = 5;
+    vector<Float_t> absetalims = {0.,0.1,0.2,0.4,0.6,0.8};
+
+    vector<vector<Float_t> > meanPion = { {-0.643992, -0.547379, -0.477054, -0.440121, -0.426498, -0.406638, -0.361916, -0.311107},
+                                         {-0.714799, -0.624286, -0.588865, -0.554541, -0.539189, -0.50596, -0.442875, -0.504426},
+                                         {-0.641763, -0.623418, -0.607051, -0.580924, -0.573627, -0.534728, -0.520039, -0.457556},
+                                         {-0.292997, -0.446284, -0.484493, -0.499929, -0.516507, -0.485561, -0.428434, -0.387974},
+                                         {0.151661, -0.179137, -0.303383, -0.371113, -0.418849, -0.413089, -0.380399, -0.442395} };
+
+    vector<vector<Float_t> > meanKaon = { {-0.180292, -0.327542, -0.451762, -0.598542, -0.655667, -0.629728, -0.562158, -0.399934},
+                                         {-0.247604, -0.448958, -0.522777, -0.71607, -0.737935, -0.683963, -0.577149, -0.59199},
+                                         {-0.189726, -0.48024, -0.575707, -0.742612, -0.765291, -0.709371, -0.607647, -0.28355},
+                                         {0.00208301, -0.258596, -0.444814, -0.667385, -0.713196, -0.654455, -0.540685, -0.339524},
+                                         {-0.000405731, 0.0385342, -0.162143, -0.523791, -0.612858, -0.553858, -0.45908, -0.401148} };
+
+    vector<vector<Float_t> > meanProton = { {-0.149563, -0.156293, -0.17301, -0.377551, -0.531683, -0.617193, -0.576007, -0.621884},
+                                           {-0.14944, -0.204765, -0.255216, -0.438923, -0.675954, -0.637264, -0.640382, -0.585865},
+                                           {-0.149585, -0.263429, -0.274904, -0.428442, -0.50586, -0.734513, -0.659482, -0.473013},
+                                           {-0.13168, -0.278353, -0.222243, -0.405964, -0.603998, -0.612839, -0.631597, -0.651136},
+                                           {-0.108823, -0.280568, -0.193149, -0.250911, -0.53358, -0.55575, -0.545469, -0.421828} };
+
+    vector<vector<Float_t> > sigmaPion = { {1.08474, 1.09912, 1.10605, 1.11466, 1.12312, 1.13388, 1.11915, 0.98612},
+                                          {1.0785, 1.09545, 1.10056, 1.10451, 1.11234, 1.12323, 1.10217, 1.14173},
+                                          {1.0727, 1.09036, 1.09512, 1.10093, 1.10376, 1.10297, 1.1321, 1.06425},
+                                          {1.07348, 1.08058, 1.08902, 1.08921, 1.08795, 1.08588, 1.05973, 1.01606},
+                                          {1.08087, 1.06969, 1.08016, 1.08215, 1.08229, 1.07935, 1.04663, 1.02234} };
+
+    vector<vector<Float_t> > sigmaKaon = { {1.10082, 1.14338, 1.17166, 1.08815, 1.07553, 1.05804, 0.98676, 1.09437},
+                                          {1.06003, 1.09105, 1.13176, 1.08161, 1.08362, 1.0915, 1.0352, 1.11064},
+                                          {1.04461, 1.08936, 1.14854, 1.08121, 1.09336, 1.09623, 1.04665, 0.882711},
+                                          {1.01912, 1.09634, 1.15565, 1.08002, 1.09909, 1.09498, 1.05249, 0.999984},
+                                          {1.0683, 1.09023, 1.13342, 1.07979, 1.0902, 1.09837, 1.0282, 1.07592} };
+
+    vector<vector<Float_t> > sigmaProton = { {1.06529, 1.10828, 1.14221, 1.18478, 1.10225, 1.07407, 1.08529, 1.14558},
+                                            {1.05081, 1.10053, 1.1237, 1.15429, 1.04817, 1.09967, 1.10276, 1.21743},
+                                            {1.06485, 1.11335, 1.13392, 1.12825, 1.12658, 1.08174, 1.10395, 1.2337},
+                                            {1.05451, 1.11328, 1.13998, 1.17462, 1.19486, 1.09464, 1.07388, 1.07995},
+                                            {1.05442, 1.09606, 1.14899, 1.14143, 1.04405, 1.08258, 1.05422, 1.13655} };
+    
     std::copy(pTPClims.begin(),pTPClims.end(),Plims);
-    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
-    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
-    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+    std::copy(absetalims.begin(),absetalims.end(),absEtalims);
+    
+    for(int iEta=0; iEta<nEtabins; iEta++) {
+      meanNsigmaTPCpion[iEta] = meanPion[iEta];
+      meanNsigmaTPCkaon[iEta] = meanKaon[iEta];
+      meanNsigmaTPCproton[iEta] = meanProton[iEta];
+      sigmaNsigmaTPCpion[iEta] = sigmaPion[iEta];
+      sigmaNsigmaTPCkaon[iEta] = sigmaKaon[iEta];
+      sigmaNsigmaTPCproton[iEta] = sigmaProton[iEta];
+    }
   }
   else { //default: no correction applied
     nPbins = 1;
-    array<Float_t,2> pTPClims = {0.,1000.};    
-    array<Float_t,1> meanPion = {0.};
-    array<Float_t,1> meanKaon = {0.};
-    array<Float_t,1> meanProton = {0.};
-    array<Float_t,1> sigmaPion = {1.};
-    array<Float_t,1> sigmaKaon = {1.};
-    array<Float_t,1> sigmaProton = {1.};
+    vector<Float_t> pTPClims = {0.,1000.};  
+    nEtabins = 1;
+    vector<Float_t> absetalims = {0.,2.};  
+
+    vector<Float_t> meanPion = {0.};
+    vector<Float_t> meanKaon = {0.};
+    vector<Float_t> meanProton = {0.};
+    vector<Float_t> sigmaPion = {1.};
+    vector<Float_t> sigmaKaon = {1.};
+    vector<Float_t> sigmaProton = {1.};
     std::copy(pTPClims.begin(),pTPClims.end(),Plims);
-    std::copy(meanPion.begin(),meanPion.end(),meanNsigmaTPCpion);
-    std::copy(meanKaon.begin(),meanKaon.end(),meanNsigmaTPCkaon);
-    std::copy(meanProton.begin(),meanProton.end(),meanNsigmaTPCproton);
-    std::copy(sigmaPion.begin(),sigmaPion.end(),sigmaNsigmaTPCpion);
-    std::copy(sigmaKaon.begin(),sigmaKaon.end(),sigmaNsigmaTPCkaon);
-    std::copy(sigmaProton.begin(),sigmaProton.end(),sigmaNsigmaTPCproton);
+    std::copy(absetalims.begin(),absetalims.end(),absEtalims);
+
+    meanNsigmaTPCpion[0] = meanPion;
+    meanNsigmaTPCkaon[0] = meanKaon;
+    meanNsigmaTPCproton[0] = meanProton;
+    sigmaNsigmaTPCpion[0] = sigmaPion;
+    sigmaNsigmaTPCkaon[0] = sigmaKaon;
+    sigmaNsigmaTPCproton[0] = sigmaProton;
   }
 }

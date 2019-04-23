@@ -21,7 +21,6 @@
 #include "AliMultSelection.h"
 #include "AliESDtrack.h"
 #include "AliRDHFCuts.h"
-#include "AliAODPidHF.h"
 
 ClassImp(AliAnalysisTaskSEHFSystPID)
 
@@ -79,7 +78,9 @@ fSigmaNsigmaTPCPionData{},
 fSigmaNsigmaTPCKaonData{},
 fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
-fNPbinsNsigmaTPCDataCorr(0)
+fNPbinsNsigmaTPCDataCorr(0),
+fEtalimitsNsigmaTPCDataCorr{},
+fNEtabinsNsigmaTPCDataCorr(0)
 {
   //
   // default constructur
@@ -92,16 +93,12 @@ fNPbinsNsigmaTPCDataCorr(0)
     fHistNsigmaTOFvsPt[iHisto] = nullptr;
   }
 
-  for(int iP=0; iP<100; iP++) {
-    fMeanNsigmaTPCPionData[iP] = 0.;
-    fMeanNsigmaTPCKaonData[iP] = 0.;
-    fMeanNsigmaTPCProtonData[iP] = 0.;
-    fSigmaNsigmaTPCPionData[iP] = 1.;
-    fSigmaNsigmaTPCKaonData[iP] = 1.;
-    fSigmaNsigmaTPCProtonData[iP] = 1.;
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
   }
-  fPlimitsNsigmaTPCDataCorr[100] = 0.;
+  for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
+  }
 }
 
 //________________________________________________________________________
@@ -158,7 +155,9 @@ fSigmaNsigmaTPCPionData{},
 fSigmaNsigmaTPCKaonData{},
 fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
-fNPbinsNsigmaTPCDataCorr(0)
+fNPbinsNsigmaTPCDataCorr(0),
+fEtalimitsNsigmaTPCDataCorr{},
+fNEtabinsNsigmaTPCDataCorr(0)
 {
   //
   // standard constructur
@@ -171,16 +170,12 @@ fNPbinsNsigmaTPCDataCorr(0)
     fHistNsigmaTOFvsPt[iHisto] = nullptr;
   }
 
-  for(int iP=0; iP<100; iP++) {
-    fMeanNsigmaTPCPionData[iP] = 0.;
-    fMeanNsigmaTPCKaonData[iP] = 0.;
-    fMeanNsigmaTPCProtonData[iP] = 0.;
-    fSigmaNsigmaTPCPionData[iP] = 1.;
-    fSigmaNsigmaTPCKaonData[iP] = 1.;
-    fSigmaNsigmaTPCProtonData[iP] = 1.;
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
   }
-  fPlimitsNsigmaTPCDataCorr[100] = 0.;
+  for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
+  }
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -368,7 +363,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   //load data correction for NsigmaTPC, if enabled
   if(fEnableNsigmaTPCDataCorr) {
     if(fAOD->GetRunNumber()!=fRunNumberPrevEvent) {
-      AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fAOD->GetRunNumber(), fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
+      AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fAOD->GetRunNumber(), fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
     }
   }
 
@@ -441,9 +436,9 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
       float nSigmaTPCProton = fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton);
       if(fEnableNsigmaTPCDataCorr) {
         float meanPion = 0., meanKaon = 0., meanProton = 0., sigmaPion = 1., sigmaKaon = 1., sigmaProton = 1.;
-        GetNsigmaTPCMeanSigmaData(meanPion, sigmaPion, AliPID::kPion, track->GetTPCmomentum());
-        GetNsigmaTPCMeanSigmaData(meanKaon, sigmaKaon, AliPID::kKaon, track->GetTPCmomentum());
-        GetNsigmaTPCMeanSigmaData(meanProton, sigmaProton, AliPID::kProton, track->GetTPCmomentum());
+        GetNsigmaTPCMeanSigmaData(meanPion, sigmaPion, AliPID::kPion, track->GetTPCmomentum(), track->Eta());
+        GetNsigmaTPCMeanSigmaData(meanKaon, sigmaKaon, AliPID::kKaon, track->GetTPCmomentum(), track->Eta());
+        GetNsigmaTPCMeanSigmaData(meanProton, sigmaProton, AliPID::kProton, track->GetTPCmomentum(), track->Eta());
 
         if(nSigmaTPCPion>-990.)
           nSigmaTPCPion = (nSigmaTPCPion-meanPion) / sigmaPion;
@@ -776,29 +771,33 @@ unsigned short AliAnalysisTaskSEHFSystPID::ConvertFloatToUnsignedShort(float num
 }
 
 //________________________________________________________________
-void AliAnalysisTaskSEHFSystPID::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC) {
+void AliAnalysisTaskSEHFSystPID::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta) {
     
   int bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
   if(bin<0) bin=0; //underflow --> equal to min value
   else if(bin>fNPbinsNsigmaTPCDataCorr-1) bin=fNPbinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
 
+  int etabin = TMath::BinarySearch(fNEtabinsNsigmaTPCDataCorr,fEtalimitsNsigmaTPCDataCorr,TMath::Abs(eta));
+  if(etabin<0) etabin=0; //underflow --> equal to min value
+  else if(etabin>fNEtabinsNsigmaTPCDataCorr-1) etabin=fNEtabinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
+
   switch(species) {
     case AliPID::kPion: 
     {
-      mean = fMeanNsigmaTPCPionData[bin];
-      sigma = fSigmaNsigmaTPCPionData[bin];
+      mean = fMeanNsigmaTPCPionData[etabin][bin];
+      sigma = fSigmaNsigmaTPCPionData[etabin][bin];
       break;
     }
     case AliPID::kKaon: 
     {
-      mean = fMeanNsigmaTPCKaonData[bin];
-      sigma = fSigmaNsigmaTPCKaonData[bin];
+      mean = fMeanNsigmaTPCKaonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCKaonData[etabin][bin];
       break;
     }
     case AliPID::kProton: 
     {
-      mean = fMeanNsigmaTPCProtonData[bin];
-      sigma = fSigmaNsigmaTPCProtonData[bin];
+      mean = fMeanNsigmaTPCProtonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCProtonData[etabin][bin];
       break;
     }
     default: 
