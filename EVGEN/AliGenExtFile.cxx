@@ -215,11 +215,13 @@ void AliGenExtFile::Generate()
     selector.init();
     for (i = 0; i < nTracks; i++) {
        TParticle* jparticle = fReader->NextParticle();
-       selector.setData(i,
+       if(jparticle){
+	     selector.setData(i,
              jparticle->GetFirstMother(),
              jparticle->GetSecondMother(),
              KinematicSelection(jparticle,0));
-    }
+    	}
+    }       
     selector.reselectCuttedMothersAndRemapIDs();
     fReader->RewindEvent();
 
