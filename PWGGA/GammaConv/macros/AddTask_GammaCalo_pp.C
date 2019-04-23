@@ -1520,6 +1520,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790007f032230000","01631031000000d0"); // no NL, E/p TM, tight timing
     cuts.AddCutCalo("00010113","411790005f032230000","01631031000000d0"); // no NL, E/p TM, -50ns, 30ns timing cut
     cuts.AddCutCalo("00010113","411790000f032230000","01631031000000d0"); // no NL, E/p TM, open timing
+  } else if (trainConfig == 2018){ // EMCAL+DCAL clusters standard cuts
+    cuts.AddCutCalo("00010113","411791105f032230000","01631031000000d0"); // std TM, -50ns, 30ns timing cut
+    cuts.AddCutCalo("00010113","411791205f032230000","01631031000000d0"); // std TM, -50ns, 30ns timing cut
+    cuts.AddCutCalo("00010113","411792105f032230000","01631031000000d0"); // std TM, -50ns, 30ns timing cut
+    cuts.AddCutCalo("00010113","411792205f032230000","01631031000000d0"); // std TM, -50ns, 30ns timing cut
 
 // EDC 13 TeV 2016 & 2017 settings with MC fine tuning correction
   } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, tight timing
