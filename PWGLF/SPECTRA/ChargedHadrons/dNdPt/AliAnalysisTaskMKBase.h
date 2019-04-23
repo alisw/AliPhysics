@@ -142,8 +142,11 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Int_t                   fMultMB;                //!<! MinBias Multiplicity (no of contributers to vertex)
         Double_t                fMultV0M;               //!<! v0a + v0c
         Double_t                fMCb;                   //!<! impact parameter in MC
-        Int_t                   fMCnPrim;               //!<! number of primary particles according to mc
-        Int_t                   fMCnPrimV0M;            //!<! number of primary particles in the v0 acceptance
+        Int_t                   fMCnPrimPtCut;          //!<! number of charged primary particles according to mario def (eta<0.8, pt>150 mev)
+        Int_t                   fMCnPrim10;             //!<! number of charged primary particles according to mc in eta<1.0
+        Int_t                   fMCnPrim08;             //!<! number of charged primary particles according to mc in eta<0.8
+        Int_t                   fMCnPrim05;             //!<! number of charged primary particles according to mc in eta<0.5        
+        Int_t                   fMCnPrimV0M;            //!<! number of charged primary particles in the v0 acceptance
         Int_t                   fMCnTracks;             //!<! number of "tracks" i.e. particles in MCevent
         Bool_t                  fIsTrigger;             //!<! is event triggered?
         Bool_t                  fHasVertex;             //!<! has the event a vertex?

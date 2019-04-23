@@ -106,12 +106,12 @@ void AliAnalysisTaskUEStudy::AddOutput()
     fOutputList->Add(fHistUETracksMC);
     
     //ptmax:ntracksaway;ntrackstransverse:ntracktowards:ntracks:mcptmax:nchawa:nchtransverse:nchtowards:nch
-    AddAxis("pTmax","pt");    
+    AddAxis("pTmax","ptveryfew");    
     AddAxis("nTracksAway","mult6kfine");    
     AddAxis("nTracksTransverse","mult6kfine");
     AddAxis("nTracksTowards","mult6kfine");
 //     AddAxis("nTracks","mult6kfine");
-    AddAxis("pTmaxMC","pt");    
+    AddAxis("pTmaxMC","ptveryfew");    
     AddAxis("nTracksAwayMC","mult6kfine");    
     AddAxis("nTracksTransverseMC","mult6kfine");
     AddAxis("nTracksTowardsMC","mult6kfine");
@@ -120,11 +120,11 @@ void AliAnalysisTaskUEStudy::AddOutput()
     fOutputList->Add(fHistUE);    
     
     //ptmax:ptmaxmc:phimax:phimaxmc:deltaphi    
-    AddAxis("pTmax","pt");    
-    AddAxis("pTmaxMC","pt");            
-    AddAxis("PhiMax",360,0,2*TMath::Pi());
-    AddAxis("PhiMaxMC",360,0,2*TMath::Pi());
-    AddAxis("DeltaPhi",360,-TMath::Pi(),TMath::Pi());
+    AddAxis("pTmax","ptveryfew");    
+    AddAxis("pTmaxMC","ptveryfew");            
+    AddAxis("PhiMax",180,0,2*TMath::Pi());
+    AddAxis("PhiMaxMC",180,0,2*TMath::Pi());
+    AddAxis("DeltaPhi",360,-0.1*TMath::Pi(),0.1*TMath::Pi());
     fHistUEPhiRes = CreateHist("fHistUEPhiRes");
     fOutputList->Add(fHistUEPhiRes);
 }
