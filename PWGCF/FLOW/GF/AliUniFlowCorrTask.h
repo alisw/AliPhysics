@@ -30,7 +30,7 @@ class AliUniFlowCorrTask
     protected:
     private:
 
-    ClassDef(AliUniFlowCorrTask, 1);
+    ClassDefNV(AliUniFlowCorrTask, 1);
 };
 
 
