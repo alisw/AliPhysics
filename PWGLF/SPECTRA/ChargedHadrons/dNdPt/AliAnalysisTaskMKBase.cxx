@@ -549,7 +549,8 @@ Bool_t AliAnalysisTaskMKBase::InitMCEvent()
     
     for (Int_t i = 0; i < fMCnTracks; i++) {
         fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(i));
-        if (!fMCParticle) { Err("noMCParticle"); continue; }         
+        if (!fMCParticle) { Err("noMCParticle"); continue; }   
+        fMCLabel = i;
         InitMCParticle();
         if (fMCIsCharged && fMCisPrim) {
             if (TMath::Abs(fMCEta)<1.) { fMCnPrim10++; }
