@@ -87,8 +87,8 @@ void AliAnalysisTaskDCArStudy::AnaEvent()
 
 void AliAnalysisTaskDCArStudy::AnaTrack()
 {
-    if (!fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
-    if (!fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
+    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
+    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
 }
 
 //_____________________________________________________________________________
