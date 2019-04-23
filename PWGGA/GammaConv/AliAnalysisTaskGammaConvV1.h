@@ -264,8 +264,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoV0MultVsNumberTPCoutTracks;           //! correlation V=Mult vs number TPC out Tracks
     TH1F**                            fHistoNV0Tracks;                            //!
     TH1F**                            fHistoBDToutput;                            //!
-    TH1F**                            fHistoBDToutputMCTrue;                      //!
     TH1F**                            fHistoBDToutputPt;                          //!
+    TH1F**                            fHistoBDToutputMCTrue;                      //!
     TProfile**                        fProfileEtaShift;                           //! array of profiles with eta shift
     TProfile**                        fProfileJetJetXSection;                     //! array of profiles with xsection for jetjet
     TH1F**                            fhJetJetNTrials;                            //! array of histos with ntrials for jetjet
