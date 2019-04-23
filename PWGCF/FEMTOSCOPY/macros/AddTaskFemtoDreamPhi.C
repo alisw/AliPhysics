@@ -1,5 +1,9 @@
 AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
-                                        TString CentEst = "kInt7") {
+                                        TString CentEst = "kInt7",
+                                        const char *cutVariation = "0") {
+
+  TString suffix = TString::Format("%s", cutVariation);
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -22,11 +26,21 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetCutCharge(-1);
 
+  if (suffix != "0") {
+    TrackCuts->SetMinimalBooking(true);
+    AntiTrackCuts->SetMinimalBooking(true);
+  }
+
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
+
+  if (suffix != "0") {
+    TrackPosKaonCuts->SetMinimalBooking(true);
+    TrackNegKaonCuts->SetMinimalBooking(true);
+  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetAxisInvMassPlots(400, 0.9, 1.2);
@@ -38,6 +52,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   TrackCutsPhi->SetPDGCodePosDaug(321);
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
+
+  if (suffix != "0") {
+    TrackCutsPhi->SetMinimalBooking(true);
+  }
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
@@ -197,10 +215,18 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("MyTask");
-  coutputQA = mgr->CreateContainer(QAName.Data(), TList::Class(),
-                                   AliAnalysisManager::kOutputContainer,
-                                   Form("%s:%s", file.Data(), QAName.Data()));
+  TString addon = "";
+  if (CentEst == "kInt7") {
+    addon += "MB";
+  } else if (CentEst == "kHM") {
+    addon += "HM";
+  }
+  TString QAName = Form("%sResults%s", addon.Data(), suffix.Data());
+  coutputQA = mgr->CreateContainer(
+      QAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
   return task;
