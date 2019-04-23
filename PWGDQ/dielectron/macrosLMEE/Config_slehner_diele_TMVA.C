@@ -24,6 +24,7 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
   for(int glcut = 0; glcut <=30; ++glcut){
 //  for(int glcut = 0; glcut <=0; ++glcut){
     ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
+    if(glcut>0 && glcut<21) continue;
     PIDCut=glcut-10;
     trackCut=glcut;
     if(glcut==0) trackCut=-1;
