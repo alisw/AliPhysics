@@ -3233,7 +3233,7 @@ void AliAnalysisTaskSED0MassTMVA::NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2
             tmp[17] = cosThetaStarD0;
             // printf("D0 cut: %f, PID: %f, %f \n",tmp[5],tmp[6],tmp[7]);
             
-            if((tmp[0]>=fD0PtCut[0]&&tmp[0]<fD0PtCut[1])&&(tmp[8]>=1.7&&tmp[8]<2.1))
+            if(tmp[8]>=1.7&&tmp[8]<2.1)
                 fNtupleD0Data->Fill(tmp);
         }
         if (fIsSelectedCandidate>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)){
@@ -3244,7 +3244,7 @@ void AliAnalysisTaskSED0MassTMVA::NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2
             tmp[8] = invmassD0bar;
             tmp[17] = cosThetaStarD0bar;
             
-            if((tmp[0]>=fD0PtCut[0]&&tmp[0]<fD0PtCut[1])&&(tmp[8]>=1.7&&tmp[8]<2.1))
+            if(tmp[8]>=1.7&&tmp[8]<2.1)
                 fNtupleD0Data->Fill(tmp);
         }
     }
