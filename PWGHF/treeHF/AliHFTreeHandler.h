@@ -217,12 +217,12 @@ class AliHFTreeHandler : public TObject
     int fRunNumberPrevCand; ///run number of previous candidate
     bool fApplyNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
     int fSystNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
-    float fMeanNsigmaTPCPionData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];    /// array of NsigmaTPC pion mean in data 
-    float fMeanNsigmaTPCKaonData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];    /// array of NsigmaTPC kaon mean in data 
-    float fMeanNsigmaTPCProtonData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];  /// array of NsigmaTPC proton mean in data 
-    float fSigmaNsigmaTPCPionData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];   /// array of NsigmaTPC pion mean in data 
-    float fSigmaNsigmaTPCKaonData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins];   /// array of NsigmaTPC kaon mean in data 
-    float fSigmaNsigmaTPCProtonData[AliAODPidHF::kMaxEtaBins][AliAODPidHF::kMaxPBins]; /// array of NsigmaTPC proton mean in data 
+    vector<vector<float> > fMeanNsigmaTPCPionData; /// array of NsigmaTPC pion mean in data 
+    vector<vector<float> > fMeanNsigmaTPCKaonData; /// array of NsigmaTPC kaon mean in data 
+    vector<vector<float> > fMeanNsigmaTPCProtonData; /// array of NsigmaTPC proton mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCPionData; /// array of NsigmaTPC pion mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCKaonData; /// array of NsigmaTPC kaon mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCProtonData; /// array of NsigmaTPC proton mean in data 
     float fPlimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxPBins+1]; /// array of p limits for data-driven NsigmaTPC correction
     int fNPbinsNsigmaTPCDataCorr;/// number of p bins for data-driven NsigmaTPC correction
     float fEtalimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxEtaBins+1]; /// vector of eta limits for data-driven NsigmaTPC correction

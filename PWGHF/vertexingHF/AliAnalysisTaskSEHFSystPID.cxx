@@ -93,23 +93,12 @@ fNEtabinsNsigmaTPCDataCorr(0)
     fHistNsigmaTOFvsPt[iHisto] = nullptr;
   }
 
-  for(int iP=0; iP<AliAODPidHF::kMaxPBins; iP++) {
-    for(int iEta=0; iEta<AliAODPidHF::kMaxEtaBins; iEta++) {
-      fMeanNsigmaTPCPionData[iEta][iP] = 0.;
-      fMeanNsigmaTPCKaonData[iEta][iP] = 0.;
-      fMeanNsigmaTPCProtonData[iEta][iP] = 0.;
-      fSigmaNsigmaTPCPionData[iEta][iP] = 1.;
-      fSigmaNsigmaTPCKaonData[iEta][iP] = 1.;
-      fSigmaNsigmaTPCProtonData[iEta][iP] = 1.;
-    }
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
   }
-  fPlimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxPBins] = 0.;
-
   for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
     fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
-
 }
 
 //________________________________________________________________________
@@ -181,19 +170,9 @@ fNEtabinsNsigmaTPCDataCorr(0)
     fHistNsigmaTOFvsPt[iHisto] = nullptr;
   }
 
-  for(int iP=0; iP<AliAODPidHF::kMaxPBins; iP++) {
-    for(int iEta=0; iEta<AliAODPidHF::kMaxEtaBins; iEta++) {
-      fMeanNsigmaTPCPionData[iEta][iP] = 0.;
-      fMeanNsigmaTPCKaonData[iEta][iP] = 0.;
-      fMeanNsigmaTPCProtonData[iEta][iP] = 0.;
-      fSigmaNsigmaTPCPionData[iEta][iP] = 1.;
-      fSigmaNsigmaTPCKaonData[iEta][iP] = 1.;
-      fSigmaNsigmaTPCProtonData[iEta][iP] = 1.;
-    }
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
   }
-  fPlimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxPBins] = 0.;
-
   for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
     fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
