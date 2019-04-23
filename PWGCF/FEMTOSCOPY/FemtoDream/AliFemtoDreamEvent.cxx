@@ -132,6 +132,8 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
 }
 
 void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(evt->GetHeader());
+
   AliAODVertex *vtx = evt->GetPrimaryVertex();
   AliAODVZERO *vZERO = evt->GetVZEROData();
   if (!vtx) {
@@ -165,7 +167,7 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
   this->fspher = CalculateSphericityEvent(evt);
-
+  fRefMult08 = header->GetRefMultiplicityComb08();
   AliMultSelection *MultSelection = 0x0;
   MultSelection = (AliMultSelection *) evt->FindListObject("MultSelection");
   if (!MultSelection) {
@@ -173,7 +175,6 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
     AliWarning("AliMultSelection object not found!");
   } else {
     fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-    fRefMult08 = MultSelection->GetMultiplicityPercentile("RefMult08");
   }
   return;
 }
