@@ -22,6 +22,14 @@ class AliAnalysisTaskFemtoDreamPhi : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *){};
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) { fEventCuts = evtCuts; };
+
+  void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
+    fTrackCutsPartProton = cuts;
+  }
+  void SetAntiProtonCuts(AliFemtoDreamTrackCuts *cuts) {
+    fTrackCutsPartAntiProton = cuts;
+  }
+
   void SetPosKaonCuts(AliFemtoDreamTrackCuts *trkCuts) {
     fPosKaonCuts = trkCuts;
   }
@@ -47,13 +55,14 @@ class AliAnalysisTaskFemtoDreamPhi : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts *fPosKaonCuts;  //
   AliFemtoDreamTrackCuts *fNegKaonCuts;  //
   AliFemtoDreamv0Cuts *fPhiCuts;         //
-
+  AliFemtoDreamTrackCuts *fTrackCutsPartProton;      //
+  AliFemtoDreamTrackCuts *fTrackCutsPartAntiProton;  //
   AliFemtoDreamCollConfig *fConfig;        //
   AliFemtoDreamPairCleaner *fPairCleaner;  //!
   AliFemtoDreamPartCollection *fPartColl;  //!
   AliAODTrack **fGTI;                      //!
   int fTrackBufferSize;                    //
-  ClassDef(AliAnalysisTaskFemtoDreamPhi, 1)
+  ClassDef(AliAnalysisTaskFemtoDreamPhi, 2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskFemtoDreamPhi_H_ */

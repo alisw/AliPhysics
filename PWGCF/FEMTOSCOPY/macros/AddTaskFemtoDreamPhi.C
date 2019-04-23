@@ -14,6 +14,14 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
+  AliFemtoDreamTrackCuts *TrackCuts =
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  TrackCuts->SetCutCharge(1);
+
+  AliFemtoDreamTrackCuts *AntiTrackCuts =
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  AntiTrackCuts->SetCutCharge(-1);
+
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
 
@@ -174,6 +182,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   // Throw all our settings to the task
   task->SetEventCuts(evtCuts);
+  task->SetProtonCuts(TrackCuts);
+  task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetPosKaonCuts(TrackPosKaonCuts);
   task->SetNegKaonCuts(TrackNegKaonCuts);
   task->SetCollectionConfig(config);
