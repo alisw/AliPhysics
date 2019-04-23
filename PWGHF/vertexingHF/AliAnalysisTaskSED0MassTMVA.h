@@ -78,7 +78,7 @@ class AliAnalysisTaskSED0MassTMVA : public AliAnalysisTaskSE
   void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
   void SetPileupRejectionVZEROTPCcls(Bool_t flag, Bool_t rejpileup) {fEnablePileupRejVZEROTPCcls=flag; fRejectOutOfBunchPileUp=rejpileup;}
   void SetFillSubSampleHist(Bool_t flag) {fFillSubSampleHist=flag;}
-  void SetD0PtCut(Float_t cut1,Float_t cut2) {fD0PtCut[0]=cut1;fD0PtCut[1]=cut2;}
+
 
   void SetEnableCentralityCorrCutsPbPb(Bool_t flag=kFALSE, Int_t year=2018) {
     fEnableCentralityCorrCuts=flag;
@@ -182,7 +182,7 @@ class AliAnalysisTaskSED0MassTMVA : public AliAnalysisTaskSE
   TNtuple *fNtupleD0B;//!<!
   TNtuple *fNtupleD0Data;//!<!
   TNtuple *fNtupleRefl;//!<!
-  Float_t fD0PtCut[2];
+
 
 
   /// \cond CLASSIMP

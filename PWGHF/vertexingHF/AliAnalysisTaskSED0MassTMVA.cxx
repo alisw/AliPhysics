@@ -912,7 +912,7 @@ void AliAnalysisTaskSED0MassTMVA::UserCreateOutputObjects()
       const char* varstring = "ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi";
       fNtupleD0C = new TNtuple("fNtupleD0C", "Prompt D0 in MC", varstring);
       fNtupleD0B = new TNtuple("fNtupleD0B", "Non-prompt D0 in MC",    varstring);
-      fNtupleD0Data = new TNtuple(Form("fNtupleD0Data_%.0f_%.0f",fD0PtCut[0],fD0PtCut[1]), "D0 in Data", varstring);
+      fNtupleD0Data = new TNtuple("fNtupleD0Data", "D0 in Data", varstring);
       fNtupleRefl = new TNtuple("fNtupleRefl","Reflection in MC", varstring);
   }
   if(fReadMC){
@@ -3233,7 +3233,7 @@ void AliAnalysisTaskSED0MassTMVA::NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2
             tmp[17] = cosThetaStarD0;
             // printf("D0 cut: %f, PID: %f, %f \n",tmp[5],tmp[6],tmp[7]);
             
-            if((tmp[0]>=fD0PtCut[0]&&tmp[0]<fD0PtCut[1])&&(tmp[8]>=1.7&&tmp[8]<2.1))
+            if(tmp[8]>=1.7&&tmp[8]<2.1)
                 fNtupleD0Data->Fill(tmp);
         }
         if (fIsSelectedCandidate>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)){
@@ -3244,7 +3244,7 @@ void AliAnalysisTaskSED0MassTMVA::NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2
             tmp[8] = invmassD0bar;
             tmp[17] = cosThetaStarD0bar;
             
-            if((tmp[0]>=fD0PtCut[0]&&tmp[0]<fD0PtCut[1])&&(tmp[8]>=1.7&&tmp[8]<2.1))
+            if(tmp[8]>=1.7&&tmp[8]<2.1)
                 fNtupleD0Data->Fill(tmp);
         }
     }

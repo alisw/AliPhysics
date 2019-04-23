@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0MassTMVA *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,
+AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,
                                            Bool_t filldistr=kFALSE,Bool_t cutOnDistr=kFALSE,
                                            Int_t system=0/*0=pp,1=PbPb*/,Int_t flagD0D0bar=0,
                                            Float_t minC=0, Float_t maxC=0,
