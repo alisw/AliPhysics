@@ -227,12 +227,19 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoSPDClusterTrackletBackground(NULL),
   fHistoV0MultVsNumberTPCoutTracks(NULL),
   fHistoNV0Tracks(NULL),
+  fHistoBDToutput(NULL),
+  fHistoBDToutputPt(NULL),
+  fHistoBDToutputMCTrue(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   fhJetJetNTrials(NULL),
   fHistoEtaShift(NULL),
   tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
   fInvMass(0),
+  fBDTvariable(NULL),
+  fBDTreader(NULL),
+  fFileNameBDT(0),
+  fEnableBDT(0),
   fPt(0),
   fDCAzGammaMin(0),
   fDCAzGammaMax(0),
@@ -439,12 +446,19 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoSPDClusterTrackletBackground(NULL),
   fHistoV0MultVsNumberTPCoutTracks(NULL),
   fHistoNV0Tracks(NULL),
+  fHistoBDToutput(NULL),
+  fHistoBDToutputPt(NULL),
+  fHistoBDToutputMCTrue(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   fhJetJetNTrials(NULL),
   fHistoEtaShift(NULL),
   tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
   fInvMass(0),
+  fBDTvariable(NULL),
+  fBDTreader(NULL),
+  fFileNameBDT(0),
+  fEnableBDT(0),
   fPt(0),
   fDCAzGammaMin(0),
   fDCAzGammaMax(0),
@@ -605,6 +619,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
+  if( ((AliConversionPhotonCuts*)fCutArray->At(0))->GetUseBDTPhotonCuts()){
+      fEnableBDT  = kTRUE;
+      InitializeBDT(); //
+  }
 
   // Set dimenstions for THnSparse
   const Int_t nDim2 = 4;
@@ -860,6 +878,14 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoNV0Tracks                            = new TH1F*[fnCuts];
   }
 
+  if(fEnableBDT){
+    fHistoBDToutput = new TH1F*[fnCuts];
+    fHistoBDToutputPt = new TH1F*[fnCuts];
+    if (fIsMC > 0){
+      fHistoBDToutputMCTrue = new TH1F*[fnCuts];
+    }
+  }
+
   fHistoEtaShift                             = new TProfile*[fnCuts];
 
   // gamma histos:
@@ -1065,6 +1091,14 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 	fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 1500, 0, 1500);
       if(fDoCentralityFlat > 0 || fIsMC > 1) fHistoNV0Tracks[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoNV0Tracks[iCut]);
+    }
+
+    if(fEnableBDT){
+      fHistoBDToutput[iCut] = new TH1F("BDT_output", "BDT_output", 200, -1, 1);
+      fESDList[iCut]->Add(fHistoBDToutput[iCut]);
+
+      fHistoBDToutputPt[iCut] = new TH1F("BDT_ConvGamma_Pt", "BDT_ESD_ConvGamma_Pt", nBinsPt, arrPtBinning);
+      fESDList[iCut]->Add(fHistoBDToutputPt[iCut]);
     }
 
     fHistoEtaShift[iCut]               = new TProfile("Eta Shift", "Eta Shift", 1, -0.5, 0.5);
@@ -1504,6 +1538,11 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fTrueList[iCut]->Add(fHistoDoubleCountTrueConvGammaRPt[iCut]);
       fHistoMultipleCountTrueConvGamma[iCut]   = new TH1F("ESD_TrueMultipleCountConvGamma", "ESD_TrueMultipleCountConvGamma", 10, 1, 11);
       fTrueList[iCut]->Add(fHistoMultipleCountTrueConvGamma[iCut]);
+
+      if(fEnableBDT){
+        fHistoBDToutputMCTrue[iCut] = new TH1F("BDT_output_MCTrue", "BDT_output_MCTrue", 200, -1, 1);
+        fTrueList[iCut]->Add(fHistoBDToutputMCTrue[iCut]);
+      }
 
       fHistoCombinatorialPt[iCut]           = new TH2F("ESD_TrueCombinatorial_Pt", "ESD_TrueCombinatorial_Pt", nBinsPt, arrPtBinning, 16, -0.5, 15.5);
       fHistoCombinatorialPt[iCut]->GetYaxis()->SetBinLabel( 1,"Elec+Elec");
@@ -2001,6 +2040,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
     }
 
     ProcessPhotonCandidates(); // Process this cuts gammas
+    if(fEnableBDT) ProcessPhotonBDT(); //
 
     if(!fDoLightOutput){
       if(fDoCentralityFlat > 0){
@@ -2339,6 +2379,93 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   delete GammaCandidatesStepTwo;
   GammaCandidatesStepTwo = 0x0;
 
+}
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::InitializeBDT()
+{
+
+    // This loads the library
+   TMVA::Tools::Instance();
+   fBDTreader = new TMVA::Reader( "!Color:!Silent" );
+
+   fBDTvariable  = new Float_t[18];
+   for(Int_t i=0; i<18; i++){
+     fBDTvariable[i] = 0;
+   }
+
+   // add variables
+   fBDTreader->AddVariable( "dEdxElectronITS + dEdxPositronITS" , &fBDTvariable[0] );
+   fBDTreader->AddVariable( "photonQt"                          , &fBDTvariable[1] );
+   fBDTreader->AddVariable( "photonInvMass"                     , &fBDTvariable[2] );
+   fBDTreader->AddVariable( "photonR"                           , &fBDTvariable[3] );
+   fBDTreader->AddVariable( "photonAlpha"                       , &fBDTvariable[4] );
+   fBDTreader->AddVariable( "photonPsiPair"                     , &fBDTvariable[5] );
+   fBDTreader->AddVariable( "photonCosPoint"                    , &fBDTvariable[6] );
+   fBDTreader->AddVariable( "fracClsTPCPositron"                , &fBDTvariable[7] );
+   fBDTreader->AddVariable( "fracClsTPCElectron"                , &fBDTvariable[8] );
+   fBDTreader->AddVariable( "clsITSPositron"                    , &fBDTvariable[9] );
+   fBDTreader->AddVariable( "clsITSElectron"                    , &fBDTvariable[10] );
+   fBDTreader->AddVariable( "nSigmaTPCElectron"                 , &fBDTvariable[11] );
+   fBDTreader->AddVariable( "nSigmaTPCPositron"                 , &fBDTvariable[12] );
+   // add spectators like in the training
+   fBDTreader->AddSpectator( "photonPt", &fBDTvariable[13] );
+   fBDTreader->AddSpectator( "kind", &fBDTvariable[14] );
+   fBDTreader->AddSpectator( "photonEta", &fBDTvariable[15] );
+   fBDTreader->AddSpectator( "photonP", &fBDTvariable[16] );
+   fBDTreader->AddSpectator( "photonPhi", &fBDTvariable[17] );
+
+   fBDTreader->BookMVA( "BDT method", fFileNameBDT.Data());
+
+}
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::ProcessPhotonBDT()
+{
+  // Loop over Photon Candidates allocated by ReaderV1
+  for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
+    AliAODConversionPhoton *PhotonCandidate=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
+    if(!PhotonCandidate) continue;
+
+    Float_t SingleTrackBDTVariableValues[7];
+    if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetBDTVariableValues(PhotonCandidate,fInputEvent, SingleTrackBDTVariableValues)){
+      fBDTvariable[0] = SingleTrackBDTVariableValues[0]; //"dEdxElectronITS + dEdxPositronITS"
+      fBDTvariable[1] = PhotonCandidate->GetArmenterosQt(); //"photonQt"
+      fBDTvariable[2] = GetOriginalInvMass(PhotonCandidate,fInputEvent); //"photonInvMass"
+      fBDTvariable[3] = PhotonCandidate->GetConversionRadius(); //"photonR"
+      fBDTvariable[4] = PhotonCandidate->GetArmenterosAlpha(); //"photonAlpha"
+      fBDTvariable[5] = PhotonCandidate->GetPsiPair(); //"photonPsiPair"
+      fBDTvariable[6] = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetCosineOfPointingAngle(PhotonCandidate,fInputEvent); //"photonCosPoint"
+      fBDTvariable[7] = SingleTrackBDTVariableValues[1]; //"fracClsTPCPositron"
+      fBDTvariable[8] = SingleTrackBDTVariableValues[2]; //"fracClsTPCElectron"
+      fBDTvariable[9] = SingleTrackBDTVariableValues[3]; //"clsITSPositron"
+      fBDTvariable[10] = SingleTrackBDTVariableValues[4]; //"clsITSElectron"
+      fBDTvariable[11] = SingleTrackBDTVariableValues[5]; //"nSigmaTPCElectron"
+      fBDTvariable[12] = SingleTrackBDTVariableValues[6]; //"nSigmaTPCPositron"
+
+      //Here we want to see the BDT output value
+      Float_t BDToutput = fBDTreader->EvaluateMVA("BDT method");
+      fHistoBDToutput[fiCut]->Fill( BDToutput );
+      if(BDToutput > 0.) fHistoBDToutputPt[fiCut]->Fill( PhotonCandidate->Pt() );
+
+      //going to check the BDT output if the current photon is a true conversion
+      if(fIsMC > 0){
+        TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (AODMCTrackArray != NULL && PhotonCandidate != NULL){
+          AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(PhotonCandidate->GetMCLabelPositive());
+          AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(PhotonCandidate->GetMCLabelNegative());
+          if(posDaughter != NULL && negDaughter != NULL){
+              Int_t pdgCode[2] = {TMath::Abs(posDaughter->GetPdgCode()),TMath::Abs(negDaughter->GetPdgCode())};
+              if(posDaughter->GetMother() == negDaughter->GetMother()){
+                if((pdgCode[0]==11 && pdgCode[1]==11)&&  posDaughter->GetPdgCode()!=negDaughter->GetPdgCode()){
+                  AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
+                  if(Photon->GetPdgCode() == 22) fHistoBDToutputMCTrue[fiCut]->Fill( BDToutput );
+                }
+              }
+          }
+        }
+      }
+
+    }
+  }
 }
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvV1::ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton *TruePhotonCandidate)
