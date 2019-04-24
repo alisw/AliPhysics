@@ -721,6 +721,7 @@ Double_t AliGFWFlowContainer::VN2Value(Double_t cor2) {
   return TMath::Sqrt(cor2);
 };
 Double_t AliGFWFlowContainer::VN2Error(Double_t cor2, Double_t cor2e) {
+  if(cor2<0) return 0;
   if(!fPropagateErrors) return 0;
   return 0.5*cor2e/TMath::Sqrt(cor2);
 };
@@ -730,7 +731,9 @@ Double_t AliGFWFlowContainer::VDN2Value(Double_t cor2d, Double_t cor2) {
 };
 Double_t AliGFWFlowContainer::VDN2Error(Double_t cor2d, Double_t cor2de, Double_t cor2, Double_t cor2e) {
   if(!fPropagateErrors) return 0;
-  return TMath::Sqrt(cor2de*cor2de/cor2 + 0.25*cor2d*cor2d*cor2e*cor2e/(cor2*cor2*cor2));
+  Double_t sqrtv = cor2de*cor2de/cor2 + 0.25*cor2d*cor2d*cor2e*cor2e/(cor2*cor2*cor2);
+  if(sqrtv<0) return 0;
+  return TMath::Sqrt(sqrtv);
 };
 
 
@@ -754,6 +757,7 @@ Double_t AliGFWFlowContainer::VN4Value(Double_t c4) {
   return TMath::Power(-c4,1./4);
 };
 Double_t AliGFWFlowContainer::VN4Error(Double_t c4, Double_t c4e) {
+  if(c4>0) return 0;
   if(!fPropagateErrors) return 0;
   return TMath::Power(-c4,(-3./4))*c4e/4;
 };
@@ -763,6 +767,7 @@ Double_t AliGFWFlowContainer::VDN4Value(Double_t d4, Double_t c4) {
 };
 Double_t AliGFWFlowContainer::VDN4Error(Double_t d4, Double_t d4e, Double_t c4, Double_t c4e) {
   if(!fPropagateErrors) return 0;
+  if(c4>0) return 0;
   return TMath::Sqrt(TMath::Power(-c4, -6./4)*d4e*d4e +
 		     TMath::Power(-c4,-14./4)*d4*d4*c4e*c4e*9./16);
 };
@@ -804,6 +809,7 @@ Double_t AliGFWFlowContainer::VN6Value(Double_t c6) {
   return TMath::Power(c6/4, 1./6);
 };
 Double_t AliGFWFlowContainer::VN6Error(Double_t c6, Double_t c6e) {
+  if(c6<0) return 0;
   if(!fPropagateErrors) return 0;
   return c6e/6*TMath::Power(4,-1./6)*TMath::Power(c6,-5./6);
 };
@@ -813,6 +819,7 @@ Double_t AliGFWFlowContainer::VDN6Value(Double_t d6, Double_t c6) {
 };
 Double_t AliGFWFlowContainer::VDN6Error(Double_t d6, Double_t d6e, Double_t c6, Double_t c6e) {
   if(!fPropagateErrors) return 0;
+  if(c6<0) return 0;
   Double_t vdn6 = VDN6Value(d6, c6);
   Double_t dp = d6e/d6;
   Double_t cp = 5*c6e/6;
@@ -862,6 +869,7 @@ Double_t AliGFWFlowContainer::VN8Value(Double_t c8) {
   return TMath::Power(-c8/33, 1./8);
 };
 Double_t AliGFWFlowContainer::VN8Error(Double_t c8, Double_t c8e) {
+  if(c8>0) return 0;
   if(!fPropagateErrors) return 0;
   return c8e * 1./(8*c8) * VN8Value(c8);
 };
@@ -870,6 +878,7 @@ Double_t AliGFWFlowContainer::VDN8Value(Double_t d8, Double_t c8) {
   return d8/c8 * VN8Value(c8);
 };
 Double_t AliGFWFlowContainer::VDN8Error(Double_t d8, Double_t d8e, Double_t c8, Double_t c8e) {
+  if(c8>0) return 0;
   if(!fPropagateErrors) return 0;
   Double_t vdn8v = VDN8Value(d8,c8);
   Double_t dd = d8e/d8;
