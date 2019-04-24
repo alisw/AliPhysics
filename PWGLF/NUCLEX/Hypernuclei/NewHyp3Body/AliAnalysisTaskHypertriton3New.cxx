@@ -629,11 +629,11 @@ void AliAnalysisTaskHypertriton3New::UserExec(Option_t *) {
         ? fTreeHyp3BodyVarNsigmaTOF[0] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_deu, AliPID::kDeuteron))
         : fTreeHyp3BodyVarNsigmaTOF[0] = -1.0;
     HasTOF(cand.track_p)
-        ? fTreeHyp3BodyVarNsigmaTOF[0] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_p, AliPID::kProton))
-        : fTreeHyp3BodyVarNsigmaTOF[0] = -1.0;
+        ? fTreeHyp3BodyVarNsigmaTOF[1] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_p, AliPID::kProton))
+        : fTreeHyp3BodyVarNsigmaTOF[1] = -1.0;
     HasTOF(cand.track_pi)
-        ? fTreeHyp3BodyVarNsigmaTOF[0] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_pi, AliPID::kPion))
-        : fTreeHyp3BodyVarNsigmaTOF[0] = -1.0;
+        ? fTreeHyp3BodyVarNsigmaTOF[2] = std::abs(fPIDResponse->NumberOfSigmasTOF(cand.track_pi, AliPID::kPion))
+        : fTreeHyp3BodyVarNsigmaTOF[2] = -1.0;
 
     fTreeHyp3BodyVarFlags[0] = (ULong64_t)cand.track_deu->GetStatus();
     fTreeHyp3BodyVarFlags[1] = (ULong64_t)cand.track_p->GetStatus();
