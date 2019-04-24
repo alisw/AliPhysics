@@ -87,6 +87,11 @@ public:
     TString GetExceptionMapping( TString lProductionName ) const; //list of exceptions
     Bool_t CheckOADB( TString lProdName ) const;
     
+    /// Static helper functions
+    static TString GetPeriodNameByRunNumber(int runNumber);
+    static TString GetSystemTypeByRunNumber(int runNumber);
+    static TString GetPeriodNameByGenericPath( const TString lPath );
+
     //Check MC type
     Bool_t IsHijing()  const;
     Bool_t IsDPMJet()  const;
