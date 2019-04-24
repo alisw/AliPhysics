@@ -77,6 +77,7 @@ set(SRCS
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
+    AliAnalysisTaskGammaMCStudies.cxx
     AliAnalysisTaskGammaCocktailMC.cxx
     AliAnalysisTaskGammaTriggerQA.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx
