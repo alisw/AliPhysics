@@ -64,16 +64,21 @@ void AliAnalysisTaskMKTest::AddOutput()
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKTest::AnaEvent()
+Bool_t AliAnalysisTaskMKTest::IsEventSelected()
 {
-   if (!fEventCutsPassed)  return; 
-   LoopOverAllTracks();
-   
+    return fIsAcceptedAliEventCuts;
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKTest::AnaTrack()
+void AliAnalysisTaskMKTest::AnaEvent()
+{   
+   LoopOverAllTracks();
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskMKTest::AnaTrack(Int_t flag)
 {
     if (!fAcceptTrack[0]) return;
     FillHist(fHistPt, fPt, fPtInner, fPtInnerTPC, fMCPt);

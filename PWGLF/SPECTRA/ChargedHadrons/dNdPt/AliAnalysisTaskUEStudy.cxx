@@ -39,8 +39,7 @@ AliAnalysisTaskUEStudy::AliAnalysisTaskUEStudy()
     , fNTracksAway(-1)
     , fMCNChTowards(-1)
     , fMCNChTransverse(-1)
-    , fMCNChAway(-1)    
-    , fLoopCount(0)
+    , fMCNChAway(-1)        
     , fHistUETracks(0)
     , fHistUE(0)   
     , fHistUETracksMC(0)
@@ -63,8 +62,7 @@ AliAnalysisTaskUEStudy::AliAnalysisTaskUEStudy(const char* name)
     , fNTracksAway(-1)
     , fMCNChTowards(-1)
     , fMCNChTransverse(-1)
-    , fMCNChAway(-1)    
-    , fLoopCount(0)
+    , fMCNChAway(-1)        
     , fHistUETracks(0)
     , fHistUE(0)   
     , fHistUETracksMC(0)
@@ -129,11 +127,18 @@ void AliAnalysisTaskUEStudy::AddOutput()
     fOutputList->Add(fHistUEPhiRes);
 }
 
+
+//_____________________________________________________________________________
+
+Bool_t AliAnalysisTaskUEStudy::IsEventSelected()
+{
+    return fIsAcceptedAliEventCuts;
+}
+
 //_____________________________________________________________________________
 
 void AliAnalysisTaskUEStudy::AnaEvent()
-{   
-   if (!fEventCutsPassed)  return; 
+{      
    
     fPtMax = -1;
     fMCPtMax = -1;    
@@ -144,42 +149,43 @@ void AliAnalysisTaskUEStudy::AnaEvent()
     fMCNChTransverse = 0;
     fMCNChAway = 0;
    
-   // first loop to find highest pt particle
-   fLoopCount=0;
-   LoopOverAllTracks();
-   LoopOverAllParticles();
-   fLoopCount=1;
-   LoopOverAllTracks();
-   LoopOverAllParticles();
-   fLoopCount=2;
-   LoopOverAllTracks();
-   LoopOverAllParticles();
-      
-   //ptmax:ntracksaway;ntrackstransverse:ntracktowards:ntracks:mcptmax:nchawa:nchtransverse:nchtowards:nch
-   FillHist(fHistUE,fPtMax,fNTracksAway,fNTracksTransverse,fNTracksTowards,fMCPtMax,fMCNChAway,fMCNChTransverse,fMCNChTowards);
+    // 1st loop to find highest pt particle    
+    LoopOverAllTracks(1);
+    LoopOverAllParticles(1);    
+    // 2nd loop to cout multiplicities
+    LoopOverAllTracks(2);
+    LoopOverAllParticles(2);    
+    // 3nd loop to fill histograms
+    LoopOverAllTracks(3);
+    LoopOverAllParticles(3);
+    
+    // fill event based histograms
+    
+    //ptmax:ntracksaway;ntrackstransverse:ntracktowards:ntracks:mcptmax:nchawa:nchtransverse:nchtowards:nch
+    FillHist(fHistUE,fPtMax,fNTracksAway,fNTracksTransverse,fNTracksTowards,fMCPtMax,fMCNChAway,fMCNChTransverse,fMCNChTowards);
    
-   //ptmax:ptmaxmc:phimax:phimaxmc:deltaphi    
-   Double_t deltaphi = fPtMaxPhi-fMCPtMaxPhi;
-   AlidNdPtTools::Range1Pi(deltaphi);
+    //ptmax:ptmaxmc:phimax:phimaxmc:deltaphi    
+    Double_t deltaphi = fPtMaxPhi-fMCPtMaxPhi;
+    AlidNdPtTools::Range1Pi(deltaphi);
    
-   FillHist(fHistUEPhiRes,fPtMax,fMCPtMax,fPtMaxPhi,fMCPtMaxPhi,deltaphi);
+    FillHist(fHistUEPhiRes,fPtMax,fMCPtMax,fPtMaxPhi,fMCPtMaxPhi,deltaphi);
    
    
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskUEStudy::AnaTrack()
+void AliAnalysisTaskUEStudy::AnaTrack(Int_t flag)
 {
-    if (!fAcceptTrack[0]) return;
+    if (!fAcceptTrack[0]) return;    
         
-    if (fLoopCount==0) {             
+    if (flag == 1) {             
         if (fPt>fPtMax) { fPtMax = fPt; fPtMaxPhi = fPhi; }
         return;
     }
     
     Double_t cosdphi = TMath::Cos(fPhi-fPtMaxPhi);
-    if (fLoopCount==1) { 
+    if (flag == 2) { 
         if (cosdphi < -0.5) {
             fNTracksAway++;
         } else if (cosdphi >= 0.5) {
@@ -189,7 +195,7 @@ void AliAnalysisTaskUEStudy::AnaTrack()
         }
     }
     
-    if (fLoopCount==2) {
+    if (flag == 3) {
         //pt:ptmax:ntracksaway:cosdphi:ntracksaway:ntrackstransverse:ntrackstowards
         FillHist(fHistUETracks,fPt,fPtMax,cosdphi,fNTracksAway,fNTracksTransverse,fNTracksTowards);        
     }
@@ -197,20 +203,20 @@ void AliAnalysisTaskUEStudy::AnaTrack()
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskUEStudy::AnaMCParticle()
+void AliAnalysisTaskUEStudy::AnaMCParticle(Int_t flag)
 {
     if (!fMCisPrim) return;    
     if (!fMCIsCharged) return;    
     if (TMath::Abs(fMCEta) > 0.8) return;  
     
         
-    if (fLoopCount==0) {        
+    if (flag == 1) {        
         if (fMCPt>fMCPtMax) { fMCPtMax = fMCPt; fMCPtMaxPhi = fMCPhi; }
         return;
     }
     
     Double_t cosdphi = TMath::Cos(fMCPhi-fMCPtMaxPhi);
-    if (fLoopCount==1) { 
+    if (flag == 2) { 
         if (cosdphi < -0.5) {
             fMCNChAway++;
         } else if (cosdphi >= 0.5) {
@@ -220,7 +226,7 @@ void AliAnalysisTaskUEStudy::AnaMCParticle()
         }
     }
     
-    if (fLoopCount==2) {
+    if (flag == 3) {
         //pt:ptmax:ntracksaway:cosdphi:ntracksaway:ntrackstransverse:ntrackstowards
         FillHist(fHistUETracksMC,fMCPt,fMCPtMax,cosdphi,fMCNChAway,fMCNChTransverse,fMCNChTowards);        
     }

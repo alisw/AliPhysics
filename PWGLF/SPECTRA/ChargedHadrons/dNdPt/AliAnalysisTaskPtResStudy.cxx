@@ -97,17 +97,24 @@ void AliAnalysisTaskPtResStudy::AddOutput()
     
 }
 
+
 //_____________________________________________________________________________
 
-void AliAnalysisTaskPtResStudy::AnaEvent()
+Bool_t AliAnalysisTaskPtResStudy::IsEventSelected()
 {
-   if (fEventCutsPassed) LoopOverAllTracks();
-   
+    return fIsAcceptedAliEventCuts;
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskPtResStudy::AnaTrack()
+void AliAnalysisTaskPtResStudy::AnaEvent()
+{
+    LoopOverAllTracks();
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskPtResStudy::AnaTrack(Int_t flag)
 {
     if (!fAcceptTrack[0]) return;
     if (f1Pt<1.0)  { FillHist(fHistPtResCov,       fSigned1Pt, fSigma1Pt, fNTracksAcc); }
