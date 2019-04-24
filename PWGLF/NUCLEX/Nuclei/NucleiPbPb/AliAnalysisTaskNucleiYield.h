@@ -344,7 +344,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = part->Charge() > 0 ? 1 : 0;
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
-        if (MCEvent()->IsPhysicalPrimary(mcId)) {
+        if (part->IsPhysicalPrimary()) {
           if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
               (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
               (!iR || pid_check) && (iR || pid_mask & 8))
@@ -354,7 +354,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
             fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
             fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
             } // Fill it only once.
-        } else if (MCEvent()->IsSecondaryFromMaterial(mcId) && !isFromHyperNucleus)
+        } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
           fDCASecondary[iR][iC]->Fill(fCentrality,pT,dca[0]);
         else
           fDCASecondaryWeak[iR][iC]->Fill(fCentrality,pT,dca[0]);
