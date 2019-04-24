@@ -28,11 +28,13 @@ class AliAnalysisTaskUEStudy : public AliAnalysisTaskMKBase
                                 AliAnalysisTaskUEStudy();
                                 AliAnalysisTaskUEStudy(const char *name);
         virtual                 ~AliAnalysisTaskUEStudy();
-
-        virtual void            AddOutput(); //called at the beginning
-        virtual void            AnaTrack();  //called once for every track
-        virtual void            AnaMCParticle();  //called once for every mc particle
-        virtual void            AnaEvent();  //called once for every event        
+        
+        virtual void            AddOutput();                     //called at the beginning
+        virtual Bool_t          IsEventSelected();               //called for each event
+        virtual void            AnaEvent();                      //called once for every event                
+        virtual void            AnaTrack(Int_t flag = 0);        //called once for every track
+        virtual void            AnaMCParticle(Int_t flag = 0);   //called once for every mc particle
+        
         
         static AliAnalysisTaskUEStudy* AddTaskUEStudy(const char* name = "TaskUEStudy", const char* outfile = 0);
 
@@ -46,8 +48,7 @@ class AliAnalysisTaskUEStudy : public AliAnalysisTaskMKBase
         Int_t                   fNTracksAway;               //!<! ntracks in away region
         Int_t                   fMCNChTowards;              //!<! MC nCH in towards region
         Int_t                   fMCNChTransverse;           //!<! MC nCH in transvers region
-        Int_t                   fMCNChAway;                 //!<! MC nCH in away region           
-        Int_t                   fLoopCount;                 //!<! loop counter        
+        Int_t                   fMCNChAway;                 //!<! MC nCH in away region                   
         THnSparseD*             fHistUETracks;              //-> underlying event histogram in data
         THnSparseD*             fHistUE;                    //-> underlying event histogram in data
         THnSparseD*             fHistUETracksMC;            //-> underlying event histogram in mc        
@@ -61,7 +62,7 @@ class AliAnalysisTaskUEStudy : public AliAnalysisTaskMKBase
         AliAnalysisTaskUEStudy& operator=(const AliAnalysisTaskUEStudy&); // not implemented
         
     /// \cond CLASSIMP    
-        ClassDef(AliAnalysisTaskUEStudy, 1);
+        ClassDef(AliAnalysisTaskUEStudy, 2);
     /// \endcond        
 };
 

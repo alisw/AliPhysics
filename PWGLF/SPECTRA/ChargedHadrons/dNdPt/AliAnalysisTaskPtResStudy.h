@@ -29,9 +29,10 @@ class AliAnalysisTaskPtResStudy : public AliAnalysisTaskMKBase
                                 AliAnalysisTaskPtResStudy(const char *name);
         virtual                 ~AliAnalysisTaskPtResStudy();
 
-        virtual void            AddOutput(); //called at the beginning
-        virtual void            AnaTrack();  //called once for every track
-        virtual void            AnaEvent();  //called once for every event        
+        virtual void            AddOutput();                     //called at the beginning
+        virtual Bool_t          IsEventSelected();               //called for each event
+        virtual void            AnaEvent();                      //called once for every selected event        
+        virtual void            AnaTrack(Int_t flag = 0);        //called once for every track
         
         static AliAnalysisTaskPtResStudy* AddTaskPtResStudy(const char* name = "TaskPtResStudy", const char* outfile = 0);
 
