@@ -18,6 +18,7 @@
 /// for single particle/track loops the above functions can make use of 
 /// LoopOverAllParticles(Int_t flag) and LoopOverAllTracks(Int_t flag)
 /// where the flag can be used to distinguish multiple loops
+/// default is flag=0
 /// 
 /// Inside the loops the following functions are called 
 /// (these functions should be overwritten by the derived task)
@@ -118,6 +119,9 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         virtual void          AnaParticleMC(Int_t flag = 0) {}; //called for every MC Particle (to be implemented in derived class)
         virtual Bool_t        IsEventSelected() { return kTRUE; }; //user defined event selection, default is all events are accepted
         
+        virtual void          BaseAnaTrack(Int_t flag = 0);      // wraps AnaTracK, to be used for mult counting
+        virtual void          BaseAnaParticleMC(Int_t flag = 0); // wraps AnaParticleMC, to be used for mult counting
+        
         //         
         virtual Bool_t          InitEvent();   // loads event-related properties
         virtual Bool_t          InitEventMult();   //initialize multiplicity specific variables, requires corresponding task
@@ -169,6 +173,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Bool_t                          fIsMC;                      //!<! do we have an MC event?                                           --ReadMCEvent()
         Int_t                           fRunNumber;                 //!<! run n                                                             --InitEvent()
         TString                         fRunNumberString;           //!<! run number as string                                              --InitEvent()
+        UInt_t                          fTimeStamp;                 //!<! event time stamp                                                  --InitEvent()
+        Int_t                           fEventNumberInFile;         //!<! event number in file                                              --InitEvent()
         TString                         fFiredTriggerClasses;       //!<! all trigger classes as string                                     --ReadEvent()
         UInt_t                          fEventSpecie;               //!<! event specie                                                      --InitEvent()
         Double_t                        fOldCentPercentileV0M;      //!<! centrality percentile from old framework                          --InitEventCent()
@@ -304,6 +310,8 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         UInt_t                          fTriggerMaskRequired;       // only events with this trigger mask are accepted                      --
         UInt_t                          fTriggerMaskRejected;       // reject events with this trigger mask                                 --
 
+        Bool_t                          fInternalLoop;              // used to flag an internal particle/track loop for AliAnalysisTaskMKBase
+        
         // output list and control histograms
         TList*                          fOutputList;            //->  output list
         TH1D*                           fLogHist;               //->  generic log histogram use Log() to fill

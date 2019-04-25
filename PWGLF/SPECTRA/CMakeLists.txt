@@ -58,6 +58,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtTools.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskMKBase.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskBaseWeights.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskMKTest.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskTPCMatchEff.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskDCArStudy.cxx
