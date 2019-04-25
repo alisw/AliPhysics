@@ -257,6 +257,7 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmul
     delete tempprof;
   };
   delete rhProfSub;
+  retSubset->RebinX(fPtRebin);
   return retSubset;
 };
 TH1D *AliGFWFlowContainer::ProfToHist(TProfile *inpf) {
