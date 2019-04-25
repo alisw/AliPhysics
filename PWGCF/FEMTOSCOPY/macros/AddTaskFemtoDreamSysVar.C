@@ -342,6 +342,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   config->SetkTBinning(kTBinning);
   config->SetkTCentralityBinning(kTCentBinning);
   config->SetmTBinning(mTBinning);
+  config->SetExtendedQAPairs(config->GetStandardPairs());
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
 
