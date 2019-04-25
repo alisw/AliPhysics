@@ -410,7 +410,7 @@ void AliXiStarPbPb::XiStarInit()
     
     
     fMaxDecayLength = 100.;
-    fMassWindow = 0.006;
+    fMassWindow = 0.007;
     
     /////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////
@@ -429,7 +429,7 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[0][6] = 0.035;
     fCutValues[0][7] = 0.06;
     fCutValues[0][8] = 0.5;
-    fCutValues[0][9] = 1.0; //  selection of DCA p-pi
+    fCutValues[0][9] = 0.9; //  selection of DCA p-pi
     fCutValues[0][10] = 0.6; //  selection of DCA L-pi
     fCutValues[0][11] = 0.997; // selection of CPA L
     fCutValues[0][12] = 0.996; // selection of CPA Xi
@@ -448,7 +448,7 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[4][6] = 0.03;
     fCutValues[5][7] = 0.05;
     fCutValues[6][8] = 0.6;
-    fCutValues[7][9] = 1.1;
+    fCutValues[7][9] = 1.0;
     fCutValues[8][10] = 0.7;
     fCutValues[9][11] = 0.995;
     fCutValues[10][12] = 0.995;
@@ -460,7 +460,7 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[14][6] = 0.04;
     fCutValues[15][7] = 0.07;
     fCutValues[16][8] = 0.4;
-    fCutValues[17][9] = 0.9;
+    fCutValues[17][9] = 0.8;
     fCutValues[18][10] = 0.5;
     fCutValues[19][11] = 0.998;
     fCutValues[20][12] = 0.998;
