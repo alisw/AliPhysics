@@ -551,6 +551,12 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
+  if (suffix == "0" && fullBlastQA) {
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+  }
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -570,7 +576,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  const int nPairs = 36;
+  const int nPairs = (suffix == "0" && fullBlastQA) ? 78 : 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -592,7 +598,7 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
   closeRejection[8] = true;  // barp barp
 
   // do extended QA for the pairs in default mode
-  if (suffix == "0") {
+  if (suffix == "0" && !fullBlastQA) {
     NBins[0] = 750;  // pp
     NBins[8] = 750;  // barp barp
 
@@ -600,6 +606,17 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
     pairQA[2] = 14;   // pSigma
     pairQA[8] = 11;   // barp barp
     pairQA[10] = 14;  // barp bSigma
+  } else if (suffix == "0" && fullBlastQA) {
+    NBins[0] = 750;   // pp
+    NBins[12] = 750;  // barp barp
+
+    pairQA[0] = 11;   // pp
+    pairQA[2] = 14;   // pSigma
+    pairQA[12] = 11;  // barp barp
+    pairQA[14] = 14;  // barp bSigma
+
+    closeRejection[8] = false;  // no more barp barp
+    closeRejection[12] = true;  // new barp barp
   }
 
   AliFemtoDreamCollConfig *config =
@@ -717,6 +734,10 @@ AliAnalysisTaskSE *AddTaskSigma0Femto(bool isMC = false, bool MomRes = false,
 
   if (suffix != "0" && suffix != "999") {
     task->SetLightweight(true);
+  }
+
+  if (suffix == "0" && fullBlastQA) {
+    task->SetCheckDaughterCF(true);
   }
 
   mgr->AddTask(task);
