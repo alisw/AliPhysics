@@ -139,6 +139,7 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   this->SetTheta(trackSum.Theta());
   this->Setv0Mass(trackSum.M());
   this->fIsSet = true;
+  this->fUse = true;
 
   // track IDs
   auto IDpos = posDaughter.GetIDTracks();
