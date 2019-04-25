@@ -179,7 +179,8 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0)
+      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -290,7 +291,8 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0)
+      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0)
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -741,15 +743,41 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
                 Form("fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH_%d", iCosThetaBins),
                 Form("fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH_%d", iCosThetaBins),
                 2000, 0, 20
-              );
+                );
     fOutputList->Add(fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH[iCosThetaBins]);
   }
 
   fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
         new TH2F( "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
                   "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
-                  80, -1, 1, 80, -4, 4);
+                  80, -1, 1, 80, -4, 4
+                  );
   fOutputList->Add(fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
+
+  /* - Variable binning for CosTheta and Phi.
+     - Adopting same binning as inclusive people's.
+     -
+   */
+  const Int_t XBINS = 19;
+  const Int_t YBINS = 20;
+  Double_t CosThetaBinning[ XBINS + 1 ] = { -1. , -0.8, -0.7 , -0.6 , -0.5, -0.4,
+                                            -0.3, -0.2, -0.12, -0.04,  0.04, 0.12,
+                                             0.2,  0.3,  0.4,   0.5,   0.6,  0.7,
+                                             0.8,  1
+                                             };
+  Double_t PhiBinning[ YBINS + 1 ] = { -3.142, -2.639, -2.136, -1.885, -1.696,
+                                       -1.571, -1.445, -1.257, -1.005, -0.502,
+                                        0.,     0.502,  1.005,  1.257,  1.445,
+                                        1.571,  1.696,  1.885,  2.136,  2.639,
+                                        3.142
+                                      };
+  fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH =
+        new TH2F( "fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  "fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  XBINS, CosThetaBinning,
+                  YBINS, PhiBinning
+                  );
+  fOutputList->Add(fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH);
 
 
   //_______________________________
@@ -1700,6 +1728,16 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                                                                              possibleJPsiCopy
                                                                                              )
                                                                         );
+    fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                      muonsCopy2[1],
+                                                                                      possibleJPsiCopy
+                                                                                      ),
+                                                               CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                    muonsCopy2[1],
+                                                                                    possibleJPsiCopy
+                                                                                    )
+                                                               );
+
   }
 
   // post the data
