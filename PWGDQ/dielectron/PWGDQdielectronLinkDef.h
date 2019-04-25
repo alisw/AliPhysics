@@ -11,6 +11,7 @@
 #pragma link C++ class AliDielectronHistos+;
 #pragma link C++ class AliDielectronCF+;
 #pragma link C++ class AliDielectronCFdraw+;
+#pragma link C++ class AliDielectronClusterCuts+;
 #pragma link C++ class AliDielectronHF+;
 #pragma link C++ class AliDielectronHFhelper+;
 #pragma link C++ class AliDielectronMC+;

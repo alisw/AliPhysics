@@ -3308,7 +3308,7 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPairMC( AliDalitzAODESDMC* fMCP
 
 
 //_____________________________________________________________________________
-Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair( const AliDalitzAODESD *trackPos, const AliDalitzAODESD *trackNeg ) const {
+Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos, AliDalitzAODESD *trackNeg ) const {
   //
   // This angle is a measure for the contribution of the opening in polar
   // direction ?0 to the opening angle ? Pair
@@ -3317,24 +3317,64 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair( const AliDalitzAODESD *tr
   //      Mas   ter Thesis. Thorsten Dahms. 2005
   // https://twiki.cern.ch/twiki/pub/ALICE/GammaPhysicsPublications/tdahms_thesis.pdf
   //
-  Double_t momPos[3];
-  Double_t momNeg[3];
-  if( trackPos->GetPxPyPzG(momPos) == 0 ) trackPos->GetPxPyPzG( momPos );
-  if( trackNeg->GetPxPyPzG(momNeg) == 0 ) trackNeg->GetPxPyPzG( momNeg );
+  Double_t momPos[3]={0.0,0.0,0.0};
+  Double_t momNeg[3]={0.0,0.0,0.0};
+  Double_t fPos[3]={0.0,0.0,0.0};
 
-  TVector3 posDaughter;
-  TVector3 negDaughter;
+        TVector3 posDaughterB;
+        TVector3 negDaughterB;
+        TVector3 posDaughterA;
+        TVector3 negDaughterA;
+  if (fAODESDEvent->GetIsESD()){
+    if( trackPos->GetPxPyPzG(momPos) == 0 ) trackPos->GetPxPyPzG( momPos );
+    if( trackNeg->GetPxPyPzG(momNeg) == 0 ) trackNeg->GetPxPyPzG( momNeg );
+        posDaughterA.SetXYZ( momPos[0], momPos[1], momPos[2] );
+        negDaughterA.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
+        posDaughterB.SetXYZ( momPos[0], momPos[1], momPos[2] );
+        negDaughterB.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
+  }
+  else {
+   // Double_t dzp[2],covdzp[3],dzn[2],covdzn[3];
+    AliExternalTrackParam Positive;
+    Positive.CopyFromVTrack(trackPos->GetDalitzVTrack());
+    AliExternalTrackParam Negative;
+    Negative.CopyFromVTrack(trackNeg->GetDalitzVTrack());
+    AliAODVertex *vtxAOD = (AliAODVertex*)fAODESDEvent->GetPrimaryVertex();
 
-  posDaughter.SetXYZ( momPos[0], momPos[1], momPos[2] );
-  negDaughter.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
+        fPos[0]=vtxAOD->GetX();
+        fPos[1]=vtxAOD->GetY();
+        fPos[2]=vtxAOD->GetZ();
 
-  Double_t deltaTheta = negDaughter.Theta() - posDaughter.Theta();
-  Double_t openingAngle =  posDaughter.Angle( negDaughter );  //TMath::ACos( posDaughter.Dot(negDaughter)/(negDaughter.Mag()*posDaughter.Mag()) );
+        //Double_t Radios=TMath::Sqrt(fPos[0]*fPos[0]+fPos[1]*fPos[1]+fPos[2]*fPos[2]);
+        Double_t radiussum = TMath::Sqrt(fPos[0]*fPos[0] + fPos[1]*fPos[1]) + 50;
+        // cout<<Radios<<" 3D "<<radiussum<<" 2D "<<endl;
+        posDaughterB.SetXYZ( trackPos->GetPxG(), trackPos->GetPyG(), trackPos->GetPzG());
+        negDaughterB.SetXYZ( trackNeg->GetPxG(), trackNeg->GetPyG(), trackNeg->GetPzG());
+    // activate the following two lines if you want to check that the event primary vertex is that reconstructed with tracks
+    //  TString title=vtxAOD->GetTitle();
+    //  if(!title.Contains("VertexerTracks")) { you could decide what to do in case the primary vertex is not reconstructed with tracks }fAODESDEvent
+    Double_t b=fInputEvent->GetMagneticField();
+    //Positive.PropagateToDCA(vtxAOD,b,3.,dzp,covdzp);
+    //Negative.PropagateToDCA(vtxAOD,b,3.,dzn,covdzn);
+    // --> see above what dz and covdz represent
+
+    Positive.GetPxPyPzAt(radiussum,b,momPos);
+    Negative.GetPxPyPzAt(radiussum,b,momNeg);
+
+    //Positive.PxPyPz(momPos);
+    //Negative.PxPyPz(momNeg);
+
+    posDaughterA.SetXYZ( momPos[0], momPos[1], momPos[2] );
+    negDaughterA.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
+
+  }
+
+  Double_t deltaTheta = negDaughterB.Theta() - posDaughterB.Theta();
+  Double_t openingAngle =  posDaughterA.Angle( negDaughterA );  //TMath::ACos( posDaughter.Dot(negDaughter)/(negDaughter.Mag()*posDaughter.Mag()) );
 
   if( openingAngle < 1e-20 ) return 0.;
 
   Double_t psiAngle = TMath::ASin( deltaTheta/openingAngle );
-
   return psiAngle;
 }
 

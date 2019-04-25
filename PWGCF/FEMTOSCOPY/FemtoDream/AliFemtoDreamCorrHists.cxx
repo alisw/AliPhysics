@@ -483,7 +483,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
 
       if (fillHists && fPtQA) {
         TString PtQAName = Form("PtQA_Particle%d_Particle%d", iPar1, iPar2);
-        fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 50, 0, 1, 50, 0, 1);
+        fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 50, 0, 10, 50, 0, 10);
         fPtQADist[Counter]->GetXaxis()->SetTitle(Form("#it{p}_{T} Particle %d (GeV/#it{c})", iPar1));
         fPtQADist[Counter]->GetYaxis()->SetTitle(Form("#it{p}_{T} Particle %d (GeV/#it{c})", iPar2));
         fPairs[Counter]->Add(fPtQADist[Counter]);

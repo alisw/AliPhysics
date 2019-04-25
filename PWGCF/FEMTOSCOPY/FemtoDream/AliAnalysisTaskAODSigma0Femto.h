@@ -30,6 +30,8 @@ class AliAnalysisTaskAODSigma0Femto : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
 
+  void CastToVector(std::vector<AliFemtoDreamBasePart> &particlesOut,
+                    std::vector<AliFemtoDreamBasePart> &particlesIn);
   void CastToVector(std::vector<AliFemtoDreamBasePart> &container,
                     const AliAODEvent *inputEvent);
   AliAODTrack *GetTrack(const AliAODEvent *event, int label) const;

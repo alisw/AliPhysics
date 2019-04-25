@@ -610,7 +610,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         fHists->FillTPCCrossedRowCut(i, Track->GetTPCCrossedRows());
         fHists->FillTPCRatioCut(i, Track->GetRatioCr());
         fHists->FillTPCClsS(i, Track->GetTPCClsC());
-        for (int j = 0; j < 6; ++j) {
+        for (size_t j = 0; j < Track->GetITSHits().size(); ++j) {
           if (Track->GetITSHit(j)) {
             fHists->FillTPCClsCPileUp(i, j, Track->GetTPCClsC());
           } else if (Track->GetHasITSHit()
@@ -626,7 +626,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
           fHists->FillTPCClsCPileUp(i, 14, Track->GetTPCClsC());
         }
 
-        for (int j = 0; j < 6; ++j) {
+        for (size_t j = 0; j < Track->GetSharedClusterITS().size(); ++j) {
           if (Track->GetSharedClusterITS(j)) {
             fHists->FillHasSharedClsITS(i, j + 1, 0);
           } else {
@@ -942,6 +942,30 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimProtonCuts(
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   trackCuts->SetPID(AliPID::kProton, 0.75);
   trackCuts->SetRejLowPtPionsTOF(true);
+  trackCuts->SetCutSmallestSig(true);
+
+  return trackCuts;
+}
+
+AliFemtoDreamTrackCuts *AliFemtoDreamTrackCuts::PrimKaonCuts(
+    bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting) {
+  AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
+  trackCuts->SetPlotDCADist(DCAPlots);
+  trackCuts->SetPlotCombSigma(CombSigma);
+  trackCuts->SetPlotContrib(ContribSplitting);
+  trackCuts->SetIsMonteCarlo(isMC);
+
+  trackCuts->SetFilterBit(96);
+  trackCuts->SetPtRange(0.15, 999);
+  trackCuts->SetEtaRange(-0.8, 0.8);
+  trackCuts->SetNClsTPC(80);
+  trackCuts->SetDCAReCalculation(true);
+  trackCuts->SetDCAVtxZ(0.2);
+  trackCuts->SetDCAVtxXY(0.1);
+  trackCuts->SetCutSharedCls(true);
+  trackCuts->SetCutTPCCrossedRows(true, 70, 0.80);
+  trackCuts->SetPID(AliPID::kKaon, 0.5);
+  // trackCuts->SetRejLowPtPionsTOF(false);
   trackCuts->SetCutSmallestSig(true);
 
   return trackCuts;

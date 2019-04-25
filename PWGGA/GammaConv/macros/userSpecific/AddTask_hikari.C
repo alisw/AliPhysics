@@ -266,17 +266,16 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("00010113", "0d200009297000008250404000", "0152103500000000"); // to be used for MBW
 
     } else if (trainConfig == 440){ // as 400 to be used MBW
-      cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-      cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-    } else if (trainConfig == 441){
-      cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
-      cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
-      cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
-    } else if (trainConfig == 442){ // as 440 to be used MBW
-      cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-33.5
-      cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72.
-      cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180    
+      cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // 
+      cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // 
+      cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // 
+    } else if (trainConfig == 441){// as 440 to be used MBW
+      cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // R 5-33.5 cm
+      cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // R 33.5-72 cm
+      cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // R 72-180 cm
+    } else if (trainConfig == 442){ //further study material 
+      cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // R 95.0-180 cm Gas Volume
+      cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // R 5-13.0 cm SPD
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL;
@@ -348,6 +347,27 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
       cuts.AddCutPCM("80210113", "0d200009a17000008250404000", "0162103500000000"); // pidEdx 0,-10
       cuts.AddCutPCM("80210113", "0d200009a27000003250404000", "0162103500000000"); // qT max 0.05 1D
       cuts.AddCutPCM("80210113", "0d200009a27000002250404000", "0162103500000000"); // qT max 0.06 2D
+    } else if (trainConfig == 17){
+      cuts.AddCutPCM("82410113", "0d200009a27300008250404000", "0162103500000000"); // default 2040 
+    } else if (trainConfig == 18){
+      cuts.AddCutPCM("84610113", "0d200009a27300008250404000", "0162103500000000"); // default 4060
+    } else if (trainConfig == 19){
+      cuts.AddCutPCM("86810113", "0d200009a27300008250404000", "0162103500000000"); // default 6080
+    } else if (trainConfig == 20){
+      cuts.AddCutPCM("88010113", "0d200009a27300008250404000", "0162103500000000"); // default 80100
+
+    } else if (trainConfig == 440){// as 400 to be used MBW
+      cuts.AddCutPCM("80010113", "00200009a27300008250404000", "0162103500000000"); // 
+      cuts.AddCutPCM("80010113", "0c200009a27300008250404000", "0162103500000000"); // 
+      cuts.AddCutPCM("80010113", "0d200009a27300008250404000", "0162103500000000"); // 
+    } else if (trainConfig == 441){// as 440 to be used MBW
+      cuts.AddCutPCM("80010113", "0da00009a27300008250404000", "0162103500000000"); // R 5-33.5   cm
+      cuts.AddCutPCM("80010113", "0db00009a27300008250404000", "0162103500000000"); // R 33.5-72  cm
+      cuts.AddCutPCM("80010113", "0dc00009a27300008250404000", "0162103500000000"); // R 72-180   cm
+    } else if (trainConfig == 442){// further study material 
+      cuts.AddCutPCM("80010113", "0dh00009a27300008250404000", "0162103500000000"); // R 95.0-180 cm Gas Volume
+      cuts.AddCutPCM("80010113", "0di00009a27300008250404000", "0162103500000000"); // R 5-13.0   cm SPD
+
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL; 

@@ -66,6 +66,8 @@ void  AliAnalysisTaskNanoValidator::UserExec(Option_t */*option*/)
   if (!fInputEvent)
     return;
   
+  // header validation
+  
   Double_t CentrV0M = -1;
   Double_t CentrCL0 = -1;
   Double_t CentrCL1 = -1;
@@ -123,4 +125,45 @@ void  AliAnalysisTaskNanoValidator::UserExec(Option_t */*option*/)
   Printf("T0: %f \t %f \t %f \t %f", T0Spread[0], T0Spread[1], T0Spread[2], T0Spread[3]);
   Printf("Centrality: %f \t %f \t %f \t %f \t %f", CentrV0M, CentrCL0, CentrCL1, CentrTRK, RefMult08);
   Printf(" ");
+  
+  // track validation
+  
+  unsigned int nTracks = fInputEvent->GetNumberOfTracks();
+  for (unsigned int i = 0; i < nTracks; i++) {
+    AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(i);
+    Double_t pos[3];
+    track->GetXYZ(pos);
+    
+    Printf("1) %f %f %f %d %d %d %d %d %d", track->Pt(), track->Phi(), track->Theta(), track->HasPointOnITSLayer(0), track->HasPointOnITSLayer(1), 
+           track->HasPointOnITSLayer(2), track->HasPointOnITSLayer(3), track->HasPointOnITSLayer(4), track->HasPointOnITSLayer(5)
+          );
+    Printf("2) %f %f %f %d %d %d", pos[0], pos[1], pos[2], track->GetTPCncls(), track->GetID(), track->GetTPCNclsF()
+          );
+    Printf("3) %f %f %f %f %f %f %d %f %f", track->GetTrackPhiOnEMCal(), track->GetTrackEtaOnEMCal(), track->GetTrackPtOnEMCal(),
+           track->GetITSsignal(), track->GetTPCsignal(), track->GetTPCsignalTunedOnData(), track->GetTPCsignalN(), track->GetTPCmomentum(), track->GetTPCTgl()
+          );
+    Printf("4) %f %f %f %f %f %f %f %d %d", track->GetTOFsignal(), track->GetIntegratedLength(), track->GetTOFsignalTunedOnData(), track->GetHMPIDsignal(), 
+           track->GetHMPIDoccupancy(), track->GetTRDsignal(), track->GetTRDchi2(), track->GetNumberOfTRDslices(), track->GetTOFBunchCrossing()
+          );
+ 
+    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*> (track);
+    if (aodTrack) {
+      Printf("5) %f %f %f %f %f %f %f %f %f %d %d %d", aodTrack->PxAtDCA(), aodTrack->PyAtDCA(), aodTrack->PzAtDCA(), aodTrack->Chi2perNDF(),
+             aodTrack->XAtDCA(), aodTrack->YAtDCA(), aodTrack->ZAtDCA(), aodTrack->DCA(), aodTrack->GetRAtAbsorberEnd(), 
+             aodTrack->GetFilterMap(), aodTrack->GetTPCNCrossedRows(), aodTrack->GetTPCnclsS()
+      );
+    }
+    AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*> (track);
+    if (nanoTrack) {
+      Printf("5) %f %f %f %f %f %f %f %f %f %d %d %d", nanoTrack->PxAtDCA(), nanoTrack->PyAtDCA(), nanoTrack->PzAtDCA(), nanoTrack->Chi2perNDF(),
+             nanoTrack->XAtDCA(), nanoTrack->YAtDCA(), nanoTrack->ZAtDCA(), nanoTrack->DCA(), nanoTrack->GetRAtAbsorberEnd(), 
+             nanoTrack->GetFilterMap(), nanoTrack->GetTPCNCrossedRows(), nanoTrack->GetTPCnclsS()
+      );
+    }
+    Printf(" ");
+    
+    // TODO missing: covmat
+  }
 }
+
+ 

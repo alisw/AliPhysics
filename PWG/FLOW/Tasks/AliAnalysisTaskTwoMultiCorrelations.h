@@ -81,7 +81,7 @@ public:
     this->fCentralityMax = maxCentrality;
   }
 
-  void SetEventSelection(Bool_t cutOnVertexX, Double_t minVertexX, Double_t maxVertexX, Bool_t cutOnVertexY, Double_t minVertexY, Double_t maxVertexY, Bool_t cutOnVertexZ, Double_t minVertexZ, Double_t maxVertexZ, Int_t minNumberOfTracks)
+  void SetVertexSelection(Bool_t cutOnVertexX, Double_t minVertexX, Double_t maxVertexX, Bool_t cutOnVertexY, Double_t minVertexY, Double_t maxVertexY, Bool_t cutOnVertexZ, Double_t minVertexZ, Double_t maxVertexZ)
   {
     this->fCutOnVertexX = cutOnVertexX;
     this->fVertexMinX = minVertexX;
@@ -92,7 +92,21 @@ public:
     this->fCutOnVertexZ = cutOnVertexZ;
     this->fVertexMinZ = minVertexZ;
     this->fVertexMaxZ = maxVertexZ;
+  }
+
+  void SetEventTracksSelection(Int_t minNumberOfTracks, Bool_t cutMaxNumberOfTracks, Int_t maxTracksZero, Int_t maxTracksFive, Int_t maxTracksTen, Int_t maxTracksTwenty, Int_t maxTracksThirty, Int_t maxTracksForty, Int_t maxTracksFifty, Int_t maxTracksSixty, Int_t maxTracksSeventy)
+  {
     this->fNumberOfTracksMin = minNumberOfTracks;
+    this->fCutOnTracksMax = cutMaxNumberOfTracks;
+    this->fNumberOfTracksMaxZero = maxTracksZero;
+    this->fNumberOfTracksMaxFive = maxTracksFive;
+    this->fNumberOfTracksMaxTen = maxTracksTen;
+    this->fNumberOfTracksMaxTwenty = maxTracksTwenty;
+    this->fNumberOfTracksMaxThirty = maxTracksThirty;
+    this->fNumberOfTracksMaxForty = maxTracksForty;
+    this->fNumberOfTracksMaxFifty = maxTracksFifty;
+    this->fNumberOfTracksMaxSixty = maxTracksSixty;
+    this->fNumberOfTracksMaxSeventy = maxTracksSeventy;
   } 
 
 /// Setters of the differents cuts of the track selection.
@@ -212,6 +226,16 @@ private:
   Double_t fVertexMaxZ; // Maximum of the z-position of the PV. (default: 10 cm)
 
   Int_t fNumberOfTracksMin; // Strict minimum number of tracks needed in an event to have an event weight which makes sense. (default: 6)
+  Bool_t fCutOnTracksMax; // Apply maximum limits on the multiplicity to remove high multiplicity outliers? (default: kFALSE)
+  Int_t fNumberOfTracksMaxZero; // Strict maximum number of tracks needed in one event for 0-5% centrality. (default: 0)
+  Int_t fNumberOfTracksMaxFive; // Strict maximum number of tracks needed in one event for 5-10% centrality. (default: 0)
+  Int_t fNumberOfTracksMaxTen;  // Strict maximum number of tracks needed in one event for 10-20% centrality. (default: 0)
+  Int_t fNumberOfTracksMaxTwenty; // Strict maximum number of tracks needed in one event for 20-30% centrality. (default: 0)
+  Int_t fNumberOfTracksMaxThirty; // Strict maximum number of tracks needed in one event for 30-40% centrality. (default: 0)
+  Int_t fNumberOfTracksMaxForty;  // Strict maximum number of tracks needed in one event for 40-50% centrality. (default: 0)
+  Int_t fNumberOfTracksMaxFifty;  // Strict maximum number of tracks needed in one event for 50-60% centrality. (default: 0)
+  Int_t fNumberOfTracksMaxSixty;  // Strict maximum number of tracks needed in one event for 60-70% centrality. (default: 0)
+  Int_t fNumberOfTracksMaxSeventy;  // Strict maximum number of tracks needed in one event for 70-80% centrality. (default: 0)
 
 // Track selection.
   Bool_t fCutOnPt;  // Apply the cuts on the transverse momentum? (default: kFALSE)
@@ -278,8 +302,8 @@ private:
 
 //--------------------------------------------------------------------------------------//
 // Version number to handle properly objects written before and after the changes.
-// Version 8, date: 2019-04-01.
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 8);
+// Version 9, date: 2019-04-15.
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 9);
 
 };  // End: class AliAnalysisTaskTwoMultiCorrelations.
 

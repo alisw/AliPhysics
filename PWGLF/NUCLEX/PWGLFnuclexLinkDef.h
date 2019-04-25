@@ -11,10 +11,6 @@
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
 /// * LambdaNN
 #pragma link C++ class AliAnalysisTaskLNNntuple+;
-/// * NOmega
-#pragma link C++ class AliAnalysisTaskNOmegaLPK+;
-#pragma link C++ class AliAnalysisTaskOmegaOmegaOX+;
-#pragma link C++ class AliAnalysisTaskNOmegaLX+;
 /// * Ps
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
 /// * dStar
@@ -103,6 +99,7 @@
 /// * New Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3New+;
+#pragma link C++ class AliAnalysisTaskHypertriton3ML+;
 
 /// Hypertriton Selector
 #ifdef __CLING__
@@ -127,6 +124,7 @@
 #pragma link C++ class AliAnalysisCODEX::Track+;
 #pragma link C++ class std::vector<AliAnalysisCODEX::Track>+;
 #pragma link C++ class AliAnalysisCODEXtask+;
-/// * NucleiSkimAOD
-#pragma link C++ class AliAnalysisTaskNucleiSkimAOD+;
+/// * NanoAOD
+#pragma link C++ class AliNanoFilterPID+;
+#pragma link C++ class AliNanoSkimmingPID+;
 #endif

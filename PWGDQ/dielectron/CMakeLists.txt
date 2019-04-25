@@ -48,6 +48,7 @@ set(SRCS
       BtoJPSI/AliDielectronBtoJPSItoEle.cxx
       core/AliDielectronCF.cxx
       core/AliDielectronCFdraw.cxx
+      core/AliDielectronClusterCuts.cxx
       core/AliDielectronCutGroup.cxx
       core/AliDielectronCutQA.cxx
       core/AliDielectron.cxx

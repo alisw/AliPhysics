@@ -123,6 +123,8 @@
 #pragma link C++ class AliAnalysisTaskPSHFE+;
 #pragma link C++ class AliAnalysisTaskPrepareInputForEmbedding+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
+#pragma link C++ class AliEventTree+;
+#pragma link C++ class AliAnalysisTaskEventExtractor+;
 
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;

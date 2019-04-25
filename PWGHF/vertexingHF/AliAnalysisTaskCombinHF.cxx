@@ -114,6 +114,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fCounter(0x0),
   fMeson(kDzero),
   fReadMC(kFALSE),
+  fEnforceMBTrigMaskInMC(kTRUE),
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
   fSignalOnlyMC(kFALSE),
@@ -215,6 +216,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fCounter(0x0),
   fMeson(meson),
   fReadMC(kFALSE),
+  fEnforceMBTrigMaskInMC(kTRUE),
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
   fSignalOnlyMC(kFALSE),
@@ -640,15 +642,20 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
-  // Reject events with trigger mask 0 of the LHC13d3 production
-  // For these events the ITS layers are skipped in the trakcing
-  // and the vertex reconstruction efficiency from tracks is biased
   if(fReadMC){
-   Int_t runnumber = aod->GetRunNumber();
-   if(aod->GetTriggerMask()==0 &&
-      (runnumber>=195344 && runnumber<=195677)){
-     return;
-   }
+    // Reject events with trigger mask 0 of the LHC13d3 production
+    // For these events the ITS layers are skipped in the trakcing
+    // and the vertex reconstruction efficiency from tracks is biased
+    Int_t runnumber = aod->GetRunNumber();
+    if(aod->GetTriggerMask()==0 &&
+       (runnumber>=195344 && runnumber<=195677)){
+      return;
+    }
+    // Set the trigger mask for physics selection to kMB in the MC
+    if(fEnforceMBTrigMaskInMC){
+      //      printf("Enforce trigger mask to kMB, previous mask = %d\n",fAnalysisCuts->GetTriggerMask());
+      fAnalysisCuts->SetTriggerMask(AliVEvent::kMB);
+    }
   }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

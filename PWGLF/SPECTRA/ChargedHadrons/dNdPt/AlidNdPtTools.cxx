@@ -93,8 +93,8 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, const char* o
         return AddAxis(label, title, nbins, xbins);    
     }
     if (o.Contains("ptveryfew")) {
-        const Int_t nbins = 5;
-        Double_t xbins[6] = {0.0, 0.5, 1.0, 1.5, 2.0, 200.0};
+        const Int_t nbins = 8;
+        Double_t xbins[9] = {0.0, 0.15, 0.5, 1.0, 2.0, 5.0, 10, 25.0, 200.0};
         return AddAxis(label, title, nbins, xbins);    
     }
     if (o.Contains("ptmario")) {   
@@ -268,6 +268,25 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
         cuts->SetEtaRange(-0.8,0.8);
+        
+    } else if (o.EqualTo("tpcitsfordcarstudy")) {
+        cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr and Chi2 TPCc vs. Global");
+        cuts->SetRequireTPCRefit(kTRUE);    
+        cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);        
+        cuts->SetRequireITSRefit(kTRUE);
+        cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+        cuts->SetMaxChi2PerClusterITS(36.);
+        cuts->SetDCAToVertex2D(kFALSE);
+        cuts->SetRequireSigmaToVertex(kFALSE);
+        cuts->SetMaxDCAToVertexZ(2.0);
+        cuts->SetAcceptKinkDaughters(kFALSE);
+        // tpcc cut
+        // cuts->SetMaxChi2TPCConstrainedGlobal(36.);
+        // Geometrical-Length Cut
+        cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+        cuts->SetEtaRange(-0.8,0.8);        
         
     } else if (o.EqualTo("tpcgeo")) { 
         cuts = new AliESDtrackCuts("TPConly with geo L");

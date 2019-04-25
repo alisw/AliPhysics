@@ -20,15 +20,16 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   AliFemtoDreamv0();
   virtual ~AliFemtoDreamv0();
   void Setv0(AliAODEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
+  void Setv0(AliVEvent *evt, AliAODv0 *v0, const int multiplicity = -1);
   void Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
              const int multiplicity = -1);
   // the last two are switches to ignore the first entry in the phi, eta, ...
   // vector in case one cases a V0 in this object, and only wants to keep the
   // daughter information
-  void Setv0(const AliFemtoDreamBasePart &posDaughter, const float posMass,
-             const AliFemtoDreamBasePart &negDaughter, const float negMass,
+  void Setv0(const AliFemtoDreamBasePart &posDaughter,
+             const AliFemtoDreamBasePart &negDaughter,
              const bool ignoreFirstPos = false,
-             const bool ignoreFirstNeg = false);
+             const bool ignoreFirstNeg = false, const bool setDaughter = true);
   bool GetOnlinev0() const {
     return fOnlinev0;
   }
@@ -107,6 +108,8 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   AliFemtoDreamv0(const AliFemtoDreamv0&);
   void Reset();
   void SetDaughter(AliAODv0 *v0);
+  void SetDaughter(AliAODv0 *v0, AliVEvent *evt);
+  void SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter);
   void SetDaughter(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0);
   void SetDaughterInfo(AliAODv0 *v0);
   void SetDaughterInfo(AliESDv0 *v0);

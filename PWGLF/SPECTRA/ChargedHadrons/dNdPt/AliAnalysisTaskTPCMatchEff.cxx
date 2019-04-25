@@ -87,31 +87,32 @@ void AliAnalysisTaskTPCMatchEff::AddOutput()
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskTPCMatchEff::AnaEvent()
+Bool_t AliAnalysisTaskTPCMatchEff::IsEventSelected()
 {
-   InitEvent();
-   InitMCEvent();
-   InitEventMult();
-   LoopOverAllTracks();
-   
+    return fIsAcceptedAliEventCuts;
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskTPCMatchEff::AnaTrack()
-{    
-    InitTrackCuts();    
+void AliAnalysisTaskTPCMatchEff::AnaEvent()
+{
+   LoopOverAllTracks();
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskTPCMatchEff::AnaTrackMC(Int_t flag)
+{     
     if (!fAcceptTrack[0]) return;    
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
-    if (fIsMC) {  
-        FillHist(fHistMCMatchEff, fMultPercentileV0M, fPt, fPtInnerTPC, fEtaInnerTPC, fPhiInnerTPC, fAcceptTrack[1], fAcceptTrack[2], fAcceptTrack[3], fAcceptTrack[4], fMCPrimSec, fMCPt);
-    } else { 
-        FillHist(fHistDATAMatchEff, fMultPercentileV0M, fPt, fPtInnerTPC, fEtaInnerTPC, fPhiInnerTPC, fAcceptTrack[1], fAcceptTrack[2], fAcceptTrack[3], fAcceptTrack[4]);
-    }
-   
+    FillHist(fHistMCMatchEff, fMultPercentileV0M, fPt, fPtInnerTPC, fEtaInnerTPC, fPhiInnerTPC, fAcceptTrack[1], fAcceptTrack[2], fAcceptTrack[3], fAcceptTrack[4], fMCPrimSec, fMCPt);
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskTPCMatchEff::AnaTrackDATA(Int_t flag)
+{     
+    if (!fAcceptTrack[0]) return;    
+    FillHist(fHistDATAMatchEff, fMultPercentileV0M, fPt, fPtInnerTPC, fEtaInnerTPC, fPhiInnerTPC, fAcceptTrack[1], fAcceptTrack[2], fAcceptTrack[3], fAcceptTrack[4]);
 }
 
 //_____________________________________________________________________________

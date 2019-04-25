@@ -19,6 +19,9 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
+#include "AliESDVertex.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
 #include "AliAnalysisTaskMKBase.h"
 
 class AliAnalysisTaskMKBase;
@@ -44,6 +47,12 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fMCStack(0)
     , fMCHeader(0)
     , fMCGenHeader(0)
+    , fMCGenHeaderPythia(0)
+    , fMCGenHeaderDPMjet(0)
+    , fMCEventType(AlidNdPtTools::kInvalidProcess)
+    , fMCProcessTypeFlag(0)
+    , fMultSelection(0)
+    , fCentrality(0)    
     , fNTracksESD(0)
     , fNTracksAcc(0)
     , fIsMC(kFALSE)
@@ -53,15 +62,63 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fEventSpecie(0)
     , fOldCentPercentileV0M(-1)
     , fMultPercentileV0M(-1)
-    , fEventCutsPassed(kFALSE)
+    , fIsAcceptedAliEventCuts(kFALSE)
+    , fVtx(0)
+    , fXv(0)
+    , fYv(0)
     , fZv(0)
+    , fXvRes(0)
+    , fYvRes(0)
+    , fZvRes(0)
+    , fVtxNContrib(0)
+    , fVtxStatus(kFALSE)
+    , fVtxDispersion(0)
+    , fUsedVtxTRK(kFALSE)
+    , fUsedVtxSPD(kFALSE)
+    , fUsedVtxTPC(kFALSE)
+    , fVtxTRK(0)
+    , fXvTRK(0)
+    , fYvTRK(0)
+    , fZvTRK(0)
+    , fXvResTRK(0)
+    , fYvResTRK(0)
+    , fZvResTRK(0)
+    , fVtxNContribTRK(0)
+    , fVtxStatusTRK(kFALSE)
+    , fVtxDispersionTRK(0)
+    , fVtxSPD(0)
+    , fXvSPD(0)
+    , fYvSPD(0)
+    , fZvSPD(0)
+    , fXvResSPD(0)
+    , fYvResSPD(0)
+    , fZvResSPD(0)
+    , fVtxNContribSPD(0)
+    , fVtxStatusSPD(kFALSE)
+    , fVtxDispersionSPD(0)
+    , fVtxTPC(0)
+    , fXvTPC(0)
+    , fYvTPC(0)
+    , fZvTPC(0)
+    , fXvResTPC(0)
+    , fYvResTPC(0)
+    , fZvResTPC(0)
+    , fVtxNContribTPC(0)
+    , fVtxStatusTPC(kFALSE)
+    , fVtxDispersionTPC(0)    
+    , fMCxv(0)
+    , fMCyv(0)
     , fMCzv(0)
     , fMultMB(-1)
     , fMultV0M(-1)
     , fMCb(-1)
-    , fMCnPrim(-1)
+    , fMCnPrimPtCut(-1)
+    , fMCnPrim10(-1)
+    , fMCnPrim08(-1)
+    , fMCnPrim05(-1)
     , fMCnPrimV0M(-1)
     , fMCnTracks(-1)
+    , fMCnPrim(-1)
     , fIsTrigger(kFALSE)
     , fHasVertex(kFALSE)
     , fIsIncompleteDAQ(kFALSE)
@@ -71,8 +128,9 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fIsOutOfBunchPileUp(kFALSE)
     , fIsPileUpEvent(kFALSE)
     , fIsPileUpSPD(kFALSE)
-    , fNOTIsVertexSelected2013pA(kFALSE)
+    , fIsVertexRejected2013pA(kFALSE)
     , fIsPileupFromSPD508(kFALSE)
+    , fIsEventAccepted(kFALSE)
     , fESDTrack(0)
     , fPt(0)
     , fEta(0)
@@ -84,6 +142,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fSigma1Pt2(0)
     , fSigma1Pt(0)
     , fSigned1Pt(0)
+    , f1Pt(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -116,6 +175,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fEventCuts(0)
     , fUseEventCuts(kFALSE)
     , fESDtrackCutsM(0)
+    , fAcceptTrackM(kFALSE)
     , fESDtrackCuts{0,0,0,0,0,0,0,0,0,0}
     , fAcceptTrack{kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE}
     , fMultEstimator("")
@@ -129,7 +189,9 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fRunHist(0)
     , fRunHistSelected(0)
     , fTrigInfo(0)
+    , fTrigInfoSelected(0)
     , fTrigHist(0)
+    , fTrigHistSelected(0)
 {
     // default constructor for root    
 }
@@ -140,7 +202,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     : AliAnalysisTaskSE(name)    
     , fAnalysisManager(0)
     , fInputEventHandler(0)
-    , fEventSelected(0)
+    , fEventSelected(0)    
     , fEvent(0)
     , fESD(0)
     , fAOD(0)
@@ -149,6 +211,12 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fMCStack(0)
     , fMCHeader(0)
     , fMCGenHeader(0)
+    , fMCGenHeaderPythia(0)
+    , fMCGenHeaderDPMjet(0)
+    , fMCEventType(AlidNdPtTools::kInvalidProcess)
+    , fMCProcessTypeFlag(0)
+    , fMultSelection(0)
+    , fCentrality(0)
     , fNTracksESD(0)
     , fNTracksAcc(0)
     , fIsMC(kFALSE)
@@ -158,15 +226,63 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fEventSpecie(0)
     , fOldCentPercentileV0M(-1)
     , fMultPercentileV0M(-1)
-    , fEventCutsPassed(kFALSE)
+    , fIsAcceptedAliEventCuts(kFALSE)
+    , fVtx(0)
+    , fXv(0)
+    , fYv(0)
     , fZv(0)
+    , fXvRes(0)
+    , fYvRes(0)
+    , fZvRes(0)
+    , fVtxNContrib(0)
+    , fVtxStatus(kFALSE)
+    , fVtxDispersion(0)
+    , fUsedVtxTRK(kFALSE)
+    , fUsedVtxSPD(kFALSE)
+    , fUsedVtxTPC(kFALSE)
+    , fVtxTRK(0)
+    , fXvTRK(0)
+    , fYvTRK(0)
+    , fZvTRK(0)
+    , fXvResTRK(0)
+    , fYvResTRK(0)
+    , fZvResTRK(0)
+    , fVtxNContribTRK(0)
+    , fVtxStatusTRK(kFALSE)
+    , fVtxDispersionTRK(0)
+    , fVtxSPD(0)
+    , fXvSPD(0)
+    , fYvSPD(0)
+    , fZvSPD(0)
+    , fXvResSPD(0)
+    , fYvResSPD(0)
+    , fZvResSPD(0)
+    , fVtxNContribSPD(0)
+    , fVtxStatusSPD(kFALSE)
+    , fVtxDispersionSPD(0)
+    , fVtxTPC(0)
+    , fXvTPC(0)
+    , fYvTPC(0)
+    , fZvTPC(0)
+    , fXvResTPC(0)
+    , fYvResTPC(0)
+    , fZvResTPC(0)
+    , fVtxNContribTPC(0)
+    , fVtxStatusTPC(kFALSE)
+    , fVtxDispersionTPC(0)    
+    , fMCxv(0)
+    , fMCyv(0)
     , fMCzv(0)
     , fMultMB(-1)
     , fMultV0M(-1)
     , fMCb(-1)
-    , fMCnPrim(-1)
+    , fMCnPrimPtCut(-1)
+    , fMCnPrim10(-1)
+    , fMCnPrim08(-1)
+    , fMCnPrim05(-1)
     , fMCnPrimV0M(-1)
     , fMCnTracks(-1)
+    , fMCnPrim(-1)
     , fIsTrigger(kFALSE)
     , fHasVertex(kFALSE)
     , fIsIncompleteDAQ(kFALSE)
@@ -176,8 +292,9 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fIsOutOfBunchPileUp(kFALSE)
     , fIsPileUpEvent(kFALSE)
     , fIsPileUpSPD(kFALSE)
-    , fNOTIsVertexSelected2013pA(kFALSE)
+    , fIsVertexRejected2013pA(kFALSE)
     , fIsPileupFromSPD508(kFALSE)
+    , fIsEventAccepted(kFALSE)
     , fESDTrack(0)
     , fPt(0)
     , fEta(0)
@@ -189,6 +306,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fSigma1Pt2(0)
     , fSigma1Pt(0)
     , fSigned1Pt(0)
+    , f1Pt(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -221,6 +339,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fEventCuts(0)
     , fUseEventCuts(kFALSE)    
     , fESDtrackCutsM(0)
+    , fAcceptTrackM(kFALSE)
     , fESDtrackCuts{0,0,0,0,0,0,0,0,0,0}
     , fAcceptTrack{kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE}
     , fMultEstimator("")
@@ -234,7 +353,9 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fRunHist(0)
     , fRunHistSelected(0)
     , fTrigInfo(0)
+    , fTrigInfoSelected(0)
     , fTrigHist(0)
+    , fTrigHistSelected(0)
 {    
     // constructor    
     DefineInput(0, TChain::Class()); 
@@ -257,7 +378,7 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
     fOutputList = new TList(); 
     fOutputList->SetOwner(kTRUE); 
     
-    // create defualt histograms    
+    // create defualt event histograms    
     
     fLogHist = CreateLogHist("fLogHist");
     fOutputList->Add(fLogHist);
@@ -277,8 +398,14 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
     fTrigInfo = CreateLogHist("fTrigInfo");
     fOutputList->Add(fTrigInfo);
     
+    fTrigInfoSelected = CreateLogHist("fTrigInfoSelected");
+    fOutputList->Add(fTrigInfoSelected);
+    
     fTrigHist = CreateLogHist("fTrigHist");
-    fOutputList->Add(fTrigHist);    
+    fOutputList->Add(fTrigHist);
+    
+    fTrigHistSelected = CreateLogHist("fTrigHistSelected");
+    fOutputList->Add(fTrigHistSelected);
 
 
     AddOutput();
@@ -287,7 +414,21 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskMKBase::CheckEvent()
+
+/// Internal function
+/// does all checks of the events and sets corresponding flags
+/// also checks the AliEventCuts
+///
+/// REQUIRES:
+/// fESD, fMultSelection
+/// 
+/// SETS:
+/// fIsIncompleteDAQ, fIsSPDClusterVsTrackletBG, fIsFirstEventInChunk,
+/// fIsPileUpMV, fIsOutOfBunchPileUp, fIsPileUpEvent, fIsPileUpSPD,
+/// fIsVertexRejected2013pA, fIsPileupFromSPD508, fIsAcceptedAliEventCuts
+///
+
+void AliAnalysisTaskMKBase::InitEventChecks()
 {
 
     // incomplete daq events
@@ -295,7 +436,7 @@ void AliAnalysisTaskMKBase::CheckEvent()
         LogEvent("event.IsIncompleteDAQ");
     }
 
-    // background rejection etc.
+    // background rejection etc. using AliAnalysisUtils
     AliAnalysisUtils utils;
     
     if ((fIsSPDClusterVsTrackletBG = utils.IsSPDClusterVsTrackletBG(fESD))) {    
@@ -317,12 +458,47 @@ void AliAnalysisTaskMKBase::CheckEvent()
     if ((fIsPileUpSPD = utils.IsPileUpSPD(fESD))) {
         LogEvent("utils.IsPileUpSPD");
     }
-    if ((fNOTIsVertexSelected2013pA = !utils.IsVertexSelected2013pA(fESD))) {
+    if ((fIsVertexRejected2013pA = !utils.IsVertexSelected2013pA(fESD))) {
         LogEvent("utils.NOT.IsVertexSelected2013pA");
     }
     if ((fIsPileupFromSPD508 = fESD->IsPileupFromSPD(5,0.8))) {
         LogEvent("event.IsPileupFromSPD(5,0.8)");
     }
+    
+    // for vertex cuts check and log, but do not cut or set flags (for now)
+    if (fVtxStatus) {
+        if (fZvRes > 0.25) {
+            LogEvent("PrimVtx.ResolutionGreater0.25");
+        }    
+    }
+    if (fVtxStatusSPD) {
+        if (fVtxSPD->IsFromVertexerZ() && fVtxDispersionSPD > 0.04) {
+            LogEvent("PrimVtxSPD.fromVertexerZ&DispersionGreater0.04");
+        }
+        if (fVtxDispersionSPD > 0.04) {
+            LogEvent("PrimVtxSPD.DispersionGreater0.04");
+        }
+        if (fVtxDispersionSPD > 0.02) {
+            LogEvent("PrimVtxSPD.DispersionGreater0.02");
+        }
+    }
+    if (fVtxStatusTRK && fVtxStatusSPD) {
+        if (TMath::Abs(fZvTRK-fZvSPD) > 0.5) {
+            LogEvent("abs(zvTRK-zvSPD)Greater0.5");
+        }
+    }
+    
+    // check event cuts
+    fIsAcceptedAliEventCuts = kFALSE;    
+    if(fMultSelection) {                
+        // AliEventCut needs multiplcity task, otherwise it crashes
+        // so we put it here  
+        fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
+        if (fIsAcceptedAliEventCuts) { LogEvent("AliEventCutsPassed"); }
+    } else {
+        Err("no AliMultSelection: skipping AliEventCuts");
+    }
+        
 }
 
 //_____________________________________________________________________________
@@ -331,6 +507,10 @@ void AliAnalysisTaskMKBase::CheckEvent()
 /// fEvent, fESD
 /// also sets fRunNumber and fRunNumberString and fills fRunHist histogram
 /// later to included the functionally to run on AOD
+///
+/// SETS:
+/// fAnalysisManager, fInputEventHandler, fEventSelected, fEvent, fAOD, fESD
+///
 ///
 /// \return kTRUE if ESD event is present
 
@@ -344,12 +524,11 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
         fInputEventHandler = dynamic_cast<AliInputEventHandler*>(fAnalysisManager->GetInputEventHandler());
     }
     if (fInputEventHandler) { 
-        fEventSelected = fInputEventHandler->IsEventSelected();
-        FillTriggerLog();
+        fEventSelected = fInputEventHandler->IsEventSelected();        
     } else {
         Err("noInputEventHandler");  
-    }
-    
+        fEventSelected = 0;
+    }    
     fEvent = InputEvent();
     if (!fEvent) { Err("noEvent"); return kFALSE; }
     
@@ -358,24 +537,17 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());   
 
-    Log(fTrigInfo,fFiredTriggerClasses.Data());
-    
-    
-    if (!fESD) { Err("noESD"); return kFALSE; } // for now analyse only ESD
+    // for now analyse only ESDs 
+    if (!fESD) { Err("noESD"); return kFALSE; }
     if (fESD)  { LogEvent("ESD"); }
+
+    // set all the event related properties
+    InitEvent();
     
-    CheckEvent();
-    
-    UInt_t fEventSpecie = fESD->GetEventSpecie();
-    
-    fRunNumber = fESD->GetRunNumber();
-    fRunNumberString = "";
-    fRunNumberString += fRunNumber;
-    
-    Log(fRunHist,fRunNumberString.Data());
+    // read the mc event and set all mc related properties
+    ReadMCEvent();
           
     return kTRUE;
-        
 }
 
 //_____________________________________________________________________________
@@ -422,100 +594,116 @@ Bool_t AliAnalysisTaskMKBase::ReadMCEvent()
         s += fMCGenHeader->GetName();
         LogEvent(s.Data());
     }
-    
+    InitMCEvent();
     return fIsMC;
 }
 
 //_____________________________________________________________________________
 
-/// Initialize event-related properties, needs to be called from user
+/// Initialize event-related properties, internal function
 /// sets multiplicities, vertex, etc
 ///
+/// REQUIRES:
+/// fESD, 
+/// 
+/// SETS:
+/// fEventSpecie, fRunNumber, fRunNumberString, fNTracksESD, fNTracksAcc
+/// 
+/// 
 /// \return kTRUE 
 
 Bool_t AliAnalysisTaskMKBase::InitEvent() 
 {
-    if (!fESD) { return kFALSE;}
-      // this is needed for some esd track cuts, to be on the save side we call it here
-      if (!TGeoGlobalMagField::Instance()->GetField()) { fESD->InitMagneticField(); }
+    if (!fESD) { return kFALSE;} //protection
+    fEventSpecie = fESD->GetEventSpecie();
+    
+    fRunNumber = fESD->GetRunNumber();
+    fRunNumberString = "";
+    fRunNumberString += fRunNumber;
+        
+    // this is needed for some esd track cuts, to be on the save side we call it here
+    if (!TGeoGlobalMagField::Instance()->GetField()) { fESD->InitMagneticField(); }
+    fNTracksESD = fESD->GetNumberOfTracks();
       
-      fNTracksESD = fESD->GetNumberOfTracks();
-      
-      // loop over all tracks to get the accepted multiplicity
-      // only if track cuts are set
-      fNTracksAcc = 0;
-      if (fESDtrackCutsM) {
-          for (Int_t i = 0; i < fNTracksESD; i++) {
-              AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
-              if (!track) continue;
-              if (fESDtrackCutsM->AcceptTrack(track) ) { fNTracksAcc++; }
-          }
-      } else {
-          fNTracksAcc = fNTracksESD;
-          Log("noAliESDTrackCutsM");
-      } 
-     
-      return kTRUE;
+    // loop over all tracks to get the accepted multiplicity
+    // only if track cuts are set
+    fNTracksAcc = 0;
+    if (fESDtrackCutsM) {
+        for (Int_t i = 0; i < fNTracksESD; i++) {
+            AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+            if (!track) continue;
+            if (fESDtrackCutsM->AcceptTrack(track) ) { fNTracksAcc++; }              
+        }
+    } else {
+        fNTracksAcc = fNTracksESD;
+        Log("noAliESDTrackCutsM");
+    }
+    InitEventVertex();
+    InitEventCent();
+    InitEventMult();
+    InitEventChecks();
+    InitEventVZERO();
+    return kTRUE;
 }
 
 //_____________________________________________________________________________
 
 /// function to check all triggers and log into trigger histogram
 
-void AliAnalysisTaskMKBase::FillTriggerLog()
+void AliAnalysisTaskMKBase::FillTrigHist(TH1D* h)
 {    
-    if (fEventSelected & AliVEvent::kMB)                { Log(fTrigHist,"kMB"); }                 // Minimum bias trigger in PbPb 2010-11
-    if (fEventSelected & AliVEvent::kINT1)              { Log(fTrigHist,"kINT1"); }               // V0A | V0C | SPD minimum bias trigger
-    if (fEventSelected & AliVEvent::kINT7)              { Log(fTrigHist,"kINT7"); }               // V0AND minimum bias trigger
-    if (fEventSelected & AliVEvent::kMUON)              { Log(fTrigHist,"kMUON"); }               // Single muon trigger in pp2010-11, INT1 suite
-    if (fEventSelected & AliVEvent::kHighMult)          { Log(fTrigHist,"kHighMult"); }           // High-multiplicity SPD trigger
-    if (fEventSelected & AliVEvent::kHighMultSPD)       { Log(fTrigHist,"kHighMultSPD"); }        // High-multiplicity SPD trigger
-    if (fEventSelected & AliVEvent::kEMC1)              { Log(fTrigHist,"kEMC1"); }               // EMCAL trigger in pp2011, INT1 suite
-    if (fEventSelected & AliVEvent::kCINT5)             { Log(fTrigHist,"kCINT5"); }              // V0OR minimum bias trigger
-    if (fEventSelected & AliVEvent::kINT5)              { Log(fTrigHist,"kINT5"); }               // V0OR minimum bias trigger
-    if (fEventSelected & AliVEvent::kCMUS5)             { Log(fTrigHist,"kCMUS5"); }              // Single muon trigger, INT5 suite
-    if (fEventSelected & AliVEvent::kMUSPB)             { Log(fTrigHist,"kMUSPB"); }              // Single muon trigger in PbPb 2011
-    if (fEventSelected & AliVEvent::kINT7inMUON)        { Log(fTrigHist,"kINT7inMUON"); }         // INT7 in MUON or MUFAST cluster
-    if (fEventSelected & AliVEvent::kMuonSingleHighPt7) { Log(fTrigHist,"kMuonSingleHighPt7"); }  // Single muon high-pt, INT7 suite
-    if (fEventSelected & AliVEvent::kMUSH7)             { Log(fTrigHist,"kMUSH7"); }              // Single muon high-pt, INT7 suite
-    if (fEventSelected & AliVEvent::kMUSHPB)            { Log(fTrigHist,"kMUSHPB"); }             // Single muon high-pt in PbPb 2011
-    if (fEventSelected & AliVEvent::kMuonLikeLowPt7)    { Log(fTrigHist,"kMuonLikeLowPt7"); }     // Like-sign dimuon low-pt, INT7 suite
-    if (fEventSelected & AliVEvent::kMUL7)              { Log(fTrigHist,"kMUL7"); }               // Like-sign dimuon low-pt, INT7 suite
-    if (fEventSelected & AliVEvent::kMuonLikePB)        { Log(fTrigHist,"kMuonLikePB"); }         // Like-sign dimuon low-pt in PbPb 2011
-    if (fEventSelected & AliVEvent::kMuonUnlikeLowPt7)  { Log(fTrigHist,"kMuonUnlikeLowPt7"); }   // Unlike-sign dimuon low-pt, INT7 suite
-    if (fEventSelected & AliVEvent::kMUU7)              { Log(fTrigHist,"kMUU7"); }               // Unlike-sign dimuon low-pt, INT7 suite
-    if (fEventSelected & AliVEvent::kMuonUnlikePB)      { Log(fTrigHist,"kMuonUnlikePB"); }       // Unlike-sign dimuon low-pt in PbPb 2011
-    if (fEventSelected & AliVEvent::kEMC7)              { Log(fTrigHist,"kEMC7"); }               // EMCAL/DCAL L0 trigger, INT7 suite
-    if (fEventSelected & AliVEvent::kEMC8)              { Log(fTrigHist,"kEMC8"); }               // EMCAL/DCAL L0 trigger, INT8 suite
-    if (fEventSelected & AliVEvent::kMUS7)              { Log(fTrigHist,"kMUS7"); }               // Single muon low-pt, INT7 suite
-    if (fEventSelected & AliVEvent::kMuonSingleLowPt7)  { Log(fTrigHist,"kMuonSingleLowPt7"); }   // Single muon low-pt, INT7 suite
-    if (fEventSelected & AliVEvent::kPHI1)              { Log(fTrigHist,"kPHI1"); }               // PHOS L0 trigger in pp2011, INT1 suite
-    if (fEventSelected & AliVEvent::kPHI7)              { Log(fTrigHist,"kPHI7"); }               // PHOS trigger, INT7 suite
-    if (fEventSelected & AliVEvent::kPHI8)              { Log(fTrigHist,"kPHI8"); }               // PHOS trigger, INT8 suite
-    if (fEventSelected & AliVEvent::kPHOSPb)            { Log(fTrigHist,"kPHOSPb"); }             // PHOS trigger in PbPb 2011
-    if (fEventSelected & AliVEvent::kEMCEJE)            { Log(fTrigHist,"kEMCEJE"); }             // EMCAL/DCAL L1 jet trigger
-    if (fEventSelected & AliVEvent::kEMCEGA)            { Log(fTrigHist,"kEMCEGA"); }             // EMCAL/DCAL L1 gamma trigger
-    if (fEventSelected & AliVEvent::kHighMultV0)        { Log(fTrigHist,"kHighMultV0"); }         // High-multiplicity V0 trigger
-    if (fEventSelected & AliVEvent::kCentral)           { Log(fTrigHist,"kCentral"); }            // Central trigger in PbPb 2011
-    if (fEventSelected & AliVEvent::kSemiCentral)       { Log(fTrigHist,"kSemiCentral"); }        // Semicentral trigger in PbPb 2011
-    if (fEventSelected & AliVEvent::kDG)                { Log(fTrigHist,"kDG"); }                 // Double gap diffractive
-    if (fEventSelected & AliVEvent::kDG5)               { Log(fTrigHist,"kDG5"); }                // Double gap diffractive
-    if (fEventSelected & AliVEvent::kZED)               { Log(fTrigHist,"kZED"); }                // ZDC electromagnetic dissociation
-    if (fEventSelected & AliVEvent::kSPI7)              { Log(fTrigHist,"kSPI7"); }               // Power interaction trigger
-    if (fEventSelected & AliVEvent::kSPI)               { Log(fTrigHist,"kSPI"); }                // Power interaction trigger
-    if (fEventSelected & AliVEvent::kINT8)              { Log(fTrigHist,"kINT8"); }               // 0TVX trigger
-    if (fEventSelected & AliVEvent::kMuonSingleLowPt8)  { Log(fTrigHist,"kMuonSingleLowPt8"); }   // Single muon low-pt, INT8 suite
-    if (fEventSelected & AliVEvent::kMuonSingleHighPt8) { Log(fTrigHist,"kMuonSingleHighPt8"); }  // Single muon high-pt, INT8 suite
-    if (fEventSelected & AliVEvent::kMuonLikeLowPt8)    { Log(fTrigHist,"kMuonLikeLowPt8"); }     // Like-sign dimuon low-pt, INT8 suite
-    if (fEventSelected & AliVEvent::kMuonUnlikeLowPt8)  { Log(fTrigHist,"kMuonUnlikeLowPt8"); }   // Unlike-sign dimuon low-pt, INT8 suite
-    if (fEventSelected & AliVEvent::kMuonUnlikeLowPt0)  { Log(fTrigHist,"kMuonUnlikeLowPt0"); }   // Unlike-sign dimuon low-pt, no additional L0 requirement
-    if (fEventSelected & AliVEvent::kUserDefined)       { Log(fTrigHist,"kUserDefined"); }        // Set when custom trigger classes are set in AliPhysicsSelection
-    if (fEventSelected & AliVEvent::kTRD)               { Log(fTrigHist,"kTRD"); }                // TRD trigger
-    if (fEventSelected & AliVEvent::kMuonCalo)          { Log(fTrigHist,"kMuonCalo"); }           // Muon-calo triggers
-    if (fEventSelected & AliVEvent::kCaloOnly)          { Log(fTrigHist,"kCaloOnly"); }           // MB, EMCAL and PHOS triggers in CALO or CALOFAST cluster    
-    if (fEventSelected & AliVEvent::kFastOnly)          { Log(fTrigHist,"kFastOnly"); }           // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
-    if (fEventSelected & AliVEvent::kAny)               { Log(fTrigHist,"kAny"); }                // to accept any defined trigger
-    if (fEventSelected & AliVEvent::kAnyINT)            { Log(fTrigHist,"kAnyINT"); }             // to accept any interaction (aka minimum bias) trigger    
+    if (fEventSelected & AliVEvent::kMB)                { Log(h,"kMB"); }                 // Minimum bias trigger in PbPb 2010-11
+    if (fEventSelected & AliVEvent::kINT1)              { Log(h,"kINT1"); }               // V0A | V0C | SPD minimum bias trigger
+    if (fEventSelected & AliVEvent::kINT7)              { Log(h,"kINT7"); }               // V0AND minimum bias trigger
+    if (fEventSelected & AliVEvent::kMUON)              { Log(h,"kMUON"); }               // Single muon trigger in pp2010-11, INT1 suite
+    if (fEventSelected & AliVEvent::kHighMult)          { Log(h,"kHighMult"); }           // High-multiplicity SPD trigger
+    if (fEventSelected & AliVEvent::kHighMultSPD)       { Log(h,"kHighMultSPD"); }        // High-multiplicity SPD trigger
+    if (fEventSelected & AliVEvent::kEMC1)              { Log(h,"kEMC1"); }               // EMCAL trigger in pp2011, INT1 suite
+    if (fEventSelected & AliVEvent::kCINT5)             { Log(h,"kCINT5"); }              // V0OR minimum bias trigger
+    if (fEventSelected & AliVEvent::kINT5)              { Log(h,"kINT5"); }               // V0OR minimum bias trigger
+    if (fEventSelected & AliVEvent::kCMUS5)             { Log(h,"kCMUS5"); }              // Single muon trigger, INT5 suite
+    if (fEventSelected & AliVEvent::kMUSPB)             { Log(h,"kMUSPB"); }              // Single muon trigger in PbPb 2011
+    if (fEventSelected & AliVEvent::kINT7inMUON)        { Log(h,"kINT7inMUON"); }         // INT7 in MUON or MUFAST cluster
+    if (fEventSelected & AliVEvent::kMuonSingleHighPt7) { Log(h,"kMuonSingleHighPt7"); }  // Single muon high-pt, INT7 suite
+    if (fEventSelected & AliVEvent::kMUSH7)             { Log(h,"kMUSH7"); }              // Single muon high-pt, INT7 suite
+    if (fEventSelected & AliVEvent::kMUSHPB)            { Log(h,"kMUSHPB"); }             // Single muon high-pt in PbPb 2011
+    if (fEventSelected & AliVEvent::kMuonLikeLowPt7)    { Log(h,"kMuonLikeLowPt7"); }     // Like-sign dimuon low-pt, INT7 suite
+    if (fEventSelected & AliVEvent::kMUL7)              { Log(h,"kMUL7"); }               // Like-sign dimuon low-pt, INT7 suite
+    if (fEventSelected & AliVEvent::kMuonLikePB)        { Log(h,"kMuonLikePB"); }         // Like-sign dimuon low-pt in PbPb 2011
+    if (fEventSelected & AliVEvent::kMuonUnlikeLowPt7)  { Log(h,"kMuonUnlikeLowPt7"); }   // Unlike-sign dimuon low-pt, INT7 suite
+    if (fEventSelected & AliVEvent::kMUU7)              { Log(h,"kMUU7"); }               // Unlike-sign dimuon low-pt, INT7 suite
+    if (fEventSelected & AliVEvent::kMuonUnlikePB)      { Log(h,"kMuonUnlikePB"); }       // Unlike-sign dimuon low-pt in PbPb 2011
+    if (fEventSelected & AliVEvent::kEMC7)              { Log(h,"kEMC7"); }               // EMCAL/DCAL L0 trigger, INT7 suite
+    if (fEventSelected & AliVEvent::kEMC8)              { Log(h,"kEMC8"); }               // EMCAL/DCAL L0 trigger, INT8 suite
+    if (fEventSelected & AliVEvent::kMUS7)              { Log(h,"kMUS7"); }               // Single muon low-pt, INT7 suite
+    if (fEventSelected & AliVEvent::kMuonSingleLowPt7)  { Log(h,"kMuonSingleLowPt7"); }   // Single muon low-pt, INT7 suite
+    if (fEventSelected & AliVEvent::kPHI1)              { Log(h,"kPHI1"); }               // PHOS L0 trigger in pp2011, INT1 suite
+    if (fEventSelected & AliVEvent::kPHI7)              { Log(h,"kPHI7"); }               // PHOS trigger, INT7 suite
+    if (fEventSelected & AliVEvent::kPHI8)              { Log(h,"kPHI8"); }               // PHOS trigger, INT8 suite
+    if (fEventSelected & AliVEvent::kPHOSPb)            { Log(h,"kPHOSPb"); }             // PHOS trigger in PbPb 2011
+    if (fEventSelected & AliVEvent::kEMCEJE)            { Log(h,"kEMCEJE"); }             // EMCAL/DCAL L1 jet trigger
+    if (fEventSelected & AliVEvent::kEMCEGA)            { Log(h,"kEMCEGA"); }             // EMCAL/DCAL L1 gamma trigger
+    if (fEventSelected & AliVEvent::kHighMultV0)        { Log(h,"kHighMultV0"); }         // High-multiplicity V0 trigger
+    if (fEventSelected & AliVEvent::kCentral)           { Log(h,"kCentral"); }            // Central trigger in PbPb 2011
+    if (fEventSelected & AliVEvent::kSemiCentral)       { Log(h,"kSemiCentral"); }        // Semicentral trigger in PbPb 2011
+    if (fEventSelected & AliVEvent::kDG)                { Log(h,"kDG"); }                 // Double gap diffractive
+    if (fEventSelected & AliVEvent::kDG5)               { Log(h,"kDG5"); }                // Double gap diffractive
+    if (fEventSelected & AliVEvent::kZED)               { Log(h,"kZED"); }                // ZDC electromagnetic dissociation
+    if (fEventSelected & AliVEvent::kSPI7)              { Log(h,"kSPI7"); }               // Power interaction trigger
+    if (fEventSelected & AliVEvent::kSPI)               { Log(h,"kSPI"); }                // Power interaction trigger
+    if (fEventSelected & AliVEvent::kINT8)              { Log(h,"kINT8"); }               // 0TVX trigger
+    if (fEventSelected & AliVEvent::kMuonSingleLowPt8)  { Log(h,"kMuonSingleLowPt8"); }   // Single muon low-pt, INT8 suite
+    if (fEventSelected & AliVEvent::kMuonSingleHighPt8) { Log(h,"kMuonSingleHighPt8"); }  // Single muon high-pt, INT8 suite
+    if (fEventSelected & AliVEvent::kMuonLikeLowPt8)    { Log(h,"kMuonLikeLowPt8"); }     // Like-sign dimuon low-pt, INT8 suite
+    if (fEventSelected & AliVEvent::kMuonUnlikeLowPt8)  { Log(h,"kMuonUnlikeLowPt8"); }   // Unlike-sign dimuon low-pt, INT8 suite
+    if (fEventSelected & AliVEvent::kMuonUnlikeLowPt0)  { Log(h,"kMuonUnlikeLowPt0"); }   // Unlike-sign dimuon low-pt, no additional L0 requirement
+    if (fEventSelected & AliVEvent::kUserDefined)       { Log(h,"kUserDefined"); }        // Set when custom trigger classes are set in AliPhysicsSelection
+    if (fEventSelected & AliVEvent::kTRD)               { Log(h,"kTRD"); }                // TRD trigger
+    if (fEventSelected & AliVEvent::kMuonCalo)          { Log(h,"kMuonCalo"); }           // Muon-calo triggers
+    if (fEventSelected & AliVEvent::kCaloOnly)          { Log(h,"kCaloOnly"); }           // MB, EMCAL and PHOS triggers in CALO or CALOFAST cluster    
+    if (fEventSelected & AliVEvent::kFastOnly)          { Log(h,"kFastOnly"); }           // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
+    if (fEventSelected & AliVEvent::kAny)               { Log(h,"kAny"); }                // to accept any defined trigger
+    if (fEventSelected & AliVEvent::kAnyINT)            { Log(h,"kAnyINT"); }             // to accept any interaction (aka minimum bias) trigger    
 }
 
 //_____________________________________________________________________________
@@ -523,13 +711,82 @@ void AliAnalysisTaskMKBase::FillTriggerLog()
 Bool_t AliAnalysisTaskMKBase::InitMCEvent() 
 {
     if (!fIsMC) return kFALSE;
+    TArrayF vtxMC(3);
+    // mc vertex    
+    fMCGenHeader->PrimaryVertex(vtxMC);
+    fMCxv = vtxMC[0];
+    fMCyv = vtxMC[1];
+    fMCzv = vtxMC[2];
+    
+    // mc mult
     fMCnTracks = fMC->GetNumberOfTracks();
+    
+    fMCnPrimPtCut = 0;
+    fMCnPrim10 = 0;
+    fMCnPrim08 = 0;
+    fMCnPrim05 = 0;
+    fMCnPrimV0M = 0;
+    fMCnPrim = 0;
+    
+    for (Int_t i = 0; i < fMCnTracks; i++) {
+        fMCParticle  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
+        if (!fMCParticle) { Err("noMCParticle"); continue; }   
+        fMCLabel = i;
+        InitMCParticle();
+        if (fMCIsCharged && fMCisPrim) {
+            fMCnPrim++;
+            if (TMath::Abs(fMCEta)<1.) { fMCnPrim10++; }
+            if (TMath::Abs(fMCEta)<0.8) { fMCnPrim08++; } 
+            if (TMath::Abs(fMCEta)<0.5) { fMCnPrim05++; }
+            if ( ( 2.8 < fMCEta) && (fMCEta <  5.1) ) { fMCnPrimV0M++; } //V0A
+            if ( (-3.7 < fMCEta) && (fMCEta < -1.7) ) { fMCnPrimV0M++; } //V0C 
+            if ( (TMath::Abs(fMCEta) < 0.8) && (fMCPt > 0.15) ) { fMCnPrimPtCut++; }
+        }
+    }    
+    InitMCEventType();
     return kTRUE;
 }
 
 //_____________________________________________________________________________
 
-Bool_t AliAnalysisTaskMKBase::InitVZERO()
+Bool_t AliAnalysisTaskMKBase::InitMCEventType()
+{
+    AliGenPythiaEventHeader* fMCGenHeaderPythia = dynamic_cast<AliGenPythiaEventHeader*>(fMCGenHeader);
+    AliGenDPMjetEventHeader* fMCGenHeaderDPMjet = dynamic_cast<AliGenDPMjetEventHeader*>(fMCGenHeader);
+
+    fMCProcessTypeFlag = 0;    
+    fMCEventType = AlidNdPtTools::kInvalidProcess;
+    
+    if(fMCGenHeaderPythia) {
+        LogEvent("PythiaGenHeader");
+        fMCProcessTypeFlag = fMCGenHeaderPythia->ProcessType();
+        if      (fMCProcessTypeFlag == 92) { fMCEventType = AlidNdPtTools::kSD; }
+        else if (fMCProcessTypeFlag == 93) { fMCEventType = AlidNdPtTools::kSD; }
+        else if (fMCProcessTypeFlag == 94) { fMCEventType = AlidNdPtTools::kDD; }
+        else if (fMCProcessTypeFlag == 91) { fMCEventType = AlidNdPtTools::kElastic; }
+        else if (fMCProcessTypeFlag == -2) { fMCEventType = AlidNdPtTools::kCD; }
+        else if (fMCProcessTypeFlag == -1) { fMCEventType = AlidNdPtTools::kND; }        
+        else { Err("UnknownPythiaEventType"); }
+    }
+    else if (fMCGenHeaderDPMjet) {
+        LogEvent("DPMjetGenHeader");
+        fMCProcessTypeFlag = fMCGenHeaderDPMjet->ProcessType();        
+        if      (fMCProcessTypeFlag == 5) { fMCEventType = AlidNdPtTools::kSD; }
+        else if (fMCProcessTypeFlag == 6) { fMCEventType = AlidNdPtTools::kSD; }
+        else if (fMCProcessTypeFlag == 7) { fMCEventType = AlidNdPtTools::kDD; }
+        else if (fMCProcessTypeFlag == 2) { fMCEventType = AlidNdPtTools::kElastic; }
+        else if (fMCProcessTypeFlag == 4) { fMCEventType = AlidNdPtTools::kCD; }
+        else if (fMCProcessTypeFlag == 1) { fMCEventType = AlidNdPtTools::kND; }                
+        else { Err("UnknownDPMjetEventType"); }        
+    } else {
+        LogEvent("unknownGenHeader");
+    }
+    return kTRUE;
+}
+
+//_____________________________________________________________________________
+
+Bool_t AliAnalysisTaskMKBase::InitEventVZERO()
 {
     fVZERO = fESD->GetVZEROData();
     if (!fVZERO) { 
@@ -556,6 +813,14 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
     }
     fSigma1Pt =  TMath::Sqrt(fSigma1Pt2);
     fSigned1Pt = fESDTrack->GetSigned1Pt();
+    f1Pt = TMath::Abs(fSigned1Pt);
+    
+    InitTrackCuts();
+    InitTrackIP();
+    InitTrackTPC();
+    
+    if (fIsMC) { InitMCTrack(); }
+    
     return kTRUE;
 }
 
@@ -579,13 +844,14 @@ Bool_t AliAnalysisTaskMKBase::InitMCTrack()
     
     fMCLabel = TMath::Abs(fESDTrack->GetLabel());
     if (fMCLabel < 0) { Log("tracklabel<0"); }
-    fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(fMCLabel));
+    fMCParticle  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(fMCLabel));
     if (!fMCParticle) { 
         Err("particleNOTinStack"); 
         return kFALSE;
     }    
-    
-    return InitMCParticle();
+    InitMCParticle();
+    if (fMCPrimSec == -1)             { Err("TrackNOTprimORsec"); }
+    return kTRUE;    
 }
 
 //_____________________________________________________________________________
@@ -619,7 +885,7 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
     if (fMCisPrim)     { fMCPrimSec = 0; fMCProdcutionType = AlidNdPtTools::kPrim; }
     if (fMCisSecDecay) { fMCPrimSec = 1; fMCProdcutionType = AlidNdPtTools::kSecDecay; }
     if (fMCisSecMat)   { fMCPrimSec = 2; fMCProdcutionType = AlidNdPtTools::kSecMaterial; }
-    if (fMCPrimSec == -1)             { Err("NOTprimORsec"); }
+    //if (fMCPrimSec == -1)             { Err("NOTprimORsec"); }
     if (fMCisPrim && fMCisSec)        { Err("primANDsec"); }
     if (fMCisSecDecay && fMCisSecMat) { Err("decayANDmat"); }
     fMCPDGCode = fMCParticle->PdgCode();
@@ -630,16 +896,113 @@ Bool_t AliAnalysisTaskMKBase::InitMCParticle()
 
 //_____________________________________________________________________________
 
+Bool_t AliAnalysisTaskMKBase::InitEventVertex()
+{
+    fVtxTRK = fESD->GetPrimaryVertexTracks();
+    fVtxStatusTRK = kFALSE;
+    if (fVtxTRK) { 
+        fVtxNContribTRK = fVtxTRK->GetNContributors();
+        fXvTRK = fVtxTRK->GetX();
+        fYvTRK = fVtxTRK->GetY();
+        fZvTRK = fVtxTRK->GetZ();
+        fXvResTRK = fVtxTRK->GetXRes();
+        fYvResTRK = fVtxTRK->GetYRes();
+        fZvResTRK = fVtxTRK->GetZRes();        
+        fVtxStatusTRK = fVtxTRK->GetStatus();
+        fVtxDispersionTRK = fVtxTRK->GetDispersion();
+        if (!fVtxStatusTRK) { LogEvent("noVertexTRK"); }        
+    } else {
+        LogEvent("PrimVtxTRK==0");
+    }
+    
+    fVtxSPD = fESD->GetPrimaryVertexSPD();
+    fVtxStatusSPD = kFALSE;
+    if (fVtxSPD) { 
+        fVtxNContribSPD = fVtxSPD->GetNContributors();
+        fXvSPD = fVtxSPD->GetX();
+        fYvSPD = fVtxSPD->GetY();
+        fZvSPD = fVtxSPD->GetZ();
+        fXvResSPD = fVtxSPD->GetXRes();
+        fYvResSPD = fVtxSPD->GetYRes();
+        fZvResSPD = fVtxSPD->GetZRes();        
+        fVtxStatusSPD = fVtxSPD->GetStatus();
+        fVtxDispersionSPD = fVtxSPD->GetDispersion();
+        if (!fVtxStatusSPD) { LogEvent("noVertexSPD"); }
+    } else {
+        LogEvent("PrimVtxSPD==0");
+    }
+    
+    fVtxTPC = fESD->GetPrimaryVertexTPC();
+    fVtxStatusTPC = kFALSE;
+    if (fVtxTPC) { 
+        fVtxNContribTPC = fVtxTPC->GetNContributors();
+        fXvTPC = fVtxTPC->GetX();
+        fYvTPC = fVtxTPC->GetY();
+        fZvTPC = fVtxTPC->GetZ();
+        fXvResTPC = fVtxTPC->GetXRes();
+        fYvResTPC = fVtxTPC->GetYRes();
+        fZvResTPC = fVtxTPC->GetZRes();        
+        fVtxStatusTPC = fVtxTPC->GetStatus();
+        fVtxDispersionTPC = fVtxTPC->GetDispersion();
+        if (!fVtxStatusTPC) { LogEvent("noVertexTPC"); }
+    } else {
+        LogEvent("PrimVtxTPC==0");
+    }
+    
+    fUsedVtxTRK = kFALSE;
+    fUsedVtxSPD = kFALSE;
+    fUsedVtxTPC = kFALSE;
+    
+    if (fVtxStatusTRK) {        
+        fVtx = fVtxTRK;           
+        fUsedVtxTRK = kTRUE;
+        LogEvent("usedVertexTRK");
+    } else if (fVtxStatusSPD) {
+        fVtx = fVtxSPD;            
+        fUsedVtxSPD = kTRUE;
+        LogEvent("usedVertexSPD");
+    } else if (fVtxStatusTPC) {        
+        fVtx = fVtxTPC;        
+        fUsedVtxTPC = kTRUE;
+        LogEvent("usedVertexTPC");
+    } else {
+        fVtx = 0; 
+        Log("noPrimVtx");
+    }
+    
+    // fill vertex information if there is a vertex    
+    if (fVtx) { 
+        fVtxNContrib = fVtx->GetNContributors();
+        fXv = fVtx->GetX();
+        fYv = fVtx->GetY();
+        fZv = fVtx->GetZ();
+        fXvRes = fVtx->GetXRes();
+        fYvRes = fVtx->GetYRes();
+        fZvRes = fVtx->GetZRes();        
+        fVtxStatus = fVtx->GetStatus();
+        fVtxDispersion = fVtx->GetDispersion();
+    } else {
+        fVtxStatus = kFALSE;
+        fVtxNContrib = 0;        
+    }
+    
+    fMultMB = fVtxNContrib;
+    fHasVertex = fVtxStatus; //fHasVertex is only an alias
+    return kTRUE;
+}
+
+//_____________________________________________________________________________
+
 Bool_t AliAnalysisTaskMKBase::InitEventCent()
 { 
     if (!fESD) { Err("MultCentRequiresESD"); return kFALSE; }
-    AliCentrality *centrality = fESD->GetCentrality();
+    AliCentrality *fCentrality = fESD->GetCentrality();
     fOldCentPercentileV0M = -1;
-    if (!centrality) { 
+    if (!fCentrality) { 
         LogEvent("noOldCentrality");
         return kFALSE;
     } else {
-        fOldCentPercentileV0M = centrality->GetCentralityPercentile("V0M");
+        fOldCentPercentileV0M = fCentrality->GetCentralityPercentile("V0M");
         if (fOldCentPercentileV0M < 0.) { LogEvent("fOldCentPercentileV0M<0"); }
         if (fOldCentPercentileV0M > 100.) { LogEvent("fOldCentPercentileV0M>100"); }
         if (fOldCentPercentileV0M == 0.) { LogEvent("fOldCentPercentileV0M==0"); }
@@ -651,26 +1014,28 @@ Bool_t AliAnalysisTaskMKBase::InitEventCent()
 
 Bool_t AliAnalysisTaskMKBase::InitEventMult()
 {
-    fEventCutsPassed = kFALSE;
+    fIsAcceptedAliEventCuts = kFALSE;
     fMultPercentileV0M = -1;
-    AliMultSelection *multSelection = 0; 
-    multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
-    if(!multSelection) {
+    fMultSelection = 0; 
+    fMultSelection = dynamic_cast<AliMultSelection*> (fEvent->FindListObject("MultSelection"));
+    if(!fMultSelection) {
         LogEvent("noMultSelection");
         return kFALSE;
     } else {
-        fMultPercentileV0M = multSelection->GetMultiplicityPercentile("V0M");
+        fMultPercentileV0M = fMultSelection->GetMultiplicityPercentile("V0M");
         if (fMultPercentileV0M < 0.) { LogEvent("fMultPercentileV0M<0"); }
         if (fMultPercentileV0M > 100.) { LogEvent("fMultPercentileV0M>100"); }
         if (fMultPercentileV0M == 0.) { LogEvent("fMultPercentileV0M==0"); }
         if (fMultPercentileV0M == 100.) { LogEvent("fMultPercentileV0M==100"); }        
     }
     
+    /*
+     * moved to InitEventChecks()
     // AliEventCut needs multiplcity task, otherwise it crashes
     // so we put it here  
-    fEventCutsPassed = fEventCuts.AcceptEvent(fEvent);
-    if (fEventCutsPassed) { LogEvent("AliEventCutsPassed"); }         
-    
+    fIsAcceptedAliEventCuts = fEventCuts.AcceptEvent(fEvent);
+    if (fIsAcceptedAliEventCuts) { LogEvent("AliEventCutsPassed"); }         
+    */
     return kTRUE;
 }
 
@@ -717,50 +1082,93 @@ Bool_t AliAnalysisTaskMKBase::InitTrackTPC()
 }
         
 //_____________________________________________________________________________
-        
+
+/// master function steering the task
+/// called by the AnalysisManager
+/// calles the event selection and AnaEvent functions of the derived classes
+
         
 void AliAnalysisTaskMKBase::UserExec(Option_t *)
 {   
-    // call analysis for data and mc
-    ReadEvent();
-    ReadMCEvent();
-    
-    AnaEvent();
-    if (fIsMC) {
-        AnaMCEvent(); 
-    } else {
-        AnaDATAEvent();
+    // Read the event and set all event related properties
+    if (! ReadEvent()) {         
+        Err("AliAnalysisTaskMKBase::UserExec:ErrorReadingEvent");
+        return;
     }
-    
+    // we analyse only events that could be properly read
+    FillDefaultHistograms(0);
+    fIsEventAccepted = IsEventSelected();
+    if (fIsEventAccepted) {
+        FillDefaultHistograms(1);
+        // call user analysis of the event
+        AnaEvent();
+        // call mc and data anlayses
+        if (fIsMC) {
+            AnaEventMC(); 
+        } else {
+            AnaEventDATA();
+        }
+    }
     // postdata
     PostData(1, fOutputList);
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKBase::LoopOverAllTracks()
+/// Function to fill default event histograms of the base class
+/// Histograms for trigger and run are filled twice:
+/// before and after the user implemented event selection
+/// to remove filling of the histograms, overwrite this function
+/// in the derived class
+
+void AliAnalysisTaskMKBase::FillDefaultHistograms(Int_t step)
+{    
+    if (step == 0) {
+        Log(fTrigInfo,fFiredTriggerClasses.Data());
+        FillTrigHist(fTrigHist);
+        Log(fRunHist,fRunNumberString.Data());
+    }
+    else if (step == 1) {
+        Log(fTrigInfoSelected,fFiredTriggerClasses.Data());
+        FillTrigHist(fTrigHistSelected);
+        Log(fRunHistSelected,fRunNumberString.Data());
+    } else {
+        Err("AliAnalysisTaskMKBase::FillDefaultHistograms:InvalidStep");
+    }
+    
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskMKBase::LoopOverAllTracks(Int_t flag)
 {    
     fNTracksESD = fESD->GetNumberOfTracks();
     for (Int_t i = 0; i < fNTracksESD; i++) {
-        fESDTrack = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+        fESDTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(i));
         if (!fESDTrack) { Err("noESDtrack"); continue; }
-        
-        AnaTrack();
-        if (fIsMC) AnaMCTrack();
+        InitTrack();
+        AnaTrack(flag);
+        if (fIsMC) {
+            AnaTrackMC(flag); 
+        } else {
+            AnaTrackDATA(flag); 
+        }
     }
 }
 
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskMKBase::LoopOverAllParticles()
+void AliAnalysisTaskMKBase::LoopOverAllParticles(Int_t flag)
 {    
+    if (!fIsMC) return;
     fMCnTracks = fMC->GetNumberOfTracks();
     for (Int_t i = 0; i < fMCnTracks; i++) {
-        fMCParticle  = static_cast<AliMCParticle*>(fMC->GetTrack(i));
+        fMCParticle  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
         if (!fMCParticle) { Err("noMCParticle"); continue; }         
         fMCLabel = i;
-        AnaMCParticle();        
+        InitMCParticle();
+        AnaParticleMC(flag);
     }
 }
 

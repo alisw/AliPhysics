@@ -85,6 +85,7 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   TH2D * fDCABeautyNewRAAIP;
   TH2D * fDCABeautyNewRAAOOP;
   TH2D * fDCAConversionNew;
+  TH3D * fDCAConversionNewCent;
   TH2D * fDCADalitzNew;
   TH2D * fDCADalitzCharm; // c -> x -> e
   TH2D * fDCADalitzBeauty;

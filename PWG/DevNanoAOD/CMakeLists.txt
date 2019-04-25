@@ -32,9 +32,11 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   AliAnalysisNanoAODCuts.cxx
   AliAnalysisTaskNanoAODFilter.cxx
+  AliAnalysisTaskNanoAODskimming.cxx
   AliNanoAODCustomSetter.cxx
   AliNanoAODReplicator.cxx
   AliNanoAODTrack.cxx
+  AliNanoFilterNormalisation.cxx
   AliAnalysisNanoAODCutsCRCZDC.cxx
   AliAnalysisNanoAODCutsJet.cxx
   AliNanoAODTrackMapping.cxx
@@ -101,3 +103,5 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install(DIRECTORY . DESTINATION PWG/DevNanoAOD FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY macros DESTINATION PWG/DevNanoAOD)
+

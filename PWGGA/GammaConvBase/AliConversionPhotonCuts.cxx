@@ -153,6 +153,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fUseEtaMinCut(kFALSE),
   fUseOnFlyV0Finder(kTRUE),
   fUseOnFlyV0FinderSameSign(0),
+  fUseBDTPhotonCuts(0),
   fDoPhotonAsymmetryCut(kTRUE),
   fDoPhotonPDependentAsymCut(kFALSE),
   fFAsymmetryCut(0),
@@ -310,6 +311,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fUseEtaMinCut(ref.fUseEtaMinCut),
   fUseOnFlyV0Finder(ref.fUseOnFlyV0Finder),
   fUseOnFlyV0FinderSameSign(ref.fUseOnFlyV0FinderSameSign),
+  fUseBDTPhotonCuts(ref.fUseBDTPhotonCuts),
   fDoPhotonAsymmetryCut(ref.fDoPhotonAsymmetryCut),
   fDoPhotonPDependentAsymCut(ref.fDoPhotonPDependentAsymCut),
   fFAsymmetryCut(ref.fFAsymmetryCut),
@@ -1579,6 +1581,46 @@ Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, Ali
   return Kappa;
 
 }
+///________________________________________________________________________
+Bool_t AliConversionPhotonCuts::GetBDTVariableValues(AliConversionPhotonBase *gamma, AliVEvent * event, Float_t* values){
+
+  if(!fPIDResponse){InitPIDResponse();}// Try to reinitialize PID Response
+  if(!fPIDResponse){AliError("No PID Response"); return kFALSE;}// if still missing fatal error
+
+  AliVTrack * negTrack = GetTrack(event, gamma->GetTrackLabelNegative());
+  AliVTrack * posTrack = GetTrack(event, gamma->GetTrackLabelPositive());
+  Int_t nPosClusterITS = 0;
+  Int_t nNegClusterITS = 0;
+  for(Int_t itsLayer = 0; itsLayer<6;itsLayer++){
+    if(TESTBIT(negTrack->GetITSClusterMap(),itsLayer)){
+      nNegClusterITS++;
+    }
+    if(TESTBIT(posTrack->GetITSClusterMap(),itsLayer)){
+      nPosClusterITS++;
+    }
+  }
+
+  //"dEdxElectronITS + dEdxPositronITS"
+  if (nPosClusterITS > 0 ){
+    values[0] =  posTrack->GetITSsignal();
+  } else {
+    values[0] =  1000;
+  }
+  if (nNegClusterITS > 0 ){
+    values[0] +=  negTrack->GetITSsignal();
+  } else {
+    values[0] +=  1000;
+  }
+
+  values[1]= (Float_t)posTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(gamma->GetConversionRadius())); //"fracClsTPCPositron"
+  values[2]= (Float_t)negTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(gamma->GetConversionRadius())); //"fracClsTPCElectron"
+  values[3]= nPosClusterITS; //"clsITSPositron"
+  values[4]= nNegClusterITS; //"clsITSElectron"
+  values[5]=fPIDResponse->NumberOfSigmasTPC(negTrack,AliPID::kElectron); //"nSigmaTPCElectron"
+  values[6]=fPIDResponse->NumberOfSigmasTPC(posTrack,AliPID::kElectron); //"nSigmaTPCPositron"
+
+  return kTRUE;
+}
 
 
 ///________________________________________________________________________
@@ -2325,6 +2367,12 @@ Bool_t AliConversionPhotonCuts::SetV0Finder(Int_t v0FinderType){   // Set Cut
     cout << "have chosen onfly V0 unlike sign and same signs pairing" << endl;
     fUseOnFlyV0Finder=kTRUE;
     fUseOnFlyV0FinderSameSign=2;
+    break;
+  case 4:  // on fly V0 finder using BDT cuts on the rest of the variables
+    cout << "have chosen onfly V0" << endl;
+    fUseOnFlyV0Finder=kTRUE;
+    fUseOnFlyV0FinderSameSign=0;
+    fUseBDTPhotonCuts=kTRUE;
     break;
   default:
     AliError(Form(" v0FinderType not defined %d",v0FinderType));

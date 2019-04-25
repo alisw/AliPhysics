@@ -137,6 +137,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t GetNCaloClusters() const {return fNCaloClusters;}
   AliReducedCaloClusterInfo* GetCaloCluster(Int_t i) const 
     {return (i>=0 && i<fNCaloClusters ? (AliReducedCaloClusterInfo*)fCaloClusters->At(i) : 0x0);}
+  AliReducedCaloClusterInfo* GetCaloClusterFromID(Int_t clusterID) const;
   
   void  GetQvector(Double_t Qvec[][2], Int_t det, Float_t etaMin=-0.8, Float_t etaMax=+0.8, Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);
   Int_t GetTPCQvector(Double_t Qvec[][2], Int_t det, Float_t etaMin=-0.8, Float_t etaMax=+0.8, Bool_t (*IsTrackSelected)(AliReducedTrackInfo*)=NULL);

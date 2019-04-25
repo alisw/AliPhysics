@@ -154,6 +154,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TString GetCutNumber();
 
     Float_t GetKappaTPC(AliConversionPhotonBase *gamma, AliVEvent *event);
+    Bool_t GetBDTVariableValues(AliConversionPhotonBase *gamma, AliVEvent *event, Float_t* values);
 
     // Cut Selection
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
@@ -255,6 +256,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
+    Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
     Bool_t GetElecDeDxPostCalibrationInitialized() {return fElecDeDxPostCalibrationInitialized;}
     Bool_t  InitializeElecDeDxPostCalibration(TString filename);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
@@ -319,6 +321,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fUseEtaMinCut;                        ///< flag
     Bool_t            fUseOnFlyV0Finder;                    ///< flag
     Int_t             fUseOnFlyV0FinderSameSign;            ///< int to set same sign pairing
+    Bool_t            fUseBDTPhotonCuts;                    ///< flag
     Bool_t            fDoPhotonAsymmetryCut;                ///< flag to use the PhotonAsymetryCut
     Bool_t            fDoPhotonPDependentAsymCut;           ///< flag to use the PhotonAsymetryCut with P dependent cut
     TF1 *             fFAsymmetryCut;                       ///<
@@ -402,7 +405,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,20)
+    ClassDef(AliConversionPhotonCuts,21)
     /// \endcond
 };
 

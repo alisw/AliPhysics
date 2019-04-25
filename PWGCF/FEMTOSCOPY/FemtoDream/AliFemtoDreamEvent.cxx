@@ -9,6 +9,7 @@
 #include "AliAODHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODVZERO.h"
+#include "AliVEvent.h"
 #include "AliMultSelection.h"
 #include "AliESDtrackCuts.h"
 
@@ -77,11 +78,9 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
   }
 
   if (trigger != AliVEvent::kINT7) {
-    fEvtCuts->SetManualMode();
-    fEvtCuts->SetupRun2pp();
     std::cout << "Setting up Track Cuts correspondingly for pp trigger: "
               << trigger << std::endl;
-    fEvtCuts->fTriggerMask = trigger;
+    fEvtCuts->OverrideAutomaticTriggerSelection(trigger);
   }
   if (EvtCutQA) {
     fEvtCutList = new TList();
@@ -133,9 +132,10 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
 }
 
 void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
+  AliAODHeader *header = dynamic_cast<AliAODHeader*>(evt->GetHeader());
+
   AliAODVertex *vtx = evt->GetPrimaryVertex();
   AliAODVZERO *vZERO = evt->GetVZEROData();
-  AliAODHeader *header = dynamic_cast<AliAODHeader*>(evt->GetHeader());
   if (!vtx) {
     this->fHasVertex = false;
   } else {
@@ -166,9 +166,8 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fNSPDClusterLy1 = evt->GetNumberOfITSClusters(1);
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
-  this->fRefMult08 = header->GetRefMultiplicityComb08();
   this->fspher = CalculateSphericityEvent(evt);
-
+  fRefMult08 = header->GetRefMultiplicityComb08();
   AliMultSelection *MultSelection = 0x0;
   MultSelection = (AliMultSelection *) evt->FindListObject("MultSelection");
   if (!MultSelection) {
@@ -178,6 +177,46 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
     fV0MCentrality = MultSelection->GetMultiplicityPercentile("V0M");
   }
   return;
+}
+
+void AliFemtoDreamEvent::SetEvent(AliVEvent *evt) {
+  AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(evt->GetHeader());
+  const AliVVertex *vtx = evt->GetPrimaryVertex();
+  if (!vtx) {
+    this->fHasVertex = false;
+  } else {
+    this->fHasVertex = true;
+    this->fnContrib = vtx->GetNContributors();
+    this->fxVtx = vtx->GetX();
+    this->fyVtx = vtx->GetY();
+    this->fzVtx = vtx->GetZ();
+  }
+  if (TMath::Abs(evt->GetMagneticField()) < 0.001) {
+    this->fHasMagField = false;
+  } else {
+    this->fHasMagField = true;
+    this->fBField = evt->GetMagneticField();
+  }
+
+  // This we already know since the NanoAOD filtering was done
+  this->fisPileUp = false;
+  this->fPassAliEvtSelection = true;
+
+  this->fNSPDClusterLy0 = evt->GetNumberOfITSClusters(0);
+  this->fNSPDClusterLy1 = evt->GetNumberOfITSClusters(1);
+  static const Int_t kRefMult =
+      nanoHeader->GetVarIndex("MultSelection.RefMult08");
+  if (kRefMult != -1) {
+    this->fRefMult08 = nanoHeader->GetVar(kRefMult);
+  }
+  this->fV0MCentrality = nanoHeader->GetCentr("V0M");
+
+  // TODO
+  //  this->fSPDMult = CalculateITSMultiplicity(evt);
+  //  const AliVVZERO *vZERO = evt->GetVZEROData();
+  //  this->fV0AMult = vZERO->GetMTotV0A();
+  //  this->fV0CMult = vZERO->GetMTotV0C();
+  //  this->fspher = CalculateSphericityEvent(evt);
 }
 
 void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
@@ -299,8 +338,6 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
     double pt = aodtrack->Pt();
     double px = aodtrack->Px();
     double py = aodtrack->Py();
-    double pz = aodtrack->Pz();
-    double eta = aodtrack->Eta();
 
     ptTot += pt;
 

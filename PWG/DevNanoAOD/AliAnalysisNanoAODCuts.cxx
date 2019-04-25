@@ -346,7 +346,7 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
     Float_t xvP = evt->GetPrimaryVertex()->GetX();
     Float_t yvP = evt->GetPrimaryVertex()->GetY();
     Float_t zvP = evt->GetPrimaryVertex()->GetZ();
-    Double_t vecTarget[3] = { xvP, yvP, zvP };
+    // Double_t vecTarget[3] = { xvP, yvP, zvP };
     if (fCPACascMin > 0.
         && cascade->CosPointingAngleXi(xvP, yvP, zvP) < fCPACascMin) {
       return false;
@@ -426,8 +426,13 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
                                                         nTrack,
                                                         AliPID::kPion);
 
+    Float_t nSigBachKaon = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
+                                                        nTrack,
+                                                        AliPID::kKaon);
+
     // if the Bachelor is not a pion, the candidate can go
-    if (!nSigBachPion < fCascDaugnSigTPCMax) {
+    if (!((nSigBachPion < fCascDaugnSigTPCMax)||
+        (nSigBachKaon < fCascDaugnSigTPCMax))) {
       return false;
     }
     // if the daughter tracks are not a proton or a pion within loose cuts, the candidate can be rejected
@@ -539,7 +544,7 @@ Bool_t AliAnalysisNanoAODCascadeParametricCuts::IsSelected(TObject* obj) {
         Float_t xvP = evt->GetPrimaryVertex()->GetX();
         Float_t yvP = evt->GetPrimaryVertex()->GetY();
         Float_t zvP = evt->GetPrimaryVertex()->GetZ();
-        Double_t vecTarget[3] = { xvP, yvP, zvP };
+        // Double_t vecTarget[3] = { xvP, yvP, zvP };
         //======== casc cosPA =========================
         Float_t lCascCosPACut = fCPACascMin;
         Float_t lVarCascCosPA = TMath::Cos(
@@ -724,6 +729,9 @@ void AliNanoAODSimpleSetter::Init(AliNanoAODHeader* head, TString varListHeader)
   Int_t index=0;
   Int_t indexInt=0;
   
+  // HACK workaround for bug in initializer of AliNanoAODHeader in AliRoot v5-09-47b
+  head->SetNumberOfESDTracksIndex(-1);
+  
   std::map<TString,int> cstMap = head->GetMapCstVar();
 
   while ((token = (TObjString*) it.Next())) {
@@ -787,8 +795,10 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent* event, AliNanoA
     centrCL0 = MultSelection->GetMultiplicityPercentile("CL0");
     centrTRK = MultSelection->GetMultiplicityPercentile("TRK");
     
-    for (std::map<TString,int>::iterator it = fMultMap.begin(); it != fMultMap.end(); it++)
-      head->SetVar(it->second, MultSelection->GetMultiplicityPercentile(it->first));
+    for (std::map<TString,int>::iterator it = fMultMap.begin(); it != fMultMap.end(); it++) {
+      double value = it->first.EndsWith(".Value") ?  MultSelection->GetEstimator(it->first(0, it->first.Length() - 6))->GetValue() : MultSelection->GetMultiplicityPercentile(it->first);
+      head->SetVar(it->second, value);
+    }
   }else{
     //2011 
     AliCentrality * centralityObj = header->GetCentralityP();

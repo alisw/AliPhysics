@@ -7,9 +7,6 @@
 
 #include "SystemOfUnits.h"   // has "tesla" in it
 
-#include <algorithm>
-
-
 
 AliFemtoTrack::AliFemtoTrack():
   fCharge(0),

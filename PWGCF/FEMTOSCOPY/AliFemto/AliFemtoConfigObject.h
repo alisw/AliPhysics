@@ -222,7 +222,7 @@ public:
     // ConstructorDef(char*, kSTRING, fValueString);
 
     // constructors with all associated value-types (IntValue_t, MapValue_t, etc..)
-    FORWARD_STANDARD_TYPES(ConstructorDef);
+    FORWARD_STANDARD_TYPES(ConstructorDef)
 
     //ConstructorDef(TString, kSTRING, fValueString);   // implicit cast - not allowed by clang 9.0, must be declared explicitly
     ConstructorDef(int, kINT, fValueInt);
@@ -287,7 +287,7 @@ public:
 
 #endif
 
-    FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
+    FORWARD_STANDARD_TYPES(IMPL_BUILDITEM)
 
     IMPL_BUILDITEM_CASTED(Float_t, FloatValue_t);
     IMPL_BUILDITEM_CASTED(Int_t, IntValue_t);
@@ -357,7 +357,7 @@ public:
     bool operator==(const __type &rhs) const { return fTypeTag == __tag && __target == rhs; } \
     bool operator!=(const __type &rhs) const { return !operator==(rhs); }
 
-    FORWARD_STANDARD_TYPES(IMPL_EQUALITY);
+    FORWARD_STANDARD_TYPES(IMPL_EQUALITY)
     IMPL_EQUALITY(TString, kSTRING, fValueInt); // fValueString);
 
   #undef IMPL_EQUALITY
@@ -467,24 +467,22 @@ public:
   #undef IMPL_FINDANDLOAD
 
   bool find_and_load(const Key_t &key, AliFemtoConfigObject &dest) const
-  {
-    if (is_map()) {
-      MapValue_t::const_iterator found = fValueMap.find(key);
-      if (found != fValueMap.cend()) {
-        dest = found->second;
-        return true;
+    {
+      if (is_map()) {
+        if (const AliFemtoConfigObject *found = find(key)) {
+          dest = *found;
+          return true;
+        }
       }
+      return false;
     }
-    return false;
-  }
-
 
   #define IMPL_GET(__type, _ignored, __ignored) \
     __type get(const Key_t &key, const __type &defval) const \
       { __type result(defval); find_and_load(key, result);  \
         return result; }
 
-  FORWARD_STANDARD_TYPES(IMPL_GET);
+  FORWARD_STANDARD_TYPES(IMPL_GET)
   IMPL_GET(pair_of_floats, kRANGE, fValueRange);
   IMPL_GET(pair_of_ints, kRANGE, fValueRange);
   // IMPL_GET(int, kINT, fValueInt);
@@ -493,6 +491,46 @@ public:
   IMPL_GET(TString, kSTRING, fValueString);
 
   #undef IMPL_GET
+
+  AliFemtoConfigObject get_object(const Key_t &key) const
+    {
+      AliFemtoConfigObject result;
+      find_and_load(key, result);
+      return result;
+    }
+
+  double get_num(const Key_t &key, const double defval=NAN) const
+    {
+      double result = defval;
+
+      if (is_map()) {
+        const AliFemtoConfigObject *found = find(key);
+        if (found) {
+          if (found->is_float()) {
+            result = found->fValueFloat;
+          }
+          else if (found->is_int()) {
+            result = found->fValueInt;
+          }
+        }
+      }
+
+      return result;
+    }
+
+  TString get_str(const Key_t &key, const TString &defval="") const
+    {
+      TString result = defval;
+
+      if (is_map()) {
+        const AliFemtoConfigObject *found = find(key);
+        if (found && found->is_str()) {
+          result = found->fValueString;
+        }
+      }
+
+      return result;
+    }
 
   #if __cplusplus < 201103L
 
@@ -520,7 +558,7 @@ public:
 
   #endif
 
-    FORWARD_STANDARD_TYPES(IMPL_INSERT);
+    FORWARD_STANDARD_TYPES(IMPL_INSERT)
 
     IMPL_INSERT(pair_of_floats, kRANGE, fValueRange);
     IMPL_INSERT(pair_of_ints, kRANGE, fValueRange);
@@ -541,7 +579,7 @@ public:
       if (!is_map()) { return; }                          \
       fValueMap.emplace(key, std::move(value)); }
 
-  FORWARD_STANDARD_TYPES(IMPL_INSERT);
+  FORWARD_STANDARD_TYPES(IMPL_INSERT)
 
   #undef IMPL_INSERT
   #endif
@@ -561,7 +599,7 @@ public:
   /// Delete the pointer after use!
   ///
   /// Index starts at 0. Negative numbers wrap around to the back, so '-1'
-  /// removes the last element (default behavior).
+  /// removes the last element (default
   ///
   /// If not array, or index out of bounds returns nullptr
   AliFemtoConfigObject* pop(Int_t index=-1);

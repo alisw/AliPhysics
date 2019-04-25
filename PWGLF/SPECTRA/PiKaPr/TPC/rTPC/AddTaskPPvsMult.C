@@ -14,11 +14,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
 		Bool_t MakePid = kFALSE,
-		const Int_t LHC16l = 1,  // 1-LHC16l 0-LHC16k 
-		const Int_t CrossedRowsTPC = 60,
-		const Int_t ChiSquaredTPC = 5,
-		const Int_t MaxDCAz = 1,
-		const Int_t VtxZcut = 10
+		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
 		)   
 {
 
@@ -37,9 +33,6 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 
 	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
 	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	esdTrackCutsGolden->SetMinNCrossedRowsTPC(CrossedRowsTPC);
-	esdTrackCutsGolden->SetMaxChi2PerClusterTPC(ChiSquaredTPC);
-	esdTrackCutsGolden->SetMaxDCAToVertexZ(MaxDCAz);
 	trackFilterGolden->AddCuts(esdTrackCutsGolden);
 
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");
@@ -80,7 +73,7 @@ AliAnalysisTaskPPvsMult* AddTaskPPvsMult(
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-	task->SetVtxCut(VtxZcut);
+//	task->SetVtxCut(10.0);
 //	task->SetTrigger(AliVEvent::kINT7);
 //	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr

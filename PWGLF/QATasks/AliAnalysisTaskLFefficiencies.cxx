@@ -124,7 +124,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
 
   for (int iMC = 0; iMC < mcEv->GetNumberOfTracks(); ++iMC) {
     AliVParticle* part = mcEv->GetTrack(iMC);
-    if (!mcEv->IsPhysicalPrimary(iMC)) continue;
+    if (!part->IsPhysicalPrimary()) continue;
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {

@@ -8,6 +8,7 @@
 /// The main output is stored in a THnSparse histogram or in a TTree.
 ///
 /// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+//  \author  adapted for Substructure measurements by Leticia Cunqueiro
 /// \date Oct 13, 2017
 
 #ifndef ALIANALYSISTASKDMESONJETSSUB_H

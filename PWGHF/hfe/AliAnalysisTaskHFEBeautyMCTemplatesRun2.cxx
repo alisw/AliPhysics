@@ -45,14 +45,14 @@ ClassImp(AliAnalysisTaskHFEBeautyMCTemplatesRun2)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEBeautyMCTemplatesRun2::AliAnalysisTaskHFEBeautyMCTemplatesRun2()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCABeautyNew(0), fDCAConversionNew(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCABeautyNew(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
 {
   
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHFEBeautyMCTemplatesRun2::AliAnalysisTaskHFEBeautyMCTemplatesRun2(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCABeautyNew(0), fDCAConversionNew(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCABeautyNew(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
 {
   // Constructor
   // Define input and output slots here
@@ -82,6 +82,9 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
   // Create histograms
   // Called once
     Double_t ptbinningX[19] = {0., 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2., 2.5, 3., 4., 6., 8., 10., 12., 16., 20.}; // Apr 2018 binning
+    Double_t CentBins[11] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
+    Double_t * IPbins = new Double_t[401];
+    for(int i=0;i<401;i++) IPbins[i] = -0.2 + 0.4/400.*double(i);
     
     fCentrality = new TH1D(Form("fCentrality"),Form("fCentrality"), 20, 0., 100.);
     //fSourceGenerator = new TH2D(Form("fSourceGenerator"),Form("fSourceGenerator"), 10, -0.5, 9.5, 20, -1.5, 18.5);
@@ -111,6 +114,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fDCABeautyNewRAAIP = new TH2D(Form("fDCABeautyNewRAAIP"),Form("fDCABeautyNewRAAIP"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCABeautyNewRAAOOP = new TH2D(Form("fDCABeautyNewRAAOOP"),Form("fDCABeautyNewRAAOOP"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCAConversionNew = new TH2D(Form("fDCAConversionNew"),Form("fDCAConversionNew"), 18, ptbinningX, 400, -0.2, 0.2);
+    fDCAConversionNewCent = new TH3D(Form("fDCAConversionNewCent"),Form("fDCAConversionNewCent"), 18, ptbinningX, 400, IPbins, 10, CentBins);
     fDCADalitzNew = new TH2D(Form("fDCADalitzNew"),Form("fDCADalitzNew"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCADalitzCharm = new TH2D(Form("fDCADalitzCharm"),Form("fDCADalitzCharm"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCADalitzBeauty = new TH2D(Form("fDCADalitzBeauty"),Form("fDCADalitzBeauty"), 18, ptbinningX, 400, -0.2, 0.2);
@@ -165,6 +169,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fOutputContainer->Add(fDCABeautyNewRAAIP);
     fOutputContainer->Add(fDCABeautyNewRAAOOP);
     fOutputContainer->Add(fDCAConversionNew);
+    fOutputContainer->Add(fDCAConversionNewCent);
     fOutputContainer->Add(fDCADalitzNew);
     fOutputContainer->Add(fDCADalitzCharm);
     fOutputContainer->Add(fDCADalitzBeauty);
@@ -432,7 +437,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
   vertex->GetXYZ(vtx);
   vertexSPD->GetXYZ(vtxSPD);
 
-  bool analyzeEvent=(centrality>=0.0 && centrality<=90.0 && TMath::Sqrt(vcov[5]) < 0.25 && TMath::Abs(vtx[2])<10. && TMath::Abs(vtx[2] - vtxSPD[2]) < 0.5);
+  bool analyzeEvent=(centrality>=0.0 && centrality<=60.0 && TMath::Sqrt(vcov[5]) < 0.25 && TMath::Abs(vtx[2])<10. && TMath::Abs(vtx[2] - vtxSPD[2]) < 0.5); // had 0-90 before
   //hfetrackCuts->SetRecEvent(aodEvent);
 
   int nTracks = aodEvent->GetNumberOfTracks();
@@ -544,7 +549,10 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
           if(rndm < BeautyOOPCorrection) fDCABeautyNewRAAOOP->Fill(pt, IP);
         }
         if(SourceNew == 2 && !IsAddedSignal(mcple))
+        {
           fDCAConversionNew->Fill(pt, IP);
+          fDCAConversionNewCent->Fill(pt, IP, centrality);
+        }
         if(SourceNew == 3 && !IsAddedSignal(mcple))
           fDCADalitzNew->Fill(pt, IP);
 

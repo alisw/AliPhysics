@@ -885,7 +885,7 @@ void AliReducedAnalysisFilterTrees::LoopOverMCTracks(Int_t trackArray /*=1*/) {
       daughter2 = FindMCtruthTrackByLabel(daughter2Label);
 
       // reset track variables and fill info
-      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kEMCALmatchedEOverP; ++i) fValues[i]=-9999.;
+      for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
       AliReducedVarManager::FillMCTruthInfo(mother, fValues, daughter1, daughter2);
 
       // loop over jpsi mother selections and fill histograms before the kine cuts on electrons

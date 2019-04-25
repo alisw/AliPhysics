@@ -33,10 +33,11 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoCascadeHF.h"
+#include "AliAODMCHeader.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliNeutralTrackParam.h"
 #include "AliAnalysisTaskSEImproveITS.h"
-
+#include "AliVertexingHFUtils.h"
 //
 // Implementation of the "hybrid-approach" for ITS upgrade studies.
 // The tastk smears the track parameters according to estimations
@@ -101,20 +102,8 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
    fPt1ResKUpgSA  (0),
    fPt1ResPiUpgSA (0),
    fPt1ResEUpgSA (0),
-   fRunInVertexing(kFALSE),
-   fImproveTracks(kTRUE),
-   fUpdateSecVertCovMat(kTRUE),
-   fUpdateSTCovMatrix(kTRUE),
-   fUpdatePulls(kTRUE),
-   fMimicData(kFALSE),
-   fIsAOD        (kTRUE),
-   fMCs         (0),
-   fDebugOutput (0),
-   fDebugNtuple (0),
-   fDebugVars   (0), 
-   fNDebug      (0)
    // specific stuff for PbPb 2018
-  ,fIsPbPb2018(kFALSE)
+   fIsPbPb2018(kFALSE)
    // kFirst
   ,fD0ZResPCur_PbPb2018_kFirst(0)
   ,fD0ZResKCur_PbPb2018_kFirst(0) 
@@ -220,7 +209,20 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS()
   ,fPt1ResPUpgSA_PbPb2018_kOnlySecond(0) 
   ,fPt1ResKUpgSA_PbPb2018_kOnlySecond(0) 
   ,fPt1ResPiUpgSA_PbPb2018_kOnlySecond(0) 
-  ,fPt1ResEUpgSA_PbPb2018_kOnlySecond(0) 
+  ,fPt1ResEUpgSA_PbPb2018_kOnlySecond(0),
+   fRunInVertexing(kFALSE),
+   fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kTRUE),
+   fUpdateSTCovMatrix(kTRUE),
+   fUpdatePulls(kTRUE),
+   fMimicData(kFALSE),
+   fIsAOD        (kTRUE),
+   fSmearOnlySignal(kFALSE),
+   fMCs         (0),
+   fDebugOutput (0),
+   fDebugNtuple (0),
+   fDebugVars   (0), 
+   fNDebug      (0)
 {
   //
   // Default constructor.
@@ -319,20 +321,8 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
    fPt1ResKUpgSA  (0),
    fPt1ResPiUpgSA (0),
    fPt1ResEUpgSA (0),
-   fRunInVertexing(isRunInVertexing),
-   fImproveTracks(kTRUE),
-   fUpdateSecVertCovMat(kTRUE),
-   fUpdateSTCovMatrix(kTRUE),
-   fUpdatePulls(kTRUE),
-   fMimicData(kFALSE),
-   fIsAOD        (kTRUE),
-   fMCs         (0),
-   fDebugOutput (0),
-   fDebugNtuple (0),
-   fDebugVars   (0),
-   fNDebug      (ndebug)
    // specific stuff for PbPb 2018
-  ,fIsPbPb2018(kFALSE)
+   fIsPbPb2018(kFALSE)
    // kFirst
   ,fD0ZResPCur_PbPb2018_kFirst(0)
   ,fD0ZResKCur_PbPb2018_kFirst(0) 
@@ -438,7 +428,20 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
   ,fPt1ResPUpgSA_PbPb2018_kOnlySecond(0) 
   ,fPt1ResKUpgSA_PbPb2018_kOnlySecond(0) 
   ,fPt1ResPiUpgSA_PbPb2018_kOnlySecond(0) 
-  ,fPt1ResEUpgSA_PbPb2018_kOnlySecond(0) 
+  ,fPt1ResEUpgSA_PbPb2018_kOnlySecond(0),
+   fRunInVertexing(isRunInVertexing),
+   fImproveTracks(kTRUE),
+   fUpdateSecVertCovMat(kTRUE),
+   fUpdateSTCovMatrix(kTRUE),
+   fUpdatePulls(kTRUE),
+   fMimicData(kFALSE),
+   fIsAOD        (kTRUE),
+   fSmearOnlySignal(kFALSE),
+   fMCs         (0),
+   fDebugOutput (0),
+   fDebugNtuple (0),
+   fDebugVars   (0),
+   fNDebug      (ndebug)
 {
   //
   // Constructor to be used to create the task.
@@ -597,54 +600,37 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
     }
     else  // analysing PbPb 2018 periods
     {
-      printf("\nCur\n--------------------\n");
       if(resfileCur->Get("kFirst_D0RPResP") && resfileCur->Get("kOnlySecond_D0RPResP")){
         fD0RPResPCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPResP")->Clone("kFirst_D0RPResPCur"));
         fD0RPResPCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPResP")->Clone("kOnlySecond_D0RPResPCur"));
-        printf("%p\n",fD0RPResPCur_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResPCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPResK") && resfileCur->Get("kOnlySecond_D0RPResK")){
         fD0RPResKCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPResK")->Clone("kFirst_D0RPResKCur"));
         fD0RPResKCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPResK")->Clone("kOnlySecond_D0RPResKCur"));
-        printf("%p\n",fD0RPResKCur_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResKCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPResPi") && resfileCur->Get("kOnlySecond_D0RPResPi")){
         fD0RPResPiCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPResPi")->Clone("kFirst_D0RPResPiCur"));
         fD0RPResPiCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPResPi")->Clone("kOnlySecond_D0RPResPiCur"));
-        printf("%p\n",fD0RPResPiCur_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResPiCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPResE") && resfileCur->Get("kOnlySecond_D0RPResE")){
         fD0RPResECur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPResE")->Clone("kFirst_D0RPResECur"));
         fD0RPResECur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPResE")->Clone("kOnlySecond_D0RPResECur"));
-        printf("%p\n",fD0RPResECur_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResECur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPSigmaPullRatioP") && resfileCur->Get("kOnlySecond_D0RPSigmaPullRatioP")){
         fD0RPSigmaPullRatioP_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPSigmaPullRatioP"));
         fD0RPSigmaPullRatioP_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPSigmaPullRatioP"));
-        printf("%p\n",fD0RPSigmaPullRatioP_PbPb2018_kFirst);
-        printf("%p\n",fD0RPSigmaPullRatioP_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPSigmaPullRatioK") && resfileCur->Get("kOnlySecond_D0RPSigmaPullRatioK")){
         fD0RPSigmaPullRatioK_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPSigmaPullRatioK"));
         fD0RPSigmaPullRatioK_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPSigmaPullRatioK"));
-        printf("%p\n",fD0RPSigmaPullRatioK_PbPb2018_kFirst);
-        printf("%p\n",fD0RPSigmaPullRatioK_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPSigmaPullRatioPi") && resfileCur->Get("kOnlySecond_D0RPSigmaPullRatioPi")){
         fD0RPSigmaPullRatioPi_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPSigmaPullRatioPi"));
         fD0RPSigmaPullRatioPi_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPSigmaPullRatioPi"));
-        printf("%p\n",fD0RPSigmaPullRatioPi_PbPb2018_kFirst);
-        printf("%p\n",fD0RPSigmaPullRatioPi_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPSigmaPullRatioE") && resfileCur->Get("kOnlySecond_D0RPSigmaPullRatioE")){
         fD0RPSigmaPullRatioE_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPSigmaPullRatioE"));
         fD0RPSigmaPullRatioE_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPSigmaPullRatioE"));
-        printf("%p\n",fD0RPSigmaPullRatioE_PbPb2018_kFirst);
-        printf("%p\n",fD0RPSigmaPullRatioE_PbPb2018_kOnlySecond);
       }
       for(UInt_t j = 0; j < 2; j++)
       {
@@ -652,148 +638,100 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
           if(resfileCur->Get(Form("kFirst_D0RPMeanP_B%d_phi%d",j,i)) && resfileCur->Get(Form("kOnlySecond_D0RPMeanP_B%d_phi%d",j,i))){
             fD0RPMeanPCur_PbPb2018_kFirst[j][i]=(TGraph*)resfileCur->Get(Form("kFirst_D0RPMeanP_B%d_phi%d",j,i))->Clone(Form("kFirst_D0RPMeanPCur_B%d_phi%d",j,i));
             fD0RPMeanPCur_PbPb2018_kOnlySecond[j][i]=(TGraph*)resfileCur->Get(Form("kOnlySecond_D0RPMeanP_B%d_phi%d",j,i))->Clone(Form("kOnlySecond_D0RPMeanPCur_B%d_phi%d",j,i));
-            printf("%p\n",fD0RPMeanPCur_PbPb2018_kFirst[j][i]);
-            printf("%p\n",fD0RPMeanPCur_PbPb2018_kOnlySecond[j][i]);
           }
           if(resfileCur->Get(Form("kFirst_D0RPMeanK_B%d_phi%d",j,i)) && resfileCur->Get(Form("kOnlySecond_D0RPMeanK_B%d_phi%d",j,i))){
             fD0RPMeanKCur_PbPb2018_kFirst[j][i]=(TGraph*)resfileCur->Get(Form("kFirst_D0RPMeanK_B%d_phi%d",j,i))->Clone(Form("kFirst_D0RPMeanKCur_B%d_phi%d",j,i));
             fD0RPMeanKCur_PbPb2018_kOnlySecond[j][i]=(TGraph*)resfileCur->Get(Form("kOnlySecond_D0RPMeanK_B%d_phi%d",j,i))->Clone(Form("kOnlySecond_D0RPMeanKCur_B%d_phi%d",j,i));
-            printf("%p\n",fD0RPMeanKCur_PbPb2018_kFirst[j][i]);
-            printf("%p\n",fD0RPMeanKCur_PbPb2018_kOnlySecond[j][i]);
           }
           if(resfileCur->Get(Form("kFirst_D0RPMeanPi_B%d_phi%d",j,i)) && resfileCur->Get(Form("kOnlySecond_D0RPMeanPi_B%d_phi%d",j,i))){
             fD0RPMeanPiCur_PbPb2018_kFirst[j][i]=(TGraph*)resfileCur->Get(Form("kFirst_D0RPMeanPi_B%d_phi%d",j,i))->Clone(Form("kFirst_D0RPMeanPiCur_B%d_phi%d",j,i));
             fD0RPMeanPiCur_PbPb2018_kOnlySecond[j][i]=(TGraph*)resfileCur->Get(Form("kOnlySecond_D0RPMeanPi_B%d_phi%d",j,i))->Clone(Form("kOnlySecond_D0RPMeanPiCur_B%d_phi%d",j,i));
-            printf("%p\n",fD0RPMeanPiCur_PbPb2018_kFirst[j][i]);
-            printf("%p\n",fD0RPMeanPiCur_PbPb2018_kOnlySecond[j][i]);
           }      
           if(resfileCur->Get(Form("kFirst_D0RPMeanE_B%d_phi%d",j,i)) && resfileCur->Get(Form("kOnlySecond_D0RPMeanE_B%d_phi%d",j,i))){
             fD0RPMeanECur_PbPb2018_kFirst[j][i]=(TGraph*)resfileCur->Get(Form("kFirst_D0RPMeanE_B%d_phi%d",j,i))->Clone(Form("kFirst_D0RPMeanECur_B%d_phi%d",j,i));
             fD0RPMeanECur_PbPb2018_kOnlySecond[j][i]=(TGraph*)resfileCur->Get(Form("kOnlySecond_D0RPMeanE_B%d_phi%d",j,i))->Clone(Form("kOnlySecond_D0RPMeanECur_B%d_phi%d",j,i));
-            printf("%p\n",fD0RPMeanECur_PbPb2018_kFirst[j][i]);
-            printf("%p\n",fD0RPMeanECur_PbPb2018_kOnlySecond[j][i]);
           }    
         }
       }
       if(resfileCur->Get("kFirst_D0ZResP") && resfileCur->Get("kOnlySecond_D0ZResP")){
         fD0ZResPCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0ZResP")->Clone("kFirst_D0ZResPCur"));
         fD0ZResPCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0ZResP")->Clone("kOnlySecond_D0ZResPCur"));
-        printf("%p\n",fD0ZResPCur_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResPCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0ZResK") && resfileCur->Get("kOnlySecond_D0ZResK")){
         fD0ZResKCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0ZResK")->Clone("kFirst_D0ZResKCur"));
         fD0ZResKCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0ZResK")->Clone("kOnlySecond_D0ZResKCur"));
-        printf("%p\n",fD0ZResKCur_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResKCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0ZResPi") && resfileCur->Get("kOnlySecond_D0ZResPi")){
         fD0ZResPiCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0ZResPi")->Clone("kFirst_D0ZResPiCur"));
         fD0ZResPiCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0ZResPi")->Clone("kOnlySecond_D0ZResPiCur"));
-        printf("%p\n",fD0ZResPiCur_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResPiCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0ZResE") && resfileCur->Get("kOnlySecond_D0ZResE")){
         fD0ZResECur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0ZResE")->Clone("kFirst_D0ZResECur"));
         fD0ZResECur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0ZResE")->Clone("kOnlySecond_D0ZResECur"));
-        printf("%p\n",fD0ZResECur_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResECur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_Pt1ResP") && resfileCur->Get("kOnlySecond_Pt1ResP")){
         fPt1ResPCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_Pt1ResP")->Clone("kFirst_Pt1ResPCur"));
         fPt1ResPCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_Pt1ResP")->Clone("kOnlySecond_Pt1ResPCur"));
-        printf("%p\n",fPt1ResPCur_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResPCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_Pt1ResK") && resfileCur->Get("kOnlySecond_Pt1ResK")){
         fPt1ResKCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_Pt1ResK")->Clone("kFirst_Pt1ResKCur"));
         fPt1ResKCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_Pt1ResK")->Clone("kOnlySecond_Pt1ResKCur"));
-        printf("%p\n",fPt1ResKCur_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResKCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_Pt1ResPi") && resfileCur->Get("kOnlySecond_Pt1ResPi")){
         fPt1ResPiCur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_Pt1ResPi")->Clone("kFirst_Pt1ResPiCur"));
         fPt1ResPiCur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_Pt1ResPi")->Clone("kOnlySecond_Pt1ResPiCur"));
-        printf("%p\n",fPt1ResPiCur_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResPiCur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_Pt1ResE") && resfileCur->Get("kOnlySecond_Pt1ResE")){
         fPt1ResECur_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_Pt1ResE")->Clone("kFirst_Pt1ResECur"));
         fPt1ResECur_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_Pt1ResE")->Clone("kOnlySecond_Pt1ResECur"));
-        printf("%p\n",fPt1ResECur_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResECur_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPResPSA") && resfileCur->Get("kOnlySecond_D0RPResPSA")){
         fD0RPResPCurSA_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPResPSA")->Clone("kFirst_D0RPResPCurSA"));
         fD0RPResPCurSA_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPResPSA")->Clone("kOnlySecond_D0RPResPCurSA"));
-        printf("%p\n",fD0RPResPCurSA_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResPCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPResKSA") && resfileCur->Get("kOnlySecond_D0RKResPSA")){
         fD0RPResKCurSA_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPResKSA")->Clone("kFirst_D0RPResKCurSA"));
         fD0RPResKCurSA_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPResKSA")->Clone("kOnlySecond_D0RPResKCurSA"));
-        printf("%p\n",fD0RPResKCurSA_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResKCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPResPiSA") && resfileCur->Get("kOnlySecond_D0RPResPiSA")){
         fD0RPResPiCurSA_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPResPiSA")->Clone("kFirst_D0RPResPiCurSA"));
         fD0RPResPiCurSA_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPResPiSA")->Clone("kOnlySecond_D0RPResPiCurSA"));
-        printf("%p\n",fD0RPResPiCurSA_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResPiCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0RPResESA") && resfileCur->Get("kOnlySecond_D0RPResESA")){
         fD0RPResECurSA_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0RPResESA")->Clone("kFirst_D0RPResECurSA"));
         fD0RPResECurSA_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0RPResESA")->Clone("kOnlySecond_D0RPResECurSA"));
-        printf("%p\n",fD0RPResECurSA_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResECurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0ZResPSA") && resfileCur->Get("kOnlySecond_D0ZResPSA")){
         fD0ZResPCurSA_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0ZResPSA")->Clone("kFirst_D0ZResPCurSA"));
         fD0ZResPCurSA_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0ZResPSA")->Clone("kOnlySecond_D0ZResPCurSA"));
-        printf("%p\n",fD0ZResPCurSA_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResPCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0ZResKSA") && resfileCur->Get("kOnlySecond_D0ZResKSA")){
         fD0ZResKCurSA_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0ZResKSA")->Clone("kFirst_D0ZResKCurSA"));
         fD0ZResKCurSA_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0ZResKSA")->Clone("kOnlySecond_D0ZResKCurSA"));
-        printf("%p\n",fD0ZResKCurSA_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResKCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0ZResPiSA") && resfileCur->Get("kOnlySecond_D0ZResPiSA")){
         fD0ZResPiCurSA_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0ZResPiSA")->Clone("kFirst_D0ZResPiCurSA"));
         fD0ZResPiCurSA_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0ZResPiSA")->Clone("kOnlySecond_D0ZResPiCurSA"));
-        printf("%p\n",fD0ZResPiCurSA_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResPiCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_D0ZResESA") && resfileCur->Get("kOnlySecond_D0ZResESA")){
         fD0ZResECurSA_PbPb2018_kFirst=(TGraph*)(resfileCur->Get("kFirst_D0ZResESA")->Clone("kFirst_D0ZResECurSA"));
         fD0ZResECurSA_PbPb2018_kOnlySecond=(TGraph*)(resfileCur->Get("kOnlySecond_D0ZResESA")->Clone("kOnlySecond_D0ZResECurSA"));
-        printf("%p\n",fD0ZResECurSA_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResECurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_Pt1ResPSA") && resfileCur->Get("kOnlySecond_Pt1ResPSA")){
         fPt1ResPCurSA_PbPb2018_kFirst=(TGraph*) (resfileCur->Get("kFirst_Pt1ResPSA")->Clone("kFirst_Pt1ResPCurSA"));
         fPt1ResPCurSA_PbPb2018_kOnlySecond=(TGraph*) (resfileCur->Get("kOnlySecond_Pt1ResPSA")->Clone("kOnlySecond_Pt1ResPCurSA"));
-        printf("%p\n",fPt1ResPCurSA_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResPCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_Pt1ResKSA") && resfileCur->Get("kOnlySecond_Pt1ResKSA")){
         fPt1ResKCurSA_PbPb2018_kFirst=(TGraph*) (resfileCur->Get("kFirst_Pt1ResKSA")->Clone("kFirst_Pt1ResKCurSA"));
         fPt1ResKCurSA_PbPb2018_kOnlySecond=(TGraph*) (resfileCur->Get("kOnlySecond_Pt1ResKSA")->Clone("kOnlySecond_Pt1ResKCurSA"));
-        printf("%p\n",fPt1ResKCurSA_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResKCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_Pt1ResPiSA") && resfileCur->Get("kOnlySecond_Pt1ResPiSA")){
         fPt1ResPiCurSA_PbPb2018_kFirst=(TGraph*) (resfileCur->Get("kFirst_Pt1ResPiSA")->Clone("kFirst_Pt1ResPiCurSA"));
         fPt1ResPiCurSA_PbPb2018_kOnlySecond=(TGraph*) (resfileCur->Get("kOnlySecond_Pt1ResPiSA")->Clone("kOnlySecond_Pt1ResPiCurSA"));
-        printf("%p\n",fPt1ResPiCurSA_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResPiCurSA_PbPb2018_kOnlySecond);
       }
       if(resfileCur->Get("kFirst_Pt1ResESA") && resfileCur->Get("kOnlySecond_Pt1ResESA")){
         fPt1ResECurSA_PbPb2018_kFirst=(TGraph*) (resfileCur->Get("kFirst_Pt1ResESA")->Clone("kFirst_Pt1ResECurSA"));
         fPt1ResECurSA_PbPb2018_kOnlySecond=(TGraph*) (resfileCur->Get("kOnlySecond_Pt1ResESA")->Clone("kOnlySecond_Pt1ResECurSA"));
-        printf("%p\n",fPt1ResECurSA_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResECurSA_PbPb2018_kOnlySecond);
       }
       delete resfileCur;
     }    
@@ -897,178 +835,121 @@ AliAnalysisTaskSEImproveITS::AliAnalysisTaskSEImproveITS(const char *name,
     }
     else  // analysing PbPb 2018 periods
     {
-      printf("\nNew\n--------------------\n");
       if(resfileUpg->Get("kFirst_D0RPResP") && resfileUpg->Get("kOnlySecond_D0RPResP")){
         fD0RPResPUpg_PbPb2018_kFirst=(TGraph*)(resfileUpg->Get("kFirst_D0RPResP")->Clone("kFirst_D0RPResPUpg"));
         fD0RPResPUpg_PbPb2018_kOnlySecond=(TGraph*)(resfileUpg->Get("kOnlySecond_D0RPResP")->Clone("kOnlySecond_D0RPResPUpg"));
-        printf("%p\n",fD0RPResPUpg_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResPUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0RPResK") && resfileUpg->Get("kOnlySecond_D0RPResK")){
         fD0RPResKUpg_PbPb2018_kFirst=(TGraph*)(resfileUpg->Get("kFirst_D0RPResK")->Clone("kFirst_D0RPResKUpg"));
         fD0RPResKUpg_PbPb2018_kOnlySecond=(TGraph*)(resfileUpg->Get("kOnlySecond_D0RPResK")->Clone("kOnlySecond_D0RPResKUpg"));
-        printf("%p\n",fD0RPResKUpg_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResKUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0RPResPi") && resfileUpg->Get("kOnlySecond_D0RPResPi")){
         fD0RPResPiUpg_PbPb2018_kFirst=(TGraph*)(resfileUpg->Get("kFirst_D0RPResPi")->Clone("kFirst_D0RPResPiUpg"));
         fD0RPResPiUpg_PbPb2018_kOnlySecond=(TGraph*)(resfileUpg->Get("kOnlySecond_D0RPResPi")->Clone("kOnlySecond_D0RPResPiUpg"));
-        printf("%p\n",fD0RPResPiUpg_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResPiUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0RPResE") && resfileUpg->Get("kOnlySecond_D0RPResE")){
         fD0RPResEUpg_PbPb2018_kFirst=(TGraph*)(resfileUpg->Get("kFirst_D0RPResE")->Clone("kFirst_D0RPResEUpg"));
         fD0RPResEUpg_PbPb2018_kOnlySecond=(TGraph*)(resfileUpg->Get("kOnlySecond_D0RPResE")->Clone("kOnlySecond_D0RPResEUpg"));
-        printf("%p\n",fD0RPResEUpg_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResEUpg_PbPb2018_kOnlySecond);
       }
       for(UInt_t j = 0; j < 2; j++){
         for(UInt_t i = 0; i < 24; i++){
           if(resfileUpg->Get(Form("kFirst_D0RPMeanP_B%d_phi%d",j,i)) && resfileUpg->Get(Form("kOnlySecond_D0RPMeanP_B%d_phi%d",j,i))){
             fD0RPMeanPUpg_PbPb2018_kFirst[j][i]=(TGraph*)(resfileUpg->Get(Form("kFirst_D0RPMeanP_B%d_phi%d",j,i))->Clone(Form("kFirst_D0RPMeanP_B%d_phi%d",j,i)));
             fD0RPMeanPUpg_PbPb2018_kOnlySecond[j][i]=(TGraph*)(resfileUpg->Get(Form("kOnlySecond_D0RPMeanP_B%d_phi%d",j,i))->Clone(Form("kOnlySecond_D0RPMeanP_B%d_phi%d",j,i)));          
-            printf("%p\n",fD0RPMeanPUpg_PbPb2018_kFirst[j][i]);
-            printf("%p\n",fD0RPMeanPUpg_PbPb2018_kOnlySecond[j][i]);
           }
           if(resfileUpg->Get(Form("kFirst_D0RPMeanK_B%d_phi%d",j,i)) && resfileUpg->Get(Form("kOnlySecond_D0RPMeanK_B%d_phi%d",j,i))){
             fD0RPMeanKUpg_PbPb2018_kFirst[j][i]=(TGraph*)(resfileUpg->Get(Form("kFirst_D0RPMeanK_B%d_phi%d",j,i))->Clone(Form("kFirst_D0RPMeanK_B%d_phi%d",j,i)));
             fD0RPMeanKUpg_PbPb2018_kOnlySecond[j][i]=(TGraph*)(resfileUpg->Get(Form("kOnlySecond_D0RPMeanK_B%d_phi%d",j,i))->Clone(Form("kOnlySecond_D0RPMeanK_B%d_phi%d",j,i)));          
-            printf("%p\n",fD0RPMeanKUpg_PbPb2018_kFirst[j][i]);
-            printf("%p\n",fD0RPMeanKUpg_PbPb2018_kOnlySecond[j][i]);
           }
           if(resfileUpg->Get(Form("kFirst_D0RPMeanPi_B%d_phi%d",j,i)) && resfileUpg->Get(Form("kOnlySecond_D0RPMeanPi_B%d_phi%d",j,i))){
             fD0RPMeanPiUpg_PbPb2018_kFirst[j][i]=(TGraph*)(resfileUpg->Get(Form("kFirst_D0RPMeanPi_B%d_phi%d",j,i))->Clone(Form("kFirst_D0RPMeanPi_B%d_phi%d",j,i)));
             fD0RPMeanPiUpg_PbPb2018_kOnlySecond[j][i]=(TGraph*)(resfileUpg->Get(Form("kOnlySecond_D0RPMeanPi_B%d_phi%d",j,i))->Clone(Form("kOnlySecond_D0RPMeanPi_B%d_phi%d",j,i)));          
-            printf("%p\n",fD0RPMeanPiUpg_PbPb2018_kFirst[j][i]);
-            printf("%p\n",fD0RPMeanPiUpg_PbPb2018_kOnlySecond[j][i]);
           }
           if(resfileUpg->Get(Form("kFirst_D0RPMeanE_B%d_phi%d",j,i)) && resfileUpg->Get(Form("kOnlySecond_D0RPMeanE_B%d_phi%d",j,i))){
             fD0RPMeanEUpg_PbPb2018_kFirst[j][i]=(TGraph*)(resfileUpg->Get(Form("kFirst_D0RPMeanE_B%d_phi%d",j,i))->Clone(Form("kFirst_D0RPMeanE_B%d_phi%d",j,i)));
             fD0RPMeanEUpg_PbPb2018_kOnlySecond[j][i]=(TGraph*)(resfileUpg->Get(Form("kOnlySecond_D0RPMeanE_B%d_phi%d",j,i))->Clone(Form("kOnlySecond_D0RPMeanE_B%d_phi%d",j,i)));          
-            printf("%p\n",fD0RPMeanEUpg_PbPb2018_kFirst[j][i]);
-            printf("%p\n",fD0RPMeanEUpg_PbPb2018_kOnlySecond[j][i]);
           }
         } 
       }
       if(resfileUpg->Get("kFirst_D0ZResP") && resfileUpg->Get("kOnlySecond_D0ZResP")){
         fD0ZResPUpg_PbPb2018_kFirst=(TGraph*)(resfileUpg->Get("kFirst_D0ZResP")->Clone("kFirst_D0ZResPUpg"));
         fD0ZResPUpg_PbPb2018_kOnlySecond=(TGraph*)(resfileUpg->Get("kOnlySecond_D0ZResP")->Clone("kOnlySecond_D0ZResPUpg"));
-        printf("%p\n",fD0ZResPUpg_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResPUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0ZResK") && resfileUpg->Get("kOnlySecond_D0ZResK")){
         fD0ZResKUpg_PbPb2018_kFirst=(TGraph*)(resfileUpg->Get("kFirst_D0ZResK")->Clone("kFirst_D0ZResKUpg"));
         fD0ZResKUpg_PbPb2018_kOnlySecond=(TGraph*)(resfileUpg->Get("kOnlySecond_D0ZResK")->Clone("kOnlySecond_D0ZResKUpg"));
-        printf("%p\n",fD0ZResKUpg_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResKUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0ZResPi") && resfileUpg->Get("kOnlySecond_D0ZResPi")){
         fD0ZResPiUpg_PbPb2018_kFirst=(TGraph*)(resfileUpg->Get("kFirst_D0ZResPi")->Clone("kFirst_D0ZResPiUpg"));
         fD0ZResPiUpg_PbPb2018_kOnlySecond=(TGraph*)(resfileUpg->Get("kOnlySecond_D0ZResPi")->Clone("kOnlySecond_D0ZResPiUpg"));
-        printf("%p\n",fD0ZResPiUpg_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResPiUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0ZResE") && resfileUpg->Get("kOnlySecond_D0ZResE")){
         fD0ZResEUpg_PbPb2018_kFirst=(TGraph*)(resfileUpg->Get("kFirst_D0ZResE")->Clone("kFirst_D0ZResEUpg"));
         fD0ZResEUpg_PbPb2018_kOnlySecond=(TGraph*)(resfileUpg->Get("kOnlySecond_D0ZResE")->Clone("kOnlySecond_D0ZResEUpg"));
-        printf("%p\n",fD0ZResEUpg_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResEUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_Pt1ResP") && resfileUpg->Get("kOnlySecond_Pt1ResP")){
         fPt1ResPUpg_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_Pt1ResP")->Clone("kFirst_Pt1ResPUpg"));
         fPt1ResPUpg_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_Pt1ResP")->Clone("kOnlySecond_Pt1ResPUpg"));
-        printf("%p\n",fPt1ResPUpg_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResPUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_Pt1ResK") && resfileUpg->Get("kOnlySecond_Pt1ResK")){
         fPt1ResKUpg_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_Pt1ResK")->Clone("kFirst_Pt1ResKUpg"));
         fPt1ResKUpg_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_Pt1ResK")->Clone("kOnlySecond_Pt1ResKUpg"));
-        printf("%p\n",fPt1ResKUpg_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResKUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_Pt1ResPi") && resfileUpg->Get("kOnlySecond_Pt1ResPi")){
         fPt1ResPiUpg_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_Pt1ResPi")->Clone("kFirst_Pt1ResPiUpg"));
         fPt1ResPiUpg_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_Pt1ResPi")->Clone("kOnlySecond_Pt1ResPiUpg"));
-        printf("%p\n",fPt1ResPiUpg_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResPiUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_Pt1ResE") && resfileUpg->Get("kOnlySecond_Pt1ResE")){
         fPt1ResEUpg_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_Pt1ResE")->Clone("kFirst_Pt1ResEUpg"));
         fPt1ResEUpg_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_Pt1ResE")->Clone("kOnlySecond_Pt1ResEUpg"));
-        printf("%p\n",fPt1ResEUpg_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResEUpg_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0RPResPSA") && resfileUpg->Get("kOnlySecond_D0RPResPSA")){
         fD0RPResPUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_D0RPResPSA")->Clone("kFirst_D0RPResPUpgSA"));
         fD0RPResPUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_D0RPResPSA")->Clone("kOnlySecond_D0RPResPUpgSA"));
-        printf("%p\n",fD0RPResPUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResPUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0RPResKSA") && resfileUpg->Get("kOnlySecond_D0RPResKSA")){
         fD0RPResKUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_D0RPResKSA")->Clone("kFirst_D0RPResKUpgSA"));
         fD0RPResKUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_D0RPResKSA")->Clone("kOnlySecond_D0RPResKUpgSA"));
-        printf("%p\n",fD0RPResKUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResKUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0RPResPiSA") && resfileUpg->Get("kOnlySecond_D0RPResPiSA")){
         fD0RPResPiUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_D0RPResPiSA")->Clone("kFirst_D0RPResPiUpgSA"));
         fD0RPResPiUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_D0RPResPiSA")->Clone("kOnlySecond_D0RPResPiUpgSA"));
-        printf("%p\n",fD0RPResPiUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResPiUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0RPResESA") && resfileUpg->Get("kOnlySecond_D0RPResESA")){
         fD0RPResEUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_D0RPResESA")->Clone("kFirst_D0RPResEUpgSA"));
         fD0RPResEUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_D0RPResESA")->Clone("kOnlySecond_D0RPResEUpgSA"));
-        printf("%p\n",fD0RPResEUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fD0RPResEUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0ZResPSA") && resfileUpg->Get("kOnlyFirst_D0ZResPSA")){
         fD0ZResPUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_D0ZResPSA")->Clone("kFirst_D0ZResPUpgSA"));
         fD0ZResPUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_D0ZResPSA")->Clone("kOnlySecond_D0ZResPUpgSA"));
-        printf("%p\n",fD0ZResPUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResPUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0ZResKSA") && resfileUpg->Get("kOnlyFirst_D0ZResKSA")){
         fD0ZResKUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_D0ZResKSA")->Clone("kFirst_D0ZResKUpgSA"));
         fD0ZResKUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_D0ZResKSA")->Clone("kOnlySecond_D0ZResKUpgSA"));
-        printf("%p\n",fD0ZResKUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResKUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0ZResPiSA") && resfileUpg->Get("kOnlyFirst_D0ZResPiSA")){
         fD0ZResPiUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_D0ZResPiSA")->Clone("kFirst_D0ZResPiUpgSA"));
         fD0ZResPiUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_D0ZResPiSA")->Clone("kOnlySecond_D0ZResPiUpgSA"));
-        printf("%p\n",fD0ZResPiUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResPiUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_D0ZResESA") && resfileUpg->Get("kOnlyFirst_D0ZResESA")){
         fD0ZResEUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_D0ZResESA")->Clone("kFirst_D0ZResEUpgSA"));
         fD0ZResEUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_D0ZResESA")->Clone("kOnlySecond_D0ZResEUpgSA"));
-        printf("%p\n",fD0ZResEUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fD0ZResEUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_Pt1ResPSA") && resfileUpg->Get("kOnlySecond_Pt1ResPSA")){
         fPt1ResPUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_Pt1ResPSA")->Clone("kFirst_Pt1ResPUpgSA"));
         fPt1ResPUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_Pt1ResPSA")->Clone("kOnlySecond_Pt1ResPUpgSA"));
-        printf("%p\n",fPt1ResPUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResPUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_Pt1ResKSA") && resfileUpg->Get("kOnlySecond_Pt1ResKSA")){
         fPt1ResKUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_Pt1ResKSA")->Clone("kFirst_Pt1ResKUpgSA"));
         fPt1ResKUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_Pt1ResKSA")->Clone("kOnlySecond_Pt1ResKUpgSA"));
-        printf("%p\n",fPt1ResKUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResKUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_Pt1ResPiSA") && resfileUpg->Get("kOnlySecond_Pt1ResPiSA")){
         fPt1ResPiUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_Pt1ResPiSA")->Clone("kFirst_Pt1ResPiUpgSA"));
         fPt1ResPiUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_Pt1ResPiSA")->Clone("kOnlySecond_Pt1ResPiUpgSA"));
-        printf("%p\n",fPt1ResPiUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResPiUpgSA_PbPb2018_kOnlySecond);
       }
       if(resfileUpg->Get("kFirst_Pt1ResESA") && resfileUpg->Get("kOnlySecond_Pt1ResESA")){
         fPt1ResEUpgSA_PbPb2018_kFirst=(TGraph*) (resfileUpg->Get("kFirst_Pt1ResESA")->Clone("kFirst_Pt1ResEUpgSA"));
         fPt1ResEUpgSA_PbPb2018_kOnlySecond=(TGraph*) (resfileUpg->Get("kOnlySecond_Pt1ResESA")->Clone("kOnlySecond_Pt1ResEUpgSA"));
-        printf("%p\n",fPt1ResEUpgSA_PbPb2018_kFirst);
-        printf("%p\n",fPt1ResEUpgSA_PbPb2018_kOnlySecond);
       }
       delete resfileUpg;
     }
@@ -1302,6 +1183,10 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
   if(fIsAOD) {
     
+    fMCs=static_cast<TClonesArray*>(ev->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+    AliAODMCHeader *mcHeader = (AliAODMCHeader*)ev->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!fMCs || !mcHeader) return;
+
     // first loop on candidates to fill them in case of reduced AODs
     // this is done to have the same behaviour of the improver with full (pp, p-Pb) and recuced (Pb-Pb) candidates
     AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
@@ -1309,36 +1194,41 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     // D0->Kpi
     TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
     if (array2Prong) {
-      for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+      for (Int_t icand=0;icand<array2Prong->GetEntriesFast();++icand) {
 	AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+	vHF->GetProng(ev,decay,0); // needed to fill fAODMap in AliAnalysisVertexingHF
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay);
       }
     }
     // Dstar->Kpipi
     TClonesArray *arrayCascade=static_cast<TClonesArray*>(ev->GetList()->FindObject("Dstar"));
     if (arrayCascade) {
-      for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+      for (Int_t icand=0;icand<arrayCascade->GetEntriesFast();++icand) {
 	AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+	vHF->GetProng(ev,decayDstar,0); // needed to fill fAODMap in AliAnalysisVertexingHF
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decayDstar,ev,mcHeader,fMCs)==kFALSE) continue;
 	vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE);
       }
     }
     // Three prong
     TClonesArray *array3Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("Charm3Prong"));
     if (array3Prong) {
-      for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+      for (Int_t icand=0;icand<array3Prong->GetEntriesFast();++icand) {
 	AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+	vHF->GetProng(ev,decay,0); // needed to fill fAODMap in AliAnalysisVertexingHF
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay);
       }
     }
-    
+  
     
     // Smear all tracks
-    fMCs=static_cast<TClonesArray*>(ev->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-    if (!fMCs) return;
     if (fImproveTracks) {
       for(Int_t itrack=0;itrack<ev->GetNumberOfTracks();++itrack) {
-	AliAODTrack * trk = dynamic_cast<AliAODTrack*>(ev->GetTrack(itrack));
+	AliAODTrack * trk = static_cast<AliAODTrack*>(ev->GetTrack(itrack));
 	if(!trk) AliFatal("Not a standard AOD");
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsTrackInjected(trk,mcHeader,fMCs)==kFALSE) continue;
 	SmearTrack(trk,bz);
       }
     }
@@ -1349,8 +1239,10 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     // Recalculate all candidates
     // D0->Kpi
     if (array2Prong) {
-      for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
+      for (Int_t icand=0;icand<array2Prong->GetEntriesFast();++icand) {
 	AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+	
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay))continue;
 	
 	// recalculate vertices
@@ -1412,8 +1304,9 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     
     // Dstar->Kpipi
     if (arrayCascade) {
-      for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
+      for (Int_t icand=0;icand<arrayCascade->GetEntriesFast();++icand) {
 	AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decayDstar,ev,mcHeader,fMCs)==kFALSE) continue;
 	if(!vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE))continue;
 	//Get D0 from D*
 	AliAODRecoDecayHF2Prong* decay=(AliAODRecoDecayHF2Prong*)decayDstar->Get2Prong();
@@ -1462,8 +1355,9 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     
     // Three prong
     if (array3Prong) {
-      for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
+      for (Int_t icand=0;icand<array3Prong->GetEntriesFast();++icand) {
 	AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+	if(fSmearOnlySignal && AliVertexingHFUtils::IsCandidateInjected(decay,ev,mcHeader,fMCs)==kFALSE) continue;
 	if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay))continue;
 	
 	// recalculate vertices
@@ -1549,7 +1443,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
     if (!fMCEvent) return;
     if (fImproveTracks) {
       for(Int_t itrack=0;itrack<evesd->GetNumberOfTracks();++itrack) {
-	AliESDtrack * trk = dynamic_cast<AliESDtrack*>(evesd->GetTrack(itrack));
+	AliESDtrack * trk = static_cast<AliESDtrack*>(evesd->GetTrack(itrack));
 	if(!trk) AliFatal("No a standard ESD");
 	SmearTrack(trk,bz);
       }
@@ -1597,10 +1491,10 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliVTrack *track,Double_t bz) {
   Short_t  mcc;
   const AliVParticle *mc= 0x0;
   if(fIsAOD) {
-    mc = dynamic_cast<AliVParticle*>(fMCs->At(imc));
+    mc = static_cast<AliVParticle*>(fMCs->At(imc));
   }
   else {
-    mc = dynamic_cast<AliVParticle*>(fMCEvent->GetTrack(imc));
+    mc = static_cast<AliVParticle*>(fMCEvent->GetTrack(imc));
   }
   if(!mc) return;
   mc->XvYvZv(mcx);
@@ -1908,7 +1802,7 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliVTrack *track,Double_t bz) {
 
 
   // write out debug infos
-  if (fDebugNtuple->GetEntries()<fNDebug) {
+  if (fDebugNtuple->GetEntriesFast()<fNDebug) {
     Int_t idbg=0;
     fDebugVars[idbg++]=pdgcode;
     fDebugVars[idbg++]=ptmc  ;
@@ -1989,9 +1883,8 @@ Int_t AliAnalysisTaskSEImproveITS::PhiBin(Double_t phi) const {
   }
   else{ // correction performed in 24 φ bins for PbPb 2018 periods
     Double_t width = 2.*pi/24;
-    for(UInt_t i = 0; i < 24; i++){
-      if(phi>i*width && phi<=(i+1)*width)    return i;
-    }
+    Int_t jBin=TMath::Floor(phi/width);
+    return jBin; // by construction is 0<=jBin<23 since phi is in 0-2pi
   }
   
   return -1;

@@ -28,6 +28,9 @@ AnalysisOptions:
     IncludeReflections: 0 # 0->false, 1->true
     ReflFileName: "Refl_Templates.root"
     ReflOpt: "2gaus"
+    FixMeanSecondPeak: 0 # 0->false, 1->true, used for Ds
+    FixSigmaSecondPeak: 0 # 0->false, 1->true, used for Ds
+    SigmaFileName: "" # file with MC D+ peak width
 
 FitSystematicsOptions: #common for all pT bins
     Rebin: [ 1, 2, 3, 4, 5 ]

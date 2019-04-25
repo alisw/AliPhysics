@@ -227,13 +227,17 @@ void AliAnalysisTaskAODSigma0Femto::UserExec(Option_t * /*option*/) {
   // Sigma0 selection
   fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, AntiDecays);
 
-  auto sigma0particles = fSigmaCuts->GetSigma();
-  auto sigma0sidebandUp = fSigmaCuts->GetSidebandUp();
-  auto sigma0sidebandLow = fSigmaCuts->GetSidebandDown();
+  std::vector<AliFemtoDreamBasePart> sigma0particles, sigma0sidebandUp,
+      sigma0sidebandLow, antiSigma0particles, antiSigma0sidebandUp,
+      antiSigma0sidebandLow;
 
-  auto antiSigma0particles = fAntiSigmaCuts->GetSigma();
-  auto antiSigma0sidebandUp = fAntiSigmaCuts->GetSidebandUp();
-  auto antiSigma0sidebandLow = fAntiSigmaCuts->GetSidebandDown();
+  CastToVector(sigma0particles, fSigmaCuts->GetSigma());
+  CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
+  CastToVector(sigma0sidebandLow, fSigmaCuts->GetSidebandDown());
+
+  CastToVector(antiSigma0particles, fAntiSigmaCuts->GetSigma());
+  CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp());
+  CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown());
 
   fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
@@ -288,6 +292,17 @@ void AliAnalysisTaskAODSigma0Femto::CastToVector(
     auto neg = GetTrack(inputEvent, PhotonCandidate->GetTrackLabelNegative());
     if (!pos || !neg) continue;
     container.push_back({PhotonCandidate, pos, neg, inputEvent});
+  }
+}
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskAODSigma0Femto::CastToVector(
+    std::vector<AliFemtoDreamBasePart> &particlesOut,
+    std::vector<AliFemtoDreamBasePart> &particlesIn) {
+  particlesOut.clear();
+  // Randomly pick one of the particles in the container
+  if (particlesIn.size() > 0) {
+    particlesOut.push_back(particlesIn[fRandom->Rndm() * particlesIn.size()]);
   }
 }
 

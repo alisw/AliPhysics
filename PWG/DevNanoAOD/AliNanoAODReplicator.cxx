@@ -549,8 +549,10 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   Int_t nvertices(0);
   while ( ( v = static_cast<AliAODVertex*>(nextV()) ) )
   {
-    if (v->GetType()!=AliAODVertex::kPrimary)
+    if (v->GetType()!=AliAODVertex::kPrimary && v->GetType()!=AliAODVertex::kMainSPD && 
+      v->GetType()!=AliAODVertex::kPileupSPD && v->GetType()!=AliAODVertex::kMainTPC && v->GetType()!=AliAODVertex::kPrimaryTPC)
       continue;
+
     AliAODVertex* tmp = v->CloneWithoutRefs();
     AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
     copiedVertex->SetNContributors(v->GetNContributors()); 

@@ -65,6 +65,34 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt, AliAODv0* v0,
   }
 }
 
+void AliFemtoDreamv0::Setv0(AliVEvent *evt, AliAODv0* v0,
+                            const int multiplicity) {
+  if (!fVGTI) {
+    AliFatal("no GTI Array set");
+  }
+  if (!v0) {
+    AliFatal("SetProng No v0 to work with");
+  }
+  SetEventMultiplicity(multiplicity);
+  Reset();
+  if (v0->GetNProngs() == 2 && v0->GetNDaughters() == 2) {
+    fIsReset = false;
+    if (v0->GetOnFlyStatus()) {
+      this->fOnlinev0 = true;
+    } else {
+      this->fOnlinev0 = false;
+    }
+    this->SetMotherInfo(static_cast<AliAODEvent*>(evt), v0);
+    this->SetEvtNumber(evt->GetRunNumber());
+    if (fIsMC) {
+//      this->SetMCMotherInfo(evt, v0);
+    }
+    this->SetDaughter(v0, evt);
+  } else {
+    this->SetUse(false);
+  }
+}
+
 void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
                             const int multiplicity) {
   if (!v0) {
@@ -88,20 +116,21 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
 }
 
 void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
-                            const float posMass,
                             const AliFemtoDreamBasePart &negDaughter,
-                            const float negMass, const bool ignoreFirstPos,
-                            const bool ignoreFirstNeg) {
+                            const bool ignoreFirstPos,
+                            const bool ignoreFirstNeg, const bool setDaughter) {
   Reset();
   SetEventMultiplicity(posDaughter.GetEventMultiplicity());
   fIsReset = false;
+
+  if (setDaughter) SetDaughter(posDaughter, negDaughter);
 
   float posP[3], negP[3];
   posDaughter.GetMomentum().GetXYZ(posP);
   negDaughter.GetMomentum().GetXYZ(negP);
   TLorentzVector trackPos, trackNeg;
-  trackPos.SetXYZM(posP[0], posP[1], posP[2], posMass);
-  trackNeg.SetXYZM(negP[0], negP[1], negP[2], negMass);
+  trackPos.SetXYZM(posP[0], posP[1], posP[2], posDaughter.GetInvMass());
+  trackNeg.SetXYZM(negP[0], negP[1], negP[2], negDaughter.GetInvMass());
   TLorentzVector trackSum = trackPos + trackNeg;
   this->SetPt(trackSum.Pt());
   this->SetMomentum(trackSum.Px(), trackSum.Py(), trackSum.Pz());
@@ -110,6 +139,7 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   this->SetTheta(trackSum.Theta());
   this->Setv0Mass(trackSum.M());
   this->fIsSet = true;
+  this->fUse = true;
 
   // track IDs
   auto IDpos = posDaughter.GetIDTracks();
@@ -145,7 +175,7 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
     this->SetEta(Etaneg[i]);
   }
 
-  // Eta
+  // Theta
   auto Thetapos = posDaughter.GetTheta();
   for (size_t i = 0; i < Thetapos.size(); ++i) {
     if (i == 0 && ignoreFirstPos) continue;
@@ -157,6 +187,19 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
     this->SetTheta(Thetaneg[i]);
   }
 
+  // Charge
+  auto Chargepos = posDaughter.GetCharge();
+  auto Chargeneg = negDaughter.GetCharge();
+  this->SetCharge(Chargepos.at(0) + Chargeneg.at(0));
+  for (size_t i = 0; i < Chargepos.size(); ++i) {
+    if (i == 0 && ignoreFirstPos) continue;
+    this->SetCharge(Chargepos[i]);
+  }
+  for (size_t i = 0; i < Chargeneg.size(); ++i) {
+    if (i == 0 && ignoreFirstNeg) continue;
+    this->SetCharge(Chargeneg[i]);
+  }
+
   // Phi At Radii
   auto PhiAtRadiipos = posDaughter.GetPhiAtRaidius();
   for (const auto &itPhiAtRadius : PhiAtRadiipos) {
@@ -165,6 +208,38 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   auto PhiAtRadiineg = negDaughter.GetPhiAtRaidius();
   for (const auto &itPhiAtRadius : PhiAtRadiineg) {
     this->SetPhiAtRadius(itPhiAtRadius);
+  }
+}
+
+void AliFemtoDreamv0::SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter) {
+  const int negID = negDaughter.GetIDTracks().at(0);
+  const int posID = posDaughter.GetIDTracks().at(0);
+  if (negID >= fTrackBufferSize
+      || posID >= fTrackBufferSize) {
+    std::cout << "fGTI too small, no Global Tracks to work with, PosID:  "
+              << posID << " and NegID: " << negID
+              << std::endl;
+    this->fHasDaughter = false;
+  } else {
+    fpDaug->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+    fnDaug->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+    if (fGTI[posID] && fGTI[negID]) {
+      if (fGTI[posID]->Charge() > 0
+          && fGTI[negID]->Charge() < 0) {
+        fnDaug->SetTrack(fGTI[negID]);
+        fpDaug->SetTrack(fGTI[posID]);
+        this->fHasDaughter = true;
+      } else if (fGTI[posID]->Charge() < 0
+          && fGTI[negID]->Charge() > 0) {
+        fnDaug->SetTrack(fGTI[posID]);
+        fpDaug->SetTrack(fGTI[negID]);
+        this->fHasDaughter = true;
+      } else {
+        this->fHasDaughter = false;
+      }
+    } else {
+      this->fHasDaughter = false;
+    }
   }
 }
 
@@ -189,6 +264,38 @@ void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
           && fGTI[v0->GetNegID()]->Charge() > 0) {
         fnDaug->SetTrack(fGTI[v0->GetPosID()]);
         fpDaug->SetTrack(fGTI[v0->GetNegID()]);
+        this->SetDaughterInfo(v0);
+        this->fHasDaughter = true;
+      } else {
+        this->fHasDaughter = false;
+      }
+    } else {
+      this->fHasDaughter = false;
+    }
+  }
+}
+
+void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0, AliVEvent *evt) {
+  if (v0->GetPosID() >= fTrackBufferSize
+      || v0->GetNegID() >= fTrackBufferSize) {
+    std::cout << "fVGTI too small, no Global Tracks to work with, PosID:  "
+              << v0->GetPosID() << " and NegID: " << v0->GetNegID()
+              << std::endl;
+    this->fHasDaughter = false;
+  } else {
+    fpDaug->SetGlobalTrackInfo(fVGTI, fTrackBufferSize);
+    fnDaug->SetGlobalTrackInfo(fVGTI, fTrackBufferSize);
+    if (fVGTI[v0->GetPosID()] && fVGTI[v0->GetNegID()]) {
+      if (fVGTI[v0->GetPosID()]->Charge() > 0
+          && fVGTI[v0->GetNegID()]->Charge() < 0) {
+        fnDaug->SetTrack(fVGTI[v0->GetNegID()], evt);
+        fpDaug->SetTrack(fVGTI[v0->GetPosID()], evt);
+        this->SetDaughterInfo(v0);
+        this->fHasDaughter = true;
+      } else if (fVGTI[v0->GetPosID()]->Charge() < 0
+          && fVGTI[v0->GetNegID()]->Charge() > 0) {
+        fnDaug->SetTrack(fVGTI[v0->GetPosID()], evt);
+        fpDaug->SetTrack(fVGTI[v0->GetNegID()], evt);
         this->SetDaughterInfo(v0);
         this->fHasDaughter = true;
       } else {
