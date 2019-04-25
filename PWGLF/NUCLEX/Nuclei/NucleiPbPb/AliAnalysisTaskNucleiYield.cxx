@@ -526,6 +526,22 @@ void AliAnalysisTaskNucleiYield::SetDCABins(Int_t nbins, Float_t *bins) {
 /// This functions sets the \f$p_{\mathrm{T}}\f$ bins used in the analysis
 ///
 /// \param nbins Number of \f$p_{\mathrm{T}}\f$ bins
+/// \param min Lower limit for the \f$p_{\mathrm{T}}\f$ axis
+/// \param max Upper limit for the \f$p_{\mathrm{T}}\f$ axis
+/// \return void
+///
+void AliAnalysisTaskNucleiYield::SetPtBins(Int_t nbins, Float_t min, Float_t max) {
+  const float delta = (max - min) / nbins;
+  fPtBins.Set(nbins + 1);
+  for (int iB = 0; iB < nbins; ++iB) {
+    fPtBins[iB] = min + iB * delta;
+  }
+  fPtBins[nbins] = max;
+}
+
+/// This functions sets the \f$p_{\mathrm{T}}\f$ bins used in the analysis
+///
+/// \param nbins Number of \f$p_{\mathrm{T}}\f$ bins
 /// \param bins Array with nbins + 1 elements contanining the edges of the bins
 /// \return void
 ///
