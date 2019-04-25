@@ -430,9 +430,9 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[0][7] = 0.06;
     fCutValues[0][8] = 0.5;
     fCutValues[0][9] = 0.9; //  selection of DCA p-pi
-    fCutValues[0][10] = 0.6; //  selection of DCA L-pi
-    fCutValues[0][11] = 0.997; // selection of CPA L
-    fCutValues[0][12] = 0.996; // selection of CPA Xi
+    fCutValues[0][10] = 0.3; //  selection of DCA L-pi (0.6)
+    fCutValues[0][11] = 0.998; // selection of CPA L (0.997)
+    fCutValues[0][12] = 0.9992; // selection of CPA Xi (0.996)
     
     
     for(int cv=1; cv<kNCutVariations; cv++){
@@ -1259,7 +1259,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(fTempStruct[myTracks].fNclusTPC < 60) continue;
         if(fTempStruct[myTracks].fDCAZ > 2.) continue;
         if(fTempStruct[myTracks].fEta > 0.8) continue;
-        if(fTempStruct[myTracks].fDCAXY > .5) continue;
+        if(fTempStruct[myTracks].fDCAXY > 2.) continue;
 
         
         myTracks++;
