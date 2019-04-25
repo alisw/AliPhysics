@@ -795,8 +795,10 @@ void AliNanoAODSimpleSetter::SetNanoAODHeader(const AliAODEvent* event, AliNanoA
     centrCL0 = MultSelection->GetMultiplicityPercentile("CL0");
     centrTRK = MultSelection->GetMultiplicityPercentile("TRK");
     
-    for (std::map<TString,int>::iterator it = fMultMap.begin(); it != fMultMap.end(); it++)
-      head->SetVar(it->second, MultSelection->GetMultiplicityPercentile(it->first));
+    for (std::map<TString,int>::iterator it = fMultMap.begin(); it != fMultMap.end(); it++) {
+      double value = it->first.EndsWith(".Value") ?  MultSelection->GetEstimator(it->first(0, it->first.Length() - 6))->GetValue() : MultSelection->GetMultiplicityPercentile(it->first);
+      head->SetVar(it->second, value);
+    }
   }else{
     //2011 
     AliCentrality * centralityObj = header->GetCentralityP();
