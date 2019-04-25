@@ -23,6 +23,7 @@
 #pragma link C++ class AlidNdPtTask+;
 #pragma link C++ class AlidNdPtHelper+;
 #pragma link C++ class AlidNdPtTools+;
+#pragma link C++ class AliMCSpectraWeightsAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskMKBase+;
 #pragma link C++ class AliAnalysisTaskMKTest+;
 #pragma link C++ class AliAnalysisTaskTPCMatchEff+;
