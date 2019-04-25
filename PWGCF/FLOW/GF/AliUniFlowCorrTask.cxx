@@ -30,6 +30,7 @@ ClassImp(AliUniFlowCorrTask);
 
 // ============================================================================
 AliUniFlowCorrTask::AliUniFlowCorrTask() :
+  TObject{},
   fbDoRefs{0},
   fbDoPOIs{0},
   fiNumHarm{0},
@@ -41,6 +42,7 @@ AliUniFlowCorrTask::AliUniFlowCorrTask() :
 {}
 // ============================================================================
 AliUniFlowCorrTask::AliUniFlowCorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> harms, std::vector<Double_t> gaps) :
+  TObject{},
   fbDoRefs{doRFPs},
   fbDoPOIs{doPOIs},
   fiNumHarm{0},
