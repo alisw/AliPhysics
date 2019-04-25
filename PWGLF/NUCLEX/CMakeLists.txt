@@ -73,11 +73,6 @@ set(SRCS
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
-  Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
-  Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx
-  Nuclei/Nucleipp/AliLnAODtrackCuts.cxx
-  Nuclei/Nucleipp/AliLnHistoMap.cxx
-  Nuclei/Nucleipp/AliLnID.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
