@@ -24,6 +24,7 @@ class AliReducedEventPlaneInfo;
 class AliReducedBaseTrack;
 class AliReducedTrackInfo;
 class AliReducedCaloClusterInfo;
+class AliReducedCaloClusterTrackMatcher;
 class AliKFParticle;
 
 //_____________________________________________________________________
@@ -608,6 +609,9 @@ class AliReducedVarManager : public TObject {
     kEMCALmatchedM20,
     kEMCALmatchedNCells,
     kEMCALmatchedNMatchedTracks,
+    kEMCALmatchedDeltaPhi,
+    kEMCALmatchedDeltaEta,
+    kEMCALmatchedDistance,
     kNTrackVars,            // variable to mark end of track vars, introduce new tracks vars before this one
     // Calorimeter cluster variables --------------------------------------
     kEMCALclusterEnergy,        
@@ -703,8 +707,8 @@ class AliReducedVarManager : public TObject {
   static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillTrackMCFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values, UShort_t flag2=999);
   static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values, UShort_t flag2=999);
-  static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values, TList* clusterList=0x0);
-  static void FillClusterMatchedTrackInfo(AliReducedTrackInfo* pinfo, Float_t* values, TList* clusterList=0x0);
+  static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);
+  static void FillClusterMatchedTrackInfo(AliReducedBaseTrack* p, Float_t* values, TList* clusterList=0x0, AliReducedCaloClusterTrackMatcher* matcher=0x0);
   static void FillITSlayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillITSsharedLayerFlag(AliReducedTrackInfo* track, Int_t layer, Float_t* values);
   static void FillTPCclusterBitFlag(AliReducedTrackInfo* track, Int_t bit, Float_t* values);
@@ -814,7 +818,7 @@ class AliReducedVarManager : public TObject {
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager, 10);
+  ClassDef(AliReducedVarManager, 11);
 };
 
 #endif

@@ -36,6 +36,7 @@ using std::ifstream;
 #include "AliReducedTrackInfo.h"
 #include "AliReducedPairInfo.h"
 #include "AliReducedCaloClusterInfo.h"
+#include "AliReducedCaloClusterTrackMatcher.h"
 #include "AliKFParticle.h"
 
 #define BASEEVENT AliReducedBaseEvent
@@ -1495,7 +1496,7 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* leg1, TRACK* leg2, Float_t* va
 
 
 //_________________________________________________________________
-void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values, TList* clusterList/*=0x0*/) {
+void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   //
   // fill track information
   //
@@ -1730,8 +1731,6 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values, TList* c
   values[kTRDGTUsagitta]     = pinfo->TRDGTUsagitta();
   values[kTRDGTUPID]         = pinfo->TRDGTUPID();
 
-  FillClusterMatchedTrackInfo(pinfo, values, clusterList);
-
   FillTrackingStatus(pinfo,values);
   //FillTrackingFlags(pinfo,values);
 
@@ -1760,17 +1759,19 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values, TList* c
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillClusterMatchedTrackInfo(AliReducedTrackInfo* pinfo, Float_t* values, TList* clusterList/*=0x0*/) {
+void AliReducedVarManager::FillClusterMatchedTrackInfo(AliReducedBaseTrack* p, Float_t* values, TList* clusterList/*=0x0*/, AliReducedCaloClusterTrackMatcher* matcher/*=0x0*/) {
   //
   // fill calorimeter cluster matched track info
   //
+  if(p->IsA()!=TRACK::Class()) return;
+  TRACK* pinfo = (TRACK*)p;
+
   if (!fgUsedVars[kEMCALmatchedEnergy] &&
       !fgUsedVars[kEMCALmatchedEOverP] &&
       !fgUsedVars[kEMCALmatchedM02] &&
       !fgUsedVars[kEMCALmatchedM20] &&
       !fgUsedVars[kEMCALmatchedClusterId]) return;
 
-  if (fgUsedVars[kEMCALmatchedClusterId]) values[kEMCALmatchedClusterId] = pinfo->CaloClusterId();
   if (fgEvent && (fgEvent->IsA()==EVENT::Class())) {
     CLUSTER* cluster = NULL;
     if (clusterList) {
@@ -1782,11 +1783,22 @@ void AliReducedVarManager::FillClusterMatchedTrackInfo(AliReducedTrackInfo* pinf
     } else {
       cluster = ((EVENT*)fgEvent)->GetCaloClusterFromID(pinfo->CaloClusterId());
     }
+    // track matcher:
+    Float_t deltaPhi  = -9999.;
+    Float_t deltaEta  = -9999.;
+    Float_t dist      = -9999.;
+    if (matcher) {
+      if (!matcher->IsClusterMatchedToTrack(pinfo, cluster, deltaPhi, deltaEta, dist)) cluster = NULL;
+    }
+    if (fgUsedVars[kEMCALmatchedClusterId])       values[kEMCALmatchedClusterId]      = (cluster ? pinfo->CaloClusterId() : -9999.);
     if (fgUsedVars[kEMCALmatchedEnergy])          values[kEMCALmatchedEnergy]         = (cluster ? cluster->Energy() : -9999.);
     if (fgUsedVars[kEMCALmatchedM02])             values[kEMCALmatchedM02]            = (cluster ? cluster->M02() : -9999.);
     if (fgUsedVars[kEMCALmatchedM20])             values[kEMCALmatchedM20]            = (cluster ? cluster->M20() : -9999.);
     if (fgUsedVars[kEMCALmatchedNCells])          values[kEMCALmatchedNCells]         = (cluster ? cluster->NCells() : -9999.);
     if (fgUsedVars[kEMCALmatchedNMatchedTracks])  values[kEMCALmatchedNMatchedTracks] = (cluster ? cluster->NMatchedTracks() : -9999.);
+    if (fgUsedVars[kEMCALmatchedDeltaPhi])        values[kEMCALmatchedDeltaPhi]       = (cluster ? deltaPhi : -9999.);
+    if (fgUsedVars[kEMCALmatchedDeltaEta])        values[kEMCALmatchedDeltaEta]       = (cluster ? deltaEta : -9999.);
+    if (fgUsedVars[kEMCALmatchedDistance])        values[kEMCALmatchedDistance]       = (cluster ? dist : -9999.);
     if (fgUsedVars[kEMCALmatchedEOverP]) {
       Float_t               mom = 0.0;
       if (pinfo->PonCalo()) mom = pinfo->PonCalo();
@@ -3197,6 +3209,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALmatchedM20]       = "Calo M20";                fgVariableUnits[kEMCALmatchedM20] = "";
   fgVariableNames[kEMCALmatchedNCells]          = "Calo No. cells";           fgVariableUnits[kEMCALmatchedNCells] = "";
   fgVariableNames[kEMCALmatchedNMatchedTracks]  = "Calo No. matched tracks";  fgVariableUnits[kEMCALmatchedNMatchedTracks] = "";
+  fgVariableNames[kEMCALmatchedDeltaPhi]        = "#Delta#varphi track-cluster";  fgVariableUnits[kEMCALmatchedDeltaPhi] = "";
+  fgVariableNames[kEMCALmatchedDeltaEta]        = "#Delta#eta track-cluster";     fgVariableUnits[kEMCALmatchedDeltaEta] = "";
+  fgVariableNames[kEMCALmatchedDistance]        = "track-cluster distance";       fgVariableUnits[kEMCALmatchedDistance] = "";
   fgVariableNames[kEMCALclusterEnergy]    = "Calo cls. energy";        fgVariableUnits[kEMCALclusterEnergy] = "GeV";
   fgVariableNames[kEMCALclusterDx]        = "Calo cls. dx";            fgVariableUnits[kEMCALclusterDx] = "";  
   fgVariableNames[kEMCALclusterDz]        = "Calo cls. dz";            fgVariableUnits[kEMCALclusterDz] = "";  

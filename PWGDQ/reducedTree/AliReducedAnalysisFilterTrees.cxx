@@ -264,6 +264,7 @@ void AliReducedAnalysisFilterTrees::WriteFilteredTracks(Int_t array /*=1*/) {
    for(Int_t it=0; it<trackList->GetEntries(); ++it) {
       track = (AliReducedBaseTrack*)nextTrack();
       AliReducedVarManager::FillTrackInfo(track, fValues);
+      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
       
       Bool_t writeTrack = IsTrackSelected(track, fValues);
@@ -324,6 +325,7 @@ void AliReducedAnalysisFilterTrees::RunCandidateLegsSelection() {
    for(Int_t it=0; it<trackList->GetEntries(); ++it) {
       track = (AliReducedBaseTrack*)nextTrack();
       AliReducedVarManager::FillTrackInfo(track, fValues);
+      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       if(fOptionRunOverMC && fLegCandidatesMCcuts) mcDecision = CheckReconstructedLegMCTruth(track);
       if(isAsymmetricDecayChannel) {
          if(IsCandidateLegSelected(track, fValues, 1) && mcDecision) {
@@ -443,6 +445,7 @@ void AliReducedAnalysisFilterTrees::RunCandidateLegsPrefilter(Int_t leg) {
    for(Int_t it = 0; it<(leg==1 ? fLeg1Tracks.GetEntries() : fLeg2Tracks.GetEntries()); ++it) {
       track = (AliReducedBaseTrack*)iterLeg();
       AliReducedVarManager::FillTrackInfo(track, fValues);
+      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       FillCandidateLegHistograms(Form("Track_LEG%d_AfterPrefilter", leg), track, fValues, (leg==2 && isAsymmetricDecayChannel ? 2 : 1), isAsymmetricDecayChannel);
    }
 }
