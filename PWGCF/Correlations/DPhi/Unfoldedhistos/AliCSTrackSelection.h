@@ -13,7 +13,7 @@ class TBits;
 class TH1F;
 class TH2F;
 class AliVTrack;
-class TParticle;
+class AliVParticle;
 class AliPIDResponse;
 
 /// \class AliCSTrackSelection

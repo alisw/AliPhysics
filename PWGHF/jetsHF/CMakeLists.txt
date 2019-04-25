@@ -32,6 +32,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/Run2
                     ${AliRoot_SOURCE_DIR}/PYTHIA6/pythia6
@@ -53,7 +54,6 @@ set(SRCS
     AliAnalysisTaskEmcalHFeJetCorrel.cxx		    
     AliAnalysisTaskEmcalJetBJetTaggingIP.cxx
     AliAnalysisTaskEmcalJetBtagSV.cxx          
-    AliAnalysisTaskJetExtractorHF.cxx
     AliRDHFJetsCuts.cxx
     AliRDHFJetsCutsVertex.cxx
     AliHFJetsTaggingVertex.cxx
@@ -63,6 +63,7 @@ set(SRCS
     AliAnalysisTaskDJetCorrelations.cxx
     AliAnalysisTaskDJetCorrelationsQA.cxx
     AliAnalysisTaskDmesonsFilterCJ.cxx
+    AliEmbeddingEventForHFTask.cxx
 )
 
 if(FASTJET_FOUND)

@@ -60,7 +60,6 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const TString &prefix
   , fDenominatorReconstructed(nullptr)
   , fDenominatorGenWeighted(nullptr)
   , fDenominatorRecWeighted(nullptr)
-  , fRng(new TRandom())
 {
 
   auto new_th3 = [&] (const TString &name, const TString &title)
@@ -127,7 +126,6 @@ AliFemtoModelCorrFctnTrueQ3D::AliFemtoModelCorrFctnTrueQ3D(const AliFemtoModelCo
   , fDenominatorReconstructed(nullptr)
   , fDenominatorGenWeighted(nullptr)
   , fDenominatorRecWeighted(nullptr)
-  , fRng(new TRandom())
 {
   fNumeratorGenerated = new TH3F(*orig.fNumeratorGenerated);
   fNumeratorReconstructed = new TH3F(*orig.fNumeratorReconstructed);
@@ -190,7 +188,6 @@ AliFemtoModelCorrFctnTrueQ3D::~AliFemtoModelCorrFctnTrueQ3D()
   delete fNumeratorRecUnweighted;
   delete fDenominatorGenWeighted;
   delete fDenominatorRecWeighted;
-  delete fRng;
 }
 
 
@@ -271,15 +268,11 @@ fill_hists(TH3 *dest,
   Double_t q_out, q_side, q_long;
   std::tie(q_out, q_side, q_long) = Qcms(p1, p2);
 
-  const Int_t dest_bin
-    = dest ? dest->FindBin(q_out, q_long, q_side)
-           : dest_unweighted->FindBin(q_out, q_long, q_side);
+  TH3 *hist = dest ?: dest_unweighted;
 
-  const bool is_out_of_bounds
-    = dest ? dest->IsBinOverflow(dest_bin) or dest->IsBinUnderflow(dest_bin)
-           : dest_unweighted->IsBinOverflow(dest_bin) or dest_unweighted->IsBinUnderflow(dest_bin);
+  const Int_t dest_bin = hist->FindBin(q_out, q_long, q_side);
 
-  if (!is_out_of_bounds) {
+  if (!hist->IsBinOverflow(dest_bin) and !hist->IsBinUnderflow(dest_bin)) {
     if (dest) {
       dest->Fill(q_out, q_side, q_long, weight);
     }
@@ -348,16 +341,11 @@ AliFemtoModelCorrFctnTrueQ3D::AddRealPair(AliFemtoPair *pair)
   const AliFemtoParticle *p1 = pair->Track1(),
                          *p2 = pair->Track2();
 
-  // randomize to avoid ordering biases
-  if (fRng->Uniform() >= 0.5) {
-    std::swap(p1, p2);
-  }
-
   AddPair(*p1, *p2,
-          fNumeratorGenUnweighted,
-          fNumeratorRecUnweighted,
           fNumeratorGenerated,
           fNumeratorReconstructed,
+          fNumeratorGenUnweighted,
+          fNumeratorRecUnweighted,
           fManager->GetWeight(pair));
 }
 
@@ -367,11 +355,6 @@ AliFemtoModelCorrFctnTrueQ3D::AddMixedPair(AliFemtoPair *pair)
 {
   const AliFemtoParticle *p1 = pair->Track1(),
                          *p2 = pair->Track2();
-
-  // randomize to avoid ordering biases
-  if (fRng->Uniform() >= 0.5) {
-    std::swap(p1, p2);
-  }
 
   AddPair(*p1, *p2,
           fDenominatorGenWeighted,

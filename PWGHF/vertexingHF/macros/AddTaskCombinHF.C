@@ -91,6 +91,7 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   TString inname = Form("cinput%s%s",mesname.Data(),containerStr.Data());
   TString outname = Form("coutput%s%s",mesname.Data(),containerStr.Data());
   TString normname = Form("coutput%sNorm%s",mesname.Data(),containerStr.Data());
+  TString cutname = Form("coutput%sCuts%s",mesname.Data(),containerStr.Data());
   
   AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),
                                                           AliAnalysisManager::kInputContainer);
@@ -104,12 +105,16 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson = 0,
   AliAnalysisDataContainer *coutputNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),
                                                                AliAnalysisManager::kOutputContainer,
                                                                outputfile.Data());
-  
+  AliAnalysisDataContainer* coutputCuts = mgr->CreateContainer(cutname,
+							       TList::Class(),
+							       AliAnalysisManager::kParamContainer,
+							       outputfile.Data() ); 
+
   mgr->ConnectInput(dTask,0,mgr->GetCommonInputContainer());
   
   mgr->ConnectOutput(dTask,1,coutput);
-  
   mgr->ConnectOutput(dTask,2,coutputNorm);  
+  mgr->ConnectOutput(dTask,3,coutputCuts);
   
   return dTask;
 }

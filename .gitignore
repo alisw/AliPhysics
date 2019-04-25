@@ -82,3 +82,11 @@ rpm-tmp.*
 
 # compile_commands.json
 compile_commands.json
+
+# artefacts of analyses testing
+AliAOD.root
+AliESDs.root
+AnalysisResults.root
+EventStat_temp.root
+event_stat.root
+AliAOD.NanoAOD.root

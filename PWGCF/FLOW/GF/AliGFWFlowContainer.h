@@ -32,7 +32,9 @@ class AliGFWFlowContainer:public TNamed {
   Bool_t OverrideMainWithSub(Int_t subind, Bool_t ExcludeChosen);
   TObjArray *GetSubProfiles() { return fProfRand; };
   Long64_t Merge(TCollection *collist);
-  void SetIDName(TString newname) { fIDName = newname; }; //! do not store
+  void SetIDName(TString newname); //! do not store
+  void SetPtRebin(Int_t newval) { fPtRebin=newval; };
+  void SetPropagateErrors(Bool_t newval) { fPropagateErrors = newval; };
   TProfile *GetCorrXXVsMulti(const char *order, Int_t l_pti=0);//pti = 0 for pt-integrated
   TProfile *GetCorrXXVsPt(const char *order, Double_t lminmulti=-1, Double_t lmaxmulti=-1); //0 for multi. integrated
   TH1D *GetHistCorrXXVsMulti(const char *order, Int_t l_pti=0);//pti = 0 for pt-integrated
@@ -42,7 +44,7 @@ class AliGFWFlowContainer:public TNamed {
   TH1D *GetVN2VsPt(Int_t n=2, Double_t min=-1, Double_t max=-1) { return GetVN2VsX(n,kTRUE,min,max);};
   TH1D *GetCN4VsMulti(Int_t n=2, Int_t pti=0) { return GetCN4VsX(n,kFALSE,pti); };
   TH1D *GetCN4VsPt(Int_t n=2, Double_t min=-1, Double_t max=-1) { return GetCN4VsX(n,kTRUE,min,max); };
-  
+
   TH1D *GetVN4VsMulti(Int_t n=2, Int_t pti=0) { return GetVN4VsX(n,kFALSE,pti); };
   TH1D *GetVN4VsPt(Int_t n=2, Double_t min=-1, Double_t max=-1) { return GetVN4VsX(n,kTRUE,min,max); };
 
@@ -51,7 +53,7 @@ class AliGFWFlowContainer:public TNamed {
 
   TH1D *GetVN8VsMulti(Int_t n=2, Int_t pti=0) { return GetVN8VsX(n,kFALSE,pti); };
   TH1D *GetVN8VsPt(Int_t n=2, Double_t min=-1, Double_t max=-1) { return GetVN8VsX(n,kTRUE,min,max); };
-  
+
   TH1D *GetCNN(Int_t n=2, Int_t c=2, Bool_t onPt=kTRUE, Double_t arg1=-1, Double_t arg2=-1);
   TH1D *GetVNN(Int_t n=2, Int_t c=2, Bool_t onPt=kTRUE, Double_t arg1=-1, Double_t arg2=-1);
 
@@ -73,7 +75,7 @@ class AliGFWFlowContainer:public TNamed {
   Double_t VN4Error(Double_t c4, Double_t c4e);
   Double_t VDN4Value(Double_t d4, Double_t c4);
   Double_t VDN4Error(Double_t d4, Double_t d4e, Double_t c4, Double_t c4e);
-  
+
   Double_t CN6Value(Double_t cor6, Double_t cor4, Double_t cor2);
   Double_t CN6Error(Double_t cor6e, Double_t cor4, Double_t cor4e,  Double_t cor2, Double_t cor2e);
 
@@ -90,7 +92,7 @@ class AliGFWFlowContainer:public TNamed {
   Double_t CN8Error(Double_t cor8e, Double_t cor6, Double_t cor6e,
 		    Double_t cor4, Double_t cor4e, Double_t cor2, Double_t cor2e);
   Double_t DN8Value(Double_t cor8d, Double_t cor6d, Double_t cor4d, Double_t cor2d, Double_t cor6, Double_t cor4, Double_t cor2);
-  Double_t DN8Error(Double_t d8e, Double_t d6, Double_t d6e, Double_t d4, 
+  Double_t DN8Error(Double_t d8e, Double_t d6, Double_t d6e, Double_t d4,
 		    Double_t d4e, Double_t d2, Double_t d2e, Double_t c6,
 		    Double_t c6e, Double_t c4, Double_t c4e, Double_t c2,
 		    Double_t c2e);
@@ -109,7 +111,7 @@ class AliGFWFlowContainer:public TNamed {
   TH1D *GetVN8VsX(Int_t n=2, Bool_t onPt=kTRUE, Double_t larg1=-1, Double_t larg2=-1);
 
 
-  TH1D *GetVN2(TH1D *cn2);  
+  TH1D *GetVN2(TH1D *cn2);
   TH1D *GetVN4(TH1D *inh);
   TH1D *GetVN6(TH1D *inh);
   TH1D *GetVN8(TH1D *inh);
@@ -122,6 +124,8 @@ class AliGFWFlowContainer:public TNamed {
   TObjArray *fProfRand;
   Int_t fNRandom;
   TString fIDName;
+  Int_t fPtRebin; //! do not store
+  Bool_t fPropagateErrors; //! do not store
   TProfile *GetRefFlowProfile(const char *order, Double_t m1=-1, Double_t m2=-1);
   ClassDef(AliGFWFlowContainer, 1);
 };

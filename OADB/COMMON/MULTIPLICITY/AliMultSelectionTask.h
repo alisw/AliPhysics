@@ -87,6 +87,11 @@ public:
     TString GetExceptionMapping( TString lProductionName ) const; //list of exceptions
     Bool_t CheckOADB( TString lProdName ) const;
     
+    /// Static helper functions
+    static TString GetPeriodNameByRunNumber(int runNumber);
+    static TString GetSystemTypeByRunNumber(int runNumber);
+    static TString GetPeriodNameByGenericPath( const TString lPath );
+
     //Check MC type
     Bool_t IsHijing()  const;
     Bool_t IsDPMJet()  const;
@@ -108,6 +113,7 @@ public:
     void SetFilterMB     ( Bool_t lVar ) { fkFilterMB    = lVar; } ;
     void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
     void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
+    void SetStoreAllQA( Bool_t lVar ) { fkStoreQA = lVar; }
     void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
     void SetGeneratorOnly( Bool_t lVar ) { fkGeneratorOnly = lVar; }
     
@@ -130,10 +136,11 @@ public:
     //Calibration mode downscaling for manageable output
     void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
     
-    void SetOADB ( TString lOADBfilename ); 
+    void SetOADB ( TString lOADBfilename );
+    AliOADBContainer* GetOADB() {return fOADB;}; //for expert manipulation only
     
     // Static method for AddTaskMultSelection
-    static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, const TString lMasterJobSessionFlag = "");
+    static AliMultSelectionTask* AddTaskMultSelection ( Bool_t lCalibration = kFALSE, TString lExtraOptions = "", Int_t lNDebugEstimators = 1, TString lContainerAppend = "", const TString lMasterJobSessionFlag = "");
 
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
@@ -153,6 +160,7 @@ private:
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
+    Bool_t fkStoreQA;     //if true, store all QA histograms (and not just typical)
     Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
     Bool_t fkGeneratorOnly; //if true, skip loading of reco objects
     
@@ -300,6 +308,7 @@ private:
     AliMultVariable *fMC_NchEta08;
     AliMultVariable *fMC_NchEta10;
     AliMultVariable *fMC_NchEta14;
+    AliMultVariable *fMC_b;
     
     //Histograms / Anything else as needed
     TH1D *fHistEventCounter; //!

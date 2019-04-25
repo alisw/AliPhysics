@@ -30,6 +30,7 @@ ClassImp(AliMultDepSpecAnalysisTask);
 /// \endcond
 
 
+
 //________________________________________________________________________
 AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAnalysisTaskSE(name),
   //General member variables
@@ -109,11 +110,13 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   // Set default binning
   Double_t binsMultDefault[2] = {0., 10000.};
   Double_t binsCentDefault[2] = {0., 100.};
-  Double_t binsPtDefault[49] = {0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0};
+  //Double_t binsPtDefault[49] = {0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0};
+  Double_t binsPtDefault[53] = {0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,20.0,30.0,40.0,50.0,60.0};
   Double_t binsEtaDefault[19] = {-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
   Double_t binsZvDefault[13] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
   //  Double_t binsPtDefault[69] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
   //  Double_t binsEtaDefault[31] = {-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5};
+
 
   // binning for relative pT resolution
   const Int_t nBinsPtReso = 300;
@@ -136,7 +139,8 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
 
   SetBinsMult(1,binsMultDefault);
   SetBinsCent(1,binsCentDefault);
-  SetBinsPt(48,binsPtDefault);
+  SetBinsPt(52, binsPtDefault);
+  //SetBinsPt(48,binsPtDefault);
   SetBinsEta(18,binsEtaDefault);
   SetBinsZv(12,binsZvDefault);
   SetMeanXYZv(0.0,0.0,0.0);
@@ -463,7 +467,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){ // Main loop (called for 
 
   // True Multiplicity Nch:
   if(fIsMC){
-    for(Int_t iGenPart = 1; iGenPart < fMCEvent->GetNumberOfTracks(); iGenPart++) {
+    for(Int_t iGenPart = 0; iGenPart < fMCEvent->GetNumberOfTracks(); iGenPart++) {
       AliMCParticle* mcGenParticle  = (AliMCParticle*)fMCEvent->GetTrack(iGenPart);
       if(!mcGenParticle) {Printf("ERROR: mcGenParticle  not available\n"); continue;}
       if(!IsParticleInKinematicRange(mcGenParticle)) continue;
@@ -521,11 +525,6 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){ // Main loop (called for 
       AliMCParticle* mcParticle  = (AliMCParticle*)fMCEvent->GetTrack(mcLabel);
       if(!mcParticle) {Printf("ERROR: mcParticle not available\n"); continue;}
 
-      Double_t ptResValues[2] = {track->Pt(), mcParticle->Pt()};
-      fHistMCPtRes->Fill(ptResValues);
-      Double_t etaResValues[2] = {track->Eta(), mcParticle->Eta()};
-      fHistMCEtaRes->Fill(etaResValues);
-
       if(!IsParticleInKinematicRange(mcParticle)) continue;
       multRecPart++;
 
@@ -544,6 +543,11 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){ // Main loop (called for 
 
       if(IsChargedPrimary(mcLabel))
       {
+        Double_t ptResValues[2] = {track->Pt(), mcParticle->Pt()};
+        fHistMCPtRes->Fill(ptResValues);
+        Double_t etaResValues[2] = {track->Eta(), mcParticle->Eta()};
+        fHistMCEtaRes->Fill(etaResValues);
+
         Double_t mcPrimTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
         fHistMCRecPrimTrack->Fill(mcPrimTrackValue);
 
@@ -572,7 +576,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){ // Main loop (called for 
   ///------------------- Loop over Generated Tracks (True MC)------------------------------
   if (fIsMC){
 
-    for(Int_t iGenPart = 1; iGenPart < fMCEvent->GetNumberOfTracks(); iGenPart++) {
+    for(Int_t iGenPart = 0; iGenPart < fMCEvent->GetNumberOfTracks(); iGenPart++) {
       AliMCParticle* mcGenParticle  = (AliMCParticle*)fMCEvent->GetTrack(iGenPart);
       if(!mcGenParticle) {Printf("ERROR: mcGenParticle  not available\n"); continue;}
 

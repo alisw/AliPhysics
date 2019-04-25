@@ -93,6 +93,7 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut():
     fNsigmaTPCTOF(kFALSE),
     fNsigmaTPConly(kFALSE),
     fNsigma(3.),
+    fNsigmaMass(-1.0),
     fminTPCclsF(0),
     fminTPCncls(0),
     fminITScls(0),
@@ -181,7 +182,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     return false;
   }
 
-  if (track->TPCncls() > 0 && (track->TPCchi2() / track->TPCncls()) > fMaxTPCchiNdof) {
+  if (track->TPCchi2perNDF() > fMaxTPCchiNdof) {
     return false;
   }
 
@@ -559,89 +560,63 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 AliFemtoString AliFemtoESDTrackCut::Report()
 {
   // Prepare report from the execution
-  string tStemp;
-  char tCtemp[100];
-  snprintf(tCtemp , 100, "Particle mass:\t%E\n",this->Mass());
-  tStemp=tCtemp;
-  snprintf(tCtemp , 100, "Particle charge:\t%d\n",fCharge);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Particle eta:\t%E - %E\n",fEta[0],fEta[1]);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
-  tStemp += tCtemp;
-  AliFemtoString returnThis = tStemp;
-  return returnThis;
+  AliFemtoString report;
+  report += Form("Particle mass:\t%E\n",this->Mass());
+  report += Form("Particle charge:\t%d\n",fCharge);
+  report += Form("Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
+
+  report += Form("Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
+  report += Form("Particle eta:\t%E - %E\n",fEta[0],fEta[1]);
+  report += Form("Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
+
+  return report;
 }
+
 TList *AliFemtoESDTrackCut::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoESDTrackCut.mass=%f", this->Mass());
-  tListSetttings->AddLast(new TObjString(buf));
+  tListSetttings->AddVector(
+    new TObjString(Form("AliFemtoESDTrackCut.mass=%f", this->Mass())),
+    new TObjString(Form("AliFemtoESDTrackCut.charge=%i", fCharge)),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobpion.minimum=%f", fPidProbPion[0])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobpion.maximum=%f", fPidProbPion[1])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobkaon.minimum=%f", fPidProbKaon[0])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobkaon.maximum=%f", fPidProbKaon[1])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobproton.minimum=%f", fPidProbProton[0])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobproton.maximum=%f", fPidProbProton[1])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobelectron.minimum=%f", fPidProbElectron[0])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobelectron.maximum=%f", fPidProbElectron[1])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobMuon.minimum=%f", fPidProbMuon[0])),
+    new TObjString(Form("AliFemtoESDTrackCut.pidprobMuon.maximum=%f", fPidProbMuon[1])),
+    new TObjString(Form("AliFemtoESDTrackCut.minimumtpcclusters=%i", fminTPCclsF)),
+    new TObjString(Form("AliFemtoESDTrackCut.minimumitsclusters=%i", fminTPCclsF)),
+    new TObjString(Form("AliFemtoESDTrackCut.pt.minimum=%f", fPt[0])),
+    new TObjString(Form("AliFemtoESDTrackCut.pt.maximum=%f", fPt[1])),
+    new TObjString(Form("AliFemtoESDTrackCut.rapidity.minimum=%f", fRapidity[0])),
+    new TObjString(Form("AliFemtoESDTrackCut.rapidity.maximum=%f", fRapidity[1])),
+    new TObjString(Form("AliFemtoESDTrackCut.removekinks=%i", fRemoveKinks)),
+    new TObjString(Form("AliFemtoESDTrackCut.maxitschindof=%f", fMaxITSchiNdof)),
+    new TObjString(Form("AliFemtoESDTrackCut.maxtpcchindof=%f", fMaxTPCchiNdof)),
+    new TObjString(Form("AliFemtoESDTrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex)),
+    new TObjString(Form("AliFemtoESDTrackCut.maximpactxy=%f", fMaxImpactXY)),
+    new TObjString(Form("AliFemtoESDTrackCut.maximpactz=%f", fMaxImpactZ)),
+    nullptr
+  );
 
-  snprintf(buf, 200, "AliFemtoESDTrackCut.charge=%i", fCharge);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobpion.minimum=%f", fPidProbPion[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobpion.maximum=%f", fPidProbPion[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobkaon.minimum=%f", fPidProbKaon[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobkaon.maximum=%f", fPidProbKaon[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobproton.minimum=%f", fPidProbProton[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobproton.maximum=%f", fPidProbProton[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobelectron.minimum=%f", fPidProbElectron[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobelectron.maximum=%f", fPidProbElectron[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobMuon.minimum=%f", fPidProbMuon[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pidprobMuon.maximum=%f", fPidProbMuon[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.minimumtpcclusters=%i", fminTPCclsF);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.minimumitsclusters=%i", fminTPCclsF);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pt.minimum=%f", fPt[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.pt.maximum=%f", fPt[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.minimum=%f", fRapidity[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.rapidity.maximum=%f", fRapidity[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.removekinks=%i", fRemoveKinks);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.maxitschindof=%f", fMaxITSchiNdof);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.maxtpcchindof=%f", fMaxTPCchiNdof);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.maximpactxy=%f", fMaxImpactXY);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoESDTrackCut.maximpactz=%f", fMaxImpactZ);
-  tListSetttings->AddLast(new TObjString(buf));
   if (fMostProbable) {
-    if (fMostProbable == 2)
-      snprintf(buf, 200, "AliFemtoESDTrackCut.mostprobable=%s", "Pion");
-    if (fMostProbable == 3)
-      snprintf(buf, 200, "AliFemtoESDTrackCut.mostprobable=%s", "Kaon");
-    if (fMostProbable == 4)
-      snprintf(buf, 200, "AliFemtoESDTrackCut.mostprobable=%s", "Proton");
-
-    tListSetttings->AddLast(new TObjString(buf));
+    tListSetttings->Add(
+      new TObjString(
+        Form("AliFemtoESDTrackCut.mostprobable=%s",
+                      ((fMostProbable == 2) ? "Pion"
+                     : (fMostProbable == 3) ? "Kaon"
+                     : (fMostProbable == 4) ? "Proton"
+                     : "??"))));
   }
+
   return tListSetttings;
 }
+
 void AliFemtoESDTrackCut::SetRemoveKinks(const bool& flag)
 {
   fRemoveKinks = flag;
@@ -1075,8 +1050,7 @@ bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigm
 
 bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
-  if (fNsigmaTPCTOF) {
-    if (mom > 0.5) {
+  if (fNsigmaTPCTOF) {    if (mom > 0.5) {
 //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
         if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigma)
             return true;
@@ -1114,14 +1088,24 @@ bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
 {
   double massPDGD=1.8756;
   if (fNsigmaTPCTOF) {
-    if (mom > 1) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
+    if (mom > 1.0) {  //if TOF avaliable: && (nsigmaTOFD != -1000) --> always TOF
       //if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
-      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) && (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass))
+      if ((TMath::Hypot( nsigmaTOFD, nsigmaTPCD ) < fNsigma) ) //&& (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass)
         return true;
     }
     else {
       if (TMath::Abs(nsigmaTPCD) < fNsigma)
         return true;
+    }
+  }
+  else{
+    if(sigmaMass<0){
+      if (TMath::Abs(nsigmaTPCD) < fNsigma)
+	return true;
+    }
+    else{
+      if ((TMath::Abs(nsigmaTPCD) < fNsigma) && (TMath::Abs(massTOFPDG-massPDGD*massPDGD)<sigmaMass))
+	return true;
     }
   }
 

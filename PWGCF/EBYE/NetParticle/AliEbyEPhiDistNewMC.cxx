@@ -20,7 +20,7 @@
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                            Surya Prakash Pathak                         //
 //                       surya.prakash.pathak@cern.ch                      //
-//                         (Last Modified 2019/02/01)                      //
+//                         (Last Modified 2019/03/06)                      //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle analysis code//
 //=========================================================================//
@@ -424,8 +424,8 @@ void AliEbyEPhiDistNewMC::CreatePhiHistMC() {
   const Char_t *PidCut[4] = {
     "ChHad",
     "TPC", // 0 only TPC
-    "TPC+TOF",
-    "TPC+ITS+TOF"
+    "TPC",
+    "TPC"
   };
   
   

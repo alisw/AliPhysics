@@ -1521,7 +1521,7 @@ Double_t AliAnalysisTaskDmesonsFilterCJ::AddMCDaughters(AliAODMCParticle* mcDmes
     // Add all the dauthers of cand in an array. Follows all the decay cascades.
 
     Int_t n = mcDmeson->GetNDaughters();
-    Int_t nD0 = mcDmeson->GetDaughter(0); // get label of the first daughter
+    Int_t nD0 = mcDmeson->GetDaughterLabel(0); // get label of the first daughter
     //Printf("AddDaughters: the number of dauhters is %d", n);
     Double_t pt = 0;
 
@@ -1682,8 +1682,8 @@ Int_t AliAnalysisTaskDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part, 
 
   if (part->GetNDaughters() == 2) {
 
-    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
-    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(1)));
 
     if (!d1 || !d2) {
       return decay;

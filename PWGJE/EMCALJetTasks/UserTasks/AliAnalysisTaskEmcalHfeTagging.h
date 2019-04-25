@@ -220,7 +220,9 @@ protected:
     TH1F                                *fptRecPE;
     TH1F                                *fptTruePE;
     TH1F                                *fptTrueHFEeffTPCTOF[5];
+    TH1F                                *fptTrueHFEeffTPCTOFwJetPt[2][5];
     TH1F                                *fptTrueHFEeffEMCal[5];
+    TH1F                                *fptTrueHFEeffEMCalwJetPt[2][5];
     TH1F                                *fptWrongPE;
     TH1F                                *fPtTrack;
     TH2F                                *fPhiTrack;
@@ -237,6 +239,7 @@ protected:
     TH2F                                *fEtaPhiTrueElec;
     TH2F                                *fnEovPelecTPCcut;
     TH2F                                *fnEovPelecTPCEMCalcut;
+    TH2F                                *fnEovPelecTPCsscut[5];
     TH2F                                *fnEovPbackg;
     TH2F                                *fnClsE;
     TH2F                                *fnM20;

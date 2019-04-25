@@ -26,6 +26,7 @@ public:
   /// \param nbins The number of bins in each direction of , and q
   ///
   AliFemtoCorrFctn3DLCMSSym(const char* title, const int nbins, const float QHi);
+  AliFemtoCorrFctn3DLCMSSym(const char* title, const int nbins, const float QHi, bool enable_errs);
 
   /// Copy Constructor
   AliFemtoCorrFctn3DLCMSSym(const AliFemtoCorrFctn3DLCMSSym& aCorrFctn);

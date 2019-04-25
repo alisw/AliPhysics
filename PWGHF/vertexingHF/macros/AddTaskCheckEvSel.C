@@ -11,6 +11,8 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
 					     Int_t minContPileup=3,
 					     Double_t minDzPileup=0.6,
 					     Bool_t multDepPileup=kFALSE,
+					     Int_t optForOOBPileupInPbPb=0,
+					     Bool_t useCentrCorrelCuts=kFALSE,
 					     Bool_t doVtxNtuple=kFALSE)
 {
   
@@ -33,23 +35,26 @@ AliAnalysisTaskCheckEvSel *AddTaskCheckEvSel(TString suffix="",
     }
     evselCuts->SetOptPileup(optPileup);
     if(optPileup==AliRDHFCuts::kRejectPileupEvent){
-      evselCuts->ConfigurePileupCuts(minContPileup,minDzPileup);
+      evselCuts->ConfigureSPDPileupCuts(minContPileup,minDzPileup);
       evselCuts->SetUseMultDepPileupCut(multDepPileup);
     }
     else if(optPileup==AliRDHFCuts::kRejectMVPileupEvent){
-      evselCuts->ConfigurePileupCuts(minContPileup,minDzPileup);
+      evselCuts->SetMinContribPileupMV(minContPileup);
     }
     evselCuts->SetCutOnzVertexSPD(cutOnZVertexSPD);
+    evselCuts->SetUseCentralityCorrelationCuts(useCentrCorrelCuts);
+    evselCuts->SetUsePbPbOutOfBunchPileupCut(optForOOBPileupInPbPb);
   }else{
     TFile* filecuts=TFile::Open(filecutName.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file with cuts not found");
+      ::Fatal("AddTaskCheckEvSel","Input file with cuts not found");
     }
     evselCuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutObjname.Data());
     if(!evselCuts){
-      AliFatal("Cut object not found");
+      ::Fatal("AddTaskCheckEvSel","Cut object not found");
     }
   }
+  
   AliAnalysisTaskCheckEvSel *dTask = new AliAnalysisTaskCheckEvSel(readMC,system,evselCuts);
   dTask->SetCutOnzVertexSPD(cutOnZVertexSPD);
   dTask->SetEnableVertexNtuple(doVtxNtuple);

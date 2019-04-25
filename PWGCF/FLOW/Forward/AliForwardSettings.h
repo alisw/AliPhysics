@@ -19,23 +19,19 @@ class AliForwardSettings : public TObject {
  public:
   AliForwardSettings();
 
-  // Types of data this analysis can access
-  enum {kMCTRUTH, kRECON};
-  // The type of data this task is accessing
-  Int_t fDataType;
-
   // Lower bound phi acceptance (should always be 0)
   Double_t fPhiAcceptanceLowEdge;
   // Upper bound phi acceptance (should always be 2pi)
   Double_t fPhiAcceptanceUpEdge;
-  // Lower bound eta acceptance (should always be -6.0)
-  Double_t fEtaLowEdge;
-  // Upper bound eta acceptance (should always be 6.0)
-  Double_t fEtaUpEdge;
   // Number of bins used along phi
   // fPhiBins must be divisable by 2, but not by 4; so that we can later shift it by pi/2 (2pi is total int.)
   // The idea is to have the deltaPhi histogram with a bin centered arround 0
   Int_t fNPhiBins;
+
+  // Lower bound eta acceptance (should always be -6.0)
+  Double_t fEtaLowEdge;
+  // Upper bound eta acceptance (should always be 6.0)
+  Double_t fEtaUpEdge;
   // Lower edge of the Zvtx acceptance region in cm
   Double_t fZVtxAcceptanceLowEdge;
   // Upper edge of the Z_vtx acceptance region in cm
@@ -55,25 +51,36 @@ class AliForwardSettings : public TObject {
 
   TH3F* nuacentral;
   TH3F* nuaforward;
+  TH3F* nuacentral_ref;
+  TH3F* nuaforward_ref;
+  TH3F* seccorr_fwd;
+  TH3F* seccorr_cen;
 
   bool doNUA;
 
   Double_t gap;
+  Double_t minpt;
   Double_t maxpt;
   Bool_t mc;
   Bool_t esd;
 
   Int_t tracktype;
   UShort_t nua_mode;
+  UShort_t ref_mode;
   Bool_t useTPC;
   Bool_t useSPD;
+  Bool_t useITS;
   Bool_t use_primaries;
   Bool_t use_primaries_cen;
   Bool_t use_primaries_fwd;
+  Bool_t useEventcuts;
+  TString centrality_estimator;
   Bool_t etagap;
   Bool_t makeFakeHoles;
-
-  TString centrality_estimator;
+  Int_t fnoClusters;
+  Double_t fCutChargedDCAxyMax;
+  Double_t fCutChargedDCAzMax;
+  Bool_t doPt;
   // return true if good event
 
   // flags used for method of cumulant
@@ -100,6 +107,13 @@ class AliForwardSettings : public TObject {
   };
 
   enum {
+    kSPDref   = 0x0001, // Standard QC{2} and QC{4} calculations
+    kITSref  = 0x0002, // QC{2} w/ an eta-gap
+    kTPCref    = 0x0004, // 3 correlator method for QC{2} w/ an eta-gap
+    kFMDref = 0x0008
+  };
+
+  enum {
     kTPCOnly = 128, // TPC only tracks
     kHybrid = 768, // TPC only tracks
     kGlobal = 32, // Global tracks
@@ -109,14 +123,15 @@ class AliForwardSettings : public TObject {
   };
   // definition of different variables to save
   enum {
-    kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
-    kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
-    kW2,               // <w2>
-    k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
-    kW4,               // <w4>
-    kW4Four,           // <w4*four>
+    //kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    //kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    //kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+    kW2 = 1,               // <w2>
+    //k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
     kW2Two,            // <w2*two>
+    kW4,               // <w4>
+    kW4Four           // <w4*four>
+    /*
     kCosphi1A,         // <cos(phi1)> for subevent A
     kSinphi1A,         // <sin(phi1)> for subevent A
     kCosphi1B,         // <cos(phi1)> for subevent B
@@ -128,6 +143,26 @@ class AliForwardSettings : public TObject {
     kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
     kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
     kSinphi1phi2phi3p,  // <sin(phi1+phi2-phi3)>
+    */
+  };
+
+
+  enum {
+    kWA = 1,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    kWA2,           // multiplicity for all particles in subevent A (note subevent A can also be the entire event)
+    kWB,               // multiplicity for all particles in subevent B (note subevent B can NOT be the entire event)
+    k3pWeight,         // M(M-1)(M-1) or (mp*M-2mq)(M-1)
+    kCosphi1A,         // <cos(phi1)> for subevent A
+    kSinphi1A,         // <sin(phi1)> for subevent A
+    kCosphi1B,         // <cos(phi1)> for subevent B
+    kSinphi1B,         // <sin(phi1)> for subevent B
+    kCosphi1phi2p,     // <cos(phi1+phi2)>
+    kCosphi1phi2m,     // <cos(phi1-phi2)>
+    kSinphi1phi2p,     // <sin(phi1+phi2)>
+    kCosphi1phi2phi3m, // <cos(phi1-phi2-phi3)>
+    kSinphi1phi2phi3m, // <sin(phi1-phi2-phi3)>
+    kCosphi1phi2phi3p, // <cos(phi1+phi2-phi3)>
+    kSinphi1phi2phi3p  // <sin(phi1+phi2-phi3)>
   };
 
   // definition of different variables to save

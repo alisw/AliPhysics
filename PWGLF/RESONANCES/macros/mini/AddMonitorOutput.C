@@ -16,9 +16,10 @@ Options ("opt" argument):
 #include "AliRsnValueEvent.h"
 #include "AliRsnValueDaughter.h"
 #include "AliRsnListOutput.h"
+#include "AliRsnLoopDaughter.h"
 #endif
 
-void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="NoSIGN",AliRsnLoopDaughter *lm=0)
+void AddMonitorOutput(Bool_t useMCMon, TObjArray *mon=0,TString opt="NoSIGN",AliRsnLoopDaughter *lm=0)
 {
   //Set options
   Bool_t useTH1 = opt.Contains("dim1");

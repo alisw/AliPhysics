@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//update Jan 2019
+//update Apr 2019
 
 #ifndef AliAnalysisTaskNetLambdaTrad_h
 #define AliAnalysisTaskNetLambdaTrad_h
@@ -36,40 +36,110 @@ protected:
     AliPIDResponse* fPIDResponse;
     AliEventCuts fEventCuts;
     TList* fListHist;
-    TTree* fTreeV0;
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
     
-    TH2F*  f2fHistRecCentVsPtLambda;
-    TH2F*  f2fHistRecCentVsPtAntiLambda;
-    TH2F*  f2fHistInvMassVsPtLambda;
-    TH2F*  f2fHistInvMassVsPtAntiLambda;
-    TH1F*  f1fHistmassctLambda;
-    TH1F*  f1fHistmassctAntiLambda;
-    TH2F*  f2fHistPtmassctLambda;
-    TH2F* f2fHistPtmassctAntiLambda;
+    
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point6;
+    TH3F*  f3fHistCentVsInvMassLambda1point0;
+    TH3F*  f3fHistCentVsInvMassLambda0point6;
+    TH3F*  f3fHistCentVsInvMassLambda0point2;
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point6Sigtwo;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Sigtwo;
+    TH3F*  f3fHistCentVsInvMassLambda0point6Sigtwo;
+    TH3F*  f3fHistCentVsInvMassLambda0point2Sigtwo;
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point6Masscut;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
+    TH3F*  f3fHistCentVsInvMassLambda0point6Masscut;
+    TH3F*  f3fHistCentVsInvMassLambda0point2Masscut;
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point6SigtwoMasscut;
+    TH3F*  f3fHistCentVsInvMassLambda1point0SigtwoMasscut;
+    TH3F*  f3fHistCentVsInvMassLambda0point6SigtwoMasscut;
+    TH3F*  f3fHistCentVsInvMassLambda0point2SigtwoMasscut;
+    
+    //    TH3F*  f3fHistPtmassctLambdaPosOpoint2;
+    //    TH3F*  f3fHistPtmassctLambdaPosOpoint4;
+    //    TH3F*  f3fHistPtmassctLambdaPosOpoint6;
+    //    TH3F*  f3fHistPtmassctLambdaPosOpoint8;
+    
+    ///ANTI-LAMBDA
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point6;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point6;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point2;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point6Sigtwo;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Sigtwo;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point6Sigtwo;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point2Sigtwo;
+    
+    //    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint2;
+    //    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint4;
+    //    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint6;
+    //    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint8;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point6Masscut;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point6Masscut;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point2Masscut;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point6SigtwoMasscut;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0SigtwoMasscut;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point6SigtwoMasscut;
+    TH3F*  f3fHistCentVsInvMassAntiLambda0point2SigtwoMasscut;
+    
+    
+    
     
     Float_t fCentrality;
     
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
     
-    Float_t fTreeVariableInvMassLambda;
-    Float_t fTreeVariableInvMassAntiLambda;
-    Float_t fTreeVariableDcaV0Daughters;
-    Float_t fTreeVariableDcaV0ToPrimVertex;
-    Float_t fTreeVariableDcaPosToPrimVertex;
-    Float_t fTreeVariableDcaNegToPrimVertex;
-    Float_t fTreeVariableNsigmaPosProton;
-    Float_t fTreeVariableNsigmaNegProton;
-    Float_t fTreeVariableCentrality;
     
     UInt_t fEvSel;
     Int_t  fNptBins;
     
-    THnSparse *fPtBinNplusNminusChALL;
-    THnSparse *fPtBinNplusNminusChCut;
+    
+    THnSparse *fPtBinNplusNminusChEtaFour;
+    THnSparse *fPtBinNplusNminusChEtaThree;
+    THnSparse *fPtBinNplusNminusChEtaTwo;
+    THnSparse *fPtBinNplusNminusChEtaOne;
+    
+    //    THnSparse *fPtBinNplusNminusChPosEtaFour;
+    //    THnSparse *fPtBinNplusNminusChPosEtaThree;
+    //    THnSparse *fPtBinNplusNminusChPosEtaTwo;
+    //    THnSparse *fPtBinNplusNminusChPosEtaOne;
+    
+    THnSparse *fPtBinNplusNminusChEtaFourSigTwo;
+    THnSparse *fPtBinNplusNminusChEtaThreeSigTwo;
+    THnSparse *fPtBinNplusNminusChEtaTwoSigTwo;
+    THnSparse *fPtBinNplusNminusChEtaOneSigTwo;
+    
+    
+    
+    //bkg
+    THnSparse *fPtBinNplusNminusChBproxyLF1point6;
+    THnSparse *fPtBinNplusNminusChBproxyLF1point0;
+    THnSparse *fPtBinNplusNminusChBproxyLF0point6;
+    THnSparse *fPtBinNplusNminusChBproxyLF0point2;
+    
+    //bkg sig 2
+    
+    THnSparse *fPtBinNplusNminusChBproxyLF1point6SigTwo;
+    THnSparse *fPtBinNplusNminusChBproxyLF1point0SigTwo;
+    THnSparse *fPtBinNplusNminusChBproxyLF0point6SigTwo;
+    THnSparse *fPtBinNplusNminusChBproxyLF0point2SigTwo;
+    
+    
+    
+    
+    
     Int_t    GetPtBin(Double_t pt);
     
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);

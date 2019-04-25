@@ -75,8 +75,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   void SetSystem(Int_t system){fSystem = system;}
 
+  void SetUseFinePtBinsForSparse(bool usefinebins=kTRUE) {fUseFinPtBinsForSparse=kTRUE;} //use only in case of few candidates (e.g. MC signal only)
+
   Double_t GetPtWeightFromHistogram(Double_t pt);
-    
+
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -195,9 +197,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
    
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
   TString fCentEstName; /// name of the centrality estimator (to fill axis of sparse)
-    
+  Bool_t fUseFinPtBinsForSparse; ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,28);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,29);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

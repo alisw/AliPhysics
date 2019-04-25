@@ -64,21 +64,23 @@ public:
     fTriggerSelectionString = triggerstring;
   }
   void SetUseDownscaleWeight(bool doUse) { fUseDownscaleWeight = doUse; }
-  void SetUseAliEventCuts(bool doUse) { fUseAliEventCuts = doUse; }
+  void SetUseSumw2(Bool_t doUse) { fUseSumw2 = doUse; }
   void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
   void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasTrigger = minbiastrigger; }
   void SetUserPtBinning(int nbins, double *binning) { fUserPtBinning.Set(nbins+1, binning); }
   void SetRequestCentrality(bool doRequest) { fRequestCentrality = doRequest; }
   void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
   void SetCentralityEstimator(const char *centest) { fCentralityEstimator = centest; }
+  void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *trigger, const char *suffix = "");
+
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, const char *namepartcont, const char *trigger, const char *suffix = "");
 
 protected:
   virtual void UserCreateOutputObjects();
   virtual bool Run();
-  virtual bool IsEventSelected();
   virtual bool IsTriggerSelected();
+  virtual Bool_t CheckMCOutliers();
   virtual void RunChanged(Int_t newrun);
   std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
@@ -89,8 +91,8 @@ private:
   AliAnalysisTaskEmcalJetEnergySpectrum &operator=(const AliAnalysisTaskEmcalJetEnergySpectrum &);
 
   THistManager                  *fHistos;                       ///< Histogram manager
-  AliEventCuts                  *fEventCuts;                    ///< Event cuts as implemented in AliEventCuts
   Bool_t                        fIsMC;                          ///< Running on simulated events
+  Bool_t                        fFillHSparse;                   ///< Fill THnSparses with more information
 	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits
   TString                       fTriggerSelectionString;        ///< Trigger selection string
   Bool_t                        fRequireSubsetMB;               ///< Require for triggers to be a subset of Min. Bias (for efficiency studies)
@@ -102,6 +104,7 @@ private:
   Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
   Bool_t                        fRequestCentrality;             ///< Request centrality
   Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
+  Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
 

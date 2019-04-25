@@ -35,7 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
+  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx  
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
@@ -56,6 +56,14 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtEventCuts.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AlidNdPtTask.cxx
+  ChargedHadrons/dNdPt/AlidNdPtTools.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskMKBase.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskMKTest.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskTPCMatchEff.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskDCArStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskPtResStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskEffContStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskUEStudy.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
@@ -137,19 +145,27 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Extra files to include in the PARfile
-set(PAR_EXTRAFILES
+set(PAR_EXTRAFILES_CXX
   PiKaPr/TestAOD/HistogramNamesBoth.cxx
-  PiKaPr/TestAOD/HistogramNamesBoth.h
   PiKaPr/TestAOD/HistogramNames.cxx
+)
+
+set(PAR_EXTRAFILES_H
+  PiKaPr/TestAOD/HistogramNamesBoth.h
   PiKaPr/TestAOD/HistogramNames.h
   PiKaPr/TestAOD/HistogramsBoth.h
   PiKaPr/TestAOD/Histograms.h
 )
 
+set(PAR_EXTRAFILES 
+   ${PAR_EXTRAFILES_H} 
+   ${PAR_EXTRAFILES_CXX}
+)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs} ${PAR_EXTRAFILES_H}")
 
 set(ROOT_DEPENDENCIES)
 set(ALIROOT_DEPENDENCIES ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN PWGLFnuclex)

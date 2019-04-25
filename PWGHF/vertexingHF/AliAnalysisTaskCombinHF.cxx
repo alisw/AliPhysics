@@ -50,7 +50,9 @@ ClassImp(AliAnalysisTaskCombinHF);
 AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   AliAnalysisTaskSE(),
   fOutput(0x0),
+  fListCuts(0x0),
   fHistNEvents(0x0),
+  fHistEventMultCent(0x0),
   fHistEventMultZv(0x0),
   fHistEventMultZvEvSel(0x0),
   fHistTrackStatus(0x0),
@@ -90,6 +92,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fApplyCutCosThetaStar(kFALSE),
+  fCutCosThetaStar(999.),
   fPhiMassCut(99999.),
   fCutCos3PiKPhiRFrame(-1.1),
   fCutCosPiDsLabFrame(1.1),
@@ -110,8 +114,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fCounter(0x0),
   fMeson(kDzero),
   fReadMC(kFALSE),
+  fEnforceMBTrigMaskInMC(kTRUE),
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
+  fSignalOnlyMC(kFALSE),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -146,7 +152,9 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
 AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analysiscuts):
   AliAnalysisTaskSE("DmesonCombin"),
   fOutput(0x0),
+  fListCuts(0x0),
   fHistNEvents(0x0),
+  fHistEventMultCent(0x0),
   fHistEventMultZv(0x0),
   fHistEventMultZvEvSel(0x0),
   fHistTrackStatus(0x0),
@@ -186,6 +194,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fApplyCutCosThetaStar(kFALSE),
+  fCutCosThetaStar(999.),
   fPhiMassCut(99999.),
   fCutCos3PiKPhiRFrame(-1),
   fCutCosPiDsLabFrame(1.1),
@@ -206,8 +216,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fCounter(0x0),
   fMeson(meson),
   fReadMC(kFALSE),
+  fEnforceMBTrigMaskInMC(kTRUE),
   fGoUpToQuark(kTRUE),
   fFullAnalysis(0),
+  fSignalOnlyMC(kFALSE),
   fPIDstrategy(knSigma),
   fmaxPforIDPion(0.8),
   fmaxPforIDKaon(2.),
@@ -239,6 +251,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
 
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
+  DefineOutput(3,TList::Class());
 }
 
 //________________________________________________________________________
@@ -249,6 +262,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   //
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistEventMultCent;
     delete fHistEventMultZv;
     delete fHistEventMultZvEvSel;
     delete fHistTrackStatus;
@@ -285,6 +299,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   }
 
   delete fOutput;
+  if (fListCuts) delete fListCuts;
   delete fCounter;
   delete fTrackCutsAll;
   delete fTrackCutsPion;
@@ -353,7 +368,10 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
-  
+
+  fHistEventMultCent = new TH2F("hEventMultCent","",100,0.,100.,200,fMinMultiplicity,fMaxMultiplicity);
+  fOutput->Add(fHistEventMultCent);
+
   fHistEventMultZv = new TH2F("hEventMultZv","",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultZv);
 
@@ -548,6 +566,43 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
+
+  fListCuts = new TList();
+  fListCuts->SetOwner();
+  if(fTrackCutsAll){
+    AliESDtrackCuts* tatosave=new AliESDtrackCuts(*fTrackCutsAll);
+    fListCuts->Add(tatosave);
+  }
+  if(fTrackCutsPion){
+    AliESDtrackCuts* tptosave=new AliESDtrackCuts(*fTrackCutsPion);
+    tptosave->SetName(Form("%sForPions",fTrackCutsPion->GetName()));
+    fListCuts->Add(tptosave);
+  }
+  if(fTrackCutsKaon){
+    AliESDtrackCuts* tktosave=new AliESDtrackCuts(*fTrackCutsKaon);
+    tktosave->SetName(Form("%sForKaons",fTrackCutsKaon->GetName()));
+    fListCuts->Add(tktosave);
+  }
+  if(fPidHF){
+    AliAODPidHF* pidtosave=new AliAODPidHF(*fPidHF);
+    fListCuts->Add(pidtosave);
+  }
+  TH1F* hCutValues = new TH1F("hCutValues","",6,0.5,6.5);
+  hCutValues->SetBinContent(1,fFilterMask);
+  hCutValues->GetXaxis()->SetBinLabel(1,"Filter bit");
+  hCutValues->SetBinContent(2,(Float_t)fApplyCutCosThetaStar);
+  hCutValues->GetXaxis()->SetBinLabel(2,"Use costhetastar (D0)");
+  hCutValues->SetBinContent(3,fCutCosThetaStar);
+  hCutValues->GetXaxis()->SetBinLabel(3,"costhetastar (D0)");
+  hCutValues->SetBinContent(4,fPhiMassCut);
+  hCutValues->GetXaxis()->SetBinLabel(4,"phi mass (Ds)");
+  hCutValues->SetBinContent(5,fCutCos3PiKPhiRFrame);
+  hCutValues->GetXaxis()->SetBinLabel(5,"cos3piK (Ds)");
+  hCutValues->SetBinContent(6,fCutCosPiDsLabFrame);
+  hCutValues->GetXaxis()->SetBinLabel(6,"cospiDs (Ds)");
+  fListCuts->Add(hCutValues);
+  PostData(3, fListCuts);
+
   
   fKaonTracks = new TObjArray();
   fPionTracks=new TObjArray();
@@ -587,15 +642,20 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
-  // Reject events with trigger mask 0 of the LHC13d3 production
-  // For these events the ITS layers are skipped in the trakcing
-  // and the vertex reconstruction efficiency from tracks is biased
   if(fReadMC){
-   Int_t runnumber = aod->GetRunNumber();
-   if(aod->GetTriggerMask()==0 &&
-      (runnumber>=195344 && runnumber<=195677)){
-     return;
-   }
+    // Reject events with trigger mask 0 of the LHC13d3 production
+    // For these events the ITS layers are skipped in the trakcing
+    // and the vertex reconstruction efficiency from tracks is biased
+    Int_t runnumber = aod->GetRunNumber();
+    if(aod->GetTriggerMask()==0 &&
+       (runnumber>=195344 && runnumber<=195677)){
+      return;
+    }
+    // Set the trigger mask for physics selection to kMB in the MC
+    if(fEnforceMBTrigMaskInMC){
+      //      printf("Enforce trigger mask to kMB, previous mask = %d\n",fAnalysisCuts->GetTriggerMask());
+      fAnalysisCuts->SetTriggerMask(AliVEvent::kMB);
+    }
   }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -657,16 +717,23 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
     fHistEventMultZv->Fill(zMCVertex,fMultiplicity);
     if(isEvSel) fHistEventMultZvEvSel->Fill(zMCVertex,fMultiplicity);
+    // switch off event mixing in case of signal only MC
+    if(fSignalOnlyMC) fDoEventMixing=0;
   }else{
     fHistEventMultZv->Fill(fVtxZ,fMultiplicity);
     if(isEvSel) fHistEventMultZvEvSel->Fill(fVtxZ,fMultiplicity);
   }
 
-  
   if(!isEvSel)return;
   
+  Float_t evCentr=fAnalysisCuts->GetCentrality(aod);
   fHistNEvents->Fill(1);
-  
+  fHistEventMultCent->Fill(evCentr,fMultiplicity);
+
+
+  Int_t pdgOfD=421;
+  if(fMeson==kDplus) pdgOfD=411;
+  else if(fMeson==kDs) pdgOfD=431;
 
   // select and flag tracks
   UChar_t* status = new UChar_t[ntracks];
@@ -676,6 +743,11 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(!track){
       AliWarning("Error in casting track to AOD track. Not a standard AOD?");
       continue;
+    }
+    if(fReadMC && fSignalOnlyMC && arrayMC){
+      // for fast MC analysis we skip tracks not coming from charm hadrons
+      Bool_t isCharm=AliVertexingHFUtils::IsTrackFromHadronDecay(pdgOfD,track,arrayMC);
+      if(!isCharm) continue;
     }
     if(IsTrackSelected(track)) status[iTr]+=1;
     
@@ -862,15 +934,23 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 //________________________________________________________________________
 void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge){
   /// Fill histos for LS candidates
-  
+
+  if(fReadMC && fSignalOnlyMC) return;
   tmpRD->SetPxPyPzProngs(nProngs,px,py,pz);
   Double_t pt = tmpRD->Pt();
   Double_t minv2 = tmpRD->InvMass2(nProngs,pdgdau);
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-      if(charge>0) fMassVsPtVsYLSpp->Fill(TMath::Sqrt(minv2),pt,rapid);
-      else fMassVsPtVsYLSmm->Fill(TMath::Sqrt(minv2),pt,rapid);
+      Bool_t fillLS=kTRUE;
+      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	if(TMath::Abs(costhst)>fCutCosThetaStar) fillLS=kFALSE;
+      }
+      if(fillLS){
+	if(charge>0) fMassVsPtVsYLSpp->Fill(TMath::Sqrt(minv2),pt,rapid);
+	else fMassVsPtVsYLSmm->Fill(TMath::Sqrt(minv2),pt,rapid);
+      }
     }
   }
   return;
@@ -954,35 +1034,45 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-      fMassVsPtVsY->Fill(mass,pt,rapid);
       accept=kTRUE;
-      if(fReadMC){
-        Int_t signPdg[3]={0,0,0};
-        for(Int_t iii=0; iii<nProngs; iii++) signPdg[iii]=pdgdau[iii];
-        Int_t labD = tmpRD->MatchToMC(pdgD,arrayMC,nProngs,signPdg);
-        if(labD>=0){
-          AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(dgLabels[0])));
-          if(part){
-            Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
-	    Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
-	    if(pdgCode==321){
-	      fMassVsPtVsYSig->Fill(mass,pt,rapid);
-	      AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
-	      if(dmes){
-		if(orig==4) fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
-		else if(orig==5) fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	if(TMath::Abs(costhst)>fCutCosThetaStar) accept=kFALSE;
+      }
+      if(accept){
+	fMassVsPtVsY->Fill(mass,pt,rapid);
+	if(fReadMC){
+	  Int_t signPdg[3]={0,0,0};
+	  for(Int_t iii=0; iii<nProngs; iii++) signPdg[iii]=pdgdau[iii];
+	  Int_t labD = tmpRD->MatchToMC(pdgD,arrayMC,nProngs,signPdg);
+	  if(labD>=0){
+	    AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(dgLabels[0])));
+	    if(part){
+	      Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
+	      Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
+	      if(pdgCode==321){
+		fMassVsPtVsYSig->Fill(mass,pt,rapid);
+		AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
+		if(dmes){
+		  if(orig==4) fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		  else if(orig==5) fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
+		}
+	      }else{
+		fMassVsPtVsYRefl->Fill(mass,pt,rapid);
 	      }
-	    }else{
-	      fMassVsPtVsYRefl->Fill(mass,pt,rapid);
 	    }
+	  }else{
+	    if(fSignalOnlyMC) accept=kFALSE;
+	    else fMassVsPtVsYBkg->Fill(mass,pt,rapid);
 	  }
-        }else{
-          fMassVsPtVsYBkg->Fill(mass,pt,rapid);
-        }
+	}
       }
     }
   }
-  
+  // skip track rotations in case of signal only MC
+  if(fReadMC && fSignalOnlyMC) return accept;
+
+  // Track rotations to estimate the background
   Int_t nRotated=0;
   Double_t massRot=0;// calculated later only if candidate is acceptable
   Double_t angleProngXY;
@@ -1034,13 +1124,20 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
       if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
 	Double_t rapid = tmpRD->Y(pdgD);
 	if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-	  massRot=TMath::Sqrt(minv2);
-	  fMassVsPtVsYRot->Fill(massRot,pt,rapid);
-	  nRotated++;
-	  fDeltaMass->Fill(massRot-mass);
-	  if(fFullAnalysis){
-	    Double_t pointRot[5]={mass,massRot-mass,ptOrig,pt-ptOrig,angleProngXY};
-	    fDeltaMassFullAnalysis->Fill(pointRot);
+	  Bool_t fillRotCase=kTRUE;
+	  if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	    Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	    if(TMath::Abs(costhst)>fCutCosThetaStar) fillRotCase=kFALSE;
+	  }
+	  if(fillRotCase){
+	    massRot=TMath::Sqrt(minv2);
+	    fMassVsPtVsYRot->Fill(massRot,pt,rapid);
+	    nRotated++;
+	    fDeltaMass->Fill(massRot-mass);
+	    if(fFullAnalysis){
+	      Double_t pointRot[5]={mass,massRot-mass,ptOrig,pt-ptOrig,angleProngXY};
+	      fDeltaMassFullAnalysis->Fill(pointRot);
+	    }
 	  }
 	}
       }
@@ -1075,7 +1172,12 @@ void AliAnalysisTaskCombinHF::FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-      fMassVsPtVsYME->Fill(mass,pt,rapid);
+      Bool_t fillME=kTRUE;
+      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	if(TMath::Abs(costhst)>fCutCosThetaStar) fillME=kFALSE;
+      }
+      if(fillME) fMassVsPtVsYME->Fill(mass,pt,rapid);
     }
   }
   return;
@@ -1092,8 +1194,15 @@ void AliAnalysisTaskCombinHF::FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRec
   if(minv2>fMinMass*fMinMass && minv2<fMaxMass*fMaxMass){
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
-      if(charge>0) fMassVsPtVsYMELSpp->Fill(mass,pt,rapid);
-      if(charge<0) fMassVsPtVsYMELSmm->Fill(mass,pt,rapid);
+      Bool_t fillME=kTRUE;
+      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
+	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	if(TMath::Abs(costhst)>fCutCosThetaStar) fillME=kFALSE;
+      }
+      if(fillME){
+	if(charge>0) fMassVsPtVsYMELSpp->Fill(mass,pt,rapid);
+	if(charge<0) fMassVsPtVsYMELSmm->Fill(mass,pt,rapid);
+      }
     }
   }
   return;

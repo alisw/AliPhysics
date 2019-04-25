@@ -119,6 +119,8 @@ class AliHFInvMassFitter : public TNamed {
   TF1*     GetBkgPlusReflFunc(){return fBkRFunc;}
   TF1*     GetSignalFunc(){return fSigFunc;}
   TF1*     GetMassFunc(){return fTotFunc;}
+  TF1*     GetSecondPeakFunc(){return fSecFunc;}
+  TF1*     GetReflFunc(){return fRflFunc;}
   Double_t GetChiSquare() const{
     if(fTotFunc) return fTotFunc->GetChisquare();
     else return -1;
@@ -148,10 +150,12 @@ class AliHFInvMassFitter : public TNamed {
   virtual  void     Signal(Double_t min,Double_t max,Double_t &signal,Double_t &errsignal) const;
   void Background(Double_t nOfSigma, Double_t &background,Double_t &errbackground) const;
   void Background(Double_t min, Double_t max, Double_t &background,Double_t &errbackground) const;
-  void DrawHere(TVirtualPad* c, Double_t nsigma=3,Int_t writeFitInfo=1);
+  void DrawHere(TVirtualPad* c, Double_t nsigma=3,Int_t writeFitInfo=2);
   void Significance(Double_t nOfSigma, Double_t &significance,Double_t &errsignificance) const;
   void Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const;
-  TH1F* GetResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0,Double_t minrange=0,Double_t maxrange=-1);
+  TH1F* GetResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0,Double_t minrange=0,Double_t maxrange=-1, Int_t option=0);
+  TH1F* GetOverBackgroundResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
+  TH1F* GetOverBackgroundPlusReflResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
   void PrintFunctions();
 
  private:

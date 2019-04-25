@@ -241,6 +241,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse1[5] =       {3000, 50, 4, 2, 2};
         Double_t limitLowImpParSparse1[5] = {-1500., 0.1, 0., 0., 0.};
         Double_t limitUpImpParSparse1[5] =  {1500., 25., 4., 2., 2.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse1[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse1[2] = 24;
+        }
         TString axTitle1[5]={"imp. par. (#mum)",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -257,6 +261,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse2[5] =       {3000, 50, 4, 2, 10};
         Double_t limitLowImpParSparse2[5] = {-1500., 0.1, 0., 0., -10.};
         Double_t limitUpImpParSparse2[5] =  {1500., 25., 4., 2., +10.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse2[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse2[2] = 24;
+        }
         TString axTitle2[7]={"imp. par. (#mum)",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -273,6 +281,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse3[5] =       {1000, 50, 4, 2, 2};
         Double_t limitLowImpParSparse3[5] = {-1500., 0.1, 0., 0., 0.};
         Double_t limitUpImpParSparse3[5] =  {1500., 25., 4., 2., 2.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse3[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse3[2] = 24;
+        }
         TString axTitle3[5]={"imp. par. (#mum)",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -288,6 +300,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse4[5] =       {1000, 50, 4, 2, 10};
         Double_t limitLowImpParSparse4[5] = {-1500., 0.1, 0., 0., -10.};
         Double_t limitUpImpParSparse4[5] =  {1500., 25., 4., 2., +10.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse4[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse4[2] = 24;
+        } 
         TString axTitle4[5]={"imp. par. (#mum)",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -305,6 +321,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
         Int_t nbinsImpParSparse_pullPtBchargePhi[5] =       {400, 50, 4, 2, 2};
         Double_t limitLowImpParSparse_pullPtBchargePhi[5] = {-10., 0.1, 0., 0., 0.};
         Double_t limitUpImpParSparse_pullPtBchargePhi[5] =  {10., 25., 4., 2., 2.};
+        if (fUseFinerPhiBins) {     // mfaggin
+            nbinsImpParSparse_pullPtBchargePhi[2]   = 24; // 1 bin every 15°
+            limitUpImpParSparse_pullPtBchargePhi[2] = 24;
+        } 
         TString axTitle_rphi_pullPtBchargePhi[5]={"rphi pull",
             "#it{p}_{T} (GeV/c)",
             "#phi",
@@ -419,6 +439,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     Int_t nbinsImpParSparse_z[4] =       {1000, 50, 4, 2};
     Double_t limitLowImpParSparse_z[4] = {-1500., 0.1, 0., 0.};
     Double_t limitUpImpParSparse_z[4] =  {1500., 25., 4., 2.};
+    if (fUseFinerPhiBins) {     // mfaggin
+        nbinsImpParSparse_z[2]   = 24; // 1 bin every 15°
+        limitUpImpParSparse_z[2] = 24;
+    }
     TString axTitle_z[4]={"z imp. par. (#mum)",
         "#it{p}_{T} (GeV/c)",
         "#phi",
@@ -434,6 +458,10 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
     Int_t nbinsImpParSparse_pull[4] =       {400, 50, 4, 2};
     Double_t limitLowImpParSparse_pull[4] = {-10., 0.1, 0., 0.};
     Double_t limitUpImpParSparse_pull[4] =  {10., 25., 4., 2.};
+    if (fUseFinerPhiBins) {     // mfaggin
+        nbinsImpParSparse_pull[2]   = 24; // 1 bin every 15°
+        limitUpImpParSparse_pull[2] = 24;
+    }
     TString axTitle_rphi_pull[4]={"rphi pull",
         "#it{p}_{T} (GeV/c)",
         "#phi",
@@ -754,15 +782,15 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         //Printf("charge %d",charge);
         
         phi=vtrack->Phi();
-        Int_t phibin=PhiBin(phi);
+        Int_t phibin=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
         if(phibin<0) continue;
         pullrphi[2]=phibin;
         pullz[2]=phibin;
         pullrphi1[2]=phibin;
         pullz1[2]=phibin;
 
-        //pointrphi[2]=phibin;
-        pointrphi[2]=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
+        pointrphi[2]=phibin;
+        //pointrphi[2]=PhiBin(phi,fUseFinerPhiBins);  // mfaggin
 
         pointz[2]=phibin;
         pointrphi1[2]=phibin;
@@ -1105,10 +1133,32 @@ Int_t AliAnalysisTaskSEImpParResSparse::PhiBin(Double_t phi, Bool_t usefinebinsp
     Double_t pi=TMath::Pi();
     
     if (usefinebinsphi) {   // mfaggin
-        if(!fImpParrphiSparsePtEtaPhi){
+        if(!fImpParrphiSparsePtBchargePhi &&
+           !fImpParrphiSparsePtzVtxEtaPhi &&
+           !fImpParrphiSparsePtEtaPhi &&
+           !fImpParPullrphiSparsePtEtaPhi &&
+           !fImpParPullrphiSparsePtBchargePhi &&
+           !fImpParzSparsePtBchargePhi &&
+           !fImpParzSparsePtzVtxEtaPhi &&
+           !fImpParzSparsePtEtaPhi &&
+           !fImpParPullzSparsePtEtaPhi &&
+           !fImpParPullzSparsePtBchargePhi
+          ){
             return 999;
         }
-        UInt_t nBins = fImpParrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        UInt_t nBins = 1;
+        if(fImpParrphiSparsePtBchargePhi)           nBins = fImpParrphiSparsePtBchargePhi->GetAxis(2)->GetNbins();
+        else if(fImpParrphiSparsePtzVtxEtaPhi)      nBins = fImpParrphiSparsePtzVtxEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParrphiSparsePtEtaPhi)          nBins = fImpParrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParPullrphiSparsePtEtaPhi)      nBins = fImpParPullrphiSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParPullrphiSparsePtBchargePhi)  nBins = fImpParPullrphiSparsePtBchargePhi->GetAxis(2)->GetNbins();
+        else if(fImpParzSparsePtBchargePhi)         nBins = fImpParzSparsePtBchargePhi->GetAxis(2)->GetNbins();
+        else if(fImpParzSparsePtzVtxEtaPhi)         nBins = fImpParzSparsePtzVtxEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParzSparsePtEtaPhi)             nBins = fImpParzSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParPullzSparsePtEtaPhi)         nBins = fImpParPullzSparsePtEtaPhi->GetAxis(2)->GetNbins();
+        else if(fImpParPullzSparsePtBchargePhi)     nBins = fImpParPullzSparsePtBchargePhi->GetAxis(2)->GetNbins();
+        else    return 999;
+        
         Double_t width = 2.*pi/nBins;
         for(UInt_t i = 0; i < nBins; i++)
         {

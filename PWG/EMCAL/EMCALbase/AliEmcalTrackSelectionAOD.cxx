@@ -167,19 +167,18 @@ PWG::EMCAL::AliEmcalTrackSelResultPtr AliEmcalTrackSelectionAOD::IsTrackAccepted
   TBits trackbitmap(64);
   trackbitmap.ResetAllBits();
   UInt_t cutcounter(0);
-  TClonesArray selectionStatus("PWG::EMCAL::AliEmcalTrackSelResultPtr", fListOfCuts->GetEntries());
-  selectionStatus.SetOwner(kTRUE);
+  std::vector<PWG::EMCAL::AliEmcalTrackSelResultPtr> selectionStatus(fListOfCuts->GetEntries());
   if (fListOfCuts) {
     for (auto cutIter : *fListOfCuts){ // @suppress("Symbol is not resolved")
       PWG::EMCAL::AliEmcalCutBase *trackCuts = static_cast<PWG::EMCAL::AliEmcalCutBase*>(static_cast<AliEmcalManagedObject *>(cutIter)->GetObject());
       PWG::EMCAL::AliEmcalTrackSelResultPtr cutresults = trackCuts->IsSelected(aodt);
       if (cutresults) trackbitmap.SetBitNumber(cutcounter);
-      new(selectionStatus[selectionStatus.GetEntries()]) PWG::EMCAL::AliEmcalTrackSelResultPtr(cutresults);
+      selectionStatus.push_back(cutresults);
       cutcounter++;
     }
   }
 
-  PWG::EMCAL::AliEmcalTrackSelResultPtr result(aodt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(&selectionStatus));
+  PWG::EMCAL::AliEmcalTrackSelResultPtr result(aodt, kFALSE, new PWG::EMCAL::AliEmcalTrackSelResultCombined(selectionStatus));
   if (fSelectionModeAny){
     // In case of ANY one of the cuts need to be fulfilled (equivalent to one but set)
     result.SetSelectionResult(trackbitmap.CountBits() > 0 || cutcounter == 0);
@@ -222,7 +221,7 @@ Bool_t AliEmcalTrackSelectionAOD::GetHybridFilterBits(Char_t bits[], TString per
       period == "lhc13d" || period == "lhc13e" || period == "lhc13f" ||
       period == "lhc13g" ||
 
-      (period.Length() == 6 && (period.BeginsWith("lhc15") || period.BeginsWith("lhc16") || period.BeginsWith("lhc17"))) // all Run-2 data, excluding MC productions
+      (period.Length() == 6 && (period.BeginsWith("lhc15") || period.BeginsWith("lhc16") || period.BeginsWith("lhc17") || period.BeginsWith("lhc18"))) // all Run-2 data, excluding MC productions
   ) {
     bits[0] = 8;
     bits[1] = 9;

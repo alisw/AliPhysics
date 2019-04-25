@@ -19,13 +19,12 @@
  *
  * @ingroup pwglf_forward_flow
  */
-#include "AliForwardTaskValidation.h"
 
-AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , Int_t tracktype, TString centrality,TString name1)
+AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool mc,  bool esd,bool prim_cen,bool prim_fwd , 
+                                     Int_t tracktype, TString centrality,Double_t minpt,Double_t maxpt,TString suffix="")
 {
   std::cout << "______________________________________________________________________________" << std::endl;
 
-  AliForwardTaskValidation* validation_task = AliForwardTaskValidation::ConnectTask("", true) ;
   std::cout << "AddTaskForwardNUA" << std::endl;
 
   // --- Get analysis manager ----------------------------------------
@@ -33,10 +32,8 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
   if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  TString name = name1;
-
-  AliForwardNUATask* task = new AliForwardNUATask(name);
-  TString resName = "ForwardNUA";
+  AliForwardNUATask* task = new AliForwardNUATask(suffix);
+  TString resName = suffix;
 
     task->fSettings.use_primaries_cen = prim_cen;
     if (mc) resName += (prim_cen ? "_primcen" : "_trcen");
@@ -78,6 +75,24 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
     }
   }
 
+  //TString name; name.Form("%d",type);
+   //return name.Data();
+
+//TString combinedName;
+//combinedName.Form("%s%s", suffix);
+TString ptmaxname;
+TString ptminname;
+ptminname.Form("%d",(int)(minpt*10));
+ptmaxname.Form("%d",(int)(maxpt*10));
+    task->fSettings.minpt = minpt;
+    resName += "_minpt";
+    resName +=  ptminname;//std::to_string
+
+    task->fSettings.maxpt = maxpt;
+    resName += "_maxpt";
+    resName += ptmaxname;//std::to_string
+
+
   resName += "_" + centrality;
   if (mc) resName += "_mc";
 
@@ -97,13 +112,15 @@ AliAnalysisTaskSE* AddTaskForwardNUA(UShort_t nua_mode, bool makeFakeHoles, bool
 
   task->fSettings.nua_mode = nua_mode; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
 
-  std::cout << "Container name: " << resName << std::endl;
+  TString combName = resName + '_' + suffix;
+  std::cout << "Container name: " << combName << std::endl;
+
   //resName = "hej";
-  std::cout << "______________________________________________________________________________" << std::endl;
-  task->ConnectInput(1,validation_task->GetOutputSlot(2)->GetContainer());
+  AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
+  task->ConnectInput(1,valid);
 
   AliAnalysisDataContainer *coutput_recon =
-  mgr->CreateContainer(resName,
+  mgr->CreateContainer(suffix, //combName
    TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());

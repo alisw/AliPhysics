@@ -45,7 +45,7 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
     }
     else if(L0input > 0)    TriggerName = TriggerName + "_" + "L0";
     else{
-      ::Error("AddTaskPHOSPi0EtaToGammaGamma", "PHOS trigger analysis requires at least 1 trigger input (L0 or L1[H,M,L]).");
+      ::Error("AddTaskPHOSSingleSim", "PHOS trigger analysis requires at least 1 trigger input (L0 or L1[H,M,L]).");
       return NULL;
     }
   }
@@ -166,14 +166,16 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
       TObjArray *farray_Gamma = new TObjArray(Ncen_Gamma-1);
       TF1 *f1weightGamma[Ncen_Gamma-1];
 
-      const Double_t p0[Ncen_Gamma-1] = {2.70};
-      const Double_t p1[Ncen_Gamma-1] = {0.132};
-      const Double_t p2[Ncen_Gamma-1] = {6.64};
+      const Double_t p0[Ncen_Gamma-1] = {4.77586e+01};//Ae
+      const Double_t p1[Ncen_Gamma-1] = {1.15413e-01};//Te
+      const Double_t p2[Ncen_Gamma-1] = {9.08380e-01};//A
+      const Double_t p3[Ncen_Gamma-1] = {4.76998e-01};//T
+      const Double_t p4[Ncen_Gamma-1] = {3.04367e+00};//n
 
       for(Int_t icen=0;icen<Ncen_Gamma-1;icen++){
-        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"1.0 * ([0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.139*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.139*0.139) - 0.139)/([2]*[1]),-[2]))",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
+        f1weightGamma[icen] = new TF1(Form("f1weightGamma_%d",icen),"[0] * TMath::Exp(-(TMath::Sqrt(x*x + 0*0) - 0) / [1]) + [2] * TMath::Power(1 + (x*x)/([3]*[3]*[4]) , -[4])",0,100);//TCM fit to pp inclusive photon
         f1weightGamma[icen]->SetNpx(1000);
-        f1weightGamma[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
+        f1weightGamma[icen]->SetParameters(p0[icen],p1[icen],p2[icen],p3[icen],p4[icen]);
         farray_Gamma->Add(f1weightGamma[icen]);
       }
       task->SetAdditionalGammaPtWeightFunction(centarray_Gamma,farray_Gamma);

@@ -282,8 +282,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   fFastJetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(0));
 
   fFastJetWrapper_Truth=new AliFJWrapper("fastjetwrapper_truth","fastjetwrapper_truth");
-  
-  if (fJetShapeType == kData || fJetShapeType == kDetSignal || fJetShapeType == kDetBackground || fJetShapeType == kDetReflection){
+
+  if (fJetShapeType == kData || fJetShapeType == kDetSignal || fJetShapeType == kDetBackground || fJetShapeType == kDetReflection || fJetShapeType == kDet){
     
     fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject("D0toKpi"));
 
@@ -360,7 +360,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
       Double_t Inv_Mass_D=0.0;
       if (Mass_Hypo_Type==1){ 
-	if (fJetShapeType==kData || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==-fCandidatePDG)){
+	if (fJetShapeType==kData || fJetShapeType == kDet || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==-fCandidatePDG)){
 	  Inv_Mass_D=D_Candidate->InvMassD0();
 	  fhEvent->Fill(6); 
 	}
@@ -371,7 +371,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       }
 
       if (Mass_Hypo_Type==2){ 
-	if (fJetShapeType==kData || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==-fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=-fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==fCandidatePDG)){
+	if (fJetShapeType==kData || fJetShapeType == kDet || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==-fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=-fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==fCandidatePDG)){
 	  Inv_Mass_D=D_Candidate->InvMassD0bar();
 	  fhEvent->Fill(8); 
 	}
@@ -388,7 +388,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 	if (Mass_Hypo_Type==3){ 
 	    if(i_Mass_Hypotheses==0){
-	      if (fJetShapeType==kData || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==-fCandidatePDG)){
+	      if (fJetShapeType==kData || fJetShapeType == kDet || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==-fCandidatePDG)){
 		Inv_Mass_D=D_Candidate->InvMassD0();
 		fhEvent->Fill(11); 
 	      }
@@ -398,7 +398,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      }
 	    }
 	    if(i_Mass_Hypotheses==1){
-	      if (fJetShapeType==kData || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==-fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=-fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==fCandidatePDG)){
+	      if (fJetShapeType==kData || fJetShapeType == kDet || (fJetShapeType==kDetSignal && Matched_Truth_Particle_PDG==-fCandidatePDG) || (fJetShapeType==kDetBackground && Matched_Truth_Particle_PDG!=-fCandidatePDG) || (fJetShapeType==kDetReflection && Matched_Truth_Particle_PDG==fCandidatePDG)){
 		Inv_Mass_D=D_Candidate->InvMassD0bar();
 		fhEvent->Fill(13); 
 	      }
@@ -502,7 +502,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fShapesVar[4] = Inv_Mass_D;
 	  fShapesVar[5] = 0.0;
 	  fShapesVar[6] = Flag_D;
-	  fShapesVar[7] = 0.0;
+	  if (fJetShapeType == kData) fShapesVar[7] = 0.0;
+	  else fShapesVar[7] = Matched_Truth_Particle_PDG;
 	  fShapesVar[8] = Is_Prompt_Correct_Quark_PDG;
 	  fShapesVar[9] = 0.0;
 
@@ -522,6 +523,18 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 	  fTreeResponseMatrixAxis->Fill();
 	  fTreeSplittings->Fill();
+	  fShapesVar_Splittings_DeltaR.clear();
+	  fShapesVar_Splittings_DeltaR_Truth.clear();
+	  fShapesVar_Splittings_Zg.clear();
+	  fShapesVar_Splittings_Zg_Truth.clear();
+	  fShapesVar_Splittings_LeadingSubJetpT.clear();
+	  fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	  fShapesVar_Splittings_HardestSubJetD0.clear();
+	  fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	  fShapesVar_Splittings_RadiatorE.clear();
+	  fShapesVar_Splittings_RadiatorE_Truth.clear();
+	  fShapesVar_Splittings_RadiatorpT.clear();
+	  fShapesVar_Splittings_RadiatorpT_Truth.clear(); 
       }
       }
       //delete D_Candidate;
@@ -534,33 +547,34 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     if(N_DMesons==5) fhEvent->Fill(21); 
     if(N_DMesons==6) fhEvent->Fill(22); 
 
-    if (fIncludeInclusive){ 
-      fFastJetWrapper->Clear(); 
-
+    if (fIncludeInclusive){
+      fFastJetWrapper->Clear();
+      /*
       for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
 	fFastJetWrapper->AddInputVector(D_Candidates_Vector[i_D_Found]->Px(), D_Candidates_Vector[i_D_Found]->Py(), D_Candidates_Vector[i_D_Found]->Pz(), D_Candidates_Vector[i_D_Found]->AliAODRecoDecay::E(fCandidatePDG), i_D_Found);
 	//Track_Container->SetDMesonCandidate(D_Candidates_Vector[i_D_Found]);
       }
-
+      */
       AliAODTrack *Track = NULL;
       Bool_t DMeson_Daughter_Track=kFALSE;
       for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
-	for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
+	/*	for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
 	  Track_Container->SetDMesonCandidate(D_Candidates_Vector[i_D_Found]);
 	  Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	  if(!Track) DMeson_Daughter_Track=kTRUE;
-	}
-	if (DMeson_Daughter_Track) continue;
+	  }
+	  if (DMeson_Daughter_Track) continue;*/
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
+	if(!Track) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
       }
       //delete Track;
-      fFastJetWrapper->Run(); 
-      std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets(); 
-      for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){ 
+      fFastJetWrapper->Run();
+      std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets();
+      for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){
 	if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
 	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
-	Bool_t Is_D_Jet = kFALSE; 
+	/*	Bool_t Is_D_Jet = kFALSE; 
 	std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet));
 	for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
 	  for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
@@ -569,7 +583,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    }
 	  }
 	}
-	if (Is_D_Jet) continue; 
+	if (Is_D_Jet) continue; */
 	fhEvent->Fill(23); 
 	std::vector<Double_t> Splittings_Zg;
 	std::vector<Double_t> Splittings_DeltaR;
@@ -577,7 +591,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	std::vector<Double_t> Splittings_HardestSubJetD0;
 	std::vector<Double_t> Splittings_RadiatorE;
 	std::vector<Double_t> Splittings_RadiatorpT;
-
 
 	fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
   
@@ -591,7 +604,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fastjet::PseudoJet Daughter_Jet = Reclustered_Jet[0];
 	  fastjet::PseudoJet Parent_SubJet_1; 
 	  fastjet::PseudoJet Parent_SubJet_2;  
-    
+
 	  while(Daughter_Jet.has_parents(Parent_SubJet_1,Parent_SubJet_2)){
 	    if(Parent_SubJet_1.perp() < Parent_SubJet_2.perp()) std::swap(Parent_SubJet_1,Parent_SubJet_2);
 	    Splittings_LeadingSubJetpT.push_back(Parent_SubJet_1.perp());
@@ -633,14 +646,28 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fShapesVar_Splittings_RadiatorpT.push_back(Splittings_RadiatorpT);
 	fShapesVar_Splittings_RadiatorpT_Truth.push_back(Splittings_RadiatorpT); 
 
-	
+
 	fTreeResponseMatrixAxis->Fill();
 	fTreeSplittings->Fill();
+
+	fShapesVar_Splittings_DeltaR.clear();
+	fShapesVar_Splittings_DeltaR_Truth.clear();
+	fShapesVar_Splittings_Zg.clear();
+	fShapesVar_Splittings_Zg_Truth.clear();
+	fShapesVar_Splittings_LeadingSubJetpT.clear();
+	fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	fShapesVar_Splittings_HardestSubJetD0.clear();
+	fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	fShapesVar_Splittings_RadiatorE.clear();
+	fShapesVar_Splittings_RadiatorE_Truth.clear();
+	fShapesVar_Splittings_RadiatorpT.clear();
+	fShapesVar_Splittings_RadiatorpT_Truth.clear();
 
       }
     }
     // delete Track_Container;
     // if (fJetShapeType != kData) delete Particle_Container;
+  
   }
 
 
@@ -991,7 +1018,19 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	  fTreeResponseMatrixAxis->Fill();
 	  fTreeSplittings->Fill();
-	
+
+	  fShapesVar_Splittings_DeltaR.clear();
+	  fShapesVar_Splittings_DeltaR_Truth.clear();
+	  fShapesVar_Splittings_Zg.clear();
+	  fShapesVar_Splittings_Zg_Truth.clear();
+	  fShapesVar_Splittings_LeadingSubJetpT.clear();
+	  fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	  fShapesVar_Splittings_HardestSubJetD0.clear();
+	  fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	  fShapesVar_Splittings_RadiatorE.clear();
+	  fShapesVar_Splittings_RadiatorE_Truth.clear();
+	  fShapesVar_Splittings_RadiatorpT.clear();
+	  fShapesVar_Splittings_RadiatorpT_Truth.clear(); 
 	}
       }
       // delete Matched_Truth_Particle;
@@ -1021,6 +1060,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	Bool_t Is_Unmatched_D=kFALSE;
 	Int_t D_Meson_Matched_Index=-1; 
 	if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
+	if (Inclusive_Jets_Truth[i_Jet_Truth].perp()<fJetMinPt) continue;
 	std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth)); 
 	for (UInt_t i_Constituents_Truth = 0; i_Constituents_Truth < Constituents_Truth.size(); i_Constituents_Truth++) { 
 	  for (UInt_t i_Unmacthed_D=0; i_Unmacthed_D<Unmatched_Truth_Level_D.size(); i_Unmacthed_D++){ 
@@ -1154,6 +1194,19 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	fTreeResponseMatrixAxis->Fill();
 	fTreeSplittings->Fill();
+	
+	fShapesVar_Splittings_DeltaR.clear();
+	fShapesVar_Splittings_DeltaR_Truth.clear();
+	fShapesVar_Splittings_Zg.clear();
+	fShapesVar_Splittings_Zg_Truth.clear(); 
+	fShapesVar_Splittings_LeadingSubJetpT.clear();
+	fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	fShapesVar_Splittings_HardestSubJetD0.clear();
+	fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	fShapesVar_Splittings_RadiatorE.clear();
+	fShapesVar_Splittings_RadiatorE_Truth.clear();
+	fShapesVar_Splittings_RadiatorpT.clear();
+	fShapesVar_Splittings_RadiatorpT_Truth.clear();
 	// delete Truth_D_Particle;		
       }	 
     }
@@ -1356,6 +1409,19 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	fTreeResponseMatrixAxis->Fill();
 	fTreeSplittings->Fill();
+
+	fShapesVar_Splittings_DeltaR.clear();
+	fShapesVar_Splittings_DeltaR_Truth.clear();
+	fShapesVar_Splittings_Zg.clear();
+	fShapesVar_Splittings_Zg_Truth.clear();
+	fShapesVar_Splittings_LeadingSubJetpT.clear();
+	fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+	fShapesVar_Splittings_HardestSubJetD0.clear();
+	fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+	fShapesVar_Splittings_RadiatorE.clear();
+	fShapesVar_Splittings_RadiatorE_Truth.clear();
+	fShapesVar_Splittings_RadiatorpT.clear();
+	fShapesVar_Splittings_RadiatorpT_Truth.clear();
 	
 
 	//	delete Truth_D_Particle;
@@ -1370,6 +1436,125 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     }
     //delete Particle_Container; 
   }
+
+
+
+
+  if (fJetShapeType == kDataInclusive){
+
+    AliHFTrackContainer* Track_Container=dynamic_cast<AliHFTrackContainer*>(GetTrackContainer(0));
+    if (!Track_Container) return kTRUE;
+    //Track_Container->SetDMesonCandidate(NULL);
+    fFastJetWrapper->Clear();
+    AliAODTrack *Track = NULL;
+    for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
+      Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
+      if(!Track) continue;
+      fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
+    }
+    fFastJetWrapper->Run();
+    std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets();
+    for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){
+      if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
+      if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
+      fhEvent->Fill(23); 
+      std::vector<Double_t> Splittings_Zg;
+      std::vector<Double_t> Splittings_DeltaR;
+      std::vector<Double_t> Splittings_LeadingSubJetpT;
+      std::vector<Double_t> Splittings_HardestSubJetD0;
+      std::vector<Double_t> Splittings_RadiatorE;
+      std::vector<Double_t> Splittings_RadiatorpT;
+
+      fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+  
+      try{
+	std::vector<fastjet::PseudoJet> Reclustered_Particles(fFastJetWrapper->GetJetConstituents(i_Jet));
+	fastjet::ClusterSequence Cluster_Sequence_CA(Reclustered_Particles, Jet_Definition);
+	std::vector<fastjet::PseudoJet> Reclustered_Jet =  Cluster_Sequence_CA.inclusive_jets(0.0);
+	Reclustered_Jet = sorted_by_pt(Reclustered_Jet);
+         
+
+	fastjet::PseudoJet Daughter_Jet = Reclustered_Jet[0];
+	fastjet::PseudoJet Parent_SubJet_1; 
+	fastjet::PseudoJet Parent_SubJet_2;
+
+	while(Daughter_Jet.has_parents(Parent_SubJet_1,Parent_SubJet_2)){
+	  if(Parent_SubJet_1.perp() < Parent_SubJet_2.perp()) std::swap(Parent_SubJet_1,Parent_SubJet_2);
+	  Double_t Leading_Track_pT=0.0;
+	  vector <fastjet::PseudoJet> Hard_SubJet_Constituents = sorted_by_pt(Parent_SubJet_1.constituents());
+	  for (Int_t i_Leading_Track=0; i_Leading_Track < Hard_SubJet_Constituents.size(); i_Leading_Track++){
+	    if (Hard_SubJet_Constituents[i_Leading_Track].perp() > Leading_Track_pT) Leading_Track_pT=Hard_SubJet_Constituents[i_Leading_Track].perp();
+	  }
+	  Splittings_LeadingSubJetpT.push_back(Parent_SubJet_1.perp());
+	  Splittings_HardestSubJetD0.push_back(Leading_Track_pT);  
+	  Splittings_DeltaR.push_back(Parent_SubJet_1.delta_R(Parent_SubJet_2));
+	  Splittings_Zg.push_back(Parent_SubJet_2.perp()/(Parent_SubJet_1.perp()+Parent_SubJet_2.perp()));
+	  Splittings_RadiatorE.push_back(Daughter_Jet.E());
+	  Splittings_RadiatorpT.push_back(Daughter_Jet.perp());
+	  Daughter_Jet=Parent_SubJet_1;
+	}
+
+         
+      } catch (fastjet::Error) { /*return -1;*/ }
+
+
+	
+      fShapesVar[0] = Inclusive_Jets[i_Jet].perp();
+      fShapesVar[1] = 0.0;
+      fShapesVar[2] = 0.0;
+      fShapesVar[3] = 0.0;
+      fShapesVar[4] = 0.0;
+      fShapesVar[5] = 0.0;
+      fShapesVar[6] = 0.0;
+      fShapesVar[7] = 0.0;
+      fShapesVar[8] = 0.0;
+      fShapesVar[9] = 0.0;
+
+
+      fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR);
+      fShapesVar_Splittings_DeltaR_Truth.push_back(Splittings_DeltaR); 
+      fShapesVar_Splittings_Zg.push_back(Splittings_Zg);
+      fShapesVar_Splittings_Zg_Truth.push_back(Splittings_Zg);
+      fShapesVar_Splittings_LeadingSubJetpT.push_back(Splittings_LeadingSubJetpT);
+      fShapesVar_Splittings_LeadingSubJetpT_Truth.push_back(Splittings_LeadingSubJetpT); 
+      fShapesVar_Splittings_HardestSubJetD0.push_back(Splittings_HardestSubJetD0);
+      fShapesVar_Splittings_HardestSubJetD0_Truth.push_back(Splittings_HardestSubJetD0);
+      fShapesVar_Splittings_RadiatorE.push_back(Splittings_RadiatorE);
+      fShapesVar_Splittings_RadiatorE_Truth.push_back(Splittings_RadiatorE);
+      fShapesVar_Splittings_RadiatorpT.push_back(Splittings_RadiatorpT);
+      fShapesVar_Splittings_RadiatorpT_Truth.push_back(Splittings_RadiatorpT); 
+
+
+      fTreeResponseMatrixAxis->Fill();
+      fTreeSplittings->Fill();
+
+      fShapesVar_Splittings_DeltaR.clear();
+      fShapesVar_Splittings_DeltaR_Truth.clear();
+      fShapesVar_Splittings_Zg.clear();
+      fShapesVar_Splittings_Zg_Truth.clear();
+      fShapesVar_Splittings_LeadingSubJetpT.clear();
+      fShapesVar_Splittings_LeadingSubJetpT_Truth.clear();
+      fShapesVar_Splittings_HardestSubJetD0.clear();
+      fShapesVar_Splittings_HardestSubJetD0_Truth.clear();
+      fShapesVar_Splittings_RadiatorE.clear();
+      fShapesVar_Splittings_RadiatorE_Truth.clear();
+      fShapesVar_Splittings_RadiatorpT.clear();
+      fShapesVar_Splittings_RadiatorpT_Truth.clear();
+
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+  
 
   delete fFastJetWrapper_Truth;
   delete fFastJetWrapper;

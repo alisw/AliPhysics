@@ -56,7 +56,8 @@ fKaonTOFHistoOpt(kSamePionV0tag),
 fAODProtection(1),
 fNPtBins(0),
 fPtLimits(nullptr),
-fAnalysisCuts(nullptr)
+fAnalysisCuts(nullptr),
+fVarForProp(kPt)
 {
   for(int iHist=0; iHist<2; iHist++) {
     fHistEffPionTPC[iHist]=nullptr;
@@ -91,7 +92,8 @@ fKaonTOFHistoOpt(kSamePionV0tag),
 fAODProtection(1),
 fNPtBins(0),
 fPtLimits(nullptr),
-fAnalysisCuts(cuts)
+fAnalysisCuts(cuts),
+fVarForProp(kPt)
 {
   for(int iHist=0; iHist<2; iHist++) {
     fHistEffPionTPC[iHist]=nullptr;
@@ -118,12 +120,11 @@ AliAnalysisTaskSEDmesonPIDSysProp::~AliAnalysisTaskSEDmesonPIDSysProp()
     
     delete fHistPtDauVsD;
     delete fHistSystPIDEffD;
-    delete fOutput;
   }
   if(fPIDresp) delete fPIDresp;
   if(fAnalysisCuts) delete fAnalysisCuts;
   if(fPtLimits) delete[] fPtLimits; 
-  fOutput = nullptr;
+  delete fOutput;
 }
 
 //________________________________________________________________________
@@ -166,8 +167,14 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserCreateOutputObjects()
   }
   if(fPtLimits[fNPtBins]>100) fPtLimits[fNPtBins] = 100.;
   
-  fHistSystPIDEffD = new TH2F("fHistSystPIDEffD","PID efficiency systematic uncertainty; #it{p}_{T}^{D} (GeV/#it{c}); relative systematic uncertainty",fNPtBins,fPtLimits,150,0.,0.15);
-  fHistPtDauVsD = new TH2F("fHistPtDauVsD","#it{p}_{T} Dau vs #it{p}_{T} D; #it{p}_{T}^{D} (GeV/#it{c}); #it{p}_{T}^{daugh} (GeV/#it{c})",static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins],static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins]);
+  TString varname = "";
+  if(fVarForProp==kPt) 
+    varname = "#it{p}_{T}";
+  else if(fVarForProp==kP) 
+    varname = "#it{p}";
+
+  fHistSystPIDEffD = new TH2F("fHistSystPIDEffD","PID efficiency systematic uncertainty; #it{p}_{T}^{D} (GeV/#it{c}); relative systematic uncertainty",fNPtBins,fPtLimits,500,0.,0.5);
+  fHistPtDauVsD = new TH2F("fHistPtDauVsD",Form("%s Dau vs #it{p}_{T} D; #it{p}_{T}^{D} (GeV/#it{c}); %s^{daugh} (GeV/#it{c})",varname.Data(),varname.Data()),static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins],static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins]);
   fOutput->Add(fHistSystPIDEffD);
   fOutput->Add(fHistPtDauVsD);
     
@@ -388,24 +395,41 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
     
     bool recVtx=false;
     AliAODVertex *origownvtx = nullptr;
-    
+    if(fAnalysisCuts->GetIsPrimaryWithoutDaughters()){
+	    if(d->GetOwnPrimaryVtx()) 
+        origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
+	    if(fAnalysisCuts->RecalcOwnPrimaryVtx(d,aod))
+        recVtx = true;
+	    else fAnalysisCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
+    }
+
     double ptD = d->Pt();
     double rapid  = d->Y(pdgcode);
     bool isFidAcc = fAnalysisCuts->IsInFiducialAcceptance(ptD,rapid);
     
     if(isFidAcc){
       int retCodeAnalysisCuts = fAnalysisCuts->IsSelectedPID(d);
-      if(retCodeAnalysisCuts==0) continue;
+      int retCodeAnalysisTrackCuts = fAnalysisCuts->IsSelected(d,AliRDHFCuts::kTracks,aod); //reject also 
+      if(retCodeAnalysisCuts==0 || retCodeAnalysisTrackCuts==0) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       fHistNEvents->Fill(12);
 
       int mcLabel=-1;
       int orig = 0;
       if(!isDStarCand) mcLabel = d->MatchToMC(pdgcode,arrayMC,nprongs,pdgDaughter);
       else mcLabel = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdgcode,421,pdgDaughter,pdg2Daughter,arrayMC);
-      if(mcLabel<0) continue;
+      if(mcLabel<0) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       AliAODMCParticle* partD = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcLabel));
-      if(partD) orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partD,kTRUE);
-      if(orig<4) continue;
+      if(partD) orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partD,true);
+      if(orig<4) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       
       const int nDau = d->GetNDaughters();
       AliAODTrack* dautrack[nDau];
@@ -416,6 +440,7 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       else {
         AliAODRecoDecayHF2Prong* D0prong = dynamic_cast<AliAODRecoDecayHF2Prong*>((dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong());
         if(!D0prong) {
+          if(unsetvtx) d->UnsetOwnPrimaryVtx();
           continue;
         }
         for(int iDau=0; iDau<nDau; iDau++) {
@@ -424,9 +449,14 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       }
 
       double syst = GetDmesonPIDuncertainty(dautrack,nDau,arrayMC,ptD);
-      if(syst==-999. || syst==0.) continue;
+      if(syst==-999. || syst==0.) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       fHistSystPIDEffD->Fill(ptD,syst);
     }
+
+    if(recVtx) fAnalysisCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
@@ -538,13 +568,19 @@ double AliAnalysisTaskSEDmesonPIDSysProp::GetDmesonPIDuncertainty(AliAODTrack *t
     
     int daupdgcode = TMath::Abs(p->GetPdgCode());
     double daupt = track[iDau]->Pt();
+    double daupTPC = track[iDau]->GetTPCmomentum();
+    double dauvar = -1.;
+    if(fVarForProp==kPt)
+      dauvar = daupt;
+    else if(fVarForProp==kP)
+      dauvar = daupTPC;
 
     bool isTPCok = false;
     bool isTOFok = false;
     if(fPIDresp->CheckPIDStatus(AliPIDResponse::kTPC,track[iDau]) == AliPIDResponse::kDetPidOk) isTPCok = true;
     if(fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track[iDau]) == AliPIDResponse::kDetPidOk) isTOFok = true;
 
-    int bin = fHistSystPionTPC[0]->GetXaxis()->FindBin(daupt);
+    int bin = fHistSystPionTPC[0]->GetXaxis()->FindBin(dauvar);
     double systTPC=0.;
     double systTOF=0.;
     double probTPC=0.;
@@ -602,7 +638,7 @@ double AliAnalysisTaskSEDmesonPIDSysProp::GetDmesonPIDuncertainty(AliAODTrack *t
       probTPCandTOF = probTPC*probTOF;
       if(probTPCandTOF>1.e-20) syst += TMath::Sqrt(probTPC*probTPC*systTOF*systTOF+probTOF*probTOF*systTPC*systTPC)/probTPCandTOF;
     }
-    fHistPtDauVsD->Fill(ptD,daupt);
+    fHistPtDauVsD->Fill(ptD,dauvar);
   }
   
   return TMath::Abs(syst);

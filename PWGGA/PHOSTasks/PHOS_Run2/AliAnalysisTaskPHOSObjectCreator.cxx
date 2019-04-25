@@ -112,12 +112,12 @@ void AliAnalysisTaskPHOSObjectCreator::UserCreateOutputObjects()
   for(Int_t i=50;i<60;i++)    pTgg[i] = 0.5 * (i-50) + 5.0; //every 0.5 GeV/c, up to 10 GeV/c
   for(Int_t i=60;i<NpTgg;i++) pTgg[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 50 GeV/c
 
-  fHistoMggvsEProbe = new TH2F("hMgg_STDCut_Probe","Probe #gamma for standard cluster cut",60,0,0.24,NpTgg-1,pTgg);
+  fHistoMggvsEProbe = new TH2F("hMgg_STDCut_Probe","Probe #gamma for standard cluster cut",180,0,0.72,NpTgg-1,pTgg);
   fHistoMggvsEProbe->Sumw2();
   fHistoMggvsEProbe->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
   fHistoMggvsEProbe->SetYTitle("E_{#gamma} (GeV)");
 
-  fHistoMggvsEPassingProbe = new TH2F("hMgg_STDCut_PassingProbe","Passing Probe #gamma for standard cluster cut",60,0,0.24,NpTgg-1,pTgg);
+  fHistoMggvsEPassingProbe = new TH2F("hMgg_STDCut_PassingProbe","Passing Probe #gamma for standard cluster cut",180,0,0.72,NpTgg-1,pTgg);
   fHistoMggvsEPassingProbe->Sumw2();
   fHistoMggvsEPassingProbe->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
   fHistoMggvsEPassingProbe->SetYTitle("E_{#gamma} (GeV)");
@@ -1013,9 +1013,8 @@ Bool_t AliAnalysisTaskPHOSObjectCreator::PassSTDCut(AliVCluster *cluster)
 {
   if(cluster->GetM20() > 2.0) return kFALSE;
   if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) return kFALSE;
-  //if(cluster->E() > 1.0 && cluster->GetNCells() < 2.5) return kFALSE;
+  if(cluster->E() > 2.0 && cluster->GetM20() < 0.1) return kFALSE;
   return kTRUE;
-
 }
 //________________________________________________________________________
 void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *array)

@@ -36,6 +36,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     fmTBinning = doIt;
   }
   ;
+  void SetPtQA(bool doIt) {
+    fPtQA = doIt;
+  }
   void SetMomentumResolution(bool doIt) {
     fMomentumResolution = doIt;
   }
@@ -51,6 +54,10 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   void SetdPhidEtaPlots(bool doIt) {
     fdPhidEtaPlots = doIt;
+    fdPhidEtaPlotsSmallK = doIt;
+  }
+  void SetdPhidEtaPlotsSmallK(bool doIt) {
+    fdPhidEtaPlotsSmallK = doIt;
   }
   ;
   void SetUseEventMixing(bool use) {
@@ -74,6 +81,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetCentBins(std::vector<float> CentBins);
   void SetmTdEtadPhiBins(std::vector<float> mTBins);
   void SetExtendedQAPairs(std::vector<int> whichPairs);
+  void SetClosePairRejection(std::vector<bool> whichPairs);
   void SetMixingDepth(int MixingDepth) {
     fMixingDepth = MixingDepth;
   }
@@ -114,6 +122,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fmTBinning;
   }
   ;
+  bool GetDoPtQA() {
+    return fPtQA;
+  }
   bool GetDoMomResolution() {
     return fMomentumResolution;
   }
@@ -140,6 +151,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   bool GetdPhidEtaPlots() {
     return fdPhidEtaPlots;
+  }
+  bool GetdPhidEtaPlotsSmallK() {
+    return fdPhidEtaPlotsSmallK;
   }
   ;
   bool GetdPhidEtamTPlots() {
@@ -186,8 +200,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<float> GetCentBins();
   std::vector<float> GetmTBins();
   std::vector<unsigned int> GetWhichPairs();
+  std::vector<bool> GetClosePairRej();
   std::vector<float> GetStandardmTBins();
   std::vector<int> GetStandardPairs();
+  std::vector<bool> GetStandardPairRejection();
+  std::vector<bool> GetAllPairRejection();
   int GetMixingDepth() {
     return fMixingDepth;
   }
@@ -217,9 +234,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fCentBinning;            //
   bool fkTBinning;              //
   bool fmTBinning;              //
+  bool fPtQA;                   //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   bool fdPhidEtaPlots;          //
+  bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
   bool fStravinsky;             //
@@ -235,7 +254,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fMaxK_rel;           //
   TNtuple *fCentBins;           //
   TNtuple *fmTBins;             //
-  TNtuple *fWhichPairs;         //
+  TNtuple *fWhichQAPairs;       //
+  TNtuple *fClosePairRej;       //
   int fMixingDepth;             //
   int fSpinningDepth;			      //
   bool fkTCentrality;           //
@@ -245,7 +265,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
 
-ClassDef(AliFemtoDreamCollConfig,9)
+ClassDef(AliFemtoDreamCollConfig,11)
   ;
 };
 

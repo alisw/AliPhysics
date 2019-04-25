@@ -46,6 +46,7 @@
 #pragma link C++ class AliAnalysisTaskSEDs+;
 #pragma link C++ class AliAnalysisTaskSELambdac+;
 #pragma link C++ class AliAnalysisTaskSED0Mass+;
+#pragma link C++ class AliAnalysisTaskSED0MassTMVA+;
 #pragma link C++ class AliAnalysisTaskSED0MassCutVarFDSub+;
 #pragma link C++ class AliAnalysisTaskSECharmFraction+;
 #pragma link C++ class AliAnalysisTaskSED0MassNonPromptFraction+;
@@ -93,6 +94,9 @@
 #pragma link C++ class AliAnalysisTaskHFv1+;
 #pragma link C++ class AliAnalysisTaskFlowD2H+;
 #pragma link C++ class AliHFAfterBurner+;
+#pragma link C++ class AliHFQnVectorHandler+;
+#pragma link C++ class AliAnalysisTaskSEHFTenderQnVectors+;
+#pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
 #pragma link C++ class AliAnalysisTaskSELambdacUp+;
 #pragma link C++ class AliAnalysisTaskCountLcEta+;
 #pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVA+;

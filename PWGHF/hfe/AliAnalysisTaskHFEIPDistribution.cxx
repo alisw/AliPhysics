@@ -423,7 +423,7 @@ void AliAnalysisTaskHFEIPDistribution::Process(AliAODEvent *const aodEvent)
           if(track->Pt() > 0.5)
           {
             DeltaPhi->Fill(DPhi);
-            if(DPhi/2. < TMath::Pi()/4.) // IP
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP bug fixed
             {
               if(centrality>=20.0 && centrality<=40.0) fpTIP2040IP->Fill(track->Pt(), IP);
               if(centrality>=30.0 && centrality<=50.0) fpTIP3050IP->Fill(track->Pt(), IP);

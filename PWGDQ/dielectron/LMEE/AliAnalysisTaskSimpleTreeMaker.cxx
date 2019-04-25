@@ -3,7 +3,7 @@
 * Created: 05.10.2016                                  *
 * Authors: Aaron Capon      (aaron.capon@cern.ch)      *
 *          Sebastian Lehner (sebastian.lehner@cern.ch) *
-*                                                      *
+*          Elisa Meninno (elisa.meninno@cern.ch)       *                
 *******************************************************/
 /**********************************************************************************
 *This analysis task is designed to create simple flat structured TTrees which     *
@@ -75,112 +75,117 @@
 ClassImp(AliAnalysisTaskSimpleTreeMaker)
 
 AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
-	AliAnalysisTaskSE(),
-	eventNum(0),
-	hasMC(kFALSE),
-	fESDtrackCuts(0),
-	fPIDResponse(0),
-	fMCevent(0),
-	fTree(0x0),
-	eventCuts(0),
-	eventFilter(0),
-	varCuts(0),
-	trackCuts(0),
-	pidCuts(0),
-	cuts(0),
-	trackFilter(0),
-	varManager(0),
-	primaryVertex{0,0,0},
-	multiplicityV0A(0),
-	multiplicityV0C(0),
-	multiplicityCL1(0),
-	runNumber(0),
-	event(0),
-	pt(0),
-	eta(0),
-	phi(0),
-	nTPCclusters(0),
-	nTPCcrossed(0),
-	fTPCcrossOverFind(0),
-	nTPCfindable(0),
-	tpcSharedMap(0),
-	nTPCshared(0),
-	chi2TPC(0),
-	DCA{0,0},
-	nITS(0),
-	chi2ITS(0),
-	fITSshared(0),
-	SPDfirst(0),
-	charge(0),
-	EnSigmaITS(0),
-	EnSigmaITScorr(0),
-	EnSigmaTPC(0),
-	EnSigmaTPCcorr(0),
-	EnSigmaTOF(0),
-	EnSigmaTOFcorr(0),
-	maxPtPIDcorrection(5),
-	PnSigmaITS(0),
-	PnSigmaTPC(0),
-	PnSigmaTOF(0),
-	storeKaonPID(0),
-	KnSigmaITS(0),
-	KnSigmaTPC(0),
-	KnSigmaTOF(0),
-	ITSsignal(0),
-	TPCsignal(0),
-	TOFsignal(0),
-	goldenChi2(0),
-	mcEta(0),
-	mcPhi(0),
-	mcPt(0),
-	mcVert{0,0,0},
-	iPdg(0),
-	iPdgMother(0),
-	HasMother(0),
-	motherLabel(0),
-	isInj(0),
-	iPdgFirstMother(0),
-	gLabelFirstMother(0),
-	gLabelMinFirstMother(0),
-	gLabelMaxFirstMother(0),
-	pointingAngle(0),
-	daughtersDCA(0),
-	decayLength(0),
-	v0mass(0),
-	ptArm(0),
-	alpha(0),
-	fQAhist(0),
-	fCentralityPercentileMin(0),
-	fCentralityPercentileMax(100),
-	fPtMin(0.2),
-	fPtMax(10),
-	fEtaMin(-0.8),
-	fEtaMax(0.8),
-	fESigTPCMin(-4.),
-	fESigTPCMax(4.),
-	fHasSDD(kTRUE),
-	fIsV0tree(kFALSE),
-	fArmPlot(0),
-	fIsAOD(kTRUE),
-	fFilterBit(16),
-	fIsGRIDanalysis(kTRUE),
-	fGridPID(-1),
-	fUseTPCcorr(kFALSE),
-	fWidthTPC(0),
-	fMeanTPC(0),
-	fUseITScorr(kFALSE),
-	fWidthITS(0),
-	fMeanITS(0),
-	fUseTOFcorr(kFALSE),
-	fWidthTOF(0),
-	fMeanTOF(0),
-	TOFstartMask(0),
-	fGeneratorHashes(0)
+AliAnalysisTaskSE(),
+  eventNum(0),
+  hasMC(kFALSE),
+  fESDtrackCuts(0),
+  fPIDResponse(0),
+  fMCevent(0),
+  fTree(0x0),
+  eventCuts(0),
+  eventFilter(0),
+  varCuts(0),
+  trackCuts(0),
+  pidCuts(0),
+  cuts(0),
+  trackFilter(0),
+  varManager(0),
+  primaryVertex{0,0,0},
+  multiplicityV0A(0),
+  multiplicityV0C(0),
+  multiplicityCL1(0),
+  runNumber(0),
+  event(0),
+  pt(0),
+  eta(0),
+  phi(0),
+  nTPCclusters(0),
+  nTPCcrossed(0),
+  fTPCcrossOverFind(0),
+  nTPCfindable(0),
+  tpcSharedMap(0),
+  nTPCshared(0),
+  chi2TPC(0),
+  DCA{0,0},
+  DCAsigma{0,0},
+  DCA3{0,0,0},
+  //DCA3sigma{0,0,0},
+  DCAXYtest(0),
+  nITS(0),
+  chi2ITS(0),
+  fITSshared(0),
+  SPDfirst(0),
+  charge(0),
+  EnSigmaITS(0),
+  EnSigmaITScorr(0),
+  EnSigmaTPC(0),
+  EnSigmaTPCcorr(0),
+  EnSigmaTOF(0),
+  EnSigmaTOFcorr(0),
+  maxPtPIDcorrection(5),
+  PnSigmaITS(0),
+  PnSigmaTPC(0),
+  PnSigmaTOF(0),
+  storeKaonPID(0),
+  KnSigmaITS(0),
+  KnSigmaTPC(0),
+  KnSigmaTOF(0),
+  ITSsignal(0),
+  TPCsignal(0),
+  TOFsignal(0),
+  goldenChi2(0),
+  mcEta(0),
+  mcPhi(0),
+  mcPt(0),
+  mcVert{0,0,0},
+  iPdg(0),
+  iPdgMother(0),
+  HasMother(0),
+  motherLabel(0),
+  isInj(0),
+  iPdgFirstMother(0),
+  gLabelFirstMother(0),
+  gLabelMinFirstMother(0),
+  gLabelMaxFirstMother(0),
+  pointingAngle(0),
+  daughtersDCA(0),
+  decayLength(0),
+  v0mass(0),
+  ptArm(0),
+  alpha(0),
+  fQAhist(0),
+  fCentralityPercentileMin(0),
+  fCentralityPercentileMax(100),
+  fPtMin(0.2),
+  fPtMax(10),
+  fEtaMin(-0.8),
+  fEtaMax(0.8),
+  fESigTPCMin(-4.),
+  fESigTPCMax(4.),
+  fHasSDD(kTRUE),
+  fIsV0tree(kFALSE),
+  fExtraDCA(kFALSE),
+  fArmPlot(0),
+  fIsAOD(kTRUE),
+  fFilterBit(16),
+  fIsGRIDanalysis(kTRUE),
+  fGridPID(-1),
+  fUseTPCcorr(kFALSE),
+  fWidthTPC(0),
+  fMeanTPC(0),
+  fUseITScorr(kFALSE),
+  fWidthITS(0),
+  fMeanITS(0),
+  fUseTOFcorr(kFALSE),
+  fWidthTOF(0),
+  fMeanTOF(0),
+  TOFstartMask(0),
+  fGeneratorHashes(0)
 {
-
+  
 }
 
-AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name) :
+AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name, Bool_t addDCA) :
 	AliAnalysisTaskSE(name),
 	eventNum(0),
 	hasMC(kFALSE),
@@ -213,6 +218,10 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 	nTPCshared(0),
 	chi2TPC(0),
 	DCA{0,0},
+	DCAsigma{0,0},
+	DCA3{0,0,0},
+	//DCA3sigma{0,0,0},
+	DCAXYtest(0),
 	nITS(0),
 	chi2ITS(0),
 	fITSshared(0),
@@ -267,6 +276,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 	fHasSDD(kTRUE),
 	fIsV0tree(kFALSE),
 	fArmPlot(0),
+	fExtraDCA(addDCA),
 	fIsAOD(kTRUE),
 	fFilterBit(16),
 	fIsGRIDanalysis(kTRUE),
@@ -353,17 +363,30 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	fTree->Branch("fITSshared",        &fITSshared,        "fITSshared/F");
 	fTree->Branch("chi2ITS",           &chi2ITS,           "chi2ITS/F");
 	fTree->Branch("SPDfirst",          &SPDfirst,          "SPDfirst/O");
-	fTree->Branch("DCAxy",             &DCA[0],            "DCAxy/F");
-	fTree->Branch("DCAz",              &DCA[1],            "DCAz/F");
+	//DCA variables
+	fTree->Branch("DCAxy",             &DCA[0]);
+	fTree->Branch("DCAz",              &DCA[1]);
+	if(fExtraDCA){
+	  fTree->Branch("DCAsigmaxy",        &DCAsigma[0]);
+	  fTree->Branch("DCAsigmaz",         &DCAsigma[1]);
+	  fTree->Branch("DCA3x",             &DCA3[0]);
+	  fTree->Branch("DCA3y",             &DCA3[1]);
+	  fTree->Branch("DCA3z",             &DCA3[2]);
+	  //Once you have also the normalized components x,y,z:
+	  //fTree->Branch("DCA3sigmax",             &DCA3sigma[0]);
+	  //fTree->Branch("DCA3sigmay",             &DCA3sigma[1]);
+	  //fTree->Branch("DCA3sigmaz",             &DCA3sigma[2]);
+	  fTree->Branch("DCAxytest",         &DCAXYtest);
+	}
 	fTree->Branch("goldenChi2",        &goldenChi2,        "goldenChi2/F");
 	fTree->Branch("charge",            &charge,            "charge/I");
 	fTree->Branch("EsigITS",           &EnSigmaITS,     "EsigITS/F");
 	if(fUseITScorr){
-		fTree->Branch("EsigITScorr",     &EnSigmaITScorr, "EsigITScorr/F");
+	  fTree->Branch("EsigITScorr",     &EnSigmaITScorr, "EsigITScorr/F");
 	}
 	fTree->Branch("EsigTPC",           &EnSigmaTPC,     "EsigTPC/F");
 	if(fUseTPCcorr){
-		fTree->Branch("EsigTPCcorr",     &EnSigmaTPCcorr, "EsigTPCcorr/F");
+	  fTree->Branch("EsigTPCcorr",     &EnSigmaTPCcorr, "EsigTPCcorr/F");
 	}
 	fTree->Branch("EsigTOF",           &EnSigmaTOF,     "EsigTOF/F");
 	if(fUseTOFcorr){
@@ -560,7 +583,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 	AliVParticle* mcTrack = 0x0;
 	AliVParticle* motherMCtrack = 0x0;
-
+	//Printf("myclass!!");
 	// Loop over tracks for event
 	if(!fIsV0tree){
 		for(Int_t iTrack = 0; iTrack < eventTracks; iTrack++){
@@ -619,6 +642,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 				// Get basic MC information
 				iPdg  = mcTrack->PdgCode();
+				//std::cout << mcTrack->PdgCode() << std::endl;
+				if(iPdg == 1000822080)
+				  {
+				    //std::cout << "Ion lead found..skip" << std::endl;
+				    continue;
+				  }
 				mcEta = mcTrack->Eta();
 				mcPhi = mcTrack->Phi();
 				mcPt  = mcTrack->Pt();
@@ -653,39 +682,59 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 					iPdgMother  = motherMCtrack->PdgCode();
 					// Get mother label so tracks can be correctly paired
 					motherLabel = TMath::Abs(motherMCtrack->GetLabel());
-					
+					/*	if(iPdgMother == 1000822080)
+					  {
+					    std::cout << "Ion lead found..skip" << std::endl;
+					    break;
+					    }*/
+					    //std::cout << "First print, PdgMother= "<< iPdgMother << " " << "mother lable= " << motherLabel << std::endl;
 					// If index is minus then particle has no mother particle
 					// Otherwise, begin search for original particle
 					Int_t gFirstMotherIndex = motherMCtrack->GetMother();
-					if(gFirstMotherIndex != -1){
+				       
+					if(gFirstMotherIndex != -1){   
 
-						// Retreive grandmother particle of track
+						// Retreive grandmother particle of trackx
 						AliMCParticle* firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gFirstMotherIndex));
 						// Scan down decay chain until a negative index is returned
 						// I.e. first particle in decay is found
+						//std::cout << "next while start!!" << std::endl;
 						while(gFirstMotherIndex > 0){
 
 							gLabelFirstMother = gFirstMotherIndex; // Use label as temp. index storage
 							firstMotherTrack  = (AliMCParticle*)(fMCevent->GetTrack(gLabelFirstMother));
 							gFirstMotherIndex = firstMotherTrack->GetMother();
+							//	std::cout << "PdgFirstMother=" <<  firstMotherTrack->PdgCode() << "  " << gLabelFirstMother << "  "  << gFirstMotherIndex << std::endl;
 						}
+						//std::cout << "while is finished!!" << std::endl;
 
 						// If greatgrand-mother (etc) was found, store pdg code
 						// Otherwise, grandmother was already primary
 						if(gLabelFirstMother != -1) {
+						  //Printf("gLabelFirstMother != -1");
 							iPdgFirstMother = firstMotherTrack->PdgCode();
+							//std::cout << iPdgFirstMother << "   " << gLabelFirstMother << std::endl;
+					    
 						}
 						else{
-							gLabelFirstMother = gFirstMotherIndex; // set mother to first mother
-							iPdgFirstMother   = iPdgMother;
+						  gLabelFirstMother = gFirstMotherIndex; // set mother to first mother
+						  iPdgFirstMother   = iPdgMother;
+						  //		std::cout << "gLabelFirstMother = -1  " << "PdgFirstMother=" << iPdgFirstMother << " Label=  " << gLabelFirstMother << std::endl;
 						}
-
+						
+						//std::cout << iPdgFirstMother << " pdgFirstMother" << std::endl;
+						//std::cout << gLabelFirstMother << "LabelFirstMother" << std::endl;
+						
 						Int_t nParticles = fMCevent->GetNumberOfTracks();
+							if(iPdgFirstMother == 1000822080)
+							  {
+							    continue;
+							  }
 						//Needed for HIJING....
 						// find range of -1 - minimum
 						gLabelMinFirstMother = gLabelFirstMother;
 						while(gFirstMotherIndex < 0){
-							gLabelMinFirstMother--;
+						  gLabelMinFirstMother--;  
 							if(gLabelMinFirstMother < 0){
 								gFirstMotherIndex = 0;
 							}
@@ -711,7 +760,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 							}
 						}
 						gLabelMaxFirstMother --; // set back by one
-					}
+						 
+									}
 				}
 			}// End if(hasMC)
 
@@ -800,25 +850,62 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 			chi2TPC = track->GetTPCchi2(); 
 
-			// DCA values
+			//DCA values
 			Float_t  DCAesd[2] = {0.0, 0.0};
 			Double_t DCAaod[2] = {0.0, 0.0};
-			Double_t DCAcov[2] = {0.0, 0.0};
+			Double_t DCAcov[3] = {-999., -999., -999.}; //covariance matrix
+		
 			if(!fIsAOD){
-				// Arguments: xy, z
-				track->GetImpactParameters( &DCAesd[0], &DCAesd[1]);
+				//Arguments: xy, z
+			            // 'Float_t' needed for 'virtual void AliESDtrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const'
+			  Float_t DCAcov1[3] = {-999., -999., -999.}; //covariance matrix
+				track->GetImpactParameters( DCAesd, DCAcov1);
+				DCAcov[0] = DCAcov1[0]; DCAcov[1] = DCAcov1[1]; DCAcov[2] = DCAcov1[2];				
 			}
 			else{
+			  
 				GetDCA(const_cast<const AliVEvent*>(event), dynamic_cast<const AliAODTrack*>(track), DCAaod, DCAcov);
 			}
-			// Final DCA values stored here
+			//Final DCA values stored here 
 			if(!fIsAOD){
-				DCA[0] = static_cast<Double_t>(DCAesd[0]);
-				DCA[1] = static_cast<Double_t>(DCAesd[1]);
+			  DCA[0] = static_cast<Double_t>(DCAesd[0]); 
+			  DCA[1] = static_cast<Double_t>(DCAesd[1]);
 			}
 			else{
-				DCA[0] = static_cast<Double_t>(DCAaod[0]);
-				DCA[1] = static_cast<Double_t>(DCAaod[1]);
+			  DCA[0] = static_cast<Double_t>(DCAaod[0]);
+			  DCA[1] = static_cast<Double_t>(DCAaod[1]);
+			}
+			if(fExtraDCA){
+			// compute the normalized DCAs
+			// neglect the resolution mixed term DCAcov[1]
+			//if(DCAcov[0]>0.)
+			DCAsigma[0] = static_cast<Double_t>(DCA[0])/TMath::Sqrt(static_cast<Double_t>(DCAcov[0]));
+			//if(DCAcov[2]>0.)
+			DCAsigma[1] = static_cast<Double_t>(DCA[1])/TMath::Sqrt(static_cast<Double_t>(DCAcov[2]));
+			
+			//Approximation of the Impact Parameter
+			//Get TVectors for primary and secondary vertex as well as for particle momentum
+			// ImpPar = |p x (priVertex- secVertex)|/|p|
+
+			TVector3 priVtx(primaryVertex[0],primaryVertex[1],primaryVertex[2]); //primary vertex
+			 
+			Double_t secvtx[3];
+			track->GetXYZ(secvtx);
+			TVector3 secVtx(secvtx[0],secvtx[1],secvtx[2]); //particle position
+
+			Double_t  mompart[3];
+			track->GetPxPyPz(mompart);
+			TVector3 momPart(mompart[0],mompart[1],mompart[2]); //particle momentum
+			
+			priVtx -= secVtx; 
+			
+			TVector3 numerator = momPart.Cross(priVtx);
+			Double_t denominator = momPart.Mag();
+
+			DCA3[0] = numerator.X()/denominator;
+			DCA3[1] = numerator.Y()/denominator;
+			DCA3[2] = numerator.Z()/denominator;
+			DCAXYtest = static_cast<Double_t>((TMath::Sqrt(numerator.X()*numerator.X() + numerator.Y()*numerator.Y()))/denominator);
 			}
 
 			// Get ITS information

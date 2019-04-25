@@ -79,6 +79,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fAddQA(kFALSE),
   fQAList(0)
 {
+  if(!fProduceWeights) DefineInput(1,TList::Class());
   DefineOutput(1,(fProduceWeights?TList::Class():AliGFWFlowContainer::Class()));
   if(fAddQA)
     DefineOutput(2,TList::Class());
@@ -105,7 +106,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
       fWeights = (AliGFWWeights*)fWeightList->Last();
       fWeights->SetName(Form("weights%s",fSelections[i]->GetSystPF()));
       fWeights->Init(!fIsMC,fIsMC); // AddData = !fIsMC; AddMC = fIsMC
-    } 
+    }
   } else {
     //Setup the structure of FC:
     TObjArray *OAforPt=new TObjArray();
@@ -138,67 +139,127 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("MidV44_pt_%i",i+1),"MidV44_pTDiff"));
 
-    //2SE:
-    OAforPt->Add(new TNamed("Mid2SEV22","Mid2SEV22"));
+    //2SENeg:
+    OAforPt->Add(new TNamed("Mid2SENV22","Mid2SENV22"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV22_pt_%i",i+1),"Mid2SEV22_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEV24","Mid2SEV24"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV22_pt_%i",i+1),"Mid2SENV22_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SENV24","Mid2SENV24"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV24_pt_%i",i+1),"Mid2SEV24_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEV26","Mid2SEV26"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV24_pt_%i",i+1),"Mid2SENV24_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SENV26","Mid2SENV26"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV26_pt_%i",i+1),"Mid2SEV26_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEV28","Mid2SEV28"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV26_pt_%i",i+1),"Mid2SENV26_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SENV28","Mid2SENV28"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV28_pt_%i",i+1),"Mid2SEV28_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEV32","Mid2SEV32"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV28_pt_%i",i+1),"Mid2SENV28_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SENV32","Mid2SENV32"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV32_pt_%i",i+1),"Mid2SEV32_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEV34","Mid2SEV34"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV32_pt_%i",i+1),"Mid2SENV32_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SENV34","Mid2SENV34"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV34_pt_%i",i+1),"Mid2SEV34_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEV36","Mid2SEV36"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV34_pt_%i",i+1),"Mid2SENV34_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SENV36","Mid2SENV36"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV36_pt_%i",i+1),"Mid2SEV36_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEV42","Mid2SEV42"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV36_pt_%i",i+1),"Mid2SENV36_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SENV42","Mid2SENV42"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV42_pt_%i",i+1),"Mid2SEV42_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEV44","Mid2SEV44"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV42_pt_%i",i+1),"Mid2SENV42_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SENV44","Mid2SENV44"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEV44_pt_%i",i+1),"Mid2SEV44_pTDiff"));
+      OAforPt->Add(new TNamed(Form("Mid2SENV44_pt_%i",i+1),"Mid2SENV44_pTDiff"));
+
+    //2SEPos:
+    OAforPt->Add(new TNamed("Mid2SEPV22","Mid2SEPV22"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV22_pt_%i",i+1),"Mid2SEPV22_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SEPV24","Mid2SEPV24"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV24_pt_%i",i+1),"Mid2SEPV24_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SEPV26","Mid2SEPV26"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV26_pt_%i",i+1),"Mid2SEPV26_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SEPV28","Mid2SEPV28"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV28_pt_%i",i+1),"Mid2SEPV28_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SEPV32","Mid2SEPV32"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV32_pt_%i",i+1),"Mid2SEPV32_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SEPV34","Mid2SEPV34"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV34_pt_%i",i+1),"Mid2SEPV34_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SEPV36","Mid2SEPV36"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV36_pt_%i",i+1),"Mid2SEPV36_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SEPV42","Mid2SEPV42"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV42_pt_%i",i+1),"Mid2SEPV42_pTDiff"));
+    OAforPt->Add(new TNamed("Mid2SEPV44","Mid2SEPV44"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("Mid2SEPV44_pt_%i",i+1),"Mid2SEPV44_pTDiff"));
 
     //|eta|>0.5
-    OAforPt->Add(new TNamed("MidGapV22","MidGapV22"));
+    OAforPt->Add(new TNamed("MidGapNV22","MidGapNV22"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV22_pt_%i",i+1),"MidGapV22_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapV24","MidGapV24"));
+      OAforPt->Add(new TNamed(Form("MidGapNV22_pt_%i",i+1),"MidGapNV22_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapNV24","MidGapNV24"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV24_pt_%i",i+1),"MidGapV24_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapV26","MidGapV26"));
+      OAforPt->Add(new TNamed(Form("MidGapNV24_pt_%i",i+1),"MidGapNV24_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapNV26","MidGapNV26"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV26_pt_%i",i+1),"MidGapV26_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapV28","MidGapV28"));
+      OAforPt->Add(new TNamed(Form("MidGapNV26_pt_%i",i+1),"MidGapNV26_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapNV28","MidGapNV28"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV28_pt_%i",i+1),"MidGapV28_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapV32","MidGapV32"));
+      OAforPt->Add(new TNamed(Form("MidGapNV28_pt_%i",i+1),"MidGapNV28_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapNV32","MidGapNV32"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV32_pt_%i",i+1),"MidGapV32_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapV34","MidGapV34"));
+      OAforPt->Add(new TNamed(Form("MidGapNV32_pt_%i",i+1),"MidGapNV32_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapNV34","MidGapNV34"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV34_pt_%i",i+1),"MidGapV34_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapV36","MidGapV36"));
+      OAforPt->Add(new TNamed(Form("MidGapNV34_pt_%i",i+1),"MidGapNV34_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapNV36","MidGapNV36"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV36_pt_%i",i+1),"MidGapV36_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapV42","MidGapV42"));
+      OAforPt->Add(new TNamed(Form("MidGapNV36_pt_%i",i+1),"MidGapNV36_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapNV42","MidGapNV42"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV42_pt_%i",i+1),"MidGapV42_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapV44","MidGapV44"));
+      OAforPt->Add(new TNamed(Form("MidGapNV42_pt_%i",i+1),"MidGapNV42_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapNV44","MidGapNV44"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapV44_pt_%i",i+1),"MidGapV44_pTDiff"));
+      OAforPt->Add(new TNamed(Form("MidGapNV44_pt_%i",i+1),"MidGapNV44_pTDiff"));
+
+    //|eta|>0.5
+    OAforPt->Add(new TNamed("MidGapPV22","MidGapPV22"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV22_pt_%i",i+1),"MidGapPV22_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapPV24","MidGapPV24"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV24_pt_%i",i+1),"MidGapPV24_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapPV26","MidGapPV26"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV26_pt_%i",i+1),"MidGapPV26_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapPV28","MidGapPV28"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV28_pt_%i",i+1),"MidGapPV28_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapPV32","MidGapPV32"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV32_pt_%i",i+1),"MidGapPV32_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapPV34","MidGapPV34"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV34_pt_%i",i+1),"MidGapPV34_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapPV36","MidGapPV36"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV36_pt_%i",i+1),"MidGapPV36_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapPV42","MidGapPV42"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV42_pt_%i",i+1),"MidGapPV42_pTDiff"));
+    OAforPt->Add(new TNamed("MidGapPV44","MidGapPV44"));
+    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+      OAforPt->Add(new TNamed(Form("MidGapPV44_pt_%i",i+1),"MidGapPV44_pTDiff"));
+
+
 
 
     //Multi bins:
-    Double_t multibins[] = {0,5,10,15,20,30,40,50,70};
+    Double_t multibins[] = {0,10,20,30,40,50,60,70,80};
     fFC = new AliGFWFlowContainer();
     fFC->SetName(Form("FC%s",fSelections[fCurrSystFlag]->GetSystPF()));
     fFC->Initialize(OAforPt,8,multibins,fCurrSystFlag?1:10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
@@ -208,11 +269,13 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fGFW->AddRegion("refMid",10,10,-0.8,0.8,1,1);
     //2 subevets:
     fGFW->AddRegion("poiSENeg",10,10,-0.8,0.,1+fPtAxis->GetNbins(),1);
-    fGFW->AddRegion("refSENeg",10,10,-0.8,0.8,1,1);
+    fGFW->AddRegion("refSENeg",10,10,-0.8,0.,1,1);
+    fGFW->AddRegion("poiSEPos",10,10,0.,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refSEPos",10,10,0.,0.8,1,1);
     //With gap
     fGFW->AddRegion("poiGapNeg",10,10,-0.8,-0.5,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refGapNeg",10,10,-0.8,-0.5,1,1);
+    fGFW->AddRegion("poiGapPos",10,10,0.5,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refGapPos",10,10,0.5,0.8,1,1);
 
 
@@ -224,6 +287,10 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fQAList->SetOwner(kTRUE);
     fEventCuts.AddQAplotsToList(fQAList);
     PostData(2,fQAList);
+  };
+  if(!fProduceWeights) {
+    fWeightList = (TList*) GetInputData(1);
+    if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
   };
 };
 void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
@@ -243,7 +310,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   if(fCurrSystFlag==fTotTrackFlags+4) cent = lMultSel->GetMultiplicityPercentile("CL1"); //CL1 flag is EvFlag 4 = N_TrackFlags + 4
   if(fCurrSystFlag==fTotTrackFlags+5) cent = lMultSel->GetMultiplicityPercentile("CL0"); //CL0 flag is EvFlag 5 = N_TrackFlags + 5
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
-  Double_t vtxb = GetVtxBit(fAOD);
+  Int_t vtxb = GetVtxBit(fAOD);
   if(!vtxb) return; //If no vertex pass, then do not consider further
   //fFlowEvent->SetRunNumber(fAOD->GetRunNumber());
   const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(fAOD->GetPrimaryVertex());
@@ -254,19 +321,19 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     if(fIsMC) {
       tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
       for(Int_t i=0;i<tca->GetEntries();i++) {
-	AliVParticle *lPart;
-	lPart = (AliAODMCParticle*)tca->At(i);
-	if(!AcceptParticle(lPart)) continue;
-	Int_t partbit = GetParticleBit(lPart);
-	if(!partbit) continue; //if no particle bit is set, no need to continue
-	Int_t combinedbit = CombineBits(vtxb,partbit);
-	Int_t count=0;
-	for(Int_t i=0;i<fTotFlags;++i) 
-	  if(fSelections[i]->NeedsExtraWeight()) {
-	    if(combinedbit&(1<<i))
-	      ((AliGFWWeights*)fWeightList->At(count))->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),cent,2);
-	    count++;
-	  };
+      	AliVParticle *lPart;
+      	lPart = (AliAODMCParticle*)tca->At(i);
+      	if(!AcceptParticle(lPart)) continue;
+      	Int_t partbit = GetParticleBit(lPart);
+      	if(!partbit) continue; //if no particle bit is set, no need to continue
+      	Int_t combinedbit = CombineBits(vtxb,partbit);
+      	Int_t count=0;
+      	for(Int_t i=0;i<fTotFlags;++i)
+      	  if(fSelections[i]->NeedsExtraWeight()) {
+      	    if(combinedbit&(1<<i))
+      	      ((AliGFWWeights*)fWeightList->At(count))->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),cent,2);
+      	    count++;
+      	  };
       };
     };
     AliAODTrack *lTrack;
@@ -282,24 +349,23 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       if(!trackbit) continue; //if no track bit is set, no need to continue
       Int_t combinedbit = CombineBits(vtxb,trackbit);
       if(fIsMC) {
-	AliVParticle *lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
-	Int_t count=0;
-	for(Int_t i=0;i<fTotFlags;++i) 
-	  if(fSelections[i]->NeedsExtraWeight()) {
-	    if(combinedbit&(1<<i))
-	      ((AliGFWWeights*)fWeightList->At(count))->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),cent,1);
-	    count++;
-	  };
-      } else {
-	Int_t count=0;
-	for(Int_t i=0;i<fTotFlags;++i) 
-	  if(fSelections[i]->NeedsExtraWeight()) {
-	    if((combinedbit&(1<<i)))
-	      ((AliGFWWeights*)fWeightList->At(count))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
-	    count++;
-	  };	  
-	
-      };
+        AliVParticle *lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
+        Int_t count=0;
+        for(Int_t i=0;i<fTotFlags;++i)
+          if(fSelections[i]->NeedsExtraWeight()) {
+            if(combinedbit&(1<<i))
+              ((AliGFWWeights*)fWeightList->At(count))->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),cent,1);
+            count++;
+          };
+        } else {
+          Int_t count=0;
+          for(Int_t i=0;i<fTotFlags;++i)
+            if(fSelections[i]->NeedsExtraWeight()) {
+              if((combinedbit&(1<<i)))
+                ((AliGFWWeights*)fWeightList->At(count))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
+              count++;
+            };
+        };
     };
     PostData(1,fWeightList);
     if(fAddQA) PostData(2,fQAList);
@@ -307,6 +373,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   } else {
     fGFW->Clear();
     AliAODTrack *lTrack;
+    if(!fSelections[fCurrSystFlag]->AcceptVertex(fAOD,1)) return;
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
       //if(!AcceptAODTrack(lTrack,tca)) continue;
@@ -317,14 +384,16 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       Double_t dcaxy = TMath::Sqrt(DCA[0]*DCA[0]+DCA[1]*DCA[1]);
       Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
       if(!fSelections[fCurrSystFlag]->AcceptTrack(lTrack,lDCA) &&
-	 !fSelections[9]->AcceptTrack(lTrack,lDCA)) continue;
+      	 !fSelections[9]->AcceptTrack(lTrack,lDCA)) continue;
+      if(!fWeights) printf("Weights do not exist!\n");
       Double_t nua = fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
       //Double_t nuaITS = fExtraWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
       Double_t nue = fPtAxis->GetNbins()>1?1:fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,cent,lTrack->Pt(),1);
-      if(fSelections[fCurrSystFlag]->AcceptTrack(lTrack, lDCA))
-	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nua*nue,1);
+      if(fSelections[fCurrSystFlag]->AcceptTrack(lTrack, lDCA)) {
+      	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nua*nue,1);
+      };
       /*if(fSelections[9]->AcceptTrack(lTrack, lDCA)) //No ITS for now
-	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nuaITS*nue,2);*/ 
+	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nuaITS*nue,2);*/
     };
     TRandom rndm(0);
     Double_t rndmn=rndm.Rndm();
@@ -343,60 +412,106 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     filled = FillFCs("MidV32","poiMid refMid {3 -3}", cent, kTRUE,rndmn);
     filled = FillFCs("MidV34","refMid {3 3 -3 -3}", cent, kFALSE,rndmn);
     filled = FillFCs("MidV34","poiMid refMid {3 3 -3 -3}", cent, kTRUE,rndmn);
-    filled = FillFCs("MidV36","refMid {2 2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidV36","poiMid refMid {2 2 -2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidV36","refMid {3 3 3 -3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidV36","poiMid refMid {3 3 3 -3 -3 -3}", cent, kTRUE,rndmn);
     //V_4{n}, full acceptance:
     filled = FillFCs("MidV42","refMid {4 -4}", cent, kFALSE,rndmn);
     filled = FillFCs("MidV42","poiMid refMid {4 -4}", cent, kTRUE,rndmn);
     filled = FillFCs("MidV44","refMid {4 4 -4 -4}", cent, kFALSE,rndmn);
     filled = FillFCs("MidV44","poiMid refMid {4 4 -4 -4}", cent, kTRUE,rndmn);
     //V_2{n}, 2 subevents:
-    filled = FillFCs("Mid2SEV22","refSENeg {2} refSEPos {-2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV22","poiSENeg refSENeg {2} refSEPos {-2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV24","refSENeg {2 2} refSEPos {-2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV24","poiSENeg refSENeg {2 2} refSEPos {-2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV26","refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV26","poiSENeg refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV28","refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV28","poiSENeg refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV22","refSENeg {2} refSEPos {-2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV24","refSENeg {2 2} refSEPos {-2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV26","refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV28","refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV22","poiSENeg refSENeg {2} refSEPos {-2}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SENV24","poiSENeg refSENeg {2 2} refSEPos {-2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SENV26","poiSENeg refSENeg {2 2 2} refSEPos {-2 -2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SENV28","poiSENeg refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", cent, kTRUE,rndmn);
+
+    filled = FillFCs("Mid2SEPV22","refSEPos {2} refSENeg {-2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV24","refSEPos {2 2} refSENeg {-2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV26","refSEPos {2 2 2} refSENeg {-2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV28","refSEPos {2 2 2 2} refSENeg {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV22","poiSEPos refSEPos {2} refSENeg {-2}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SEPV24","poiSEPos refSEPos {2 2} refSENeg {-2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SEPV26","poiSEPos refSEPos {2 2 2} refSENeg {-2 -2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SEPV28","poiSEPos refSEPos {2 2 2 2} refSENeg {-2 -2 -2 -2}", cent, kTRUE,rndmn);
+
     //V_3{n}, 2 subevents:
-    filled = FillFCs("Mid2SEV32","refSENeg {3} refSEPos {-3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV32","poiSENeg refSENeg {3} refSEPos {-3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV34","refSENeg {3 3} refSEPos {-3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV34","poiSENeg refSENeg {3 3} refSEPos {-3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV36","refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV36","poiSENeg refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV32","refSENeg {3} refSEPos {-3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV34","refSENeg {3 3} refSEPos {-3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV36","refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV32","poiSENeg refSENeg {3} refSEPos {-3}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SENV34","poiSENeg refSENeg {3 3} refSEPos {-3 -3}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SENV36","poiSENeg refSENeg {3 3 3} refSEPos {-3 -3 -3}", cent, kTRUE,rndmn);
+
+    filled = FillFCs("Mid2SEPV32","refSEPos {3} refSENeg {-3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV34","refSEPos {3 3} refSENeg {-3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV36","refSEPos {3 3 3} refSENeg {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV32","poiSEPos refSEPos {3} refSENeg {-3}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SEPV34","poiSEPos refSEPos {3 3} refSENeg {-3 -3}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SEPV36","poiSEPos refSEPos {3 3 3} refSENeg {-3 -3 -3}", cent, kTRUE,rndmn);
+
     //V_4{n}, 2 subevents:
-    filled = FillFCs("Mid2SEV42","refSENeg {4} refSEPos {-4}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV42","poiSENeg refSENeg {4} refSEPos {-4}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV44","refSENeg {4 4} refSEPos {-4 -4}", cent, kFALSE,rndmn);
-    filled = FillFCs("Mid2SEV44","poiSENeg refSENeg {4 4} refSEPos {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV42","refSENeg {4} refSEPos {-4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV44","refSENeg {4 4} refSEPos {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SENV42","poiSENeg refSENeg {4} refSEPos {-4}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SENV44","poiSENeg refSENeg {4 4} refSEPos {-4 -4}", cent, kTRUE,rndmn);
+
+    filled = FillFCs("Mid2SEPV42","refSEPos {4} refSENeg {-4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV44","refSEPos {4 4} refSENeg {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("Mid2SEPV42","poiSEPos refSEPos {4} refSENeg {-4}", cent, kTRUE,rndmn);
+    filled = FillFCs("Mid2SEPV44","poiSEPos refSEPos {4 4} refSENeg {-4 -4}", cent, kTRUE,rndmn);
 
     //V_2{n}, eta gap 1:
-    filled = FillFCs("MidGapV22","refGapNeg {2} refGapPos {-2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV22","poiGapNeg refGapNeg {2} refGapPos {-2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV24","refGapNeg {2 2} refGapPos {-2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV24","poiGapNeg refGapNeg {2 2} refGapPos {-2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV26","refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV26","poiGapNeg refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV28","refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV28","poiGapNeg refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV22","refGapNeg {2} refGapPos {-2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV24","refGapNeg {2 2} refGapPos {-2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV26","refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV28","refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV22","poiGapNeg refGapNeg {2} refGapPos {-2}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapNV24","poiGapNeg refGapNeg {2 2} refGapPos {-2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapNV26","poiGapNeg refGapNeg {2 2 2} refGapPos {-2 -2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapNV28","poiGapNeg refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", cent, kTRUE,rndmn);
+
+    filled = FillFCs("MidGapPV22","refGapPos {2} refGapNeg {-2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV24","refGapPos {2 2} refGapNeg {-2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV26","refGapPos {2 2 2} refGapNeg {-2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV28","refGapPos {2 2 2 2} refGapNeg {-2 -2 -2 -2}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV22","poiGapPos refGapPos {2} refGapNeg {-2}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapPV24","poiGapPos refGapPos {2 2} refGapNeg {-2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapPV26","poiGapPos refGapPos {2 2 2} refGapNeg {-2 -2 -2}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapPV28","poiGapPos refGapPos {2 2 2 2} refGapNeg {-2 -2 -2 -2}", cent, kTRUE,rndmn);
+
+
     //V_3{n}, eta gap 1:
-    filled = FillFCs("MidGapV32","refGapNeg {3} refGapPos {-3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV32","poiGapNeg refGapNeg {3} refGapPos {-3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV34","refGapNeg {3 3} refGapPos {-3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV34","poiGapNeg refGapNeg {3 3} refGapPos {-3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV36","refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV36","poiGapNeg refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV32","refGapNeg {3} refGapPos {-3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV34","refGapNeg {3 3} refGapPos {-3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV36","refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV32","poiGapNeg refGapNeg {3} refGapPos {-3}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapNV34","poiGapNeg refGapNeg {3 3} refGapPos {-3 -3}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapNV36","poiGapNeg refGapNeg {3 3 3} refGapPos {-3 -3 -3}", cent, kTRUE,rndmn);
+
+    filled = FillFCs("MidGapPV32","refGapPos {3} refGapNeg {-3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV34","refGapPos {3 3} refGapNeg {-3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV36","refGapPos {3 3 3} refGapNeg {-3 -3 -3}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV32","poiGapPos refGapPos {3} refGapNeg {-3}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapPV34","poiGapPos refGapPos {3 3} refGapNeg {-3 -3}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapPV36","poiGapPos refGapPos {3 3 3} refGapNeg {-3 -3 -3}", cent, kTRUE,rndmn);
     //V_4{n}, eta gap 1:
-    filled = FillFCs("MidGapV42","refGapNeg {4} refGapPos {-4}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV42","poiGapNeg refGapNeg {4} refGapPos {-4}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV44","refGapNeg {4 4} refGapPos {-4 -4}", cent, kFALSE,rndmn);
-    filled = FillFCs("MidGapV44","poiGapNeg refGapNeg {4 4} refGapPos {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV42","refGapNeg {4} refGapPos {-4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV44","refGapNeg {4 4} refGapPos {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapNV42","poiGapNeg refGapNeg {4} refGapPos {-4}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapNV44","poiGapNeg refGapNeg {4 4} refGapPos {-4 -4}", cent, kTRUE,rndmn);
+
+    filled = FillFCs("MidGapPV42","refGapPos {4} refGapNeg {-4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV44","refGapPos {4 4} refGapNeg {-4 -4}", cent, kFALSE,rndmn);
+    filled = FillFCs("MidGapPV42","poiGapPos refGapPos {4} refGapNeg {-4}", cent, kTRUE,rndmn);
+    filled = FillFCs("MidGapPV44","poiGapPos refGapPos {4 4} refGapNeg {-4 -4}", cent, kTRUE,rndmn);
 
     PostData(1,fFC);
     if(fAddQA) PostData(2,fQAList);
-  }; 
+  };
 };
 void AliAnalysisTaskGFWFlow::Terminate(Option_t*) {
 };
@@ -411,7 +526,7 @@ Bool_t AliAnalysisTaskGFWFlow::AcceptAODVertex(AliAODEvent *inEv) {
   const AliAODVertex* vtx = dynamic_cast<const AliAODVertex*>(inEv->GetPrimaryVertex());
   if(!vtx || vtx->GetNContributors() < 1)
     return kFALSE;
-  
+
   const AliAODVertex* vtxSPD = dynamic_cast<const AliAODVertex*>(inEv->GetPrimaryVertexSPD());
   Double_t dMaxResol = 0.25; // suggested from DPG
   Double_t cov[6] = {0};
@@ -422,28 +537,15 @@ Bool_t AliAnalysisTaskGFWFlow::AcceptAODVertex(AliAODEvent *inEv) {
   const Double_t aodVtxZ = vtx->GetZ();
   if(TMath::Abs(aodVtxZ) > 10)
     return kFALSE;
-  
+
   return kTRUE;
 };
-Bool_t AliAnalysisTaskGFWFlow::AcceptAODTrack(AliAODTrack *mtr, TClonesArray *tca) {
-  if(TMath::Abs(mtr->Eta())>1.6) return kFALSE;
-  if(mtr->Pt()<0.2) return kFALSE;
-  if(mtr->Pt()>20) return kFALSE;
-  if(!mtr->TestFilterBit(2+96+768)) return kFALSE;
-  //if(mtr->GetTPCNclsF()<70) return kFALSE; //This will be done in the Selection object
-  if(tca) {
-    Int_t mcind = TMath::Abs(mtr->GetLabel());
-    AliAODMCParticle *lp = (AliAODMCParticle*)tca->At(mcind);
-    if(!lp->IsPhysicalPrimary()) return kFALSE;
-    if(lp->Charge()==0) return kFALSE;
-  };
-  return kTRUE;
-};
+
 Bool_t AliAnalysisTaskGFWFlow::AcceptParticle(AliVParticle *mpa) {
   if(!mpa->IsPhysicalPrimary()) return kFALSE;
   if(mpa->Charge()==0) return kFALSE;
   if(TMath::Abs(mpa->Eta())>0.8) return kFALSE;
-  if(mpa->Pt()<0.2) return kFALSE;
+  if(mpa->Pt()<0.3) return kFALSE;
   if(mpa->Pt()>20) return kFALSE;
   return kTRUE;
 };
@@ -451,13 +553,13 @@ Int_t AliAnalysisTaskGFWFlow::GetVtxBit(AliAODEvent *mev) {
   Int_t retbit=0;
   for(Int_t vtxst=fTotTrackFlags+1;vtxst<fTotFlags; vtxst++) //vtx flags are 9-14
     retbit+=fSelections[vtxst]->AcceptVertex(mev,vtxst);
-  
+
   //PU unc. bit has been set with a wide cut. Override with a check w/ smaller cut:
   Int_t PUSystFlag = 1<<(fTotTrackFlags+6);//PU syst. flag is 6-th in ev/vtx selection
   //Only override if the event has passed the initial selection:
   if((retbit&PUSystFlag)==PUSystFlag) //if event accepted by nominal cuts
     if(!fEventCutsForPU.AcceptEvent(mev)) //Check if it gets rejected by the PU cut
-    retbit-=PUSystFlag; //and if so, set the PU flag to zero    
+    retbit-=PUSystFlag; //and if so, set the PU flag to zero
   retbit+=fSelections[0]->AcceptVertex(mev); //the standard one
   return retbit;
 };
@@ -484,7 +586,31 @@ Int_t AliAnalysisTaskGFWFlow::CombineBits(Int_t VtxBit, Int_t TrkBit) {
   //retbit=retbit|((VtxBit&1)*(TrkBit&(1<<13)));
   return retbit;
 };
-Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) {
+Bool_t AliAnalysisTaskGFWFlow::SetInputWeightList(TList *inlist) {
+  if(!inlist) {
+    return kFALSE;
+  };
+  fWeightList = inlist;
+  return kTRUE;
+};
+Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when running on the trains
+  if(fWeightList) {
+    fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",runno,fSelections[fCurrSystFlag]->NeedsExtraWeight()?
+							    fSelections[fCurrSystFlag]->GetSystPF():""));
+    if(!fWeights) {
+      AliFatal("Weights could not be found in the list!\n");
+      return kFALSE;
+    };
+    fWeights->CreateNUA();
+    fWeights->CreateNUE();
+    return kTRUE;
+  } else {
+    AliFatal("Weight list (for some reason) not set!\n");
+    return kFALSE;
+  };
+  printf("You should not be here!\n");
+  return kFALSE;
+//If weights not set, attempting to fetch them from pre-set directory. This will definitely fail if running on train
   fWeightPath.Clear();
   fWeightPath.Append(fWeightDir.Data());
   fWeightPath.Append(Form("%i.root",runno));

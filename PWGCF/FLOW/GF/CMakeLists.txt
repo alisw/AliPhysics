@@ -32,12 +32,14 @@ set(SRCS
   AliAnalysisTaskChargedFlow.cxx
   AliAnalysisTaskGFWFlow.cxx
   AliAnalysisTaskUniFlow.cxx
+  AliAnalysisTaskUniFlowMultiStrange.cxx
   AliGFW.cxx
   AliGFWCumulant.cxx
   AliGFWCuts.cxx
   AliGFWFlowContainer.cxx
   AliProfileSubset.cxx
   AliGFWWeights.cxx
+  AliUniFlowCorrTask.cxx
   )
 
 # Headers from sources

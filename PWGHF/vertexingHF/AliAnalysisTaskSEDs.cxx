@@ -107,7 +107,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   fnSparse(0),
   fImpParSparse(0x0),
   fMultSelectionObjectName("MultSelection"),
-  fCentEstName("off")
+  fCentEstName("off"),
+  fUseFinPtBinsForSparse(kFALSE)
 {
   /// Default constructor
 
@@ -214,7 +215,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   fnSparse(0),
   fImpParSparse(0x0),
   fMultSelectionObjectName("MultSelection"),
-  fCentEstName("off")
+  fCentEstName("off"),
+  fUseFinPtBinsForSparse(kFALSE)
 {
   /// Default constructor
   /// Output slot #1 writes into a TList container
@@ -877,9 +879,6 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
       return;
     if (fAnalysisCuts->GetUseCentrality() > 0 && fAnalysisCuts->IsEventSelectedInCentrality(aod) != 0)
       // events not passing the centrality selection can be removed immediately.
-      return;
-    Double_t zMCVertex = mcHeader->GetVtxZ();
-    if (TMath::Abs(zMCVertex) > fAnalysisCuts->GetMaxVtxZ())
       return;
     FillMCGenAccHistos(arrayMC, mcHeader, nTracklets);
   }
@@ -1797,7 +1796,11 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     nSparseAxes--;
   }
 
-  Int_t nBinsReco[knVarForSparse] = {nInvMassBins, (Int_t)fPtLimits[fNPtBins], 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nTrklBins, nCentrBins};
+  Int_t nPtBins = (Int_t)fPtLimits[fNPtBins];
+  if(fUseFinPtBinsForSparse)
+    nPtBins = nPtBins*10;
+
+  Int_t nBinsReco[knVarForSparse] = {nInvMassBins, nPtBins, 30, 20, 20, 20, 20, 20, 14, 6, 6, 12, 30, nTrklBins, nCentrBins};
   Double_t xminReco[knVarForSparse] = {minMass, 0., 0., 0., 0., 0., 90., 90., 0., 7., 0., 0., 0., 1., 0.};
   Double_t xmaxReco[knVarForSparse] = {maxMass, fPtLimits[fNPtBins], 15., 100., 100., 10., 100., 100., 70., 10., 3., 6., 300., 301., 101.};
   TString axis[knVarForSparse] = {"invMassDsAllPhi", "p_{T}", "#Delta Mass(KK)", "dlen", "dlen_{xy}", "normdl_{xy}", "cosP", "cosP_{xy}", "sigVert", "cosPiDs", "|cosPiKPhi^{3}|", "normIP", "ImpPar_{xy}", "N tracklets", Form("Percentile (%s)", fCentEstName.Data())};
@@ -1827,7 +1830,7 @@ void AliAnalysisTaskSEDs::CreateCutVarsAndEffSparses()
     xmaxReco[7] = 100.;
   }
 
-  Int_t nBinsAcc[knVarForSparseAcc] = {(Int_t)fPtLimits[fNPtBins], 20, nTrklBins};
+  Int_t nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, nTrklBins};
   Double_t xminAcc[knVarForSparseAcc] = {0., -10., 1.};
   Double_t xmaxAcc[knVarForSparseAcc] = {fPtLimits[fNPtBins], 10., 301.};
 
@@ -1946,7 +1949,7 @@ Float_t AliAnalysisTaskSEDs::GetTrueImpactParameterDstoPhiPi(const AliAODMCHeade
   }
 
   Int_t nDau = partDs->GetNDaughters();
-  Int_t labelFirstDau = partDs->GetDaughter(0);
+  Int_t labelFirstDau = partDs->GetDaughterLabel(0);
   if (nDau == 2)
   {
     Int_t theDau = 0;
@@ -1972,7 +1975,7 @@ Float_t AliAnalysisTaskSEDs::GetTrueImpactParameterDstoPhiPi(const AliAODMCHeade
         Int_t nDauRes = part->GetNDaughters();
         if (nDauRes == 2)
         {
-          Int_t labelFirstDauRes = part->GetDaughter(0);
+          Int_t labelFirstDauRes = part->GetDaughterLabel(0);
           for (Int_t iDauRes = 0; iDauRes < 2; iDauRes++)
           {
             Int_t indDR = labelFirstDauRes + iDauRes;

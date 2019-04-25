@@ -29,6 +29,13 @@
 #include <AliPID.h>
 #include <TLorentzVector.h>
 #include "AliEventCuts.h"
+#include <AliMCEvent.h>
+#include <AliAODMCParticle.h>
+
+#include <TH3F.h>
+
+#define LIGHT_SPEED 2.99792457999999984e-02 // in the units that TOF likes
+#define EPS 1.e-16
 
 class TF1;
 class TH2F;
@@ -40,6 +47,7 @@ class AliPIDResponse;
 class TList;
 class TTree;
 class AliPWGFunc;
+class AliNanoAODTrack;
 
 struct SLightNucleus {
   float pt;
@@ -75,14 +83,12 @@ public:
   AliAnalysisTaskNucleiYield(TString taskname = "NucleiYieldTask");
   virtual ~AliAnalysisTaskNucleiYield();
 
+
   void SetParticleType(AliPID::EParticleType part);
   void SetPDG (int pdg) { fPDG = (pdg >= 0) ? pdg : -pdg; }
   void SetIsMC (bool isMc) { fIsMC = isMc; }
   void SetFillOnlyEventHistos (bool onlyEventHistos) { fFillOnlyEventHistos = onlyEventHistos; }
 
-  void SetRequireITSrefit (bool refit = true) { fRequireITSrefit = refit; }
-  void SetRequireTPCrefit (bool refit = true) { fRequireTPCrefit = refit; }
-  void SetRequireNoKinks (bool nokinks = true) { fRequireNoKinks = nokinks; }
   void SetRequireITSrecPoints (int rec = 4) { fRequireITSrecPoints = rec; }
   void SetRequireTPCrecPoints (int rec = 70) { fRequireTPCrecPoints = rec; }
   void SetRequireTPCfoundFraction (float rec = 0.8) { fRequireTPCfoundFraction = rec; }
@@ -123,11 +129,13 @@ public:
   }
   void SetBeamRapidity(float rap) { fBeamRapidity = rap; }
   void SetCentralityEstimator(int est) { fEstimator = est; }
+  void SetupTRDstudies(int vintage, bool trdin) { fTRDvintage = vintage; fTRDin = trdin; }
 
   void SaveTrees(bool save=true) { fSaveTrees = save; }
 
   static int    GetNumberOfITSclustersPerLayer(AliVTrack *track, int &nSPD, int &nSDD, int &nSSD);
   static float  HasTOF(AliAODTrack *t, AliPIDResponse* pid);
+  static float  HasTOF(AliNanoAODTrack *t, AliPIDResponse* pid);
 
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *);
@@ -144,9 +152,17 @@ private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
 
-  bool   AcceptTrack(AliAODTrack *t, Double_t dca[2]);
+  template<class track> void TrackLoop(track* t, bool nano);
+  void SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl);
+
+  bool IsInTRD(float pt, float phi, float sign);
+
+  template <class track_t>
+  bool   AcceptTrack(track_t *t, Float_t dca[2]);
   int   PassesPIDSelection(AliAODTrack *t);
+  int   PassesPIDSelection(AliNanoAODTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
+  float  GetTOFsigmas(AliVTrack* t, bool nano);
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
@@ -165,7 +181,9 @@ private:
   Bool_t                fFillOnlyEventHistos;   ///<  Set treu to fill only event related histograms
 
   AliPIDResponse       *fPID;                   //!<! PID response class
-  Float_t               fMagField;              ///<  Magnetic field value for the current event
+  Float_t               fMagField;              //!<! Magnetic field value for the current event
+  Float_t               fCentrality;            //!<! Centrality for the current event
+  std::vector<int>      fRejectedParticles;     //!<! List of rejected particles for adapting the MC pt shape
 
   Float_t               fDCAzLimit;             ///<  Limits of the \f$DCA_{z}\f$ histograms
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
@@ -176,9 +194,6 @@ private:
   Float_t               fDisableITSatHighPt;    ///<  \f$p_{T}\f$ threshold for ITS cuts
   Float_t               fDisableTPCpidAtHighPt; ///<  \f$p_{T}\f$ threshold for TPC pid cut
   Bool_t                fEnablePtCorrection;    ///<  If true enables the MC based \f$p_{T}\f$ correction
-  Bool_t                fRequireITSrefit;       ///<  Cut on tracks: set true to require ITS refit
-  Bool_t                fRequireTPCrefit;       ///<  Cut on tracks: set true to require TPC refit
-  Bool_t                fRequireNoKinks;        ///<  Cut on tracks: set true to exclude tracks from kink vertices
   UShort_t              fRequireITSrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
   UShort_t              fRequireTPCrecPoints;   ///<  Cut on tracks: minimum number of required ITS recpoints
   UShort_t              fRequireITSsignal;      ///<  Cut on tracks: minimum number of required ITS PID recpoints
@@ -232,6 +247,7 @@ private:
   TH2F                 *fReconstructed[2][2];    //!<! *(MC only)* Positive and negative tracks reconstructed in the acceptance (ITS-TPC,ITS-TPC-TOF)
   TH2F                 *fTotal[2];               //!<! *(MC only)* Positively and negatively charged particles in acceptance
   TH2F                 *fPtCorrection[2];        //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for positive and negative tracks
+  TH2F                 *fPcorrectionTPC[2];      //!<! *(MC only)* \f$p_{T}^{rec}-p_{T}^{MC}\f$ as a function of \f$p_{T}^{rec}\f$ for positive and negative tracks in TPC
   TH3F                 *fDCAPrimary[2][2];       //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of primaries
   TH3F                 *fDCASecondary[2][2];     //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from material
   TH3F                 *fDCASecondaryWeak[2][2]; //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from Weak Decay
@@ -243,11 +259,175 @@ private:
   TH3F                 *fTPCbackgroundTpl[2];    //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
+  TH2F *fHist2Phi[2]; //! phi vs pt, negative (0) and positive (1): used for monitoring
+  TF1 *fTRDboundariesPos[4]; //!<! Function with the phi limits of TRD boundaries as a function of pt
+  TF1 *fTRDboundariesNeg[4]; //!<! Function with the phi limits of TRD boundaries as a function of pt
+  int  fTRDvintage;          /// TRD configuration (year)
+  bool fTRDin;               /// if true only tracks within TRD area are considered
+
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);
   /// \endcond
 };
+
+template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* track, bool nano) {
+
+  if (!nano && track->GetID() < 0) return;
+  Float_t dca[2] = {0.f,0.f};
+  if (!nano && !track->TestFilterBit(fFilterBit) && fFilterBit) return;
+  bool acceptedTrack = AcceptTrack(track,dca);
+  float beta = HasTOF(track,fPID);
+  if (beta > 1. - EPS) beta = -1;
+  const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
+
+  if (fSaveTrees && track->Pt() < 10.) {
+    //double mcPt = 0;
+    bool good2save{true};
+    if (fIsMC) {
+      int mcId = std::abs(track->GetLabel());
+      AliAODMCParticle *part = (AliAODMCParticle*)MCEvent()->GetTrack(mcId);
+      if (part) {
+        good2save = std::abs(part->PdgCode()) == fPDG;
+        SetSLightNucleus(part, fSimNucleus);
+      } else
+        good2save = false;
+    }
+    if (good2save) {
+      fRecNucleus.pt = track->Pt() * track->Charge();
+      fRecNucleus.eta = track->Eta();
+      fRecNucleus.phi = track->Phi();
+      fRecNucleus.m2 = m2;
+      fRecNucleus.dcaxy = dca[0];
+      fRecNucleus.dcaz = dca[1];
+      fRecNucleus.tpcNsigmaD = fPID->NumberOfSigmasTPC(track, AliPID::kDeuteron);
+      fRecNucleus.tpcNsigmaT = fPID->NumberOfSigmasTPC(track, AliPID::kTriton);
+      fRecNucleus.tpcNsigmaHe3 = fPID->NumberOfSigmasTPC(track, AliPID::kHe3);
+      fRecNucleus.centrality = fCentrality;
+      fRecNucleus.itsCls = track->GetITSClusterMap();
+      fRecNucleus.tpcPIDcls = track->GetTPCsignalN();
+      if ((fRecNucleus.tpcNsigmaD > -5. && track->Pt() < 1.4) ||
+          (fRecNucleus.tpcNsigmaT > -5. && track->Pt() < 1.6) ||
+          (fRecNucleus.tpcNsigmaHe3 > -6.) ||
+          (m2 > 1.11 && m2 < 21.58)
+        )
+        fRTree->Fill();
+    }
+  }
+
+  if (!acceptedTrack) return;
+  bool positive = track->Charge() > 0;
+  if (fHist2Phi[positive]) fHist2Phi[positive]->Fill(track->Phi() , track->Pt() );
+
+  const int iTof = beta > EPS ? 1 : 0;
+  float pT = track->Pt() * fCharge;
+  float p_TPC = track->GetTPCmomentum(); 
+  int pid_mask = PassesPIDSelection(track);
+  bool pid_check = (pid_mask & 7) == 7;
+  if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
+
+  int mcId = TMath::Abs(track->GetLabel());
+  if (fPtShape) {
+    if (std::find(fRejectedParticles.begin(), fRejectedParticles.end(), mcId) != fRejectedParticles.end()) {
+      return;
+    }
+  }
+  if (fIsMC) {
+    AliAODMCParticle *part = (AliAODMCParticle*)MCEvent()->GetTrack(mcId);
+    /// Workaround: if the AOD are filtered with an AliRoot tag before v5-08-18, hyper-nuclei prongs
+    /// are marked as SecondaryFromMaterial.
+    const int mother_id = part->GetMother();
+    AliAODMCParticle* mother = (mother_id >= 0) ? (AliAODMCParticle*)MCEvent()->GetTrack(mother_id) : 0x0;
+    const int mother_pdg = mother ? TMath::Abs(mother->PdgCode()) : 0;
+    const bool isFromHyperNucleus = (mother_pdg > 1000000000 && (mother_pdg / 10000000) % 10 != 0);
+    if (!part) return;
+    const int iC = part->Charge() > 0 ? 1 : 0;
+    if (std::abs(part->PdgCode()) == fPDG) {
+      for (int iR = iTof; iR >= 0; iR--) {
+        if (part->IsPhysicalPrimary()) {
+          if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
+              (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
+              (!iR || pid_check) && (iR || pid_mask & 8))
+            fReconstructed[iR][iC]->Fill(fCentrality,pT);
+          fDCAPrimary[iR][iC]->Fill(fCentrality,pT,dca[0]);
+          if (!iR) {
+            fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
+            fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
+            } // Fill it only once.
+        } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
+          fDCASecondary[iR][iC]->Fill(fCentrality,pT,dca[0]);
+        else
+          fDCASecondaryWeak[iR][iC]->Fill(fCentrality,pT,dca[0]);
+      }
+    }
+  } else {
+    const int iC = (track->Charge() > 0) ? 1 : 0;
+
+    float tpc_n_sigma = GetTPCsigmas(track);
+    float tof_n_sigma = iTof ? GetTOFsigmas(track,nano) : -999.f;
+
+    for (int iR = iTof; iR >= 0; iR--) {
+      /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
+      /// to compensate for the shift in the sigma (to be rechecked in case of update of TOF PID response)
+      if (tpc_n_sigma > -2. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {
+        fDCAxy[iR][iC]->Fill(fCentrality, pT, dca[0]);
+        fDCAz[iR][iC]->Fill(fCentrality, pT, dca[1]);
+      }
+    }
+    if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return;
+    if ((fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
+        (pid_mask & 8))
+      fTPCcounts[iC]->Fill(fCentrality, pT, tpc_n_sigma);
+
+    if (iTof == 0) return;
+    if (std::abs(tof_n_sigma) < 4.)
+      fTPCsignalTpl[iC]->Fill(fCentrality, pT, tpc_n_sigma);
+    else
+      fTPCbackgroundTpl[iC]->Fill(fCentrality, pT, tpc_n_sigma);
+
+    if (!pid_check) return;
+    /// \f$ m = \frac{p}{\beta\gamma} \f$
+    fTOFsignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+
+  }
+}
+
+/// This function checks whether a track passes the cuts required in this task
+///
+/// \param track Track that is going to be checked
+/// \param dca[2] Projections on the transverse plane and on z of the distance of closest approach
+///               of the track to the primary vertex
+/// \return Boolean value: true means that the track has passed all the cuts.
+///
+template<class track_t>
+bool AliAnalysisTaskNucleiYield::AcceptTrack(track_t *track, Float_t dca[2]) {
+  fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
+  if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return false;
+  if (fCutVec.Rapidity() < fRequireYmin + fBeamRapidity || fCutVec.Rapidity() > fRequireYmax + fBeamRapidity) return false;
+  if (track->Chi2perNDF() > fRequireMaxChi2) return false;
+  if (track->GetTPCNcls() < fRequireTPCrecPoints) return false;
+  if (track->GetTPCFoundFraction() < fRequireTPCfoundFraction) return false;
+  if (track->GetTPCsignalN() < fRequireTPCsignal) return false;
+  if (track->GetTPCsignal() < fRequireMinEnergyLoss) return false;
+  if (fTRDvintage != 0 && fTRDin != IsInTRD(track->Pt(), track->Phi(), track->Charge())) return false;
+
+  /// ITS related cuts
+  dca[0] = 0.;
+  dca[1] = 0.;
+  if (track->Pt() < fDisableITSatHighPt) {
+    int nSPD = 0u, nSDD = 0u, nSSD = 0u;
+    int nITS = GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);
+    if (nITS < fRequireITSrecPoints) return false;
+    if (nSPD < fRequireSPDrecPoints) return false;
+    if (nSDD < fRequireSDDrecPoints) return false;
+    if (fRequireVetoSPD && nSPD > 0) return false;
+    track->GetImpactParameters(dca[0], dca[1]);
+    if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return false;
+    //if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return false;
+  }
+
+  return true;
+}
 
 
 #endif /* defined(__AliAnalysisTaskNucleiYield__) */
