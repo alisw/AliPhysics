@@ -1,7 +1,12 @@
+void isCompatibleBinning(TH1D* h0,TH1D* h1);
+void isSameBinning(TH1D* h0,TH1D* h1);
+void rebin(TH1D** h);
+void do_fit(TH1D* m,TF1* f,int test);
+
 int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int save=2,double tolerance=0.001){
   /* Author: Anders G. Knospe, The University of Texas at Austin
      Created: 26 January 2014
-     Last Modified: 19 August 2017
+     Last Modified: 25 April 2019
 
      This macro implements an iterative procedure to re-weight efficiencies.
      See the following analysis note for more information:
@@ -71,10 +76,10 @@ int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int
   if(!G){cerr<<"Error in ReweightEfficiency(): missing input: generated pT spectrum from simulation"<<endl; return 1;}
   if(!R){cerr<<"Error in ReweightEfficiency(): missing input: reconstructed pT spectrum from simulation"<<endl; return 1;}
 
-  char mname[500]; sprintf(mname,M->GetName());
-  char fname[500]; sprintf(fname,F->GetName());
-  char gname[500]; sprintf(gname,G->GetName());
-  char rname[500]; sprintf(rname,R->GetName());
+  char mname[500]; sprintf(mname,"%s",M->GetName());
+  char fname[500]; sprintf(fname,"%s",F->GetName());
+  char gname[500]; sprintf(gname,"%s",G->GetName());
+  char rname[500]; sprintf(rname,"%s",R->GetName());
 
   cout<<"using ReweightEfficiency():\n  M="<<mname<<"\n  F="<<fname<<"\n  G="<<gname<<"\n  R="<<rname<<endl;
 
