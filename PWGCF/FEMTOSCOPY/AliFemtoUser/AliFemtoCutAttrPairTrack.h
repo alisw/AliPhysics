@@ -135,8 +135,8 @@ struct PairCutTrackAttrShareQuality {
         qual_and_frac = calc_share_quality_fraction(track1, track2);
 
       const double
-        share_fraction = qual_and_frac.first,
-        share_quality = qual_and_frac.second;
+        share_quality = qual_and_frac.first,
+        share_fraction = qual_and_frac.second;
 
       return share_fraction <= share_fraction_max
           && share_quality <= share_quality_max;

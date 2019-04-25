@@ -893,6 +893,15 @@ public:
     iterator_over_map(AliFemtoConfigObject &obj): fParent(&obj) {}
     map_iterator begin() { return fParent->map_begin(); }
     map_iterator end() { return fParent->map_end(); }
+
+    /// Python-interop method
+    ///
+    /// Use as iterator
+    ///
+    /// Does not check if type is map! MAY CRASH!
+    ///
+    MapValue_t __iter__() const
+      { return fParent->is_map() ? fParent->fValueMap : MapValue_t(); }
   };
 
   /// Simplified loop-over-map syntax function
