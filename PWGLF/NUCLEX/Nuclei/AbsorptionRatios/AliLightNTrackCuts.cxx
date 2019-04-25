@@ -27,8 +27,8 @@ AliLightNTrackCuts::AliLightNTrackCuts()
 ,fetamin(0.)
 ,fetamax(0.)
 ,fcutEta(false)
-,fcutCharge(false)
 ,fCutRapidity(false)
+,fcutCharge(false)
 ,fCharge(0)
 ,fnTPCCls(0)
 ,fcutnTPCCls(false)
@@ -502,7 +502,7 @@ void AliLightNTrackCuts::Init() {
 void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
     std::vector<double> eta=Track->GetEta();
     std::vector<double> phi=Track->GetPhi();
-    double pT = Track->GetPt();
+    // double pT = Track->GetPt();
     double pTPC = Track->GetMomTPC();
     double p = 0;
     TVector3 MomVector= Track->GetMomentum();
@@ -648,7 +648,7 @@ void AliLightNTrackCuts::BookMC(AliLightNTrack *Track) {
         }
     }
     if (Track->UseParticle()) {
-        double pT = Track->GetPt();
+        // double pT = Track->GetPt();
         int PDGcode[6] = {11,13,211,321,2212,1000010020};
         //Fill Identified
         fMCHists->FillMCIdent(p);
@@ -687,7 +687,7 @@ void AliLightNTrackCuts::FillMCContributions(
     if (MomVector*MomVector > 0){
         p =TMath::Sqrt(MomVector*MomVector);
     }
-    double pT=Track->GetPt();
+    // double pT=Track->GetPt();
     AliLightNBasePart::PartOrigin org=Track->GetParticleOrigin();
     Int_t iFill = -1;
     switch(org) {

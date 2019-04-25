@@ -67,6 +67,7 @@ using std::endl;
 //________________________________________________________________________
 AliAnalysisTaskAllPtcv2::AliAnalysisTaskAllPtcv2() 
 : AliAnalysisTaskSE(),
+  fEventCuts(0),  
   fESDevent(0),                         //! 
   fAODevent(0),                           //! 
   fevent(0),   
@@ -177,8 +178,7 @@ AliAnalysisTaskAllPtcv2::AliAnalysisTaskAllPtcv2()
   huqV0AxuqV0CvsPtAll6080(0),
   fESDtrackCuts(0),
   fESDtrackCutsEP(0),
-  fPIDResponse(0),
-  fEventCuts(0)
+  fPIDResponse(0)
 {
   // Dummy Constructor 
   fESDtrackCuts   = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
@@ -190,6 +190,7 @@ AliAnalysisTaskAllPtcv2::AliAnalysisTaskAllPtcv2()
 //________________________________________________________________________
 AliAnalysisTaskAllPtcv2::AliAnalysisTaskAllPtcv2(const char *name) 
 : AliAnalysisTaskSE(name),
+  fEventCuts(0),
   fESDevent(0),                         //! 
   fAODevent(0),                           //! 
   fevent(0),   
@@ -300,8 +301,7 @@ AliAnalysisTaskAllPtcv2::AliAnalysisTaskAllPtcv2(const char *name)
   huqV0AxuqV0CvsPtAll6080(0),
   fESDtrackCuts(0),
   fESDtrackCutsEP(0),
-  fPIDResponse(0),
-  fEventCuts(0)
+  fPIDResponse(0)
 {
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -747,7 +747,7 @@ void AliAnalysisTaskAllPtcv2::UserExec(Option_t *)
   fPIDResponse=inputHandler->GetPIDResponse(); 
 
   Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
-  AliCentrality* centrality = 0x0;
+  // AliCentrality* centrality = 0x0;
   
   //-----------------------------------------------------
   
@@ -756,8 +756,8 @@ void AliAnalysisTaskAllPtcv2::UserExec(Option_t *)
   
   ULong_t  status=0;
  
-  Double_t pmax  = 10.;
-  Double_t ptmax = 6.2;
+  // Double_t pmax  = 10.;
+  // Double_t ptmax = 6.2;
 
   // Primary vertex cut
 
