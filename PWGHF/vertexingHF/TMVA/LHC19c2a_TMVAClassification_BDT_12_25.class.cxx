@@ -6,13 +6,13 @@ double ReadBDT_Default_LHC19c2a_12_25::GetMvaValue__(const std::vector<double> &
   double norm = 0;
   for (unsigned int itree = 0; itree < fForest.size(); itree++)
   {
-    BDT_DefaultNode *current = fForest[itree];
+    BDTNode *current = fForest[itree];
     while (current->GetNodeType() == 0)
     { //intermediate node
       if (current->GoesRight(inputValues))
-        current = (BDT_DefaultNode *)current->GetRight();
+        current = (BDTNode *)current->GetRight();
       else
-        current = (BDT_DefaultNode *)current->GetLeft();
+        current = (BDTNode *)current->GetLeft();
     }
     myMVA += fBoostWeights[itree] * current->GetNodeType();
     norm += fBoostWeights[itree];

@@ -114,7 +114,7 @@ centrality                    centrality                    centrality          
 #include <string>
 #include <iostream>
 #include "IClassifierReader.h"
-#include "BDT_DefaultNode.h"
+#include "BDTNode.h"
 
 // Default constructor added by ALICE analyzers
 class ReadBDT_Default_LHC19c2b_5_6 : public IClassifierReader
@@ -247,7 +247,7 @@ private:
   double GetMvaValue__(const std::vector<double> &inputValues) const;
 
   // private members (method specific)
-  std::vector<BDT_DefaultNode *> fForest; // i.e. root nodes of decision trees
+  std::vector<BDTNode *> fForest; // i.e. root nodes of decision trees
   std::vector<double> fBoostWeights;      // the weights applied in the individual boosts
 };
 
