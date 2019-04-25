@@ -296,13 +296,13 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   fPhiNumBinsMass; // number of InvMass bins for phi distribution
       Int_t                   fV0sNumBinsMass; // number of InvMass bins for V0s distribution
       Int_t                   fNumSamples; // [1] overall number of samples (from random sampling) used
-      TString                 fFlowWeightsTag; // [""] tag with TList name for weights (used for systematics)
       Bool_t                  fFlowFillWeights; //[kFALSE] flag for filling weights
       Bool_t                  fFlowFillAfterWeights; //[kTRUE] flag for filling weights after NUA (only if fUseWeights is on)
       Bool_t                  fFlowUseWeights; //[kFALSE] flag for using the previously filled weights
       Bool_t                  fFlowUse3Dweights; // [kFALSE] flag for using 3D GF weights, if kFALSE, 2D weights are expected
       Bool_t                  fFlowRunByRunWeights; // [kTRUE] flag for using rub-by-run weigths from weigths file; if false, only one set of histrograms is provided
       Bool_t                  fFlowWeightsApplyForReco; //[kFALSE] flag for applying weights for Reco particles
+      TString                 fFlowWeightsTag; // [""] tag with TList name for weights (used for systematics)
 
       //cuts & selection: events
       ColSystem               fColSystem; // collisional system

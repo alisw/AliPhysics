@@ -58,6 +58,8 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fIsMC(kFALSE)
     , fRunNumber(0)
     , fRunNumberString("")
+    , fTimeStamp(0)
+    , fEventNumberInFile(0)    
     , fFiredTriggerClasses("")
     , fEventSpecie(0)
     , fOldCentPercentileV0M(-1)
@@ -143,6 +145,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fSigma1Pt(0)
     , fSigned1Pt(0)
     , f1Pt(0)
+    , fChargeSign(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -182,6 +185,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fCentEstimator("")
     , fTriggerMaskRequired(0)
     , fTriggerMaskRejected(0)
+    , fInternalLoop(kTRUE)
     , fOutputList(0)
     , fLogHist(0)
     , fLogErr(0)
@@ -222,6 +226,8 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fIsMC(kFALSE)
     , fRunNumber(0)
     , fRunNumberString("")
+    , fTimeStamp(0)
+    , fEventNumberInFile(0)
     , fFiredTriggerClasses("")
     , fEventSpecie(0)
     , fOldCentPercentileV0M(-1)
@@ -307,6 +313,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fSigma1Pt(0)
     , fSigned1Pt(0)
     , f1Pt(0)
+    , fChargeSign(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -346,6 +353,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fCentEstimator("")
     , fTriggerMaskRequired(0)
     , fTriggerMaskRejected(0)
+    , fInternalLoop(kTRUE)
     , fOutputList(0)
     , fLogHist(0)
     , fLogErr(0)
@@ -540,12 +548,12 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
     // for now analyse only ESDs 
     if (!fESD) { Err("noESD"); return kFALSE; }
     if (fESD)  { LogEvent("ESD"); }
-
-    // set all the event related properties
-    InitEvent();
     
     // read the mc event and set all mc related properties
-    ReadMCEvent();
+    ReadMCEvent();    
+
+    // set all the event related properties
+    InitEvent();    
           
     return kTRUE;
 }
@@ -620,6 +628,9 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
     fRunNumber = fESD->GetRunNumber();
     fRunNumberString = "";
     fRunNumberString += fRunNumber;
+    
+    fTimeStamp = fESD->GetTimeStamp();
+    fEventNumberInFile = fESD->GetEventNumberInFile();
         
     // this is needed for some esd track cuts, to be on the save side we call it here
     if (!TGeoGlobalMagField::Instance()->GetField()) { fESD->InitMagneticField(); }
@@ -629,10 +640,20 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
     // only if track cuts are set
     fNTracksAcc = 0;
     if (fESDtrackCutsM) {
+        fInternalLoop = kTRUE;
+        LoopOverAllTracks();
+        fInternalLoop = kFALSE;
+    } else {
+        fNTracksAcc = fNTracksESD;
+        Log("noAliESDTrackCutsM");
+    }
+    
+    fNTracksAcc = 0;
+    if (fESDtrackCutsM) {
         for (Int_t i = 0; i < fNTracksESD; i++) {
             AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
             if (!track) continue;
-            if (fESDtrackCutsM->AcceptTrack(track) ) { fNTracksAcc++; }              
+            if (fESDtrackCutsM->AcceptTrack(track) ) { fNTracksAcc++; }
         }
     } else {
         fNTracksAcc = fNTracksESD;
@@ -708,8 +729,47 @@ void AliAnalysisTaskMKBase::FillTrigHist(TH1D* h)
 
 //_____________________________________________________________________________
 
+void AliAnalysisTaskMKBase::BaseAnaParticleMC(Int_t flag)
+{   
+    // for non-interal loop call AnaParticleMC
+    if (!fInternalLoop) { AnaParticleMC(flag); return;}
+    
+    // internal loop to get multiplicities
+    if (fMCIsCharged && fMCisPrim) {
+        fMCnPrim++;
+        if (TMath::Abs(fMCEta)<1.) { fMCnPrim10++; }
+        if (TMath::Abs(fMCEta)<0.8) { fMCnPrim08++; } 
+        if (TMath::Abs(fMCEta)<0.5) { fMCnPrim05++; }
+        if ( ( 2.8 < fMCEta) && (fMCEta <  5.1) ) { fMCnPrimV0M++; } //V0A
+        if ( (-3.7 < fMCEta) && (fMCEta < -1.7) ) { fMCnPrimV0M++; } //V0C 
+        if ( (TMath::Abs(fMCEta) < 0.8) && (fMCPt > 0.15) ) { fMCnPrimPtCut++; }
+    }
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskMKBase::BaseAnaTrack(Int_t flag)
+{       
+    if (!fInternalLoop) { 
+        // for non-interal loop call AnaTrack
+        AnaTrack(flag); 
+        if (fIsMC) {
+            AnaTrackMC(flag); 
+        } else {
+            AnaTrackDATA(flag); 
+        }
+    } else {
+        // internal loop to get multiplicities
+        if (fAcceptTrackM) { fNTracksAcc++; }
+    }
+}        
+
+//_____________________________________________________________________________
+
 Bool_t AliAnalysisTaskMKBase::InitMCEvent() 
 {
+    InitMCEventType();
+    
     if (!fIsMC) return kFALSE;
     TArrayF vtxMC(3);
     // mc vertex    
@@ -728,22 +788,10 @@ Bool_t AliAnalysisTaskMKBase::InitMCEvent()
     fMCnPrimV0M = 0;
     fMCnPrim = 0;
     
-    for (Int_t i = 0; i < fMCnTracks; i++) {
-        fMCParticle  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
-        if (!fMCParticle) { Err("noMCParticle"); continue; }   
-        fMCLabel = i;
-        InitMCParticle();
-        if (fMCIsCharged && fMCisPrim) {
-            fMCnPrim++;
-            if (TMath::Abs(fMCEta)<1.) { fMCnPrim10++; }
-            if (TMath::Abs(fMCEta)<0.8) { fMCnPrim08++; } 
-            if (TMath::Abs(fMCEta)<0.5) { fMCnPrim05++; }
-            if ( ( 2.8 < fMCEta) && (fMCEta <  5.1) ) { fMCnPrimV0M++; } //V0A
-            if ( (-3.7 < fMCEta) && (fMCEta < -1.7) ) { fMCnPrimV0M++; } //V0C 
-            if ( (TMath::Abs(fMCEta) < 0.8) && (fMCPt > 0.15) ) { fMCnPrimPtCut++; }
-        }
-    }    
-    InitMCEventType();
+    fInternalLoop = kTRUE;
+    LoopOverAllParticles();
+    fInternalLoop = kFALSE;
+  
     return kTRUE;
 }
 
@@ -804,6 +852,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
     fPt = fESDTrack->Pt();
     fEta = fESDTrack->Eta();
     fPhi = fESDTrack->Phi();
+    fChargeSign = fESDTrack->Charge();
     fESDTrack->GetImpactParameters(fDCA,fDCACov);
     fDCAr = fDCA[0];
     fDCAz = fDCA[1];
@@ -1147,12 +1196,7 @@ void AliAnalysisTaskMKBase::LoopOverAllTracks(Int_t flag)
         fESDTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(i));
         if (!fESDTrack) { Err("noESDtrack"); continue; }
         InitTrack();
-        AnaTrack(flag);
-        if (fIsMC) {
-            AnaTrackMC(flag); 
-        } else {
-            AnaTrackDATA(flag); 
-        }
+        BaseAnaTrack(flag);
     }
 }
 
@@ -1168,7 +1212,7 @@ void AliAnalysisTaskMKBase::LoopOverAllParticles(Int_t flag)
         if (!fMCParticle) { Err("noMCParticle"); continue; }         
         fMCLabel = i;
         InitMCParticle();
-        AnaParticleMC(flag);
+        BaseAnaParticleMC(flag);
     }
 }
 
