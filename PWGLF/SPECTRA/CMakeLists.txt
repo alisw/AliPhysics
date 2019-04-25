@@ -35,7 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx  
+  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
   ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
@@ -72,6 +72,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AlimPtMatrix.cxx
   ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
+  ChargedHadrons/AliMCSpectraWeights/AliMCSpectraWeightsAnalysisTask.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
@@ -158,8 +159,8 @@ set(PAR_EXTRAFILES_H
   PiKaPr/TestAOD/Histograms.h
 )
 
-set(PAR_EXTRAFILES 
-   ${PAR_EXTRAFILES_H} 
+set(PAR_EXTRAFILES
+   ${PAR_EXTRAFILES_H}
    ${PAR_EXTRAFILES_CXX}
 )
 
