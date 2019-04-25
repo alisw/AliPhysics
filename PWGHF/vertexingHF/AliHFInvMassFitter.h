@@ -42,6 +42,9 @@ class AliHFInvMassFitter : public TNamed {
     fTypeOfFit4Bkg=fittypeb; fTypeOfFit4Sgn=fittypes;
     SetNumberOfParams();
   }
+    void     SetSigmaLimit(Double_t sigmaVar, Double_t sigmalimit){
+      fSigmaVar=sigmaVar; fParSig=sigmalimit;
+    } 
 
   void SetUseLikelihoodFit(){fFitOption="L,E";}
   void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
@@ -66,6 +69,11 @@ class AliHFInvMassFitter : public TNamed {
   void SetFixGaussianSigma(Double_t sigma){
     SetInitialGaussianSigma(sigma);
     fFixedSigma=kTRUE;
+  }
+  void SetBoundGaussianSigma(Double_t sigma, Double_t sigmalimit){
+    SetInitialGaussianSigma(sigma);
+    SetSigmaLimit(sigma, sigmalimit);
+    fBoundSigma=kTRUE;//fFitOption="L,E,B";
   }
   void SetFixSecondGaussianSigma(Double_t sigma){
     if(fTypeOfFit4Sgn!=k2Gaus) AliFatal("fTypeOfFit4Sgn should be set to k2Gaus to fix ratio between gaussians\n");
@@ -190,12 +198,15 @@ class AliHFInvMassFitter : public TNamed {
   Double_t  fSigmaSgn2Gaus;        /// signal second gaussian sigma in case of k2Gaus
   Bool_t    fFixedMean;            /// switch for fix mean of gaussian
   Bool_t    fFixedSigma;           /// switch for fix Sigma of gaussian
+  Bool_t    fBoundSigma;           /// switch for bound Sigma of gaussian
+  Double_t  fSigmaVar;             /// value of bound Sigma of gaussian
+  Double_t  fParSig;               /// +/- range variation of bound Sigma of gaussian in %
   Bool_t    fFixedSigma2Gaus;      /// switch for fix Sigma of second gaussian in case of k2Gaus
   Double_t  fFixedRawYield;        /// initialization for wa yield
   Double_t  fFrac2Gaus;            /// initialization for fraction of 2nd gaussian in case of k2Gaus or k2GausSigmaRatioPar
   Bool_t    fFixedFrac2Gaus;       /// switch for fixed fraction of 2nd gaussian in case of k2Gaus or k2GausSigmaRatioPar
-  Double_t  fRatio2GausSigma;       /// initialization for ratio between two gaussian sigmas in case of k2GausSigmaRatioPar
-  Bool_t    fFixedRatio2GausSigma;  /// switch for fixed ratio between two gaussian sigmas in case of k2GausSigmaRatioPar
+  Double_t  fRatio2GausSigma;      /// initialization for ratio between two gaussian sigmas in case of k2GausSigmaRatioPar
+  Bool_t    fFixedRatio2GausSigma; /// switch for fixed ratio between two gaussian sigmas in case of k2GausSigmaRatioPar
   Int_t     fNParsSig;             /// fit parameters in signal fit function
   Int_t     fNParsBkg;             /// fit parameters in background fit function
   Bool_t    fOnlySideBands;        /// kTRUE = only side bands considered
