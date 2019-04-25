@@ -74,6 +74,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fFillGenericV0s{true},
       fFillTracklet{true},
       fSaveFileNames{false},
+      fPropagetToPV{true},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fPIDResponse{nullptr},
@@ -404,6 +405,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     // Track quality cuts
 
     float he3B[2], piB[2], bCov[3];
+    if (fPropagetToPV) {
+      piTrack->PropagateToDCA(fEventCuts.GetPrimaryVertex(),esdEvent->GetMagneticField(), 25.);
+      he3Track->PropagateToDCA(fEventCuts.GetPrimaryVertex(),esdEvent->GetMagneticField(), 25.);
+    }
     piTrack->GetImpactParameters(piB, bCov);
     he3Track->GetImpactParameters(he3B, bCov);
     const float he3DCA = std::hypot(he3B[0], he3B[1]);

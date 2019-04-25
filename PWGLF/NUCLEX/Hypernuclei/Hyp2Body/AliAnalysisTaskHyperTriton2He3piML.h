@@ -138,6 +138,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   bool fFillGenericV0s;
   bool fFillTracklet;
   bool fSaveFileNames;
+  bool fPropagetToPV;
 
  private:
   TList* fListHist;  //! List of Cascade histograms
