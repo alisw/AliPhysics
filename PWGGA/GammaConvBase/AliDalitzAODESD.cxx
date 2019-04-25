@@ -18,53 +18,79 @@ ClassImp( AliDalitzAODESD )
 //-----------------------------------------------------------------------------------------------
          
      Double_t AliDalitzAODESD::GetPtG(){
-        if (fIsESD==kTRUE) return fESDtrack->GetConstrainedParam()->Pt();
+        if (fIsESD==kTRUE) return fESDtrack->Pt();
         else return fAODtrack->Pt();
      }
      Double_t AliDalitzAODESD::GetPxG(){
-        if (fIsESD==kTRUE) return fESDtrack->GetConstrainedParam()->Px();
+        if (fIsESD==kTRUE) return fESDtrack->Px();
         else return fAODtrack->Px();
      }
      Double_t AliDalitzAODESD::GetPyG(){
-        if (fIsESD==kTRUE) return fESDtrack->GetConstrainedParam()->Py();
+        if (fIsESD==kTRUE) return fESDtrack->Py();
         else return fAODtrack->Py();
      }     
      Double_t AliDalitzAODESD::GetPzG(){
-        if (fIsESD==kTRUE) return fESDtrack->GetConstrainedParam()->Pz();
+        if (fIsESD==kTRUE) return fESDtrack->Pz();
         else return fAODtrack->Pz();
      }
     Double_t AliDalitzAODESD::GetPhiG(){
+        if (fIsESD==kTRUE) return fESDtrack->Phi();
+        else return fAODtrack->Phi();
+     }
+    Double_t AliDalitzAODESD::GetConstrainedParamPhiG(){
         if (fIsESD==kTRUE) return fESDtrack->GetConstrainedParam()->Phi();
         else return fAODtrack->Phi();
      }
-    const AliExternalTrackParam* AliDalitzAODESD::GetParamG(){
+    const AliExternalTrackParam* AliDalitzAODESD::GetParamG(const AliVVertex* vx,Double_t bmag){
         if (fIsESD==kTRUE) return fESDtrack->GetConstrainedParam();
         else{ //AliExternalTrackParam* aodParam;
-            const AliExternalTrackParam* aodParam1=0;
-           //AliExternalTrackParam etp;
-         //   etp.CopyFromVTrack(fAODtrack);
+        //ALERT modification on GetParamG(), for ESD is the same, but for AOD we need the inputs of Vertex and GetMagneticField, with that we recalcualte the GetConstrainedParam
 
-            std::cout<<"definio aodParam"<<std::endl;
-           // std::cout<<fAODtrack->Pt()<<endl;
-           // AliExternalTrackParam((AliVTrack*)fAODtrack);
-           // aodParam->CopyFromVTrack(fAODtrack);
-            std::cout<<"Copio"<<std::endl;
-           // const AliExternalTrackParam* aodParam1 =static_cast< const AliExternalTrackParam*>(*etp);
-            //const AliExternalTrackParam* aodParam1=etp;
-            aodParam1 = fAODtrack->GetOuterParam();
-            std::cout<<"Lista para retornar"<<std::endl;
-            //return aodParam1;
-            return aodParam1;
+        //NOTE   const AliExternalTrackParam* aodParam1=0;
+        //AliExternalTrackParam etp;
+        //etp.CopyFromVTrack(fAODtrack);
+
+        //NOTE   std::cout<<"definio aodParam"<<std::endl;
+        //std::cout<<fAODtrack->Pt()<<endl;
+        //AliExternalTrackParam((AliVTrack*)fAODtrack);
+        //aodParam->CopyFromVTrack(fAODtrack);
+        //NOTE std::cout<<"Copio"<<std::endl;
+        //const AliExternalTrackParam* aodParam1 =static_cast< const AliExternalTrackParam*>(*etp);
+        //const AliExternalTrackParam* aodParam1=etp;
+        //NOTE aodParam1 = fAODtrack->GetOuterParam();
+        //NOTE std::cout<<"Lista para retornar"<<std::endl;
+        //return aodParam1;
+        //NOTE return aodParam1;
+
+        //ALERT Here is the new way of calculate this parameters and return a AliExternalTrackParam to obtain the momentum
+            AliExternalTrackParam* par = new AliExternalTrackParam();
+            par->CopyFromVTrack(fAODtrack);
+            double dz[2];
+            double chi2;
+            if (!par->PropagateToDCA(vx,bmag,999.,dz,0)) {
+                delete par;
+                chi2 = 1e9;
+                return 0;
+            }
+            Double_t covar[6]; vx->GetCovarianceMatrix(covar);
+            Double_t p[2]= { par->GetParameter()[0]-dz[0], par->GetParameter()[1]-dz[1]};
+            Double_t c[3]= { covar[2],0.,covar[5] };
+            chi2 = par->GetPredictedChi2(p,c);
+            if (chi2>1e9 || !par->Update(p,c)) {
+                delete par;
+            return 0;
+            }
+            return par;
         }
      }
     Int_t AliDalitzAODESD::GetLabelG(){
         if (fIsESD==kTRUE) return fESDtrack->GetLabel();
         else return fAODtrack->GetLabel();
      }
-     Bool_t AliDalitzAODESD::GetPxPyPzG(Double_t* p) const{
+     Bool_t AliDalitzAODESD::GetConstrainedPxPyPzG(Double_t* p) const{
         if (fIsESD==kTRUE) return fESDtrack->GetConstrainedPxPyPz(p);//NOTE debe ir GetConstrainedParam
-        //else return fAODtrack->GetPxPyPz(p);
-        else return fAODtrack->PxPyPzAtDCA(p);
+        else return fAODtrack->GetPxPyPz(p);
+        //else return fAODtrack->PxPyPzAtDCA(p);
      };
      void AliDalitzAODESD::GetImpactParametersG(Float_t* p,Float_t* cov) const{
         p[0]=b[0];
@@ -147,5 +173,9 @@ ClassImp( AliDalitzAODESD )
     Double_t AliDalitzAODESD::GetDCAz(){
         return b[1];
     }
+       Bool_t AliDalitzAODESD::TestFilterBitG(UInt_t bit) const{
+        if (fIsESD==kTRUE) return kFALSE;//NOTE there is no FilterBit on ESD
+        else return fAODtrack->TestFilterBit(bit);
+     };
     
     

@@ -161,14 +161,20 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
   Bool_t selectPrimaries=kFALSE;
   fesdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 }
-//NOTE work here Edgar New function.
 Bool_t AliDalitzElectronCuts::AcceptedAODESDTrack(AliDalitzAODESD* aliaodtrack) {
-    if(!(aliaodtrack->GetDalitzAODTrack()->IsHybridGlobalConstrainedGlobal())){//GlobalConstrained
-      return kFALSE;
-    }
+     //if(!(aliaodtrack->GetDalitzAODTrack()->IsHybridGlobalConstrainedGlobal())){//GlobalConstrained
+     // return kFALSE;
+     //}
 
-     if((aliaodtrack->GetDalitzAODTrack()->IsGlobalConstrained())){//GlobalConstrained
-      return kFALSE;
+     //if((aliaodtrack->GetDalitzAODTrack()->IsGlobalConstrained())){//GlobalConstrained
+     // return kFALSE;
+     //}
+    UInt_t bit=256;
+    //NOTE FilterBit for AOD
+    //Tracks passing standard TPC+ITS cuts , SPD hit request and golden chi2 cut are marked as filter bit 256
+    //Need a version where AOD and ESD are the same, like Correlation code.
+    if(!aliaodtrack->TestFilterBitG(bit)) {
+        return kFALSE;
     }
 
     if(fUseCrossedRows){
@@ -451,9 +457,9 @@ Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliESDtrack* lTrack)
 ///________________________________________________________________________
 Bool_t AliDalitzElectronCuts::ElectronIsSelected(AliDalitzAODESD* lTrack)
 {
-    //cout<<"ElectronIsSelected Entro"<<endl;
+    //NOTE On ESD we only check if there are ConstrainedParam, we do not need the inputs of the vertex or magnetic field to calculate like AOD(there are already calculate), for that we use the GetParamG(0,0).
     if(lTrack->GetIsESD()){
-        if ( ! lTrack->GetParamG() ){
+        if ( ! lTrack->GetParamG(0,0)){
             return kFALSE;
           //  lTrack->IsHybridGlobalConstrainedGlobal();
         }
