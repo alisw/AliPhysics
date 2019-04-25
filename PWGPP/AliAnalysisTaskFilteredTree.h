@@ -182,6 +182,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   TTree* fLaserTree;        //! list send on output slot 0
   TTree* fMCEffTree;        //! list send on output slot 0
   TTree* fCosmicPairsTree;  //! list send on output slot 0
+  TH1F * fSelectedTracksMask;   //! histogram of the selected tracks
+  TH1F * fSelectedPIDMask;   //! histogram of the selected tracks
+  TH1F * fSelectedV0Mask;   //! histogram of the selected tracks
 
   TH3D* fPtResPhiPtTPC;    //! sigma(pt)/pt vs Phi vs Pt for prim. TPC tracks
   TH3D* fPtResPhiPtTPCc;   //! sigma(pt)/pt vs Phi vs Pt for prim. TPC contrained to vertex tracks

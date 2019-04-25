@@ -128,6 +128,9 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fLaserTree(0)
   , fMCEffTree(0)
   , fCosmicPairsTree(0)
+  , fSelectedTracksMask(0)   //! histogram of the selected tracks
+  , fSelectedPIDMask(0)   //! histogram of the selected tracks
+  , fSelectedV0Mask(0)       //! histogram of the selected V0s
   , fPtResPhiPtTPC(0)
   , fPtResPhiPtTPCc(0)
   , fPtResPhiPtTPCITS(0)
@@ -266,6 +269,10 @@ void AliAnalysisTaskFilteredTree::UserCreateOutputObjects()
   for (Int_t i=0;i<=nbinsCent;i++) {
     binsCent[i] = minCent + i*(maxCent-minCent)/nbinsCent;
   }
+  //
+  fSelectedTracksMask=new TH1F("selectedTracksMask","selectedTracksMask",32,0,32);
+  fSelectedPIDMask=new TH1F("selectedPIDMask","selectedPIDMask",32,0,32);
+  fSelectedV0Mask=new TH1F("selectedV0Mask","selectedV0Mask",64,0,64);
 
   fPtResPhiPtTPC = new TH3D("fPtResPhiPtTPC","pt rel. resolution from cov. matrix TPC tracks",nbinsPt,binsPt,nbinsPhi,binsPhi,nbins1PtRes,bins1PtRes);
   fPtResPhiPtTPCc = new TH3D("fPtResPhiPtTPCc","pt rel. resolution from cov. matrix TPC constrained tracks",nbinsPt,binsPt,nbinsPhi,binsPhi,nbins1PtRes,bins1PtRes);
@@ -283,6 +290,10 @@ void AliAnalysisTaskFilteredTree::UserCreateOutputObjects()
   fOutput = new TList; 
   if(!fOutput) return;
   fOutput->SetOwner();
+  fOutput->Add(fSelectedTracksMask);
+  fOutput->Add(fSelectedPIDMask);
+  fOutput->Add(fSelectedV0Mask);
+
 
   fOutput->Add(fPtResPhiPtTPC);
   fOutput->Add(fPtResPhiPtTPCc);
@@ -710,6 +721,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       ///    if( downscaleCounter>0 && TMath::Exp(2*scalempt)<downscaleF) continue;
       /// New code using flat pt and flat q/pt mixture
       Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
+      fSelectedTracksMask->Fill(selectionPtMask);
       if( downscaleCounter>0 && selectionPtMask==0) continue;
 
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
@@ -1014,6 +1026,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       /// New code using flat pt and flat q/pt mixture
       Int_t selectionPtMask=DownsampleTsalisCharged(track->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fChargedEffectiveMass);
       Int_t selectionPIDMask=PIDSelection(track);
+      fSelectedTracksMask->Fill(selectionPtMask);
+      fSelectedPIDMask->Fill(selectionPIDMask);
       if( downscaleCounter>0 && selectionPtMask==0 && selectionPIDMask==0) continue;
 
       //printf("TMath::Exp(2*scalempt) %e, downscaleF %e \n",TMath::Exp(2*scalempt), downscaleF);
@@ -2044,6 +2058,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       if (v0->Pt()<0.01) continue; ///TODO -THIS line should be used configured value
       //Int_t selectionPtMask=DownsampleTsalisCharged(v0->Pt(), 1./fLowPtTrackDownscaligF, 1/fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass);
       Int_t selectionPtMask=V0DownscaledMask(v0);
+      fSelectedV0Mask->Fill(selectionPtMask);
       if( downscaleCounter>0 && selectionPtMask==0) continue;
 
       AliKFParticle kfparticle; //
