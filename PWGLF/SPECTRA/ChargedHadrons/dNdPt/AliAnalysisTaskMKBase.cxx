@@ -145,6 +145,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fSigma1Pt(0)
     , fSigned1Pt(0)
     , f1Pt(0)
+    , fChargeSign(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -312,6 +313,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fSigma1Pt(0)
     , fSigned1Pt(0)
     , f1Pt(0)
+    , fChargeSign(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -850,6 +852,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
     fPt = fESDTrack->Pt();
     fEta = fESDTrack->Eta();
     fPhi = fESDTrack->Phi();
+    fChargeSign = fESDTrack->Charge();
     fESDTrack->GetImpactParameters(fDCA,fDCACov);
     fDCAr = fDCA[0];
     fDCAz = fDCA[1];

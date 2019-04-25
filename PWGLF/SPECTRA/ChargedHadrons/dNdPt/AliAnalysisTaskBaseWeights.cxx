@@ -125,6 +125,7 @@ void AliAnalysisTaskBaseWeights::LoopOverAllParticles(Int_t flag)
             s--;
         }
         if (s > 0) {
+            if (!fRand) { fRand = new TRandom3(); }
             fRand->SetSeed(GetSeed());
             if (fRand->Rndm() < s) { BaseAnaParticleMC(flag); }
         }        

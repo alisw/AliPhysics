@@ -178,7 +178,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         TString                         fFiredTriggerClasses;       //!<! all trigger classes as string                                     --ReadEvent()
         UInt_t                          fEventSpecie;               //!<! event specie                                                      --InitEvent()
         Double_t                        fOldCentPercentileV0M;      //!<! centrality percentile from old framework                          --InitEventCent()
-        Double_t                        fMultPercentileV0M;         //!<! centrality/multiplicity percentile from new framework             --InitEventMult()
+        Double_t                        fMultPercentileV0M;         //!<! centrality/multiplicity percentile from new framework             --InitEventMult()  
         Bool_t                          fIsAcceptedAliEventCuts;    //!<! accepted by AliEventCuts?                                         --InitEventChecks()
 
         const AliESDVertex*             fVtx;                       //!<! best available vertex                                             --InitEventVertex()
@@ -267,6 +267,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                        fSigma1Pt;                  //!<! sigma(1/pT)                                                       --InitTrack()
         Double_t                        fSigned1Pt;                 //!<! signed 1/pT                                                       --InitTrack()
         Double_t                        f1Pt;                       //!<! 1/pT                                                              --InitTrack()
+        Short_t                         fChargeSign;                //!<! Sign of the track charge                                          --InitTrack()
         
         AliMCParticle*                  fMCParticle;                //!<! mc particle                                                       --
         Int_t                           fMCLabel;                   //!<! mc label                                                          --
