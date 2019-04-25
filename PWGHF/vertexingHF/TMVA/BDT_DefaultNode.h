@@ -1,12 +1,12 @@
+#ifndef BDT_DefaultNode__def
+#define BDT_DefaultNode__def
+
 #include <vector>
 #include <cmath>
 #include <string>
 #include <iostream>
 
 #define NN new BDT_DefaultNode
-   
-#ifndef BDT_DefaultNode__def
-#define BDT_DefaultNode__def
    
 class BDT_DefaultNode {
    
@@ -56,14 +56,14 @@ private:
 }; 
    
 //_______________________________________________________________________
-   BDT_DefaultNode::~BDT_DefaultNode()
+inline BDT_DefaultNode::~BDT_DefaultNode()
 {
    if (fLeft  != NULL) delete fLeft;
    if (fRight != NULL) delete fRight;
 }; 
    
 //_______________________________________________________________________
-bool BDT_DefaultNode::GoesRight( const std::vector<double>& inputValues ) const
+inline bool BDT_DefaultNode::GoesRight( const std::vector<double>& inputValues ) const
 {
    // test event if it decends the tree at this node to the right
    bool result;
@@ -73,7 +73,7 @@ bool BDT_DefaultNode::GoesRight( const std::vector<double>& inputValues ) const
 }
    
 //_______________________________________________________________________
-bool BDT_DefaultNode::GoesLeft( const std::vector<double>& inputValues ) const
+inline bool BDT_DefaultNode::GoesLeft( const std::vector<double>& inputValues ) const
 {
    // test event if it decends the tree at this node to the left
    if (!this->GoesRight(inputValues)) return true;
