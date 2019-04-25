@@ -87,6 +87,7 @@
 #include "AliPIDResponse.h"
 #include "TVectorD.h"
 #include "TStatToolkit.h"
+#include "AliESDtools.h"
 using namespace std;
 
 ClassImp(AliAnalysisTaskFilteredTree)
@@ -341,6 +342,15 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   if (!inputHandler){
     return;
   }
+  /// Append and set AliESDools
+  if (!fESDtool) {
+    fESDtool = new AliESDtools();
+    fESDtool->SetStreamer(fTreeSRedirector);
+  }
+  fESDtool->Init(NULL,fESD);
+  fESDtool->CalculateEventVariables();
+
+  fESDtool->DumpEventVariables();
 
   //if set, use the environment variables to set the downscaling factors
   //AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
@@ -2399,8 +2409,10 @@ Bool_t AliAnalysisTaskFilteredTree::IsV0Downscaled(AliESDv0 *const v0)
 /// \return         - triggers mask based on the flat p, qpt spectra
 ///                   bit 0 - flat pt MB
 ///                   bit 1 - flat qpt MB
-///                   bit 2 - flat pt Gamma candidate
-///                   bit 3 - flat q/pt Gamma candidate
+///                   bit 2 - MB
+///                   bit 3 - flat pt Gamma candidate
+///                   bit 4 - flat q/pt Gamma candidate
+///                   bit 5 - MB gamma
 Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
 {
   //
@@ -2413,7 +2425,7 @@ Int_t AliAnalysisTaskFilteredTree::V0DownscaledMask(AliESDv0 *const v0)
   Double_t mass00=  v0->GetEffMass(0,0);
   Bool_t gammaCandidate= TMath::Abs(mass00-0)<cutGammaMass;
   if (gammaCandidate){
-    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), 10./fLowPtTrackDownscaligF, 10./fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass)*4;
+    Int_t selectionPtMaskGamma=DownsampleTsalisCharged(v0->Pt(), 10./fLowPtTrackDownscaligF, 10./fLowPtTrackDownscaligF, fSqrtS, fV0EffectiveMass)*8;
     selectionPtMask+=selectionPtMaskGamma;
   }
   return selectionPtMask;
@@ -3480,11 +3492,13 @@ Double_t AliAnalysisTaskFilteredTree::TsalisCharged(Double_t pt, Double_t mass, 
 /// \return trigger bitmask
 ///         bit 1 - flat pt   trigger
 ///         bit 2 - flat q/pt trigger
+///         bit 3 - MB trigger
 Int_t  AliAnalysisTaskFilteredTree::DownsampleTsalisCharged(Double_t pt, Double_t factorPt, Double_t factor1Pt, Double_t sqrts, Double_t mass){
   Double_t prob=TsalisCharged(pt,mass,sqrts)*pt;
   Double_t probNorm=TsalisCharged(1.,mass,sqrts);
   Int_t triggerMask=0;
   if (gRandom->Rndm()*prob/probNorm<factorPt) triggerMask|=1;
   if ((gRandom->Rndm()*((prob/probNorm)*pt*pt))<factor1Pt) triggerMask|=2;
+  if (gRandom->Rndm()<factorPt) triggerMask|=4;
   return triggerMask;
 }

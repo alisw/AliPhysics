@@ -10,12 +10,13 @@ class TH1F;
 class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDfriend;
+//class TVectorF;
 #include "TNamed.h"
 
 class AliESDtools : public TNamed {
   public:
   AliESDtools();
-  void Init(TTree* tree);
+  void Init(TTree* tree, AliESDEvent *event= nullptr);
   void SetStreamer(TTreeSRedirector *streamer){fStreamer=streamer;}
   static Double_t LoadESD(Int_t entry, Int_t verbose=0);
   /// caching
@@ -46,6 +47,7 @@ class AliESDtools : public TNamed {
   TTree *fESDtree;                                //! esd Tree pointer - class is not owner
   AliESDEvent * fEvent;                           //! esd event pointer - class is not owner
   AliPIDResponse   * fPIDResponse;                //! PID response object
+  Bool_t   fTaskMode;                             // analysis task mode
   TH1F *fHisTPCVertexA;                           // TPC z vertex A side
   TH1F *fHisTPCVertexC;                           // TPC z vertex C side
   TH1F *fHisTPCVertex;                            //

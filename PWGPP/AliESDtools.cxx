@@ -15,15 +15,16 @@
 ///////////////////////////////////////////////////////////////////////////
 /// \file AliESDtools.cxx
 /// \class AliESDtools
-/// \brief Set of tools to define derive ESD variables:
-/// \authors marian.ivanov@cern.ch 
-/// * Instance of the AliESDtools allow usage of functions in the TTree formulas
+/// \brief Set of tools to define derived ESD variables. To be used in the AnalysisTasks, but can be used also in the TTreeFormulas
+/// \authors marian.ivanov@cern.ch
+
+/// * Instance of the AliESDtools allow usage of functions in the TTree formulas.
 /// ** Cache information (e.g mean event properties)
 /// ** Set of static function to access pre-calculated variables 
 /// * enabling  ESD track functionality in TTree::Draw queries
 /// ** Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose)
 
-/// Example usage:
+/// Example usage for Tree queries mode (used e.g in N-Dimensional analysis pipeline):
 /*   
   /// 0.) Initialize tool e.g:
   tree = AliXRDPROOFtoolkit::MakeChainRandom("esd.list","esdTree",0,10)
@@ -78,6 +79,7 @@ AliESDtools::AliESDtools():
   fESDtree(nullptr),
   fEvent(nullptr),
   fPIDResponse(nullptr),               // PID response parametrization
+  fTaskMode(kFALSE),                   // switch - task mode
   fHisTPCVertexA(nullptr),
   fHisTPCVertexC(nullptr),
   fHisTPCVertex(nullptr),         // helper histogram phi counters
@@ -103,13 +105,23 @@ AliESDtools::AliESDtools():
 }
 
 /// Initialize tool - set ESD address and book histogram counters
-/// \param tree - input tree
-void AliESDtools::Init(TTree *tree) {
+/// \param tree       - input tree
+/// \param taskMode   - in task mode external event and trees are used AliESDtool not owner
+void AliESDtools::Init(TTree *tree, AliESDEvent *event) {
   AliESDtools & tools = *this;
-  delete tools.fESDtree;
-  if (!tools.fEvent) tools.fEvent = new AliESDEvent();
+  if (tools.fESDtree) {
+    delete tools.fESDtree;
+  }
+
   tools.fESDtree = tree;
-  tools.fEvent->ReadFromTree(tree);
+  if (event== nullptr) {
+    if (!tools.fEvent) tools.fEvent = new AliESDEvent();
+    tools.fEvent->ReadFromTree(tree);
+    fTaskMode=kFALSE;
+  }else{
+    tools.fEvent =event;
+    fTaskMode=kTRUE;
+  }
   if (fHisTPCVertexA == nullptr) {
     tools.fHisTPCVertexA = new TH1F("hisTPCZA", "hisTPCZA", 1000, -250, 250);
     tools.fHisTPCVertexC = new TH1F("hisTPCZC", "hisTPCZC", 1000, -250, 250);
@@ -451,6 +463,7 @@ void AliESDtools::ProcessITSTPCmatchOut(AliESDEvent *const esdEvent, AliESDfrien
 Int_t AliESDtools::CalculateEventVariables(){
   //AliVEvent *event=InputEvent();
   CacheTPCEventInformation();
+  CachePileupVertexTPC(fEvent->GetEventNumberInFile());
   //
   //
   const Int_t kNclTPCCut=60;
@@ -721,7 +734,7 @@ Int_t AliESDtools::CalculateEventVariables(){
 }
 
 /// Load ESD - used for the ESD event proper caching - to be executed as first action in TTree::Draw
-/// function is static
+/// function is static - NOT NEEDED  in task mode
 /// \param entry    - entry number
 /// \param verbose  - verbosity
 /// \return         - 1  - no load needed, 2 - reset event and load branches
@@ -738,11 +751,15 @@ Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose) {
   fgInstance->fEvent->ConnectTracks();
   return 2;
 }
-/// Find pile-up TPC vertex  - working for the PbPb
+/// Find (biggest) pile-up TPC vertex  - high eficiency for the PbPb - for pp should be still opimized
+/// Cache pileup vertex information into  fTPCVertexInfo
+/// \param entry
+/// \param verbose
+/// \return
 Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
   static Int_t oldEntry = -1;
   if (oldEntry != entry) {
-    LoadESD(entry);
+    if (!fTaskMode) LoadESD(entry);
     oldEntry = entry;
     Int_t nNumberOfTracks = fEvent->GetNumberOfTracks();
     const Int_t bufSize = 20000;
@@ -768,6 +785,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
         fHisTPCVertexC->Fill(track->GetZ());
       }
     }
+    (*fTPCVertexInfo)*=0;
     Double_t posZA = (counterP > 0) ? TMath::Median(counterP, bufferP) : 0;
     Double_t posZC = (counterM > 0) ? TMath::Median(counterM, bufferM) : 0;
     (*fTPCVertexInfo)[0] = posZA;
@@ -784,7 +802,8 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
 }
 
 
-//________________________________________________________________________
+/// DumpEvent varaibles ito the tree
+/// \return
 Int_t AliESDtools::DumpEventVariables() {
   if (fStreamer== nullptr) {
     ::Error("AliESDtools::DumpEventVariable","Streamer not set");
@@ -857,8 +876,6 @@ Int_t AliESDtools::DumpEventVariables() {
                      "bField="               << bField                   <<  // b field
                      "gid="                  << gid              <<  // global event ID
                      "timestamp="            << timeStamp             <<  // timestamp
-//                     "centV0M="              << fCentrality            <<  // centrality
-//                     "cent.="                << fCentralityEstimates   <<  // track counter
                      "vz="                   << fVz                    <<  // vertex Z
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
@@ -877,19 +894,14 @@ Int_t AliESDtools::DumpEventVariables() {
                      "trackChi2.="           << fCacheTrackChi2        <<  // Chi2 counter
                      "trackMatchEff.="       << fCacheTrackMatchEff    <<  // matching efficiency
                      "trackTPCCountersZ.="   << fCacheTrackTPCCountersZ    <<  // Chi2 counter
-//                     "hisTPCVertexA.="       << fHisTPCVertexA         <<  // TPC vertex z
-//                     "hisTPCVertexC.="       << fHisTPCVertexC         <<  // TPC vertex z
-//                     "hisTPCVertex.="        << fHisTPCVertex          <<  // TPC vertex z
-//                     "hisTPCVertexACut.="    << fHisTPCVertexACut      <<  // TPC vertex z
-//                     "hisTPCVertexCCut.="    << fHisTPCVertexCCut      <<  // TPC vertex z
-//                     "phiTPCdcarA.="         << fPhiTPCdcarA           <<  // track counter
-//                     "phiTPCdcarC.="         << fPhiTPCdcarC           <<  // dEdx counter
                      "phiCountA.="           << &phiCountA             <<  // TPC track count on A side
                      "phiCountC.="           << &phiCountC             <<  // TPC track count on C side
                      "phiCountAITS.="        << &phiCountAITS          <<  // track count fitted ITS on A side
                      "phiCountCITS.="        << &phiCountCITS          <<  // track count fitted ITS on C side
                      "phiCountAITSOnly.="    << &phiCountAITSOnly      <<  // track count only ITS on A side
                      "phiCountCITSOnly.="    << &phiCountCITSOnly      <<  // track count only ITS on C side
+                     //
+                     "tpcVertexInfo.="<<fTPCVertexInfo<<                   // TPC vertex information
                      "\n";
 
   return 0;
