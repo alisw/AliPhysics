@@ -65,12 +65,9 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
-  Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
-  Nuclei/DeuteronpA/AliAnalysisDeuteronTree.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
-  Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx

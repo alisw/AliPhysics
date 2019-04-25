@@ -40,16 +40,12 @@
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
-/// * DeuteronpA
-#pragma link C++ class AliAnalysisDeuteronpA+;
-#pragma link C++ class AliAnalysisDeuteronTree+;
 /// * He4
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
 /// * He4pp
 #pragma link C++ class AliAnalysisHe4+;
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
-#pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
 #pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
 #pragma link C++ class AliAnalysisTaskSignalLoss+;
 #pragma link C++ class RLightNucleus+;
