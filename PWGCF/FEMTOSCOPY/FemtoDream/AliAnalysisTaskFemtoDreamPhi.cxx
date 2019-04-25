@@ -9,6 +9,7 @@ ClassImp(AliAnalysisTaskFemtoDreamPhi)
     AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi()
     : AliAnalysisTaskSE(),
       fIsMC(false),
+      fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
       fTrack(),
@@ -29,6 +30,7 @@ AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi(const char *name,
                                                            bool isMC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
+      fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
       fTrack(),
@@ -54,7 +56,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
   fOutput->SetName("Output");
   fOutput->SetOwner();
 
-  fEvent = new AliFemtoDreamEvent(false, true, AliVEvent::kINT7);
+  fEvent = new AliFemtoDreamEvent(false, true, fTrigger);
   fOutput->Add(fEvent->GetEvtCutList());
 
   fTrack = new AliFemtoDreamTrack();

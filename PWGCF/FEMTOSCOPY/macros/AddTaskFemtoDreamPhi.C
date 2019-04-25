@@ -175,9 +175,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
   if (CentEst == "kInt7") {
+    task->SetTrigger(AliVEvent::kINT7);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     std::cout << "Added kINT7 Trigger \n";
   } else if (CentEst == "kHM") {
+    task->SetTrigger(AliVEvent::kHighMultV0);
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
     std::cout << "Added kHighMultV0 Trigger \n";
   } else {
