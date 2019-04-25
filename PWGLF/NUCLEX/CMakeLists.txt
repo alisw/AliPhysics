@@ -81,13 +81,6 @@ set(SRCS
   Nuclei/v2/AliAnalysisTaskAllPtcv2.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKineCor.cxx
-  Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
-  Utils/NuclexFilter/AliAODNuclExReplicator.cxx
-  Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilter.cxx
-  Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilterMC.cxx
-  Utils/NuclexFilter/AliAnalysisTaskReadNuclexAOD.cxx
-  Utils/RecoDecay/AliAODRecoDecayLF.cxx
-  Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx

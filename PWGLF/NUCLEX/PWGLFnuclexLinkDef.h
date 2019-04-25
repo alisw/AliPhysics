@@ -104,15 +104,6 @@
 #pragma link C++ class AliVertexerHyperTriton3Body+;
 
 /// Utils
-/// * RecoDecay
-#pragma link C++ class AliAODRecoDecayLF+;
-#pragma link C++ class AliAODRecoDecayLF2Prong+;
-/// * NuclexFilter
-#pragma link C++ class AliAODNuclExReplicator+;
-#pragma link C++ class AliAnalysisTaskESDNuclExFilter+;
-#pragma link C++ class AliAODMCNuclExReplicator+;
-#pragma link C++ class AliAnalysisTaskESDNuclExFilterMC+;
-#pragma link C++ class AliAnalysisTaskReadNuclexAOD+;
 /// * CODEX
 #pragma link C++ class AliAnalysisCODEX::Header+;
 #pragma link C++ class AliAnalysisCODEX::Track+;
