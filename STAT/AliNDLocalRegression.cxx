@@ -663,7 +663,8 @@ Bool_t AliNDLocalRegression::EvalAndDerivative(Double_t *point, Double_t &val, D
 
 Int_t  AliNDLocalRegression::GetVisualCorrectionIndex(const char *corName){
   //
-  return TMath::Hash(corName)%1000000;
+  return TMath::Hash(corName)%1000000;  /// BUGGY hash in the TMath
+  //return TString(corName).Hash()%1000000; /// also buggy - even more clashes
 }
 
     
