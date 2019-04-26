@@ -227,13 +227,9 @@ void AliReducedAnalysisSingleTrack::RunTrackSelection() {
     // reset track variables
     for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i] = -9999.;
     
-    if (fOptionRunOverCaloCluster)  {
-      AliReducedVarManager::FillTrackInfo(track, fValues);
-      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters, fClusterTrackMatcher);
-    } else{
-      AliReducedVarManager::FillTrackInfo(track, fValues);
-      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
-    }
+    AliReducedVarManager::FillTrackInfo(track, fValues);
+    if (fClusterCuts.GetEntries())  AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters, fClusterTrackMatcher);
+    else                            AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, NULL, fClusterTrackMatcher);
     fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
     
     if (track->IsA() == AliReducedTrackInfo::Class()) {
@@ -283,13 +279,9 @@ void AliReducedAnalysisSingleTrack::FillTrackHistograms(TString trackClass/*="Tr
     // reset track variables
     for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i] = -9999.;
     
-    if (fOptionRunOverCaloCluster)  {
-      AliReducedVarManager::FillTrackInfo(track, fValues);
-      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters, fClusterTrackMatcher);
-    } else{
-      AliReducedVarManager::FillTrackInfo(track, fValues);
-      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
-    }
+    AliReducedVarManager::FillTrackInfo(track, fValues);
+    if (fClusterCuts.GetEntries())  AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters, fClusterTrackMatcher);
+    else                            AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, NULL, fClusterTrackMatcher);
     FillTrackHistograms(track, trackClass);
   }
 
