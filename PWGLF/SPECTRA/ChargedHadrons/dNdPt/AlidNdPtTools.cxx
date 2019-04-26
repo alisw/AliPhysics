@@ -468,8 +468,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
         cuts->SetMaxChi2PerClusterTPC(4);
-        cuts->SetMaxFractionSharedTPCClusters(0.4);
-        cuts->SetMaxDCAToVertexXY(3.0);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);        
         cuts->SetRequireITSRefit(kTRUE);
         cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
         cuts->SetMaxChi2PerClusterITS(36.);
