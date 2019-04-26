@@ -112,7 +112,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fMCyv(0)
     , fMCzv(0)
     , fMultMB(-1)
+    , fMultV0A(-1)
+    , fMultV0C(-1)
     , fMultV0M(-1)
+    , fMultV0MmultSelection(-1)
     , fMCb(-1)
     , fMCnPrimPtCut(-1)
     , fMCnPrim10(-1)
@@ -280,7 +283,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fMCyv(0)
     , fMCzv(0)
     , fMultMB(-1)
+    , fMultV0A(-1)
+    , fMultV0C(-1)
     , fMultV0M(-1)
+    , fMultV0MmultSelection(-1)
     , fMCb(-1)
     , fMCnPrimPtCut(-1)
     , fMCnPrim10(-1)
@@ -839,8 +845,15 @@ Bool_t AliAnalysisTaskMKBase::InitEventVZERO()
     fVZERO = fESD->GetVZEROData();
     if (!fVZERO) { 
         Log("noVZEROData");
+        fMultV0A = -1;
+        fMultV0C = -1;
+        fMultV0M = -1;
         return kFALSE;
-    }
+    }    
+    fMultV0A = fVZERO->GetMTotV0A();    
+    fMultV0C = fVZERO->GetMTotV0C();
+    fMultV0M = fMultV0A+fMultV0C;
+    
     return kTRUE;
 }
 
@@ -998,28 +1011,9 @@ Bool_t AliAnalysisTaskMKBase::InitEventVertex()
         LogEvent("PrimVtxTPC==0");
     }
     
-    fUsedVtxTRK = kFALSE;
-    fUsedVtxSPD = kFALSE;
-    fUsedVtxTPC = kFALSE;
-    
-    if (fVtxStatusTRK) {        
-        fVtx = fVtxTRK;           
-        fUsedVtxTRK = kTRUE;
-        LogEvent("usedVertexTRK");
-    } else if (fVtxStatusSPD) {
-        fVtx = fVtxSPD;            
-        fUsedVtxSPD = kTRUE;
-        LogEvent("usedVertexSPD");
-    } else if (fVtxStatusTPC) {        
-        fVtx = fVtxTPC;        
-        fUsedVtxTPC = kTRUE;
-        LogEvent("usedVertexTPC");
-    } else {
-        fVtx = 0; 
-        Log("noPrimVtx");
-    }
-    
-    // fill vertex information if there is a vertex    
+    // get best available vertex accorind to aliesdevent
+    fVtx = fESD->GetPrimaryVertex();
+    fVtxStatus = kFALSE;
     if (fVtx) { 
         fVtxNContrib = fVtx->GetNContributors();
         fXv = fVtx->GetX();
@@ -1030,11 +1024,20 @@ Bool_t AliAnalysisTaskMKBase::InitEventVertex()
         fZvRes = fVtx->GetZRes();        
         fVtxStatus = fVtx->GetStatus();
         fVtxDispersion = fVtx->GetDispersion();
+        if (!fVtxStatus) { LogEvent("noGoodVertex"); }
     } else {
-        fVtxStatus = kFALSE;
-        fVtxNContrib = 0;        
+        LogEvent("PrimVtx==0");
     }
     
+    
+    fUsedVtxTRK = (fVtx == fVtxTRK);
+    fUsedVtxSPD = (fVtx == fVtxSPD);
+    fUsedVtxTPC = (fVtx == fVtxTPC);
+   
+    if (fUsedVtxTRK) { LogEvent("usedVertexTRK"); }
+    if (fUsedVtxSPD) { LogEvent("usedVertexSPD"); }
+    if (fUsedVtxTPC) { LogEvent("usedVertexTPC"); }
+            
     fMultMB = fVtxNContrib;
     fHasVertex = fVtxStatus; //fHasVertex is only an alias
     return kTRUE;

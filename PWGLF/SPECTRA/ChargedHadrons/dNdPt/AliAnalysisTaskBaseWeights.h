@@ -68,7 +68,7 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         AliAnalysisTaskBaseWeights& operator=(const AliAnalysisTaskBaseWeights&); // not implemented
         
     /// \cond CLASSIMP    
-        ClassDef(AliAnalysisTaskBaseWeights, 1);
+        ClassDef(AliAnalysisTaskBaseWeights, 2);
     /// \endcond        
 };
 
