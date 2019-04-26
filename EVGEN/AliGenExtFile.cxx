@@ -221,6 +221,9 @@ void AliGenExtFile::Generate()
              jparticle->GetSecondMother(),
              KinematicSelection(jparticle,0));
     	}
+       else{
+	     AliWarning(Form("Particle %d = NULL",i));
+       }
     }       
     selector.reselectCuttedMothersAndRemapIDs();
     fReader->RewindEvent();

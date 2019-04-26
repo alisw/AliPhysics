@@ -100,6 +100,9 @@ Int_t AliGenReaderHepMC::NextEvent()
 		particle->SetProductionVertex(particle->Vx(), particle->Vy(), particle->Vz(),
 					 particle->T() * conv);
 	   }
+	   else{
+		AliWarning(Form("Particle %d = NULL",i));
+	   }
       }
       fParticleIterator->Reset();
       //
