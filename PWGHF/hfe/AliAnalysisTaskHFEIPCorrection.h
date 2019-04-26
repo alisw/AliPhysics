@@ -82,6 +82,10 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH2D * fpTIP3050OOP;
   TH3D * fPionV0pTRNoCuts;
   TH3D * fPionV0pTRWithCuts;
+  TH3D * fPionV0pTRNoCutsIP;
+  TH3D * fPionV0pTRWithCutsIP;
+  TH3D * fPionV0pTRNoCutsOOP;
+  TH3D * fPionV0pTRWithCutsOOP;
   TH2D * fPionV0pTTPC;
   TH2D * fPionV0pTTPCWithCuts;
 
