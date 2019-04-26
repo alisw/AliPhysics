@@ -296,7 +296,7 @@ void AliJetTreeHandler::SetJetConstituentVariables(const AliVParticle* track)
 void AliJetTreeHandler::SetJetLabels()
 {
   // Reset all labels
-  for (auto jet : fJetContainer->accepted()) {
+  for (auto jet : fJetContainer->all()) {
     jet->SetLabel(999);
   }
 
