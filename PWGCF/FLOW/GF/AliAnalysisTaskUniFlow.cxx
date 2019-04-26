@@ -163,6 +163,9 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fCentMin{0},
   fCentMax{0},
   fCentBinNum{0},
+  fCentEstimatorAdd{kRFP},
+  fCentMinAdd{0},
+  fCentMaxAdd{0},
   fPVtxCutZ{10.0},
   fEventRejectAddPileUp{kFALSE},
   fCutChargedTrackFilterBit{96},
@@ -426,6 +429,9 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fCentMin{0},
   fCentMax{0},
   fCentBinNum{0},
+  fCentEstimatorAdd{kRFP},
+  fCentMinAdd{0},
+  fCentMaxAdd{0},
   fPVtxCutZ{10.0},
   fEventRejectAddPileUp{kFALSE},
   fCutChargedTrackFilterBit{96},
@@ -754,6 +760,9 @@ void AliAnalysisTaskUniFlow::ListParameters() const
   printf("      fCentMin: (Int_t) %d\n",    fCentMin);
   printf("      fCentMax: (Int_t) %d\n",    fCentMax);
   printf("      fCentBinNum: (Int_t) %d\n",    fCentBinNum);
+  printf("      fCentEstimatorAdd: (CentEst) '%s' (%d)\n",    GetCentEstimatorLabel(fCentEstimatorAdd), fCentEstimatorAdd);
+  printf("      fCentMinAdd: (Int_t) %d\n",    fCentMinAdd);
+  printf("      fCentMaxAdd: (Int_t) %d\n",    fCentMaxAdd);
   printf("      fPVtxCutZ: (Double_t) %g (cm)\n",    fPVtxCutZ);
   printf("   -------- Charged tracks --------------------------------------\n");
   printf("      fCutChargedTrackFilterBit: (UInt) %d\n",    fCutChargedTrackFilterBit);
@@ -1073,14 +1082,23 @@ void AliAnalysisTaskUniFlow::UserExec(Option_t *)
 
   // checking if there is at least 5 particles: needed to "properly" calculate correlations
   if(fVector[kRefs]->size() < 5) { return; }
-  fhEventCounter->Fill("#RPFs OK",1);
 
   // estimate centrality & assign indexes (centrality/percentile, sampling, ...)
-  fIndexCentrality = GetCentralityIndex();
-  if(fIndexCentrality < 0) { return; }
-  if(fCentMin > 0 && fIndexCentrality < fCentMin) { return; }
-  if(fCentMax > 0 && fIndexCentrality > fCentMax) { return; }
-  fhEventCounter->Fill("Cent/Mult OK",1);
+  if(fCentEstimator == kRFP) {
+      fIndexCentrality = GetCentralityIndex(fCentEstimator);
+      if(fIndexCentrality < 0) { return; }
+
+      if(fCentMin > 0 && fIndexCentrality < fCentMin) { return; }
+      if(fCentMax > 0 && fIndexCentrality > fCentMax) { return; }
+  }
+
+  if(fCentMaxAdd > 0 && fCentMinAdd > 0 && fCentEstimatorAdd == kRFP) {
+    Int_t addCent = GetCentralityIndex(fCentEstimatorAdd);
+    if(addCent < fCentMinAdd) { return; }
+    if(addCent > fCentMaxAdd) { return; }
+  }
+
+  fhEventCounter->Fill("#RPFs OK",1);
 
   // here events are selected
   fhEventCounter->Fill("Selected",1);
@@ -1188,6 +1206,24 @@ Bool_t AliAnalysisTaskUniFlow::IsEventSelected()
 
   // Additional pile-up rejection cuts for LHC15o dataset
   if(fColSystem == kPbPb && fEventRejectAddPileUp && IsEventRejectedAddPileUp()) { return kFALSE; }
+
+  // estimate centrality & assign indexes (only if AliMultEstimator is requested)
+  if(fCentEstimator != kRFP) {
+      fIndexCentrality = GetCentralityIndex(fCentEstimator);
+
+      if(fIndexCentrality < 0) { return kFALSE; }
+      if(fCentMin > 0 && fIndexCentrality < fCentMin) { return kFALSE; }
+      if(fCentMax > 0 && fIndexCentrality > fCentMax) { return kFALSE; }
+  }
+
+  // additional centrality cut for "double differential" cut
+  if(fCentEstimatorAdd != kRFP && fCentMaxAdd > 0) {
+    Int_t addCentIndex = GetCentralityIndex(fCentEstimatorAdd);
+    if(addCentIndex < fCentMinAdd) { return kFALSE; }
+    if(addCentIndex > fCentMaxAdd) { return kFALSE; }
+  }
+
+  fhEventCounter->Fill("Cent/Mult OK",1);
 
   return kTRUE;
 }
@@ -3227,7 +3263,7 @@ Int_t AliAnalysisTaskUniFlow::GetSamplingIndex() const
   return index;
 }
 // ============================================================================
-Int_t AliAnalysisTaskUniFlow::GetCentralityIndex() const
+Int_t AliAnalysisTaskUniFlow::GetCentralityIndex(CentEst est) const
 {
   // Estimating centrality percentile based on selected estimator.
   // (Default) If no multiplicity estimator is specified, percentile is estimated as number of selected / filtered charged tracks (NRFP).
@@ -3237,7 +3273,7 @@ Int_t AliAnalysisTaskUniFlow::GetCentralityIndex() const
   Int_t iCentralityIndex = -1;
 
   // assigning centrality based on number of selected charged tracks
-  if(fCentEstimator == kRFP) {
+  if(est == kRFP) {
       iCentralityIndex = fVector[kRefs]->size();
   } else {
     AliMultSelection* multSelection = (AliMultSelection*) fEventAOD->FindListObject("MultSelection");
@@ -3246,7 +3282,7 @@ Int_t AliAnalysisTaskUniFlow::GetCentralityIndex() const
       return -1;
     }
 
-    Float_t dPercentile = multSelection->GetMultiplicityPercentile(GetCentEstimatorLabel(fCentEstimator));
+    Float_t dPercentile = multSelection->GetMultiplicityPercentile(GetCentEstimatorLabel(est));
     if(dPercentile > 100 || dPercentile < 0) {
       AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1");
       return -1;
