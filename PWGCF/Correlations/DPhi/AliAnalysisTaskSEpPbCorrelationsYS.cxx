@@ -1177,10 +1177,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        ndetatpcfmd=33;
        nfmdbin=17;
      }
-     Double_t binning_pt_fmdtpc[4]={0.3,0.8,4.,8.};
-       
+     //     Double_t binning_pt_fmdtpc[4]={0.3,0.8,4.,8.};
+     Double_t binning_pt_fmdtpc[2]={0.,8.};
      const Double_t binning_cent_fmdfmd[9]={0.,5.,10.,20.,40.,60.,70,80.,100.1};
-     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,3,nfmdbin,8,72,10,2};
+     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,1,nfmdbin,8,72,10,4};
      fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 7, iTrackBin_tpcfmd);
      fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, 7,iTrackBin_tpcfmd);
      if(fAnaMode=="TPCFMD") {
