@@ -448,7 +448,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int mult = -1 + 2 * iC;
       if (pdg != fPDG) continue;
       if (fPtShape) {
-        if (gRandom->Uniform(0, fPtShapeMaximum) > fPtShape->Eval(part->Pt())) {
+        if (part->IsPhysicalPrimary() && gRandom->Uniform(0, fPtShapeMaximum) > fPtShape->Eval(part->Pt())) {
           fRejectedParticles.push_back(iMC);
           continue;
         }
