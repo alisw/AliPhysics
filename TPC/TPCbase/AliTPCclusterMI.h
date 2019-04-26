@@ -70,6 +70,12 @@ public:
   AliTPCclusterMI*  MakeCluster(AliTrackPoint* point);
   AliTrackPoint*    MakePoint();
   static void     SetGlobalTrackPoint(const AliCluster &cl, AliTrackPoint &point);
+  void SetBaselineTail(Float_t tail){fBaselineTail=tail;}
+  void SetBaselineTailPos(Float_t tail){fBaselineTailPos=tail;}
+  void SetBaselineCrosstalk(Float_t crosstalk){fBaselineCrosstalk=crosstalk;}
+  Float_t GetBaselineTail(){return fBaselineTail;}
+  Float_t GetBaselineTailPos(){return fBaselineTailPos;}
+  Float_t GetBaselineCrosstalk(){return fBaselineCrosstalk;}
 
  protected:
   enum{ // constants for storing x,y,z distortion in AliCluster::fSigmaYZ 
@@ -94,8 +100,11 @@ private:
   UChar_t   fDisp;     ///< dispersion of applied correction
   UChar_t   fDetector; ///< detector  number
   UChar_t   fRow;      ///< row number number
+  Float_t   fBaselineTailPos;  /// baseline shift due ion tail positive
+  Float_t   fBaselineTail;  /// baseline shift due ion tail negative
+  Float_t   fBaselineCrosstalk;  /// baseline shift due crosstalk
   /// \cond CLASSIMP
-  ClassDef(AliTPCclusterMI,7)  // Time Projection Chamber clusters
+  ClassDef(AliTPCclusterMI,9)  // Time Projection Chamber clusters
   /// \endcond
 };
 

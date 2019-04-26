@@ -48,7 +48,10 @@ AliTPCclusterMI::AliTPCclusterMI():
   fUsed(0),     //counter of usage
   fDisp(0),     /// dispersion of applied correction
   fDetector(0), //detector  number
-  fRow(0)      //row number number
+  fRow(0),      //row number number
+  fBaselineTailPos(0),  /// baseline shift due ion tail
+  fBaselineTail(0),  /// baseline shift due ion tail
+  fBaselineCrosstalk(0)  /// baseline shift due crosstalk
 {
   //
   // default constructor
@@ -66,7 +69,10 @@ AliTPCclusterMI::AliTPCclusterMI(const AliTPCclusterMI & cluster):
   fUsed(cluster.fUsed),
   fDisp(cluster.fDisp),
   fDetector(cluster.fDetector),
-  fRow(cluster.fRow)
+  fRow(cluster.fRow),
+  fBaselineTailPos(cluster.fBaselineTailPos),  /// baseline shift due ion tail
+  fBaselineTail(cluster.fBaselineTail),  /// baseline shift due ion tail
+  fBaselineCrosstalk(cluster.fBaselineCrosstalk)  /// baseline shift due crosstalk
 {
   /// copy constructor
 
