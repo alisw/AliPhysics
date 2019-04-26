@@ -232,7 +232,10 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         Double_t                        fMCyv;                      //!<! mc truth y vertex position                                        --InitMCEvent() 
         Double_t                        fMCzv;                      //!<! mc truth z vertex position                                        --InitMCEvent() 
         Int_t                           fMultMB;                    //!<! MinBias Multiplicity (no of contributers to vertex)               --InitEventVertex()
-        Double_t                        fMultV0M;                   //!<! v0a + v0c                                                         --
+        Double_t                        fMultV0A;                   //!<! v0a amplitude                                                     --InitEventVZERO()
+        Double_t                        fMultV0C;                   //!<! v0c amplitude                                                     --InitEventVZERO()
+        Double_t                        fMultV0M;                   //!<! v0a + v0c ampliude                                                --InitEventVZERO()
+        Double_t                        fMultV0MmultSelection;      //!<! v0a + v0c ampliude as used in AliMultSelection                    --
         Double_t                        fMCb;                       //!<! impact parameter in MC                                            --
         Int_t                           fMCnPrimPtCut;              //!<! ch. prim. particles according to mario def (eta<0.8, pt>150 MeV)  --InitMCEvent() 
         Int_t                           fMCnPrim10;                 //!<! ch. prim. particles according to mc in eta<1.0                    --InitMCEvent() 
@@ -330,7 +333,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         
     /// \cond CLASSIMP      
-    ClassDef(AliAnalysisTaskMKBase, 4);
+    ClassDef(AliAnalysisTaskMKBase, 5);
     /// \endcond
     
 };
