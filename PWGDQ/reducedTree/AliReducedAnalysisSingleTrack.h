@@ -44,7 +44,7 @@ public:
   void AddMCSignalCut(AliReducedInfoCut* cut) {if (fMCSignalCuts.GetEntries()>=32) return; fMCSignalCuts.Add(cut);}
   void SetRunOverMC(Bool_t option) {fOptionRunOverMC = option;}
   void SetRunOverCaloCluster(Bool_t option) {fOptionRunOverCaloCluster = option;}
-  void SetClusterTrackMatcher(AliReducedCaloClusterTrackMatcher* matcher) { fClusterTrackMatcher = matcher; fOptionRunOverCaloCluster = kTRUE; }
+  void SetClusterTrackMatcher(AliReducedCaloClusterTrackMatcher* matcher) {fClusterTrackMatcher = matcher;}
 
   //getters
   virtual AliHistogramManager*  GetHistogramManager() const {return fHistosManager;}
