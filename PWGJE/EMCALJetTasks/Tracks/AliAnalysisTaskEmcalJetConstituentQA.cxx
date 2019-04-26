@@ -91,7 +91,7 @@ AliAnalysisTaskEmcalJetConstituentQA::~AliAnalysisTaskEmcalJetConstituentQA(){
 void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  TLinearBinning binningz(50, 0., 1), multbinning(51, -0.5, 50.5), binningnef(50, 0., 1.), binningR(50, 0., 0.5), binningptconst(200, 0., 200.), binningptjet(20, 0., 200.),
+  TLinearBinning binningz(50, 0., 1), multbinning(51, -0.5, 50.5), binningnef(50, 0., 1.), binningR(50, 0., 0.5), binningptconst(300, 0., 300.), binningptjet(30, 0., 300.),
                  binningNCell(101, -0.5, 100.5), binningFracCellLeading(100, 0., 1.), binningM02(100, 0., 1.), etabinning(100, -0.8, 0.8), phibinning(100, 0., TMath::TwoPi());
 
   const TBinning *jetbinning[4] = {&binningptjet, &binningnef, &multbinning, &multbinning},
@@ -100,6 +100,7 @@ void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
                  *binningHighZClusters[7] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningNCell, &binningFracCellLeading, &binningM02},
                  *leadingchargedbinning[5] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningR},
                  *leadingneutralbinning[6] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningR, &binningptconst},
+                 *leadingcellbinning[4] = {&binningptjet, &binningnef, &binningptconst, &binningptconst},
                  *leadingjetvecbinning[4] = {&binningptjet, &etabinning, &phibinning, &binningptjet};
 
   fHistos = new THistManager(Form("histos_%s", GetName()));
@@ -117,6 +118,7 @@ void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
       fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 9, neutralbinning);
       fHistos->CreateTHnSparse(Form("hHighZClusters%s", contname->String().Data()), "Properties of high-z clusters", 7, binningHighZClusters);
       fHistos->CreateTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 6, leadingneutralbinning);
+      fHistos->CreateTHnSparse(Form("hLeadingCell%s", contname->String().Data()), Form("Leading cell in jets %s", contname->String().Data()), 4, leadingcellbinning);
       fHistos->CreateTHnSparse(Form("hLeadingJetLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 6, leadingneutralbinning);
     }
   }
@@ -219,6 +221,13 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
           memcpy(fracamp.data(), leadingcluster->GetCellsAmplitudeFraction(), sizeof(double) * leadingcluster->GetNCells());
           double lclusterpoint[6] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), jet->GetZ(pvect.Px(), pvect.Py(), pvect.Pz()), jetvec.DeltaR(pvect.Vect()), std::abs(leadingcluster->E() * (*std::max_element(fracamp.begin(), fracamp.end())))};
           fHistos->FillTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), lclusterpoint);
+          double leadingCellE = 0.;
+          for(auto icell = 0; icell < leadingcluster->GetNCells(); icell++) {
+            auto ecell = fCaloCells->GetAmplitude(leadingcluster->GetCellAbsId(icell));
+            if(ecell > leadingCellE) leadingCellE = ecell;
+          }
+          double cellpoint[4] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), leadingCellE};
+          fHistos->FillTHnSparse(Form("hLeadingCell%s", contname->String().Data()), cellpoint);
         }
       }
     }
