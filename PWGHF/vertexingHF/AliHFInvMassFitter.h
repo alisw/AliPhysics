@@ -42,9 +42,9 @@ class AliHFInvMassFitter : public TNamed {
     fTypeOfFit4Bkg=fittypeb; fTypeOfFit4Sgn=fittypes;
     SetNumberOfParams();
   }
-    void     SetSigmaLimit(Double_t sigmaVar, Double_t sigmalimit){
-      fSigmaVar=sigmaVar; fParSig=sigmalimit;
-    } 
+  void     SetSigmaLimit(Double_t sigmaVar, Double_t sigmalimit){
+    fSigmaVar=sigmaVar; fParSig=sigmalimit;
+  } 
 
   void SetUseLikelihoodFit(){fFitOption="L,E";}
   void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
@@ -73,7 +73,8 @@ class AliHFInvMassFitter : public TNamed {
   void SetBoundGaussianSigma(Double_t sigma, Double_t sigmalimit){
     SetInitialGaussianSigma(sigma);
     SetSigmaLimit(sigma, sigmalimit);
-    fBoundSigma=kTRUE;//fFitOption="L,E,B";
+    fBoundSigma=kTRUE;
+    fFitOption="L,E,B";
   }
   void SetFixSecondGaussianSigma(Double_t sigma){
     if(fTypeOfFit4Sgn!=k2Gaus) AliFatal("fTypeOfFit4Sgn should be set to k2Gaus to fix ratio between gaussians\n");
@@ -147,7 +148,7 @@ class AliHFInvMassFitter : public TNamed {
   }
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t nSigma=3., Int_t option=0, Int_t pdgCode=0) const;
   Double_t GetRawYieldBinCounting(Double_t& errRyBC, Double_t minMass, Double_t maxMass, Int_t option=0) const;
-  Int_t   MassFitter(Bool_t draw=kTRUE);
+  Int_t    MassFitter(Bool_t draw=kTRUE);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
   Double_t FitFunction4Refl(Double_t *x,Double_t *par);
@@ -171,14 +172,14 @@ class AliHFInvMassFitter : public TNamed {
   AliHFInvMassFitter& operator=(const AliHFInvMassFitter& source); 
 
   void  SetNumberOfParams();
-  Double_t  CheckForSignal(Double_t mean, Double_t sigma);
-  TF1*  CreateBackgroundFitFunction(TString fname, Double_t integral);
-  TF1*  CreateSignalFitFunction(TString fname, Double_t integral);
-  TF1*  CreateSecondPeakFunction(TString fname, Double_t integral);
-  TF1* CreateReflectionFunction(TString fname);
-  TF1* CreateBackgroundPlusReflectionFunction(TString fname);
-  TF1* CreateTotalFitFunction(TString fname);
-  Bool_t PrepareHighPolFit(TF1 *fback);
+  Double_t CheckForSignal(Double_t mean, Double_t sigma);
+  TF1*	   CreateBackgroundFitFunction(TString fname, Double_t integral);
+  TF1*	   CreateSignalFitFunction(TString fname, Double_t integral);
+  TF1*	   CreateSecondPeakFunction(TString fname, Double_t integral);
+  TF1*	   CreateReflectionFunction(TString fname);
+  TF1*	   CreateBackgroundPlusReflectionFunction(TString fname);
+  TF1*	   CreateTotalFitFunction(TString fname);
+  Bool_t   PrepareHighPolFit(TF1 *fback);
   Double_t BackFitFuncPolHelper(Double_t *x,Double_t *par);
 
   void DrawFit();
@@ -237,7 +238,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fTotFunc;              /// total fit function
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,5); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,6); /// class for invariant mass fit
   /// \endcond
 };
 
