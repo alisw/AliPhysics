@@ -80,6 +80,7 @@ public:
   Bool_t GetLoopOverTracks() const {return fOptionLoopOverTracks;}
   Bool_t GetRunPrefilter() const {return fOptionRunPrefilter;}
   Bool_t GetStoreJpsiCandidates() const {return fOptionStoreJpsiCandidates;}
+  Bool_t GetFillCaloClusterHistograms() const {return fFillCaloClusterHistograms;}
   Int_t GetNLegCandidateMCcuts() const {return fLegCandidatesMCcuts.GetEntries();}
   const Char_t* GetLegCandidateMCcutName(Int_t i) const {return (i<fLegCandidatesMCcuts.GetEntries() ? fLegCandidatesMCcuts.At(i)->GetName() : "");}
   Int_t GetNJpsiMotherMCCuts() const {return fJpsiMotherMCcuts.GetEntries();}
@@ -166,7 +167,7 @@ protected:
   Bool_t fSkipMCEvent;          // decision to skip MC event
   TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,10);
+  ClassDef(AliReducedAnalysisJpsi2ee,11);
 };
 
 #endif
