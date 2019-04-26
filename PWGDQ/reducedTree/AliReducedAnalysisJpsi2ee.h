@@ -13,6 +13,7 @@
 #include "AliReducedBaseTrack.h"
 #include "AliReducedTrackInfo.h"
 #include "AliReducedCaloClusterInfo.h"
+#include "AliReducedCaloClusterTrackMatcher.h"
 #include "AliHistogramManager.h"
 #include "AliMixingHandler.h"
 
@@ -51,6 +52,7 @@ public:
   void SetStoreJpsiCandidates(Bool_t option) {fOptionStoreJpsiCandidates = option;}
   void SetMCJpsiPtWeights(TH1F* weights) {fMCJpsiPtWeights = weights;}
   void SetFillCaloClusterHistograms(Bool_t option) {fFillCaloClusterHistograms = option;}
+  void SetClusterTrackMatcher(AliReducedCaloClusterTrackMatcher* matcher) {fClusterTrackMatcher = matcher;}
 
   void AddLegCandidateMCcut(AliReducedInfoCut* cut, Bool_t sameMother=kTRUE) {
      if(fLegCandidatesMCcuts.GetEntries()>=32) return;
@@ -66,6 +68,7 @@ public:
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   virtual AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
+  virtual AliReducedCaloClusterTrackMatcher* GetClusterTrackMatcher() const {return fClusterTrackMatcher;}
   Int_t GetNClusterCuts() const {return fClusterCuts.GetEntries();}
   const Char_t* GetClusterCutName(Int_t i) const {return (i<fClusterCuts.GetEntries() ? fClusterCuts.At(i)->GetName() : "");}
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
@@ -83,8 +86,9 @@ public:
   const Char_t* GetJpsiMotherMCcutName(Int_t i) const {return (i<fJpsiMotherMCcuts.GetEntries() ? fJpsiMotherMCcuts.At(i)->GetName() : "");}
   
 protected:
-   AliHistogramManager* fHistosManager;   // Histogram manager
-   AliMixingHandler*         fMixingHandler;    // mixing handler
+   AliHistogramManager*               fHistosManager;       // Histogram manager
+   AliMixingHandler*                  fMixingHandler;       // mixing handler
+   AliReducedCaloClusterTrackMatcher* fClusterTrackMatcher; // cluster-track matcher
    
    Bool_t fOptionRunMixing;    // true: run event mixing, false: no event mixing
    Bool_t fOptionRunPairing;    // true: run pairing, false: only apply the track cuts
@@ -155,10 +159,14 @@ protected:
   void FillClusterHistograms(AliReducedCaloClusterInfo* cluster, TString clusterClass="CaloCluster");
   void FillMCTruthHistograms();
 
+  TList*  fClusterTrackMatcherHistograms;             // list of cluster-track matcher histograms
+  TH1I*   fClusterTrackMatcherMultipleMatchesBefore;  // multiple matches of tracks to same cluster before matching
+  TH1I*   fClusterTrackMatcherMultipleMatchesAfter;   // multiple matches of tracks to same cluster after matching
+
   Bool_t fSkipMCEvent;          // decision to skip MC event
   TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,9);
+  ClassDef(AliReducedAnalysisJpsi2ee,10);
 };
 
 #endif
