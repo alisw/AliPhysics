@@ -53,6 +53,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fListCuts(0x0),
   fHistNEvents(0x0),
   fHistEventMultCent(0x0),
+  fHistEventMultCentEvSel(0x0),
   fHistEventMultZv(0x0),
   fHistEventMultZvEvSel(0x0),
   fHistTrackStatus(0x0),
@@ -155,6 +156,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fListCuts(0x0),
   fHistNEvents(0x0),
   fHistEventMultCent(0x0),
+  fHistEventMultCentEvSel(0x0),
   fHistEventMultZv(0x0),
   fHistEventMultZvEvSel(0x0),
   fHistTrackStatus(0x0),
@@ -263,6 +265,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistEventMultCent;
+    delete fHistEventMultCentEvSel;
     delete fHistEventMultZv;
     delete fHistEventMultZvEvSel;
     delete fHistTrackStatus;
@@ -369,13 +372,16 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
 
-  fHistEventMultCent = new TH2F("hEventMultCent","",100,0.,100.,200,fMinMultiplicity,fMaxMultiplicity);
+  fHistEventMultCent = new TH2F("hEventMultCent"," ; Centrality (V0M) ; N_{tracklets} (|#eta|<1)",100,0.,100.,200,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultCent);
 
-  fHistEventMultZv = new TH2F("hEventMultZv","",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
+  fHistEventMultCentEvSel = new TH2F("hEventMultCentEvSel"," ; Centrality (V0M) ; N_{tracklets} (|#eta|<1)",100,0.,100.,200,fMinMultiplicity,fMaxMultiplicity);
+  fOutput->Add(fHistEventMultCentEvSel);
+
+  fHistEventMultZv = new TH2F("hEventMultZv"," ; z_{vertex} (cm) ; N_{tracklets} (|#eta|<1)",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultZv);
 
-  fHistEventMultZvEvSel = new TH2F("hEventMultZvEvSel","",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
+  fHistEventMultZvEvSel = new TH2F("hEventMultZvEvSel"," ; z_{vertex} (cm) ; N_{tracklets} (|#eta|<1)",30,-15.,15.,200,fMinMultiplicity,fMaxMultiplicity);
   fOutput->Add(fHistEventMultZvEvSel);
 
   fHistTrackStatus  = new TH1F("hTrackStatus", "",8,-0.5,7.5);
@@ -689,12 +695,18 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
   }
 
-  if(fAnalysisCuts->GetUseCentrality()>0 && fAnalysisCuts->IsEventSelectedInCentrality(aod)!=0) return;
-  // events not passing the centrality selection can be removed immediately. For the others we must count the generated D mesons
-
   Int_t ntracks=aod->GetNumberOfTracks();
   fVtxZ = aod->GetPrimaryVertex()->GetZ();
   fMultiplicity = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
+  Float_t evCentr=fAnalysisCuts->GetCentrality(aod);
+  if(!fAnalysisCuts->IsEventRejectedDueToTrigger() && !fAnalysisCuts->IsEventRejectedDuePhysicsSelection() &&
+     !fAnalysisCuts->IsEventRejectedDueToBadPrimaryVertex() && !fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()){
+    fHistEventMultCent->Fill(evCentr,fMultiplicity);
+  }
+
+  if(fAnalysisCuts->GetUseCentrality()>0 && fAnalysisCuts->IsEventSelectedInCentrality(aod)!=0) return;
+  // events not passing the centrality selection can be removed immediately. For the others we must count the generated D mesons
+
 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
@@ -724,11 +736,11 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if(isEvSel) fHistEventMultZvEvSel->Fill(fVtxZ,fMultiplicity);
   }
 
+
   if(!isEvSel)return;
   
-  Float_t evCentr=fAnalysisCuts->GetCentrality(aod);
   fHistNEvents->Fill(1);
-  fHistEventMultCent->Fill(evCentr,fMultiplicity);
+  fHistEventMultCentEvSel->Fill(evCentr,fMultiplicity);
 
 
   Int_t pdgOfD=421;
