@@ -19,6 +19,7 @@ using std::endl;
 #include "AliReducedBaseTrack.h"
 #include "AliReducedTrackInfo.h"
 #include "AliReducedPairInfo.h"
+#include "AliReducedCaloClusterInfo.h"
 #include "AliHistogramManager.h"
 #include "AliReducedTrackCut.h"
 
@@ -39,10 +40,12 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
   fOptionStoreJpsiCandidates(kFALSE),
   fFillCaloClusterHistograms(kFALSE),
   fEventCuts(),
+  fClusterCuts(),
   fTrackCuts(),
   fPreFilterTrackCuts(),
   fPairCuts(),
   fPreFilterPairCuts(),
+  fClusters(),
   fPosTracks(),
   fNegTracks(),
   fPrefilterPosTracks(),
@@ -75,10 +78,12 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
   fOptionStoreJpsiCandidates(kFALSE),
   fFillCaloClusterHistograms(kFALSE),
   fEventCuts(),
+  fClusterCuts(),
   fTrackCuts(),
   fPreFilterTrackCuts(),
   fPairCuts(),
   fPreFilterPairCuts(),
+  fClusters(),
   fPosTracks(),
   fNegTracks(),
   fPrefilterPosTracks(),
@@ -95,10 +100,12 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
   // named constructor
   //
    fEventCuts.SetOwner(kTRUE);
+   fClusterCuts.SetOwner(kTRUE);
    fTrackCuts.SetOwner(kTRUE);
    fPreFilterTrackCuts.SetOwner(kTRUE);
    fPairCuts.SetOwner(kTRUE);
    fPreFilterPairCuts.SetOwner(kTRUE);
+   fClusters.SetOwner(kFALSE);
    fPosTracks.SetOwner(kFALSE);
    fNegTracks.SetOwner(kFALSE);
    fPrefilterPosTracks.SetOwner(kFALSE);
@@ -117,8 +124,17 @@ AliReducedAnalysisJpsi2ee::~AliReducedAnalysisJpsi2ee()
   //
   // destructor
   //
-   fEventCuts.Clear("C"); fTrackCuts.Clear("C"); fPreFilterTrackCuts.Clear("C"); fPreFilterPairCuts.Clear("C"); fPairCuts.Clear("C");
-   fPosTracks.Clear("C"); fNegTracks.Clear("C"); fPrefilterPosTracks.Clear("C"); fPrefilterNegTracks.Clear("C");
+   fEventCuts.Clear("C");
+   fClusterCuts.Clear("C");
+   fTrackCuts.Clear("C");
+   fPreFilterTrackCuts.Clear("C");
+   fPreFilterPairCuts.Clear("C");
+   fPairCuts.Clear("C");
+   fClusters.Clear("C");
+   fPosTracks.Clear("C");
+   fNegTracks.Clear("C");
+   fPrefilterPosTracks.Clear("C");
+   fPrefilterNegTracks.Clear("C");
    fJpsiCandidates.Clear("C");
    if(fHistosManager) delete fHistosManager;
    if(fMixingHandler) delete fMixingHandler;
@@ -153,6 +169,21 @@ Bool_t AliReducedAnalysisJpsi2ee::IsEventSelected(AliReducedBaseEvent* event, Fl
     else { if(!cut->IsSelected(event)) return kFALSE; }
   }
   return kTRUE;
+}
+
+//___________________________________________________________________________
+Bool_t AliReducedAnalysisJpsi2ee::IsClusterSelected(AliReducedCaloClusterInfo* cluster, Float_t* values/*=0x0*/) {
+  //
+  // apply cluster cuts
+  //
+  if (fClusterCuts.GetEntries()==0) return kTRUE;
+  cluster->ResetFlags();
+  for (Int_t i=0; i<fClusterCuts.GetEntries(); ++i) {
+    AliReducedInfoCut* cut = (AliReducedInfoCut*)fClusterCuts.At(i);
+    if (values) { if (cut->IsSelected(cluster, values)) cluster->SetFlag(i); }
+    else { if (cut->IsSelected(cluster)) cluster->SetFlag(i); }
+  }
+  return (cluster->GetFlags()>0 ? kTRUE : kFALSE);
 }
 
 //___________________________________________________________________________
@@ -248,14 +279,8 @@ void AliReducedAnalysisJpsi2ee::Process() {
      cout << "ERROR: AliReducedAnalysisJpsi2ee::Process() needs AliReducedEventInfo events" << endl;
      return;
   }
-  if(fOptionRunOverMC) {
-     if(fEventCounter%10000==0) 
-        cout << "Event no. " << fEventCounter << endl;
-  }
-  else {
-    if(fEventCounter%10000==0) 
-       cout << "Event no. " << fEventCounter << endl;
-  }
+  if(fOptionRunOverMC && fEventCounter%10000==0)  cout << "Event no. " << fEventCounter << endl;
+  else if(fEventCounter%10000==0)                 cout << "Event no. " << fEventCounter << endl;
   fEventCounter++;
   
   AliReducedVarManager::SetEvent(fEvent);
@@ -281,12 +306,11 @@ void AliReducedAnalysisJpsi2ee::Process() {
   
   // fill calorimeter info histograms
   if(fFillCaloClusterHistograms) {
-    for(Int_t icl=0; icl<eventInfo->GetNCaloClusters(); ++icl) {
-      AliReducedVarManager::FillCaloClusterInfo(eventInfo->GetCaloCluster(icl), fValues);
-      fHistosManager->FillHistClass("CaloClusters", fValues);
-    }
+    RunClusterSelection();
+    FillClusterHistograms();
   }
 
+  // fill MC truth histograms
   if(fOptionRunOverMC) {
      fSkipMCEvent = kFALSE;
      FillMCTruthHistograms();
@@ -359,7 +383,8 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(TString trackClass /*= "Trac
       for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
       
       AliReducedVarManager::FillTrackInfo(track, fValues);
-      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
+      if (fClusterCuts.GetEntries())  AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters);
+      else                            AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       FillTrackHistograms(track, trackClass);
    }
    TIter nextNegTrack(&fNegTracks);
@@ -371,7 +396,8 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(TString trackClass /*= "Trac
       for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
       
       AliReducedVarManager::FillTrackInfo(track, fValues);
-      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
+      if (fClusterCuts.GetEntries())  AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters);
+      else                            AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       FillTrackHistograms(track, trackClass);
    }
 }
@@ -467,6 +493,54 @@ void AliReducedAnalysisJpsi2ee::FillPairHistograms(ULong_t mask, Int_t pairType,
    }  // end loop over cuts
 }
 
+//___________________________________________________________________________
+void AliReducedAnalysisJpsi2ee::FillClusterHistograms(TString clusterClass/*="CaloCluster"*/) {
+  //
+  // fill cluster histograms
+  //
+  AliReducedCaloClusterInfo* cluster = NULL;
+  TIter nextCluster(&fClusters);
+  for (Int_t i=0; i<fClusters.GetEntries(); ++i) {
+    cluster = (AliReducedCaloClusterInfo*)nextCluster();
+    for (Int_t i=AliReducedVarManager::kEMCALclusterEnergy; i<=AliReducedVarManager::kNEMCALvars; ++i) fValues[i] = -9999.;
+    AliReducedVarManager::FillCaloClusterInfo(cluster, fValues);
+    FillClusterHistograms(cluster, clusterClass);
+  }
+}
+
+//___________________________________________________________________________
+void AliReducedAnalysisJpsi2ee::FillClusterHistograms(AliReducedCaloClusterInfo* cluster, TString clusterClass/*="CaloCluster"*/) {
+  //
+  // fill cluster histograms
+  //
+  for (Int_t icut=0; icut<fClusterCuts.GetEntries(); ++icut) {
+    if (cluster->TestFlag(icut)) fHistosManager->FillHistClass(Form("%s_%s", clusterClass.Data(), fClusterCuts.At(icut)->GetName()), fValues);
+  }
+}
+
+//___________________________________________________________________________
+void AliReducedAnalysisJpsi2ee::RunClusterSelection() {
+  //
+  // select cluster
+  //
+  fClusters.Clear("C");
+
+  if (fEvent->IsA() == AliReducedBaseEvent::Class()) return;
+  Int_t nCaloCluster = ((AliReducedEventInfo*)fEvent)->GetNCaloClusters();
+  if (!nCaloCluster) return;
+
+  AliReducedCaloClusterInfo* cluster = NULL;
+  for (Int_t icl=0; icl<nCaloCluster; ++icl) {
+    cluster = ((AliReducedEventInfo*)fEvent)->GetCaloCluster(icl);
+
+    for (Int_t i=AliReducedVarManager::kEMCALclusterEnergy; i<=AliReducedVarManager::kNEMCALvars; ++i) fValues[i] = -9999.;
+
+    AliReducedVarManager::FillCaloClusterInfo(cluster, fValues);
+    fHistosManager->FillHistClass("CaloCluster_BeforeCuts", fValues);
+
+    if (IsClusterSelected(cluster, fValues)) fClusters.Add(cluster);
+  }
+}
 
 //___________________________________________________________________________
 void AliReducedAnalysisJpsi2ee::RunTrackSelection() {
@@ -501,7 +575,8 @@ void AliReducedAnalysisJpsi2ee::LoopOverTracks(Int_t arrayOption /*=1*/) {
       for(Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i]=-9999.;
 
       AliReducedVarManager::FillTrackInfo(track, fValues);
-      AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
+      if (fClusterCuts.GetEntries())  AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters);
+      else                            AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues);
       fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
       
       if(track->IsA() == AliReducedTrackInfo::Class()) {

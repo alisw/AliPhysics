@@ -12,6 +12,7 @@
 #include "AliReducedBaseEvent.h"
 #include "AliReducedBaseTrack.h"
 #include "AliReducedTrackInfo.h"
+#include "AliReducedCaloClusterInfo.h"
 #include "AliHistogramManager.h"
 #include "AliMixingHandler.h"
 
@@ -33,6 +34,7 @@ public:
   
   // setters
   void AddEventCut(AliReducedInfoCut* cut) {fEventCuts.Add(cut);}
+  void AddClusterCut(AliReducedInfoCut* cut) {fClusterCuts.Add(cut); fFillCaloClusterHistograms=kTRUE; }
   void AddTrackCut(AliReducedInfoCut* cut);
   void AddPrefilterTrackCut(AliReducedInfoCut* cut) {fPreFilterTrackCuts.Add(cut);}
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
@@ -64,6 +66,8 @@ public:
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   virtual AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
+  Int_t GetNClusterCuts() const {return fClusterCuts.GetEntries();}
+  const Char_t* GetClusterCutName(Int_t i) const {return (i<fClusterCuts.GetEntries() ? fClusterCuts.At(i)->GetName() : "");}
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
   const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");} 
   Bool_t GetRunOverMC() const {return fOptionRunOverMC;};
@@ -92,11 +96,13 @@ protected:
    Bool_t fFillCaloClusterHistograms;   // false (default); if true, fill calorimeter cluster histograms
   
    TList fEventCuts;               // array of event cuts
+   TList fClusterCuts;             // array of cluster cuts
    TList fTrackCuts;               // array of track cuts
    TList fPreFilterTrackCuts;  // track cuts to be used at the prefilter stage
    TList fPairCuts;                  // array of pair cuts
    TList fPreFilterPairCuts;     // pair cuts to be used at the prefilter stage
-   
+
+   TList fClusters;               // list of selected clusters
    TList fPosTracks;               // list of selected positive tracks in the current event
    TList fNegTracks;              // list of selected negative tracks in the current event
    TList fPrefilterPosTracks;  // list of prefilter selected positive tracks in the current event
@@ -124,6 +130,7 @@ protected:
    TList fJpsiElectronMCcuts;
    
   Bool_t IsEventSelected(AliReducedBaseEvent* event, Float_t* values=0x0);
+  Bool_t IsClusterSelected(AliReducedCaloClusterInfo* cluster, Float_t* values=0x0);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
   Bool_t IsTrackPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
   Bool_t IsPairSelected(Float_t* values);
@@ -139,16 +146,19 @@ protected:
   void RunPrefilter();
   void RunSameEventPairing(TString pairClass = "PairSE");
   void RunTrackSelection();
+  void RunClusterSelection();
   void LoopOverTracks(Int_t arrayOption=1);
   void FillTrackHistograms(TString trackClass = "Track");
   void FillTrackHistograms(AliReducedBaseTrack* track, TString trackClass = "Track");
   void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", UInt_t mcDecisions = 0);
+  void FillClusterHistograms(TString clusterClass="CaloCluster");
+  void FillClusterHistograms(AliReducedCaloClusterInfo* cluster, TString clusterClass="CaloCluster");
   void FillMCTruthHistograms();
 
   Bool_t fSkipMCEvent;          // decision to skip MC event
   TH1F*  fMCJpsiPtWeights;            // weights vs pt to reject events depending on the jpsi true pt (needed to re-weights jpsi Pt distribution)
   
-  ClassDef(AliReducedAnalysisJpsi2ee,8);
+  ClassDef(AliReducedAnalysisJpsi2ee,9);
 };
 
 #endif
