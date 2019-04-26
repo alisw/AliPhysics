@@ -16,6 +16,7 @@
 #include "AliGenEventHeader.h"
 #include "AlidNdPtTools.h"
 #include "AliESDtrackCuts.h"
+#include "AliMultEstimator.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
@@ -853,6 +854,32 @@ Bool_t AliAnalysisTaskMKBase::InitEventVZERO()
     fMultV0A = fVZERO->GetMTotV0A();    
     fMultV0C = fVZERO->GetMTotV0C();
     fMultV0M = fMultV0A+fMultV0C;
+    
+    fMultV0MmultSelection = -1;
+    if (fMultSelection) {
+        AliMultEstimator* estv0m = fMultSelection->GetEstimator("V0M");
+        fMultV0MmultSelection = estv0m->GetValue();
+        TString defv0m = estv0m->GetDefinition();
+
+        cout<<endl;
+        cout<<"V0M DEFINTION"<<endl;
+        cout<<defv0m<<endl;
+        cout<<endl;
+        cout<<"fAmplitude_V0A "<<fMultV0A<<endl;
+        cout<<"fAmplitude_V0C "<<fMultV0C<<endl;
+        cout<<"fEvSel_VtxZ    "<<fZv<<endl;
+        cout<<endl;
+        cout<<"fMultV0MmultSelection "<<fMultV0MmultSelection<<endl;
+        
+        defv0m.ReplaceAll("(fAmplitude_V0A)","[0]");
+        defv0m.ReplaceAll("(fAmplitude_V0C)","[1]");
+        defv0m.ReplaceAll("(fEvSel_VtxZ)","[2]");
+        TFormula formv0m("form",defv0m);
+        formv0m.SetParameters(fMultV0A,fMultV0C,fZv);
+        cout<<"my own calulation     "<<formv0m.Eval(0)<<endl;
+        cout<<endl;
+        cout<<endl;
+    }            
     
     return kTRUE;
 }
