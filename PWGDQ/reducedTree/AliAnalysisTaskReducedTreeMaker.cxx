@@ -2222,6 +2222,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
       // NOTE: extrapolation depends on radius and PHOS radius differs slightly from EMCal radius
       if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fMomentumOnCalo = esdTrack->GetTrackPOnEMCal();
+      if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fPhiOnCalo = esdTrack->GetTrackPhiOnEMCal();
+      if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fEtaOnCalo = esdTrack->GetTrackEtaOnEMCal();
 
       Double_t xyz[3], pxpypz[3];
       Double_t covMat[21];

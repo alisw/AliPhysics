@@ -23,6 +23,7 @@
 #pragma link C++ class AliReducedBaseTrack+;
 #pragma link C++ class AliReducedCaloClusterCut+;
 #pragma link C++ class AliReducedCaloClusterInfo+;
+#pragma link C++ class AliReducedCaloClusterTrackMatcher++;
 #pragma link C++ class AliReducedCompositeCut+;
 #pragma link C++ class AliReducedEventCut+;
 #pragma link C++ class AliReducedEventInfo+;
