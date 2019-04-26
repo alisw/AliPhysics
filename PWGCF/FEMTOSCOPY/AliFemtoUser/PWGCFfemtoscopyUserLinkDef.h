@@ -157,6 +157,7 @@
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::PairCutParams+;
 
 #pragma link C++ class AliFemtoCutMonitorPairKT;
+#pragma link C++ class AliFemtoCutMonitorPairMomRes;
 #pragma link C++ class AliFemtoPairCutMInv;
 
 #pragma link C++ class AliFemtoV0PurityBgdEstimator+;

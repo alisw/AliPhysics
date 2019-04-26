@@ -151,6 +151,7 @@ set(SRCS
   AliFemtoKKTrackCutTest.cxx # new class
   AliFemtoCorrFctnInvMass.cxx
   AliFemtoCutMonitorV0CosPointingAngle.cxx
+  AliFemtoCutMonitorPairMomRes.cxx
   )
 
 
