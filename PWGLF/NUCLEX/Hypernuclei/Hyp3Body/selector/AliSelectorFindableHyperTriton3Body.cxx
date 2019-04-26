@@ -14,8 +14,10 @@
 #include <TVector3.h>
 #include <cmath>
 
-#include "AliAnalysisTaskHypertriton3New.h"
 #include "AliSelectorFindableHyperTriton3Body.h"
+
+const unsigned char g = 0x1; // on if is a good candidate
+const unsigned char r = 0x2; // on if is reflection candidate
 
 /// usefull functions
 template <typename T> double Pot2(T a) { return a * a; }
@@ -26,7 +28,10 @@ template <typename T> double Distance(T pX, T pY, T pZ, T dX, T dY, T dZ) {
 
 AliSelectorFindableHyperTriton3Body::AliSelectorFindableHyperTriton3Body(TString outputName, TString outputPath,
                                                                          TTree *)
-    : fOutputFileName{outputName}, fOutputFilePath{outputPath}, fHypertritonVertexer(), fHypertritonVertexerHard() {
+    : fOutputFileName{outputName}, //
+      fOutputFilePath{outputPath}, //
+      fHypertritonVertexer(),      //
+      fHypertritonVertexerHard() {
   fHypertritonVertexerHard.SetToleranceGuessCompatibility(2);
   fHypertritonVertexerHard.SetMaxDinstanceInit(1.5);
 }

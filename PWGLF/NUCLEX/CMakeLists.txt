@@ -45,12 +45,9 @@ set(SRCS
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypCrossCheck.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHyperTriton2He3piML.cxx
+	Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3.cxx
-  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3Dev.cxx
-  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3AOD.cxx
-	Hypernuclei/NewHyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
-  Hypernuclei/NewHyp3Body/AliAnalysisTaskHypertriton3New.cxx
-  Hypernuclei/NewHyp3Body/AliAnalysisTaskHypertriton3ML.cxx
+  Hypernuclei/Hyp3Body/AliAnalysisTaskHypertriton3ML.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
@@ -102,7 +99,7 @@ set(SRCS
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	 set(SRCS
 		  ${SRCS}
-				  Hypernuclei/NewHyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
+				  Hypernuclei/Hyp3Body/selector/AliSelectorFindableHyperTriton3Body.cxx
 						  )
 	  endif()
 
