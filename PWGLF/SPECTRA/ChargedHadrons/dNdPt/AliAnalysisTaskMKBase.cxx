@@ -879,7 +879,7 @@ Bool_t AliAnalysisTaskMKBase::InitEventVZERO()
 //         cout<<"my own calulation     "<<formv0m.Eval(0)<<endl;
 //         cout<<endl;
 //         cout<<endl;
-        if (formv0m.Eval(0) != fMultV0MmultSelection) {
+        if (TMath::Abs(formv0m.Eval(0)-fMultV0MmultSelection)>0.01) {
             Err("multSelection.V0Mmismatch");
         }
     }            
