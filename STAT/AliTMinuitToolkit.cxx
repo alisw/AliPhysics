@@ -352,6 +352,10 @@ void AliTMinuitToolkit::Fit(Option_t *option) {
   for (Int_t iParam=0; iParam<nParam; iParam++){
     if (sOption.Contains("rndmInit")){
       Double_t initValue=(*fInitialParam)(iParam, 0)+gRandom->Gaus()*(*fInitialParam)(iParam,1);
+      if ((*fInitialParam)(iParam, 2)< (*fInitialParam)(iParam, 3)){
+        if (initValue<(*fInitialParam)(iParam, 2)) initValue=(*fInitialParam)(iParam, 2);
+        if (initValue>(*fInitialParam)(iParam, 3)) initValue=(*fInitialParam)(iParam, 3);
+      }
       minuit->SetParameter(iParam, Form("p[%d]",iParam), initValue, (*fInitialParam)(iParam,1), (*fInitialParam)(iParam, 2), (*fInitialParam)(iParam, 3));
     }else{
       minuit->SetParameter(iParam, Form("p[%d]",iParam), (*fInitialParam)(iParam,0), (*fInitialParam)(iParam,1), (*fInitialParam)(iParam, 2), (*fInitialParam)(iParam, 3));
@@ -501,7 +505,7 @@ TString AliTMinuitToolkit::GetFitFunctionAsAlias(Option_t *option, TTree * tree,
       }
     }
   }
-  return inputString;
+  return TString(inputString.Data());
 }
 
 /// \brief Random gaus generator as static function (to use in root TFormula, TTreeFormula)
