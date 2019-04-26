@@ -1,19 +1,19 @@
-#ifndef BDT_DefaultNode__def
-#define BDT_DefaultNode__def
+#ifndef BDTNode__def
+#define BDTNode__def
 
 #include <vector>
 #include <cmath>
 #include <string>
 #include <iostream>
 
-#define NN new BDT_DefaultNode
+#define NN new BDTNode
    
-class BDT_DefaultNode {
+class BDTNode {
    
 public:
   
   // constructor of an essentially "empty" node floating in space
-  BDT_DefaultNode ( BDT_DefaultNode* left=0,BDT_DefaultNode* right=0,
+  BDTNode ( BDTNode* left=0,BDTNode* right=0,
 		    int selector=0, double cutValue=0, bool cutType=0, 
 		    int nodeType=0, double purity=0, double response=0 ) :
    fLeft         ( left         ),
@@ -26,15 +26,15 @@ public:
    fResponse     ( response     ){
    }
 
-   virtual ~BDT_DefaultNode();
+   virtual ~BDTNode();
 
    // test event if it decends the tree at this node to the right
    virtual bool GoesRight( const std::vector<double>& inputValues ) const;
-   BDT_DefaultNode* GetRight( void )  {return fRight; };
+   BDTNode* GetRight( void )  {return fRight; };
 
    // test event if it decends the tree at this node to the left 
    virtual bool GoesLeft ( const std::vector<double>& inputValues ) const;
-   BDT_DefaultNode* GetLeft( void ) { return fLeft; };   
+   BDTNode* GetLeft( void ) { return fLeft; };   
 
    // return  S/(S+B) (purity) at this node (from  training)
 
@@ -45,8 +45,8 @@ public:
 
 private:
 
-   BDT_DefaultNode*   fLeft;     // pointer to the left daughter node
-   BDT_DefaultNode*   fRight;    // pointer to the right daughter node
+   BDTNode*   fLeft;     // pointer to the left daughter node
+   BDTNode*   fRight;    // pointer to the right daughter node
    int                     fSelector; // index of variable used in node selection (decision tree)   
    double                  fCutValue; // cut value appplied on this node to discriminate bkg against sig
    bool                    fCutType;  // true: if event variable > cutValue ==> signal , false otherwise
@@ -56,14 +56,14 @@ private:
 }; 
    
 //_______________________________________________________________________
-inline BDT_DefaultNode::~BDT_DefaultNode()
+inline BDTNode::~BDTNode()
 {
    if (fLeft  != NULL) delete fLeft;
    if (fRight != NULL) delete fRight;
 }; 
    
 //_______________________________________________________________________
-inline bool BDT_DefaultNode::GoesRight( const std::vector<double>& inputValues ) const
+inline bool BDTNode::GoesRight( const std::vector<double>& inputValues ) const
 {
    // test event if it decends the tree at this node to the right
    bool result;
@@ -73,7 +73,7 @@ inline bool BDT_DefaultNode::GoesRight( const std::vector<double>& inputValues )
 }
    
 //_______________________________________________________________________
-inline bool BDT_DefaultNode::GoesLeft( const std::vector<double>& inputValues ) const
+inline bool BDTNode::GoesLeft( const std::vector<double>& inputValues ) const
 {
    // test event if it decends the tree at this node to the left
    if (!this->GoesRight(inputValues)) return true;
