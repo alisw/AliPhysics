@@ -8,21 +8,90 @@ class AlidNdPtTools;
 
 using namespace std;
 
+/// \cond CLASSIMP    
 ClassImp(AlidNdPtTools)
+/// \endcond 
+
+//____________________________________________________________________________
 
 THnSparseD* AlidNdPtTools::fSparseTmp = 0;
 
 //____________________________________________________________________________
 
-Long64_t AlidNdPtTools::FillHist(THnSparseD* s, Double_t x1, Double_t x2, Double_t x3, Double_t x4, Double_t x5, Double_t x6, 
-                     Double_t x7 , Double_t x8 , Double_t x9 , Double_t x10 , Double_t x11 , Double_t x12 )
+/// Function to fill THnSparse or THn with up to 12 dimensions
+/// 
+/// Ugly, but works and makes filling easier
+///
+/// \param s   Pointer to histogram to be filled
+/// \param x0  x of dimension 0
+/// \param x1  x of dimension 1
+/// \param x2  x of dimention 2
+/// \param x3  x of dimention 3
+/// \param x4  x of dimention 4
+/// \param x5  x of dimention 5
+/// \param x6  x of dimention 6
+/// \param x7  x of dimention 7
+/// \param x8  x of dimention 8
+/// \param x9  x of dimention 9
+/// \param x10 x of dimention 10
+/// \param x11 x of dimention 11
+///
+/// \return return value of THnBase->Fill(...) or 0 in case of error
+
+Long64_t AlidNdPtTools::FillHist(THnBase* s,  Double_t x0, Double_t x1, Double_t x2, Double_t x3, Double_t x4, Double_t x5, Double_t x6, 
+                     Double_t x7 , Double_t x8 , Double_t x9 , Double_t x10 , Double_t x11 )
 {
     if (s->GetNdimensions() > 12) { return 0; }
-    Double_t vals[12]={x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12};
+    Double_t vals[12]={x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11};
     return s->Fill(vals);
 }
 
 //____________________________________________________________________________
+
+/// Function to fill THnSparse or THn with up to 12 dimensions with weight
+/// 
+/// \param w   weight to be used for Histogram filling
+/// \param s   Pointer to histogram to be filled
+/// \param x0  x of dimension 0
+/// \param x1  x of dimension 1
+/// \param x2  x of dimention 2
+/// \param x3  x of dimention 3
+/// \param x4  x of dimention 4
+/// \param x5  x of dimention 5
+/// \param x6  x of dimention 6
+/// \param x7  x of dimention 7
+/// \param x8  x of dimention 8
+/// \param x9  x of dimention 9
+/// \param x10 x of dimention 10
+/// \param x11 x of dimention 11
+///
+/// \return return value of THnBase->Fill(...) or 0 in case of error
+
+Long64_t AlidNdPtTools::FillHist(Double_t w, THnBase* s,  Double_t x0, Double_t x1, Double_t x2, Double_t x3, Double_t x4, Double_t x5, Double_t x6, 
+                     Double_t x7 , Double_t x8 , Double_t x9 , Double_t x10 , Double_t x11 )
+{
+    if (s->GetNdimensions() > 12) { return 0; }
+    Double_t vals[12]={x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11};
+    return s->Fill(vals,w);
+}
+
+//____________________________________________________________________________
+
+/// Add an Axis (Dimension) to the THnSparseD
+/// 
+/// function to add a user defined axes
+/// with normal (linear) binning
+/// number of bins, upper and lower range
+/// has to be provided 
+/// 
+/// \param label axis label (short version)
+/// \param title axis title (long version with latex code)
+/// \param nbins number of bins
+/// \param xmin lower edge of first bin
+/// \param xmax upper edge of last bin
+/// \param option not used and currently ignored
+///
+/// \return the total number of dimensions after adding this axis, 0 in case of error
 
 Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins, Double_t xmin, Double_t xmax, const char* option)
 {
@@ -60,12 +129,43 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins, 
 
 //____________________________________________________________________________
 
+/// Add an Axis (Dimension) to the THnSparseD
+/// 
+/// function to add a user defined axes
+/// with normal (linear) binning
+/// number of bins, upper and lower range
+/// has to be provided 
+/// 
+/// \param label this is used as label AND title for the new axis
+/// \param nbins number of bins
+/// \param xmin lower edge of first bin
+/// \param xmax upper edge of last bin
+/// \param option not used and currently ignored
+///
+/// \return the total number of dimensions after adding this axis, 0 in case of error
+
+
 Int_t AlidNdPtTools::AddAxis(const char* label, Int_t nbins, Double_t xmin, Double_t xmax, const char* option)
 {
     return AddAxis(label, label, nbins, xmin, xmax, option);
 }
 
 //____________________________________________________________________________
+
+/// Add an Axis (Dimension) to the THnSparseD
+/// 
+/// function to add a user defined binning with 
+/// the option of variable bin size
+/// number of bins and and an array defining the bin edges 
+/// has to be provided 
+/// 
+/// \param label axis label (short version)
+/// \param title axis title (long version with latex code)
+/// \param nbins number of bins
+/// \param xbins array of length nbins+1 containing the bin edges
+/// \param option not used and currently ignored
+///
+/// \return the total number of dimensions after adding this axis, 0 in case of error
 
 Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins, Double_t* xbins, const char* option)
 {
@@ -76,12 +176,48 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, Int_t nbins, 
 
 //____________________________________________________________________________
 
+/// Add an Axis (Dimension) to the THnSparseD
+/// 
+/// function to add a user defined binning with 
+/// the option of variable bin size
+/// number of bins and and an array defining the bin edges 
+/// has to be provided 
+/// 
+/// \param label this is used as label AND title for the new axis
+/// \param nbins number of bins
+/// \param xbins array of length nbins+1 containing the bin edges
+/// \param option not used and currently ignored
+///
+/// \return the total number of dimensions after adding this axis, 0 in case of error
+
 Int_t AlidNdPtTools::AddAxis(const char* label, Int_t nbins, Double_t* xbins, const char* option)
 {
     return AddAxis(label, label, nbins, xbins, option);
 }
 
 //____________________________________________________________________________
+
+/// Add an Axis (Dimension) to the THnSparseD
+/// 
+/// function to add from a series of pre-defined options
+/// option supplied in not case-senstitiv
+/// 
+/// currently the following ones are available
+/// "pt"                standard pT axis 
+/// "ptfew"             reduced pt binning
+/// "ptveryfew"         much reduced pt binning
+/// "ptmario"           marios pt binning
+/// "cent"              standard centrality binning
+/// "varsig35"
+/// "mult6kfine"        multiplicity bining 0-6000 in fine bins
+/// "mult6kcoarse"      multiplicity bining 0-6000 in coarse bins
+/// "mult100kcoarse"    multiplicity bining 0-100000 in coarse bins
+/// 
+/// \param label axis label (short version)
+/// \param title axis title (long version with latex code)
+/// \param option string to steer the binning 
+///
+/// \return the total number of dimensions after adding this axis, 0 in case of error
 
 Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, const char* option)
 {
@@ -171,6 +307,27 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, const char* o
 
 //____________________________________________________________________________
 
+/// Add an Axis (Dimension) to the THnSparseD
+/// 
+/// function to add from a series of pre-defined options
+/// option supplied in not case-senstitiv
+/// 
+/// currently the following ones are available
+/// "pt"                standard pT axis 
+/// "ptfew"             reduced pt binning
+/// "ptveryfew"         much reduced pt binning
+/// "ptmario"           marios pt binning
+/// "cent"              standard centrality binning
+/// "varsig35"
+/// "mult6kfine"        multiplicity bining 0-6000 in fine bins
+/// "mult6kcoarse"      multiplicity bining 0-6000 in coarse bins
+/// "mult100kcoarse"    multiplicity bining 0-100000 in coarse bins
+/// 
+/// \param label this is used as label AND title for the new axis
+/// \param option string to steer the binning 
+///
+/// \return the total number of dimensions after adding this axis, 0 in case of error
+
 Int_t AlidNdPtTools::AddAxis(const char* label, const char* option)
 {
     return AddAxis(label, label, option);
@@ -178,16 +335,58 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* option)
 
 //____________________________________________________________________________
 
+/// Add an Axis (Dimension) to the THnSparseD
+/// 
+/// function to add from a series of pre-defined options
+/// option supplied in not case-senstitiv
+/// 
+/// currently the following ones are available
+/// "pt"                standard pT axis 
+/// "ptfew"             reduced pt binning
+/// "ptveryfew"         much reduced pt binning
+/// "ptmario"           marios pt binning
+/// "mcpt"              standard pT axis for MC 
+/// "mcptfew"           reduced pt binning for MC
+/// "mcptveryfew"       much reduced pt binning
+/// "mcptmario"         marios pt binning
+/// "cent"              standard centrality binning
+/// "mult6kfine"        multiplicity bining 0-6000 in fine bins
+/// "mult6kcoarse"      multiplicity bining 0-6000 in coarse bins
+/// "mult100kcoarse"    multiplicity bining 0-100000 in coarse bins
+/// 
+/// \param option string to steer the binning 
+///
+/// \return the total number of dimensions after adding this axis, 0 in case of error
+
 Int_t AlidNdPtTools::AddAxis(const char* option)
 {
     TString o(option);
     o.ToLower();
-    if (o.Contains("pt"))   return AddAxis("pt","p_{T} (GeV/c)",option);    
-    if (o.Contains("cent"))   return AddAxis("cent","centrality",option);
+    if (o.EqualTo("pt"))                return AddAxis("pT","p_{T} (GeV/c)","pt");    
+    if (o.EqualTo("mcpt"))              return AddAxis("MCpT","p_{T,MC} (GeV/c)","pt");
+    if (o.EqualTo("ptfew"))             return AddAxis("pT","p_{T} (GeV/c)","ptfew");    
+    if (o.EqualTo("mcptfew"))           return AddAxis("MCpT","p_{T,MC} (GeV/c)","ptfew");
+    if (o.EqualTo("ptveryfew"))         return AddAxis("pT","p_{T} (GeV/c)","ptveryfew");    
+    if (o.EqualTo("mcptveryfew"))       return AddAxis("MCpT","p_{T,MC} (GeV/c)","ptveryfew");
+    if (o.EqualTo("ptmario"))           return AddAxis("pT","p_{T} (GeV/c)","ptmario");    
+    if (o.EqualTo("mcptmario"))         return AddAxis("MCpT","p_{T,MC} (GeV/c)","ptmario");    
+    if (o.EqualTo("mult6kfine"))        return AddAxis("mult","N","mult6kfine");    
+    if (o.EqualTo("mult6kcoarse"))      return AddAxis("mult","N","mult6kcoarse");      
+    if (o.EqualTo("mult1000kcoarse"))   return AddAxis("mult","N","mult1000kcoarse");
+    if (o.EqualTo("cent"))              return AddAxis("cent","centrality (%)","cent");
     return 0;
 }
 
 //____________________________________________________________________________
+
+/// Create a THnSparseD histogram
+/// 
+/// Before this function actually creates a histogram
+/// axis have to be added using the various AddAxis() functions
+/// 
+/// \param name  name of the histogram
+///
+/// \return newly created THnSparseD histogram or 0 in case fo error
 
 THnSparseD* AlidNdPtTools::CreateHist(const char* name)
 {
@@ -199,6 +398,13 @@ THnSparseD* AlidNdPtTools::CreateHist(const char* name)
 }
 
 //____________________________________________________________________________
+
+/// Create a TH1D histogram for Logging purposes
+/// 
+/// \param name  name of the histogram
+/// \param title title of the histogram
+///
+/// \return newly created TH1D histogram
 
 TH1D* AlidNdPtTools::CreateLogHist(const char* name, const char* title)
 {   
@@ -212,6 +418,12 @@ TH1D* AlidNdPtTools::CreateLogHist(const char* name, const char* title)
 }   
 
 //____________________________________________________________________________
+
+/// Create a TH1D histogram for Logging purposes
+/// 
+/// \param name  name and title of the histogram
+///
+/// \return newly created TH1D histogram
   
 TH1D* AlidNdPtTools::CreateLogHist(const char* name) 
 { 
@@ -219,6 +431,29 @@ TH1D* AlidNdPtTools::CreateLogHist(const char* name)
 }
 
 //____________________________________________________________________________
+
+/// Function to create AliESDtrackCuts with various settings
+/// 
+/// specfiy the type of track cuts to be created in the option string
+/// this is not case senstitiv
+/// 
+/// currently the folowing options are implemented:
+/// ""                          identical to "TPCITSgeo"
+/// "default"                   identical to "TPCITSgeo"
+/// "TPCITSgeo"                 all standard track cuts for TPC-ITS primaries including the golden chi2 cut and the geometric cut
+/// "TPCITSgeoNoDCAr"           same as "TPCITSgeo" but without the DCAr cut
+/// "TPCITSforDCArStudy"        "TPCITSgeoNoDCAr" but without the golden chi2 cut (for DCAr fits)
+/// "TPCgeo"                    all default TPC cuts, including the geometric length cut
+/// "TPCgeoNoDCAr"              same as "TPCgeo" but without the cut on DCAr (for DCAr fits)
+/// "TPCgeo+ITShit"             same as "TPCgeo" but in addition require a hit in the ITS (for Matching Efficieny studies)
+/// "TPCgeo+ITSrefit"           same as "TPCgeo" but in addition require the ITS refit, i.e. 2 hitsin the ITS (for Matching Efficieny studies)
+/// "TPCgeo+SPDhit"             same as "TPCgeo" but in addition require a hit in any layer of the SPD (for Matching Efficieny studies)
+/// "TPCgeo+SPDhit+ITSrefit"    identical to "TPCgeo+ITSrefit+SPDhit"
+/// "TPCgeo+ITSrefit+SPDhit"    same as "TPCgeo" but in addition require a hit in any layer of the SPD AND a ITS refit (for Matching Efficieny studies) 
+/// 
+/// \param option string to select the type of track cuts to be created
+///
+/// \return the newly created AliESDtrackCuts or 0 in case of error
 
 AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
 {
@@ -233,8 +468,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
         cuts->SetMaxChi2PerClusterTPC(4);
-        cuts->SetMaxFractionSharedTPCClusters(0.4);
-        cuts->SetMaxDCAToVertexXY(3.0);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);        
         cuts->SetRequireITSRefit(kTRUE);
         cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
         cuts->SetMaxChi2PerClusterITS(36.);
@@ -353,7 +587,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         // spd hit
         cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
         
-    }  else if (o.EqualTo("tpcgeo+itsrefit+spdhit") || o.EqualTo("tpcgeo+itsrefit+spdhit")) { 
+    }  else if (o.EqualTo("tpcgeo+itsrefit+spdhit") || o.EqualTo("tpcgeo+spdhit+itsrefit")) { 
         cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit + hit in SPD");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
@@ -374,6 +608,23 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
 
 //____________________________________________________________________________
 
+/// Retrieve the scaling factor for MC primaries and secondaries
+/// 
+/// WARNING! only dummy function - use only for testing
+///
+/// This method looks up the proper scaling factors and returns them
+/// for offline and -- especially -- online use
+///
+/// For now this is only a dummy until proper implementation of the 
+/// functionality is available
+/// 
+/// 
+/// \param prod MC production type (primary, secondary from material or secondary from decay)
+/// \param part MC particle species (pion, proton, kaon, sigma+, sigma-, xi-, omega-, electron, muon, other)
+/// \param pt   MC pT of the particle
+///
+/// \return scaling factor accoring to the supplied arguments
+
 Double_t AlidNdPtTools::MCScalingFactor(ProductionType prod, ParticleType part, Double_t pt) 
 {
     //if prod or part type not set return scaling of 1
@@ -381,6 +632,8 @@ Double_t AlidNdPtTools::MCScalingFactor(ProductionType prod, ParticleType part, 
     //dummy function for testing, scaling sigmas up by a factor two
     //secondaries from decay by factor 1.5
     //and leaves the rest unchanged
+    // TODO this should call the ALiMCSpectra weights once they are ready
+    // TODO and the corresponding solution for secondariy scaling
     if (prod == kSecDecay) return 1.5;
     if (prod == kPrim) {
         if ( (part == kSigmaP) || (part == kSigmaM) ) return 2.0;        
@@ -390,6 +643,12 @@ Double_t AlidNdPtTools::MCScalingFactor(ProductionType prod, ParticleType part, 
 }
 
 //____________________________________________________________________________
+
+/// Convert the PDG code to a ParticleType
+/// 
+/// \param pdgCode PDG code
+///
+/// \return AlidNdPtTools::ParticleType (pion, proton, kaon, sigma+, sigma-, xi-, omega-, electron, muon, other)
 
 AlidNdPtTools::ParticleType AlidNdPtTools::ParticleTypeFromPDG(Int_t pdgCode)
 {
