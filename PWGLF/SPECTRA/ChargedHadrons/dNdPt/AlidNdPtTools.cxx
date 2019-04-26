@@ -42,7 +42,7 @@ Long64_t AlidNdPtTools::FillHist(THnBase* s,  Double_t x0, Double_t x1, Double_t
                      Double_t x7 , Double_t x8 , Double_t x9 , Double_t x10 , Double_t x11 , Double_t x11 )
 {
     if (s->GetNdimensions() > 12) { return 0; }
-    Double_t vals[12]={x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12};
+    Double_t vals[12]={x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11};
     return s->Fill(vals);
 }
 
@@ -71,7 +71,7 @@ Long64_t AlidNdPtTools::FillHist(Double_t w, THnBase* s,  Double_t x0, Double_t 
                      Double_t x7 , Double_t x8 , Double_t x9 , Double_t x10 , Double_t x11 , Double_t x11 )
 {
     if (s->GetNdimensions() > 12) { return 0; }
-    Double_t vals[12]={x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12};
+    Double_t vals[12]={x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11};
     return s->Fill(vals,w);
 }
 
