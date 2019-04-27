@@ -47,7 +47,7 @@ ClassImp(AliAnalysisTaskHFEIPCorrection)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // default Constructor
   // Define input and output slots here
@@ -76,7 +76,7 @@ AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -143,6 +143,10 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
 
     fPionV0pTRNoCuts = new TH3D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
     fPionV0pTRWithCuts = new TH3D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
+    fPionV0pTRNoCutsIP = new TH3D(Form("fPionV0pTRNoCutsIP"),Form("fPionV0pTRNoCutsIP"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
+    fPionV0pTRWithCutsIP = new TH3D(Form("fPionV0pTRWithCutsIP"),Form("fPionV0pTRWithCutsIP"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
+    fPionV0pTRNoCutsOOP = new TH3D(Form("fPionV0pTRNoCutsOOP"),Form("fPionV0pTRNoCutsOOP"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
+    fPionV0pTRWithCutsOOP = new TH3D(Form("fPionV0pTRWithCutsOOP"),Form("fPionV0pTRWithCutsOOP"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
     fPionV0pTTPC = new TH2D(Form("fPionV0pTTPC"),Form("fPionV0pTTPC"), 18, ptbinningX, 200, -10., 10.);
     fPionV0pTTPCWithCuts = new TH2D(Form("fPionV0pTTPCWithCuts"),Form("fPionV0pTTPCWithCuts"), 18, ptbinningX, 200, -10., 10.);
 
@@ -194,6 +198,10 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fOutputContainer->Add(fpTIP3050OOP);
     fOutputContainer->Add(fPionV0pTRNoCuts);
     fOutputContainer->Add(fPionV0pTRWithCuts);
+    fOutputContainer->Add(fPionV0pTRNoCutsIP);
+    fOutputContainer->Add(fPionV0pTRWithCutsIP);
+    fOutputContainer->Add(fPionV0pTRNoCutsOOP);
+    fOutputContainer->Add(fPionV0pTRWithCutsOOP);
     fOutputContainer->Add(fPionV0pTTPC);
     fOutputContainer->Add(fPionV0pTTPCWithCuts);
     fOutputContainer->Add(EventSelectionSteps);
@@ -773,10 +781,50 @@ if(!MultSelection){
         {
           V0Daughter[0] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(0)); // This is how to get the daughter particles in AODs, apparently
           V0Daughter[1] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(1));
-          if(PassesMinimalTrackCuts(V0Daughter[0])) fPionV0pTRNoCuts->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
-          if(PassesMinimalTrackCuts(V0Daughter[1])) fPionV0pTRNoCuts->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
-          if(PassesITSTrackCuts(V0Daughter[0])) fPionV0pTRWithCuts->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
-          if(PassesITSTrackCuts(V0Daughter[1])) fPionV0pTRWithCuts->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
+
+          
+
+          if(PassesMinimalTrackCuts(V0Daughter[0]))
+          {
+            fPionV0pTRNoCuts->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
+            DPhi = V0Daughter[0]->Phi() - V0PlanePhi - TMath::Pi();
+            while(DPhi<0.) DPhi += TMath::Pi();
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
+              fPionV0pTRNoCutsIP->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
+            else
+              fPionV0pTRNoCutsOOP->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
+
+          }
+          if(PassesMinimalTrackCuts(V0Daughter[1]))
+          {
+            fPionV0pTRNoCuts->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
+            DPhi = V0Daughter[1]->Phi() - V0PlanePhi - TMath::Pi();
+            while(DPhi<0.) DPhi += TMath::Pi();
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
+              fPionV0pTRNoCutsIP->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
+            else
+              fPionV0pTRNoCutsOOP->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
+          }
+          if(PassesITSTrackCuts(V0Daughter[0]))
+          {
+            fPionV0pTRWithCuts->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
+            DPhi = V0Daughter[0]->Phi() - V0PlanePhi - TMath::Pi();
+            while(DPhi<0.) DPhi += TMath::Pi();
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
+              fPionV0pTRWithCutsIP->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
+            else
+              fPionV0pTRWithCutsOOP->Fill(V0Daughter[0]->Pt(), recoRadius, centrality);
+          }
+          if(PassesITSTrackCuts(V0Daughter[1]))
+          {
+            fPionV0pTRWithCuts->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
+            DPhi = V0Daughter[1]->Phi() - V0PlanePhi - TMath::Pi();
+            while(DPhi<0.) DPhi += TMath::Pi();
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
+              fPionV0pTRWithCutsIP->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
+            else
+              fPionV0pTRWithCutsOOP->Fill(V0Daughter[1]->Pt(), recoRadius, centrality);
+          }
           if(centrality>=20.0 && centrality<=50.0){
           if(PassesMinimalTrackCuts(V0Daughter[0])) fPionV0pTTPC->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kPion));
           if(PassesMinimalTrackCuts(V0Daughter[1])) fPionV0pTTPC->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kPion));
