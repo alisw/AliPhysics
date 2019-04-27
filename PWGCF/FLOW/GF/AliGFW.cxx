@@ -197,22 +197,3 @@ Bool_t AliGFW::SetHarmonicsToZero(TString &instr) {
   for(Int_t i=0;i<indc;i++) instr.Append("0 ");
   return kTRUE;
 };
-// SplitRegion method to fetch overlapping regions. Deprecated, as things have been removed from Region structure
-/*
-void AliGFW::SplitRegions() {
-  //Simple case. Will not look for overlaps, etc. Everything is left for end-used
-  //  printf("Just called SortRegions\n");
-  std::sort(fRegions.begin(),fRegions.end());
-  //Look for overlapping regions and split them
-  Int_t frs=fRegions.size();
-  for(Int_t i=0;i<frs-1;++i) {
-    Region er=fRegions.at(i)&fRegions.at(i+1);
-    if(er.UniqueBit==-1 || !er.IsExtra) continue;
-    fRegions.at(i).AddOverlapBit(1<<fRegions.size());
-    fRegions.at(i+1).AddOverlapBit(1<<fRegions.size());    
-    er.AddOverlapBit(i);
-    AddRegion(er);
-  };
-  std::sort(fRegions.begin(),fRegions.end());
-};
-*/
