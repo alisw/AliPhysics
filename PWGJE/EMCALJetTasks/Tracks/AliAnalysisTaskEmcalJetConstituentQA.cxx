@@ -154,7 +154,6 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
     return kFALSE;
   }
 
-
   for(auto jc : fNamesJetContainers){
     auto contname = dynamic_cast<TObjString *>(jc);
     if(!contname) {
@@ -240,7 +239,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
           fHistos->FillTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), lclusterpoint);
           double leadingCellE = 0.;
           for(auto icell = 0; icell < leadingcluster->GetNCells(); icell++) {
-            auto ecell = fCaloCells->GetAmplitude(leadingcluster->GetCellAbsId(icell));
+            auto ecell =  fInputEvent->GetEMCALCells()->GetAmplitude(leadingcluster->GetCellAbsId(icell));
             if(ecell > leadingCellE) leadingCellE = ecell;
           }
           double cellpoint[5] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), leadingCellE, fracmax};
@@ -366,7 +365,7 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
   }
 
   // create jet containers for R02 and R04 jets
-  std::array<double, 4> jetradii = {{0.2, 0.3, 0.4, 0.5}};
+  std::array<double, 5> jetradii = {{0.2, 0.3, 0.4, 0.5, 0.6}};
   for(auto r : jetradii) {
     std::stringstream contname;
     contname << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(r*10.);
