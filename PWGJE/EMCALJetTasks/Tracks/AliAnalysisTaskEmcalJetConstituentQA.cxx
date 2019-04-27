@@ -154,7 +154,6 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
     return kFALSE;
   }
 
-
   for(auto jc : fNamesJetContainers){
     auto contname = dynamic_cast<TObjString *>(jc);
     if(!contname) {
@@ -240,7 +239,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
           fHistos->FillTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), lclusterpoint);
           double leadingCellE = 0.;
           for(auto icell = 0; icell < leadingcluster->GetNCells(); icell++) {
-            auto ecell = fCaloCells->GetAmplitude(leadingcluster->GetCellAbsId(icell));
+            auto ecell =  fInputEvent->GetEMCALCells()->GetAmplitude(leadingcluster->GetCellAbsId(icell));
             if(ecell > leadingCellE) leadingCellE = ecell;
           }
           double cellpoint[5] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), leadingCellE, fracmax};
