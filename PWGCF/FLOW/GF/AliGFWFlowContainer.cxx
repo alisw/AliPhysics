@@ -7,6 +7,7 @@ AliGFWFlowContainer::AliGFWFlowContainer():
   fNRandom(0),
   fIDName("MidV"),
   fPtRebin(1),
+  fPtRebinEdges(0),
   fPropagateErrors(kFALSE)
 {
 };
@@ -17,6 +18,7 @@ AliGFWFlowContainer::AliGFWFlowContainer(const char *name):
   fNRandom(0),
   fIDName("MidV"),
   fPtRebin(1),
+  fPtRebinEdges(0),
   fPropagateErrors(kFALSE)
 {
 };
@@ -257,7 +259,13 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmul
     delete tempprof;
   };
   delete rhProfSub;
-  retSubset->RebinX(fPtRebin);
+  if(fPtRebinEdges) {
+    TString pnbu(retSubset->GetName());
+    retSubset->SetName("TempName");
+    TProfile *tempprof = (TProfile*)retSubset->Rebin(fPtRebin,pnbu.Data(),fPtRebinEdges);
+    delete retSubset;
+    retSubset = tempprof;
+  } else retSubset->RebinX(fPtRebin);
   return retSubset;
 };
 TH1D *AliGFWFlowContainer::ProfToHist(TProfile *inpf) {
