@@ -34,6 +34,7 @@ class AliGFWFlowContainer:public TNamed {
   Long64_t Merge(TCollection *collist);
   void SetIDName(TString newname); //! do not store
   void SetPtRebin(Int_t newval) { fPtRebin=newval; };
+  void SetPtRebin(Int_t nbins, Double_t *binedges) { fPtRebin=nbins; fPtRebinEdges=binedges; };
   void SetPropagateErrors(Bool_t newval) { fPropagateErrors = newval; };
   TProfile *GetCorrXXVsMulti(const char *order, Int_t l_pti=0);//pti = 0 for pt-integrated
   TProfile *GetCorrXXVsPt(const char *order, Double_t lminmulti=-1, Double_t lmaxmulti=-1); //0 for multi. integrated
@@ -125,6 +126,7 @@ class AliGFWFlowContainer:public TNamed {
   Int_t fNRandom;
   TString fIDName;
   Int_t fPtRebin; //! do not store
+  Double_t *fPtRebinEdges; //! do not store
   Bool_t fPropagateErrors; //! do not store
   TProfile *GetRefFlowProfile(const char *order, Double_t m1=-1, Double_t m2=-1);
   ClassDef(AliGFWFlowContainer, 1);
