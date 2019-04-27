@@ -97,6 +97,8 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fOverrideAutoTriggerMask{false},
   fOverrideAutoPileUpCuts{false},
   fMultSelectionEvCuts{false},  
+  fUseTimeRangeCut{false},
+  fTimeRangeCut{},
   fCutStats{nullptr},
   fCutStatsAfterTrigger{nullptr},
   fCutStatsAfterMultSelection{nullptr},
@@ -284,6 +286,16 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
+  /// Time Range masking
+  if (fUseTimeRangeCut) {
+    fTimeRangeCut.InitFromEvent(ev);
+    const Bool_t cutEvent = fTimeRangeCut.CutEvent(ev);
+
+    if ( cutEvent ) {
+      fFlag |= BIT(kTimeRangeCut);
+    }
+  }
+
   /// Ignore SPD/tracks vertex position and reconstruction individual flags
   bool allcuts = CheckNormalisationMask(kPassesAllCuts);
   if (allcuts) {
@@ -363,6 +375,7 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "Multiplicity selection",
     "INEL > 0",
     "Correlations",
+    "TimeRangeCut",
     "All cuts"
   };
 
