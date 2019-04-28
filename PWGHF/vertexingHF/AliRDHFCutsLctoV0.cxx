@@ -1181,7 +1181,7 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
     tofID = fPidHF->GetnSigmaTOF(bachelor, 4, nTOFsigmas);
     nTPCsigmas = -999;
     tpcID = fPidHF->GetnSigmaTPC(bachelor, 4, nTPCsigmas);
-    
+
     isBachelorID1 = (tpcID == 1) && (TMath::Abs(nTPCsigmas) < 3.) && ((tofID == 1 && TMath::Abs(nTOFsigmas) < 3.) || tofID == -1);
 
     nTOFsigmas = -999;
@@ -1189,7 +1189,7 @@ void AliRDHFCutsLctoV0::CheckPID(AliAODTrack *bachelor,
     nTPCsigmas = -999;
     tpcID = fPidHF->GetnSigmaTPC(bachelor, 2, nTPCsigmas);
 
-    isBachelorID1 = (tpcID == 1) && (TMath::Abs(nTPCsigmas) < 3.) && ((tofID == 1 && TMath::Abs(nTOFsigmas) < 3.) || tofID == -1);
+    isBachelorID2 = (tpcID == 1) && (TMath::Abs(nTPCsigmas) < 3.) && ((tofID == 1 && TMath::Abs(nTOFsigmas) < 3.) || tofID == -1);
     isBachelorID4 = isBachelorID2;
 
     break;
