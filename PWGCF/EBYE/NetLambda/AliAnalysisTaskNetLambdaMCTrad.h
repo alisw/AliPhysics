@@ -2,8 +2,9 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
 
-#ifndef AliAnalysisTaskNetLambdaTrad_h
-#define AliAnalysisTaskNetLambdaTrad_h
+#ifndef AliAnalysisTaskNetLambdaMCTrad_h
+#define AliAnalysisTaskNetLambdaMCTrad_h
+
 
 
 #include "AliAnalysisTaskSE.h"
@@ -19,10 +20,10 @@ class TH3;
 class TH3F;
 #include "AliEventCuts.h"
 
-class AliAnalysisTaskNetLambdaTrad : public AliAnalysisTaskSE {
+class AliAnalysisTaskNetLambdaMCTrad : public AliAnalysisTaskSE {
 public:
-    AliAnalysisTaskNetLambdaTrad(const char* name="AliAnalysisTaskNetLambdaTrad");
-    virtual ~AliAnalysisTaskNetLambdaTrad(){};
+    AliAnalysisTaskNetLambdaMCTrad(const char* name="AliAnalysisTaskNetLambdaMCTrad");
+    virtual ~AliAnalysisTaskNetLambdaMCTrad(){};
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
     
@@ -31,8 +32,8 @@ public:
     void SetEventSelection(UInt_t val) {fEvSel = val;}
     
 protected:
-    AliAnalysisTaskNetLambdaTrad(const  AliAnalysisTaskNetLambdaTrad &task);
-    AliAnalysisTaskNetLambdaTrad& operator=(const  AliAnalysisTaskNetLambdaTrad &task);
+    AliAnalysisTaskNetLambdaMCTrad(const  AliAnalysisTaskNetLambdaMCTrad &task);
+    AliAnalysisTaskNetLambdaMCTrad& operator=(const  AliAnalysisTaskNetLambdaMCTrad &task);
     
     AliESDEvent* fESD;
     AliPIDResponse* fPIDResponse;
@@ -148,10 +149,11 @@ protected:
 
     Int_t    GetPtBin(Double_t pt);
 
-    ClassDef(AliAnalysisTaskNetLambdaTrad,5);
+    ClassDef(AliAnalysisTaskNetLambdaMCTrad,4);
 };
 
 
 #endif
+
 
 
