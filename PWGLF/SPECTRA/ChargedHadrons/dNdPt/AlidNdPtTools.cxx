@@ -471,13 +471,13 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
     // and remove the part of the string containting the eta range
     if ( o.Contains("eta05") ) {
         cuts->SetEtaRange(-0.5,0.5);
-        s.ReplaceAll("eta05","");
+        o.ReplaceAll("eta05","");
     } else if ( o.Contains("eta08") ) {
         cuts->SetEtaRange(-0.5,0.5);
-        s.ReplaceAll("eta08","");
+        o.ReplaceAll("eta08","");
     } else if ( o.Contains("eta10") ) {
         cuts->SetEtaRange(-1.0,1.0);
-        s.ReplaceAll("eta10","");
+        o.ReplaceAll("eta10","");
     }    
         
         
