@@ -97,6 +97,9 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   void SetFillSparse_ImpParPullzSparsePtEtaPhi(Bool_t flag) {fFillSparse_ImpParPullzSparsePtEtaPhi=flag;}   // mfaggin
   void SetFillSparse_ImpParPullzSparsePtBchargePhi(Bool_t flag)   {fFillSparse_ImpParPullzSparsePtBchargePhi=flag;}  // mfaggin
 
+  // establish which tracks label an event as "high multiplicity"
+  void SetEstimatorHighMultEv(Bool_t flag)   {fUsetrkITSrefit_highMev=flag;}  // mfaggin
+
  private:
   
   AliAnalysisTaskSEImpParResSparse(const AliAnalysisTaskSEImpParResSparse &source);
@@ -165,8 +168,18 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   Bool_t fUsePhysicalPrimary; //
   Bool_t fUseGeneratedPt; //
 
-                                             // mfaggin (number 8 inserted)
-  ClassDef(AliAnalysisTaskSEImpParResSparse,8); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  // (mfaggin)
+  // establish which tracks label an event as "high multiplicity"
+  Bool_t fUsetrkITSrefit_highMev;   ///
+  // debug histogram for track counting 
+  TH1D* fCountTracks;      //!<!
+  // debug histogram for counting of number of tracks per event 
+  TH1D* fNumTracksperEv;   //!<!
+  // debug histogram for counting of number of contributors to the primary vertex
+  TH1D* fNumContributors;  //!<!
+
+                                             // mfaggin (number 9 inserted)
+  ClassDef(AliAnalysisTaskSEImpParResSparse,9); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif

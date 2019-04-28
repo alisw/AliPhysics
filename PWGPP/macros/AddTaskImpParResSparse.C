@@ -36,6 +36,7 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
                                                          ,Bool_t switchImpParzSparsePtEtaPhi = kTRUE
                                                          ,Bool_t switchImpParPullzSparsePtEtaPhi = kTRUE
                                                          ,Bool_t switchImpParPullzSparsePtBchargePhi = kTRUE
+                                                         ,Bool_t useITSrefitTrks_highMev = kFALSE
                                           				 )
 
 {
@@ -87,6 +88,9 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
     d0ResTask->SetFillSparse_ImpParPullzSparsePtBchargePhi(switchImpParPullzSparsePtBchargePhi);
 
     d0ResTask->SetFillSparseForExpert(fillexpertSparse);
+
+    // mfaggin
+    d0ResTask->SetEstimatorHighMultEv(useITSrefitTrks_highMev);
     
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("d0ResAnalysisESDTrackCuts");
     esdTrackCuts->SetRequireTPCRefit(kTRUE);
