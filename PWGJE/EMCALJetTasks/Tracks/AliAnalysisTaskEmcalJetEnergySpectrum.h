@@ -53,13 +53,13 @@ public:
     kTrgClusterN
   };
   AliAnalysisTaskEmcalJetEnergySpectrum();
-  AliAnalysisTaskEmcalJetEnergySpectrum(const char *name);
+  AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
-  void SetNameJetContainer(const char *name) { fNameJetContainer = name; }
-  void SetNameTriggerDecisionContainer(const char *name) { fNameTriggerDecisionContainer = name; }
-  void SetTriggerSelection(UInt_t triggerbits, const char *triggerstring) { 
+  void SetNameJetContainer(EMCAL_STRINGVIEW name) { fNameJetContainer = name; }
+  void SetNameTriggerDecisionContainer(EMCAL_STRINGVIEW name) { fNameTriggerDecisionContainer = name; }
+  void SetTriggerSelection(UInt_t triggerbits, EMCAL_STRINGVIEW triggerstring) { 
     fTriggerSelectionBits = triggerbits;
     fTriggerSelectionString = triggerstring;
   }
@@ -70,11 +70,11 @@ public:
   void SetUserPtBinning(int nbins, double *binning) { fUserPtBinning.Set(nbins+1, binning); }
   void SetRequestCentrality(bool doRequest) { fRequestCentrality = doRequest; }
   void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
-  void SetCentralityEstimator(const char *centest) { fCentralityEstimator = centest; }
+  void SetCentralityEstimator(EMCAL_STRINGVIEW centest) { fCentralityEstimator = centest; }
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
 
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, const char *namepartcont, const char *trigger, const char *suffix = "");
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix = "");
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -82,9 +82,9 @@ protected:
   virtual bool IsTriggerSelected();
   virtual Bool_t CheckMCOutliers();
   virtual void RunChanged(Int_t newrun);
-  std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
-  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
-  std::string MatchTrigger(const std::string &striggerstring);
+  std::vector<TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
+  bool IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const;
+  std::string MatchTrigger(EMCAL_STRINGVIEW striggerstring);
 
 private:
   AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);
