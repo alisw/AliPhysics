@@ -83,6 +83,9 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         void                    SetFilterBit (Int_t filter) { fFilterBit = filter; }
         void                    SetRemoveHadronsFromV0 (Bool_t rem) { fRemoveHadrFromV0 = rem; }
         void                    SetRemoveLamhFromCascade (Bool_t rem) { fRemoveLamhFromCascade = rem; }
+        void                    SetAcceptLambdasFromCascades (Bool_t accept) { fAacceptLambdasFromCasscade = accept; }
+        void                    SetAcceptPurePrimHadrons (Bool_t accept) { fPurePrimHadrons = accept; }
+        void                    SetAcceptPureV0 (Bool_t accept) { fPureV0 = accept; }
     
         AliEventCuts            fAliEventCuts;
     
@@ -173,11 +176,14 @@ class AliAnalysisTaskDiHadCorrelHighPt : public AliAnalysisTaskSE
         Int_t                   fFilterBit; // enable to vary filter bit for systematic studies
         Bool_t                  fRemoveLamhFromCascade; // enable to remove hh corelations, which are from the same V0
         Bool_t                  fRemoveHadrFromV0; // enable to remove Lamh corelations, which are from the same cascade
+        Bool_t                  fAacceptLambdasFromCasscade; // accept Lambdas from cascades to efficiency calculation 
+        Bool_t                  fPurePrimHadrons; // anable to accept only pure primary hadrons for MC closure test
+        Bool_t                  fPureV0; // anable to accept only pure good ID V0 for MC closure test
 
         AliAnalysisTaskDiHadCorrelHighPt(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
         AliAnalysisTaskDiHadCorrelHighPt& operator=(const AliAnalysisTaskDiHadCorrelHighPt&); // not implemented
 
-        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 13);
+        ClassDef(AliAnalysisTaskDiHadCorrelHighPt, 14);
 };
 
 class AliV0ChParticle : public AliVParticle
