@@ -1,4 +1,4 @@
-AliAnalysisTaskNetLambdaMCTrad *AddTaskNetLambdaMCTrad(const char* outputFileName = 0, const char* containerName = "NetLambdaOutput")
+AliAnalysisTaskNetLambdaMCTrad *AddTaskNetLambdaMCTrad(const char* outputFileName = 0, const char* containerName = "NetLambdaOutputMC")
 {
     // Get the pointer to the existing analysis manager via the static access method.
     //==============================================================================
@@ -27,7 +27,7 @@ AliAnalysisTaskNetLambdaMCTrad *AddTaskNetLambdaMCTrad(const char* outputFileNam
     
     outputFileName = "AnalysisResults.root";
     
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("LambdaList", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("LambdaListMC", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
     
     mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput (ana, 1, coutput1 );
