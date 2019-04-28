@@ -106,6 +106,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH1F*   fMassHistK0st[4*kMaxPtBins];    //!<! hist. of mass spectra via K0* (sig,bkg,tot)
   TH1F*   fMassHistKK[kMaxPtBins];        //!<! hist. of mass spectra of KK
   TH1F*   fMassHistKpi[kMaxPtBins];       //!<! hist. of mass spectra of Kpi
+  TH2F*   fMassHistKKVsKKpi[kMaxPtBins];  //!<! hist. of mass spectra of KK vs. mass spectra of KKpi
+  TH2F*   fMassHistKpiVsKKpi[kMaxPtBins]; //!<! hist. of mass spectra of KK vs. mass spectra of KKpi
   TH1F*   fMassRotBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from rot. of the pion
   TH1F*   fMassLSBkgHistPhi[kMaxPtBins];  //!<! hist. of bkg generated from left phi sideband + pion
   TH1F*   fMassRSBkgHistPhi[kMaxPtBins];  //!<! hist. of bkg generated from right phi sideband + pion
