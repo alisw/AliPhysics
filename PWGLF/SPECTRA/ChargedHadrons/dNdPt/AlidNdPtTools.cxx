@@ -462,9 +462,9 @@ TH1D* AlidNdPtTools::CreateLogHist(const char* name)
 /// \return the newly created AliESDtrackCuts or 0 in case of error
 
 AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
-{        
-    AliESDtrackCuts* cuts = new AliESDtrackCuts(o.Data());
+{            
     TString o(option);
+    AliESDtrackCuts* cuts = new AliESDtrackCuts(o.Data());
     o.ToLower();
     
     // if eta ranges is provided set the eta range
@@ -634,9 +634,11 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetRequireTPCRefit(kTRUE);                
         cuts->SetMaxChi2PerClusterTPC(4);
         cuts->SetMaxFractionSharedTPCClusters(0.4);        
-        esdTrackCuts->SetMinNClustersTPC(50);
+        cuts->SetMinNClustersTPC(50);
 //         cuts->SetEtaRange(-1.0,1.0);        
     } else {
+        // in case of no valid argument for cuts supplied
+        // return 0 to avoid mistakes
         delete cuts;
         cuts = 0;
     }
