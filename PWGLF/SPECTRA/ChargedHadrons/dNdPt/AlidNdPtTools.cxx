@@ -450,21 +450,42 @@ TH1D* AlidNdPtTools::CreateLogHist(const char* name)
 /// "TPCgeo+SPDhit"             same as "TPCgeo" but in addition require a hit in any layer of the SPD (for Matching Efficieny studies)
 /// "TPCgeo+SPDhit+ITSrefit"    identical to "TPCgeo+ITSrefit+SPDhit"
 /// "TPCgeo+ITSrefit+SPDhit"    same as "TPCgeo" but in addition require a hit in any layer of the SPD AND a ITS refit (for Matching Efficieny studies) 
+/// "TPConlyMinimal"            minimal tpc only cuts
 /// 
+/// all these cuts do not include the eta-cut, to add add one  of the following options:
+/// "Eta05" 
+/// "Eta08" 
+/// "Eta10"
+///
 /// \param option string to select the type of track cuts to be created
 ///
 /// \return the newly created AliESDtrackCuts or 0 in case of error
 
 AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
-{
-    AliESDtrackCuts* cuts = 0;
+{        
+    AliESDtrackCuts* cuts = new AliESDtrackCuts(o.Data());
     TString o(option);
     o.ToLower();
+    
+    // if eta ranges is provided set the eta range
+    // and remove the part of the string containting the eta range
+    if ( o.Contains("eta05") ) {
+        cuts->SetEtaRange(-0.5,0.5);
+        s.ReplaceAll("eta05","");
+    } else if ( o.Contains("eta08") ) {
+        cuts->SetEtaRange(-0.5,0.5);
+        s.ReplaceAll("eta08","");
+    } else if ( o.Contains("eta10") ) {
+        cuts->SetEtaRange(-1.0,1.0);
+        s.ReplaceAll("eta10","");
+    }    
+        
+        
     // as default use the cuts with geometric length cut
     if ( (o.EqualTo("")) || (o.EqualTo("default")) ) { o = "tpcitsgeo"; }
     
     if (o.EqualTo("tpcitsgeo")) {
-        cuts = new AliESDtrackCuts("default TPCITS with geo L cut");
+//         cuts = new AliESDtrackCuts("default TPCITS with geo L cut");
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
         cuts->SetMaxChi2PerClusterTPC(4);
@@ -482,10 +503,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetMaxChi2TPCConstrainedGlobal(36.);
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
-        cuts->SetEtaRange(-0.8,0.8);
+//         cuts->SetEtaRange(-0.8,0.8);
         
     } else if (o.EqualTo("tpcitsgeonodcar")) {
-        cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr");
+//         cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr");
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
         cuts->SetMaxChi2PerClusterTPC(4);
@@ -501,10 +522,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetMaxChi2TPCConstrainedGlobal(36.);
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
-        cuts->SetEtaRange(-0.8,0.8);
+//         cuts->SetEtaRange(-0.8,0.8);
         
     } else if (o.EqualTo("tpcitsfordcarstudy")) {
-        cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr and Chi2 TPCc vs. Global");
+//         cuts = new AliESDtrackCuts("default TPCITS with geo L cut without DCAr and Chi2 TPCc vs. Global");
         cuts->SetRequireTPCRefit(kTRUE);    
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
         cuts->SetMaxChi2PerClusterTPC(4);
@@ -520,10 +541,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         // cuts->SetMaxChi2TPCConstrainedGlobal(36.);
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
-        cuts->SetEtaRange(-0.8,0.8);        
+//         cuts->SetEtaRange(-0.8,0.8);        
         
     } else if (o.EqualTo("tpcgeo")) { 
-        cuts = new AliESDtrackCuts("TPConly with geo L");
+//         cuts = new AliESDtrackCuts("TPConly with geo L");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -533,6 +554,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetMaxDCAToVertexXY(3);
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
+//         cuts->SetEtaRange(-0.8,0.8);
         
     } else if (o.EqualTo("tpcgeonodcar")) { 
         cuts = new AliESDtrackCuts("TPConly with geo L without DCAr");
@@ -544,9 +566,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetMaxDCAToVertexZ(3);        
         // Geometrical-Length Cut
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);    
+//         cuts->SetEtaRange(-0.8,0.8);
         
     } else if (o.EqualTo("tpcgeo+itshit")) { 
-        cuts = new AliESDtrackCuts("TPConly with geo L + hit in ITS");
+//         cuts = new AliESDtrackCuts("TPConly with geo L + hit in ITS");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -558,9 +581,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
         // its hit
         cuts->SetMinNClustersITS(1);
+//         cuts->SetEtaRange(-0.8,0.8);
         
     } else if (o.EqualTo("tpcgeo+itsrefit")) { 
-        cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit");
+//         cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -574,7 +598,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetRequireITSRefit(kTRUE);
         
     } else if (o.EqualTo("tpcgeo+spdhit")) { 
-        cuts = new AliESDtrackCuts("TPC with geo L + hit in SPD");
+//         cuts = new AliESDtrackCuts("TPC with geo L + hit in SPD");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -586,9 +610,10 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7);
         // spd hit
         cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+//         cuts->SetEtaRange(-0.8,0.8);        
         
     }  else if (o.EqualTo("tpcgeo+itsrefit+spdhit") || o.EqualTo("tpcgeo+spdhit+itsrefit")) { 
-        cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit + hit in SPD");
+//         cuts = new AliESDtrackCuts("TPC with geo L + ITSrefit + hit in SPD");
         cuts->SetRequireTPCRefit(kTRUE);
         cuts->SetAcceptKinkDaughters(kFALSE);
         cuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -601,6 +626,19 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         // its refit + spd hit
         cuts->SetRequireITSRefit(kTRUE);
         cuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+//         cuts->SetEtaRange(-0.8,0.8);        
+    
+        
+    }  else if (o.EqualTo("tpconlyminimal")) { 
+//         cuts = new AliESDtrackCuts("minimal TPC only cuts");
+        cuts->SetRequireTPCRefit(kTRUE);                
+        cuts->SetMaxChi2PerClusterTPC(4);
+        cuts->SetMaxFractionSharedTPCClusters(0.4);        
+        esdTrackCuts->SetMinNClustersTPC(50);
+//         cuts->SetEtaRange(-1.0,1.0);        
+    } else {
+        delete cuts;
+        cuts = 0;
     }
 
     return cuts;
