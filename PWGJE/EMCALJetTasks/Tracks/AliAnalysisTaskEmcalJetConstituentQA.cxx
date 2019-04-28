@@ -210,18 +210,23 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
           memcpy(fracamp.data(), clust->GetCellsAmplitudeFraction(), sizeof(double) * clust->GetNCells());
           if(!clust) continue; 
           TLorentzVector ptvec;
+          double maxEcell = 0.;
+          for(auto icell = 0; icell < clust->GetNCells(); icell++) {
+            auto ecell =  fInputEvent->GetEMCALCells()->GetCellAmplitude(clust->GetCellAbsId(icell));
+            if(ecell > maxEcell) maxEcell = ecell;
+          }
           clust->GetMomentum(ptvec, this->fVertex, AliVCluster::kHadCorr);
           pointneutral[4] = std::abs(clust->GetHadCorrEnergy());
           pointneutral[5] = std::abs(clust->GetNonLinCorrEnergy());
           pointneutral[6] = jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
           pointneutral[7] = jetvec.DeltaR(ptvec.Vect());
-          pointneutral[8] = std::abs(clust->E() * (*std::max_element(fracamp.begin(), fracamp.end())));
+          pointneutral[8] = maxEcell;
           fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
           if(fDoHighZClusters && (pointneutral[6] > 0.95)) {
             pointHighZCluster[2] = pointneutral[4];
             pointHighZCluster[3] = pointneutral[6];
             pointHighZCluster[4] = clust->GetNCells();
-            pointHighZCluster[5] = *std::max_element(clust->GetCellsAmplitudeFraction(), clust->GetCellsAmplitudeFraction()+clust->GetNCells());
+            pointHighZCluster[5] = maxEcell;
             pointHighZCluster[6] = clust->GetM02();
             fHistos->FillTHnSparse(Form("hHighZClusters%s", contname->String().Data()), pointHighZCluster);
           }
@@ -231,17 +236,18 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
         if(leadingcluster){
           TLorentzVector pvect;
           leadingcluster->GetMomentum(pvect, fVertex);
-          std::vector<double> fracamp(leadingcluster->GetNCells());
-          memcpy(fracamp.data(), leadingcluster->GetCellsAmplitudeFraction(), sizeof(double) * leadingcluster->GetNCells());
-          double fracmax = (*std::max_element(fracamp.begin(), fracamp.end())),
-                 maxEcell = fracmax * leadingcluster->E();
+          double maxEcell = 0.;
+          for(auto icell = 0; icell < leadingcluster->GetNCells(); icell++) {
+            auto ecell =  fInputEvent->GetEMCALCells()->GetCellAmplitude(leadingcluster->GetCellAbsId(icell));
+            AliDebugStream(3) << icell << " Pos "  << leadingcluster->GetCellAbsId(icell) <<  " Ecell " << ecell << std::endl;
+            if(ecell > maxEcell) maxEcell = ecell;
+          }
+          double fracmax = maxEcell / leadingcluster->E();
+          AliDebugStream(3) << "leading cluster Max E: " << maxEcell << ", frac " << fracmax << std::endl;
           double lclusterpoint[7] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), jet->GetZ(pvect.Px(), pvect.Py(), pvect.Pz()), jetvec.DeltaR(pvect.Vect()), std::abs(maxEcell), fracmax};
           fHistos->FillTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), lclusterpoint);
           double leadingCellE = 0.;
-          for(auto icell = 0; icell < leadingcluster->GetNCells(); icell++) {
-            auto ecell =  fInputEvent->GetEMCALCells()->GetAmplitude(leadingcluster->GetCellAbsId(icell));
-            if(ecell > leadingCellE) leadingCellE = ecell;
-          }
+
           double cellpoint[5] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), leadingCellE, fracmax};
           fHistos->FillTHnSparse(Form("hLeadingCell%s", contname->String().Data()), cellpoint);
         }
@@ -269,10 +275,12 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
         if(leadingcluster){
           TLorentzVector pvect;
           leadingcluster->GetMomentum(pvect, fVertex);
-          std::vector<double> fracamp(leadingcluster->GetNCells());
-          memcpy(fracamp.data(), leadingcluster->GetCellsAmplitudeFraction(), sizeof(double) * leadingcluster->GetNCells());
-          double fracmax = (*std::max_element(fracamp.begin(), fracamp.end())),
-                 maxEcell = fracmax * leadingcluster->E();
+          double maxEcell = 0.;
+          for(auto icell = 0; icell < leadingcluster->GetNCells(); icell++) {
+            auto ecell =  fInputEvent->GetEMCALCells()->GetCellAmplitude(leadingcluster->GetCellAbsId(icell));
+            if(ecell > maxEcell) maxEcell = ecell;
+          }
+          double fracmax = maxEcell / leadingcluster->E();
           double lclusterpoint[7] = {std::abs(leadingjet->Pt()), leadingjet->NEF(), std::abs(pvect.Pt()), leadingjet->GetZ(pvect.Px(), pvect.Py(), pvect.Pz()), leadingjetvec.DeltaR(pvect.Vect()), maxEcell, fracmax};
           fHistos->FillTHnSparse(Form("hLeadingJetLeadingCluster%s", contname->String().Data()), lclusterpoint);
         }
