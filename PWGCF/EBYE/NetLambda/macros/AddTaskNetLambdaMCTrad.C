@@ -1,16 +1,16 @@
-AliAnalysisTaskNetLambdaTrad *AddTaskNetLambdaTrad(const char* outputFileName = 0, const char* containerName = "NetLambdaOutput")
+AliAnalysisTaskNetLambdaMCTrad *AddTaskNetLambdaMCTrad(const char* outputFileName = 0, const char* containerName = "NetLambdaOutput")
 {
     // Get the pointer to the existing analysis manager via the static access method.
     //==============================================================================
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
-        ::Error("AddTaskNetLambdaTrad", "No analysis manager to connect to.");
+        ::Error("AddTaskNetLambdaMCTrad", "No analysis manager to connect to.");
         return NULL;
     }
     
     // Create the task and configure it.
     //===========================================================================
-    AliAnalysisTaskNetLambdaTrad* ana = new  AliAnalysisTaskNetLambdaTrad(containerName);
+    AliAnalysisTaskNetLambdaMCTrad* ana = new  AliAnalysisTaskNetLambdaMCTrad(containerName);
     
     // common config,
     ana->SetDebugLevel(0);
