@@ -144,6 +144,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs() : AliAnalysisTaskSE(),
   {
     fMassHistKK[i] = 0;
     fMassHistKpi[i] = 0;
+    fMassHistKKVsKKpi[i] = 0;
+    fMassHistKpiVsKKpi[i] = 0;
     fMassRotBkgHistPhi[i] = 0;
     fMassLSBkgHistPhi[i] = 0;
     fMassRSBkgHistPhi[i] = 0;
@@ -253,6 +255,8 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi *
   {
     fMassHistKK[i] = 0;
     fMassHistKpi[i] = 0;
+    fMassHistKKVsKKpi[i] = 0;
+    fMassHistKpiVsKKpi[i] = 0;
     fMassRotBkgHistPhi[i] = 0;
     fMassLSBkgHistPhi[i] = 0;
     fMassRSBkgHistPhi[i] = 0;
@@ -367,6 +371,8 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
     {
       delete fMassHistKK[i];
       delete fMassHistKpi[i];
+      delete fMassHistKKVsKKpi[i];
+      delete fMassHistKpiVsKKpi[i];
       delete fMassRotBkgHistPhi[i];
       delete fMassLSBkgHistPhi[i];
       delete fMassRSBkgHistPhi[i];
@@ -701,6 +707,12 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
     fMassHistKpi[i] = new TH1F(hisname.Data(), hisname.Data(), 200, 0.7, 1.1);
     fMassHistKpi[i]->Sumw2();
     fOutput->Add(fMassHistKpi[i]);
+    hisname.Form("hMassKKVsKKpiPt%d", i);
+    fMassHistKKVsKKpi[i] = new TH2F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass, 200, 0.95, 1.15);
+    fOutput->Add(fMassHistKKVsKKpi[i]);
+    hisname.Form("hMassKpiVsKKpiPt%d", i);
+    fMassHistKpiVsKKpi[i] = new TH2F(hisname.Data(), hisname.Data(), nInvMassBins, minMass, maxMass, 200, 0.7, 1.1);
+    fOutput->Add(fMassHistKpiVsKKpi[i]);
     if (fDoRotBkg)
     {
       hisname.Form("hMassAllPt%dphi_RotBkg", i);
@@ -1126,6 +1138,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           invMass_KKpi = d->InvMassDsKKpi();
           fMassHist[index]->Fill(invMass_KKpi, weightKKpi);
           fPtVsMass->Fill(invMass_KKpi, ptCand, weightKKpi);
+          fMassHistKKVsKKpi[index]->Fill(invMass_KKpi, massKK_KKpi);
+          fMassHistKpiVsKKpi[index]->Fill(invMass_KKpi, massKp);
 
           if (fDoBkgPhiSB && (0.010 < TMath::Abs(massKK_KKpi - massPhi)) && (TMath::Abs(massKK_KKpi - massPhi) < 0.030))
           {
@@ -1188,6 +1202,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           invMass_piKK = d->InvMassDspiKK();
           fMassHist[index]->Fill(invMass_piKK, weightpiKK);
           fPtVsMass->Fill(invMass_piKK, ptCand, weightpiKK);
+          fMassHistKKVsKKpi[index]->Fill(invMass_piKK, massKK_piKK);
+          fMassHistKpiVsKKpi[index]->Fill(invMass_piKK, masspK);
 
           if (fDoBkgPhiSB && (0.010 < TMath::Abs(massKK_piKK - massPhi)) && (TMath::Abs(massKK_piKK - massPhi) < 0.030))
           {
