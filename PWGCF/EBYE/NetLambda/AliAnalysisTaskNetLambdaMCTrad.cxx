@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Apr 27
+// Updated Apr 28
 
 
 #include "AliAnalysisManager.h"
@@ -35,12 +35,12 @@
 #include "THnSparse.h"
 
 
-#include "AliAnalysisTaskNetLambdaTrad.h"
+#include "AliAnalysisTaskNetLambdaMCTrad.h"
 
-ClassImp(AliAnalysisTaskNetLambdaTrad)
+ClassImp(AliAnalysisTaskNetLambdaMCTrad)
 
 //-----------------------------------------------------------------------------
-AliAnalysisTaskNetLambdaTrad::AliAnalysisTaskNetLambdaTrad(const char* name) :
+AliAnalysisTaskNetLambdaMCTrad::AliAnalysisTaskNetLambdaMCTrad(const char* name) :
 AliAnalysisTaskSE(name),
 fESD(0x0),
 fPIDResponse(0x0),
@@ -139,7 +139,7 @@ fPtBinNplusNminusChUNTagFourlooseBKG(NULL),
 fPtBinNplusNminusChTruth(NULL)
 
 {
-    Info("AliAnalysisTaskNetLambdaTrad","Calling Constructor");
+    Info("AliAnalysisTaskNetLambdaMCTrad","Calling Constructor");
     
     DefineInput(0,TChain::Class());
     DefineOutput(1,TList::Class());
@@ -147,7 +147,7 @@ fPtBinNplusNminusChTruth(NULL)
 }
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
+void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
 {
     fListHist = new TList();
     fListHist->SetOwner();
@@ -428,7 +428,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
 
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
+void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
 {
     
     const Int_t dim = fNptBins*2;
@@ -1179,7 +1179,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Int_t AliAnalysisTaskNetLambdaTrad::GetPtBin(Double_t pt)
+Int_t AliAnalysisTaskNetLambdaMCTrad::GetPtBin(Double_t pt)
 {
     Int_t bin = -1;
     
