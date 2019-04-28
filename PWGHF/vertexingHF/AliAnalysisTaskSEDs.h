@@ -202,7 +202,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Bool_t fUseFinPtBinsForSparse; ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,29);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,30);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
