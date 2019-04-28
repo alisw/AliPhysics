@@ -215,6 +215,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
             auto ecell =  fInputEvent->GetEMCALCells()->GetCellAmplitude(clust->GetCellAbsId(icell));
             if(ecell > maxEcell) maxEcell = ecell;
           }
+          double fracmax = maxEcell / clust->E();
           clust->GetMomentum(ptvec, this->fVertex, AliVCluster::kHadCorr);
           pointneutral[4] = std::abs(clust->GetHadCorrEnergy());
           pointneutral[5] = std::abs(clust->GetNonLinCorrEnergy());
@@ -226,7 +227,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
             pointHighZCluster[2] = pointneutral[4];
             pointHighZCluster[3] = pointneutral[6];
             pointHighZCluster[4] = clust->GetNCells();
-            pointHighZCluster[5] = maxEcell;
+            pointHighZCluster[5] = fracmax;
             pointHighZCluster[6] = clust->GetM02();
             fHistos->FillTHnSparse(Form("hHighZClusters%s", contname->String().Data()), pointHighZCluster);
           }
