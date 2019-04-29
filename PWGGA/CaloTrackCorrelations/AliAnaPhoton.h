@@ -62,15 +62,16 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   // Analysis methods
   
   Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Bool_t matched, 
-                               Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps) ;
+                               Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps, Float_t weight) ;
   
   void         FillAcceptanceHistograms();
   
 //  void         DistanceToAddedSignalAtGeneratorLevel(Int_t label, Int_t nprim, 
 //                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Int_t nlm, 
-                                         Bool_t matched, Float_t maxCellEFraction, Int_t & largeTimeInside) ;
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Float_t weight,
+                                          Int_t nlm, Bool_t matched, Float_t maxCellEFraction, 
+                                          Int_t & largeTimeInside) ;
   
   void         SwitchOnFillShowerShapeHistograms()        { fFillSSHistograms      = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()       { fFillSSHistograms      = kFALSE ; }  
@@ -93,8 +94,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillTrackMultiplicityHistograms()  { fFillTrackMultHistograms = kTRUE  ; }
   void         SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
-  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t sm, Bool_t matched, 
-                                                   Int_t mctag, Float_t mcbin, Float_t egen, Int_t noverlaps);
+  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t sm, 
+                                                   Bool_t matched, Int_t mctag, Float_t mcbin, 
+                                                   Float_t egen, Int_t noverlaps, Float_t weight);
   
   void         SwitchOnTMHistoFill()                      { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                     { fFillTMHisto           = kFALSE ; }
@@ -222,6 +224,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fMomentum;                         //!<! Cluster momentum, temporary container
   TLorentzVector fMomentum2;                        //!<! Cluster momentum, temporary container
   TLorentzVector fPrimaryMom;                       //!<! Primary MC momentum, temporary container
+  TLorentzVector fPrimaryMom2;                      //!<! Primary MC momentum, temporary container
   TVector3       fProdVertex;                       //!<! Primary MC production vertex, temporary container
   
   Float_t  fConstantTimeShift;                      ///<  Apply a 600 ns time shift in case of simulation, shift in ns.

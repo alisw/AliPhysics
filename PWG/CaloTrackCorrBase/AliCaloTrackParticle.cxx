@@ -26,7 +26,7 @@ ClassImp(AliCaloTrackParticle)
 AliCaloTrackParticle::AliCaloTrackParticle() :
 AliVParticle(),
 fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
-fCaloLabel(), fTrackLabel(), fDetectorTag(-1),
+fCaloLabel(), fTrackLabel(), fDetectorTag(-1), fWeight(1),
 fBadDist(0), fNLM(0), fM02(0), fM20(0),
 fTime(0),fNCells(0),fSuperModule(0),fCellAbsIdMax(0),
 fDecayTag(0),fIsolated(0), fLeadingParticle(0),
@@ -61,7 +61,7 @@ fTagged(0), fFidArea(0), fInputFileIndex(0),fBtag(0)
 AliCaloTrackParticle::AliCaloTrackParticle(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliVParticle(),
   fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
-  fCaloLabel(), fTrackLabel(), fDetectorTag(-1),
+  fCaloLabel(), fTrackLabel(), fDetectorTag(-1), fWeight(1),
   fBadDist(0), fNLM(0), fM02(0), fM20(0),
   fTime(0),fNCells(0),fSuperModule(0),fCellAbsIdMax(0),
   fDecayTag(0),fIsolated(0), fLeadingParticle(0),
@@ -95,7 +95,7 @@ AliCaloTrackParticle::AliCaloTrackParticle(Double_t px, Double_t py, Double_t pz
 AliCaloTrackParticle::AliCaloTrackParticle(TLorentzVector & p):
   AliVParticle(),
   fMomentum(0),fPdg(-1), fTag(0), fLabel(-1),
-  fCaloLabel(), fTrackLabel(),fDetectorTag(-1),
+  fCaloLabel(), fTrackLabel(),fDetectorTag(-1), fWeight(1),
   fBadDist(0), fNLM(0), fM02(0), fM20(0),
   fTime(0),fNCells(0),fSuperModule(0),fCellAbsIdMax(0),
   fDecayTag(0),fIsolated(0), fLeadingParticle(0),
@@ -143,7 +143,7 @@ void AliCaloTrackParticle::Clear(const Option_t* /*opt*/)
 AliCaloTrackParticle::AliCaloTrackParticle(const AliCaloTrackParticle& part) :
   AliVParticle(part),
   fMomentum(0), fPdg(part.fPdg), fTag(part.fTag), fLabel(part.fLabel),
-  fCaloLabel(), fTrackLabel(), fDetectorTag(part.fDetectorTag),
+  fCaloLabel(), fTrackLabel(), fDetectorTag(part.fDetectorTag), fWeight(part.fWeight),
   fBadDist(part.fBadDist),fNLM(part.fNLM), fM02(part.fM02), fM20(part.fM20),
   fTime(part.fTime),fNCells(part.fNCells),fSuperModule(part.fSuperModule),fCellAbsIdMax(part.fCellAbsIdMax),
   fDecayTag(part.fDecayTag),fIsolated(part.fIsolated), fLeadingParticle(part.fLeadingParticle),
@@ -188,6 +188,7 @@ AliCaloTrackParticle& AliCaloTrackParticle::operator=(const AliCaloTrackParticle
     fIsoConeSumPt [1] = part.fIsoConeSumPt [1];
     
     fDetectorTag = part.fDetectorTag;
+    fWeight   = part.fWeight;
     fDisp     = part.fDisp;
     fTof      = part.fTof;
     fCharged  = part.fCharged;
@@ -250,6 +251,7 @@ void AliCaloTrackParticle::Print(Option_t* /*option*/) const
   printf("     Pz = %13.3f\n", Pz());
   printf("Id PDG     : %d\n",fPdg);
   printf("MC Tag     : %d\n",fTag);
+  printf("Weight     : %2.3f\n",fWeight);
   printf("Dist. to bad channel : %d\n",fBadDist);
 
   printf("Detector  : %d, Labels:\n",fDetectorTag);
