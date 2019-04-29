@@ -74,9 +74,10 @@ public:
      Double_t GetPyG();
      Double_t GetPzG();
      Double_t GetPhiG();
+     Double_t GetConstrainedParamPhiG();
      Int_t GetLabelG();
-     Bool_t GetPxPyPzG(Double_t* p) const;
-     const AliExternalTrackParam* GetParamG();
+     Bool_t GetConstrainedPxPyPzG(Double_t* p) const;
+     const AliExternalTrackParam* GetParamG(const AliVVertex* vx,Double_t bmag);
      void GetImpactParametersG(Float_t* p,Float_t* cov) const;
      Double_t GetSignG();
      Double_t GetEtaG();
@@ -87,6 +88,7 @@ public:
      Bool_t   HasPointOnITSLayerG(Int_t i);
      Double_t GetDCAxy();
      Double_t GetDCAz();
+     Bool_t TestFilterBitG(UInt_t bit) const;
      Bool_t   GetIsESD(){
          return fIsESD;
      }
