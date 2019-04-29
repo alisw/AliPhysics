@@ -5,6 +5,9 @@
 #ifndef AliMultDepSpecAnalysisTask_cxx
 #define AliMultDepSpecAnalysisTask_cxx
 
+#define MAX_HISTO_DIM 4
+#define PRECISION 1e-6
+
 class TParticle;
 class AliESDEvent;
 class AliVEvent;
@@ -25,8 +28,6 @@ using std::array;
 
 class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
   public:
-    static constexpr Int_t MAX_HISTO_DIM = 6;
-    static constexpr Double_t PRECISION = 1e-6;
     AliMultDepSpecAnalysisTask();
     AliMultDepSpecAnalysisTask(const char *name);
     virtual ~AliMultDepSpecAnalysisTask();
