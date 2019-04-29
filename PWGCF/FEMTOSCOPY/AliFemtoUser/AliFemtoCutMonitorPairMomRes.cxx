@@ -8,7 +8,9 @@
 
 
 AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes():
-  fMomRes(0)
+  fMomRes(0),
+  fMassPart1(0),
+  fMassPart2(0)
 {
   // Default constructor
   fMomRes = new TH2D("PairMomRes","PairMomRes",100,0,2,100,0,2);
@@ -17,8 +19,10 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes():
  
 }
 
-AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const char *aName, double qmin, double qmax, int nbins):
-  fMomRes(0)
+AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const char *aName, double massPart1, double massPart2, double qmin, double qmax, int nbins):
+  fMomRes(0),
+  fMassPart1(0),
+  fMassPart2(0)
 {
   // Normal constructor
   char name[200];
@@ -29,7 +33,9 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const char *aName, do
 
 AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const AliFemtoCutMonitorPairMomRes &aCut):
   AliFemtoCutMonitor(aCut),
-  fMomRes(0)
+  fMomRes(0),
+  fMassPart1(aCut.fMassPart1),
+  fMassPart2(aCut.fMassPart2)
 {
   // copy constructor
   fMomRes = new TH2D(*aCut.fMomRes);
@@ -51,6 +57,9 @@ AliFemtoCutMonitorPairMomRes& AliFemtoCutMonitorPairMomRes::operator=(const AliF
 
   if (fMomRes) delete fMomRes;
   fMomRes = new TH2D(*aCut.fMomRes);
+
+  fMassPart1 = aCut.fMassPart1;
+  fMassPart2 = aCut.fMassPart2;
 
   return *this;
 }
@@ -77,8 +86,8 @@ void AliFemtoCutMonitorPairMomRes::Fill(const AliFemtoPair* aPair)
 
     if(tInfo1!=NULL && tInfo2!=NULL) {
 
-      AliFemtoLorentzVector p1(::sqrt(tInfo1->GetTrueMomentum()->Mag2() + tInfo1->GetMass()*tInfo1->GetMass()), *tInfo1->GetTrueMomentum());
-      AliFemtoLorentzVector p2(::sqrt(tInfo2->GetTrueMomentum()->Mag2() + tInfo2->GetMass()*tInfo2->GetMass()), *tInfo2->GetTrueMomentum());
+      AliFemtoLorentzVector p1(::sqrt(tInfo1->GetTrueMomentum()->Mag2() + fMassPart1*fMassPart1), *tInfo1->GetTrueMomentum());
+      AliFemtoLorentzVector p2(::sqrt(tInfo2->GetTrueMomentum()->Mag2() + fMassPart2*fMassPart2), *tInfo2->GetTrueMomentum());
 
       
       const double
