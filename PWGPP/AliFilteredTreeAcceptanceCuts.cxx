@@ -46,8 +46,8 @@ AliAnalysisCuts(name, title)
 , fExcludeMinPhi2(0)
 , fExcludeMaxPhi2(0)
 , fCheckRange(kFALSE)
-, fMaxDCAr(0)
-, fMaxDCAz(0)
+, fMaxDCAr(5)
+, fMaxDCAz(5)
 {
   // default constructor 
   

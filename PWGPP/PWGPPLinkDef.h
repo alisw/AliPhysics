@@ -58,7 +58,7 @@
 #pragma link C++ class AliPIDtools+;
 #pragma link C++ class std::map<int,AliTPCPIDResponse *>+;
 #pragma link C++ class std::map<int,AliPIDResponse *>+;
-
+#pragma link C++ class AliESDtools+;
 #pragma link C++ class AliIntSpotEstimator+;
 #pragma link C++ class AliAnalysisTaskIPInfo+;
 
