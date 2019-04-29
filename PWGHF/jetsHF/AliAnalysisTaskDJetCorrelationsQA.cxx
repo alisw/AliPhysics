@@ -1188,11 +1188,6 @@ Bool_t  AliAnalysisTaskDJetCorrelationsQA::DefineHistoForAnalysis(){
    fhstat->SetNdivisions(1);
    fOutput->Add(fhstat);
 
-   fhCentDjet=new TH1F("hCentDjet","Centrality",100,0,100);
-   fOutput->Add(fhCentDjet);
-
-   fhMultiplicity=new TH1F("fhMultiplicity","Multiplicity",500,-0.5,499.5);
-   fOutput->Add(fhMultiplicity);
 
    const Int_t nbinsmass=300;
    const Int_t nbinspttrack=500;
@@ -1225,6 +1220,12 @@ Bool_t  AliAnalysisTaskDJetCorrelationsQA::DefineHistoForAnalysis(){
    Float_t centLims[2] = {0,100};
    Float_t multLims[2] = {-0.5,499.5};
    if(fIsPbPbData) multLims[1] = 9999.5;
+
+   fhCentDjet=new TH1F("hCentDjet","Centrality",nbinsCent,centLims[0],centLims[1]);
+   fOutput->Add(fhCentDjet);
+
+   fhMultiplicity=new TH1F("fhMultiplicity","Multiplicity",nbinsMult,multLims[0],multLims[1]);
+   fOutput->Add(fhMultiplicity);
 
    // jet related fistograms
 
