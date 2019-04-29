@@ -1138,8 +1138,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           invMass_KKpi = d->InvMassDsKKpi();
           fMassHist[index]->Fill(invMass_KKpi, weightKKpi);
           fPtVsMass->Fill(invMass_KKpi, ptCand, weightKKpi);
-          fMassHistKKVsKKpi[index]->Fill(invMass_KKpi, massKK_KKpi);
-          fMassHistKpiVsKKpi[index]->Fill(invMass_KKpi, massKp);
+          fMassHistKKVsKKpi[iPtBin]->Fill(invMass_KKpi, massKK_KKpi);
+          fMassHistKpiVsKKpi[iPtBin]->Fill(invMass_KKpi, massKp);
 
           if (fDoBkgPhiSB && (0.010 < TMath::Abs(massKK_KKpi - massPhi)) && (TMath::Abs(massKK_KKpi - massPhi) < 0.030))
           {
@@ -1202,8 +1202,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t * /*option*/)
           invMass_piKK = d->InvMassDspiKK();
           fMassHist[index]->Fill(invMass_piKK, weightpiKK);
           fPtVsMass->Fill(invMass_piKK, ptCand, weightpiKK);
-          fMassHistKKVsKKpi[index]->Fill(invMass_piKK, massKK_piKK);
-          fMassHistKpiVsKKpi[index]->Fill(invMass_piKK, masspK);
+          fMassHistKKVsKKpi[iPtBin]->Fill(invMass_piKK, massKK_piKK);
+          fMassHistKpiVsKKpi[iPtBin]->Fill(invMass_piKK, masspK);
 
           if (fDoBkgPhiSB && (0.010 < TMath::Abs(massKK_piKK - massPhi)) && (TMath::Abs(massKK_piKK - massPhi) < 0.030))
           {
