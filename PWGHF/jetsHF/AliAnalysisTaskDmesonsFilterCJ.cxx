@@ -1434,9 +1434,8 @@ void AliAnalysisTaskDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliParti
         if(fUsePythia) {
             if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) continue;
             if(fMultPythiaHeader){
-                //if( !(nameGen.Contains("PYTHIA") && nameGen.Contains(Form("%d",fPythiaEvent)) ) ) continue;
-                if( !(nameGen.Contains(Form("%d",fPythiaEvent)) ) ) continue;
-             }
+                if( !(nameGen.Contains("PYTHIA") && nameGen.Contains(Form("%d",fPythiaEvent)) ) ) continue;
+            }
          }
          else if(fUseHijing) {
             if(!nameGen.Contains("ijing")) continue;
@@ -1517,16 +1516,14 @@ void AliAnalysisTaskDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliPar
     while ((mcpart = static_cast<AliAODMCParticle*>(mctracks->GetNextAcceptParticle()))) {
         if(TMath::Abs(mcpart->Charge())==0) continue;
 
-        AliAODTrack* track = dynamic_cast<AliAODTrack*>(mcpart);
         TString nameGen;
-        GetTrackPrimaryGenerator(track,fMCHeader,fMCarray,nameGen);
+        GetTrackPrimaryGenerator(mcpart,fMCHeader,fMCarray,nameGen);
 
         if(fUsePythia) {
             if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) continue;
             if(fMultPythiaHeader){
-                //if( !(nameGen.Contains("PYTHIA") && nameGen.Contains(Form("%d",fPythiaEvent)) ) ) continue;
-                if( !(nameGen.Contains(Form("%d",fPythiaEvent)) ) ) continue;
-             }
+                if( !(nameGen.Contains("PYTHIA") && nameGen.Contains(Form("%d",fPythiaEvent)) ) ) continue;
+            }
          }
          else if(fUseHijing) {
             if(!nameGen.Contains("ijing")) continue;
@@ -1720,6 +1717,41 @@ void AliAnalysisTaskDmesonsFilterCJ::GetTrackPrimaryGenerator(AliAODTrack *track
   
   return;
 }
+
+//_____________________________________________________________________
+void AliAnalysisTaskDmesonsFilterCJ::GetTrackPrimaryGenerator(AliAODMCParticle *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen){
+
+  /// method to check if a track comes from a given generator
+
+  Int_t lab=TMath::Abs(track->GetLabel());
+  nameGen=AliVertexingHFUtils::GetGenerator(lab,header);
+
+  //  Int_t countControl=0;
+
+  while(nameGen.IsWhitespace()){
+    AliAODMCParticle *mcpart= (AliAODMCParticle*)arrayMC->At(lab);
+    if(!mcpart){
+      printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
+      break;
+    }
+    Int_t mother = mcpart->GetMother();
+    if(mother<0){
+      printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
+      break;
+    }
+    lab=mother;
+    nameGen=AliVertexingHFUtils::GetGenerator(mother,header);
+    // countControl++;
+    // if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
+    //   printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Protection from infinite loop active\n");
+    //   break;
+    // }
+  }
+
+  return;
+}
+
+
 //----------------------------------------------------------------------
 Bool_t AliAnalysisTaskDmesonsFilterCJ::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC){
   /// method to check if a track comes from the signal event or from the underlying Hijing event
