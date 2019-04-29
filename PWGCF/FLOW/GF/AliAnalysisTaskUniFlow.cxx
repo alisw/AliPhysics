@@ -624,7 +624,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   DefineOutput(12, TList::Class());
   DefineOutput(13, TList::Class());
   DefineOutput(14, TList::Class());
-  DefineOutput(15, TList::Class());
+  if(fMC) DefineOutput(15, TList::Class());
 }
 // ============================================================================
 AliAnalysisTaskUniFlow::~AliAnalysisTaskUniFlow()
@@ -4279,7 +4279,7 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
   if(fMC) {
     // NUE weights
     for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
-        if(!fProcessSpec[iSpec]) { continue; }
+        // if(!fProcessSpec[iSpec]) { continue; }
 
         Int_t iNumBinsPt = fFlowPOIsPtBinNum;
         Double_t dPtLow = fFlowPOIsPtMin;
