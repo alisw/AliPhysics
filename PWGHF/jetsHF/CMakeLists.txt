@@ -47,8 +47,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliHFJetsTagging.cxx
     AliHFJetTaggingIP.cxx
-    AliAnalysisTaskBJetTC.cxx	
-    AliAnalysisTaskHFJetIPQA.cxx	
+    AliAnalysisTaskBJetTC.cxx		
     AliAnalysisHFjetTagHFE.cxx
     AliAnalysisTaskEmcalHFCJQA.cxx	    
     AliAnalysisTaskEmcalHFeJetCorrel.cxx		    
