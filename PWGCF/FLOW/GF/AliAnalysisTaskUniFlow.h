@@ -13,7 +13,6 @@ class TString;
 class TComplex;
 class TFile;
 class TList;
-class TClonesArray;
 class TProfile;
 class TH1D;
 class TH2D;
@@ -23,6 +22,8 @@ class AliPIDResponse;
 class AliPIDCombined;
 class AliVEvent;
 class AliAODEvent;
+class AliMCEvent;
+class AliVParticle;
 class AliVTrack;
 class AliAODTrack;
 class AliPicoTrack;
@@ -180,16 +181,20 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       Int_t                   GetCentralityIndex(CentEst est) const; // returns centrality index based centrality estimator or number of selected tracks
       const char*             GetCentEstimatorLabel(CentEst est) const; // returns mult/cent estimator string with label or 'n/a' if not available
 
-      void                    CalculateCorrelations(const AliUniFlowCorrTask* task, PartSpecies species, Double_t dPt = -1.0, Double_t dMass = -1.0) const; // wrapper for correlations methods
-      Bool_t                  ProcessCorrTask(const AliUniFlowCorrTask* task); // procesisng of AliUniFlowCorrTask
-      Bool_t                  CalculateFlow(); // main (envelope) method for flow calculations in selected events
-
+      void                    ProcessMC() const; // processing MC generated particles
       void                    FilterCharged() const; // charged tracks filtering
       void                    FilterPID() const; // pi,K,p filtering
       void                    FilterV0s() const; // K0s, Lambda, ALambda filtering
       void                    FilterPhi() const; // reconstruction and filtering of Phi meson candidates
 
+      void                    CalculateCorrelations(const AliUniFlowCorrTask* task, PartSpecies species, Double_t dPt = -1.0, Double_t dMass = -1.0) const; // wrapper for correlations methods
+      Bool_t                  ProcessCorrTask(const AliUniFlowCorrTask* task); // procesisng of AliUniFlowCorrTask
+      Bool_t                  CalculateFlow(); // main (envelope) method for flow calculations in selected events
+
       AliAODMCParticle*       GetMCParticle(Int_t label) const; // find corresponding MC particle from fArrayMC depending of AOD track label
+      Bool_t                  CheckMCPDG(const AliVParticle* track, const Int_t iPDGCode) const; // check if track has an associated MC particle which is the same species
+      Bool_t                  CheckMCPDG(const AliVParticle* track, const PartSpecies species) const; // check if track has an associated MC particle which is the same species
+      Bool_t                  CheckMCTruthReco(const PartSpecies species, const AliVParticle* track, const AliVParticle* daughterPos = nullptr, const AliVParticle* daughterNeg = nullptr) const; // check if Reco track has an associated MC particle which is the same species
       Double_t                GetRapidity(Double_t mass, Double_t Pt, Double_t Eta) const; // calculate particle / track rapidity
       Bool_t                  HasMass(PartSpecies spec) const { return (spec == kK0s || spec == kLambda || spec == kPhi); }
       Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
@@ -245,19 +250,12 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TComplex                FourDiffGapNeg(Int_t n1, Int_t n2, Int_t n3, Int_t n4) const; // Four particle reference correlation calculations (with eta gap)
 
       // array lenghts & constants
-      const Double_t          fPDGMassPion; // [DPGMass] DPG mass of charged pion
-      const Double_t          fPDGMassKaon; // [DPGMass] DPG mass of charged kaon
-      const Double_t          fPDGMassProton; // [DPGMass] DPG mass of proton
-      const Double_t          fPDGMassPhi; // [DPGMass] DPG mass of phi (333) meson
-      const Double_t          fPDGMassK0s; // [DPGMass] DPG mass of K0s
-      const Double_t          fPDGMassLambda; // [DPGMass] DPG mass of (Anti)Lambda
-
       AliAODEvent*            fEventAOD; //! AOD event countainer
+      AliMCEvent*             fEventMC; //! MC event countainer
       Double_t                fPVz; // PV z-coordinate used for weights
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
       TList*                  fFlowWeightsList; //! list of weights from input file
-      TClonesArray*           fArrayMC; //! input list of MC particles
       Bool_t                  fMC; // is running on mc?
       Bool_t                  fInit; // initialization check
       Int_t                   fIndexSampling; // sampling index (randomly generated)
@@ -378,7 +376,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TList*                  fQAPhi; //! Phi candidates list
       TList*                  fFlowWeights; //! list for flow weights
       TList*                  fListFlow[kUnknown]; //! flow lists
-
+      TList*                  fListMC; //! list for MC
 
       // histograms & profiles
 
@@ -431,19 +429,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*                   fh2PIDTOFnSigmaKaon[3]; //! TOF nSigma vs pT for selected pions (kaon hypothesis)
       TH2D*                   fh2PIDTPCnSigmaProton[3]; //! TPC nSigma vs pT for selected pions (proton hypothesis)
       TH2D*                   fh2PIDTOFnSigmaProton[3]; //! TOF nSigma vs pT for selected pions (proton hypothesis)
-
-      TH1D*                   fhMCRecoSelectedPionPt; //! pt dist of selected (MC reco) pions
-      TH1D*                   fhMCRecoSelectedTruePionPt; //! pt dist of selected (MC reco) true (tagged in MC gen) pions
-      TH1D*                   fhMCRecoAllPionPt; //! pt dist of all (MC reco) pions (i.e. selected charged tracks that are tagged in MC)
-      TH1D*                   fhMCGenAllPionPt; //! pt dist of all (MC) generated pions
-      TH1D*                   fhMCRecoSelectedKaonPt; //! pt dist of selected (MC reco) Kaons
-      TH1D*                   fhMCRecoSelectedTrueKaonPt; //! pt dist of selected (MC reco) true (tagged in MC gen) Kaons
-      TH1D*                   fhMCRecoAllKaonPt; //! pt dist of all (MC reco) Kaons (i.e. selected charged tracks that are tagged in MC)
-      TH1D*                   fhMCGenAllKaonPt; //! pt dist of all (MC) generated Kaons
-      TH1D*                   fhMCRecoSelectedProtonPt; //! pt dist of selected (MC reco) Protons
-      TH1D*                   fhMCRecoSelectedTrueProtonPt; //! pt dist of selected (MC reco) true (tagged in MC gen) Protons
-      TH1D*                   fhMCRecoAllProtonPt; //! pt dist of all (MC reco) Protons (i.e. selected charged tracks that are tagged in MC)
-      TH1D*                   fhMCGenAllProtonPt; //! pt dist of all (MC) generated Protons
+      // MC
+      TH2D*                   fh2MCPtEtaGen[kUnknown]; //! (pt,eta) dist for generated particles
+      TH2D*                   fh2MCPtEtaReco[kUnknown]; //! (pt,eta) dist for reconstructed particles
+      TH2D*                   fh2MCPtEtaRecoTrue[kUnknown]; //! (pt,eta) dist for reconstructed particles with matching generating particle (true)
       // Phi
       TH1D*                   fhPhiCounter; //! counter following phi candidate selection
       TH1D*                   fhPhiMult; //! multiplicity distribution of selected phi candidates
@@ -471,10 +460,10 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*                   fhQAEventsNumSPDContrPV[QAindex::kNumQA]; //!
       TH1D*                   fhQAEventsDistPVSPD[QAindex::kNumQA]; //!
       TH1D*                   fhQAEventsSPDresol[QAindex::kNumQA]; //!
-      TH2D*                   fhQAEventsfMult32vsCentr;
-      TH2D*                   fhQAEventsMult128vsCentr;
-      TH2D*                   fhQAEventsfMultTPCvsTOF;
-      TH2D*                   fhQAEventsfMultTPCvsESD;
+      TH2D*                   fhQAEventsfMult32vsCentr; //!
+      TH2D*                   fhQAEventsMult128vsCentr; //!
+      TH2D*                   fhQAEventsfMultTPCvsTOF; //!
+      TH2D*                   fhQAEventsfMultTPCvsESD; //!
       // QA: charged tracks
       TH1D*                   fhQAChargedMult[QAindex::kNumQA];       //! number of AOD charged tracks distribution
       TH1D*                   fhQAChargedPt[QAindex::kNumQA];         //! pT dist of charged tracks
@@ -536,7 +525,7 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*			  		  fhQAV0sArmenterosLambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for Lambda candidates
       TH2D*			  		  fhQAV0sArmenterosALambda[QAindex::kNumQA];	//! Armenteros-Podolanski plot for ALambda candidates
 
-      ClassDef(AliAnalysisTaskUniFlow, 7);
+      ClassDef(AliAnalysisTaskUniFlow, 8);
 };
 
 #endif
