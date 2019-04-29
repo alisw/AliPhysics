@@ -17,7 +17,7 @@ class TList;
 class AliFemtoCutMonitorPairMomRes : public AliFemtoCutMonitor {
 public:
   AliFemtoCutMonitorPairMomRes();
-  AliFemtoCutMonitorPairMomRes(const char *aName, double qmin, double qmax, int nbins);
+  AliFemtoCutMonitorPairMomRes(const char *aName, double massPart1, double massPart2, double qmin, double qmax, int nbins);
   AliFemtoCutMonitorPairMomRes(const AliFemtoCutMonitorPairMomRes &aCut);
   virtual ~AliFemtoCutMonitorPairMomRes();
 
@@ -39,6 +39,8 @@ public:
 
 private:
   TH2D *fMomRes;
+  double fMassPart1;
+  double fMassPart2;
   
 };
 
