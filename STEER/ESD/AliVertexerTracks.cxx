@@ -401,7 +401,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const TObjArray *trkArrayOrig
     VertexFitter();
   } // end loop on the two iterations
 
-  if (!multiMode || fMVVertices->GetEntries()==0) { // in multi-vertex mode this is already done for found vertices
+  if (!multiMode || fMVVertices->GetEntriesFast()==0) { // in multi-vertex mode this is already done for found vertices
     // set indices of used tracks
     UShort_t *indices = 0;
     if(fCurrentVertex->GetNContributors()>0) {
@@ -523,7 +523,7 @@ Double_t AliVertexerTracks::GetStrLinMinDist(const Double_t *p0,const Double_t *
 void AliVertexerTracks::OneTrackVertFinder() 
 {
   // find vertex for events with 1 track, using DCA to nominal beam axis
-  AliDebug(1,Form("Number of prepared tracks =%d - Call OneTrackVertFinder",fTrkArraySel.GetEntries()));
+  AliDebug(1,Form("Number of prepared tracks =%d - Call OneTrackVertFinder",fTrkArraySel.GetEntriesFast()));
   AliExternalTrackParam *track1;
   track1 = (AliExternalTrackParam*)fTrkArraySel.At(0);
   Double_t alpha=track1->GetAlpha();
@@ -1571,7 +1571,7 @@ void AliVertexerTracks::VertexFitter(Bool_t vfit, Bool_t chiCalc,Int_t useWeight
     initPos[2]=fNominalPos[2];
   }
 
-  Int_t nTrksSel = (Int_t)fTrkArraySel.GetEntries();
+  Int_t nTrksSel = (Int_t)fTrkArraySel.GetEntriesFast();
   if(nTrksSel==1) useConstraint=kTRUE;
   AliDebug(1,Form("--- VertexFitter(): start (%d,%d,%d)",vfit,chiCalc,useWeights));
   AliDebug(1,Form(" Number of tracks in array: %d\n",nTrksSel));
@@ -1939,9 +1939,9 @@ Bool_t AliVertexerTracks::FindNextVertexMV()
   }
   else {
     VertexFitter(kFALSE,kTRUE,fMVFinalWBinary ? 2:1); // final chi2 calculation
-    int nv = fMVVertices->GetEntries();
+    int nv = fMVVertices->GetEntriesFast();
     // create indices
-    int ntrk = fTrkArraySel.GetEntries();
+    int ntrk = fTrkArraySel.GetEntriesFast();
     int nindices = fCurrentVertex->GetNContributors() - (fConstraint ? 1:0);
     if (nindices<1) {
       delete fCurrentVertex;
@@ -1953,7 +1953,7 @@ Bool_t AliVertexerTracks::FindNextVertexMV()
     int nadded = 0;
     for (int itr=0;itr<ntrk;itr++) {
       AliExternalTrackParam* t = (AliExternalTrackParam*)fTrkArraySel[itr];
-      if (t->TestBit(kBitAccounted) || !t->TestBit(kBitUsed)) continue;   // already belongs to some vertex
+      if (!t || t->TestBit(kBitAccounted) || !t->TestBit(kBitUsed)) continue;   // already belongs to some vertex
       t->SetBit(kBitAccounted);
       indices[nadded++] = fIdSel[itr];
     }
@@ -1989,7 +1989,7 @@ void AliVertexerTracks::FindVerticesMV()
   if (!fMVVertices) fMVVertices = new TObjArray(10);
   fMVVertices->Clear();
   //
-  int ntrLeft = (Int_t)fTrkArraySel.GetEntries();
+  int ntrLeft = (Int_t)fTrkArraySel.GetEntriesFast();
   //
   double sig2Scan = fMVSig2Ini;
   Bool_t runMore = kTRUE;
