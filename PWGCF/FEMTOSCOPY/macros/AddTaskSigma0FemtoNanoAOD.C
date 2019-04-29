@@ -70,7 +70,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
       "V0ReaderV1_%s_%s", cutnumberEvent.Data(), cutnumberPhoton.Data());
   AliConvEventCuts *fEventCuts = NULL;
 
-  AliV0ReaderV1 *fV0ReaderV1 = nullptr;
+  AliV0ReaderV1 *fV0ReaderV1 = NULL;
   if (!(AliV0ReaderV1 *)mgr->GetTask(V0ReaderName.Data())) {
     fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
     if (periodNameV0Reader.CompareTo("") != 0)
