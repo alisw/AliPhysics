@@ -2440,7 +2440,8 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC17pq ||                                                                                            // pp 5TeV LHC17pq
       fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 ||                                                                // MC pp 5TeV LHC17pq
       fPeriodEnum == kLHC17l4b ||                                                                                           // MC pp 5TeV LHC17pq
-      fPeriodEnum == kLHC18b8                                                                                               // MC Jet Jet pp 5TeV LHC17pq
+      fPeriodEnum == kLHC18b8  ||                                                                                           // MC Jet Jet pp 5TeV LHC17pq
+      fPeriodEnum == kLHC18l6b1 || fPeriodEnum == kLHC18l6c1                                                                // MC Jet Jet pp 13 TeV with decay photon in EMCal acc.
       ){
       return kTRUE;
   } else {
@@ -3014,6 +3015,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
   fMaxPtJetMC                          = 0;
 
   if (  fPeriodEnum != kLHC18b8 &&                                                                  // LHC17pq pp 5TeV JetJet MC's
+        fPeriodEnum != kLHC18l6b1 && fPeriodEnum != kLHC18l6c1  &&                                  // LHC18 JetJet MC decay EMCal triggered
         fPeriodEnum != kLHC17i3a1 &&                                                                // LHC16ijklop GammaJet MC EMCal triggered
         fPeriodEnum != kLHC17i3c1 &&                                                                // LHC16ijklop JetJet MC EMCal triggered
         fPeriodEnum != kLHC17g8a &&                                                                 // LHC16qt pPb 5TeV JetJet MC's
@@ -3542,10 +3544,12 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC12P2JJ  &&                                                                 // LHC12 JetJet MC
-        fPeriodEnum != kLHC18b11a  &&                                                                 // LHC18 GammaJet MC anchored to LHC15o
-        fPeriodEnum != kLHC18b11b  &&                                                                 // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC12P2JJ  &&                                                               // LHC12 JetJet MC
+        fPeriodEnum != kLHC18b11a  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC18b11b  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
         fPeriodEnum != kLHC18b11c  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC18l6b1  &&                                                               // LHC18 GammaJet MC anchored to LHC17 (with decay photon in EMC acc.)
+        fPeriodEnum != kLHC18l6c1  &&                                                               // LHC18 GammaJet MC anchored to LHC17 (with decay photon in EMC acc.)
         fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
      ){
     NTrials = -1;
@@ -3628,7 +3632,8 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent, AliVEvent* event){
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
 
-  if (  fPeriodEnum != kLHC18b8 &&                                                                 // LHC17pq pp 5TeV JetJet MC's
+  if (  fPeriodEnum != kLHC18b8 &&                                                                  // LHC17pq pp 5TeV JetJet MC's
+        fPeriodEnum != kLHC18l6b1 && fPeriodEnum != kLHC18l6c1 &&                                   // LHC17 JetJet MC with decay photons in EMCal acc.
         fPeriodEnum != kLHC17g8a &&                                                                 // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC16rP1JJ &&  fPeriodEnum != kLHC16sP1JJ &&                                // LHC16sr pPb 8TeV JetJet MC's
         fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
@@ -6637,6 +6642,13 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC17P1JJ") == 0 ||
               periodName.CompareTo("LHC18f5") == 0 ){
     fPeriodEnum = kLHC17P1JJ;
+    fEnergyEnum = k13TeV;
+  // special JJ MC with decay photon in EMCal acc
+  } else if ( periodName.CompareTo("LHC18l6b1") == 0){
+    fPeriodEnum = kLHC18l6b1;
+    fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC18l6c1") == 0){
+    fPeriodEnum = kLHC18l6c1;
     fEnergyEnum = k13TeV;
 
   // pp 13 TeV LHC17 special MC - strangeness enhanced
