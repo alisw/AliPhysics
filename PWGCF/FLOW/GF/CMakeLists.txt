@@ -23,7 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
-										${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+					${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
   )
 
@@ -55,7 +55,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice)
+set(LIBDEPS ANALYSISalice EMCALbase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
