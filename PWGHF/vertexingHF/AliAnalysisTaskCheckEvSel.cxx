@@ -59,6 +59,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNCL1BeforePileup(0x0),
   fHistNCL1AfterPileup(0x0),
   fHistCentrality(0x0),
+  fHistCL0vsV0MCentrality(0x0),
   fHistNTracksTPCoutVsV0Cent(0x0),
   fHistNTracksFB4VsV0Cent(0x0),
   fHistNTracksBC0VsV0Cent(0x0),
@@ -100,6 +101,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNCL1BeforePileup(0x0),
   fHistNCL1AfterPileup(0x0),
   fHistCentrality(0x0),
+  fHistCL0vsV0MCentrality(0x0),
   fHistNTracksTPCoutVsV0Cent(0x0),
   fHistNTracksFB4VsV0Cent(0x0),
   fHistNTracksBC0VsV0Cent(0x0),
@@ -144,6 +146,7 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNCL1BeforePileup;
     delete fHistNCL1AfterPileup;
     delete fHistCentrality;
+    delete fHistCL0vsV0MCentrality;
     delete fHistNTracksTPCoutVsV0Cent;
     delete fHistNTracksFB4VsV0Cent;
     delete fHistNTracksBC0VsV0Cent;
@@ -205,7 +208,9 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fOutput->Add(fHistNCL1AfterPileup);
 
   fHistCentrality = new TH1F("hCentrality"," ; Centrality ; ",105,0.,105.);
+  fHistCL0vsV0MCentrality = new TH2F("hCL0vsV0MCentrality"," ; Centrality V0M ; Centrality CL0",105,0.,105.,105,0.,105.);
   fOutput->Add(fHistCentrality);
+  fOutput->Add(fHistCL0vsV0MCentrality);
 
   fHistNTracksTPCoutVsV0Cent = new TH2F("hNTracksTPCoutVsV0Cent"," ; Centrality ; N_{tracks, TPCout}",105,0.,105.,200,-0.5,2*maxMult-0.5);
   fHistNTracksFB4VsV0Cent = new TH2F("hNTracksFB4VsV0Cent"," ; Centrality ; N_{tracks, FiltBit4}",105,0.,105.,200,-0.5,maxMult-0.5);
@@ -314,6 +319,7 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   Int_t wrej=fAnalysisCuts->GetWhyRejection();
   Double_t centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentV0M);
   if(fSystem==2) centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentZNA);// p-Pb
+  Double_t centrCL0=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentCL0);
   const AliVVertex *vertex = aod->GetPrimaryVertex();
   const AliVVertex *vertexSPD = aod->GetPrimaryVertexSPD();
   Double_t ntrkl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
@@ -468,6 +474,7 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
       }
     }
     fHistCentrality->Fill(centr);
+    fHistCL0vsV0MCentrality->Fill(centr,centrCL0);
     fHistNTracksTPCoutVsV0Cent->Fill(centr,ntracksTPCout);
     fHistNTracksFB4VsV0Cent->Fill(centr,ntracksFB4);
     fHistNTracksBC0VsV0Cent->Fill(centr,ntracksBC0);

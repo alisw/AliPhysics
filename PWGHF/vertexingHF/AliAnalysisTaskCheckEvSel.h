@@ -66,6 +66,7 @@ private:
   TH1F *fHistNCL1BeforePileup;           //!<! hist. for No. of tracklets
   TH1F *fHistNCL1AfterPileup;            //!<! hist. for No. of tracklets
   TH1F *fHistCentrality;                 //!<! hist. of centrality distribution
+  TH2F *fHistCL0vsV0MCentrality;         //!<! hist. of centrality (CL0 vs V0)
   TH2F *fHistNTracksTPCoutVsV0Cent;      //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksFB4VsV0Cent;         //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksBC0VsV0Cent;         //!<! Centrality-multiplicity correl
@@ -85,7 +86,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,4);
+  ClassDef(AliAnalysisTaskCheckEvSel,5);
 };
 
 #endif
