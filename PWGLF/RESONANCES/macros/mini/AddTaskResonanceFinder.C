@@ -4932,7 +4932,7 @@ Bool_t Config_pikstar0(
   Char_t charge1;
   AliRsnMiniOutput* out;
 
-  for(i=0;i<16;i++){
+  for(i=0;i<20;i++){
     if(!i){
       xID=imID;
       name.Form("PipKstar0");
@@ -5061,6 +5061,38 @@ Bool_t Config_pikstar0(
       cut2=iCutlikemmKstar0;
       pairID=0;
       ipdg=3124;
+    }else if(i==16){
+      xID=imID;
+      name.Form("PipKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='+';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==17){
+      xID=imID;
+      name.Form("PimKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='-';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=-3124;
+    }else if(i==18){
+      xID=imID;
+      name.Form("PipantiKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='+';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==19){
+      xID=imID;
+      name.Form("PimantiKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='-';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=-3124;
     }
 
     out=task->CreateOutput(Form("pikstar0_%s%s",name.Data(),suffix),"HIST",comp.Data());
@@ -5424,7 +5456,7 @@ Bool_t Config_kxkstar0(
   Char_t charge1;
   AliRsnMiniOutput* out;
 
-  for(i=0;i<16;i++){
+  for(i=0;i<20;i++){
     if(!i){
       xID=imID;
       name.Form("KpKstar0");
@@ -5553,7 +5585,40 @@ Bool_t Config_kxkstar0(
       cut2=iCutlikemmKstar0;
       pairID=0;
       ipdg=3124;
+    }else if(i==16){
+      xID=imID;
+      name.Form("KpKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='+';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==17){
+      xID=imID;
+      name.Form("KmKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='-';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=-3124;
+    }else if(i==18){
+      xID=imID;
+      name.Form("KpantiKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='+';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==19){
+      xID=imID;
+      name.Form("KmantiKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='-';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=-3124;
     }
+
     //modification in here
     out=task->CreateOutput(Form("kxkstar0_%s%s",name.Data(),suffix),"HIST",comp.Data());
     out->SetDaughter(0,AliRsnDaughter::kKaon);
@@ -5986,7 +6051,7 @@ Bool_t Config_k0kstar0(
   Char_t charge1;
   AliRsnMiniOutput* out;
 
-  for(i=0;i<8;i++){
+  for(i=0;i<10;i++){
     if(!i){
       xID=imID;
       name.Form("K0Kstar0");
@@ -6051,7 +6116,24 @@ Bool_t Config_k0kstar0(
       cut2=iCutlikemmKstar0;
       pairID=0;
       ipdg=3124;
+    }else if(i==8){
+      xID=imID;
+      name.Form("K0Kstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='0';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==9){
+      xID=imID;
+      name.Form("K0antiKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='0';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=3124;
     }
+
     //modification in here
     out=task->CreateOutput(Form("k0kstar0_%s%s",name.Data(),suffix),"HIST",comp.Data());
     out->SetDaughter(0,AliRsnDaughter::kKaon0);
@@ -6435,7 +6517,7 @@ Bool_t Config_pkstar0(
   Char_t charge1;
   AliRsnMiniOutput* out;
 
-  for(i=0;i<16;i++){
+  for(i=0;i<20;i++){
     if(!i){
       xID=imID;
       name.Form("PpKstar0");
@@ -6564,7 +6646,40 @@ Bool_t Config_pkstar0(
       cut2=iCutlikemmKstar0;
       pairID=0;
       ipdg=3124;
+    }else if(i==16){
+      xID=imID;
+      name.Form("PpKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='+';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==17){
+      xID=imID;
+      name.Form("PmKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='-';
+      cut2=iCutKstar0;
+      pairID=0;
+      ipdg=-3124;
+    }else if(i==18){
+      xID=imID;
+      name.Form("PpantiKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='+';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=3124;
+    }else if(i==19){
+      xID=imID;
+      name.Form("PmantiKstar0Rotated");
+      comp.Form("ROTATE1");
+      charge1='-';
+      cut2=iCutantiKstar0;
+      pairID=0;
+      ipdg=-3124;
     }
+
     //modification in here
     out=task->CreateOutput(Form("pkstar0_%s%s",name.Data(),suffix),"HIST",comp.Data());
     out->SetDaughter(0,AliRsnDaughter::kProton);
