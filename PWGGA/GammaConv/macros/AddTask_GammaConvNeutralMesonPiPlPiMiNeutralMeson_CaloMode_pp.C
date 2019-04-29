@@ -24,18 +24,20 @@
 //main function
 //***************************************************************************************
 void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
-    Int_t trainConfig                 = 1,
-    Int_t isMC                        = 0,                                  //run MC
-    TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
-    Int_t selectHeavyNeutralMeson     = 0,                                  //run eta prime instead of omega
-    Int_t enableQAMesonTask           = 1,                                  //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
-    TString fileNameInputForWeighting = "MCSpectraInput.root",              // path to file for weigting input
-    Bool_t doWeighting                = kFALSE,                             //enable Weighting
-    TString generatorName             = "HIJING",
-    Double_t tolerance                = -1,
-    TString periodNameV0Reader        = "",                                 // period Name for V0Reader
-    Int_t runLightOutput              = 0,                                  // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
-    TString additionalTrainConfig     = "0"                                 // additional counter for trainconfig, this has to be always the last parameter
+    Int_t     trainConfig                 = 1,
+    Int_t     isMC                        = 0,                        //run MC
+    TString   photonCutNumberV0Reader     = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
+    Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
+    Int_t     enableQAMesonTask           = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
+    Bool_t    enableTriggerMimicking      = kFALSE,                   // enable trigger mimicking
+    Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
+    TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
+    Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
+    TString   generatorName               = "HIJING",
+    Double_t  tolerance                   = -1,
+    TString   periodNameV0Reader          = "",                       // period Name for V0Reader
+    Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
   //parse additionalTrainConfig flag
@@ -206,7 +208,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     // EMCal pp 13 TeV
   } else if( trainConfig == 112)  { // Test for EMCal (13 TeV) with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00010113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // INT7
-    cuts.AddCutHeavyMesonCalo("00052113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EMC7
     cuts.AddCutHeavyMesonCalo("00085113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG2
     cuts.AddCutHeavyMesonCalo("00083113","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // EG1
     // EMCal LHC11 pp 7TeV
@@ -477,15 +478,20 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+    analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     if(runLightOutput>0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
+
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     if(runLightOutput>0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+
+    if(enableQAMesonTask>0) analysisClusterCuts[i]->SetExtendedMatchAndQA(kTRUE);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     if( ! analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data()) ) {
       std::cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<std::endl;

@@ -24,18 +24,20 @@
 //main function
 //***************************************************************************************
 void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
-    Int_t trainConfig                 = 1,
-    Int_t isMC                        = 0,                               //run MC
-    TString   photonCutNumberV0Reader       = "",       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
-    Int_t selectHeavyNeutralMeson     = 0,                               //run eta prime instead of omega
-    Int_t enableQAMesonTask           = 1,                               //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
-    TString fileNameInputForWeighting = "MCSpectraInput.root",           // path to file for weigting input
-    Bool_t doWeighting                = kFALSE,                          //enable Weighting
-    TString generatorName             = "HIJING",
-    Double_t tolerance                = -1,
-    TString    periodNameV0Reader     = "",                               // period Name for V0Reader
-    Int_t   runLightOutput            = 0,                                // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
-    TString additionalTrainConfig     = "0"                               // additional counter for trainconfig, this has to be always the last parameter
+    Int_t     trainConfig                 = 1,
+    Int_t     isMC                        = 0,                        //run MC
+    TString   photonCutNumberV0Reader     = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
+    Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
+    Int_t     enableQAMesonTask           = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
+    Bool_t    enableTriggerMimicking      = kFALSE,                   // enable trigger mimicking
+    Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
+    TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
+    Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
+    TString   generatorName               = "HIJING",
+    Double_t  tolerance                   = -1,
+    TString   periodNameV0Reader          = "",                       // period Name for V0Reader
+    Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
   //parse additionalTrainConfig flag
@@ -303,6 +305,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   for(Int_t i = 0; i<numberOfCuts; i++){
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
+    analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     if(runLightOutput>0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
