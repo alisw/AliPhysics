@@ -654,8 +654,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         for (Int_t it=0; it<nTrks; it++){ //start loop over tracks
             trk = (AliVTrack*)event->GetTrack(it);
             if(!trk) {continue;}
-            if(fIsAOD)  {if(((AliAODTrack*)trk)->GetStatus()&AliESDtrack::kITSrefit)    nTrks_ITSrefit++;}
-            else        {if(((AliESDtrack*)trk)->GetStatus()&AliESDtrack::kITSrefit)    nTrks_ITSrefit++;}
+            if(trk->GetStatus()&AliESDtrack::kITSrefit)    nTrks_ITSrefit++;
         }
         highMult=(nTrks_ITSrefit>500 ? kTRUE : kFALSE);
         fNumTracksperEv->Fill(nTrks_ITSrefit);
@@ -797,8 +796,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         
         npointsITS=0; npointsSPD=0;
         if(fIsAOD){
-            haskITSrefit=(((AliAODTrack*)vtrack)->GetStatus()&AliESDtrack::kITSrefit);
-            haskTPCrefit=(((AliAODTrack*)vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
+            haskITSrefit=((/*(AliAODTrack*)*/vtrack)->GetStatus()&AliESDtrack::kITSrefit);
+            haskTPCrefit=((/*(AliAODTrack*)*/vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
             nClsTotTPC=((AliAODTrack*)vtrack)->GetTPCNcls();
             //Printf("nClsTotTPC %d",nClsTotTPC);
             if(!haskITSrefit) continue;
@@ -809,8 +808,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             //Printf("npointsITS %d",npointsITS);
         }
         else {
-            haskITSrefit=(((AliESDtrack*)vtrack)->GetStatus()&AliESDtrack::kITSrefit);
-            haskTPCrefit=(((AliESDtrack*)vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
+            haskITSrefit=((/*(AliESDtrack*)*/vtrack)->GetStatus()&AliESDtrack::kITSrefit);
+            haskTPCrefit=((/*(AliESDtrack*)*/vtrack)->GetStatus()&AliESDtrack::kTPCrefit);
             nClsTotTPC=((AliESDtrack*)vtrack)->GetTPCNcls();
             if(!haskITSrefit) continue;
             for (Int_t ilayer=0; ilayer<6; ilayer++){
