@@ -62,19 +62,11 @@ set(SRCS
   Nuclei/AbsorptionRatios/AliLightNTrackMCHist.cxx
   Nuclei/DeltaMasses/AliAnalysisNucleiMass.cxx
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
-  Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
-  Nuclei/DeuteronpA/AliAnalysisDeuteronTree.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
   Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
-  Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
-  Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
-  Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx
-  Nuclei/Nucleipp/AliLnAODtrackCuts.cxx
-  Nuclei/Nucleipp/AliLnHistoMap.cxx
-  Nuclei/Nucleipp/AliLnID.cxx
   Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskTritonVsMultiplicity_PbPb.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
@@ -83,13 +75,6 @@ set(SRCS
   Nuclei/v2/AliAnalysisTaskAllPtcv2.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKine.cxx
   Nuclei/NucleiKine/AliAnalysisTaskNucleiKineCor.cxx
-  Utils/NuclexFilter/AliAODMCNuclExReplicator.cxx
-  Utils/NuclexFilter/AliAODNuclExReplicator.cxx
-  Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilter.cxx
-  Utils/NuclexFilter/AliAnalysisTaskESDNuclExFilterMC.cxx
-  Utils/NuclexFilter/AliAnalysisTaskReadNuclexAOD.cxx
-  Utils/RecoDecay/AliAODRecoDecayLF.cxx
-  Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx

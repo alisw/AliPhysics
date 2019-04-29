@@ -40,16 +40,12 @@
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
-/// * DeuteronpA
-#pragma link C++ class AliAnalysisDeuteronpA+;
-#pragma link C++ class AliAnalysisDeuteronTree+;
 /// * He4
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
 /// * He4pp
 #pragma link C++ class AliAnalysisHe4+;
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
-#pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
 #pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
 #pragma link C++ class AliAnalysisTaskSignalLoss+;
 #pragma link C++ class RLightNucleus+;
@@ -58,12 +54,6 @@
 #pragma link C++ class AliAnalysisTaskTritonVsMultiplicity_PbPb+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
-/// * Nucleipp
-#pragma link C++ class AliLnID+;
-#pragma link C++ class AliLnHistoMap+;
-#pragma link C++ class AliLnAODtrackCuts+;
-#pragma link C++ class AliAnalysisTaskB2+;
-#pragma link C++ class AliAnalysisTaskB2AOD+;
 /// * v2
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
@@ -104,15 +94,6 @@
 #pragma link C++ class AliVertexerHyperTriton3Body+;
 
 /// Utils
-/// * RecoDecay
-#pragma link C++ class AliAODRecoDecayLF+;
-#pragma link C++ class AliAODRecoDecayLF2Prong+;
-/// * NuclexFilter
-#pragma link C++ class AliAODNuclExReplicator+;
-#pragma link C++ class AliAnalysisTaskESDNuclExFilter+;
-#pragma link C++ class AliAODMCNuclExReplicator+;
-#pragma link C++ class AliAnalysisTaskESDNuclExFilterMC+;
-#pragma link C++ class AliAnalysisTaskReadNuclexAOD+;
 /// * CODEX
 #pragma link C++ class AliAnalysisCODEX::Header+;
 #pragma link C++ class AliAnalysisCODEX::Track+;
