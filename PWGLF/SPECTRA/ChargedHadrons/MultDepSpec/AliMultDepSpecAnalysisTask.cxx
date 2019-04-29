@@ -1,28 +1,4 @@
-#include "TList.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TCanvas.h"
-#include "TF1.h"
-
-#include "AliAnalysisTask.h"
-#include "AliAnalysisManager.h"
-
-#include "AliVEvent.h"
-#include "AliVTrack.h"
-#include "AliVVertex.h"
-
-#include "AliESDEvent.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
-
-#include "AliAnalysisUtils.h"
-#include "AliMultSelection.h"
-#include "AliMultSelectionTask.h"
-
-#include "AliMCEvent.h"
-
 #include "AliMultDepSpecAnalysisTask.h"
-
 
 /// \cond CLASSIMP
 ClassImp(AliMultDepSpecAnalysisTask);
@@ -33,10 +9,10 @@ ClassImp(AliMultDepSpecAnalysisTask);
  ******************************************************************************/
  AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(),
    //General member variables
-   fEventCuts(),
    fOutputList(nullptr),
    fEvent(nullptr),
    fMCEvent(nullptr),
+   fEventCuts(),
    fESDtrackCuts(nullptr),
    fCutMode(100),
    //Toggles
@@ -77,10 +53,10 @@ ClassImp(AliMultDepSpecAnalysisTask);
  ******************************************************************************/
 AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAnalysisTaskSE(name),
   //General member variables
-  fEventCuts(),
   fOutputList(nullptr),
   fEvent(nullptr),
   fMCEvent(nullptr),
+  fEventCuts(),
   fESDtrackCuts(nullptr),
   fCutMode(100),
   //Toggles
@@ -152,10 +128,8 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
 
   fHistEvents = CreateHistogram("fHistEvents", {"mult_meas", "cent"});
   fOutputList->Add(fHistEvents);
-
   fHistTracks = CreateHistogram("fHistTracks", {"pt_meas", "eta_meas", "mult_meas", "cent"});
   fOutputList->Add(fHistTracks);
-
   fHistRelPtReso = CreateHistogram("fHistRelPtReso", {"sigmapt", "pt_meas", "cent"});
   fOutputList->Add(fHistRelPtReso);
 
@@ -163,22 +137,16 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
   {
     fHistMCRelPtReso = CreateHistogram("fHistMCRelPtReso", {"deltapt", "pt_meas", "cent"});
     fOutputList->Add(fHistMCRelPtReso);
-
     fHistMCMultCorrelMatrix = CreateHistogram("fHistMCMultCorrelMatrix", {"mult_meas", "mult_true"});
     fOutputList->Add(fHistMCMultCorrelMatrix);
-
     fHistMCPtCorrelMatrix = CreateHistogram("fHistMCPtCorrelMatrix", {"pt_meas", "pt_true"});
     fOutputList->Add(fHistMCPtCorrelMatrix);
-
     fHistMCEtaCorrelMatrix = CreateHistogram("fHistMCEtaCorrelMatrix", {"eta_meas", "eta_true"});
     fOutputList->Add(fHistMCEtaCorrelMatrix);
-
     fHistMCPrimTrue = CreateHistogram("fHistMCPrimTrue", {"pt_true", "eta_true", "mult_true", "cent"});
     fOutputList->Add(fHistMCPrimTrue);
-
     fHistMCPrimMeas = CreateHistogram("fHistMCPrimMeas", {"pt_true", "eta_true", "mult_true", "cent"});
     fOutputList->Add(fHistMCPrimMeas);
-
     fHistMCSecMeas = CreateHistogram("fHistMCSecMeas", {"pt_true", "eta_true", "mult_true", "cent"});
     fOutputList->Add(fHistMCSecMeas);
   }
@@ -205,11 +173,11 @@ AliMultDepSpecAnalysisTask::~AliMultDepSpecAnalysisTask(){
 void AliMultDepSpecAnalysisTask::UserExec(Option_t *){
 
   fEvent = InputEvent();
-  if (!fEvent) {Printf("ERROR: fEvent not available\n"); return;}
+  if (!fEvent) {AliError("fEvent not available\n"); return;}
 
   if(fIsMC){
     fMCEvent = MCEvent();
-    if (!fMCEvent) {Printf("ERROR: fMCEvent not available\n"); return;}
+    if (!fMCEvent) {AliError("fMCEvent not available\n"); return;}
   }
 
   fHistEventSelection->Fill(1.0); // all events
@@ -228,7 +196,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){
   if(fIsMC){
     for(Int_t iGenPart = 0; iGenPart < fMCEvent->GetNumberOfTracks(); iGenPart++) {
       AliMCParticle* mcGenParticle  = (AliMCParticle*)fMCEvent->GetTrack(iGenPart);
-      if(!mcGenParticle) {Printf("ERROR: mcGenParticle  not available\n"); continue;}
+      if(!mcGenParticle) {AliError("mcGenParticle  not available\n"); continue;}
       if(!AcceptKinematics(mcGenParticle)) continue;
       if(IsChargedPrimary(iGenPart)) mult_true++;
     }
@@ -238,7 +206,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){
   AliVTrack* track = nullptr;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
-    if (!track){Printf("ERROR: Could not receive track %d\n", iTrack); continue;}
+    if (!track){AliErrorF("Could not receive track %d\n", iTrack); continue;}
     if(!AcceptKinematics(track)) continue;
     if(!AcceptTrackQuality(track)) continue;
     mult_meas++;
@@ -258,7 +226,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){
   track = NULL;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
-    if(!track) {Printf("ERROR: Could not receive track %d\n", iTrack); continue;}
+    if(!track) {AliErrorF("Could not receive track %d\n", iTrack); continue;}
     if(!AcceptKinematics(track)) continue;
     if(!AcceptTrackQuality(track)) continue;
 
@@ -272,7 +240,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){
     if(fIsMC){
       Int_t mcLabel = TMath::Abs(track->GetLabel()); // negative label means bad quality track
       AliMCParticle* mcParticle  = (AliMCParticle*)fMCEvent->GetTrack(mcLabel);
-      if(!mcParticle) {Printf("ERROR: mcParticle not available\n"); continue;}
+      if(!mcParticle) {AliError("mcParticle not available\n"); continue;}
 
       if(!AcceptKinematics(mcParticle)) continue;
 
@@ -294,7 +262,7 @@ void AliMultDepSpecAnalysisTask::UserExec(Option_t *){
 
     for(Int_t iGenPart = 0; iGenPart < fMCEvent->GetNumberOfTracks(); iGenPart++) {
       AliMCParticle* mcGenParticle  = (AliMCParticle*)fMCEvent->GetTrack(iGenPart);
-      if(!mcGenParticle) {Printf("ERROR: mcGenParticle  not available\n"); continue;}
+      if(!mcGenParticle) {AliError("mcGenParticle  not available\n"); continue;}
 
       if(!AcceptKinematics(mcGenParticle)) continue;
 
@@ -321,7 +289,7 @@ Bool_t AliMultDepSpecAnalysisTask::IsChargedPrimary(Int_t mcLabel)
 {
   if(!fMCEvent->IsPhysicalPrimary(mcLabel)) return kFALSE;
   AliMCParticle* mcParticle  = (AliMCParticle*)fMCEvent->GetTrack(mcLabel);
-  if(!mcParticle) {Printf("ERROR: mcGenParticle  not available\n"); return kFALSE;}
+  if(!mcParticle) {AliError("mcGenParticle  not available\n"); return kFALSE;}
   if(!(TMath::Abs(mcParticle->Charge()) > 0.01)) return kFALSE;
   return kTRUE;
 }
@@ -374,7 +342,7 @@ void AliMultDepSpecAnalysisTask::InitESDTrackCuts(){
 
   if(fESDtrackCuts) delete fESDtrackCuts;
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
-  if(!fESDtrackCuts) {printf("ERROR: fESDtrackCuts not available\n"); return;}
+  if(!fESDtrackCuts) {AliError("fESDtrackCuts not available"); return;}
 
   fESDtrackCuts->SetRequireTPCRefit(kTRUE);
   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
@@ -473,13 +441,13 @@ THnSparseF* AliMultDepSpecAnalysisTask::CreateHistogram(string name, vector<stri
  * Function to obtain the correct binning for the respective axis.
  ******************************************************************************/
 TArrayD* AliMultDepSpecAnalysisTask::GetBinEdges(string& axisName){
-  if(axisName.find("sigmapt") != string::npos) return fBinsPtReso;
+       if(axisName.find("sigmapt") != string::npos) return fBinsPtReso;
   else if(axisName.find("deltapt") != string::npos) return fBinsPtReso;
-  else if(axisName.find("pt") != string::npos) return fBinsPt;
-  else if(axisName.find("eta") != string::npos) return fBinsEta;
-  else if(axisName.find("mult") != string::npos) return fBinsMult;
-  else if(axisName.find("cent") != string::npos) return fBinsCent;
-  else if(axisName.find("zv") != string::npos) return fBinsZv;
+  else if(axisName.find("pt") != string::npos)      return fBinsPt;
+  else if(axisName.find("eta") != string::npos)     return fBinsEta;
+  else if(axisName.find("mult") != string::npos)    return fBinsMult;
+  else if(axisName.find("cent") != string::npos)    return fBinsCent;
+  else if(axisName.find("zv") != string::npos)      return fBinsZv;
   else return nullptr;
 }
 
@@ -487,18 +455,18 @@ TArrayD* AliMultDepSpecAnalysisTask::GetBinEdges(string& axisName){
  * Function to get the correct title for each histogram axis.
  ******************************************************************************/
 string AliMultDepSpecAnalysisTask::GetAxisTitle(string& axisName){
-  if(axisName == "pt") return "#it{p}_{T} (GeV/#it{c})";
-  else if(axisName == "deltapt") return "#Delta(#it{p}_{T}) / #it{p}^{ meas}_{T}";
-  else if(axisName == "mult") return "Multiplicity";
-  else if(axisName == "cent") return "Centrality (%)";
-  else if(axisName == "eta_meas") return "#eta^{ meas}";
-  else if(axisName == "eta_true") return "#eta^{ true}";
-  else if(axisName == "pt_meas") return "#it{p}^{ meas}_{T} (GeV/#it{c})";
-  else if(axisName == "pt_true") return "#it{p}^{ true}_{T} (GeV/#it{c})";
-  else if(axisName == "mult_meas") return "#it{N}^{ meas}_{ch}";
-  else if(axisName == "mult_true") return "#it{N}^{ true}_{ch}";
-  else if(axisName == "sigmapt") return "#sigma(#it{p}^{ meas}_{T}) / #it{p}^{ meas}_{T}";
-  else return "dummyTitle";
+       if(axisName == "pt")         return "#it{p}_{T} (GeV/#it{c})";
+  else if(axisName == "deltapt")    return "#Delta(#it{p}_{T}) / #it{p}^{ meas}_{T}";
+  else if(axisName == "mult")       return "Multiplicity";
+  else if(axisName == "cent")       return "Centrality (%)";
+  else if(axisName == "eta_meas")   return "#eta^{ meas}";
+  else if(axisName == "eta_true")   return "#eta^{ true}";
+  else if(axisName == "pt_meas")    return "#it{p}^{ meas}_{T} (GeV/#it{c})";
+  else if(axisName == "pt_true")    return "#it{p}^{ true}_{T} (GeV/#it{c})";
+  else if(axisName == "mult_meas")  return "#it{N}^{ meas}_{ch}";
+  else if(axisName == "mult_true")  return "#it{N}^{ true}_{ch}";
+  else if(axisName == "sigmapt")    return "#sigma(#it{p}^{ meas}_{T}) / #it{p}^{ meas}_{T}";
+  else                              return "dummyTitle";
 }
 
 /***************************************************************************//**
