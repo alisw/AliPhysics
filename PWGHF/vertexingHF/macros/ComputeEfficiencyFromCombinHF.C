@@ -17,13 +17,16 @@
 
 enum EPtWei{kFONLL5overLHC13d3,kFONLL7overLHC10f7a,kFONLL7overLHC10f6a,kFLAToverLHC10f7a,kNoWei};
 
-const Int_t nPtBins=8;
-Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
-Int_t ptcol[nPtBins]={1,kRed+1,kGreen+2,4,kOrange+2,kMagenta,kMagenta+2,kBlue+1};
+TString configFileName="configfile4lowptanalysis.txt";
+TString fileNameMC="";
+TString suffix="";
+TString fileNameToy="";
 
-TString fileNameMC="../MCtrains/AnalysisResults_16qt_FAST_wSDD_trains1159-1158.root";
-TString suffix="_MC_Pt400_SPDany_3SigPID_FidY_PilMV5_EM1";
-TString fileNameToy="../Acceptance_Toy_D0Kpi_yfidPtDep_etaDau09_ptDau100_FONLL5ptshape.root";
+const Int_t maxPtBins=30;
+Int_t nPtBins=8;
+Double_t binLims[maxPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
+Int_t ptcol[maxPtBins]={1,kRed+1,kRed,kGreen+2,kCyan,4,kOrange+2,kMagenta,kMagenta+2,kBlue+1,kGray,kGray+2,kGreen,kYellow+7};
+
 Int_t ptWeight=kFONLL5overLHC13d3;
 Bool_t useMultWeight=kTRUE;
 Double_t maxMult=200;
@@ -37,9 +40,21 @@ Int_t wcol[3]={kRed+1,kGreen+1,4};
 Int_t wmark[3]={22,23,26};
 
 void ComputeAndWriteEff(TList* l, TString dCase);
+Bool_t ReadConfig(TString configName);
 
 void ComputeEfficiencyFromCombinHF(){
 
+
+  if(configFileName.Length()>0){
+    if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",configFileName.Data()))==0){
+      printf("Read configuration from file %s\n",configFileName.Data());
+      Bool_t readOK=ReadConfig(configFileName);
+      if(!readOK){
+	printf("Error in reading configuration file\n");
+	return;
+      }
+    }
+  }
 
   // multiplicity weights
   TString fileWeightName="trackletsWeightsMultInt_LHC13d3_08092014.root";
@@ -303,10 +318,10 @@ void ComputeEfficiencyFromCombinHF(){
 
   TLegend* legpf=new TLegend(0.6,0.16,0.89,0.36);
   legpf->AddEntry("hEffPromptVsPtNoWeight","Effic. prompt","P");
-  legpf->AddEntry(hEffFd->GetName(),"Effic. feeddown","P");
+  legpf->AddEntry(hEffFd,"Effic. feeddown","P");
   legpf->AddEntry(hAccToy,"Acceptance","P");
-  legpf->AddEntry("hEffD","Acc x eff prompt","P");
-  legpf->AddEntry("hEffB","Acc x eff feeddown","P");
+  legpf->AddEntry(hEffD,"Acc x eff prompt","P");
+  legpf->AddEntry(hEffB,"Acc x eff feeddown","P");
   legpf->Draw();
 
   outup->cd();  
@@ -1007,4 +1022,47 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hEvSelEffVsPt->Write();
   out->Close();
 
+}
+
+Bool_t ReadConfig(TString configName){
+  FILE* confFil=fopen(configName.Data(),"r");
+  char line[50];
+  char name[200];
+  int n;
+  float x;
+  bool readok;
+  while(!feof(confFil)){
+    readok=fscanf(confFil,"%s:",line);
+    if(strstr(line,"MCFile")){
+      readok=fscanf(confFil,"%s",name);
+      fileNameMC=name;
+    }
+    else if(strstr(line,"SuffixMC")){
+      readok=fscanf(confFil,"%s",name);
+      suffix=name;
+    }
+    else if(strstr(line,"AcceptanceFile")){
+      readok=fscanf(confFil,"%s",name);
+      fileNameToy=name;
+    }
+    else if(strstr(line,"NumOfPtBins")){
+      readok=fscanf(confFil,"%d",&n);
+      nPtBins=n;
+    }
+    else if(strstr(line,"BinLimits")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	readok=fscanf(confFil,"%f,",&x);
+	binLims[j]=x;
+	if(j>0 && binLims[j]<=binLims[j-1]){
+	  printf("ERROR in array of pt bin limits\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil,"%f",&x);
+      binLims[nPtBins]=x;
+      readok=fscanf(confFil," ] ");
+    }
+  }
+  return kTRUE;
 }
