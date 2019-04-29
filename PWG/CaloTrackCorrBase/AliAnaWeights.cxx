@@ -43,6 +43,7 @@ AliAnaWeights::AliAnaWeights()
   fUseCentralityWeight(0),
   fDoMCParticlePtWeights(1),
   fEtaFunction(0), fPi0Function(0), 
+  fCheckGeneratorName(0),
   fMCWeight(1.),
   fCurrFileName(0),
   fCheckMCCrossSection(kFALSE),
@@ -142,12 +143,27 @@ Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genNa
 
   if ( !fDoMCParticlePtWeights ) return weight ;
 
-  if      (pdg == 111 && fPi0Function && 
-           (genName.Contains("Pi0") || genName.Contains("pi0") || genName.Contains("PARAM") || genName.Contains("BOX")))
-    weight = fPi0Function->Eval(pt);
-  else if (pdg == 221 && fEtaFunction &&
-           (genName.Contains("Eta") || genName.Contains("eta") || genName.Contains("PARAM") || genName.Contains("BOX")))
-    weight = fEtaFunction->Eval(pt);
+  //printf("Get particle MC weight %p %p\n",fPi0Function,fEtaFunction);
+  
+  if ( !fCheckGeneratorName )
+  {
+    if      (pdg == 111 && fPi0Function)
+    {
+      weight = fPi0Function->Eval(pt);
+      //printf("GetParticlePtWeights:: Pi0 w %2.3f, pt %2.3f\n",weight,pt);
+    }
+    else if (pdg == 221 && fEtaFunction)
+      weight = fEtaFunction->Eval(pt);
+  }
+  else // Check particular generator names, to be better done
+  {
+    if      (pdg == 111 && fPi0Function && 
+             ( genName.Contains("Pi0") || genName.Contains("pi0") || genName.Contains("PARAM") || genName.Contains("BOX")))
+      weight = fPi0Function->Eval(pt);
+    else if (pdg == 221 && fEtaFunction && 
+             ( genName.Contains("Eta") || genName.Contains("eta") || genName.Contains("PARAM") || genName.Contains("BOX")))
+      weight = fEtaFunction->Eval(pt);
+  }
   
   AliDebug(1,Form("MC particle pdg %d, pt %2.2f, generator %s with index %d: weight %f",pdg,pt,genName.Data(),igen, weight));
   
