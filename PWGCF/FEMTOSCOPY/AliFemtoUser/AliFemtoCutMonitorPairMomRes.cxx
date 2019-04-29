@@ -110,32 +110,33 @@ void AliFemtoCutMonitorPairMomRes::Fill(const AliFemtoPair* aPair)
 
       double tPtrans = tPx*tPx + tPy*tPy;
       double tMtrans = tPE*tPE - tPz*tPz;
-      double tPinv = ::sqrt(tMtrans - tPtrans);
-      tMtrans = ::sqrt(tMtrans);
-      tPtrans = ::sqrt(tPtrans);
-
-      double tQinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
-	(py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
-
       if( (tMtrans - tPtrans) > 0)
 	{
-      double tQ = (mass1_sqrd - mass2_sqrd)/tPinv;
-  
-      if((tQ*tQ - tQinvL)>=0.000000001)
-	{
-	  tQ = ::sqrt( tQ*tQ - tQinvL);
+	  double tPinv = ::sqrt(tMtrans - tPtrans);
+	  tMtrans = ::sqrt(tMtrans);
+	  tPtrans = ::sqrt(tPtrans);
 
-	  double KStar_true = tQ/2;
-
-	  if(KStar_true!=0 || KStar_rec!=0)
-	    fMomRes->Fill(KStar_rec,KStar_true);
-	}
+	  double tQinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
+	    (py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
+	  
+	  
+	  double tQ = (mass1_sqrd - mass2_sqrd)/tPinv;
+	  
+	  if((tQ*tQ - tQinvL)>=0.000000001)
+	    {
+	      tQ = ::sqrt( tQ*tQ - tQinvL);
+	      
+	      double KStar_true = tQ/2;
+	      
+	      if(KStar_true!=0 || KStar_rec!=0)
+		fMomRes->Fill(KStar_rec,KStar_true);
+	    }
 	}
     }
     
   }
   
-   
+  
 }
 
 void AliFemtoCutMonitorPairMomRes::Write()
