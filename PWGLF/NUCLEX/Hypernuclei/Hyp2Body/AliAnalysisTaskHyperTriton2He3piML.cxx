@@ -138,7 +138,7 @@ AliAnalysisTaskHyperTriton2He3piML::~AliAnalysisTaskHyperTriton2He3piML()
 void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
 {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
+  inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
   inputHandler->SetNeedField();
 
@@ -229,6 +229,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fRCollision.fX = primaryVertex[0];
   fRCollision.fY = primaryVertex[1];
   fRCollision.fZ = primaryVertex[2];
+
+  unsigned char tgr = 0x0;
+
+  if (inputHandler->IsEventSelected() & AliVEvent::kINT7) tgr = 1;
+  if (inputHandler->IsEventSelected() & AliVEvent::kCentral) tgr = 2;
+  if (inputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr = 4;
+
+  fRCollision.fTrigger = tgr;
 
   std::unordered_map<int, int> mcMap;
   if (fMC)
