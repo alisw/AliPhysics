@@ -65,9 +65,9 @@ fpidResponse(0),
 fOutputList(0),
 fNevents(0),
 fNumTracks(0),
-fphiEff(),
-fhEff(),
-ftrigEff(),
+fphiEff(0),
+fhEff(0),
+ftrigEff(0),
 fVtxZ(0),
 fVtxX(0),
 fVtxY(0),
@@ -172,9 +172,9 @@ fpidResponse(0),
 fOutputList(0),
 fNevents(0),
 fNumTracks(0),
-fphiEff(),
-fhEff(),
-ftrigEff(),
+fphiEff(0),
+fhEff(0),
+ftrigEff(0),
 fVtxZ(0),
 fVtxX(0),
 fVtxY(0),
@@ -602,13 +602,13 @@ Bool_t AliAnalysisTaskHadronPhiCorr::MakeCorrelations(Int_t triggerIndex, AliVPa
         dphi_point[4] = phi.particle.M();
 
         Double_t weight = 1.0;
-        if(!IS_MC_TRUE && !IS_MC_KAON){
+        if(!IS_MC_TRUE && !IS_MC_KAON && fphiEff!=0){
             if((phi.particle.Pt() > 1.0 && phi.particle.Pt() < 8.0) && trigger->Pt() > 3.0 && trigger->Pt() < 9.0){
                 weight = 1.0/fphiEff->Eval(phi.particle.Pt());
                 weight = weight*(1.0/ftrigEff->Eval(trigger->Pt()));
                 //weight = 21.0;
             }
-        }else if(IS_MC_KAON){
+        }else if(IS_MC_KAON && ftrigEff!=0){
             weight = weight*1.0/ftrigEff->Eval(trigger->Pt());
         }
         fDphi->Fill(dphi_point, weight);
@@ -675,7 +675,7 @@ void AliAnalysisTaskHadronPhiCorr::MakeMixCorrelations(AliPhiContainer* phi, THn
             dphi_point[4] = phi->particle.M();
 
             Double_t weight = 1.0;
-            if(!IS_MC_TRUE && !IS_MC_KAON){
+            if(!IS_MC_TRUE && !IS_MC_KAON && fphiEff!=0 && ftrigEff!=0){
                 if((phi->particle.Pt() > 1.0 && phi->particle.Pt() < 8.0) && hadron->Pt() > 3.0){
                     weight = 1.0/fphiEff->Eval(phi->particle.Pt());
                     weight = weight*(1.0/ftrigEff->Eval(hadron->Pt()));
@@ -732,8 +732,10 @@ void AliAnalysisTaskHadronPhiCorr::MakeHHMixCorrelations(AliCFParticle *assocPar
                 dphi_point[3] = hadron->Eta() - assocPart->Eta();
                 //dphi_point[4] = zVtx;
                 Double_t weight = 1.0;
-                weight = 1.0/fhEff->Eval(assocPart->Pt());
-                weight = weight*(1.0/ftrigEff->Eval(hadron->Pt()));
+                if(fhEff !=0 && ftrigEff != 0){
+                    weight = 1.0/fhEff->Eval(assocPart->Pt());
+                    weight = weight*(1.0/ftrigEff->Eval(hadron->Pt()));
+                }
                 fDphiMixed->Fill(dphi_point, weight);
             }
         }
@@ -1259,10 +1261,7 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                 trigPoint[1] = triggerTrack->Phi();
                 trigPoint[2] = triggerTrack->Eta();
                 Float_t weight = 1.0;
-                if(ftrigEff == 0x0){
-                    AliFatal("No trigger Efficiency Loaded!!");
-                }
-                if(triggerTrack->Pt() < 9.0){ //&& !IS_MC_TRUE && !IS_MC_KAON){
+                if(triggerTrack->Pt() < 12.0 && ftrigEff !=0){ //&& !IS_MC_TRUE && !IS_MC_KAON){
                     if(ftrigEff->Eval(triggerTrack->Pt()) == 0){
                         AliFatal(Form("Trigger Efficiency Evaluated to 0 for pT %f", triggerTrack->Pt()));
                     }else{
@@ -1328,9 +1327,10 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                                 //hhdphi_point[4] = Zvertex;
                                 //hhdphi_point[4] = multPercentile;
                                 Double_t weight = 1.0;
-                                weight = 1.0/fhEff->Eval(aassocTrack->Pt());
-                                weight = weight*(1.0/ftrigEff->Eval(trigPoint[0]));
-
+                                if(fhEff !=0 && ftrigEff !=0){
+                                    weight = 1.0/fhEff->Eval(aassocTrack->Pt());
+                                    weight = weight*(1.0/ftrigEff->Eval(trigPoint[0]));
+                                }
                                 fDphiHH[indexZVtx]->Fill(hhdphi_point, weight);
                                 hhAssoc->SetPt(aassocTrack->Pt());
                                 hhAssoc->SetEta(aassocTrack->Eta());
