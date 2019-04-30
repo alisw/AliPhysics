@@ -1611,7 +1611,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fTrueList[iCut]->Add(fHistoTrueAngleSum[iCut]);
 
         fHistoTrueHNMesonPtvsNDMPt[iCut]                            = new TH2F("ESD_TrueMother_HNMesonPtvsNDMPt","ESD_TrueMother_HNMesonPtvsNDMPt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-        fHistoTrueHNMesonPtvsNDMPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c) of HNM");
+      fHistoTrueHNMesonPtvsNDMPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c) of HNM");
         fHistoTrueHNMesonPtvsNDMPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c) of NDM");
         fTrueList[iCut]->Add(fHistoTrueHNMesonPtvsNDMPt[iCut]);
 
@@ -2009,6 +2009,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
   // 	cout << nclus << endl;
 
   if(nclus == 0)	return;
+    // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
+  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
+
+  // match tracks to clusters
+  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
+
 
   // vertex
   Double_t vertex[3] = {0};
@@ -2016,13 +2022,23 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
 
   // Loop over EMCal clusters
   for(Long_t i = 0; i < nclus; i++){
+    Double_t tempClusterWeight        = fWeightJetJetMC;
+    Double_t tempPhotonWeight         = fWeightJetJetMC;
 
     std::unique_ptr<AliVCluster> clus;
     if(fInputEvent->IsA()==AliESDEvent::Class()) clus = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i)));
     else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i)));
 
     if (!clus) continue;
-    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus.get(),fInputEvent,fMCEvent,fIsMC,1.,i))  continue;
+    // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
+    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
+      if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(clus->GetLabelAt(0), fMCEvent, fInputEvent) == 2)
+        tempClusterWeight = 1;
+    }
+
+    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus.get(),fInputEvent,fMCEvent,fIsMC, tempClusterWeight,i)){
+      continue;
+    }
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
     clus->GetMomentum(clusterVector,vertex);
@@ -2032,13 +2048,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
 
     // convert to AODConversionPhoton
     AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(&tmpvec);
-    if(!PhotonCandidate) continue;
+    if(!PhotonCandidate){ continue;}
 
     // Flag Photon as CaloPhoton
     PhotonCandidate->SetIsCaloPhoton();
     PhotonCandidate->SetCaloClusterRef(i);
     // get MC label
-    if(fIsMC){
+    if(fIsMC>0){
       Int_t* mclabelsCluster = clus->GetLabels();
       PhotonCandidate->SetNCaloPhotonMCLabels(clus->GetNLabels());
 			// cout << clus->GetNLabels() << endl;
@@ -2055,8 +2071,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
     // test whether largest contribution to cluster orginates in added signals
     if ((((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0) && fIsMC && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 0) fIsFromMBHeader = kFALSE;
     if (fIsFromMBHeader && (!fDoLightOutput)){
-      fHistoClusterGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
-      fHistoClusterGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), fWeightJetJetMC);
+      fHistoClusterGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), tempPhotonWeight);
+      fHistoClusterGammaEta[fiCut]->Fill(PhotonCandidate->Eta(), tempPhotonWeight);
     }
     fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 
