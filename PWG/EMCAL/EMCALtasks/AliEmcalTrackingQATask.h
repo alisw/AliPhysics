@@ -45,10 +45,10 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcalLight {
   void                   AllocateGeneratorLevelTHnSparse()              ;
   void                   AllocateMatchedParticlesTHnSparse()            ;
   void                   FillDetectorLevelTHnSparse(Double_t cent, Double_t trackEta, Double_t trackPhi, Double_t trackPt, 
-                                                    Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType);
-  void                   FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Int_t mcGen, Byte_t findable);
+                                                    Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType, Double_t trackCharge);
+  void                   FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Int_t mcGen, Byte_t findable, Double_t partCharge);
   void                   FillMatchedParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt,
-                                                       Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
+                                                       Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType, Double_t trackCharge);
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   THnSparse* GenerateTHnSparse(const char* name, const std::vector<std::tuple<std::string, std::vector<Double_t>::iterator, std::vector<Double_t>::iterator>>& axis);
 #endif
@@ -71,6 +71,7 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcalLight {
   std::vector<Double_t>   fPtResHistBins         ; //!<! pt res bins
   std::vector<Double_t>   f1OverPtResHistBins    ; //!<! 1/pt res bins
   std::vector<Double_t>   fIntegerHistBins       ; //!<! integer bins
+  std::vector<Double_t>   fChargeHistBins;       ; //!<! charge bins
 
   // Histograms
   THnSparse*              fTracks                ; //! all tracks
