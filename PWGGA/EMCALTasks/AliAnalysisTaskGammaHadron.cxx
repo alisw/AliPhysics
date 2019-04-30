@@ -689,7 +689,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThnPi0[dimThnPi0] = 3;
     dimThnPi0++;
 
-    Double_t mcStatusArray[7+1];
+    Double_t mcStatusArray[14+1];
     if (fIsMC) {
       //..MC Status array:
 			// 0 - no Match, 1 - Single Particle to two clusters, 2 - pi0 to two gamma
@@ -830,7 +830,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
       fUMatrix = new THnSparseF("UMatrix","UMatrix",dimThnModMatrix,nBinsThnModMatrix,minThnModMatrix,maxThnModMatrix);
       fVMatrix = new THnSparseF("VMatrix","VMatrix",dimThnModMatrix,nBinsThnModMatrix,minThnModMatrix,maxThnModMatrix);
-      for(Int_t i=0;i<dimThnMod;i++)
+      for(Int_t i=0;i<dimThnModMatrix;i++)
       {
         fUMatrix->GetAxis(i)->SetTitle(titleThnModMatrix[i]);
         fVMatrix->GetAxis(i)->SetTitle(titleThnModMatrix[i]);
