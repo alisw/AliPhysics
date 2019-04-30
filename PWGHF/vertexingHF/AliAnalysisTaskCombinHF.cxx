@@ -59,6 +59,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
   fHistCheckOrigin(0x0),
+  fHistCheckOriginRecoD(0x0),
+  fHistCheckOriginRecoVsGen(0x0),
   fHistCheckDecChan(0x0),
   fHistCheckDecChanAcc(0x0),
   fPtVsYVsMultGenPrompt(0x0),
@@ -173,6 +175,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fHistTrackStatus(0x0),
   fHistTrackEtaMultZv(0x0),
   fHistCheckOrigin(0x0),
+  fHistCheckOriginRecoD(0x0),
+  fHistCheckOriginRecoVsGen(0x0),
   fHistCheckDecChan(0x0),
   fHistCheckDecChanAcc(0x0),
   fPtVsYVsMultGenPrompt(0x0),
@@ -293,6 +297,8 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fHistTrackStatus;
     delete fHistTrackEtaMultZv;
     delete fHistCheckOrigin;
+    delete fHistCheckOriginRecoD;
+    delete fHistCheckOriginRecoVsGen;
     delete fHistCheckDecChan;
     delete fHistCheckDecChanAcc;
     delete fPtVsYVsMultGenPrompt;
@@ -437,10 +443,17 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
 
   if(fReadMC){
     
-    fHistCheckOrigin=new TH1F("hCheckOrigin","",7,-1.5,5.5);
-    fHistCheckOrigin->SetMinimum(0);
+    fHistCheckOrigin=new TH2F("hCheckOrigin"," ; origin ; generator",7,-1.5,5.5,2,-0.5,1.5);
+    fHistCheckOrigin->GetYaxis()->SetBinLabel(1,"Hijing");
+    fHistCheckOrigin->GetYaxis()->SetBinLabel(2,"Injected");
+    fHistCheckOriginRecoD=new TH2F("hCheckOriginRecoD"," ; origin ; generator",7,-1.5,5.5,2,-0.5,1.5);
+    fHistCheckOriginRecoD->GetYaxis()->SetBinLabel(1,"Hijing");
+    fHistCheckOriginRecoD->GetYaxis()->SetBinLabel(2,"Injected");
+    fHistCheckOriginRecoVsGen=new TH2F("hCheckOriginRecoVsGen"," ; Origin (reco D) ; Origin (gen D)",7,-1.5,5.5,7,-1.5,5.5);
     fOutput->Add(fHistCheckOrigin);
-    
+    fOutput->Add(fHistCheckOriginRecoD);
+    fOutput->Add(fHistCheckOriginRecoVsGen);
+  
     fHistCheckDecChan=new TH1F("hCheckDecChan","",7,-2.5,4.5);
     fHistCheckDecChan->SetMinimum(0);
     fOutput->Add(fHistCheckDecChan);
@@ -661,6 +674,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       //      printf("Enforce trigger mask to kMB, previous mask = %d\n",fAnalysisCuts->GetTriggerMask());
       fAnalysisCuts->SetTriggerMask(AliVEvent::kMB);
     }
+    for(Int_t j=0; j<200000; j++) fOrigContainer[j]=-1;
   }
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -724,7 +738,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
     Double_t zMCVertex = mcHeader->GetVtxZ();
     if (TMath::Abs(zMCVertex) < fAnalysisCuts->GetMaxVtxZ()){ // only cut on zVertex applied to count the signal
-      FillGenHistos(arrayMC,isEvSel);
+      FillGenHistos(arrayMC,mcHeader,isEvSel);
     }
     fHistEventMultZv->Fill(zMCVertex,fMultiplicity);
     if(isEvSel) fHistEventMultZvEvSel->Fill(zMCVertex,fMultiplicity);
@@ -850,7 +864,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 	  v2->AddDaughter(trK);
 	  v2->AddDaughter(trPi1);
 	  tmpRD2->SetSecondaryVtx(v2);
-	  Bool_t ok=FillHistos(421,2,tmpRD2,px,py,pz,pdg0,arrayMC,dgLabels);
+	  Bool_t ok=FillHistos(421,2,tmpRD2,px,py,pz,pdg0,arrayMC,mcHeader,dgLabels);
 	  v2->RemoveDaughters();
 	  if(ok) nSelected++;
 	}
@@ -901,8 +915,8 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 	    v3->AddDaughter(trPi2);
 	    tmpRD3->SetSecondaryVtx(v3);
 	    Bool_t ok=kFALSE;
-	    if(fMeson==kDplus) ok=FillHistos(411,3,tmpRD3,px,py,pz,pdgp,arrayMC,dgLabels);
-	    else if(fMeson==kDs) ok=FillHistos(431,3,tmpRD3,px,py,pz,pdgs,arrayMC,dgLabels);
+	    if(fMeson==kDplus) ok=FillHistos(411,3,tmpRD3,px,py,pz,pdgp,arrayMC,mcHeader,dgLabels);
+	    else if(fMeson==kDs) ok=FillHistos(431,3,tmpRD3,px,py,pz,pdgs,arrayMC,mcHeader,dgLabels);
 	    v3->RemoveDaughters();
 	    if(ok) nSelected++;
 	  }
@@ -976,7 +990,7 @@ void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSel){
+void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeader *mcHeader, Bool_t isEvSel){
   /// Fill histos with generated quantities
   Int_t totPart=arrayMC->GetEntriesFast();
   Int_t thePDG=411;
@@ -992,7 +1006,9 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSe
     AliAODMCParticle *part = (AliAODMCParticle*)arrayMC->At(ip);
     if(TMath::Abs(part->GetPdgCode())==thePDG){
       Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
-      fHistCheckOrigin->Fill(orig);
+      if(ip<200000) fOrigContainer[ip]=orig;
+      Bool_t isInj=AliVertexingHFUtils::IsTrackInjected(ip,mcHeader,arrayMC);
+      fHistCheckOrigin->Fill(orig,isInj);
       Int_t deca=0;
       Bool_t isGoodDecay=kFALSE;
       Int_t labDau[4]={-1,-1,-1,-1};
@@ -1040,7 +1056,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSe
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels){
+Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t* dgLabels){
   /// Fill histos for candidates with proper charge sign
   
   Bool_t accept=kFALSE;
@@ -1071,13 +1087,16 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	  if(labD>=0){
 	    AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(dgLabels[0])));
 	    if(part){
-	      Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
 	      Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
 	      if(pdgCode==321){
 		fMassVsPtVsYSig->Fill(mass,pt,rapid);
 		if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthStSig->Fill(mass,pt,absCosThSt);
 		AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
 		if(dmes){
+		  Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,dmes,fGoUpToQuark);
+		  Bool_t isInj=AliVertexingHFUtils::IsTrackInjected(labD,mcHeader,arrayMC);
+		  fHistCheckOriginRecoD->Fill(orig,isInj);
+		  if(labD<200000) fHistCheckOriginRecoVsGen->Fill(fOrigContainer[labD],orig);
 		  if(orig==4) fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
 		  else if(orig==5) fPtVsYVsMultRecoFeeddw->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
 		}

@@ -126,11 +126,11 @@ public:
   Bool_t IsPion(AliAODTrack* track);
   Bool_t SelectAODTrack(AliAODTrack *track, AliESDtrackCuts *cuts);
   
-  Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels);
+  Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Int_t* dgLabels);
   void FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
   void FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau);
   void FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
-  void FillGenHistos(TClonesArray* arrayMC, Bool_t isEvSel);
+  void FillGenHistos(TClonesArray* arrayMC, AliAODMCHeader *mcHeader, Bool_t isEvSel);
   Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau); 
   Int_t GetPoolIndex(Double_t zvert, Double_t mult);
   void ResetPool(Int_t poolIndex);
@@ -159,7 +159,9 @@ private:
   TH2F *fHistEventMultZvEvSel;  //!<!hist. of evnt Mult vs. Zv for selected ev
   TH1F *fHistTrackStatus;     //!<!hist. of status of tracks
   TH3F* fHistTrackEtaMultZv;  // track distribution vs. era z vertex and mult
-  TH1F *fHistCheckOrigin;     //!<!hist. of origin (c/b) of D meson
+  TH2F *fHistCheckOrigin;          //!<!hist. of origin (c/b) of D meson (gen)
+  TH2F *fHistCheckOriginRecoD;     //!<!hist. of origin (c/b) of D meson (reco)
+  TH2F *fHistCheckOriginRecoVsGen; //!<!hist. of origin (c/b) of D meson
   TH1F *fHistCheckDecChan;    //!<!hist. of decay channel of D meson
   TH1F *fHistCheckDecChanAcc; //!<!hist. of decay channel of D meson in acc.
   TH3F *fPtVsYVsMultGenPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (all D)
@@ -243,6 +245,7 @@ private:
   Int_t    fPIDselCaseZero;  /// flag to change PID strategy
   Double_t fBayesThresKaon;  /// threshold for kaon identification via Bayesian PID
   Double_t fBayesThresPion;  /// threshold for pion identification via Bayesian PID
+  Int_t  fOrigContainer[200000]; /// container for checks
 
   Int_t fDoEventMixing; /// flag for event mixing
   Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
@@ -263,9 +266,9 @@ private:
   Double_t fMaxMultiplicity; /// upper limit for multiplcities in MC histos
   TObjArray* fKaonTracks; /// array of kaon-compatible tracks (TLorentzVectors)
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
-
+    
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,21); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,22); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
