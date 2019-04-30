@@ -809,6 +809,7 @@ void AliAnalysisTaskDiHadCorrelHighPt::UserExec(Option_t *)
             fHistPurityCheck->Fill(purhadr);
             
             AliAODMCParticle* mcTrack = static_cast<AliAODMCParticle*>(mcArray->At(AssocLabel));
+            if(!mcTrack) continue;
             Bool_t isPhyPrim = mcTrack->IsPhysicalPrimary();
             Double_t genPt = mcTrack->Pt();
             Double_t genEta = mcTrack->Eta();
