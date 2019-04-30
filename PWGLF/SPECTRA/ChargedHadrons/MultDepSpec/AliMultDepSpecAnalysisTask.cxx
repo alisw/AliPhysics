@@ -608,12 +608,6 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
     task->SetMaxPt(cutPtHigh);
     task->SetMaxZv(cutVertexZ);
 
-    if(useCent)
-    {
-      task->SetMinPt(cutCentLow);
-      task->SetMaxPt(cutCentHigh);
-    }
-
     // hang task in train
     mgr->AddTask(task);
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
