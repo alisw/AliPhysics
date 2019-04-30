@@ -307,10 +307,12 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
     else if(index == fTOFsignalDx      )  return "TOFsignalDx"      ;
     else if(index == fTRDnSlices       )  return "TRDnSlices"       ;
     
-    for (Int_t i=0; i<21; i++){
-        
-        if(index == fcovmat[i]) return TString::Format("covmat%d",i).Data();
-        
+    for (Int_t i=0; i<21; i++) {
+        if(index == fcovmat[i]) {
+          static TString retValue;
+          retValue = TString::Format("covmat%d",i);
+          return retValue;
+        }
     }
     if (index >= fSize) {
       AliWarning(Form("Invalid index %d", index));
