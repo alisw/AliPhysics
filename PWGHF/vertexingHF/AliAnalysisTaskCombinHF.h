@@ -71,6 +71,9 @@ public:
     else fApplyCutCosThetaStar=kFALSE;
     fCutCosThetaStar=cut;
   }
+  void EnableHistosVsCosThetaStar(Bool_t opt){
+    fFillHistosVsCosThetaStar=opt;
+  }
   void SetCutOnKKInvMass(Double_t cut){
     fPhiMassCut=cut;
   }
@@ -187,10 +190,21 @@ private:
   TH3F *fMassVsPtVsYMELSmm;   //!<! hist. of Y vs. Pt vs. Mass (mixedevents)
   TH2F* fEventsPerPool;   //!<! hist with number of events per pool  
   TH2F* fMixingsPerPool;    //!<! hist with number of mixings per pool
+  TH3F *fMassVsPtVsCosthSt;         //!<! hist. of Pt vs. Mass vs. cos(th*) (all cand)
+  TH3F *fMassVsPtVsCosthStRot;      //!<! hist. of Pt vs. Mass vs. cos(th*) (rotations)
+  TH3F *fMassVsPtVsCosthStLSpp;     //!<! hist. of Pt vs. Mass vs. cos(th*) (like sign ++)
+  TH3F *fMassVsPtVsCosthStLSmm;     //!<! hist. of Pt vs. Mass vs. cos(th*) (like sign --)
+  TH3F *fMassVsPtVsCosthStSig;      //!<! hist. of Pt vs. Mass vs. cos(th*) (signal)
+  TH3F *fMassVsPtVsCosthStRefl;     //!<! hist. of Pt vs. Mass vs. cos(th*) (reflections)
+  TH3F *fMassVsPtVsCosthStBkg;      //!<! hist. of Pt vs. Mass vs. cos(th*) (background)
+  TH3F *fMassVsPtVsCosthStME;       //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH3F *fMassVsPtVsCosthStMELSpp;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH3F *fMassVsPtVsCosthStMELSmm;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
   AliESDtrackCuts* fTrackCutsKaon; /// kaon track selection
+  Bool_t fFillHistosVsCosThetaStar; /// flag to control cos(theta*) cut
   Bool_t fApplyCutCosThetaStar; /// flag to control cos(theta*) cut
   Double_t fCutCosThetaStar;    /// cos(theta*) cut
   Double_t fPhiMassCut;   /// cut on the KK inv mass for phi selection
@@ -251,7 +265,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,20); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,21); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

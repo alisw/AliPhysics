@@ -89,10 +89,21 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fMassVsPtVsYMELSmm(0x0),
   fEventsPerPool(0x0),
   fMixingsPerPool(0x0),
+  fMassVsPtVsCosthSt(0x0),
+  fMassVsPtVsCosthStRot(0x0),
+  fMassVsPtVsCosthStLSpp(0x0),
+  fMassVsPtVsCosthStLSmm(0x0),
+  fMassVsPtVsCosthStSig(0x0),
+  fMassVsPtVsCosthStRefl(0x0),
+  fMassVsPtVsCosthStBkg(0x0),
+  fMassVsPtVsCosthStME(0x0),
+  fMassVsPtVsCosthStMELSpp(0x0),
+  fMassVsPtVsCosthStMELSmm(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fFillHistosVsCosThetaStar(kFALSE),
   fApplyCutCosThetaStar(kFALSE),
   fCutCosThetaStar(999.),
   fPhiMassCut(99999.),
@@ -192,10 +203,21 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fMassVsPtVsYMELSmm(0x0),
   fEventsPerPool(0x0),
   fMixingsPerPool(0x0),
+  fMassVsPtVsCosthSt(0x0),
+  fMassVsPtVsCosthStRot(0x0),
+  fMassVsPtVsCosthStLSpp(0x0),
+  fMassVsPtVsCosthStLSmm(0x0),
+  fMassVsPtVsCosthStSig(0x0),
+  fMassVsPtVsCosthStRefl(0x0),
+  fMassVsPtVsCosthStBkg(0x0),
+  fMassVsPtVsCosthStME(0x0),
+  fMassVsPtVsCosthStMELSpp(0x0),
+  fMassVsPtVsCosthStMELSmm(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
   fTrackCutsKaon(0x0),
+  fFillHistosVsCosThetaStar(kFALSE),
   fApplyCutCosThetaStar(kFALSE),
   fCutCosThetaStar(999.),
   fPhiMassCut(99999.),
@@ -299,6 +321,16 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fMassVsPtVsYME;
     delete fMassVsPtVsYMELSpp;
     delete fMassVsPtVsYMELSmm;
+    delete fMassVsPtVsCosthSt;
+    delete fMassVsPtVsCosthStRot;
+    delete fMassVsPtVsCosthStLSpp;
+    delete fMassVsPtVsCosthStLSmm;
+    delete fMassVsPtVsCosthStSig;
+    delete fMassVsPtVsCosthStRefl;
+    delete fMassVsPtVsCosthStBkg;
+    delete fMassVsPtVsCosthStME;
+    delete fMassVsPtVsCosthStMELSpp;
+    delete fMassVsPtVsCosthStMELSmm;
   }
 
   delete fOutput;
@@ -568,6 +600,27 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fMixingsPerPool->Sumw2();
   fMixingsPerPool->SetMinimum(0);
   fOutput->Add(fMixingsPerPool);
+
+  fMassVsPtVsCosthSt=new TH3F("hMassVsPtVsCosthSt","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStRot=new TH3F("hMassVsPtVsCosthStRot","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStLSpp=new TH3F("hMassVsPtVsCosthStLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStLSmm=new TH3F("hMassVsPtVsCosthStLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStSig=new TH3F("hMassVsPtVsCosthStSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStRefl=new TH3F("hMassVsPtVsCosthStRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStBkg=new TH3F("hMassVsPtVsCosthStBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStME=new TH3F("hMassVsPtVsCosthStME","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStMELSpp=new TH3F("hMassVsPtVsCosthStMELSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthStMELSmm=new TH3F("hMassVsPtVsCosthStMELSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fOutput->Add(fMassVsPtVsCosthSt);
+  fOutput->Add(fMassVsPtVsCosthStRot);
+  fOutput->Add(fMassVsPtVsCosthStLSpp);
+  fOutput->Add(fMassVsPtVsCosthStLSmm);
+  fOutput->Add(fMassVsPtVsCosthStSig);
+  fOutput->Add(fMassVsPtVsCosthStRefl);
+  fOutput->Add(fMassVsPtVsCosthStBkg);
+  fOutput->Add(fMassVsPtVsCosthStME);
+  fOutput->Add(fMassVsPtVsCosthStMELSpp);
+  fOutput->Add(fMassVsPtVsCosthStMELSmm);
 
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
@@ -955,13 +1008,21 @@ void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
       Bool_t fillLS=kTRUE;
-      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
-	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
-	if(TMath::Abs(costhst)>fCutCosThetaStar) fillLS=kFALSE;
+      Double_t costhst=0;
+      Double_t absCosThSt=0;
+      if(TMath::Abs(pdgD)==421 && (fApplyCutCosThetaStar || fFillHistosVsCosThetaStar)){
+	costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	absCosThSt=TMath::Abs(costhst);
+	if(fApplyCutCosThetaStar && absCosThSt>fCutCosThetaStar) fillLS=kFALSE;
       }
       if(fillLS){
-	if(charge>0) fMassVsPtVsYLSpp->Fill(TMath::Sqrt(minv2),pt,rapid);
-	else fMassVsPtVsYLSmm->Fill(TMath::Sqrt(minv2),pt,rapid);
+	Double_t invMass=TMath::Sqrt(minv2);
+	if(charge>0) fMassVsPtVsYLSpp->Fill(invMass,pt,rapid);
+	else fMassVsPtVsYLSmm->Fill(invMass,pt,rapid);
+	if(fFillHistosVsCosThetaStar){
+	  if(charge>0) fMassVsPtVsCosthStLSpp->Fill(invMass,pt,absCosThSt);
+	  else fMassVsPtVsCosthStLSmm->Fill(invMass,pt,absCosThSt);
+	}
       }
     }
   }
@@ -1047,12 +1108,16 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
       accept=kTRUE;
-      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
-	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
-	if(TMath::Abs(costhst)>fCutCosThetaStar) accept=kFALSE;
+      Double_t costhst=0;
+      Double_t absCosThSt=0;
+      if(TMath::Abs(pdgD)==421 && (fApplyCutCosThetaStar || fFillHistosVsCosThetaStar)){
+	costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	absCosThSt=TMath::Abs(costhst);
+	if(fApplyCutCosThetaStar && absCosThSt>fCutCosThetaStar) accept=kFALSE;
       }
       if(accept){
 	fMassVsPtVsY->Fill(mass,pt,rapid);
+	if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthSt->Fill(mass,pt,absCosThSt);
 	if(fReadMC){
 	  Int_t signPdg[3]={0,0,0};
 	  for(Int_t iii=0; iii<nProngs; iii++) signPdg[iii]=pdgdau[iii];
@@ -1064,6 +1129,7 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	      Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
 	      if(pdgCode==321){
 		fMassVsPtVsYSig->Fill(mass,pt,rapid);
+		if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthStSig->Fill(mass,pt,absCosThSt);
 		AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
 		if(dmes){
 		  if(orig==4) fPtVsYVsMultRecoPrompt->Fill(dmes->Pt(),dmes->Y(),fMultiplicity);
@@ -1071,11 +1137,13 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 		}
 	      }else{
 		fMassVsPtVsYRefl->Fill(mass,pt,rapid);
+		if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthStRefl->Fill(mass,pt,absCosThSt);
 	      }
 	    }
 	  }else{
 	    if(fSignalOnlyMC) accept=kFALSE;
 	    else fMassVsPtVsYBkg->Fill(mass,pt,rapid);
+	    if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthStBkg->Fill(mass,pt,absCosThSt);
 	  }
 	}
       }
@@ -1137,13 +1205,17 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	Double_t rapid = tmpRD->Y(pdgD);
 	if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
 	  Bool_t fillRotCase=kTRUE;
-	  if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
-	    Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
-	    if(TMath::Abs(costhst)>fCutCosThetaStar) fillRotCase=kFALSE;
+	  Double_t costhst=0;
+	  Double_t absCosThSt=0;
+	  if(TMath::Abs(pdgD)==421 && (fApplyCutCosThetaStar || fFillHistosVsCosThetaStar)){
+	    costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	    absCosThSt=TMath::Abs(costhst);
+	    if(fApplyCutCosThetaStar && absCosThSt>fCutCosThetaStar) fillRotCase=kFALSE;
 	  }
 	  if(fillRotCase){
 	    massRot=TMath::Sqrt(minv2);
 	    fMassVsPtVsYRot->Fill(massRot,pt,rapid);
+	    if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthStRot->Fill(massRot,pt,absCosThSt);
 	    nRotated++;
 	    fDeltaMass->Fill(massRot-mass);
 	    if(fFullAnalysis){
@@ -1185,11 +1257,17 @@ void AliAnalysisTaskCombinHF::FillMEHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
       Bool_t fillME=kTRUE;
-      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
-	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
-	if(TMath::Abs(costhst)>fCutCosThetaStar) fillME=kFALSE;
+      Double_t costhst=0;
+      Double_t absCosThSt=0;
+      if(TMath::Abs(pdgD)==421 && (fApplyCutCosThetaStar || fFillHistosVsCosThetaStar)){
+	costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	absCosThSt=TMath::Abs(costhst);
+	if(fApplyCutCosThetaStar && absCosThSt>fCutCosThetaStar) fillME=kFALSE;
       }
-      if(fillME) fMassVsPtVsYME->Fill(mass,pt,rapid);
+      if(fillME){
+	fMassVsPtVsYME->Fill(mass,pt,rapid);
+	if(fFillHistosVsCosThetaStar) fMassVsPtVsCosthStME->Fill(mass,pt,absCosThSt);
+      }
     }
   }
   return;
@@ -1207,13 +1285,20 @@ void AliAnalysisTaskCombinHF::FillMEHistosLS(Int_t pdgD,Int_t nProngs, AliAODRec
     Double_t rapid = tmpRD->Y(pdgD);
     if(fAnalysisCuts->IsInFiducialAcceptance(pt,rapid)){
       Bool_t fillME=kTRUE;
-      if(TMath::Abs(pdgD)==421 && fApplyCutCosThetaStar){
-	Double_t costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
-	if(TMath::Abs(costhst)>fCutCosThetaStar) fillME=kFALSE;
+      Double_t costhst=0;
+      Double_t absCosThSt=0;
+      if(TMath::Abs(pdgD)==421 && (fApplyCutCosThetaStar || fFillHistosVsCosThetaStar)){
+	costhst=tmpRD->CosThetaStar(0,421,321,211); // kaon is the first daughter
+	absCosThSt=TMath::Abs(costhst);
+	if(fApplyCutCosThetaStar && absCosThSt>fCutCosThetaStar) fillME=kFALSE;
       }
       if(fillME){
 	if(charge>0) fMassVsPtVsYMELSpp->Fill(mass,pt,rapid);
-	if(charge<0) fMassVsPtVsYMELSmm->Fill(mass,pt,rapid);
+	else if(charge<0) fMassVsPtVsYMELSmm->Fill(mass,pt,rapid);
+	if(fFillHistosVsCosThetaStar){
+	  if(charge>0) fMassVsPtVsCosthStMELSpp->Fill(mass,pt,absCosThSt);
+	  else if(charge<0) fMassVsPtVsCosthStMELSmm->Fill(mass,pt,absCosThSt);
+	}
       }
     }
   }
