@@ -94,7 +94,8 @@ void AliEmcalTrackingQATask::GenerateHistoBins()
   GenerateFixedBinArray(14,  3.0,  10.0, fPtHistBins, false);
   GenerateFixedBinArray(10, 10.0,  20.0, fPtHistBins, false);
   GenerateFixedBinArray(15, 20.0,  50.0, fPtHistBins, false);
-  GenerateFixedBinArray(20, 50.0, 150.0, fPtHistBins);
+  GenerateFixedBinArray(40, 50.0, 250.0, fPtHistBins, false);
+  GenerateFixedBinArray(10, 250.0, 350.0, fPtHistBins);
 
   GenerateFixedBinArray(100, -1.0, 1.0, fEtaHistBins);
 
