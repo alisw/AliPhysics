@@ -217,6 +217,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fJetsContPart(0),
   fTracksCont(0),
   fCaloClustersCont(0),
+  fEventCut(false),
   fAOD(0),
   fMCarray(0),
   fMCparticle(0),
@@ -402,6 +403,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fTracksCont(0),
   fCaloClustersCont(0),
   //
+  fEventCut(false),
   fAOD(0),
   fMCarray(0),
   fMCparticle(0),
@@ -885,6 +887,8 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistJetEnergyReso = new TH2D("fHistJetENergyReso",";p_{T,ch jet}^{part};<(p_{T,ch,jet}^{det}-p_{T,ch,jet}^{part}/p_{T,ch,jet}^{part})>",100,0,100,200,-1,1);
   fOutput->Add(fHistJetEnergyReso);
 
+  fEventCut.AddQAplotsToList(fOutput,true);
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
   // pi0 & eta weight
@@ -1073,6 +1077,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
   
+
   if(idbHFEj)cout <<  endl;
   if(idbHFEj)cout << "++++++++++++++++ " << endl;
   if(idbHFEj)cout << "Run!" << endl;
