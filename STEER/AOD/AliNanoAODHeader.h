@@ -140,8 +140,10 @@ public:
   
   // assume event filtering is done before and that nano AOD don't need the detector staus bits
   virtual Bool_t IsDetectorOn(ULong_t /*detMask*/) const { return kTRUE; }
+  
+  static void SetFatalMode() { fFatalMode = kTRUE; }
 
-  ClassDef(AliNanoAODHeader, 4)
+  ClassDef(AliNanoAODHeader, 5)
 private:
   void NotImplemented() const;
 
@@ -161,6 +163,8 @@ private:
   Int_t fRunNumber;  ///< index of stored variable
   Int_t fT0Spread[4]; ///< index of stored variable
   Int_t fNumberOfESDTracks;  ///< index of stored variable
+  
+  static Bool_t fFatalMode; //! throw AliFatal if invalid field is accessed
 
   std::map<TString,int> fMapCstVar;///< Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
 
