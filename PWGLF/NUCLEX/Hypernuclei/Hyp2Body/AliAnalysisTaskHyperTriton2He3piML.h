@@ -63,6 +63,7 @@ struct RCollision {
   float fY;
   float fZ;
   float fCent;
+  unsigned char fTrigger;
 };
 
 struct RTracklet {
@@ -144,7 +145,8 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   TList* fListHist;  //! List of Cascade histograms
   TTree* fTreeV0;    //! Output Tree, V0s
 
-  AliPIDResponse* fPIDResponse;  //! PID response object
+  AliInputEventHandler *inputHandler;
+  AliPIDResponse *fPIDResponse; //! PID response object
 
   bool fMC;
   bool fUseOnTheFly;
