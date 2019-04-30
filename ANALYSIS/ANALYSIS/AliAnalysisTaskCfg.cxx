@@ -481,13 +481,13 @@ TObjArray *AliAnalysisTaskCfg::ExtractModulesFrom(const char *filename)
    TObjArray *array = 0;
    ifstream in;
    in.open(expname);
-   char cline[1024];
+   char cline[10000];
    TString line;
    TString decode;
    TMacro *addMacro = 0;
    TMacro *addConfig = 0;
    while (in.good()) {
-      in.getline(cline,1024);
+      in.getline(cline,10000);
       line = cline;
       if (line.BeginsWith("#Module.Begin")) {
       // New module found, save previous if any

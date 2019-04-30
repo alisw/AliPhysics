@@ -26,6 +26,7 @@ class AliVertexGenFile: public AliVertexGenerator {
   virtual TVector3 GetVertex();
   time_t GetHeaderTimeStamp() const;
   Float_t GetLastVertexTime() const {return fLastTime;}
+  const AliHeader* GetHeader() const {return fHeader;}
   
  private:
   AliVertexGenFile(const AliVertexGenFile &vgf);

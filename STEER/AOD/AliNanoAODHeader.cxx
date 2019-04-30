@@ -17,11 +17,14 @@ AliNanoAODHeader::AliNanoAODHeader():
   fFiredTriggerClasses(-1),
   fMagField(-1),
   fOfflineTrigger(-1),
-  fRunNumber(-1)
+  fRunNumber(-1),
+  fNumberOfESDTracks(-1)
 {
 
   // default ctor
-
+  
+  for (int i=0; i<4; i++)
+    fT0Spread[i] = -1;
 }
 
 AliNanoAODHeader::AliNanoAODHeader(Int_t size):
@@ -38,10 +41,13 @@ AliNanoAODHeader::AliNanoAODHeader(Int_t size):
   fFiredTriggerClasses(-1),
   fMagField(-1),
   fOfflineTrigger(-1),
-  fRunNumber(-1)
+  fRunNumber(-1),
+  fNumberOfESDTracks(-1)
 {
-  AllocateInternalStorage(size, 0);
+  for (int i=0; i<4; i++)
+    fT0Spread[i] = -1;
 
+  AllocateInternalStorage(size, 0);
 }
 
 AliNanoAODHeader::AliNanoAODHeader(Int_t size, Int_t sizeInt):
@@ -58,9 +64,12 @@ AliNanoAODHeader::AliNanoAODHeader(Int_t size, Int_t sizeInt):
   fFiredTriggerClasses(-1),
   fMagField(-1),
   fOfflineTrigger(-1),
-  fRunNumber(-1)
+  fRunNumber(-1),
+  fNumberOfESDTracks(-1)
 {
-
+  for (int i=0; i<4; i++)
+    fT0Spread[i] = -1;
+  
   AllocateInternalStorage(size, sizeInt);
 }
 
@@ -100,7 +109,7 @@ Double_t AliNanoAODHeader::GetCentr (const char *x) const {
 } 
 
 Int_t  AliNanoAODHeader::GetRunNumber() const { 
-   if (fRunNumber>0) return Int_t(GetVar(fRunNumber));
+   if (fRunNumber>0) return GetVarInt(fRunNumber);
    return 0;
 
 } 

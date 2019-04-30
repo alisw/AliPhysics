@@ -167,8 +167,11 @@ class AliAODHeader : public AliVAODHeader {
   void SetNumberOfGlobalDimuons(Int_t nGlobalDimuons) { fNGlobalDimuons = nGlobalDimuons; }    // AU
   void SetRefMultiplicityComb05(Int_t refMult)   { fRefMultComb05 = refMult; }
   void SetRefMultiplicityComb08(Int_t refMult)   { fRefMultComb08 = refMult; }  
-  void SetRefMultiplicityComb10(Int_t refMult)   { fRefMultComb10 = refMult; }  
-
+  void SetRefMultiplicityComb10(Int_t refMult)   { fRefMultComb10 = refMult; }
+  
+  void SetTPCTrackBeforeClean(int n) {fNTPCTrackBeforeClean = n;}
+  Int_t GetNTPCTrackBeforeClean() const {return fNTPCTrackBeforeClean;}
+  
   void SetQTheta(Double_t *QTheta, UInt_t size = 5);  
   void RemoveQTheta();
 
@@ -283,6 +286,7 @@ class AliAODHeader : public AliVAODHeader {
   Int_t       fEventNumberESDFile;  ///< Event number in ESD file
   Int_t       fNumberESDTracks;     ///< Number of tracks in origingal ESD event
   Int_t       fNumberTPCTracks;     ///< Number of TPCrefit tracks in origingal ESD event
+  Int_t       fNTPCTrackBeforeClean; ///< unumber of TPC tracks in the ESD before Clean (if any)
   Int_t       fNumberTPCClusters;   ///< total number of TPC clusters
   UInt_t      fL0TriggerInputs;     ///< L0 Trigger Inputs (mask)
   UInt_t      fL1TriggerInputs;     ///< L1 Trigger Inputs (mask)
@@ -295,7 +299,7 @@ class AliAODHeader : public AliVAODHeader {
   Float_t     fT0spread[kT0SpreadSize]; ///< spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
   TBits   fIRInt2InteractionsMap;  ///< map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  ///< map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 31);
+  ClassDef(AliAODHeader, 32);
 
 };
 inline

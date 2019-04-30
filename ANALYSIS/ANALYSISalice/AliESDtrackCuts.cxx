@@ -115,6 +115,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) :
   fCutMaxC44(0),
   fCutMaxC55(0),
   fCutMaxRel1PtUncertainty(0),
+  fCutMaxRel1PtUncertaintyPtDep(""),
+  f1CutMaxRel1PtUncertaintyPtDep(0x0),
   fCutAcceptKinkDaughters(0),
   fCutAcceptSharedTPCClusters(0),
   fCutMaxFractionSharedTPCClusters(0),
@@ -235,6 +237,8 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) :
   fCutMaxC44(0),
   fCutMaxC55(0),
   fCutMaxRel1PtUncertainty(0),
+  fCutMaxRel1PtUncertaintyPtDep(""),
+  f1CutMaxRel1PtUncertaintyPtDep(0x0),  
   fCutAcceptKinkDaughters(0),
   fCutAcceptSharedTPCClusters(0),
   fCutMaxFractionSharedTPCClusters(0),
@@ -350,6 +354,9 @@ AliESDtrackCuts::~AliESDtrackCuts()
     if (fhTOFdistance[i])
       delete fhTOFdistance[i];
   }
+  
+  if(f1CutMaxRel1PtUncertaintyPtDep)delete f1CutMaxRel1PtUncertaintyPtDep;
+  f1CutMaxRel1PtUncertaintyPtDep = 0;
 
   if(f1CutMaxDCAToVertexXYPtDep)delete f1CutMaxDCAToVertexXYPtDep;
   f1CutMaxDCAToVertexXYPtDep = 0;
@@ -397,6 +404,11 @@ void AliESDtrackCuts::Init()
   fCutMaxC55 = 0;
 
   fCutMaxRel1PtUncertainty = 0;
+  
+  fCutMaxRel1PtUncertaintyPtDep = "";
+  
+  if(f1CutMaxRel1PtUncertaintyPtDep)delete f1CutMaxRel1PtUncertaintyPtDep;
+  f1CutMaxRel1PtUncertaintyPtDep = 0;  
 
   fCutAcceptKinkDaughters = 0;
   fCutAcceptSharedTPCClusters = 0;
@@ -419,7 +431,7 @@ void AliESDtrackCuts::Init()
   fCutMaxDCAToVertexZPtDep = "";
   fCutMinDCAToVertexXYPtDep = "";
   fCutMinDCAToVertexZPtDep = "";
-
+  
   if(f1CutMaxDCAToVertexXYPtDep)delete f1CutMaxDCAToVertexXYPtDep;
   f1CutMaxDCAToVertexXYPtDep = 0;
   if( f1CutMaxDCAToVertexXYPtDep) delete  f1CutMaxDCAToVertexXYPtDep;
@@ -430,8 +442,7 @@ void AliESDtrackCuts::Init()
   f1CutMinDCAToVertexXYPtDep = 0;
   if(f1CutMinDCAToVertexZPtDep)delete f1CutMinDCAToVertexZPtDep;
   f1CutMinDCAToVertexZPtDep = 0;
-
-
+  
   fPMin = 0;
   fPMax = 0;
   fPtMin = 0;
@@ -542,6 +553,11 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutMaxC55 = fCutMaxC55;
 
   target.fCutMaxRel1PtUncertainty = fCutMaxRel1PtUncertainty;
+  target.fCutMaxRel1PtUncertaintyPtDep = fCutMaxRel1PtUncertaintyPtDep;
+  if(fCutMaxRel1PtUncertaintyPtDep.Length()>0)target.SetMaxRel1PtUncertaintyPtDep(fCutMaxRel1PtUncertaintyPtDep.Data());
+  if(f1CutMaxRel1PtUncertaintyPtDep){
+    target.f1CutMaxRel1PtUncertaintyPtDep = (TFormula*) f1CutMaxRel1PtUncertaintyPtDep->Clone("f1CutMaxRel1PtUncertaintyPtDep");
+  }  
 
   target.fCutAcceptKinkDaughters = fCutAcceptKinkDaughters;
   target.fCutAcceptSharedTPCClusters = fCutAcceptSharedTPCClusters;
@@ -746,9 +762,6 @@ void AliESDtrackCuts::SetCutGeoNcrNcl(Float_t deadZoneWidth,Float_t cutGeoNcrNcl
   fCutGeoNcrNclFractionNcr=cutGeoNcrNclFractionNcr;
   fCutGeoNcrNclFractionNcl=cutGeoNcrNclFractionNcl;
 }
-
-
-
 
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()
@@ -1305,6 +1318,8 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
     bCov[0]=0; bCov[2]=0;
   }
 
+  // set pt-dependent pt resolution cut
+  SetPtDepUncertaintyCuts(esdTrack->Pt());
 
   // set pt-dependent DCA cuts, if requested
   SetPtDepDCACuts(esdTrack->Pt());
@@ -2840,6 +2855,56 @@ Bool_t AliESDtrackCuts::CheckPtDepDCA(TString dist,Bool_t print) const {
    tmp.ReplaceAll("pt","x");
    f1CutMinDCAToVertexZPtDep = new TFormula("f1CutMinDCAToVertexZPtDep",tmp.Data());
 }
+
+
+//--------------------------------------------------------------------------
+
+void AliESDtrackCuts::SetPtDepUncertaintyCuts(Double_t pt) {
+  /// set the pt-dependent cut on pt resolution
+
+  if(f1CutMaxRel1PtUncertaintyPtDep) {
+     fCutMaxRel1PtUncertainty=f1CutMaxRel1PtUncertaintyPtDep->Eval(pt);
+  }
+
+  return;
+}
+
+
+//--------------------------------------------------------------------------
+
+Bool_t AliESDtrackCuts::CheckPtDepUncertainty(TString dist,Bool_t print) const {
+  /// Check the correctness of the string syntax
+
+  Bool_t retval=kTRUE;
+
+  if(!dist.Contains("pt")) {
+    if(print) AliError("string must contain \"pt\"");
+    retval= kFALSE;
+  }
+  return retval;
+}
+
+//--------------------------------------------------------------------------
+
+ void AliESDtrackCuts::SetMaxRel1PtUncertaintyPtDep(const char *dist){
+
+   if(f1CutMaxRel1PtUncertaintyPtDep){
+     delete f1CutMaxRel1PtUncertaintyPtDep;
+     // reset both
+     f1CutMaxRel1PtUncertaintyPtDep = 0;
+     fCutMaxRel1PtUncertaintyPtDep = "";
+   }
+   if(!CheckPtDepUncertainty(dist,kTRUE)){
+     return;
+   }
+   fCutMaxRel1PtUncertaintyPtDep = dist;
+   TString tmp(dist);
+   tmp.ReplaceAll("pt","x");
+   f1CutMaxRel1PtUncertaintyPtDep = new TFormula("f1CutMaxRel1PtUncertaintyPtDep",tmp.Data());
+
+}
+
+//--------------------------------------------------------------------------
 
 AliESDtrackCuts* AliESDtrackCuts::GetMultEstTrackCuts(MultEstTrackCuts cut)
 {

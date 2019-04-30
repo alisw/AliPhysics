@@ -40,7 +40,6 @@
 #include <TDirectory.h>
 #include <TVirtualMC.h>
 #include <TGeoManager.h>
-#include <TString.h>
 
 #include "AliLog.h"
 #include "AliConfig.h"
@@ -191,7 +190,7 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
 }
 
 //_______________________________________________________________________
-void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a, 
+void AliModule::AliGetMaterial(Int_t imat, TString& name, Float_t &a, 
                                Float_t &z, Float_t &dens, Float_t &radl,
                                Float_t &absl) const
 {
@@ -210,13 +209,9 @@ void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a,
   //
 
   Int_t kmat=(*fIdmate)[imat];
-  TString sname;
   TArrayD par;
   Double_t da, dz, ddens, dradl, dabsl;
-  TVirtualMC::GetMC()->GetMaterial(kmat, sname, da, dz, ddens, dradl, dabsl, par);
-
-  const char* chname = sname.Data();
-  strncpy(name, chname, strlen(chname)+1);
+  TVirtualMC::GetMC()->GetMaterial(kmat, name, da, dz, ddens, dradl, dabsl, par);
   a = da;
   z = dz;
   dens = ddens;

@@ -152,6 +152,7 @@ public:
   Double_t  GetZDCEMEnergy(Int_t i) const { return fHeader ? fHeader->GetZDCEMEnergy(i) : -999.; }
   Int_t     GetNumberOfESDTracks()  const { return fHeader ? fHeader->GetNumberOfESDTracks() : 0; }
   Int_t     GetNumberOfTPCTracks()  const { return fHeader ? fHeader->GetNumberOfTPCTracks() : 0; }
+  Int_t     GetNTPCTrackBeforeClean() const { return fHeader ? ((AliAODHeader*)fHeader)->GetNTPCTrackBeforeClean() : 0;}
   Int_t     GetNumberOfTPCClusters() const { return fHeader ? fHeader->GetNumberOfTPCClusters() : 0; }
   Int_t     GetNumberOfITSClusters(Int_t lr) const {return fHeader ? (int)fHeader->GetNumberOfITSClusters(lr) : 0;}
   void SetTOFHeader(const AliTOFHeader * tofEventTime);

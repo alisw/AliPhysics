@@ -23,9 +23,9 @@ public:
   // AliNanoAODHeader(const AliVHeader& evt); 
   AliNanoAODHeader& operator=(const AliNanoAODHeader& evt);
   
-  virtual UShort_t  GetBunchCrossNumber()   const { return UShort_t(GetVarInt(fBunchCrossNumber));}
-  virtual UInt_t    GetOrbitNumber()        const { return UInt_t(GetVarInt(fOrbitNumber));}
-  virtual UInt_t    GetPeriodNumber()       const { return UInt_t(GetVarInt(fPeriodNumber));}
+  virtual UShort_t  GetBunchCrossNumber()   const { return GetVarInt(fBunchCrossNumber);}
+  virtual UInt_t    GetOrbitNumber()        const { return GetVarInt(fOrbitNumber);}
+  virtual UInt_t    GetPeriodNumber()       const { return GetVarInt(fPeriodNumber);}
   virtual UInt_t    GetTimeStamp()          const { NotImplemented();return 0;}
   virtual ULong64_t GetTriggerMask()        const { NotImplemented();return 0;}
   virtual ULong64_t GetTriggerMaskNext50()  const { NotImplemented();return 0;}
@@ -33,7 +33,7 @@ public:
   virtual UInt_t    GetEventType()          const { NotImplemented();return 0;}
 
   virtual Bool_t   InitMagneticField()             const    { NotImplemented(); return 0;};
-  virtual void     SetRunNumber(Int_t /*n*/)                    {NotImplemented();};
+  virtual void     SetRunNumber(Int_t n)                    { SetVarInt(fRunNumber, n); };
   virtual void     SetMagneticField(Double_t /*magFld*/)        {NotImplemented();};
   virtual void     SetMuonMagFieldScale(Double_t /*magFldScl*/) {NotImplemented();};
   virtual void     SetDiamond(Float_t */*xy[2]*/,Float_t */*cov[3]*/) {NotImplemented();}; 
@@ -47,9 +47,9 @@ public:
   virtual Double_t GetSigma2DiamondY()             const    {NotImplemented(); return 0;};
   virtual Double_t GetSigma2DiamondZ()             const    {NotImplemented(); return 0;};
 
-  virtual void     SetBunchCrossNumber(UShort_t nBx )    { SetVarInt(Int_t(fBunchCrossNumber), nBx); };
-  virtual void     SetOrbitNumber(UInt_t nOr)           { SetVarInt(Int_t(fOrbitNumber), nOr); };
-  virtual void     SetPeriodNumber(UInt_t nPer)         { SetVarInt(Int_t(fPeriodNumber), nPer); };
+  virtual void     SetBunchCrossNumber(UShort_t nBx )       { SetVarInt(fBunchCrossNumber, nBx); };
+  virtual void     SetOrbitNumber(UInt_t nOr)               { SetVarInt(fOrbitNumber, nOr); };
+  virtual void     SetPeriodNumber(UInt_t nPer)             { SetVarInt(fPeriodNumber, nPer); };
   virtual void     SetTimeStamp(UInt_t /* t */)               {NotImplemented(); };
   virtual void     SetEventType(UInt_t /* evttype */)         {NotImplemented(); };
   virtual void     SetTriggerMask(ULong64_t /* trigMsk */)    {NotImplemented(); };
@@ -63,22 +63,26 @@ public:
   virtual Double_t GetZDCP2Energy()         const             {NotImplemented(); return 0;};
 
   virtual Double_t GetZDCEMEnergy(Int_t /* i */) const            {NotImplemented(); return 0;};
-  virtual Int_t    GetNumberOfESDTracks()  const            {NotImplemented(); return 0;};
+  virtual Int_t    GetNumberOfESDTracks()  const              { return GetVarInt(fNumberOfESDTracks); };
   virtual Int_t    GetNumberOfTPCClusters() const {NotImplemented(); return 0;};
   virtual Int_t    GetNumberOfTPCTracks()   const {NotImplemented(); return 0;};
   
   virtual UInt_t   GetNumberOfITSClusters(Int_t /* ilay */) const {NotImplemented(); return 0;};
-  virtual Float_t  GetT0spread(Int_t /* i */)               const {NotImplemented(); return 0;};
-  // FIXME: THIS IS UGLY!!!!
-  // FIXME: use dynamic cast in AliAODEVent?
+  virtual Float_t  GetT0spread(Int_t i)               const { return GetVar(fT0Spread[i]); };
+
   virtual AliCentrality* GetCentralityP()  const {NotImplemented(); return 0;};
+  virtual Double_t GetCentralityV0M() const { return GetVar(fCentr); }
+  virtual Double_t GetCentralityTRK() const { return GetVar(fCentrTRK); }
+  virtual Double_t GetCentralityCL0() const { return GetVar(fCentrCL0); }
+  virtual Double_t GetCentralityCL1() const { return GetVar(fCentrCL1); }
+  
   virtual AliEventplane* GetEventplaneP()  const {NotImplemented(); return 0;};
   virtual Double_t       GetEventplane()     const {NotImplemented(); return 0;};
   virtual const Float_t* GetVZEROEqFactors() const {NotImplemented(); return 0;};
   virtual Float_t        GetVZEROEqFactors(Int_t /* i */) const {NotImplemented(); return 0;};
   virtual void           SetVZEROEqFactors(const Float_t* /*factors*/) {NotImplemented(); } 
 
-  virtual UInt_t GetOfflineTrigger()  { return UInt_t(GetVar(fOfflineTrigger));};
+  virtual UInt_t GetOfflineTrigger()  { return GetVarInt(fOfflineTrigger);};
 
   virtual void Print(Option_t* /*option = ""*/) const  {Printf("I'm a special header!");}
  
@@ -109,6 +113,8 @@ public:
   void SetMagFieldIndex   (Int_t var) { fMagField  = var; }
   void SetOfflineTriggerIndex   (Int_t var) { fOfflineTrigger  = var; }
   void SetRunNumberIndex  (Int_t var) { fRunNumber = var; }
+  void SetT0SpreadIndex  (Int_t i, Int_t var) { fT0Spread[i] = var; }
+  void SetNumberOfESDTracksIndex  (Int_t var) { fNumberOfESDTracks = var; }
 
   
   Int_t GetBunchCrossNumberIndex      () { return fBunchCrossNumber     ; }
@@ -122,6 +128,8 @@ public:
   Int_t GetMagFieldIndex   () { return fMagField  ; }
   Int_t GetOfflineTriggerIndex () { return fOfflineTrigger  ; }
   Int_t GetRunNumberIndex  () { return fRunNumber ; }
+  Int_t GetT0SpreadIndex  (Int_t i) { return fT0Spread[i]; }
+  Int_t GetNumberOfESDTracksIndex  () { return fNumberOfESDTracks ; }
 
   std::map<TString,int> GetMapCstVar () { return fMapCstVar; } 
   void SetMapCstVar (std::map<TString,int> cstmap) { fMapCstVar = cstmap; }
@@ -151,6 +159,8 @@ private:
   Int_t fMagField;   ///< index of stored variable
   Int_t fOfflineTrigger;///< index of stored variable
   Int_t fRunNumber;  ///< index of stored variable
+  Int_t fT0Spread[4]; ///< index of stored variable
+  Int_t fNumberOfESDTracks;  ///< index of stored variable
 
   std::map<TString,int> fMapCstVar;///< Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
 
