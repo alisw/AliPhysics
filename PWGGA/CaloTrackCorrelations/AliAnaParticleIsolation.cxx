@@ -7740,6 +7740,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   Int_t    mcIndex   =  0 ;
   Int_t    nprim     = GetMC()->GetNumberOfTracks();
   
+  Bool_t   ok        = kFALSE;
+  Int_t    momLabel  = -1;
+  
   AliVParticle * primary = 0;
   
   TString genName = "";
@@ -7831,6 +7834,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       continue;
     }
     
+    /// Particle ID and pT dependent Weight
+    Int_t index     = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
+    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
+    ///
+    
     // Check the origin of the photon or if it is a pi0, assing a tag
     Int_t pi0d1Label = -1, pi0d2Label = -1;
     Bool_t overlapPi0 = kTRUE;
@@ -7880,11 +7888,15 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
     {
-      mcIndex = kmcPrimPi0Decay;
+      mcIndex   = kmcPrimPi0Decay;
+      fMomentum = GetMCAnalysisUtils()->GetMotherWithPDG(i, 111, GetMC(),ok, momLabel);        
+      weightPt  = GetParticlePtWeight(fMomentum.Pt(), 111, genName, index) ; 
     }
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
     {
-      mcIndex = kmcPrimEtaDecay;
+      mcIndex   = kmcPrimEtaDecay;
+      fMomentum = GetMCAnalysisUtils()->GetMotherWithPDG(i, 221, GetMC(),ok, momLabel);        
+      weightPt  = GetParticlePtWeight(fMomentum.Pt(), 221, genName, index) ; 
     }
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) )
     {
@@ -7998,9 +8010,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         else if ( TMath::Abs(partInConePDG) == 2212 )  mcChTag = 2; 
         
         if(physPrimary)
-          fhPtTrackInConeMCPrimaryGener  [mcChTag]->Fill(photonPt, partInConePt, GetEventWeight());
+          fhPtTrackInConeMCPrimaryGener  [mcChTag]->Fill(photonPt, partInConePt, GetEventWeight()*weightPt);
         else
-          fhPtTrackInConeMCSecondaryGener[mcChTag]->Fill(photonPt, partInConePt, GetEventWeight());
+          fhPtTrackInConeMCSecondaryGener[mcChTag]->Fill(photonPt, partInConePt, GetEventWeight()*weightPt);
 
         //printf("Selected particles pdg %d, status %d\n", partInConePDG, partInConeStatus);
       }
@@ -8017,25 +8029,6 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     
     ///////END ISO MC/////////////////////////
-    
-    /// Particle ID and pT dependent Weight
-    Int_t genType = GetNCocktailGenNamesToCheck()-2; // bin 0 is not null 
-    Int_t index   = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
-    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
-    
-    if(IsStudyClusterOverlapsPerGeneratorOn())
-    {
-      for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
-      {       
-        if ( GetCocktailGenNameToCheck(igen).Contains(genName) && 
-            ( GetCocktailGenIndexToCheck(igen) < 0 || index == GetCocktailGenIndexToCheck(igen)) )
-        {
-          genType = igen-1;
-          break;
-        }
-      }
-    }
-    ///
     
     // Fill the histograms, only those in the defined calorimeter acceptance
     

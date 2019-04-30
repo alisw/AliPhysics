@@ -1030,7 +1030,10 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   Int_t    nprim     =  GetMC()->GetNumberOfTracks();
   Bool_t   inacceptance = kFALSE ;
   
-  TString genName = "";
+  Bool_t   ok        = kFALSE;
+  Int_t    momLabel  = -1;
+  
+  TString genName    = "";
 
   AliVParticle * primary = 0;
   
@@ -1112,6 +1115,11 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     // to not consider this.
     if(status > 1) continue ; // Avoid "partonic" photons
     
+    /// Particle ID and pT dependent Weight
+    Int_t index      = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
+    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
+    ///
+    
     Bool_t takeIt  = kFALSE ;
     if(status == 1 && GetMCAnalysisUtils()->GetMCGenerator() != AliMCAnalysisUtils::kBoxLike ) takeIt = kTRUE ;
 
@@ -1133,10 +1141,14 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
     {
       mcIndex = kmcPPi0Decay;
+      fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(i, 111, GetMC(),ok, momLabel);        
+      weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index) ; 
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
     {
       mcIndex = kmcPEtaDecay;
+      fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(i, 221, GetMC(),ok, momLabel);        
+      weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index) ; 
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
     {
@@ -1151,25 +1163,6 @@ void AliAnaPhoton::FillAcceptanceHistograms()
     if(!takeIt &&  (mcIndex == kmcPPi0Decay || mcIndex == kmcPOtherDecay)) takeIt = kTRUE ;
 
     if(!takeIt) continue ;
-      
-    /// Particle ID and pT dependent Weight
-    Int_t genType = GetNCocktailGenNamesToCheck()-2; // bin 0 is not null 
-    Int_t index   = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
-    Float_t weightPt = GetParticlePtWeight(photonPt, 22, genName, index) ; 
-    
-    if(IsStudyClusterOverlapsPerGeneratorOn())
-    {
-      for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
-      {       
-        if ( GetCocktailGenNameToCheck(igen).Contains(genName) && 
-            ( GetCocktailGenIndexToCheck(igen) < 0 || index == GetCocktailGenIndexToCheck(igen)) )
-        {
-          genType = igen-1;
-          break;
-        }
-      }
-    }
-    ///
     
     // Fill histograms for all photons
     fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY, GetEventWeight()*weightPt) ;
@@ -4760,7 +4753,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     const Int_t nlabels = calo->GetNLabels();
     Float_t ener        = calo->E();
     
-    Int_t   genType  = 0; 
     Int_t   index    = 0;
     Float_t weightPt = 1 ; 
     
@@ -4800,7 +4792,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       else                                                                                  mcbin = 10.5 ;
       
       /// Generated mother kine, ID and pT dependent Weight
-      genType  = GetNCocktailGenNamesToCheck()-2; // bin 0 is not null 
       index    = GetReader()->GetCocktailGeneratorAndIndex(mcLabel, genName);
       
       if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  ||
@@ -4827,19 +4818,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       else
       {
         weightPt = GetParticlePtWeight(fPrimaryMom.Pt(), pdg, genName, index) ; 
-      }
-      
-      if ( IsStudyClusterOverlapsPerGeneratorOn() )
-      {
-        for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
-        {       
-          if ( GetCocktailGenNameToCheck(igen).Contains(genName) && 
-              ( GetCocktailGenIndexToCheck(igen) < 0 || index == GetCocktailGenIndexToCheck(igen)) )
-          {
-            genType = igen-1;
-            break;
-          }
-        }
       }
       
       // Check if several particles contributed to cluster and discard overlapped mesons
