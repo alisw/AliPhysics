@@ -1907,8 +1907,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[22] = bachelor->Eta();
       fCandidateVariables[23] = v0part->P();
       fCandidateVariables[24] = part->DecayLengthV0();
-      fCandidateVariables[25] = v0part->AlphaV0();
-      fCandidateVariables[26] = v0part->PtArmV0();
+      fCandidateVariables[25] = nSigmaTPCpi;
+      fCandidateVariables[26] = nSigmaTPCka;
       fCandidateVariables[27] = fNTracklets_1;
       fCandidateVariables[28] = countTreta1corr;
       fCandidateVariables[29] = cts;
