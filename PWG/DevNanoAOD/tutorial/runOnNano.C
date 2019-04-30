@@ -11,6 +11,9 @@ void runOnNano(const char* filePath = "AliAOD.NanoAOD.root")
   
   mgr->InitAnalysis();
   mgr->PrintStatus();
+
+  // NOTE enable this for strict mode in which you get an AliFatal also for fields in the header which are accessed but not available
+  // AliNanoAODHeader::SetFatalMode();
   
   // Create chain of input files
   TChain * chain = new TChain("aodTree");
