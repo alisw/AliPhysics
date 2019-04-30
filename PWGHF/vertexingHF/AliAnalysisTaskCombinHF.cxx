@@ -450,63 +450,39 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fOutput->Add(fHistCheckDecChanAcc);
     
     fPtVsYVsMultGenPrompt = new TH3F("hPtVsYVsMultGenPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenPrompt->Sumw2();
-    fPtVsYVsMultGenPrompt->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenPrompt);
     
     fPtVsYVsMultGenLargeAccPrompt = new TH3F("hPtVsYVsMultGenLargeAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenLargeAccPrompt->Sumw2();
-    fPtVsYVsMultGenLargeAccPrompt->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenLargeAccPrompt);
     
     fPtVsYVsMultGenLimAccPrompt = new TH3F("hPtVsYVsMultGenLimAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenLimAccPrompt->Sumw2();
-    fPtVsYVsMultGenLimAccPrompt->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenLimAccPrompt);
     
     fPtVsYVsMultGenAccPrompt = new TH3F("hPtVsYVsMultGenAccPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenAccPrompt->Sumw2();
-    fPtVsYVsMultGenAccPrompt->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenAccPrompt);
     
     fPtVsYVsMultGenAccEvSelPrompt = new TH3F("hPtVsYVsMultGenAccEvSelPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenAccEvSelPrompt->Sumw2();
-    fPtVsYVsMultGenAccEvSelPrompt->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenAccEvSelPrompt);
  
     fPtVsYVsMultRecoPrompt = new TH3F("hPtVsYVsMultRecoPrompt","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultRecoPrompt->Sumw2();
-    fPtVsYVsMultRecoPrompt->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultRecoPrompt);
 
     fPtVsYVsMultGenFeeddw = new TH3F("hPtVsYVsMultGenFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenFeeddw->Sumw2();
-    fPtVsYVsMultGenFeeddw->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenFeeddw);
     
     fPtVsYVsMultGenLargeAccFeeddw = new TH3F("hPtVsYVsMultGenLargeAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenLargeAccFeeddw->Sumw2();
-    fPtVsYVsMultGenLargeAccFeeddw->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenLargeAccFeeddw);
     
     fPtVsYVsMultGenLimAccFeeddw = new TH3F("hPtVsYVsMultGenLimAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenLimAccFeeddw->Sumw2();
-    fPtVsYVsMultGenLimAccFeeddw->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenLimAccFeeddw);
     
     fPtVsYVsMultGenAccFeeddw = new TH3F("hPtVsYVsMultGenAccFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenAccFeeddw->Sumw2();
-    fPtVsYVsMultGenAccFeeddw->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenAccFeeddw);
     
     fPtVsYVsMultGenAccEvSelFeeddw = new TH3F("hPtVsYVsMultGenAccEvSelFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultGenAccEvSelFeeddw->Sumw2();
-    fPtVsYVsMultGenAccEvSelFeeddw->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultGenAccEvSelFeeddw);
  
     fPtVsYVsMultRecoFeeddw = new TH3F("hPtVsYVsMultRecoFeeddw","",nPtBins,0.,maxPt,20,-1.,1.,200,fMinMultiplicity,fMaxMultiplicity);
-    fPtVsYVsMultRecoFeeddw->Sumw2();
-    fPtVsYVsMultRecoFeeddw->SetMinimum(0);
     fOutput->Add(fPtVsYVsMultRecoFeeddw);
  
   }
@@ -515,52 +491,32 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   Int_t nMassBins=static_cast<Int_t>(fMaxMass*1000.-fMinMass*1000.);
   Double_t maxm=fMinMass+nMassBins*0.001;
   fMassVsPtVsY=new TH3F("hMassVsPtVsY","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsY->Sumw2();
-  fMassVsPtVsY->SetMinimum(0);
   fOutput->Add(fMassVsPtVsY);
   
   fMassVsPtVsYRot=new TH3F("hMassVsPtVsYRot","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYRot->Sumw2();
-  fMassVsPtVsYRot->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYRot);
   
   fMassVsPtVsYLSpp=new TH3F("hMassVsPtVsYLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYLSpp->Sumw2();
-  fMassVsPtVsYLSpp->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYLSpp);
   fMassVsPtVsYLSmm=new TH3F("hMassVsPtVsYLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYLSmm->Sumw2();
-  fMassVsPtVsYLSmm->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYLSmm);
   
   fMassVsPtVsYSig=new TH3F("hMassVsPtVsYSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYSig->Sumw2();
-  fMassVsPtVsYSig->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYSig);
   
   fMassVsPtVsYRefl=new TH3F("hMassVsPtVsYRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYRefl->Sumw2();
-  fMassVsPtVsYRefl->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYRefl);
   
   fMassVsPtVsYBkg=new TH3F("hMassVsPtVsYBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYBkg->Sumw2();
-  fMassVsPtVsYBkg->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYBkg);
   
   fNSelected=new TH1F("hNSelected","",100,-0.5,99.5);
-  fNSelected->Sumw2();
-  fNSelected->SetMinimum(0);
   fOutput->Add(fNSelected);
   
   fNormRotated=new TH1F("hNormRotated","",11,-0.5,10.5);
-  fNormRotated->Sumw2();
-  fNormRotated->SetMinimum(0);
   fOutput->Add(fNormRotated);
   
   fDeltaMass=new TH1F("hDeltaMass","",100,-0.4,0.4);
-  fDeltaMass->Sumw2();
-  fDeltaMass->SetMinimum(0);
   fOutput->Add(fDeltaMass);
   
   Int_t binSparseDMassRot[5]={nMassBins,100,24,40,20};
@@ -570,18 +526,12 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fDeltaMassFullAnalysis);
   
   fMassVsPtVsYME=new TH3F("hMassVsPtVsYME","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYME->Sumw2();
-  fMassVsPtVsYME->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYME);
 
   fMassVsPtVsYMELSpp=new TH3F("hMassVsPtVsYMELSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYMELSpp->Sumw2();
-  fMassVsPtVsYMELSpp->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYMELSpp);
 
   fMassVsPtVsYMELSmm=new TH3F("hMassVsPtVsYMELSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
-  fMassVsPtVsYMELSmm->Sumw2();
-  fMassVsPtVsYMELSmm->SetMinimum(0);
   fOutput->Add(fMassVsPtVsYMELSmm);
 
   fNOfPools=fNzVertPools*fNMultPools;
@@ -594,11 +544,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     fEventsPerPool=new TH2F("hEventsPerPool","hEventsPerPool",1,-10.,10.,1,-0.5,2000.5);
     fMixingsPerPool=new TH2F("hMixingsPerPool","hMixingsPerPool",1,-10.,10.,1,-0.5,2000.5);
   }
-  fEventsPerPool->Sumw2();
-  fEventsPerPool->SetMinimum(0);
   fOutput->Add(fEventsPerPool);
-  fMixingsPerPool->Sumw2();
-  fMixingsPerPool->SetMinimum(0);
   fOutput->Add(fMixingsPerPool);
 
   fMassVsPtVsCosthSt=new TH3F("hMassVsPtVsCosthSt","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
