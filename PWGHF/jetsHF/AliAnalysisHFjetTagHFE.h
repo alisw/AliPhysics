@@ -243,7 +243,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
   Double_t IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE);
   Double_t CalJetWidth(AliEmcalJet* jetC, TH2F *htmp0, TH2F *htmp1, TH2F *htmp2, TH2F *htmp3);
-
+  AliEventCuts  fEventCut; 
+ 
  private:
 
 

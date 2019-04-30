@@ -15,8 +15,10 @@
 
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
+#include "AliVEventHandler.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliMultSelection.h"
+
 
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
@@ -38,6 +40,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     AliMultDepSpecAnalysisTask(const char *name);
     virtual ~AliMultDepSpecAnalysisTask();
 
+    static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 121);
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t* option);
     virtual void   Terminate(Option_t*);
@@ -45,7 +48,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     // Setters
     void SetTriggerMask(UInt_t triggermask)  {fTriggerMask = triggermask;}
     void SetCutMode(Int_t cutMode){fCutMode = cutMode;}
-    void SetUseMC(Bool_t useMC = kTRUE){fIsMC = useMC;}
+    void SetIsMC(Bool_t isMC = kTRUE){fIsMC = isMC;}
     void SetUseESD(){fIsESD = kTRUE;}
     void SetUseAOD(){fIsESD = kFALSE;}
 
@@ -56,12 +59,17 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     void SetBinsCent(Int_t nBins, Double_t* binEdges){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(nBins+1,binEdges);}
     void SetBinsZv(Int_t nBins, Double_t* binEdges){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(nBins+1,binEdges);}
     void SetBinsPtReso(Int_t nBins, Double_t* binEdges){if(fBinsPtReso) delete fBinsPtReso; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
+    void SetBinsMult(vector<Int_t> multSteps, vector<Int_t> multBinWidth);
+    void SetBinsMult(Int_t maxMult);
 
     // Acceptance cuts
     void SetMinEta(Double_t minEta){fMinEta = minEta;}
     void SetMaxEta(Double_t maxEta){fMaxEta = maxEta;}
     void SetMinPt(Double_t minPt){fMinPt = minPt;}
     void SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
+    void SetMaxZv(Double_t maxZv)  {fMaxZv = maxZv;}
+    void SetMaxCent(Double_t maxCent)  {fUseCent = kTRUE; fMaxCent = maxCent;}
+    void SetMinCent(Double_t minCent)  {fUseCent = kTRUE; fMinCent = minCent;}
 
   private:
 
@@ -74,6 +82,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     Int_t               fCutMode;         ///< ID of track cut variation (100=default)
     Bool_t              fIsESD;			      ///< Flag for ESD usage
     Bool_t              fIsMC;            ///< Flag for MC usage
+    Bool_t              fUseCent;         ///< Flag for Centrality usage
 
     // Acceptance cuts for tracks
     UInt_t                fTriggerMask;   ///< Trigger mask
@@ -81,6 +90,9 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     Double_t              fMaxEta;        ///< Maximum eta cut
     Double_t              fMinPt;			    ///< Minimum pT cut
     Double_t              fMaxPt;			    ///< Maximum pT cut
+    Double_t              fMaxZv;			    ///< Maximum absolute z vertex cut
+    Double_t              fMinCent;       ///< Minimum centrality
+    Double_t              fMaxCent;       ///< Maximum centrality
 
     // Binning
     TArrayD*             fBinsMult;       ///< Array of bins in multiplicity
