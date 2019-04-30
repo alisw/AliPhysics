@@ -18,12 +18,16 @@ ClassImp(AliMultDepSpecAnalysisTask);
    //Toggles
    fIsESD(kTRUE),
    fIsMC(kFALSE),
+   fUseCent(kFALSE),
    // Cut Parameters
    fTriggerMask(AliVEvent::kMB | AliVEvent::kINT7),
    fMinEta(-10),
    fMaxEta(10),
    fMinPt(0.0),
    fMaxPt(50.0),
+   fMaxZv(10.0),
+   fMinCent(0.0),
+   fMaxCent(100.0),
    //Arrays for Binning
    fBinsMult(nullptr),
    fBinsCent(nullptr),
@@ -62,12 +66,16 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   //Toggles
   fIsESD(kTRUE),
   fIsMC(kFALSE),
+  fUseCent(kFALSE),
   // Cut Parameters
   fTriggerMask(AliVEvent::kMB | AliVEvent::kINT7),
   fMinEta(-10),
   fMaxEta(10),
   fMinPt(0.0),
   fMaxPt(50.0),
+  fMaxZv(10.0),
+  fMinCent(0.0),
+  fMaxCent(100.0),
   //Arrays for Binning
   fBinsMult(nullptr),
   fBinsCent(nullptr),
@@ -101,20 +109,20 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   SetFixedBinEdges(binsPtReso, 0., 0.3, nBinsPtReso);
   SetBinsPtReso(nBinsPtReso, binsPtReso);
 
-  SetBinsMult(1,binsMultDefault);
-  SetBinsCent(1,binsCentDefault);
+  SetBinsMult(1, binsMultDefault);
+  SetBinsCent(1, binsCentDefault);
   SetBinsPt(52, binsPtDefault);
-  SetBinsEta(18,binsEtaDefault);
-  SetBinsZv(12,binsZvDefault);
+  SetBinsEta(18, binsEtaDefault);
+  SetBinsZv(12, binsZvDefault);
 
   DefineOutput(1, TList::Class());
 }
 
 /***************************************************************************//**
- * Function executed once before the event loop.
+ * Function executed once before the event loop. Create histograms here.
  ******************************************************************************/
 void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
-  // Create histograms here (function is called once)
+
   OpenFile(1, "recreate");
   fOutputList = new TList();
   fOutputList->SetOwner();
@@ -151,11 +159,10 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCSecMeas);
   }
 
-
   // override event automatic event selection settings
-  //fEventCuts.SetMaxVertexZposition();
-  //fEventCuts.SetCentralityRange();
-  //fEventCuts.OverrideAutomaticTriggerSelection();
+  fEventCuts.SetMaxVertexZposition(fMaxZv);
+  if(fUseCent) fEventCuts.SetCentralityRange(fMinCent, fMaxCent);
+  fEventCuts.OverrideAutomaticTriggerSelection(fTriggerMask);
 
   if(fIsESD) InitESDTrackCuts();
 
@@ -329,9 +336,9 @@ Double_t AliMultDepSpecAnalysisTask::GetCentrality(AliVEvent* event)
 {
   Double_t centrality = -1;
   AliMultSelection* multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
-  if(!multSelection){AliInfo("ERROR: No MultSelection found!"); return 999;}
-  centrality = multSelection->GetMultiplicityPercentile("V0M"/*, lEmbedEventSelection = kFALSE*/);
-  if(centrality > 100) {AliInfo("ERROR: Centrality determination does not work proprely!"); return 999;}
+  if(!multSelection){AliError("No MultSelection found!"); return 999;}
+  centrality = multSelection->GetMultiplicityPercentile("V0M");
+  if(centrality > 100) {AliError("Centrality determination does not work proprely!"); return 999;}
   return centrality;
 }
 
@@ -358,9 +365,6 @@ void AliMultDepSpecAnalysisTask::InitESDTrackCuts(){
   fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
   fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(36.); // tpcc cut
   fESDtrackCuts->SetCutGeoNcrNcl(3,130,1.5,0.85,0.7); // Geometrical-Length Cut
-
-  fESDtrackCuts->SetEtaRange(-0.8, 0.8);
-  fESDtrackCuts->SetPtRange(0.15, 50.0);
 
   // cut-variations:
   if(fCutMode == 101) {fESDtrackCuts->SetMaxChi2PerClusterITS(25.);}
@@ -476,13 +480,138 @@ void AliMultDepSpecAnalysisTask::FillHisto(THnSparseF* histo, array<Double_t, MA
   histo->Fill(values.data());
 }
 
+/***************************************************************************//**
+ * Function to set variable binning for multiplicity.
+ ******************************************************************************/
+void AliMultDepSpecAnalysisTask::SetBinsMult(vector<Int_t> multSteps, vector<Int_t> multBinWidth)
+{
+    if(multSteps.size() != multBinWidth.size())
+    {
+      AliError("SetBinsMult:: Vectors need to have same size!");
+      return;
+    }
 
+    Int_t nMultSteps = multSteps.size();
+    Int_t nBinsMult = 1; // for mult=0 bin
+    for(Int_t multBins : multSteps) nBinsMult += multBins;
+    Double_t* multBinEdges = new Double_t [nBinsMult+1]; // edges need one more
 
+    multBinEdges[0] = -0.5;
+    multBinEdges[1] = 0.5;
+    Int_t startBin = 1;
+    Int_t endBin = 1;
+    for(Int_t multStep = 0; multStep < nMultSteps; multStep++){
+      endBin += multSteps[multStep];
+      for(Int_t multBin = startBin; multBin < endBin; multBin++)  {
+        multBinEdges[multBin+1] = multBinEdges[multBin] + multBinWidth[multStep];
+      }
+      startBin = endBin;
+    }
+    SetBinsMult(nBinsMult, multBinEdges);
+}
+
+/***************************************************************************//**
+ * Function to set maxMult single multiplicity steps.
+ ******************************************************************************/
+void AliMultDepSpecAnalysisTask::SetBinsMult(Int_t maxMult)
+{
+  return SetBinsMult({maxMult}, {1});
+}
 
 /***************************************************************************//**
  * Function to add this task to a train.
  ******************************************************************************/
-//void AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(){
+AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TString controlstring, Int_t cutModeLow, Int_t cutModeHigh)
+{
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskMultDepSpec", "No analysis manager found.");
+    return nullptr;
+  }
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskMultDepSpec", "No input event handler found.");
+    return nullptr;
+  }
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  Bool_t isMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != nullptr);
 
 
-//}
+  // Default cut settings:
+  UInt_t triggerMask = AliVEvent::kMB | AliVEvent::kINT7;
+
+  Double_t cutVertexZ = 10.0;
+
+  Double_t cutCentLow = 0.0;
+  Double_t cutCentHigh = 100.0;
+
+  Double_t cutPtLow = 0.15;
+  Double_t cutPtHigh = 50.0;
+
+  Double_t cutEtaLow = -0.8;
+  Double_t cutEtaHigh = 0.8;
+
+  Int_t maxMult = 100;
+  string colsys = "pp";
+
+  Bool_t useCent = kFALSE;
+  if(controlstring.Contains("useCent")) useCent = kTRUE;
+  Double_t centBinEdges[9] = {0., 5., 10., 20., 40., 60., 80., 90., 100.};
+
+
+  // colison system specific settings
+  if(controlstring.Contains("pp")){
+    colsys = "pp";
+    maxMult = 100;
+  }
+  else if(controlstring.Contains("pPb"))  {
+    colsys = "pPb";
+    maxMult = 200;
+  }
+  else if(controlstring.Contains("XeXe")){
+    colsys = "XeXe";
+    maxMult = 3500;
+  }
+  else if(controlstring.Contains("PbPb")) {
+    colsys = "PbPb";
+    maxMult = 4500;
+  }
+
+  AliMultDepSpecAnalysisTask* returnTask = nullptr;
+
+  char taskName[100] = "";
+
+  for(Int_t cutMode = cutModeLow; cutMode <= cutModeHigh; cutMode++){
+    sprintf(taskName, "multDepSpec_%s_cutMode_%d", colsys.c_str(), cutMode);
+
+    AliMultDepSpecAnalysisTask* task = new AliMultDepSpecAnalysisTask(taskName);
+    if(cutMode == cutModeLow) returnTask = task; // return one of the tasks
+
+    task->SetCutMode(cutMode);
+    task->SetTriggerMask(triggerMask);
+
+    task->SetIsMC(isMC);
+    if(type.Contains("ESD")) task->SetUseESD();
+    else task->SetUseAOD();
+
+    task->SetBinsMult(maxMult);
+
+    if(useCent){
+      task->SetMinCent(cutCentLow);
+      task->SetMaxCent(cutCentHigh);
+      task->SetBinsCent(8, centBinEdges);
+    }
+
+    // kinematic cuts:
+    task->SetMinEta(cutEtaLow);
+    task->SetMaxEta(cutEtaHigh);
+    task->SetMinPt(cutPtLow);
+    task->SetMaxPt(cutPtHigh);
+    task->SetMaxZv(cutVertexZ);
+
+    // hang task in train
+    mgr->AddTask(task);
+    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(taskName, TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root"));
+  }
+  return returnTask;
+}
