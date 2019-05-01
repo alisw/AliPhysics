@@ -28,7 +28,7 @@ public:
   enum VarForProp {kPt, kP};
 
   AliAnalysisTaskSEDmesonPIDSysProp();
-  AliAnalysisTaskSEDmesonPIDSysProp(int ch, AliRDHFCuts* cuts, TString systfilename);
+  AliAnalysisTaskSEDmesonPIDSysProp(int ch, AliRDHFCuts* cuts, TFile* systfile);
   virtual ~AliAnalysisTaskSEDmesonPIDSysProp();
   
   virtual void   UserCreateOutputObjects();
@@ -36,7 +36,7 @@ public:
   virtual void   UserExec(Option_t *);
   
   void SetAODMismatchProtection(int opt=1) {fAODProtection=opt;}
-  void SetPIDEffSystFileName(TString filename) {fSystFileName=filename;}
+  void SetPIDEffSystFile(TFile* infile) {fSystFile=infile;}
   void SetPIDStrategy(int PIDst=kStrongPID) {fPIDstrategy=PIDst;}
   void SetKaonHistoOptions(int tpcopt, int tofopt) {fKaonTPCHistoOpt=tpcopt; fKaonTOFHistoOpt=tofopt;}
   void SetVariableForUncProp(int var=kPt) {fVarForProp=var;}
@@ -66,7 +66,7 @@ private:
   TString fPartName;              /// string for particle name
   AliPIDResponse *fPIDresp;       /// basic pid object
 
-  TString fSystFileName;          /// Name of file with single track syst. unc.
+  TFile* fSystFile;               /// File with single track syst. unc.
   int fPIDstrategy;               /// PID strategy (conservative, strong, nsigma..)
   double fnSigma;                 /// number of sigma PID if nsigma strategy enabled
     
@@ -83,7 +83,7 @@ private:
   
   int fVarForProp;                /// variable used for propagation (p or pT)
 
-  ClassDef(AliAnalysisTaskSEDmesonPIDSysProp, 2);
+  ClassDef(AliAnalysisTaskSEDmesonPIDSysProp, 3);
 };
 
 #endif
