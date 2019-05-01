@@ -127,7 +127,7 @@ void AliEmcalTrackingQATask::GenerateHistoBins()
 
   GenerateFixedBinArray(10, -0.5, 9.5, fIntegerHistBins);
   
-  GenerateFixedBinArray(2, -1.1, 1.1, fChargeHistBins);
+  GenerateFixedBinArray(2, -1.1, 1.1, fChargeHistBins, true);
 }
 
 /**
