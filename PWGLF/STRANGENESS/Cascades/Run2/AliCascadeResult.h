@@ -43,7 +43,7 @@ public:
     AliCascadeResult& operator=(const AliCascadeResult& lCopyMe);
     
     Long64_t Merge(TCollection *hlist);
-    
+
     //Acceptance
     void SetCutMinRapidity      ( Double_t lCut ) { fCutMinRapidity       = lCut; }
     void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
@@ -88,13 +88,24 @@ public:
     //2.76 TeV reanalysis cuts
     void SetCutUse276TeVV0CosPA ( Bool_t lCut ) { fCutUse276TeVV0CosPA = lCut; }
     
+    //experimental TOF 3-sigma cut (no weak decay correction)
+    void SetCutUseTOFUnchecked ( Bool_t lCut ) { fCutUseTOFUnchecked = lCut; }
+    
     //Track Quality
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
+    void SetCutUseITSRefitNegative    ( Bool_t lCut ) { fCutUseITSRefitNegative    = lCut; }
+    void SetCutUseITSRefitPositive    ( Bool_t lCut ) { fCutUseITSRefitPositive    = lCut; }
+    void SetCutUseITSRefitBachelor    ( Bool_t lCut ) { fCutUseITSRefitBachelor    = lCut; }
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
     void SetCutMinEtaTracks ( Double_t lCut ) { fCutMinEtaTracks = lCut; }
     void SetCutMaxEtaTracks ( Double_t lCut ) { fCutMaxEtaTracks = lCut; }
     void SetCutMaxChi2PerCluster ( Double_t lCut ) { fCutMaxChi2PerCluster = lCut; }
-    void SetCutMinTrackLength    ( Double_t lCut ) { fCutMinTrackLength    = lCut; }
+    
+    //Modern Track quality cuts
+    void SetCutMinTrackLength          ( Double_t lCut )  { fCutMinTrackLength          = lCut; }
+    void SetCutUseParametricLength     ( Bool_t   lCut )  { fCutUseParametricLength     = lCut; }
+    void SetCutLeastNumberOfCrossedRows( Double_t lCut )  { fCutLeastNumberOfCrossedRows= lCut; }
+    void SetCutMinCrossedRowsOverLength( Double_t lCut )  { fCutMinCrossedRowsOverLength= lCut; }
     
     //Variable CascCosPA
     void SetCutUseVarCascCosPA      ( Bool_t lCut )   { fCutUseVariableCascCosPA     = lCut; }
@@ -144,6 +155,33 @@ public:
         fCutVarBBCosPA_Const     = l5;
     }
     
+    //Variable DCACascDau
+    void SetCutUseVarDCACascDau      ( Bool_t lCut )   { fCutUseVariableDCACascDau     = lCut; }
+    void SetCutVarDCACascDauExp0Const( Double_t lCut ) { fCutVarDCACascDau_Exp0Const = lCut; }
+    void SetCutVarDCACascDauExp0Slope( Double_t lCut ) { fCutVarDCACascDau_Exp0Slope = lCut; }
+    void SetCutVarDCACascDauExp1Const( Double_t lCut ) { fCutVarDCACascDau_Exp1Const = lCut; }
+    void SetCutVarDCACascDauExp1Slope( Double_t lCut ) { fCutVarDCACascDau_Exp1Slope = lCut; }
+    void SetCutVarDCACascDauConst    ( Double_t lCut ) { fCutVarDCACascDau_Const     = lCut; }
+    void SetCutVarDCACascDau ( Double_t l1, Double_t l2, Double_t l3, Double_t l4, Double_t l5 ){
+        fCutUseVariableDCACascDau = kTRUE; //Automatically switch on!
+        fCutVarDCACascDau_Exp0Const = l1;
+        fCutVarDCACascDau_Exp0Slope = l2;
+        fCutVarDCACascDau_Exp1Const = l3;
+        fCutVarDCACascDau_Exp1Slope = l4;
+        fCutVarDCACascDau_Const     = l5;
+    }
+    
+    //New to comission / experiemntal
+    void SetCutDCACascadeToPV        ( Double_t lCut ) { fCutDCACascadeToPV = lCut;         }
+    void SetCutDCANegToPVWeighted    ( Double_t lCut ) { fCutDCANegToPVWeighted = lCut;     }
+    void SetCutDCAPosToPVWeighted    ( Double_t lCut ) { fCutDCAPosToPVWeighted = lCut;     }
+    void SetCutDCABachToPVWeighted   ( Double_t lCut ) { fCutDCABachToPVWeighted = lCut;    }
+    
+    void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
+    
+    void SetCutIsCowboy (Int_t lCut) { fCutIsCowboy = lCut; }
+    void SetCutIsCascadeCowboy (Int_t lCut) { fCutIsCascadeCowboy = lCut; }
+    
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
     TString GetParticleName() const; 
@@ -191,13 +229,24 @@ public:
     //2.76 TeV reanalysis cuts
     Bool_t GetCutUse276TeVV0CosPA () const { return fCutUse276TeVV0CosPA; }
     
+    //experimental TOF 3-sigma cut (no weak decay correction)
+    Bool_t GetCutUseTOFUnchecked () const { return fCutUseTOFUnchecked; }
+    
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
+    Bool_t GetCutUseITSRefitNegative    () const { return fCutUseITSRefitNegative; }
+    Bool_t GetCutUseITSRefitPositive    () const { return fCutUseITSRefitPositive; }
+    Bool_t GetCutUseITSRefitBachelor    () const { return fCutUseITSRefitBachelor; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutMinEtaTracks () const { return fCutMinEtaTracks; }
     Double_t GetCutMaxEtaTracks () const { return fCutMaxEtaTracks; }
     Double_t GetCutMaxChi2PerCluster () const { return fCutMaxChi2PerCluster; }
-    Double_t GetCutMinTrackLength    () const { return fCutMinTrackLength; }
+    
+    //Modern track quality cuts
+    Double_t GetCutMinTrackLength              () const { return fCutMinTrackLength; }
+    Bool_t   GetCutUseParametricLength         () const { return fCutUseParametricLength; }
+    Double_t GetCutLeastNumberOfCrossedRows    () const { return fCutLeastNumberOfCrossedRows; }
+    Double_t GetCutMinCrossedRowsOverLength    () const { return fCutMinCrossedRowsOverLength; }
     
     //Variable CascCosPA
     Bool_t GetCutUseVarCascCosPA        () const { return fCutUseVariableCascCosPA;   }
@@ -223,11 +272,41 @@ public:
     Double_t GetCutVarBBCosPAExp1Slope() const { return fCutVarBBCosPA_Exp1Slope; }
     Double_t GetCutVarBBCosPAConst    () const { return fCutVarBBCosPA_Const;     }
     
+    //Variable DCACascDau
+    Bool_t GetCutUseVarDCACascDau        () const { return fCutUseVariableDCACascDau;   }
+    Double_t GetCutVarDCACascDauExp0Const() const { return fCutVarDCACascDau_Exp0Const; }
+    Double_t GetCutVarDCACascDauExp0Slope() const { return fCutVarDCACascDau_Exp0Slope; }
+    Double_t GetCutVarDCACascDauExp1Const() const { return fCutVarDCACascDau_Exp1Const; }
+    Double_t GetCutVarDCACascDauExp1Slope() const { return fCutVarDCACascDau_Exp1Slope; }
+    Double_t GetCutVarDCACascDauConst    () const { return fCutVarDCACascDau_Const;     }
+    
+    //New to comission / experimental
+    Double_t GetCutDCACascadeToPV        () const { return fCutDCACascadeToPV;         }
+    Double_t GetCutDCANegToPVWeighted    () const { return fCutDCANegToPVWeighted;     }
+    Double_t GetCutDCAPosToPVWeighted    () const { return fCutDCAPosToPVWeighted;     }
+    Double_t GetCutDCABachToPVWeighted   () const { return fCutDCABachToPVWeighted;    }
+    
+    Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
+    
+    Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
+    Int_t GetCutIsCascadeCowboy () const { return fCutIsCascadeCowboy; }
+    
+    Long_t      GetNPtBins()   const { return fhNPtBounds-1;   }
+    Double_t*   GetPtBins()    const { return fhPtBins;        }
+    Long_t      GetNCentBins() const { return fhNCentBounds-1; }
+    Double_t*   GetCentBins()  const { return fhCentBins;      }
+    Long_t      GetNMassBins() const { return fhNMassBins;     }
+    Double_t    GetMinMass()   const { return fhMinMass;       }
+    Double_t    GetMaxMass()   const { return fhMaxMass;       }
+    
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
     
     TProfile *GetProtonProfile       ()       { return fProtonProfile; }
     TProfile *GetProtonProfileToCopy () const { return fProtonProfile; }
+    
+    void InitializeHisto();         //Initialize main histogram as per request
+    void InitializeProtonProfile(); //Initialize profile, otherwise not stored
     void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //Initialize profile, otherwise not stored
     
     //No such thing as feeddown corrections for this result
@@ -243,6 +322,21 @@ private:
 
     AliCascadeResult::EMassHypo fMassHypo; //For determining invariant mass
 
+    //------------------------------------------------------------------------
+    //Histogram-controlling stuff
+    Int_t fhNCentBounds;
+    Double_t *fhCentBins; //[fhNCentBounds]
+    Int_t fhNPtBounds;
+    Double_t *fhPtBins; //[fhNPtBounds]
+    Long_t fhNMassBins;
+    Double_t fhMinMass;
+    Double_t fhMaxMass;
+    //------------------------------------------------------------------------
+    // Histograms / not streamed, initialized on demand 
+    TH3F *fHisto;             //Histogram for storing output with these configurations
+    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
+    //------------------------------------------------------------------------
+    
     //Basic acceptance criteria
     Double_t fCutMinRapidity; //min rapidity
     Double_t fCutMaxRapidity; //max rapidity
@@ -283,13 +377,23 @@ private:
     
     Bool_t fCutUse276TeVV0CosPA; //use 2.76 TeV-like variable V0 CosPA (experimental)
     
+    Bool_t fCutUseTOFUnchecked; //experimental TOF 3-sigma cut (no weak decay correction)
+    
     //Track selections
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
+    Bool_t fCutUseITSRefitNegative;
+    Bool_t fCutUseITSRefitPositive;
+    Bool_t fCutUseITSRefitBachelor;
     Double_t fCutLeastNumberOfClusters; //min number of TPC clusters
     Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
     Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
     Double_t fCutMaxChi2PerCluster; //Max chi2/clusters
+    
+    //New track selections
     Double_t fCutMinTrackLength; //Minimum track length in the active TPC zone
+    Bool_t fCutUseParametricLength; //Relax track requirements at low pT or high R
+    Double_t fCutLeastNumberOfCrossedRows;
+    Double_t fCutMinCrossedRowsOverLength; //N(crossed rows)/L > something
     
     //Experimental: pt-variable cascade cosPA
     //Warning: if this cut is tighter than fCutCascCosPA, this gets used instead!
@@ -318,11 +422,27 @@ private:
     Double_t fCutVarBBCosPA_Exp1Slope;
     Double_t fCutVarBBCosPA_Const;
     
-    TH3F *fHisto; //Histogram for storing output with these configurations
+    //Experimental: pt-variable DCA casc dau
+    Bool_t fCutUseVariableDCACascDau;
+    Double_t fCutVarDCACascDau_Exp0Const;
+    Double_t fCutVarDCACascDau_Exp0Slope;
+    Double_t fCutVarDCACascDau_Exp1Const;
+    Double_t fCutVarDCACascDau_Exp1Slope;
+    Double_t fCutVarDCACascDau_Const;
     
-    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
+    //Special selections
+    Double_t fCutDCACascadeToPV;
+    Double_t fCutDCANegToPVWeighted;
+    Double_t fCutDCAPosToPVWeighted;
+    Double_t fCutDCABachToPVWeighted;
     
-    ClassDef(AliCascadeResult, 28)
+    Bool_t fCutAtLeastOneTOF;
+    
+    //Cowboy/sailor checks
+    Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
+    Int_t fCutIsCascadeCowboy; //-1: sailor, 0: don't select, 1: cowboy
+    
+    ClassDef(AliCascadeResult, 37)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -351,5 +471,14 @@ private:
     // 26 - addition of proton momenta histogram (for G3/F correction, 2.76 TeV re-analysis corrections)
     // 27 - bugfix
     // 28 - implementation of 276TeVV0CosPA cut (variable with lambda p)
+    // 29 - implementation of 3D DCA cascade to PV cut, weighted single-track DCA to PV cuts
+    // 30 - implementation of variable DCA cascade daughters cut
+    // 31 - implementation of TOF experimental cut (no weak decay trajectory correction)
+    // 32 - streaming improvement
+    // 33 - streaming improvement 2
+    // 34 - TOF cut: at-least-one type
+    // 35 - provision for prong-wise ITS refit requirement
+    // 36 - cowboy/sailor check
+    // 37 - modern track selections: parametric length, crossed rows + cr/L
 };
 #endif

@@ -12,6 +12,7 @@
 #include "AliAODTrack.h"
 
 #include <TClonesArray.h>
+#include <TRandom3.h>
 
 #include "AliNanoAODArrayMaker.h"
 
@@ -19,7 +20,7 @@ ClassImp(AliNanoAODArrayMaker)
 
 //________________________________________________________________________
 AliNanoAODArrayMaker::AliNanoAODArrayMaker(const char *name) 
-  : AliAnalysisTaskSE(name), fOutputArrayName(), fOutputArray(0), fOutputArrayPythiaName(), fPythiaArray(0), fOutputList(0x0)
+  : AliAnalysisTaskSE(name), fOutputArrayName(), fOutputArray(0), fOutputArrayPythiaName(), fPythiaArray(0), fTrackEffPythia(1.0), fTrackEffData(1.0), fRandom(), fOutputList(0x0)
 {
   // Constructor
 
@@ -33,6 +34,8 @@ void AliNanoAODArrayMaker::UserCreateOutputObjects()
 {
   // Create arrays and set names
   // Called once
+
+  fRandom = new TRandom3(0);
 
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE); 
@@ -58,6 +61,19 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
   // Main loop
   // Called for each event
   if(fIsFirstLoop){
+    //add dummy arrays so that the clean up for Nano AOD arrays works, this is necessary because normal AODs contain more arrays in the AOD event in the standard format. Only Arrays after these standard events will be resetted for the next AOD event. These dummy arrays ensure that the arrays added further below are properly resetted in the framework
+    TClonesArray* dummy[30];
+
+    int number_dummy = 22-InputEvent()->GetList()->GetSize();//22 is the number of entries in the standard AODs
+    if(number_dummy<0)
+      number_dummy=0;
+    
+    for(int i=0; i<number_dummy; i++){
+      dummy[i] = new TClonesArray(Form("dummy%i", i));//due to the definition of the content to be dummy this array cannot be filled or deleted
+      dummy[i]->SetName(Form("dummy%i", i));
+      InputEvent()->AddObject(dummy[i]);
+    }
+    
     InputEvent()->AddObject(fOutputArray);
     InputEvent()->AddObject(fPythiaArray);
     InputEvent()->AddObject(fDataArray);
@@ -78,26 +94,27 @@ void AliNanoAODArrayMaker::UserExec(Option_t *)
 
   AliAODTrack* newTrack = new AliAODTrack();
 
-  //Delte array members from the previous event
-  fPythiaArray->Delete();
-  fOutputArray->Delete();
-  fDataArray->Delete();
-  
   //loop over particles in the event and add them to the correct arrays
   for(Int_t iPart=0; iPart<nTracks; iPart++){
    AliNanoAODTrack *nanoTrack = (AliNanoAODTrack*) particleArray->At(iPart);
     
     if (nanoTrack->GetVar(indexIsPyth)==1){
+      // Discard tracks due to lowered tracking efficiency
+      if (fTrackEffPythia < 1.0 && fTrackEffPythia < fRandom->Rndm())
+        continue;
       GetAODTrack(newTrack, nanoTrack);
       new ((*fPythiaArray)[accTracksPythia]) AliAODTrack(*newTrack);
-      new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
       accTracksPythia++;
     }else{
+      // Discard tracks due to lowered tracking efficiency
+      if (fTrackEffData < 1.0 && fTrackEffData < fRandom->Rndm())
+        continue;
       GetAODTrack(newTrack, nanoTrack,indexHybGlob);
       new ((*fDataArray)[accTracksData]) AliAODTrack(*newTrack);
-      new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
       accTracksData++;
     }
+
+    new ((*fOutputArray)[accTracks]) AliAODTrack(*newTrack);
     accTracks++;
   }
   
@@ -120,7 +137,8 @@ void AliNanoAODArrayMaker::GetAODTrack(AliAODTrack* newTrack, AliNanoAODTrack* t
   newTrack->SetPhi(track->Phi());
   newTrack->SetCharge(track->Charge());
   newTrack->SetLabel(track->GetLabel());
-  if (index==-1 || track->GetVar(index) == 1) newTrack->SetIsHybridGlobalConstrainedGlobal();
+  if (index==-1 || track->GetVar(index) == 1) newTrack->SetIsHybridGlobalConstrainedGlobal(true);
+  else newTrack->SetIsHybridGlobalConstrainedGlobal(false);
   newTrack->SetFilterMap(track->GetFilterMap());
 
 }

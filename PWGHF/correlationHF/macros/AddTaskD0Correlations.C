@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=1, Bool_t puritystudies=kFALSE, Bool_t reweighMC=kFALSE, TString filenameWeights="")
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Int_t speed=AliAnalysisTaskSED0Correlations::kOneBinSB, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileMassRanges=kFALSE, Double_t ptAssocLim=1., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=1, Bool_t puritystudies=kFALSE, Bool_t reweighMC=kFALSE, TString filenameWeights="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -111,7 +111,6 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 	RDHFD0Corrs->SetMaxCentrality(maxC);
       }
       if(flagAOD049)RDHFD0Corrs->SetUseAOD049(kTRUE);
-      RDHFD0Corrs->SetUseCentrality(AliRDHFCuts::kCentV0M);
     }
   }
   else {
@@ -123,7 +122,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     if(flagAOD049)RDHFD0Corrs->SetUseAOD049(kTRUE);
     if(minC!=0 || maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
       RDHFD0Corrs->SetMinCentrality(minC);
-      RDHFD0Corrs->SetMaxCentrality(maxC);
+      RDHFD0Corrs->SetMaxCentrality(maxC); //****you need to define the estimator in the cut file, though!!!****
     } 
   }
 
@@ -230,18 +229,26 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
   if(standardbins==1) {
     printf("Standard bins (from D0Mass cuts object)\n");
-    massD0Task->SetNPtBinsCorr(RDHFD0Corrs->GetNPtBins()); 
+    Int_t nbins=RDHFD0Corrs->GetNPtBins();
+    massD0Task->SetNPtBinsCorr(nbins); 
     massD0Task->SetPtBinsLimsCorr(RDHFD0Corrs->GetPtBinLimits());
+    Double_t pttreshlow[50];
+    Double_t pttreshup[50];
+    for(int k=0;k<nbins;k++) {pttreshlow[k]=0.; pttreshup[k]=999.;}
+    massD0Task->SetPtTreshLow(pttreshlow);
+    massD0Task->SetPtTreshUp(pttreshup);
   } else {
     Double_t ptlimits[15] = {0,0.5,1,2,3,4,5,6,7,8,12,16,20,24,9999};
     massD0Task->SetNPtBinsCorr(14);
     massD0Task->SetPtBinsLimsCorr(ptlimits);
+    Double_t pttreshlow[15] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+    Double_t pttreshup[15] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
+    massD0Task->SetPtTreshLow(pttreshlow);
+    massD0Task->SetPtTreshUp(pttreshup);
   }
-  Double_t pttreshlow[15] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-  Double_t pttreshup[15] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
-  massD0Task->SetPtTreshLow(pttreshlow);
-  massD0Task->SetPtTreshUp(pttreshup);
 
+
+  //needed for fSpeed==0 and ==1 (i.e. when inv mass axis of THnSparse has the normal signal bins)
   Double_t LeftSignReg_LowPt = 1.7968;
   Double_t RightSignReg_LowPt = 1.9528;
   Double_t LeftSignReg_HighPt = 1.7488;
@@ -251,22 +258,39 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   massD0Task->SetRightSignReg_LowPt(RightSignReg_LowPt);
   massD0Task->SetLeftSignReg_HighPt(LeftSignReg_HighPt);
   massD0Task->SetRightSignReg_HighPt(RightSignReg_HighPt); 
-  
-  if(useCutFileSBRanges) { //use SB ranges from cut file
+ 
+  //needed for fSpeed==2
+
+  if(useCutFileMassRanges) { //use SB ranges from cut file
 
     TVectorD *LSBLow = (TVectorD*)filecuts2->Get("vLSBLow");
     TVectorD *LSBUpp = (TVectorD*)filecuts2->Get("vLSBUpp");
     TVectorD *RSBLow = (TVectorD*)filecuts2->Get("vRSBLow");
     TVectorD *RSBUpp = (TVectorD*)filecuts2->Get("vRSBUpp");      
 
-    if(!LSBLow||!LSBUpp||!RSBLow||!RSBUpp) {printf("Error! No SB ranges found in the Associated track cut file, but useCutFileSBRanges==kTRUE! Exiting...\n"); return;}
+    if(!LSBLow||!LSBUpp||!RSBLow||!RSBUpp) {printf("Error! No SB ranges found in the Associated track cut file, but useCutFileMassRanges==kTRUE! Exiting...\n"); return;}
 
     massD0Task->SetLSBLowLim(LSBLow->GetMatrixArray());
     massD0Task->SetLSBHighLim(LSBUpp->GetMatrixArray());
     massD0Task->SetRSBLowLim(RSBLow->GetMatrixArray());
     massD0Task->SetRSBHighLim(RSBUpp->GetMatrixArray());
 
+    if(speed==2) {
+
+      TVectorD *SignLow = (TVectorD*)filecuts2->Get("vSignLow");
+      TVectorD *SignUpp = (TVectorD*)filecuts2->Get("vSignUpp");
+
+      if(!SignLow||!SignUpp) {printf("Error! No Signal ranges found in the Associated track cut file, but useCutFileMassRanges==kTRUE, and fSpeed==2! Exiting...\n"); return;}
+
+      massD0Task->SetSignLowLim(SignLow->GetMatrixArray());
+      massD0Task->SetSignHighLim(SignUpp->GetMatrixArray());
+
+    }
+
   } else { //use SB ranges from AddTask (following settings)
+
+    if(speed==2) {printf("Error! fSpeed 2 set with useCutFileMassRanges==kTRUE, this is not allowed!\nYou have to pass the signal ranges via cut file with fSpeed=2! Exiting...\n"); return;}
+
     if(!pporpPb_lims) { //pp limits
 				//      1-2    2-3    3-4    4-5    5-6    6-7    7-8   8-12   12-16  16-20  20-24   24+
       Double_t LSBLowLim[14] = {0.,0.,1.7688,1.7688,1.7488,1.7368,1.7088,1.7168,1.7168,1.7008,1.7088,1.7088,1.7088,1.7088}; //to be filled looking at results from invariant mass fits!

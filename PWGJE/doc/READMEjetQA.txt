@@ -5,7 +5,7 @@
 The task AliAnalysisTaskPWGJEQA performs basic QA relevant to the jet group. This task is appropriate as a first step for an analysis (as opposed to light QA to be run shortly after data-taking -- for this see the [AnalysisQA train](https://alice.its.cern.ch/jira/browse/PWGPP-281)). See the task for details.
 
 - For an example configuration in PbPb data, see Jets_EMC_PbPb train 1872.
-- For an example in a pp Pt-hard production, see Jets_EMC_pp_MC train 1031.
+- For an example in a pp Pt-hard production, see Jets_EMC_pp_MC train 1031. Be sure to call the function SetIsPtHard(kTRUE), and you can reject outliers with SetRejectOutlierEvents(kTRUE).
 
 ## Plotting Jet QA
 

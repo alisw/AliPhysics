@@ -32,6 +32,8 @@ public:
   virtual void Finish();
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoSpatialSeparationFunction(*this); }
+
   
 private:
   TH1D *fAlphaNum; // distibution of angles between momenta of particle collections from the same event

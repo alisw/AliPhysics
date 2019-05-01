@@ -87,6 +87,7 @@ fUsePhiEtaWeightsVtxDep(kFALSE),
 fUsePhiEtaCuts(kFALSE),
 fUseZDCESEMulWeights(kFALSE),
 fUseZDCESESpecWeights(kFALSE),
+fCutMultiplicityOutliers(kFALSE),
 fWeightsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
@@ -249,6 +250,7 @@ fUsePhiEtaWeightsVtxDep(kFALSE),
 fUsePhiEtaCuts(kFALSE),
 fUseZDCESEMulWeights(kFALSE),
 fUseZDCESESpecWeights(kFALSE),
+fCutMultiplicityOutliers(kFALSE),
 fWeightsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
@@ -514,6 +516,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
       if(fZDCESESpecWeightsHist[k]) fQC->SetZDCESESpecWeightsHist(fZDCESESpecWeightsHist[k],k);
     }
   }
+  fQC->SetCutMultiplicityOutliers(fCutMultiplicityOutliers);
   fQC->SetZDCGainAlpha(fZDCGainAlpha);
   fQC->SetMultiplicityIs(fMultiplicityIs);
   fQC->SetnBinsForCorrelations(fnBinsForCorrelations);

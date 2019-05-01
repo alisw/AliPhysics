@@ -25,6 +25,7 @@ include_directories(
 include_directories(${ROOT_INCLUDE_DIRS}
   ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
   ${AliPhysics_SOURCE_DIR}/PWG/Tools
+  ${AliPhysics_SOURCE_DIR}/OADB
   )
 
 # Sources in alphabetical order
@@ -51,7 +52,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES PWGEMCALbase)
+set(ALIROOT_DEPENDENCIES PWGEMCALbase OADB)
 
 # Generate the ROOT map
 # Dependecies

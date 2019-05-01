@@ -1,6 +1,6 @@
 
 
-AliAnalysisTaskSE* AddTaskSPDQA() {
+AliAnalysisTaskSPD * AddTaskSPDQA() {
     
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {

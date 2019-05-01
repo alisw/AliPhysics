@@ -51,6 +51,10 @@ AliEmcalTriggerDecision::AliEmcalTriggerDecision(const char *name, const char *t
   fAcceptedPatches.SetOwner(kFALSE);
 }
 
+AliEmcalTriggerDecision::~AliEmcalTriggerDecision(){
+  fAcceptedPatches.Clear("nodelete");
+}
+
 void AliEmcalTriggerDecision::AddAcceptedPatch(AliEMCALTriggerPatchInfo * const acceptedPatch){
   fAcceptedPatches.Add(acceptedPatch);
 }

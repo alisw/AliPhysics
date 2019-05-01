@@ -29,6 +29,7 @@ class AliPhysicsSelectionTask : public AliAnalysisTaskSE {
     AliPhysicsSelection* GetPhysicsSelection() const { return fPhysicsSelection; }
     void   SetUseSpecialOutput(Bool_t v=kTRUE)         {fUseSpecialOutput = v;}
     Bool_t GetUseSpecialOutput()               const { return fUseSpecialOutput; }
+    static AliPhysicsSelectionTask* AddTaskPhysicsSelection ( const Bool_t mCAnalysisFlag = kFALSE, const Bool_t applyPileupCuts = kFALSE, const UInt_t deprecatedFlag2 = 0, const Bool_t useSpecialOutput=kFALSE);
 
  protected:
     TList* fOutput;                  //! list send on output slot 1

@@ -8,7 +8,6 @@ This analysis task shoul alwaysd be used with [phos tender](https://github.com/a
 ```c++
 // In your run.C macro
 
-gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C");
 AliPHOSTenderTask * tenderPHOS = AddAODPHOSTender("PHOSTenderTask", "PHOStender", tenderOption, 1, isMC);
 AliPHOSTenderSupply * PHOSSupply = tenderPHOS->GetPHOSTenderSupply();
 PHOSSupply->ForceUsingBadMap("/path/to/badmap/BadMap_LHC16.root");
@@ -39,19 +38,20 @@ alienHandler->SetOutputFiles(files);
 ## Class hierarchy
 
 ```c++
-AliAnalysisTaskPP13            //  Main analysis 
-└───   MixingSample
-└───   PhotonSelection         
-        └───   PhysPhotonSelection   // Fills all histograms needed to reconstruct $\pi^{0}$s
-        │           DetectorHistogram
-        │
-        └───   PhotonTimecutSelection  // Study of timing cut efficiency and purity
-        └───   QualityPhotonSelection  // QA plots for PHOS clusters
-        └───   TagAndProbeSelection
-        └───   PhysPhotonSelectionMC   // Applies nonlinearity to PHOS clusters in MC
-        └───   MesonSelectionMC        // Neutral meson efficiency study
-        │           ParticlesHistogram
-        │
-        └───   PythiaInfoSelection     // Collects cross section and ntrials data. Needed for jet-jet MC only.
-
+├── AliAnalysisTaskPP13
+├── AliPP13::ClusterCuts
+├── AliPP13::DetectorHistogram
+├── AliPP13::MixingSample
+├── AliPP13::ParticlesHistogram
+└── AliPP13::PhotonSelection
+    ├── AliPP13::PhotonSpectrumSelection
+    ├── AliPP13::PhotonTimecutStudySelection
+    ├── AliPP13::PythiaInfoSelection
+    ├── AliPP13::QualityPhotonSelection
+    ├── AliPP13::TagAndProbeSelection       // TODO: Check final parametrization
+    ├── AliPP13::EfficiencySelectionMC
+    └── AliPP13::PhysPhotonSelection
+        ├── AliPP13::NonlinearityScanSelection
+        └── AliPP13::PhysPhotonSelectionMC
+            └── AliPP13::MesonSelectionMC
 ```

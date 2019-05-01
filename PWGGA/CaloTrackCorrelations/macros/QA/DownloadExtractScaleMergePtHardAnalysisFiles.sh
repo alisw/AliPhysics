@@ -62,7 +62,7 @@ for ((bin=$pthardmin;bin < $pthardmax;bin++))
 
 fullpath=$path1/$bin/$i/$path2/AnalysisResults.root
 
-echo 'pT hard ' $bin  'run: ' $i 'copy' $fullpath
+echo 'pT hard ' $bin  'run: ' $i 'index: ' $j 'copy' $fullpath
 
 alien_cp alien:$fullpath $bin/$i.root
 

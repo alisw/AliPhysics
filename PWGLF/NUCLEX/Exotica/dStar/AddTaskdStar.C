@@ -48,8 +48,8 @@ AliAnalysisTaskdStar* AddTaskdStar(bool isMC=true,TString suffix = ""){
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":AODdstar";
 
-  AliAnalysisDataContainer *coutput1 =0x0;
-  AliAnalysisDataContainer *coutput2 =0x0;
+  AliAnalysisDataContainer *coutput1 = 0x0;
+  AliAnalysisDataContainer *coutput2 = 0x0;
 
   coutput1 = mgr->CreateContainer(Form("pfecchio_%s",tskname.Data()),
 				 TList::Class(),

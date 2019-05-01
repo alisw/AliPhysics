@@ -34,6 +34,7 @@
 #include "TRandom.h"
 #include "TDatabasePDG.h"
 #include "TGenPhaseSpace.h"
+#include "TSystem.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -56,7 +57,6 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fOutputContainer(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fHistNEvents(NULL),
   fhwEffpT(NULL),
   fhwMultpT(NULL),
@@ -73,8 +73,12 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fhKW(NULL),
   fmee_orig(NULL),
   fpteevsmee_orig(NULL),
+  fmotherpT_orig(NULL),
   fphi_orig(NULL),
   frap_orig(NULL),
+  fmee_orig_wALT(NULL),
+  fpteevsmee_orig_wALT(NULL),
+  fmotherpT_orig_wALT(NULL),
   fmee(NULL),
   fpteevsmee(NULL),
   fphi(NULL),
@@ -83,8 +87,6 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fDCAeevsptee(NULL),
   fmee_wALT(NULL),
   fpteevsmee_wALT(NULL),
-  fmee_orig_wALT(NULL),
-  fpteevsmee_orig_wALT(NULL),
   fULS_orig(NULL),
   fLSpp_orig(NULL),
   fLSmm_orig(NULL),
@@ -147,18 +149,20 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fFileEff(0),
   fFileNameVPH(0),
   fFileVPH(0),
+  fResolDataSetName(""),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
   fIsMC(1),
   fMaxEta(2),
-  fMinPt(2),
+  fMinPt(0),
+  fMaxPt(1000),
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
   fALTweightType(2)
 {
-  
+
 }
 
 //________________________________________________________________________
@@ -167,7 +171,6 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fOutputContainer(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
-  fMCStack(NULL),
   fHistNEvents(NULL),
   fhwEffpT(NULL),
   fhwMultpT(NULL),
@@ -184,8 +187,12 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fhKW(NULL),
   fmee_orig(NULL),
   fpteevsmee_orig(NULL),
+  fmotherpT_orig(NULL),
   fphi_orig(NULL),
   frap_orig(NULL),
+  fmee_orig_wALT(NULL),
+  fpteevsmee_orig_wALT(NULL),
+  fmotherpT_orig_wALT(NULL),
   fmee(NULL),
   fpteevsmee(NULL),
   fphi(NULL),
@@ -194,8 +201,6 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fDCAeevsptee(NULL),
   fmee_wALT(NULL),
   fpteevsmee_wALT(NULL),
-  fmee_orig_wALT(NULL),
-  fpteevsmee_orig_wALT(NULL),
   fULS_orig(NULL),
   fLSpp_orig(NULL),
   fLSmm_orig(NULL),
@@ -258,12 +263,14 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fFileEff(0),
   fFileNameVPH(0),
   fFileVPH(0),
+  fResolDataSetName(""),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
   fIsMC(1),
   fMaxEta(2),
-  fMinPt(2),
+  fMinPt(0),
+  fMaxPt(1000),
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
@@ -280,7 +287,7 @@ AliAnalysisTaskLMeeCocktailMC::~AliAnalysisTaskLMeeCocktailMC()
 
 //________________________________________________________________________
 void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
-  
+
   // Create histograms
   if(fOutputContainer != NULL){
     delete fOutputContainer;
@@ -345,9 +352,8 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fhKW = new TH1F("fhKW","fhKW",KWnbins,KWmin,KWmax);
   for(Int_t ibin = 1; ibin <= KWnbins; ibin++ ){
     KWmass     = KWmin + (Double_t)(ibin - 1) * KWbinwidth + KWbinwidth / 2.0;
-    fhKW->AddBinContent(ibin,(2./KWmass)
-                            *TMath::Sqrt(1.-4.*emass*emass/pow(2,KWmass))
-                            *(1.+2.*emass*emass/pow(2,KWmass)));
+    fhKW->AddBinContent(ibin,2.*(1./137.03599911)/3./3.14159265359/KWmass
+       *sqrt(1.-4.*emass*emass/KWmass/KWmass)*(1.+2.*emass*emass/KWmass/KWmass));
   }
 
   // Prepare resolution file
@@ -370,12 +376,28 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   }
   //RUN2
   if(fResolType == 2) {
-   if(fcollisionSystem==200){ //pp 13TeV
-    fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
-    fFile = TFile::Open(fFileName.Data());
-    if(!fFile->IsOpen()){
-     AliError(Form("Could not open file %s",fFileName.Data() ));
+    if(fResolDataSetName.Contains("alien")){
+      // file is copied from alien path to local directory
+      gSystem->Exec(Form("alien_cp %s .", fResolDataSetName.Data()));
+      
+      // obtain ROOT file name only and local directory
+      TObjArray* Strings = fResolDataSetName.Tokenize("/");
+      fFileName = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
+      
+      Printf("Set resolution file name to %s (copied from %s)",fFileName.Data(),fResolDataSetName.Data());
     }
+    else{
+      if(fcollisionSystem==200){ //pp 13TeV
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
+      }
+      else{
+	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
+      }
+    }
+   fFile = TFile::Open(fFileName.Data());
+   if(!fFile->IsOpen()){
+     AliError(Form("Could not open file %s",fFileName.Data() ));
+   }
     TObjArray* ArrResoPt=0x0;
     ArrResoPt = (TObjArray*) fFile->Get("RelPtResArrCocktail");
     TObjArray* ArrResoEta=0x0;
@@ -388,7 +410,6 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
     fArrResoEta=ArrResoEta;
     fArrResoPhi_Pos=ArrResoPhi_Pos;
     fArrResoPhi_Neg=ArrResoPhi_Neg;
-   } 
   } 
 
   // Define the output tree
@@ -500,10 +521,14 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fmee_orig[nInputParticles] = new TH1F("mee_orig","mee_orig",histBinM,histMinM,histMaxM);
   fmee_orig[nInputParticles]->Sumw2();
   fOutputContainer->Add(fmee_orig[nInputParticles]);
-  fpteevsmee_orig = new TH2F*[nInputParticles];
+  fpteevsmee_orig = new TH2F*[nInputParticles+1];
   fpteevsmee_orig[nInputParticles] = new TH2F("pteevsmee_orig","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
   fpteevsmee_orig[nInputParticles]->Sumw2();
   fOutputContainer->Add(fpteevsmee_orig[nInputParticles]);
+  fmotherpT_orig = new TH1F*[nInputParticles+1];
+  fmotherpT_orig[nInputParticles] = new TH1F("motherpT_orig","motherpT_orig",histBinPt,histMinPt,histMaxPt);
+  fmotherpT_orig[nInputParticles]->Sumw2();
+  fOutputContainer->Add(fmotherpT_orig[nInputParticles]);
   fphi_orig = new TH1F*[nInputParticles+1];
   fphi_orig[nInputParticles] = new TH1F("phi_orig","phi_orig",histBinPhi,histMinPhi,histMaxPhi);
   fphi_orig[nInputParticles]->Sumw2();
@@ -525,13 +550,16 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
    fpteevsmee_orig[i] = new TH2F(Form("pteevsmee_orig_%s",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
    fpteevsmee_orig[i]->Sumw2();
    fOutputContainer->Add(fpteevsmee_orig[i]);
+   fmotherpT_orig[i] = new TH1F(Form("motherpT_orig_%s",fParticleListNames[i].Data()),Form("motherpT_orig_%s",fParticleListNames[i].Data()),histBinPt,histMinPt,histMaxPt);
+   fmotherpT_orig[i]->Sumw2();
+   fOutputContainer->Add(fmotherpT_orig[i]);
   }
 
   fmee = new TH1F*[nInputParticles+1];
   fmee[nInputParticles] = new TH1F("mee","mee",histBinM,histMinM,histMaxM);
   fmee[nInputParticles]->Sumw2();
   fOutputContainer->Add(fmee[nInputParticles]);
-  fpteevsmee = new TH2F*[nInputParticles];
+  fpteevsmee = new TH2F*[nInputParticles+1];
   fpteevsmee[nInputParticles] = new TH2F("pteevsmee","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
   fpteevsmee[nInputParticles]->Sumw2();
   fOutputContainer->Add(fpteevsmee[nInputParticles]);
@@ -567,34 +595,41 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fmee_orig_wALT = new TH1F*[nInputParticles+1];
   fmee_orig_wALT[nInputParticles] = new TH1F("mee_orig_wALT","mee_orig_wALT",histBinM,histMinM,histMaxM);
   fmee_orig_wALT[nInputParticles]->Sumw2();
-  fOutputContainer->Add(fmee_orig_wALT[nInputParticles]);
-  fpteevsmee_orig_wALT = new TH2F*[nInputParticles];
+  if(fALTweightType>0)fOutputContainer->Add(fmee_orig_wALT[nInputParticles]);
+  fpteevsmee_orig_wALT = new TH2F*[nInputParticles+1];
   fpteevsmee_orig_wALT[nInputParticles] = new TH2F("pteevsmee_orig_wALT","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
   fpteevsmee_orig_wALT[nInputParticles]->Sumw2();
-  fOutputContainer->Add(fpteevsmee_orig_wALT[nInputParticles]);
+  if(fALTweightType>0)fOutputContainer->Add(fpteevsmee_orig_wALT[nInputParticles]);
+  fmotherpT_orig_wALT = new TH1F*[nInputParticles+1];
+  fmotherpT_orig_wALT[nInputParticles] = new TH1F("motherpT_orig_wALT","motherpT_orig_wALT",histBinPt,histMinPt,histMaxPt);
+  fmotherpT_orig_wALT[nInputParticles]->Sumw2();
+  if(fALTweightType>0)fOutputContainer->Add(fmotherpT_orig_wALT[nInputParticles]);
   for(Int_t i=0; i<nInputParticles; i++){
    fmee_orig_wALT[i] = new TH1F(Form("mee_orig_wALT_%s",fParticleListNames[i].Data()),Form("mee_orig_wALT_%s",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM);
    fmee_orig_wALT[i]->Sumw2();
-   fOutputContainer->Add(fmee_orig_wALT[i]);
+   if(fALTweightType>0)fOutputContainer->Add(fmee_orig_wALT[i]);
    fpteevsmee_orig_wALT[i] = new TH2F(Form("pteevsmee_orig_wALT_%s",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
    fpteevsmee_orig_wALT[i]->Sumw2();
-   fOutputContainer->Add(fpteevsmee_orig_wALT[i]);
+   if(fALTweightType>0)fOutputContainer->Add(fpteevsmee_orig_wALT[i]);
+   fmotherpT_orig_wALT[i] = new TH1F(Form("motherpT_orig_wALT_%s",fParticleListNames[i].Data()),Form("motherpT_orig_wALT_%s",fParticleListNames[i].Data()),histBinPt,histMinPt,histMaxPt);
+   fmotherpT_orig_wALT[i]->Sumw2();
+   if(fALTweightType>0)fOutputContainer->Add(fmotherpT_orig_wALT[i]);
   }
   fmee_wALT = new TH1F*[nInputParticles+1];
   fmee_wALT[nInputParticles] = new TH1F("mee_wALT","mee_wALT",histBinM,histMinM,histMaxM);
   fmee_wALT[nInputParticles]->Sumw2();
-  fOutputContainer->Add(fmee_wALT[nInputParticles]);
-  fpteevsmee_wALT = new TH2F*[nInputParticles];
+  if(fALTweightType>0)fOutputContainer->Add(fmee_wALT[nInputParticles]);
+  fpteevsmee_wALT = new TH2F*[nInputParticles+1];
   fpteevsmee_wALT[nInputParticles] = new TH2F("pteevsmee_wALT","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
   fpteevsmee_wALT[nInputParticles]->Sumw2();
-  fOutputContainer->Add(fpteevsmee_wALT[nInputParticles]);
+  if(fALTweightType>0)fOutputContainer->Add(fpteevsmee_wALT[nInputParticles]);
   for(Int_t i=0; i<nInputParticles; i++){
    fmee_wALT[i] = new TH1F(Form("mee_wALT_%s",fParticleListNames[i].Data()),Form("mee_wALT_%s",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM);
    fmee_wALT[i]->Sumw2();
-   fOutputContainer->Add(fmee_wALT[i]);
+   if(fALTweightType>0)fOutputContainer->Add(fmee_wALT[i]);
    fpteevsmee_wALT[i] = new TH2F(Form("pteevsmee_wALT_%s",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
    fpteevsmee_wALT[i]->Sumw2();
-   fOutputContainer->Add(fpteevsmee_wALT[i]);
+   if(fALTweightType>0)fOutputContainer->Add(fpteevsmee_wALT[i]);
   }
 
   fULS_orig = new TH2F("ULS_orig","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
@@ -632,12 +667,8 @@ void AliAnalysisTaskLMeeCocktailMC::UserExec(Option_t *)
   if (fIsMC==0) return;
   //cout << "I found an MC header" << endl;
     
-  fMCStack = fMCEvent->Stack();
-  if(fMCStack == NULL) fIsMC = 0;
-  if (fIsMC==0) return;
-  
   fHistNEvents->Fill(0.5);
-  //   cout << "the stack is intact" << endl;
+
   ProcessMCParticles();
 
   PostData(1, fOutputContainer);
@@ -654,19 +685,19 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
   Int_t Skip2ndLeg=0;
 
   // Loop over all primary MC particle  
-  for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+  for(UInt_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
 
    //LS and ULS spectra
    //------------------
-   if(abs(fMCStack->Particle(i)->GetPdgCode())==11){
+   if(abs(fMCEvent->GetTrack(i)->PdgCode())==11){
     //get the electron
     //---------------
     TLorentzVector e,dielectron;
     Char_t ech,dielectron_ch;
     Double_t eweight,dielectron_weight;
-    e.SetPxPyPzE(fMCStack->Particle(i)->Px(),fMCStack->Particle(i)->Py(),fMCStack->Particle(i)->Pz(),fMCStack->Particle(i)->Energy());
-    if(fMCStack->Particle(i)->GetPdgCode()>0) { ech=1.; } else { ech=-1.; };
-    eweight=fMCStack->Particle(i)->GetWeight();
+    e.SetPxPyPzE(fMCEvent->GetTrack(i)->Px(),fMCEvent->GetTrack(i)->Py(),fMCEvent->GetTrack(i)->Pz(),fMCEvent->GetTrack(i)->E());
+    if(fMCEvent->GetTrack(i)->PdgCode()>0) { ech=1.; } else { ech=-1.; };
+    eweight=fMCEvent->Particle(i)->GetWeight();
     //put in the buffer
     //-----------------
     eBuff.push_back(e);
@@ -681,7 +712,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
      if(dielectron_ch==0) fULS_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
      if(dielectron_ch>0) fLSpp_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
      if(dielectron_ch<0) fLSmm_orig->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
-     if(e.Pt()>fMinPt&&eBuff.at(jj).Pt()>fMinPt&&TMath::Abs(e.Eta())<fMaxEta&&TMath::Abs(eBuff.at(jj).Eta())<fMaxEta){
+     if(e.Pt()>fMinPt&&eBuff.at(jj).Pt()>fMinPt&&e.Pt()<fMaxPt&&eBuff.at(jj).Pt()<fMaxPt&&TMath::Abs(e.Eta())<fMaxEta&&TMath::Abs(eBuff.at(jj).Eta())<fMaxEta){
       if(dielectron_ch==0) fULS->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
       if(dielectron_ch>0) fLSpp->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
       if(dielectron_ch<0) fLSmm->Fill(dielectron.M(),dielectron.Pt(),dielectron_weight);
@@ -693,23 +724,23 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
    if(i!=0&&i==Skip2ndLeg) continue; //skip if maked as second electron
 
     //get the particle
-    TParticle* particle         = NULL;
-    TParticle* particle2         = NULL;
-    particle                    = (TParticle *)fMCStack->Particle(i);
+    AliVParticle* particle       = NULL;
+    AliVParticle* particle2      = NULL;
+    particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
     if (!particle) continue;
 
     //get the mother
     Bool_t hasMother            = kFALSE;
     Bool_t particleIsPrimary    = kTRUE;
-    //cout << i << "\t"<< particle->GetMother(0) << endl;
-    if (particle->GetMother(0)>-1){
+    //cout << i << "\t"<< particle->Particle(0) << endl;
+    if (particle->Particle()->GetMother(0)>-1){
       hasMother = kTRUE;
       particleIsPrimary = kFALSE;
     }
-    TParticle* motherParticle   = NULL;
-    TParticle* dau3Particle   = NULL;
+    AliVParticle* motherParticle   = NULL;
+    AliVParticle* dau3Particle   = NULL;
     fdau3pdg   = 0;
-    if( hasMother ) motherParticle = (TParticle *)fMCStack->Particle(particle->GetMother(0));
+    if( hasMother ) motherParticle = (AliVParticle *)fMCEvent->GetTrack(particle->Particle()->GetMother(0));
     if (motherParticle){
       hasMother                 = kTRUE;
     }else{
@@ -718,11 +749,11 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
     Bool_t motherIsPrimary    = kFALSE;
 
     if(hasMother){
-     //if(motherParticle->GetMother(0)>-1)motherIsPrimary = kTRUE;
-     if(motherParticle->GetMother(0)==-1)motherIsPrimary = kTRUE;
+     //if(motherParticle->Particle()->GetMother(0)>-1)motherIsPrimary = kTRUE;
+     if(motherParticle->Particle()->GetMother(0)==-1)motherIsPrimary = kTRUE;
      
      //skip for the moment other particles rather than pi0, eta, etaprime, omega, rho, phi.
-     switch(motherParticle->GetPdgCode()){
+     switch(motherParticle->PdgCode()){
       case 111:
        break;
       case 221:
@@ -741,53 +772,52 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
     }
 
     // Not sure about this cut. From GammaConv group. Harmless a priori.
-    if (!(fabs(particle->Energy()-particle->Pz())>0.)) continue;
+    if (!(fabs(particle->E()-particle->Pz())>0.)) continue;
 
-    Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
+    Double_t yPre = (particle->E()+particle->Pz())/(particle->E()-particle->Pz());
     if (yPre == 0.) continue;
     
     // We have an electron with a mother. Check that mother is primary and number of daughters
-    if(abs(particle->GetPdgCode())==11 && hasMother==kTRUE){
+    if(abs(particle->PdgCode())==11 && hasMother==kTRUE){
      fdectyp = 0; // fdectyp: decay type (based on number of daughters).
-     fdectyp=motherParticle->GetDaughter(1)-motherParticle->GetDaughter(0)+1;
+     fdectyp=motherParticle->GetDaughterLabel(1)-motherParticle->GetDaughterLabel(0)+1;
      if(fdectyp > 4) continue;  // exclude five or more particles decay
      if(motherIsPrimary){
 
      //check second leg
-     if(i<fMCStack->GetNtrack()-1) {
-      particle2  = (TParticle *)fMCStack->Particle(i+1);
-      if(particle2->GetMother(0)==particle->GetMother(0)&&particle->GetMother(1)==-1&&particle2->GetMother(1)==-1){
+     if(i<fMCEvent->GetNumberOfTracks()-1) {
+      particle2  = (AliVParticle *)fMCEvent->GetTrack(i+1);
+      if(particle2->Particle()->GetMother(0)==particle->Particle()->GetMother(0)&&particle->Particle()->GetMother(1)==-1&&particle2->Particle()->GetMother(1)==-1){
        Skip2ndLeg=i+1;
 
        TLorentzVector dau1,dau2,ee,ee_orig;
-       dau1.SetPxPyPzE(particle->Px(),particle->Py(),particle->Pz(),particle->Energy());
-       dau2.SetPxPyPzE(particle2->Px(),particle2->Py(),particle2->Pz(),particle2->Energy());
-  
+       dau1.SetPxPyPzE(particle->Px(),particle->Py(),particle->Pz(),particle->E());
+       dau2.SetPxPyPzE(particle2->Px(),particle2->Py(),particle2->Pz(),particle2->E());  
        //create dielectron before resolution effects:
        ee=dau1+dau2;
        ee_orig=ee;
 
        // get info of the other particles in the decay: //////////////////////////////////////
-       for(Int_t jj=motherParticle->GetDaughter(0);jj<=motherParticle->GetDaughter(1);jj++){
+       for(Int_t jj=motherParticle->GetDaughterLabel(0);jj<=motherParticle->GetDaughterLabel(1);jj++){
         if(jj==i||jj==Skip2ndLeg) {
         continue;
        }
-       dau3Particle = (TParticle *)fMCStack->Particle(jj);
-       fdau3pdg= abs(dau3Particle->GetPdgCode());
+       dau3Particle = (AliVParticle *)fMCEvent->GetTrack(jj);
+       fdau3pdg= abs(dau3Particle->PdgCode());
       }
 
       ///////////////////////////////////////////////////////////////////////////////////////
       //FOR THE TIME BEING SKIP eta' -> omega e+ e- !!!!!!!!!!! ////////////////////////////
       //  skip as well phi -> pi0 e+ e- //
       ///////////////////////////////////////////////////////////////////////////////////////
-      //if(fdectyp==3&&motherParticle->GetPdgCode()==331&&fdau3pdg==223) continue;
-      //if(fdectyp==3&&motherParticle->GetPdgCode()==333&&fdau3pdg==111) continue; // skip as well phi -> pi0 e+ e-
+      //if(fdectyp==3&&motherParticle->PdgCode()==331&&fdau3pdg==223) continue;
+      //if(fdectyp==3&&motherParticle->PdgCode()==333&&fdau3pdg==111) continue; // skip as well phi -> pi0 e+ e-
       ///////////////////////////////////////////////////////////////////////////////////////
 
        //get index for histograms
        Int_t hindex[3];
        for(Int_t jj=0;jj<3;jj++){hindex[jj]=-1;};
-       switch(motherParticle->GetPdgCode()){
+       switch(motherParticle->PdgCode()){
         case 111:
          hindex[0]=0;
          break;
@@ -836,7 +866,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         feeorigm=ee.M();
         feeorigeta=ee.Eta();
         feeorigphi=ee.Phi();
-        if(particle->GetPdgCode()>0) { feeorigphiv=PhiV(dau1,dau2); }else{ feeorigphiv=PhiV(dau2,dau1);};
+        if(particle->PdgCode()>0) { feeorigphiv=PhiV(dau1,dau2); }else{ feeorigphiv=PhiV(dau2,dau1);};
 
         //get the efficiency weight
         Int_t effbin=fhwEffpT->FindBin(dau1.Pt());
@@ -846,15 +876,16 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
 
         //Resolution and acceptance  
         //-------------------------
-        if(particle->GetPdgCode()>0) { dau1=ApplyResolution(dau1,-1,fResolType); }else{ dau1=ApplyResolution(dau1,1,fResolType);};
-        if(particle2->GetPdgCode()>0) { dau2=ApplyResolution(dau2,-1,fResolType); }else{ dau2=ApplyResolution(dau2,1,fResolType);};
+        if(particle->PdgCode()>0) { dau1=ApplyResolution(dau1,-1,fResolType); }else{ dau1=ApplyResolution(dau1,1,fResolType);};
+        if(particle2->PdgCode()>0) { dau2=ApplyResolution(dau2,-1,fResolType); }else{ dau2=ApplyResolution(dau2,1,fResolType);};
         fpass=kTRUE;
         if(dau1.Pt()<fMinPt||dau2.Pt()<fMinPt) fpass=kFALSE; //leg pT cut
+        if(dau1.Pt()>fMaxPt||dau2.Pt()>fMaxPt) fpass=kFALSE; //leg pT cut
         if(TMath::Abs(dau1.Eta())>fMaxEta||TMath::Abs(dau2.Eta())>fMaxEta) fpass=kFALSE;
 
         //get the pair DCA (based in smeared pT)
-        Float_t DCAtemplateLowEdge[nbDCAtemplate] = {0., .3, .4, .6, 1., 2. };
-        Float_t DCAtemplateUpEdge[nbDCAtemplate]  =     {.3, .4, .6, 1., 2., 100000.}  ;
+        Float_t DCAtemplateLowEdge[] = {0., .3, .4, .6, 1., 2. };
+        Float_t DCAtemplateUpEdge[]  =     {.3, .4, .6, 1., 2., 100000.}  ;
         for(int jj=0;jj<nbDCAtemplate;jj++){ //loop over DCA templates
          if(dau1.Pt()>=DCAtemplateLowEdge[jj]&&dau1.Pt()<DCAtemplateUpEdge[jj]){fd1DCA=fh_DCAtemplates[jj]->GetRandom();};
          if(dau2.Pt()>=DCAtemplateLowEdge[jj]&&dau2.Pt()<DCAtemplateUpEdge[jj]){fd2DCA=fh_DCAtemplates[jj]->GetRandom();};
@@ -877,16 +908,16 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         feem=ee.M();
         feeeta=ee.Eta();
         feephi=ee.Phi();
-        if(particle->GetPdgCode()>0) { feephiv=PhiV(dau1,dau2); }else{ feephiv=PhiV(dau2,dau1);};
+        if(particle->PdgCode()>0) { feephiv=PhiV(dau1,dau2); }else{ feephiv=PhiV(dau2,dau1);};
         fmotherpt=motherParticle->Pt();
-        fmothermt=sqrt(pow(motherParticle->GetCalcMass(),2)+pow(motherParticle->Pt(),2));
+        fmothermt=sqrt(pow(motherParticle->Particle()->GetCalcMass(),2)+pow(motherParticle->Pt(),2));
         fmotherp=motherParticle->P();
-        fmotherm=motherParticle->GetCalcMass();
+        fmotherm=motherParticle->Particle()->GetCalcMass();
         fmothereta=motherParticle->Eta();
         fmotherphi=motherParticle->Phi();
-        //fID=1000*fdectyp+motherParticle->GetPdgCode();
-        fID=motherParticle->GetPdgCode();
-        fweight=particle->GetWeight(); //get particle weight from generator
+        //fID=1000*fdectyp+motherParticle->PdgCode();
+        fID=motherParticle->PdgCode();
+        fweight=particle->Particle()->GetWeight(); //get particle weight from generator
 
         //get multiplicity based weight:
         int iwbin=fhwMultpT->FindBin(fmotherpt);
@@ -905,40 +936,47 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
 
         //Which ALT weight to use?:
         Double_t fwALT = fwEffpT; //by default use pt efficiency weight
-        if(fALTweightType == 2) fwALT = fwMultmT;  //mT multiplicity weight
+        if(fALTweightType == 1) fwALT = fwMultmT;  //mT multiplicity weight
+        if(fALTweightType == 11) fwALT = fwMultmT2;  //mT multiplicity weight, higher mult
+        if(fALTweightType == 2) fwALT = fwMultpT;  //pT multiplicity weight
+        if(fALTweightType == 22) fwALT = fwMultpT2;  //pT multiplicity weight, higher mult
  
         //Fill the tree
         if(fWriteTTree) teeTTree->Fill();
 
+	
         //Fill the histograms
         if(fdectyp<4){ //skip for the moment 4-particle decays
          for(Int_t jj=0;jj<3;jj++){ // fill the different hindex -> particles
           if(hindex[jj]>-1){
-           fmee_orig[hindex[jj]]->Fill(ee_orig.M(), particle->GetWeight());
-           fpteevsmee_orig[hindex[jj]]->Fill(ee_orig.M(),ee.Pt(), particle->GetWeight());
-           fphi_orig[hindex[jj]]->Fill(ee_orig.Phi(), particle->GetWeight());
-           frap_orig[hindex[jj]]->Fill(ee_orig.Rapidity(), particle->GetWeight());
-           fmee_orig_wALT[hindex[jj]]->Fill(ee_orig.M(), particle->GetWeight()*fwALT);
-           fpteevsmee_orig_wALT[hindex[jj]]->Fill(ee_orig.M(),ee.Pt(), particle->GetWeight()*fwALT);
+           fmee_orig[hindex[jj]]->Fill(ee_orig.M(), fweight);
+           if(fALTweightType == 1||fALTweightType == 11) {fmotherpT_orig[hindex[jj]]->Fill(fmothermt,fweight);
+           }else if(fALTweightType == 2||fALTweightType == 22) {fmotherpT_orig[hindex[jj]]->Fill(fmotherpt,fweight);}
+           fpteevsmee_orig[hindex[jj]]->Fill(ee_orig.M(),ee.Pt(), fweight);
+           fphi_orig[hindex[jj]]->Fill(ee_orig.Phi(), fweight);
+           frap_orig[hindex[jj]]->Fill(ee_orig.Rapidity(), fweight);
+           fmee_orig_wALT[hindex[jj]]->Fill(ee_orig.M(), fweight*fwALT);
+           if(fALTweightType == 1||fALTweightType == 11) {fmotherpT_orig_wALT[hindex[jj]]->Fill(fmothermt,fweight*fwALT);
+           }else if(fALTweightType == 2||fALTweightType == 22) {fmotherpT_orig_wALT[hindex[jj]]->Fill(fmotherpt,fweight*fwALT);}
+           fpteevsmee_orig_wALT[hindex[jj]]->Fill(ee_orig.M(),ee.Pt(), fweight*fwALT);
            if(fpass){
-            fmee[hindex[jj]]->Fill(ee.M(), particle->GetWeight());
-            fpteevsmee[hindex[jj]]->Fill(ee.M(),ee.Pt(), particle->GetWeight());
-            fphi[hindex[jj]]->Fill(ee.Phi(), particle->GetWeight());
-            frap[hindex[jj]]->Fill(ee.Rapidity(), particle->GetWeight());
-            fDCAeevsmee->Fill(ee.M(),fpairDCA, particle->GetWeight());
-            fDCAeevsptee->Fill(ee.Pt(),fpairDCA, particle->GetWeight());
-            fmee_wALT[hindex[jj]]->Fill(ee.M(), particle->GetWeight()*fwALT);
-            fpteevsmee_wALT[hindex[jj]]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwALT);
+            fmee[hindex[jj]]->Fill(ee.M(), fweight);
+            fpteevsmee[hindex[jj]]->Fill(ee.M(),ee.Pt(), fweight);
+            fphi[hindex[jj]]->Fill(ee.Phi(), fweight);
+            frap[hindex[jj]]->Fill(ee.Rapidity(), fweight);
+            fDCAeevsmee->Fill(ee.M(),fpairDCA, fweight);
+            fDCAeevsptee->Fill(ee.Pt(),fpairDCA, fweight);
+            fmee_wALT[hindex[jj]]->Fill(ee.M(), fweight*fwALT);
+            fpteevsmee_wALT[hindex[jj]]->Fill(ee.M(),ee.Pt(), fweight*fwALT);
            }
           }
          }
         }
-
   
         //Virtual photon generation
         //-------------------------
         //We will generate one virtual photon per histogrammed pion
-        if(motherParticle->GetPdgCode()==111){
+        if(motherParticle->PdgCode()==111){
          //get mass and pt from histos and flat eta and phi
          Double_t VPHpT = ffVPHpT->GetRandom();
          Double_t VPHmass = fhKW->GetRandom();
@@ -997,6 +1035,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         dau2=ApplyResolution(dau2,-1,fResolType);
         fpass=kTRUE;
         if(dau1.Pt()<fMinPt||dau2.Pt()<fMinPt) fpass=kFALSE; //leg pT cut
+        if(dau1.Pt()>fMaxPt||dau2.Pt()>fMaxPt) fpass=kFALSE; //leg pT cut
         if(TMath::Abs(dau1.Eta())>fMaxEta||TMath::Abs(dau2.Eta())>fMaxEta) fpass=kFALSE;
 
         //get the pair DCA (based in smeared pT) -> no DCA for virtual photon for the moment
@@ -1139,21 +1178,21 @@ TLorentzVector AliAnalysisTaskLMeeCocktailMC::ApplyResolution(TLorentzVector vec
    //smear pt
    Int_t ptbin=((TH2D*)(fArrResoPt->At(0)))->GetXaxis()->FindBin(pt);
    if(ptbin<1) ptbin=1;
-   if(ptbin>69) ptbin=69;
+   if(ptbin > fArrResoPt->GetLast()) ptbin = fArrResoPt->GetLast();
    Double_t smearing = ((TH1D*)(fArrResoPt->At(ptbin)))->GetRandom() * pt;
    Double_t sPt = pt - smearing;
 
    //smear eta
    ptbin=((TH2D*)(fArrResoEta->At(0)))->GetXaxis()->FindBin(pt);
    if(ptbin<1) ptbin=1;
-   if(ptbin>76) ptbin=76;
+   if(ptbin > fArrResoEta->GetLast()) ptbin = fArrResoEta->GetLast();
    smearing = ((TH1D*)(fArrResoEta->At(ptbin)))->GetRandom();
    Double_t sEta = eta - smearing;
 
    //smear phi
    ptbin=((TH2D*)(fArrResoPhi_Pos->At(0)))->GetXaxis()->FindBin(pt);
    if(ptbin<1) ptbin=1;
-   if(ptbin>53) ptbin=53;
+   if(ptbin > fArrResoPhi_Pos->GetLast()) ptbin = fArrResoPhi_Pos->GetLast();
    if(ch>0){
     smearing = ((TH1D*)(fArrResoPhi_Pos->At(ptbin)))->GetRandom();
    }else if(ch<0){

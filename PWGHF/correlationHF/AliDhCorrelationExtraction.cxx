@@ -54,6 +54,9 @@ fMassHistoName(""),
 fSECorrelHistoName(""),
 fSECorrelHistoName_DstarBkg(""),
 fMEsuffix(""),
+fReflFilename(""),
+fHistnameRefl(""),
+fHistnameSign(""),
 fRebinMassPlots(1),    
 fNpTbins(3),
 fFirstpTbin(1),
@@ -67,6 +70,7 @@ fSubtractSoftPiME(kFALSE),
 fUseMassVsCentPlots(kFALSE),
 fMinCent(0.),
 fMaxCent(100.),
+fUseOneMEPool(kFALSE),
 fDmesonFitterSignal(0x0),
 fDmesonFitterSignalError(0x0),
 fDmesonFitterBackground(0x0),
@@ -85,12 +89,14 @@ fAutoSBRange(kFALSE),
 fAutoSignRange(kTRUE),
 fSBOuterSigmas(8),
 fSBInnerSigmas(4),
+fSignSingleBin(kFALSE),
 fSBSingleBin(kTRUE),
 fDeltaEtaMin(-1.0),
 fDeltaEtaMax(1.0),
 fUseMC(kFALSE),
 fElSource(0),
 fD0Source(0),
+fUseRefl(kFALSE),
 fSignalCorrel(0x0),
 fBackgrCorrel(0x0),
 fRangesSignL(0x0),
@@ -102,10 +108,14 @@ fRangesSB2R(0x0),
 fScaleFactor(0x0),
 fSignalCorrelMC_c(0x0),
 fSignalCorrelMC_b(0x0),
+fReflUnderSCorrel(0x0),
+fReflUnderSBCorrel(0x0),
+fRoverSinFitRange(0x0),
 fIntegratePtBins(kFALSE),
 fDebug(0),
 fMassFit(0x0),
 fBkgFit(0x0),
+fBkRFit(0x0),
 fMassHisto(0x0),
 fMCOriginSuffix(0),
 fMCOriginType(0),
@@ -144,6 +154,9 @@ fMassHistoName(source.fMassHistoName),
 fSECorrelHistoName(source.fSECorrelHistoName),
 fSECorrelHistoName_DstarBkg(source.fSECorrelHistoName_DstarBkg),
 fMEsuffix(source.fMEsuffix),
+fReflFilename(source.fReflFilename),
+fHistnameRefl(source.fHistnameRefl),
+fHistnameSign(source.fHistnameSign),
 fRebinMassPlots(source.fRebinMassPlots),    
 fNpTbins(source.fNpTbins),
 fFirstpTbin(source.fFirstpTbin),
@@ -157,6 +170,7 @@ fSubtractSoftPiME(source.fSubtractSoftPiME),
 fUseMassVsCentPlots(source.fUseMassVsCentPlots),
 fMinCent(source.fMinCent),
 fMaxCent(source.fMaxCent),
+fUseOneMEPool(source.fUseOneMEPool),
 fDmesonFitterSignal(source.fDmesonFitterSignal),
 fDmesonFitterSignalError(source.fDmesonFitterSignalError),
 fDmesonFitterBackground(source.fDmesonFitterBackground),
@@ -175,12 +189,14 @@ fAutoSBRange(source.fAutoSBRange),
 fAutoSignRange(source.fAutoSignRange),
 fSBOuterSigmas(source.fSBOuterSigmas),
 fSBInnerSigmas(source.fSBInnerSigmas),
+fSignSingleBin(source.fSignSingleBin),
 fSBSingleBin(source.fSBSingleBin),
 fDeltaEtaMin(source.fDeltaEtaMin),
 fDeltaEtaMax(source.fDeltaEtaMax),
 fUseMC(source.fUseMC),
 fElSource(source.fElSource),
 fD0Source(source.fD0Source),
+fUseRefl(source.fUseRefl),
 fSignalCorrel(source.fSignalCorrel),
 fBackgrCorrel(source.fBackgrCorrel),
 fRangesSignL(source.fRangesSignL),
@@ -192,10 +208,14 @@ fRangesSB2R(source.fRangesSB2R),
 fScaleFactor(source.fScaleFactor),
 fSignalCorrelMC_c(source.fSignalCorrelMC_c),
 fSignalCorrelMC_b(source.fSignalCorrelMC_b),
+fReflUnderSCorrel(source.fReflUnderSCorrel),
+fReflUnderSBCorrel(source.fReflUnderSBCorrel),
+fRoverSinFitRange(source.fRoverSinFitRange),
 fIntegratePtBins(source.fIntegratePtBins),
 fDebug(source.fDebug),
 fMassFit(source.fMassFit),
 fBkgFit(source.fBkgFit),
+fBkRFit(source.fBkRFit),
 fMassHisto(source.fMassHisto),
 fMCOriginSuffix(source.fMCOriginSuffix),
 fMCOriginType(source.fMCOriginType),
@@ -355,13 +375,17 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
   fSignalCorrel = new Double_t[fNpTbins]; 
   fBackgrCorrel = new Double_t[fNpTbins]; 
   fScaleFactor = new Double_t[fNpTbins];
+  fReflUnderSCorrel = new Double_t[fNpTbins]; 
+  fReflUnderSBCorrel = new Double_t[fNpTbins];
+  fRoverSinFitRange = new Double_t[fNpTbins];
 
   fMassFit = new TF1*[fNpTbins];
   fBkgFit = new TF1*[fNpTbins];
+  fBkRFit = new TF1*[fNpTbins];
 
   fMassHisto = new TH1F*[fNpTbins];
 
-  AliHFMassFitter *fitter = NULL;
+  AliHFInvMassFitter *fitter = NULL;
 
   if(fLastpTbin-fFirstpTbin+1 != fNpTbins) { // if fits fails - display warning and keep going
       std::cout << "Error in the definition of the pT bins! Exiting..." << std::endl;
@@ -407,19 +431,26 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
 
     //Settings of mass fitter and fit masses
     if(fDmesonSpecies==kD0toKpi) {
-      fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+      fitter = new AliHFInvMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,fBkgFitFunction,0);
       fitter->SetInitialGaussianMean(1.864);
       fitter->SetInitialGaussianSigma(0.010);
+      if(fUseRefl && (fDmesonSpecies==kD0toKpi || fDmesonSpecies==kDxHFE)) {
+        Bool_t okRefl = SetReflectionInfo(fitter,i+fFirstpTbin);
+        if(!okRefl) {
+          printf("Error! Issues with reflection template inclusion in the fit!\n"); 
+          return kFALSE;
+        }
+      }
     } else if(fDmesonSpecies==kDplusKpipi) {
-      fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+      fitter = new AliHFInvMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,fBkgFitFunction,0);
       fitter->SetInitialGaussianMean(1.869);
       fitter->SetInitialGaussianSigma(0.010);
     } else if(fDmesonSpecies==kDStarD0pi) {
-      fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+      fitter = new AliHFInvMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,fBkgFitFunction,0);
       fitter->SetInitialGaussianMean(0.1454);
       fitter->SetInitialGaussianSigma(0.0005);
     } else if(fDmesonSpecies==kDxHFE) {
-      fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+      fitter = new AliHFInvMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,fBkgFitFunction,0);
       fitter->SetInitialGaussianMean(1.864);
       fitter->SetInitialGaussianSigma(0.010);
     } else {
@@ -445,6 +476,12 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
     fBkgFit[i]->SetRange(fLeftFitRange,fRightFitRange);
     fBkgFit[i]->SetLineColor(2);
 
+    if(fUseRefl && (fDmesonSpecies==kD0toKpi || fDmesonSpecies==kDxHFE)) {
+      fBkRFit[i] = fitter->GetBkgPlusReflFunc();
+      fBkRFit[i]->SetRange(fLeftFitRange,fRightFitRange);
+      fBkRFit[i]->SetLineColor(15);
+    }
+
     fitter->Signal(fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]);
     fitter->Background(fNumberOfSigmasFitter,fDmesonFitterBackground[i],fDmesonFitterBackgroundError[i]);
     fitter->Significance(fNumberOfSigmasFitter,fDmesonFitterSignificance[i],fDmesonFitterSignificanceError[i]);
@@ -466,6 +503,7 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
     fMassHisto[i]->Sumw2();
     fMassHisto[i]->Draw();
     fBkgFit[i]->Draw("same");
+    if(fUseRefl && (fDmesonSpecies==kD0toKpi || fDmesonSpecies==kDxHFE)) fBkRFit[i]->Draw("same");
     fMassFit[i]->Draw("same");
  
     TPaveText *paveTextDMass;
@@ -512,8 +550,13 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
   for(int i=0; i<fNpTbins; i++) {
     //Extract signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling; then evaluate SB scaling factor
     if(fIntegratePtBins && i>0) continue;
-    GetSignalAndBackgroundForNorm(i,fMassHisto[i]);
-    GetSBScalingFactor(i,fMassHisto[i]);
+    if(fUseRefl && (fDmesonSpecies==kD0toKpi || fDmesonSpecies==kDxHFE)) {  //in case of reflections included!
+      GetSignalAndBackgroundForNorm_WithRefl(i,fMassHisto[i]);
+      GetSBScalingFactor_WithRefl(i,fMassHisto[i]);    
+    } else {  //standard approach
+      GetSignalAndBackgroundForNorm(i,fMassHisto[i]);
+      GetSBScalingFactor(i,fMassHisto[i]);
+    }
   }
 
   std::cout << "Mass distributions for the bins considered were fitted" <<std::endl;
@@ -571,8 +614,6 @@ Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
   fMassFit = new TF1*[fNpTbins];
 
   fMassHisto = new TH1F*[fNpTbins];
-
-  AliHFMassFitter *fitter = NULL;
   
   if(fLastpTbin-fFirstpTbin+1 != fNpTbins) { // if fits fails - display warning and keep going
       std::cout << "Error in the definition of the pT bins! Exiting..." << std::endl;
@@ -597,78 +638,7 @@ Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
       if(i>0) continue;
       MergeMassPlotsVsPt_MC();
     }
-/*
-    if(fMCmode==kReco) {
 
-      //Rebinning of the mass histogram - PAY ATTENTION! Now bins are different w.r.t. THnSparse 
-      if(fRebinMassPlots>1) fMassHisto[i]->Rebin(fRebinMassPlots);
-
-      //Settings of mass fitter and fit masses
-      if(fDmesonSpecies==kD0toKpi) {
-        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
-        fitter->SetInitialGaussianMean(1.864);
-        fitter->SetInitialGaussianSigma(0.010);
-      } else if(fDmesonSpecies==kDplusKpipi) {
-        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
-        fitter->SetInitialGaussianMean(1.869);
-        fitter->SetInitialGaussianSigma(0.010);
-      } else if(fDmesonSpecies==kDStarD0pi) {
-        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
-        fitter->SetInitialGaussianMean(0.1454);
-        fitter->SetInitialGaussianSigma(0.0005);
-      } else if(fDmesonSpecies==kDxHFE) {
-        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
-        fitter->SetInitialGaussianMean(1.864);
-        fitter->SetInitialGaussianSigma(0.010);
-      } else {
-        printf("Error! Decay channel not supported!\n"); 
-        return kFALSE;
-      }
-  
-      //Do the fit!
-      std::cout << "Fitting mass plots... " <<std::endl;
-      Bool_t isFitted = fitter->MassFitter(kFALSE);
-          
-      if(!isFitted) { // if fits fails - display warning and keep going
-        std::cout << ">>>>>>>>>>> Fit at bin " << i << " not successful - skipping " << std::endl;
-        return kFALSE;
-      }
-  
-      //Get the outputs of the Fit
-      fMassFit[i] = fitter->GetMassFunc();
-      fMassFit[i]->SetRange(fLeftFitRange,fRightFitRange);
-      fMassFit[i]->SetLineColor(4);
-  
-      fitter->Signal(fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]);
-    
-      fDmesonFitterMean[i] = fitter->GetMean();
-      fDmesonFitterMeanError[i] = fitter->GetMeanUncertainty();
-      fDmesonFitterSigma[i] = fitter->GetSigma();
-      fDmesonFitterSigmaError[i]= fitter->GetSigmaUncertainty();
-
-      //Draw mass plots
-      cDMass->cd(i+1);
-      SetHistoStyle(fMassHisto[i],1);
-      fMassHisto[i]->GetXaxis()->SetRangeUser(fLeftFitRange,fRightFitRange);
-      fMassHisto[i]->SetMinimum(0);
-      fMassHisto[i]->SetMaximum(fMassHisto[i]->GetMaximum()*1.3);
-      fMassHisto[i]->Sumw2();
-      fMassHisto[i]->Draw();
-      fBkgFit[i]->Draw("same");
-      fMassFit[i]->Draw("same");
- 
-      TPaveText *paveTextDMass;
-      DefinePaveText(paveTextDMass,0.57,0.5,0.88,0.88,Form("masspavetext_%d",i+fFirstpTbin));
-       
-      paveTextDMass->AddText(Form("Bin #%d",i+fFirstpTbin));
-      paveTextDMass->AddText(Form("Signal (%.1f #sigma) =  %.1f #pm %.1f",fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]));
-      paveTextDMass->AddText(Form("Mean = %.2f #pm %.2f (MeV/c^{2}) ",fDmesonFitterMean[i]*1000,fDmesonFitterMeanError[i]*1000));
-      paveTextDMass->AddText(Form("Sigma = %.2f #pm %.2f (MeV/c^{2})  ",fDmesonFitterSigma[i]*1000,fDmesonFitterSigmaError[i]*1000));
-
-      paveTextDMass->Draw("same");
-    
-    }
-*/
   }  //end of for cycle
 
   for(int i=0; i<fNpTbins; i++) {
@@ -676,14 +646,7 @@ Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
     if(fIntegratePtBins && i>0) continue;
     fSignalCorrelMC_c[i] = fMassHisto[i]->Integral(1,fMassHisto[i]->GetNbinsX());
   }
-/*
-  if(fMCmode==kReco) {
-    std::cout << "Mass distributions for the bins considered were fitted" <<std::endl;
 
-    cDMass->SaveAs(Form("Output_png/InvMassDistributions_%s_Bins%dto%d_MC_Reco_c.png",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
-    cDMass->SaveAs(Form("Output_Root/InvMassDistributions_%s_Bins%dto%d_MC_Reco_c.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
-  }
-*/
   //*****************************//
   //Extraction of b origin D mesons
   //*****************************//
@@ -702,78 +665,7 @@ Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
       if(i>0) continue;
       MergeMassPlotsVsPt_MC();
     }
-/*
-    if(fMCmode==kReco) {
 
-      //Rebinning of the mass histogram - PAY ATTENTION! Now bins are different w.r.t. THnSparse 
-      if(fRebinMassPlots>1) fMassHisto[i]->Rebin(fRebinMassPlots);
-
-      //Settings of mass fitter and fit masses
-      if(fDmesonSpecies==kD0toKpi) {
-        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
-        fitter->SetInitialGaussianMean(1.864);
-        fitter->SetInitialGaussianSigma(0.010);
-      } else if(fDmesonSpecies==kDplusKpipi) {
-        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
-        fitter->SetInitialGaussianMean(1.869);
-        fitter->SetInitialGaussianSigma(0.010);
-      } else if(fDmesonSpecies==kDStarD0pi) {
-        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
-        fitter->SetInitialGaussianMean(0.1454);
-        fitter->SetInitialGaussianSigma(0.0005);
-      } else if(fDmesonSpecies==kDxHFE) {
-        fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
-        fitter->SetInitialGaussianMean(1.864);
-        fitter->SetInitialGaussianSigma(0.010);
-      } else {
-        printf("Error! Decay channel not supported!\n"); 
-        return kFALSE;
-      }
-  
-      //Do the fit!
-      std::cout << "Fitting mass plots... " <<std::endl;
-      Bool_t isFitted = fitter->MassFitter(kFALSE);
-          
-      if(!isFitted) { // if fits fails - display warning and keep going
-        std::cout << ">>>>>>>>>>> Fit at bin " << i << " not successful - skipping " << std::endl;
-        return kFALSE;
-      }
-  
-      //Get the outputs of the Fit
-      fMassFit[i] = fitter->GetMassFunc();
-      fMassFit[i]->SetRange(fLeftFitRange,fRightFitRange);
-      fMassFit[i]->SetLineColor(4);
-  
-      fitter->Signal(fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]);
-    
-      fDmesonFitterMean[i] = fitter->GetMean();
-      fDmesonFitterMeanError[i] = fitter->GetMeanUncertainty();
-      fDmesonFitterSigma[i] = fitter->GetSigma();
-      fDmesonFitterSigmaError[i]= fitter->GetSigmaUncertainty();
-
-      //Draw mass plots
-      cDMass->cd(i+1);
-      SetHistoStyle(fMassHisto[i],1);
-      fMassHisto[i]->GetXaxis()->SetRangeUser(fLeftFitRange,fRightFitRange);
-      fMassHisto[i]->SetMinimum(0);
-      fMassHisto[i]->SetMaximum(fMassHisto[i]->GetMaximum()*1.3);
-      fMassHisto[i]->Sumw2();
-      fMassHisto[i]->Draw();
-      fBkgFit[i]->Draw("same");
-      fMassFit[i]->Draw("same");
- 
-      TPaveText *paveTextDMass;
-      DefinePaveText(paveTextDMass,0.57,0.5,0.88,0.88,Form("masspavetext_%d",i+fFirstpTbin));
-       
-      paveTextDMass->AddText(Form("Bin #%d",i+fFirstpTbin));
-      paveTextDMass->AddText(Form("Signal (%.1f #sigma) =  %.1f #pm %.1f",fNumberOfSigmasFitter,fDmesonFitterSignal[i],fDmesonFitterSignalError[i]));
-      paveTextDMass->AddText(Form("Mean = %.2f #pm %.2f (MeV/c^{2}) ",fDmesonFitterMean[i]*1000,fDmesonFitterMeanError[i]*1000));
-      paveTextDMass->AddText(Form("Sigma = %.2f #pm %.2f (MeV/c^{2})  ",fDmesonFitterSigma[i]*1000,fDmesonFitterSigmaError[i]*1000));
-
-      paveTextDMass->Draw("same");
-    
-    }
-*/
   }  //end of for cycle
 
   for(int i=0; i<fNpTbins; i++) {
@@ -781,14 +673,7 @@ Bool_t AliDhCorrelationExtraction::ExtractNumberOfTriggers_MC() {
     if(fIntegratePtBins && i>0) continue;
     fSignalCorrelMC_b[i] = fMassHisto[i]->Integral(1,fMassHisto[i]->GetNbinsX());
   }
-/*
-  if(fMCmode==kReco) {
-    std::cout << "Mass distributions for the bins considered were fitted" <<std::endl;
 
-    cDMass->SaveAs(Form("Output_png/InvMassDistributions_%s_Bins%dto%d_MC_Reco_b.png",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
-    cDMass->SaveAs(Form("Output_Root/InvMassDistributions_%s_Bins%dto%d_MC_Reco_b.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin));
-  }  
-*/
   return kTRUE;
 }
 
@@ -833,6 +718,11 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   TH1D* h1D_Subtr;
   TH1D* h1D_SubtrNorm;
 
+    TH2D *hME_Sign_PtInt_AllPool;
+    TH2D *hME_Sideb_PtInt_AllPool;
+    TH2D *hME_Sign_SoftPi_PtInt_AllPool;
+    TH2D *hME_Sideb_SoftPi_PtInt_AllPool;
+
   for(int iPool=0; iPool<fNpools; iPool++) {
 
     for(int iBin=0; iBin<fNpTbins; iBin++) {
@@ -850,10 +740,10 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
       }
 
       if(fDebug>=3) {  //statistical uncertainty
-	printf("hSE_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sign[iPool][iBin]->GetBinContent(8,5),hSE_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)),hSE_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)));
-	printf("hME_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sign[iPool][iBin]->GetBinContent(8,5),hME_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)),hME_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)));
-	printf("hSE_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sideb[iPool][iBin]->GetBinContent(8,5),hSE_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)),hSE_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)));
-	printf("hME_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sideb[iPool][iBin]->GetBinContent(8,5),hME_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)),hME_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)));
+	     printf("hSE_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sign[iPool][iBin]->GetBinContent(8,5),hSE_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)),hSE_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)));
+     	 printf("hME_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sign[iPool][iBin]->GetBinContent(8,5),hME_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)),hME_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)));
+	     printf("hSE_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sideb[iPool][iBin]->GetBinContent(8,5),hSE_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)),hSE_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)));
+	     printf("hME_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sideb[iPool][iBin]->GetBinContent(8,5),hME_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)),hME_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)));
       }
 
       //Scale bkg plots by ratio of signal region/sidebands
@@ -915,7 +805,7 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
         hSE_Sideb_PtInt[iPool] = (TH2D*)hSE_Sideb[iPool][iBin]->Clone(Form("hSE_Sideb_PtInt_p%d",iPool));
         hME_Sideb_PtInt[iPool] = (TH2D*)hME_Sideb[iPool][iBin]->Clone(Form("hME_Sideb_PtInt_p%d",iPool));
         if(fSubtractSoftPiME) {
-	  hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));
+	        hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));
           hME_Sideb_SoftPi_PtInt[iPool] = (TH2D*)hME_Sideb_SoftPi[iPool][iBin]->Clone(Form("hME_Sideb_SoftPi_PtInt_p%d",iPool));
         }
       }
@@ -925,7 +815,7 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
         hSE_Sideb_PtInt[iPool]->Add(hSE_Sideb[iPool][iBin]);
         hME_Sideb_PtInt[iPool]->Add(hME_Sideb[iPool][iBin]);
         if(fSubtractSoftPiME) {
-	  hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
+	        hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
           hME_Sideb_SoftPi_PtInt[iPool]->Add(hME_Sideb_SoftPi[iPool][iBin]);
         }
       }
@@ -939,22 +829,81 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
       printf("hME_Sideb_PtInt: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sideb_PtInt[iPool]->GetBinContent(8,5),hME_Sideb_PtInt[iPool]->GetBinError(8,5),TMath::Sqrt(hME_Sideb_PtInt[iPool]->GetBinContent(8,5)),hME_Sideb_PtInt[iPool]->GetBinError(8,5)/TMath::Sqrt(hME_Sideb_PtInt[iPool]->GetBinContent(8,5)));
     }
 
+  } //end of pool loop
+
+  if(fUseOneMEPool) {
+    hME_Sign_PtInt_AllPool = (TH2D*)hME_Sign_PtInt[0]->Clone("hME_Sign_PtInt_AllPool");
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[1]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[2]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[3]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[4]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[5]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[6]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[7]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[8]);
+    hME_Sideb_PtInt_AllPool = (TH2D*)hME_Sideb_PtInt[0]->Clone("hME_Sideb_PtInt_AllPool");
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[1]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[2]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[3]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[4]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[5]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[6]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[7]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[8]);
+    hME_Sign_SoftPi_PtInt_AllPool = (TH2D*)hME_Sign_SoftPi_PtInt[0]->Clone("hME_Sign_SoftPi_PtInt_AllPool");
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[1]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[2]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[3]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[4]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[5]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[6]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[7]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[8]);
+    hME_Sideb_SoftPi_PtInt_AllPool = (TH2D*)hME_Sideb_SoftPi_PtInt[0]->Clone("hME_Sideb_SoftPi_PtInt_AllPool");
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[1]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[2]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[3]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[4]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[5]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[6]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[7]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[8]);
+
+    NormalizeMEplot(hME_Sign_PtInt_AllPool,hME_Sign_SoftPi_PtInt_AllPool);
+    NormalizeMEplot(hME_Sideb_PtInt_AllPool,hME_Sideb_SoftPi_PtInt_AllPool);
+/*
+    TCanvas *cTOT = new TCanvas(Form("cInput_%1.1fto%1.1f",thrMin,thrMax),Form("InputCorr_%s_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1600,900);
+    cTOT->Divide(2,1);
+    cTOT->cd(1);
+    hME_Sign_PtInt_AllPool->Draw("lego2");
+    cTOT->cd(2);
+    hME_Sideb_PtInt_AllPool->Draw("lego2");
+    cTOT->SaveAs(Form("Output_png/INTEGRATEDME_InputCorr_%s_Canvas_thr%1.1fto%1.1f.png",fDmesonLabel.Data(),thrMin,thrMax));
+*/
+  } 
+
+  for(int iPool=0; iPool<fNpools; iPool++) {//new pool lopp
+
     //Normalize ME plots and (if requested) remove the softpion-compatible tracks
     NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
     NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
 
+
+
     //Apply Event Mixing Correction
     hCorr_Sign_PtInt[iPool] = (TH2D*)hSE_Sign_PtInt[iPool]->Clone(Form("hCorr_Sign_PtInt_p%d",iPool));
-    hCorr_Sign_PtInt[iPool]->Divide(hME_Sign_PtInt[iPool]);   
+    if(!fUseOneMEPool) hCorr_Sign_PtInt[iPool]->Divide(hME_Sign_PtInt[iPool]);   
+    if(fUseOneMEPool)  hCorr_Sign_PtInt[iPool]->Divide(hME_Sign_PtInt_AllPool);   
     hCorr_Sideb_PtInt[iPool] = (TH2D*)hSE_Sideb_PtInt[iPool]->Clone(Form("hCorr_Sideb_PtInt_p%d",iPool));
-    hCorr_Sideb_PtInt[iPool]->Divide(hME_Sideb_PtInt[iPool]); 
+    if(!fUseOneMEPool) hCorr_Sideb_PtInt[iPool]->Divide(hME_Sideb_PtInt[iPool]); 
+    if(fUseOneMEPool)  hCorr_Sideb_PtInt[iPool]->Divide(hME_Sideb_PtInt_AllPool); 
     Double_t N_SEsign = 0, N_SEsideb = 0, N_sign = 0, N_sideb = 0;  
     for(int i=1;i<=hCorr_Sign_PtInt[iPool]->GetXaxis()->GetNbins();i++) {
       for(int j=1;j<=hCorr_Sign_PtInt[iPool]->GetYaxis()->GetNbins();j++) {
-	N_SEsign += hSE_Sign_PtInt[iPool]->GetBinContent(i,j);
-	N_SEsideb += hSE_Sideb_PtInt[iPool]->GetBinContent(i,j);
-	N_sign += hCorr_Sign_PtInt[iPool]->GetBinContent(i,j);
-	N_sideb += hCorr_Sideb_PtInt[iPool]->GetBinContent(i,j);
+	     N_SEsign += hSE_Sign_PtInt[iPool]->GetBinContent(i,j);
+	     N_SEsideb += hSE_Sideb_PtInt[iPool]->GetBinContent(i,j);
+	     N_sign += hCorr_Sign_PtInt[iPool]->GetBinContent(i,j);
+	     N_sideb += hCorr_Sideb_PtInt[iPool]->GetBinContent(i,j);
       }
     }
     hSE_Sign_PtInt[iPool]->SetEntries(N_SEsign); 
@@ -1030,12 +979,18 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   c2D_Sub->SaveAs(Form("Output_png/h2D_%s_Subtr_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f.png",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax));
   c2D_Sub->SaveAs(Form("Output_Root/h2D_%s_Subtr_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax));
 
-  //Evaluate total number of triggers
+  //Evaluate total number of triggers for normalization
+  //***NOTE***: in case reflections are included, this number does not coincide with the yield!!! (See the formula below and in the normalization methods)
   Double_t Snorm = 0, Bnorm = 0;
   for(int iBin=0; iBin<fNpTbins; iBin++) {
     if(fIntegratePtBins && iBin>0) continue;
-    Snorm += fSignalCorrel[iBin];
-    Bnorm += fBackgrCorrel[iBin];
+    if(fUseRefl && (fDmesonSpecies==kD0toKpi || fDmesonSpecies==kDxHFE)) { //ad hoc normalization with reflection templates included
+      Snorm += (fSignalCorrel[iBin] + fReflUnderSCorrel[iBin] - fReflUnderSBCorrel[iBin]*fScaleFactor[iBin]); //S+R+(R1+R2)*B/(SB1+SB2)
+      Bnorm += (fBackgrCorrel[iBin] + fReflUnderSBCorrel[iBin]*fScaleFactor[iBin]);  // B+(R1+R2)*B/(SB1+SB2)
+    } else { //standard normalization
+      Snorm += fSignalCorrel[iBin];
+      Bnorm += fBackgrCorrel[iBin];   
+    }
   }
 
   //1D projection
@@ -1623,26 +1578,37 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB,
     if(fDebug>=2 && pool==0) printf("Bin ranges - pT: %d-%d, dEta: %d-%d\n",ptBinTrMin,ptBinTrMax,etaLowBin,etaHighBin);
     h3D = (TH3D*)hsparse->Projection(1,2,0);//x,y,z axes
   }
+
   //now restrict to signal or to sidebands
   if(SorSB==kSign) {
-    h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
-    if(fDebug>=2 && pool==0) printf("Signal range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
-    h2D = (TH2D*)h3D->Project3D("yz");
-  } else if (SorSB==kSideb) {
-    TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
-    if(!fSBSingleBin) {
-      h3Da->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
-      h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
-      if(fDebug>=2 && pool==0) printf("SB1 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
-      if(fDebug>=2 && pool==0) printf("SB2 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
-    } else {
-      h3Da->GetXaxis()->SetRange(h3Da->GetXaxis()->GetNbins(),h3Da->GetXaxis()->GetNbins());
-      h3D->GetXaxis()->SetRange(1,1);
+    if(!fSignSingleBin) { //normal bins for signal
+      h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+      if(fDebug>=2 && pool==0) printf("Signal range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
     }
-    TH2D* h2Da = (TH2D*)h3Da->Project3D("yz"); 
-    h2D = (TH2D*)h3D->Project3D("yz"); 
-    h2D->Add(h2Da);
+    else h3D->GetXaxis()->SetRange(1,1); //lightweight option! ->Take only bin1 (which contains all signal region entries)
+    h2D = (TH2D*)h3D->Project3D("yz");
+
+  } else if (SorSB==kSideb) { //here also the value of fSignSingleBin has influence, due to the fSpeed options:
+     if(fSignSingleBin) {  //in this case (fSpeed==2 in the task), also the SB region is automatically compressed in only one bin, the 2nd!
+        h3D->GetXaxis()->SetRange(2,2); //...and so we just take bin2!
+        h2D = (TH2D*)h3D->Project3D("yz"); 
+     } else { //the standard approach (i.e. either fSpeed==0, meaning all bins for DB, or fSpeed==1, meaning one bin for LSB, one for RSB)
+      TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
+      if(!fSBSingleBin) {
+        h3Da->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+        h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+        if(fDebug>=2 && pool==0) printf("SB1 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+        if(fDebug>=2 && pool==0) printf("SB2 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+      } else {
+        h3Da->GetXaxis()->SetRange(h3Da->GetXaxis()->GetNbins(),h3Da->GetXaxis()->GetNbins());
+        h3D->GetXaxis()->SetRange(1,1);
+      }
+      TH2D* h2Da = (TH2D*)h3Da->Project3D("yz"); 
+      h2D = (TH2D*)h3D->Project3D("yz"); 
+      h2D->Add(h2Da);
+    }
   }
+
   h3D->SetName(Form("%s_SE-ME%d_S-SB%d_3D",h3D->GetName(),SEorME,SorSB));      
   h2D->SetName(Form("%s_SE-ME%d_S-SB%d_2D",h2D->GetName(),SEorME,SorSB));
   return h2D;
@@ -2088,7 +2054,7 @@ if(!fAutoSBRange && !fSBSingleBin) {
 //___________________________________________________________________________________________
 void AliDhCorrelationExtraction::SetSignRanges(Double_t* rangesSignL, Double_t* rangesSignR) {
 
-if(!fAutoSignRange) {
+if(!fAutoSignRange && !fSignSingleBin) {
   printf("*** WARNING! You are passing external signal ranges to the framework! ***\n");
   printf("*** This is perfectly fine, provided that you match mass bins of THnSparse and of invariant mass plots! ***\n");
   if(fRebinMassPlots!=1) {
@@ -2145,7 +2111,65 @@ void AliDhCorrelationExtraction::GetSignalAndBackgroundForNorm(Int_t i, TH1F* &h
 }
 
 //___________________________________________________________________________________________
+void AliDhCorrelationExtraction::GetSignalAndBackgroundForNorm_WithRefl(Int_t i, TH1F* &histo) {
+
+  /* Only for D0 when templates for reflections are included in the fit! In this case, the following formula is used:
+  //
+  //                dPhi(S+R+B) - dPhi(SB1+SB2+R1+R2)*B/(SB1+SB2)
+  // dPhi_Signal = -----------------------------------------------
+  //                        S+R-(R1+R2)*B/(SB1+SB2)
+  //
+  // with R the reflections under the peak, R1 and R2 the reflections in SB left and right, respectively */
+
+  switch(fSandBextraction) {
+
+    case (kSandBFromFit): {
+      Double_t SandB = fMassFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i]));
+      fBackgrCorrel[i] = fBkgFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i]));
+      fReflUnderSCorrel[i] = fBkRFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i])) - fBackgrCorrel[i];
+      fSignalCorrel[i] = SandB - fBackgrCorrel[i] - fReflUnderSCorrel[i];
+      if(fDebug>=2) printf("S+B = %1.2f, S = %1.2f, B = %1.2f, R = %1.2f\n",SandB,fSignalCorrel[i],fBackgrCorrel[i],fReflUnderSCorrel[i]);
+      break;
+    }
+
+    case (kSfromBinCount): {
+      Double_t SandB = histo->Integral(histo->FindBin(fRangesSignL[i]+0.00001),histo->FindBin(fRangesSignR[i]-0.00001)); //the 0.00001 to move a bit from the edges
+      fBackgrCorrel[i] = fBkgFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i]));
+      fReflUnderSCorrel[i] = fBkRFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i])) - fBackgrCorrel[i];
+      fSignalCorrel[i] = SandB - fBackgrCorrel[i] - fReflUnderSCorrel[i];
+      if(fDebug>=2) printf("S+B = %1.2f, S = %1.2f, B = %1.2f, R = %1.2f\n",SandB,fSignalCorrel[i],fBackgrCorrel[i],fReflUnderSCorrel[i]);
+      break;
+    }
+
+    case (kBfromBinCount): {
+      Double_t SandB = histo->Integral(histo->FindBin(fRangesSignL[i]+0.00001),histo->FindBin(fRangesSignR[i]-0.00001)); //the 0.00001 to move a bit from the edges
+      Double_t overallFitInt =  fMassFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i]));
+      fSignalCorrel[i] = overallFitInt - fBkRFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i])); //S(fit) = SandB(fit)-[B+R](fit)
+      fReflUnderSCorrel[i] = fBkRFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i])) - fBkgFit[i]->Integral(fRangesSignL[i],fRangesSignR[i])/histo->GetBinWidth(histo->FindBin(fRangesSignL[i]));
+      fBackgrCorrel[i] = SandB - fSignalCorrel[i] - fReflUnderSCorrel[i];
+      if(fDebug>=2) printf("S+B = %1.2f, S = %1.2f, B = %1.2f, R = %1.2f\n",SandB,fSignalCorrel[i],fBackgrCorrel[i],fReflUnderSCorrel[i]);
+      break;
+     }    
+
+    default:    
+      printf("Error! S and B extraction method wrongly set! Returning without evaluating S and B...\n");
+      return; 
+  } 
+
+}
+
+//___________________________________________________________________________________________
 void AliDhCorrelationExtraction::GetSBScalingFactor(Int_t i, TH1F* &histo) {
+
+  //first, safety for signal region, if passed from the outside and single bin used: it must match with mass bin edges!
+  if(!fAutoSignRange) {
+     Bool_t check = CheckSignRegionInMassBinEdges(i);
+     if(!check) {
+        printf("Error! Signal region passed from outside and not matching mass bin edges! Results will be biased, you shall exit...\n");
+        getchar();
+        return;
+     }
+  }
 
   switch(fSBscaling) {
 
@@ -2182,6 +2206,53 @@ void AliDhCorrelationExtraction::GetSBScalingFactor(Int_t i, TH1F* &histo) {
 }
 
 
+//___________________________________________________________________________________________
+void AliDhCorrelationExtraction::GetSBScalingFactor_WithRefl(Int_t i, TH1F* &histo) {
+
+  /* Only for D0 when templates for reflections are included in the fit! In this case, the following formula is used:
+  //
+  //                dPhi(S+R+B) - dPhi(SB1+SB2+R1+R2)*B/(SB1+SB2)
+  // dPhi_Signal = -----------------------------------------------
+  //                        S+R-(R1+R2)*B/(SB1+SB2)
+  //
+  // with R the reflections under the peak, R1 and R2 the reflections in SB left and right, respectively 
+  //
+  // In this case, the scale factor is still B/(SB1+SB2) but don't include the reflections in B, SB1, SB2 */
+
+  switch(fSBscaling) {
+
+    case (kFitScaling): {
+      Double_t binwidth = histo->GetBinWidth(histo->FindBin(fRangesSignL[i]));
+      Double_t valueSB = 0; //includes only the real bkg, not the reflections
+      if(fSBSingleBin) { //in this case do not extend the fit range to bin limits
+        valueSB = (fBkgFit[i]->Integral(fRangesSB1L[i],fRangesSB1R[i])+fBkgFit[i]->Integral(fRangesSB2L[i],fRangesSB2R[i]))/binwidth;
+        fReflUnderSBCorrel[i] = (fBkRFit[i]->Integral(fRangesSB1L[i],fRangesSB1R[i])+fBkRFit[i]->Integral(fRangesSB2L[i],fRangesSB2R[i]))/binwidth - (fBkgFit[i]->Integral(fRangesSB1L[i],fRangesSB1R[i])+fBkgFit[i]->Integral(fRangesSB2L[i],fRangesSB2R[i]))/binwidth;
+      } else { //in this case, extend the fit range to mass bin edges
+        valueSB = (fBkgFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB1L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB1R[i]-0.00001)))+fBkgFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB2L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB2R[i]-0.00001))))/binwidth;        
+        fReflUnderSBCorrel[i] = (fBkRFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB1L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB1R[i]-0.00001)))+fBkRFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB2L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB2R[i]-0.00001))))/binwidth - (fBkgFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB1L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB1R[i]-0.00001)))+fBkgFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB2L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB2R[i]-0.00001))))/binwidth;        
+      }  
+      fScaleFactor[i] = fBackgrCorrel[i]/valueSB;
+      if(fDebug>=2) printf("SB value = %1.2f, R in SB = %1.2f, B = %1.2f, Scale Factor = %1.4f\n",valueSB,fReflUnderSBCorrel[i],fBackgrCorrel[i],fScaleFactor[i]);
+      break;
+    }
+
+    case (kBinCountScaling): {
+      Double_t binwidth = histo->GetBinWidth(histo->FindBin(fRangesSignL[i]));
+      Double_t valueSB = 0;
+      fReflUnderSBCorrel[i] = (fBkRFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB1L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB1R[i]-0.00001)))+fBkRFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB2L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB2R[i]-0.00001))))/binwidth - (fBkgFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB1L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB1R[i]-0.00001)))+fBkgFit[i]->Integral(histo->GetXaxis()->GetBinLowEdge(histo->FindBin(fRangesSB2L[i]+0.00001)),histo->GetXaxis()->GetBinUpEdge(histo->FindBin(fRangesSB2R[i]-0.00001))))/binwidth;        
+      valueSB = histo->Integral(histo->FindBin(fRangesSB1L[i]+0.00001),histo->FindBin(fRangesSB1R[i]-0.00001)) + histo->Integral(histo->FindBin(fRangesSB2L[i]+0.00001),histo->FindBin(fRangesSB2R[i]-0.00001)) - fReflUnderSBCorrel[i]; //excluding the reflections in the sideband regions
+      fScaleFactor[i] = fBackgrCorrel[i]/valueSB;   
+      if(!fAutoSBRange && fSBSingleBin) RescaleSidebandsInMassBinEdges(i); //match SB ranges to inv.mass bin edges (if SB range passed from outside and single SB bin used)
+      if(fDebug>=2) printf("SB value = %1.2f, R in SB = %1.2f, B = %1.2f, Scale Factor (*renorm) = %1.4f\n",valueSB,fReflUnderSBCorrel[i],fBackgrCorrel[i],fScaleFactor[i]);
+      break;
+    }
+
+    default:    
+      printf("Error! SB rescaling method wrongly set! Returning without evaluating S and B...\n");
+      return; 
+  } 
+
+}
 //___________________________________________________________________________________________
 void AliDhCorrelationExtraction::NormalizeMEplot(TH2D* &histoME, TH2D* &histoMEsoftPi) {
 
@@ -2243,6 +2314,8 @@ void AliDhCorrelationExtraction::PrintSandBForNormal() {
     printf("****************** Bin %d *****************\n",i+fFirstpTbin);
     printf("  Signal = %1.1f\n",fSignalCorrel[i]);
     printf("  Background = %1.1f\n",fBackgrCorrel[i]);
+    if(fUseRefl) printf("  Reflections under S = %1.1f\n",fReflUnderSCorrel[i]);
+    if(fUseRefl) printf("  R/S in fit range = %1.3f\n",fRoverSinFitRange[i]);
     printf("  SB scaling factor = %1.4f\n",fScaleFactor[i]);
   }
   printf("******************************************\n\n");
@@ -2269,6 +2342,48 @@ void AliDhCorrelationExtraction::RescaleSidebandsInMassBinEdges(Int_t i) {
     printf("Bin %d - renormalization of SB scaling factor by %1.3f (from %1.3f to %1.3f)\n",fFirstpTbin+i,renorm,fScaleFactor[i]/renorm,fScaleFactor[i]);
     printf("--- integrals of bkg function are %1.4f and %1.4f, region from %1.4f to %1.4f, %1.4f to %1.4f \n",fitInt_invmassSBwidth,fitInt_corrSBwidth,fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fRangesSB1L[i]+0.00001)),fMassHisto[i]->GetXaxis()->GetBinUpEdge(fMassHisto[i]->FindBin(fRangesSB1R[i]-0.00001)),fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fRangesSB2L[i]+0.00001)),fMassHisto[i]->GetXaxis()->GetBinUpEdge(fMassHisto[i]->FindBin(fRangesSB2R[i]-0.00001)));
   }
+}
+
+//___________________________________________________________________________________________
+Bool_t AliDhCorrelationExtraction::CheckSignRegionInMassBinEdges(Int_t i) {
+
+  Bool_t outcome=kTRUE;
+
+  Double_t fitInt_invmassSignwidth, fitInt_corrSignwidth;
+  fitInt_invmassSignwidth = fBkgFit[i]->Integral(fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fRangesSignL[i]+0.00001)),fMassHisto[i]->GetXaxis()->GetBinUpEdge(fMassHisto[i]->FindBin(fRangesSignR[i]-0.00001)));
+  fitInt_corrSignwidth = fBkgFit[i]->Integral(fRangesSignL[i],fRangesSignR[i]); 
+
+  Double_t ratio =  fitInt_invmassSignwidth/fitInt_corrSignwidth;
+
+  if(TMath::Abs(ratio-1)>0.001) outcome = kFALSE;
+
+  return outcome;
+
+}
+
+//___________________________________________________________________________________________
+Bool_t AliDhCorrelationExtraction::SetReflectionInfo(AliHFInvMassFitter* &fitter, Int_t iBin) {
+  
+  printf("Loading reflecton template for bin %d...\n",iBin);
+
+  TFile *fileRefl = TFile::Open(fReflFilename.Data());
+  if(!fileRefl){
+    std::cout << "File " << fReflFilename << " (reflection templates) cannot be opened! check your file path!"; return kFALSE;
+  }
+
+  TH1F *histRefl = (TH1F*)fileRefl->Get(Form("%s%d",fHistnameRefl.Data(),iBin));
+  TH1F *histSign = (TH1F*)fileRefl->Get(Form("%s%d",fHistnameSign.Data(),iBin));
+  if(!histRefl || !histSign){
+    std::cout << "Error in loading the template/signal histrograms! Exiting...\n"; return kFALSE;
+  }
+
+  fitter->SetTemplateReflections(histRefl,"template",fLeftFitRange,fRightFitRange);
+  Double_t RoverS = histRefl->Integral(histRefl->FindBin(fLeftFitRange),histRefl->FindBin(fRightFitRange))/histSign->Integral(histSign->FindBin(fLeftFitRange),histSign->FindBin(fRightFitRange));
+  printf("R/S ratio in fit range for bin %d = %1.3f\n",iBin,RoverS);
+  fRoverSinFitRange[iBin-fFirstpTbin] = RoverS;
+  fitter->SetFixReflOverS(RoverS);
+  return kTRUE;
+
 }
 
 //___________________________________________________________________________________________
@@ -2452,9 +2567,13 @@ void AliDhCorrelationExtraction::ClearObjects() {
   if(fDmesonSpecies != kDStarD0pi && fRangesSB2L) delete[] fRangesSB2L; 
   if(fDmesonSpecies != kDStarD0pi && fRangesSB2R) delete[] fRangesSB2R;  
   if(fScaleFactor) delete[] fScaleFactor;
+  if(fReflUnderSCorrel) delete[] fReflUnderSCorrel; 
+  if(fReflUnderSBCorrel) delete[] fReflUnderSBCorrel; 
+  if(fRoverSinFitRange) delete[] fRoverSinFitRange; 
 
   if(fMassFit) delete[] fMassFit; 
   if(fBkgFit) delete[] fBkgFit;
+  if(fBkRFit) delete[] fBkRFit;
 
   if(fMassHisto) delete[] fMassHisto;  
 

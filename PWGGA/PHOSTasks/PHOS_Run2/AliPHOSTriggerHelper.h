@@ -18,6 +18,7 @@ class AliPHOSTriggerHelper : public TObject {
   public:
     AliPHOSTriggerHelper();
     AliPHOSTriggerHelper(TString trigger, Bool_t isMC);
+    AliPHOSTriggerHelper(Int_t L1triggerinput, Int_t L0triggerinput, Bool_t isMC);
     virtual ~AliPHOSTriggerHelper();
 
     void SetPHOSTRUBadMap(Int_t mod, TH2I *h)
@@ -28,6 +29,7 @@ class AliPHOSTriggerHelper : public TObject {
         fPHOSTRUBadMap[mod] = 0x0;
       }
       fPHOSTRUBadMap[mod] = new TH2I(*h);
+      AliInfo(Form("setting private TRU bad map M%d",mod));
     }
 
     TH2I* GetPHOSTRUBadMap(Int_t mod) {return fPHOSTRUBadMap[mod];}
@@ -56,10 +58,18 @@ class AliPHOSTriggerHelper : public TObject {
       fMatchingDeltaR = DeltaR;
     }
 
+    void ApplyTOFCut(Bool_t flag){
+      fApplyTOFCut = flag;
+      if(fApplyTOFCut) AliInfo("Applying TOF cut in trigger analysis");
+    }
+
+    void SetDummyRunNumber(Int_t dummy){fDRN = dummy;}
+
     Double_t GetMatchingDeltaR(){return fMatchingDeltaR;}
     Bool_t IsDeltaRUsed() {return fUseDeltaRMatching;}
-    Bool_t IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts);
+    Bool_t IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin, Double_t ETrigger, Bool_t isCoreUsed);
     Double_t GetDistanceToClosestTRUChannel(AliCaloPhoton *ph);
+    Bool_t IsPrivateTRUBadMap() {return fIsUserTRUBadMap;}
 
   private:
     AliPHOSGeometry *fPHOSGeo;
@@ -79,12 +89,15 @@ class AliPHOSTriggerHelper : public TObject {
     Bool_t fIsUserTRUBadMap;
     Int_t fRunNumber;
     Bool_t fUseDeltaRMatching;
+    Bool_t fApplyTOFCut;
+    Int_t fDRN;
+
 
   private:
     AliPHOSTriggerHelper(const AliPHOSTriggerHelper&);
     AliPHOSTriggerHelper& operator=(const AliPHOSTriggerHelper&);
 
-    ClassDef(AliPHOSTriggerHelper, 13);
+    ClassDef(AliPHOSTriggerHelper, 20);
 
 };
 

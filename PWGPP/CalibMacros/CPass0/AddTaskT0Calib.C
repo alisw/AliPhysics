@@ -1,12 +1,11 @@
 
-void    readCDB (TObject *task1);
+void    readCDB (TObject *task1, Int_t runNumber);
 //_____________________________________________________________________________
 AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
 {
   //
   // add calibration task
-  //
-
+  //  read start and end of run time from GRP
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskT0Calib", "No analysis manager to connect to.");
@@ -55,17 +54,17 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
 
   AliCDBManager* man = AliCDBManager::Instance();
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
-  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
+  if (!entry) ::Fatal("AddTaskT0Calib", "CTP timing parameters are not found in OCDB !");
   AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
   Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
 
   AliCDBEntry *entry1 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
-  if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
+  if (!entry1) ::Fatal("AddTaskT0Calib", "CTP time-alignment is not found in OCDB !");
   AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
 
   AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
-  if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  if (!entry4) ::Fatal("AddTaskT0Calib", "LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
   Float_t fGRPdelays = l1Delay - phase->GetMeanPhase();
 

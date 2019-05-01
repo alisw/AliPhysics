@@ -44,9 +44,25 @@ void writeTree(TFile* fout, TTree* t){
   fout->Close();
 }
 
-//Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=254422, TString ocdbStorage = "raw://"){
-//Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=255042, TString ocdbStorage = "raw://"){
-Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=256676, TString ocdbStorage = "local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB"){
+
+void DrawEfficiency(TH2F* h2D, const char* multOn, const char* bitName);
+void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  TH1F* hOfAcc, const char* bitName, TString multOn, TString multOf, Float_t meanOn, Float_t meanOf);
+void DrawSPDClsVsTkl(TH2F* hAll,TH2F* hCln, const char* bitName);
+void DrawV0C012vsTkl(TH2F* hAll,TH2F* hCln, const char* bitName);
+void DrawV0C3vs012(TH2F* hAll,TH2F* hCln, const char* bitName);
+void DrawVIR(TH2F* hPup,TH2F* hAcc, const char* bitName);
+void DrawTiming(TH1F* hAall,TH1F* hAacc,TH1F* hCall,TH1F* hCacc, TString cname, const char* bitName);
+void DrawFlags(TH1F* hBBAflagsAll,TH1F* hBBAflagsAcc,TH1F* hBBCflagsAll,TH1F* hBBCflagsAcc,
+               TH1F* hBGAflagsAll,TH1F* hBGAflagsAcc,TH1F* hBGCflagsAll,TH1F* hBGCflagsAcc, const char* bitName);
+void DrawZDC(TH1F* hTimeZNA, TH1F* hTimeZNC, TH2F* hTimeZNSumVsDif, TH2F* hTimeCorrZDC,const char* bitName);
+Int_t findBinNtimesLessThanMax(const TH1& h, Float_t threshold, Int_t direction);
+void setPointWithError(TGraphErrors *gr, Int_t idx, Float_t x, Float_t y, Float_t yerr);
+Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector);
+void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab=0);
+void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab=0);
+
+
+Int_t runLevelEventStatQA(TString qafilename="event_stat.root", Int_t run=295588, TString ocdbStorage = "raw://"){
   
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
@@ -289,8 +305,15 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   else if (run>=275924 && run<=276096) { refSigma= 64.0; refEff = 0.85; refClass = "CINT7-B-NOPF-CENTNOTRD"; } // T0 is not operational, using V0AND
   else if (run>=267167 && run<=280140) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
   else if (run>=280141 && run<=280235) { refSigma=4000.; refEff = 0.74; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // INEL=5.4b*C0V0M/CINT7ZAC
-  else if (run>=280236               ) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
-
+  else if (run>=280236 && run<=282007) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=282008 && run<=282441) { refSigma= 21.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // pp@5.02TeV. Taking previous estimates
+  else if (run>=282442 && run<=294999) { refSigma= 30.0; refEff = 0.40; refClass = "C0TVX-B-NOPF-CENTNOTRD"; } // back to pp at 13TeV
+  else if (run>=295000 && run<=295670) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb
+  else if (run>=295671 && run<=295715) { refSigma=4000.; refEff = 0.0675; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // bug in the trigger config
+  else if (run>=295716 && run<=295716) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // run ok
+  else if (run>=295717 && run<=295720) { refSigma=4000.; refEff = 0.0675; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // bug in the trigger config
+  else if (run>=295721               ) { refSigma=4000.; refEff = 0.50; refClass = "C0V0M-B-NOPF-CENTNOTRD"; } // PbPb at 5.02TeV, sigma from Martino cs(INEL) = 8000 mb
+  
   
   Double_t orbitRate = 11245.;
   TString partition;
@@ -338,12 +361,12 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     cl->GetDownscaleFactor(class_ds[i]);
   }
 
-  // special treatment for Pb-Pb
+  // special treatment for Pb-Pb 2015
   if (run>=244917 && run<=246994) {
     for (Int_t i=0;i<classes.GetEntriesFast();i++){
       AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
-      TObjArray* tokens = TString(cl->GetName()).Tokenize("-");
-      TString cluster = tokens->At(3)->GetName();
+      TObjArray* tokensArray = TString(cl->GetName()).Tokenize("-");
+      TString cluster = tokensArray->At(3)->GetName();
       TString lifetimeClassName = Form("C0VHM-B-NOPF-%s",cluster.Data());
       if (run<245256) lifetimeClassName = Form("C0V0M-B-NOPF-%s",cluster.Data());
       TObject* lifetimeClass = classes.FindObject(lifetimeClassName.Data());
@@ -356,8 +379,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
           class_lumi[i]=class_lumi[index]*ds_ratio;
         }
       }
-      tokens->Delete();
-      delete tokens;
+      tokensArray->Delete();
+      delete tokensArray;
     }
   }
 
@@ -469,18 +492,46 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
   if (run>=276135) {
     AliTriggerClass* refTmaskClassObject = (AliTriggerClass*) classes.FindObject("C0TVX-T-NOPF-CENTNOTRD");
     if (refClass.Contains("CINT7")) refTmaskClassObject = (AliTriggerClass*) classes.FindObject("CINT7-T-NOPF-CENTNOTRD");
-    Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
-    TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
-    refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
-    for (Int_t i=0;i<classes.GetEntriesFast();i++){
-      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
-      if (TString(cl->GetName()).Contains("-T-")){
-        class_lumi[i] = class_lumi[i]*TMath::Log(1-(Double_t)(refTmaskCounts)/totalBCs)/TMath::Log(1-(Double_t)(refCounts)/totalBCs);
+    if (refTmaskClassObject) {
+      Int_t refTmaskId = classes.IndexOf(refTmaskClassObject);
+      TString refTmaskCluster = refTmaskClassObject->GetCluster()->GetName();
+      refTmaskCounts = (activeDetectorsString.Contains("TRD") && (refTmaskCluster.EqualTo("CENT") || refTmaskCluster.EqualTo("ALL") || refTmaskCluster.EqualTo("FAST"))) ? class_lMb[refTmaskId] : class_l0b[refTmaskId];
+      for (Int_t i=0;i<classes.GetEntriesFast();i++){
+        AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+        if (!cl) continue;
+        if (TString(cl->GetName()).Contains("-T-")){
+          class_lumi[i] = class_lumi[i]*TMath::Log(1-(Double_t)(refTmaskCounts)/totalBCs)/TMath::Log(1-(Double_t)(refCounts)/totalBCs);
+        }
       }
     }
   }
+  
+  // special treatment for UPC triggers in Pb-Pb 2018
+  if (run>=295000) {
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (!TString(cl->GetName()).Contains("CCUP")) continue;
+      TObject* lifetimeClass = 0;
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CEMC8EG1-B-NOPF-CENTNOTRD");
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CPHI8PER-B-NOPF-CENTNOTRD");
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CPHI7PER-B-NOPF-CENTNOPMD");
+      if (!lifetimeClass) continue;
+      Int_t index = classes.IndexOf(lifetimeClass);
+      class_lifetime[i]=class_lifetime[index]*class_ds[i];
+      class_lumi[i]=class_lumi[index]*class_ds[i];
+    }
 
-
+    for (Int_t i=0;i<classes.GetEntriesFast();i++){
+      AliTriggerClass* cl = (AliTriggerClass*) classes.At(i);
+      if (!TString(cl->GetName()).Contains("CMUP")) continue;
+      TObject* lifetimeClass = 0;
+      if (!lifetimeClass) lifetimeClass = classes.FindObject("CMUL7-B-NOPF-MUFAST");
+      if (!lifetimeClass) continue;
+      Int_t index = classes.IndexOf(lifetimeClass);
+      class_lifetime[i]=class_lifetime[index]*class_ds[i];
+      class_lumi[i]=class_lumi[index]*class_ds[i];
+    }
+  }
   
   TFile* fin = new TFile(qafilename);
   if (!fin) {
@@ -602,17 +653,17 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     // TODO think how to propagate mask with TBit aliases
     UInt_t mask = 0;
     TString classList = ""; // list of classes for given PS bit
-    TObjArray* array = label.Tokenize(" ");
-    for (Int_t itoken=0;itoken<array->GetEntries();itoken++){
-      TString token = array->At(itoken)->GetName();
+    TObjArray* tokenArray = label.Tokenize(" ");
+    for (Int_t itoken=0;itoken<tokenArray->GetEntries();itoken++){
+      TString token = tokenArray->At(itoken)->GetName();
       if (itoken==0) classList = token; 
       if (token[0]!='&') continue;
       token.Remove(0,1);
       mask = token.Atoi();
       break;
     }
-    array->Delete();
-    delete array;
+    tokenArray->Delete();
+    delete tokenArray;
     printf("%s\n",label.Data());
     printf("%i\n",mask);
     if (!mask) continue;
@@ -620,7 +671,8 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     Int_t ibit = TMath::Nint(TMath::Log2(mask));
 
     // FIXME
-    // if (!bitNames[ibit].EqualTo("kINT7") && !bitNames[ibit].EqualTo("kINT7inMUON") && !bitNames[ibit].EqualTo("kMuonUnlikeLowPt7")) continue;
+//    if (!bitNames[ibit].EqualTo("kINT7") && !bitNames[ibit].EqualTo("kINT7inMUON") && !bitNames[ibit].EqualTo("kMuonUnlikeLowPt7")) continue;
+//    if (!bitNames[ibit].EqualTo("kINT7")) continue;
 
     if (ibit>=NBITS) continue;
 //    if (alias_recorded[ibit]) break; 
@@ -653,11 +705,36 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     //printf("%4i %8i %8i\n",ibit,alias_reconstructed[ibit],alias_accepted[ibit]);
     
     classList.Remove(0,1); // remove +
-    array = classList.Tokenize(",");
+
+    TObjArray* array = classList.Tokenize(",");
+    while (1) {
+      Int_t i=0;
+      for (i=0; i<array->GetEntries(); i++) {
+        TString str  = array->At(i)->GetName();
+        Int_t begin = str.Index("[");
+        Int_t end = str.Index("]");
+        if (begin<0 || end<0) continue;
+        TString before = str(0, begin);
+        TString after = str(end+1, str.Length());
+        TString tokens = str(begin+1, end-begin-1);
+        Int_t pos = 0;
+        Int_t l = tokens.Index("|", pos);
+        while (l >= 0) {
+          array->Add(new TObjString(before + tokens(pos,l-pos) + after));
+          pos = l + 1;
+          l   = tokens.Index("|", pos);
+        }
+        array->Add(new TObjString(before + tokens(pos, tokens.Length()) + after));
+        ((TObjString*) array->At(i))->SetString("");
+        i=-1;
+      }
+      break;
+    }
+    
     // if trigger bit corresponds to several active classes, just take the last one
     // example: kTRD
     // TODO think about more elegant solution
-    for (Int_t i=0;i<array->GetEntriesFast();i++){
+    for (Int_t i=0;i<array->GetEntries();i++){
       TString token = array->At(i)->GetName();
       AliTriggerClass* cl = (AliTriggerClass*) classes.FindObject(token.Data());
       if (!cl) continue;
@@ -752,9 +829,9 @@ Int_t runLevelEventStatQA(TString qafilename="EventStat_temp.root", Int_t run=25
     DrawTiming(hV0AAll,hV0AAcc,hV0CAll,hV0CAcc,"V0",bitName);
     DrawTiming(hADAAll,hADAAcc,hADCAll,hADCAcc,"AD",bitName);
     DrawFlags(hBBAflagsAll,hBBAflagsAcc,hBBCflagsAll,hBBCflagsAcc,hBGAflagsAll,hBGAflagsAcc,hBGCflagsAll,hBGCflagsAcc,bitName);
+    DrawZDC(hTimeZNA,hTimeZNC,hTimeZNSumVsDif,hTimeCorrZDC,bitName);
     DrawMultiplicity(hV0MOnAll,hV0MOnAcc,hV0MOnVHM,hV0MOfAll,hV0MOfAcc,bitName,"V0M","V0M",meanV0MOn,meanV0MOf);
     DrawMultiplicity(hOFOAll,hOFOAcc,hOFOVHM,hTKLAll,hTKLAcc,bitName,"OFO","TKL",meanOFO,meanTKL);
-    DrawZDC(hTimeZNA,hTimeZNC,hTimeZNSumVsDif,hTimeCorrZDC,bitName);
     if (bitNames[ibit].EqualTo("kINT7")) DrawEfficiency(hOFOvsTKLAcc,"OFO",bitName);
     if (bitNames[ibit].EqualTo("kINT7")) DrawEfficiency(hV0MOnVsOfAcc,"V0M",bitName);
 //
@@ -995,11 +1072,11 @@ void DrawMultiplicity(TH1F* hOnAll, TH1F* hOnAcc, TH1F* hOnVHM, TH1F* hOfAll,  T
 
   TLegend* leg1 = new TLegend(0.40,0.80,0.97,0.90);
   leg1->AddEntry(hOnAll,Form("All: %.0f",hOnAll->Integral(0,hOnAll->GetNbinsX()+1)));
-  leg1->AddEntry(hOnAcc,Form("Accepted: %.0f, <%s>=%.1f",hOnAcc->Integral(0,hOnAcc->GetNbinsX()+1),hOnAcc->GetMean(),multOn.Data()),"l");
+  leg1->AddEntry(hOnAcc,Form("Accepted: %.0f, <%s>=%.1f",hOnAcc->Integral(0,hOnAcc->GetNbinsX()+1),multOn.Data(),hOnAcc->GetMean()),"l");
 
   TLegend* leg2 = new TLegend(0.40,0.80,0.97,0.90);
   leg2->AddEntry(hOfAll,Form("All: %.0f",hOfAll->Integral(0,hOfAll->GetNbinsX()+1)));
-  leg2->AddEntry(hOfAcc,Form("Accepted: %.0f, <%s>=%.1f",hOfAcc->Integral(0,hOfAcc->GetNbinsX()+1),hOfAcc->GetMean(),multOf.Data()),"l");
+  leg2->AddEntry(hOfAcc,Form("Accepted: %.0f, <%s>=%.1f",hOfAcc->Integral(0,hOfAcc->GetNbinsX()+1),multOf.Data(),hOfAcc->GetMean()),"l");
 
   TCanvas* c = new TCanvas(Form("%s_%s",bitName,multOn.Data()),Form("c_%s",bitName),1800,900);
   c->Divide(2,1,0.001,0.001);
@@ -1377,7 +1454,7 @@ Helper function to set a point and its yerror in one go
 */
 void setPointWithError(TGraphErrors *gr, Int_t idx, Float_t x, Float_t y, Float_t yerr) {
   gr->SetPoint(idx, x, y);
-  gr->SetPointError(idx, 0, yerr / 2.0); // not clear if this is the total error or the error in one direction...
+  gr->SetPointError(idx, 0, yerr);
 }
 
 /* 
@@ -1414,7 +1491,6 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
     cut_width_factor = 5;
   }
   else if (detector == "V0M") {
-    // Note that parameter 2 will later be fixed. prior to the fit
     slice_fit = TF1("slice_fit","[2]*exp(-([0]-x)/[1])", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
     min_entries_per_slice = 200;
     cut_width_factor = 7;
@@ -1422,32 +1498,25 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
   else {
     return NULL;
   }
-  // Set default parameters and restrict the width to values > 0
-  slice_fit.SetParameters(1, 1, 1);
-  // Ensure that the width parameter > 0
-  slice_fit.SetParLimits(1, 0, 1e4);
-  TF1 fit_lin_mean = TF1("linear_fit_means","pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
+  slice_fit.SetParameters(1, 1, 1);  // Set default parameters
+  slice_fit.SetParLimits(1, 0, 1e4); // Ensure that the width parameter > 0
+  TF1 fit_lin_mean  = TF1("linear_fit_means" ,"pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
   TF1 fit_lin_width = TF1("linear_fit_widths","pol1", 0, h2d->GetXaxis()->GetBinUpEdge(h2d->GetNbinsX()));
-  TGraphErrors widths = TGraphErrors();
-  TGraphErrors means = TGraphErrors();
+  TGraphErrors widths  = TGraphErrors();
+  TGraphErrors means   = TGraphErrors();
   TGraphErrors nevents = TGraphErrors();
   Int_t valid_fits = 0;
+
   // Loop through each slice along the offline axis.  Fit each slice
   // with the appropriate function and add this point to a graph which
   // is latter fitted with a linear regression
   for (Int_t ibin = 1; ibin <= h2d->GetNbinsX(); ibin++) {
     TH1* h_py = h2d->ProjectionY("slice", ibin, ibin+1);
-    if (h_py->Integral() < min_entries_per_slice) {
-      // It seems like ~100 events is about the thresholds where the fitting errors skyrocket
-      continue;
-    }
+    if (h_py->Integral() < min_entries_per_slice) continue;
     if (detector == "V0M") {
-      // Alice and Evgeny move to one lower bin for the upper edge! ie h_py.GetMaximumBin() - 1
-      up_bin = h_py->GetMaximumBin() - 1;
+      up_bin  = h_py->GetMaximumBin() - 1;
       low_bin = findBinNtimesLessThanMax(*h_py, 0.1, -1);
-      if (up_bin - low_bin < 5) {
-    continue;
-      }
+      if (up_bin - low_bin < 2) continue;
       up_edge = h_py->GetXaxis()->GetBinCenter(up_bin);
       low_edge = TMath::Min(0.85 * up_edge, h_py->GetXaxis()->GetBinCenter(h_py->GetMaximumBin() -3));
       // Fix parameter [2]
@@ -1458,40 +1527,31 @@ Double_t* getCutParametersOnlineVsOffline(TH2* h2d, const std::string detector) 
     if (detector =="SPD") {
       up_bin = findBinNtimesLessThanMax(*h_py, 0, 1); // last filled bin
       low_edge = h_py->GetXaxis()->GetBinLowEdge(h_py->GetMaximumBin() - 1);
-      up_edge = h_py->GetXaxis()->GetBinUpEdge(up_bin);
+      up_edge  = h_py->GetXaxis()->GetBinUpEdge(up_bin);
       slice_fit.SetParameter(2, h_py->GetBinContent(h_py->GetMaximumBin()));
     }
-    // returns negative value in case of an error not connected with the minimization procedure
     Int_t fit_res = h_py->Fit(&slice_fit, "QRSLL", "", low_edge, up_edge);
-    if (fit_res != 0 || slice_fit.GetNDF() == 0) {
-      continue;
-    }
-    setPointWithError(&means, valid_fits,
-             h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(0),
-             slice_fit.GetParError(0));
-    setPointWithError(&widths, valid_fits,
-             h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(1),
-             slice_fit.GetParError(1));
+    if (fit_res != 0 || slice_fit.GetNDF() == 0) continue;
+    setPointWithError(&means,  valid_fits,h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(0), slice_fit.GetParError(0));
+    setPointWithError(&widths, valid_fits,h2d->GetXaxis()->GetBinCenter(ibin), slice_fit.GetParameter(1), slice_fit.GetParError(1));
     nevents.SetPoint(valid_fits, h2d->GetXaxis()->GetBinCenter(ibin), h_py->Integral());
     valid_fits++;
   }
   // Quality assurance after each slice has been tried to fit
   // Require a minimum number of successful fits in order to perform a linear regression
-  // Technically, only 2 points are necessary, of cause.
-  if (valid_fits < 3) {
-    return NULL;
-  }
+  if (valid_fits < 3) return NULL;
+
   means.Fit(&fit_lin_mean, "QS");
   widths.Fit(&fit_lin_width, "QRS", "", 0, widths.GetXaxis()->GetXmax());
   Double_t *ret = new Double_t[4];
-  ret[0] = fit_lin_mean.GetParameter(0) - cut_width_factor * fit_lin_width.GetParameter(0);
-  ret[1] = fit_lin_mean.GetParError(0) + cut_width_factor*fit_lin_width.GetParError(0);
+  ret[0] = fit_lin_mean.GetParameter(0) - cut_width_factor*fit_lin_width.GetParameter(0);
+  ret[1] = fit_lin_mean.GetParError(0)  + cut_width_factor*fit_lin_width.GetParError(0);
   ret[2] = fit_lin_mean.GetParameter(1) - cut_width_factor*fit_lin_width.GetParameter(1);
-  ret[3] = fit_lin_mean.GetParError(1) + cut_width_factor*fit_lin_width.GetParError(1);
+  ret[3] = fit_lin_mean.GetParError(1)  + cut_width_factor*fit_lin_width.GetParError(1);
   return ret;
 }
 
-void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab=0){
+void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab){
   if (!hAll || !hCln) {
     printf("QA histogram not found\n");
     return;
@@ -1518,14 +1578,16 @@ void DrawV0MOnVsOf(TH2F* hAll,TH2F* hCln,const char* bitName, Double_t* ab=0){
     pol1.SetLineColor(kMagenta);
     pol1.SetParameter(0,ab[0]);
     pol1.SetParameter(1,ab[2]);
-    pol1.Draw("same");
+    pol1.DrawCopy("same");
+    printf("ab0 = %f\n",ab[0]);
+    printf("ab2 = %f\n",ab[2]);
   }
   c->Print("V0MOnVsOf.png");
 
 }
 
 
-void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab=0){
+void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab){
   if (!hAll || !hCln) {
     printf("QA histogram not found\n");
     return;
@@ -1553,7 +1615,7 @@ void DrawSPDOnVsOf(TH2F* hAll,TH2F* hCln, const char* bitName, Double_t* ab=0){
     pol1.SetLineColor(kMagenta);
     pol1.SetParameter(0,ab[0]);
     pol1.SetParameter(1,ab[2]);
-    pol1.Draw("same");
+    pol1.DrawCopy("same");
   }
   c->Print("SPDOnVsOf.png");
 }

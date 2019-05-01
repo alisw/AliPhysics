@@ -236,7 +236,7 @@ class AliEmcalJet : public AliVParticle
 
   /**
    * @brief Checks whether a given particle is a jet constituent
-   * @param[in] Particle trajectory to check
+   * @param[in] part Particle to check
    * @return True if the particle is a jet constituent, false otherwise
    */
   bool HasParticleConstituent(const AliVParticle *const part) const;
@@ -274,6 +274,20 @@ class AliEmcalJet : public AliVParticle
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
   void              Clear(Option_t */*option*/="");
+
+  /**
+   * @brief Set pT, eta, phi of jet
+   * @param[in] pT jet pT
+   * @param[in] eta jet eta
+   * @param[in] phi jet phi
+   */
+  void              SetPtEtaPhi(Double_t pT, Double_t eta, Double_t phi) { fPt = pT; fEta = eta; fPhi = phi; }
+
+  /**
+   * @brief Set jet mass
+   * @param[in] mass jet mass
+   */
+  void              SetMass(Double_t mass) { fM = mass; }
 
   /**
    * @brief Add new particle (track / mc particle) constituent to the given jet

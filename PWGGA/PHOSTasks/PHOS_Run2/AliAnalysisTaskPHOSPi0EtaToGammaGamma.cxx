@@ -62,8 +62,13 @@
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 
+#include "AliPHOSTenderTask.h"
+#include "AliPHOSTenderSupply.h"
+#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
 
 #include "AliPHOSEventCuts.h"
 #include "AliPHOSClusterCuts.h"
@@ -93,7 +98,10 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fESDtrackCutsGlobal(0x0),
   fESDtrackCutsGlobalConstrained(0x0),
   fCentArrayPi0(0x0),
+  fCentArrayEta(0x0),
+  fCentArrayGamma(0x0),
   fCentArrayK0S(0x0),
+  fCentArrayL0(0x0),
 
   fOutputContainer(0x0),
   fEvent(0x0),
@@ -102,6 +110,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
   fJJMCHandler(0x0),
+  fPtHardAndJetPtFactor(-1),
+  fPtHardAndSinglePtFactor(-1),
   fRunNumber(0),
   fPHOSGeo(0x0),
   fPHOSClusterArray(NULL),
@@ -115,21 +125,37 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fEPBin(-1),
   fIsFlowTask(kFALSE),
   fHarmonics(-1),
-  fQnEstimator("QoverM"),
-  fFlowMethod("EP"),
+  fQNormalization("QoverM"),
+  fFM(-1),
+  fQnDetectorMain(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullV0),
+  fQnDetectorSub1(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCPosEta),
+  fQnDetectorSub2(AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCNegEta),
   fFlowQnVectorMgr(0x0),
   fEventPlane(-999.),
   fQVector1(0,0),
-  fQVector2(0,0),
+  fQnStep(5),
   fNHybridTrack(0),
   fIsPHOSTriggerAnalysis(kFALSE),
+  fEnergyThreshold(0.),
   fPHOSTriggerHelper(0x0),
   fPHOSTriggerHelperL0(0x0),
   fPHOSTriggerHelperL1H(0x0),
   fPHOSTriggerHelperL1M(0x0),
   fPHOSTriggerHelperL1L(0x0),
+  fForceActiveTRU(kFALSE),
+  fTRFM(-1),
   fPIDResponse(0x0),
-  fIsNonLinStudy(kFALSE)
+  fIsNonLinStudy(kFALSE),
+  fGlobalEScale(1.0),
+  fEmin(0.2),
+  fIsOAStudy(kFALSE),
+  fNMixTrack(5),
+  fMatchingR(2.),
+  fAnaOmega3Pi(kFALSE),
+  fMinPtPi0(0),
+  fMinPtChPi(0),
+  fMaxR(999.),
+  fPIDStudy(kFALSE)
 {
   // Constructor
 
@@ -149,6 +175,14 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
     }
   }
 
+  for(Int_t i=0;i<11;i++){
+    fAdditionalPi0PtWeight[i]   = 0x0;
+    fAdditionalEtaPtWeight[i]   = 0x0;
+    fAdditionalGammaPtWeight[i] = 0x0;
+    fAdditionalK0SPtWeight[i]   = 0x0;
+    fAdditionalL0PtWeight[i]    = 0x0;
+  }
+
   fTPCEPName[0] = "TPC";
   fTPCEPName[1] = "TPCNegEta";
   fTPCEPName[2] = "TPCPosEta";
@@ -157,14 +191,12 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fV0EPName[1] = "VZEROA";
   fV0EPName[2] = "VZEROC";
 
-  fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper("L0" ,kFALSE);
-  fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper("L1H",kFALSE);
-  fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper("L1M",kFALSE);
-  fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper("L1L",kFALSE);
-
-  for(Int_t i=0;i<10;i++){
-    fAdditionalPi0PtWeight[i] = new TF1(Form("fAdditionalPi0PtWeight_%d",i),"1.",0,100);
-    fAdditionalK0SPtWeight[i] = new TF1(Form("fAdditionalK0SPtWeight_%d",i),"1.",0,100);
+  for(Int_t i=0;i<11;i++){
+    fAdditionalPi0PtWeight[i]   = new TF1(Form("fAdditionalPi0PtWeight_%d",i)  ,"1.",0,100);
+    fAdditionalEtaPtWeight[i]   = new TF1(Form("fAdditionalEtaPtWeight_%d",i)  ,"1.",0,100);
+    fAdditionalGammaPtWeight[i] = new TF1(Form("fAdditionalGammaPtWeight_%d",i),"1.",0,100);
+    fAdditionalK0SPtWeight[i]   = new TF1(Form("fAdditionalK0SPtWeight_%d",i)  ,"1.",0,100);
+    fAdditionalL0PtWeight[i]    = new TF1(Form("fAdditionalL0PtWeight_%d",i)   ,"1.",0,100);
   }
 
   fTOFEfficiency = new TF1("fTOFEfficiency","1.",0,100);
@@ -183,30 +215,40 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
 {
   for(Int_t i=0;i<10;i++){
     for(Int_t j=0;j<12;j++){
+
       if(fPHOSEvents[i][j]){
         delete fPHOSEvents[i][j];
         fPHOSEvents[i][j] = 0x0;
       }
+
     }
   }
-
 
   if(fPHOSTriggerHelper){
     delete fPHOSTriggerHelper;
     fPHOSTriggerHelper  = 0x0;
   }
 
-  delete fPHOSTriggerHelperL0;
-  delete fPHOSTriggerHelperL1H;
-  delete fPHOSTriggerHelperL1M;
-  delete fPHOSTriggerHelperL1L;
+  if(fPHOSTriggerHelperL0 ){
+    delete fPHOSTriggerHelperL0;
+    fPHOSTriggerHelperL0  = 0x0;
+  }
+  if(fPHOSTriggerHelperL1H){
+    delete fPHOSTriggerHelperL1H;
+    fPHOSTriggerHelperL1H = 0x0;
+  }
 
-  fPHOSTriggerHelperL0  = 0x0;
-  fPHOSTriggerHelperL1H = 0x0;
-  fPHOSTriggerHelperL1M = 0x0;
-  fPHOSTriggerHelperL1L = 0x0;
+  if(fPHOSTriggerHelperL1M){
+    delete fPHOSTriggerHelperL1M;
+    fPHOSTriggerHelperL1M = 0x0;
+  }
 
-  for(Int_t i=0;i<10;i++){
+  if(fPHOSTriggerHelperL1L){
+    delete fPHOSTriggerHelperL1L;
+    fPHOSTriggerHelperL1L = 0x0;
+  }
+
+  for(Int_t i=0;i<11;i++){
     if(fAdditionalPi0PtWeight[i]){
       delete fAdditionalPi0PtWeight[i];
       fAdditionalPi0PtWeight[i] = 0x0;
@@ -216,11 +258,45 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
       delete fAdditionalK0SPtWeight[i];
       fAdditionalK0SPtWeight[i] = 0x0;
     }
+
+    if(fAdditionalEtaPtWeight[i]){
+      delete fAdditionalEtaPtWeight[i];
+      fAdditionalEtaPtWeight[i] = 0x0;
+    }
+
+    if(fAdditionalGammaPtWeight[i]){
+      delete fAdditionalGammaPtWeight[i];
+      fAdditionalGammaPtWeight[i] = 0x0;
+    }
+
   }
 
+  if(fCentArrayPi0){
+    delete fCentArrayPi0;
+    fCentArrayPi0 = 0x0;
+  }
+  if(fCentArrayEta){
+    delete fCentArrayEta;
+    fCentArrayEta = 0x0;
+  }
+  if(fCentArrayGamma){
+    delete fCentArrayGamma;
+    fCentArrayGamma = 0x0;
+  }
+  if(fCentArrayK0S){
+    delete fCentArrayK0S;
+    fCentArrayK0S = 0x0;
+  }
+  if(fCentArrayL0){
+    delete fCentArrayL0;
+    fCentArrayL0 = 0x0;
+  }
 
   delete fTOFEfficiency;
   fTOFEfficiency = 0x0;
+
+  delete fTriggerEfficiency;
+  fTriggerEfficiency = 0x0;
 
   if(fPHOSEventCuts){
     delete fPHOSEventCuts;
@@ -272,63 +348,97 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(hPHI7Summary);
 
   //event character histogram
-  fOutputContainer->Add(new TH1F("hVertexZ","VertexZ",100,-50.,50.));
-  fOutputContainer->Add(new TH1F("hVertexZSelectEvent","VertexZ SelectEvent",100,-50.,50.));
+  fOutputContainer->Add(new TH1F("hVertexZ","VertexZ;Zvtx (cm)",100,-50.,50.));
+  fOutputContainer->Add(new TH1F("hVertexZSelectEvent","VertexZ SelectEvent;Zvtx (cm)",100,-50.,50.));
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNContributor",fEstimator.Data()),Form("Centrality %s vs. Ncontributor",fEstimator.Data()),100,0.,100,101,-0.5,100.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNContributor",fEstimator.Data()),Form("Centrality %s vs. Ncontributor;centrality (%%);N_{contributor}",fEstimator.Data()),100,0.,100,2001,-0.5,2000.5));
 
-  fOutputContainer->Add(new TH2F("hCentralityV0MvsCL0","Centrality V0M vs. CL0",100,0.,100,100,0.,100.));
-  fOutputContainer->Add(new TH2F("hCentralityV0MvsCL1","Centrality V0M vs. CL1",100,0.,100,100,0.,100.));
-  fOutputContainer->Add(new TH2F("hCentralityCL0vsCL1","Centrality CL0 vs. CL1",100,0.,100,100,0.,100.));
-  fOutputContainer->Add(new TH2F("hCentralityV0AvsV0C","Centrality V0A vs. V0C",100,0.,100,100,0.,100.));
-  fOutputContainer->Add(new TH2F("hCentralityZNAvsZNC","Centrality ZNA vs. ZNC",100,0.,100,100,0.,100.));
+  fOutputContainer->Add(new TH2F("hCentralityV0MvsCL0","Centrality V0M vs. CL0;V0M;CL0",100,0.,100,100,0.,100.));
+  fOutputContainer->Add(new TH2F("hCentralityV0MvsCL1","Centrality V0M vs. CL1;V0M;CL1",100,0.,100,100,0.,100.));
+  fOutputContainer->Add(new TH2F("hCentralityCL0vsCL1","Centrality CL0 vs. CL1;CL0;CL1",100,0.,100,100,0.,100.));
+  fOutputContainer->Add(new TH2F("hCentralityV0AvsV0C","Centrality V0A vs. V0C;V0A;V0C",100,0.,100,100,0.,100.));
+  fOutputContainer->Add(new TH2F("hCentralityZNAvsZNC","Centrality ZNA vs. ZNC;ZNA;ZNC",100,0.,100,100,0.,100.));
 
   const Double_t Pi = TMath::Pi();
   const Double_t TwoPi = TMath::TwoPi();
 
   for(Int_t i=0;i<3;i++){
-    fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),100,0,100,30,0,Pi));
+    fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQNormalization.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fTPCEPName[i].Data(),fQNormalization.Data()),100,0,100,30,0,Pi));
   }
   for(Int_t i=0;i<3;i++){
-    fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),100,0,100,30,0,Pi));
+    fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),100,0,100,30,0,Pi));
   }
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,200,-0.05,0.05));
+  Double_t SPlimit = 0.2;
+  Int_t NbinSP     = 200;
+  if(fQnStep == 5){//In Qn correction task, rescaling of Q vector is applied for V0 after step4
+    SPlimit = 15.;
+    NbinSP  = 600;
+  }
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,NbinSP,-SPlimit,SPlimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{2}} #upoint #vec{Q_{3}};centrality (%%);SP #vec{Q_{2}} #upoint #vec{Q_{3}}",fEstimator.Data()),100,0,100,NbinSP,-SPlimit,SPlimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{3}} #upoint #vec{Q_{1}};centrality (%%);SP #vec{Q_{3}} #upoint #vec{Q_{1}}",fEstimator.Data()),100,0,100,NbinSP,-SPlimit,SPlimit));
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2x",fEstimator.Data()),Form("Centrality %s vs. Q_{2x};centrality (%%);Q_{2x}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2y",fEstimator.Data()),Form("Centrality %s vs. Q_{2y};centrality (%%);Q_{2y}",fEstimator.Data()),100,0,100,100,-0.5,0.5));
+  Double_t Qxylimit = 1;
+  Int_t NbinQxy     = 200;
+  if(fQnStep == 5){//In Qn correction task, rescaling of Q vector is applied for V0 after step4
+    Qxylimit = 10.;
+    NbinQxy  = 200;
+  }
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ1",fEstimator.Data()),Form("Centrality %s vs. |Q_{1}|;centrality (%%);|Q_{1}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ2",fEstimator.Data()),Form("Centrality %s vs. |Q_{2}|;centrality (%%);|Q_{2}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsNormQ3",fEstimator.Data()),Form("Centrality %s vs. |Q_{3}|;centrality (%%);|Q_{3}|",fEstimator.Data()),100,0,100,NbinQxy,0,2. * Qxylimit));
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2x",fEstimator.Data()),Form("Centrality %s vs. Q_{2x};centrality (%%);Q_{2x}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2y",fEstimator.Data()),Form("Centrality %s vs. Q_{2y};centrality (%%);Q_{2y}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3x",fEstimator.Data()),Form("Centrality %s vs. Q_{3x};centrality (%%);Q_{3x}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3y",fEstimator.Data()),Form("Centrality %s vs. Q_{3y};centrality (%%);Q_{3y}",fEstimator.Data()),100,0,100,NbinQxy,-Qxylimit,Qxylimit));
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityMC" ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"                  ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicity"   ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"                  ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityTOF",fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity with TOF cut;centrality (%%);Ncluster"     ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPDTracklet",fEstimator.Data()),Form("Centrality %s vs. SPD tracklet",fEstimator.Data()),100,0,100,5000,0,5000));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsTrackMultiplicity",fEstimator.Data()),Form("Centrality %s vs. track Multiplicity",fEstimator.Data()),100,0,100,5000,0,5000));
-  fOutputContainer->Add(new TH2F("hPHOSClusterMultiplicityvsTrackMultiplicity"   ,"cluster multiplicity vs. track multiplicity"         ,500,0,5000,201,-0.5,200.5));
-  fOutputContainer->Add(new TH2F("hPHOSClusterMultiplicityTOFvsTrackMultiplicity","cluster multiplicity with TOF vs. track multiplicity",500,0,5000,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSinDeltaEventPlane31",fEstimator.Data()),Form("Centrality %s vs. sin(%d #Delta#Psi_{EP});centrality (%%);sin(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityMC" ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"             ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicity"   ,fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity;centrality (%%);Ncluster"             ,fEstimator.Data()),100,0,100,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsPHOSClusterMultiplicityTOF",fEstimator.Data()),Form("Centrality %s vs. Cluster Multiplicity with TOF cut;centrality (%%);Ncluster",fEstimator.Data()),100,0,100,201,-0.5,200.5));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPDTracklet",fEstimator.Data()),Form("Centrality %s vs. SPD tracklet;centrality (%%);SPD tracklets",fEstimator.Data()),100,0,100,600,0,6000));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsTrackMultiplicity",fEstimator.Data()),Form("Centrality %s vs. track Multiplicity;centrality (%%);track multiplicity",fEstimator.Data()),100,0,100,400,0,4000));
+  fOutputContainer->Add(new TH2F("hPHOSClusterMultiplicityvsTrackMultiplicity"   ,"cluster multiplicity vs. track multiplicity;track multiplicity;Ncluster"         ,400,0,4000,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F("hPHOSClusterMultiplicityTOFvsTrackMultiplicity","cluster multiplicity with TOF vs. track multiplicity;track multiplicity;Ncluster",400,0,4000,201,-0.5,200.5));
+
+  fOutputContainer->Add(new TH2F("hMultiplicityV0AvsTrackMultiplicity","V0A multiplicity vs. Track Multiplicity;V0A multiplicity;Ntrack"                   ,80,0,40000,400,0,4000));
+  fOutputContainer->Add(new TH2F("hMultiplicityV0CvsTrackMultiplicity","V0C multiplicity vs. Track Multiplicity;V0C multiplicity;Ntrack"                   ,80,0,40000,400,0,4000));
+  fOutputContainer->Add(new TH2F("hMultiplicityV0vsTrackMultiplicity" ,"V0  multiplicity vs. Track Multiplicity;V0A + V0C multiplicity;Ntrack"             ,80,0,40000,400,0,4000));
+
+  fOutputContainer->Add(new TH2F("hMultiplicityV0AvsPHOSClusterMultiplicity"   ,"V0C multiplicity vs. Cluster Multiplicity;V0A multiplicity;Ncluster"                   ,80,0,40000,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F("hMultiplicityV0CvsPHOSClusterMultiplicity"   ,"V0C multiplicity vs. Cluster Multiplicity;V0C multiplicity;Ncluster"                   ,80,0,40000,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F("hMultiplicityV0vsPHOSClusterMultiplicity"    ,"V0  multiplicity vs. Cluster Multiplicity;V0A + V0C multiplicity;Ncluster"             ,80,0,40000,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F("hMultiplicityV0AvsPHOSClusterMultiplicityTOF","V0C multiplicity vs. Cluster Multiplicity with TOF cut;V0A multiplicity;Ncluster"      ,80,0,40000,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F("hMultiplicityV0CvsPHOSClusterMultiplicityTOF","V0C multiplicity vs. Cluster Multiplicity with TOF cut;V0C multiplicity;Ncluster"      ,80,0,40000,201,-0.5,200.5));
+  fOutputContainer->Add(new TH2F("hMultiplicityV0vsPHOSClusterMultiplicityTOF" ,"V0  multiplicity vs. Cluster Multiplicity with TOF cut;V0A + V0C multiplicity;Ncluster",80,0,40000,201,-0.5,200.5));
 
   //track QA histograms
-  const Int_t Ntype=3;
-  const TString tracktype[Ntype] = {"Hybrid","Global","Complementary"};
+  const Int_t Ntype=2;
+  const TString tracktype[Ntype] = {"Global","GlobalNoDCA"};
 
   for(Int_t itype=0;itype<Ntype;itype++){
-    fOutputContainer->Add(new TH1F(Form("h%sTrackMult",tracktype[itype].Data())  ,Form("Number of %s track",tracktype[itype].Data()),500,0,5000));
-    fOutputContainer->Add(new TH1F(Form("h%sTrackPt",tracktype[itype].Data())    ,Form("%s track p_{T}",tracktype[itype].Data()),100,0,100));
-    fOutputContainer->Add(new TH2F(Form("h%sTrackEtaPhi",tracktype[itype].Data()),Form("%s track #eta vs. #phi;#phi;#eta",tracktype[itype].Data()),60,0,TwoPi,20,-1,1));
+    fOutputContainer->Add(new TH1F(Form("h%sTrackMult"   ,tracktype[itype].Data()),Form("Number of %s track;track multiplicity"                         ,tracktype[itype].Data()),400,0,4000));
+    fOutputContainer->Add(new TH1F(Form("h%sTrackPt"     ,tracktype[itype].Data()),Form("%s track p_{T};p_{T} (GeV/c)"                                  ,tracktype[itype].Data()),100,0,100));
+    fOutputContainer->Add(new TH2F(Form("h%sTrackEtaPhi" ,tracktype[itype].Data()),Form("%s track #eta vs. #phi;#phi;#eta"                              ,tracktype[itype].Data()),100,0,TwoPi,40,-1,1));
+    fOutputContainer->Add(new TH2F(Form("h%sTrackDCA"    ,tracktype[itype].Data()),Form("%s track DCA;DCA_{xy} (cm);DCA_{z} (cm)"                       ,tracktype[itype].Data()),100,-5,5,100,-5,5));
+    fOutputContainer->Add(new TH2F(Form("h%sTrackTPCdEdx",tracktype[itype].Data()),Form("%s TPC dE/dx vs. track momentum;p^{track} (GeV/c);dE/dx (a.u.)",tracktype[itype].Data()),200,0,20,200,0,200));
   }
-  fOutputContainer->Add(new TH2F("hTrackTPCdEdx","TPC dE/dx vs. track momentum;p^{track} (GeV/c);dE/dx (a.u.)",40,0,20,200,0,200));
 
   //cell QA histograms
   const Int_t Nmod=5;
+  const Int_t Ntru=8;
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellNXZM%d",imod),Form("Cell N(X,Z) M%d",imod),64,0.5,64.5,56,0.5,56.5));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellEXZM%d",imod),Form("Cell E(X,Z) M%d",imod),64,0.5,64.5,56,0.5,56.5));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCellAmpTimeM%d_LG",imod),Form("Cell Amplitude vs. Time LG M%d",imod),200,0,20,1000,-500,500));
@@ -352,14 +462,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hClusterEvsTM%d",imod),Form("Cluster E vs TOF M%d;E (GeV);TOF (ns)",imod)     ,500,0,50, 1000,-500,500));
 
   fOutputContainer->Add(new TH2F("hClusterEvsN","Cluster E vs N_{cell};E (GeV);N_{cell}",500,0,50,100,0.5,100.5));
-  fOutputContainer->Add(new TH2F("hClusterEvsM02","Cluster E vs M02;E (GeV);M02 (cm)" ,500,0,50,100,0,10));
-  fOutputContainer->Add(new TH2F("hClusterNvsM02","Cluster N vs M02;N_{cell};M02 (cm)",100,0.5,100.5,100,0,10));
-  fOutputContainer->Add(new TH2F("hFullDispvsFullE","full dispersion vs full E;E (GeV);dipersion (#sigma)",100,0,50,100,0,10));
-  fOutputContainer->Add(new TH2F("hCoreDispvsCoreE","core dispersion vs core E;E (GeV);dipersion (#sigma)",100,0,50,100,0,10));
-  fOutputContainer->Add(new TH2F("hFullDispvsCoreE","full dispersion vs full E;E (GeV);dipersion (#sigma)",100,0,50,100,0,10));
-  fOutputContainer->Add(new TH2F("hCoreDispvsFullE","core dispersion vs core E;E (GeV);dipersion (#sigma)",100,0,50,100,0,10));
+  fOutputContainer->Add(new TH2F("hClusterEvsM02","Cluster E vs M02;E (GeV);M02 (cm)",500,0,50,50,0,5));
+  fOutputContainer->Add(new TH2F("hClusterEvsM20","Cluster E vs M20;E (GeV);M20 (cm)",500,0,50,50,0,5));
+  fOutputContainer->Add(new TH2F("hFullDispvsFullE","full dispersion vs full E;E (GeV);dispersion (#sigma)",100,0,50,100,0,10));
+  fOutputContainer->Add(new TH2F("hCoreDispvsCoreE","core dispersion vs core E;E (GeV);dispersion (#sigma)",100,0,50,100,0,10));
+  fOutputContainer->Add(new TH2F("hFullDispvsCoreE","full dispersion vs full E;E (GeV);dispersion (#sigma)",100,0,50,100,0,10));
+  fOutputContainer->Add(new TH2F("hCoreDispvsFullE","core dispersion vs core E;E (GeV);dispersion (#sigma)",100,0,50,100,0,10));
 
-  for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hRvsTrackPtM%d",imod),Form("r vs track pT M%d;p_{T}^{track} (GeV/c);cpv (#sigma)",imod)         ,100,0,50,100,0,10));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hdZvsZvsTrackPt_M%d",imod)        ,"dZ vs. Z;Z (cm);dZ (cm);p_{T}^{track} (GeV/c)"           ,160,-80,80,80,-20,20,40,0,20));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hdXvsXvsTrackPt_plus_M%d",imod)   ,"dX vs. X positive;X (cm);dX (cm);p_{T}^{track +} (GeV/c)",160,-80,80,80,-20,20,40,0,20));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hdXvsXvsTrackPt_minus_M%d",imod)  ,"dX vs. X negative;X (cm);dX (cm);p_{T}^{track -} (GeV/c)",160,-80,80,80,-20,20,40,0,20));
@@ -372,22 +481,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t i=60;i<NpTggModule;i++) pTggModule[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 20 GeV/c
 
   for(Int_t imod=1;imod<Nmod;imod++){
-    fOutputContainer->Add(new TH2F(Form("hEpRatiovsEnergy_M%d_Electron",imod) ,Form("E/p ratio vs. E_{cluster} M%d;E/p;E_{cluster} (GeV)",imod)    ,50,0,2,NpTggModule-1,pTggModule));
-    fOutputContainer->Add(new TH2F(Form("hEpRatiovsEnergy_M%d_Others",imod)   ,Form("E/p ratio vs. E_{cluster} M%d;E/p;E_{cluster} (GeV)",imod)    ,50,0,2,NpTggModule-1,pTggModule));
-    fOutputContainer->Add(new TH2F(Form("hEpRatiovsTrackPt_M%d_Electron",imod),Form("E/p ratio vs. E_{cluster} M%d;E/p;p_{T}^{track} (GeV/c)",imod),50,0,2,NpTggModule-1,pTggModule));
-    fOutputContainer->Add(new TH2F(Form("hEpRatiovsTrackPt_M%d_Others",imod)  ,Form("E/p ratio vs. E_{cluster} M%d;E/p;p_{T}^{track} (GeV/c)",imod),50,0,2,NpTggModule-1,pTggModule));
+    fOutputContainer->Add(new TH2F(Form("hEpRatiovsEnergy_M%d_Electron",imod) ,Form("E/p ratio vs. E_{cluster} M%d;E/p;E_{cluster} (GeV)",imod)      ,50,0,2,NpTggModule-1,pTggModule));
+    fOutputContainer->Add(new TH2F(Form("hEpRatiovsEnergy_M%d_Others",imod)   ,Form("E/p ratio vs. E_{cluster} M%d;E/p;E_{cluster} (GeV)",imod)      ,50,0,2,NpTggModule-1,pTggModule));
+    fOutputContainer->Add(new TH2F(Form("hEpRatiovsTrackPt_M%d_Electron",imod),Form("E/p ratio vs. p_{T}^{track} M%d;E/p;p_{T}^{track} (GeV/c)",imod),50,0,2,NpTggModule-1,pTggModule));
+    fOutputContainer->Add(new TH2F(Form("hEpRatiovsTrackPt_M%d_Others",imod)  ,Form("E/p ratio vs. p_{T}^{track} M%d;E/p;p_{T}^{track} (GeV/c)",imod),50,0,2,NpTggModule-1,pTggModule));
   }
 
   fOutputContainer->Add(new TH2F("hEpRatiovsNsigmaElectronTPC","E/p ratio vs. N_{#sigma}^{e};E/p;n#sigma^{e}",50,0,2,20,-5,5));
-  fOutputContainer->Add(new TH2F("hTPCdEdx_Electron","TPC dEdx vs. electron momentum;p^{track} (GeV/c);dE/dx (a.u.)"    ,40,0,20,200,0,200));
-  fOutputContainer->Add(new TH2F("hTPCdEdx_Others"  ,"TPC dEdx vs. non-electron momentum;p^{track} (GeV/c);dE/dx (a.u.)",40,0,20,200,0,200));
+  fOutputContainer->Add(new TH2F("hTPCdEdx_Electron","TPC dE/dx vs. electron momentum;p^{track} (GeV/c);dE/dx (a.u.)"    ,200,0,20,200,0,200));
+  fOutputContainer->Add(new TH2F("hTPCdEdx_Others"  ,"TPC dE/dx vs. non-electron momentum;p^{track} (GeV/c);dE/dx (a.u.)",200,0,20,200,0,200));
 
-  fOutputContainer->Add(new TH2F("hClusterEtaPhi","Cluster eta vs. phi;#phi;#eta",60,0,TwoPi,200,-1,1));
+  fOutputContainer->Add(new TH2F("hClusterEtaPhi","Cluster eta vs. phi;#phi;#eta",100,0,TwoPi,200,-1,1));
   fOutputContainer->Add(new TH2F("hEnergyvsDistanceToBadChannel","distance to closest bad channel;E (GeV);distance in cell",100,0,50,10,0,5));
-  //fOutputContainer->Add(new TH2F("hAsymvsMgg","asymmetry vs. M_{#gamma#gamma};asymmetry;M_{#gamma#gamma} (GeV/c^{2})",10,0,1,240,0,0.96));
-  //fOutputContainer->Add(new TH2F("hAsymvsPt" ,"asymmetry vs. p_{T}^{#gamma#gamma};asymmetry;p_{T} (GeV/c)",10,0,1,100,0,50));
-
-  fOutputContainer->Add(new TH3F("hMggvsPtvsDeltaRgg","Mgg vs. p_{T} vs. #DeltaR_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#DeltaR_{#gamma#gamma}",180,0,0.72,100,0,50,50,0,0.5));
 
   //<- histograms for QA
   //histograms for physics analysis ->
@@ -399,135 +504,84 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t i=50;i<60;i++)    pTgg[i] = 0.5 * (i-50) + 5.0; //every 0.5 GeV/c, up to 10 GeV/c
   for(Int_t i=60;i<NpTgg;i++) pTgg[i] = 1.0 * (i-60) + 10.0;//every 1.0 GeV/c, up to 50 GeV/c
 
-  const Int_t Nm = 241;
-  Double_t mgg[Nm] = {};
-  for(Int_t i=0;i<Nm;i++) mgg[i] = 0.004*i;
+  Int_t NbinQ   =  1;
+  Double_t Qmin = -1;
+  Double_t Qmax = +1;
+  TString axistitle = Form("cos(%d #Delta#phi)",fHarmonics);
+  if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP){
+    NbinQ = 24;
+    Qmin  = -1;
+    Qmax  = +1; 
+    axistitle = Form("cos(%d #Delta#phi)",fHarmonics);
+  }
+  else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP){
+    NbinQ = 50;
+    Qmin  = -0.5;
+    Qmax  = +0.5;
+    if(fQnStep == 5){//In Qn correction task, rescaling of Q vector is applied for V0 after step4
+      //adjusted for centrality 10-60, where event plane is well defined.
+      NbinQ = 40;
+      Qmin  = -10;
+      Qmax  = +10;
+    }
+    axistitle = "#vec{u} #upoint #vec{Q_{1}}";
+  }
 
-  const Int_t Nphi = 13;
-  Double_t phibin[Nphi] = {};
-  const Double_t delta = (1. - -1.)/Double_t(Nphi-1);
-  for(Int_t iphi=0;iphi<Nphi;iphi++) phibin[iphi] = (delta * iphi) - 1;
-
-  const Int_t Nsp = 31;
-  Double_t spbin[Nsp] = {};
-  const Double_t dsp = (0.3 - -0.3)/Double_t(Nsp-1);
-  for(Int_t isp=0;isp<Nsp;isp++) spbin[isp] = (dsp * isp) - 0.3;
-
-  ////photon pT histograms
-  //TH2F *h2PhotonPt_EP  = new TH2F("hPhotonPt_EP" ,Form("Photon Pt;p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),NpTgg-1,pTgg,Nphi-1,phibin);
-  //TH2F *h2PhotonPt_SP1 = new TH2F("hPhotonPt_SP1",Form("Photon Pt;p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),NpTgg-1,pTgg,Nsp-1,spbin);
-  //TH2F *h2PhotonPt_SP2 = new TH2F("hPhotonPt_SP2",Form("Photon Pt;p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dC}}",fHarmonics),NpTgg-1,pTgg,Nsp-1,spbin);
-  //h2PhotonPt_EP ->Sumw2();
-  //h2PhotonPt_SP1->Sumw2();
-  //h2PhotonPt_SP2->Sumw2();
-  //fOutputContainer->Add(h2PhotonPt_EP );
-  //fOutputContainer->Add(h2PhotonPt_SP1);
-  //fOutputContainer->Add(h2PhotonPt_SP2);
-
-  //TH2F *h2PhotonPt_TOF_EP  = new TH2F("hPhotonPt_TOF_EP" ,Form("Photon Pt with TOF cut;p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),NpTgg-1,pTgg,Nphi-1,phibin);
-  //TH2F *h2PhotonPt_TOF_SP1 = new TH2F("hPhotonPt_TOF_SP1",Form("Photon Pt with TOF cut;p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),NpTgg-1,pTgg,Nsp-1,spbin);
-  //TH2F *h2PhotonPt_TOF_SP2 = new TH2F("hPhotonPt_TOF_SP2",Form("Photon Pt with TOF cut;p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dC}}",fHarmonics),NpTgg-1,pTgg,Nsp-1,spbin);
-  //h2PhotonPt_TOF_EP ->Sumw2();
-  //h2PhotonPt_TOF_SP1->Sumw2();
-  //h2PhotonPt_TOF_SP2->Sumw2();
-  //fOutputContainer->Add(h2PhotonPt_TOF_EP );
-  //fOutputContainer->Add(h2PhotonPt_TOF_SP1);
-  //fOutputContainer->Add(h2PhotonPt_TOF_SP2);
-
-  const Int_t Ndimg = 4;
-  const Int_t Nbing[Ndimg]    = {500, 12,   30,   30};
-  const Double_t xming[Ndimg] = {  0, -1, -0.3, -0.3};
-  const Double_t xmaxg[Ndimg] = { 50,  1,  0.3,  0.3};
+  const Int_t Ndimg = 2;
+  const Int_t Nbing[Ndimg]    = {500, NbinQ};
+  const Double_t xming[Ndimg] = {  0,  Qmin};
+  const Double_t xmaxg[Ndimg] = { 50,  Qmax};
   //+/-0.3 is optimized for centrality 10-30, 30-50.
 
-  //const Int_t Ndimg = 2;
-  //const Int_t Nbing[Ndimg]    = {500, 12};
-  //const Double_t xming[Ndimg] = {  0, -1};
-  //const Double_t xmaxg[Ndimg] = { 50,  1};
-
   //photon pT
-  THnSparseF *hs_Photon = new THnSparseF("hSparsePhoton",Form("Photon;p_{T} (GeV/c);cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndimg,Nbing,xming,xmaxg);
+  THnSparseF *hs_Photon = new THnSparseF("hSparsePhoton",Form("Photon;p_{T} (GeV/c);%s;",axistitle.Data()),Ndimg,Nbing,xming,xmaxg);
   hs_Photon->Sumw2();
   fOutputContainer->Add(hs_Photon);
 
-  THnSparseF *hs_Photon_TOF = new THnSparseF("hSparsePhoton_TOF",Form("Photon with TOF;p_{T} (GeV/c);cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndimg,Nbing,xming,xmaxg);
+  THnSparseF *hs_Photon_TOF = new THnSparseF("hSparsePhoton_TOF",Form("Photon with TOF;p_{T} (GeV/c);%s;",axistitle.Data()),Ndimg,Nbing,xming,xmaxg);
   hs_Photon_TOF->Sumw2();
   fOutputContainer->Add(hs_Photon_TOF);
 
-  const TString Asym[] = {"","_asym08"};
-  const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
+  const Int_t Ndim = 4;
+  const Int_t Nbin[Ndim]    = { 240, 500, 10, NbinQ};
+  const Double_t xmin[Ndim] = {   0,   0,  0,  Qmin};
+  const Double_t xmax[Ndim] = {0.96,  50,  1,  Qmax};
 
-  const Int_t Ndim = 6;
-  const Int_t Nbin[Ndim]    = { 240, 500, 10, 12,   30,   30};
-  const Double_t xmin[Ndim] = {   0,   0,  0, -1, -0.3, -0.3};
-  const Double_t xmax[Ndim] = {0.96,  50,  1,  1,  0.3,  0.3};
-
-  const Int_t Ndim_mix = 4;//it is meaningless to compute SP mixed event;
-  const Int_t Nbin_mix[Ndim_mix]    = { 240, 500, 10, 12};
-  const Double_t xmin_mix[Ndim_mix] = {   0,   0,  0, -1};
-  const Double_t xmax_mix[Ndim_mix] = {0.96,  50,  1,  1};
-
-  //same event
-  THnSparseF *hs_Mgg = new THnSparseF("hSparseMgg",Form("M_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim,Nbin,xmin,xmax);
+  //same event for pi0 region
+  THnSparseF *hs_Mgg = new THnSparseF("hSparseMgg",Form("M_{#gamma#gamma};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;%s;",axistitle.Data()),Ndim,Nbin,xmin,xmax);
   hs_Mgg->Sumw2();
   fOutputContainer->Add(hs_Mgg);
 
-  THnSparseF *hs_Mgg_TOF = new THnSparseF("hSparseMgg_TOF",Form("M_{#gamma#gamma} with TOF;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim,Nbin,xmin,xmax);
+  THnSparseF *hs_Mgg_TOF = new THnSparseF("hSparseMgg_TOF",Form("M_{#gamma#gamma} with TOF;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;%s;",axistitle.Data()),Ndim,Nbin,xmin,xmax);
   hs_Mgg_TOF->Sumw2();
   fOutputContainer->Add(hs_Mgg_TOF);
 
-  //mixed event
-  THnSparseF *hs_MixMgg = new THnSparseF("hSparseMixMgg",Form("M_{#gamma#gamma}^{mix};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim_mix,Nbin_mix,xmin_mix,xmax_mix);
+  //mixed event for pi0 region
+  THnSparseF *hs_MixMgg = new THnSparseF("hSparseMixMgg",Form("M_{#gamma#gamma}^{mix};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;%s;",axistitle.Data()),Ndim,Nbin,xmin,xmax);
   hs_MixMgg->Sumw2();
   fOutputContainer->Add(hs_MixMgg);
 
-  THnSparseF *hs_MixMgg_TOF = new THnSparseF("hSparseMixMgg_TOF",Form("M_{#gamma#gamma}^{mix} with TOF;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;cos(%d #Delta#phi);#vec{u} #upoint #vec{Q_{%d A}};#vec{u} #upoint #vec{Q_{%d C}};",fHarmonics,fHarmonics,fHarmonics),Ndim_mix,Nbin_mix,xmin_mix,xmax_mix);
+  THnSparseF *hs_MixMgg_TOF = new THnSparseF("hSparseMixMgg_TOF",Form("M_{#gamma#gamma}^{mix} with TOF;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);asymmetry;%s;",axistitle.Data()),Ndim,Nbin,xmin,xmax);
   hs_MixMgg_TOF->Sumw2();
   fOutputContainer->Add(hs_MixMgg_TOF);
 
-  ////Mgg vs. pT histogram
-  //for(Int_t iasym=0;iasym<Nasym;iasym++){
-  //  TH3F *h3_EP  = new TH3F(Form("hMgg_EP%s" ,Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
-  //  TH3F *h3_SP1 = new TH3F(Form("hMgg_SP1%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
-  //  TH3F *h3_SP2 = new TH3F(Form("hMgg_SP2%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dc}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
-  //  h3_EP ->Sumw2();
-  //  h3_SP1->Sumw2();
-  //  h3_SP2->Sumw2();
-  //  fOutputContainer->Add(h3_EP);
-  //  fOutputContainer->Add(h3_SP1);
-  //  fOutputContainer->Add(h3_SP2);
+  if(fAnaOmega3Pi){
 
-  //  TH3F *h3_TOF_EP  = new TH3F(Form("hMgg_EP_TOF%s" ,Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
-  //  TH3F *h3_TOF_SP1 = new TH3F(Form("hMgg_SP1_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
-  //  TH3F *h3_TOF_SP2 = new TH3F(Form("hMgg_SP2_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dc}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
-  //  h3_TOF_EP ->Sumw2();
-  //  h3_TOF_SP1->Sumw2();
-  //  h3_TOF_SP2->Sumw2();
-  //  fOutputContainer->Add(h3_TOF_EP );
-  //  fOutputContainer->Add(h3_TOF_SP1);
-  //  fOutputContainer->Add(h3_TOF_SP2);
+    const Int_t Ndim_omega = 4;
+    const Int_t Nbin_omega[Ndim_omega]    = { 240, 500, 10, NbinQ};
+    const Double_t xmin_omega[Ndim_omega] = { 0.4,   0,  0,  Qmin};
+    const Double_t xmax_omega[Ndim_omega] = {1.36,  50,  1,  Qmax};
 
-  //  TH3F *h3Mix_EP  = new TH3F(Form("hMixMgg_EP%s" ,Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
-  //  TH3F *h3Mix_SP1 = new TH3F(Form("hMixMgg_SP1%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
-  //  TH3F *h3Mix_SP2 = new TH3F(Form("hMixMgg_SP2%s",Asym[iasym].Data()),Form("Invariant Mass with 2#gamma;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dc}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
-  //  h3Mix_EP ->Sumw2();
-  //  h3Mix_SP1->Sumw2();
-  //  h3Mix_SP2->Sumw2();
-  //  fOutputContainer->Add(h3Mix_EP);
-  //  fOutputContainer->Add(h3Mix_SP1);
-  //  fOutputContainer->Add(h3Mix_SP2);
+    //same event
+    THnSparseF *hs_M3pi = new THnSparseF("hSparseM3pi",Form("M_{#pi^{0}#pi^{+}#pi^{-}};M_{#pi^{0}#pi^{+}#pi^{-}} (GeV/c^{2});p_{T} (GeV/c);asymmetry;%s;",axistitle.Data()),Ndim_omega,Nbin_omega,xmin_omega,xmax_omega);
+    hs_M3pi->Sumw2();
+    fOutputContainer->Add(hs_M3pi);
 
-  //  TH3F *h3Mix_TOF_EP  = new TH3F(Form("hMixMgg_EP_TOF%s" ,Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);cos(%d #Delta#phi)"           ,fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nphi-1,phibin);
-  //  TH3F *h3Mix_TOF_SP1 = new TH3F(Form("hMixMgg_SP1_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dA}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
-  //  TH3F *h3Mix_TOF_SP2 = new TH3F(Form("hMixMgg_SP2_TOF%s",Asym[iasym].Data()),Form("Invariant Mass of 2#gamma with TOF cut;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);#vec{u} #upoint #vec{Q_{%dc}}",fHarmonics),Nm-1,mgg,NpTgg-1,pTgg,Nsp-1,spbin);
-  //  h3Mix_TOF_EP ->Sumw2();
-  //  h3Mix_TOF_SP1->Sumw2();
-  //  h3Mix_TOF_SP2->Sumw2();
-  //  fOutputContainer->Add(h3Mix_TOF_EP );
-  //  fOutputContainer->Add(h3Mix_TOF_SP1);
-  //  fOutputContainer->Add(h3Mix_TOF_SP2);
+    THnSparseF *hs_M3pi_TOF = new THnSparseF("hSparseM3pi_TOF",Form("M_{#pi^{0}#pi^{+}#pi^{-}} with TOF;M_{#pi^{0}#pi^{+}#pi^{-}} (GeV/c^{2});p_{T} (GeV/c);asymmetry;%s;",axistitle.Data()),Ndim_omega,Nbin_omega,xmin_omega,xmax_omega);
+    hs_M3pi_TOF->Sumw2();
+    fOutputContainer->Add(hs_M3pi_TOF);
 
-  //}//end of asymmetry loop
+  }
 
   //<- histograms for physics analysis
 
@@ -535,7 +589,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod2=imod1;imod2<Nmod;imod2++){
       if(imod2 - imod1 > 1) continue;
 
-      TH2F *h2 = new TH2F(Form("hMgg_M%d%d",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",60,0,0.24,NpTggModule-1,pTggModule);
+      TH2F *h2 = new TH2F(Form("hMgg_M%d%d",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",180,0,0.72,NpTggModule-1,pTggModule);
       h2->Sumw2();
       fOutputContainer->Add(h2);
     }
@@ -544,17 +598,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod2=imod1;imod2<Nmod;imod2++){
       if(imod2 - imod1 > 1) continue;
 
-      TH2F *h2 = new TH2F(Form("hMixMgg_M%d%d",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",60,0,0.24,NpTggModule-1,pTggModule);
-      h2->Sumw2();
-      fOutputContainer->Add(h2);
-    }
-  }
-
-  for(Int_t imod1=1;imod1<Nmod;imod1++){
-    for(Int_t imod2=imod1;imod2<Nmod;imod2++){
-      if(imod2 - imod1 > 1) continue;
-
-      TH2F *h2 = new TH2F(Form("hMgg_M%d%d_TOF",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",60,0,0.24,NpTggModule-1,pTggModule);
+      TH2F *h2 = new TH2F(Form("hMixMgg_M%d%d",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",180,0,0.72,NpTggModule-1,pTggModule);
       h2->Sumw2();
       fOutputContainer->Add(h2);
     }
@@ -564,28 +608,61 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     for(Int_t imod2=imod1;imod2<Nmod;imod2++){
       if(imod2 - imod1 > 1) continue;
 
-      TH2F *h2 = new TH2F(Form("hMixMgg_M%d%d_TOF",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",60,0,0.24,NpTggModule-1,pTggModule);
+      TH2F *h2 = new TH2F(Form("hMgg_M%d%d_TOF",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",180,0,0.72,NpTggModule-1,pTggModule);
       h2->Sumw2();
       fOutputContainer->Add(h2);
     }
+  }
+
+  for(Int_t imod1=1;imod1<Nmod;imod1++){
+    for(Int_t imod2=imod1;imod2<Nmod;imod2++){
+      if(imod2 - imod1 > 1) continue;
+
+      TH2F *h2 = new TH2F(Form("hMixMgg_M%d%d_TOF",imod1,imod2),"M_{#gamma#gamma} vs p_{T}",180,0,0.72,NpTggModule-1,pTggModule);
+      h2->Sumw2();
+      fOutputContainer->Add(h2);
+    }
+  }
+  //for PID cut study
+
+  if(fPIDStudy){
+    const Int_t Ndim_PID = 5;
+    const Int_t Nbin_PID[Ndim_PID]    = { 180, 500,   50, 50, 50};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
+    const Double_t xmin_PID[Ndim_PID] = {   0,   0,  0.5,  0,  0};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
+    const Double_t xmax_PID[Ndim_PID] = {0.72,  50, 50.5,  5,  5};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
+
+    //same event for PID study at low pT
+    THnSparseF *hs_Mgg_PID = new THnSparseF("hSparseMgg_PID","M_{#gamma#gamma} for PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV);N_{cell};M20 (cm);M02 (cm);",Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
+    hs_Mgg_PID->Sumw2();
+    fOutputContainer->Add(hs_Mgg_PID);
+
+    //mixed event for PID study at low pT
+    THnSparseF *hs_MixMgg_PID = new THnSparseF("hSparseMixMgg_PID","M_{#gamma#gamma}^{mix} for PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV);N_{cell};M020 (cm);M02 (cm);",Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
+    hs_MixMgg_PID->Sumw2();
+    fOutputContainer->Add(hs_MixMgg_PID);
   }
 
   //for PID cut efficiency
-  TH2F *h2_p_PID = new TH2F("hMgg_Probe_PID"              ,"Probe #gamma PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV)"            ,60,0,0.24,NpTgg-1,pTgg);
+  const TString PIDtype[4] = {"noPID","CPV","Disp","PID"};//str PID is for main PID cut efficiency used in this analysis
+
+  TH2F *h2_p_PID     = new TH2F(Form("hMgg_Probe_%s"          ,PIDtype[3].Data()),Form("Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"            ,PIDtype[3].Data()),180,0,0.72,NpTgg-1,pTgg);
   h2_p_PID->Sumw2();
   fOutputContainer->Add(h2_p_PID);
-
-  TH2F *h2_pp_PID = new TH2F("hMgg_PassingProbe_PID"      ,"Passing Probe #gamma PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV)"    ,60,0,0.24,NpTgg-1,pTgg);
-  h2_pp_PID->Sumw2();
-  fOutputContainer->Add(h2_pp_PID);
-
-  TH2F *h2mix_p_PID = new TH2F("hMixMgg_Probe_PID"        ,"Mix Probe #gamma PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV)"        ,60,0,0.24,NpTgg-1,pTgg);
+  TH2F *h2mix_p_PID  = new TH2F(Form("hMixMgg_Probe_%s"       ,PIDtype[3].Data()),Form("Mix Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"        ,PIDtype[3].Data()),180,0,0.72,NpTgg-1,pTgg);
   h2mix_p_PID->Sumw2();
   fOutputContainer->Add(h2mix_p_PID);
+  for(Int_t ip=1;ip<4;ip++){
 
-  TH2F *h2mix_pp_PID = new TH2F("hMixMgg_PassingProbe_PID","Mix Passing Probe #gamma PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV)",60,0,0.24,NpTgg-1,pTgg);
-  h2mix_pp_PID->Sumw2();
-  fOutputContainer->Add(h2mix_pp_PID);
+    TH2F *h2_pp_PID    = new TH2F(Form("hMgg_PassingProbe_%s"   ,PIDtype[ip].Data()),Form("Passing Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"    ,PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
+    TH2F *h2mix_pp_PID = new TH2F(Form("hMixMgg_PassingProbe_%s",PIDtype[ip].Data()),Form("Mix Passing Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
+
+    h2_pp_PID->Sumw2();
+    fOutputContainer->Add(h2_pp_PID);
+
+    h2mix_pp_PID->Sumw2();
+    fOutputContainer->Add(h2mix_pp_PID);
+
+  }//end of PID loop
 
   //for TOF cut efficiency
   TH2F *h2_p_TOF = new TH2F("hMgg_Probe_TOF"              ,"Probe #gamma TOF;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV)"            ,60,0,0.24,NpTgg-1,pTgg);
@@ -604,19 +681,77 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   h2mix_pp_TOF->Sumw2();
   fOutputContainer->Add(h2mix_pp_TOF);
 
+  //for photon purity by DDA
 
-  if(fIsPHOSTriggerAnalysis){
+  for(Int_t ip=0;ip<4;ip++){
+    TH1F *h1PhotonPt = new TH1F(Form("hPhotonPt_%s",PIDtype[ip].Data()),Form("#gamma p_{T} %s;p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),NpTgg-1,pTgg);
+    h1PhotonPt->Sumw2();
+    fOutputContainer->Add(h1PhotonPt);
+  }//end of PID loop
+
+  const TString PIDName[] = {"Electron","Pion","Kaon","Proton","AntiProton","K0L","Neutron","AntiNeutron","Gamma","Others"};//AntiProton is needed for antineutron study.
+  const Int_t Npid = sizeof(PIDName)/sizeof(PIDName[0]);
+
+  for(Int_t ip=0;ip<5;ip++){
+    fOutputContainer->Add(new TH2F(Form("hRvsTrackPt_%s"     ,PIDName[ip].Data()),Form("r vs track p_{T} %s;p_{T}^{track} (GeV/c);cpv (#sigma)"    ,PIDName[ip].Data()),500,0,50,200,0,20));
+    fOutputContainer->Add(new TH2F(Form("hRvsClusterPt_%s"   ,PIDName[ip].Data()),Form("r vs cluster p_{T} %s;p_{T}^{cluster} (GeV/c);cpv (#sigma)",PIDName[ip].Data()),500,0,50,200,0,20));
+    fOutputContainer->Add(new TH2F(Form("hMixRvsTrackPt_%s"  ,PIDName[ip].Data()),Form("r vs track p_{T} %s;p_{T}^{track} (GeV/c);cpv (#sigma)"    ,PIDName[ip].Data()),500,0,50,200,0,20));
+    fOutputContainer->Add(new TH2F(Form("hMixRvsClusterPt_%s",PIDName[ip].Data()),Form("r vs cluster p_{T} %s;p_{T}^{cluster} (GeV/c);cpv (#sigma)",PIDName[ip].Data()),500,0,50,200,0,20));
+  }
+
+  for(Int_t ip=0;ip<5;ip++){
+    TH1F *h1noPID = new TH1F(Form("hMatched%s",PIDName[ip].Data()),Form("p_{T} of %s in clusters for purity no PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+    h1noPID->Sumw2();
+    fOutputContainer->Add(h1noPID);
+    
+    TH1F *h1PID = new TH1F(Form("hMatched%s_Disp",PIDName[ip].Data()),Form("p_{T} of %s in clusters for purity Disp;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+    h1PID->Sumw2();
+    fOutputContainer->Add(h1PID);
+  };
+
+  const TString str[4] = {"L0","L1L","L1M","L1H"};
+  TH1F *h1all = new TH1F("hAllClusterEnergy","all cluster energy;E_{cluster} (GeV)",500,0,50);//for MB
+  h1all->Sumw2();
+  fOutputContainer->Add(h1all);
+
+  TH1F *h1all_GT = new TH1F("hAllClusterEnergyGoodTRU","allcluster energy on good TRU;E_{cluster} (GeV)",500,0,50);//for MB
+  h1all_GT->Sumw2();
+  fOutputContainer->Add(h1all_GT);
+
+  for(Int_t it=0;it<4;it++){
+    TH1F *h1matched = new TH1F(Form("hMatchedClusterEnergy%s",str[it].Data()),"matched cluster energy;E_{cluster} (GeV)",500,0,50);//for MB
+    h1matched->Sumw2();
+    fOutputContainer->Add(h1matched);
+  }//end of trigger type loop
+
+  for(Int_t imod=1;imod<Nmod;imod++){
+    for(Int_t itru=1;itru<=Ntru;itru++){
+      TH1F *h1all_mt     = new TH1F(Form("hAllClusterEnergyM%dTRU%d",imod,itru)    ,Form("all cluster energy M%d TRU%d;E_{cluster} (GeV)",imod,itru)    ,500,0,50);//for MB
+      h1all_mt->Sumw2();
+      fOutputContainer->Add(h1all_mt);
+    }//end of TRU loop
+  }//end of module loop
+
+  for(Int_t it=0;it<4;it++){
+    for(Int_t imod=1;imod<Nmod;imod++){
+      for(Int_t itru=1;itru<=Ntru;itru++){
+
+        TH1F *h1matched_mt = new TH1F(Form("hMatchedClusterEnergy%sM%dTRU%d",str[it].Data(),imod,itru),Form("matched cluster energy %s M%d TRU%d;E_{cluster} (GeV)",str[it].Data(),imod,itru),500,0,50);//for MB
+        h1matched_mt->Sumw2();
+        fOutputContainer->Add(h1matched_mt);
+
+      }//end of TRU loop
+    }//end of module loop
+  }//end of trigger type loop
+
+  if(fIsPHOSTriggerAnalysis){//for your trigger configuration
 
     //for Trigger QA
     fOutputContainer->Add(new TH1F("hNFiredTRUChannel","Fired TRU channel per event",101,-0.5,100.5));
     for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hFiredTRUChannelM%d",imod),Form("Fired TRU channel M%d",imod),64,0.5,64.5, 56,0.5,56.5));
     for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH3F(Form("hMatchedFiredTRUChannelM%d",imod),Form("Fired TRU channel M%d",imod),64,0.5,64.5, 56,0.5,56.5,100,0,50));
 
-    const Int_t Ntru=8;
     for(Int_t imod=1;imod<Nmod;imod++){
-      fOutputContainer->Add(new TH1F(Form("hClusterEnergyM%d",imod)       ,Form("cluster energy M%d",imod),500,0,50));
-      fOutputContainer->Add(new TH1F(Form("hMatchedClusterEnergyM%d",imod),Form("cluster energy M%d",imod),500,0,50));
-
       fOutputContainer->Add(new TH3F(Form("hClusterHitM%d",imod)       ,Form("cluster hit M%d",imod)         ,64,0.5,64.5,56,0.5,56.5,100,0,50));
       fOutputContainer->Add(new TH3F(Form("hMatchedClusterHitM%d",imod),Form("matched cluster hit M%d",imod) ,64,0.5,64.5,56,0.5,56.5,100,0,50));
 
@@ -703,8 +838,23 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   }//fIsPHOSTriggerAnalysis ends
 
+  if(fIsOAStudy){
+    //opening angle cut study
+    TH3F *h3MggvsPt_OA = new TH3F("hMgg_OA","M_{#gamma#gamma} for opening angle;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);opening angle (mrad.)" ,180,0,0.72,100,0,100,20,0,20);
+    h3MggvsPt_OA->Sumw2();
+    fOutputContainer->Add(h3MggvsPt_OA);
+
+    TH3F *h3MixMggvsPt_OA = new TH3F("hMixMgg_OA","M_{#gamma#gamma} for opening angle;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);opening angle (mrad.)" ,180,0,0.72,100,0,100,20,0,20);
+    h3MixMggvsPt_OA->Sumw2();
+    fOutputContainer->Add(h3MixMggvsPt_OA);
+  }
+
   if(fIsMC){
-    const TString parname[] = {"Pi0","Eta","Gamma","ChargedPion","ChargedKaon","K0S","K0L","Lambda0","Sigma0"};
+
+    //fOutputContainer->Add(new TH1F("hPDGPhysicalPrimary","PDG code of Phyical Primary",8001,-4000-0.5,4000+0.5));
+    //fOutputContainer->Add(new TH1F("hPDGPhysicalPrimaryStable","PDG code of Phyical Primary",8001,-4000-0.5,4000+0.5));
+
+    const TString parname[] = {"Pi0","Eta","Gamma","Omega","ChargedPion","ChargedKaon","K0S","K0L","Lambda0","Sigma0","Proton","AntiProton","Neutron","AntiNeutron"};
     const Int_t Npar = sizeof(parname)/sizeof(parname[0]);
 
     for(Int_t ipar=0;ipar<Npar;ipar++){
@@ -712,29 +862,92 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
       h1Pt->Sumw2();
       fOutputContainer->Add(h1Pt);
 
-      TH2F *h2EtaPhi = new TH2F(Form("hGen%sEtaPhi",parname[ipar].Data()),Form("generated %s eta vs phi;#phi;#eta (rad)",parname[ipar].Data()),60,0,TwoPi,200,-1,1);
+      TH2F *h2EtaPhi = new TH2F(Form("hGen%sEtaPhi",parname[ipar].Data()),Form("generated %s y vs phi;#phi (rad);rapidity",parname[ipar].Data()),60,0,TwoPi,200,-1,1);
       h2EtaPhi->Sumw2();
       fOutputContainer->Add(h2EtaPhi);
 
-      TH2F *h2EtaPt = new TH2F(Form("hGen%sEtaPt",parname[ipar].Data()),Form("generated %s eta vs pT;#eta;p_{T} (GeV/c)",parname[ipar].Data()),200,-1,1,NpTgg-1,pTgg);
+      TH2F *h2EtaPt = new TH2F(Form("hGen%sEtaPt",parname[ipar].Data()),Form("generated %s y vs pT;rapidity;p_{T} (GeV/c)",parname[ipar].Data()),200,-1,1,NpTgg-1,pTgg);
       h2EtaPt->Sumw2();
       fOutputContainer->Add(h2EtaPt);
 
+      if(parname[ipar]=="Pi0" || parname[ipar]=="Eta"){
+        //check detector acceptance
+        //these histograms are filled only when 2 gammas are in PHOS acceptance.
+
+        TH1F *h1PtACC = new TH1F(Form("hGen%sPtACC",parname[ipar].Data()),Form("generated %s pT;p_{T} (GeV/c)",parname[ipar].Data()),NpTgg-1,pTgg);
+        h1PtACC->Sumw2();
+        fOutputContainer->Add(h1PtACC);
+
+        TH2F *h2EtaPhiACC = new TH2F(Form("hGen%sEtaPhiACC",parname[ipar].Data()),Form("generated %s y vs phi;#phi (rad);rapidity",parname[ipar].Data()),60,0,TwoPi,200,-1,1);
+        h2EtaPhiACC->Sumw2();
+        fOutputContainer->Add(h2EtaPhiACC);
+
+        TH2F *h2EtaPtACC = new TH2F(Form("hGen%sEtaPtACC",parname[ipar].Data()),Form("generated %s y vs pT;rapidity;p_{T} (GeV/c)",parname[ipar].Data()),200,-1,1,NpTgg-1,pTgg);
+        h2EtaPtACC->Sumw2();
+        fOutputContainer->Add(h2EtaPtACC);
+      }
+
     }//end of particle loop
 
-    TH1F *h1TrueGamma = new TH1F("hPurityGamma","pT of true photon in clusters for purity;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueGamma->Sumw2();
-    fOutputContainer->Add(h1TrueGamma);
+
+    //const TString PIDtype[4] = {"noPID","CPV","Disp","PID"};//str PID is for main PID cut efficiency used in this analysis
+    //for purity based on MC truth
+    for(Int_t ip=0;ip<Npid;ip++){
+      for(Int_t jp=0;jp<4;jp++){
+
+        TH1F *h1purity = new TH1F(Form("hPurity%s_%s",PIDName[ip].Data(),PIDtype[jp].Data()),Form("p_{T} of true %s in clusters for purity %s;p_{T} (GeV/c)",PIDName[ip].Data(),PIDtype[jp].Data()),NpTgg-1,pTgg);
+        h1purity->Sumw2();
+        fOutputContainer->Add(h1purity);
+
+      }
+    }
+
+    //converted electrons.
+    for(Int_t jp=0;jp<4;jp++){
+      TH1F *h1purity_lce = new TH1F(Form("hPurityLCE_%s",PIDtype[jp].Data()),Form("p_{T} of true late conversion Electron in clusters for purity %s;p_{T} (GeV/c)",PIDtype[jp].Data()),NpTgg-1,pTgg);
+      h1purity_lce->Sumw2();
+      fOutputContainer->Add(h1purity_lce);
+    }
+
+    for(Int_t jp=0;jp<4;jp++){
+      TH2F *h2e = new TH2F(Form("hElectronRxy_%s",PIDtype[jp].Data()),Form("p_{T} of true Electron in clusters for purity %s vs. V_{prod};p_{T} (GeV/c);R_{xy} (cm)",PIDtype[jp].Data()),NpTgg-1,pTgg,500,0,500);
+      h2e->Sumw2();
+      fOutputContainer->Add(h2e);
+
+      TH2F *h2ce = new TH2F(Form("hConvertedElectronRxy_%s",PIDtype[jp].Data()),Form("p_{T} of true converted Electron in clusters for purity %s vs. V_{prod};p_{T} (GeV/c);R_{xy} (cm)",PIDtype[jp].Data()),NpTgg-1,pTgg,500,0,500);
+      h2ce->Sumw2();
+      fOutputContainer->Add(h2ce);
+    }
+   
+
+    //for feed down correction
+    TH1F *h1gamma_K0S = new TH1F("hGammaFromK0S","#gamma from K^{0}_{S};p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1gamma_K0S->Sumw2();
+    fOutputContainer->Add(h1gamma_K0S);
+    TH1F *h1gamma_L0 = new TH1F("hGammaFromL0","#gamma from #Lambda;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1gamma_L0->Sumw2();
+    fOutputContainer->Add(h1gamma_L0);
+    TH1F *h1gamma_S0 = new TH1F("hGammaFromS0","#gamma from #Sigma^{0};p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1gamma_S0->Sumw2();
+    fOutputContainer->Add(h1gamma_S0);
+
+    const TString Asym[] = {"","_asym08"};
+    const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
 
     for(Int_t iasym=0;iasym<Nasym;iasym++){
-      TH2F *h2 = new TH2F(Form("hMggFromK0S%s",Asym[iasym].Data()),"M_{#gamma#gamma} from K_{S}^{0};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",240,0,0.96,NpTgg-1,pTgg);
+      TH2F *h2 = new TH2F(Form("hMggFromPi0%s",Asym[iasym].Data()),"M_{#gamma#gamma} from #pi^{0};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",60,0,0.24,NpTgg-1,pTgg);
       h2->Sumw2();
       fOutputContainer->Add(h2);
-
     }//end of asym loop
 
     for(Int_t iasym=0;iasym<Nasym;iasym++){
-      TH2F *h2 = new TH2F(Form("hMggFromLambda0%s",Asym[iasym].Data()),"M_{#gamma#gamma} from K_{S}^{0};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);",240,0,0.96,NpTgg-1,pTgg);
+      TH2F *h2 = new TH2F(Form("hMggFromK0S%s",Asym[iasym].Data()),"M_{#gamma#gamma} from K_{S}^{0};M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",60,0,0.24,NpTgg-1,pTgg);
+      h2->Sumw2();
+      fOutputContainer->Add(h2);
+    }//end of asym loop
+
+    for(Int_t iasym=0;iasym<Nasym;iasym++){
+      TH2F *h2 = new TH2F(Form("hMggFromLambda0%s",Asym[iasym].Data()),"M_{#gamma#gamma} from #Lambda;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);",60,0,0.24,NpTgg-1,pTgg);
       h2->Sumw2();
       fOutputContainer->Add(h2);
 
@@ -750,25 +963,30 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
           Double_t a = -0.09 + 0.01*ia;
           Double_t b =  0.4  + 0.1 *ib;
 
-          fNonLin[ia][ib] = new TF1(Form("fNonLin_a%d_b%d",ia,ib),"1.0*(1. + [0] / (1. + TMath::Power(x/[1],2)))",0,100);
+          fNonLin[ia][ib] = new TF1(Form("fNonLin_a%d_b%d",ia,ib),"[2]*(1. + [0] / (1. + TMath::Power(x/[1],2)))",0,100);
           fNonLin[ia][ib]->SetParNames("a","b (GeV)");
           fNonLin[ia][ib]->FixParameter(0,a);
           fNonLin[ia][ib]->FixParameter(1,b);
-
-          fOutputContainer->Add(new TH2F(Form("hMgg_a%d_b%d",ia,ib)   ,Form("M_{#gamma#gamma} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b)      ,240,0,0.96,NpTgg-1,pTgg));
-          fOutputContainer->Add(new TH2F(Form("hMixMgg_a%d_b%d",ia,ib),Form("M_{#gamma#gamma}^{mix} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b),240,0,0.96,NpTgg-1,pTgg));
+          fNonLin[ia][ib]->FixParameter(2,fGlobalEScale);
+ 
+          TH2F *h2same_NL = new TH2F(Form("hMgg_a%d_b%d",ia,ib)   ,Form("M_{#gamma#gamma} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b)      ,240,0,0.96,NpTgg-1,pTgg);
+          TH2F *h2mix_NL  = new TH2F(Form("hMixMgg_a%d_b%d",ia,ib),Form("M_{#gamma#gamma}^{mix} vs. p_{T} a = %3.2f , b = %3.2f;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c)",a,b),240,0,0.96,NpTgg-1,pTgg);
+          h2same_NL->Sumw2();
+          h2mix_NL ->Sumw2();
+ 
+          fOutputContainer->Add(h2same_NL);
+          fOutputContainer->Add(h2mix_NL);
         }//end of ib
       }//end of ia
     }
 
     //for JJMC
     if(fIsJJMC){
-      fOutputContainer->Add(new TH1F("hPtHard","pT hard in GeV/c",1000,0,1000));
-      fOutputContainer->Add(new TH1F("hNTrial","nTrial",20,0.5,20.5));
-      fOutputContainer->Add(new TProfile("hProfCrossSection","inelastic cross section",20,0.5,20.5));
+      fOutputContainer->Add(new TH1F("hPtHard","pT hard in GeV/c;p_{T} hard (GeV/c)",1000,0,1000));
+      fOutputContainer->Add(new TH1F("hNTrial","nTrial;p_{T} hard bin",20,0.5,20.5));
+      fOutputContainer->Add(new TProfile("hProfCrossSection","inelastic cross section;p_{T} hard bin;<#sigma^{INEL}>",20,0.5,20.5));
 
       TH1F *hNMerged = new TH1F("hNMerged","N merged",20,0.5,20.5);
-      //hNMerged->Fill(fPtHardBin);
       hNMerged->SetYTitle("number of merged files");
       fOutputContainer->Add(hNMerged);
     }//end of IsJJMC
@@ -812,28 +1030,71 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   fESDEvent = dynamic_cast<AliESDEvent*>(fEvent);
   fAODEvent = dynamic_cast<AliAODEvent*>(fEvent);
 
+  //select event which PHOS was readout from trigger cluster point of view.
+  //for example, PHOS is not in MUFAST cluster.
+  TString trigClasses = fEvent->GetFiredTriggerClasses();
+  //printf("%s\n",trigClasses.Data());
+  if(!fIsMC 
+      && !trigClasses.Contains("-CENT") //accept CENT, CENTNO[TRD|PMD]
+      && !trigClasses.Contains("-FAST") //accept FAST, not MUFAST
+      && !trigClasses.Contains("-CALO") //accept CALO, CALOFAST
+    ){
+    AliWarning(Form("Skip event with triggers %s",trigClasses.Data()));
+    return;
+  }
+
+  fPIDResponse = fInputHandler->GetPIDResponse();
+  if(!fPIDResponse){
+    AliFatal("fPIDResponse does not exist!");
+    return;
+  }
+
+  if(fRunNumber != fEvent->GetRunNumber()){ // Check run number
+    fRunNumber = fEvent->GetRunNumber();
+    fPHOSGeo = GetPHOSGeometry();
+  }
+
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
 
   //reject pile up by physics selection
   if(!fIsPHOSTriggerAnalysis && !isINT7selected){
-    AliInfo("INT7 Event is rejected by IsEventSelected()");
+    AliInfo("INT7 Event is rejected by physics selection.");
     return;
   }
 
-  Bool_t isPHI7selected = fSelectMask & AliVEvent::kPHI7;
+  //Bool_t isPHI7selected = fSelectMask & AliVEvent::kPHI7;
+  Bool_t isPHI7selected = fSelectMask & (AliVEvent::kPHI7|AliVEvent::kCaloOnly);
   if(!fIsMC && fIsPHOSTriggerAnalysis && !isPHI7selected){
-    AliInfo("PHI7 Event is rejected by IsEventSelected()");
+    AliInfo("PHI7 Event is rejected by physics selection.");
     return;
   }
 
-  FillHistogramTH1(fOutputContainer,"hEventSummary",1);//all
+  Int_t L0input  = 17;//for LHC17
+  Int_t L1Hinput = 7;
+  Int_t L1Minput = 6;
+  Int_t L1Linput = 5;
+  if(fRunNumber <= 246994)  L0input = 9;//for LHC15
+
+  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (L0input  - 1);//trigger input -1
+  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Hinput - 1);//trigger input -1
+  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Minput - 1);//trigger input -1
+  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Linput - 1);//trigger input -1
+
+  //As of 20180617, PHI7 in [CALO/CALOFAST] is moved AliVEvent::kCaloOnly (or AliVEvent::kMuonCalo).
+  //EMC triggers and PHOS triggers are merged to 1 bit.
+  //First, select PHOS triggered event by bit operation
+  if(!fIsMC && fIsPHOSTriggerAnalysis && 
+      (!Is0PH0fired && !Is1PHHfired && !Is1PHMfired && !Is1PHLfired)
+    ){
+    AliInfo("PHI7 Event is rejected by bit operation.");
+    return;
+  }
 
   const AliVVertex *vVertex = fEvent->GetPrimaryVertex();
   fVertex[0] = vVertex->GetX();
   fVertex[1] = vVertex->GetY();
   fVertex[2] = vVertex->GetZ();
-  FillHistogramTH1(fOutputContainer,"hVertexZ" ,fVertex[2]);
   fZvtx = (Int_t)((fVertex[2]+10.)/2.);//it should be 0-9.
   if(fZvtx < 0) fZvtx = 0;//protection to avoid fZvtx = -1.
   if(fZvtx > 9) fZvtx = 9;//protection to avoid fZvtx = 10.
@@ -858,6 +1119,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
     fJJMCHandler = new AliPHOSJetJetMC(pThardbin);
     fJJMCHandler->ConfigureJetJetMC(fEvent);//this should be called in each event to get pythia event header
+
+    if(fPtHardAndJetPtFactor > 0)    fJJMCHandler->SetJetPtFactor(fPtHardAndJetPtFactor);
+    if(fPtHardAndSinglePtFactor > 0) fJJMCHandler->SetSingleParticlePtFactor(fPtHardAndSinglePtFactor);
 
     AliMCEvent *mcevent = MCEvent();
     AliGenPythiaEventHeader* pythiaGenHeader = 0x0;
@@ -954,6 +1218,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     return;
   }
 
+  FillHistogramTH1(fOutputContainer,"hEventSummary",1);//all
+  FillHistogramTH1(fOutputContainer,"hVertexZ" ,fVertex[2]);
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsNContributor",fEstimator.Data()),fCentralityMain,Ncontributor);
 
   fPHOSClusterArray = (TClonesArray*)fEvent->FindListObject("PHOSClusterArray");
@@ -962,108 +1228,53 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     return;
   }
 
+  if(!fIsMC && !fIsPHOSTriggerAnalysis && (244917 <= fRunNumber && fRunNumber <= 246994)){
+    //only for PbPb MB analysis
+    const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+    Int_t NclusterTOF = 0;
+    for(Int_t i1=0;i1<multClust;i1++){
+      AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+      if(!CheckMinimumEnergy(ph)) continue;
+
+      if(ph->IsTOFOK()) NclusterTOF++;
+
+    }//end of cluster loop
+
+    AliVVZERO *V0info = (AliVVZERO*)fEvent->GetVZEROData();
+    Float_t mtotV0A = V0info->GetMTotV0A();
+    Float_t mtotV0C = V0info->GetMTotV0C();
+    Float_t mtotV0 = mtotV0A + mtotV0C;
+    if(NclusterTOF < 1.2e-3 * mtotV0 - 12) return;
+
+  }
+
+  if(fIsFlowTask){
+    Bool_t QnOK = ExtractQnVector();
+    if(!QnOK){
+      AliInfo("Event is rejected by Qn vector quality.");
+      return;
+    }
+  }
+  else fEPBin = 0;
+
   //event selection
   if(!(fPHOSEventCuts->AcceptEvent(fEvent))){
     AliInfo("event is rejected.");
     return;
   }
 
-  if(fIsFlowTask){
-    //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
-
-    if(fHarmonics < 0){
-      AliError(Form("Qn Flow vector correction flag is ON, but fHarmonics is not set. (it is %d now).",fHarmonics));
-      return;
-    }
-
-    TList* qnlist = fFlowQnVectorMgr->GetQnVectorList();
-
-    const AliQnCorrectionsQnVector *QnVectorTPCDet[3];
-    Double_t TPCEP[3] = {};
-    for(Int_t i=0;i<3;i++){
-      QnVectorTPCDet[i] = GetQnVectorFromList(qnlist,Form("%s%s",fTPCEPName[i].Data(),fQnEstimator.Data()),"latest","plain");
-      if(!QnVectorTPCDet[i]){
-        AliInfo("Event is rejected because event plane is not found or bad event plane quality in TPC.");
-        return;//Qn vector correction does not exist or bad quality.
-      }
-      TPCEP[i] = QnVectorTPCDet[i]->EventPlane(fHarmonics);
-      if(TPCEP[i] < 0) TPCEP[i] += 2./(Double_t) fHarmonics * TMath::Pi();
-      FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQnEstimator.Data()),fCentralityMain,TPCEP[i]);
-      AliInfo(Form("harmonics %d | TPC sub detector name %s%s : event plane = %f (rad).",fHarmonics,fTPCEPName[i].Data(),fQnEstimator.Data(),TPCEP[i]));
-    }
-
-    const AliQnCorrectionsQnVector *QnVectorV0Det[3];
-    Double_t V0EP[3]  = {};
-    for(Int_t i=0;i<3;i++){
-      QnVectorV0Det[i]  = GetQnVectorFromList(qnlist,Form("%s%s",fV0EPName[i].Data(),fQnEstimator.Data()),"latest","raw");
-      if(!QnVectorV0Det[i]){
-        AliInfo("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
-        return;//Qn vector correction does not exist or bad quality.
-      }
-      V0EP[i] = QnVectorV0Det[i]->EventPlane(fHarmonics);
-      if(V0EP[i] < 0)  V0EP[i]  += 2./(Double_t) fHarmonics * TMath::Pi();
-      FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQnEstimator.Data()),fCentralityMain,V0EP[i]);
-      AliInfo(Form("harmonics %d | V0  sub detector name %s%s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data(),fQnEstimator.Data(),V0EP[i]));
-    }
-
-    //0 < event plane < 2*pi/fHarmonics.
-    //fEventPlane = TPCEP[0];//full acceptance of TPC
-    fEventPlane = V0EP[0];//full V0
-
-    Double_t Q1[2] = {};
-    Double_t Q2[2] = {};
-
-    Q1[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
-    Q1[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
-    Q2[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
-    Q2[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
-    
-    fQVector1.Set(Q1[0],Q1[1]);
-    fQVector2.Set(Q2[0],Q2[1]);
-
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1x",fEstimator.Data()),fCentralityMain,Q1[0]);
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1y",fEstimator.Data()),fCentralityMain,Q1[1]);
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2x",fEstimator.Data()),fCentralityMain,Q2[0]);
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2y",fEstimator.Data()),fCentralityMain,Q2[1]);
-
-    //Double_t sp = fQ1[0] * fQ2[0] + fQ1[1] * fQ2[1];//scalar product between Q1 vector and Q2 vector
-    Double_t sp = fQVector1 * fQVector2;//scalar product between Q1 vector and Q2 vector
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),fCentralityMain,sp);//mean value of sp is denominator of vn{SP}
-    AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , SP = %e",Q1[0],Q1[1],Q2[0],Q2[1],sp));
-
-    const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
-    fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
-    if(fEPBin < 0)  fEPBin =  0;//protection to avoid fEPBin = -1.
-    if(fEPBin > 11) fEPBin = 11;//protection to avoid fEPBin = 12.
-
-    //for event plane resolution
-    //cos V0(main)-TPCA-TPCC
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[1].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[0]  - TPCEP[1])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[0].Data() ,fTPCEPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[0]  - TPCEP[2])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[1].Data(),fTPCEPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[1] - TPCEP[2])));
-
-    //cos TPC(main)-V0A-V0C
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[1].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[0] - V0EP[1])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fTPCEPName[0].Data(),fV0EPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (TPCEP[0] - V0EP[2])));
-    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane%s%s",fEstimator.Data(),fV0EPName[1].Data() ,fV0EPName[2].Data()),fCentralityMain,TMath::Cos(fHarmonics * (V0EP[1]  - V0EP[2])));
-  }
-  else fEPBin = 0;
-
   //fill fired trigger statistics right after basic event selection, but before PHI7 event selection.
-  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (9 -1);//trigger input -1
-  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (7 -1);//trigger input -1
-  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (6 -1);//trigger input -1
-  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (5 -1);//trigger input -1
-
   if(Is0PH0fired) FillHistogramTH1(fOutputContainer,"hEventSummary",3);//0PH0
   if(Is1PHLfired) FillHistogramTH1(fOutputContainer,"hEventSummary",4);//1PHL
   if(Is1PHMfired) FillHistogramTH1(fOutputContainer,"hEventSummary",5);//1PHM
   if(Is1PHHfired) FillHistogramTH1(fOutputContainer,"hEventSummary",6);//1PHH
 
-  if(fIsPHOSTriggerAnalysis && !(fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts))){
+  if(fIsPHOSTriggerAnalysis && !(fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy))){
     AliInfo("event is rejected. IsPHI7 = kFALSE.");
     return;
   }
+
+  fPHOSTriggerHelper->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);//only to set event in fPHOSTriggerHelper. //do nothing. just return kTRUE/kFALSE
 
   //<- end of event selection
   //-> start physics analysis
@@ -1081,16 +1292,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
  
   if(!fIsMC) FillRejectionFactorMB();
 
-  if(fRunNumber != fEvent->GetRunNumber()){ // Check run number
-    fRunNumber = fEvent->GetRunNumber();
-    fPHOSGeo = GetPHOSGeometry();
-  }
-
-  fPIDResponse = fInputHandler->GetPIDResponse();
-  if(!fPIDResponse){
-    AliWarning("fPIDResponse does not exist! This is not crucial in photon analysis in calorimeters.");
-  }
-
   //track QA
   TrackQA();
 
@@ -1101,6 +1302,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     for(Int_t i1=0;i1<fPHOSClusterArray->GetEntriesFast();i1++){
       AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
       if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+      if(!CheckMinimumEnergy(ph)) continue;
+
       multPHOSClustAll++;
     }
     FillHistogramTH2(fOutputContainer,Form("hCentrality%svsPHOSClusterMultiplicityMC",fEstimator.Data()),fCentralityMain,multPHOSClustAll);
@@ -1151,6 +1354,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   if(!fIsMC && fIsPHOSTriggerAnalysis){
+    AliInfo(Form("PHOS trigger analysis is ON! RF method = %d",fTRFM));
     TriggerQA();
     SelectTriggeredCluster();
     EstimateTriggerEfficiency();
@@ -1167,9 +1371,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   FillEpRatio();
   FillMgg();
   FillMixMgg();
+  if(fAnaOmega3Pi) FillM3pi();
 
   EstimatePIDCutEfficiency();
   EstimateTOFCutEfficiency();
+  DDAPhotonPurity();
+  FillTrackMatching();
+  FillMixTrackMatching();
 
   if(fIsNonLinStudy) DoNonLinearityStudy();
 
@@ -1216,9 +1424,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TrackQA()
   const Int_t Ntracklet = fEvent->GetMultiplicity()->GetNumberOfTracklets();
 
   Double_t pT=0, eta=0, phi=0, dEdx=0, p=0;
-  Int_t NHybrid=0;
   Int_t NGlobal=0;
+  Int_t NGlobalNoDCA=0;
+  Int_t NHybrid=0;
   Int_t NComplementary=0;
+  Float_t dca_xy = 999, dca_z = 999;
 
   if(fESDEvent){
     for(Int_t itrack=0;itrack<trackMult;itrack++){
@@ -1259,45 +1469,42 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TrackQA()
     for(Int_t itrack=0;itrack<trackMult;itrack++){
       AliAODTrack *aodtrack = (AliAODTrack*)fEvent->GetTrack(itrack);
       if(TMath::Abs(aodtrack->Eta()) > 0.8) continue;
+      if(aodtrack->Pt() < 0.15) continue;
 
-      if(aodtrack->IsHybridGlobalConstrainedGlobal()){//hybrid track
-        NHybrid++;
-        pT = aodtrack->Pt();
-        eta = aodtrack->Eta();
-        phi = aodtrack->Phi();
-        if(phi<0) phi += TMath::TwoPi();
-        p = aodtrack->P();
-        dEdx = aodtrack->GetTPCsignal();
+      pT = aodtrack->Pt();
+      eta = aodtrack->Eta();
+      phi = aodtrack->Phi();
+      if(phi<0) phi += TMath::TwoPi();
+      p = aodtrack->P();
+      dEdx = aodtrack->GetTPCsignal();
 
-        FillHistogramTH2(fOutputContainer,"hTrackTPCdEdx",p,dEdx);
+      dca_xy = 999; dca_z = 999;
+      aodtrack->GetImpactParameters(dca_xy,dca_z);
 
-        FillHistogramTH1(fOutputContainer,"hHybridTrackPt",pT);
-        FillHistogramTH2(fOutputContainer,"hHybridTrackEtaPhi",phi,eta);
+      if(aodtrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){//standard cuts with very loose DCA cut
+        NGlobalNoDCA++;
+        FillHistogramTH1(fOutputContainer,"hGlobalNoDCATrackPt",pT);
+        FillHistogramTH2(fOutputContainer,"hGlobalNoDCATrackEtaPhi",phi,eta);
+        FillHistogramTH2(fOutputContainer,"hGlobalNoDCATrackDCA",dca_xy,dca_z);
+        FillHistogramTH2(fOutputContainer,"hGlobalNoDCATrackTPCdEdx",p,dEdx);
+      }//end of loose DCA
+      if(aodtrack->TestFilterMask(AliAODTrack::kTrkGlobal)){//standard cuts with tight DCA cut (AliESDtrackCuts::GetStandardITSTPCTrackCuts2011())
+        NGlobal++;
+        FillHistogramTH1(fOutputContainer,"hGlobalTrackPt",pT);
+        FillHistogramTH2(fOutputContainer,"hGlobalTrackEtaPhi",phi,eta);
+        FillHistogramTH2(fOutputContainer,"hGlobalTrackDCA",dca_xy,dca_z);
+        FillHistogramTH2(fOutputContainer,"hGlobalTrackTPCdEdx",p,dEdx);
+      }//end of tight DCA
 
-        if(aodtrack->IsGlobalConstrained()){//constrained to primary vertex, instead of SPD hits.//complementary track
-          NComplementary++;
-          FillHistogramTH1(fOutputContainer,"hComplementaryTrackPt",pT);
-          FillHistogramTH2(fOutputContainer,"hComplementaryTrackEtaPhi",phi,eta);
-        }
-        else{//global track
-          NGlobal++;
-          FillHistogramTH1(fOutputContainer,"hGlobalTrackPt",pT);
-          FillHistogramTH2(fOutputContainer,"hGlobalTrackEtaPhi",phi,eta);
-        }
-
-      }
     }//end of track loop
-
 
   }//end of AOD
 
-  FillHistogramTH1(fOutputContainer,"hHybridTrackMult",NHybrid);
   FillHistogramTH1(fOutputContainer,"hGlobalTrackMult",NGlobal);
-  FillHistogramTH1(fOutputContainer,"hComplementaryTrackMult",NComplementary);
-
-  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsTrackMultiplicity",fEstimator.Data()),fCentralityMain,NHybrid);
+  FillHistogramTH1(fOutputContainer,"hGlobalNoDCATrackMult",NGlobalNoDCA);
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsTrackMultiplicity",fEstimator.Data()),fCentralityMain,NGlobalNoDCA);
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPDTracklet",fEstimator.Data()),fCentralityMain,Ntracklet);
-  fNHybridTrack = NHybrid;
+  fNHybridTrack = NGlobalNoDCA;
 
 }
 //________________________________________________________________________
@@ -1386,7 +1593,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
     else if(L1input == 5) L1 = 2;//L1 low
   }
   else if(L0input > 0){
-    if(L0input == 9) L1 = -1;//L0
+    //if(L0input == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
 
   Int_t kUsedCluster[] = {multClust*0};
@@ -1423,7 +1631,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
 
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i);
+      if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
       //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+
       energy = ph->Energy();
 
       position[0] = ph->EMCx();
@@ -1459,7 +1669,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
       FillHistogramTH2(fOutputContainer,Form("hDeltaRM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),DeltaR,energy);
 
       if(!IsFilledOnce){//to avoid double counting of energy
-        FillHistogramTH1(fOutputContainer,Form("hClusterEnergyM%d",module),energy);
         FillHistogramTH1(fOutputContainer,Form("hClusterEnergyM%dTRU%d",module,fPHOSTriggerHelper->WhichTRU(cellx,cellz)),energy);
         FillHistogramTH3(fOutputContainer,Form("hClusterHitM%d",module),cellx,cellz,energy);
       }
@@ -1471,7 +1680,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
           FillHistogramTH2(fOutputContainer,Form("hMatchedDeltaRM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),DeltaR,energy);
 
           if(kUsedCluster[i] == 0){
-            FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergyM%d",module),energy);
             FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergyM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),energy);
             FillHistogramTH3(fOutputContainer,Form("hMatchedClusterHitM%d",module),cellx,cellz,energy);
           }
@@ -1485,7 +1693,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
           FillHistogramTH2(fOutputContainer,Form("hMatchedDeltaRM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),DeltaR,energy);
 
           if(kUsedCluster[i] == 0){
-            FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergyM%d",module),energy);
             FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergyM%dTRU%d",trgmodule,fPHOSTriggerHelper->WhichTRU(trgcellx,trgcellz)),energy);
             FillHistogramTH3(fOutputContainer,Form("hMatchedClusterHitM%d",module),cellx,cellz,energy);
           }
@@ -1513,19 +1720,20 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
   Double_t position[3] = {};
   Int_t digMult=0;
   Double_t energy=0,tof=0,eta=0,phi=0;
-  Double_t M02=0;
+  Double_t M02=0, M20=0;
   Double_t R = 0, coreR=0;
   Double_t coreE = 0;
-  Double_t r=999, trackPt=0;
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+    if(!CheckMinimumEnergy(ph)) continue;
 
     if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+      if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//only for MC
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
 
     energy  = ph->Energy();
     if(fUseCoreEnergy){
@@ -1534,6 +1742,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
 
     digMult = ph->GetNCells();
     tof     = ph->GetTime();//unit is second.
+    M20 = ph->GetLambda1();
     M02 = ph->GetLambda2();
 
     position[0] = ph->EMCx();
@@ -1553,6 +1762,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
       return;
     }
 
+    if(ph->IsTOFOK()){
+      Int_t tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
+      FillHistogramTH1(fOutputContainer,"hAllClusterEnergy",energy);//all cluster
+      if(fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)){
+        FillHistogramTH1(fOutputContainer,"hAllClusterEnergyGoodTRU",energy);//all cluster on good TRU acceptance
+        FillHistogramTH1(fOutputContainer,Form("hAllClusterEnergyM%dTRU%d",module,tru),energy);//all cluster
+      }
+    }
     FillHistogramTH2(fOutputContainer,"hEnergyvsDistanceToBadChannel",energy,ph->DistToBadfp()); //in unit of cell with floating point
 
     eta = global1.Eta();
@@ -1563,34 +1780,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
     FillHistogramTH2(fOutputContainer,Form("hCluNXZM%d",module),cellx,cellz);
     FillHistogramTH2(fOutputContainer,Form("hCluEXZM%d",module),cellx,cellz,energy);
 
-   
     R     = ph->GetNsigmaFullDisp();
     coreR = ph->GetNsigmaCoreDisp();
     coreE = (ph->GetMomV2())->Energy();
-    AliVCluster *clu = (AliVCluster*)ph->GetCluster();
-    AliVTrack *track = 0x0;
-
-    if(fESDEvent){
-      Int_t trackindex = clu->GetTrackMatchedIndex();
-      if(trackindex > 0){
-        track = (AliVTrack*)(fEvent->GetTrack(trackindex));
-      }//end of track matching
-    }//end of ESD
-    else if(fAODEvent){
-      if(clu->GetNTracksMatched() > 0){
-        track = dynamic_cast<AliVTrack*>(clu->GetTrackMatched(0));
-      }//end of track matching
-    }//end of AOD
-
-    if(track){
-      trackPt = track->Pt();
-      r = ph->GetNsigmaCPV();
-      FillHistogramTH2(fOutputContainer,Form("hRvsTrackPtM%d",module),trackPt,r);
-    } 
  
     FillHistogramTH2(fOutputContainer,"hClusterEvsN",energy,digMult);
     FillHistogramTH2(fOutputContainer,"hClusterEvsM02",energy,M02);
-    FillHistogramTH2(fOutputContainer,"hClusterNvsM02",digMult,M02);
+    FillHistogramTH2(fOutputContainer,"hClusterEvsM20",energy,M20);
     FillHistogramTH2(fOutputContainer,"hFullDispvsFullE",energy,R);
     FillHistogramTH2(fOutputContainer,"hCoreDispvsCoreE",coreE,coreR);
     FillHistogramTH2(fOutputContainer,"hFullDispvsCoreE",coreE,R);
@@ -1639,6 +1835,22 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
   FillHistogramTH2(fOutputContainer,"hPHOSClusterMultiplicityvsTrackMultiplicity",fNHybridTrack,multPHOSClust[0]);
   FillHistogramTH2(fOutputContainer,"hPHOSClusterMultiplicityTOFvsTrackMultiplicity",fNHybridTrack,multPHOSClustTOF[0]);
 
+  AliVVZERO *V0info = (AliVVZERO*)fEvent->GetVZEROData();
+  Float_t mtotV0A = V0info->GetMTotV0A();
+  Float_t mtotV0C = V0info->GetMTotV0C();
+  Float_t mtotV0 = mtotV0A + mtotV0C;
+
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0AvsPHOSClusterMultiplicity",mtotV0A,multPHOSClust[0]);
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0CvsPHOSClusterMultiplicity",mtotV0C,multPHOSClust[0]);
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0vsPHOSClusterMultiplicity" ,mtotV0 ,multPHOSClust[0]);
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0AvsPHOSClusterMultiplicityTOF",mtotV0A,multPHOSClustTOF[0]);
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0CvsPHOSClusterMultiplicityTOF",mtotV0C,multPHOSClustTOF[0]);
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0vsPHOSClusterMultiplicityTOF" ,mtotV0 ,multPHOSClustTOF[0]);
+
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0AvsTrackMultiplicity",mtotV0A,fNHybridTrack);
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0CvsTrackMultiplicity",mtotV0C,fNHybridTrack);
+  FillHistogramTH2(fOutputContainer,"hMultiplicityV0vsTrackMultiplicity" ,mtotV0 ,fNHybridTrack);
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton() 
@@ -1650,25 +1862,31 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   Double_t eff=1;
   Double_t trgeff=1;
   TF1 *f1tof = GetTOFCutEfficiencyFunction();
-  TF1 *f1trg = GetTriggerEfficiencyFunction();
-  Double_t value[4] = {};
+  TF1 * f1trg = GetTriggerEfficiencyFunction();
+  Double_t value[2] = {};
   Double_t sp1 = -999;
-  Double_t sp2 = -999;
-
-  Double_t weight = 1.;
   Int_t primary = -1;
+  Double_t weight = 1.;
+  Double_t TrueK0SPt = 0;
+  Double_t TrueL0Pt = 0;
+  Double_t TrueS0Pt = 0;
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
-    //if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
+    if(!CheckMinimumEnergy(ph)) continue;
 
     if(fIsPHOSTriggerAnalysis){
-      if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+      if( fIsMC && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//keep same TRU acceptance only in kRFE.
       if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
     }
 
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//criterion fTRFM == kRFE is not needed.
+
     weight = 1.;
+    if(fIsMC){
+      primary = ph->GetPrimary();
+      weight = ph->GetWeight();
+    }
 
     pT = ph->Pt();
     energy = ph->Energy();
@@ -1681,44 +1899,49 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     }
 
     eff = f1tof->Eval(energy);
-    if(!fIsMC && fIsPHOSTriggerAnalysis) trgeff = f1trg->Eval(energy);
-
-    if(fIsMC){
-      primary = ph->GetPrimary();
-      weight = ph->GetWeight();
-      if(IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hPurityGamma",pT,weight);
+    if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
+      trgeff = f1trg->Eval(energy);
+      AliInfo(Form("E = %4.3f GeV : trigger efficiency = %4.3f",energy,trgeff));
     }
+
+    if(fIsMC || (!fIsMC && ph->IsTOFOK())){
+                                             FillHistogramTH1(fOutputContainer,"hPhotonPt_noPID",pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->IsNeutral(ph))    FillHistogramTH1(fOutputContainer,"hPhotonPt_CPV"  ,pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->AcceptDisp(ph))   FillHistogramTH1(fOutputContainer,"hPhotonPt_Disp" ,pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->AcceptPhoton(ph)) FillHistogramTH1(fOutputContainer,"hPhotonPt_PID"  ,pT,1/eff * weight * 1/trgeff);
+    }
+
+    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
 
     //0 < photon phi < 2pi
     if(phi < 0) phi += TMath::TwoPi();
-
     TVector2 vg(TMath::Cos(fHarmonics * phi),TMath::Sin(fHarmonics * phi));
 
     if(fIsFlowTask){
       dphi = DeltaPhiIn0Pi(phi - fEventPlane);
       sp1 = vg * fQVector1;
-      sp2 = vg * fQVector2;
+      if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[1] = TMath::Cos(fHarmonics * dphi);
+      else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[1] = sp1;
+      else                                                       value[1] = 0;
     }
     else{
-      dphi = phi;
-      sp1 = 0;
-      sp2 = 0;
+      //dphi = phi;
+      //sp1 = 0;
+      value[1] = 0;
+    }
+
+    if(fIsMC){
+      if(IsFrom(primary,TrueK0SPt,310)  && IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hGammaFromK0S",pT,weight); 
+
+      if(IsFrom(primary,TrueS0Pt ,3212) && IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hGammaFromS0" ,pT,weight);//Sigma0->L0 + gamma (Br = 100%)
+      else if(IsFrom(primary,TrueL0Pt ,3122) && IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hGammaFromL0" ,pT,weight);//L0->n + pi0 (Br = 35.8%)
     }
 
     value[0] = pT;
-    value[1] = TMath::Cos(fHarmonics * dphi);
-    value[2] = sp1;//reserved by sp
-    value[3] = sp2;//reserved by sp
 
-    //FillHistogramTH2(fOutputContainer,"hPhotonPt_EP" ,pT,TMath::Cos(fHarmonics * dphi),weight);
-    //FillHistogramTH2(fOutputContainer,"hPhotonPt_SP1",pT,sp1,weight);
-    //FillHistogramTH2(fOutputContainer,"hPhotonPt_SP2",pT,sp2,weight);
     FillSparse(fOutputContainer,"hSparsePhoton",value,weight * 1/trgeff);
 
     if(ph->IsTOFOK()){
-      //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF_EP" ,pT,TMath::Cos(fHarmonics * dphi),1/eff * weight * 1/trgeff);
-      //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF_SP1",pT,sp1                          ,1/eff * weight * 1/trgeff);
-      //FillHistogramTH2(fOutputContainer,"hPhotonPt_TOF_SP2",pT,sp2                          ,1/eff * weight * 1/trgeff);
       FillSparse(fOutputContainer,"hSparsePhoton_TOF",value,1/eff * weight * 1/trgeff);
     }
 
@@ -1734,9 +1957,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
   Double_t m12=0,pt12=0,asym=0;
   Double_t e1=0,e2=0;
   Double_t phi = -999, dphi = -999.;
-  Double_t value[6] = {};
+  Double_t value[4] = {};
   Double_t sp1 = -999;
-  Double_t sp2 = -999;
 
   Double_t eff1=1, eff2=1, eff12=1;
   TF1 *f1tof = GetTOFCutEfficiencyFunction();
@@ -1749,31 +1971,29 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 
   Int_t primary1 = -1;
   Int_t primary2 = -1;
+  Double_t TruePi0Pt = 0;
   Double_t TrueK0SPt = 0;
   Double_t TrueL0Pt = 0;
   Int_t commonID = -1;
 
-  Double_t eta1 = 0;
-  Double_t phi1 = 0;
-  Double_t eta2 = 0;
-  Double_t phi2 = 0;
-  Double_t DeltaR = 0;
-
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
-    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
-
-    eta1 = ph1->Eta();
-    phi1 = ph1->Phi();
-    if(phi1 < 0) phi1 += TMath::TwoPi();
+    if(!CheckMinimumEnergy(ph1)) continue;
 
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
-      if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+      if(!CheckMinimumEnergy(ph2)) continue;
 
-      if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+      if(fIsPHOSTriggerAnalysis){
+        if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
+      }
+
+      if(fForceActiveTRU 
+          && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+        ) continue;//only for kINT7
 
       e1 = ph1->Energy();
       e2 = ph2->Energy();
@@ -1782,13 +2002,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       m12  = p12.M();
       pt12 = p12.Pt();
       phi  = p12.Phi();
-      asym = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));//always full energy
-
-      eta2 = ph2->Eta();
-      phi2 = ph2->Phi();
-      if(phi2 < 0) phi2 += TMath::TwoPi();
-
-      DeltaR = TMath::Sqrt(TMath::Power(eta1 - eta2,2) + TMath::Power(phi1 - phi2,2));
+      asym = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));
 
       if(fUseCoreEnergy){
         p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
@@ -1805,13 +2019,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       eff2 = f1tof->Eval(e2);
       eff12 = eff1 * eff2;
 
-      if(!fIsMC && fIsPHOSTriggerAnalysis){
+      if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
+        if((!ph1->IsTrig() || e1 < fEnergyThreshold)
+        && (!ph2->IsTrig() || e2 < fEnergyThreshold)
+          ) continue;
+
         trgeff1  = f1trg->Eval(e1);
         trgeff2  = f1trg->Eval(e2);
-        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
       }
-
-      FillHistogramTH3(fOutputContainer,"hMggvsPtvsDeltaRgg",m12,pt12,DeltaR);
 
       weight = 1.;
       if(fIsMC){
@@ -1822,18 +2038,49 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
         primary2 = ph2->GetPrimary();
 
         commonID = FindCommonParent(primary1,primary2);
+        if(commonID > -1) AliInfo(Form("commonID is found. primary1 = %d, primary2 = %d, commonID = %d, w1 = %e , w2 = %e",primary1,primary2,commonID,w1,w2));
+
         if(commonID > -1) weight = w1;
         else weight = w1*w2;
 
+        if(IsFrom(primary1,TruePi0Pt,111) && IsFrom(primary2,TruePi0Pt,111) && commonID > -1){
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
+
+          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+          Int_t pdg = p->PdgCode(); 
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
+            FillHistogramTH2(fOutputContainer,"hMggFromPi0",m12,pt12,weight);
+            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromPi0_asym08",m12,pt12,weight);
+          }
+        }
         if(IsFrom(primary1,TrueK0SPt,310) && IsFrom(primary2,TrueK0SPt,310) && commonID > -1){
           //for feed down correction from K0S->pi0 + pi0
-          FillHistogramTH2(fOutputContainer,"hMggFromK0S",m12,pt12,weight);
-          if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromK0S_asym08",m12,pt12,weight);
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
+          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+          Int_t pdg = p->PdgCode(); 
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
+            FillHistogramTH2(fOutputContainer,"hMggFromK0S",m12,pt12,weight);
+            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromK0S_asym08",m12,pt12,weight);
+          }
         }
-        if(IsFrom(primary1,TrueL0Pt,3122) && IsFrom(primary2,TrueL0Pt,3122) && commonID > -1){//this contibution is neglegible
+        if(IsFrom(primary1,TrueL0Pt,3122) && IsFrom(primary2,TrueL0Pt,3122) && commonID > -1){
           //for feed down correction from L0->pi0 + neutron
-          FillHistogramTH2(fOutputContainer,"hMggFromLambda0",m12,pt12,weight);
-          if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromLambda0_asym08",m12,pt12,weight);
+          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+          Int_t pdg1 = p1->PdgCode(); 
+          Int_t pdg2 = p2->PdgCode(); 
+          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+          Int_t pdg = p->PdgCode(); 
+          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
+            FillHistogramTH2(fOutputContainer,"hMggFromLambda0",m12,pt12,weight);
+            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromLambda0_asym08",m12,pt12,weight);
+          }
         }
 
       }//end of if fIsMC
@@ -1844,50 +2091,33 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       if(fIsFlowTask){
         dphi = DeltaPhiIn0Pi(phi - fEventPlane);
         sp1 = vgg * fQVector1;
-        sp2 = vgg * fQVector2;
+        if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
+        else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
+        else                                                       value[3] = 0;
       }
       else{
         dphi = phi;
         sp1 = 0;
-        sp2 = 0;
+        value[3] = 0;
       }
+
       value[0] = m12;
       value[1] = pt12;
       value[2] = asym;
-      value[3] = TMath::Cos(fHarmonics * dphi);
-      value[4] = sp1;//reserved by sp
-      value[5] = sp2;//reserved by sp
 
+      if(fIsOAStudy){
+        Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
+        FillHistogramTH3(fOutputContainer,"hMgg_OA",m12,pt12,oa,weight);
+      }
       if(m12 > 0.96) continue;//reduce entry in THnSparse
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
-      //FillHistogramTH3(fOutputContainer,"hMgg_EP" ,m12,pt12,TMath::Cos(fHarmonics * dphi),weight * 1/trgeff12);
-      //FillHistogramTH3(fOutputContainer,"hMgg_SP1",m12,pt12,sp1                          ,weight * 1/trgeff12);
-      //FillHistogramTH3(fOutputContainer,"hMgg_SP2",m12,pt12,sp2                          ,weight * 1/trgeff12);
       FillSparse(fOutputContainer,"hSparseMgg",value,weight * 1/trgeff12);
 
-      //FillHistogramTH2(fOutputContainer,"hAsymvsMgg",asym,m12,weight);
-      //if(0.12 < m12 && m12 < 0.15) FillHistogramTH2(fOutputContainer,"hAsymvsPt",asym,pt12,weight);
-
-      //if(asym < 0.8){
-      //  FillHistogramTH3(fOutputContainer,"hMgg_EP_asym08" ,m12,pt12,TMath::Cos(fHarmonics * dphi),weight * 1/trgeff12);
-      //  FillHistogramTH3(fOutputContainer,"hMgg_SP1_asym08",m12,pt12,sp1                          ,weight * 1/trgeff12);
-      //  FillHistogramTH3(fOutputContainer,"hMgg_SP2_asym08",m12,pt12,sp2                          ,weight * 1/trgeff12);
-      //}
-
       if(ph1->IsTOFOK() && ph2->IsTOFOK()){
-        //FillHistogramTH3(fOutputContainer,"hMgg_EP_TOF" ,m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight * 1/trgeff12);
-        //FillHistogramTH3(fOutputContainer,"hMgg_SP1_TOF",m12,pt12,sp1                          ,1/eff12 * weight * 1/trgeff12);
-        //FillHistogramTH3(fOutputContainer,"hMgg_SP2_TOF",m12,pt12,sp2                          ,1/eff12 * weight * 1/trgeff12);
         FillSparse(fOutputContainer,"hSparseMgg_TOF",value,1/eff12 * weight * 1/trgeff12);
 
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight * 1/trgeff12);
-
-        //if(asym < 0.8){
-        //  FillHistogramTH3(fOutputContainer,"hMgg_EP_TOF_asym08" ,m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight * 1/trgeff12);
-        //  FillHistogramTH3(fOutputContainer,"hMgg_SP1_TOF_asym08",m12,pt12,sp1                          ,1/eff12 * weight * 1/trgeff12);
-        //  FillHistogramTH3(fOutputContainer,"hMgg_SP2_TOF_asym08",m12,pt12,sp2                          ,1/eff12 * weight * 1/trgeff12);
-        //}
 
       }//end of TOF cut
 
@@ -1910,7 +2140,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
   Double_t weight = 1., w1 = 1., w2 = 1.;
   Double_t value[4] = {};
   Double_t sp1 = -999;
-  Double_t sp2 = -999;
 
   Double_t eff1=1, eff2=1, eff12=1;
   Double_t e1=0,e2=0;
@@ -1924,7 +2153,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
-    if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -1932,9 +2161,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
-        if(fIsPHOSTriggerAnalysis && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
+        if(!CheckMinimumEnergy(ph2)) continue;
 
-        if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+        if(fIsPHOSTriggerAnalysis){
+          if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+          if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
+        }
+
+        if(fForceActiveTRU 
+            && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+          ) continue;//only for kINT7
 
         e1 = ph1->Energy();
         e2 = ph2->Energy();
@@ -1962,10 +2198,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         eff12 = eff1 * eff2;
         weight = 1.;
 
-        if(!fIsMC && fIsPHOSTriggerAnalysis){
+        if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
+          if((!ph1->IsTrig() || e1 < fEnergyThreshold)
+          && (!ph2->IsTrig() || e2 < fEnergyThreshold)
+            ) continue;
+
           trgeff1  = f1trg->Eval(e1);
           trgeff2  = f1trg->Eval(e2);
           trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR
+
         }
 
         if(fIsMC){
@@ -1982,48 +2223,34 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         if(fIsFlowTask){
           dphi = DeltaPhiIn0Pi(phi - fEventPlane);
           sp1 = vgg * fQVector1;
-          sp2 = vgg * fQVector2;
+          if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
+          else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
+          else                                                       value[3] = 0;
         }
         else{
           dphi = phi;
           sp1 = 0;
-          sp2 = 0;
+          value[3] = 0;
         }
         value[0] = m12;
         value[1] = pt12;
         value[2] = asym;
-        value[3] = TMath::Cos(fHarmonics * dphi);
-        //value[4] = sp1;//reserved by sp
-        //value[5] = sp2;//reserved by sp
+
+        if(fIsOAStudy){
+          Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
+          FillHistogramTH3(fOutputContainer,"hMixMgg_OA",m12,pt12,oa,weight);
+        }
 
         if(m12 > 0.96) continue;//reduce entry in THnSparse
 
-        //FillHistogramTH3(fOutputContainer,"hMixMgg_EP" ,m12,pt12,TMath::Cos(fHarmonics * dphi),weight);
-        //FillHistogramTH3(fOutputContainer,"hMixMgg_SP1",m12,pt12,sp1                          ,weight);
-        //FillHistogramTH3(fOutputContainer,"hMixMgg_SP2",m12,pt12,sp2                          ,weight);
         FillSparse(fOutputContainer,"hSparseMixMgg",value,weight * 1/trgeff12);
-        if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12, weight * 1/trgeff12);
 
-        //if(asym < 0.8){
-        //  FillHistogramTH3(fOutputContainer,"hMixMgg_EP_asym08" ,m12,pt12,TMath::Cos(fHarmonics * dphi),weight * 1/trgeff12);
-        //  FillHistogramTH3(fOutputContainer,"hMixMgg_SP1_asym08",m12,pt12,sp1                          ,weight * 1/trgeff12);
-        //  FillHistogramTH3(fOutputContainer,"hMixMgg_SP2_asym08",m12,pt12,sp2                          ,weight * 1/trgeff12);
-        //}
+        if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12, weight * 1/trgeff12);
 
         if(ph1->IsTOFOK() && ph2->IsTOFOK()){
           FillSparse(fOutputContainer,"hSparseMixMgg_TOF",value,1/eff12 * weight * 1/trgeff12);
-          //FillHistogramTH3(fOutputContainer,"hMixMgg_EP_TOF" ,m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight * 1/trgeff12);
-          //FillHistogramTH3(fOutputContainer,"hMixMgg_SP1_TOF",m12,pt12,sp1                          ,1/eff12 * weight * 1/trgeff12);
-          //FillHistogramTH3(fOutputContainer,"hMixMgg_SP2_TOF",m12,pt12,sp2                          ,1/eff12 * weight * 1/trgeff12);
 
           if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d_TOF",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,1/eff12 * weight * 1/trgeff12);
-
-          //if(asym < 0.8){
-          //  FillHistogramTH3(fOutputContainer,"hMixMgg_EP_TOF_asym08" ,m12,pt12,TMath::Cos(fHarmonics * dphi),1/eff12 * weight * 1/trgeff12);
-          //  FillHistogramTH3(fOutputContainer,"hMixMgg_SP1_TOF_asym08",m12,pt12,sp1                          ,1/eff12 * weight * 1/trgeff12);
-          //  FillHistogramTH3(fOutputContainer,"hMixMgg_SP2_TOF_asym08",m12,pt12,sp2                          ,1/eff12 * weight * 1/trgeff12);
-          //}
-
 
         }//end of TOF cut
 
@@ -2032,6 +2259,249 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
     }//end of mix
 
   }//end of ph1
+
+}
+//________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi() 
+{
+  const Int_t trackMult = fEvent->GetNumberOfTracks();
+
+  TObjArray *array_pip = new TObjArray(trackMult);
+  TObjArray *array_pim = new TObjArray(trackMult);
+  Double_t trackPx = 0;
+  Double_t trackPy = 0;
+  Double_t trackPz = 0;
+  Double_t trackE  = 0;
+  const Double_t Mpi  = 0.13957018;//in GeV/c2
+  const Double_t Mpi0 = 0.1349766;//in GeV/c2
+  //Double_t nsigmaPion = 999;
+
+  for(Int_t itrack=0;itrack<trackMult;itrack++){
+    AliAODTrack *aodtrack = (AliAODTrack*)fEvent->GetTrack(itrack);
+
+    if(TMath::Abs(aodtrack->Eta()) > 0.8) continue;
+    if(aodtrack->Pt() < fMinPtChPi) continue;
+
+    //if(!aodtrack->IsHybridGlobalConstrainedGlobal()) continue; //select only hybrid track//loose DCA cut.
+    if(!aodtrack->TestFilterMask(AliAODTrack::kTrkGlobal)) continue;//standard cuts with tight DCA cut (AliESDtrackCuts::GetStandardITSTPCTrackCuts2011())
+    //if(!aodtrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;//standard cuts with very loose DCA cut
+   
+    //nsigmaPion = fPIDResponse->NumberOfSigmasTPC(dynamic_cast<AliVTrack*>(aodtrack),AliPID::kPion);
+    //if(nsigmaPion < -3 || 3 < nsigmaPion) continue;
+
+    if(TMath::Abs(aodtrack->Charge()) != 1) continue;//select pi+ / pi-//reject deuteron, triton
+ 
+    trackPx = aodtrack->Px();
+    trackPy = aodtrack->Py();
+    trackPz = aodtrack->Pz();
+    trackE  = TMath::Sqrt(TMath::Power(trackPx,2) + TMath::Power(trackPy,2) + TMath::Power(trackPz,2) + TMath::Power(Mpi,2));
+    TLorentzVector *p1track = new TLorentzVector(trackPx,trackPy,trackPz,trackE);
+
+    if(aodtrack->Charge() > 0){//pi+
+      array_pip->Add(p1track);
+    }
+    else{//pi-
+      array_pim->Add(p1track);
+    }
+
+  }//end of track loop
+
+  const Int_t Npip = array_pip->GetEntriesFast();
+  const Int_t Npim = array_pim->GetEntriesFast();
+  AliInfo(Form("Npip = %d , Npim = %d",Npip,Npim));
+
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+  TLorentzVector p12, p12core;
+
+  Double_t m12=0,pt12=0,asym=0;
+  Double_t pi0Px = 0;
+  Double_t pi0Py = 0;
+  Double_t pi0Pz = 0;
+  Double_t e1=0,e2=0;
+  Double_t phi = -999, dphi = -999.;
+  Double_t value[4] = {};
+  Double_t sp1 = -999;
+
+  Double_t eff1=1, eff2=1, eff12=1;
+  TF1 *f1tof = GetTOFCutEfficiencyFunction();
+  Double_t weight = 1., w1 = 1., w2 = 1.;
+
+  Double_t trgeff1=1;
+  Double_t trgeff2=1;
+  Double_t trgeff12=1;
+  TF1 *f1trg = GetTriggerEfficiencyFunction();
+
+  Int_t primary1 = -1;
+  Int_t primary2 = -1;
+  Int_t commonID = -1;
+
+  Double_t m3pi=0,pt3pi=0;
+  Double_t phipi0 = 0, etapi0 = 0;
+  Double_t phipip = 0, etapip = 0;
+  Double_t phipim = 0, etapim = 0;
+  Double_t dphi_pp = 999, deta_pp = 999, dR = 999;
+
+  for(Int_t i1=0;i1<multClust-1;i1++){
+    AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
+
+    for(Int_t i2=i1+1;i2<multClust;i2++){
+      AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
+      if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+      if(!CheckMinimumEnergy(ph2)) continue;
+
+      if(fIsPHOSTriggerAnalysis){
+        if(!fIsMC && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
+        if(fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))) continue;//use cluster pairs only on active TRU both in data and M.C.
+      }
+
+      if(fForceActiveTRU 
+          && (!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1) || !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2))
+        ) continue;//only for kINT7
+
+      p12  = *ph1 + *ph2;
+      m12  = p12.M();
+      pt12 = p12.Pt();
+      pi0Px = p12.Px();
+      pi0Py = p12.Py();
+      pi0Pz = p12.Pz();
+
+      e1 = ph1->Energy();
+      e2 = ph2->Energy();
+      asym = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));
+
+      if(fUseCoreEnergy){
+        p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
+        m12     = p12core.M();
+        pt12    = p12core.Pt();
+
+        pi0Px = p12core.Px();
+        pi0Py = p12core.Py();
+        pi0Pz = p12core.Pz();
+
+        e1 = (ph1->GetMomV2())->Energy();
+        e2 = (ph2->GetMomV2())->Energy();
+        asym = TMath::Abs(e1 - e2) / (e1 + e2);
+      }
+
+      eff1 = f1tof->Eval(e1);
+      eff2 = f1tof->Eval(e2);
+      eff12 = eff1 * eff2;
+
+      if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
+        trgeff1  = f1trg->Eval(e1);
+        trgeff2  = f1trg->Eval(e2);
+        trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
+      }
+
+      if(m12 < 0.12 || 0.15 < m12) continue;
+      if(pt12 < fMinPtPi0) continue;
+
+      Double_t pi0E = TMath::Sqrt(TMath::Power(pi0Px,2) + TMath::Power(pi0Py,2) + TMath::Power(pi0Pz,2) + TMath::Power(Mpi0,2));
+      TLorentzVector *p1pi0 = new TLorentzVector(pi0Px,pi0Py,pi0Pz,pi0E);
+      phipi0 = p1pi0->Phi();
+      if(phipi0 < 0) phipi0 += TMath::TwoPi();
+      etapi0 = p1pi0->Eta();
+
+      for(Int_t itrack1=0;itrack1<Npip;itrack1++){
+        TLorentzVector *p1pip = (TLorentzVector*)array_pip->At(itrack1);
+        phipip = p1pip->Phi();
+        if(phipip < 0) phipip += TMath::TwoPi();
+        etapip = p1pip->Eta();
+
+        dphi_pp = phipip - phipi0;
+        if(dphi_pp >  TMath::Pi()) dphi_pp -= TMath::TwoPi();
+        if(dphi_pp < -TMath::Pi()) dphi_pp += TMath::TwoPi();
+        deta_pp = etapip - etapi0;
+        dR = TMath::Sqrt(TMath::Power(dphi_pp,2) + TMath::Power(deta_pp,2));
+        if(dR > fMaxR) continue;
+
+        //printf("pip | px = %e , py = %e , pz = %e\n",p1pip->Px(),p1pip->Py(),p1pip->Pz());
+
+        for(Int_t itrack2=0;itrack2<Npim;itrack2++){
+          TLorentzVector *p1pim = (TLorentzVector*)array_pim->At(itrack2);
+          phipim = p1pim->Phi();
+          if(phipim < 0) phipim += TMath::TwoPi();
+          etapim = p1pim->Eta();
+
+          dphi_pp = phipim - phipi0;
+          if(dphi_pp >  TMath::Pi()) dphi_pp -= TMath::TwoPi();
+          if(dphi_pp < -TMath::Pi()) dphi_pp += TMath::TwoPi();
+          deta_pp = etapim - etapi0;
+          dR = TMath::Sqrt(TMath::Power(dphi_pp,2) + TMath::Power(deta_pp,2));
+          if(dR > fMaxR) continue;
+
+          //printf("pim | px = %e , py = %e , pz = %e\n",p1pim->Px(),p1pim->Py(),p1pim->Pz());
+          //printf("Mpi0 = %e , Mpip = %e , Mpim = %e\n",p1pi0->M(),p1pip->M(),p1pim->M());
+
+          TLorentzVector p3pi = *p1pi0 + *p1pip + *p1pim;
+
+          m3pi  = p3pi.M();
+          pt3pi = p3pi.Pt();
+
+          if(TMath::Abs(p3pi.Y()) > 0.5) continue;//measure omega at |rapidity| < 0.5
+
+          weight = 1.;
+          if(fIsMC){
+            w1= ph1->GetWeight();
+            primary1 = ph1->GetPrimary();
+
+            w2 = ph2->GetWeight();
+            primary2 = ph2->GetPrimary();
+
+            commonID = FindCommonParent(primary1,primary2);
+            if(commonID > -1) weight = w1;
+            else weight = w1*w2;
+
+          }//end of if fIsMC
+
+          phi = p3pi.Phi();
+          if(phi < 0) phi += TMath::TwoPi();
+
+          TVector2 vgg(TMath::Cos(fHarmonics * phi),TMath::Sin(fHarmonics * phi));
+          if(fIsFlowTask){
+            dphi = DeltaPhiIn0Pi(phi - fEventPlane);
+            sp1 = vgg * fQVector1;
+            if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      value[3] = TMath::Cos(fHarmonics * dphi);
+            else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) value[3] = sp1;
+            else                                                       value[3] = 0;
+          }
+          else{
+            dphi = phi;
+            sp1 = 0;
+            value[3] = 0;
+          }
+
+          value[0] = m3pi;
+          value[1] = pt3pi;
+          value[2] = asym;
+
+          FillSparse(fOutputContainer,"hSparseM3pi",value,weight * 1/trgeff12);
+
+          if(ph1->IsTOFOK() && ph2->IsTOFOK()){
+            FillSparse(fOutputContainer,"hSparseM3pi_TOF",value,1/eff12 * weight * 1/trgeff12);
+
+          }//end of TOF cut
+
+        }//end of track loop2
+
+      }//end of track loop1
+
+      delete p1pi0;
+      p1pi0 = 0x0;
+
+    }//end of ph2
+
+  }//end of ph1
+
+  array_pip->Clear();
+  array_pim->Clear();
+
+  delete array_pip;
+  array_pip = 0x0;
+  delete array_pim;
+  array_pim = 0x0;
 
 }
 //________________________________________________________________________
@@ -2045,7 +2515,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillEpRatio()
   const Double_t NsigmaDisp = fPHOSClusterCuts->GetDispParameter();
 
   AliPHOSClusterCuts *cuts = new AliPHOSClusterCuts("CutsForCharged");//for charged tracks
-  cuts->SetUseCoreDispersion(fUseCoreEnergy);
+  cuts->SetUseCoreDispersion(fPHOSClusterCuts->IsCoreDisp());
   cuts->SetNsigmaCPV(NsigmaCPV);
   cuts->SetNsigmaDisp(NsigmaDisp);
 
@@ -2065,48 +2535,48 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillEpRatio()
   AliVTrack *track = 0x0;
   Double_t nsigmaElectron = 999;
   Bool_t PID_ele = kFALSE;
-  Bool_t isHybridTrack = kFALSE;
-
+  Bool_t isGlobal = kFALSE;
   //Double_t weight = 1.;
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
     if(!cuts->AcceptChargedParticle(ph)) continue;
-
-    //weight = 1.;
-    //if(fIsMC) weight = ph->GetWeight();
+    if(!CheckMinimumEnergy(ph)) continue;
 
     energy = ph->Energy();
     if(fUseCoreEnergy) energy = (ph->GetMomV2())->Energy();
 
-    //eff = f1tof->Eval(energy);
+    //weight = 1.;
+    //if(fIsMC) weight = ph->GetWeight();
+
+    //eff = 1.;
+    //if(!fIsMC) eff = f1tof->Eval(energy);
 
     cluster = (AliVCluster*)ph->GetCluster();
     PID_ele = kFALSE;
-    isHybridTrack = kFALSE;
+    isGlobal = kFALSE;
     track = 0x0;
 
     if(fESDEvent){
       Int_t trackindex = cluster->GetTrackMatchedIndex();
       if(trackindex > 0){
         track = (AliVTrack*)(fEvent->GetTrack(trackindex));
-        isHybridTrack = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track)) || fESDtrackCutsGlobalConstrained->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
+        isGlobal = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
       }
     }//end of ESD
     else if(fAODEvent){
       if(cluster->GetNTracksMatched() > 0){
         track = dynamic_cast<AliVTrack*>(cluster->GetTrackMatched(0));
-        isHybridTrack = dynamic_cast<AliAODTrack*>(track)->IsHybridGlobalConstrainedGlobal();//hybrid track
+        isGlobal = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);//standard cuts with very loose DCA cut
 
       }//end of track matching
     }//end of AOD
 
-    if(track && isHybridTrack){
+    if(track && isGlobal){
       trackP  = track->P();
       trackPt = track->Pt();
       dEdx = track->GetTPCsignal();
       trackC  = track->Charge();
-
 
       trackDx = cluster->GetTrackDx();
       trackDz = cluster->GetTrackDz();
@@ -2136,7 +2606,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillEpRatio()
         FillHistogramTH2(fOutputContainer,"hTPCdEdx_Electron",trackP,dEdx);
         if(0.8 < energy/trackP && energy/trackP < 1.2) FillHistogramTH3(fOutputContainer,Form("hdZvsZvsTrackPtElectron_M%d",module),localPos.Z(),trackDz,trackPt);//for alignment study
       }
-      else if(nsigmaElectron < -3 || 5 < nsigmaElectron){//non-electron and far from border
+      if(nsigmaElectron < -3 || 5 < nsigmaElectron){//non-electron and far from border
         FillHistogramTH2(fOutputContainer,Form("hEpRatiovsEnergy_M%d_Others" ,module),energy/trackP,energy);
         FillHistogramTH2(fOutputContainer,Form("hEpRatiovsTrackPt_M%d_Others",module),energy/trackP,trackPt);
         FillHistogramTH2(fOutputContainer,"hTPCdEdx_Others",trackP,dEdx);
@@ -2159,30 +2629,70 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
 
   TLorentzVector p12, p12core;
   Double_t m12=0;
+  Double_t pT=0;
   Double_t energy=0;
+  Double_t weight = 1., w1 = 1., w2 = 1.;
+  Int_t primary1 = -1;
+  Int_t primary2 = -1;
+  Int_t commonID = -1;
+
+  Double_t value[5] = {0,0,0,0,0};
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
+
+    if(!CheckMinimumEnergy(ph1)) continue;
+    //if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+
+    //apply tight cut to photon1
+    if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
+      if(!CheckMinimumEnergy(ph2)) continue;
 
       if(i2==i1) continue;//reject same cluster combination
 
       p12 = *ph1 + *ph2;
       m12 = p12.M();
+      pT = ph2->Pt();
       energy = ph2->Energy();
 
       if(fUseCoreEnergy){
         p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
         m12 = p12core.M();
+        pT = (ph2->GetMomV2())->Pt();
         energy = (ph2->GetMomV2())->Energy();
       }
 
-      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,energy);
-      if(fPHOSClusterCuts->AcceptPhoton(ph2))
-        FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID",m12,energy);
+      weight = 1.;
+      if(fIsMC){
+        w1= ph1->GetWeight();
+        primary1 = ph1->GetPrimary();
+
+        w2 = ph2->GetWeight();
+        primary2 = ph2->GetPrimary();
+
+        commonID = FindCommonParent(primary1,primary2);
+        if(commonID > -1) weight = w1;
+        else weight = w1*w2;
+
+      }//end of if fIsMC
+
+
+      value[0] = m12;
+      value[1] = energy;
+      value[2] = ph2->GetNCells();
+      value[3] = ph2->GetLambda1();
+      value[4] = ph2->GetLambda2();
+      if(fPIDStudy) FillSparse(fOutputContainer,"hSparseMgg_PID",value,weight);
+
+      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,pT,weight);
+
+      if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_CPV" ,m12,pT,weight);
+      if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_Disp",m12,pT,weight);
+      if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID" ,m12,pT,weight);
 
     }//end of ph2
 
@@ -2193,27 +2703,51 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
+
+    if(!CheckMinimumEnergy(ph1)) continue;
+    //if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+
+    //apply tight cut to photon1
+    if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
+        if(!CheckMinimumEnergy(ph2)) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
+        pT = ph2->Pt();
         energy = ph2->Energy();
 
         if(fUseCoreEnergy){
           p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
           m12 = p12core.M();
+          pT = (ph2->GetMomV2())->Pt();
           energy = (ph2->GetMomV2())->Energy();
         }
 
-        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,energy);
-        if(fPHOSClusterCuts->AcceptPhoton(ph2))
-          FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID",m12,energy);
+        weight = 1.;
+        if(fIsMC){
+          w1= ph1->GetWeight();
+          w2 = ph2->GetWeight();
+          weight = w1*w2;
+        }//end of if fIsMC
+
+        value[0] = m12;
+        value[1] = energy;
+        value[2] = ph2->GetNCells();
+        value[3] = ph2->GetLambda1();
+        value[4] = ph2->GetLambda2();
+        if(fPIDStudy) FillSparse(fOutputContainer,"hSparseMixMgg_PID",value,weight);
+
+        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,pT,weight);
+        if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_CPV" ,m12,pT,weight);
+        if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_Disp",m12,pT,weight);
+        if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID" ,m12,pT,weight);
 
       }//end of mix
 
@@ -2237,10 +2771,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!ph1->IsTOFOK()) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
 
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
+    //triggered clusters have very likely their hit timing within 12.5 ns in kPHI7 events.
+ 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+      if(!CheckMinimumEnergy(ph2)) continue;
 
       if(i2==i1) continue;//reject same cluster combination
 
@@ -2268,6 +2807,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!ph1->IsTOFOK()) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
+
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -2275,6 +2817,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+        if(!CheckMinimumEnergy(ph2)) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
@@ -2292,6 +2835,269 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
       }//end of mix
 
     }//end of ph2
+
+  }//end of ph1
+
+}
+//________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
+{
+  //Data Driven Approach to measure photon purity.
+  //identified charged particle pi/K/p are used.
+  //shower shape is same in pi/K/p, but different from EM (e/gamma) shower shape.-> hadronic contamination after shower shape cut is measured.
+  //photon should be neutral hit, so, clusters matching with track is not photon.-> charged particle contamination after CPV cut is measured.
+  //an electrons is EM particle, but charged.-> electrons are rejected by CPV.
+
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+
+  Double_t pT=0, cluE = 0;
+  Double_t weight = 1.;
+  Int_t primary = -1;
+
+  AliVCluster *cluster = 0x0;
+  AliVTrack *track = 0x0;
+  Int_t charge = 0;
+  Double_t trackP = 0;
+  Double_t nsigmaElectron = 999;
+  Double_t nsigmaPion = 999;
+  Double_t nsigmaKaon = 999;
+  Double_t nsigmaProton = 999;
+  Bool_t pidPion = kFALSE;
+  Bool_t pidKaon = kFALSE;
+  Bool_t pidProton = kFALSE;
+  Bool_t pidElectron = kFALSE;
+  const Double_t NsigmaCut = 3;
+  Bool_t isGlobal = kFALSE;
+  const Double_t Rcut_CE = 240.;
+
+  const Double_t NsigmaDisp = fPHOSClusterCuts->GetDispParameter();
+  AliInfo(Form("NsigmaDisp = %2.1f sigma",NsigmaDisp));
+
+  for(Int_t i1=0;i1<multClust;i1++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+    if(!fIsMC && fIsPHOSTriggerAnalysis && !ph->IsTrig()) continue;//it is meaningless to look at non-triggered cluster in PHOS trigger analysis.
+    if(!CheckMinimumEnergy(ph)) continue;
+
+    //if(!fIsMC && !ph->IsTOFOK()) continue;
+
+    pT = ph->Pt();
+    cluE = ph->Energy();
+
+    if(fUseCoreEnergy){
+      pT = (ph->GetMomV2())->Pt();
+      cluE = (ph->GetMomV2())->Energy();
+    }
+
+    weight = 1.;
+    if(fIsMC){
+      primary = ph->GetPrimary();
+      weight = ph->GetWeight();
+    }
+
+    cluster = 0x0;
+    track = 0x0;
+
+    cluster = (AliVCluster*)ph->GetCluster();
+    isGlobal = kFALSE;
+
+    if(fESDEvent){
+      Int_t trackindex = cluster->GetTrackMatchedIndex();
+      if(trackindex > 0){
+        track = (AliVTrack*)(fEvent->GetTrack(trackindex));
+        isGlobal = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
+      }
+    }//end of ESD
+    else if(fAODEvent){
+      if(cluster->GetNTracksMatched() > 0){
+        track = dynamic_cast<AliVTrack*>(cluster->GetTrackMatched(0));
+        isGlobal = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);//standard cuts with very loose DCA cut
+      }//end of track matching
+    }//end of AOD
+
+    pidPion = kFALSE;
+    pidKaon = kFALSE;
+    pidProton = kFALSE;
+    pidElectron = kFALSE;
+
+    if(track){
+      //Note that histograms are filled as a function of cluster pT.
+      charge = track->Charge();
+      trackP = track->P();
+      nsigmaElectron = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);//(-2,3) is for real electron analysis.
+      nsigmaPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
+      nsigmaKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
+      nsigmaProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+
+      if((TMath::Abs(nsigmaElectron) < nsigmaPion)     && (TMath::Abs(nsigmaElectron) < nsigmaKaon) && (TMath::Abs(nsigmaElectron) < nsigmaProton) && (-2 < nsigmaElectron && nsigmaElectron < 3)) pidElectron = kTRUE;
+      if((nsigmaPion     < TMath::Abs(nsigmaElectron)) && (nsigmaPion     < nsigmaKaon) && (nsigmaPion     < nsigmaProton) && (nsigmaPion     < NsigmaCut)) pidPion = kTRUE;
+      if((nsigmaKaon     < TMath::Abs(nsigmaElectron)) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
+      if((nsigmaProton   < TMath::Abs(nsigmaElectron)) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
+
+      if(ph->GetNsigmaCPV() < fMatchingR){//matching cut to evaluate dispersion cut efficiency for charged particle.
+        if(pidElectron && (0.8 < cluE/trackP && cluE/trackP < 1.2))  FillHistogramTH1(fOutputContainer,"hMatchedElectron",pT,weight);
+        else if(pidPion) FillHistogramTH1(fOutputContainer,"hMatchedPion",pT,weight);
+        else if(pidKaon) FillHistogramTH1(fOutputContainer,"hMatchedKaon",pT,weight);
+        else if(pidProton){
+          if(charge > 0) FillHistogramTH1(fOutputContainer,"hMatchedProton",pT,weight);
+          else           FillHistogramTH1(fOutputContainer,"hMatchedAntiProton",pT,weight);
+        }
+
+        if(fPHOSClusterCuts->AcceptDisp(ph)){
+          if(pidElectron && (0.8 < cluE/trackP && cluE/trackP < 1.2))  FillHistogramTH1(fOutputContainer,"hMatchedElectron_Disp",pT,weight);
+          else if(pidPion) FillHistogramTH1(fOutputContainer,"hMatchedPion_Disp",pT,weight);
+          else if(pidKaon) FillHistogramTH1(fOutputContainer,"hMatchedKaon_Disp",pT,weight);
+          else if(pidProton){
+            if(charge > 0) FillHistogramTH1(fOutputContainer,"hMatchedProton_Disp",pT,weight);
+            else           FillHistogramTH1(fOutputContainer,"hMatchedAntiProton_Disp",pT,weight);
+          }
+        }//end of disp
+
+      }//end of track matching
+
+    }//end of track
+
+    if(fIsMC){
+      AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(primary);
+      Int_t pdg = p->PdgCode(); 
+      Double_t x = p->Xv();//absolute coordinate in ALICE
+      Double_t y = p->Yv();//absolute coordinate in ALICE
+      Double_t Rxy = TMath::Sqrt(x*x + y*y);
+
+      Int_t motherid = p->GetMother();
+      Int_t pdg_mother = 0;//0 is not assiend to any particle
+
+      if(motherid > -1){
+        AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
+        pdg_mother = mp->PdgCode();
+      }
+
+      //border of Rxy is 250 cm from (0,0,0) where TPC outer frame is.
+      //only for safety mergin, 240 cm is used.
+
+      if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
+
+      else if(TMath::Abs(pdg) == 11){
+        FillHistogramTH2(fOutputContainer,"hElectronRxy_noPID",pT,Rxy,weight);
+        if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+          FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,Rxy,weight);
+          if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+          else              FillHistogramTH1(fOutputContainer,"hPurityLCE_noPID",pT,weight);
+        }
+        else FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+      }
+      else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_noPID",pT,weight);
+      else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_noPID",pT,weight);
+      else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_noPID",pT,weight);
+      else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_noPID",pT,weight);
+      else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_noPID",pT,weight);
+      else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_noPID",pT,weight);
+      else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
+      else{
+        if(pdg == 111){//hadronic interaction
+          //printf("mother pdg of %d is %d and production vertex = %4.3f\n",pdg,pdg_mother,Rxy);
+          if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_noPID",pT,weight);
+          else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_noPID",pT,weight);
+          else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_noPID",pT,weight);
+          else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
+          else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+        }
+        else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+      }
+
+      if(fPHOSClusterCuts->IsNeutral(ph)){
+        if(pdg == 22) FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_CPV",pT,Rxy,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,Rxy,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_CPV",pT,weight);
+          }
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+        }
+        else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_CPV",pT,weight);
+        else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_CPV",pT,weight);
+        else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_CPV",pT,weight);
+        else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_CPV",pT,weight);
+        else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_CPV",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_CPV",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_CPV",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_CPV",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_CPV",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+        }
+
+      }//end of CPV
+
+      if(fPHOSClusterCuts->AcceptDisp(ph)){
+        if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_Disp",pT,Rxy,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,Rxy,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_Disp",pT,weight);
+          }
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+        }
+        else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_Disp",pT,weight);
+        else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_Disp",pT,weight);
+        else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_Disp",pT,weight);
+        else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_Disp",pT,weight);
+        else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_Disp",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_Disp",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_Disp",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_Disp",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_Disp",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+        }
+
+      }//end of Disp
+
+      if(fPHOSClusterCuts->AcceptPhoton(ph)){
+        if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_PID",pT,Rxy,weight);
+          if(motherid > -1 && pdg_mother == 22){//conversion gamma->ee
+            FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,Rxy,weight);
+            if(Rxy < Rcut_CE) FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+            else              FillHistogramTH1(fOutputContainer,"hPurityLCE_PID",pT,weight);
+          }
+          else FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+        }
+        else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_PID",pT,weight);
+        else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_PID",pT,weight);
+        else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_PID",pT,weight);
+        else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_PID",pT,weight);
+        else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_PID",pT,weight);
+        else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_PID",pT,weight);
+        else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_PID",pT,weight);
+        else{
+          if(pdg == 111){//hadronic interaction
+            if(pdg_mother ==  2212)      FillHistogramTH1(fOutputContainer,"hPurityProton_PID",pT,weight);
+            else if(pdg_mother == -2212) FillHistogramTH1(fOutputContainer,"hPurityAntiProton_PID",pT,weight);
+            else if(pdg_mother ==  2112) FillHistogramTH1(fOutputContainer,"hPurityNeutron_PID",pT,weight);
+            else if(pdg_mother == -2112) FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_PID",pT,weight);
+            else                         FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+          }
+          else                           FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
+        }
+
+      }//end of PID
+
+    }//end of M.C.
 
   }//end of ph1
 
@@ -2321,7 +3127,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SelectTriggeredCluster()
     else if(L1input == 5) L1 = 2;//L1 low
   }
   else if(L0input > 0){
-    if(L0input == 9) L1 = -1;//L0
+    //if(L0input == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
 
   const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
@@ -2394,6 +3201,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SelectTriggeredCluster()
   for(Int_t i=0;i<multClust;i++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i);
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+    if(!CheckMinimumEnergy(ph)) continue;
     if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
 
     energy = ph->Energy();
@@ -2416,7 +3224,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SelectTriggeredCluster()
 
     FillHistogramTH1(fOutputContainer,Form("hClusterE_M%d_TRU%d",module,tru),energy);
     if(ph->IsTrig()) FillHistogramTH1(fOutputContainer,Form("hTriggeredClusterE_M%d_TRU%d",module,tru),energy);
-    //for QA purpose TOF cut efficiency is not corrected.
+    //for the QA purpose, TOF cut efficiency is not corrected.
     if(ph->IsTOFOK()){
       FillHistogramTH1(fOutputContainer,Form("hClusterE_TOF_M%d_TRU%d",module,tru),energy);
       if(ph->IsTrig()) FillHistogramTH1(fOutputContainer,Form("hTriggeredClusterE_TOF_M%d_TRU%d",module,tru),energy);
@@ -2442,28 +3250,26 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
   Int_t truch_tag = -1, chX_tag=-1, chZ_tag=-1;
   Int_t truch = -1, chX=-1, chZ=-1;
 
-  Double_t eta_tag = -999;
-  Double_t phi_tag = -999;
-  Double_t DeltaR_tag = -999;
-
-  Double_t eta_probe = -999;
-  Double_t phi_probe = -999;
-  Double_t DeltaR_probe = -999;
-
-  Double_t DeltaRgg = -999;
-  Double_t Rlimit = 0;
+  //Double_t eta_tag = -999;
+  //Double_t phi_tag = -999;
+  //Double_t DeltaR_tag = -999;
+  //Double_t eta_probe = -999;
+  //Double_t phi_probe = -999;
+  //Double_t DeltaR_probe = -999;
+  //Double_t DeltaRgg = -999;
+  //Double_t Rlimit = 0;
 
   TLorentzVector p12, p12core;
   Double_t m12=0;
   //Int_t maxAbsId = -1;
 
-
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
-    if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
+
     if(!ph1->IsTrig()) continue;
-    //if(!ph1->IsTOFOK()) continue;
+    if(ph1->Energy() < fEnergyThreshold) continue;
 
     relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
 
@@ -2473,9 +3279,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     TVector3 global_tag(position);
     fPHOSGeo->GlobalPos2RelId(global_tag,relId);
 
-    eta_tag = global_tag.Eta();
-    phi_tag = global_tag.Phi();
-    if(phi_tag < 0) phi_tag += TMath::TwoPi();
+    //eta_tag = global_tag.Eta();
+    //phi_tag = global_tag.Phi();
+    //if(phi_tag < 0) phi_tag += TMath::TwoPi();
 
     //maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(ph1->GetCluster(), cells);
     //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
@@ -2486,13 +3292,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     tru_tag = fPHOSTriggerHelper->WhichTRU(cellx_tag,cellz_tag);
     truch_tag = fPHOSTriggerHelper->WhichTRUChannel(cellx_tag,cellz_tag,chX_tag,chZ_tag);
 
-    DeltaR_tag = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph1);
+    //DeltaR_tag = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph1);
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
       if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+      if(!CheckMinimumEnergy(ph2)) continue;
+
       if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
-      //if(!ph2->IsTOFOK()) continue;
 
       if(i2==i1) continue;//reject same cluster combination
 
@@ -2513,9 +3320,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       position[2] = ph2->EMCz();
       TVector3 global_probe(position);
       fPHOSGeo->GlobalPos2RelId(global_probe,relId);
-      eta_probe = global_probe.Eta();
-      phi_probe = global_probe.Phi();
-      if(phi_probe < 0) phi_probe += TMath::TwoPi();
+      //eta_probe = global_probe.Eta();
+      //phi_probe = global_probe.Phi();
+      //if(phi_probe < 0) phi_probe += TMath::TwoPi();
 
       //maxAbsId = fPHOSTriggerHelper->FindHighestAmplitudeCellAbsId(ph2->GetCluster(), cells);
       //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
@@ -2531,18 +3338,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       Int_t dx = chX_tag - chX;
       Int_t dz = chZ_tag - chZ;
 
-      //if( (dm == 0)
-      // && (dt == 0)
-      // && (TMath::Abs(dx) < 2)
-      // && (TMath::Abs(dz) < 2)
-      // ) continue;//reject cluster pair where they belong to same 4x4 region.
-      //AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d.",dm,dt,dx,dz,truch));
-      DeltaR_probe = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph2);
+      if( (dm == 0)
+       && (dt == 0)
+       && (TMath::Abs(dx) < 4 && TMath::Abs(dz) < 4)
+       ) continue;//reject cluster pair where they belong to same 4x4 region.//also considuer leakage of EM shower at high energy
 
-      Rlimit = DeltaR_tag + DeltaR_probe;
-      DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
-      AliInfo(Form("DeltaR between 2 gammas = %e, DeltaR_tag = %e , DeltaR_probe = = %e.",DeltaRgg,DeltaR_tag,DeltaR_probe));
-      if(DeltaRgg < Rlimit) continue;//efficiency can be measured at low pT by pi0 and at high pT by eta meson.
+      AliInfo(Form("dm = %d , dt = %d , dx = %d , dz = %d, truch = %d , truch_tag = %d.",dm,dt,dx,dz,truch,truch_tag));
+      //DeltaR_probe = fPHOSTriggerHelper->GetDistanceToClosestTRUChannel(ph2);
+
+      //Rlimit = DeltaR_tag + DeltaR_probe;
+      //DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
+      //AliInfo(Form("DeltaR between 2 gammas = %e, DeltaR_tag = %e , DeltaR_probe = = %e.",DeltaRgg,DeltaR_tag,DeltaR_probe));
+      //if(DeltaRgg < Rlimit) continue;//efficiency can be measured at low pT by pi0 and at high pT by eta meson.
 
       FillHistogramTH2(fOutputContainer,"hMgg_Probe_Trg",m12,energy);
       FillHistogramTH2(fOutputContainer,Form("hMgg_Probe_Trg_M%d_TRU%d",module,tru),m12,energy);
@@ -2562,19 +3369,20 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+    if(!CheckMinimumEnergy(ph1)) continue;
+
     if(!ph1->IsTrig()) continue;
-    if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph1)) continue;
-    //if(!ph1->IsTOFOK()) continue;
+    if(ph1->Energy() < fEnergyThreshold) continue;
 
-    position[0] = ph1->EMCx();
-    position[1] = ph1->EMCy();
-    position[2] = ph1->EMCz();
-    TVector3 global_tag(position);
-    fPHOSGeo->GlobalPos2RelId(global_tag,relId);
+    //position[0] = ph1->EMCx();
+    //position[1] = ph1->EMCy();
+    //position[2] = ph1->EMCz();
+    //TVector3 global_tag(position);
+    //fPHOSGeo->GlobalPos2RelId(global_tag,relId);
 
-    eta_tag = global_tag.Eta();
-    phi_tag = global_tag.Phi();
-    if(phi_tag < 0) phi_tag += TMath::TwoPi();
+    //eta_tag = global_tag.Eta();
+    //phi_tag = global_tag.Phi();
+    //if(phi_tag < 0) phi_tag += TMath::TwoPi();
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -2582,8 +3390,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
         if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+        if(!CheckMinimumEnergy(ph2)) continue;
+
         if(!fPHOSTriggerHelper->IsOnActiveTRUChannel(ph2)) continue;
-        //if(!ph2->IsTOFOK()) continue;
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
@@ -2602,17 +3411,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
         relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
         TVector3 global_probe(position);
         fPHOSGeo->GlobalPos2RelId(global_probe,relId);
-        eta_probe = global_probe.Eta();
-        phi_probe = global_probe.Phi();
-        if(phi_probe < 0) phi_probe += TMath::TwoPi();
+        //eta_probe = global_probe.Eta();
+        //phi_probe = global_probe.Phi();
+        //if(phi_probe < 0) phi_probe += TMath::TwoPi();
 
         module = relId[0];
         cellx  = relId[2];
         cellz  = relId[3];
         tru = fPHOSTriggerHelper->WhichTRU(cellx,cellz);
 
-        DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
-        if(DeltaRgg < Rlimit) continue;
+        //DeltaRgg = TMath::Sqrt(TMath::Power(eta_tag - eta_probe,2) + TMath::Power(phi_tag - phi_probe,2));
+        //if(DeltaRgg < Rlimit) continue;
 
         FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_Trg",m12,energy);
         FillHistogramTH2(fOutputContainer,Form("hMixMgg_Probe_Trg_M%d_TRU%d",module,tru),m12,energy);
@@ -2660,11 +3469,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
     AliInfo(Form("genIDUE = %d , genIDJet = %d , firstindexJet = %d , lastindexJet = %d.",genIDUE,genIDJet,firstJetindex,lastJetindex));
   }
 
-  TF1 *f1Pi0Weight = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
-  TF1 *f1K0SWeight = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
+  TF1 *f1Pi0Weight   = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
+  TF1 *f1EtaWeight   = (TF1*)GetAdditionalEtaPtWeightFunction(fCentralityMain);
+  //TF1 *f1GammaWeight = (TF1*)GetAdditionalGammaPtWeightFunction(fCentralityMain);
+  TF1 *f1K0SWeight   = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
+  TF1 *f1L0Weight    = (TF1*)GetAdditionalL0PtWeightFunction(fCentralityMain);
 
   Double_t TruePi0Pt = 0.;
   Double_t TrueK0SPt = 0.;
+  Double_t TrueL0Pt  = 0.;
+  Double_t TrueEtaPt = 0.;
 
   Int_t genID = -1;
   Double_t pT=0, rapidity=0, phi=0;
@@ -2687,9 +3501,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
     const Int_t Ntrack = fMCArrayESD->GetNprimary();//this is the number of generated particles by event generator.
     for(Int_t i=0;i<Ntrack;i++){
       TParticle *p = (TParticle*)fMCArrayESD->Particle(i);
-      Int_t primary = FindPrimaryMotherESD(i);
 
       if(fIsJJMC){
+        Int_t primary = FindPrimaryMotherESD(i);
         if(fMCType.Contains("JJMC") && (primary < firstJetindex || lastJetindex < primary)) continue;
         if(fMCType.Contains("MBMC") && (primary < firstUEindex  || lastUEindex  < primary)) continue;
       }
@@ -2699,35 +3513,58 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       phi = p->Phi();
       pdg = p->GetPdgCode();
 
+//      if(fMCArrayESD->IsPhysicalPrimary(i))
+//      FillHistogramTH1(fOutputContainer,"hPDGPhysicalPrimary",pdg);
+
       //rapidity is Y(), but, pseudo-rapidity is Eta();
 
+      weight = 1.;
       if(pT < 1e-3) continue;//reject below 1 MeV
       if(TMath::Abs(rapidity) > 0.5) continue;
 
-      if(p->Rho() > 1.0) continue;
+      Double32_t x = p->Vx() - fVertex[0];
+      Double32_t y = p->Vy() - fVertex[1];
+      //Double32_t z = p->Vz() - fVertex[2];
+      //Double32_t Rho = sqrt(x*x + y*y + z*z);
+      Double32_t R = sqrt(x*x + y*y);
+
+      //if(Rho > 1.0) continue;//3D
+      if(R > 1.0) continue;//2D
       weight = 1.;
 
       if(pdg==111){//pi0
         parname = "Pi0";
+        weight = f1Pi0Weight->Eval(pT);
         if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-        else                        weight = f1Pi0Weight->Eval(pT);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
+
       }
       else if(pdg==221){//eta
         parname = "Eta";
+        weight = f1EtaWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
+
       }
       else if(pdg==22){//gamma
         parname = "Gamma";
-        if(IsFrom(i,TruePi0Pt,111)){
-          if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-          else                        weight = f1Pi0Weight->Eval(TruePi0Pt);
-        }
+        if(IsFrom(i,TruePi0Pt,111)) weight = f1Pi0Weight->Eval(TruePi0Pt);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
+  
+      else if(pdg==223){//omega 782 meson
+        parname = "Omega";
+        weight = 1.;
+      }
+
       else if(pdg==211 || pdg==-211){//pi+ or pi-
         //c x tau = 7.8m
         parname = "ChargedPion";
-        //weight = f1Pi0Weight->Eval(pT);
+        weight = f1Pi0Weight->Eval(pT);
         if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-        else                        weight = f1Pi0Weight->Eval(pT);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
       else if(pdg==321 || pdg==-321){//K+ or K-
         //c x tau = 3.7m
@@ -2744,12 +3581,30 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
         parname = "K0L";
         weight = f1K0SWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
-      else if(pdg==3122){//Lmabda0
+      else if(TMath::Abs(pdg) == 3122){//Lmabda0
         //c x tau = 7.89cm
         parname = "Lambda0";
+        weight = f1L0Weight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
-      else if(pdg==3212){//Sigma0
+      else if(TMath::Abs(pdg) == 3212){//Sigma0
         parname = "Sigma0";
+        weight = 1.;
+      }
+      else if(pdg == 2212){//proton
+        parname = "Proton";
+        weight = 1.;
+      }
+      else if(pdg == -2212){//anti-proton
+        parname = "AntiProton";
+        weight = 1.;
+      }
+      else if(pdg == 2112){//neutron
+        parname = "Neutron";
+        weight = 1.;
+      }
+      else if(pdg == -2112){//anti-neutron
+        parname = "AntiNeutron";
+        weight = 1.;
       }
       else{
         continue;
@@ -2786,35 +3641,59 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       phi = p->Phi();
       pdg = p->PdgCode();
 
+      //if(p->IsPhysicalPrimary())
+      //  FillHistogramTH1(fOutputContainer,"hPDGPhysicalPrimary",pdg);
+
       //rapidity is Y(), but, pseudo-rapidity is Eta();
 
+      weight = 1.;
       if(pT < 1e-3) continue;//reject below 1 MeV
       if(TMath::Abs(rapidity) > 0.5) continue;
 
-      if(Rho(p) > 1.0) continue;
+      //if(Rho(p) > 1.0) continue;//3D
+      if(R(p) > 1.0) continue;//2D
       weight = 1.;
 
       if(pdg==111){//pi0
         parname = "Pi0";
+        weight = f1Pi0Weight->Eval(pT);
         if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-        else                        weight = f1Pi0Weight->Eval(pT);
-      }
-      else if(pdg==221){//eta
-        parname = "Eta";
-      }
-      else if(pdg==22){//gamma
-        parname = "Gamma";
-        if(IsFrom(i,TruePi0Pt,111)){
-          if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-          else                        weight = f1Pi0Weight->Eval(TruePi0Pt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
+
+        if(Are2GammasInPHOSAcceptance(i)){
+          FillHistogramTH1(fOutputContainer,Form("hGen%sPtACC"    ,parname.Data()),pT          ,weight);
+          FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPhiACC",parname.Data()),phi,rapidity,weight);
+          FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPtACC" ,parname.Data()),rapidity,pT ,weight);
         }
 
       }
+      else if(pdg==221){//eta
+        parname = "Eta";
+        weight = f1EtaWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
+        if(Are2GammasInPHOSAcceptance(i)){
+          FillHistogramTH1(fOutputContainer,Form("hGen%sPtACC"    ,parname.Data()),pT          ,weight);
+          FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPhiACC",parname.Data()),phi,rapidity,weight);
+          FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPtACC" ,parname.Data()),rapidity,pT ,weight);
+        }
+      }
+      else if(pdg==22){//gamma
+        parname = "Gamma";
+        if(IsFrom(i,TruePi0Pt,111)) weight = f1Pi0Weight->Eval(TruePi0Pt);
+        if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
+      }
+      else if(pdg==223){//omega 782 meson
+        parname = "Omega";
+        weight = 1.;
+      }
       else if(pdg==211 || pdg==-211){//pi+ or pi-
         parname = "ChargedPion";
+        weight = f1Pi0Weight->Eval(pT);
         if(IsFrom(i,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-        else                        weight = f1Pi0Weight->Eval(pT);
-
+        if(IsFrom(i,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);
+        if(IsFrom(i,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);
       }
       else if(pdg==321 || pdg==-321){//K+ or K-
         parname = "ChargedKaon";
@@ -2828,11 +3707,28 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
         parname = "K0L";
         weight = f1K0SWeight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
-      else if(pdg==3122){//Lmabda0
+      else if(TMath::Abs(pdg) == 3122){//Lmabda0
         parname = "Lambda0";
+        weight = f1L0Weight->Eval(pT) * f1Pi0Weight->Eval(pT);
       }
-      else if(pdg==3212){//Sigma0
+      else if(TMath::Abs(pdg) == 3212){//Sigma0
         parname = "Sigma0";
+      }
+      else if(pdg == 2212){//proton
+        parname = "Proton";
+        weight = 1.;
+      }
+      else if(pdg == -2212){//anti-proton
+        parname = "AntiProton";
+        weight = 1.;
+      }
+      else if(pdg == 2112){//neutron
+        parname = "Neutron";
+        weight = 1.;
+      }
+      else if(pdg == -2112){//anti-neutron
+        parname = "AntiNeutron";
+        weight = 1.;
       }
       else{
         continue;
@@ -2843,8 +3739,29 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
       FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPt" ,parname.Data()),rapidity,pT ,weight);
 
     }//end of generated particle loop
+   
+    //AliGenHijingEventHeader* hijingGenHeader = 0x0;
+    //if(fAODEvent) {
+    //  AliAODMCHeader* mcHeader = (AliAODMCHeader*) fAODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    //  TList* headerList = mcHeader->GetCocktailHeaders();
+    //  for (Int_t i=0; i<headerList->GetEntries(); i++) {
+    //    hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(headerList->At(i));
+    //    if(hijingGenHeader) break;
+    //  }
+    //}
+    //if(hijingGenHeader){
+    //  const Int_t Nprimary = hijingGenHeader->NProduced();
+    //  for(Int_t i=0;i<Nprimary;i++){
+    //  AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(i);
+    //  genID = p->GetGeneratorIndex();
 
+    //  pdg = p->PdgCode();
+    //  FillHistogramTH1(fOutputContainer,"hPDGPhysicalPrimary",pdg);
+    //  if(p->MCStatusCode() == 1) FillHistogramTH1(fOutputContainer,"hPDGPhysicalPrimaryStable",pdg);
 
+    //  }
+
+    //}
   }
 
 
@@ -2853,50 +3770,50 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ProcessMC()
 Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::R(AliAODMCParticle* p)
 {
   //Radius of vertex in cylindrical system.
-
-//  if(p->PdgCode() == 111){
-//    cout << "Xv = " << p->Xv() << " , fVertex[0] = " << fVertex[0] << endl;
-//    cout << "Yv = " << p->Yv() << " , fVertex[1] = " << fVertex[1] << endl;
-//    cout << "Zv = " << p->Zv() << " , fVertex[2] = " << fVertex[2] << endl;
-//  }
+  //relative position to vertex is NOT mandatory, if you want to use cylindrical system.
+  //just for consistency, relative position is used here.
 
   Double32_t x = p->Xv() - fVertex[0];
   Double32_t y = p->Yv() - fVertex[1];
   return sqrt(x*x + y*y);
-
-  //Double32_t x = p->Xv();
-  //Double32_t y = p->Yv();
-  //Double32_t z = p->Zv();
-  //return sqrt(x*x + y*y + z*z);
 }
 //________________________________________________________________________
 Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::Rho(AliAODMCParticle* p)
 {
   //Radius of vertex in spherical system.
-
-//  if(p->PdgCode() == 111){
-//    cout << "Xv = " << p->Xv() << " , fVertex[0] = " << fVertex[0] << endl;
-//    cout << "Yv = " << p->Yv() << " , fVertex[1] = " << fVertex[1] << endl;
-//    cout << "Zv = " << p->Zv() << " , fVertex[2] = " << fVertex[2] << endl;
-//  }
+  //relative position to vertex is necessary, if you want to use spherical system.
 
   Double32_t x = p->Xv() - fVertex[0];
   Double32_t y = p->Yv() - fVertex[1];
   Double32_t z = p->Zv() - fVertex[2];
   return sqrt(x*x + y*y + z*z);
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::RAbs(AliAODMCParticle* p)
+{
+  //Radius of vertex in cylindrical system.
 
-  //Double32_t x = p->Xv();
-  //Double32_t y = p->Yv();
-  //Double32_t z = p->Zv();
-  //return sqrt(x*x + y*y + z*z);
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  return sqrt(x*x + y*y);
+}
+//________________________________________________________________________
+Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::RhoAbs(AliAODMCParticle* p)
+{
+  //Radius of vertex in spherical system.
+
+  Double32_t x = p->Xv();
+  Double32_t y = p->Yv();
+  Double32_t z = p->Zv();
+  return sqrt(x*x + y*y + z*z);
 }
 //________________________________________________________________________
 Double_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::DeltaPhiIn0Pi(Double_t dphi)
 {
   //this returns dphi in 0-pi range in unit of radian.
   Double_t tmp = dphi;
-  while(tmp < 0)           tmp += 2./(Double_t)fHarmonics * TMath::Pi();
-  while(tmp > TMath::Pi()) tmp -= 2./(Double_t)fHarmonics * TMath::Pi();
+  while(tmp < 0)                                     tmp += 2./(Double_t)fHarmonics * TMath::Pi();
+  while(tmp > 2./(Double_t)fHarmonics * TMath::Pi()) tmp -= 2./(Double_t)fHarmonics * TMath::Pi();
 
   return tmp;
 }
@@ -2911,20 +3828,39 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
   Double_t pT = 0;
 
   if(esd){
+    const Int_t Nprimary = fMCArrayESD->GetNprimary();//this number contains only generated particles by event generator.
     TParticle *p = (TParticle*)fMCArrayESD->Particle(label);
     TParticle *mp = 0x0;
     motherid = p->GetFirstMother();
-    while(motherid > -1){
+
+    Double32_t x = 999;
+    Double32_t y = 999;
+    //Double32_t z = 999;
+    //Double32_t Rho = 999;
+    Double32_t R = 999;
+
+    //printf("Nprimary = %d\n",Nprimary);
+
+    while(motherid >= Nprimary){
       mp = (TParticle*)fMCArrayESD->Particle(motherid);
       pT = mp->Pt();
       pdg = mp->GetPdgCode(); 
 
-      if(pdg == target_pdg && mp->Rho() < 1.0){//pi0 from primary vertex
+      //printf("IsFrom::motherid = %d\n",motherid);
+
+      x = mp->Vx() - fVertex[0];
+      y = mp->Vy() - fVertex[1];
+      //z = mp->Vz() - fVertex[2];
+      //Rho = sqrt(x*x + y*y + z*z);
+      R = sqrt(x*x + y*y);
+
+      //if(TMath::Abs(pdg) == target_pdg && Rho < 1.0){//pi0 from primary vertex
+      if(TMath::Abs(pdg) == target_pdg && R < 1.0){//pi0 from primary vertex
         TruePt = pT;
         return kTRUE;
       }
 
-      motherid = p->GetFirstMother();
+      motherid = mp->GetFirstMother();
     }
 
   }
@@ -2938,7 +3874,8 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
       pT = mp->Pt();
       pdg = mp->PdgCode(); 
 
-      if(pdg == target_pdg && Rho(mp) < 1.0){//pi0 from primary vertex
+      //if(TMath::Abs(pdg) == target_pdg && Rho(mp) < 1.0){//pi0 from primary vertex
+      if(TMath::Abs(pdg) == target_pdg && R(mp) < 1.0){//pi0 from primary vertex
         TruePt = pT;
         return kTRUE;
       }
@@ -2951,9 +3888,15 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsFrom(Int_t label, Double_t &True
 //________________________________________________________________________
 Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::IsPhoton(Int_t label)
 {
-
-  AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(label);
-  Int_t pdg = p->PdgCode(); 
+  Int_t pdg = 0;
+  if(fESDEvent){
+    TParticle *p = (TParticle*)fMCArrayESD->Particle(label);
+    pdg = p->GetPdgCode(); 
+  }
+  else if(fAODEvent){
+    AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(label);
+    pdg = p->PdgCode();
+  }
 
   if(pdg == 22) return kTRUE;
   else          return kFALSE; 
@@ -2971,14 +3914,37 @@ Int_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::FindCommonParent(Int_t iPart, Int_t
   Int_t iprim1 = iPart;
 
   while(iprim1>-1){
-    Int_t iprim2=jPart;
-
-    while(iprim2>-1){
-      if(iprim1==iprim2) return iprim1;
-      iprim2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2))->GetMother();
+    AliAODMCParticle *p1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1));
+    Int_t pdg1 = p1->GetPdgCode();
+    if(TMath::Abs(pdg1) <= 6 || TMath::Abs(pdg1) == 21){//reject quarks and gluons as parents.
+      iprim1 = p1->GetMother();
+      continue;
+    }
+    if(iprim1 == 0 || iprim1 == 1){//colliding protons
+      iprim1 = p1->GetMother();
+      continue;
     }
 
-    iprim1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1))->GetMother();
+    Int_t iprim2 = jPart;
+    while(iprim2>-1){
+      AliAODMCParticle *p2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2));
+      Int_t pdg2 = p2->GetPdgCode();
+
+      if(TMath::Abs(pdg2) <= 6 || TMath::Abs(pdg2) == 21){//reject quarks and gluons as parents.
+        iprim2 = p2->GetMother();
+        continue;
+      }
+      if(iprim2 == 0 || iprim2 == 1){//colliding protons
+        iprim2 = p2->GetMother();
+        continue;
+      }
+
+      if(iprim1==iprim2) return iprim1;
+      iprim2 = p2->GetMother();
+
+    }
+
+    iprim1 = p1->GetMother();
   }
 
   return -1;
@@ -3200,10 +4166,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SetMCWeight()
   const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
 
   Double_t weight = 1.;
-  TF1 *f1Pi0Weight = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
-  TF1 *f1K0SWeight = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
+  TF1 *f1Pi0Weight   = (TF1*)GetAdditionalPi0PtWeightFunction(fCentralityMain);
+  TF1 *f1K0SWeight   = (TF1*)GetAdditionalK0SPtWeightFunction(fCentralityMain);
+  TF1 *f1L0Weight    = (TF1*)GetAdditionalL0PtWeightFunction(fCentralityMain);
+  TF1 *f1EtaWeight   = (TF1*)GetAdditionalEtaPtWeightFunction(fCentralityMain);
+  //TF1 *f1GammaWeight = (TF1*)GetAdditionalGammaPtWeightFunction(fCentralityMain);
+
   Int_t primary = -1;
   Double_t TruePi0Pt = 0.;
+  Double_t TrueEtaPt = 0.;
+  //Double_t TrueGammaPt = 0.;
   Double_t TrueK0SPt = 0;
   Double_t TrueL0Pt = 0;
 
@@ -3212,17 +4184,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::SetMCWeight()
     primary = ph->GetPrimary();
     weight = 1.;
 
-    if(IsFrom(primary,TruePi0Pt,111)){//pi0
-      //for feed down correction from K0S->pi0 + pi0
-      if(IsFrom(primary,TrueK0SPt,310)) weight *= f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);
-      else                              weight *= f1Pi0Weight->Eval(TruePi0Pt);
-    }
+    //weight is always defined as relative X/pi0 ratio, and pi0 weight is absolute number.
+    if(IsFrom(primary,TruePi0Pt,111)) weight = f1Pi0Weight->Eval(TruePi0Pt);//pi0
+    if(IsFrom(primary,TruePi0Pt,211)) weight = f1Pi0Weight->Eval(TruePi0Pt);//pi+/-
 
-    if(IsFrom(primary,TrueL0Pt,3122)){//lambda0
-      //for feed down correction from L0->pi0 + neutron
-      //weight *= f1K0SWeight->Eval(TrueK0SPt);
-      weight *= 1.;
-    }
+    if(IsFrom(primary,TrueK0SPt,310)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);//K0S
+    if(IsFrom(primary,TrueK0SPt,130)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);//K0L
+    if(IsFrom(primary,TrueK0SPt,321)) weight = f1K0SWeight->Eval(TrueK0SPt) * f1Pi0Weight->Eval(TrueK0SPt);//K+/-
+
+    if(IsFrom(primary,TrueEtaPt,221)) weight = f1EtaWeight->Eval(TrueEtaPt) * f1Pi0Weight->Eval(TrueEtaPt);//eta
+
+    if(IsFrom(primary,TrueL0Pt,3122)) weight = f1L0Weight->Eval(TrueL0Pt)   * f1Pi0Weight->Eval(TrueL0Pt);//Lambda
 
     ph->SetWeight(weight);
 
@@ -3236,20 +4208,154 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillRejectionFactorMB()
   //the best senario of how to estimate trigger rejection factor is reading ALICE electric log book.
   //but, fake trigger might be there.
 
-  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (9 -1);//trigger input -1
-  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (7 -1);//trigger input -1
-  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (6 -1);//trigger input -1
-  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (5 -1);//trigger input -1
+  Int_t L1Hinput = 7;
+  Int_t L1Minput = 6;
+  Int_t L1Linput = 5;
+  Int_t L0input  = 17;//LHC17
 
-  Bool_t Is0PH0matched = fPHOSTriggerHelperL0 ->IsPHI7(fEvent,fPHOSClusterCuts);
-  Bool_t Is1PHHmatched = fPHOSTriggerHelperL1H->IsPHI7(fEvent,fPHOSClusterCuts);
-  Bool_t Is1PHMmatched = fPHOSTriggerHelperL1M->IsPHI7(fEvent,fPHOSClusterCuts);
-  Bool_t Is1PHLmatched = fPHOSTriggerHelperL1L->IsPHI7(fEvent,fPHOSClusterCuts);
+  if(fRunNumber <= 246994)  L0input = 9;
+  const Int_t Nmod=5;//number of mpdules
+  const Bool_t IsPrivateTRUBadMap = fPHOSTriggerHelper->IsPrivateTRUBadMap();
+
+  if(!fPHOSTriggerHelperL0 ){
+    fPHOSTriggerHelperL0  = new AliPHOSTriggerHelper(-1      ,L0input,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL0->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1H){
+    fPHOSTriggerHelperL1H = new AliPHOSTriggerHelper(L1Hinput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1H->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1M){
+    fPHOSTriggerHelperL1M = new AliPHOSTriggerHelper(L1Minput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1M->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+  if(!fPHOSTriggerHelperL1L){
+    fPHOSTriggerHelperL1L = new AliPHOSTriggerHelper(L1Linput,-1     ,kFALSE);
+    if(IsPrivateTRUBadMap){
+      for(Int_t imod=1;imod<Nmod;imod++) fPHOSTriggerHelperL1L->SetPHOSTRUBadMap(imod,fPHOSTriggerHelper->GetPHOSTRUBadMap(imod));
+    }
+  }
+
+  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (L0input  - 1);//trigger input -1
+  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Hinput - 1);//trigger input -1
+  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Minput - 1);//trigger input -1
+  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Linput - 1);//trigger input -1
+
+  AliInfo(Form("Energy threshold of PHOS trigger is %3.2f GeV",fEnergyThreshold));
+
+  Bool_t Is0PH0matched = fPHOSTriggerHelperL0 ->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);
+  Bool_t Is1PHHmatched = fPHOSTriggerHelperL1H->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);
+  Bool_t Is1PHMmatched = fPHOSTriggerHelperL1M->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);
+  Bool_t Is1PHLmatched = fPHOSTriggerHelperL1L->IsPHI7(fEvent,fPHOSClusterCuts,fEmin,fEnergyThreshold,fUseCoreEnergy);
 
   if(Is0PH0fired && Is0PH0matched) FillHistogramTH1(fOutputContainer,"hEventSummary", 7);//0PH0
   if(Is1PHLfired && Is1PHHmatched) FillHistogramTH1(fOutputContainer,"hEventSummary", 8);//1PHL
   if(Is1PHMfired && Is1PHMmatched) FillHistogramTH1(fOutputContainer,"hEventSummary", 9);//1PHM
   if(Is1PHHfired && Is1PHLmatched) FillHistogramTH1(fOutputContainer,"hEventSummary",10);//1PHH
+
+  if(Is0PH0fired) FillTriggerInfoMB(fPHOSTriggerHelperL0,-1);
+  if(Is1PHLfired) FillTriggerInfoMB(fPHOSTriggerHelperL1L,2);
+  if(Is1PHMfired) FillTriggerInfoMB(fPHOSTriggerHelperL1M,1);
+  if(Is1PHHfired) FillTriggerInfoMB(fPHOSTriggerHelperL1H,0);
+
+}
+//_______________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTriggerInfoMB(AliPHOSTriggerHelper *helper, const Int_t L1)
+{
+  Double_t energy = 0;
+  //Double_t pT = 0;
+  Float_t position[3] = {};
+  Int_t trgrelId[4]={};
+  Int_t tmod=0; //"Online" module number
+  Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
+  Int_t trgmodule=0,trgcellx=0,trgcellz=0;
+
+
+  Int_t relId[4]={};
+  Int_t module=0,cellx=0,cellz=0,tru=0;
+
+  TString type = "";
+  if(L1== -1) type = "L0";
+  else if(L1== 0) type = "L1H";
+  else if(L1== 1) type = "L1M";
+  else if(L1== 2) type = "L1L";
+  else{
+    AliInfo(Form("Your choice of trigger type %d is wrong. return.",L1));
+    return;
+  }
+
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+
+  for(Int_t i=0;i<multClust;i++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i);
+    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+    if(!CheckMinimumEnergy(ph)) continue;
+
+    if(!ph->IsTOFOK()) continue;//MB data requires timing cut.
+
+    //pT = ph->Pt();
+    energy = ph->Energy();
+
+    if(fUseCoreEnergy){
+      //pT = (ph->GetMomV2())->Pt();
+      energy = (ph->GetMomV2())->Energy();
+    }
+
+    position[0] = ph->EMCx();
+    position[1] = ph->EMCy();
+    position[2] = ph->EMCz();
+    TVector3 global1(position);
+    fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+    module = relId[0];
+    cellx  = relId[2];
+    cellz  = relId[3];
+    tru = helper->WhichTRU(cellx,cellz);
+
+    if(module < 1 || module > 4){
+      AliError(Form("Wrong module number %d",module));
+      return;
+    }
+    AliInfo(Form("cluster position M:%d, X:%d , Z:%d , TRU:%d",module,cellx,cellz,tru));
+
+    AliVCaloTrigger* trg = fEvent->GetCaloTrigger("PHOS");
+    trg->Reset();
+
+    while(trg->Next()){
+
+      // L1 threshold: -1-L0, 0-PHH, 1-PHM, 2-PHL
+      if(trg->GetL1TimeSum() != L1) continue;
+
+      trg->GetPosition(tmod,trgabsId);//tmod is online module numbering. i.e., tmod=1 means half module.
+
+      fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelId);
+      //for offline numbering, relId should be used.
+
+      trgmodule = trgrelId[0];
+      trgcellx  = trgrelId[2];
+      trgcellz  = trgrelId[3];
+
+      AliInfo(Form("fired TRU channel M:%d, X:%d , Z:%d",trgmodule,trgcellx,trgcellz));
+
+      if(trgmodule < 1 || trgmodule > 4){
+        AliError(Form("Wrong module number %d",trgmodule));
+        return;
+      }
+
+      if(helper->IsMatched(trgrelId,relId)){
+        FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%s",type.Data()),energy);//matched cluster
+        FillHistogramTH1(fOutputContainer,Form("hMatchedClusterEnergy%sM%dTRU%d",type.Data(),module,tru),energy);//matched cluster
+        break;//exit from trigger patch loop
+      }
+    }//end of while trigger patch loop
+
+  }//end of cluster loop
 
 }
 //_______________________________________________________________________________
@@ -3284,6 +4390,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
   TLorentzVector p12, p12core;
   Double_t m12=0,pt12=0;
   Double_t e1=0,e2=0;
+  Double_t weight = 1., w1 = 1., w2 = 1.;
+  Int_t primary1 = -1;
+  Int_t primary2 = -1;
+  Int_t commonID = -1;
 
   for(Int_t ia=0;ia<7;ia++){
     for(Int_t ib=0;ib<7;ib++){
@@ -3291,10 +4401,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
       for(Int_t i1=0;i1<multClust-1;i1++){
         AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
         if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+        if(!CheckMinimumEnergy(ph1)) continue;
 
         for(Int_t i2=i1+1;i2<multClust;i2++){
           AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
           if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+          if(!CheckMinimumEnergy(ph2)) continue;
 
           e1 = ph1->Energy();
           e2 = ph2->Energy();
@@ -3312,7 +4424,21 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
             pt12 = p12core.Pt();
           }
 
-          FillHistogramTH2(fOutputContainer,Form("hMgg_a%d_b%d",ia,ib),m12,pt12);
+          weight = 1.;
+          if(fIsMC){
+            w1= ph1->GetWeight();
+            primary1 = ph1->GetPrimary();
+
+            w2 = ph2->GetWeight();
+            primary2 = ph2->GetPrimary();
+
+            commonID = FindCommonParent(primary1,primary2);
+            if(commonID > -1) weight = w1;
+            else weight = w1*w2;
+
+          }//end of if fIsMC
+
+          FillHistogramTH2(fOutputContainer,Form("hMgg_a%d_b%d",ia,ib),m12,pt12,weight);
 
         }//end of ph2
       }//end of ph1
@@ -3327,6 +4453,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
       for(Int_t i1=0;i1<multClust;i1++){
         AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
         if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+        if(!CheckMinimumEnergy(ph1)) continue;
 
         for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
           TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -3334,6 +4461,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
           for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
             AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
             if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+            if(!CheckMinimumEnergy(ph2)) continue;
 
             e1 = ph1->Energy();
             e2 = ph2->Energy();
@@ -3359,5 +4487,417 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
   }//end of ia
 
 }
+//_______________________________________________________________________________
+Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::ExtractQnVector()
+{
+  if(fHarmonics < 0){
+    AliError(Form("Qn Flow vector correction flag is ON, but fHarmonics is not set. (it is %d now).",fHarmonics));
+    return kFALSE;
+  }
+
+  TList* qnlist = fFlowQnVectorMgr->GetQnVectorList();
+
+  const AliQnCorrectionsQnVector *QnVectorTPCDet[3];
+  Double_t TPCEP[3] = {};
+  for(Int_t i=0;i<3;i++){
+    QnVectorTPCDet[i] = GetQnVectorFromList(qnlist,Form("%s%s",fTPCEPName[i].Data(),fQNormalization.Data()),"latest","plain");
+    if(!QnVectorTPCDet[i]){
+      AliInfo("Event is rejected because event plane is not found or bad event plane quality in TPC.");
+      return kFALSE;//Qn vector correction does not exist or bad quality.
+    }
+    TPCEP[i] = QnVectorTPCDet[i]->EventPlane(fHarmonics);
+    if(TPCEP[i] < 0) TPCEP[i] += 2./(Double_t) fHarmonics * TMath::Pi();
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fTPCEPName[i].Data(),fQNormalization.Data()),fCentralityMain,TPCEP[i]);
+    AliInfo(Form("harmonics %d | TPC sub detector name %s%s : event plane = %f (rad).",fHarmonics,fTPCEPName[i].Data(),fQNormalization.Data(),TPCEP[i]));
+  }
+
+  const AliQnCorrectionsQnVector *QnVectorV0Det[3];
+  Double_t V0EP[3]  = {};
+  for(Int_t i=0;i<3;i++){
+    QnVectorV0Det[i]  = GetQnVectorFromList(qnlist,Form("%s%s",fV0EPName[i].Data(),fQNormalization.Data()),"latest","raw");
+    if(!QnVectorV0Det[i]){
+      AliInfo("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
+      return kFALSE;//Qn vector correction does not exist or bad quality.
+    }
+    V0EP[i] = QnVectorV0Det[i]->EventPlane(fHarmonics);
+    if(V0EP[i] < 0)  V0EP[i]  += 2./(Double_t) fHarmonics * TMath::Pi();
+    FillHistogramTH2(fOutputContainer,Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),fCentralityMain,V0EP[i]);
+    AliInfo(Form("harmonics %d | V0  sub detector name %s%s : event plane = %f (rad).",fHarmonics,fV0EPName[i].Data(),fQNormalization.Data(),V0EP[i]));
+  }
+
+  //0 < event plane < 2*pi/fHarmonics.
+  Double_t EP2 = -999; 
+  Double_t EP3 = -999; 
+
+  Double_t Q1[2] = {};//for Main
+  Double_t Q2[2] = {};//for Sub1
+  Double_t Q3[2] = {};//for Sub2
+
+  if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullTPC){
+    Q1[0] = QnVectorTPCDet[0]->Qx(fHarmonics);//FullTPC
+    Q1[1] = QnVectorTPCDet[0]->Qy(fHarmonics);//FullTPC
+    Q2[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q2[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q3[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q3[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    fEventPlane = TPCEP[0];
+    EP2 = V0EP[1];
+    EP3 = V0EP[2];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCNegEta){
+    Q1[0] = QnVectorTPCDet[1]->Qx(fHarmonics);//TPCNegEta
+    Q1[1] = QnVectorTPCDet[1]->Qy(fHarmonics);//TPCNegEta
+    Q2[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q2[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q3[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q3[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    fEventPlane = TPCEP[2];
+    EP2 = V0EP[1];
+    EP3 = V0EP[2];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCPosEta){
+    Q1[0] = QnVectorTPCDet[2]->Qx(fHarmonics);//TPCPosEta
+    Q1[1] = QnVectorTPCDet[2]->Qy(fHarmonics);//TPCPosEta
+    Q2[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q2[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q3[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q3[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    fEventPlane = TPCEP[1];
+    EP2 = V0EP[1];
+    EP3 = V0EP[2];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullV0){
+    Q1[0] = QnVectorV0Det[0]->Qx(fHarmonics);//FullV0
+    Q1[1] = QnVectorV0Det[0]->Qy(fHarmonics);//FullV0
+    Q2[0] = QnVectorTPCDet[1]->Qx(fHarmonics);//TPCNegEta
+    Q2[1] = QnVectorTPCDet[1]->Qy(fHarmonics);//TPCNegEta
+    Q3[0] = QnVectorTPCDet[2]->Qx(fHarmonics);//TPCPosEta
+    Q3[1] = QnVectorTPCDet[2]->Qy(fHarmonics);//TPCPosEta
+    fEventPlane = V0EP[0];
+    EP2 = TPCEP[1];
+    EP3 = TPCEP[2];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A){
+    Q1[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q1[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q2[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q2[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    Q3[0] = QnVectorTPCDet[0]->Qx(fHarmonics);//full acceptance of TPC
+    Q3[1] = QnVectorTPCDet[0]->Qy(fHarmonics);//full acceptance of TPC
+    fEventPlane = V0EP[1];
+    EP2 = V0EP[2];
+    EP3 = TPCEP[0];
+  }
+  else if(fQnDetectorMain == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C){
+    Q1[0] = QnVectorV0Det[2]->Qx(fHarmonics);//V0C
+    Q1[1] = QnVectorV0Det[2]->Qy(fHarmonics);//V0C
+    Q2[0] = QnVectorV0Det[1]->Qx(fHarmonics);//V0A
+    Q2[1] = QnVectorV0Det[1]->Qy(fHarmonics);//V0A
+    Q3[0] = QnVectorTPCDet[0]->Qx(fHarmonics);//full acceptance of TPC
+    Q3[1] = QnVectorTPCDet[0]->Qy(fHarmonics);//full acceptance of TPC
+    fEventPlane = V0EP[2];
+    EP2 = V0EP[1];
+    EP3 = TPCEP[0];
+  }
+
+  fQVector1.Set(Q1[0],Q1[1]);
+  TVector2 QVector2(Q2[0],Q2[1]);
+  TVector2 QVector3(Q3[0],Q3[1]);
+
+
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsNormQ1",fEstimator.Data()),fCentralityMain,fQVector1.Mod());
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsNormQ2",fEstimator.Data()),fCentralityMain, QVector2.Mod());
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsNormQ3",fEstimator.Data()),fCentralityMain, QVector3.Mod());
+
+
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1x",fEstimator.Data()),fCentralityMain,Q1[0]);
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ1y",fEstimator.Data()),fCentralityMain,Q1[1]);
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2x",fEstimator.Data()),fCentralityMain,Q2[0]);
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ2y",fEstimator.Data()),fCentralityMain,Q2[1]);
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ3x",fEstimator.Data()),fCentralityMain,Q3[0]);
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsQ3y",fEstimator.Data()),fCentralityMain,Q3[1]);
+
+  Double_t sp12 = fQVector1 *  QVector2;//scalar product between Q1 vector and Q2 vector
+  Double_t sp23 =  QVector2 *  QVector3;//scalar product between Q2 vector and Q3 vector
+  Double_t sp31 =  QVector3 * fQVector1;//scalar product between Q3 vector and Q1 vector
+
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),fCentralityMain,sp12);//mean value of sp is denominator of SP method
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),fCentralityMain,sp23);//mean value of sp is denominator of SP method
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),fCentralityMain,sp31);//mean value of sp is denominator of SP method
+  AliInfo(Form("Q1x = %e , Q1y = %e , Q2x = %e , Q2y = %e , Q3x = %e , Q3y = %e ,  SP12 = %e ,  SP23 = %e ,  SP31 = %e",Q1[0],Q1[1],Q2[0],Q2[1],Q3[0],Q3[1],sp12,sp23,sp31));
+  
+  const Double_t delta = 2. * TMath::Pi() / Double_t(fHarmonics) / 12.;
+  fEPBin = (Int_t)((fEventPlane) / delta);//it should be 0-11.
+  if(fEPBin < 0)  fEPBin =  0;//protection to avoid fEPBin = -1.
+  if(fEPBin > 11) fEPBin = 11;//protection to avoid fEPBin = 12.
+  
+  //for event plane resolution
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (fEventPlane - EP2)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (EP2         - EP3)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsCosDeltaEventPlane31",fEstimator.Data()),fCentralityMain,TMath::Cos(fHarmonics * (EP3 - fEventPlane)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane12",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (fEventPlane - EP2)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane23",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (EP2         - EP3)));
+  FillHistogramTH2(fOutputContainer,Form("hCentrality%svsSinDeltaEventPlane31",fEstimator.Data()),fCentralityMain,TMath::Sin(fHarmonics * (EP3 - fEventPlane)));
+
+  return kTRUE;
+}
+//_______________________________________________________________________________
+Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::Are2GammasInPHOSAcceptance(Int_t id)
+{
+  if(!fMCArrayAOD) return kFALSE;
+  AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(id);
+ 
+  Int_t id0 = p->GetDaughterLabel(0);
+  Int_t id1 = p->GetDaughterLabel(1);
+
+  if(id0 < 0 || id1 < 0) return kFALSE;
+ 
+  AliAODMCParticle *d0 = (AliAODMCParticle*)fMCArrayAOD->At(id0);
+  //printf("d0 | pdg = %d , eta = %e , phi = %e\n",d0->GetPdgCode(),d0->Eta(),d0->Phi());
+
+  AliAODMCParticle *d1 = (AliAODMCParticle*)fMCArrayAOD->At(id1);
+  //printf("d1 | pdg = %d , eta = %e , phi = %e\n",d1->GetPdgCode(),d1->Eta(),d1->Phi());
+
+  if(d0->GetPdgCode() != 22 || d1->GetPdgCode() != 22) return kFALSE;
+  if(TMath::Abs(d0->Eta()) > 0.13 || TMath::Abs(d1->Eta()) > 0.13) return kFALSE;
+
+  if(d0->Phi() < 260.*TMath::DegToRad() || 320.*TMath::DegToRad() < d0->Phi()) return kFALSE;
+  if(d1->Phi() < 260.*TMath::DegToRad() || 320.*TMath::DegToRad() < d1->Phi()) return kFALSE;
+
+  return kTRUE;
+}
+//_______________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTrackMatching()
+{
+
+  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
+
+  Double_t r=999, trackPt=0;
+  Double_t pT = 0;
+  Int_t charge = 0;
+  Double_t nsigmaElectron = 999;
+  Double_t nsigmaPion = 999;
+  Double_t nsigmaKaon = 999;
+  Double_t nsigmaProton = 999;
+  Bool_t pidPion = kFALSE;
+  Bool_t pidKaon = kFALSE;
+  Bool_t pidProton = kFALSE;
+  Bool_t pidElectron = kFALSE;
+  const Double_t NsigmaCut = 3;
+  Bool_t isGlobal = kFALSE;
+
+  for(Int_t i1=0;i1<multClust;i1++){
+    AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
+    //if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+    if(!CheckMinimumEnergy(ph)) continue;
+    //if(!fIsMC && !ph->IsTOFOK()) continue;
+
+    if(fIsPHOSTriggerAnalysis){
+      if( fIsMC && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//only for MC
+      if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
+    }
+    if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;
+
+    pT = ph->Pt();
+    if(fUseCoreEnergy) pT = (ph->GetMomV2())->Pt();
+
+    AliVCluster *clu = (AliVCluster*)ph->GetCluster();
+    AliVTrack *track = 0x0;
+    r = 999;
+    isGlobal = kFALSE;
+
+    if(fESDEvent){
+      Int_t trackindex = clu->GetTrackMatchedIndex();
+      if(trackindex > 0){
+        track = (AliVTrack*)(fEvent->GetTrack(trackindex));
+        isGlobal = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
+      }//end of track matching
+    }//end of ESD
+    else if(fAODEvent){
+      if(clu->GetNTracksMatched() > 0){
+        track = dynamic_cast<AliVTrack*>(clu->GetTrackMatched(0));
+        isGlobal = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);//standard cuts with very loose DCA cut
+      }//end of track matching
+    }//end of AOD
+
+    pidPion = kFALSE;
+    pidKaon = kFALSE;
+    pidProton = kFALSE;
+    pidElectron = kFALSE;
+    r = ph->GetNsigmaCPV();
+
+    if(track){
+      trackPt = track->Pt();
+      charge = track->Charge();
+
+      nsigmaElectron = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);//(-2,3) is for real electron analysis.
+      nsigmaPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
+      nsigmaKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
+      nsigmaProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+
+      if((TMath::Abs(nsigmaElectron) < nsigmaPion)     && (TMath::Abs(nsigmaElectron) < nsigmaKaon) && (TMath::Abs(nsigmaElectron) < nsigmaProton) && (-2 < nsigmaElectron && nsigmaElectron < 3)) pidElectron = kTRUE;
+      if((nsigmaPion     < TMath::Abs(nsigmaElectron)) && (nsigmaPion     < nsigmaKaon) && (nsigmaPion     < nsigmaProton) && (nsigmaPion     < NsigmaCut)) pidPion = kTRUE;
+      if((nsigmaKaon     < TMath::Abs(nsigmaElectron)) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
+      if((nsigmaProton   < TMath::Abs(nsigmaElectron)) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
+
+      if(pidElectron){
+        FillHistogramTH2(fOutputContainer,"hRvsTrackPt_Electron",trackPt,r);
+        FillHistogramTH2(fOutputContainer,"hRvsClusterPt_Electron",pT,r);
+      }
+      else if(pidPion){
+        FillHistogramTH2(fOutputContainer,"hRvsTrackPt_Pion",trackPt,r);
+        FillHistogramTH2(fOutputContainer,"hRvsClusterPt_Pion",pT,r);
+      }
+      else if(pidKaon){
+        FillHistogramTH2(fOutputContainer,"hRvsTrackPt_Kaon",trackPt,r);
+        FillHistogramTH2(fOutputContainer,"hRvsClusterPt_Kaon",pT,r);
+      }
+      else if(pidProton){
+        if(charge > 0){
+          FillHistogramTH2(fOutputContainer,"hRvsTrackPt_Proton",trackPt,r);
+          FillHistogramTH2(fOutputContainer,"hRvsClusterPt_Proton",pT,r);
+        }
+        else{
+          FillHistogramTH2(fOutputContainer,"hRvsTrackPt_AntiProton",trackPt,r);
+          FillHistogramTH2(fOutputContainer,"hRvsClusterPt_AntiProton",pT,r);
+        }
+      }
+    }//end of track matching
+
+    //FillHistogramTH2(fOutputContainer,"hRvsClusterPt",pT,r);
+ 
+  }//end of cluster loop
+
+}
+//_______________________________________________________________________________
+void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
+{
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+  Float_t position[3] = {0,0,0};
+  Int_t relId[4]={0,0,0,0};
+  Double_t pT = 0;
+  Double_t pttrack=0.;
+  Int_t charge=0;
+  Double_t cpv = 999;
+  Double_t dx=999.,dz=999.;
+
+  Double_t nsigmaElectron = 999;
+  Double_t nsigmaPion = 999;
+  Double_t nsigmaKaon = 999;
+  Double_t nsigmaProton = 999;
+  Bool_t pidPion = kFALSE;
+  Bool_t pidKaon = kFALSE;
+  Bool_t pidProton = kFALSE;
+  Bool_t pidElectron = kFALSE;
+  const Double_t NsigmaCut = 3;
+  Bool_t isGlobal = kFALSE;
+
+  AliPHOSTenderTask *PHOSTenderTask = dynamic_cast<AliPHOSTenderTask*>(AliAnalysisManager::GetAnalysisManager()->GetTask("PHOSTenderTask"));
+  if(!PHOSTenderTask){
+    AliInfo("PHOSTenderTask does not exist!");
+    return;
+  }
+  else{
+    AliPHOSTenderSupply *supply = (AliPHOSTenderSupply*)PHOSTenderTask->GetPHOSTenderSupply();
+    //track matching by AliPHOSTenderSupply
+
+    Int_t Nev = prevPHOS->GetSize();
+    if(Nev > fNMixTrack) Nev = fNMixTrack;//set max N events.
+
+    for(Int_t iev=0;iev<Nev;iev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(iev));
+
+      for(Int_t iph=0;iph<mixPHOS->GetEntriesFast();iph++){
+        AliCaloPhoton *ph = (AliCaloPhoton*)mixPHOS->At(iph);
+        //if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+        if(!CheckMinimumEnergy(ph)) continue;
+        //if(!fIsMC && !ph->IsTOFOK()) continue;
+
+        if(fIsPHOSTriggerAnalysis){
+          if( fIsMC && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//keep same TRU acceptance only in kRFE.
+          if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
+        }
+
+        if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//criterion fTRFM == kRFE is not needed.
+
+        pT = ph->Pt();
+        if(fUseCoreEnergy) pT = (ph->GetMomV2())->Pt();
+
+        position[0] = ph->EMCx();
+        position[1] = ph->EMCy();
+        position[2] = ph->EMCz();
+
+        TVector3 global(position);
+        relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+        fPHOSGeo->GlobalPos2RelId(global,relId);
+        Int_t module = relId[0];
+        TVector3 locPos;
+        fPHOSGeo->Global2Local(locPos,global,module);
+        cpv = 999.; dx  = 999.; dz  = 999.;
+        Int_t itr = supply->FindTrackMatching(module,&locPos,dx,dz,pttrack,charge);
+
+        if(itr > 0){
+          cpv = supply->TestCPV(dx,dz,pttrack,charge);
+          //AliInfo(Form("dx = %3.2f cm , dz = %3.2f cm , distance in sigma = %3.2f",dx,dz,cpv));
+
+          //FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt",pttrack,cpv);
+          //FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt",pTcluster,cpv);
+
+          pidPion = kFALSE;
+          pidKaon = kFALSE;
+          pidProton = kFALSE;
+          pidElectron = kFALSE;
+          isGlobal = kFALSE;
+
+          AliVTrack *track = (AliVTrack*)fEvent->GetTrack(itr);
+          if(fESDEvent){
+            isGlobal = fESDtrackCutsGlobal->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
+          }//end of ESD
+          else if(fAODEvent){
+            isGlobal = dynamic_cast<AliAODTrack*>(track)->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA);//standard cuts with very loose DCA cut
+          }//end of AOD
+
+          nsigmaElectron = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron);//(-2,3) is for real electron analysis.
+          nsigmaPion     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
+          nsigmaKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
+          nsigmaProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+
+          if((TMath::Abs(nsigmaElectron) < nsigmaPion)     && (TMath::Abs(nsigmaElectron) < nsigmaKaon) && (TMath::Abs(nsigmaElectron) < nsigmaProton) && (-2 < nsigmaElectron && nsigmaElectron < 3)) pidElectron = kTRUE;
+          if((nsigmaPion     < TMath::Abs(nsigmaElectron)) && (nsigmaPion     < nsigmaKaon) && (nsigmaPion     < nsigmaProton) && (nsigmaPion     < NsigmaCut)) pidPion = kTRUE;
+          if((nsigmaKaon     < TMath::Abs(nsigmaElectron)) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
+          if((nsigmaProton   < TMath::Abs(nsigmaElectron)) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
+
+          if(pidElectron){
+            FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Electron",pttrack,cpv);
+            FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Electron",pT,cpv);
+          }
+          else if(pidPion){
+            FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Pion",pttrack,cpv);
+            FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Pion",pT,cpv);
+          }
+          else if(pidKaon){
+            FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Kaon",pttrack,cpv);
+            FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Kaon",pT,cpv);
+          }
+          else if(pidProton){
+            if(charge > 0){
+              FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_Proton",pttrack,cpv);
+              FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_Proton",pT,cpv);
+            }
+            else{
+              FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt_AntiProton",pttrack,cpv);
+              FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt_AntiProton",pT,cpv);
+            }
+          }
+        }//end of track matching
+
+      }//end of cluster loop
+
+    }//end of mixed event loop
+
+  }//end of accessing PHOSTender
+
+}
+//_______________________________________________________________________________
 //_______________________________________________________________________________
 

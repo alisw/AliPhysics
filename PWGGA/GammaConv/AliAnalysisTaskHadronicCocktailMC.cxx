@@ -93,7 +93,10 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(): AliAnaly
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
-  fMaxY(2)
+  fMaxY(2),
+  fMaxEta(0),
+  fMaxPt(50),
+  fPtBinWidth(0.05)
 {
 
 }
@@ -138,7 +141,10 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(const char 
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
-  fMaxY(2)
+  fMaxY(2),
+  fMaxEta(0),
+  fMaxPt(50),
+  fPtBinWidth(0.05)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -224,8 +230,10 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
     for (Int_t i=0; i<24; i++) fHasMother[i] = kTRUE;
   }
 
-  fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}",1,0,1,kTRUE);
+  fHistNEvents = (TH1F*)SetHist1D(fHistNEvents,"f","NEvents","","N_{evt}",1,0,1, kTRUE);
   fOutputContainer->Add(fHistNEvents);
+
+  Int_t nBinsPt = fMaxPt/fPtBinWidth;
 
   const Int_t nInputParticles         = 24;
   Int_t   fParticleList_local[]       = {221,310,130,3122,113,331,223,213,-213,333,443,2114,2214,1114,2224,321,-321,-3334,3334,-3312,3312,3224,3114,313};
@@ -245,34 +253,39 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
   fHistPhiDaughterPhiSourceInput  = new TH2F*[nInputParticles];
   for(Int_t i=0; i<nInputParticles; i++){
     if (fHasMother[i]) {
-      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f",Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+      fHistPtYInput[i] = (TH2F*)SetHist2D(fHistPtYInput[i],"f", Form("Pt_Y_%s",fParticleListNames[i].Data()),"#it{p}_{T}","Y", nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYInput[i]);
 
       // pi0/eta/pi+- from certain mother
-      fHistPtYDaughterSource[i] = (TH2F*)SetHist2D(fHistPtYDaughterSource[i],"f",Form("Pt_Y_%s_From_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+      fHistPtYDaughterSource[i] = (TH2F*)SetHist2D(fHistPtYDaughterSource[i],"f", Form("Pt_Y_%s_From_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#it{p}_{T}","Y",
+                                                   nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYDaughterSource[i]);
 
       // phi distributions
-      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f",Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,2*TMath::Pi(),kTRUE);
+      fHistPtPhiInput[i] = (TH2F*)SetHist2D(fHistPtPhiInput[i],"f", Form("Pt_Phi_%s",fParticleListNames[i].Data()),"#it{p}_{T}","#phi", nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiInput[i]);
 
-      fHistPtPhiDaughterSource[i] = (TH2F*)SetHist2D(fHistPtPhiDaughterSource[i],"f",Form("Pt_Phi_%s_From_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,7,kTRUE);
+      fHistPtPhiDaughterSource[i] = (TH2F*)SetHist2D(fHistPtPhiDaughterSource[i],"f", Form("Pt_Phi_%s_From_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#it{p}_{T}","#phi",
+                                                     nBinsPt, 0, fMaxPt, 100, 0, 7, kTRUE);
       fOutputContainer->Add(fHistPtPhiDaughterSource[i]);
 
       // correlation gamma from certain mother to mother
-      fHistPtDaughterPtSourceInput[i] = (TH2F*)SetHist2D(fHistPtDaughterPtSourceInput[i],"f",Form("Pt%s_PtMother_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#it{p}_{T,daughter}","#it{p}_{T,mother}",500,0,50,500,0,50,kTRUE);
+      fHistPtDaughterPtSourceInput[i] = (TH2F*)SetHist2D(fHistPtDaughterPtSourceInput[i],"f", Form("Pt%s_PtMother_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),
+                                                         "#it{p}_{T,daughter}","#it{p}_{T,mother}", nBinsPt, 0, fMaxPt, nBinsPt, 0, fMaxPt, kTRUE);
       fOutputContainer->Add(fHistPtDaughterPtSourceInput[i]);
 
-      fHistPhiDaughterPhiSourceInput[i] = (TH2F*)SetHist2D(fHistPhiDaughterPhiSourceInput[i],"f",Form("Phi%s_PhiMother_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#phi_{daughter}","#phi_{mother}",100,0,7,100,0,7,kTRUE);
+      fHistPhiDaughterPhiSourceInput[i] = (TH2F*)SetHist2D(fHistPhiDaughterPhiSourceInput[i],"f",
+                                                           Form("Phi%s_PhiMother_%s",fAnalyzedParticle.Data(),fParticleListNames[i].Data()),"#phi_{daughter}","#phi_{mother}",
+                                                           100, 0, 7, 100, 0, 7, kTRUE);
       fOutputContainer->Add(fHistPhiDaughterPhiSourceInput[i]);
 
       // decay channels mother
-      fHistDecayChannelsInput[i] = (TH1F*)SetHist1D(fHistDecayChannelsInput[i],"f",Form("DecayChannels_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
+      fHistDecayChannelsInput[i] = (TH1F*)SetHist1D(fHistDecayChannelsInput[i],"f", Form("DecayChannels_%s",fParticleListNames[i].Data()),"","", 20, -0.5, 19.5, kTRUE);
       InitializeDecayChannelHist(fHistDecayChannelsInput[i], i);
       fOutputContainer->Add(fHistDecayChannelsInput[i]);
 
       // BR from pythia
-      fHistPythiaBR[i] = (TH1F*)SetHist1D(fHistPythiaBR[i],"f",Form("PythiaBR_%s",fParticleListNames[i].Data()),"","", 20,-0.5,19.5,kTRUE);
+      fHistPythiaBR[i] = (TH1F*)SetHist1D(fHistPythiaBR[i],"f", Form("PythiaBR_%s",fParticleListNames[i].Data()),"","", 20, -0.5, 19.5, kTRUE);
       InitializeDecayChannelHist(fHistPythiaBR[i], i);
       FillPythiaBranchingRatio(fHistPythiaBR[i], i);
       fUserInfo->Add(fHistPythiaBR[i]);
@@ -296,16 +309,20 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
   for (Int_t i = 0; i<3; i++) {
     if (fHasMother[i+1]) {
 
-      fHistPtYGammaFromXFromInput[i] = (TH2F*)SetHist2D(fHistPtYGammaFromXFromInput[i],"f",Form("Pt_Y_Gamma_From_X_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+      fHistPtYGammaFromXFromInput[i] = (TH2F*)SetHist2D(fHistPtYGammaFromXFromInput[i],"f", Form("Pt_Y_Gamma_From_X_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","Y",
+                                                        nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYGammaFromXFromInput[i]);
 
-      fHistPtYGammaFromPi0FromInput[i] = (TH2F*)SetHist2D(fHistPtYGammaFromPi0FromInput[i],"f",Form("Pt_Y_Gamma_From_Pi0_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","Y",500,0,50,400,-2.0,2.0,kTRUE);
+      fHistPtYGammaFromPi0FromInput[i] = (TH2F*)SetHist2D(fHistPtYGammaFromPi0FromInput[i],"f", Form("Pt_Y_Gamma_From_Pi0_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","Y",
+                                                          nBinsPt, 0, fMaxPt, 400, -2.0, 2.0, kTRUE);
       fOutputContainer->Add(fHistPtYGammaFromPi0FromInput[i]);
 
-      fHistPtPhiGammaFromXFromInput[i] = (TH2F*)SetHist2D(fHistPtPhiGammaFromXFromInput[i],"f",Form("Pt_Phi_Gamma_From_X_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,2*TMath::Pi(),kTRUE);
+      fHistPtPhiGammaFromXFromInput[i] = (TH2F*)SetHist2D(fHistPtPhiGammaFromXFromInput[i],"f", Form("Pt_Phi_Gamma_From_X_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","#phi",
+                                                          nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiGammaFromXFromInput[i]);
 
-      fHistPtPhiGammaFromPi0FromInput[i] = (TH2F*)SetHist2D(fHistPtPhiGammaFromPi0FromInput[i],"f",Form("Pt_Phi_Gamma_From_Pi0_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","#phi",500,0,50,100,0,2*TMath::Pi(),kTRUE);
+      fHistPtPhiGammaFromPi0FromInput[i] = (TH2F*)SetHist2D(fHistPtPhiGammaFromPi0FromInput[i],"f", Form("Pt_Phi_Gamma_From_Pi0_From_%s",fParticleListNames[i+1].Data()),"#it{p}_{T}","#phi",
+                                                            nBinsPt, 0, fMaxPt, 100, 0, 2*TMath::Pi(), kTRUE);
       fOutputContainer->Add(fHistPtPhiGammaFromPi0FromInput[i]);
 
     } else {
@@ -316,10 +333,10 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
     }
   }
 
-  fHistPdgInputRest = (TH1I*)SetHist1D(fHistPdgInputRest,"f","Pdg_primary_rest","PDG code","",5000,0,5000,kTRUE);
+  fHistPdgInputRest = (TH1I*)SetHist1D(fHistPdgInputRest,"f","Pdg_primary_rest","PDG code","",5000, 0, 5000, kTRUE);
   fOutputContainer->Add(fHistPdgInputRest);
 
-  fHistPdgDaughterSourceRest = (TH1I*)SetHist1D(fHistPdgDaughterSourceRest,"f",Form("Pdg_%s_From_rest",fAnalyzedParticle.Data()),"PDG code mother","",5000,0,5000,kTRUE);
+  fHistPdgDaughterSourceRest = (TH1I*)SetHist1D(fHistPdgDaughterSourceRest,"f", Form("Pdg_%s_From_rest",fAnalyzedParticle.Data()),"PDG code mother","",5000, 0, 5000, kTRUE);
   fOutputContainer->Add(fHistPdgDaughterSourceRest);
 
   fOutputContainer->Add(fOutputTree);
@@ -506,7 +523,6 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
     if( yPre <= 0 ) continue;
 
     Double_t y = 0.5*TMath::Log(yPre);
-    if (TMath::Abs(y) > fMaxY) continue;
 
     Int_t                       PdgAnalyzedParticle = 0;
     if (fAnalyzedMeson==0)      PdgAnalyzedParticle = 111;
@@ -515,6 +531,7 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
 
     // pi0/eta/pi+- from source
     if(TMath::Abs(particle->GetPdgCode())==PdgAnalyzedParticle && hasMother==kTRUE){
+      if (TMath::Abs(y) > fMaxY) continue;
       if(motherIsPrimary && fHasMother[GetParticlePosLocal(motherParticle->GetPdgCode())]){
 
         switch(motherParticle->GetPdgCode()){
@@ -671,6 +688,7 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
 
     // source
     if(particle->GetPdgCode()!=PdgAnalyzedParticle && particleIsPrimary && fHasMother[GetParticlePosLocal(particle->GetPdgCode())]){
+      if (TMath::Abs(y) > fMaxY) continue;
 
       switch(particle->GetPdgCode()){
         case 221:
@@ -825,6 +843,12 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
 
     // gamma from X/pi0 from source
     if (particle->GetPdgCode()==22 && motherHasMother) {
+      // additional condition to remove gammas out of eta range
+      if (fMaxEta>0){
+        if (TMath::Abs(particle->Eta()) > fMaxEta) continue;
+      } else {
+        if (TMath::Abs(y) > fMaxY) continue;
+      }
       if (grandMotherIsPrimary && fHasMother[GetParticlePosLocal(grandMotherParticle->GetPdgCode())]) {
 
         switch(grandMotherParticle->GetPdgCode()){

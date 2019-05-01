@@ -34,8 +34,10 @@ CEPEventBuffer::CEPEventBuffer()
   , fisClusterCut(kFALSE)
   , fisDGTrigger(kFALSE)
   , fnTOFmaxipads(0)
+  , fTOFTriggerMask(new AliTOFTriggerMask())
   , fEventCondition(AliCEPBase::kETBaseLine)
   , fnTracklets(0)
+  , fTrl2Tr(new TObjArray())
   , fnTracks(0)
   , fnTracksCombined(0)
   , fnTracksITSpure(0)
@@ -44,12 +46,14 @@ CEPEventBuffer::CEPEventBuffer()
   , fnV0(0)
   , fVtxType(-1)
   , fVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
+  , fdPhiEtaMinMax(999.)
   , fMCGenerator("")
   , fMCProcessType(AliCEPBase::kdumval)
   , fMCVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
   , fCEPTracks(new TObjArray())
 {
 
+  for (Int_t ii=0; ii<6; ii++) fnITSCluster[ii] = 0;
   for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
 }
@@ -64,6 +68,14 @@ CEPEventBuffer::~CEPEventBuffer()
 		fCEPTracks->Clear();
 		delete fCEPTracks;
 		fCEPTracks = 0x0;
+	}
+
+	// delete fTrl2Tr and all the associations it contains
+  if (fTrl2Tr) {
+		fTrl2Tr->SetOwner(kTRUE);
+		fTrl2Tr->Clear();
+		delete fTrl2Tr;
+		fTrl2Tr = 0x0;
 	}
 
 }
@@ -82,6 +94,7 @@ void CEPEventBuffer::Reset()
   fCollissionType  = AliCEPBase::kBinEventUnknown;
   fMagnField       = AliCEPBase::kdumval;
   fFiredTriggerClasses = TString("");
+  for (Int_t ii=0; ii<6; ii++) fnITSCluster[ii] = 0;
   for (Int_t ii=0; ii<4; ii++) fFiredChips[ii] = 0;
 
   // general event features
@@ -92,6 +105,8 @@ void CEPEventBuffer::Reset()
   fisDGTrigger     = kFALSE;
 
   fnTracklets     = 0;
+  fTrl2Tr->SetOwner(kTRUE);
+  fTrl2Tr->Clear();
   fnTracks        = 0;
   fnTracksCombined= 0;
   fnTracksITSpure = 0;
@@ -100,6 +115,7 @@ void CEPEventBuffer::Reset()
   fnV0            = 0;
   fVtxType        = -1;
   fVtxPos         = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
+  fdPhiEtaMinMax  = 999.;
 
   // Monte Carlo information
   fMCProcessType = AliCEPBase::kdumval;
@@ -164,6 +180,9 @@ Bool_t CEPEventBuffer::RemoveTrack(Int_t ind)
     } else {
       fnTracksCombined--;
     }
+    
+    // free memory
+    delete trk;
     
     done = kTRUE;
   }

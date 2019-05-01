@@ -32,7 +32,6 @@ AliJRunTable::AliJRunTable() :
 }
 
 void AliJRunTable::Init(){
-  // comment needed
     SetPeriodInformation( kUnknownPeriod, "UnknownPeriod", kPP, kRE, 0, -1, -1, "UnKnownPeriod" );
     SetPeriodInformation( kLHC10b, "LHC10b", kPP, kRE, 7000, 114737, 117223, "LHC10d1" );
     SetPeriodInformation( kLHC10c, "LHC10c", kPP, kRE, 7000, 118503, 121040, "LHC10d4" );
@@ -41,6 +40,8 @@ void AliJRunTable::Init(){
     SetPeriodInformation( kLHC10h, "LHC10h", kPbPb, kRE, 2760, 136851, 139517, "LHC11a10a_bis" );
     SetPeriodInformation( kLHC11h, "LHC11h", kPbPb, kRE, 2760, 167813, 170595, "LHC12a17" );
     SetPeriodInformation( kLHC15o, "LHC15o", kPbPb, kRE, 5020, 244640, 247173, "LHC16g" ); // HIJING MB 16g1
+	SetPeriodInformation( kLHC18r, "LHC18r", kPbPb, kRE, 5020, 296690, 297624, "LHC18r" );
+	SetPeriodInformation( kLHC18q_uncalib, "LHC18q", kPbPb, kRE, 5020, 295581, 296068, "LHC16g" );
 
     //LHC11a
     SetPeriodInformation(kLHC11a, "LHC11a", kPP, kRE, 2760, 144871, 146860, "LHC11b10a" );
@@ -61,6 +62,9 @@ void AliJRunTable::Init(){
     SetPeriodInformation( kLHC13g, "LHC13g",kPA, kRE, 5020, 197669,200000, "LHC13b2-efix_p1" );
     // p-Pb 5TeV
     SetPeriodInformation( kLHC16q, "LHC16q",kPA, kRE, 5020, 264896,265533, "LHC17f2" );
+    // p-p 5TeV
+    SetPeriodInformation( kLHC17p, "LHC17p",kPP, kRE, 5020, 281970,282350, "LHC17l3b" );
+    SetPeriodInformation( kLHC17q, "LHC17q",kPP, kRE, 5020, 282351,282444, "LHC17l3b" ); // need to update once it is available
 }
 
 

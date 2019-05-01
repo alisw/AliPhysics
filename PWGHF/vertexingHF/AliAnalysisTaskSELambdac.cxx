@@ -1648,20 +1648,20 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
   Int_t numberOfLambdac=0;
   if(TMath::Abs(part->GetPdgCode())!=4122) return kFALSE;
   // Int_t daughTmp[2];
-  // daughTmp[0]=part->GetDaughter(0);
-  // daughTmp[1]=part->GetDaughter(1);
+  // daughTmp[0]=part->GetDaughterLabel(0);
+  // daughTmp[1]=part->GetDaughterLabel(1);
   Int_t nDaugh = (Int_t)part->GetNDaughters();
   if(nDaugh<2) return kFALSE;
   if(nDaugh>3) return kFALSE;
-  AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughter(0));
+  AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(0));
   if(!pdaugh1) {return kFALSE;}
   Int_t number1 = TMath::Abs(pdaugh1->GetPdgCode());
-  AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughter(1));
+  AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(1));
   if(!pdaugh2) {return kFALSE;}
   Int_t number2 = TMath::Abs(pdaugh2->GetPdgCode());
 
   if(nDaugh==3){
-    Int_t thirdDaugh=part->GetDaughter(1)-1;
+    Int_t thirdDaugh=part->GetDaughterLabel(1)-1;
     AliAODMCParticle* pdaugh3 = (AliAODMCParticle*)arrayMC->At(thirdDaugh);
     Int_t number3 = TMath::Abs(pdaugh3->GetPdgCode());
     if((number1==321 && number2==211 && number3==2212) ||
@@ -1685,8 +1685,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if((number1==2212 && number2==313)){
       nfiglieK=pdaugh2->GetNDaughters();
       if(nfiglieK!=2) return kFALSE;
-      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
       if(!pdaughK1) return kFALSE;
       if(!pdaughK2) return kFALSE;
       if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) numberOfLambdac++;
@@ -1695,8 +1695,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if((number1==313 && number2==2212)){
       nfiglieK=pdaugh1->GetNDaughters();
       if(nfiglieK!=2) return kFALSE;
-      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
       if(!pdaughK1) return kFALSE;
       if(!pdaughK2) return kFALSE;
       if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) numberOfLambdac++;
@@ -1707,8 +1707,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if(number1==321 && number2==2224){
       nfiglieDelta=pdaugh2->GetNDaughters();
       if(nfiglieDelta!=2) return kFALSE;
-      AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-      AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+      AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
       if(!pdaughD1) return kFALSE;
       if(!pdaughD2) return kFALSE;
       if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) numberOfLambdac++;
@@ -1716,8 +1716,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if(number1==2224 && number2==321){
       nfiglieDelta=pdaugh1->GetNDaughters();
       if(nfiglieDelta!=2) return kFALSE;
-      AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-      AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+      AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
       if(!pdaughD1) return kFALSE;
       if(!pdaughD2) return kFALSE;
       if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) numberOfLambdac++;
@@ -1729,8 +1729,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if(number1==3124 && number2==211){
       nfiglieLa=pdaugh1->GetNDaughters();
       if(nfiglieLa!=2) return kFALSE;
-      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
       if(!pdaughL1) return kFALSE;
       if(!pdaughL2) return kFALSE;
       if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) numberOfLambdac++;
@@ -1738,8 +1738,8 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
     if(number1==211 && number2==3124){
       nfiglieLa=pdaugh2->GetNDaughters();
       if(nfiglieLa!=2) return kFALSE;
-      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
       if(!pdaughL1) return kFALSE;
       if(!pdaughL2) return kFALSE;
       if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) numberOfLambdac++;
@@ -1898,12 +1898,18 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
       AliVertexingHFUtils *util = new AliVertexingHFUtils();
       //      IsInjected = util->IsCandidateInjected(part,mcHeader2,arrayMC)?1:0;
    
-      labDp = MatchToMCLambdac(part,arrayMC);
-      if(labDp>0){
+			Int_t pdgCand =4122;
+			Int_t pdgDaughter[3]={-1,-1,-1};
+			pdgDaughter[0]=2212;
+			pdgDaughter[1]=321;
+			pdgDaughter[2]=211;   
+			//labDp = MatchToMCLambdac(part,arrayMC);
+      labDp = part->MatchToMC(pdgCand,arrayMC,3,pdgDaughter);
+      if(labDp>=0){
 	IsLc = 1;
 	AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
-	AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));
-	AliAODMCParticle *dg1 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(1));
+	AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughterLabel(0));
+	AliAODMCParticle *dg1 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughterLabel(1));
 	deltaPx=partDp->Px()-part->Px();
 	deltaPy=partDp->Py()-part->Py();
 	deltaPz=partDp->Pz()-part->Pz();
@@ -2313,7 +2319,7 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
       }
 
       if(fReadMC){
-	if(labDp>0) {
+	if(labDp>=0) {
 	  index=GetSignalHistoIndex(iPtBin);
 	  if(invMasspiKp>0. && invMasspKpi>0.){
 	    if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp,0.5);
@@ -2550,7 +2556,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
   Bool_t IsLcfromc=0;
   if(fReadMC){
     lab=part->MatchToMC(4122,arrMC,3,pdgDgLctopKpi); //return MC particle label if the array corresponds to a Lc, -1 if not (cf. AliAODRecoDecay.cxx)
-    if(lab>0){
+    if(lab>=0){
       AliAODMCParticle *partDp = (AliAODMCParticle*)arrMC->At(lab);
       AliVertexingHFUtils *util = new AliVertexingHFUtils();
       Int_t pdgMom=util->CheckOrigin(arrMC,partDp,kFALSE);
@@ -2622,7 +2628,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
   }
   if(fReadMC && selectionTrack>0) { // 3prongs candidate x Lc (only track selection) Jaime
     Int_t isReal=0;
-    if(lab>0 &&  IsLcfromc){ // Signal
+    if(lab>=0 &&  IsLcfromc){ // Signal
       for (Int_t iprong=0; iprong<3; iprong++) {
 	switch (pdgProngMC[iprong]) {
 	case 2212:
@@ -2678,7 +2684,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
   //cuts->SetUsePID(kTRUE); //PAOLA
   Int_t selection=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);
 
-  if ( (lab>0 && fReadMC && IsLcfromc) ||             // signal X MC
+  if ( (lab>=0 && fReadMC && IsLcfromc) ||             // signal X MC
        (isSelectedPID>0 && !fReadMC) ) { // signal+bkg X real data
 
     fillthis="hMass";
@@ -2927,7 +2933,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 
     } // end if (selection)
 
-  }else if( lab<=0 && fReadMC && !IsInjected ) { // bkg x MC
+  }else if( lab<0 && fReadMC && !IsInjected ) { // bkg x MC
 
     fillthis="hbMass";
 
@@ -3390,7 +3396,7 @@ void AliAnalysisTaskSELambdac::MultiplicityStudies(AliAODRecoDecayHF3Prong *part
 
   if(isSelected3ProngByLc>0 && fReadMC) {
     flag1 = kTRUE;
-    if (lab>0) {
+    if (lab>=0) {
       flag3 = kTRUE;
     }
 
@@ -3455,7 +3461,7 @@ void AliAnalysisTaskSELambdac::MultiplicityStudies(AliAODRecoDecayHF3Prong *part
 	break;
       }
 
-      if (lab>0) {
+      if (lab>=0) {
 	switch (TMath::Abs(mcprongTest->GetPdgCode())) {
 	case 11:
 	  fillthis="hElIn3Prong1";

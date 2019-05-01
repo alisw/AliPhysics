@@ -77,11 +77,11 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC()
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0),fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
-  fListHist(0),fListHistKstar(0),fListHist2Rho4Pion(0),fListHistK0s3PiPi4K(0),
+  fListHist(0),fListHistKstar(0),fListHist2Rho4Pion(0),fListHistK0s3PiPi4K(0),fListHistZDC(0),
   fHistNeventsEtaC(0),fMPiKvsMPiK(0),f2KstarPtPiPlus(0),f2KstarPtPiMinus(0),f2KstarPtKPlus(0),f2KstarPtKMinus(0),f2KstarTPCsignalPion(0),f2KstarTPCsignalKaon(0),f2KstarDedxVsPtPion(0),f2KstarDedxVsPtKaon(0),f2KstarTPCsignalVsQPtPion(0),f2KstarTPCsignalVsQPtKaon(0),f2KstarPtVsMinvFirstKstar(0),f2KstarPtVsMinvSecondKstar(0),f2KstarPtVsMinvEtaC(0),
   f1KstarPtPiPlus(0),f1KstarPtPiMinus(0),f1KstarPtKPlus(0),f1KstarPtKMinus(0),f1KstarTPCsignalPion(0),f1KstarTPCsignalKaon(0),f1KstarDedxVsPtPion(0),f1KstarDedxVsPtKaon(0),f1KstarTPCsignalVsQPtPion(0),f1KstarTPCsignalVsQPtKaon(0),f1KstarPtVsMinvKstar(0),f1KstarPtVsMinvOtherPiKcombo(0),f1KstarPtVsMinvEtaC(0),
   f0KstarPtPiPlus(0),f0KstarPtPiMinus(0),f0KstarPtKPlus(0),f0KstarPtKMinus(0),f0KstarTPCsignalPion(0),f0KstarTPCsignalKaon(0),f0KstarDedxVsPtPion(0),f0KstarDedxVsPtKaon(0),f0KstarTPCsignalVsQPtPion(0),f0KstarTPCsignalVsQPtKaon(0),f0KstarPtVsMinvFirstPiKcombo(0),f0KstarPtVsMinvSecondPiKcombo(0),f0KstarPtVsMinvEtaC(0),
-  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fK0sPionPt(0),fK0sKaonPt(0),fK0sPtVsMinvK0s(0),fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fK0sPtVsMinvEtaC(0),fK0sDecayLength(0),
+  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fK0sPionPt(0),fK0sKaonPt(0),fK0sPtVsMinvK0s(0),fKPiPtVsMinvK0sChannel(0),fM2K0sVsM2KPiK0sChannel(0),fM2K0sPiVsM2KPiK0sChannel(0),fM2K0sKVsM2KPiK0sChannel(0),fK0sPtVsMinvEtaC(0),fK0sDecayLength(0),
   fHistNpion(0),fHistNK0sPion(0),fHistNkaon(0),fHistPiMinusK(0),
   fV0DaughterDca(0),fK0sDcaToPrimVertex(0),fK0sDaughterDcaToPrimVertex(0),fK0sMassDistribution(0),fV0DecayLength(0),fV0Eta(0),fCosPointingAngle(0),
     fHistNeventsEtaCK0sChannel(0),fHistEtaCMassVsPt(0),fHistEtaCMassCoherent(0),fHistZDCCuts(0),
@@ -92,18 +92,19 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC()
   fTOFbetaVsPtAll(0),fTOFbetaVsPtPionsWithPID(0),fTOFbetaVsPtKaonsWithPID(0),
   fHistNeventsEtaCRhoChannel(0),f2RhoPtVsMinvRho(0),f4PionPtVsMinvRho(0),f2RhoPtVsMinvEtaC(0),f4PionPtVsMinvEtaC(0),
   fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),
-  f2RhoPtVsMinvOtherRho(0),f2RhoPtVsMinvNonRhoPairs(0),f4PiVs2PiMinv(0),f4PiVs2PiMinvSquared(0),
+  f2RhoPtVsMinvOtherRho(0),f2RhoPtVsMinvNonRhoPairs(0),f4PiVs2PiMinv(0),f4PiVs2PiMinvSquared(0),fM2PiPiVsM2PiPi(0),
   fKstarParentPx(0),fKstarParentPy(0),fKstarParentPz(0),fKstarDaughterParentAngle(0),fKstarDaughterParentCosAngle(0),fKstarDaughterDaughterAngle(0),fKstarDaughterDaughterCosAngle(0),fKstarDaughterPtotal(0),fKstarDaughterPtotalNorm(0),
   fKstarParentPxCheck(0),fKstarParentPyCheck(0),fKstarParentPzCheck(0),fKstarDaughterParentAngleCheck(0),fKstarDaughterParentCosAngleCheck(0),fKstarDaughterDaughterAngleCheck(0),fKstarDaughterDaughterCosAngleCheck(0),fKstarDaughterPtotalCheck(0),fKstarDaughterPtotalNormCheck(0),
   f2RhoParentPx(0),f2RhoParentPy(0),f2RhoParentPz(0),f2RhoDaughterParentAngle(0),f2RhoDaughterParentCosAngle(0),f2RhoDaughterDaughterAngle(0),f2RhoDaughterDaughterCosAngle(0),f2RhoDaughterPtotal(0),
   f2RhoParentPxCheck(0),f2RhoParentPyCheck(0),f2RhoParentPzCheck(0),f2RhoDaughterParentAngleCheck(0),f2RhoDaughterParentCosAngleCheck(0),f2RhoDaughterDaughterAngleCheck(0),f2RhoDaughterDaughterCosAngleCheck(0),f2RhoDaughterPtotalCheck(0),
-  fHistNeventsEtaC4KaonChannel(0),f4KaonPtVsMinvEtaC(0),f4KaonPtVsMinvKK(0),f4KVs2KMinv(0),f4KVs2KMinvSquared(0),
+  fHistNeventsEtaC4KaonChannel(0),f4KaonPtVsMinvEtaC(0),f4KaonPtVsMinvKK(0),f4KVs2KMinv(0),f4KVs2KMinvSquared(0),fM2KKVsM2KK(0),
   f2KstarEtaVsMinvEtaC(0),f1KstarEtaVsMinvEtaC(0),f0KstarEtaVsMinvEtaC(0),f2RhoEtaVsMinvEtaC(0),f4PionEtaVsMinvEtaC(0),f3PiPiEtaVsMinvEtaC(0),f4KaonEtaVsMinvEtaC(0),fK0sEtaVsMinvEtaC(0),
   f2KstarEtaVsMinvEtaC400MeVPtMax(0),f1KstarEtaVsMinvEtaC400MeVPtMax(0),f0KstarEtaVsMinvEtaC400MeVPtMax(0),f2RhoEtaVsMinvEtaC400MeVPtMax(0),f4PionEtaVsMinvEtaC400MeVPtMax(0),f3PiPiEtaVsMinvEtaC400MeVPtMax(0),f4KaonEtaVsMinvEtaC400MeVPtMax(0),fK0sEtaVsMinvEtaC400MeVPtMax(0),
   f2KstarEtaVsMinvEtaC100MeVPtMax(0),f1KstarEtaVsMinvEtaC100MeVPtMax(0),f0KstarEtaVsMinvEtaC100MeVPtMax(0),f2RhoEtaVsMinvEtaC100MeVPtMax(0),f4PionEtaVsMinvEtaC100MeVPtMax(0),f3PiPiEtaVsMinvEtaC100MeVPtMax(0),f4KaonEtaVsMinvEtaC100MeVPtMax(0),fK0sEtaVsMinvEtaC100MeVPtMax(0),
   f2KstarSumPzVsMinvEtaC(0),f1KstarSumPzVsMinvEtaC(0),f0KstarSumPzVsMinvEtaC(0),f2RhoSumPzVsMinvEtaC(0),f4PionSumPzVsMinvEtaC(0),f3PiPiSumPzVsMinvEtaC(0),f4KaonSumPzVsMinvEtaC(0),fK0sSumPzVsMinvEtaC(0),
   f2KstarScalarSumP(0),f1KstarScalarSumP(0),f0KstarScalarSumP(0),f2RhoScalarSumP(0),f4PionScalarSumP(0),f3PiPiScalarSumP(0),f4KaonScalarSumP(0),fK0sScalarSumP(0),
   f2KstarVectorSumPt(0),f1KstarVectorSumPt(0),f0KstarVectorSumPt(0),f2RhoVectorSumPt(0),f4PionVectorSumPt(0),f3PiPiVectorSumPt(0),f4KaonVectorSumPt(0),fK0sVectorSumPt(0),
+  fHistZDCAenergy(0),fHistZDCCenergy(0),fHistZDCAtime(0),fHistZDCCtime(0),fHistZDCImpactParameter(0),fHistZDCAImpactParameter(0),fHistZDCCImpactParameter(0),
   fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -126,11 +127,11 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),fHistCint1TriggersPerRun(0), fHistCint6TriggersPerRun(0), fHistC0tvxAndCint1TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
   fHistCTest58TriggersPerRun(0),fHistCTest59TriggersPerRun(0),fHistCTest60TriggersPerRun(0),fHistCTest61TriggersPerRun(0),fHistCcup8TriggersPerRun(0),fHistCcup9TriggersPerRun(0),fHistCcup10TriggersPerRun(0),fHistCcup11TriggersPerRun(0),fHistCcup12TriggersPerRun(0),fHistCtrueTriggersPerRun(0),
-  fListHist(0),fListHistKstar(0),fListHist2Rho4Pion(0),fListHistK0s3PiPi4K(0),
+  fListHist(0),fListHistKstar(0),fListHist2Rho4Pion(0),fListHistK0s3PiPi4K(0),fListHistZDC(0),
   fHistNeventsEtaC(0),fMPiKvsMPiK(0),f2KstarPtPiPlus(0),f2KstarPtPiMinus(0),f2KstarPtKPlus(0),f2KstarPtKMinus(0),f2KstarTPCsignalPion(0),f2KstarTPCsignalKaon(0),f2KstarTPCsignalVsQPtPion(0),f2KstarTPCsignalVsQPtKaon(0),f2KstarDedxVsPtPion(0),f2KstarDedxVsPtKaon(0),f2KstarPtVsMinvFirstKstar(0),f2KstarPtVsMinvSecondKstar(0),f2KstarPtVsMinvEtaC(0),
   f1KstarPtPiPlus(0),f1KstarPtPiMinus(0),f1KstarPtKPlus(0),f1KstarPtKMinus(0),f1KstarTPCsignalPion(0),f1KstarTPCsignalKaon(0),f1KstarDedxVsPtPion(0),f1KstarDedxVsPtKaon(0),f1KstarTPCsignalVsQPtPion(0),f1KstarTPCsignalVsQPtKaon(0),f1KstarPtVsMinvKstar(0),f1KstarPtVsMinvOtherPiKcombo(0),f1KstarPtVsMinvEtaC(0),
   f0KstarPtPiPlus(0),f0KstarPtPiMinus(0),f0KstarPtKPlus(0),f0KstarPtKMinus(0),f0KstarTPCsignalPion(0),f0KstarTPCsignalKaon(0),f0KstarDedxVsPtPion(0),f0KstarDedxVsPtKaon(0),f0KstarTPCsignalVsQPtPion(0),f0KstarTPCsignalVsQPtKaon(0),f0KstarPtVsMinvFirstPiKcombo(0),f0KstarPtVsMinvSecondPiKcombo(0),f0KstarPtVsMinvEtaC(0),
-  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fK0sPionPt(0),fK0sKaonPt(0),fK0sPtVsMinvK0s(0),fKPiPtVsMinvK0sChannel(0),fMK0sVsMKPiK0sChannel(0),fK0sPtVsMinvEtaC(0),fK0sDecayLength(0),
+  fHistK0sCandidatesPerEvent(0),fK0sPosDaughterPt(0),fK0sNegDaughterPt(0),fK0sPosVsNegDaughterPt(0),fK0sPionPt(0),fK0sKaonPt(0),fK0sPtVsMinvK0s(0),fKPiPtVsMinvK0sChannel(0),fM2K0sVsM2KPiK0sChannel(0),fM2K0sPiVsM2KPiK0sChannel(0),fM2K0sKVsM2KPiK0sChannel(0),fK0sPtVsMinvEtaC(0),fK0sDecayLength(0),
   fHistNpion(0),fHistNK0sPion(0),fHistNkaon(0),fHistPiMinusK(0),
   fV0DaughterDca(0),fK0sDcaToPrimVertex(0),fK0sDaughterDcaToPrimVertex(0),fK0sMassDistribution(0),fV0DecayLength(0),fV0Eta(0),fCosPointingAngle(0),
     fHistNeventsEtaCK0sChannel(0),fHistEtaCMassVsPt(0),fHistEtaCMassCoherent(0),fHistZDCCuts(0),
@@ -141,18 +142,19 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
   fTOFbetaVsPtAll(0),fTOFbetaVsPtPionsWithPID(0),fTOFbetaVsPtKaonsWithPID(0),
   fHistNeventsEtaCRhoChannel(0),f2RhoPtVsMinvRho(0),f4PionPtVsMinvRho(0),f2RhoPtVsMinvEtaC(0),f4PionPtVsMinvEtaC(0),
   fHistNeventsEtaC3PiPiChannel(0),f3PiPiPtVsMinvEtaC(0),
-  f2RhoPtVsMinvOtherRho(0),f2RhoPtVsMinvNonRhoPairs(0),f4PiVs2PiMinv(0),f4PiVs2PiMinvSquared(0),
+  f2RhoPtVsMinvOtherRho(0),f2RhoPtVsMinvNonRhoPairs(0),f4PiVs2PiMinv(0),f4PiVs2PiMinvSquared(0),fM2PiPiVsM2PiPi(0),
   fKstarParentPx(0),fKstarParentPy(0),fKstarParentPz(0),fKstarDaughterParentAngle(0),fKstarDaughterParentCosAngle(0),fKstarDaughterDaughterAngle(0),fKstarDaughterDaughterCosAngle(0),fKstarDaughterPtotal(0),fKstarDaughterPtotalNorm(0),
   fKstarParentPxCheck(0),fKstarParentPyCheck(0),fKstarParentPzCheck(0),fKstarDaughterParentAngleCheck(0),fKstarDaughterParentCosAngleCheck(0),fKstarDaughterDaughterAngleCheck(0),fKstarDaughterDaughterCosAngleCheck(0),fKstarDaughterPtotalCheck(0),fKstarDaughterPtotalNormCheck(0),
   f2RhoParentPx(0),f2RhoParentPy(0),f2RhoParentPz(0),f2RhoDaughterParentAngle(0),f2RhoDaughterParentCosAngle(0),f2RhoDaughterDaughterAngle(0),f2RhoDaughterDaughterCosAngle(0),f2RhoDaughterPtotal(0),
   f2RhoParentPxCheck(0),f2RhoParentPyCheck(0),f2RhoParentPzCheck(0),f2RhoDaughterParentAngleCheck(0),f2RhoDaughterParentCosAngleCheck(0),f2RhoDaughterDaughterAngleCheck(0),f2RhoDaughterDaughterCosAngleCheck(0),f2RhoDaughterPtotalCheck(0),
-  fHistNeventsEtaC4KaonChannel(0),f4KaonPtVsMinvEtaC(0),f4KaonPtVsMinvKK(0),f4KVs2KMinv(0),f4KVs2KMinvSquared(0),
+  fHistNeventsEtaC4KaonChannel(0),f4KaonPtVsMinvEtaC(0),f4KaonPtVsMinvKK(0),f4KVs2KMinv(0),f4KVs2KMinvSquared(0),fM2KKVsM2KK(0),
   f2KstarEtaVsMinvEtaC(0),f1KstarEtaVsMinvEtaC(0),f0KstarEtaVsMinvEtaC(0),f2RhoEtaVsMinvEtaC(0),f4PionEtaVsMinvEtaC(0),f3PiPiEtaVsMinvEtaC(0),f4KaonEtaVsMinvEtaC(0),fK0sEtaVsMinvEtaC(0),
   f2KstarEtaVsMinvEtaC400MeVPtMax(0),f1KstarEtaVsMinvEtaC400MeVPtMax(0),f0KstarEtaVsMinvEtaC400MeVPtMax(0),f2RhoEtaVsMinvEtaC400MeVPtMax(0),f4PionEtaVsMinvEtaC400MeVPtMax(0),f3PiPiEtaVsMinvEtaC400MeVPtMax(0),f4KaonEtaVsMinvEtaC400MeVPtMax(0),fK0sEtaVsMinvEtaC400MeVPtMax(0),
   f2KstarEtaVsMinvEtaC100MeVPtMax(0),f1KstarEtaVsMinvEtaC100MeVPtMax(0),f0KstarEtaVsMinvEtaC100MeVPtMax(0),f2RhoEtaVsMinvEtaC100MeVPtMax(0),f4PionEtaVsMinvEtaC100MeVPtMax(0),f3PiPiEtaVsMinvEtaC100MeVPtMax(0),f4KaonEtaVsMinvEtaC100MeVPtMax(0),fK0sEtaVsMinvEtaC100MeVPtMax(0),
   f2KstarSumPzVsMinvEtaC(0),f1KstarSumPzVsMinvEtaC(0),f0KstarSumPzVsMinvEtaC(0),f2RhoSumPzVsMinvEtaC(0),f4PionSumPzVsMinvEtaC(0),f3PiPiSumPzVsMinvEtaC(0),f4KaonSumPzVsMinvEtaC(0),fK0sSumPzVsMinvEtaC(0),
   f2KstarScalarSumP(0),f1KstarScalarSumP(0),f0KstarScalarSumP(0),f2RhoScalarSumP(0),f4PionScalarSumP(0),f3PiPiScalarSumP(0),f4KaonScalarSumP(0),fK0sScalarSumP(0),
   f2KstarVectorSumPt(0),f1KstarVectorSumPt(0),f0KstarVectorSumPt(0),f2RhoVectorSumPt(0),f4PionVectorSumPt(0),f3PiPiVectorSumPt(0),f4KaonVectorSumPt(0),fK0sVectorSumPt(0),
+  fHistZDCAenergy(0),fHistZDCCenergy(0),fHistZDCAtime(0),fHistZDCCtime(0),fHistZDCImpactParameter(0),fHistZDCAImpactParameter(0),fHistZDCCImpactParameter(0),
   fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListEtaCLoose(0),fListEtaCTight(0)
 
 {
@@ -174,6 +176,7 @@ AliAnalysisTaskUpcEtaC::AliAnalysisTaskUpcEtaC(const char *name)
   DefineOutput(5, TList::Class());
   DefineOutput(6, TList::Class());
   DefineOutput(7, TList::Class());
+  DefineOutput(8, TList::Class());
 }//AliAnalysisTaskUpcEtaC
 
 //_____________________________________________________________________________
@@ -570,30 +573,50 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHistK0s3PiPi4K = new TList();
   fListHistK0s3PiPi4K->SetOwner();
 
+  fListHistZDC = new TList();
+  fListHistZDC->SetOwner();
+
+  fHistZDCAenergy = new TH1D("fHistZDCAenergy","fHistZDCAenergy",1500,-3000.,12000.);
+  fListHistZDC->Add(fHistZDCAenergy);
+  fHistZDCCenergy = new TH1D("fHistZDCCenergy","fHistZDCCenergy",1500,-3000.,12000.);
+  fListHistZDC->Add(fHistZDCCenergy);
+  fHistZDCAtime = new TH1D("fHistZDCAtime","fHistZDCAtime",1600,-8.,8.);
+  fListHistZDC->Add(fHistZDCAtime);
+  fHistZDCCtime = new TH1D("fHistZDCCtime","fHistZDCCtime",1600,-8.,8.);
+  fListHistZDC->Add(fHistZDCCtime);
+  fHistZDCImpactParameter = new TH1D("fHistZDCImpactParameter","fHistZDCImpactParameter",100.,0.,10000.); //540,0.,1000); //Test large |b| values for UPC.
+  fListHistZDC->Add(fHistZDCImpactParameter);                                                  //Test |b| in femtometers (units in fm).
+  fHistZDCAImpactParameter = new TH1D("fHistZDCAImpactParameter","fHistZDCCImpactParameter",100.,0.,100.*pow(10,-15)); //540,-TMath::Pi(),2.*TMath::Pi());
+  fListHistZDC->Add(fHistZDCAImpactParameter);                                                 //Test |b| in hundreds of femtometers (units in m).
+  fHistZDCCImpactParameter = new TH1D("fHistZDCCImpactParameter","fHistZDCCImpactparameter",100.,0.,1.*pow(10,-15));//540,-TMath::Pi(),2.*TMath::Pi());
+  fListHistZDC->Add(fHistZDCCImpactParameter);                                                 //Test |b| in femtometers (units in m).
+
+
   cout << "##### Before fHistNevents... stuff is completed" << endl;
  
-  TString CutNameEtaCK0sChannel[15] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","1 or more K0s candidates",
+  TString CutNameEtaCK0sChannel[14] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","1 or more K0s candidates",
 				       "Four good tracks","KPi and two daughter Pions","qK<0 && Sum(qPi)<0 (bad)","qK>0 && Sum(qPi)>0 (bad)",
-				       "K-Pi+ && Opp sign daughters (good)","K+Pi- && Opp sign daughters","Total with correct charges","2+ tracks with pT>0.4","Belle Cuts Passed"};
+				       "K-Pi+ && Opp sign daughters (good)","K+Pi- && Opp sign daughters","Total with correct charges","2+ tracks with pT>0.4"};
 
-  fHistNeventsEtaCK0sChannel = new TH1D("fHistNeventsEtaCK0sChannel","fHistNeventsEtaCK0sChannel",15,0.5,15.5);
-  for(Int_t i=0;i<15; i++) fHistNeventsEtaCK0sChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCK0sChannel[i].Data());
+  fHistNeventsEtaCK0sChannel = new TH1D("fHistNeventsEtaCK0sChannel","fHistNeventsEtaCK0sChannel",14,0.5,14.5);
+  for(Int_t i=0;i<14; i++) fHistNeventsEtaCK0sChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCK0sChannel[i].Data());
   fListHistK0s3PiPi4K->Add(fHistNeventsEtaCK0sChannel);
 
-  TString CutNameEtaC[17] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+  TString CutNameEtaC[19] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
 			     "Two Kaons and Two Pions","Like sign kaons","Like sign pions","Like sign both","Opposite sign",
-			     "Pion and Kaon mass check","2Kstar events","1Kstar events","0Kstar events","2+ tracks with pT>0.4","Belle Cuts Passed"};
+			     "Pion and Kaon mass check","2Kstar events","1Kstar events","0Kstar events","2+ tracks with pT>0.4",
+			     "2 k missing TOF PID","2 #pi missing TOF PID","1 k and 1 #pi missing TOF PID"};
 
-  fHistNeventsEtaC = new TH1D("fHistNeventsEtaC","fHistNeventsEtaC",17,0.5,17.5);
-  for (Int_t i = 0; i<17; i++) fHistNeventsEtaC->GetXaxis()->SetBinLabel(i+1,CutNameEtaC[i].Data());
+  fHistNeventsEtaC = new TH1D("fHistNeventsEtaC","fHistNeventsEtaC",19,0.5,19.5);
+  for (Int_t i = 0; i<19; i++) fHistNeventsEtaC->GetXaxis()->SetBinLabel(i+1,CutNameEtaC[i].Data());
   fListHistKstar->Add(fHistNeventsEtaC);
 
-  TString CutNameEtaCRhoChannel[17] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+  TString CutNameEtaCRhoChannel[15] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
 				       "Four Pions","non-zero net charge","zero net charge","no sets of #rho's","one set of #rho's",
-				       "two sets of #rho's","#eta_{C}->#rho#rho candidates","2+ tracks with pT>0.4 rho0","2+ tracks with pT>0.4 4pi","Belle Cuts Passed (w/o 2#rho's)","Belle Cuts Passed (All 4#pi)"};
+				       "two sets of #rho's","#eta_{C}->#rho#rho candidates","2+ tracks with pT>0.4 rho0","2+ tracks with pT>0.4 4pi"};
 
-  fHistNeventsEtaCRhoChannel = new TH1D("fHistNeventsEtaCRhoChannel","fHistNeventsEtaCRhoChannel",17,0.5,17.5);
-  for (Int_t i = 0; i<17; i++) fHistNeventsEtaCRhoChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCRhoChannel[i].Data());
+  fHistNeventsEtaCRhoChannel = new TH1D("fHistNeventsEtaCRhoChannel","fHistNeventsEtaCRhoChannel",15,0.5,15.5);
+  for (Int_t i = 0; i<15; i++) fHistNeventsEtaCRhoChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaCRhoChannel[i].Data());
   fListHist2Rho4Pion->Add(fHistNeventsEtaCRhoChannel);
 
   f2RhoPtVsMinvEtaC = new TH2D("f2RhoPtVsMinvEtaC","f2RhoPtVsMinvEtaC",1000, 0., 10.,1000, 0., 10.);
@@ -620,6 +643,9 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
 
   f4PiVs2PiMinvSquared = new TH2D("f4PiVs2PiMinvSquared","f4PiVs2PiMinvSquared",2500, 0., 25., 2500, 0., 25.);
   fListHist2Rho4Pion->Add(f4PiVs2PiMinvSquared);
+
+  fM2PiPiVsM2PiPi = new TH2D("f2PiPiVsM2PiPi","fM2PiPiVsM2PiPi",1000, 0., 10., 1000, 0., 10.);
+  fListHist2Rho4Pion->Add(fM2PiPiVsM2PiPi);
 
   f2RhoScalarSumP = new TH1D("f2RhoScalarSumP","f2RhoScalarSumP",1000, 0., 10.);
   fListHist2Rho4Pion->Add(f2RhoScalarSumP);
@@ -659,11 +685,11 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
 
 
   //3PiPi channel
-  TString CutNameEtaC3PiPiChannel[11] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
-					 "Six Pions","non-zero net charge","candidate (0 net charge)","2+ tracks with pT>0.4","Belle Cuts Passed"};
+  TString CutNameEtaC3PiPiChannel[10] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Six good tracks",
+					"Six Pions","non-zero net charge","candidate (0 net charge)","2+ tracks with pT>0.4"};
 
-  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",11,0.5,11.5);
-  for (Int_t i = 0; i<11; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
+  fHistNeventsEtaC3PiPiChannel = new TH1D("fHistNeventsEtaC3PiPiChannel","fHistNeventsEtaC3PiPiChannel",10,0.5,10.5);
+  for (Int_t i = 0; i<10; i++) fHistNeventsEtaC3PiPiChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC3PiPiChannel[i].Data());
   fListHistK0s3PiPi4K->Add(fHistNeventsEtaC3PiPiChannel);
 
   
@@ -689,11 +715,11 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHistK0s3PiPi4K->Add(f3PiPiSumPzVsMinvEtaC);
 
   //4 kaon channel
-  TString CutNameEtaC4KaonChannel[12] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
-					 "Four Kaons","non-zero net charge","zero net charge","#eta_{C} candidates","2+ tracks with pT>0.4","Belle Cuts Passed"};
+  TString CutNameEtaC4KaonChannel[11] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
+					 "Four Kaons","non-zero net charge","zero net charge","#eta_{C} candidates","2+ tracks with pT>0.4"};
 
-  fHistNeventsEtaC4KaonChannel = new TH1D("fHistNeventsEtaC4KaonChannel","fHistNeventsEtaC4KaonChannel",12,0.5,12.5);
-  for (Int_t i = 0; i<12; i++) fHistNeventsEtaC4KaonChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC4KaonChannel[i].Data());
+  fHistNeventsEtaC4KaonChannel = new TH1D("fHistNeventsEtaC4KaonChannel","fHistNeventsEtaC4KaonChannel",11,0.5,11.5);
+  for (Int_t i = 0; i<11; i++) fHistNeventsEtaC4KaonChannel->GetXaxis()->SetBinLabel(i+1,CutNameEtaC4KaonChannel[i].Data());
   fListHistK0s3PiPi4K->Add(fHistNeventsEtaC4KaonChannel);
 
   f4KaonPtVsMinvEtaC = new TH2D("f4KaonPtVsMinvEtaC","f4KaonPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
@@ -704,6 +730,9 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
 
   f4KVs2KMinv = new TH2D("f4KVs2KMinv","f4KVs2KMinv",1000, 0., 10., 1000, 0., 10.);
   fListHistK0s3PiPi4K->Add(f4KVs2KMinv);
+
+  fM2KKVsM2KK = new TH2D("fM2KKVsM2KK","fM2KKVsM2KK",1000, 0., 10., 1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fM2KKVsM2KK);
 
   f4KVs2KMinvSquared = new TH2D("f4KVs2KMinvSquared","f4KVs2KMinvSquared",2500, 0., 25., 2500, 0., 25.);
   fListHistK0s3PiPi4K->Add(f4KVs2KMinvSquared);
@@ -1009,8 +1038,12 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   fListHistK0s3PiPi4K->Add(fKPiPtVsMinvK0sChannel);
   //fKPiMinvK0sChannel = new TH1D("fKPiMinvK0sChannel","fKPiMinvK0sChannel",500, 0.4, 0.9);
   //fListHist->Add(fKPiMinvK0sChannel);
-  fMK0sVsMKPiK0sChannel = new TH2D("fMK0sVsMKPiK0sChannel","fMK0sVsMKPiK0sChannel",1000, 0., 1., 1000, 0., 1.);
-  fListHistK0s3PiPi4K->Add(fMK0sVsMKPiK0sChannel);
+  fM2K0sVsM2KPiK0sChannel = new TH2D("fM2K0sVsM2KPiK0sChannel","fM2K0sVsM2KPiK0sChannel",1000, 0., 10., 1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fM2K0sVsM2KPiK0sChannel);
+  fM2K0sPiVsM2KPiK0sChannel = new TH2D("fM2K0sPiVsM2KPiK0sChannel","fM2K0sPiVsM2KPiK0sChannel",1000, 0., 10., 1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fM2K0sPiVsM2KPiK0sChannel);
+  fM2K0sKVsM2KPiK0sChannel = new TH2D("fM2K0sKVsM2KPiK0sChannel","fM2K0sKVsM2KPiK0sChannel",1000, 0., 10., 1000, 0., 10.);
+  fListHistK0s3PiPi4K->Add(fM2K0sKVsM2KPiK0sChannel);
   fK0sPtVsMinvEtaC = new TH2D("fK0sPtVsMinvEtaC","fK0sPtVsMinvEtaC",1000, 0., 10., 1000, 0., 10.);
   fListHistK0s3PiPi4K->Add(fK0sPtVsMinvEtaC);
   fK0sEtaVsMinvEtaC = new TH2D("fK0sEtaVsMinvEtaC","fK0sEtaVsMinvEtaC",1000, 0., 10., 2000, -10., 10.);
@@ -1075,6 +1108,7 @@ void AliAnalysisTaskUpcEtaC::UserCreateOutputObjects()
   PostData(5, fListHistKstar);
   PostData(6, fListHist2Rho4Pion);
   PostData(7, fListHistK0s3PiPi4K);
+  PostData(8, fListHistZDC);
 }//UserCreateOutputObjects
 
 //_____________________________________________________________________________
@@ -1303,10 +1337,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   fZDCCtime = fZDCdata->GetZNCTime();
   
   if(trigger.Contains("CCUP4-B"))fHistZDCCuts->Fill(1);
-  if(fZNAenergy < 8200 && fZNCenergy < 8200) fHistZDCCuts->Fill(2);
-  if(fZNAenergy < 683 && fZNCenergy < 683) fHistZDCCuts->Fill(3);
+  if(fZNAenergy < 11500 && fZNCenergy < 11500) fHistZDCCuts->Fill(2); //was 8200
+  if(fZNAenergy < 1500 && fZNCenergy < 1500) fHistZDCCuts->Fill(3); //was 683
   if(fZDCAtime == 0 && fZDCCtime == 0) fHistZDCCuts->Fill(4);
-
+  
   //primary vertex
   AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
   fVtxContrib = fAODVertex->GetNContributors();
@@ -1325,6 +1359,14 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   fV0Adecision = fV0data->GetV0ADecision();
   fV0Cdecision = fV0data->GetV0CDecision();
   if(fV0Adecision != AliAODVZERO::kV0Empty || fV0Cdecision != AliAODVZERO::kV0Empty) return;
+
+  fHistZDCAenergy->Fill(fZNAenergy);
+  fHistZDCCenergy->Fill(fZNCenergy);
+  fHistZDCAtime->Fill(fZDCAtime);
+  fHistZDCCtime->Fill(fZDCCtime);
+  fHistZDCImpactParameter->Fill(fZDCdata->GetImpactParameter());
+  fHistZDCAImpactParameter->Fill(fZDCdata->GetImpactParamSideA());
+  fHistZDCCImpactParameter->Fill(fZDCdata->GetImpactParamSideC());
   
   fHistNeventsEtaCK0sChannel->Fill(4);
   fHistNeventsEtaC->Fill(4);
@@ -1332,7 +1374,9 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   fHistNeventsEtaC3PiPiChannel->Fill(4);
   fHistNeventsEtaC4KaonChannel->Fill(4);
 
-  if( fZNAenergy > 8200 || fZNCenergy > 8200) return;
+  if( fZNAenergy > 11500 || fZNCenergy > 11500) return; // was 8200
+  if( fZNAenergy <= 1500 && fZNCenergy <= 1500) return; //>1500 for 0n0n or <= 1500 for XnXn
+  if( fZNAenergy > 1500 && fZNCenergy > 1500) return; //for 0nXn or Xn0n, one ZDC <= 1500 AND other ZDC > 1500.
   
   fHistNeventsEtaCK0sChannel->Fill(5);
   fHistNeventsEtaC->Fill(5); 
@@ -1349,13 +1393,12 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   Int_t missingTOFPID[7] = {-1,-1,-1,-1,-1,-1,-1};
   Int_t missingTOFPIDK0s[7] = {-1,-1,-1,-1,-1,-1,-1};
   
-  TLorentzVector vPion[7], vKaon[7], vK0sPion[7], vKPiK0sChannel, vK0s, vKstar[2], vCandidate, vPionMinus[4], vPionPlus[4], vRho[4], vKK[5];
+  TLorentzVector vPion[7], vKaon[7], vK0sPion[7], vKPiK0sChannel, vK0s, vKstar[2], vCandidate, vPionMinus[4], vPionPlus[4], vRho[4], vKK[5], vKaonMinus[4], vKaonPlus[4], vK0sPi, vK0sK;
   TVector3 sumPtVector;
   Int_t nHighPtTracks = 0;
   Short_t qKaon[7], qPion[7], qK0sPion[7];
   UInt_t nKaon=0, nPion=0, nK0sPion=0, nSpdHits=0;
   Double_t SumPz=0, VectorSumPt=0, ScalarSumP=0;
-  Bool_t BelleCuts = kFALSE;
   Double_t fRecTPCsignalPion[7], fRecTPCsignalKaon[7], fRecTPCsignalK0sPion[7];
   Int_t fChannel = 0;
   Double_t trackPt[7]={0,0,0,0,0,0,0};
@@ -1464,14 +1507,28 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //Kstar and 2pi2k channels
   nKaon=0; nPion=0;
-  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0; BelleCuts=kFALSE;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
   Int_t nTracksWithoutTOFinfo = 0;
   Bool_t goodPairA = kFALSE;
   Bool_t goodPairB = kFALSE;
   Double_t boostInfoA[13] = {-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.};
   Double_t boostInfoB[13] = {-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.,-999.};
+  Bool_t firstGuess = kTRUE;
+  Bool_t secondGuess = kFALSE;
 
   if(nGoodTracks == 4 && nSpdHits>1){
+    for(Int_t pidLoopCounter = 0;pidLoopCounter<1;pidLoopCounter++) { //loop over twice in case of 1 missing pion and 1 missing kaon.
+
+      nKaon=0; nPion=0;
+      SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
+      nTracksWithoutTOFinfo = 0;
+      goodPairA = kFALSE;
+      goodPairB = kFALSE;
+      for(int aa=0;aa<13;aa++) {
+	boostInfoA[aa] = -999.;
+	boostInfoB[aa] = -999.;
+      }
+
   	  fHistNeventsEtaC->Fill(6);
   	  for(Int_t i=0; i<4; i++){
                 AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(trackIndex[i]));
@@ -1525,18 +1582,52 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		if(nPion > 2 || nKaon > 2) break;
 	  }
 	    for(int i=0;i<4;i++) { //If one kaon or one pion is missing due to missing TOF PID info assume it is the fourth.
-	      if(nPion == 2 && nKaon == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+	      if(nPion == 2 && nKaon == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo <=2) {
 		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
 		fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
 		qKaon[nKaon] = trk->Charge();
 		vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 		nKaon++;
-	      } else if(nKaon == 2 && nPion == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+	      } else if(nKaon == 2 && nPion == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo <= 2) {
 		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
 		fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 		qPion[nPion] = trk->Charge();
 		vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
 		nPion++;
+	      } else if(nPion == 2 && nKaon == 0 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 2) {
+		fHistNeventsEtaC->Fill(17);
+		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+		fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
+		qKaon[nKaon] = trk->Charge();
+		vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
+		nKaon++;
+	      } else if(nKaon == 2 && nPion == 0 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 2) {
+		fHistNeventsEtaC->Fill(18);
+		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+		fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
+		qPion[nPion] = trk->Charge();
+		vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+		nPion++;
+	      } else if(nKaon == 1 && nPion == 1 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 2) {
+		if(firstGuess) {
+		  fHistNeventsEtaC->Fill(19);
+		  AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+		  fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
+		  qPion[nPion] = trk->Charge();
+		  vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+		  nPion++;
+		  pidLoopCounter--;
+		  firstGuess = kFALSE;
+		  secondGuess = kTRUE;
+		} else if(secondGuess) {
+		  AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
+		  fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
+		  qKaon[nKaon] = trk->Charge();
+		  vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
+		  nKaon++;
+		  firstGuess = kTRUE;
+		  secondGuess = kFALSE;
+		} 
 	      }
 	    }
 	    
@@ -1566,11 +1657,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  if(vKaon[aa].Pt() > 0.4) nHighPtTracks++;
 		}
 		if(nHighPtTracks > 1) fHistNeventsEtaC->Fill(16);
-		//Apply Belle Cuts
-		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
-		else BelleCuts = kFALSE;
-		if(BelleCuts) fHistNeventsEtaC->Fill(17);
-
+		
 		for(Int_t aa = 0;aa<13;aa++) {
 		  boostInfoA[aa] = -999.;
 		  boostInfoB[aa] = -999.;
@@ -1653,7 +1740,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    fKstarDaughterPtotalNormCheck->Fill(boostInfoB[12]);
 		  }
 
-		  //##### Turn off Helicity Cut #####
+		  //##### Turn off Helicitu Cut #####
 		  goodPairA = kTRUE;    goodPairB = kTRUE;
 
 		  //Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
@@ -1664,7 +1751,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  //2 Kstar case
 		  if((vKstar[0].M() < (kStarMass + kStarWidth)) && (vKstar[0].M() > (kStarMass - kStarWidth)) &&
 		     (vKstar[1].M() < (kStarMass + kStarWidth)) && (vKstar[1].M() > (kStarMass - kStarWidth)) && 
-		     goodPairA && goodPairB && BelleCuts) {
+		     goodPairA && goodPairB) {
 		    fHistNeventsEtaC->Fill(13);
 		    if(qPion[0] > 0 && qPion[1] < 0) {
 		      f2KstarPtPiPlus->Fill(vPion[0].Pt());
@@ -1705,7 +1792,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  //1 Kstar case
 		  else if ((vKstar[0].M() < (kStarMass + kStarWidth)) && (vKstar[0].M() > (kStarMass - kStarWidth)) &&
 			   ((vKstar[1].M() > (kStarMass + kStarWidth)) || (vKstar[1].M() < (kStarMass - kStarWidth))) &&
-			   goodPairA && BelleCuts) {
+			   goodPairA) {
 		    //Fill using first Kstar candidate
 		    fHistNeventsEtaC->Fill(14);
 		    if(qPion[0] > 0 && qPion[1] < 0) {
@@ -1746,7 +1833,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  }
 		  else if ((vKstar[1].M() < (kStarMass + kStarWidth)) && (vKstar[1].M() > (kStarMass - kStarWidth)) &&
 			   ((vKstar[0].M() > (kStarMass + kStarWidth)) || (vKstar[0].M() < (kStarMass - kStarWidth))) &&
-			   goodPairB && BelleCuts) {
+			   goodPairB) {
 		    //Fill using second Kstar candidate
 		    fHistNeventsEtaC->Fill(14);
 		    if(qPion[0] > 0 && qPion[1] < 0) {
@@ -1786,7 +1873,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		    //f1KstarMinvEtaC->Fill(vCandidate.M());
 		  }
 		  //0 Kstar case
-		  else if(BelleCuts){
+		  else {
 		    //if(((vKstar[0].M() > (kStarMass+kStarWidth)) || (vKstar[0].M() < (kStarMass-kStarWidth))) &&
 		    //	  ((vKstar[1].M() > (kStarMass+kStarWidth)) || (vKstar[1].M() < (kStarMass-kStarWidth)))) {
 		    fHistNeventsEtaC->Fill(15);
@@ -1830,13 +1917,14 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  //TEMP }
 	    }
 	  }
+    } //end pidLoopCounter
   }
   //End Kstar Channel
 
 
   //EtaC->RhoRho Channel
   nKaon=0; nPion=0;
-  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0; BelleCuts=kFALSE;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
   nTracksWithoutTOFinfo = 0;
   Int_t nPiMinus=0;
   Int_t nPiPlus=0;
@@ -1909,7 +1997,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	      //vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 	      //nKaon++;
 	      //} else 
-	      if(nPion == 3 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+	      if( ((nPion == 2 && nTracksWithoutTOFinfo == 2) || (nPion == 3 && nTracksWithoutTOFinfo <= 2)) && missingTOFPID[i] > 0) {
 		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
 		fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 		qPion[nPion] = trk->Charge();
@@ -1939,10 +2027,6 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		VectorSumPt = sumPtVector.Pt();
 		//Number of tracks with pT>0.4 GeV/c
 		for(Int_t aa = 0;aa<4;aa++) if(vPion[aa].Pt() > 0.4) nHighPtTracks++;
-		//Apply Belle Cuts
-		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
-		else BelleCuts = kFALSE;
-		if(BelleCuts) fHistNeventsEtaCRhoChannel->Fill(17);
 
 		for(Int_t aa = 0;aa<13;aa++) {
 		  boostInfoRhoZero[aa]  = -999.;
@@ -2123,8 +2207,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		if(nRhoPairs == 1) fHistNeventsEtaCRhoChannel->Fill(11);
 		if(nRhoPairs == 2) fHistNeventsEtaCRhoChannel->Fill(12);
 
-		//##### NOTE: I will only apply the BelleCuts to the 4 particle final state to allow studying double rho0 production in intermediate case.
-		if(nRhoPairs > 0 && BelleCuts) {
+		if(nRhoPairs > 0) {
 		  fHistNeventsEtaCRhoChannel->Fill(13);
 		  f2RhoPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //4Pi final states with 2 intermediate rho's.
 		  f2RhoEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
@@ -2134,8 +2217,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f2RhoScalarSumP->Fill(ScalarSumP);
 		  f2RhoVectorSumPt->Fill(VectorSumPt);
 		  if(nHighPtTracks > 1) fHistNeventsEtaCRhoChannel->Fill(14);
-		} else if(nRhoPairs == 0 && BelleCuts) {
-		  fHistNeventsEtaCRhoChannel->Fill(16);
+		} else if(nRhoPairs == 0) {
 		  f4PionPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt()); //All 4Pi final states.
 		  f4PionEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
 		  if(vCandidate.Pt()<0.4) f4PionEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
@@ -2151,6 +2233,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		  f4PiVs2PiMinv->Fill(vCandidate.M(),vRho[RhoIndex].M());
 		  f4PiVs2PiMinvSquared->Fill( (vCandidate.M()*vCandidate.M()) , (vRho[RhoIndex].M()*vRho[RhoIndex].M()) );
 		}
+		fM2PiPiVsM2PiPi->Fill( (vRho[0].M()*vRho[0].M()) , (vRho[1].M()*vRho[1].M()) );
+		fM2PiPiVsM2PiPi->Fill( (vRho[2].M()*vRho[2].M()) , (vRho[3].M()*vRho[3].M()) );
 
 		////Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
 		  //if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vRho[0].M(),2),pow(vRho[1].M(),2));
@@ -2165,7 +2249,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
  
   //EtaC->3(pi+pi-) Channel
   nKaon=0; nPion=0;
-  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0; BelleCuts=kFALSE;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
   nTracksWithoutTOFinfo = 0;
   if(nGoodTracks == 6 && nSpdHits>1){
   	  fHistNeventsEtaC3PiPiChannel->Fill(6);
@@ -2227,7 +2311,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	      //vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 	      //nKaon++;
 	      //} else 
-	      if(nPion == 5 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+	      if( ((nPion == 3 && nTracksWithoutTOFinfo == 3) || (nPion == 4 && nTracksWithoutTOFinfo <= 3) || (nPion == 5 && nTracksWithoutTOFinfo <= 3)) && missingTOFPID[i] > 0) {
 		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
 		fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 		qPion[nPion] = trk->Charge();
@@ -2256,22 +2340,17 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		VectorSumPt = sumPtVector.Pt();
 		//Number of tracks with pT>0.4 GeV/c
 		for(Int_t aa = 0;aa<6;aa++) if(vPion[aa].Pt() > 0.4) nHighPtTracks++;
-		//Apply Belle Cuts
-		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
-		else BelleCuts = kFALSE;
-		if(BelleCuts) fHistNeventsEtaC3PiPiChannel->Fill(11);
 
-		if(BelleCuts) {
-		  f3PiPiPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-		  f3PiPiEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-		  if(vCandidate.Pt()<0.4) f3PiPiEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		  if(vCandidate.Pt()<0.1) f3PiPiEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		  f3PiPiSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
-		  f3PiPiScalarSumP->Fill(ScalarSumP);
-		  f3PiPiVectorSumPt->Fill(VectorSumPt);
-		  if(nHighPtTracks > 1) fHistNeventsEtaC3PiPiChannel->Fill(10);
-		  //cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
-		}
+		f3PiPiPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		f3PiPiEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		if(vCandidate.Pt()<0.4) f3PiPiEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		if(vCandidate.Pt()<0.1) f3PiPiEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		f3PiPiSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		f3PiPiScalarSumP->Fill(ScalarSumP);
+		f3PiPiVectorSumPt->Fill(VectorSumPt);
+		if(nHighPtTracks > 1) fHistNeventsEtaC3PiPiChannel->Fill(10);
+		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
+
 		  
 		////Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
 		  //if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vRho[0].M(),2),pow(vRho[1].M(),2));
@@ -2285,7 +2364,9 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
   //EtaC->2(k+k-) Channel
   nKaon=0; nPion=0;
-  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks++; BelleCuts=kFALSE;
+  SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks++;
+  Int_t nKMinus = 0;
+  Int_t nKPlus = 0;
   Int_t nKK = 0;
   nTracksWithoutTOFinfo = 0;
   if(nGoodTracks == 4 && nSpdHits>1){
@@ -2348,7 +2429,7 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	      //vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 	      //nKaon++;
 	      //} else 
-	      if(nKaon == 3 && missingTOFPID[i] > 0 && nTracksWithoutTOFinfo == 1) {
+	      if( ((nKaon == 2 && nTracksWithoutTOFinfo == 2) || (nKaon == 3 && nTracksWithoutTOFinfo <= 2)) && missingTOFPID[i] > 0) {
 		AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPID[i]));
 		fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
 		qKaon[nPion] = trk->Charge();
@@ -2378,32 +2459,64 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 		VectorSumPt = sumPtVector.Pt();
 		//Number of tracks with pT>0.4 GeV/c
 		for(Int_t aa = 0;aa<4;aa++) if(vKaon[aa].Pt() > 0.4) nHighPtTracks++;
-		//Apply Belle Cuts
-		if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
-		else BelleCuts = kFALSE;
-		if(BelleCuts) fHistNeventsEtaC4KaonChannel->Fill(12);
 
-		if(BelleCuts) {
-		  f4KaonPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-		  f4KaonEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-		  if(vCandidate.Pt()<0.4) f4KaonEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		  if(vCandidate.Pt()<0.1) f4KaonEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-		  f4KaonSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
-		  f4KaonScalarSumP->Fill(ScalarSumP);
-		  f4KaonVectorSumPt->Fill(VectorSumPt);
-		  if(nHighPtTracks > 1) fHistNeventsEtaC4KaonChannel->Fill(11);
-		  //cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
-		}
+		f4KaonPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+		f4KaonEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+		if(vCandidate.Pt()<0.4) f4KaonEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		if(vCandidate.Pt()<0.1) f4KaonEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+		f4KaonSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+		f4KaonScalarSumP->Fill(ScalarSumP);
+		f4KaonVectorSumPt->Fill(VectorSumPt);
+		if(nHighPtTracks > 1) fHistNeventsEtaC4KaonChannel->Fill(11);
+		//cout << "mEtaC " << vCandidate.M() << ", ptEtaC " << vCandidate.Pt() << endl;
 
 		//Now the intermediate K+K- pairs (all combinations)
 		nKK = 0;
 		for(Int_t numKK = 0; numKK < 4; numKK++) vKK[numKK].SetPtEtaPhiM(0.,0.,0.,0.);
-		if(qKaon[0]*qKaon[1] < 0.) { vKK[nKK] = vKaon[0] + vKaon[1]; nKK++; }
-		if(qKaon[0]*qKaon[2] < 0.) { vKK[nKK] = vKaon[0] + vKaon[2]; nKK++; }
-		if(qKaon[0]*qKaon[3] < 0.) { vKK[nKK] = vKaon[0] + vKaon[3]; nKK++; }
-		if(qKaon[1]*qKaon[2] < 0.) { vKK[nKK] = vKaon[1] + vKaon[2]; nKK++; }
-		if(qKaon[1]*qKaon[3] < 0.) { vKK[nKK] = vKaon[1] + vKaon[3]; nKK++; }
-		if(qKaon[2]*qKaon[3] < 0.) { vKK[nKK] = vKaon[2] + vKaon[3]; nKK++; }
+		//if(qKaon[0]*qKaon[1] < 0.) { vKK[nKK] = vKaon[0] + vKaon[1]; nKK++; }
+		//if(qKaon[0]*qKaon[2] < 0.) { vKK[nKK] = vKaon[0] + vKaon[2]; nKK++; }
+		//if(qKaon[0]*qKaon[3] < 0.) { vKK[nKK] = vKaon[0] + vKaon[3]; nKK++; }
+		//if(qKaon[1]*qKaon[2] < 0.) { vKK[nKK] = vKaon[1] + vKaon[2]; nKK++; }
+		//if(qKaon[1]*qKaon[3] < 0.) { vKK[nKK] = vKaon[1] + vKaon[3]; nKK++; }
+		//if(qKaon[2]*qKaon[3] < 0.) { vKK[nKK] = vKaon[2] + vKaon[3]; nKK++; }
+
+		//Get masses of potential intermediate Rho's
+		if(qKaon[0] < 0) {
+		  vKaonMinus[nKMinus]=vKaon[0];
+		  nKMinus++;
+		} else {
+		  vKaonPlus[nKPlus]=vKaon[0];
+		  nKPlus++;
+		}
+		if(qKaon[1] < 0) {
+		  vKaonMinus[nKMinus]=vKaon[1];
+		  nKMinus++;
+		} else {
+		  vKaonPlus[nKPlus]=vKaon[1];
+		  nKPlus++;
+		}
+		if(qKaon[2] < 0) {
+		  vKaonMinus[nKMinus]=vKaon[2];
+		  nKMinus++;
+		} else {
+		  vKaonPlus[nKPlus]=vKaon[2];
+		  nKPlus++;
+		}
+		if(qKaon[3] < 0) {
+		  vKaonMinus[nKMinus]=vKaon[3];
+		  nKMinus++;
+		} else {
+		  vKaonPlus[nKPlus]=vKaon[3];
+		  nKPlus++;
+		}
+		//Either 0 and 1 are rho's or 2 and 3. If both sets are rho's choose best set.
+		vKK[0] = vKaonMinus[0]+vKaonPlus[0];
+		vKK[1] = vKaonMinus[1]+vKaonPlus[1];
+		vKK[2] = vKaonMinus[1]+vKaonPlus[0];
+		vKK[3] = vKaonMinus[0]+vKaonPlus[1];
+
+		nKK = nKPlus + nKMinus;
+
 		for(Int_t numKK = 0; numKK < 4; numKK++) {
 		  f4KaonPtVsMinvKK->Fill(vKK[numKK].M(),vKK[numKK].Pt());
 		}
@@ -2411,11 +2524,11 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
 		//For all cases look at 4K vs 2K minv
 		for(Int_t KKIndex = 0;KKIndex < 4; KKIndex++) {
-		  if(BelleCuts) { //##### NOTE: Apply BelleCuts here too.
-		    f4KVs2KMinv->Fill(vCandidate.M(),vKK[KKIndex].M());
-		    f4KVs2KMinvSquared->Fill( (vCandidate.M()*vCandidate.M()) , (vRho[KKIndex].M()*vKK[KKIndex].M()) );
-		  }
+		  f4KVs2KMinv->Fill(vCandidate.M(),vKK[KKIndex].M());
+		  f4KVs2KMinvSquared->Fill( (vCandidate.M()*vCandidate.M()) , (vRho[KKIndex].M()*vKK[KKIndex].M()) );
 		}
+		fM2KKVsM2KK->Fill( (vKK[0].M()*vKK[0].M()) , (vKK[1].M()*vKK[1].M()) );
+		fM2KKVsM2KK->Fill( (vKK[2].M()*vKK[2].M()) , (vKK[3].M()*vKK[3].M()) );
 
 		////Fill Dalitz plot with PiK masses Pi-K+ vs Pi+K-
 		  //if(qKaon[0] < 0) fMPiKvsMPiK->Fill(pow(vRho[0].M(),2),pow(vRho[1].M(),2));
@@ -2799,14 +2912,27 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
     //now identify the additional kaon and pion, excluding the pions from K0s daughters by fID.
     nKaon=0; nPion=0; nK0sPion=0;
-    SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0; BelleCuts=kFALSE;
+    SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
     qK0sPion[0] = 0;
     qK0sPion[1] = 0;
     qPion[0] = 0;
     qKaon[0] = 0;
     Int_t nTracksWithoutTOFinfoK0s = 0;
+    Bool_t firstGuess = kTRUE;
+    Bool_t secondGuess = kFALSE;
+
+    for(Int_t pidLoopCounter = 0;pidLoopCounter<1;pidLoopCounter++) {
+
+	nKaon=0; nPion=0; nK0sPion=0;
+	SumPz=0; ScalarSumP=0; VectorSumPt=0; nHighPtTracks=0;
+	qK0sPion[0] = 0;
+	qK0sPion[1] = 0;
+	qPion[0] = 0;
+	qKaon[0] = 0;
+	nTracksWithoutTOFinfoK0s = 0;
 
     if(nGoodTracks == 4 && nSpdHits>1 && nProngFound == 2){
+
       fHistNeventsEtaCK0sChannel->Fill(7);
       for(Int_t i=0; i<4; i++){
 	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(trackIndex[i]));
@@ -2844,18 +2970,28 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	    //More restrictive PID   && fPIDTPCElectron[i] > 2 && fPIDTPCKaon[i] > 2 && fPIDTPCProton[i] > 2) {
 	  if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() >= 3. && fabs(fPIDTPCPion[i]) < 1. && fabs(fPIDTPCKaon[i]) > 1.)) {
 	    fRecTPCsignalK0sPion[0] = trk->GetTPCsignal();
-	    qK0sPion[0] = trk->Charge();
-	    vK0sPion[0].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	    qK0sPion[nK0sPion] = trk->Charge();
+	    vK0sPion[nK0sPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
 	    nK0sPion++;
-	  }
+	  } else if(trk->Pt() >= 0.6 && trk->Pt() < 3. && fPIDTOFPion[i] == -999. && fabs(fPIDTPCPion[i]) < 3.) {
+	    fRecTPCsignalK0sPion[1] = trk->GetTPCsignal();
+	    qK0sPion[nK0sPion] = trk->Charge();
+	    vK0sPion[nK0sPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	    nK0sPion++;
+	  } 
 	}
 	else if(i == negTrackIndex) {
 	  //	  if(fabs(fPIDTPCPion[i]) < 4 && fabs(fPIDTPCPion[i]) < fabs(fPIDTPCKaon[i])) { 
 	    //More restrictive PID   && fPIDTPCElectron[i] > 2 && fPIDTPCKaon[i] > 2 && fPIDTPCProton[i] > 2) {
 	  if((trk->Pt() < 0.6 && fabs(fPIDTPCPion[i]) < 3. && fabs(fPIDTPCKaon[i]) > 3.) || (trk->Pt() >= 0.6 && trk->Pt() < 3. && fabs(fPIDTOFPion[i]) < 3. && fabs(fPIDTOFKaon[i]) > 3. && fPIDTOFPion[i] > -999. && fabs(fPIDTPCPion[i]) < 3.) || (trk->Pt() >= 3. && fabs(fPIDTPCPion[i]) < 1. && fabs(fPIDTPCKaon[i]) > 1.)) {
 	    fRecTPCsignalK0sPion[1] = trk->GetTPCsignal();
-	    qK0sPion[1] = trk->Charge();
-	    vK0sPion[1].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	    qK0sPion[nK0sPion] = trk->Charge();
+	    vK0sPion[nK0sPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	    nK0sPion++;
+	  } else if(trk->Pt() >= 0.6 && trk->Pt() < 3. && fPIDTOFPion[i] == -999. && fabs(fPIDTPCPion[i]) < 3.) {
+	    fRecTPCsignalK0sPion[1] = trk->GetTPCsignal();
+	    qK0sPion[nK0sPion] = trk->Charge();
+	    vK0sPion[nK0sPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
 	    nK0sPion++;
 	  }
 	}
@@ -2886,20 +3022,85 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	if(nPion > 1 || nK0sPion > 2 || nKaon > 1) break;
       }
       for(int i=0;i<4;i++) { //If one kaon or one pion is missing due to missing TOF PID info assume it is the fourth.
-	if(nK0sPion == 2 && nPion == 1 && nKaon == 0 && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s == 1) {
+	if(nK0sPion == 2 && nPion == 1 && nKaon == 0 && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s <= 2) {
 	  AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
 	  fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
 	  qKaon[nKaon] = trk->Charge();
 	  vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
 	  nKaon++;
-	} else if(((nKaon == 1 && nK0sPion == 1 && nPion == 1) || (nKaon == 1 && nK0sPion == 2 && nPion == 0)) && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s == 1) {
+	} else if((nKaon == 1 && nK0sPion == 2 && nPion == 0) && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s <= 2) {
 	  AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
 	  fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
 	  qPion[nPion] = trk->Charge();
 	  vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
 	  nPion++;
+	} else if((nKaon == 1 && nK0sPion == 1 && nPion == 1) && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s <= 2) {
+	  AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	  fRecTPCsignalK0sPion[nK0sPion] = trk->GetTPCsignal();
+	  qK0sPion[nK0sPion] = trk->Charge();
+	  vK0sPion[nK0sPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	  nK0sPion++;
+	} else if(nK0sPion == 2 && nPion == 0 && nKaon == 0 && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s == 2) {
+	  if(firstGuess) {
+	    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	    fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
+	    qPion[nPion] = trk->Charge();
+	    vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	    nPion++;
+	    pidLoopCounter--;
+	    firstGuess = kFALSE;
+	    secondGuess = kTRUE;
+	  } else if(secondGuess) {
+	    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	    fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
+	    qKaon[nKaon] = trk->Charge();
+	    vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
+	    nKaon++;
+	    firstGuess = kTRUE;
+	    secondGuess = kFALSE;
+	  }
+	} else if(nK0sPion == 1 && nPion == 1 && nKaon == 0 && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s == 2) {
+	  if(firstGuess) {
+	    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	    fRecTPCsignalK0sPion[nK0sPion] = trk->GetTPCsignal();
+	    qK0sPion[nK0sPion] = trk->Charge();
+	    vK0sPion[nK0sPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	    nK0sPion++;
+	    pidLoopCounter--;
+	    firstGuess = kFALSE;
+	    secondGuess = kTRUE;
+	  } else if (secondGuess) {
+	    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	    fRecTPCsignalKaon[nKaon] = trk->GetTPCsignal();
+	    qKaon[nKaon] = trk->Charge();
+	    vKaon[nKaon].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),kaonMass);
+	    nKaon++;
+	    firstGuess = kTRUE;
+	    secondGuess = kFALSE;
+	  }
+	} else if(nK0sPion == 1 && nPion == 0 && nKaon == 1 && missingTOFPIDK0s[i] > 0 && nTracksWithoutTOFinfoK0s == 2) {
+	  if(firstGuess) {
+	    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	    fRecTPCsignalK0sPion[nK0sPion] = trk->GetTPCsignal();
+	    qK0sPion[nK0sPion] = trk->Charge();
+	    vK0sPion[nK0sPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	    nK0sPion++;
+	    pidLoopCounter--;
+	    firstGuess = kFALSE;
+	    secondGuess = kTRUE;
+	  } else if (secondGuess) {
+	    AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(missingTOFPIDK0s[i]));
+	    fRecTPCsignalPion[nPion] = trk->GetTPCsignal();
+	    qPion[nPion] = trk->Charge();
+	    vPion[nPion].SetPtEtaPhiM(trk->Pt(),trk->Eta(),trk->Phi(),pionMass);
+	    nPion++;
+	    firstGuess = kTRUE;
+	    secondGuess = kFALSE;
+	  }
 	}
+
       }
+      //} Debugging parenthesis.
 
       //Histos to understand the events the code is seeing.
       if(nProngFound == 2) {
@@ -2920,6 +3121,31 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 
 	  //PRINT	  cout << "Filling K0s histos" << endl;
 
+	  fHistNeventsEtaCK0sChannel->Fill(13);
+	  //Now we need to use the V0s to identify a K0s and select best K0s candidate.
+	  //Individual Track Ptś
+	  fK0sPosDaughterPt->Fill(vK0sPion[0].Pt());
+	  fK0sNegDaughterPt->Fill(vK0sPion[1].Pt());
+	  fK0sPosVsNegDaughterPt->Fill(vK0sPion[1].Pt(),vK0sPion[0].Pt());
+	  fK0sPionPt->Fill(vPion[0].Pt());
+	  fK0sKaonPt->Fill(vKaon[0].Pt());
+	  //Compute K0s info
+	  vK0s = vK0sPion[0] + vK0sPion[1];
+	  fK0sPtVsMinvK0s->Fill(vK0s.M(),vK0s.Pt());
+	  //fK0sMinv->Fill(vK0s.M());
+	  //Compute PiK info
+	  vKPiK0sChannel = vPion[0] + vKaon[0];
+	  fKPiPtVsMinvK0sChannel->Fill(vKPiK0sChannel.M(),vKPiK0sChannel.Pt());
+	  //fKPiMinvK0sChannel->Fill(vKPiK0sChannel.M());
+	  //Dalitz plot K0s vs PiK combo
+	  vK0sPi = vK0s + vPion[0];
+	  vK0sK = vK0s + vKaon[0];
+	  fM2K0sVsM2KPiK0sChannel->Fill(vKPiK0sChannel.M()*vKPiK0sChannel.M(),vK0s.M()*vK0s.M());
+	  fM2K0sPiVsM2KPiK0sChannel->Fill(vKPiK0sChannel.M()*vKPiK0sChannel.M(),vK0sPi.M()*vK0sPi.M());
+	  fM2K0sKVsM2KPiK0sChannel->Fill(vKPiK0sChannel.M()*vKPiK0sChannel.M(),vK0sK.M()*vK0sK.M());
+	  //Compute EtaC info
+	  vCandidate = vK0sPion[0] + vK0sPion[1] + vPion[0] + vKaon[0];
+
 	  //Sum Pz
 	  SumPz = vK0sPion[0].Pz() + vK0sPion[1].Pz() + vPion[0].Pz() + vKaon[0].Pz();
 	  //Scalar Sum P
@@ -2931,52 +3157,23 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
 	  for(Int_t aa=0;aa<2;aa++) if(vK0sPion[aa].Pt() > 0.4) nHighPtTracks++;
 	  if(vPion[0].Pt() > 0.4) nHighPtTracks++;
 	  if(vKaon[0].Pt() > 0.4) nHighPtTracks++;
-	  //Apply Belle Cuts
-	  if(ScalarSumP < 6 && nHighPtTracks > 1) BelleCuts = kTRUE;
-	  else BelleCuts = kFALSE;
-	  if(BelleCuts) fHistNeventsEtaCK0sChannel->Fill(15);
 
-	  fHistNeventsEtaCK0sChannel->Fill(13);
-
-	  if(BelleCuts) {
-	    //Now we need to use the V0s to identify a K0s and select best K0s candidate.
-	    //Individual Track Ptś
-	    fK0sPosDaughterPt->Fill(vK0sPion[0].Pt());
-	    fK0sNegDaughterPt->Fill(vK0sPion[1].Pt());
-	    fK0sPosVsNegDaughterPt->Fill(vK0sPion[1].Pt(),vK0sPion[0].Pt());
-	    fK0sPionPt->Fill(vPion[0].Pt());
-	    fK0sKaonPt->Fill(vKaon[0].Pt());
-	    //Compute K0s info
-	    vK0s = vK0sPion[0] + vK0sPion[1];
-	    fK0sPtVsMinvK0s->Fill(vK0s.M(),vK0s.Pt());
-	    //fK0sMinv->Fill(vK0s.M());
-	    //Compute PiK info
-	    vKPiK0sChannel = vPion[0] + vKaon[0];
-	    fKPiPtVsMinvK0sChannel->Fill(vKPiK0sChannel.M(),vKPiK0sChannel.Pt());
-	    //fKPiMinvK0sChannel->Fill(vKPiK0sChannel.M());
-	    //Dalitz plot K0s vs PiK combo
-	    fMK0sVsMKPiK0sChannel->Fill(vKPiK0sChannel.M(),vK0s.M());
-	    //Compute EtaC info
-	    vCandidate = vK0sPion[0] + vK0sPion[1] + vPion[0] + vKaon[0];
-
-
-	    fK0sPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
-	    fK0sEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
-	    if(vCandidate.Pt()<0.4) fK0sEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-	    if(vCandidate.Pt()<0.1) fK0sEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
-	    fK0sSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
-	    fK0sScalarSumP->Fill(ScalarSumP);
-	    fK0sVectorSumPt->Fill(VectorSumPt);
-	    if(nHighPtTracks > 1) fHistNeventsEtaCK0sChannel->Fill(14);
-	    //fEtaCMinvK0sChannel->Fill(vCandidate.M());
-	    fK0sDecayLength->Fill(v0->DecayLength(fAODVertex));
-	  }
-
+	  fK0sPtVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Pt());
+	  fK0sEtaVsMinvEtaC->Fill(vCandidate.M(),vCandidate.Eta());
+	  if(vCandidate.Pt()<0.4) fK0sEtaVsMinvEtaC400MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+	  if(vCandidate.Pt()<0.1) fK0sEtaVsMinvEtaC100MeVPtMax->Fill(vCandidate.M(),vCandidate.Eta());
+	  fK0sSumPzVsMinvEtaC->Fill(vCandidate.M(),SumPz);
+	  fK0sScalarSumP->Fill(ScalarSumP);
+	  fK0sVectorSumPt->Fill(VectorSumPt);
+	  if(nHighPtTracks > 1) fHistNeventsEtaCK0sChannel->Fill(14);
+	  //fEtaCMinvK0sChannel->Fill(vCandidate.M());
+	  fK0sDecayLength->Fill(v0->DecayLength(fAODVertex));
 	}
       }
+    }   
     }
   }
-  
+
 
 
   //  cout << "##### End of RunAODHist()" << endl;
@@ -2985,7 +3182,8 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   PostData(5, fListHistKstar);
   PostData(6, fListHist2Rho4Pion);
   PostData(7, fListHistK0s3PiPi4K);
- }
+  PostData(8, fListHistZDC);
+}
 
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcEtaC::RunAODtree()

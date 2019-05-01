@@ -240,7 +240,7 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
     double kinepid[5];
     for(int pid_iter=0;pid_iter<5;pid_iter++)
       kinepid[pid_iter]=0;
-    Int_t pdgcode = TMath::Abs(MCtrk->GetPdgCode());
+    Int_t pdgcode = MCtrk->GetPdgCode();
     //proton
     if(pdgcode==2212 || pdgcode==-2212)
       kinepid[4]=1000;

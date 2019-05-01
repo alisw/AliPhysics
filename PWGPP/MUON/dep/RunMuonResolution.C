@@ -12,28 +12,44 @@
 //--------------------------------------------------------------------------
 
 //______________________________________________________________________________
-void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs.root",
-		       TString rootVersion = "", TString aliphysicsVersion = "vAN-20161011-1", Int_t nSteps = 3,
+void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs.root", Int_t nSteps = 5,
+		       TString rootVersion = "", TString aliphysicsVersion = "vAN-20180105-1",
+                       TString dataDir = "/alice/sim/2016/LHC16e2_plus",
+                       TString dataPattern = "p20/*/AliESDs.root",
+                       TString runFormat = "%d",
+                       TString outDir = "Sim/LHC15o/EmbedV2b/Resolution/20GeV",
+                       Int_t maxFilesPerJob = 500, Int_t maxMergeFiles = 10, Int_t maxMergeStages = 2,
 		       Bool_t selectPhysics = kTRUE, Bool_t selectTrigger = kTRUE, Bool_t matchTrig = kTRUE,
-		       Bool_t applyAccCut = kTRUE, Bool_t applyPDCACut = kTRUE, Double_t minMomentum = 0., Double_t minPt = 0.,
+		       Bool_t applyAccCut = kTRUE, Bool_t applyPDCACut = kTRUE, Double_t minMomentum = 20., Double_t minPt = 0.,
                        Bool_t isMC = kFALSE, Bool_t correctForSystematics = kTRUE, Int_t extrapMode = 1,
                        Bool_t shiftHalfCh = kFALSE, Bool_t shiftDE = kFALSE, Int_t nevents = 1234567890)
 {
   /// Compute the cluster resolution by studying cluster-track residual, deconvoluting from track resolution
-  /// - smode = "local" or "caf"
-  /// - inputFileName = an ESD root file or a list of ESDs or a collection of ESDs or a dataset in proof mode
+  /// - smode = "local", "caf", "saf3", "test", "offline", "submit", "full", "merge", "terminate" or "terminateonly"
+  /// - inputFileName = an ESD root file or a list or a collection or a dataset of ESDs in proof mode or a list of runs in grid mode
+  /// - nSteps = number of times the task is run (at each step it starts with the chamber resolution obtained in the previous one)
   /// - rootVersion = version of root package to enable on AAF (only used in proof mode)
-  /// - alirootVersion = version of aliroot package to enable on AAF (only used in proof mode)
   /// - aliphysicsVersion = version of aliphysics package to enable on AAF (only used in proof mode)
-  /// - nSteps = number of times to task is run (at each step it starts with the chamber resolution obtained in the previous one)
-  /// - selectPhysics : apply or not the physics selection
-  /// - selectTrigger : select only muon trigger events or not (the type of trigger can eventually be changed)
-  /// - matchTrigger : select only the tracks matching the trigger or not
-  /// - applyAccCut : select only the tracks passing the Rabs and the eta cut or not
-  /// - minMomentum : select only the tracks with a total momentum above this value
+  /// - dataDir = input data directory on the grid
+  /// - dataPattern = input data pattern on the grid
+  /// - runFormat = run format on the grid
+  /// - outDir = ouput directory on the grid
+  /// - maxFilesPerJob = maximum number of input files per job on the grid
+  /// - maxMergeFiles = maximum number of merged files per job on the grid
+  /// - maxMergeStages = maximum number of merging steps on the grid
+  /// - selectPhysics = apply or not the physics selection
+  /// - selectTrigger = select only muon trigger events or not (the type of trigger can eventually be changed)
+  /// - matchTrigger = select only the tracks matching the trigger or not
+  /// - applyAccCut = select only the tracks passing the Rabs and the eta cuts or not
+  /// - applyPDCACut = select only the tracks passing the pDCA cut or not
+  /// - minMomentum = select only the tracks with a total momentum above this value
+  /// - minPt = select only the tracks with a pT above this value
+  /// - isMC = running on MC data or not (for physics selection and track cuts)
   /// - if correctForSystematics == kTRUE: the systematic shifts of the residuals is included in the resolution
   /// - if extrapMode == 0: extrapolate from the closest cluster
   /// - if extrapMode == 1: extrapolate from the previous cluster except between stations 2-3-4
+  /// - shiftHalfCh = correct for the half-chamber shifts measured at the previous step
+  /// - shiftDE = correct for the DE shifts measured at the previous step
   /// - nevents = maximum number of processed events
   
   if (smode == "saf3" && gSystem->GetFromPipe("hostname") != "nansafmaster3.in2p3.fr") {
@@ -57,7 +73,7 @@ void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs
     //if (!AliAnalysisAlien::SetupPar("PWGPPMUONdep.par")) return kFALSE;
     if (smode == "saf3") gROOT->LoadMacro("MuonResolution.C++g");
     else gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/MuonResolution.C++g");
-    MuonResolution(smode, inputFileName, rootVersion, aliphysicsVersion, nSteps, selectPhysics, selectTrigger, matchTrig, applyAccCut, applyPDCACut, minMomentum, minPt, isMC, correctForSystematics, extrapMode, shiftHalfCh, shiftDE, nevents);
+    MuonResolution(smode, inputFileName, nSteps, rootVersion, aliphysicsVersion, dataDir, dataPattern, runFormat, outDir, maxFilesPerJob, maxMergeFiles, maxMergeStages, selectPhysics, selectTrigger, matchTrig, applyAccCut, applyPDCACut, minMomentum, minPt, isMC, correctForSystematics, extrapMode, shiftHalfCh, shiftDE, nevents);
     
   }
   
@@ -142,7 +158,7 @@ void CreateSAF3Executable(TString dataset)
   ofstream outFile("runAnalysis.sh");
   outFile << "#!/bin/bash" << endl;
   outFile << "vafctl start" << endl;
-  Int_t nWorkers = 88;
+  Int_t nWorkers = 80;
   outFile << "nWorkers=" << nWorkers << endl;
   outFile << "let \"nWorkers -= `pod-info -n`\"" << endl;
   outFile << "echo \"requesting $nWorkers additional workers\"" << endl;

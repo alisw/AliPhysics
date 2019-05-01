@@ -2,7 +2,8 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
 					  TString cFileName = "Config_rbailhac_lowmass.C",
 					  Char_t* outputFileName="LMEE.root",
 					  ULong64_t triggerMask = AliVEvent::kINT7,
-					  Bool_t pileupon = kFALSE
+					  Bool_t pileupon = kFALSE,
+					  Int_t wagon = 0
                                              )
 {
 
@@ -25,21 +26,27 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
 
   //Do we have an MC handler?
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  if(hasMC) kMix = 0;
 
   //if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
-  gROOT->LoadMacro(configFilePath.Data());
-
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject("Config_rbailhac_lowmass")) {
+    printf("Load macro now\n");
+    gROOT->LoadMacro(configFilePath.Data());
+  }
+  
   //create task and add it to the manager (MB)
-  TString appendix(TString::Format("pileup%d",(Int_t)pileupon));
+  TString appendix;
+  if(wagon!=0) appendix += TString::Format("wagon%d_pileup%d",wagon,(Int_t)pileupon);
+  else appendix += TString::Format("pileup%d",(Int_t)pileupon);
   printf("appendix %s\n", appendix.Data());
   AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(Form("MultiDielectron_%s",appendix.Data()));
   if (!hasMC) task->UsePhysicsSelection();
   task->SetTriggerMask(triggerMask);
   if(pileupon) task->SetRejectPileup();
-  //task->SetRandomizeDaughters(randomizeDau); //default kFALSE
+  task->SetRandomizeDaughters(randomizeDau); //default kFALSE
 
   //Add event filter
-  task->SetEventFilter( GetEventCuts() );
+  task->SetEventFilter( GetEventCuts(wagon) );
 
   mgr->AddTask(task);
 

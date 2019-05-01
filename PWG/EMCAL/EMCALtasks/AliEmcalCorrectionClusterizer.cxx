@@ -29,6 +29,7 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
+#include "AliEMCALClusterizerv3.h"
 #include "AliEMCALClusterizerFixedWindow.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
@@ -55,6 +56,7 @@ const std::map <std::string, AliEMCALRecParam::AliEMCALClusterizerFlag> AliEmcal
   {"kClusterizerv1", AliEMCALRecParam::kClusterizerv1 },
   {"kClusterizerNxN", AliEMCALRecParam::kClusterizerNxN },
   {"kClusterizerv2", AliEMCALRecParam::kClusterizerv2 },
+  {"kClusterizerv3", AliEMCALRecParam::kClusterizerv3 },
   {"kClusterizerFW", AliEMCALRecParam::kClusterizerFW }
 };
 
@@ -72,6 +74,8 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fClusterizer(0),
   fUnfolder(0),
   fJustUnfold(kFALSE),
+  fUnfoldCellMinE(0),
+  fUnfoldCellMinEFrac(0),
   fGeomName(),
   fGeomMatrixSet(kFALSE),
   fLoadGeomMatrices(kFALSE),
@@ -122,6 +126,14 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   std::string clusterizerTypeStr = "";
   GetProperty("clusterizer", clusterizerTypeStr);
   UInt_t clusterizerType = fgkClusterizerTypeMap.at(clusterizerTypeStr);
+  
+  Bool_t unfold  = kFALSE;
+  GetProperty("unfold", unfold);
+  Bool_t unfoldRejectBelowThreshold  = kFALSE;
+  GetProperty("unfoldRejectBelowThreshold", unfoldRejectBelowThreshold);
+  GetProperty("unfoldMinCellE"    , fUnfoldCellMinE);
+  GetProperty("unfoldMinCellEFrac", fUnfoldCellMinEFrac);
+
   Double_t cellE  = 0.05;
   GetProperty("cellE", cellE);
   Double_t seedE  = 0.1;
@@ -156,6 +168,8 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   TString removeMCGen2 = removeMcGen2.c_str();
 
   fRecParam->SetClusterizerFlag(clusterizerType);
+  fRecParam->SetUnfold(unfold); 
+  fRecParam->SetRejectBelowThreshold(unfoldRejectBelowThreshold); 
   fRecParam->SetMinECut(cellE);
   fRecParam->SetClusteringThreshold(seedE);
   fRecParam->SetW0(w0);
@@ -487,17 +501,38 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *elist = recpoint->GetEnergiesList();
     Double_t mcEnergy = 0;
     
+    Float_t clusterE = 0; 
     for (Int_t c = 0; c < ncells; ++c)
     {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
       absIds[ncellsTrue] = digit->GetId();
       ratios[ncellsTrue] = elist[c]/digit->GetAmplitude();
+    
+      if ( !fRecParam->GetUnfold() && (ratios[ncellsTrue] > 1 || ratios[ncellsTrue] < 1)  ) 
+        AliWarning(Form("recpoint cell E %2.3f but digit E %2.3f and no unfolding", 
+                        recpoint->GetEnergiesList()[c], digit->GetAmplitude()));
+      
+      // In case of unfolding, remove digits with unfolded energy too low      
+      if ( fRecParam->GetUnfold() )
+      {
+        if ( recpoint->GetEnergiesList()[c] < fUnfoldCellMinE || 
+             ratios[ncellsTrue]             < fUnfoldCellMinEFrac )  
+        {
+          
+          AliDebug(2,Form("Too small energy in cell of cluster: cluster cell %f, digit %f",
+                          recpoint->GetEnergiesList()[c],digit->GetAmplitude()));
+          continue;
+        } // if cuts
+      }// Select cells
+      
+      // Recalculate cluster energy and number of cluster cells in case any of the cells was rejected
+      clusterE += recpoint->GetEnergiesList()[c];
       
       if (digit->GetIparent(1) > 0)
         mcEnergy += digit->GetDEParent(1)/recpoint->GetEnergy();
       
       ++ncellsTrue;
-    }
+    } // cluster cell loop
     
     if (ncellsTrue < 1)
     {
@@ -515,7 +550,7 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     
     AliVCluster *c = static_cast<AliVCluster*>(clus->New(nout++));
     c->SetType(AliVCluster::kEMCALClusterv1);
-    c->SetE(recpoint->GetEnergy());
+    c->SetE(clusterE);
     c->SetPosition(g);
     c->SetNCells(ncellsTrue);
     c->SetCellsAbsId(absIds);
@@ -526,11 +561,25 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     c->SetChi2(-1);
     c->SetTOF(recpoint->GetTime()) ;     //time-of-flight
     c->SetNExMax(recpoint->GetNExMax()); //number of local maxima
-    Float_t elipAxis[2];
-    recpoint->GetElipsAxis(elipAxis);
-    c->SetM02(elipAxis[0]*elipAxis[0]);
-    c->SetM20(elipAxis[1]*elipAxis[1]);
     c->SetMCEnergyFraction(mcEnergy);
+
+    if ( ncells == ncellsTrue )
+    {
+      Float_t elipAxis[2];
+      recpoint->GetElipsAxis(elipAxis);
+      c->SetM02(elipAxis[0]*elipAxis[0]);
+      c->SetM20(elipAxis[1]*elipAxis[1]);
+    }
+    else
+    {
+      // In case some cells rejected, in unfolding case, recalculate
+      // shower shape parameters and position
+      AliDebug(2,Form("Cells removed from cluster (ncells %d, ncellsTrue %d), recalculate Shower Shape",ncells,ncellsTrue));
+      
+      fRecoUtils->RecalculateClusterShowerShapeParameters(fGeom,fCaloCells,c);
+      //fRecoUtils->RecalculateClusterPID(c);
+      fRecoUtils->RecalculateClusterPosition(fGeom,fCaloCells,c); 
+    } 
     
     //
     // MC labels
@@ -540,9 +589,7 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
     
     c->SetLabel(parentList, parentMult);
-    if(fSetCellMCLabelFromEdepFrac) {
-      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
-    }
+    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
     
     //
     // Set the cell energy deposition fraction map:
@@ -865,6 +912,8 @@ void AliEmcalCorrectionClusterizer::Init()
   }
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2)
     fClusterizer = new AliEMCALClusterizerv2(fGeom);
+  else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv3)
+    fClusterizer = new AliEMCALClusterizerv3(fGeom);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerFW) {
     AliEMCALClusterizerFixedWindow *clusterizer = new AliEMCALClusterizerFixedWindow(fGeom);
     clusterizer->SetNphi(fNPhi);
@@ -910,6 +959,7 @@ void AliEmcalCorrectionClusterizer::Init()
   fClusterizer->SetOutput(0);
   fClusterArr = const_cast<TObjArray *>(fClusterizer->GetRecPoints());
   
+  //fClusterizer->Print("");
 }
 
 /**

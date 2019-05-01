@@ -243,6 +243,8 @@ class AliAnalysisVertexingHF : public TNamed {
 
   void SetPidResponse(AliPIDResponse* p){fPidResponse=p;}
 
+  AliAODTrack *GetProng(AliVEvent *event,AliAODRecoDecayHF *rd,Int_t iprong);
+
   //
  private:
   //

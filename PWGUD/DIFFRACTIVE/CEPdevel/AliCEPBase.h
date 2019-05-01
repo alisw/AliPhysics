@@ -61,10 +61,12 @@ class AliCEPBase : public TObject {
     kTTFiredChips      = BIT( 9), // passed FiredChips test
     kTTAccTPCOnly      = BIT(10), // passed standard TPCOnly criteria
     kTTSPDHit          = BIT(11), // has at least one SPD hit
+    kTTCaloMatch       = BIT(12), // match with calorimeter cluster
+    kTTAccV0daughter   = BIT(13), // passed standard V0daughter criteria
 
     // type of vertex
     kVtxUnknown         = 0,
-    kVtxSPD             = BIT(0),  // from ITS
+    kVtxSPD             = BIT(0),  // from SPD tracklets
     kVtxTracks          = BIT(1),  // from tracks
     kVtxErrRes          = BIT(2),  // z-resolution of SPD vertex is out-of-bounds
     kVtxErrDif          = BIT(3),  // difference in z between SPD and track
@@ -146,7 +148,9 @@ class AliCEPBase : public TObject {
     kBitBBFlagStudy           = BIT( 9), // BBFlag study
     kBitV0Study               = BIT(10), // V0 study
     kBitFMDStudy              = BIT(11), // FMD study
-		kBitConfigurationVersion  = BIT(12)  // always set, last bit
+    kBitEMCStudy              = BIT(12), // EMC study
+		kBitRawBuffer             = BIT(13), // save a CEPRawEventBuffer
+		kBitConfigurationVersion  = BIT(14)  // always set, last bit
 	
   };
 

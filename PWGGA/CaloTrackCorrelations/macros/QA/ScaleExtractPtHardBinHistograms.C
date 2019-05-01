@@ -26,7 +26,7 @@
 #include "TList.h"
 #include "TDirectoryFile.h"
 
-#endif
+#endif // CINT
 
 void ForBin
 (
@@ -111,10 +111,16 @@ void ForBin ( Int_t bin, TString listName, TString subListName )
   // Calculate scaling factor
   //
   Double_t nEve   = ((TH1F*)list->FindObject("hNEvents"))->GetBinContent(1);
-  Double_t xsec   = ((TH1F*)list->FindObject("hXsec"   ))->GetBinContent(1);
-  Double_t trials = ((TH1F*)list->FindObject("hTrials" ))->GetBinContent(1);
-  Int_t    nfiles = ((TH1F*)list->FindObject("hTrials" ))->GetEntries();
-
+  Double_t xsec   = 1;
+  Double_t trials = 1;
+  Int_t    nfiles = 1;
+  if((TH1F*)list->FindObject("hXsec"   ))
+  {
+    xsec   = ((TH1F*)list->FindObject("hXsec"   ))->GetBinContent(1);
+    trials = ((TH1F*)list->FindObject("hTrials" ))->GetBinContent(1);
+    nfiles = ((TH1F*)list->FindObject("hTrials" ))->GetEntries();
+  }
+  else printf("XSec histogram not found!!!!\n");
   printf(" nevents %e, xsec %2.2e, nTrials %e, files %d; ",nEve,xsec,trials,nfiles);
 
   trials/=nfiles;
@@ -130,7 +136,7 @@ void ForBin ( Int_t bin, TString listName, TString subListName )
   
   printf("\t scaling ...\n ");
   
-  TObject * h ; 
+  TObject * h = 0 ; 
 
   for(Int_t i = 0; i < list->GetEntries(); i++) 
   { 

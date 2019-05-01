@@ -23,7 +23,9 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
-  AliEventCuts  fEventCut;
+  void SetCustomBetheBloch(int iSpecies, float res, const float* bethe);
+
+  AliEventCuts  fEventCut; ///<
 
   float fNsigmaITS;  ///< Number of sigma ITS
   float fNsigmaTPC;  ///< Number of sigma TPC
@@ -38,6 +40,8 @@ private:
   AliPIDResponse* fPID;              //!<! ALICE PID framework
 
   // Data histograms
+  TH2D *fTPCperformance;             //!<!
+  TH2D *fTPCperformanceTwoCharges;   //!<!
   TH2F *fITSsignal[2];               //!<! ITS dE/dx for positive and negative particles
   TH2F *fTPCsignal[2];               //!<! TPC dE/dx for positive and negative particles
   TH2F *fTOFsignal[2];               //!<! TOF beta for positive and negative particles
@@ -47,6 +51,11 @@ private:
   TH2F *fITSnSigmaSelected[2][4][5]; //!<! ITS nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
   TH2F *fTPCnSigmaSelected[2][4][5]; //!<! TPC nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
   TH2F *fTOFnSigmaSelected[2][4][5]; //!<! TOF nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
+
+  bool  fUseCustomBethe[4];
+  float fCustomBethe[4][5];
+  float fCustomResolution[4];
+
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiPIDqa, 1);
   /// \endcond

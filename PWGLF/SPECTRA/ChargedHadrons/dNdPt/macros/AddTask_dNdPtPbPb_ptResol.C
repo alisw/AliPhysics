@@ -66,10 +66,6 @@ void AddTask_dNdPtPbPb_ptResol(Int_t cutMode =222 , Double_t smearing = 0.000, c
   mgr->AddTask(task);
 
   // Create containers for input
-  TString stOutputFileName("jgronef_PbPb_ptRes_Data.root");
-  if(hasMC){stOutputFileName = "jgronef_PbPb_ptRes_MC.root";}
-
-  // Create containers for input
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
 

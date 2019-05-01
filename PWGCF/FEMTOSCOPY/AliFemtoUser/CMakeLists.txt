@@ -61,7 +61,16 @@ set(SRCS
   AliFemtoModelCorrFctnQinv.cxx
   AliFemtoModelCorrFctnTrueQ.cxx
   AliFemtoModelCorrFctnTrueQ3D.cxx
+  AliFemtoModelCorrFctnTrueQ3DByParent.cxx
+  AliFemtoModelCorrFctnTrueQ6D.cxx
+  AliFemtoModelCorrFctnKK.cxx
+  AliFemtoModelCorrFctnKpKp.cxx
   AliFemtoNSigmaFilter.cxx
+  AliFemtoCutAttrEvent.cxx
+  AliFemtoCutAttrPairTrack.cxx
+  AliFemtoCutAttrTrack.cxx
+  AliFemtoAnalysisPionPionCuts.cxx
+  AliFemtoAnalysisPionPionObjectConstructor.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
   AliFemtoCutMonitorParticlePtPDG.cxx
@@ -78,17 +87,19 @@ set(SRCS
   AliFemtoShareQualityQAPairCut.cxx
   AliFemtoShareQualityCorrFctn.cxx
   AliFemtoYlm.cxx
-  AliFemtoConfigObject.cxx
+  AliFemtoCorrFctn3DLCMSPosQuad.cxx
   AliFemtoCorrFctnDirectYlm.cxx
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
+  AliFemtoCorrFctnDEtaDPhiStar.cxx
   AliFemtoCorrFctnDEtaDPhiTHn.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
   AliFemtoCorrFctnDYDPhi.cxx
   AliFemtoCorrFctnKStar.cxx
   AliFemtoCorrFctnGammaMonitor.cxx
-  AliFemtoQinvCorrFctnEMCIC.cxx
+  AliFemtoCorrFctnQLCMS.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
+  AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoBPLCMS3DCorrFctnEMCIC.cxx
   AliFemtoPairCutAntiGamma.cxx
   AliFemtoPairCutRadialDistance.cxx
@@ -99,6 +110,7 @@ set(SRCS
   AliFemtoAnalysisAzimuthalPbPb2Order.cxx
   AliFemtoAnalysisPionLambda.cxx
   AliFemtoAnalysisPionPion.cxx
+  AliFemtoAnalysisPionPionObjectConstructor.cxx
   AliFemtoPairCutRadialDistanceLM.cxx
   AliFemtoPicoEventRP.cxx
   AliFemtoPairCutRadialDistanceKK.cxx
@@ -128,10 +140,18 @@ set(SRCS
   AliFemtoModelCorrFctnKStarFull.cxx
   AliFemtoModelWeightGeneratorBasicLednicky.cxx
   AliFemtoAnalysisLambdaKaon.cxx
+  AliFemtoModelCorrFctnDEtaDPhiAK.cxx
   AliFemtoModelCorrFctnDEtaDPhiRM.cxx
   AliFemtoCutMonitorPairKT.cxx
   AliFemtoPairCutMInv.cxx
   AliFemtoV0PurityBgdEstimator.cxx
+  AliFemtoPairCutRadialDistanceKKdist.cxx
+  AliFemtoSphericityEventCutKK.cxx #  Sphericity for KK analysis in pp13TeV
+  AliFemtoCutMonitorEventSphericity.cxx # Sphericity monitor
+  AliFemtoKKTrackCutTest.cxx # new class
+  AliFemtoCorrFctnInvMass.cxx
+  AliFemtoCutMonitorV0CosPointingAngle.cxx
+  AliFemtoCutMonitorPairMomRes.cxx
   )
 
 
@@ -142,6 +162,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Additional headers
 set(HDRS ${HDRS}
   AliFemtoPairCutDetaDphi.h
+  AliFemtoCorrFctnQ3D.h
   )
 
 # Generate the dictionary

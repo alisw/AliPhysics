@@ -68,36 +68,20 @@ fTrackCutsStrong(0),
 fTrackCutsWeak(0),
 fPoolMan(0),
 fPool(0),
+UseNonSignalEvents(0),
+MBtrg(0),
 EMC7trg(0),
 EMCEGAtrg(0),
 EMCJettrg(0),
-MBtrg(0),
 tagStrong(0),
 tagPhot(0),
-UseNonSignalEvents(0),
 
-fHistPIDRejection(0),
-fHistNElecPerEvent(0),
-fHistTestDCA(0),
-fHistTestEMCEnergy(0),
-fHistTestTPCdEdx(0),
-fHistTestEOP(0),
-fHistTestOGDPhi(0),
-fHistTestPt(0),
-fHistTestInvMassElecLike(0),
-fHistTestInvMassElecUnLike(0),
-fHistTestInvMassPionLike(0),
-fHistTestInvMassPionUnLike(0),
-fHistTestDPhiSpeNoSec(0),
-fHistTestDPhi18Sec(0),
-fHistTestDPhi18NoSec(0),
-fHistTestDPhiType(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
 fHistImpPar_MB(0),
 fHistImpParTag_MB(0),
-fHistNevents_MB(0),
+fHistEMC_Had_MB_1Gev(0),
 fHistPtSum_MB(0),
 fHistPtSumTag_MB(0),
 fHistPtSumEMC_MB(0),
@@ -106,24 +90,24 @@ fHistEtaPhiTag_MB(0),
 fHistEtaPhiTPCOnly_MB(0),
 fHistDPhi28_MB(0),
 fHistDPhiDEta28_MB(0),
-fHistDPhiMix28_MB(0),
-fHistDPhiDEtaMix28_MB(0),
-fHistEMC_Had_MB_1Gev(0),
+fHistNevents_MB(0),
 fHistInvMassElecLike_MB(0),
-fHistInvMassElecUnLike_MB(0),
 fHistOpAngElecLike_MB(0),
+fHistInvMassElecUnLike_MB(0),
 fHistOpAngElecUnLike_MB(0),
 fHistPtAssoc_MB(0),
 fHistPtAssocMix_MB(0),
 fHistPtTag_MB(0),
 fHistPhotoMismatch_MB(0),
 fHistDPhi18Spe_MB(0),
+fHistDPhiMix28_MB(0),
+fHistDPhiDEtaMix28_MB(0),
+
 
 fHistTPCNClus_EMC7(0),
 fHistITSNClus_EMC7(0),
 fHistImpPar_EMC7(0),
 fHistImpParTag_EMC7(0),
-fHistNevents_EMC7(0),
 fHistPtSum_EMC7(0),
 fHistPtSumTag_EMC7(0),
 fHistPtSumEMC_EMC7(0),
@@ -131,23 +115,23 @@ fHistEtaPhi_EMC7(0),
 fHistEtaPhiTag_EMC7(0),
 fHistDPhi28_EMC7(0),
 fHistDPhiDEta28_EMC7(0),
-fHistDPhiMix28_EMC7(0),
-fHistDPhiDEtaMix28_EMC7(0),
+fHistNevents_EMC7(0),
 fHistInvMassElecLike_EMC7(0),
-fHistInvMassElecUnLike_EMC7(0),
 fHistOpAngElecLike_EMC7(0),
+fHistInvMassElecUnLike_EMC7(0),
 fHistOpAngElecUnLike_EMC7(0),
 fHistPtAssoc_EMC7(0),
 fHistPtAssocMix_EMC7(0),
 fHistPtTag_EMC7(0),
 fHistPhotoMismatch_EMC7(0),
 fHistDPhi18Spe_EMC7(0),
+fHistDPhiMix28_EMC7(0),
+fHistDPhiDEtaMix28_EMC7(0),
 
 fHistTPCNClus_EMCEGA(0),
 fHistITSNClus_EMCEGA(0),
 fHistImpPar_EMCEGA(0),
 fHistImpParTag_EMCEGA(0),
-fHistNevents_EMCEGA(0),
 fHistPtSum_EMCEGA(0),
 fHistPtSumTag_EMCEGA(0),
 fHistPtSumEMC_EMCEGA(0),
@@ -155,23 +139,23 @@ fHistEtaPhi_EMCEGA(0),
 fHistEtaPhiTag_EMCEGA(0),
 fHistDPhi28_EMCEGA(0),
 fHistDPhiDEta28_EMCEGA(0),
-fHistDPhiMix28_EMCEGA(0),
-fHistDPhiDEtaMix28_EMCEGA(0),
+fHistNevents_EMCEGA(0),
 fHistInvMassElecLike_EMCEGA(0),
-fHistInvMassElecUnLike_EMCEGA(0),
 fHistOpAngElecLike_EMCEGA(0),
+fHistInvMassElecUnLike_EMCEGA(0),
 fHistOpAngElecUnLike_EMCEGA(0),
 fHistPtAssoc_EMCEGA(0),
 fHistPtAssocMix_EMCEGA(0),
 fHistPtTag_EMCEGA(0),
 fHistPhotoMismatch_EMCEGA(0),
 fHistDPhi18Spe_EMCEGA(0),
+fHistDPhiMix28_EMCEGA(0),
+fHistDPhiDEtaMix28_EMCEGA(0),
 
 fHistTPCNClus_EMCJet(0),
 fHistITSNClus_EMCJet(0),
 fHistImpPar_EMCJet(0),
 fHistImpParTag_EMCJet(0),
-fHistNevents_EMCJet(0),
 fHistPtSum_EMCJet(0),
 fHistPtSumTag_EMCJet(0),
 fHistPtSumEMC_EMCJet(0),
@@ -179,17 +163,35 @@ fHistEtaPhi_EMCJet(0),
 fHistEtaPhiTag_EMCJet(0),
 fHistDPhi28_EMCJet(0),
 fHistDPhiDEta28_EMCJet(0),
-fHistDPhiMix28_EMCJet(0),
-fHistDPhiDEtaMix28_EMCJet(0),
+fHistNevents_EMCJet(0),
 fHistInvMassElecLike_EMCJet(0),
-fHistInvMassElecUnLike_EMCJet(0),
 fHistOpAngElecLike_EMCJet(0),
+fHistInvMassElecUnLike_EMCJet(0),
 fHistOpAngElecUnLike_EMCJet(0),
 fHistPtAssoc_EMCJet(0),
 fHistPtAssocMix_EMCJet(0),
 fHistPtTag_EMCJet(0),
 fHistPhotoMismatch_EMCJet(0),
-fHistDPhi18Spe_EMCJet(0)
+fHistDPhi18Spe_EMCJet(0),
+fHistDPhiMix28_EMCJet(0),
+fHistDPhiDEtaMix28_EMCJet(0),
+
+fHistPIDRejection(0),
+fHistNElecPerEvent(0),
+fHistTestDCA(0),
+fHistTestEMCEnergy(0),
+fHistTestTPCdEdx(0),
+fHistTestEOP(0),
+fHistTestOGDPhi(0),
+fHistTestInvMassElecLike(0),
+fHistTestInvMassElecUnLike(0),
+fHistTestInvMassPionLike(0),
+fHistTestInvMassPionUnLike(0),
+fHistTestPt(0),
+fHistTestDPhiSpeNoSec(0),
+fHistTestDPhi18Sec(0),
+fHistTestDPhi18NoSec(0),
+fHistTestDPhiType(0)
 
     // The last in the above list should not have a comma after it
 {
@@ -287,36 +289,20 @@ fTrackCutsStrong(0),
 fTrackCutsWeak(0),
 fPoolMan(0),
 fPool(0),
+UseNonSignalEvents(0),
+MBtrg(0),
 EMC7trg(0),
 EMCEGAtrg(0),
 EMCJettrg(0),
-MBtrg(0),
 tagStrong(0),
 tagPhot(0),
-UseNonSignalEvents(0),
 
-fHistPIDRejection(0),
-fHistNElecPerEvent(0),
-fHistTestDCA(0),
-fHistTestEMCEnergy(0),
-fHistTestTPCdEdx(0),
-fHistTestEOP(0),
-fHistTestOGDPhi(0),
-fHistTestPt(0),
-fHistTestInvMassElecLike(0),
-fHistTestInvMassElecUnLike(0),
-fHistTestInvMassPionLike(0),
-fHistTestInvMassPionUnLike(0),
-fHistTestDPhiSpeNoSec(0),
-fHistTestDPhi18Sec(0),
-fHistTestDPhi18NoSec(0),
-fHistTestDPhiType(0),
 
 fHistTPCNClus_MB(0),
 fHistITSNClus_MB(0),
 fHistImpPar_MB(0),
 fHistImpParTag_MB(0),
-fHistNevents_MB(0),
+fHistEMC_Had_MB_1Gev(0),
 fHistPtSum_MB(0),
 fHistPtSumTag_MB(0),
 fHistPtSumEMC_MB(0),
@@ -325,24 +311,24 @@ fHistEtaPhiTag_MB(0),
 fHistEtaPhiTPCOnly_MB(0),
 fHistDPhi28_MB(0),
 fHistDPhiDEta28_MB(0),
-fHistDPhiMix28_MB(0),
-fHistDPhiDEtaMix28_MB(0),
-fHistEMC_Had_MB_1Gev(0),
+fHistNevents_MB(0),
 fHistInvMassElecLike_MB(0),
-fHistInvMassElecUnLike_MB(0),
 fHistOpAngElecLike_MB(0),
+fHistInvMassElecUnLike_MB(0),
 fHistOpAngElecUnLike_MB(0),
 fHistPtAssoc_MB(0),
 fHistPtAssocMix_MB(0),
 fHistPtTag_MB(0),
 fHistPhotoMismatch_MB(0),
 fHistDPhi18Spe_MB(0),
+fHistDPhiMix28_MB(0),
+fHistDPhiDEtaMix28_MB(0),
+
 
 fHistTPCNClus_EMC7(0),
 fHistITSNClus_EMC7(0),
 fHistImpPar_EMC7(0),
 fHistImpParTag_EMC7(0),
-fHistNevents_EMC7(0),
 fHistPtSum_EMC7(0),
 fHistPtSumTag_EMC7(0),
 fHistPtSumEMC_EMC7(0),
@@ -350,23 +336,23 @@ fHistEtaPhi_EMC7(0),
 fHistEtaPhiTag_EMC7(0),
 fHistDPhi28_EMC7(0),
 fHistDPhiDEta28_EMC7(0),
-fHistDPhiMix28_EMC7(0),
-fHistDPhiDEtaMix28_EMC7(0),
+fHistNevents_EMC7(0),
 fHistInvMassElecLike_EMC7(0),
-fHistInvMassElecUnLike_EMC7(0),
 fHistOpAngElecLike_EMC7(0),
+fHistInvMassElecUnLike_EMC7(0),
 fHistOpAngElecUnLike_EMC7(0),
 fHistPtAssoc_EMC7(0),
 fHistPtAssocMix_EMC7(0),
 fHistPtTag_EMC7(0),
 fHistPhotoMismatch_EMC7(0),
 fHistDPhi18Spe_EMC7(0),
+fHistDPhiMix28_EMC7(0),
+fHistDPhiDEtaMix28_EMC7(0),
 
 fHistTPCNClus_EMCEGA(0),
 fHistITSNClus_EMCEGA(0),
 fHistImpPar_EMCEGA(0),
 fHistImpParTag_EMCEGA(0),
-fHistNevents_EMCEGA(0),
 fHistPtSum_EMCEGA(0),
 fHistPtSumTag_EMCEGA(0),
 fHistPtSumEMC_EMCEGA(0),
@@ -374,23 +360,23 @@ fHistEtaPhi_EMCEGA(0),
 fHistEtaPhiTag_EMCEGA(0),
 fHistDPhi28_EMCEGA(0),
 fHistDPhiDEta28_EMCEGA(0),
-fHistDPhiMix28_EMCEGA(0),
-fHistDPhiDEtaMix28_EMCEGA(0),
+fHistNevents_EMCEGA(0),
 fHistInvMassElecLike_EMCEGA(0),
-fHistInvMassElecUnLike_EMCEGA(0),
 fHistOpAngElecLike_EMCEGA(0),
+fHistInvMassElecUnLike_EMCEGA(0),
 fHistOpAngElecUnLike_EMCEGA(0),
 fHistPtAssoc_EMCEGA(0),
 fHistPtAssocMix_EMCEGA(0),
 fHistPtTag_EMCEGA(0),
 fHistPhotoMismatch_EMCEGA(0),
 fHistDPhi18Spe_EMCEGA(0),
+fHistDPhiMix28_EMCEGA(0),
+fHistDPhiDEtaMix28_EMCEGA(0),
 
 fHistTPCNClus_EMCJet(0),
 fHistITSNClus_EMCJet(0),
 fHistImpPar_EMCJet(0),
 fHistImpParTag_EMCJet(0),
-fHistNevents_EMCJet(0),
 fHistPtSum_EMCJet(0),
 fHistPtSumTag_EMCJet(0),
 fHistPtSumEMC_EMCJet(0),
@@ -398,17 +384,35 @@ fHistEtaPhi_EMCJet(0),
 fHistEtaPhiTag_EMCJet(0),
 fHistDPhi28_EMCJet(0),
 fHistDPhiDEta28_EMCJet(0),
-fHistDPhiMix28_EMCJet(0),
-fHistDPhiDEtaMix28_EMCJet(0),
+fHistNevents_EMCJet(0),
 fHistInvMassElecLike_EMCJet(0),
-fHistInvMassElecUnLike_EMCJet(0),
 fHistOpAngElecLike_EMCJet(0),
+fHistInvMassElecUnLike_EMCJet(0),
 fHistOpAngElecUnLike_EMCJet(0),
 fHistPtAssoc_EMCJet(0),
 fHistPtAssocMix_EMCJet(0),
 fHistPtTag_EMCJet(0),
 fHistPhotoMismatch_EMCJet(0),
-fHistDPhi18Spe_EMCJet(0)
+fHistDPhi18Spe_EMCJet(0),
+fHistDPhiMix28_EMCJet(0),
+fHistDPhiDEtaMix28_EMCJet(0),
+
+fHistPIDRejection(0),
+fHistNElecPerEvent(0),
+fHistTestDCA(0),
+fHistTestEMCEnergy(0),
+fHistTestTPCdEdx(0),
+fHistTestEOP(0),
+fHistTestOGDPhi(0),
+fHistTestInvMassElecLike(0),
+fHistTestInvMassElecUnLike(0),
+fHistTestInvMassPionLike(0),
+fHistTestInvMassPionUnLike(0),
+fHistTestPt(0),
+fHistTestDPhiSpeNoSec(0),
+fHistTestDPhi18Sec(0),
+fHistTestDPhi18NoSec(0),
+fHistTestDPhiType(0)
 
     // The last in the above list should not have a comma after it
 {
@@ -623,16 +627,16 @@ void AliAnalysisTaskPSHFE::UserCreateOutputObjects(){
     //Initialize event pool stuff
     Double_t vertexBins[5] = { -10, -4,  0, 4, 10 };
     Int_t nZvtxBins  = 4;
-    Double_t multBins[12] = {0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 200};
-    Int_t nMultBins = 11;
+    Double_t multBins[5] = {0, 10, 50, 100, 200};
+    Int_t nMultBins = 4;
 
-    fPoolMan = new AliEventPoolManager(1000, 10000, nMultBins, multBins, nZvtxBins, vertexBins);
+    fPoolMan = new AliEventPoolManager(1000, 10, nMultBins, multBins, nZvtxBins, vertexBins);
     fPoolMan->Validate();
 
     //Some strings for histograms
     TString ptRangesDPhi[3] = {"1-2Gev", "2-4Gev", "4-8Gev"};
     TString ptRangesPID[6] = {"1-2GeV", "2-3GeV", "3-4GeV", "4-5GeV", "5-6GeV", ">6GeV"};
-    TString ptRangesRegion[4] = {"1-2Gev", "2-4Gev", "4-6Gev", ">6Gev"};
+    
 
     //Strong cuts for heavy flavour
     fTrackCutsStrong = new AliESDtrackCuts();
@@ -1732,7 +1736,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
 
     trigVal= EMCJettrg?EMCJE:EMC7trg?EMC7:EMCEGAtrg?EMCEGA:NONE;
 
-    Int_t elecIDs[1000];
+    
     Int_t elecCnt=0;
 
     AliPIDResponse* fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
@@ -1751,7 +1755,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     if(MBtrg){
         fHistNevents_MB->Fill("Events",1);
     }
-    switch(trigVal){
+    switch(trigVal){ case(NONE): break;
         case(EMC7):
             fHistNevents_EMC7->Fill("Events",1);
             break;
@@ -1814,7 +1818,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         if(MBtrg){
             fHistEtaPhi_MB->Fill(aodtrack->Eta(),aodtrack->Phi());
         }
-        switch(trigVal){
+        switch(trigVal){ case(NONE): break;
             case(EMC7):
                 fHistEtaPhi_EMC7->Fill(aodtrack->Eta(),aodtrack->Phi());
                 break;
@@ -1832,7 +1836,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             }
             fHistITSNClus_MB->Fill(aodtrack->GetNcls(0));
         }
-        switch(trigVal){
+        switch(trigVal){ case(NONE): break;
             case(EMC7):
                 if(aodtrack->GetTPCncls()>0){
                     fHistTPCNClus_EMC7->Fill(aodtrack->GetTPCncls());
@@ -1857,14 +1861,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
 
         //Impact parameter
         Float_t xy;
-        Float_t z;
+        
 
         xy=TMath::Sqrt(aodtrack->XAtDCA()*aodtrack->XAtDCA()+aodtrack->YAtDCA()*aodtrack->YAtDCA());
 
         if(MBtrg){
             fHistImpPar_MB->Fill(xy);
         }
-        switch(trigVal){
+        switch(trigVal){ case(NONE): break;
             case(EMC7):
                 fHistImpPar_EMC7->Fill(xy);
                 break;
@@ -1896,14 +1900,14 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             tagEvt=kTRUE;//This event contains a candidate electron
             //Increment the candidate count and put track ID of candidate into array
 
-            elecIDs[elecCnt]=i;
+            
             elecCnt+=1;
 
             //Fill impact parameter plots
             if(MBtrg){
                 fHistImpParTag_MB->Fill(xy);
             }
-            switch(trigVal){
+            switch(trigVal){ case(NONE): break;
                 case(EMC7):
                     fHistImpParTag_EMC7->Fill(xy);
                     break;
@@ -1922,7 +1926,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
             if(MBtrg){
                 fHistPtTag_MB->Fill(aodtrack->Pt());
             }
-            switch(trigVal){
+            switch(trigVal){ case(NONE): break;
                 case(EMC7):
                     fHistPtTag_EMC7->Fill(aodtrack->Pt());
                     break;
@@ -1941,7 +1945,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
                 if(MBtrg){
                     fHistPhotoMismatch_MB->Fill(0);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistPhotoMismatch_EMC7->Fill(0);
                         break;
@@ -1989,10 +1993,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     }
 
     //Call function to fill Region histos and pass it int array of IDs for identified electron tracks
-    Int_t elecIDsSparse[elecCnt];
-    for(Int_t i=0;i<elecCnt;i++){
-        elecIDsSparse[i]=elecIDs[i];
-    }
+    
 
     //Fill Number of electrons plot
     fHistNElecPerEvent->Fill(elecCnt);
@@ -2002,7 +2003,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         if(MBtrg){
             fHistPtSumTag_MB->Fill(PtSum);
         }
-        switch(trigVal){
+        switch(trigVal){ case(NONE): break;
             case(EMC7):
                 fHistPtSumTag_EMC7->Fill(PtSum);
                 break;
@@ -2017,7 +2018,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         if(MBtrg){
             fHistPtSum_MB->Fill(PtSum);
         }
-        switch(trigVal){
+        switch(trigVal){ case(NONE): break;
             case(EMC7):
                 fHistPtSum_EMC7->Fill(PtSum);
                 break;
@@ -2033,7 +2034,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
     if(MBtrg){
         fHistPtSumEMC_MB->Fill(PtSumEMC);
     }
-    switch(trigVal){
+    switch(trigVal){ case(NONE): break;
         case(EMC7):
             fHistPtSumEMC_EMC7->Fill(PtSumEMC);
             break;
@@ -2050,7 +2051,7 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
         if(MBtrg){
             fHistNevents_MB->Fill("Events containing candidates",1);
         }  
-        switch(trigVal){
+        switch(trigVal){ case(NONE): break;
             case(EMC7):
                 fHistNevents_EMC7->Fill("Events containing candidates",1);
                 break;
@@ -2065,11 +2066,11 @@ void AliAnalysisTaskPSHFE::UserExec(Option_t *)
 
     //Fill the Eta Phi histograms
     if(tagEvt){
-        for(Int_t i=0;i<Eta.size();i++){
+        for(UInt_t i=0;i<Eta.size();i++){
             if(MBtrg){
                 fHistEtaPhiTag_MB->Fill(Eta[i],Phi[i]);
             }
-            switch(trigVal){
+            switch(trigVal){ case(NONE): break;
                 case(EMC7):
                     fHistEtaPhiTag_EMC7->Fill(Eta[i],Phi[i]);
                     break;
@@ -2139,8 +2140,7 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
 
 
     //Get the # of sigmas around an electron hypothesis for TOF and TPC
-    Double_t nSigmaTOF;
-    nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(aodtrack,AliPID::kElectron);
+    
 
     Double_t nSigmaTPC;
     nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(aodtrack,AliPID::kElectron);
@@ -2180,7 +2180,6 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
     Double_t ptUpper[6] = {2, 3, 4, 5, 6, 1000000};
     Double_t ptLower[6] = {1, 2, 3, 4, 5, 6};
     Double_t TPCcut = 2;
-    Double_t TOFcut = 2;
     Double_t TRDcut = .9;
     Double_t EMCcutLower[6] = {.85,.85,.85,.85,.85,.85};
     Double_t EMCcutHigher[6] = {1.3,1.3,1.3,1.3,1.3,1.3};
@@ -2195,7 +2194,7 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
                 if(MBtrg){
                     fHistTPC_EMCTRD_MB[i]->Fill(aodtrack->Pt(), nSigmaTPC);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistTPC_EMCTRD_EMC7[i]->Fill(aodtrack->Pt(), nSigmaTPC);
                         break;
@@ -2219,7 +2218,7 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
                     if(MBtrg){
                         fHistEMC_TPCTRD_MB[i]->Fill(EOP);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
                             break;
@@ -2236,7 +2235,7 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
                     if(MBtrg){
                         fHistEMC_TPCTRD_MB[i]->Fill(EOP);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistEMC_TPCTRD_EMC7[i]->Fill(EOP);
                             break;
@@ -2260,7 +2259,7 @@ void AliAnalysisTaskPSHFE::FillPIDHistos(AliAODEvent *aod, AliAODTrack *aodtrack
                 if(MBtrg){
                     fHistTRD_TPCEMC_MB[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistTRD_TPCEMC_EMC7[i]->Fill(aodtrack->Pt(), elecLikeTRD[0]);
                         break;
@@ -2370,7 +2369,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
         if(MBtrg){
             fHistPtAssoc_MB->Fill(aodtrackassoc->Pt());
         }
-        switch(trigVal){
+        switch(trigVal){ case(NONE): break;
             case(EMC7):
                 fHistPtAssoc_EMC7->Fill(aodtrackassoc->Pt());
                 break;
@@ -2418,12 +2417,20 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
             case AliAODTrack::kUnknown:
                 PID=0;
                 break;
+            case AliAODTrack::kTriton:
+                break;
+            case AliAODTrack::kHelium3:
+                break;
+            case AliAODTrack::kAlpha:
+                break;
+            case AliAODTrack::kMostProbable:
+                break;
         }
 
         if(MBtrg){
             fHistDPhi18Spe_MB->Fill(DPhi, PID);
         }
-        switch(trigVal){
+        switch(trigVal){ case(NONE): break;
             case(EMC7):
                 fHistDPhi18Spe_EMC7->Fill(DPhi, PID);
                 break;
@@ -2492,7 +2499,6 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
 
                 if(DPhi>3*TMath::Pi()/2){DPhi=-TMath::Abs(2*TMath::Pi()-DPhi);}
 
-                Double_t DEta=aodtrackassoc2->Eta()-aodtrack->Eta();
 
                 Double_t ElecMass=.000511;
 
@@ -2581,7 +2587,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(MBtrg){
                     fHistDPhi300_1_MB[0]->Fill(DPhi);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi300_1_EMC7[0]->Fill(DPhi);
                         break;
@@ -2599,7 +2605,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(MBtrg){
                     fHistDPhi1_2_MB[0]->Fill(DPhi);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi1_2_EMC7[0]->Fill(DPhi);
                         break;
@@ -2617,7 +2623,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(MBtrg){
                     fHistDPhi2_4_MB[0]->Fill(DPhi);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi2_4_EMC7[0]->Fill(DPhi);
                         break;
@@ -2635,7 +2641,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(MBtrg){
                     fHistDPhi4_8_MB[0]->Fill(DPhi);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi4_8_EMC7[0]->Fill(DPhi);
                         break;
@@ -2661,7 +2667,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(MBtrg){
                     fHistDPhi300_1_MB[1]->Fill(DPhi);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi300_1_EMC7[1]->Fill(DPhi);
                         break;
@@ -2679,7 +2685,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(MBtrg){
                     fHistDPhi1_2_MB[1]->Fill(DPhi);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi1_2_EMC7[1]->Fill(DPhi);
                         break;
@@ -2699,7 +2705,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi2_4_EMC7[1]->Fill(DPhi);
                         fHistDPhi28_EMC7->Fill(DPhi);
@@ -2725,7 +2731,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi4_8_EMC7[1]->Fill(DPhi);
                         fHistDPhi28_EMC7->Fill(DPhi);
@@ -2757,7 +2763,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(MBtrg){
                     fHistDPhi300_1_MB[2]->Fill(DPhi);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi300_1_EMC7[2]->Fill(DPhi);
                         break;
@@ -2775,7 +2781,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                 if(MBtrg){
                     fHistDPhi1_2_MB[2]->Fill(DPhi);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi1_2_EMC7[2]->Fill(DPhi);
                         break;
@@ -2795,7 +2801,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi2_4_EMC7[2]->Fill(DPhi);
                         fHistDPhi28_EMC7->Fill(DPhi);
@@ -2821,7 +2827,7 @@ void AliAnalysisTaskPSHFE::FillDPhiHistos(AliAODEvent *aod, AliAODTrack *aodtrac
                     fHistDPhi28_MB->Fill(DPhi);
                     fHistDPhiDEta28_MB->Fill(DPhi, DEta);
                 }
-                switch(trigVal){
+                switch(trigVal){ case(NONE): break;
                     case(EMC7):
                         fHistDPhi4_8_EMC7[2]->Fill(DPhi);
                         fHistDPhi28_EMC7->Fill(DPhi);
@@ -2980,7 +2986,7 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *ao
                 fHistInvMassElecLike_MB->Fill(InvMass);
                 fHistOpAngElecLike_MB->Fill(OpAng);
             }
-            switch(trigVal){
+            switch(trigVal){ case(NONE): break;
                 case(EMC7):
                     fHistInvMassElecLike_EMC7->Fill(InvMass);
                     fHistOpAngElecLike_EMC7->Fill(OpAng);
@@ -3003,7 +3009,7 @@ void AliAnalysisTaskPSHFE::FillPhotoElecHistos(AliAODEvent *aod, AliAODTrack *ao
                 fHistInvMassElecUnLike_MB->Fill(InvMass);
                 fHistOpAngElecUnLike_MB->Fill(OpAng);
             }
-            switch(trigVal){
+            switch(trigVal){ case(NONE): break;
                 case(EMC7):
                     fHistInvMassElecUnLike_EMC7->Fill(InvMass);
                     fHistOpAngElecUnLike_EMC7->Fill(OpAng);
@@ -3078,7 +3084,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
             if(MBtrg){
                 fHistPtAssocMix_MB->Fill(aodtrackassoc->Pt());
             }
-            switch(trigVal){
+            switch(trigVal){ case(NONE): break;
                 case(EMC7):
                     fHistPtAssocMix_EMC7->Fill(aodtrackassoc->Pt());
                     break;
@@ -3111,7 +3117,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     if(MBtrg){
                         fHistDPhiMix300_1_MB[0]->Fill(DPhi);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix300_1_EMC7[0]->Fill(DPhi);
                             break;
@@ -3129,7 +3135,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     if(MBtrg){
                         fHistDPhiMix1_2_MB[0]->Fill(DPhi);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix1_2_EMC7[0]->Fill(DPhi);
                             break;
@@ -3147,7 +3153,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     if(MBtrg){
                         fHistDPhiMix2_4_MB[0]->Fill(DPhi);
                     }
-                    switch(trigVal){                       
+                    switch(trigVal){ case(NONE): break;                       
                         case(EMC7):
                             fHistDPhiMix2_4_EMC7[0]->Fill(DPhi);
                             break;
@@ -3165,7 +3171,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     if(MBtrg){
                         fHistDPhiMix4_8_MB[0]->Fill(DPhi);
                     }
-                    switch(trigVal){                        
+                    switch(trigVal){ case(NONE): break;                        
                         case(EMC7):
                             fHistDPhiMix4_8_EMC7[0]->Fill(DPhi);
                             break;
@@ -3191,7 +3197,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     if(MBtrg){
                         fHistDPhiMix300_1_MB[1]->Fill(DPhi);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix300_1_EMC7[1]->Fill(DPhi);
                             break;
@@ -3209,7 +3215,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     if(MBtrg){
                         fHistDPhiMix1_2_MB[1]->Fill(DPhi);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix1_2_EMC7[1]->Fill(DPhi);
                             break;
@@ -3229,7 +3235,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix2_4_EMC7[1]->Fill(DPhi);
                             fHistDPhiMix28_EMC7->Fill(DPhi);
@@ -3255,7 +3261,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix4_8_EMC7[1]->Fill(DPhi);
                             fHistDPhiMix28_EMC7->Fill(DPhi);
@@ -3287,7 +3293,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     if(MBtrg){
                         fHistDPhiMix300_1_MB[2]->Fill(DPhi);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix300_1_EMC7[2]->Fill(DPhi);
                             break;
@@ -3305,7 +3311,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                     if(MBtrg){
                         fHistDPhiMix1_2_MB[2]->Fill(DPhi);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix1_2_EMC7[2]->Fill(DPhi);
                             break;
@@ -3325,7 +3331,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix2_4_EMC7[2]->Fill(DPhi);
                             fHistDPhiMix28_EMC7->Fill(DPhi);
@@ -3351,7 +3357,7 @@ void AliAnalysisTaskPSHFE::FillMEDPhiHistos(AliAODTrack *aodtrack)
                         fHistDPhiMix28_MB->Fill(DPhi);
                         fHistDPhiDEtaMix28_MB->Fill(DPhi, DEta);
                     }
-                    switch(trigVal){
+                    switch(trigVal){ case(NONE): break;
                         case(EMC7):
                             fHistDPhiMix4_8_EMC7[2]->Fill(DPhi);
                             fHistDPhiMix28_EMC7->Fill(DPhi);

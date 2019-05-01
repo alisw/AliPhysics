@@ -24,8 +24,10 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetWriteTTree(Bool_t WriteTTree){fWriteTTree = WriteTTree;}
     void SetMaxEta(Float_t maxEta = 0.8){fMaxEta = maxEta;}
     void SetMinPt(Float_t MinPt = 0.2){fMinPt = MinPt;}
+    void SetMaxPt(Float_t MaxPt = 8.0){fMaxPt = MaxPt;}
     void SetResolType(Int_t ResolType = 2){fResolType = ResolType;}
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
+    void SetResFileName(TString name){ fResolDataSetName = name; }
 
     // For resolution smearing (from Theos LightFlavorGenerator)
     TObjArray       *fArr;
@@ -40,13 +42,12 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
   protected:
     AliVEvent*            fInputEvent;                // current event
     AliMCEvent*           fMCEvent;                   // corresponding MC event
-    AliStack*             fMCStack;                   // stack belonging to MC event
     TList*                fOutputContainer;           // Output container
     
     Int_t*                fParticleList;              // array with particle Pdg values
     TString*              fParticleListNames;         // array with particle names
 
-    static const Int_t nInputParticles = 14;
+    const Int_t nInputParticles = 14;
 
     // Event histograms
     TH1F*                 fHistNEvents;               // number of events histo
@@ -60,7 +61,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
 
     // DCA input templates:
     TH1F** fh_DCAtemplates;
-    static const Int_t nbDCAtemplate = 6;
+    const Int_t nbDCAtemplate = 6;
 
     //VPH histogram (pT) and function (mass)
     TF1* ffVPHpT;
@@ -70,8 +71,12 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     // before smearing+acceptance cuts:
     TH1F** fmee_orig;
     TH2F** fpteevsmee_orig;
+    TH1F** fmotherpT_orig;
     TH1F** fphi_orig;
     TH1F** frap_orig;
+    TH1F** fmee_orig_wALT;
+    TH2F** fpteevsmee_orig_wALT;
+    TH1F** fmotherpT_orig_wALT;
     // after smearing + acceptance cuts
     TH1F** fmee;
     TH2F** fpteevsmee;
@@ -79,11 +84,8 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TH1F** frap;
     TH2F* fDCAeevsmee;
     TH2F* fDCAeevsptee;
-    // after smearing + acceptance cuts + efficiency weight
     TH1F** fmee_wALT;
     TH2F** fpteevsmee_wALT;
-    TH1F** fmee_orig_wALT;
-    TH2F** fpteevsmee_orig_wALT;
     // LS, ULS histos
     TH2F* fULS_orig;
     TH2F* fLSpp_orig;
@@ -150,13 +152,15 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TFile*      fFileEff;        //! Pointer to input file
     TString     fFileNameVPH;    // Name of the input file (VPH)
     TFile*      fFileVPH;        //! Pointer to input file
+    TString     fResolDataSetName; //Specify multiplicity class and data set for Run 2 data
 
     //tree
     TTree*               teeTTree; 
 
     Int_t                 fIsMC;                      // MC flag
-    Float_t              fMaxEta;                      // Max Eta
-    Float_t              fMinPt;
+    Float_t              fMaxEta;                     // Max single electron Eta
+    Float_t              fMinPt;                      // Min single electron Pt
+    Float_t              fMaxPt;                      // Max single electron Pt
     Bool_t               fWriteTTree;
     Int_t              fcollisionSystem;
     Int_t                fResolType;

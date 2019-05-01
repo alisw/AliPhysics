@@ -63,15 +63,15 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fMagneticField(),
   fNV0Cand(),
   fMcGenRecCounter(),
+  fPidQa(0),
+  fUseAnalysisTrkSel(kTRUE),
+  fPIDCheckOnly(kFALSE),
   fMCtrue(0),
   fEventCuts(),
   fPeriod(),
   fBetheSplines(),
   fBetheParamsHe(),
-  fBetheParamsT(),
-  fPidQa(0),
-  fUseAnalysisTrkSel(kTRUE),
-  fPIDCheckOnly(kFALSE) {
+  fBetheParamsT() {
 
   }
 
@@ -102,15 +102,16 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fMagneticField(),
   fNV0Cand(),
   fMcGenRecCounter(),
+  fPidQa(0),
+  fUseAnalysisTrkSel(kTRUE),
+  fPIDCheckOnly(kFALSE),
   fMCtrue(0),
   fEventCuts(),
   fPeriod(),
   fBetheSplines(),
   fBetheParamsHe(),
-  fBetheParamsT(),
-  fPidQa(0),
-  fUseAnalysisTrkSel(kTRUE),
-  fPIDCheckOnly(kFALSE) {
+  fBetheParamsT()
+  {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     DefineOutput(2, TTree::Class());
@@ -263,7 +264,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       }
     }
   }
-  if (fPeriod == 2016) {
+  if (fPeriod == 2016 || fPeriod == 2017) {
     if(!fEventCuts.AcceptEvent(fESDevent)) {
       PostData(1,fHistogramList);
       return;
@@ -339,12 +340,12 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     if (trackN->GetInnerParam()->GetP() > 10 || trackP->GetInnerParam()->GetP() > 10) continue;
     Bool_t pionPositive     = kFALSE;
     Bool_t pionNegative     = kFALSE;
-    Bool_t protonPositive   = kFALSE;
-    Bool_t protonNegative   = kFALSE;
-    Bool_t deuteronPositive = kFALSE;
-    Bool_t deuteronNegative = kFALSE;
-    Bool_t tritonPositive   = kFALSE;
-    Bool_t tritonNegative   = kFALSE;
+    // Bool_t protonPositive   = kFALSE;
+    // Bool_t protonNegative   = kFALSE;
+    // Bool_t deuteronPositive = kFALSE;
+    // Bool_t deuteronNegative = kFALSE;
+    // Bool_t tritonPositive   = kFALSE;
+    // Bool_t tritonNegative   = kFALSE;
     Bool_t helium3Positive  = kFALSE;
     Bool_t helium3Negative  = kFALSE;
     if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kPion)) < 3) {

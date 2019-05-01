@@ -6,18 +6,17 @@
 #ifndef ALIFEMTOANALYSIS_PIONPION_H_
 #define ALIFEMTOANALYSIS_PIONPION_H_
 
-class AliFemtoBasicTrackCut;
-class AliFemtoPairCutAntiGamma;
-class AliFemtoBasicEventCut;
-class AliFemtoPairCutDetaDphi;
-
+class AliFemtoEventReader;
 class TList;
+
 
 
 #include "AliFemtoConfigObject.h"
 
-
 #include "AliFemtoVertexMultAnalysis.h"
+#include "AliFemtoEventReaderAODMultSelection.h"
+
+#include <TNamed.h>
 
 
 /// \class AliFemtoAnalysisPionPion
@@ -78,6 +77,10 @@ public:
                            const AnalysisParams&,
                            const CutParams&);
 
+  /// Construct from configuration object
+  ///
+  AliFemtoAnalysisPionPion(const AliFemtoConfigObject &);
+
   virtual void EventBegin(const AliFemtoEvent*);
   virtual void EventEnd(const AliFemtoEvent*);
 
@@ -110,9 +113,41 @@ public:
   /// analysis.
   virtual TList* ListSettings();
 
+  /// Construct analysis based on the input from config object
+  ///
+  /// This static method is only using the class as a namespace (this
+  /// should be changed eventually)
+  ///
+  static AliFemtoAnalysis* BuildAnalysisFromConfiguration(AliFemtoConfigObject);
+
+  /// Construct an Event Reader from config object
+  ///
+  /// This static method is only using the class as a namespace (this
+  /// should be changed eventually)
+  ///
+  static AliFemtoEventReader* ConstructEventReader(AliFemtoConfigObject cfg);
+
+  /// Construct event cut via configuration
+  static AliFemtoEventCut* ConstructEventCut(AliFemtoConfigObject);
+
+  /// Construct pion cut via configuration
+  static AliFemtoParticleCut* ConstructParticleCut(AliFemtoConfigObject);
+
+  /// Construct pair cut via configuration
+  static AliFemtoPairCut* ConstructPairCut(AliFemtoConfigObject);
+
+  /// Construct a CorrelationFunction from config object
+  static AliFemtoCorrFctn* ConstructCorrelationFunction(AliFemtoConfigObject);
+
+  template <typename T>
+  static AliFemtoConfigObject GetConfigurationOf(const T&);
+
+  static TString make_random_string(const TString &prefix="");
+
+
 protected:
 
-  /// The name of the analysis to identify in the output list
+  /// The name of this analysis used for identification in the output list
   TString fAnalysisName;
 
   /// The type of Pion particles this analysis will search for
@@ -130,13 +165,10 @@ protected:
 
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
-
-  /// Saved Configuration
-  AliFemtoConfigObject fConfiguration;
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams
-struct AliFemtoAnalysisPionPion::AnalysisParams {
+struct AliFemtoAnalysisPionPion::AnalysisParams : public TNamed {
 
   UInt_t vertex_bins;
   Float_t vertex_min,
@@ -157,26 +189,16 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
   Bool_t group_output_objects;
   Bool_t output_settings;
   Bool_t is_mc_analysis;
-/*
-  AnalysisParams():
-    vertex_bins(8)
-  , vertex_min(-8)
-  , vertex_max(8)
 
-  , mult_bins(4)
-  , mult_min(0)
-  , mult_max(10000)
+  // Bool_t auto_mult_bin;
 
-  , pion_type_1(kNone)
-  , pion_type_2(kNone)
+  /// get multiplicty from cut params
+  void calc_automult(const AliFemtoAnalysisPionPion::CutParams &);
 
-  , num_events_to_mix(10)
-  , min_coll_size(100)
-  , enable_pair_monitors(kTRUE)
-  , group_output_objects(kTRUE)
-  , is_mc_analysis(kFALSE)
-  {}
-*/
+  /// Default Values
+  AnalysisParams();
+
+  ClassDef(AnalysisParams, 1);
 };
 
 /// \class AliFemtoAnalysisPionPion::CutParams
@@ -185,23 +207,29 @@ struct AliFemtoAnalysisPionPion::AnalysisParams {
 ///
 /// The expected way to use this class
 ///
-struct AliFemtoAnalysisPionPion::CutParams {
+struct AliFemtoAnalysisPionPion::CutParams : public TNamed {
+
+  Bool_t cuts_use_attrs;
+
+  Bool_t event_use_basic;
+
   // EVENT
-  Float_t event_MultMin,
-          event_MultMax;
+  Int_t event_MultMin,
+        event_MultMax;
 
-  Float_t event_CentralityMin,
-          event_CentralityMax;
+  double event_CentralityMin,
+         event_CentralityMax;
 
-  Float_t event_VertexZMin,
-          event_VertexZMax;
+  double event_VertexZMin,
+         event_VertexZMax;
 
-  Float_t event_EP_VZeroMin,
-          event_EP_VZeroMax;
+  double event_EP_VZeroMin,
+         event_EP_VZeroMax;
 
-  Int_t   event_TriggerSelection;
-  Bool_t  event_AcceptBadVertex;
-  Bool_t  event_AcceptOnlyPhysics;
+  Int_t event_TriggerSelection;
+  Bool_t event_AcceptBadVertex;
+  Bool_t event_AcceptOnlyPhysics;
+  Int_t event_zdc_part;
 
   // PION - 1
   Float_t pion_1_PtMin,
@@ -213,20 +241,25 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Float_t pion_1_DCAMin,
           pion_1_DCAMax;
 
-  Float_t pion_1_NSigmaMin
-        , pion_1_NSigmaMax
-        ;
+  // Float_t pion_1_NSigmaMin,
+  //        pion_1_NSigmaMax;
 
-  Float_t pion_1_max_impact_xy
-        , pion_1_max_impact_z
-        , pion_1_max_tpc_chi_ndof
-        , pion_1_max_its_chi_ndof
-        ;
+  ULong_t pion_1_status;
+
+  Float_t pion_1_sigma;
+
+  Float_t pion_1_max_impact_xy,
+          pion_1_max_impact_z,
+          pion_1_min_tpc_chi_ndof,
+          pion_1_max_tpc_chi_ndof,
+          pion_1_max_its_chi_ndof;
 
   UInt_t pion_1_min_tpc_ncls;
-  Bool_t pion_1_remove_kinks,
-         pion_1_set_label;
+  UInt_t pion_1_min_its_ncls;
 
+  Bool_t pion_1_remove_kinks,
+         pion_1_rm_neg_lbl,
+         pion_1_use_tpctof;
 
   // PION - 2
   Float_t pion_2_PtMin,
@@ -253,31 +286,42 @@ struct AliFemtoAnalysisPionPion::CutParams {
 
 
   // PAIR
+  Bool_t pair_use_avgsep;
   Bool_t pair_TPCOnly;
   // Float_t pair_TPCExitSepMin;
-  // Float_t pair_MinAvgSeparationPos;
+  Float_t pair_min_avgsep;
   // Float_t pair_MinAvgSeparationNeg;
 
-  Float_t pair_delta_eta_min
-        , pair_delta_phi_min
-        , pair_phi_star_radius
-        ;
+  Float_t pair_delta_eta_min,
+          pair_delta_phi_min,
+          pair_phi_star_radius;
+
+  Float_t pair_ee_min;
 
   Float_t pair_max_share_quality,
           pair_max_share_fraction;
   Bool_t pair_remove_same_label;
+  Int_t pair_algorithm;
 
+  /// Default Values
+  CutParams();
+
+
+  ClassDef(CutParams, 0);
 };
 
-/*
-template<>
-AliFemtoAnalysisPionPion*
-AliFemtoConfigObject::Construct<AliFemtoAnalysisPionPion>() const
+template <typename T>
+AliFemtoConfigObject
+AliFemtoAnalysisPionPion::GetConfigurationOf(const T &cut)
 {
-  // AliFemtoAnalysisPionPion* AliFemtoConfigObject::Construct() const {
+  auto *cls = TClass::GetClass(typeid(cut));
+  if (cls) {
+    return AliFemtoConfigObject("");
+  }
+  AliFemtoConfigObject::MapValue_t result;
+  result["_class"] = "AliFemtoSomething";
 
-  return nullptr;
+  return AliFemtoConfigObject(result);
 }
-*/
 
 #endif

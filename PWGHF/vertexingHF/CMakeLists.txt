@@ -16,6 +16,7 @@
 #Module
 set(MODULE PWGHFvertexingHF)
 add_definitions(-D_MODULE_="${MODULE}")
+add_subdirectory (TMVA)
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
@@ -35,8 +36,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskSEB0toDStarPi.cxx
-  AliRDHFCutsB0toDStarPi.cxx
   AliAODHFUtil.cxx
   AliAODRecoDecayHF.cxx
   AliAODRecoDecayHF2Prong.cxx
@@ -48,6 +47,8 @@ set(SRCS
   AliRDHFCuts.cxx
   AliVertexingHFUtils.cxx
   AliHFSystErr.cxx
+  AliRDHFCutsB0toDStarPi.cxx
+  AliRDHFCutsBPlustoD0Pi.cxx
   AliRDHFCutsD0toKpi.cxx
   AliRDHFCutsJpsitoee.cxx
   AliRDHFCutsDplustoKpipi.cxx
@@ -62,8 +63,11 @@ set(SRCS
   AliRDHFCutsLctopK0sfromAODtracks.cxx
   AliRDHFCutsOmegactoeleOmegafromAODtracks.cxx
   AliRDHFCutsXicPlustoXiPiPifromAODtracks.cxx
+  AliRDHFCutsXicZerotoXiPifromAODtracks.cxx
   AliRDHFCutsXictoeleXifromAODtracks.cxx
   AliAnalysisVertexingHF.cxx
+  AliAnalysisTaskSEB0toDStarPi.cxx
+  AliAnalysisTaskSEBPlustoD0Pi.cxx
   AliAnalysisTaskSEVertexingHF.cxx
   AliAnalysisTaskMEVertexingHF.cxx
   AliAnalysisTaskSESelectHF.cxx
@@ -73,6 +77,7 @@ set(SRCS
   AliAnalysisTaskSEDs.cxx
   AliAnalysisTaskSELambdac.cxx
   AliAnalysisTaskSED0Mass.cxx
+  AliAnalysisTaskSED0MassTMVA.cxx
   AliAnalysisTaskSELambdacTMVA.cxx
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx
@@ -80,9 +85,11 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelor.cxx
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
+  AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
+  AliAnalysisTaskSEXicZero2XiPifromAODtracks.cxx
   AliCFVertexingHF.cxx
   AliCFVertexingHF2Prong.cxx
   AliCFVertexingHF3Prong.cxx
@@ -116,6 +123,9 @@ set(SRCS
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx
   charmFlow/AliAnalysisTaskFlowD2H.cxx
+  charmFlow/AliHFQnVectorHandler.cxx
+  charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
+  charmFlow/AliAnalysisTaskSECharmHadronvn.cxx  
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx
@@ -136,10 +146,14 @@ set(SRCS
   AliAnalysisTaskSEB0toDminuspi.cxx
   AliAnalysisTaskSEDstoK0sK.cxx
   AliHFVnVsMassFitter.cxx
-  )
+  AliAnalysisTaskSELc2V0bachelorTMVAApp.cxx
+  AliAnalysisTaskSEHFSystPID.cxx
+  AliAnalysisTaskSEDmesonPIDSysProp.cxx
+   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+set(HDRS ${HDRS} IClassifierReader.h)
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -196,8 +210,14 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent_NoLS.C
             ConfigVertexingHF_DplustoK0s_DstoK0s.C
             ConfigVertexingHF_pPbRHF_DplustoK0s_DstoK0s.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LcMinpt1_DsMinPt15_2018opt.C
         DESTINATION
             PWGHF/vertexingHF/)
+
+install(FILES
+	    upgrade/ConfigVertexingHF_Pb_Upgrade2018.C
+        DESTINATION
+            PWGHF/vertexingHF/upgrade)
 
 install(DIRECTORY
             macros

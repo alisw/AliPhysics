@@ -4,11 +4,13 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TNamed.h>
+#include <TString.h> /// required to have easy access to tokenize
 #include <cmath>
 #include <string>
-using std::string;
+#include <vector>
 
 #include "AliVEvent.h"
+#include "AliAnalysisCuts.h"
 #include "AliAnalysisUtils.h"
 
 class AliESDtrackCuts;
@@ -50,6 +52,7 @@ class AliEventCuts : public TList {
       kDAQincomplete,
       kBfield,
       kTrigger,
+      kTriggerClasses,
       kVertexSPD,
       kVertexTracks,
       kVertex,
@@ -66,7 +69,8 @@ class AliEventCuts : public TList {
 
     enum NormMask {
       kAnyEvent = BIT(kNoCuts),
-      kPassesAllCuts = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks)),
+      kTriggeredEvent = BIT(kTrigger),
+      kPassesAllCuts = (BIT(kAllCuts) - 1) ^ (BIT(kVertexPositionSPD) | BIT(kVertexPositionTracks) | BIT(kVertexSPD) | BIT(kVertexTracks) | BIT(kTriggerClasses)),
       kPassesNonVertexRelatedSelections = kPassesAllCuts ^ (BIT(kVertex) | BIT(kVertexPosition) | BIT(kVertexQuality)),
       kHasReconstructedVertex = kPassesAllCuts ^ BIT(kVertexPosition)
     };
@@ -75,15 +79,22 @@ class AliEventCuts : public TList {
     bool   AcceptEvent (AliVEvent *ev);
     bool   PassedCut (AliEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
     bool   CheckNormalisationMask (AliEventCuts::NormMask mask) { return (fFlag & mask) == mask; }
+    bool   IsTrueINELgtZero (AliVEvent *ev, bool chkGenVtxZ = false);
     void   AddQAplotsToList(TList *qaList = 0x0, bool addCorrelationPlots = false);
     void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
     void   SetManualMode (bool man = true) { fManualMode = man; }
-    void   SetupLHC11h();
-    void   SetupLHC15o();
+    void   SetupRun1PbPb();
+    void   SetupLHC15o() { SetupRun2PbPb(); }
+    void   SetupPbPb2018();
+    void   SetupRun2PbPb();
+    void   SetupLHC17n();
     void   SetupRun2pp();
+    void   SetupRun1pp();
+    void   SetupRun1pA(int iPeriod);
     void   SetupRun2pA(int iPeriod);
     void   UseMultSelectionEventSelection(bool useIt = true);
+    void   SetAcceptedTriggerClasses(TString classes);
 
     static bool GoodPrimaryAODVertex(AliVEvent *ev);
 
@@ -92,10 +103,10 @@ class AliEventCuts : public TList {
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
     /// is convenient having special setters in this case.
     float             GetCentrality (unsigned int estimator = 0) const;
-    string            GetCentralityEstimator (unsigned int estimator = 0) const;
+    std::string       GetCentralityEstimator (unsigned int estimator = 0) const;
     const AliVVertex* GetPrimaryVertex() const { return fPrimaryVertex; }
 
-    void          SetCentralityEstimators (string first = "V0M", string second = "CL0") { fCentEstimators[0] = first; fCentEstimators[1] = second; }
+    void          SetCentralityEstimators (std::string first = "V0M", std::string second = "CL0") { fCentEstimators[0] = first; fCentEstimators[1] = second; }
     void          SetCentralityRange (float min, float max) { fMinCentrality = min; fMaxCentrality = max; }
     void          SetMaxVertexZposition (float max) { fMinVtz = -fabs(max); fMaxVtz = fabs(max); }
 
@@ -111,13 +122,17 @@ class AliEventCuts : public TList {
     float         fMaxDeltaSpdTrackNsigmaSPD;     ///<
     float         fMaxDeltaSpdTrackNsigmaTrack;   ///<
     float         fMaxResolutionSPDvertex;        ///<
+    float         fMaxDispersionSPDvertex;        ///<
     bool          fCheckAODvertex;                ///< if true it rejects the AOD primary vertices coming from TPC ESD vertices or SPD placeholder vertices
 
     bool          fRejectDAQincomplete;           ///< Reject events that have incomplete information
 
     int           fRequiredSolenoidPolarity;      ///< 0: does not require any particular polarity. Positive numbers -> positive B field, negative numbers -> negative B field
 
+    bool          fUseCombinedMVSPDcut;           ///< If true, MV cut is used when a track vertex is present and if not, it used the SPDvsMultCut
+
     bool          fUseMultiplicityDependentPileUpCuts; ///< If true fSPDpileupMinContributors is set according to the event multiplicity (automatic setup set it true only if the user does not specify any custom value)
+    bool          fUseSPDpileUpCut;               ///< Enable the SPD pileup cut
     int           fSPDpileupMinContributors;      ///< Reject all the events with SPD pile-up vertices with more than fRejectPileupSPD contributors
     double        fSPDpileupMinZdist;             ///<
     double        fSPDpileupNsigmaZdist;          ///<
@@ -148,9 +163,10 @@ class AliEventCuts : public TList {
 
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
+    std::vector<std::string> fTriggerClasses;     ///< Trigger classes
 
     AliEventCutsContainer fContainer;       //!<! Local copy of the event cuts container (safe against user changes)
-    const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
+    const std::string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
     AliEventCuts(const AliEventCuts& copy);
@@ -164,7 +180,7 @@ class AliEventCuts : public TList {
     int           fCurrentRun;                    ///<
     unsigned long fFlag;                          ///< Flag of the passed cuts
 
-    string        fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
+    std::string   fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
     float         fCentPercentiles[2];            ///< Centrality percentiles
     AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
 
@@ -174,7 +190,7 @@ class AliEventCuts : public TList {
     bool          fOverrideAutoTriggerMask;       ///<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
     bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
     bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
-    
+
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1D* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
     TH1D* fCutStatsAfterTrigger;   //!<! Cuts statistics: every column keeps track of how many times a cut is passed for events that pass the trigger selection
@@ -195,7 +211,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts,6)
+    ClassDef(AliEventCuts,9)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

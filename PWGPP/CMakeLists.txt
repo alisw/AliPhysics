@@ -35,6 +35,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/TRD/info
   )
 
 # Sources as introduced by the authors
@@ -57,6 +59,8 @@ set ( SRCS1
   AliTrackComparisonESD.cxx
   AliOfflineTrigger.cxx
 		AliMCTreeTools.cxx
+	AliPIDtools.cxx	
+	AliESDtools.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
@@ -66,7 +70,12 @@ set ( SRCS2
   global/AliAnalysisTaskCheckVertexAOD.cxx
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
+  global/AliAnalysisTaskCheckGenKine.cxx
+  global/AliAnalysisTaskCountEvents.cxx
+  global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
+  global/AliAnalysisTaskTrackRefsChecksMultipleSpecies.cxx
+  global/AliAnalysisTaskTrackRefsChecks.cxx
   )
 #file ( GLOB SRCS3 "cosmic/*.cxx" )
 set ( SRCS3
@@ -228,6 +237,7 @@ set ( SRCS18
   AD/ADESDFriendUtils.cxx
   AD/AliAnalysisTaskADCalib.cxx
   AD/AliAnalysisTaskADChargeMonitoring.cxx
+  AD/AliAnalysisTaskADCent.cxx
   )
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19
@@ -286,7 +296,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER Tender TOFrec TPCrec TRDrec Postscript ADbase ADrec)
+set(LIBDEPS ANALYSISalice OADB CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER STEERBase Tender TOFrec TPCrec TRDrec Postscript ADbase ADrec AliHLTGlobal)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -359,6 +369,7 @@ install(FILES AD/AddTaskADQA.C
 	      AD/AddTaskADPilot.C
 	      AD/AddTaskADCalib.C
 	      AD/AddTaskADChargeMonitoring.C
+	      AD/AddTaskADCent.C
 	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C
  	      AD/trending/MakeTrendingADQA.C
@@ -381,18 +392,15 @@ install(DIRECTORY benchmark DESTINATION PWGPP USE_SOURCE_PERMISSIONS)
 install(DIRECTORY EvTrkSelection/macros DESTINATION PWGPP/EvTrkSelection FILES_MATCHING PATTERN "*.C")
 install(FILES EvTrkSelection/macros/AddTaskTrackingUncert.C
 	      EvTrkSelection/macros/AddSingleTrackEfficiencyTaskForAutomaticQA.C
+	      EvTrkSelection/macros/main_AddSingleTrackEfficiencyTaskForAutomaticQA.C
 	      DESTINATION PWGPP/EvTrkSelection)
-install(FILES CalibMacros/CPass0/LoadLibraries.C
-	      CalibMacros/CPass0/ConfigCalibTrain.C
-	      CalibMacros/CPass0/AddTaskTPCCalib.C
+install(FILES CalibMacros/CPass0/AddTaskTPCCalib.C
 	      CalibMacros/CPass0/AddTOFAnalysisTaskCalibPass0.C
 	      CalibMacros/CPass0/AddTaskT0Calib.C
 	      CalibMacros/CPass0/AddTaskMeanVertexCalib.C
 	      CalibMacros/CPass0/AddTaskSDDCalib.C
 	      DESTINATION PWGPP/CalibMacros/CPass0)
-install(FILES CalibMacros/CPass1/LoadLibraries.C
-	      CalibMacros/CPass1/ConfigCalibTrain.C
-	      CalibMacros/CPass1/AddTaskTPCCalib.C
+install(FILES CalibMacros/CPass1/AddTaskTPCCalib.C
 	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibPass0.C
 	      CalibMacros/CPass1/AddTOFAnalysisTaskCalibTree.C
 	      CalibMacros/CPass1/AddTaskT0Calib.C

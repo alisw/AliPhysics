@@ -14,13 +14,13 @@ class AliVTrack;
 class AliVCluster;
 class AliVEvent;
 #include <AliLog.h>
+#include <AliEMCALGeometry.h>
 #include "AliYAMLConfiguration.h"
 #include "AliEmcalContainerUtils.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
-#include "AliEMCALGeometry.h"
 #include "AliEmcalCorrectionEventManager.h"
 
 /**
@@ -32,7 +32,7 @@ class AliVEvent;
  * component corresponds to a correction needed for the EMCal. Creation, configuration, and execution
  * of all of the components is handled by AliEmcalCorrectionTask. Each new component is automatically
  * registered through the AliEmcalCorrectionComponentFactory class, and is thus automatically available
- * to execute. Components are configured through a set of YAML configuration files stored in
+ * to execute. Components are configured through a set of %YAML configuration files stored in
  * AliYAMLConfiguration. For more information about the steering, see AliEmcalCorrectionTask.
  *
  * @author Raymond Ehlers <raymond.ehlers@yale.edu>, Yale University
@@ -79,6 +79,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliTrackContainer      *GetTrackContainer(const char* name)              const { return dynamic_cast<AliTrackContainer*>(GetParticleContainer(name))     ; }
   void                    RemoveParticleContainer(Int_t i=0)                     { fParticleCollArray.RemoveAt(i)                      ; }
   void                    RemoveClusterContainer(Int_t i=0)                      { fClusterCollArray.RemoveAt(i)                       ; }
+  AliEMCALRecoUtils      *GetRecoUtils()  const { return fRecoUtils; }
   AliVCaloCells          *GetCaloCells()  const { return fCaloCells; }
   TList                  *GetOutputList() const { return fOutput; }
   
@@ -101,14 +102,15 @@ class AliEmcalCorrectionComponent : public TNamed {
   void SetNcentralityBins(Int_t n) { fNcentBins = n; }
   void SetVertex(Double_t * vertex) { fVertex[0] = vertex[0]; fVertex[1] = vertex[1]; fVertex[2] = vertex[2]; }
   void SetIsESD(Bool_t isESD) {fEsdMode = isESD; }
+  void SetCustomBadChannels(TString customBC) {fCustomBadChannelFilePath = customBC; }
 
-  /// Set YAML Configuration
+  /// Set %YAML Configuration
   void SetYAMLConfiguration(PWG::Tools::AliYAMLConfiguration config) { fYAMLConfig = config; }
 
   /// Retrieve property
   template<typename T> bool GetProperty(std::string propertyName, T & property, bool requiredProperty = true, std::string correctionName = "");
  protected:
-  PWG::Tools::AliYAMLConfiguration fYAMLConfig;           ///< Contains the YAML configuration used to configure the component
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig;           ///< Contains the %YAML configuration used to configure the component
   Bool_t                  fCreateHisto;                   ///< Flag to make some basic histograms
   Int_t                   fRun;                           //!<! Run number
   TString                 fFilepass;                      ///< Input data pass number
@@ -132,18 +134,19 @@ class AliEmcalCorrectionComponent : public TNamed {
   TList                  *fOutput;                        //!<! List of output histograms
   
   TString                fBasePath;                       ///< Base folder path to get root files
+  TString                fCustomBadChannelFilePath;       ///< Custom path to bad channel map OADB file
 
  private:
   AliEmcalCorrectionComponent(const AliEmcalCorrectionComponent &);               // Not implemented
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 5); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 6); // EMCal correction component
   /// \endcond
 };
 
 /**
- * Get the requested property from the YAML configuration. This function is generally used by
+ * Get the requested property from the %YAML configuration. This function is generally used by
  * AliEmcalCorrectionComponent derived tasks as a wrapper around the more complicated functions to
  * retrieve properties.
  *
@@ -174,7 +177,7 @@ bool AliEmcalCorrectionComponent::GetProperty(std::string propertyName, T & prop
  * This class maintains a map between the name of the correction component and a function to create the
  * component. This map can be then be used to create each desired component by passing the name in a string.
  * The benefit of this approach is new components can be automatically registered without changing any of the
- * correction classes. Only the YAML configuration needs to be changed!
+ * correction classes. Only the %YAML configuration needs to be changed!
  *
  * The class and associated functions are based on: https://stackoverflow.com/a/582456 , and edited
  * for our purposes.

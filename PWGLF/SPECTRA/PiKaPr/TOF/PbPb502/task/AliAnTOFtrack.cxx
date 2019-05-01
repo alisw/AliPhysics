@@ -34,8 +34,8 @@ AliAnTOFtrack::AliAnTOFtrack()
     : fTrkMask(0)
     , fTPCPIDMask(0)
     , fTrkCutMask(0)
-    , fDCAXYIndex(0)
-    , fDCAZIndex(0)
+    , fDCAXY(-999)
+    , fDCAZ(-999)
     , fLength(-999)
     , fLengthRatio(-999)
     , fTOFTime(-999)
@@ -49,26 +49,32 @@ AliAnTOFtrack::AliAnTOFtrack()
     , fNTOFClusters(-999)
     , fTPCSignal(-999)
 // fT0TrkSigma(-999)
-{
+{ // standard constructur which should be used
 
-  //
-  // standard constructur which should be used
-  //
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFtrack::AliAnTOFtrack", "**** CONSTRUCTOR CALLED ****");
+#endif
+
   for (Int_t i = 0; i < kExpSpecies; i++) {
     fTOFExpTime[i] = -999;
     fTOFExpSigma[i] = -999;
   }
 
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFtrack::AliAnTOFtrack", "**** END OF CONSTRUCTOR ****");
+#endif
 }
 
 //________________________________________________________________________
 AliAnTOFtrack::~AliAnTOFtrack()
 { //Destructor
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFtrack::~AliAnTOFtrack", "**** DESTRUCTOR CALLED ****");
+#endif
 
+#ifndef LOG_NO_INFO
   ::Info("AliAnTOFtrack::~AliAnTOFtrack", "**** END OF DESTRUCTOR ****");
+#endif
 }
 
 ///////////////////
@@ -76,7 +82,7 @@ AliAnTOFtrack::~AliAnTOFtrack()
 ///////////////////
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::PassStdCut()
+Bool_t AliAnTOFtrack::PassStdCut() const
 {
   for (Int_t i = 0; i < nCuts; i++)
     if (!GetMaskBit(fTrkCutMask, CutStdIndexInMask[i]))
@@ -85,7 +91,7 @@ Bool_t AliAnTOFtrack::PassStdCut()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::PassCut(const Int_t cut)
+Bool_t AliAnTOFtrack::PassCut(const Int_t cut) const
 {
   if (cut < -1 || cut >= nCutVars)
     ::Fatal("AliAnTOFtrack::PassCut", "requested cut is out of bound");
@@ -124,7 +130,7 @@ Bool_t AliAnTOFtrack::PassCut(const Int_t cut)
 /////////////////////////
 
 //________________________________________________________________________
-Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id)
+Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id) const
 {
   if (id > kExpSpecies)
     ::Fatal(" AliAnTOFtrack::GetDeltaT", "Index required is out of bound");
@@ -132,7 +138,7 @@ Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id)
 }
 
 //________________________________________________________________________
-Float_t AliAnTOFtrack::GetDeltaSigma(const UInt_t id, const UInt_t hypo)
+Float_t AliAnTOFtrack::GetDeltaSigma(const UInt_t id, const UInt_t hypo) const
 {
   if (id > kExpSpecies || hypo > kExpSpecies)
     ::Fatal(" AliAnTOFtrack::GetDeltaSigma", "Index required is out of bound");
@@ -140,7 +146,7 @@ Float_t AliAnTOFtrack::GetDeltaSigma(const UInt_t id, const UInt_t hypo)
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsTPCElectron()
+Bool_t AliAnTOFtrack::IsTPCElectron() const
 {
   if (GetMaskBit(fTPCPIDMask, kIsTPCElectron))
     return kTRUE; //1.5 sigma cut for Electrons in TPC
@@ -148,7 +154,7 @@ Bool_t AliAnTOFtrack::IsTPCElectron()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsTPCPiKP(const UInt_t i)
+Bool_t AliAnTOFtrack::IsTPCPiKP(const UInt_t i) const
 {
   if (i >= 3)
     ::Fatal("AliAnTOFtrack::IsTPCPiKP", "Wrong index required");
@@ -158,7 +164,7 @@ Bool_t AliAnTOFtrack::IsTPCPiKP(const UInt_t i)
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsTPCPiKP()
+Bool_t AliAnTOFtrack::IsTPCPiKP() const
 {
   for (Int_t i = 0; i < 3; i++)
     if (IsTPCPiKP(i))
@@ -167,7 +173,7 @@ Bool_t AliAnTOFtrack::IsTPCPiKP()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::ConsistentTPCTOF()
+Bool_t AliAnTOFtrack::ConsistentTPCTOF() const
 {
   if (!IsTPCPiKP())
     return kFALSE;
@@ -183,7 +189,7 @@ Bool_t AliAnTOFtrack::ConsistentTPCTOF()
 ///////////////////////
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsNegative()
+Bool_t AliAnTOFtrack::IsNegative() const
 {
   if (GetMaskBit(fTrkMask, kNegTrk))
     return kTRUE;
@@ -191,39 +197,19 @@ Bool_t AliAnTOFtrack::IsNegative()
 }
 
 //________________________________________________________________________
-Double_t AliAnTOFtrack::GetDCA(const Bool_t xy)
+Double_t AliAnTOFtrack::GetGammaBeta() const
 {
-  if (xy)
-    return GetBinnedData(fDCAXYIndex, -fDCAXYRange, fDCAXYRange, 256);
-  else
-    return GetBinnedData(fDCAZIndex, -fDCAZRange, fDCAZRange, 256);
+  Double_t beta = GetBeta();
+  if (beta == 1.)
+    return -999.;
+  return beta / (TMath::Sqrt(1. - beta * beta));
 }
 
-////////////////////////
-/////TEST functions/////
-////////////////////////
-
 //________________________________________________________________________
-void AliAnTOFtrack::TestDCAXYBinning()
+Double_t AliAnTOFtrack::GetTOFMass() const
 {
-  Int_t dim = static_cast<Int_t>(TMath::Power(2., 8. * sizeof(fDCAXYIndex)));
-  Double_t range = (2. * fDCAXYRange);
-  std::cout << "fDCAXYIndex has " << dim << " possibilities" << std::endl;
-  std::cout << "DCAXY range is [" << -fDCAXYRange << "," << fDCAXYRange << "] -> " << range << " bin width = " << range / dim << std::endl;
-  std::cout << "Variable dimension is " << dim << " while actual bin required are " << kDCAXYBins << std::endl;
-
-  dim = static_cast<Int_t>(TMath::Power(2., 8. * sizeof(fDCAZIndex)));
-  range = (2. * fDCAZRange);
-  std::cout << "fDCAZIndex has " << dim << " possibilities" << std::endl;
-  std::cout << "DCAZ range is [" << -fDCAZRange << "," << fDCAZRange << "] -> " << range << " bin width = " << range / dim << std::endl;
-  std::cout << "Variable dimension is " << dim << " while actual bin required are " << kDCAZBins << std::endl;
-
-  for (Int_t var = 0; var <= 20; ++var) {
-    //       Double_t rnd = 2.*fDCAXYRange*gRandom->Rndm()-1;
-    Double_t rnd = 2. * fDCAXYRange * (Double_t)var / 20. - fDCAXYRange;
-    ComputeDCABin(rnd, kTRUE);
-    std::cout << rnd << " Index: " << fDCAXYIndex << " binned is " << GetDCA(kTRUE) << " --> Diff --> " << GetDCA(kTRUE) - rnd << std::endl;
-  }
+  Double_t gb = GetGammaBeta();
+  return gb <= 0 ? gb : GetMomentum() / gb;
 }
 
 ///////////////////////////
@@ -233,11 +219,10 @@ void AliAnTOFtrack::TestDCAXYBinning()
 //________________________________________________________________________
 void AliAnTOFtrack::ComputeDCABin(const Double_t dca, const Bool_t xy)
 {
-  if (xy) {
-    fDCAXYIndex = static_cast<UShort_t>(BinData(dca, -fDCAXYRange, fDCAXYRange, 256));
-  } else {
-    fDCAZIndex = static_cast<UShort_t>(BinData(dca, -fDCAZRange, fDCAZRange, 256));
-  }
+  if (xy)
+    fDCAXY = dca;
+  else
+    fDCAZ = dca;
 };
 
 //________________________________________________________________________
@@ -262,7 +247,7 @@ Double_t AliAnTOFtrack::GetT0Resolution(const Double_t TOFsigma) const
 ////////////////////////
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0TOF(const Bool_t exclusive)
+Bool_t AliAnTOFtrack::IsT0TOF(const Bool_t exclusive) const
 {
   if (GetMaskBit(fTrkMask, kT0_0)) {
     if (exclusive && !GetMaskBit(fTrkMask, kT0_1) && !GetMaskBit(fTrkMask, kT0_2))
@@ -275,7 +260,7 @@ Bool_t AliAnTOFtrack::IsT0TOF(const Bool_t exclusive)
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0A(const Bool_t exclusive)
+Bool_t AliAnTOFtrack::IsT0A(const Bool_t exclusive) const
 {
   if (GetMaskBit(fTrkMask, kT0_1)) {
     if (exclusive && !GetMaskBit(fTrkMask, kT0_0) && !GetMaskBit(fTrkMask, kT0_2))
@@ -288,7 +273,7 @@ Bool_t AliAnTOFtrack::IsT0A(const Bool_t exclusive)
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0C(const Bool_t exclusive)
+Bool_t AliAnTOFtrack::IsT0C(const Bool_t exclusive) const
 {
   if (GetMaskBit(fTrkMask, kT0_2)) {
     if (exclusive && !GetMaskBit(fTrkMask, kT0_0) && !GetMaskBit(fTrkMask, kT0_1))
@@ -301,7 +286,7 @@ Bool_t AliAnTOFtrack::IsT0C(const Bool_t exclusive)
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0Fill()
+Bool_t AliAnTOFtrack::IsT0Fill() const
 {
   if (!GetMaskBit(fTrkMask, kT0_0) && !GetMaskBit(fTrkMask, kT0_1) && !GetMaskBit(fTrkMask, kT0_2))
     return kTRUE;
@@ -309,7 +294,7 @@ Bool_t AliAnTOFtrack::IsT0Fill()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0TOF_T0A()
+Bool_t AliAnTOFtrack::IsT0TOF_T0A() const
 {
   if (IsT0TOF() && IsT0A())
     return kTRUE;
@@ -317,7 +302,7 @@ Bool_t AliAnTOFtrack::IsT0TOF_T0A()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsOrT0TOF_T0A()
+Bool_t AliAnTOFtrack::IsOrT0TOF_T0A() const
 {
   if (IsT0TOF() || IsT0A())
     return kTRUE;
@@ -325,7 +310,7 @@ Bool_t AliAnTOFtrack::IsOrT0TOF_T0A()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0TOF_T0C()
+Bool_t AliAnTOFtrack::IsT0TOF_T0C() const
 {
   if (IsT0TOF() && IsT0C())
     return kTRUE;
@@ -333,7 +318,7 @@ Bool_t AliAnTOFtrack::IsT0TOF_T0C()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsOrT0TOF_T0C()
+Bool_t AliAnTOFtrack::IsOrT0TOF_T0C() const
 {
   if (IsT0TOF() || IsT0C())
     return kTRUE;
@@ -341,7 +326,7 @@ Bool_t AliAnTOFtrack::IsOrT0TOF_T0C()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0A_T0C()
+Bool_t AliAnTOFtrack::IsT0A_T0C() const
 {
   if (IsT0A() && IsT0C())
     return kTRUE;
@@ -349,7 +334,7 @@ Bool_t AliAnTOFtrack::IsT0A_T0C()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsOrT0A_T0C()
+Bool_t AliAnTOFtrack::IsOrT0A_T0C() const
 {
   if (IsT0A() || IsT0C())
     return kTRUE;
@@ -357,7 +342,7 @@ Bool_t AliAnTOFtrack::IsOrT0A_T0C()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsT0TOF_T0A_T0C()
+Bool_t AliAnTOFtrack::IsT0TOF_T0A_T0C() const
 {
   if (IsT0TOF() && IsT0A() && IsT0C())
     return kTRUE;
@@ -365,9 +350,38 @@ Bool_t AliAnTOFtrack::IsT0TOF_T0A_T0C()
 }
 
 //________________________________________________________________________
-Bool_t AliAnTOFtrack::IsOrT0TOF_T0A_T0C()
+Bool_t AliAnTOFtrack::IsOrT0TOF_T0A_T0C() const
 {
   if (IsT0TOF() || IsT0A() || IsT0C())
     return kTRUE;
   return kFALSE;
 }
+
+//________________________________________________________________________
+void AliAnTOFtrack::Print() const
+{
+#define PrintVar(Var) \
+  cout << #Var << " " << Var << endl;
+  PrintVar(fTrkMask);
+  PrintVar(fTPCPIDMask);
+  PrintVar(fTrkCutMask);
+  PrintVar(fDCAXY);
+  PrintVar(fDCAZ);
+  PrintVar(fLength);
+  PrintVar(fLengthRatio);
+  PrintVar(fTOFTime);
+  PrintVar(fTOFMismatchTime);
+  for (Int_t i = 0; i < kExpSpecies; i++) {
+    PrintVar(fTOFExpTime[i]);
+    PrintVar(fTOFExpSigma[i]);
+  }
+  PrintVar(fT0TrkTime);
+  PrintVar(fTOFchan);
+  PrintVar(fEta);
+  PrintVar(fPhi);
+  PrintVar(fPt);
+  PrintVar(fPTPC);
+  PrintVar(fNTOFClusters);
+  PrintVar(fTPCSignal);
+#undef PrintVar
+};

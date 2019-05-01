@@ -30,6 +30,7 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 add_subdirectory(EMCALbase)
 add_subdirectory(EMCALtasks)
 add_subdirectory(EMCALtrigger)
+add_subdirectory(EMCALtriggerPart)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWG/EMCAL)

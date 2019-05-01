@@ -19,6 +19,7 @@
 //
 // Author: J.Otwinowski 14/04/2008 
 // Changes by M.Knichel 15/10/2010
+// Changes by J.Salzwedel 29/9/2014
 //------------------------------------------------------------------------------
 
 #include <iostream>
@@ -33,7 +34,6 @@
 #include "TMath.h"
 
 #include "AliLog.h" 
-#include "AliESDVertex.h" 
 #include "AliPerformanceObject.h" 
 
 using namespace std;
@@ -41,37 +41,46 @@ using namespace std;
 ClassImp(AliPerformanceObject)
 
 //_____________________________________________________________________________
-AliPerformanceObject::AliPerformanceObject():
-  TNamed("AliPerformanceObject","AliPerformanceObject"),
+AliPerformanceObject::AliPerformanceObject(TRootIOCtor*):
+  AliMergeable(),
+  TNamed(),
   fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(-1),
   fHptGenerator(kFALSE),
-  fTriggerClass(0),
+  fTriggerClass(),
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(kFALSE),
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0),
-  fUseTOFBunchCrossing(kTRUE)
+  fUseTOFBunchCrossing(kFALSE),
+  fUseSparse(1),
+  fCutsRC(),
+  fCutsMC()
 {
-  // constructor
+  // io constructor
 }
 
 //_____________________________________________________________________________
 AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, Int_t run, Bool_t highMult):
+  AliMergeable(),
   TNamed(name,title),
   fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(run),
   fHptGenerator(kFALSE),
-  fTriggerClass(0),
+  fTriggerClass(),
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(highMult),
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0),
-  fUseTOFBunchCrossing(kTRUE)
+  fUseTOFBunchCrossing(kFALSE),
+  fUseSparse(1),
+  fCutsRC(),
+  fCutsMC()
 {
-  // constructor
+
+    // constructor
 }
 
 //_____________________________________________________________________________
@@ -161,7 +170,7 @@ Double_t * AliPerformanceObject::CreateLogAxis(Int_t nbins, Double_t xmin, Doubl
 
   xbins[0] = xmin;
   for (Int_t i=1;i<=nbins;i++) {
-    xbins[i] = xmin + TMath::Power(10,logxmin+i*binwidth);
+    xbins[i] = TMath::Power(10,logxmin+i*binwidth);
   }
 
 return xbins;

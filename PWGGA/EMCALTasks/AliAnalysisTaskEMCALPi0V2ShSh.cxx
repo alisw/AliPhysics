@@ -44,6 +44,7 @@
 #include "AliEventplane.h"
 #include "AliOADBContainer.h"
 #include <iostream>
+#include "AliDataFile.h"
 
 using std::cout;
 using std::endl;
@@ -133,7 +134,7 @@ void AliAnalysisTaskEMCALPi0V2ShSh::UserCreateOutputObjects()
 { // Create histograms, called once
   fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
   fOADBContainer = new AliOADBContainer("AliEMCALgeo");
-  fOADBContainer->InitFromFile(Form("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root"), "AliEMCALgeo");
+  fOADBContainer->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALlocal2master.root").data(), "AliEMCALgeo");
   fFlatContainer = new AliOADBContainer("phosFlat");
   fFlatContainer->InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root", "phosFlat");
 

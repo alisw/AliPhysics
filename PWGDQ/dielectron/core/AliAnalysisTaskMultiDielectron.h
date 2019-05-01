@@ -54,7 +54,8 @@ public:
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
   void SetTriggerOnV0AND(Bool_t v0and=kTRUE)    { fTriggerOnV0AND=v0and;    }
-  void SetRejectPileup(Bool_t pileup=kTRUE)     { fRejectPileup=pileup;     }
+  void SetRejectPileup(Bool_t pileup=kTRUE)     { fRejectPileup=pileup; }
+  void SetPileupRejTool (AliDielectronEventCuts::EPileUpTool PileUpTool)     { fPileUpRejTool=PileUpTool; }
   void AddDielectron(AliDielectron * const die) { fListDielectron.Add(die);
                       SetEvtVsTrkHistoExists(die->GetEvtVsTrkHistExists());}
   void SetBeamEnergy(Double_t beamEbyHand=-1.)  { fBeamEnergy=beamEbyHand;  }
@@ -84,6 +85,8 @@ protected:
   TString fFiredTrigger;             // online trigger class name
   Bool_t fFiredExclude;              // cut logic: select(default) or exclude
   Bool_t fRejectPileup;              // pileup rejection wanted
+  AliDielectronEventCuts::EPileUpTool fPileUpRejTool; // which pile-up rejection tool will be used
+
   Double_t fBeamEnergy;              // beam energy in GeV (set by hand)
   Bool_t   fRandomizeDaughters;      // shuffle daughters at pair creation (sorted according to pt by default, which affects PhivPair at least for Like Sign)
 

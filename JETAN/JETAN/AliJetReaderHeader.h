@@ -14,8 +14,6 @@
 #include <Riostream.h>  
 #include <TNamed.h>
 #include <TString.h>
-
-class AliEMCALRecoUtils;
  
 class AliJetReaderHeader : public TNamed
 {

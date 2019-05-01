@@ -197,8 +197,8 @@ Bool_t AliQnCorrectionsProfile3DCorrelations::CreateCorrelationComponentsProfile
         currentHarmonic++;
       }
       /* let's build the histograms names and titles */
-      TString BaseName = Form("%s %sx%s", GetName(), combNames[ixComb], combNames[(ixComb+1)%CORRELATIONSNOOFQNVECTORS]);
-      TString BaseTitle = Form("%s %sx%s", GetTitle(), combNames[ixComb], combNames[(ixComb+1)%CORRELATIONSNOOFQNVECTORS]);
+      TString BaseName = TString::Format("%s %sx%s", GetName(), combNames[ixComb], combNames[(ixComb+1)%CORRELATIONSNOOFQNVECTORS]);
+      TString BaseTitle = TString::Format("%s %sx%s", GetTitle(), combNames[ixComb], combNames[(ixComb+1)%CORRELATIONSNOOFQNVECTORS]);
       TString histoXXName = BaseName; histoXXName += szXXCorrelationComponentSuffix;
       TString histoXYName = BaseName; histoXYName += szXYCorrelationComponentSuffix;
       TString histoYXName = BaseName; histoYXName += szYXCorrelationComponentSuffix;
@@ -208,17 +208,17 @@ Bool_t AliQnCorrectionsProfile3DCorrelations::CreateCorrelationComponentsProfile
       TString histoYXTitle = BaseTitle; histoYXTitle += szYXCorrelationComponentSuffix;
       TString histoYYTitle = BaseTitle; histoYYTitle += szYYCorrelationComponentSuffix;
 
-      fXXValues[ixComb][currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoXXName, currentHarmonic * fHarmonicMultiplier),
-          Form("%s h%d", (const char *) histoXXTitle, currentHarmonic),
+      fXXValues[ixComb][currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoXXName, currentHarmonic * fHarmonicMultiplier).Data(),
+          TString::Format("%s h%d", (const char *) histoXXTitle, currentHarmonic).Data(),
           nVariables,nbins,minvals,maxvals);
-      fXYValues[ixComb][currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoXYName, currentHarmonic * fHarmonicMultiplier),
-          Form("%s h%d", (const char *) histoXYTitle, currentHarmonic),
+      fXYValues[ixComb][currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoXYName, currentHarmonic * fHarmonicMultiplier).Data(),
+          TString::Format("%s h%d", (const char *) histoXYTitle, currentHarmonic).Data(),
           nVariables,nbins,minvals,maxvals);
-      fYXValues[ixComb][currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoYXName, currentHarmonic * fHarmonicMultiplier),
-          Form("%s h%d", (const char *) histoYXTitle, currentHarmonic),
+      fYXValues[ixComb][currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoYXName, currentHarmonic * fHarmonicMultiplier).Data(),
+          TString::Format("%s h%d", (const char *) histoYXTitle, currentHarmonic).Data(),
           nVariables,nbins,minvals,maxvals);
-      fYYValues[ixComb][currentHarmonic] = new THnF(Form("%s_h%d", (const char *) histoYYName, currentHarmonic * fHarmonicMultiplier),
-          Form("%s h%d", (const char *) histoYYTitle, currentHarmonic),
+      fYYValues[ixComb][currentHarmonic] = new THnF(TString::Format("%s_h%d", (const char *) histoYYName, currentHarmonic * fHarmonicMultiplier).Data(),
+          TString::Format("%s h%d", (const char *) histoYYTitle, currentHarmonic).Data(),
           nVariables,nbins,minvals,maxvals);
 
       /* now let's set the proper binning and label on each axis */

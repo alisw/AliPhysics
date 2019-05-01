@@ -85,7 +85,7 @@ Bool_t    GetList   (TString trigName );
 //-----------------------
 // Some global variables
 TDirectoryFile *dir = 0;  /// TDirectory file where lists per trigger are stored in train ouput
-TList  *list = 0;         /// TList with histograms for a given trigger
+TList  *histArr = 0;      /// TList with histograms for a given trigger
 TFile  *file = 0;         /// input train file
 TFile  *fout = 0;         /// output file with plots or extracted histograms
 TString histoTag = "";    /// file names tag, basically the trigger and calorimeter combination 
@@ -470,10 +470,10 @@ void CaloQA(Int_t icalo)
   }
   
   // Plot track-matching residuals
-  TH1F* hTrackMatchResEtaNeg;
-  TH1F* hTrackMatchResEtaPos;
-  TH1F* hTrackMatchResPhiNeg;
-  TH1F* hTrackMatchResPhiPos;
+  TH1F* hTrackMatchResEtaNeg = NULL;
+  TH1F* hTrackMatchResEtaPos = NULL;
+  TH1F* hTrackMatchResPhiNeg = NULL;
+  TH1F* hTrackMatchResPhiPos = NULL;
 
   // first test did not have this histogram, add protection
   TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaDPhiPosNoCut",icalo));
@@ -2278,7 +2278,8 @@ void CorrelQA(Int_t icalo)
   
   l.Draw("same");
   
-  // xE correlation
+  // xE, zT correlation
+  //
   cCorrelation->cd(2);
   gPad->SetLogy();
   
@@ -2290,31 +2291,66 @@ void CorrelQA(Int_t icalo)
   
   TH2F* hEXE   = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hXECharged"  ,icalo));
   TH2F* hEXEUE = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hXEUeCharged",icalo));
+  Int_t rebinXE = 2;
   
   TH1F* hXE  = (TH1F*) hEXE->ProjectionY(Form("%s_hXE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
   hXE->Sumw2();
-  hXE->Rebin(2);
+  hXE->Rebin(rebinXE);
   hXE->Scale(1./nTrig);
   hXE->SetAxisRange(0,1);
   hXE->SetMarkerStyle(24);
   hXE->SetMarkerColor(1);
   hXE->SetLineColor(1);
   hXE->SetTitleOffset(1.5,"Y");
+  hXE->SetXTitle("#it{x}_{E}, #it{z}_{T}");
   hXE->SetYTitle("#it{N}_{pairs} / #it{N}_{trig}");
   hXE->SetTitle("#gamma (#lambda_{0}^{2} < 0.4, neutral cluster) trigger");
-  l2.AddEntry(hXE,"raw x_{E}","P");
+  l2.AddEntry(hXE,"raw #it{x}_{E}","P");
+  
+  hXE->SetMaximum(2e2);
+  hXE->SetMinimum(1e-5);
+  
   hXE->Draw();
-
+ 
   TH1F* hXEUE  = (TH1F*) hEXEUE->ProjectionY(Form("%s_hXEUE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
   hXEUE->Sumw2();
-  hXEUE->Rebin(2);
+  hXEUE->Rebin(rebinXE);
   hXEUE->Scale(1./nTrig);
   hXEUE->SetAxisRange(0,1);
   hXEUE->SetMarkerStyle(25);
   hXEUE->SetMarkerColor(2);
   hXEUE->SetLineColor(2);
-  l2.AddEntry(hXEUE,"raw Und. Event x_{E}","P");
+
+  l2.AddEntry(hXEUE,"raw Und. Event #it{x}_{E}","P");
   hXEUE->Draw("same");
+
+  TH2F* hEZT   = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hZTCharged"  ,icalo));
+  TH2F* hEZTUE = (TH2F*) GetHisto(Form("AnaPhotonHadronCorr_Calo%d_hZTUeCharged",icalo));
+  
+  TH1F* hZT  = (TH1F*) hEZT->ProjectionY(Form("%s_hZT_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
+  hZT->Sumw2();
+  hZT->Rebin(rebinXE);
+  hZT->Scale(1./nTrig);
+  hZT->SetAxisRange(0,1);
+  hZT->SetMarkerStyle(20);
+  hZT->SetMarkerColor(1);
+  hZT->SetLineColor(1);
+  hZT->SetTitleOffset(1.5,"Y");
+  //hZT->SetYTitle("#it{N}_{pairs} / #it{N}_{trig}");
+  //hZT->SetTitle("#gamma (#lambda_{0}^{2} < 0.4, neutral cluster) trigger");
+  l2.AddEntry(hZT,"raw #it{z}_{T}","P");
+  hZT->Draw("same");
+  
+  TH1F* hZTUE  = (TH1F*) hEZTUE->ProjectionY(Form("%s_hZTUE_TrigEnMin%2.0fGeV",histoTag.Data(),minClusterE),minClusterEBin,10000);
+  hZTUE->Sumw2();
+  hZTUE->Rebin(rebinXE);
+  hZTUE->Scale(1./nTrig);
+  hZTUE->SetAxisRange(0,1);
+  hZTUE->SetMarkerStyle(21);
+  hZTUE->SetMarkerColor(2);
+  hZTUE->SetLineColor(2);
+  l2.AddEntry(hZTUE,"raw Und. Event #it{z}_{T}","P");
+  hZTUE->Draw("same");
   
   l2.Draw("same");
 
@@ -2358,7 +2394,20 @@ void CorrelQA(Int_t icalo)
     text[ok]->Draw();
   }
 
-  
+// Optional ratio xE, zT
+//  cCorrelation->cd(2);
+//  
+//  TH1F* hRatZTXE  = (TH1F*)hXE->Clone(Form("RatZTXE_%s",hXE->GetName()));
+//  hRatZTXE->Divide(hZT);
+//  hRatZTXE->SetYTitle("f(#it{x}_{E})/f(#it{z}_{T})");
+//  hRatZTXE->Draw();
+//  hRatZTXE->SetMaximum(2);
+//  hRatZTXE->SetMinimum(0);
+//
+//  TH1F* hRatZTXEUE  = (TH1F*)hXEUE->Clone(Form("RatZTXE_%s",hXEUE->GetName()));
+//  hRatZTXEUE->Divide(hZTUE);
+//  hRatZTXEUE->Draw("same");
+
   cCorrelation->Print(Form("%s_CorrelationHisto.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save
@@ -2675,26 +2724,26 @@ void MCQA(Int_t icalo)
 //____________________________________________________________________
 Bool_t GetList(TString trigName)
 {  
-  if(list) delete list;
+  if(histArr) delete histArr;
   
-  list = (TList*) dir->Get(trigName);
+  histArr = (TList*) dir->Get(trigName);
   
-  if ( !list ) 
+  if ( !histArr ) 
   { 
     printf("List not found, do nothing\n");
     return kFALSE; 
   }
 
-  if ( list->GetEntries() <= 0 ) 
+  if ( histArr->GetEntries() <= 0 ) 
   { 
-    printf("No histograms found <%d>, do nothing\n",list->GetEntries());
+    printf("No histograms found <%d>, do nothing\n",histArr->GetEntries());
     return kFALSE; 
   }
 
   if ( exportToFile == 2 )
   {
     fout = new TFile(Form("AnalysisResults%s.root",histoTag.Data()),"RECREATE");
-    list->Write();
+    histArr->Write();
     fout->Close();
   }
   
@@ -2713,8 +2762,10 @@ TObject * GetHisto(TString histoName)
 {
   TObject *histo = 0x0;
   
-  if ( list ) histo = list->FindObject(histoName);
-  else        histo = file->Get       (histoName);
+  if ( histArr ) 
+    histo = histArr->FindObject(histoName);
+  else        
+    histo = file->Get       (histoName);
   
   SaveHisto(histo);
   

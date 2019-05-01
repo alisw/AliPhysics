@@ -52,7 +52,7 @@
 #include "AliStack.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliVertexingHFUtils.h"
-
+#include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 
 ClassImp(AliAnalysisTaskSEDmesonsFilterCJ)
@@ -83,6 +83,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
   fMCHeader(0),
+  fCounter(0),
   fRan(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
@@ -159,6 +160,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
   fMCHeader(0),
+  fCounter(0),
   fRan(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
@@ -256,6 +258,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   DefineOutput(5, TClonesArray::Class()); //array of candidates and event tracks
   DefineOutput(6, TClonesArray::Class()); //array of SB candidates and event tracks
   DefineOutput(7, TClonesArray::Class()); //array of MC D and event MC particles
+  DefineOutput(8, AliNormalizationCounter::Class()); // normalization counte; // normalization counter
 }
 
 //_______________________________________________________________________________
@@ -293,6 +296,12 @@ AliAnalysisTaskSEDmesonsFilterCJ::~AliAnalysisTaskSEDmesonsFilterCJ()
     delete fCombinedDmesonsBkg;
     fCombinedDmesonsBkg = 0;
   }
+
+  if (fCounter){
+    delete fCounter;
+    fCounter=0;
+  }
+
 }
 
 //_______________________________________________________________________________
@@ -383,12 +392,16 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
   fMCCombinedDmesons->SetOwner();
   fMCCombinedDmesons->SetName(GetOutputSlot(7)->GetContainer()->GetName());
 
+  fCounter = new AliNormalizationCounter("NormalizationCounter");
+  fCounter->Init();
+
   PostData(1, fOutput);
   PostData(3, fCandidateArray);
   PostData(4, fSideBandArray);
   PostData(5, fCombinedDmesons);
   PostData(6, fCombinedDmesonsBkg);
   PostData(7, fMCCombinedDmesons);
+  PostData(8, fCounter);
 
   Info("UserCreateOutputObjects","Data posted for task %s", GetName());
 }
@@ -501,6 +514,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   AliDebug(2, "TClonesArray cleared");
 
   fHistStat->Fill(0);
+  fCounter->StoreEvent(fAodEvent,fCuts,fUseMCInfo);
 
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
@@ -730,6 +744,7 @@ else {
   PostData(5, fCombinedDmesons);
   PostData(6, fCombinedDmesonsBkg);
   PostData(7, fMCCombinedDmesons);
+  PostData(8, fCounter);
 
   AliDebug(2, "Exiting method");
 
@@ -1410,12 +1425,16 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliPar
     }
    
     if (allDaughters.Remove(track) == 0) {
-      new ((*coll)[n]) AliEmcalParticle(track);
-      n++;
-      AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
+	if(fUseRejTracks){
+      	   if(fRan->Rndm() < fTrackIneff) continue;
+        }
+
+      	new ((*coll)[n]) AliEmcalParticle(track);
+      	n++;
+      	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
     }
     else {
-      AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
+      	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
     }
   }
 }
@@ -1485,9 +1504,6 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliP
       
         
         if (allMCDaughters.Remove(mcpart) == 0) {
-            if(fUseRejTracks){
-              if(fRan->Rndm() < fTrackIneff) continue;
-            }
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
             n++;
             AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", mctracks->GetCurrentID(), mcpart->Pt(), mcpart->Eta(), mcpart->Phi()));
@@ -1504,7 +1520,7 @@ Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddMCDaughters(AliAODMCParticle* mcDm
     // Add all the dauthers of cand in an array. Follows all the decay cascades.
 
     Int_t n = mcDmeson->GetNDaughters();
-    Int_t nD0 = mcDmeson->GetDaughter(0); // get label of the first daughter
+    Int_t nD0 = mcDmeson->GetDaughterLabel(0); // get label of the first daughter
     //Printf("AddDaughters: the number of dauhters is %d", n);
     Double_t pt = 0;
 
@@ -1665,8 +1681,8 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part
 
   if (part->GetNDaughters() == 2) {
 
-    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
-    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(1)));
 
     if (!d1 || !d2) {
       return decay;

@@ -183,14 +183,16 @@ public:
   AliJTH1D fhChargedEta; //! Charged particle pseudorapidity distribution
   AliJTH1D fhLPeta; //! Leading particle eta distribution
   AliJTH1D fhChargedMult; //! Charged particle multiplicity distribution
-  
+
+  AliJTH1D fhCentr; //!
+  AliJTH1D fhiCentr; //!
   AliJTH1D fhZVert; //! z-vertex distribution
 
   //===================================================
   // Acceptance correction QA histograms
   // Not needed in the actual analysis, only for check
   //===================================================
-  
+
   AliJTH1D fhAcceptanceTraditional;   //! Acceptance correction check for traditional 1D triangle
   AliJTH2D fhAcceptanceTraditional2D; //! Acceptance correction check for traditional deltaEta deltaPhi distribution
   AliJTH2D fhAcceptance3DNearSide; //! Acceptance correction check for 3D near side deltaEta deltaPhi distribution
@@ -198,12 +200,12 @@ public:
   AliJTH2D fhAcceptance3DNearSideZ; //! Z-vertex binned acceptance correction check for 3D near side deltaEta deltaPhi distribution
   AliJTH2D fhDphiDetaTrackMergeCorrection; //! Track merge correction check
 
-  
+
 protected:
   double fmaxEtaRange;              // maximum eta range
   bool fenable2DHistos;             // enable the filling of two dimensional histograms
   bool fEnableAcceptanceQAHistos;   // enable the filling of acceptance correction quality control histograms
-  
+
 };
 
 #endif

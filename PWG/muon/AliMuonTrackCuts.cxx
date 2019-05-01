@@ -31,7 +31,7 @@
 #include "AliVParticle.h"
 #include "AliESDMuonTrack.h"
 #include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 #include "AliVEvent.h"
 #include "AliDataFile.h"
 
@@ -148,7 +148,7 @@ AliOADBMuonTrackCutsParam* AliMuonTrackCuts::CustomParam ( )
 }
 
 //________________________________________________________________________
-void AliMuonTrackCuts::SetCustomParam ( const AliInputEventHandler* eventHandler )
+void AliMuonTrackCuts::SetCustomParam ( const AliVEventHandler* eventHandler )
 {
   /// It tries to sets the parameters from the OADB
   /// for the current run, then gives the possiblity to the user
@@ -160,7 +160,7 @@ void AliMuonTrackCuts::SetCustomParam ( const AliInputEventHandler* eventHandler
 }
 
 //________________________________________________________________________
-TString AliMuonTrackCuts::GuessPass ( const AliInputEventHandler* eventHandler )
+TString AliMuonTrackCuts::GuessPass ( const AliVEventHandler* eventHandler )
 {
   /// If pass not defined guess it from event handler
   
@@ -183,7 +183,7 @@ TString AliMuonTrackCuts::GuessPass ( const AliInputEventHandler* eventHandler )
 }
 
 //________________________________________________________________________
-Bool_t AliMuonTrackCuts::SetRun ( const AliInputEventHandler* eventHandler )
+Bool_t AliMuonTrackCuts::SetRun ( const AliVEventHandler* eventHandler )
 {
   /// Get parameters from OADB for current run
   

@@ -51,6 +51,9 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskParticleStudies.cxx
   BalanceFunctions/AliAnalysisTaskPIDBF.cxx
   BalanceFunctions/AliPidBFBase.cxx   
+  BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx   
+  BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
+  BalanceFunctions/Corrections/AliAnalysisTaskPIDPerformCombIDPtDep.cxx
   LRC/AliLRCBase.cxx
   LRC/AliAnalysisTaskLRC.cxx
   LRC/AliLRCAnalysis.cxx
@@ -70,6 +73,11 @@ set(SRCS
   Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
+  NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
+  NetLambda/AliAnalysisTaskNetLambdaIdent.cxx 
+  NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx 
+  NetLambda/AliAnalysisTaskNetLambdaTrad.cxx 
   PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx
   PIDFluctuation/task/AliEbyENetChargeFluctuationTask.cxx
   PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx
@@ -95,6 +103,7 @@ set(SRCS
   NetParticle/AliAnalysisNetParticleHelper.cxx
   NetParticle/AliAnalysisTaskNetParticle.cxx
   NetParticle/AliAnalysisNetParticleQA.cxx
+  NetParticle/AliEbyEPhiDistNew.cxx
   TempFluctuations/AliAnalysisTempFluc.cxx
   LongAsymmetry/AliAnalysisFBMultFluct.cxx
   )
@@ -139,6 +148,8 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY macros DESTINATION PWGCF/EBYE)
 install(DIRECTORY PIDFluctuation/macros DESTINATION PWGCF/EBYE/PIDFluctuation)
 install(DIRECTORY NetParticle/macros DESTINATION PWGCF/EBYE/NetParticle)
+install(DIRECTORY NetLambda/macros DESTINATION PWGCF/EBYE/NetLambda)
 install(DIRECTORY TempFluctuations/macros DESTINATION PWGCF/EBYE/TempFluctuations)
 install(DIRECTORY LongAsymmetry/macros DESTINATION PWGCF/EBYE/LongAsymmetry)
 install(DIRECTORY IdentityMethodEbyeFluctuations/macros DESTINATION PWGCF/EBYE/IdentityMethodEbyeFluctuations)
+install(DIRECTORY NetChargeFluctuations/macros DESTINATION PWGCF/EBYE/NetChargeFluctuations)

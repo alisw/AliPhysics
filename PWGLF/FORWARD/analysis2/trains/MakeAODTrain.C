@@ -144,8 +144,23 @@ protected:
       SetOnMCFwd(fwd, "GetTrackDensity().SetMaxConsequtiveStrips",
 		 Form("%d",mSt));
     fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
-    if (!corr.IsNull()) 
-      fRailway->LoadAux(Form("%s/fmd_corrections.root",corr.Data()), true);
+    if (!corr.IsNull()) {
+      // fRailway->LoadAux(Form("%s/fmd_corrections.root",corr.Data()), true);
+      const char* names[] = {
+	"secondary",	
+	"elossfits",	
+	// "vertexbias",	
+	// "merging",	
+	// "doublehit",	
+	"acceptance",	
+	"noisegain",
+	0 };
+      const char** ptr = names;
+      while (*ptr) {
+	fRailway->LoadAux(Form("%s/%s",corr.Data(),*ptr),true);
+	ptr++;
+      }
+    }
     if (!dead.IsNull())
       fRailway->LoadAux(Form("%s",dead.Data()), true);
 

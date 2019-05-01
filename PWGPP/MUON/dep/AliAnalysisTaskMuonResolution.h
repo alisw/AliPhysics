@@ -68,6 +68,9 @@ public:
   // set standard cuts to select tracks to be considered
   void SetMuonTrackCuts(AliMuonTrackCuts &trackCuts);
   
+  /// select only tracks with MC label or not
+  void UseMCLabel(Bool_t flag = kTRUE) { fUseMCLabel = flag; }
+
   /// set the extrapolation mode to get the track parameters and covariances at a given cluster:
   /// 0 = extrapolate from the closest cluster; 1 = extrapolate from the previous cluster except between stations 2-3-4
   void SetExtrapMode(Int_t val) { fExtrapMode = val; }
@@ -253,6 +256,7 @@ private:
   Double_t fMinMomentum;           ///< use only tracks with momentum higher than this value
   Double_t fMinPt;                 ///< use only tracks with pT higher than this value
   Short_t  fSign;                  ///< use only tracks of this sign
+  Bool_t   fUseMCLabel;            ///< use only tracks with MC label or not
   Int_t    fExtrapMode;            ///< extrapolation mode to get the track parameters and covariances at a given cluster
   Bool_t   fCorrectForSystematics; ///< add or not the systematic shifts of the residuals to the resolution
   Bool_t   fRemoveMonoCathCl;      ///< remove or not the mono-cathod clusters
@@ -279,7 +283,7 @@ private:
   AliMuonEventCuts* fMuonEventCuts; ///< cuts to select events to be considered
   AliMuonTrackCuts* fMuonTrackCuts; ///< cuts to select tracks to be considered
   
-  ClassDef(AliAnalysisTaskMuonResolution, 6); // chamber resolution analysis
+  ClassDef(AliAnalysisTaskMuonResolution, 7); // chamber resolution analysis
 };
 
 //________________________________________________________________________

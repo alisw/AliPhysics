@@ -82,11 +82,14 @@ public:
         fkApplyTrackletsVsClustersCut = lSPDClsVsTrk;
     }
 
+    Bool_t SelectEventsMultiplicityDependentAnalysis();
+    Bool_t SelectEventsMinimumBiasAnalysis();
+
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection 
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
     void SetSelectedTriggerClass(TString trigName) { fkSelectTriggerByName = kTRUE; fTrigName = trigName;}
-
+    void SetMininumBiasAnalysis(Bool_t lMinbAn) { fMinbAnalysis = lMinbAn;}
     
 //---------------------------------------------------------------------------------------
     //Task Configuration: Meant to enable quick re-execution of vertexer if needed
@@ -184,6 +187,7 @@ private:
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
     Bool_t    fkSkipEventSelection;     // if true, will only perform TRIGGER selection (currently kMB, to change)
     Bool_t    fkApplyTrackletsVsClustersCut; //if true, applies Tracklet vs clusters cut together with PS
+    Bool_t    fMinbAnalysis;                // if true event selection is done according to minb analysis
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     TString   fTrigName; // trigger name (if it's not available in AliVEvent)
 

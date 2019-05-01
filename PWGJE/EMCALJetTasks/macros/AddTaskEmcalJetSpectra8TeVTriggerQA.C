@@ -2,6 +2,7 @@ AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA* AddTaskEmcalJetSpectra8TeVTriggerQA
                                                                                  const char *ntracks            = "usedefault",
                                                                                  const char *nclusters          = "usedefault",
                                                                                  const char* ncells             = "usedefault",
+                                                                                 const char *nparticle          = "mcparticles",
                                                                                  const char *suffix             = ""
                                                                                  )
 {

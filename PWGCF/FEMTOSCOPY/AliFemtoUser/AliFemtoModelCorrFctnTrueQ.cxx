@@ -73,14 +73,12 @@ AliFemtoModelCorrFctnTrueQ::~AliFemtoModelCorrFctnTrueQ()
 AliFemtoModelCorrFctnTrueQ& AliFemtoModelCorrFctnTrueQ::operator=(const AliFemtoModelCorrFctnTrueQ& aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
-  if (aCorrFctn.fTrueNum)
-    fTrueNum = new TH1D (*aCorrFctn.fTrueNum);
-  else fTrueNum = 0;
-  if (aCorrFctn.fTrueDen)
-    fTrueDen = new TH1D(*aCorrFctn.fTrueDen);
-  else fTrueDen = 0;
+  }
+
+  *fTrueNum = *aCorrFctn.fTrueNum;
+  *fTrueDen = *aCorrFctn.fTrueDen;
 
   return *this;
 }
@@ -129,7 +127,7 @@ TList* AliFemtoModelCorrFctnTrueQ::GetOutputList()
   return tOutputList;
 }
 //_______________________
-AliFemtoModelCorrFctn* AliFemtoModelCorrFctnTrueQ::Clone()
+AliFemtoModelCorrFctn* AliFemtoModelCorrFctnTrueQ::Clone() const
 {
   // Clone the correlation function
   AliFemtoModelCorrFctnTrueQ *tCopy = new AliFemtoModelCorrFctnTrueQ(*this);

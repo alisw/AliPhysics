@@ -11,6 +11,7 @@ foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
           CMP0025  # Compiler id for Apple Clang is now AppleClang (v3.0)
           CMP0042  # MACOSX_RPATH is enabled by default (v3.0)
           CMP0053  # Simplify variable reference and escape sequence evaluation (v3.1.3)
+          CMP0068  # RPATH settings on macOS do not affect install_name (v3.9 and newer)
        )
   if(POLICY ${p})
     cmake_policy(SET ${p} NEW)
@@ -77,6 +78,23 @@ include(cmake/GenParFile.cmake)
 if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
+
+# Be sure about where libraries and binaries are put
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
+
+# Build targets with install rpath on Mac to dramatically speed up installation
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+  endif()
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+endif()
+unset(isSystemDir)
 
 # Optional: Doxygen for reference doc generation
 find_package(Doxygen)
@@ -146,6 +164,12 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=delete-non-virtual-dtor")
   endif()
 
+  # Turn OFF some -Werrors
+  check_cxx_compiler_flag(-Wno-error=strict-aliasing CXX_COMPILER_STRICT_ALIASING)
+  if(CXX_COMPILER_STRICT_ALIASING)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=strict-aliasing")
+  endif()
+
   # Turn on "all" warnings, but skip missing braces warning
   check_cxx_compiler_flag(-Wall CXX_COMPILER_HAS_WALL)
   if(CXX_COMPILER_HAS_WALL)
@@ -184,20 +208,12 @@ else()
   endif()
 
   # If no Fortran, i.e on Windows
-  # We need to specify ROOT fortran
-  # (f95 comes before gfortran in default module)
   include(CheckLanguage)
-
-  if(ROOT_FORTRAN)
-    message(STATUS "Using the Fortran compiler defined by ROOT configuration: ${ROOT_FORTRAN}")
-    set(CMAKE_Fortran_COMPILER ${ROOT_FORTRAN})
-  else()
-    message(STATUS "Using default system Fortran compiler")
-  endif(ROOT_FORTRAN)
 
   check_language(Fortran)
   if(CMAKE_Fortran_COMPILER)
     enable_language(Fortran OPTIONAL)
+    message(STATUS "Fortran compiler is ${CMAKE_Fortran_COMPILER}")
   else()
     message(STATUS "No Fortran support.")
   endif()
@@ -213,6 +229,9 @@ else()
 
   # FastJet
   find_package(FASTJET)
+
+  # RooUnfold
+  find_package(RooUnfold)
 
   # ZEROMQ
   find_package(ZeroMQ)
@@ -253,6 +272,11 @@ else()
   add_subdirectory(PWGPP)
   add_subdirectory(PWGUD)
   add_subdirectory(PWGMM)
+
+  # Transition to Run3
+  if(ROOT_VERSION_MAJOR EQUAL 6)
+    add_subdirectory(RUN3)
+  endif()
 
   # List modules with PARfiles
   string(REPLACE ";" " " ALIPARFILES_FLAT "${ALIPARFILES}")

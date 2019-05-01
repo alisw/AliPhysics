@@ -35,6 +35,7 @@
 #include "AliOADBContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
+#include "AliDataFile.h"
 
 #include "AliAnalysisTaskEMCALTriggerQA.h"
 
@@ -181,8 +182,6 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
   // Set it only once
   if(fOADBSet) return ;
   
-  if(fOADBFilePath == "") fOADBFilePath = "$ALICE_PHYSICS/OADB/EMCAL" ;
-  
   Int_t   runnumber = InputEvent()->GetRunNumber() ;
   
   AliInfo(Form("Get AODB parameters from EMCAL in %s for run %d",fOADBFilePath.Data(),runnumber));
@@ -193,8 +192,11 @@ void AliAnalysisTaskEMCALTriggerQA::AccessOADB()
   if(fRecoUtils->IsBadChannelsRemovalSwitchedOn())
   {
     AliOADBContainer *contBC=new AliOADBContainer("");
-    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePath.Data()),"AliEMCALBadChannels");
-    
+    if(fOADBFilePath!="")
+      contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePath.Data()),"AliEMCALBadChannels");
+    else
+      contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels");
+
     TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runnumber);
     
     if(arrayBC)

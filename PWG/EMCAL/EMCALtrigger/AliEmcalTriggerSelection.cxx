@@ -79,5 +79,15 @@ AliEmcalTriggerDecision* AliEmcalTriggerSelection::MakeDecison(const TClonesArra
   return result;
 }
 
+void AliEmcalTriggerSelection::PrintStream(std::ostream &stream) const {
+  stream << "  Name of the trigger class: " << GetName() << std::endl;
+  stream << *fSelectionCuts << std::endl;
 }
+
+}
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWG::EMCAL::AliEmcalTriggerSelection &sel) {
+  sel.PrintStream(stream);
+  return stream;
 }

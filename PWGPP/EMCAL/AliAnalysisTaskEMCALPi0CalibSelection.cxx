@@ -21,11 +21,13 @@
 #include "AliAnalysisTaskEMCALPi0CalibSelection.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliMultSelection.h"
 #include "AliEMCALGeometry.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEMCALPi0CalibSelection) ;
@@ -45,6 +47,8 @@ fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
 //fCuts(0x0),               
 fOutputContainer(0x0),
+fCheckCentrality(kFALSE), fCentralityClass("V0M"),  fCentWithEventSel(kFALSE),
+fCentMin(-1),             fCentMax(10000000), 
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
@@ -169,6 +173,8 @@ fCorrectClusters(kFALSE), fRecalPosition(kTRUE),
 fCaloClustersArr(0x0),    fEMCALCells(0x0),
 //fCuts(0x0),               
 fOutputContainer(0x0),
+fCheckCentrality(kFALSE), fCentralityClass("V0M"),  fCentWithEventSel(kFALSE),
+fCentMin(-1),             fCentMax(10000000), 
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.), 
@@ -197,6 +203,7 @@ fHmggMaskFrame(0x0),      fHmggDifferentSMMaskFrame(0x0),
 fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),  
 fHAsymmetry(0x0),         fHAsymmetryDifferentSM(0x0),  
 fhNEvents(0x0),
+fhCentrality(0x0),        fhCentralitySelected(0x0),
 fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
 {
   for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++)
@@ -817,10 +824,10 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
     if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
     {
       // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-      if     (runnumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-      else if(runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-      else if(runnumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
-      else                         fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >= 2015
+      if     (runnumber <  140000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2010.root").data();
+      else if(runnumber <  171000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2011.root").data();
+      else if(runnumber <  198000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2012.root").data(); // 2012-2013
+      else                         fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2015.root").data(); // >= 2015
     }
     
     AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
@@ -834,11 +841,12 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
     AliInfo("Load user defined EMCAL geometry matrices");
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
-    
-    if(fOADBFilePath=="") fOADBFilePath = "$ALICE_PHYSICS/OADB/EMCAL" ;
-    
-    emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
-    
+
+    if(fOADBFilePath!="")
+      emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
+    else
+      emcGeoMat.InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALlocal2master.root").data(),"AliEMCALgeo");
+
     TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
     
     for(Int_t mod = 0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
@@ -915,8 +923,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitTemperatureCorrections()
   
   AliOADBContainer *contRFTD=new AliOADBContainer("");
   
-  contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
-  
+  if(fOADBFilePath!="")
+    contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
+  else
+    contRFTD->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"AliEMCALRunDepTempCalibCorrections");
+
   Int_t runnumber = InputEvent()->GetRunNumber() ;
 
   TH1S *htd=(TH1S*)contRFTD->GetObject(runnumber); 
@@ -1001,6 +1012,23 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fhNEvents        = new TH1I("hNEvents", "Number of analyzed events"   , 1 , 0 , 1  ) ;
   fOutputContainer->Add(fhNEvents);
   
+  if ( fCheckCentrality )
+  {
+    fhCentrality   = new TH1F
+    ("hCentrality",
+     Form("Number of events in centrality bins, |vz|<10 cm, method <%s> ",fCentralityClass.Data()),
+     1000,-1000.,1000.) ;
+    fhCentrality->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentrality) ;  
+    
+    fhCentralitySelected   = new TH1F
+    ("hCentralitySelected",
+     Form("Number of selected events in centrality bin, |vz|<10 cm, method <%s> ",fCentralityClass.Data()),
+     100,0.,100.) ;
+    fhCentralitySelected->SetXTitle("Centrality bin");
+    fOutputContainer->Add(fhCentralitySelected) ;  
+  }
+
   fHmgg = new TH2F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin,100,0,10);
   fHmgg->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
   fHmgg->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
@@ -1741,6 +1769,25 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     return;
   }
   
+  // Centrality selection
+  
+  if ( fCheckCentrality )
+  {
+    AliMultSelection* multSelection = (AliMultSelection * ) event->FindListObject("MultSelection") ;
+    if ( multSelection ) 
+    {
+      Float_t cent = multSelection->GetMultiplicityPercentile(fCentralityClass, fCentWithEventSel);
+      fhCentrality->Fill(cent);
+      
+      AliDebug(1,Form("Centrality %2.1f for class <%s>, event sel %d\n",cent,fCentralityClass.Data(),fCentWithEventSel));
+      //printf("Centrality %2.1f for class <%s>, select in [%1.1f,%1.1f]\n",cent,fCentralityClass.Data(),fCentMin,fCentMax);
+      
+      if ( cent < fCentMin || cent >= fCentMax ) return ;
+      
+      fhCentralitySelected->Fill(cent);
+    }
+  }
+  
   AliDebug(1,Form("<<< %s: Event %d >>>",event->GetName(), (Int_t)Entry()));
   
   // Get the primary vertex
@@ -1805,6 +1852,9 @@ void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo()
   
   printf("EMCAL Geometry name: < %s >, Load Matrices %d\n",fEMCALGeoName.Data(), fLoadMatrices) ;
 
+  if ( fCheckCentrality )
+    printf("Select centrality bin [%1.1f,%1.1f] for class <%s>, event sel. %d\n",fCentMin,fCentMax,fCentralityClass.Data(),fCentWithEventSel);
+  
   if(fLoadMatrices) { for(Int_t ism = 0; ism < AliEMCALGeoParams::fgkEMCALModules; ism++) if(fMatrix[ism]) fMatrix[ism]->Print() ; }
 }
 

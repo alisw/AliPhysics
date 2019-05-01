@@ -16,6 +16,7 @@
 ClassImp(AliReducedBaseEvent)
 
 TClonesArray* AliReducedBaseEvent::fgTracks = 0;
+TClonesArray* AliReducedBaseEvent::fgTracks2 = 0;
 TClonesArray* AliReducedBaseEvent::fgCandidates = 0;
 
 //____________________________________________________________________________
@@ -30,6 +31,7 @@ AliReducedBaseEvent::AliReducedBaseEvent() :
   fNtracks(),
   fNV0candidates(),
   fTracks(0x0),
+  fTracks2(0x0),
   fCandidates(0x0)
 {
   //
@@ -43,7 +45,7 @@ AliReducedBaseEvent::AliReducedBaseEvent() :
 
 
 //____________________________________________________________________________
-AliReducedBaseEvent::AliReducedBaseEvent(const Char_t* /*name*/, Int_t trackOption /*=kNoInit*/) :
+AliReducedBaseEvent::AliReducedBaseEvent(const Char_t* /*name*/, Int_t trackOption /*=kNoInit*/, Int_t track2Option /*=kNoInit*/) :
   TObject(),
   fEventTag(0),
   fRunNo(0),
@@ -54,6 +56,7 @@ AliReducedBaseEvent::AliReducedBaseEvent(const Char_t* /*name*/, Int_t trackOpti
   fNtracks(),
   fNV0candidates(),
   fTracks(0x0),
+  fTracks2(0x0),
   fCandidates(0x0)
 {
   //
@@ -63,6 +66,7 @@ AliReducedBaseEvent::AliReducedBaseEvent(const Char_t* /*name*/, Int_t trackOpti
   for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
   fNtracks[0]=0; fNtracks[1]=0;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
+  
   if(trackOption == kUseBaseTracks) {
     if(!fgTracks) fgTracks = new TClonesArray("AliReducedBaseTrack", 100000);
     fTracks = fgTracks;
@@ -71,6 +75,16 @@ AliReducedBaseEvent::AliReducedBaseEvent(const Char_t* /*name*/, Int_t trackOpti
      if(!fgTracks) fgTracks = new TClonesArray("AliReducedTrackInfo", 100000);
      fTracks = fgTracks;
   }
+  
+  if(track2Option == kUseBaseTracks || track2Option == kNoInit) {
+     if(!fgTracks2) fgTracks2 = new TClonesArray("AliReducedBaseTrack", 100000);
+     fTracks2 = fgTracks2;
+  }
+  if(track2Option == kUseReducedTracks) {
+     if(!fgTracks2) fgTracks2 = new TClonesArray("AliReducedTrackInfo", 100000);
+     fTracks2 = fgTracks2;
+  }
+  
   if(!fgCandidates) fgCandidates = new TClonesArray("AliReducedPairInfo", 100000);
   fCandidates = fgCandidates;
 }
@@ -107,6 +121,7 @@ void AliReducedBaseEvent::ClearEvent() {
   // clear the event
   //
   if(fTracks) fTracks->Clear("C");
+  if(fTracks2) fTracks2->Clear("C");
   if(fCandidates) fCandidates->Clear("C");
   fEventTag = 0;
   fRunNo = 0;

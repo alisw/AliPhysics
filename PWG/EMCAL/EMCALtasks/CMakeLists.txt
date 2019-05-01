@@ -37,6 +37,7 @@ set(SRCS
   AliAnalysisTaskEMCALClusterizeFast.cxx
   AliAnalysisTaskEmcalSample.cxx
   AliAnalysisTaskEmcalTriggerPatchClusterMatch.cxx
+  AliAodSkimTask.cxx
   AliEMCALClusterParams.cxx
   AliEmcalAodTrackFilterTask.cxx
   AliEmcalClusTrackMatcherTask.cxx
@@ -70,12 +71,16 @@ set(SRCS
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
+  AliEmcalCorrectionCellEmulateCrosstalk.cxx
   AliEmcalCorrectionCellCombineCollections.cxx
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
+  AliEmcalCorrectionClusterNonLinearityMCAfterburner.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
+  AliEmcalCorrectionCellEnergyVariation.cxx
+  AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
   TestAliEmcalAODFilterBitCuts.cxx

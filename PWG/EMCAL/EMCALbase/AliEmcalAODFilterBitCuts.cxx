@@ -12,8 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <AliEmcalAODFilterBitCuts.h>
+#include <bitset>
+#include <iostream>
 #include "AliAODTrack.h"
+#include "AliEmcalAODFilterBitCuts.h"
+#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalAODFilterBitCuts)
@@ -40,6 +43,7 @@ AliEmcalAODFilterBitCuts::AliEmcalAODFilterBitCuts(const char *name, const char 
 }
 
 Bool_t AliEmcalAODFilterBitCuts::IsSelected(TObject *o){
+  AliDebugStream(1) << "Filter bit cut: selecting " << std::bitset<sizeof(decltype(fAODfilterBits))*8>(fAODfilterBits) << std::endl;
   AliAODTrack *testtrack = dynamic_cast<AliAODTrack *>(o);
   if(!testtrack) return false;
   Bool_t result(true);

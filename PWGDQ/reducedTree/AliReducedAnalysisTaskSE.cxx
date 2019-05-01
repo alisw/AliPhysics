@@ -24,6 +24,7 @@ AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE() :
   fInactiveBranches(""),
   fFilteredEvent(0x0),
   fFilteredTreeWritingOption(kBaseEventsWithBaseTracks),
+  fProcessMCInfo(kFALSE),
   fEventCounter(0)
 {
   //
@@ -46,6 +47,7 @@ AliReducedAnalysisTaskSE::AliReducedAnalysisTaskSE(const Char_t* name, const Cha
   fInactiveBranches(""),
   fFilteredEvent(0x0),
   fFilteredTreeWritingOption(kBaseEventsWithBaseTracks),
+  fProcessMCInfo(kFALSE),
   fEventCounter(0)
 {
   //

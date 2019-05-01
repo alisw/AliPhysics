@@ -64,6 +64,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     void SetNeutralPionMode(Int_t mode){fNeutralPionMode = mode; }
     void SetTolerance(Double_t tol){fTolerance=tol;}
 
+    void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
+
   private:
 
     void InitBack();
@@ -147,14 +149,25 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TTree**                           fTreePiPiSameMother;                                // Tree containing info about the mother of two pions who have the same mother,
                                                                                           // if ID isn't covered by current implementations
     TTree**                           fTreePiPiPiSameMother;                              // Tree containing info about the mother of three pions who have the same mother,
+    TTree**                           fTreeEventInfoOmega;                                // Tree containing information about an event where omega->pi+pi-pi0 was found
+    TTree**                           fTreeEventInfoEta;                                  // Tree containing information about an event where eta->pi+pi-pi0 was found
                                                                                           // if ID isn't covered by current implementations
     Short_t                           fCasePiPi;                                          // 0:PiPlPiMi 1:PiMiPiZero 1:PiPlPiZero
     Float_t                           fSamePiPiMotherID;                                  // ID of mother of two pions
     Float_t                           fSamePiPiMotherInvMass;                             // Invariant mass of mother of two pions
     Float_t                           fSamePiPiMotherPt;                                  // pT of mother of two pions
-    Float_t                           fSamePiPiPiMotherID;                                  // ID of mother of two pions
-    Float_t                           fSamePiPiPiMotherInvMass;                             // Invariant mass of mother of two pions
-    Float_t                           fSamePiPiPiMotherPt;                                  // pT of mother of two pions
+    Float_t                           fSamePiPiPiMotherID;                                // ID of mother of two pions
+    Float_t                           fSamePiPiPiMotherInvMass;                           // Invariant mass of mother of two pions
+    Float_t                           fSamePiPiPiMotherPt;                                // pT of mother of two pions
+    Float_t                           fV0MultiplicityOmegaEvent;                          // V0 multiplicity of an event where a true omega was found
+    Float_t                           fTrackMultiplicityOmegaEvent;                       // track multiplicity of an event where a true omega was found
+    Float_t                           fZVertexOmegaEvent;                                 // z position of primary vertex of an event where a true omega was found
+    Float_t                           fPtOmega;                                           // pT of a true omega
+    Float_t                           fV0MultiplicityEtaEvent;                            // V0 multiplicity of an event where a true Eta was found
+    Float_t                           fTrackMultiplicityEtaEvent;                         // track multiplicity of an event where a true Eta was found
+    Float_t                           fZVertexEtaEvent;                                   // z position of primary vertex of an event where a true Eta was found
+    Float_t                           fPtEta;                                             // pT of a true Eta
+    Float_t                           fPDGMassPi0;                                        // PDG mass of pi0
     // reconstructed particles
     TH1F**                            fHistoConvGammaPt;                                  // array of histos of conversion photon, pt
     TH1F**                            fHistoConvGammaEta;                                 // array of histos of conversion photon, eta
@@ -174,6 +187,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     TH2F**                            fHistoPionTPCdEdx;                                  // array of histos of pion, p, TPC dEdx
     TH2F**                            fHistoPionPionInvMassPt;                            // array of histos of pion pion, invMass, pT_{pi+pi-}
     TH2F**                            fHistoGammaGammaInvMassPt;                          // array of histos of gamma-gamma, invMass, pT_{gamma gamma}
+    TH2F**                            fHistoGammaGammaInvMassPtBeforeCuts;                // array of histos of gamma-gamma, invMass, pT_{gamma gamma} before neutral meson cuts
     TH2F**                            fHistoMotherInvMassPt;                              // array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             // array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoBackInvMassPtGroup1;                          // Event mixing background group 1 (pi+ and pi- from same event)
@@ -293,11 +307,13 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     Bool_t                          fDoLightOutput;                                       // Flag to turn on light output
     Int_t                           fNeutralPionMode;                                     // Flag how neutral pion is reconstructed 0=PCM-PCM, 1=PCM-Calo, 2=Calo-Calo
     Double_t                        fTolerance;                                           // tolerance in rad for angle cuts
+    Int_t                           fTrackMatcherRunningMode;                             // CaloTrackMatcher running mode
+
 private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 18);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 24);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

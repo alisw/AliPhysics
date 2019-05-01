@@ -46,6 +46,7 @@ class AliPrimaryPionSelector : public AliAnalysisTaskSE {
    //selected electron arrays
    
    Bool_t ProcessESDs();
+   Bool_t ProcessAODs();
    AliPrimaryPionCuts *fPionCuts; // Pointer to the ConversionCut Selection
    vector<Int_t> fPosPionsIndex;
    vector<Int_t> fNegPionsIndex;
@@ -57,7 +58,7 @@ class AliPrimaryPionSelector : public AliAnalysisTaskSE {
 
 
    
-   ClassDef(AliPrimaryPionSelector,1)
+   ClassDef(AliPrimaryPionSelector,2)
       };
 
 inline void AliPrimaryPionSelector::SetPrimaryPionCuts(const TString cut){

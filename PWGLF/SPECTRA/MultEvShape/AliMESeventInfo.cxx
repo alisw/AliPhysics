@@ -37,10 +37,10 @@ void AliMESeventInfo::Clear(Option_t *)
   fVertexZ = 0.;
 //   memset(fMultiplicity, 0, kNmult*sizeof(Int_t));
   memset(fMultiplicity, 0, kNmult*sizeof(Double_t));
-  fEvShape.fSphericity = 0.;
+  fEvShape.fSphericity = -2.;
   fEvShape.fThrust[0] = 0.; fEvShape.fThrust[1] = 0.;
   fEvShape.fRecoil=0.;
-  fEvShape.fDir[0] = 0.; fEvShape.fDir[1] = 0.;
+  fEvShape.fDir[0] = -2.; fEvShape.fDir[1] = -2.;
   memset(fEvShape.fFW, 0, FW_MAX_ORDER*sizeof(Double_t));
   fEvShape.fPxyLead[0] = 0.; fEvShape.fPxyLead[1] = 0.;
 }
@@ -89,7 +89,7 @@ Bool_t AliMESeventInfo::MakeThrust(TObjArray* tracks){
 // sphericity
 void AliMESeventInfo::MakeSphericity(TObjArray* tracks){
 
-    Double_t rv = -1.;
+    Double_t rv = -2.;
 
     if(!tracks->GetEntries()){
       AliDebug(2, "Failed event shape estimation. No tracks in event.");
@@ -188,9 +188,10 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
   Int_t ntracks(0);
   if(!(ntracks=tracks->GetEntries())) return kFALSE;
 
+  // Int_t indexmax(0);
   Double_t ptmax(0.);
-  Double_t etamax(0.);
-  Double_t phimax(0.);
+  // Double_t etamax(0.);
+  // Double_t phimax(0.);
   // AliVParticle *track(NULL);
   AliMEStrackInfo *track(NULL);
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
@@ -202,10 +203,19 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
     pxy[0] = track->Px();
     pxy[1] = track->Py();
     ptmax  = track->Pt();
-    etamax = track->Eta();
-    phimax = track->Phi();
+    // etamax = track->Eta();
+    // phimax = track->Phi();
+    // indexmax = iTracks;
   }
+/*
+  printf("AliMESeventInfo::LeadingParticleDirection: indexmax = %i \t ptmax = %f \n", indexmax, ptmax);
 
+  // put the LP on the first position on the list
+  AliMEStrackInfo *tempLP = dynamic_cast<AliMEStrackInfo*>(tracks->At(indexmax));
+  AliMEStrackInfo *temp0 = dynamic_cast<AliMEStrackInfo*>(tracks->At(0));
+  tracks->AddAt(temp0, indexmax);   // put the first particle in the old LP position
+  tracks->AddAt(tempLP, 0);         // put the LP first
+*/
   return kTRUE;
 }
 
@@ -372,7 +382,8 @@ void AliMESeventInfo::Print(Option_t */*o*/) const
   printf("Event Shape  : D+[%f] D-[%f] T[%f %f] S[%f] R[%f] Leading(px, py)[%f %f]\n",
     fEvShape.fDir[0], fEvShape.fDir[1], fEvShape.fThrust[0], fEvShape.fThrust[1],  fEvShape.fSphericity,  fEvShape.fRecoil, fEvShape.fPxyLead[0], fEvShape.fPxyLead[1]);
   printf("             : FW[");
-  for(Int_t ifw(0); ifw<FW_MAX_ORDER; ifw++) printf("%f ", fEvShape.fFW[ifw]); printf("]\n");
+  for(Int_t ifw(0); ifw<FW_MAX_ORDER; ifw++) printf("%f ", fEvShape.fFW[ifw]); 
+  printf("]\n");
 }
 
 //______________________________________________________________

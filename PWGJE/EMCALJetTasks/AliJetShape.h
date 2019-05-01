@@ -174,19 +174,19 @@ class AliJetShapeOpeningAngle_akt02 : public fastjet::FunctionOfPseudoJet<Double
   Double32_t result(const fastjet::PseudoJet &jet) const;
 };
 
-class AliJetShape1subjettiness_casd : public fastjet::FunctionOfPseudoJet<Double32_t>{
+class AliJetShape1subjettiness_onepassca : public fastjet::FunctionOfPseudoJet<Double32_t>{
  public:
   virtual std::string description() const{return "1subJettiness ca sd exclusive";}
   Double32_t result(const fastjet::PseudoJet &jet) const;
 };
 
-class AliJetShape2subjettiness_casd : public fastjet::FunctionOfPseudoJet<Double32_t>{
+class AliJetShape2subjettiness_onepassca : public fastjet::FunctionOfPseudoJet<Double32_t>{
  public:
   virtual std::string description() const{return "2subJettiness ca sd exclusive";}
   Double32_t result(const fastjet::PseudoJet &jet) const;
 };
 
-class AliJetShapeOpeningAngle_casd : public fastjet::FunctionOfPseudoJet<Double32_t>{
+class AliJetShapeOpeningAngle_onepassca : public fastjet::FunctionOfPseudoJet<Double32_t>{
  public:
   virtual std::string description() const{return "Opening Angle of Subjet Axes ca sd exclusive";}
   Double32_t result(const fastjet::PseudoJet &jet) const;

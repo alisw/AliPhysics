@@ -22,7 +22,7 @@
 #endif
 
 extern void FillHbtParticleCollection(AliFemtoParticleCut* partCut,
-                                      AliFemtoEvent* hbtEvent,
+                                      const AliFemtoEvent* hbtEvent,
                                       AliFemtoParticleCollection* partCollection,
                                       bool performSharedDaughterCut=kFALSE);
 
@@ -206,8 +206,8 @@ void AliFemtoAnalysisAzimuthal::ProcessEvent(const AliFemtoEvent* hbtEvent) {
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
   if (tmpPassEvent) {
     fPicoEvent = new AliFemtoPicoEvent; // this is what we will make pairs from and put in Mixing Buffer, no memory leak. we will delete picoevents when they come out of the mixing buffer
-    FillHbtParticleCollection(fFemtoParticleCut,(AliFemtoEvent*)hbtEvent,fPicoEvent->FirstParticleCollection());
-    FillHbtParticleCollection(fFlowParticleCut,(AliFemtoEvent*)hbtEvent,fPicoEvent->SecondParticleCollection());
+    FillHbtParticleCollection(fFemtoParticleCut,hbtEvent,fPicoEvent->FirstParticleCollection());
+    FillHbtParticleCollection(fFlowParticleCut,hbtEvent,fPicoEvent->SecondParticleCollection());
 
       // get right mixing buffer
   double vertexZ = hbtEvent->PrimVertPos().z();

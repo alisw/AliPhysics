@@ -943,7 +943,7 @@ bool AliFemtoKKTrackCutFull::IsKaonNSigma(float mom, float nsigmaTPCK, float nsi
 	}
     }
 
- if(mom>=0.45 && mom<0.5)
+ if(mom>=0.45 && mom<0.5 && !fUseNsigmaTOF450_500)
     {
       if(TMath::Abs(nsigmaTPCK)<fNsigmaTPC450_500)
 	{ 

@@ -27,30 +27,22 @@ AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn)
 
 void AliFemtoCorrFctn::AddRealPair(AliFemtoPair*)
 {
-  cout << "Not implemented" << endl;
+  cout << "AliFemtoCorrFctn::AddRealPair -- Not implemented\n";
 }
 void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*)
 {
-  cout << "Not implemented" << endl;
+  cout << "AliFemtoCorrFctn::AddMixedPair -- Not implemented\n";
 }
 
 void AliFemtoCorrFctn::AddFirstParticle(AliFemtoParticle*, bool)
 {
-  cout << "Not implemented" << endl;
+  cout << "AliFemtoCorrFctn::AddFirstParticle -- Not implemented\n";
 }
 void AliFemtoCorrFctn::AddSecondParticle(AliFemtoParticle*)
 {
-  cout << "Not implemented" << endl;
+  cout << "AliFemtoCorrFctn::AddSecondParticle -- Not implemented\n";
 }
 void AliFemtoCorrFctn::CalculateAnglesForEvent()
 {
-  cout << "Not implemented" << endl;
+  cout << "AliFemtoCorrFctn::CalculateAnglesForEvent -- Not implemented\n";
 }
-
-
-
-#ifdef __ROOT__
-  /// \cond CLASSIMP
-  ClassImp(AliFemtoCorrFctn);
-  /// \endcond
-#endif

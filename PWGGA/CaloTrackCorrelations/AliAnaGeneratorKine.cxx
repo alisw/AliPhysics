@@ -351,8 +351,8 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
     fhPt[p]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPt[p]);
 
-    fhPhi[p]  = new TH1F(Form("h%sPhi",particle[p].Data()),Form("Input %s #phi with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),180,0,TMath::TwoPi());
-    fhPhi[p]->SetXTitle("#phi (rad)");
+    fhPhi[p]  = new TH1F(Form("h%sPhi",particle[p].Data()),Form("Input %s #varphi with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),180,0,TMath::TwoPi());
+    fhPhi[p]->SetXTitle("#varphi (rad)");
     outputContainer->Add(fhPhi[p]);
 
     fhEta[p]  = new TH1F(Form("h%sEta",particle[p].Data()),Form("Input %s #eta with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),200,-2,2);
@@ -360,16 +360,16 @@ TList *  AliAnaGeneratorKine::GetCreateOutputObjects()
     outputContainer->Add(fhEta[p]);
 
     fhEtaPhi[p]  = new TH2F(Form("h%sEtaPhi",particle[p].Data()),
-                            Form("Input %s #eta vs #phi with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),
+                            Form("Input %s #eta vs #varphi with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),
                             200,-2,2,180,0,TMath::TwoPi());
     fhEtaPhi[p]->SetXTitle("#eta");
-    fhEtaPhi[p]->SetYTitle("#phi (rad)");
+    fhEtaPhi[p]->SetYTitle("#varphi (rad)");
     outputContainer->Add(fhEtaPhi[p]);
 
     fhPhiStatus[p]  = new TH2F(Form("h%sPhiStatus",particle[p].Data()),
-                               Form("Input %s #phi vs status code with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),
+                               Form("Input %s #varphi vs status code with #it{p}_{T} > %f GeV/c",partTitl[p].Data(),GetMinPt()),
                                180,0,TMath::TwoPi(),101,-50,50);
-    fhPhiStatus[p]->SetXTitle("#phi (rad)");
+    fhPhiStatus[p]->SetXTitle("#varphi (rad)");
     fhPhiStatus[p]->SetYTitle("status code");
     outputContainer->Add(fhPhiStatus[p]);
     
@@ -1028,7 +1028,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
 //_____________________________________________________
 void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
 {
-  if( !GetMC() )
+  if ( !GetMC() )
   {
     AliFatal("MCEvent not available, is the MC handler called? STOP");
     return;
@@ -1047,20 +1047,28 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
 
   //
   // Get the MC particles container
-  if(fNPrimaries > 6)
+  // Get the partons that likely are the origin of direct photon, 
+  // 6 and 7 for Pythia6; 4 and 5 for Pythia8 (check)
+  Int_t parton7 = GetMCAnalysisUtils()->GetPythiaMaxPartParent()-1;
+  Int_t parton6 = GetMCAnalysisUtils()->GetPythiaMinPartParent()+1;
+  //printf("Parton min %d, max %d\n",parton6,parton7);
+  
+  if ( fNPrimaries > parton6 )
   {
-    primary = GetMC()->GetTrack(6);
+    primary = GetMC()->GetTrack(parton6);
     primary->Momentum(fParton6) ;
     
     fParton6PDG =  primary->PdgCode();
+    //primary->Print();
   }
   
-  if(fNPrimaries > 7)
+  if ( fNPrimaries > parton7 )
   {
-    primary = GetMC()->GetTrack(7);
+    primary = GetMC()->GetTrack(parton7);
     primary->Momentum(fParton7) ;
     
     fParton7PDG =  primary->PdgCode();
+    //primary->Print();
   }
   
   GetPartonsAndJets();
@@ -1325,7 +1333,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
 //_________________________________________________________
 /// Set the calorimeter for the analysis.
 //_________________________________________________________
-void AliAnaGeneratorKine::SetTriggerDetector(TString & det)
+void AliAnaGeneratorKine::SetTriggerDetector(TString det)
 {
   fTriggerDetectorString = det;
   

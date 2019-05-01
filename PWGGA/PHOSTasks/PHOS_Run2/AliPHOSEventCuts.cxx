@@ -21,7 +21,8 @@ AliPHOSEventCuts::AliPHOSEventCuts(const char *name):
 	fIsMC(kFALSE),
   fMaxAbsZvtx(10.),
   fRejectPileup(kTRUE),
-  fRejectDAQIncomplete(kTRUE)
+  fRejectDAQIncomplete(kTRUE),
+  fPF(AliPHOSEventCuts::kSPDInMultBins)
 {
   // Constructor
 
@@ -37,15 +38,19 @@ AliPHOSEventCuts::~AliPHOSEventCuts()
 Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
 {
 
-  //select event which PHOS was readout from trigger cluster point of view.
-  //for example, PHOS was not in MUFAST cluster.
-  TString trigClasses = event->GetFiredTriggerClasses();
-
-  if(!fIsMC && !trigClasses.Contains("CENT") && !trigClasses.Contains("FAST")){
-    //At least, PHOS must be in CENT or FAST as a readout cluster. INT7 or PHI7 do not matter.
-    AliWarning(Form("Skip event with triggers %s",trigClasses.Data()));
-    return kFALSE;
-  }
+//  //select event which PHOS was readout from trigger cluster point of view.
+//  //for example, PHOS was not in MUFAST cluster.
+//  TString trigClasses = event->GetFiredTriggerClasses();
+//
+//  if(!fIsMC 
+//      && !trigClasses.Contains("-CENT") //accept CENT, CENTNO[TRD|PMD]
+//      && !trigClasses.Contains("-FAST") //accept FAST
+//      && !trigClasses.Contains("-CALO") //accept CALO, CALOFAST
+//    ){
+//    //At least, PHOS must be in CENT[|NOTRD|NOPMD] or [CALO|FAST] or as a readout cluster. INT7 or PHI7 do not matter.
+//    AliWarning(Form("Skip event with triggers %s",trigClasses.Data()));
+//    return kFALSE;
+//  }
 
   Int_t run = event->GetRunNumber();
 
@@ -92,8 +97,9 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
     }
   }
 
-//  AliAODEvent *fAODEvent = dynamic_cast<AliAODEvent*>(event);
-//  AliESDEvent *fESDEvent = dynamic_cast<AliESDEvent*>(event);
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event);
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
+
 //  if(fESDEvent){
 //    if(fESDEvent->IsPileupFromSPD()) {
 //      eventPileup = kTRUE;
@@ -118,6 +124,25 @@ Bool_t AliPHOSEventCuts::AcceptEvent(AliVEvent *event)
   utils.SetMinWDistMV(minWeiZDiff);
   utils.SetCheckPlpFromDifferentBCMV(checkPlpFromDifferentBC);
   eventPileup = utils.IsPileUpMV(event);
+
+  switch(fPF){
+    case AliPHOSEventCuts::kSPD:
+      if(esd)      eventPileup = esd->IsPileupFromSPD();
+      else if(aod) eventPileup = aod->IsPileupFromSPD();
+      break;
+
+    case AliPHOSEventCuts::kSPDInMultBins:
+      if(esd)      eventPileup = esd->IsPileupFromSPDInMultBins();
+      else if(aod) eventPileup = aod->IsPileupFromSPDInMultBins();
+      break;
+
+    case AliPHOSEventCuts::kMultiVertexer:
+      eventPileup = utils.IsPileUpMV(event);
+      break;
+    default:
+      eventPileup = kFALSE;
+      break;
+  }
 
   if(IsZvtxOut)                               return kFALSE; //reject event with Zvtx > threshold
   if(fRejectPileup && eventPileup)            return kFALSE; //reject pile up event

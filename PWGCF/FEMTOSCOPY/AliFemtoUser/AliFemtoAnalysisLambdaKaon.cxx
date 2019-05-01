@@ -5,6 +5,10 @@
 #include "AliFemtoAnalysisLambdaKaon.h"
 #include "TObjArray.h"
 #include "AliESDtrack.h"
+
+#include "AliFemtoPicoEventCollectionVector.h"
+#include "AliFemtoPicoEventCollectionVectorHideAway.h"
+
 #ifdef __ROOT__
 ClassImp(AliFemtoAnalysisLambdaKaon)
 #endif
@@ -39,10 +43,13 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   fOutputName(fAnalysisTags[aAnalysisType]),
   fMultHist(NULL),
   fImplementAvgSepCuts(aImplementAvgSepCuts),
+  fImplementPairCutsOnlyInKStarCfs(false),
   fWritePairKinematics(aWritePairKinematics),
   fIsMCRun(aIsMCRun),
   fIsMBAnalysis(kFALSE),
   fBuildMultHist(kFALSE),
+  fBuildmTBinned(true),
+  fBuildCosPointingAnglewParentInfo(false),
   fMinCent(-1000),
   fMaxCent(1000),
 
@@ -61,10 +68,14 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   fAnalysisParams.minMult = minMult;
   fAnalysisParams.maxMult = maxMult;
 
+  fAnalysisParams.binEventsInRP = false;
+  fAnalysisParams.nBinsRP = -1;
+
   fAnalysisParams.analysisType = aAnalysisType;
 
   fAnalysisParams.isMCRun = aIsMCRun;
-  fAnalysisParams.implementVertexCorrections = aImplementAvgSepCuts;
+  fAnalysisParams.implementAvgSepCuts = fImplementAvgSepCuts;
+  fAnalysisParams.implementPairCutsOnlyInKStarCfs = fImplementPairCutsOnlyInKStarCfs;
   fAnalysisParams.writePairKinematics = aWritePairKinematics;
 
   SetParticleTypes(fAnalysisType);
@@ -88,12 +99,18 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
 
   fCollectionOfCfs = new AliFemtoCorrFctnCollection;
 
+//  int tNbinsKStar = 200;
+//  double tKStarMin = 0.0, tKStarMax = 1.0;
+
+  int tNbinsKStar = 400;
+  double tKStarMin = 0.0, tKStarMax = 2.0;
+
   if(fWritePairKinematics) KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],62,0.,0.31); //TNtuple is huge, and I don't need data out to 1 GeV
-  else KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],200,0.,1.0);
+  else KStarCf = CreateCorrFctnKStar(fAnalysisTags[aAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
 
   AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[aAnalysisType],200,0.,20.);
 
-  KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[aAnalysisType],200,0.,1.0);
+  KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[aAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
 
   if(fWritePairKinematics) fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
   else
@@ -121,10 +138,13 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   fOutputName(fAnalysisTags[fAnalysisType]),
   fMultHist(NULL),
   fImplementAvgSepCuts(aAnParams.implementAvgSepCuts),
+  fImplementPairCutsOnlyInKStarCfs(aAnParams.implementPairCutsOnlyInKStarCfs),
   fWritePairKinematics(aAnParams.writePairKinematics),
   fIsMCRun(aAnParams.isMCRun),
   fIsMBAnalysis(aAnParams.isMBAnalysis),
   fBuildMultHist(aAnParams.buildMultHist),
+  fBuildmTBinned(aAnParams.buildmTBinned),
+  fBuildCosPointingAnglewParentInfo(false),
   fMinCent(-1000),
   fMaxCent(1000),
 
@@ -143,6 +163,20 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   SetEnablePairMonitors(aAnParams.isMCRun);
   SetMultHist(fAnalysisTags[fAnalysisType]);
 
+  if(fAnalysisParams.binEventsInRP && fAnalysisParams.nBinsRP>0)
+  {
+    if(fMixingBuffer) 
+    {
+      delete fMixingBuffer;
+      fMixingBuffer = NULL;
+    }
+    if(fPicoEventCollectionVectorHideAway) delete fPicoEventCollectionVectorHideAway;
+    fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(
+      fAnalysisParams.nBinsVertex, fAnalysisParams.minVertex, fAnalysisParams.maxVertex,
+      fAnalysisParams.nBinsMult, fAnalysisParams.minMult, fAnalysisParams.maxMult, 
+      fAnalysisParams.nBinsRP, -1.*TMath::PiOver2(), TMath::PiOver2());
+  }
+
 
   fMinCent = aAnParams.minMult/10.;
   fMaxCent = aAnParams.maxMult/10.;
@@ -156,24 +190,32 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
 
   fCollectionOfCfs = new AliFemtoCorrFctnCollection;
 
+//  int tNbinsKStar = 200;
+//  double tKStarMin = 0.0, tKStarMax = 1.0;
+
+  int tNbinsKStar = 400;
+  double tKStarMin = 0.0, tKStarMax = 2.0;
 
   if(fWritePairKinematics)
   {
     KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],62,0.,0.31); //TNtuple is huge, and I don't need data out to 1 GeV
+    KStarCf->SetBuildIndmTBinned(fAnalysisParams.buildIndmTBinnedCfs);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
   }
   else
   {
-    KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],200,0.,1.0);
+    KStarCf = CreateCorrFctnKStar(fAnalysisTags[fAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
+    KStarCf->SetBuildIndmTBinned(fAnalysisParams.buildIndmTBinnedCfs);
     AvgSepCf = CreateAvgSepCorrFctn(fAnalysisTags[fAnalysisType],200,0.,20.);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarCf);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)AvgSepCf);
     if(fAnalysisType==kProtPiM || fAnalysisType==kAProtPiP || fAnalysisType==kPiPPiM) fCollectionOfCfs->push_back((AliFemtoV0PurityBgdEstimator*)CreateV0PurityBgdEstimator());
+    if(fAnalysisParams.buildSphericalHarmonics) fCollectionOfCfs->push_back((AliFemtoCorrFctnDirectYlm*)CreateCorrFctnDirectYlm(fAnalysisTags[fAnalysisType], 2, tNbinsKStar, tKStarMin, tKStarMax, fAnalysisParams.useLCMSforSH));
   }
 
   if(fIsMCRun)
   {
-    KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[fAnalysisType],200,0.,1.0);
+    KStarModelCfs = CreateModelCorrFctnKStarFull(fAnalysisTags[fAnalysisType],tNbinsKStar,tKStarMin,tKStarMax);
     KStarModelCfs->SetRemoveMisidentified(fAnalysisParams.removeMisidentifiedMCParticles);
     fCollectionOfCfs->push_back((AliFemtoCorrFctn*)KStarModelCfs);
   }
@@ -188,6 +230,9 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   AliFemtoV0TrackCutNSigmaFilter* tV0Cut1 = CreateV0Cut(aV0CutParams1);
   AliFemtoV0TrackCutNSigmaFilter* tV0Cut2 = CreateV0Cut(aV0CutParams2);
   AliFemtoV0PairCut* tV0PairCut = CreateV0PairCut(aPairCutParams);
+
+  fBuildCosPointingAnglewParentInfo = aV0CutParams1.buildCosPointingAnglewParentInfo;
+  if(!fIsMCRun) fBuildCosPointingAnglewParentInfo = false;
 
   if(aAnParams.isMBAnalysis)
   {
@@ -209,6 +254,9 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   AliFemtoV0TrackCutNSigmaFilter* tV0Cut1 = CreateV0Cut(aV0CutParams1);
   AliFemtoESDTrackCutNSigmaFilter* tESDCut2 = CreateESDCut(aESDCutParams2);
   AliFemtoV0TrackPairCut* tV0TrackPairCut = CreateV0TrackPairCut(aPairCutParams);
+
+  fBuildCosPointingAnglewParentInfo = aV0CutParams1.buildCosPointingAnglewParentInfo;
+  if(!fIsMCRun) fBuildCosPointingAnglewParentInfo = false;
 
   if(aAnParams.isMBAnalysis)
   {
@@ -249,6 +297,9 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   AliFemtoXiTrackCutNSigmaFilter* tXiCut1 = CreateXiCut(aXiCutParams1);
   AliFemtoV0TrackCutNSigmaFilter* tV0Cut1 = CreateV0Cut(aV0CutParams1);
   AliFemtoXiV0PairCut* tXiV0PairCut = CreateXiV0PairCut(aPairCutParams);
+
+  fBuildCosPointingAnglewParentInfo = aV0CutParams1.buildCosPointingAnglewParentInfo;
+  if(!fIsMCRun) fBuildCosPointingAnglewParentInfo = false;
 
   if(aAnParams.isMBAnalysis)
   {
@@ -296,10 +347,13 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(const AliFemtoAnalysisLam
   fOutputName(a.fOutputName),
   fMultHist(NULL),
   fImplementAvgSepCuts(a.fImplementAvgSepCuts),
+  fImplementPairCutsOnlyInKStarCfs(a.fImplementPairCutsOnlyInKStarCfs),
   fWritePairKinematics(a.fWritePairKinematics),
   fIsMCRun(a.fIsMCRun),
   fIsMBAnalysis(a.fIsMBAnalysis),
   fBuildMultHist(a.fBuildMultHist),
+  fBuildmTBinned(a.fBuildmTBinned),
+  fBuildCosPointingAnglewParentInfo(a.fBuildCosPointingAnglewParentInfo),
   fMinCent(a.fMinCent),
   fMaxCent(a.fMaxCent),
 
@@ -351,10 +405,13 @@ AliFemtoAnalysisLambdaKaon& AliFemtoAnalysisLambdaKaon::operator=(const AliFemto
   fOutputName = a.fOutputName;
   fMultHist = NULL;
   fImplementAvgSepCuts = a.fImplementAvgSepCuts;
+  fImplementPairCutsOnlyInKStarCfs = a.fImplementPairCutsOnlyInKStarCfs;
   fWritePairKinematics = a.fWritePairKinematics;
   fIsMCRun = a.fIsMCRun;
   fIsMBAnalysis = a.fIsMBAnalysis;
   fBuildMultHist = a.fBuildMultHist;
+  fBuildmTBinned = a.fBuildmTBinned;
+  fBuildCosPointingAnglewParentInfo = a.fBuildCosPointingAnglewParentInfo;
   fMinCent = a.fMinCent;
   fMaxCent = a.fMaxCent;
   fCollectionOfCfs = NULL;
@@ -399,7 +456,33 @@ void AliFemtoAnalysisLambdaKaon::ProcessEvent(const AliFemtoEvent* hbtEvent)
 {
   double multiplicity = hbtEvent->UncorrectedNumberOfPrimaries();
   if(fBuildMultHist) fMultHist->Fill(multiplicity);
-  AliFemtoVertexMultAnalysis::ProcessEvent(hbtEvent);
+
+  if(fAnalysisParams.binEventsInRP && fAnalysisParams.nBinsRP>0)
+  {
+    const double vertexZ = hbtEvent->PrimVertPos().z(),
+                 mult = hbtEvent->UncorrectedNumberOfPrimaries(),
+                 tCurrentRP = hbtEvent->ReactionPlaneAngle();
+
+    fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,tCurrentRP);
+
+    if (!fMixingBuffer)
+    {
+      if (vertexZ < fVertexZ[0]) fUnderFlowVertexZ++;
+      else if (vertexZ > fVertexZ[1]) fOverFlowVertexZ++;
+
+      if (mult < fMult[0]) fUnderFlowMult++;
+      else if (mult > fMult[1]) fOverFlowMult++;
+
+      return;
+    }
+
+    // now that fMixingBuffer has been set - call superclass ProcessEvent()
+    AliFemtoSimpleAnalysis::ProcessEvent(hbtEvent);
+
+    // NULL out the mixing buffer after event processed
+    fMixingBuffer = NULL;
+  }
+  else AliFemtoVertexMultAnalysis::ProcessEvent(hbtEvent);
 }
 
 //____________________________
@@ -616,9 +699,26 @@ AliFemtoBasicEventCut* AliFemtoAnalysisLambdaKaon::CreateBasicEventCut(EventCutP
 AliFemtoEventCutEstimators* AliFemtoAnalysisLambdaKaon::CreateEventCutEstimators(EventCutParams &aEvCutParams)
 {
   AliFemtoEventCutEstimators* EvCutEst = new AliFemtoEventCutEstimators();
-    EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
-    EvCutEst->SetVertZPos(aEvCutParams.minVertexZ,aEvCutParams.maxVertexZ);
-    EvCutEst->SetVerboseMode(aEvCutParams.verboseMode);
+
+  if(aEvCutParams.centEstMethod > 0)
+  {
+    if     (aEvCutParams.centEstMethod == 1) EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+    else if(aEvCutParams.centEstMethod == 2) EvCutEst->SetCentEst2Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+    else if(aEvCutParams.centEstMethod == 3) EvCutEst->SetCentEst3Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+    else if(aEvCutParams.centEstMethod == 4) EvCutEst->SetCentEst4Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+    else EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+  }
+  else if(aEvCutParams.multEstMethod > 0)
+  {
+    if     (aEvCutParams.multEstMethod == 1) EvCutEst->SetMultEst1Range(aEvCutParams.minMult, aEvCutParams.maxMult);
+    else if(aEvCutParams.multEstMethod == 2) EvCutEst->SetMultEst2Range(aEvCutParams.minMult, aEvCutParams.maxMult);
+    else if(aEvCutParams.multEstMethod == 3) EvCutEst->SetMultEst3Range(aEvCutParams.minMult, aEvCutParams.maxMult);
+    else EvCutEst->SetMultEst1Range(aEvCutParams.minMult, aEvCutParams.maxMult);
+  }
+  else EvCutEst->SetCentEst1Range(aEvCutParams.minCentrality,aEvCutParams.maxCentrality);
+
+  EvCutEst->SetVertZPos(aEvCutParams.minVertexZ,aEvCutParams.maxVertexZ);
+  EvCutEst->SetVerboseMode(aEvCutParams.verboseMode);
   return EvCutEst;
 }
 
@@ -957,6 +1057,7 @@ AliFemtoESDTrackCutNSigmaFilter* AliFemtoAnalysisLambdaKaon::CreateESDCut(ESDCut
   if(aCutParams.useCustomMisID) AddCustomESDRejectionFilters(aCutParams.particlePDGType,tESDCut);
 
   tESDCut->SetUseCustomElectronRejection(aCutParams.useCustomElectronRejection);
+  tESDCut->SetUseIsProbableElectronMethod(aCutParams.useIsProbableElectronMethod);
 
   return tESDCut;
 }
@@ -1355,7 +1456,7 @@ AliFemtoCorrFctnKStar* AliFemtoAnalysisLambdaKaon::CreateCorrFctnKStar(const cha
   AliFemtoCorrFctnKStar *cf = new AliFemtoCorrFctnKStar(TString::Format("KStarCf_%s",name),bins,min,max);
     cf->SetCalculatePairKinematics(fWritePairKinematics);
     cf->SetBuildkTBinned(false);
-    cf->SetBuildmTBinned(true);
+    cf->SetBuildmTBinned(fBuildmTBinned);
     cf->SetBuild3d(false);
   return cf;
 }
@@ -1451,7 +1552,7 @@ AliFemtoV0PurityBgdEstimator* AliFemtoAnalysisLambdaKaon::CreateV0PurityBgdEstim
   TString tName = "V0PurityBgdEstimator_";
   V0CutParams tV0CutParams;
   unsigned int tNbins = 100;
-  double tMinvMin, tMinvMax;
+  double tMinvMin=0., tMinvMax=0.;
 
   switch(fAnalysisType) {
   case AliFemtoAnalysisLambdaKaon::kProtPiM:
@@ -1489,11 +1590,21 @@ AliFemtoV0PurityBgdEstimator* AliFemtoAnalysisLambdaKaon::CreateV0PurityBgdEstim
 }
 
 //___________________________________________________________________
+AliFemtoCorrFctnDirectYlm* AliFemtoAnalysisLambdaKaon::CreateCorrFctnDirectYlm(const char* name, int maxl, unsigned int bins, double min, double max, int useLCMS)
+{
+  AliFemtoCorrFctnDirectYlm *tCf = new AliFemtoCorrFctnDirectYlm(TString::Format("DirectYlmCf_%s", name), maxl, bins, min, max, useLCMS); 
+  return tCf;
+}
+
+//___________________________________________________________________
 void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, AliFemtoParticleCut* aPartCut1, AliFemtoParticleCut* aPartCut2, AliFemtoPairCut* aPairCut)
 {
   aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventMult("_EvPass"));
   aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventPartCollSize("_Part1",100,0,100,"_Part2",100,0,100));
   if(!fAnalysisParams.monitorEvCutPassOnly) aEventCut->AddCutMonitorFail(new AliFemtoCutMonitorEventMult("_EvFail"));
+
+  aEventCut->AddCutMonitorPass(new AliFemtoCutMonitorEventVertex("_EvPass"));
+  if(!fAnalysisParams.monitorEvCutPassOnly) aEventCut->AddCutMonitorFail(new AliFemtoCutMonitorEventVertex("_EvFail"));
 
   TString tPartName1, tPartName2;
 
@@ -1586,18 +1697,22 @@ void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, Ali
   TString tNamePass2 = tPartName2 + TString("_Pass");
   TString tNameFail2 = tPartName2 + TString("_Fail");
 
+  int tNbinsCPA = 100;
+  double tMinCPA = 0.99;
+  double tMaxCPA = 1.0;
+
   switch(fGeneralAnalysisType) {
   case AliFemtoAnalysisLambdaKaon::kV0V0:
-    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass1));
-    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail1));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
 
-    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass2));
-    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail2));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
     break;
 
   case AliFemtoAnalysisLambdaKaon::kV0Track:
-    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass1));
-    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail1));
+    aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail1, fParticlePDGType1, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
 
     aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticleYPt(tNamePass2,tPartMass2));
     aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorParticlePID(tNamePass2,tPartType2));
@@ -1625,8 +1740,8 @@ void AliFemtoAnalysisLambdaKaon::AddCutMonitors(AliFemtoEventCut* aEventCut, Ali
     aPartCut1->AddCutMonitorPass(new AliFemtoCutMonitorXi(tNamePass1));
     if(!fAnalysisParams.monitorPart1CutPassOnly) aPartCut1->AddCutMonitorFail(new AliFemtoCutMonitorXi(tNameFail1));
 
-    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0(tNamePass2));
-    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0(tNameFail2));
+    aPartCut2->AddCutMonitorPass(new AliFemtoCutMonitorV0CosPointingAngle(tNamePass2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
+    if(!fAnalysisParams.monitorPart2CutPassOnly) aPartCut2->AddCutMonitorFail(new AliFemtoCutMonitorV0CosPointingAngle(tNameFail2, fParticlePDGType2, fBuildCosPointingAnglewParentInfo, tNbinsCPA, tMinCPA, tMaxCPA));
     break;
 
   case AliFemtoAnalysisLambdaKaon::kTrackTrack:
@@ -1672,11 +1787,18 @@ void AliFemtoAnalysisLambdaKaon::SetAnalysis(AliFemtoEventCut* aEventCut, AliFem
   SetEventCut(tEventCut);
   SetFirstParticleCut(tPartCut1);
   SetSecondParticleCut(tPartCut2);
-  SetPairCut(tPairCut);
+
+  if(fImplementPairCutsOnlyInKStarCfs)
+  {
+    AliFemtoDummyPairCut *tDummyPairCut = new AliFemtoDummyPairCut();
+    SetPairCut(tDummyPairCut);
+  }
+  else SetPairCut(tPairCut);
 
   AliFemtoCorrFctnIterator iter;
   for(iter=fCollectionOfCfs->begin(); iter!=fCollectionOfCfs->end(); iter++)
   {
+    if(distance(fCollectionOfCfs->begin(), iter)==0) (*iter)->SetPairSelectionCut(tPairCut);  //only add for AliFemtoCorrFctnKStar
     AddCorrFctn(*iter);
   }
 }
@@ -1704,6 +1826,9 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.minMult = 0.;
   tReturnParams.maxMult = 1000.;
 
+  tReturnParams.binEventsInRP = false;
+  tReturnParams.nBinsRP = -1;
+
   tReturnParams.analysisType = AliFemtoAnalysisLambdaKaon::kLamK0;
   tReturnParams.generalAnalysisType = AliFemtoAnalysisLambdaKaon::kV0V0;
 
@@ -1717,6 +1842,7 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.isMCRun = false;
   tReturnParams.isMBAnalysis = false;
   tReturnParams.buildMultHist = false;
+  tReturnParams.buildmTBinned = true;
   tReturnParams.implementVertexCorrections = true;
   tReturnParams.removeMisidentifiedMCParticles = false;
   tReturnParams.setV0SharedDaughterCut = true;
@@ -1726,6 +1852,11 @@ AliFemtoAnalysisLambdaKaon::DefaultAnalysisParams()
   tReturnParams.monitorPart2CutPassOnly = false;
   tReturnParams.monitorPairCutPassOnly = false;
   tReturnParams.useMCWeightGenerator = false;
+
+  tReturnParams.buildSphericalHarmonics = false;
+  tReturnParams.useLCMSforSH = false;
+
+  tReturnParams.buildIndmTBinnedCfs = false;
 
   return tReturnParams;
 }
@@ -1746,6 +1877,9 @@ AliFemtoAnalysisLambdaKaon::DefaultEventCutParams()
   tReturnParams.maxVertexZ = 8.;
 
   tReturnParams.verboseMode = false;
+
+  tReturnParams.centEstMethod = 1;
+  tReturnParams.multEstMethod = -1;
 
   return tReturnParams;
 }
@@ -1807,6 +1941,8 @@ AliFemtoAnalysisLambdaKaon::DefaultLambdaCutParams()
 
   tReturnParams.ignoreOnFlyStatus = false;
 
+  tReturnParams.buildCosPointingAnglewParentInfo = true;
+
   return tReturnParams;
 }
 
@@ -1865,6 +2001,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAntiLambdaCutParams()
   tReturnParams.radiusV0Max = 99999.0;
 
   tReturnParams.ignoreOnFlyStatus = false;
+
+  tReturnParams.buildCosPointingAnglewParentInfo = true;
 
   return tReturnParams;
 }
@@ -1925,6 +2063,8 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
 
   tReturnParams.ignoreOnFlyStatus = false;
 
+  tReturnParams.buildCosPointingAnglewParentInfo = true;
+
   return tReturnParams;
 }
 
@@ -1970,6 +2110,7 @@ AliFemtoAnalysisLambdaKaon::DefaultKchCutParams(int aCharge)
   tReturnParams.useCustomMisID = true;
   tReturnParams.useElectronRejection = true;
   tReturnParams.useCustomElectronRejection = true;
+  tReturnParams.useIsProbableElectronMethod = true;
   tReturnParams.usePionRejection = true;
 
   return tReturnParams;
@@ -2017,6 +2158,7 @@ AliFemtoAnalysisLambdaKaon::DefaultPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2254,6 +2396,7 @@ AliFemtoAnalysisLambdaKaon::LambdaPurityPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2315,6 +2458,7 @@ AliFemtoAnalysisLambdaKaon::K0ShortPurityPiCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;
@@ -2380,6 +2524,7 @@ AliFemtoAnalysisLambdaKaon::LambdaPurityProtonCutParams(int aCharge)
   tReturnParams.useCustomMisID = false;
   tReturnParams.useElectronRejection = false;
   tReturnParams.useCustomElectronRejection = false;
+  tReturnParams.useIsProbableElectronMethod = false;
   tReturnParams.usePionRejection = false;
 
   return tReturnParams;

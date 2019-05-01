@@ -176,7 +176,7 @@ void SubtractFDexploitingClassDzero(Double_t ptmin, Double_t ptmax, Double_t pta
                                     TString spectraMacroOutput="HFPtSpectrum_Nb.root",
                                     TString strdirTempl="temp/",
                                     Int_t system =0, Double_t v2D = 0, Double_t v2Had = 0,Int_t systoption = 3,
-                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     TFile *fDataCorr=TFile::Open(correlationDataFile.Data(),"READ");
     TCanvas *cData;
@@ -195,7 +195,7 @@ void SubtractFDexploitingClassDzero(Double_t ptmin, Double_t ptmax, Double_t pta
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
 
     const Int_t Dzero = 0;
-    SubtractFDexploitingClass(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClass(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();
 }
@@ -208,7 +208,7 @@ void SubtractFDexploitingClassDstar(Double_t ptmin, Double_t ptmax, Double_t pta
                                     TString spectraMacroOutput="HFPtSpectrum_Nb.root",
                                     TString strdirTempl="temp/",
                                     Int_t system =0, Double_t v2D = 0, Double_t v2Had = 0,Int_t systoption = 3,
-                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     TFile *fDataCorr=TFile::Open(correlationDataFile.Data(),"READ");
     TCanvas *cData;
@@ -227,7 +227,7 @@ void SubtractFDexploitingClassDstar(Double_t ptmin, Double_t ptmax, Double_t pta
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
     
     const Int_t Dstar = 1;
-    SubtractFDexploitingClass(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClass(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();    
 }
@@ -239,7 +239,7 @@ void SubtractFDexploitingClassDplus(Double_t ptmin, Double_t ptmax, Double_t pta
                                     TString spectraMacroOutput="HFPtSpectrum_Nb.root",
                                     TString strdirTempl="temp/",
                                     Int_t system =0, Double_t v2D = 0, Double_t v2Had = 0,Int_t systoption = 3,
-                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     TFile *fDataCorr=TFile::Open(correlationDataFile.Data(),"READ");
     TCanvas *cData;
@@ -258,7 +258,7 @@ void SubtractFDexploitingClassDplus(Double_t ptmin, Double_t ptmax, Double_t pta
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
 
     const Int_t Dplus = 2;
-    SubtractFDexploitingClass(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClass(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();
 }
@@ -269,7 +269,7 @@ void SubtractFDexploitingClassDzerov2Modulations(Double_t ptmin, Double_t ptmax,
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
                                                  Int_t system = 1, Int_t systoption=3,
-                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     /*Parameter
      (Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],
@@ -295,7 +295,7 @@ void SubtractFDexploitingClassDzerov2Modulations(Double_t ptmin, Double_t ptmax,
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
     
     const Int_t Dzero = 0;
-    SubtractFDexploitingClassv2Modulations(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClassv2Modulations(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin,filepurity);
 }
 
 
@@ -305,7 +305,7 @@ void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,D
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
                                                  Int_t system = 1, Int_t systoption=3,
-                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     /*Parameter
      (Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],
@@ -331,7 +331,7 @@ void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,D
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
     
     const Int_t Dstar = 1;
-    SubtractFDexploitingClassv2Modulations(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClassv2Modulations(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();
 }
@@ -342,7 +342,7 @@ void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,D
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
                                                  Int_t system = 1, Int_t systoption=3,
-                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     /*Parameter 
      (Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],
@@ -368,15 +368,15 @@ void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,D
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
 
     const Int_t Dplus = 2;
-    SubtractFDexploitingClassv2Modulations(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClassv2Modulations(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();
 }
 
 //______________________________________________________________________________________________
-void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0 /*0 is pp, 1 is pPb*/, Double_t v2D = 0, Double_t v2Had = 0, Int_t systoption = 3, Bool_t subtrMCclos = kFALSE, Int_t centbin){
+void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0 /*0 is pp, 1 is pPb*/, Double_t v2D = 0, Double_t v2Had = 0, Int_t systoption = 3, Bool_t subtrMCclos = kFALSE, Int_t centbin, TString filepurity=""){
     
-    if(system ==0){
+    if(system ==0 || system ==3){
         if(TMath::Abs(v2D)>0.00000001 || TMath::Abs(v2Had)>0.00000001){
             cout << "Sorry, it is pp - let's keep assuming that in this system v2 is still 0 :) " << endl;
             cout << "Resetting v2 D meson and v2 hadron to 0" << endl;
@@ -397,9 +397,34 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
       gROOT->LoadMacro(Form("%s/FitPlots.C",localcode.Data()));
       fitcodeIsLoaded=kTRUE;
     }
+cout << "FIT PLOTS " << Form("%s/FitPlots.C",localcode.Data()) << endl;
     hData->Sumw2();
     hData->Rebin(rebin);
-    hData->Scale(purity*1./(Double_t)rebin);
+    
+    if(purity<=1) hData->Scale(purity*1./(Double_t)rebin);
+    else if(purity==10) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflected");
+      hPurity->Rebin(rebin);
+      hData->Multiply(hPurity);
+    }
+    else if(purity==20) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = (TCanvas*)fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflected");
+      TF1 *funPurity = (TF1*)hPurity->GetListOfFunctions()->At(0);
+      if(rebin!=1) {printf("WARNING! Not possible to apply purity correction via fit function in case of rebinning of the histogram!"); return;}
+      hData->Multiply(funPurity);
+    }
+    else if(purity==30) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflMovMean");
+      hPurity->Rebin(rebin);
+      hData->Multiply(hPurity);
+    }
+
 
     //Apply modulation from MC closure test (as correction on data points! pPb2016 preliminary approach!)
     if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax,system,centbin);
@@ -437,22 +462,22 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     TString templPerugia0="", templPerugia2010="",templPerugia2011="";
     
     TString strsystnametempl;
-    if(system ==0){
+    if(system ==0 || system ==3){
       if(strsystem.EqualTo("none")){
 	strsystnametempl="pp";
       }
       else {
 	strsystnametempl=strsystem;
       }
-        cout << "Templates for on pp... Loading Perugia0, Perugia2010, Perugia2011" << endl;
-        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        cout << "Templates for on pp... Loading Perugia2011, Perugia2010, PYTHIA8" << endl;
+        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia0=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
 
         templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
         templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
 
-        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPYTHIA8Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2011=Form("%s/%sCorrelationPlotsPYTHIA8Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
     }
     
     else if(system ==1){
@@ -640,6 +665,7 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
     if(system == 2 && centbin == 1)oUnc->InitStandardUncertaintiesPPb2016in020(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb 2016 uncertainties 0-20%
     if(system == 2 && centbin == 2)oUnc->InitStandardUncertaintiesPPb2016in2060(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb 2016 uncertainties 20-60%
     if(system == 2 && centbin == 3)oUnc->InitStandardUncertaintiesPPb2016in60100(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb 2016 uncertainties 60-100%
+    if(system == 3)oUnc->InitStandardUncertaintiesPP2017(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load pp uncertainties    
     oUnc->SetHistoBeautyFDmin(fdSubtracter->GetHistoRelSystUncMin(),"",kTRUE);
     oUnc->SetHistoBeautyFDmax(fdSubtracter->GetHistoRelSystUncMax(),"",kTRUE);
     
@@ -675,12 +701,12 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
 }
 
 //______________________________________________________________________________________________
-void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0, Int_t systoption =3, Bool_t subtrMCclos = kFALSE, Int_t centbin){
+void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0, Int_t systoption =3, Bool_t subtrMCclos = kFALSE, Int_t centbin, TString filepurity=""){
     
     cout << "This might take a while - go and get a coffee, you deserved it :) " << endl;
     gSystem->Sleep(2000);
     
-    if(system ==0){
+    if(system ==0 || system ==3){
         cout << "Sorry, it is pp : Going Back: Exiting...." << endl;
         return;
     }
@@ -706,7 +732,30 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     }
     hData->Sumw2();
     hData->Rebin(rebin);
-    hData->Scale(purity*1./(Double_t)rebin);
+    
+    if(purity<=1) hData->Scale(purity*1./(Double_t)rebin);
+    else if(purity==10) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflected");
+      hPurity->Rebin(rebin);
+      hData->Multiply(hPurity);
+    }
+    else if(purity==20) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = (TCanvas*)fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflected");
+      TF1 *funPurity = (TF1*)hPurity->GetListOfFunctions()->At(0);
+      if(rebin!=1) {printf("WARNING! Not possible to apply purity correction via fit function in case of rebinning of the histogram!"); return;}
+      hData->Multiply(funPurity);
+    }
+    else if(purity==30) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflMovMean");
+      hPurity->Rebin(rebin);
+      hData->Multiply(hPurity);
+    }
 
     //Apply modulation from MC closure test (as correction on data points! pPb2016 preliminary approach!)
     if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax,system,centbin);
@@ -911,13 +960,14 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     
     AliHFDhadronCorrSystUnc *oUnc=new AliHFDhadronCorrSystUnc();
     oUnc->SetName("SystematicUncertainty");
-    if(system ==0) oUnc->InitStandardUncertainties2010(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load pp uncertainties
+    if(system ==0) oUnc->InitStandardUncertaintiesPP2010(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load pp uncertainties
     if(system ==1) oUnc->InitStandardUncertaintiesPPb2013(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb uncertainties
     if(system == 2 && centbin == 0)oUnc->InitStandardUncertaintiesPPb2016(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb 2016 uncertainties 0-100%
     if(system == 2 && centbin == 1)oUnc->InitStandardUncertaintiesPPb2016in020(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb 2016 uncertainties 0-20%
     if(system == 2 && centbin == 2)oUnc->InitStandardUncertaintiesPPb2016in2060(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb 2016 uncertainties 20-60%
     if(system == 2 && centbin == 3)oUnc->InitStandardUncertaintiesPPb2016in60100(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load p-Pb 2016 uncertainties 60-100%
-    
+    if(system ==3) oUnc->InitStandardUncertaintiesPP2017(meson,0.5*(ptmin+ptmax),ptassoc,ptassocMax); // load pp uncertainties
+
     oUnc->SetHistoBeautyFDmin(fdSubtracter->GetHistoRelSystUncMin(),"",kTRUE);
     oUnc->SetHistoBeautyFDmax(fdSubtracter->GetHistoRelSystUncMax(),"",kTRUE);
     
@@ -1140,8 +1190,9 @@ void OpenOutputFileAndDrawReflect(TString strfile,Double_t ptminD,Double_t ptmax
   if(system==2 && centbin == 1)syst->InitStandardUncertaintiesPPb2016in020(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
   if(system==2 && centbin == 2)syst->InitStandardUncertaintiesPPb2016in2060(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
   if(system==2 && centbin == 3)syst->InitStandardUncertaintiesPPb2016in60100(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
-  if(system==AliHFCorrelationUtils::kpPb)syst->InitStandardUncertaintiesPPb2013(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
-  else if(system==AliHFCorrelationUtils::kpp)syst->InitStandardUncertaintiesPP2010(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
+  else if(system==1)syst->InitStandardUncertaintiesPPb2013(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
+  else if(system==0)syst->InitStandardUncertaintiesPP2010(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
+  else if(system==3)syst->InitStandardUncertaintiesPP2017(meson,(ptmaxD+ptminD)/2.,ptminAss,ptmaxAss);
 
   syst->SetHistoBeautyFDmin(hFDm2,"",kTRUE);
   syst->SetHistoBeautyFDmax(hFDM2,"",kTRUE);
@@ -1182,6 +1233,7 @@ void OpenOutputFileAndDrawReflect(TString strfile,Double_t ptminD,Double_t ptmax
 
   TLatex *tSystem=new TLatex(0.18,0.80,"#bf{pp, #sqrt{#it{s}} = 7 TeV, L_{int} = 5 nb^{-1}}");
   if(system==1 || system==2) tSystem->SetTitle("#bf{p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV, L_{int} = 50 #mub^{-1}}");
+  if(system==3) tSystem->SetTitle("#bf{pp, #sqrt{#it{s}} = 5.02 TeV, L_{int} = 18 nb^{-1}}");
   tSystem->SetNDC();
   tSystem->SetTextSize(0.03);
   tSystem->Draw();
@@ -1256,7 +1308,7 @@ void OpenOutputFileAndDrawReflect(TString strfile,Double_t ptminD,Double_t ptmax
   hVaryDown->Draw("same");
 
   TString strfileout="CanvaAndVariedHisto";
-  if(system==AliHFCorrelationUtils::kpp)strfileout.Append("pp");
+  if(system==AliHFCorrelationUtils::kpp || system==3)strfileout.Append("pp");
   else if(system==AliHFCorrelationUtils::kpPb || system==2)strfileout.Append("pPb");
 
   if(ptmaxAss<0){
@@ -1290,24 +1342,25 @@ void SubtractMCclosureModulation(TH1D *h, Double_t ptD, Double_t ptTrmin, Double
    
    printf("Number of deltaPhi bins where we apply modulation: %d (it HAS to be 32)\n",h->GetNbinsX());
 
-   Int_t bin1L = h->GetXaxis()->FindBin(0.1);
-   Int_t bin1R = h->GetXaxis()->FindBin(-0.1);
-   Int_t bin2L = h->GetXaxis()->FindBin(0.3);
-   Int_t bin2R = h->GetXaxis()->FindBin(-0.3);
-   Int_t bin3L = h->GetXaxis()->FindBin(0.5);
-   Int_t bin3R = h->GetXaxis()->FindBin(-0.5);
-   Int_t bin4L = h->GetXaxis()->FindBin(0.7);
-   Int_t bin4R = h->GetXaxis()->FindBin(-0.7);
-   Int_t bin5L = h->GetXaxis()->FindBin(0.9);
-   Int_t bin5R = h->GetXaxis()->FindBin(-0.9);
-   Int_t bin6L = h->GetXaxis()->FindBin(1.1);
-   Int_t bin6R = h->GetXaxis()->FindBin(-1.1);
+   Int_t bin1L = h->GetXaxis()->FindBin(-0.1);
+   Int_t bin1R = h->GetXaxis()->FindBin(0.1);
+   Int_t bin2L = h->GetXaxis()->FindBin(-0.3);
+   Int_t bin2R = h->GetXaxis()->FindBin(0.3);
+   Int_t bin3L = h->GetXaxis()->FindBin(-0.5);
+   Int_t bin3R = h->GetXaxis()->FindBin(0.5);
+   Int_t bin4L = h->GetXaxis()->FindBin(-0.7);
+   Int_t bin4R = h->GetXaxis()->FindBin(0.7);
+   Int_t bin5L = h->GetXaxis()->FindBin(-0.9);
+   Int_t bin5R = h->GetXaxis()->FindBin(0.9);
+   Int_t bin6L = h->GetXaxis()->FindBin(-1.1);
+   Int_t bin6R = h->GetXaxis()->FindBin(1.1);
 
    Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
    AliHFCorrelationUtils::GetMCClosureModulation(ptD,ptTrmin,ptTrmax,mod,system,centbin);
    if(mod[0]==-999) printf("Error in retrieving MC closure modulation! Results will be not corrected by it\n");
 
    printf("Applying modulations of %1.4f, %1.4f, %1.4f, %1.4f, %1.4f, %1.4f\n",mod[0],mod[1],mod[2],mod[3],mod[4],mod[5]);
+   printf("NOTE: purity is already applied at this step! Cfr 'old' values with input data!\n");
    printf("Bin1L old data %1.5f\n",h->GetBinContent(bin1L));
    printf("Bin1R old data %1.5f\n",h->GetBinContent(bin1R));
    printf("Bin2L old data %1.5f\n",h->GetBinContent(bin2L));

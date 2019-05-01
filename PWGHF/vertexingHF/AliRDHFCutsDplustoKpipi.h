@@ -15,8 +15,8 @@
 /// \author        G. Ortona ortona@to.infn.it
 /////////////////////////////////////////////////////////////
 
-
 #include "AliRDHFCuts.h"
+
 class AliAODPidHF;
 
 class AliRDHFCutsDplustoKpipi : public AliRDHFCuts 
@@ -25,7 +25,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
 
   AliRDHFCutsDplustoKpipi(const char* name="CutsDplustoKpipi");
   
-  virtual ~AliRDHFCutsDplustoKpipi(){};
+  virtual ~AliRDHFCutsDplustoKpipi();
   AliRDHFCutsDplustoKpipi(const AliRDHFCutsDplustoKpipi& source);
   AliRDHFCutsDplustoKpipi& operator=(const AliRDHFCutsDplustoKpipi& source); 
 
@@ -41,6 +41,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   }
   virtual Int_t IsSelected(TObject* obj,Int_t selectionLevel,AliAODEvent* aod);
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF *rd);
+  Int_t IsSelectedPID(Double_t Pt, TObjArray aodtracks);
 
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   virtual void SetStandardCutsPP2010();
@@ -85,6 +86,12 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
 
   void Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval);
   void Setd0Cut(Int_t nPtBins, Float_t *cutval);
+  
+  const Float_t *Getd0MeasMinusExpCut() const {return fMaxd0MeasMinusExp;} 
+  const Float_t *Getd0Cut() const {return fMaxd0;} 
+
+  virtual Int_t PreSelect(TObjArray aodTracks);
+
   virtual void PrintAll()const;
 
   enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
@@ -93,6 +100,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
                    kTOFPionLess1,kTOFPionMore1Less2,kTOFPionMore2Less3,kTOFPionMore3,
                    kTOFKaonLess1,kTOFKaonMore1Less2,kTOFKaonMore2Less3,kTOFKaonMore3,
                    kTOFProtonLess1,kTOFProtonMore1Less2,kTOFProtonMore2Less3,kTOFProtonMore3};
+
  protected:
 
  private:

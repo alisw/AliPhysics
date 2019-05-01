@@ -115,6 +115,8 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 
 		Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
 	
+        void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
+
 	protected:
 		AliV0ReaderV1 						*fV0Reader;							// basic photon Selection Task
         TString                             fV0ReaderName;
@@ -373,14 +375,14 @@ class AliAnalysisTaskGammaCaloDalitzV1 : public AliAnalysisTaskSE {
 		Bool_t 								fIsFromMBHeader;					// flag for MC headers
 		Bool_t								fIsOverlappingWithOtherHeader; 		// flag for particles in MC overlapping between headers
 		Bool_t 								fIsMC;								// flag for MC information
-		Bool_t 								fDoTHnSparse;                 // flag for THnSparse
-
+        Bool_t 								fDoTHnSparse;                       // flag for THnSparse
+        Int_t                               fTrackMatcherRunningMode;           // CaloTrackMatcher running mode
 		
 	private:
 		AliAnalysisTaskGammaCaloDalitzV1(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent copy-construction
 		AliAnalysisTaskGammaCaloDalitzV1 &operator=(const AliAnalysisTaskGammaCaloDalitzV1&); // Prevent assignment
 
-        ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 5);
+        ClassDef(AliAnalysisTaskGammaCaloDalitzV1, 6);
 };
 
 #endif

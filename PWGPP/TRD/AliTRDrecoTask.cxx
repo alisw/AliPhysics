@@ -40,9 +40,9 @@
 #include <AliTRDtrackV1.h>
 #include <AliTRDpidUtil.h>
 
-#include "info/AliTRDchmbInfo.h"
-#include "info/AliTRDeventInfo.h"
-#include "info/AliTRDtrendingManager.h"
+#include "AliTRDchmbInfo.h"
+#include "AliTRDeventInfo.h"
+#include "AliTRDtrendingManager.h"
 #include "AliTRDrecoTask.h"
 
 ClassImp(AliTRDrecoTask)

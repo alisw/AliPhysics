@@ -26,7 +26,7 @@ class TArrayI   ;
 class AliVCluster ;
 class AliAODTrack ;
 class AliAODEvent ;
-class AliMCEvent  ;
+#include "AliMCEvent.h"
 class AliVEvent   ;
 
 class AliCaloTrackMCReader : public AliCaloTrackReader {
@@ -59,7 +59,12 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   // Data members setters and getters
   
   AliVEvent*  GetInputEvent()               const { return (AliVEvent *) GetMC()   ; }
-  
+  AliGenEventHeader* GetGenEventHeader()    const 
+  {
+    if ( GetMC() ) return GetMC()->GenEventHeader();
+    else           return 0x0;
+  }
+
   void      GetVertex(Double_t v[3]) const ;
   Double_t* GetVertex(Int_t evtIndex) const {return fVertex[evtIndex];}
   void      GetVertex(Double_t vertex[3], Int_t evtIndex) const 

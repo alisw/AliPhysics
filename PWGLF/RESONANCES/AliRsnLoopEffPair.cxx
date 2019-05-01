@@ -122,7 +122,8 @@ Bool_t AliRsnLoopEffPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int
    // assign them as MC reference of the 'fDaughter' objects
    fDaughter[0].Reset();
    fDaughter[1].Reset();
-   Int_t index[2] = {motherP->GetFirstDaughter(), motherP->GetLastDaughter()};
+   //Int_t index[2] = {motherP->GetFirstDaughter(), motherP->GetLastDaughter()}; // Before change in accessing MC infor in AliRoot v5-09-46
+   Int_t index[2] = {mother->GetDaughterFirst(), mother->GetDaughterLast()};
    Int_t i, pdg;
    Short_t charge;
    AliMCParticle *daughter = 0x0;
@@ -194,7 +195,7 @@ Bool_t AliRsnLoopEffPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int
    // assign them as MC reference of the 'fDaughter' objects
    fDaughter[0].Reset();
    fDaughter[1].Reset();
-   Int_t index[2] = {(Int_t)mother->GetDaughter(0), (Int_t)mother->GetDaughter(1)};
+   Int_t index[2] = {(Int_t)mother->GetDaughterLabel(0), (Int_t)mother->GetDaughterLabel(1)};
    Int_t i, pdg;
    Short_t charge;
    AliAODMCParticle *daughter = 0x0;

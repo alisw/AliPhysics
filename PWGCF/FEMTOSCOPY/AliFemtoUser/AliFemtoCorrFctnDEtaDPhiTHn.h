@@ -19,7 +19,7 @@
 
 class AliFemtoCorrFctnDEtaDPhiTHn : public AliFemtoCorrFctn {
  public:
-  AliFemtoCorrFctnDEtaDPhiTHn(char* title, const int& aPhiBins, const int& aEtaBins, const int &pT1Bins, const double &pT1min, const double &pT1max,  const int &pT2Bins, const double &pT2min, const double &pT2max,  const int &zvtxBins, const double &zvtxmin,  const double &zvtxmax, const int &multBins, const int &multmin, const int &multmax );
+  AliFemtoCorrFctnDEtaDPhiTHn(const char* title, const int& aPhiBins, const int& aEtaBins, const int &pT1Bins, const double &pT1min, const double &pT1max,  const int &pT2Bins, const double &pT2min, const double &pT2max,  const int &zvtxBins, const double &zvtxmin,  const double &zvtxmax, const int &multBins, const int &multmin, const int &multmax );
   AliFemtoCorrFctnDEtaDPhiTHn(const AliFemtoCorrFctnDEtaDPhiTHn& aCorrFctn);
   virtual ~AliFemtoCorrFctnDEtaDPhiTHn();
 
@@ -32,6 +32,7 @@ class AliFemtoCorrFctnDEtaDPhiTHn : public AliFemtoCorrFctn {
   virtual void Finish();
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDEtaDPhiTHn(*this); }
 
  private:
   THnSparseF *fDPhiDEtaNum;  // Numerator of dEta dPhi function

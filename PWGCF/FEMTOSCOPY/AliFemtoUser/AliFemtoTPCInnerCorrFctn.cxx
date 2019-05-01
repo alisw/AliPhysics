@@ -11,12 +11,12 @@
 //#include "AliFemtoHisto.hh"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoTPCInnerCorrFctn)
 #endif
 
 //____________________________
-AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+AliFemtoTPCInnerCorrFctn::AliFemtoTPCInnerCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
   fDTPCNumerator(0),
   fDTPCDenominator(0),
   fRadDNumerator(0),
@@ -134,8 +134,9 @@ AliFemtoString AliFemtoTPCInnerCorrFctn::Report(){
 //____________________________
 void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double pih = TMath::Pi();
   double pit = TMath::Pi()*2;
@@ -171,8 +172,9 @@ void AliFemtoTPCInnerCorrFctn::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoTPCInnerCorrFctn::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double pih = TMath::Pi();
   double pit = TMath::Pi()*2;
@@ -221,10 +223,10 @@ TList* AliFemtoTPCInnerCorrFctn::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fDTPCNumerator); 
-  tOutputList->Add(fDTPCDenominator);  
-  tOutputList->Add(fRadDNumerator); 
-  tOutputList->Add(fRadDDenominator);  
+  tOutputList->Add(fDTPCNumerator);
+  tOutputList->Add(fDTPCDenominator);
+  tOutputList->Add(fRadDNumerator);
+  tOutputList->Add(fRadDDenominator);
 
   return tOutputList;
 }

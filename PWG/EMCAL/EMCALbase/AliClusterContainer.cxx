@@ -30,6 +30,14 @@
 ClassImp(AliClusterContainer);
 /// \endcond
 
+// string to enum map for use with the %YAML config
+const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> AliClusterContainer::fgkClusterEnergyTypeMap = {
+  {"kNonLinCorr", AliVCluster::kNonLinCorr },
+  {"kHadCorr", AliVCluster::kHadCorr },
+  {"kUserDefEnergy1", AliVCluster::kUserDefEnergy1 },
+  {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
+};
+
 // Properly instantiate the object
 AliEmcalContainerIndexMap <TClonesArray, AliVCluster> AliClusterContainer::fgEmcalContainerIndexMap;
 
@@ -46,7 +54,7 @@ AliClusterContainer::AliClusterContainer():
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
   fPhosMinM02(0),
-  fEmcalMinM02(DBL_MIN),
+  fEmcalMinM02(-1.),
   fEmcalMaxM02(DBL_MAX),
   fEmcalMaxM02CutEnergy(DBL_MAX)
 {
@@ -72,7 +80,7 @@ AliClusterContainer::AliClusterContainer(const char *name):
   fIncludePHOSonly(kFALSE),
   fPhosMinNcells(0),
   fPhosMinM02(0),
-  fEmcalMinM02(DBL_MIN),
+  fEmcalMinM02(-1.),
   fEmcalMaxM02(DBL_MAX),
   fEmcalMaxM02CutEnergy(DBL_MAX)
 {
@@ -326,8 +334,9 @@ Bool_t AliClusterContainer::AcceptCluster(const AliVCluster* clus, UInt_t &rejec
 
 /**
  * Return true if cluster is accepted.
- * @param clus
- * @return
+ * @param clus The cluster to which the cuts will be applied
+ * @param rejectionReason Contains the bit specifying the rejection reason
+ * @return True if the cluster is accepted.
  */
 Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &rejectionReason) const
 {

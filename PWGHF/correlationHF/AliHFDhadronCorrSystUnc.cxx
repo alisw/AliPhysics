@@ -2294,6 +2294,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016(Int_t meson,Doubl
 
 }
 
+
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016in020(Int_t meson,Double_t ptD,Double_t minptAss, Double_t maxptAss){
 
   if(meson==AliHFCorrelationUtils::kDzero) {
@@ -2857,6 +2858,469 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016in60100(Int_t meso
   }
 
 }
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017(Int_t meson,Double_t ptD,Double_t minptAss, Double_t maxptAss){
+
+  if(meson==AliHFCorrelationUtils::kDzero) {
+    // 0.3-99 GeV/c
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DzeroVeryLowPtAss03to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DzeroLowPtAss03to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DzeroMidPtAss03to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DzeroHighPtAss03to99();
+      }
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DzeroVeryHighPtAss03to99();
+      }      
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DzeroVeryLowPtAss03to1();
+      }        
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DzeroLowPtAss03to1();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DzeroMidPtAss03to1();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DzeroHighPtAss03to1();
+      }
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DzeroVeryHighPtAss03to1();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 1-99 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DzeroVeryLowPtAss1to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DzeroLowPtAss1to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DzeroMidPtAss1to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DzeroHighPtAss1to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DzeroVeryHighPtAss1to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 2-99 GeV/c
+    else if(TMath::Abs(minptAss-2.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DzeroVeryLowPtAss2to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DzeroLowPtAss2to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DzeroMidPtAss2to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DzeroHighPtAss2to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DzeroVeryHighPtAss2to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 3-99 GeV/c
+    else if(TMath::Abs(minptAss-3.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DzeroVeryLowPtAss3to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DzeroLowPtAss3to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DzeroMidPtAss3to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DzeroHighPtAss3to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DzeroVeryHighPtAss3to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 1-2 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001 && maxptAss==2.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DzeroVeryLowPtAss1to2();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DzeroLowPtAss1to2();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DzeroMidPtAss1to2();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DzeroHighPtAss1to2();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DzeroVeryHighPtAss1to2();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 2-3 GeV/c
+    else if(TMath::Abs(minptAss-2.)<0.0001 && maxptAss==3){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DzeroVeryLowPtAss2to3();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DzeroLowPtAss2to3();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DzeroMidPtAss2to3();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DzeroHighPtAss2to3();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DzeroVeryHighPtAss2to3();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }            
+    else {
+      printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+    }
+  }
+  else if(meson==AliHFCorrelationUtils::kDstar) {
+    // 0.3-99 GeV/c
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DstarVeryLowPtAss03to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DstarLowPtAss03to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DstarMidPtAss03to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DstarHighPtAss03to99();
+      }
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DstarVeryHighPtAss03to99();
+      }      
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DstarVeryLowPtAss03to1();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DstarLowPtAss03to1();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DstarMidPtAss03to1();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DstarHighPtAss03to1();
+      }
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DstarVeryHighPtAss03to1();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 1-99 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DstarVeryLowPtAss1to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DstarLowPtAss1to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DstarMidPtAss1to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DstarHighPtAss1to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DstarVeryHighPtAss1to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 2-99 GeV/c
+    else if(TMath::Abs(minptAss-2.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DstarVeryLowPtAss2to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DstarLowPtAss2to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DstarMidPtAss2to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DstarHighPtAss2to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DstarVeryHighPtAss2to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 3-99 GeV/c
+    else if(TMath::Abs(minptAss-3.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DstarVeryLowPtAss3to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DstarLowPtAss3to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DstarMidPtAss3to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DstarHighPtAss3to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DstarVeryHighPtAss3to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 1-2 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001 && maxptAss==2.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DstarVeryLowPtAss1to2();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DstarLowPtAss1to2();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DstarMidPtAss1to2();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DstarHighPtAss1to2();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DstarVeryHighPtAss1to2();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 2-3 GeV/c
+    else if(TMath::Abs(minptAss-2.)<0.0001 && maxptAss==3){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DstarVeryLowPtAss2to3();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DstarLowPtAss2to3();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DstarMidPtAss2to3();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DstarHighPtAss2to3();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DstarVeryHighPtAss2to3();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }            
+    else {
+      printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+    }
+  }
+  else if(meson==AliHFCorrelationUtils::kDplus) {
+    // 0.3-99 GeV/c
+    if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DplusVeryLowPtAss03to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DplusLowPtAss03to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DplusMidPtAss03to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DplusHighPtAss03to99();
+      }
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DplusVeryHighPtAss03to99();
+      }      
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 0.3-1 GeV/c
+    else if(TMath::Abs(minptAss-0.3)<0.0001 && maxptAss==1.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DplusVeryLowPtAss03to1();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DplusLowPtAss03to1();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DplusMidPtAss03to1();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DplusHighPtAss03to1();
+      }
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DplusVeryHighPtAss03to1();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 1-99 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DplusVeryLowPtAss1to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DplusLowPtAss1to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DplusMidPtAss1to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DplusHighPtAss1to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DplusVeryHighPtAss1to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 2-99 GeV/c
+    else if(TMath::Abs(minptAss-2.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DplusVeryLowPtAss2to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DplusLowPtAss2to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DplusMidPtAss2to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DplusHighPtAss2to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DplusVeryHighPtAss2to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 3-99 GeV/c
+    else if(TMath::Abs(minptAss-3.)<0.0001 && maxptAss>90.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DplusVeryLowPtAss3to99();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DplusLowPtAss3to99();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DplusMidPtAss3to99();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DplusHighPtAss3to99();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DplusVeryHighPtAss3to99();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 1-2 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001 && maxptAss==2.){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DplusVeryLowPtAss1to2();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DplusLowPtAss1to2();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DplusMidPtAss1to2();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DplusHighPtAss1to2();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DplusVeryHighPtAss1to2();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }
+    // 2-3 GeV/c
+    else if(TMath::Abs(minptAss-2.)<0.0001 && maxptAss==3){
+      if(ptD>2&&ptD<3){
+        InitStandardUncertaintiesPP2017DplusVeryLowPtAss2to3();
+      }
+      else if(ptD>3&&ptD<5){
+        InitStandardUncertaintiesPP2017DplusLowPtAss2to3();
+      }
+      else if(ptD>5&&ptD<8){
+        InitStandardUncertaintiesPP2017DplusMidPtAss2to3();
+      }
+      else if(ptD>8&&ptD<16){
+        InitStandardUncertaintiesPP2017DplusHighPtAss2to3();
+      } 
+      else if(ptD>16&&ptD<24){
+        InitStandardUncertaintiesPP2017DplusVeryHighPtAss2to3();
+      }          
+      else {
+        printf("Methods for syst unc not ready yet for this pt(D) bin  \n");
+      }
+    }            
+    else {
+      printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+    }
+  }
+
+}
+
 
 TGraphAsymmErrors* AliHFDhadronCorrSystUnc::GetUncGraphFromHistos(TH1D *hRef,TH1D *hMin,TH1D *hMax){
   
@@ -51535,6 +51999,17928 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2016DplusVeryHighPtAss
   }
   
 }
+
+
+/************************************************/
+/*          pp 2017 - HP Preliminaries          */
+/************************************************/
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryLowPtAss03to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 2<pt(D)<3, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.025);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.025);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 2<pt(D)<3, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.025);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.025);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryLowPtAss1to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 2<pt(D)<3, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.025);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.025);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryLowPtAss2to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 2<pt(D)<3, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.025);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.025);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryLowPtAss3to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 2<pt(D)<3, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.025);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.025);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryLowPtAss1to2(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 2<pt(D)<3, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.025);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.025);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryLowPtAss2to3(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 2<pt(D)<3, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.025);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.025);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroLowPtAss03to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 3<pt(D)<5, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 3<pt(D)<5, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.025);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroLowPtAss1to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 3<pt(D)<5, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.04);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroLowPtAss2to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 3<pt(D)<5, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroLowPtAss3to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 3<pt(D)<5, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroLowPtAss1to2(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 3<pt(D)<5, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroLowPtAss2to3(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 3<pt(D)<5, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroMidPtAss03to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 5<pT(D)<8, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroMidPtAss03to1(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 5<pT(D)<8, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.025);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroMidPtAss1to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 5<pT(D)<8, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroMidPtAss2to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 5<pT(D)<8, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroMidPtAss3to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 5<pT(D)<8, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroMidPtAss1to2(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 5<pT(D)<8, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroMidPtAss2to3(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 5<pT(D)<8, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroHighPtAss03to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 8<pT(D)<16, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 8<pT(D)<16, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.025);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroHighPtAss1to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 8<pT(D)<16, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroHighPtAss2to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 8<pT(D)<16, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroHighPtAss3to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 8<pT(D)<16, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroHighPtAss1to2(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 8<pT(D)<16, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroHighPtAss2to3(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 8<pT(D)<16, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryHighPtAss03to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 16<pT(D)<24, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 16<pT(D)<24, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.025);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryHighPtAss1to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 16<pT(D)<24, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryHighPtAss2to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 16<pT(D)<24, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryHighPtAss3to99(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 16<pT(D)<24, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryHighPtAss1to2(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 16<pT(D)<24, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DzeroVeryHighPtAss2to3(){ 
+  Printf("Setting uncertainties for Dzero pp 2017, 16<pT(D)<24, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDzero;
+  fstrmeson="Dzero";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.025);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryLowPtAss03to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 2<pt(D)<3, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 2<pt(D)<3, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryLowPtAss1to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 2<pt(D)<3, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryLowPtAss2to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 2<pt(D)<3, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryLowPtAss3to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 2<pt(D)<3, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryLowPtAss1to2(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 2<pt(D)<3, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryLowPtAss2to3(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 2<pt(D)<3, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarLowPtAss03to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 3<pt(D)<5, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 3<pt(D)<5, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarLowPtAss1to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 3<pt(D)<5, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarLowPtAss2to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 3<pt(D)<5, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarLowPtAss3to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 3<pt(D)<5, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.055);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.055);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarLowPtAss1to2(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 3<pt(D)<5, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarLowPtAss2to3(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 3<pt(D)<5, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.06);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.06);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarMidPtAss03to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 5<pT(D)<8, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.02);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarMidPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 5<pT(D)<8, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.02);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarMidPtAss1to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 5<pT(D)<8, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.02);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarMidPtAss2to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 5<pT(D)<8, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.02);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarMidPtAss3to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 5<pT(D)<8, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.02);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.055);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.055);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarMidPtAss1to2(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 5<pT(D)<8, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.02);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarMidPtAss2to3(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 5<pT(D)<8, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.02);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.02);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.02);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.06);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.06);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.015);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.015);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarHighPtAss03to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 8<pT(D)<16, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 8<pT(D)<16, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarHighPtAss1to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 8<pT(D)<16, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarHighPtAss2to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 8<pT(D)<16, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarHighPtAss3to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 8<pT(D)<16, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.055);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.055);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarHighPtAss1to2(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 8<pT(D)<16, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarHighPtAss2to3(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 8<pT(D)<16, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.015);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.06);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.06);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryHighPtAss03to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 16<pT(D)<24, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.03);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.03);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.03);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 16<pT(D)<24, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.03);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.03);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.03);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.03);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.03);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryHighPtAss1to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 16<pT(D)<24, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.03);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.03);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.03);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryHighPtAss2to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 16<pT(D)<24, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.03);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.03);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.03);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryHighPtAss3to99(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 16<pT(D)<24, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.03);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.03);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.03);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.055);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.055);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryHighPtAss1to2(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 16<pT(D)<24, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.03);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.03);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.03);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DstarVeryHighPtAss2to3(){ 
+  Printf("Setting uncertainties for Dstar pp 2017, 16<pT(D)<24, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDstar;
+  fstrmeson="Dstar";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.03);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.03);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.03);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.05);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryLowPtAss03to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 2<pt(D)<3, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 2<pt(D)<3, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryLowPtAss1to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 2<pt(D)<3, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryLowPtAss2to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 2<pt(D)<3, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryLowPtAss3to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 2<pt(D)<3, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryLowPtAss1to2(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 2<pt(D)<3, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryLowPtAss2to3(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 2<pt(D)<3, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt2to3";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusLowPtAss03to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 3<pt(D)<5, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusLowPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 3<pt(D)<5, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.025);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusLowPtAss1to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 3<pt(D)<5, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.040);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.040);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusLowPtAss2to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 3<pt(D)<5, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusLowPtAss3to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 3<pt(D)<5, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusLowPtAss1to2(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 3<pt(D)<5, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.040);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.040);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusLowPtAss2to3(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 3<pt(D)<5, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusMidPtAss03to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 5<pT(D)<8, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusMidPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 5<pT(D)<8, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.025);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusMidPtAss1to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 5<pT(D)<8, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.040);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.040);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusMidPtAss2to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 5<pT(D)<8, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusMidPtAss3to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 5<pT(D)<8, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusMidPtAss1to2(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 5<pT(D)<8, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.040);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.040);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusMidPtAss2to3(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 5<pT(D)<8, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt5to8";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.01);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.01);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusHighPtAss03to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 8<pT(D)<16, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 8<pT(D)<16, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.025);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusHighPtAss1to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 8<pT(D)<16, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.040);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.040);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusHighPtAss2to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 8<pT(D)<16, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusHighPtAss3to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 8<pT(D)<16, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusHighPtAss1to2(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 8<pT(D)<16, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.040);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.040);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusHighPtAss2to3(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 8<pT(D)<16, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryHighPtAss03to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 16<pT(D)<24, pt(assoc)>0.3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryHighPtAss03to1(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 16<pT(D)<24, 0.3<pt(assoc)<1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt03to1";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.025);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.025);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.02);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.02);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryHighPtAss1to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 16<pT(D)<24, pt(assoc)>1 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.040);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.040);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryHighPtAss2to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 16<pT(D)<24, pt(assoc)>2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore2";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryHighPtAss3to99(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 16<pT(D)<24, pt(assoc)>3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore3";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.035);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.035);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryHighPtAss1to2(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 16<pT(D)<24, 1<pt(assoc)<2 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt1to2";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.040);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.040);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.015);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.015);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2017DplusVeryHighPtAss2to3(){ 
+  Printf("Setting uncertainties for Dplus pp 2017, 16<pT(D)<24, 2<pt(assoc)<3 GeV/c ");
+  fmeson=AliHFCorrelationUtils::kDplus;
+  fstrmeson="Dplus";
+  fstrptAss="pt2to3";
+  fstrptD="Dpt16to24";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.01);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.01);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.01);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.045);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.045);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.02);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.02);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.01);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.01);
+  }
+
+
+  // MC CLOSURE TEST (as flat contribution + modulation/sqrt(12) bilateral, i.e. total spread is modulation/sqrt(3))
+  Double_t mod[6] = {0.,0.,0.,0.,0.,0.};
+  AliHFCorrelationUtils::GetMCClosureModulation(4,0.3,99.,mod,2,0); //retrieve modulation value
+
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinCenter(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinCenter(j);
+    fhMCclosureTestMax->SetBinContent(j,0.00); //flat contribution
+    
+    if(-1.2<x&&x<=-1){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));      
+    }
+    else if(-1.<x&&x<=-0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));      
+    }
+    else if(-0.8<x&&x<=-0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));       
+    }
+    else if(-0.6<x&&x<=-0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));          
+    }
+    else if(-0.4<x&&x<=-0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));        
+    }
+    else if(-0.2<x&&x<=0.){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));       
+    }
+    else if(0.<x&&x<=0.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[0]-1)/TMath::Sqrt(12));        
+    }
+    else if(0.2<x&&x<=0.4){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[1]-1)/TMath::Sqrt(12));         
+    }
+    else if(0.4<x&&x<=0.6){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[2]-1)/TMath::Sqrt(12));            
+    }
+    else if(0.6<x&&x<=0.8){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[3]-1)/TMath::Sqrt(12));      
+    }
+    else if(0.8<x&&x<=1.0){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[4]-1)/TMath::Sqrt(12));          
+    }
+    else if(1.0<x&&x<=1.2){    
+      fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)+TMath::Abs(mod[5]-1)/TMath::Sqrt(12));          
+    }
+  }
+ 
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);    
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*********************** DUMMY CASE (FOR KINE CASES NOT TO BE USED; BUT TO AVOID CODE CRASHES) **********************/

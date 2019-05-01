@@ -21,6 +21,7 @@
 
 #include "AliAnalysisTaskConversionQA.h"
 #include "TChain.h"
+#include "TRandom.h"
 #include "AliAnalysisManager.h"
 #include "TParticle.h"
 #include "TVectorF.h"
@@ -49,10 +50,9 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fMCEvent(NULL),
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
-  ffillTree(kFALSE),
+  ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
-  fTreeList(NULL),
   fESDList(NULL),
   hVertexZ(NULL),
   hNGoodESDTracks(NULL),
@@ -140,10 +140,9 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fMCEvent(NULL),
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
-  ffillTree(kFALSE),
+  ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
-  fTreeList(NULL),
   fESDList(NULL),
   hVertexZ(NULL),
   hNGoodESDTracks(NULL),
@@ -223,6 +222,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -416,15 +416,10 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       fOutputList->Add(fConversionCuts->GetCutHistograms());
     }
   }
-  
-  if(ffillTree){
-    fTreeList = new TList();
-    fTreeList->SetOwner(kTRUE);
-    fTreeList->SetName("TreeList");
-    fOutputList->Add(fTreeList);
 
-    fTreeQA = new TTree("PhotonQA","PhotonQA");   
-    
+  if(ffillTree>=1.0){
+    fTreeQA = new TTree(Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()),Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()));
+
     fTreeQA->Branch("daughterProp",&fDaughterProp);
     fTreeQA->Branch("recCords",&fGammaConvCoord);
     fTreeQA->Branch("photonProp",&fGammaPhotonProp);
@@ -433,8 +428,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     fTreeQA->Branch("chi2ndf",&fGammaChi2NDF,"fGammaChi2NDF/F");
     if (fIsMC) {
       fTreeQA->Branch("kind",&fKind,"fKind/b");
-    }   
-    fTreeList->Add(fTreeQA);
+    }
   }
 
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
@@ -443,8 +437,12 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
     if (fV0Reader->GetV0FindingEfficiencyHistograms())
       fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
-  
+
   PostData(1, fOutputList);
+  if(ffillTree>=1.0){
+      OpenFile(2);
+      PostData(2, fTreeQA);
+  }
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskConversionQA::Notify()
@@ -456,7 +454,7 @@ Bool_t AliAnalysisTaskConversionQA::Notify()
     }  
  
   
-  if(!fEventCuts->GetDoEtaShift()) return kTRUE;; // No Eta Shift requested, continue
+  if(!fEventCuts->GetDoEtaShift()) return kTRUE; // No Eta Shift requested, continue
     
   if(fEventCuts->GetEtaShift() == 0.0){ // Eta Shift requested but not set, get shift automatically
     fEventCuts->GetCorrectEtaShiftFromPeriod();
@@ -514,8 +512,19 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
     RelabelAODPhotonCandidates(kTRUE);  // In case of AODMC relabeling MC
     fV0Reader->RelabelAODs(kTRUE);
   }
-    
-    
+
+  // reduce event statistics in the tree by a factor ffilltree
+  Bool_t ffillTreeNew = kFALSE;
+  if(ffillTree>=1.0) {
+    ffillTreeNew = kTRUE;
+    if (ffillTree>1.0) {
+      gRandom->SetSeed(0);
+      if(gRandom->Uniform(ffillTree)>1.0) {
+	ffillTreeNew = kFALSE;
+      }
+    }
+  }
+
   for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
     AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
     if (gamma==NULL) continue;
@@ -529,7 +538,7 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
       continue;
     }
 
-    if(ffillTree) ProcessQATree(gamma);
+    if(ffillTreeNew) ProcessQATree(gamma);
     if(ffillHistograms) ProcessQA(gamma);
   }
   

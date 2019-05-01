@@ -29,7 +29,6 @@ class AliAODMCHeader;
 class AliGenEventHeader;
 class AliVEvent;
 class AliEMCALGeometry;
-class AliEMCALRecoUtils;
 class AliAnalysisFilter;
 class AliESDtrackCuts;
 class AliESDtrack;

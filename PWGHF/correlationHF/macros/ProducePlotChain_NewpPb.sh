@@ -27,35 +27,45 @@
 declare baseStartingDir="$PWD/ScriptOutput/"
 export HFCJlocalCodeDir="$PWD"
 # "/Users/administrator/soft/alisoft/aliphysics/master/PWGHF/correlationHF/macros"
-declare templateDirPP="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_NEW/Inputs/Templates_pp"
-declare templateDirPPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_NEW/Inputs/Templates_pPb"
+declare templateDirPP="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Templates_pp"
+declare templateDirPPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Templates_pPb"
 declare -a templateDirSystemSuffix=( "none" "none" "none" ) #### THIS IS KEPT JUST FOR BACKWARD COMPATIBILITY WITH OLD TEMPLATES! NO NEED TO TOUCH IT UNLESS YOU WANT TO USE OLD TEMPLATES
 declare -a templateDir=( "$templateDirPP" "$templateDirPPb" "$templateDirPPb" )
+
+###these for loading beta values from MC, in case of fixed beta approach!
+declare betaTemplDirPP="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Templates_pp/FitResults/Trends_pp/PYTHIA8"
+declare betaTemplDirPPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Templates_pPb/FitResults/Trends_pPb/PYTHIA8"
+declare -a betaTemplDir=( "$betaTemplDirPP" "$betaTemplDirPPb" "$betaTemplDirPPb"  "$betaTemplDirPP")
+
 ### the following is needed for hte comparison to MC (as well as MC fitting)
 declare -a Nmccase=( 6 6 6 )
 declare -a mccasePP=( 1 1 1 1 0 1 0 1 ) # according to CompareFitResults array: Perugia0, Perugia2010, Perugia2011, PYTHIA8, HERWIG, POHWEG+Perugia2011, POWHEG+Perugia2011 with EPS09, EPOS 3
 declare -a mccasePPb=( 1 1 1 1 0 0 1 0 )
 declare -a isreflectedMC=(0 0 0 0 0 0 0 1 ) # used only to determine the fit range and the transverse region range, it does not however change the results. Only EPOS is already reflected
-declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC"  "CorrelationPlotsEPOS3PtDzerofromC")
-declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPYTHIA8wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" "CorrelationPlotsEPOS3PtDzerofromC")
+declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtAveragefromC" "CorrelationPlotsPerugia2010PtAveragefromC" "CorrelationPlotsPerugia2011PtAveragefromC" "CorrelationPlotsPYTHIA8PtAveragefromC" "CorrelationPlotsPOWHEGPtAveragefromC"  "CorrelationPlotsEPOS3PtDzerofromC")
+declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtAveragefromC" "CorrelationPlotsPerugia2010wBoostPtAveragefromC" "CorrelationPlotsPerugia2011wBoostPtAveragefromC" "CorrelationPlotsPYTHIA8wBoostPtAveragefromC" "CorrelationPlotsPOWHEGPtAveragefromC" "CorrelationPlotsEPOS3PtDzerofromC")
+
+declare puritytemplateDirpp="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Purity_Templates_pp"
+declare puritytemplateDirpPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Purity_Templates_pPb"
+declare -a puritytemplateDir=( "$puritytemplateDirpp" "$puritytemplateDirpPb" "$puritytemplateDirpPb" )
 
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
-declare dirppDzeroNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_NEW/Inputs/Dzero_pp"
-declare dirpPbDzeroNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_NEW/Inputs/Dzero_pPb"
+declare dirppDzeroNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Dzero_pp"
+declare dirpPbDzeroNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Dzero_pPb"
 declare -a dirDzeroNotFDsubt=( "$dirppDzeroNotFDsubt" "$dirpPbDzeroNotFDsubt" "$dirpPbDzeroNotFDsubt" )
-declare -a fpromptfileDzero=( "HFPtSpectrum_pp.root" "HFPtSpectrum_DrawFpromptVsRaaElossHypoCombined.root" "fPrompt_Nb_D0.root" )
+declare -a fpromptfileDzero=( "HFPtSpectrum_pp.root" "HFPtSpectrum_DrawFpromptVsRaaElossHypoCombined.root" "fPrompt_Final_Nb_0100.root" )
 declare -a filerootDzero=( "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated_Bins" "1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated_Bins" "AzimCorrDistr_Dzero_Canvas_PtIntBins" )
 
-declare dirppDstarNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_NEW/Inputs/Dstar_pp"
-declare dirpPbDstarNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_NEW/Inputs/Dstar_pPb"
+declare dirppDstarNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Dstar_pp"
+declare dirpPbDstarNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Dstar_pPb"
 declare -a dirDstarNotFDsubt=( "$dirppDstarNotFDsubt" "$dirpPbDstarNotFDsubt" "$dirpPbDstarNotFDsubt" )
-declare -a fpromptfileDstar=( "outputkfc6_23mb.root" "fPromptWithBeautyRpA.root" "fPrompt_Nb_Dstar.root" )
+declare -a fpromptfileDstar=( "outputkfc6_23mb.root" "fPromptWithBeautyRpA.root" "fPrompt_Final_Nb_0100.root" )
 declare -a filerootDstar=( "FinalDphiCorrelationsCanvas_" "FinalDphiCorrelationsCanvas_" "AzimCorrDistr_Dstar_Canvas_PtIntBins" )
 
-declare dirppDplusNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_NEW/Inputs/Dplus_pp"
-declare dirpPbDplusNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_NEW/Inputs/Dplus_pPb"
+declare dirppDplusNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Dplus_pp"
+declare dirpPbDplusNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPbInt/Inputs/Dplus_pPb"
 declare -a dirDplusNotFDsubt=( "$dirppDplusNotFDsubt" "$dirpPbDplusNotFDsubt" "$dirpPbDplusNotFDsubt" )
-declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_kpp7.root" "DrawFpromptVsRaaElossHypoCombined.root" "fPrompt_Nb_Dplus.root" )
+declare -a fpromptfileDplus=( "HFPtSpectrum_ppDplus_kfc_kpp7.root" "DrawFpromptVsRaaElossHypoCombined.root" "fPrompt_Final_Nb_0100.root" )
 declare -a filerootDplus=( "1D_pp_DplusHCorr_" "1D_pPb_DplusHCorr_" "AzimCorrDistr_Dplus_Canvas_PtIntBins" )
 
 ###### THE FOLLOWING DIRECTORIES WILL BE USED ONLY IN CASE THE FD IS NOT DONE WITH THIS SCRIPT FOR A GIVEN MESON
@@ -84,7 +94,9 @@ declare reflect=1   #0 : do not reflect, 1 reflect
 declare averageOpt=0  #0 = weighted, 1=arithmetic (BE AWARE THAT SETTINGS FOR FINAL STYLE PLOTS MIGHT NOT BE OK FOR ARITHMETIC AVERAGE AND THEY MIGHT USE PATHS EXPECTED FOR WEIGHTING AV)
 declare -a includev2=( 0 0 1 ) 
 ##### Subtraction of b-origin modulation (MC closure) - Set 0 in pp2010, pPb2013; set 1 in pPb2016. IF 1, REMEMBER TO SET THE UNCERTAINTY UPWARDS!
-declare subtrMCclos=1 
+declare subtrMCclos=1  #0: don't do anything for MC closure structures (use old approach), #1 apply correction for MC closure b->D structures
+declare purityOpt=30 #0: simple rescale (flat), 10: multiply by prim/inclusive histogram, 20: multiply by template fit on prim/inclusive histogram, 30: multiply by moving mean of prim/inclusive histogram
+declare doNewPedestalVars=1 #USE ALWAYS 1 UNLESS FOR REPRODUCING 2010+2013 PAPER RESULTS; #0: use paper pedestal variations; #1: use new variations (less transverse regions, added baseline +/- isigma_stat)
 
 ###############################################################################
 ############ YOU CAN CHOOSE TO DO ONLY SOME STEPS           ###################
@@ -96,40 +108,42 @@ declare -i doFeedDownGlob=0
 declare -ia doFeedDownMes=( 1 1 1 ) ## Dzero, Dstar, Dplus values
 declare doInitAndReflStep=0 ## NOTE THAT THIS STEP IS NECESSARY ALSO IN CASE THE PLOTS DO NOT HAVE TO BE REFLECTED. THE "reflect" PARAMETER ABOVE IS WHAT DETERMINED WHETHER OR NOT THE PLOTS WILL BE REFLECTED INSIDE THIS STEP. THIS PARAMETER IS JUST A SWITCH: YOU CAN SET IT TO 0 IN CASE YOU ALREADY DID IT AND YOU DO NOT WANT TO REPEAT IT
 declare doAverage=0
-declare dofit=0
-declare doDrawFitFigure=0
+declare dofit=1
+declare doDrawFitFigure=1
 declare dofitMC=0
-declare dofitawayside=0
+declare dofitawayside=1
 #Paper 2010&2013
-declare doNicePlot=0
-declare doCompareMesons=0 #
-declare doFitResultComparisonPPpPb=0 #For paper 2010 & 2013
-declare doFitResultComparisonPPtoMC=0 #For paper 2010 & 2013
-declare doFitResultComparisonPPbtoMC=0 #For paper 2010 & 2013
-declare doFitResultComparisonPPtoMCawayside=0 #For paper 2010 & 2013
-declare doFitResultComparisonPPbtoMCawayside=0 #For paper 2010 & 2013
-declare doFitResultComparisonPPtoPPbtoMCPP=0 #For paper 2010 & 2013
-declare doCompareWithMC=0 #For paper 2010 & 2013
-declare doComparepppPb=0 #For paper 2010 & 2013
+declare doNicePlot=1
+declare doCompareMesons=1 #
+declare doFitResultComparisonPPpPb=1 #For paper 2010 & 2013
+declare doFitResultComparisonPPtoMC=1 #For paper 2010 & 2013
+declare doFitResultComparisonPPbtoMC=1 #For paper 2010 & 2013
+declare doFitResultComparisonPPtoMCawayside=1 #For paper 2010 & 2013
+declare doFitResultComparisonPPbtoMCawayside=1 #For paper 2010 & 2013
+declare doFitResultComparisonPPtoPPbtoMCPP=1 #For paper 2010 & 2013
+declare doCompareWithMC=1 #For paper 2010 & 2013
+declare doComparepppPb=1 #For paper 2010 & 2013
 declare doOldPlots=0 #For paper 2010 & 2013
 #pPb 2016 preliminaries
-declare doCompareWithMC2016=0 #For pPb 2016
-declare doFitResultComparisonPPbtoMC2016=0 #For paper 2016
-declare doFitResultComparisonPPbtoMCawayside2016=0 #For paper 2016
-declare doComparepppPb2016=0 #For pPb 2016
-declare doFitResultComparisonPPpPb2016=0 #For pPb 2016
+declare doCompareWithMC2016=1 #For pPb 2016
+declare doFitResultComparisonPPbtoMC2016=1 #For paper 2016
+declare doFitResultComparisonPPbtoMCawayside2016=1 #For paper 2016
+declare doComparepppPb2016=1 #For pPb 2016
+declare doFitResultComparisonPPpPb2016=1 #For pPb 2016
 declare doProduceSQMplots=1 #For pPb 2016
 
 ### MODIFY THE PARAMETERS BELOW ONLY IF YOU WANT TO RUN ONLY OVER FEW KINE CASES, OTHERWISE DO NOT TOUCH THEM
 declare -i firstcollsyst=2   #default 0
-declare -i lastcollsyst=2    #default 1 
+declare -i lastcollsyst=2   #default 1 
 declare -i firstmeson=0     #default 0
 declare -i lastmeson=2      #default 2
+
 declare -i firstassocbin=0  #default 0
 declare -i lastassocbin=6   #default 2
-
 declare -i firsttrigbin=0   #default 0
 declare -i lasttrigbin=3    #default 2
+
+declare -i centralitybin=0  #default 0, use always 0 for cent-integrated cases! then, 1 is 0-20%, 2 is 20-60%, 3 is 60-100%
 
 
 #################################################################################################
@@ -182,24 +196,18 @@ if [ ${cpCode} = 1 ]; then
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoPlotComparedot3to1pPb.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoPlotComparedot3to1pp.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_pPbVsMC.C .
-    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_pPbVsMC2016.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVsMC.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVspPb.C .
-    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_pPb2016VsMCallPanelsNew.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/FitSystematicsAverage_pp.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/FitSystematicsAverage_pPb.C .
-    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/FitSystematicsAverage_pPb2016.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/FitPlots.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/SubtractFD.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoNiceSpecieComparisonPlot.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/CompareFitResults.C .
-    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/CompareFitResultspPb2016.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoNiceFitPlots.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVspPballPanels.C .
-    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVspPballPanels2016.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoComparison_ppVsMCallPanelsNew.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoPlotInSingleCanvasNoSpaces.C .
-    cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/Restyle_pPb2016_Prel_Plots.C .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/DoFitMC.sh .
     cp ${ALICE_PHYSICS}/../../git/PWGHF/correlationHF/macros/CheckDiff.sh .
 else 
@@ -299,11 +307,11 @@ if [ $doFeedDownGlob = 1 ]; then
 	    mkdir -p ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    cd ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    if [ ${imeson} = 0 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin} ${purityOpt} ${puritytemplateDir[${collsyst}]}
 	    elif [ ${imeson} = 1 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin} ${purityOpt} ${puritytemplateDir[${collsyst}]}
 	    elif [ ${imeson} = 2 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin} ${purityOpt} ${puritytemplateDir[${collsyst}]}
 	    fi
 	    imeson=${imeson}+1
 	done
@@ -329,35 +337,35 @@ if [ $doInitAndReflStep = 1 ]; then
 		    if [ ${collsyst} = 0 ]; then 
 			if [ ${imeson} = 0 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 ${centralitybin}
 			elif [ ${imeson} = 1 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 ${centralitybin}
 			elif [ ${imeson} = 2 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirppInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}${endFilepp} ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 ${centralitybin}
 			fi
 		elif [ ${collsyst} = 1 ]; then 
 			if [ ${imeson} = 0 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 ${centralitybin}
 			elif [ ${imeson} = 1 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1  ${centralitybin}
 			elif [ ${imeson} = 2 ]; then
 			#echo "ciao"
-			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
+			    $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[${collsyst}]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 ${centralitybin}
 			fi
         elif [ ${collsyst} = 2 ]; then 
             if [ ${imeson} = 0 ]; then
             #echo "ciao"
-                $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[1]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
+                $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[1]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 ${centralitybin}
             elif [ ${imeson} = 1 ]; then
             #echo "ciao"
-                $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[1]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
+                $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[1]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 ${centralitybin}
             elif [ ${imeson} = 2 ]; then
             #echo "ciao"
-                $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[1]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1
+                $HFCJlocalCodeDir/DrawPlotInSubtractFD.sh ${dirpPbInput[${imeson}]}/${collsystdir[1]}_${baseFile}${meson[$imeson]}Pt${pttrig[${itrigbin}]}assoc${ptassoc[${iassocbin}]}.root ${imeson} ${collsyst} ${itrigbin} ${iassocbin} ${reflect} ${rebin} 1 ${centralitybin}
             fi
 		    fi
         #now make symbolic link of newly created plots
@@ -403,7 +411,7 @@ if [ ${doAverage} = 1 ]; then
 	    iassocbin=${firstassocbin}
 	    while [ ${iassocbin} -le ${lastassocbin} ]; do
 		echo "Averaging for ${collsystdir[${collsyst}]} collisions,  pt(D) bin ${itrigbin}, pt(assoc) bin  ${iassocbin} "
-		$HFCJlocalCodeDir/DoAverages.sh ${collsyst} ${itrigbin} ${iassocbin} ${averageOpt} ${reflect} 5 ${baseDir}/AllPlots/ ${baseDir}/AllPlots/ ${baseDir}/AllPlots/ 1
+		$HFCJlocalCodeDir/DoAverages.sh ${collsyst} ${itrigbin} ${iassocbin} ${averageOpt} ${reflect} 5 ${baseDir}/AllPlots/ ${baseDir}/AllPlots/ ${baseDir}/AllPlots/ 1 ${centralitybin}
 		iassocbin=${iassocbin}+1
 		done
 	    itrigbin=${itrigbin}+1
@@ -514,10 +522,11 @@ if [ ${dofitMC} = 1 ]; then
 fi
 collsyst=${firstcollsyst}
 
+echo "Produce Plot Chain: fit data distributions"
 if [ ${dofit} = 1 ]; then
     cd ${baseDir}/AllPlots/Averages/FitResults/    
     while [ ${collsyst} -le ${lastcollsyst} ]; do
-	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]} ${dofitawayside}
+	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]} ${dofitawayside} ${doNewPedestalVars} ${betaTemplDir[${collsyst}]}
 	collsyst=${collsyst}+1
     done
 fi

@@ -32,6 +32,9 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  DCAxyTPC()                    const {return fTPCDCA[0];}
   Float_t  DCAzTPC()                     const {return fTPCDCA[1];}
   Float_t  Pin()                         const {return fMomentumInner;}
+  Float_t  PonCalo()                     const {return fMomentumOnCalo;}
+  Float_t  PhiOnCalo()                   const {return fPhiOnCalo;}
+  Float_t  EtaOnCalo()                   const {return fEtaOnCalo;}
   Float_t  DCAxy()                       const {return fDCA[0];}
   Float_t  DCAz()                        const {return fDCA[1];}
   Float_t  TrackLength()                 const {return fTrackLength;}
@@ -61,6 +64,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t TPCsignal()                      const {return fTPCsignal;}
   UChar_t TPCsignalN()                     const {return fTPCsignalN;}
   Float_t TPCnSig(Int_t specie)            const {return (specie>=0 && specie<=3 ? fTPCnSig[specie] : -999.);}
+  Float_t TPCdEdxInfoQmax(Int_t i)         const {return (i>=0 && i<4 ? fTPCdEdxInfoQmax[i] : -999.);}
+  Float_t TPCdEdxInfoQtot(Int_t i)         const {return (i>=0 && i<4 ? fTPCdEdxInfoQtot[i] : -999.);}
   Float_t TPCchi2()                        const {return fTPCchi2;}
   Float_t TPCActiveLength()         const {return fTPCActiveLength;}
   Float_t TPCGeomLength()       const {return fTPCGeomLength;}
@@ -78,15 +83,23 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  TRDpid(Int_t specie)       const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
   Float_t  TRDpidLQ1D(Int_t specie)   const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
   Float_t  TRDpidLQ2D(Int_t specie)   const {return (specie>=0 && specie<=1 ? fTRDpidLQ2D[specie] : -999.);}
-  
+
+  // TRD online tracks
+  UChar_t   TRDGTUtracklets()      const {return fTRDGTUtracklets;}
+  UChar_t   TRDGTUlayermask()      const {return fTRDGTUlayermask;}
+  Float_t   TRDGTUpt()             const {return fTRDGTUpt;}
+  Float_t   TRDGTUsagitta()        const {return fTRDGTUsagitta;}
+  UChar_t   TRDGTUPID()            const {return fTRDGTUPID;}
+
+
   Int_t    CaloClusterId() const {return fCaloClusterId;}
   
   Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
   Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
   
-  Float_t MCmom(Int_t dim) {return (dim>=0 && dim<3 ? fMCMom[dim] : 0.0);}
-  Float_t PtMC() {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]);}
-  Float_t PMC()   const {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]);}
+  Float_t MCmom(Int_t dim);  
+  Float_t PtMC() {return (fIsMCTruth ? Pt() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]));}
+  Float_t PMC()   const {return (fIsMCTruth ? P() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]));}
   Float_t PhiMC() const;
   Float_t EtaMC() const;
   Float_t RapidityMC(Float_t massAssumption) const;
@@ -106,6 +119,9 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fTPCPt;               // inner param pt  
   Float_t fTPCEta;              // inner param eta 
   Float_t fMomentumInner;       // inner param momentum (only the magnitude)
+  Float_t fMomentumOnCalo;      // momentum on calorimeter surface (only the magnitude)
+  Float_t fPhiOnCalo;           // phi on calorimeter (EMCal radius) surface
+  Float_t fEtaOnCalo;           // eta on calorimeter (EMCal radius) surface
   Float_t fDCA[2];              // DCA xy,z
   Float_t fTPCDCA[2];           // TPConly DCA xy,z
   Float_t fTrackLength;         // track length
@@ -130,6 +146,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fTPCsignal;          // TPC de/dx
   UChar_t fTPCsignalN;         // TPC no clusters de/dx
   Float_t fTPCnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
+  Float_t fTPCdEdxInfoQmax[4]; // dE/dx info using Qmax, 0 - IROC, 1- medium OROC, 2- long OROC, 3- all OROC
+  Float_t fTPCdEdxInfoQtot[4]; // dE/dx info using Qtot, 0 - IROC, 1- medium OROC, 2- long OROC, 3- all OROC
   Float_t fTPCchi2;            // TPC chi2 / cls
   Float_t fTPCActiveLength;   // track length in active parts of the TPC
   Float_t fTPCGeomLength;   // geometrical track length in the TPC
@@ -148,7 +166,14 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t fTRDntracklets[2];       // 0 - AliESDtrack::GetTRDntracklets(); 1 - AliESDtrack::GetTRDntrackletsPID()   TODO: use only 1 char
   Float_t fTRDpid[2];              // TRD pid 1D likelihoods, [0]-electron , [1]- pion
   Float_t fTRDpidLQ2D[2];          // TRD pid 2D likelihoods, [0]-electron , [1]- pion
-  
+
+  // TRD online tracks
+  UChar_t  fTRDGTUtracklets;    // TRD online track #tracklets
+  UChar_t  fTRDGTUlayermask;    // TRD online track hit in layer0 yes/no
+  Float_t  fTRDGTUpt;           // TRD online track pT
+  Float_t  fTRDGTUsagitta;      // TRD online track sagitta
+  UChar_t  fTRDGTUPID;          // TRD online track pid
+
   // EMCAL/PHOS
   Int_t  fCaloClusterId;          // ID for the calorimeter cluster (if any)
   
@@ -167,14 +192,33 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 5);
+  ClassDef(AliReducedTrackInfo, 9);
 };
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::MCmom(Int_t dim) {  // {}
+   //
+   // return momentum component
+   //
+   if(dim<0 || dim>2) return 0.0;
+   if(fIsMCTruth) {     // pure MC track -> use the fP vector
+      if(dim==0) return Px();
+      if(dim==1) return Py();
+      if(dim==2) return Pz();
+   }
+   else 
+      return fMCMom[dim];
+   
+   return 0.0;
+}
 
 //_______________________________________________________________________________
 inline Float_t AliReducedTrackInfo::PhiMC() const {
    //
    // Return the azimuthal angle of this particle
    //
+   if(fIsMCTruth) return Phi();
+   
    Float_t phi=TMath::ATan2(fMCMom[1],fMCMom[0]); 
    if(phi>=0.0) 
       return phi;
@@ -187,6 +231,8 @@ inline Float_t AliReducedTrackInfo::ThetaMC() const {
    //
    // Return the polar angle for this particle
    //
+   if(fIsMCTruth) return Theta();
+   
    Float_t p=PMC(); 
    if(p>=1.0e-6) 
       return TMath::ACos(fMCMom[2]/p);
@@ -199,6 +245,8 @@ inline Float_t AliReducedTrackInfo::EtaMC() const {
    //
    // Return the pseudorapidity of this particle
    //
+   if(fIsMCTruth) return Eta();
+   
    Float_t eta = TMath::Tan(0.5*ThetaMC());
    if(eta>1.0e-6) 
       return -1.0*TMath::Log(eta);
@@ -211,6 +259,8 @@ inline Float_t AliReducedTrackInfo::RapidityMC(Float_t massAssumption) const {
    //
    // Return the rapidity of this particle using a massAssumption
    //
+   if(fIsMCTruth) return Rapidity(massAssumption);
+   
    Float_t e = EnergyMC(massAssumption);
    Float_t factor = e-fMCMom[2];
    if(TMath::Abs(factor)<1.0e-6) return 0.0;

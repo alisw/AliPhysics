@@ -15,7 +15,7 @@
 
 //____________________________
 AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(
-  char* title,
+  const char* title,
   const int& nbins,
   const float& QLo,
   const float& QHi

@@ -82,6 +82,7 @@ class AliCaloTrackParticle : public AliVParticle {
   virtual Int_t   GetIdentifiedParticleType() const { return fPdg     ; }
 
   virtual Int_t   GetLabel()             const { return fLabel        ; }
+  virtual Float_t GetWeight()            const { return fWeight       ; }
   virtual Int_t   GetCaloLabel (Int_t i) const { return fCaloLabel[i] ; }
   virtual Int_t   GetTrackLabel(Int_t i) const { return fTrackLabel[i]; }
   virtual UInt_t  GetDetectorTag()       const { return fDetectorTag  ; }
@@ -106,7 +107,8 @@ class AliCaloTrackParticle : public AliVParticle {
   virtual Float_t GetTime()              const { return fTime         ; }
   virtual Int_t   GetNCells()            const { return fNCells       ; }
   virtual Int_t   GetSModNumber()        const { return fSuperModule  ; }
-
+  virtual Int_t   GetCellAbsIdMax()      const { return fCellAbsIdMax ; }
+  
   // Isolation cone background info
   virtual Float_t GetChargedLeadPtInCone() const { return fIsoConePtLead[0] ; } 
   virtual Float_t GetNeutralLeadPtInCone() const { return fIsoConePtLead[1] ; }   
@@ -118,7 +120,8 @@ class AliCaloTrackParticle : public AliVParticle {
   // Specific setters
   virtual void SetIdentifiedParticleType(Int_t pdg) { fPdg = pdg ; }
 
-  virtual void SetLabel(Int_t l)         { fLabel = l ; }
+  virtual void SetLabel(Int_t l)         { fLabel  = l ; }
+  virtual void SetWeight(Float_t w)      { fWeight = w ; }
   virtual void SetCaloLabel (Int_t a, Int_t b) { fCaloLabel [0] = a; fCaloLabel [1] = b  ; }
   virtual void SetTrackLabel(Int_t a, Int_t b) { fTrackLabel[0] = a; fTrackLabel[1] = b  ; }
   virtual void SetTrackLabel(Int_t a, Int_t b, Int_t c, Int_t d) 
@@ -146,6 +149,7 @@ class AliCaloTrackParticle : public AliVParticle {
   virtual void SetTime  (Float_t tim)    { fTime        = tim  ; }
   virtual void SetNCells(Int_t   nce)    { fNCells      = nce  ; }
   virtual void SetSModNumber(Int_t sm)   { fSuperModule = sm   ; }
+  virtual void SetCellAbsIdMax(Int_t absid)   { fCellAbsIdMax = absid ; }
   
   // Isolation cone background info
   virtual void SetChargedLeadPtInCone(Float_t ptl) { fIsoConePtLead[0] = ptl ; } 
@@ -181,6 +185,7 @@ class AliCaloTrackParticle : public AliVParticle {
   Int_t      fCaloLabel[2];     ///< CaloCluster index, 1 for photons, 2 for pi0.
   Int_t      fTrackLabel[4];    ///< Track lable, 1 for pions, 2 for conversion photons 
   UInt_t     fDetectorTag ;     ///< Detector where particle was measured, integer
+  Float_t    fWeight;           ///< Weight to be applied to histogram
   
   // Calo specific
   Int_t      fBadDist ;         ///< Distance to calorimeter bad cell in cell units
@@ -190,6 +195,7 @@ class AliCaloTrackParticle : public AliVParticle {
   Float_t    fTime;             ///< Store the time of calorimeter cluster or track, nano seconds
   Int_t      fNCells;           ///< Store the number of cells in calorimeter cluster
   Int_t      fSuperModule;      ///< Store the super-module number of calorimeter cluster
+  Int_t      fCellAbsIdMax;     ///< Store the absID of max energy cell in calorimeter cluster
   
   // Tags
   Int_t      fDecayTag;         ///< Tag the photon as decay from, pi0, eta, pi0 side band, eta side band
@@ -211,7 +217,7 @@ class AliCaloTrackParticle : public AliVParticle {
   Int_t      fBtag;             ///< tag particle from B.
 
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackParticle, 1);
+  ClassDef(AliCaloTrackParticle, 3);
   /// \endcond
 
 };

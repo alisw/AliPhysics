@@ -97,7 +97,7 @@ protected:
   virtual bool Run();
 
 private:
-  AliEmcalTrackSelection                  *fTrackSel;         ///< EMCAL virtual track selection
+  AliEmcalTrackSelection     *fTrackSel;         ///< EMCAL virtual track selection
   Bool_t                                  fEnableSumw2;       ///< Setter for enabling Sumw2
 
   AliAnalysisTaskEmcalTriggerMultiplicity(const AliAnalysisTaskEmcalTriggerMultiplicity &);

@@ -59,6 +59,7 @@ void DoFillParticleCollection(TrackCutType *cut,
   }
 }
 
+
 // This little function is used to apply ParticleCuts (TrackCuts or V0Cuts) and
 // fill ParticleCollections from tacks in picoEvent. It is called from
 // AliFemtoSimpleAnalysis::ProcessEvent().
@@ -66,7 +67,7 @@ void DoFillParticleCollection(TrackCutType *cut,
 // The actual loop implementation has been moved to the collection-generic
 // DoFillParticleCollection() function
 void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
-                               AliFemtoEvent *hbtEvent,
+                               const AliFemtoEvent *hbtEvent,
                                AliFemtoParticleCollection *partCollection,
                                bool performSharedDaughterCut=kFALSE)
 {
@@ -78,13 +79,13 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 
   // cut is cutting on Tracks
   case hbtTrack:
-
-    DoFillParticleCollection(
-      (AliFemtoTrackCut*)partCut,
-      hbtEvent->TrackCollection(),
-      partCollection
-    );
-
+    {
+      DoFillParticleCollection(
+			       (AliFemtoTrackCut*)partCut,
+			       hbtEvent->TrackCollection(),
+			       partCollection
+			       );
+    }
     break;
 
   // cut is cutting on V0s
@@ -156,6 +157,17 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 
   partCut->FillCutMonitor(hbtEvent, partCollection);
 }
+
+// Leave this here to appease any legacy code that expected a non-const AliFemtoEvent
+void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
+                               AliFemtoEvent *hbtEvent,
+                               AliFemtoParticleCollection *partCollection,
+                               bool performSharedDaughterCut)
+{
+  FillHbtParticleCollection(partCut, const_cast<const AliFemtoEvent*>(hbtEvent), partCollection, performSharedDaughterCut);
+}
+
+
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fPicoEventCollectionVectorHideAway(nullptr),
@@ -478,14 +490,14 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   // hbtEvent which pass fFirstParticleCut. Uses cut's "Type()" to determine
   // which track collection to pull from hbtEvent.
   FillHbtParticleCollection(fFirstParticleCut,
-                            (AliFemtoEvent*)hbtEvent,
+                            hbtEvent,
                             fPicoEvent->FirstParticleCollection(),
                             fPerformSharedDaughterCut);
 
   // fill second particle cut if not analyzing identical particles
   if ( !AnalyzeIdenticalParticles() ) {
       FillHbtParticleCollection(fSecondParticleCut,
-                                (AliFemtoEvent*)hbtEvent,
+                                hbtEvent,
                                 fPicoEvent->SecondParticleCollection(),
                                 fPerformSharedDaughterCut);
   }
@@ -573,8 +585,12 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
 /// AddMixedPair() methods. If no second particle collection is
 /// specfied, make pairs within first particle collection.
 
-  const string type = typeIn;
+  bool these_are_real_pairs = 0 == strcmp(typeIn, "real");
 
+  if (!these_are_real_pairs && strcmp(typeIn, "mixed")) {
+    std::cerr << "Problem with pair type, type = " << typeIn << "\n";
+    return;
+  }
   //  int swpart = ((long int) partCollection1) % 2;
 
   // Used to swap particle 1 & 2 in identical-particle analysis
@@ -650,13 +666,11 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
       // If pair passes cut, loop over CF's and add pair to real/mixed
       if (tmpPassPair) {
         for (auto &tCorrFctn : *fCorrFctnCollection) {
-          if (type == "real")
+          if (these_are_real_pairs)
             tCorrFctn->AddRealPair(tPair);
-          else if(type == "mixed")
-            tCorrFctn->AddMixedPair(tPair);
           else
-            cout << "Problem with pair type, type = " << type << endl;
-        } // loop over corellatoin functions
+            tCorrFctn->AddMixedPair(tPair);
+        } // loop over correlation functions
       }
 
     }    // loop over second particle

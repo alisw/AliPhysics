@@ -33,11 +33,12 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
       fPHOSBadMap[mod] = new TH2I(*h);
       AliInfo(Form("Setting Bad Map Histogram  %s",fPHOSBadMap[mod]->GetName()));
     }
-    TString GetObjectArrayName() {return fObjectArrayName;}
 
     void SetUserDefinedNonlinearity(TF1 *f1nonlin) {fUserNonLinCorr = f1nonlin;}
     void ExcludeM4(Bool_t flag) {fIsM4Excluded = flag;}
-    void SetEmin(Double_t Emin) {fEmin = Emin;}
+
+    void SetSingleSim(Bool_t flag) {fIsSingleSim = flag;}
+    void SetEmbedding(Bool_t flag) {fIsEmbedding = flag;}
 
   protected:
     void Init();
@@ -76,17 +77,17 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     Bool_t fUsePHOSTender;
     Bool_t fIsMC;
     Double_t fBunchSpace;
-    TString fObjectArrayName;
     AliStack *fMCArrayESD;
     TClonesArray *fMCArrayAOD;
     Bool_t fIsM4Excluded;
-    Double_t fEmin;
+    Bool_t fIsSingleSim;
+    Bool_t fIsEmbedding;
 
   private:
     AliAnalysisTaskPHOSObjectCreator(const AliAnalysisTaskPHOSObjectCreator&);
     AliAnalysisTaskPHOSObjectCreator& operator=(const AliAnalysisTaskPHOSObjectCreator&);
 
-    ClassDef(AliAnalysisTaskPHOSObjectCreator, 14);
+    ClassDef(AliAnalysisTaskPHOSObjectCreator, 17);
 };
 
 #endif

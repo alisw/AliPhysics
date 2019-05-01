@@ -11,10 +11,18 @@
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+// ROOT
 #include <TString.h>
 #include <TROOT.h>
+#include <TSystem.h>
 
+// ALIROOT/ALIPHYSICS
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliVTrack.h"
 #include "AliLog.h"
+
+// CaloTrackCorrr
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliCaloTrackESDReader.h"
 #include "AliCaloTrackAODReader.h"
@@ -22,18 +30,16 @@
 #include "AliAnaClusterShapeCorrelStudies.h"
 #include "AliHistogramRanges.h"
 #include "AliAnaCalorimeterQA.h"
-#include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliVTrack.h"
-#include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
-#include "AliESDtrackCuts.h"
-#include "CreateTrackCutsPWGJE.C"
-#include "ConfigureEMCALRecoUtils.C"
-#include "CheckActiveEMCalTriggerPerPeriod.C"
 
-#endif
+// Macros
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+//#include "ConfigureEMCALRecoUtils.C"
+#include "PWGGA/CaloTrackCorrelations/macros/ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
+#include "PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C"
+#include "PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C"
+
+#endif // CINT
 
  // Declare methods for compilation
 
@@ -49,7 +55,7 @@ AliCalorimeterUtils * ConfigureCaloUtils
 (TString col,           Bool_t simulation,
  Bool_t tender,
  Bool_t  nonLinOn,      Int_t  year,
- Bool_t  printSettings, Int_t  debug            );
+ Bool_t  printSettings, Int_t  debug );
 
 AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
 (Bool_t tmPtDep, TString col , Bool_t  simulation, 
@@ -58,7 +64,7 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
 AliAnaCalorimeterQA * ConfigureQAAnalysis    
 (TString col,           Bool_t  simulation,
  TString calorimeter,   Int_t   year,
- Bool_t  printSettings, Int_t   debug                     );
+ Bool_t  printSettings, Int_t   debug );
 
 void SetAnalysisCommonParameters             
 (AliAnaCaloTrackCorrBaseClass* ana,
@@ -70,21 +76,14 @@ void SetAnalysisCommonParameters
 /// Global name to be composed of the settings, used to set the AOD branch name
 TString kAnaClusterShape = "";
 
-//
-////// Global variables, set externally, uncomment next lines for local tests and compilation.
-//const char* kPeriod   = "LHC16t"; // gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
-//const char* kColType  = "PbPb";   // gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE"); //either "pp", "pPb" or "PbPb"
-//const char* kProdType = "MC";     // gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
-//Bool_t kMC = kFALSE;
-
 ///
 /// Main method calling all the configuration
 /// Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
 ///
 /// The options that can be passed to the macro are:
-/// \param calorimeter : A string with he calorimeter used to measure the trigger particle
-/// \param simulation : A bool identifying the data as simulation
-/// \param collision: A string with the colliding system.
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle.
+/// \param simulation : A bool identifying the data as simulation.
+/// \param collision: A string with the colliding system. If empty, alien environment used.
 /// \param period : A string with the data period: LHC11h, LHC15n ... from it we extract the year.
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
@@ -117,37 +116,14 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
 {
   // Check the global variables, and reset the provided ones if empty.
   //
-  TString trigger = trigSuffix;
+  TString trigger  = trigSuffix;
   
-  if(collision=="")
-  {
-    if      (!strcmp(kColType, "PbPb")) collision = "PbPb"; 
-    else if (!strcmp(kColType, "AA"  )) collision = "PbPb"; 
-    else if (!strcmp(kColType, "pA"  )) collision = "pPb"; 
-    else if (!strcmp(kColType, "Ap"  )) collision = "pPb";     
-    else if (!strcmp(kColType, "pPb" )) collision = "pPb"; 
-    else if (!strcmp(kColType, "Pbp" )) collision = "pPb"; 
-    else if (!strcmp(kColType, "pp"  )) collision = "pp" ; 
-    
-    simulation = kMC;
-    period = kPeriod;
-    
-    // print check on global settings once
-    if(trigger.Contains("default") ||trigger.Contains("INT") || trigger.Contains("MB") )
-      printf("AddTaskClusterShape() - Get the data features from global parameters: collision <%s>, period <%s>, mc <%d> \n",
-             kColType,kPeriod,kMC);
-  }
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
   
-  Int_t year = 2017;
-  if ( period!="" )
-  {
-    if     (period.Contains("16")) year = 2016;
-    else if(period.Contains("15")) year = 2015;
-    else if(period.Contains("13")) year = 2013;
-    else if(period.Contains("12")) year = 2012;
-    else if(period.Contains("11")) year = 2011;
-    else if(period.Contains("10")) year = 2010;
-  }
+  Int_t   year        = 2017;
+  Bool_t  printGlobal = kTRUE;
+ 
+  GetAlienGlobalProductionVariables(simulation,collision,period,year,printGlobal);
 
   // Get the pointer to the existing analysis manager via the static access method.
   //  
@@ -282,9 +258,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskClusterShape
     maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
     
     // For recent productions where the cross sections and trials are not stored in separate file
-    TString prodName = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
-    printf("AddTaskClusterShape() - MC production name: %s\n",prodName.Data());
-    if ( prodName.Contains("LHC16c") ) // add here any other affected periods, for the moment jet-jet 8 TeV
+    TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
+    printf("AddTaskClusterShape() - MC production name: %s\n",prodType.Data());
+    if ( prodType.Contains("LHC16c") ) // add here any other affected periods, for the moment jet-jet 8 TeV
     {   
       printf("\t use the cross section from EventHeader per Event\n");
       maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
@@ -388,46 +364,11 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   //  }
   reader->SwitchOffShowerShapeSmearing();
   
+  reader->SwitchOffFiducialCut();
+  
   //
-  // Tracks
-  //
+  // No track in this analysis
   reader->SwitchOffCTS();
-  
-  reader->SwitchOffUseTrackTimeCut();
-  reader->SetTrackTimeCut(0,50);
-  
-  reader->SwitchOnFiducialCut();
-  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
-  
-  reader->SwitchOffUseTrackDCACut();
-  //reader->SetTrackDCACut(0,0.0105);
-  //reader->SetTrackDCACut(1,0.035);
-  //reader->SetTrackDCACut(2,1.1);
-  
-  if(inputDataType=="ESD")
-  {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGJE/macros/CreateTrackCutsPWGJE.C");
-    
-    //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
-    //reader->SetTrackCuts(esdTrackCuts);
-    
-    AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
-    reader->SetTrackCuts(esdTrackCuts);
-    AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
-    reader->SetTrackComplementaryCuts(esdTrackCuts2);
-    
-    reader->SwitchOnConstrainTrackToVertex();
-  }
-  else if(inputDataType=="AOD")
-  {
-    reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
-    reader->SwitchOnAODTrackSharedClusterSelection();
-    reader->SetTrackStatus(AliVTrack::kITSrefit);
-    
-    //reader->SwitchOnAODPrimaryTrackSelection(); // Used in preliminary results of QM from Nicolas and Xiangrong?
-    //reader->SwitchOnTrackHitSPDSelection();     // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
-    //reader->SetTrackFilterMask(128);            // Filter bit, not mask, use if off hybrid, TPC only
-  }
   
   //
   // Calorimeter
@@ -523,11 +464,8 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   reader->SetZvertexCut(10.);               // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
   
-  reader->SwitchOnRejectNoTrackEvents();
-  reader->SetTrackMultiplicityEtaCut(0.8);
-  
   reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
-  reader->SwitchOnPileUpEventRejection();  // remove pileup by default off, apply it only for MB not for trigger
+  reader->SwitchOnPileUpEventRejection();   // remove pileup by default off, apply it only for MB not for trigger
   
   if(col=="PbPb")
   {
@@ -590,9 +528,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
   
   if(!simulation)
     cu->SwitchOnLoadOwnEMCALGeometryMatrices();
-  
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
-  
+    
   // calibrations
   Bool_t calibEner = kFALSE;
   Bool_t calibTime = kFALSE;
@@ -617,14 +553,23 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,           Bool_t simulation
     cu->SwitchOffRunDepCorrection();
   }
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,
-                          kTRUE,      // exotic
-                          nonLinOn,   // Non linearity
-                          calibEner,  // E calib
-                          kTRUE,      // bad map
-                          calibTime); // time calib
+AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+//
+//  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
+//  ConfigureEMCALRecoUtils(recou,
+//                          simulation,
+//                          kTRUE,      // exotic
+//                          nonLinOn,   // Non linearity
+//                          calibEner,  // E calib
+//                          kTRUE,      // bad map
+//                          calibTime); // time calib
+  
+  cu->ConfigureEMCALRecoUtils(simulation,
+                              kTRUE,      // exotic
+                              nonLinOn,   // Non linearity
+                              calibEner,  // E calib
+                              kTRUE,      // bad map
+                              calibTime); // time calib
   
   //if( calibTime ) recou->SetExoticCellDiffTimeCut(1e6);
   
@@ -658,16 +603,25 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   if(simulation) ana->SetConstantTimeShift(615);
   
   ana->SwitchOffFiducialCut();
-  
+    
   ana->SwitchOnStudyClusterShape();
   
-  ana->SwitchOnStudyClusterShapeParam();
+  ana->SwitchOnStudyEMCalModuleCells();
+  
+  ana->SwitchOffStudyClusterShapeParam();
+  
+  ana->SwitchOffStudyMatchedPID() ;
   
   ana->SwitchOffStudyWeight();
   
+  ana->SetNCellBinLimits(-1); // no analysis on predefined bins in nCell
+  
   ana->SwitchOffStudyTCardCorrelation() ;
   ana->SwitchOffStudyExotic();
-    
+  ana->SwitchOffStudyInvariantMass();
+  ana->SwitchOffStudyColRowFromCellMax() ;
+  ana->SwitchOffStudyCellTime() ;
+  
   // PID cuts (Track-matching)
   ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = ana->GetCaloPID();
@@ -811,7 +765,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.06,60);//QA
   
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,1.5,150);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,1.5,150);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -857,10 +811,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
-  
+
   //
   // Debug
   //

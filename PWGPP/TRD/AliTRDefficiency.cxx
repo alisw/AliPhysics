@@ -51,7 +51,7 @@
 #include "AliTRDtrackV1.h"
 #include "AliTRDCalPID.h"
 #include "AliTRDefficiency.h"
-#include "info/AliTRDtrackInfo.h"
+#include "AliTRDtrackInfo.h"
 
 ClassImp(AliTRDefficiency)
 

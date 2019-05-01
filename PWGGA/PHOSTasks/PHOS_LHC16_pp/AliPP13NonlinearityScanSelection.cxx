@@ -13,23 +13,14 @@ ClassImp(AliPP13NonlinearityScanSelection);
 
 
 //________________________________________________________________
-TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const
+TLorentzVector AliPP13NonlinearityScanSelection::ClusterMomentumBinned(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const
 {
-	Float_t energy = c1->E();
-
 	TLorentzVector p;
 	c1->GetMomentum(p, eflags.vtxBest);
-	p *= Nonlinearity(energy, ia, ib);
+
+	Float_t energy = c1->E();
+	p *= fWeightsScan[ia][ib].Nonlinearity(energy);
 	return p;
-}
-
-//________________________________________________________________
-Float_t AliPP13NonlinearityScanSelection::Nonlinearity(Float_t x, Int_t ia, Int_t ib) const
-{
-	Float_t non_a = GetA(ia);
-	Float_t non_sigma = GetSigma(ib);
-
-	return fGlobalEnergyScale * (1. + non_a * TMath::Exp(-x / 2. * x / non_sigma / non_sigma));
 }
 
 //________________________________________________________________
@@ -47,31 +38,34 @@ void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 	{
 		for (Int_t ib = 0; ib < kNbinsSigma; ++ib)
 		{
-			Float_t a = GetA(ia);
-			Float_t b = GetSigma(ib);
+			Float_t a = fWeightsScan[ia][ib].fNonA;
+			Float_t b = fWeightsScan[ia][ib].fNonSigma;
 
-			fInvariantMass[ia][ib]    = new TH2F(Form("hMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
-			fMixInvariantMass[ia][ib] = new TH2F(Form("hMixMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
+			fInvariantMass[ia][ib] = new TH2F(Form("hMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
+			fMixInvariantMass[ia][ib] = new TH2F(Form("hMixMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), 10, mMin, mMax, 10, ptMin, ptMax);
 
 			fListOfHistos->Add(fInvariantMass[ia][ib]);
 			fListOfHistos->Add(fMixInvariantMass[ia][ib]);
 		}
 	}
+	fPtPrimaryPi0 = new TH1F(
+	    "hPt_primary_#pi^{0}_",
+	    "Generated p_{T} spectrum of primary #pi^{0}s; p_{T}, GeV/c",
+	    nPt, ptMin, ptMax);
 
 
+	// NB: Reduce the selection size
 	for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)
 	{
 		TH1 * hist = dynamic_cast<TH1 *>(fListOfHistos->At(i));
 		if (!hist) continue;
 		hist->Sumw2();
 	}
-
-// These histograms are needed only to check the performance
-// Don't do any analysis with these histograms.
-//
 }
 
 
+// NB: We need scan to test all possible nonlinearities
+//________________________________________________________________
 void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
 {
 	Int_t sm1, sm2, x1, z1, x2, z2;
@@ -82,19 +76,50 @@ void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, cons
 	{
 		for (Int_t ib = 0; ib < kNbinsSigma; ++ib)
 		{
-			TLorentzVector p1 = ClusterMomentum(c1, eflags, ia, ib);
-			TLorentzVector p2 = ClusterMomentum(c2, eflags, ia, ib);
+			TLorentzVector p1 = ClusterMomentumBinned(c1, eflags, ia, ib);
+			TLorentzVector p2 = ClusterMomentumBinned(c2, eflags, ia, ib);
 			TLorentzVector psum = p1 + p2;
 
 			if (psum.M2() < 0)
 				return;
 
-			Double_t ma12 = psum.M();
+			Double_t m12 = psum.M();
 			Double_t pt12 = psum.Pt();
-			TH1 * hist = (!eflags.isMixing) ? fInvariantMass[ia][ib] : fMixInvariantMass[ia][ib];
+			TH2 * hist = dynamic_cast<TH2 *> ((!eflags.isMixing) ? fInvariantMass[ia][ib] : fMixInvariantMass[ia][ib]);
 
-			hist->Fill(ma12, pt12);
+			Float_t weight = fWeights->Weights(pt12, eflags);
+			hist->Fill(m12, pt12, weight);
 		}
 	}
 }
 
+//________________________________________________________________
+void AliPP13NonlinearityScanSelection::ConsiderGeneratedParticles(const EventFlags & eflags)
+{
+	if (!eflags.fMcParticles)
+		return;
+
+	for (Int_t i = 0; i < eflags.fMcParticles->GetEntriesFast(); i++)
+	{
+		AliAODMCParticle * particle = ( AliAODMCParticle *) eflags.fMcParticles->At(i);
+		Int_t code = TMath::Abs(particle->GetPdgCode());
+
+		// NB: replace this condition by find, if the number of particles will grow
+		//
+		if (code != kPi0) // Only neutral pions
+			continue;
+
+
+		Double_t pt = particle->Pt();
+		Double_t w = fWeights->Weights(pt, eflags);
+
+		// Use this to remove forward photons that can modify our true efficiency
+		if (TMath::Abs(particle->Y()) > 0.5) // NB: Use rapidity instead of pseudo rapidity!
+			continue;
+
+		Bool_t primary = IsPrimary(particle);
+		if (!primary)
+			continue;
+		fPtPrimaryPi0->Fill(pt, w);
+	}
+}

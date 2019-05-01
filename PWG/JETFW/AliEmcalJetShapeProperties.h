@@ -213,35 +213,35 @@ public:
   Double_t          GetFirstOrderSubtractedOpeningAngle_akt02()            const { return fJetShapeOpeningAngleakt02FirstSub                   ; }
   Double_t          GetSecondOrderSubtractedOpeningAngle_akt02()           const { return fJetShapeOpeningAngleakt02SecondSub                  ; }
 
-  //1subjettiness_casd
-  void              SetFirstDerivative1subjettiness_casd(Double_t d)             { fJetShape1subjettinesscasdFirstDer = d                      ; }
-  void              SetSecondDerivative1subjettiness_casd(Double_t d)            { fJetShape1subjettinesscasdSecondDer = d                     ; }
-  void              SetFirstOrderSubtracted1subjettiness_casd(Double_t d)        { fJetShape1subjettinesscasdFirstSub = d                      ; }
-  void              SetSecondOrderSubtracted1subjettiness_casd(Double_t d)       { fJetShape1subjettinesscasdSecondSub = d                     ; }
-  Double_t          GetFirstDerivative1subjettiness_casd()                 const { return fJetShape1subjettinesscasdFirstDer                   ; }
-  Double_t          GetSecondDerivative1subjettiness_casd()                const { return fJetShape1subjettinesscasdSecondDer                  ; }
-  Double_t          GetFirstOrderSubtracted1subjettiness_casd()            const { return fJetShape1subjettinesscasdFirstSub                   ; }
-  Double_t          GetSecondOrderSubtracted1subjettiness_casd()           const { return fJetShape1subjettinesscasdSecondSub                  ; }
+  //1subjettiness_onepassca
+  void              SetFirstDerivative1subjettiness_onepassca(Double_t d)             { fJetShape1subjettinessonepasscaFirstDer = d                      ; }
+  void              SetSecondDerivative1subjettiness_onepassca(Double_t d)            { fJetShape1subjettinessonepasscaSecondDer = d                     ; }
+  void              SetFirstOrderSubtracted1subjettiness_onepassca(Double_t d)        { fJetShape1subjettinessonepasscaFirstSub = d                      ; }
+  void              SetSecondOrderSubtracted1subjettiness_onepassca(Double_t d)       { fJetShape1subjettinessonepasscaSecondSub = d                     ; }
+  Double_t          GetFirstDerivative1subjettiness_onepassca()                 const { return fJetShape1subjettinessonepasscaFirstDer                   ; }
+  Double_t          GetSecondDerivative1subjettiness_onepassca()                const { return fJetShape1subjettinessonepasscaSecondDer                  ; }
+  Double_t          GetFirstOrderSubtracted1subjettiness_onepassca()            const { return fJetShape1subjettinessonepasscaFirstSub                   ; }
+  Double_t          GetSecondOrderSubtracted1subjettiness_onepassca()           const { return fJetShape1subjettinessonepasscaSecondSub                  ; }
 
-  //2subjettiness_casd
-  void              SetFirstDerivative2subjettiness_casd(Double_t d)             { fJetShape2subjettinesscasdFirstDer = d                      ; }
-  void              SetSecondDerivative2subjettiness_casd(Double_t d)            { fJetShape2subjettinesscasdSecondDer = d                     ; }
-  void              SetFirstOrderSubtracted2subjettiness_casd(Double_t d)        { fJetShape2subjettinesscasdFirstSub = d                      ; }
-  void              SetSecondOrderSubtracted2subjettiness_casd(Double_t d)       { fJetShape2subjettinesscasdSecondSub = d                     ; }
-  Double_t          GetFirstDerivative2subjettiness_casd()                 const { return fJetShape2subjettinesscasdFirstDer                   ; }
-  Double_t          GetSecondDerivative2subjettiness_casd()                const { return fJetShape2subjettinesscasdSecondDer                  ; }
-  Double_t          GetFirstOrderSubtracted2subjettiness_casd()            const { return fJetShape2subjettinesscasdFirstSub                   ; }
-  Double_t          GetSecondOrderSubtracted2subjettiness_casd()           const { return fJetShape2subjettinesscasdSecondSub                  ; }
+  //2subjettiness_onepassca
+  void              SetFirstDerivative2subjettiness_onepassca(Double_t d)             { fJetShape2subjettinessonepasscaFirstDer = d                      ; }
+  void              SetSecondDerivative2subjettiness_onepassca(Double_t d)            { fJetShape2subjettinessonepasscaSecondDer = d                     ; }
+  void              SetFirstOrderSubtracted2subjettiness_onepassca(Double_t d)        { fJetShape2subjettinessonepasscaFirstSub = d                      ; }
+  void              SetSecondOrderSubtracted2subjettiness_onepassca(Double_t d)       { fJetShape2subjettinessonepasscaSecondSub = d                     ; }
+  Double_t          GetFirstDerivative2subjettiness_onepassca()                 const { return fJetShape2subjettinessonepasscaFirstDer                   ; }
+  Double_t          GetSecondDerivative2subjettiness_onepassca()                const { return fJetShape2subjettinessonepasscaSecondDer                  ; }
+  Double_t          GetFirstOrderSubtracted2subjettiness_onepassca()            const { return fJetShape2subjettinessonepasscaFirstSub                   ; }
+  Double_t          GetSecondOrderSubtracted2subjettiness_onepassca()           const { return fJetShape2subjettinessonepasscaSecondSub                  ; }
 
-  //OpeningAngle_casd
-  void              SetFirstDerivativeOpeningAngle_casd(Double_t d)             { fJetShapeOpeningAnglecasdFirstDer = d                      ; }
-  void              SetSecondDerivativeOpeningAngle_casd(Double_t d)            { fJetShapeOpeningAnglecasdSecondDer = d                     ; }
-  void              SetFirstOrderSubtractedOpeningAngle_casd(Double_t d)        { fJetShapeOpeningAnglecasdFirstSub = d                      ; }
-  void              SetSecondOrderSubtractedOpeningAngle_casd(Double_t d)       { fJetShapeOpeningAnglecasdSecondSub = d                     ; }
-  Double_t          GetFirstDerivativeOpeningAngle_casd()                 const { return fJetShapeOpeningAnglecasdFirstDer                   ; }
-  Double_t          GetSecondDerivativeOpeningAngle_casd()                const { return fJetShapeOpeningAnglecasdSecondDer                  ; }
-  Double_t          GetFirstOrderSubtractedOpeningAngle_casd()            const { return fJetShapeOpeningAnglecasdFirstSub                   ; }
-  Double_t          GetSecondOrderSubtractedOpeningAngle_casd()           const { return fJetShapeOpeningAnglecasdSecondSub                  ; }
+  //OpeningAngle_onepassca
+  void              SetFirstDerivativeOpeningAngle_onepassca(Double_t d)             { fJetShapeOpeningAngleonepasscaFirstDer = d                      ; }
+  void              SetSecondDerivativeOpeningAngle_onepassca(Double_t d)            { fJetShapeOpeningAngleonepasscaSecondDer = d                     ; }
+  void              SetFirstOrderSubtractedOpeningAngle_onepassca(Double_t d)        { fJetShapeOpeningAngleonepasscaFirstSub = d                      ; }
+  void              SetSecondOrderSubtractedOpeningAngle_onepassca(Double_t d)       { fJetShapeOpeningAngleonepasscaSecondSub = d                     ; }
+  Double_t          GetFirstDerivativeOpeningAngle_onepassca()                 const { return fJetShapeOpeningAngleonepasscaFirstDer                   ; }
+  Double_t          GetSecondDerivativeOpeningAngle_onepassca()                const { return fJetShapeOpeningAngleonepasscaSecondDer                  ; }
+  Double_t          GetFirstOrderSubtractedOpeningAngle_onepassca()            const { return fJetShapeOpeningAngleonepasscaFirstSub                   ; }
+  Double_t          GetSecondOrderSubtractedOpeningAngle_onepassca()           const { return fJetShapeOpeningAngleonepasscaSecondSub                  ; }
 
   //SoftDrop
   void              SetSoftDropZg(Double_t d)                                 { fSoftDropZg = d                      ; }
@@ -347,20 +347,20 @@ protected:
   Double_t          fJetShapeOpeningAngleakt02FirstSub;         //!<!   result from shape derivatives for jet OpeningAngle_akt02: 1st order subtracted
   Double_t          fJetShapeOpeningAngleakt02SecondSub;        //!<!   result from shape derivatives for jet OpeningAngle_akt02: 2nd order subtracted
 
-  Double_t          fJetShape1subjettinesscasdFirstDer;        //!<!   result from shape derivatives for jet 1subjettiness_casd: 1st derivative
-  Double_t          fJetShape1subjettinesscasdSecondDer;       //!<!   result from shape derivatives for jet 1subjettiness_casd: 2nd derivative
-  Double_t          fJetShape1subjettinesscasdFirstSub;        //!<!   result from shape derivatives for jet 1subjettiness_casd: 1st order subtracted
-  Double_t          fJetShape1subjettinesscasdSecondSub;       //!<!   result from shape derivatives for jet 1subjettiness_casd: 2nd order subtracted
+  Double_t          fJetShape1subjettinessonepasscaFirstDer;        //!<!   result from shape derivatives for jet 1subjettiness_onepassca: 1st derivative
+  Double_t          fJetShape1subjettinessonepasscaSecondDer;       //!<!   result from shape derivatives for jet 1subjettiness_onepassca: 2nd derivative
+  Double_t          fJetShape1subjettinessonepasscaFirstSub;        //!<!   result from shape derivatives for jet 1subjettiness_onepassca: 1st order subtracted
+  Double_t          fJetShape1subjettinessonepasscaSecondSub;       //!<!   result from shape derivatives for jet 1subjettiness_onepassca: 2nd order subtracted
   
-  Double_t          fJetShape2subjettinesscasdFirstDer;        //!<!   result from shape derivatives for jet 2subjettiness_casd: 1st derivative
-  Double_t          fJetShape2subjettinesscasdSecondDer;       //!<!   result from shape derivatives for jet 2subjettiness_casd: 2nd derivative
-  Double_t          fJetShape2subjettinesscasdFirstSub;        //!<!   result from shape derivatives for jet 2subjettiness_casd: 1st order subtracted
-  Double_t          fJetShape2subjettinesscasdSecondSub;       //!<!   result from shape derivatives for jet 2subjettiness_casd: 2nd order subtracted
+  Double_t          fJetShape2subjettinessonepasscaFirstDer;        //!<!   result from shape derivatives for jet 2subjettiness_onepassca: 1st derivative
+  Double_t          fJetShape2subjettinessonepasscaSecondDer;       //!<!   result from shape derivatives for jet 2subjettiness_onepassca: 2nd derivative
+  Double_t          fJetShape2subjettinessonepasscaFirstSub;        //!<!   result from shape derivatives for jet 2subjettiness_onepassca: 1st order subtracted
+  Double_t          fJetShape2subjettinessonepasscaSecondSub;       //!<!   result from shape derivatives for jet 2subjettiness_onepassca: 2nd order subtracted
 
-  Double_t          fJetShapeOpeningAnglecasdFirstDer;         //!<!   result from shape derivatives for jet OpeningAngle_casd: 1st derivative
-  Double_t          fJetShapeOpeningAnglecasdSecondDer;        //!<!   result from shape derivatives for jet OpeningAngle_casd: 2nd derivative
-  Double_t          fJetShapeOpeningAnglecasdFirstSub;         //!<!   result from shape derivatives for jet OpeningAngle_casd: 1st order subtracted
-  Double_t          fJetShapeOpeningAnglecasdSecondSub;        //!<!   result from shape derivatives for jet OpeningAngle_casd: 2nd order subtracted
+  Double_t          fJetShapeOpeningAngleonepasscaFirstDer;         //!<!   result from shape derivatives for jet OpeningAngle_onepassca: 1st derivative
+  Double_t          fJetShapeOpeningAngleonepasscaSecondDer;        //!<!   result from shape derivatives for jet OpeningAngle_onepassca: 2nd derivative
+  Double_t          fJetShapeOpeningAngleonepasscaFirstSub;         //!<!   result from shape derivatives for jet OpeningAngle_onepassca: 1st order subtracted
+  Double_t          fJetShapeOpeningAngleonepasscaSecondSub;        //!<!   result from shape derivatives for jet OpeningAngle_onepassca: 2nd order subtracted
 
   Double_t          fSoftDropZg;                             //!<!   SoftDrop groomed momentum fraction
   Double_t          fSoftDropdR;                             //!<!   SoftDrop deltaR

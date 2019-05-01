@@ -6,15 +6,16 @@
 #include <TFile.h>
 #include <TH1.h>
 
+#include <AliAnalysisManager.h>
+#include <AliVEvent.h>
+#include <AliEMCALRecoUtils.h>
+#include <AliOADBContainer.h>
 #include "AliEmcalList.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
-#include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionComponent);
@@ -49,7 +50,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
-  fBasePath("")
+  fBasePath(""),
+  fCustomBadChannelFilePath("")
 
 {
   fVertex[0] = 0;
@@ -83,7 +85,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
-  fBasePath("")
+  fBasePath(""),
+  fCustomBadChannelFilePath("")
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -110,11 +113,14 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
   if (fFilepass != "") {
     fGetPassFromFileName = kFALSE;
     // Handle the "default" value used in MC
-    if (fFilepass == "default") {
+    if (fFilepass == "default" || fFilepass == "usedefault") {
       AliError("Received \"default\" as pass value. Defaulting to \"pass1\"! In the case of MC, the user should set the proper pass value in their configuration file! For data, empty quotes should be set so that the pass is automatically set.");
       fFilepass = "pass1";
     }
   }
+
+  // Handle create histos, as this is universal for every component
+  GetProperty("createHistos", fCreateHisto);
 
   return kTRUE;
 }
@@ -318,43 +324,57 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   
   Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
-  AliOADBContainer *contBC = new AliOADBContainer("");
+  std::unique_ptr<AliOADBContainer> contBC(nullptr);
+  std::unique_ptr<TFile> fbad;
   if (fBasePath!="")
   { //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
     
-    TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
+    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read"));
     if (!fbad || fbad->IsZombie())
     {
       AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
       return 0;
     }
     
-    if (fbad) delete fbad;
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
+  }
+  else if (fCustomBadChannelFilePath!="")
+  { //if fCustomBadChannelFilePath specified in the configuration for custom bad channel maps
+    AliInfo(Form("Loading custom Bad Channels OADB from given path %s",fCustomBadChannelFilePath.Data()));
     
-    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
+    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s",fCustomBadChannelFilePath.Data()),"read"));
+    if (!fbad || fbad->IsZombie())
+    {
+      AliFatal(Form("No valid Bad channel OADB object was not found in the path provided: %s",fCustomBadChannelFilePath.Data()));
+      return 0;
+    }
+    
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","read");
+    fbad = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"read"));
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root was not found");
+      AliFatal("OADB/EMCAL/EMCALBadChannels.root was not found");
       return 0;
     }
     
-    if (fbad) delete fbad;
-    
-    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels");
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
+  if(!contBC){
+    AliError("No OADB container found");
+    return 0;
+  }
+  contBC->SetOwner(true);
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
   if (!arrayBC)
   {
     AliError(Form("No external hot channel set for run number: %d", runBC));
-    delete contBC;
     return 2;
   }
   
@@ -374,8 +394,6 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
     h->SetDirectory(0);
     fRecoUtils->SetEMCALChannelStatusMap(i,h);
   }
-  
-  delete contBC;
   
   return 1;
 }

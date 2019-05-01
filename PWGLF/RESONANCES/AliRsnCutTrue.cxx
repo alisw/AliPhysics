@@ -12,7 +12,7 @@
 ClassImp(AliRsnCutTrue)
 
 //__________________________________________________________________________________________________
-AliRsnCutTrue::AliRsnCutTrue(const char *name, Int_t pdg) :
+AliRsnCutTrue::AliRsnCutTrue(const char *name, Long_t pdg) :
    AliRsnCut(name, AliRsnTarget::kDaughter, pdg)
 {
 //

@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
 // Analysis task for high pt particle correlations 
-// author: Jussi Viinikainen
+// author: Marton Vargyas, Jussi Viinikainen
 // ALICE Group University of Jyvaskyla 
 // Finland 
 //

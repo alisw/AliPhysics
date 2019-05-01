@@ -176,7 +176,7 @@ void AliAnalysisHe4::UserCreateOutputObjects()
   
   // binning 
   const Int_t kPtBins = 28;
-  const Int_t kMultBins = 11;
+  // const Int_t kMultBins = 11;
   const Int_t kDcaBins = 38;
 
 
@@ -444,7 +444,7 @@ void AliAnalysisHe4::UserExec(Option_t *)
     UInt_t status = track->GetStatus();
     //
     Bool_t hasTOFout  = status&AliESDtrack::kTOFout; 
-    Bool_t hasTOFtime = status&AliESDtrack::kTIME;
+    // Bool_t hasTOFtime = status&AliESDtrack::kTIME;
     
     Double_t length = track->GetIntegratedLength(); 
     Bool_t hasTOF     = kFALSE;

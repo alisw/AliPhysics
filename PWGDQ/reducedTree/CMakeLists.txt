@@ -36,17 +36,23 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
       AliAnalysisTaskReducedEventProcessor.cxx
       AliAnalysisTaskReducedTreeMaker.cxx
+      AliCorrelationExtraction.cxx
       AliHistogramManager.cxx
       AliMixingHandler.cxx
       AliReducedAnalysisFilterTrees.cxx
       AliReducedAnalysisJpsi2ee.cxx
+      AliReducedAnalysisJpsi2eeCorrelations.cxx
       AliReducedAnalysisJpsi2eeMult.cxx
+      AliReducedAnalysisSingleTrack.cxx
       AliReducedAnalysisTaskSE.cxx
       AliReducedAnalysisTest.cxx
       AliReducedBaseEvent.cxx
       AliReducedBaseTrackCut.cxx
       AliReducedBaseTrack.cxx
+      AliReducedCaloClusterCut.cxx
       AliReducedCaloClusterInfo.cxx
+      AliReducedCaloClusterTrackMatcher.cxx
+      AliReducedCompositeCut.cxx
       AliReducedEventCut.cxx
       AliReducedEventInfo.cxx
       AliReducedEventInputHandler.cxx
@@ -59,6 +65,7 @@ set(SRCS
       AliReducedVarCut.cxx
       AliReducedVarManager.cxx
       AliResonanceFits.cxx
+      AliSignalMC.cxx
    )
 
 # Headers from sources

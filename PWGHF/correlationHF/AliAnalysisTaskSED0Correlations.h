@@ -51,6 +51,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   enum PartType {kTrack,kKCharg,kK0};
   enum FillType {kSE, kME}; //for single event or event mixing histos fill
   enum TreeFill {kNoTrees, kFillTrees, kFillCutOptTree};
+  enum SpeedType {kAllBins, kOneBinSB, kOneBinSBandS};
 
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
   void SetMCReconstructedTracks(Bool_t recoTrMC=kTRUE){fRecoTr=recoTrMC;}
@@ -91,6 +92,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetLSBHighLim(Double_t* LSBUppLim) {for(int i=0;i<fNPtBinsCorr;i++) {fLSBUppLim.push_back(LSBUppLim[i]);}}  
   void SetRSBLowLim(Double_t* RSBLowLim) {for(int i=0;i<fNPtBinsCorr;i++) {fRSBLowLim.push_back(RSBLowLim[i]);}}
   void SetRSBHighLim(Double_t* RSBUppLim) {for(int i=0;i<fNPtBinsCorr;i++) {fRSBUppLim.push_back(RSBUppLim[i]);}}
+  void SetSignLowLim(Double_t* SignLowLim) {for(int i=0;i<fNPtBinsCorr;i++) {fSignLowLim.push_back(SignLowLim[i]);}}
+  void SetSignHighLim(Double_t* SignUppLim) {for(int i=0;i<fNPtBinsCorr;i++) {fSignUppLim.push_back(SignUppLim[i]);}}  
   void SetLeftSignReg_LowPt(Double_t leftlow) {fSignLeft_LowPt=leftlow;}
   void SetRightSignReg_LowPt(Double_t rightlow) {fSignRight_LowPt=rightlow;}
   void SetLeftSignReg_HighPt(Double_t lefthigh) {fSignLeft_HighPt=lefthigh;}
@@ -101,7 +104,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Int_t PtBinCorr(Double_t pt) const;
   void SetEvMixing(Bool_t mix) {fMixing=mix;}
   void SetEtaForCorrel(Double_t etacorr) {fEtaForCorrel=etacorr;}
-  void SetSpeed(Bool_t speed) {fSpeed=speed;}
+  void SetSpeed(SpeedType speed) {fSpeed=speed;}
   void SetMergePools(Bool_t mergepools) {fMergePools=mergepools;}
   void SetUseDeff(Bool_t useDeff) {fUseDeff=useDeff;}
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
@@ -147,6 +150,8 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   std::vector<Double_t>  fLSBUppLim;          // Left SB lower lim
   std::vector<Double_t>  fRSBLowLim;          // Right SB upper lim
   std::vector<Double_t>  fRSBUppLim;          // Right SB upper lim
+  std::vector<Double_t>  fSignLowLim;         // Left signal region lower lim (for fSpeed==2)
+  std::vector<Double_t>  fSignUppLim;         // Left signal region lower lim (for fSpeed==2)
   std::vector<Int_t>     fDaughTrackID;       // ID of tagged daughters
   std::vector<Int_t>     fDaughTrigNum;	      // ID of D-trigger for daughters	
 
@@ -185,7 +190,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t  fSignLeft_HighPt;		// Left bound of "signal region" range - from 8 GeV/c
   Double_t  fSignRight_HighPt;		// Right bound of "signal region" range - from 8 GeV/c
   Int_t     fPoolNum;			// Number of the pool for the analyzed event
-  Bool_t    fSpeed;			// Speed up the execution removing bins and histos
+  SpeedType fSpeed;			// Speed up the execution removing bins and histos - 0=std, 1=single-SB bins, 2=single-SB and single-S bins
   Bool_t    fMergePools;		// Put all entries from various pools in _pool0 THnSparses (as old approach) - for testing & low stat!
   Bool_t    fUseDeff;			// Use D meson efficiency as weight
   Bool_t    fUseTrackeff;   		// Use track efficiency as weight
@@ -210,7 +215,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,15); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,16); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif
