@@ -2,7 +2,7 @@
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 R__ADD_INCLUDE_PATH($ALICE_ROOT)
 
-AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr, Int_t IsDcorr, Int_t IsPi0EtaWeights);
+AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr, Int_t IsDcorr, Int_t IsPi0EtaWeights,  Bool_t fIsCalculateBDMesonpTWeights, Bool_t fIsCalculateTaggingEff, Bool_t fIsCalculateBeautyElectronTrackEff);
 
 #endif
 
@@ -26,7 +26,10 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* AddTaskHFEppTPCTOFBeauty5TeVNew( ///-> to r
             Float_t DCAz,
             Int_t IsBcorr = 0,
             Int_t IsDcorr = 0,
-            Int_t IsPi0EtaWeights = 0
+            Int_t IsPi0EtaWeights = 0,
+            Bool_t fIsCalculateBDMesonpTWeights = kFALSE,
+    	    Bool_t fIsCalculateTaggingEff = kFALSE,
+    	    Bool_t fIsCalculateBeautyElectronTrackEff = kFALSE
 )           
 {
     
@@ -46,7 +49,7 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* AddTaskHFEppTPCTOFBeauty5TeVNew( ///-> to r
     
 	
 	//_______________________
-    AliAnalysisHFEppTPCTOFBeauty5TeVNew *task = ConfigHFEppTPCTOFBeauty5TeVNew(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,EtaMin,EtaMax,DCAxy,DCAz,IsBcorr,IsDcorr, IsPi0EtaWeights);
+    AliAnalysisHFEppTPCTOFBeauty5TeVNew *task = ConfigHFEppTPCTOFBeauty5TeVNew(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,EtaMin,EtaMax,DCAxy,DCAz,IsBcorr,IsDcorr, IsPi0EtaWeights, fIsCalculateBDMesonpTWeights, fIsCalculateTaggingEff, fIsCalculateBeautyElectronTrackEff);
     //_____________________________________________________
 	//Trigger
 		//if(!isMC){
@@ -73,7 +76,7 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* AddTaskHFEppTPCTOFBeauty5TeVNew( ///-> to r
 }
 
 
-AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr, Int_t IsDcorr, Int_t IsPi0EtaWeights)
+AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t EtaMin, Float_t EtaMax, Float_t DCAxy, Float_t DCAz, Int_t IsBcorr, Int_t IsDcorr, Int_t IsPi0EtaWeights,  Bool_t fIsCalculateBDMesonpTWeights, Bool_t fIsCalculateTaggingEff, Bool_t fIsCalculateBeautyElectronTrackEff)
 {
     ///_______________________________________________________________________________________________________________
     ///Track selection: Cuts used to ensure a minimum quality level of the tracks selected to perform the analysis
@@ -148,12 +151,15 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
     {
         pid->SetHasMCData(kTRUE);
         task->SetMCanalysis();
+        task->SetTaggEffi(fIsCalculateTaggingEff);
+        task->SetElecRecoEffi(fIsCalculateBeautyElectronTrackEff);
+        task->SetBDMesonpTWeightCalc(fIsCalculateBDMesonpTWeights);
     }
     //______________________________________
    
  //  /home/sudhir/alicodes/Beauty_5_TeV/TASKS_BEAUTY_Sudhir/A_NewPhotonicTask_ForBeauty/Weights/MacroAndSpectra/nonHFEcorrect_pp5_new_BeautyEnh_correct.root
 ///home/sudhir/alicodes/Beauty_5_TeV/TASKS_BEAUTY_Sudhir/A_NewPhotonicTask_ForBeauty/Weights/MacroAndSpectra/nonHFEcorrect_pp5_new_BeautyMB_correct.root
-   
+   if(isMCc && fIsCalculateTaggingEff){
    //
    TString filenameMB = "nonHFEcorrect_pp5_new_BeautyMB_correct_chpions.root";
    //TFile *weightFileMB = TFile::Open(Form("%s", filenameMB.Data()));
@@ -200,7 +206,7 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew* ConfigHFEppTPCTOFBeauty5TeVNew(Bool_t isMCc
    task->SetEtaWeightMB(hWEtaMB);
    task->SetPi0WeightEnh(hWPiEnh);
    task->SetEtaWeightEnh(hWEtaEnh);
-   
+   }
    
    // Function for obtaining the Hadron Contamination 
     
