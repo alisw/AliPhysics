@@ -742,7 +742,11 @@ void AddTask_GammaCaloMerged_pPb(
   } else if (trainConfig == 3525){
     cuts.AddCutMergedCalo("8009c123","4117958050032200000","4117958050022700001","0163300000000000"); // EJ2+DJ2
     cuts.AddCutMergedCalo("8009b123","4117958050032200000","4117958050022700001","0163300000000000"); // EJ1+DJ1
-
+  } else if (trainConfig == 3526){ // config for V1 clusterizer
+    cuts.AddCutMergedCalo("80010123","4117957050032200000","4117957050022700002","0163300000000000"); // INT7
+  } else if (trainConfig == 3527){ // config for V1 clusterizer
+    cuts.AddCutMergedCalo("8008e123","4117957050032200000","4117957050022700002","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("8008d123","4117957050032200000","4117957050022700002","0163300000000000"); // EG1+DG1
 
   // systematics MB
   } else if (trainConfig == 3600){
