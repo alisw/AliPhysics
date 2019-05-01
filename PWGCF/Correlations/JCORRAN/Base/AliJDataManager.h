@@ -66,26 +66,14 @@ public:
   AliJEventHeader * GetEventHeader(){ return fEventHeader; };
   TClonesArray  *GetEventHeaderList(){ return fEventHeaderList; };
   TClonesArray  *GetTrackList(){ return fTrackList; };
-  TClonesArray  *GetPhotonList(){ return fPhotonList; };
-  TClonesArray  *GetCellList(){ return fCellList; };
-  TClonesArray  *GetPhotonListRecalib(){ return fPhotonListRecalib; };
-  TClonesArray  *GetCellListRecalib(){ return fCellListRecalib; };
   TClonesArray  *GetMCTrackList(){ return fMCTrackList; };
-  //AliESDVZERO *GetVZERO(){ return fVZEROData; }
-  TObject *GetVZERO(){ return fVZEROData; }
 
   void SetExecLocal( const Bool_t b ) { fExecLocal = b; }
 
   void SetTrackList( TClonesArray *a ) { fTrackList = a; }
-  void SetPhotonList( TClonesArray *a ) { fPhotonList = a; }
-  void SetCaloCellList( TClonesArray *a ) { fCellList = a; }
   void SetMCTrackList( TClonesArray *a ) { fMCTrackList = a; }
   void SetHeaderList( TClonesArray *a ) { fEventHeaderList = a; }
   void SetRunInfoList( TList *a ) { fRunInfoList = a; }
-  void SetESDVZERO( TObject *a ) { fVZEROData = a; }
-  //     void SetESDTZERO( AliESDTZERO *a ) { AliESDTZERO = a; }
-  //     void SetESDZDC( AliESDZDC *a ) { AliESDZDC = a; }
-
   UInt_t GetFilterMap() const { return fFilterMap; }
   void SetFilterMap( UInt_t fm ){ fFilterMap = fm; }
   void AcceptTrackBit( UInt_t bit ){ SETBIT(fFilterMap, bit); } 
@@ -104,12 +92,7 @@ public:
   AliJEventHeader * fEventHeader; // comment me
   TClonesArray  *fEventHeaderList; // comment me
   TClonesArray  *fTrackList; // comment me
-  TClonesArray  *fPhotonList; // comment me
-  TClonesArray  *fCellList; // comment me
-  TClonesArray  *fPhotonListRecalib; // comment me
-  TClonesArray  *fCellListRecalib; // comment me
   TClonesArray  *fMCTrackList; // comment me
-  TObject  *fVZEROData; // comment me
   TList *fRunInfoList; // comment me
 
   int fhadronSelectionCut; // comment me

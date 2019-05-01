@@ -2251,20 +2251,20 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
                        Form("fhCentrality%d%d",TMath::Nint(fCentralityBins[ic-1]),
                                TMath::Nint(fCentralityBins[ic])); 
 
-      fhCentrality[ic] = new TH1F(name.Data(),"Centrality",20,0,100);
+      fhCentrality[ic] = new TH1F(name.Data(),"Centrality",100,0,100);
       if(bNotKine) fOutput->Add((TH1F*) fhCentrality[ic]);
    }
    //-------------------------
-   fhCentralityV0M = new TH1F("hCentralityV0M","hCentralityV0M",20,0,100);
+   fhCentralityV0M = new TH1F("hCentralityV0M","hCentralityV0M",100,0,100);
    if(bNotKine)fOutput->Add(fhCentralityV0M); 
    //-------------------------
-   fhCentralityV0A = new TH1F("hCentralityV0A","hCentralityV0A",20,0,100);
+   fhCentralityV0A = new TH1F("hCentralityV0A","hCentralityV0A",100,0,100);
    if(bNotKine) fOutput->Add(fhCentralityV0A); 
    //-------------------------
-   fhCentralityV0C = new TH1F("hCentralityV0C","hCentralityV0C",20,0,100);
+   fhCentralityV0C = new TH1F("hCentralityV0C","hCentralityV0C",100,0,100);
    if(bNotKine) fOutput->Add(fhCentralityV0C);
    //-------------------------
-   fhCentralityZNA = new TH1F("hCentralityZNA","hCentralityZNA",20,0,100);
+   fhCentralityZNA = new TH1F("hCentralityZNA","hCentralityZNA",100,0,100);
    if(bNotKine) fOutput->Add(fhCentralityZNA);
    //-------------------------
    for(Int_t it =0; it<kTT;it++){

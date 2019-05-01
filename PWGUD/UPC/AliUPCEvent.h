@@ -46,6 +46,8 @@ public:
   void SetNSPDfiredInner(Int_t nInner) {fNSPDfiredInner=nInner;}
   void SetNSPDfiredOuter(Int_t nOuter) {fNSPDfiredOuter=nOuter;}
   void SetFastOrFiredChips(TBits *map) {fFOmap=map;}
+  void SetIR1Map(TBits map) {fIR1Map=map;}
+  void SetIR2Map(TBits map) {fIR2Map=map;}
 
   void SetV0ADecision(Int_t decision) {fV0ADecision=decision;}
   void SetV0CDecision(Int_t decision) {fV0CDecision=decision;}
@@ -77,6 +79,8 @@ public:
   void SetZPAtdcData(Int_t tdc) {fZPAtdcData = tdc;}
   void SetZNCTime(Float_t tdc) {fZNCTime = tdc;}
   void SetZNATime(Float_t tdc) {fZNATime = tdc;}
+  void SetZNTDCm(Float_t *znatdcm,Float_t *znctdcm,Float_t *zpatdcm,Float_t *zpctdcm);
+  void SetBCnumber(UShort_t bcNumber) {fBCnumber = bcNumber;}
 
   AliUPCTrack *AddTrack(void);
   AliUPCMuonTrack *AddMuonTrack(void);
@@ -109,6 +113,8 @@ public:
   Int_t GetNSPDfiredInner(void) const { return fNSPDfiredInner; }
   Int_t GetNSPDfiredOuter(void) const { return fNSPDfiredOuter; }
   TBits *GetFastOrFiredChips(void) const { return fFOmap;}
+  TBits GetIR1Map(void) const { return fIR1Map;}
+  TBits GetIR2Map(void) const { return fIR2Map;}
   Bool_t Get0SMB(void) const;
   Bool_t Get0SH1(void) const;
   Bool_t Get0STP(void) const;
@@ -153,6 +159,11 @@ public:
   Int_t GetZPAtdcData(void) const { return fZPAtdcData; }
   Float_t GetZNCTime(void) const { return fZNCTime; }
   Float_t GetZNATime(void) const { return fZNATime; }
+  Float_t GetZNATDCm(Int_t channel) {return fZNATDCm[channel];}
+  Float_t GetZNCTDCm(Int_t channel) {return fZNCTDCm[channel];} 
+  Float_t GetZPATDCm(Int_t channel) {return fZPATDCm[channel];}
+  Float_t GetZPCTDCm(Int_t channel) {return fZPCTDCm[channel];} 
+  UShort_t GetBCnumber() {return fBCnumber;}
 
   Int_t GetNumberOfTracks(void) const { return fNtracks; }
   AliUPCTrack *GetTrack(Int_t iTrack) const;
@@ -217,6 +228,13 @@ protected:
   Int_t fZPAtdcData; // sum of ZPA TDC
   Float_t fZNCTime; // ZNC TDC sum in ns corrected 4 phase shift, AOD
   Float_t fZNATime; // ZNA TDC sum in ns corrected 4 phase shift
+  Float_t fZNATDCm[4];
+  Float_t fZNCTDCm[4];
+  Float_t fZPATDCm[4];
+  Float_t fZPCTDCm[4];
+  TBits fIR1Map; //PF protection
+  TBits fIR2Map; //PF protection
+  UShort_t fBCnumber;
   TClonesArray *fUPCTracks; //-> array of central upc tracks
   Int_t fNtracks; // number of central upc tracks in event
   TClonesArray *fUPCMuonTracks; //-> array of muon upc tracks
@@ -230,7 +248,7 @@ protected:
   static TClonesArray *fgUPCMuonTracks; // array of muon upc tracks
   static TClonesArray *fgMCParticles; // array of MC particles
 
-  ClassDef(AliUPCEvent,2);
+  ClassDef(AliUPCEvent,5);
 };
 
 #endif

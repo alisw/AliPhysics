@@ -17,9 +17,10 @@
 
 class TString;
 class AliEmcalJet;
-class AliEmcalTrackSelection;
 class AliMCEvnet;
 class AliVParticle;
+
+class AliEmcalTrackSelection;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -65,7 +66,7 @@ protected:
   void FillHistogram(const TString &histname, const AliVParticle *track, const AliEmcalJet *jet, double vz, double weight);
   void FillJetHistogram(const TString &histname, const AliEmcalJet *recjet, double vz, double weight);
   void FillTrackHistogramCentrality(const TString &histname, const AliVTrack * const trk, const AliEmcalJet *jet, double centpercent, double weight);
-  AliEmcalTrackSelection            *fTrackSelection;         ///< Track selection cuts used in the analysis
+  AliEmcalTrackSelection  *fTrackSelection;         ///< Track selection cuts used in the analysis
   Double_t                          fMinimumJetPt;            ///< Minimum jet \f$ p_{t} \f$
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
   Bool_t                            fSwapEta;                 ///< Swap eta sign on request

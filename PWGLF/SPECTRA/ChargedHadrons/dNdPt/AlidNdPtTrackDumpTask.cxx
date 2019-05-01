@@ -900,7 +900,7 @@ void AlidNdPtTrackDumpTask::ProcessAll(AliESDEvent *const esdEvent, AliMCEvent *
       if(esdFriend && esdFriend->TestSkipBit()==kFALSE) 
       {
         // propagate ITSout to TPC inner wall
-        AliESDfriendTrack *friendTrack = esdFriend->GetTrack(iTrack);
+        const AliESDfriendTrack *friendTrack = track->GetFriendTrack();
 
         if(friendTrack) 
 	{

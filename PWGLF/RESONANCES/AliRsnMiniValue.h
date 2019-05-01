@@ -18,6 +18,7 @@ public:
 
    enum EType {
       kVz,            // event Z position of primary vertex
+      kSpherocity,    // Spherocity
       kMult,          // event multiplicity or centrality (depends on task settings)
       kRefMult,       // event reference multiplicity (depends on task settings) - may differ from centrality estimator
       kTracklets,     // event tracklets

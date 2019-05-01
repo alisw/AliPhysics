@@ -564,7 +564,8 @@ struct CENTAdder : public SysErrorAdder
   TH1*     fLookup;
   Double_t fCMin;
   Double_t fCMax;
-  Double_t fEM;
+  Double_t fEM1;
+  Double_t fEM2;
   /** 
    * Constructor 
    * 
@@ -578,7 +579,8 @@ struct CENTAdder : public SysErrorAdder
       fValue(0),
       fCMin(0),
       fCMax(0),
-      fEM(0),
+      fEM1(0),
+      fEM2(0),
       fLookup(0)
   {
     Double_t off = .1;
@@ -609,12 +611,20 @@ struct CENTAdder : public SysErrorAdder
       fTrig = "CENT";
       fLookup = new TH1D("lookup", "Centrality error lookup", 100, 0, 100);
       Double_t min = 0.004, max = 0.062, top = 100; // 0.02
-      if (sNN == 5023) {
+      if (sNN == 5023) { 
 	min = 0.005;
 	max = 0.095;
 	top = 90;
-	fEM = 0.04;
+	fEM1 = 0.04;
+	fEM2 = 0.04;
 	// max = (7.5-min)/TMath::Power(80,2) * TMath::Power(100,2) + min;
+      }
+      else if (sNN == 5440 || sNN == 5100) { // Preliminary values for Xe-Xe
+	min = 0.00086;
+	max = 0.042;
+	top = 90;
+	fEM1 = 0.014;
+	fEM2 = 0.040;
       }
       for (Int_t i = 1; i <= 100; i++) {
 	Double_t c = fLookup->GetXaxis()->GetBinCenter(i);
@@ -659,7 +669,7 @@ struct CENTAdder : public SysErrorAdder
 
     Int_t ret = SysErrorAdder::MakeTrigger(gse, l);
 
-    Double_t em = fCMax >= 80 ? fEM : 0;
+    Double_t em = fCMax > 80 ? fEM2 : fCMax > 70 ? fEM1 : 0;
     Int_t    ei = gse->DefineCommon("EM contamination", true, em, em);
     ModError(gse, ei, kEMFill, l, 0);
     

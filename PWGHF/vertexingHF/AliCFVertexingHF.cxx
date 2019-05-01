@@ -22,7 +22,6 @@
 // Base class for HF Unfolding - agrelli@uu.nl
 //-----------------------------------------------------------------------
 
-#include "TParticle.h"
 #include "TClonesArray.h"
 #include "AliAODMCParticle.h"
 #include "AliAODRecoDecayHF.h"
@@ -61,7 +60,9 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fFakeSelection(0),
 	fFake(1.), // setting to MC value
 	fRejectIfNoQuark(kFALSE),
-	fMultiplicity(0.),
+  fMultiplicity(0.),
+  fq2(0.),
+  fTrackArray(0x0),
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
 	//
@@ -97,6 +98,8 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fFake(1.), // setting to MC value
 	fRejectIfNoQuark(kFALSE),
 	fMultiplicity(0.),
+  fq2(0.),
+  fTrackArray(0x0),
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
 	//
@@ -128,7 +131,8 @@ AliCFVertexingHF::~AliCFVertexingHF()
 	if (fEtaAccCut){
 	  	delete [] fEtaAccCut;
 	  	fEtaAccCut = 0x0;
-	}	
+	}
+  if(fTrackArray) fTrackArray = 0x0;
 }
 
 //_____________________________________________________
@@ -173,7 +177,10 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 				fEtaAccCut[iP]=c.fEtaAccCut[iP];
 			}
 		}
-		fMultiplicity=c.fMultiplicity;
+    fMultiplicity=c.fMultiplicity;
+    fq2=c.fq2;
+    delete fTrackArray;
+    fTrackArray = new TClonesArray(*(c.fTrackArray));
 		fConfiguration=c.fConfiguration;
 	}
 	
@@ -203,7 +210,9 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fFakeSelection(c.fFakeSelection),
 	fFake(c.fFake),
 	fRejectIfNoQuark(c.fRejectIfNoQuark),	
-	fMultiplicity(c.fMultiplicity),
+  fMultiplicity(c.fMultiplicity),
+  fq2(c.fq2),
+  fTrackArray(0),
 	fConfiguration(c.fConfiguration)
 {  
   //
@@ -226,6 +235,8 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
     if (c.fPtAccCut) memcpy(fPtAccCut,c.fPtAccCut,fProngs*sizeof(Int_t));
     if (c.fEtaAccCut) memcpy(fEtaAccCut,c.fEtaAccCut,fProngs*sizeof(Int_t));
   }
+  delete fTrackArray;
+  fTrackArray = new TClonesArray(*(c.fTrackArray));
 }
 
 //___________________________________________________________
@@ -389,8 +400,8 @@ Bool_t AliCFVertexingHF::CheckMCDaughters()const
 	AliAODMCParticle *mcPartDaughter;
 	Bool_t checkDaughters = kFALSE;
 	
-	Int_t label0 = fmcPartCandidate->GetDaughter(0);
-	Int_t label1 = fmcPartCandidate->GetDaughter(1);
+	Int_t label0 = fmcPartCandidate->GetDaughterLabel(0);
+	Int_t label1 = fmcPartCandidate->GetDaughterLabel(1);
 	AliDebug(3,Form("label0 = %d, label1 = %d", label0, label1));
 	if (label1<=0 || label0 <= 0){
 	  AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
@@ -498,8 +509,8 @@ Bool_t AliCFVertexingHF::MCAcceptanceStep() const
 	Bool_t bMCAccStep = kFALSE;
 	
 	AliAODMCParticle *mcPartDaughter;
-	Int_t label0 = fmcPartCandidate->GetDaughter(0);
-	Int_t label1 = fmcPartCandidate->GetDaughter(1);
+	Int_t label0 = fmcPartCandidate->GetDaughterLabel(0);
+	Int_t label1 = fmcPartCandidate->GetDaughterLabel(1);
 	if (label1<=0 || label0 <= 0){
 		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
 		return bMCAccStep;  
@@ -537,8 +548,8 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts **tr
 	///
 	Bool_t bRefitStep = kFALSE;
 	
-	Int_t label0 = fmcPartCandidate->GetDaughter(0);
-	Int_t label1 = fmcPartCandidate->GetDaughter(1);
+	Int_t label0 = fmcPartCandidate->GetDaughterLabel(0);
+	Int_t label1 = fmcPartCandidate->GetDaughterLabel(1);
 	
 	if (label1<=0 || label0 <= 0){
 		AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
@@ -786,8 +797,8 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	fLabelArray = new Int_t[fProngs];
 
 	AliAODMCParticle *mcPartDaughter;
-	Int_t label0 = fmcPartCandidate->GetDaughter(0);
-	Int_t label1 = fmcPartCandidate->GetDaughter(1);
+	Int_t label0 = fmcPartCandidate->GetDaughterLabel(0);
+	Int_t label1 = fmcPartCandidate->GetDaughterLabel(1);
  	AliDebug(2, Form("label0 = %d, label1 = %d", label0, label1));
 	if (label1<=0 || label0 <= 0){
 	        AliDebug(2, Form("The MC particle doesn't have correct daughters, skipping!!"));
@@ -817,7 +828,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	// resonant decay channel
 	else if (label1 - label0 == fProngs-2 && fProngs > 2){
 	  AliDebug(3, "In the resonance decay channel");
-		Int_t labelFirstDau = fmcPartCandidate->GetDaughter(0);
+		Int_t labelFirstDau = fmcPartCandidate->GetDaughterLabel(0);
 		Int_t foundDaughters = 0;
 		for(Int_t iDau=0; iDau<fProngs-1; iDau++){
 			Int_t iLabelDau = labelFirstDau+iDau;
@@ -852,7 +863,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			    fLabelArray = 0x0;  
 			    return bLabelArray;
 			  }
-			  Int_t labelK0Dau = part->GetDaughter(0);
+			  Int_t labelK0Dau = part->GetDaughterLabel(0);
 			  AliAODMCParticle* partK0S = dynamic_cast<AliAODMCParticle*>(fmcArray->At(labelK0Dau));
 			  if(!partK0S){
 			    AliError("Error while casting particle! returning a NULL array");
@@ -868,7 +879,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			    fLabelArray = 0x0;
 			    return bLabelArray;
 			  }
-			  Int_t labelFirstDauRes = partK0S->GetDaughter(0);
+			  Int_t labelFirstDauRes = partK0S->GetDaughterLabel(0);
 			  AliDebug(2, Form("Found K0S (%d)", labelK0Dau));
 			  for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
 			    Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
@@ -902,7 +913,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			  AliDebug(3, Form("nDauRes = %d", nDauRes));
 			  if(nDauRes!=2) {
 			    AliDebug(3, Form("nDauRes = %d, different from 2", nDauRes));
-			    Int_t labelFirstDauResTest = part->GetDaughter(0);
+			    Int_t labelFirstDauResTest = part->GetDaughterLabel(0);
 			    for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
 			      Int_t iLabelDauResTest = labelFirstDauResTest+iDauRes;
 			      AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauResTest));
@@ -914,7 +925,7 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			    fLabelArray = 0x0;  
 			    return bLabelArray;			    
 			  }
-			  Int_t labelFirstDauRes = part->GetDaughter(0); 
+			  Int_t labelFirstDauRes = part->GetDaughterLabel(0); 
 			  for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
 			    Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
 			    AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
@@ -1015,4 +1026,25 @@ void AliCFVertexingHF::SetAccCut()
 		}
 	}
 	return;
-}		
+}
+
+//___________________________________________________________
+Int_t AliCFVertexingHF::ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, Double_t R) const {
+  
+  Int_t mult=0;
+  if(!fTrackArray) {
+    AliWarning("Track array not found, local multiplicity not computed\n");
+    return -1;
+  }
+  for(Int_t it=0; it<fTrackArray->GetEntriesFast(); it++) {
+    AliAODTrack* track=(AliAODTrack*)fTrackArray->UncheckedAt(it);
+    if(!track) continue;
+    if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9))) continue;
+    Double_t eta=track->Eta();
+    Double_t phi=track->Phi();
+    if(TMath::Sqrt((eta-etaD)*(eta-etaD)+(phi-phiD)*(phi-phiD))<R) mult++;
+  }
+  
+  return mult;
+}
+

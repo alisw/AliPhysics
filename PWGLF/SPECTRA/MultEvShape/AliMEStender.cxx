@@ -161,6 +161,7 @@ void AliMEStender::UserCreateOutputObjects()
   case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
     lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
     lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE,0);
+    // lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,0);
     fTrackFilter->AddCuts(lTrackCuts);
     break;
   case AliMESconfigTender::kNoTC:
@@ -258,7 +259,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   if( AliPPVsMultUtils::IsMinimumBias(fESD) ) {
 	  ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);  // events after Physics Selection (for MB normalisation to INEL)
   }
-  if( !AliPPVsMultUtils::IsEventSelected(fESD) ) {
+  if( (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kMB)) && (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kHighMult)) ) {
 	  return;
   }
   ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);  // analyzed events
@@ -267,6 +268,7 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   // TRIGGER SELECTION
   // MB & HM triggers
   Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kMB),
+  // Bool_t triggerMB = (inputHandler->IsEventSelected()& AliVEvent::kINT7),
          triggerHM = (inputHandler->IsEventSelected()& AliVEvent::kHighMult);
   if(!triggerHM && !triggerMB){
     AliDebug(2, "Miss trigger");
@@ -395,6 +397,9 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   // printf("event index = %i\n", fESD->GetEventNumberInFile());
 
   // leading particle
+  // printf("\n\nNew event!\n");
+
+  // printf("LP search\n");
   fEvInfo->FindLeadingParticle(fTracks);
   // shape
   fEvInfo->MakeDirectivity(fTracks);
@@ -488,15 +493,20 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     if(H) H->Fill(val);
 
     // define matching with ESD track array
+    // printf("New particle\n");
     for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
       if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
+      // printf("tmesRec->GetLabel() = %i \t ipart = %i\n", tmesRec->GetLabel(), ipart);
       if(tmesRec->GetLabel()!=ipart) continue;
       tmesRec->SetLabel(fMCtracks->GetEntries()-1);
       tmes->SetLabel(iesd);
+      // printf("tmesRec label = fMCtracks->GetEntries()-1 = %i \t pT = %f \n", fMCtracks->GetEntries()-1, tmesRec->Pt());
+      // printf("tmes label = iesd = %i \t pT = %f \n", iesd, tmes->Pt());
     }
   }
 
   // leading particle
+  // printf("generated LP search\n");
   fMCevInfo->FindLeadingParticle(fMCtracks);
   // shape
   fMCevInfo->MakeDirectivity(fMCtracks);
@@ -509,7 +519,19 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   val[3] = fMCevInfo->GetEventShape()->GetDirectivity(kFALSE);
   if(H) H->Fill(val);
 
-
+/*
+  for(Int_t iesd(0); iesd<fTracks->GetEntries(); iesd++){
+    if(!( tmesRec = (AliMEStrackInfo*)fTracks->At(iesd))) continue;
+    if( !(tmes= (AliMEStrackInfo*)fMCtracks->At(tmesRec->GetLabel())) ) continue;
+    // if(TMath::Abs((tmes->Pt() - tmesRec->Pt())) > 0.05){
+        // printf("\n\nshit\n\n");
+        printf("tmesRec label = fMCtracks->GetEntries()-1 = %i \t pT = %f \n", tmesRec->GetLabel(), tmesRec->Pt());
+        printf("tmes label = iesd = %i \t pT = %f \n", tmes->GetLabel(), tmes->Pt());
+        // exit(1);
+    // }
+  }
+*/
+  
   // fill debug
   if(DebugLevel()>0){
 	  (*AliMESbaseTask::DebugStream()) << "evInfoMC"

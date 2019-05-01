@@ -120,7 +120,6 @@ Bool_t AliMuonTriggerCombo::Init ( const char* name, const char* trigInputsStrin
   Bool_t hasOR = tn.Contains("|");
   Bool_t hasNOT = tn.Contains("!");
 
-  Bool_t isRegex = kFALSE;
   if ( tn.Contains("[") || tn.Contains(".") || tn.Contains("+") || tn.Contains("?") || tn.Contains("*") || tn.Contains("^") || tn.Contains("$") ) {
     // This is a regular expression
     if ( hasAND ||

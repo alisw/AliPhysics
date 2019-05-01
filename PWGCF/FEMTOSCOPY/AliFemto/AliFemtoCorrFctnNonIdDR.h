@@ -39,6 +39,8 @@ public:
   virtual AliFemtoCorrFctn* Clone();
   void FillParticleP(bool);
 
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnNonIdDR(*this); }
+
 protected:
   TH1D *fNumOutP;     ///< Numerator for pair with positive k*out
   TH1D *fNumOutN;     ///< Numerator for pair with negative k*out

@@ -155,7 +155,8 @@ void AliPtResolAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const 
   if(evtCuts->IsTriggerRequired())  
   {
     // always MB
-    isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    //isEventTriggered = inputHandler->IsEventSelected() & AliVEvent::kMB;
+    isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
 
     physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
     if(!physicsSelection) return;
@@ -168,7 +169,7 @@ void AliPtResolAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const 
       isEventTriggered = triggerAnalysis->IsOfflineTriggerFired(esdEvent, GetTrigger());
     }
 
-  // get reconstructed vertex  
+    // get reconstructed vertex  
   const AliESDVertex* vtxESD = 0; 
   Bool_t isRecVertex = kFALSE;
   if(evtCuts->IsRecVertexRequired()) 
@@ -209,7 +210,7 @@ void AliPtResolAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const 
       // only negative charged 
       if(GetParticleMode() == AlidNdPtHelper::kMinus && track->Charge() > 0) 
         continue;
-
+      
       if(esdTrackCuts->AcceptTrack(track)) 
       {
         if(accCuts->AcceptTrack(track)) 

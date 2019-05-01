@@ -80,10 +80,9 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p) const
 
   fCallParams[0] = p;
 
-  fCutMethod->SetParamPtrs(&fCallParams[0]);
+  fCutMethod->SetParamPtrs(&fCallParams[0],fCallParams.size());
   Long_t result;
   fCutMethod->Execute(fCutObject,result);
-
   return (result!=0);
 }
 
@@ -101,7 +100,7 @@ Bool_t AliAnalysisMuMuCutElement::CallCutMethod(Long_t p1, Long_t p2) const
   fCallParams[0] = p1;
   fCallParams[1] = p2;
 
-  fCutMethod->SetParamPtrs(&fCallParams[0]);
+  fCutMethod->SetParamPtrs(&fCallParams[0],fCallParams.size());
   Long_t result;
   fCutMethod->Execute(fCutObject,result);
 
@@ -328,6 +327,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
     scutMethodPrototype.ReplaceAll("const AliVParticle&","");
     scutMethodPrototype.ReplaceAll("const AliInputEventHandler&","");
     scutMethodPrototype.ReplaceAll("const AliVEventHandler&","");
+    scutMethodPrototype.ReplaceAll(",,",",");
 
     prototype += scutMethodPrototype;
 
@@ -392,7 +392,7 @@ void AliAnalysisMuMuCutElement::Init(ECutType expectedType) const
       }
     }
 
-    nameOfMethod.SetParamPtrs(&fCallParams[0+nMainPar-1]);
+    nameOfMethod.SetParamPtrs(&fCallParams[0+nMainPar-1],nMainPar+nparams);
 
     nameOfMethod.Execute(fCutObject);
 
@@ -478,7 +478,7 @@ Bool_t AliAnalysisMuMuCutElement::Pass(const AliVEvent& event) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuCutElement::Pass(const AliInputEventHandler& eventHandler) const
+Bool_t AliAnalysisMuMuCutElement::Pass(const AliVEventHandler& eventHandler) const
 {
   /// Whether the eventHandler pass this cut
   return CallCutMethod(reinterpret_cast<Long_t>(&eventHandler));
@@ -524,7 +524,7 @@ Bool_t AliAnalysisMuMuCutElement::Pass(const TString& firedTriggerClasses,
     reinterpret_cast<Long_t>(&acceptedTriggerClasses),
     L0,L1,L2 };
 
-  fCutMethod->SetParamPtrs(params);
+  fCutMethod->SetParamPtrs(params,sizeof(params)/sizeof(params[0]));
   fCutMethod->Execute(fCutObject,result);
   return (result!=0);
 }

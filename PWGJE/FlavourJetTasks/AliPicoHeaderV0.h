@@ -37,7 +37,7 @@ class AliPicoHeaderV0 : public TNamed {
 //=============================================================================
 
   void Reset();
-  void SetEventInfo(AliInputEventHandler* const pH);
+  void SetEventInfo(AliVEventHandler* const pH);
 //=============================================================================
 
  private :

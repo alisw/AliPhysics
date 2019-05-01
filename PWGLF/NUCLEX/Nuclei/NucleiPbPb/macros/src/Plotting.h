@@ -19,7 +19,7 @@ namespace plotting {
     kBlack
   };
 
-  const std::array<int,10> kSpectraColors{
+  const std::array<int,11> kSpectraColors{
     TColor::GetColor("#ff3300"),
     TColor::GetColor("#ec6e0a"),
     TColor::GetColor("#daaa14"),
@@ -27,6 +27,7 @@ namespace plotting {
     TColor::GetColor("#85dd69"),
     TColor::GetColor("#42d6b4"),
     TColor::GetColor("#00ceff"),
+    kBlack,
     TColor::GetColor("#009adf"),
     TColor::GetColor("#0067c0"),
     TColor::GetColor("#0033a1")
@@ -44,4 +45,3 @@ namespace plotting {
 }
 
 #endif
-

@@ -26,7 +26,7 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
-
+  Bool_t IsFromBGEventAOD(AliMCEvent* fAOD, Int_t Index);
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
     fCentralityPercentileMax = max;

@@ -45,8 +45,11 @@ set(SRCS
     AliHFOfflineCorrelator.cxx
     AliReducedParticle.cxx
     AliD0hCutOptim.cxx
+    AliDstarhCutOptim.cxx
+    AliDPlushCutOptim.cxx
     AliAnalysisTaskDStarCorrelations.cxx
     AliAnalysisTaskSED0Correlations.cxx
+    AliAnalysisTaskSED0CorrelationsVsMult.cxx
     AliAnalysisTaskSEDplusCorrelations.cxx
     AliAnalysisTaskSEmcCorr.cxx	
     AliAnalysisTaskSEHFCJqa.cxx

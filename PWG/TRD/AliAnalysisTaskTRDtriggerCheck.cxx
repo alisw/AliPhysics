@@ -139,11 +139,11 @@ void AliAnalysisTaskTRDtriggerCheck::UserExec(Option_t * /* option */)
   if ((fDebug > 0) && esdEvent)
     printf("event: %s-%06i\n", CurrentFileName(), esdEvent->GetEventNumberInFile());
 
-  if (!InputEvent()->GetFiredTriggerClasses().Contains("WU")) {
-    if (fDebug > 0)
-      printf("no TRD, returning\n");
-    return;
-  }
+//  if (!InputEvent()->GetFiredTriggerClasses().Contains("WU")) {
+//    if (fDebug > 0)
+//      printf("no TRD, returning\n");
+//    return;
+//  }
 
   // reproduce hardware decision
   AliTRDTriggerAnalysis trgAnalysis;

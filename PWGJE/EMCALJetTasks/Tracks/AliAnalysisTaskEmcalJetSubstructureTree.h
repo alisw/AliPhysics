@@ -29,15 +29,21 @@
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include <exception>
+#include <vector>
+#include <string>
 #include <TString.h>
 #include <fastjet/PseudoJet.hh>
 #include <fastjet/JetDefinition.hh>
 
+class TH1;
+class THistManager;
 class TTree;
 class AliClusterContainer;
 class AliEmcalJet;
 class AliParticleContainer;
 class AliTrackContainer;
+
+#define EXPERIMENTAL_JETCONSTITUENTS
 
 namespace EmcalTriggerJets {
 
@@ -49,6 +55,8 @@ namespace EmcalTriggerJets {
 struct AliNSubjettinessParameters {
   Double_t fOneSubjettiness;      ///< 1-subjettiness
   Double_t fTwoSubjettiness;      ///< 2-subjettiness
+
+  void LinkJetTreeBranches(TTree *jettree, const char *tag);
 };
 
 /**
@@ -71,7 +79,11 @@ struct AliSoftDropParameters {
   Double_t fMg;             ///< Groomed jet mass
   Double_t fRg;             ///< Groomed jet radius
   Double_t fPtg;            ///< Groomed jet pt
+  Double_t fDeltaR;         ///< Delta_r of the branches at the last splitting
+  Double_t fMug;            ///< Mass Drop parameter
   Int_t fNDropped;          ///< Number of dropped subjets
+
+  void LinkJetTreeBranches(TTree *jettree, const char *tag);
 };
 
 /**
@@ -96,6 +108,49 @@ struct AliJetSubstructureData {
 };
 
 /**
+ * @struct AliJetKineParameters
+ * @brief Jet kinematic parameters
+ * @ingroup PWGJETASKS
+ */
+struct AliJetKineParameters {
+  Double_t fPt;                              ///< Jet Pt
+  Double_t fE;                               ///< Jet Energy
+  Double_t fMass;                            ///< Jet Mass
+  Double_t fEta;                             ///< Jet Eta 
+  Double_t fPhi;                             ///< Jet Phi
+  Double_t fArea;                            ///< Jet Area
+  Double_t fNEF;                             ///< Jet Neutral Energy Fraction
+  Int_t    fNCharged;                        ///< Number of charged constituents
+  Int_t    fNNeutral;                        ///< Number of neutral constituents
+  Double_t fZLeading;                        ///< z of the leading constituent
+  Double_t fZLeadingCharged;                 ///< z of the leading charged constituent
+  Double_t fZLeadingNeutral;                 ///< z of the leading neutral constituent
+
+  void LinkJetTreeBranches(TTree *jettree, const char *tag);
+};
+
+/**
+ * @struct AliJetStructureParameters
+ * @brief Global jet substructure paramters
+ * @ingroup PWGJETASKS
+ */
+struct AliJetStructureParameters {
+  Double_t fAngularity;                       ///< Angularity
+  Double_t fPtD;                              ///< Pt dispersion
+
+  void LinkJetTreeBranches(TTree *jettree, const char *tag);
+};
+
+struct AliJetTreeGlobalParameters {
+  Double_t fJetRadius;                        ///< jet radius
+  Double_t fEventWeight;                      ///< event weight (downscale factor)
+  Int_t    fTriggerClusterIndex;              ///< Index of the trigger cluster (0 - CENT, 1 - CENTNOTRD)
+  Double_t fRhoParamters[4];                  ///< Rho parameters
+
+  void LinkJetTreeBranches(TTree *jettree, bool fillRho);
+};
+
+/**
  * @class AliAnalysisTaskEmcalJetSubstructureTree
  * @brief Tree with jet substructure information
  * @ingroup PWGJETASKS
@@ -108,62 +163,42 @@ public:
     ReclusterizerException() : std::exception() {}
     virtual ~ReclusterizerException() throw() {}
 
-    const char *what() const throw() { return "Error in reclusterizing in fastjet"; }
+    virtual const char *what() const throw() { return "Error in reclusterizing in fastjet"; }
+  };
+  class SubstructureException : public std::exception {
+  public:
+    SubstructureException() : std::exception() {}
+    virtual ~SubstructureException() throw() {}
+
+    virtual const char *what() const throw() { return "Error in builing substructure observable"; }
+  };
+  class SoftDropException : public std::exception {
+  public:
+    SoftDropException() : std::exception() {}
+    virtual ~SoftDropException() throw() {}
+
+    virtual const char *what() const throw() { return "No associated softdrop structure found for jet - softdrop algorithm failing"; }
   };
   enum Reclusterizer_t {
     kCAAlgo = 0,
     kKTAlgo = 1,
     kAKTAlgo = 2
   };
-  enum JetTreeEntry {
-    kTRadius = 0,
-    kTWeight = 1,
-    kTPtJetRec = 2,
-    kTPtJetSim = 3,
-    kTRhoPtRec = 4,
-    kTRhoPtSim = 5,
-    kTRhoMassRec = 6,
-    kTRhoMassSim = 7,
-    kTAreaRec = 8,
-    kTAreaSim = 9,
-    kTNEFRec = 10,
-    kTNEFSim = 11,
-    kTMassRec = 12,
-    kTMassSim = 13,
-    kTZgMeasured = 14,
-    kTZgTrue = 15,
-    kTRgMeasured = 16,
-    kTRgTrue = 17,
-    kTMgMeasured = 18,
-    kTMgTrue = 19,
-    kTPtgMeasured = 20,
-    kTPtgTrue = 21,
-    kTOneNSubjettinessMeasured = 22,
-    kTOneNSubjettinessTrue = 23,
-    kTTwoNSubjettinessMeasured = 24,
-    kTTwoNSubjettinessTrue = 25,
-    kTAngularityMeasured = 26,
-    kTAngularityTrue = 27,
-    kTPtDMeasured = 28,
-    kTPtDTrue = 29,
-    kTNCharged = 30,
-    kTNNeutral = 31,
-    kTNConstTrue = 32,
-    kTNDroppedMeasured = 33,
-    kTNDroppedTrue = 34,
-    kTNVar = 35
+
+  enum JetRecType_t {
+    kDetLevel = 0,
+    kPartLevel = 1
   };
+
 	AliAnalysisTaskEmcalJetSubstructureTree();
 	AliAnalysisTaskEmcalJetSubstructureTree(const char *name);
 	virtual ~AliAnalysisTaskEmcalJetSubstructureTree();
 
 	void SetTriggerBits(UInt_t triggersel) { fTriggerSelectionBits = triggersel; }
 	void SetTriggerString(TString triggerstring) { fTriggerSelectionString = triggerstring; }
-
-  void SetNameRhoPtRec(const char *rhoname) { fRhoNamePtRec = rhoname; }
-  void SetNameRhoMassRec(const char *rhoname) { fRhoNameMassRec =  rhoname; }
-  void SetNameRhoPtSim(const char *rhoname) { fRhoNamePtSim = rhoname; }
-  void SetNameRhoMassSim(const char *rhoname) { fRhoNameMassSim = rhoname; }
+	void SetUseDownscaleWeight(Bool_t usedownscale) { fUseDownscaleWeight = usedownscale; }
+  void SetGlobalTriggerDecisionContainerName(const char *name) { fNameTriggerDecisionContainer = name; }
+  void SetUseTriggerSelectionOnData(bool doUse) { fUseTriggerSelectionForData = doUse; }
 
 	void SetSoftdropDefiniion(Double_t zcut, Double_t betacut, Reclusterizer_t reclusterizer) {
 	  fSDZCut = zcut;
@@ -171,44 +206,97 @@ public:
 	  fReclusterizer = reclusterizer;
 	}
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, const char *name);
+  void SetFillPartLevelBranches(Bool_t doFill) { fFillPart = doFill; }
+  void SetFillRhoBranches(Bool_t doFill) { fFillRho = doFill; }
+  void SetFillSoftdropBranches(Bool_t doFill) { fFillSoftDrop = doFill; }
+  void SetFillNSubjettinessBranches(Bool_t doFill) { fFillNSub = doFill; }
+  void SetFillSubstructureBranches(Bool_t doFill) { fFillStructGlob = doFill; }
+
+  void SetUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
+  void SetUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
+
+  void SetHasRecEvent(Bool_t hasrec) { fHasRecEvent = hasrec; }
+  void SetHasTrueEvent(Bool_t hastrue) { fHasTrueEvent = hastrue; }
+
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();
 	virtual bool Run();
+	virtual void RunChanged(Int_t newrun);
+  virtual void UserExecOnce();
+  virtual Bool_t IsTriggerSelected();
 
 	AliJetSubstructureData MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const;
 
 	AliSoftDropParameters MakeSoftDropParameters(const fastjet::PseudoJet &jet, const AliSoftdropDefinition &cut) const;
 
 	AliNSubjettinessParameters MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const;
+  
+  AliJetKineParameters MakeJetKineParameters(const AliEmcalJet &jet, JetRecType_t rectype, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
 
 	Double_t MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
 
 	Double_t MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
 
-	void FillTree(double r, double weight, const AliEmcalJet *datajet, const AliEmcalJet *mcjet, AliSoftDropParameters *dataSoftdrop, AliSoftDropParameters *mcsoftdrop, AliNSubjettinessParameters *dataSubjettiness, AliNSubjettinessParameters *mcSubjettiness, Double_t *angularity, Double_t *ptd, Double_t *rhoparameters);
+  void FillLuminosity();
+  
+	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
+
+  std::string MatchTrigger(const std::string &triggerclass) const;
+  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
+
+  bool SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
-	Double_t                     fJetTreeData[kTNVar];        ///< Variable storage for the jet tree
+  AliJetTreeGlobalParameters  *fGlobalTreeParams;           //!<! Global jet tree parameters (same for all jets in event)
+  AliSoftDropParameters       *fSoftDropMeasured;           //!<! Data field for measured soft drop parameters in jet tree
+  AliSoftDropParameters       *fSoftDropTrue;               //!<! Data field for true soft drop parameters in jet tree
+  AliNSubjettinessParameters  *fNSubMeasured;               //!<! Data field for measured n-subjettiness parameters in jet tree
+  AliNSubjettinessParameters  *fNSubTrue;                   //!<! Data field for true n-subjettiness parameters in jet tree
+  AliJetKineParameters        *fKineRec;                    //!<! Detector level jet kinematics
+  AliJetKineParameters        *fKineSim;                    //!<! Particle level jet kinematics
+  AliJetStructureParameters   *fJetStructureMeasured;       //!<! Measured jet substructure parameters
+  AliJetStructureParameters   *fJetStructureTrue;           //!<! True jet substructure paramteres
+	THistManager                *fQAHistos;                   //!<! QA histos
+  TH1                         *fLumiMonitor;                //!<! Luminosity monitor
 
 	Double_t                     fSDZCut;                     ///< Soft drop z-cut
 	Double_t                     fSDBetaCut;                  ///< Soft drop beta cut
 	Reclusterizer_t              fReclusterizer;              ///< Reclusterizer method
 
+  Bool_t                       fHasRecEvent;                ///< Has reconstructed event (for trigger selection)
+  Bool_t                       fHasTrueEvent;               ///< Has Monte-Carlo truth (for trigger selection)
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
-	TString                      fTriggerSelectionString;     ///< Trigger selection string
+  TString                      fTriggerSelectionString;     ///< Trigger selection string
+  TString                      fNameTriggerDecisionContainer; ///< Global trigger decision container
+  Bool_t                       fUseTriggerSelectionForData; ///< Use trigger selection on data (require trigger patch in addition to trigger selection string)
+  Bool_t                       fUseDownscaleWeight;         ///< Use 1/downscale as weight
+  Bool_t                       fUseChargedConstituents;     ///< Use charged constituents 
+  Bool_t                       fUseNeutralConstituents;     ///< Use neutral constituents
 
-  TString                      fRhoNamePtRec;               ///< Name of the rho parameter coming from the rho task for rec jet (pt)
-  TString                      fRhoNameMassRec;             ///< Name of the rho parameter coming from the rho task for rec jet (mass)
-  TString                      fRhoNamePtSim;               ///< Name of the rho parameter coming from the rho task for mc-level jet (pt)
-  TString                      fRhoNameMassSim;             ///< Name of the rho parameter coming from the rho task for mc-level jet (mass)
+  // Fill levels for tree (save disk space when information is not needed)
+  Bool_t                       fFillPart;                   ///< Fill particle level information
+  Bool_t                       fFillRho;                    ///< Fill rho parameters
+  Bool_t                       fFillSoftDrop;               ///< Fill soft drop parameters
+  Bool_t                       fFillNSub;                   ///< Fill N-subjettiness
+  Bool_t                       fFillStructGlob;             ///< Fill other substructure variables
 
 	/// \cond CLASSIMP
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);
 	/// \endcond
 };
+
+/**
+ * @brief Helper function linking struct members to branches in the jet substructure tree
+ * 
+ * @param jettree Jet tree to be linked
+ * @param data Data field to be linked
+ * @param branchname Name of the branch in the jet tree
+ * @param type Variable data type
+ */
+void LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type);
 
 } /* namespace EmcalTriggerJets */
 

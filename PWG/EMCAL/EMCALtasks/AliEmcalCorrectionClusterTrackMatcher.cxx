@@ -35,6 +35,7 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fMaxDistance(0.1),
   fUsePIDmass(kTRUE),
   fUseDCA(kTRUE),
+  fUseOuterParamInESDs(kFALSE),
   fUpdateTracks(kTRUE),
   fUpdateClusters(kTRUE),
   fClusterContainerIndexMap(),
@@ -45,8 +46,8 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fNEmcalClusters(0),
   fHistMatchEtaAll(0),
   fHistMatchPhiAll(0),
-  fMCGenerToAcceptForTrack(1),
-  fNMCGenerToAccept(0)
+  fNMCGenerToAccept(0),
+  fMCGenerToAcceptForTrack(1)
 {
   for(Int_t icent=0; icent<8; ++icent) {
     for(Int_t ipt=0; ipt<9; ++ipt) {
@@ -75,9 +76,9 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("createHistos", fCreateHisto);
   GetProperty("usePIDmass", fUsePIDmass);
   GetProperty("useDCA", fUseDCA);
+  GetProperty("useOuterParamInESDs", fUseOuterParamInESDs);
   GetProperty("maxDist", fMaxDistance);
   GetProperty("updateClusters", fUpdateClusters);
   GetProperty("updateTracks", fUpdateTracks);
@@ -334,7 +335,7 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
         }
         
         // Propagate the track
-        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA);
+        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA, fUseOuterParamInESDs);
       }
 
       // Reset properties of the track to fix TRefArray errors which occur when AddTrackMatched(obj) is called.

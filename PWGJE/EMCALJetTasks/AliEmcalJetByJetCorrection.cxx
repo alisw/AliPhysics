@@ -60,8 +60,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const char* name) :
   fCorrectpTtrack(0),
   fNpPoisson(0),
   fExternalNmissed(0),
-  fNMissedTracks(-1),
   fRndm(0),
+  fNMissedTracks(-1),
   fpAppliedEfficiency(0),
   fhNmissing(0),
   fListOfOutput(0)
@@ -118,8 +118,8 @@ AliEmcalJetByJetCorrection::AliEmcalJetByJetCorrection(const AliEmcalJetByJetCor
   fhSmoothEfficiency(other.fhSmoothEfficiency),
   fCorrectpTtrack(other.fCorrectpTtrack),
   fpAppliedEfficiency(other.fpAppliedEfficiency),
-  fhNmissing(other.fhNmissing),
-  fRndm(other.fRndm)
+  fRndm(other.fRndm),
+  fhNmissing(other.fhNmissing)
 {
   // Copy constructor.
 }
@@ -241,7 +241,7 @@ void AliEmcalJetByJetCorrection::Init() {
       for(Int_t i=0;i<nBinsEfSmth;i++){
       	 Double_t binCentreT=fhSmoothEfficiency->GetBinCenter(i+1);
       	 Int_t bin = fhEfficiency->FindBin(binCentreT);
-      	 Double_t binEff = fhEfficiency->GetBinContent(bin);
+      	 //Double_t binEff = fhEfficiency->GetBinContent(bin);
       	 
       	 //fill histogram fhSmoothEfficiency by interpolation or function
       	 if(fhEfficiency->GetBinWidth(bin) > smallBinW){

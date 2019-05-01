@@ -1376,7 +1376,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         
         if (fDoPID) {
           Double_t valuesGenYield[kGenYieldNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
-          valuesGenYield[GetIndexOfChargeAxisGenYield(), -1, -1] = chargeMC;
+          valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
           
           if (isMultSelected)
             fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);

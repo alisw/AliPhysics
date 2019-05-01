@@ -96,13 +96,14 @@ AliPicoV0RD::~AliPicoV0RD()
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0RD::IsKshort(Double_t dCuts[10])
+Bool_t AliPicoV0RD::IsKshort(Double_t const dCuts[10]) const
 {
 //
-//  AliPicoV0RD::IsKshort
+//  Bool_t AliPicoV0RD::IsKshort(Double_t dCuts[10]) const
 //
 
   if (!AliPicoV0::IsKshort()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (dCuts[9]>0.) {
@@ -116,13 +117,14 @@ Bool_t AliPicoV0RD::IsKshort(Double_t dCuts[10])
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0RD::IsLambda(Double_t dCuts[10])
+Bool_t AliPicoV0RD::IsLambda(Double_t const dCuts[10]) const
 {
 //
-//  AliPicoV0RD::IsLambda
+//  Bool_t AliPicoV0RD::IsLambda(Double_t dCuts[10]) const
 //
 
   if (!AliPicoV0::IsLambda()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (dCuts[9]>0.) {
@@ -136,13 +138,14 @@ Bool_t AliPicoV0RD::IsLambda(Double_t dCuts[10])
 }
 
 //_____________________________________________________________________________
-Bool_t AliPicoV0RD::IsAntiLa(Double_t dCuts[10])
+Bool_t AliPicoV0RD::IsAntiLa(Double_t const dCuts[10]) const
 {
 //
-//  AliPicoV0RD::IsAntiLa
+//  Bool_t AliPicoV0RD::IsAntiLa(Double_t dCuts[10]) const
 //
 
   if (!AliPicoV0::IsAntiLa()) return kFALSE;
+  if (!dCuts) return kTRUE;
 //=============================================================================
 
   if (dCuts[9]>0.) {
@@ -156,10 +159,10 @@ Bool_t AliPicoV0RD::IsAntiLa(Double_t dCuts[10])
 }
 
 //_____________________________________________________________________________
-void AliPicoV0RD::GetControlVariables(Float_t d[20])
+void AliPicoV0RD::GetControlVariables(Float_t d[20]) const
 {
 //
-//  AliPicoV0RD::GetControlVariables
+//  void AliPicoV0RD::GetControlVariables(Float_t d[20]) const
 //
 
   d[ 0] = (Float_t)fV0Radius;

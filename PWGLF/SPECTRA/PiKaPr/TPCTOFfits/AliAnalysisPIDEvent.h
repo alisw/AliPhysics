@@ -51,7 +51,7 @@ public TObject
   void Reset(); // reset
   Bool_t CheckLimits(Float_t value, Float_t *params, Float_t nSigma = 3.) const; // check limits
 
-  Bool_t AcceptEvent(Int_t type = 0) const; // accept event proton-proton
+  Bool_t AcceptEvent(Bool_t CheckVertex=kTRUE, Int_t type = 0) const; // accept event proton-proton
   Bool_t AcceptVertex() const; // accept vertex
   Bool_t HasTimeZeroT0_AND() const; // has time-zero T0-AND
   Bool_t HasTimeZeroT0_XOR() const; // has time-zero T0-XOR
@@ -100,16 +100,19 @@ public TObject
     kNoV0Asym = 32,
     kVertexSelected2015pp=64,
     kSPDandTrkVtxExists=128,
-    kAll = 255
+    kPassProximityCut=256,
+    kAll = 511
   };
   static const Char_t *fgkCentralityEstimatorName[kNCentralityEstimators]; // centrality estimator name
   static void SetVertexZCuts(Float_t min, Float_t max) {fgVertexZ_cuts[0] = min; fgVertexZ_cuts[1] = max;}; // setter
   static void SetCheckFlag(Int_t);
   static void AddCheckFlag(EventFlags_t);
   static void RemoveCheckFlag(EventFlags_t);
-  static Int_t GetCheckFlag() { return fgFlagToCheck; }; 
+  static Int_t GetCheckFlag() { return fgFlagToCheck; };
   Bool_t CheckFlag();
   static void PrintEventSelection();
+  /*** tools ***/
+  static AliTOFPIDResponse fgTOFResponse; // TOF PID response
 
  private:
 
@@ -138,8 +141,6 @@ public TObject
   Int_t fRunNo;
 
 
-  /*** tools ***/
-  static AliTOFPIDResponse fgTOFResponse; // TOF PID response
 
   /*** cuts ***/
   static Float_t fgVertexZ_cuts[2]; // min,max

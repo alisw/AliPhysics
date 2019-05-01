@@ -15,7 +15,7 @@
 
 //____________________________
 AliFemtoBPLCMS3DCorrFctnKK::AliFemtoBPLCMS3DCorrFctnKK(
-  char* title,
+  const char* title,
   const int& nbins,
   const float& QLo,
   const float& QHi
@@ -335,7 +335,7 @@ AliFemtoString AliFemtoBPLCMS3DCorrFctnKK::Report()
     report += "No PairCut specific to this CorrFctn\n";
   }
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //____________________________
 void AliFemtoBPLCMS3DCorrFctnKK::AddRealPair( AliFemtoPair* pair)

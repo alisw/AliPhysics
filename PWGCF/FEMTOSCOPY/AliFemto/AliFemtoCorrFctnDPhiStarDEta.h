@@ -20,7 +20,7 @@
 class AliFemtoCorrFctnDPhiStarDEta : public AliFemtoCorrFctn {
 public:
 
-  AliFemtoCorrFctnDPhiStarDEta(char* title, double radius, const int& aEtaBins, double aEtaRangeLow, double aEtaRangeUp, const int& aPhiStarBins, double aPhiStarRangeLow, double aPhiStarRangeUp);
+  AliFemtoCorrFctnDPhiStarDEta(const char* title, double radius, const int& aEtaBins, double aEtaRangeLow, double aEtaRangeUp, const int& aPhiStarBins, double aPhiStarRangeLow, double aPhiStarRangeUp);
   AliFemtoCorrFctnDPhiStarDEta(const AliFemtoCorrFctnDPhiStarDEta& aCorrFctn);
   virtual ~AliFemtoCorrFctnDPhiStarDEta();
 
@@ -34,12 +34,13 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDPhiStarDEta(*this); }
 
   void SetMinimumRadius(double minrad);
   void SetMagneticFieldSign(int magsign);
 
 private:
-  
+
   TH2D *fDPhiStarDEtaNumerator;      // Numerator of dPhiStar dEta function
   TH2D *fDPhiStarDEtaDenominator;    // Denominator of dPhiStar dEta function
 

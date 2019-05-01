@@ -70,15 +70,19 @@ public:
 
   /// Sets which method to use
   void SetCutTechnique(Technique t);
+  Bool_t GetUsesQuadratureTechnique() const;
 
   /// Set the radius for $\Delta\phi^{*}$ calculations
   void SetR(Float_t r);
+  Float_t GetRadius() const;
 
   /// Set the minimum allowed Delta eta value
   void SetMinEta(Float_t eta);
+  Float_t GetMinDeltaEta() const;
 
   /// Set the minimum allowed Delta phi value
   void SetMinPhi(Float_t phi);
+  Float_t GetMinDeltaPhi() const;
 
   /// Calculate \Delta\eta between two particles.
   /// \param a Momentum of first particle
@@ -150,6 +154,12 @@ void AliFemtoPairCutDetaDphi::SetCutTechnique(Technique t)
 }
 
 inline
+Bool_t AliFemtoPairCutDetaDphi::GetUsesQuadratureTechnique() const
+{
+  return fCutTechnique == Quad;
+}
+
+inline
 AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi():
   AliFemtoShareQualityPairCut()
   , fCurrentMagneticField(0.0)
@@ -181,6 +191,12 @@ void AliFemtoPairCutDetaDphi::SetR(Float_t R)
   fR = R;
 }
 
+inline
+Float_t AliFemtoPairCutDetaDphi::GetRadius() const
+{
+  return fR;
+}
+
 
 inline
 void AliFemtoPairCutDetaDphi::SetMinEta(Float_t eta)
@@ -190,11 +206,28 @@ void AliFemtoPairCutDetaDphi::SetMinEta(Float_t eta)
 
 
 inline
+Float_t AliFemtoPairCutDetaDphi::GetMinDeltaEta() const
+{
+  return fDeltaEtaMin;
+}
+
+
+inline
 void AliFemtoPairCutDetaDphi::SetMinPhi(Float_t phi)
 {
   fDeltaPhiMin = phi;
+  if (fCutTechnique == Quad) {
+    fDeltaPhiMin *= fDeltaPhiMin;
+  }
 }
 
+inline
+Float_t AliFemtoPairCutDetaDphi::GetMinDeltaPhi() const
+{
+  return (fCutTechnique == Quad)
+       ? std::sqrt(fDeltaPhiMin)
+       : fDeltaPhiMin;
+}
 
 inline
 bool AliFemtoPairCutDetaDphi::Pass(AliFemtoPair *pair)
@@ -218,7 +251,9 @@ bool AliFemtoPairCutDetaDphi::Pass(const AliFemtoPair *pair)
   const Float_t dEta = fabs(CalculateDEta(p1, p2)),
                 dPhi = fabs(CalculateDPhiStar(p1, charge1, p2, charge2, fR, fCurrentMagneticField));
 
-  bool passes;
+  // Initialize to false - so if fCutTechnique is invalid, all pairs
+  // will fail and user will eventually find this comment.
+  bool passes = false;
   switch (fCutTechnique) {
   case Simple:
     passes = PassesSimple(dEta, dPhi);
@@ -268,17 +303,17 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDEtaStar(
   const AliFemtoThreeVector& b,
   const Double_t radius_in_meters)
 {
-  const double PI_OVER_2 = TMath::Pi() / 2.0,
-              PI_TIMES_2 = TMath::Pi() * 2.0,
-               RADIUS_CM = radius_in_meters * 100.0;
+  const double
+    PI_OVER_2 = TMath::Pi() / 2.0,
+    RADIUS_CM = radius_in_meters * 100.0,
 
-  const double thetas1 = PI_OVER_2 - TMath::ATan(a.z() / RADIUS_CM),
-               thetas2 = PI_OVER_2 - TMath::ATan(b.z() / RADIUS_CM);
+    thetas1 = PI_OVER_2 - TMath::ATan(a.z() / RADIUS_CM),
+    thetas2 = PI_OVER_2 - TMath::ATan(b.z() / RADIUS_CM),
 
-  const double etas1 = -TMath::Log( TMath::Tan(thetas1 / 2.0) ),
-               etas2 = -TMath::Log( TMath::Tan(thetas2 / 2.0) );
+    etas1 = -TMath::Log( TMath::Tan(thetas1 / 2.0) ),
+    etas2 = -TMath::Log( TMath::Tan(thetas2 / 2.0) ),
 
-  const double delta_eta_star = TMath::Abs(etas1 - etas2);
+    delta_eta_star = TMath::Abs(etas1 - etas2);
 
   return delta_eta_star;
 }
@@ -304,15 +339,16 @@ Float_t AliFemtoPairCutDetaDphi::CalculateDPhiStar(
   //                 ~ 0.3 [e] [Tesla] [Meters] / [GeV/c]
   //
 
-  const Double_t unit_factor = 0.299792458;
+  const double
+    UNIT_FACTOR = 0.299792458,
 
-  const Double_t phi_a = p_a.Phi(),
-                 phi_b = p_b.Phi(),
+    phi_a = p_a.Phi(),
+    phi_b = p_b.Phi(),
 
-                 prefix = -0.5 * unit_factor * magnetic_field * radius_in_meters,
+    prefix = -0.5 * UNIT_FACTOR * magnetic_field * radius_in_meters,
 
-                 shift_a = TMath::ASin(prefix * charge_a / p_a.Perp()),
-                 shift_b = TMath::ASin(prefix * charge_b / p_b.Perp());
+    shift_a = TMath::ASin(prefix * charge_a / p_a.Perp()),
+    shift_b = TMath::ASin(prefix * charge_b / p_b.Perp());
 
   const Double_t delta_phi_star = (phi_b + shift_b) - (phi_a + shift_a);
 
@@ -349,18 +385,9 @@ TList*
 AliFemtoPairCutDetaDphi::AppendSettings(TList *setting_list, const TString &prefix)
 {
   setting_list->AddVector(
-    new TObjString(
-      prefix + TString::Format("AliFemtoPairCutDetaDphi.radius=%f", fR)
-    ),
-
-    new TObjString(
-      prefix + TString::Format("AliFemtoPairCutDetaDphi.min_delta_eta=%f", fDeltaEtaMin)
-    ),
-
-    new TObjString(
-      prefix + TString::Format("AliFemtoPairCutDetaDphi.min_delta_phi=%f", fDeltaPhiMin)
-    ),
-
+    new TObjString(prefix + Form("AliFemtoPairCutDetaDphi.radius=%g", fR)),
+    new TObjString(prefix + Form("AliFemtoPairCutDetaDphi.min_delta_eta=%g", GetMinDeltaEta())),
+    new TObjString(prefix + Form("AliFemtoPairCutDetaDphi.min_delta_phi=%g", GetMinDeltaPhi())),
   nullptr);
 
   return setting_list;

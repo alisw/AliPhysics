@@ -176,7 +176,7 @@ def download_file(alien_path, local_path):
     except OSError:
         pass
     alien_path = "alien:/" + alien_path
-    cp_cmd = ['alien_cp', '-m', '-s', alien_path, local_path]
+    cp_cmd = ['alien_cp', '-v', '-s', alien_path, local_path]
     p = subprocess.Popen(cp_cmd,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
@@ -208,7 +208,7 @@ def get_generator_name_from_train(alien_path):
     if not alien_path.startswith("alien:"):
         alien_path = "alien:/" + alien_path
     path_to_env = os.path.join(os.path.split(alien_path)[0], "..", "env.sh")
-    cp_cmd = ['alien_cp', '-m', '-s', path_to_env, ".env.sh"]
+    cp_cmd = ['alien_cp', '-v', '-s', path_to_env, ".env.sh"]
     print "copying with: %s"%cp_cmd
     subprocess.check_call(cp_cmd)
     with open(".env.sh") as f:
@@ -216,7 +216,6 @@ def get_generator_name_from_train(alien_path):
             if "PERIOD_NAME" in line:
                 gen_name = re.match(".*'(.+)'", line).groups()[-1]
                 break
-    os.remove(".env.sh")
     return gen_name
 
 

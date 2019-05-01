@@ -1,0 +1,14 @@
+Macros used in extractino pi0 spectrum in LHC13bc analysis
+1.First produce raw yields using different parameterizations:
+  MakeMinvMix.C
+  MakeMinvMix.C
+2.Scan MC results with same code (PHOSTagging)
+  Extract efficiency:  MakePi0Eff.C
+  Fit Efficiency:      FitPi0Eff.C
+  Compare MC and real mass/width: CompMassOne.C  CompWidthOne.C
+3.Combine raw yields, efficiency and K0s contamination with
+  MakeFinalPi0Spectrum.C
+4.Produce example of invariant mass distributions with
+  PlotMgg.C
+5.Combine everething into final root file
+  CombinePHOSresults.C

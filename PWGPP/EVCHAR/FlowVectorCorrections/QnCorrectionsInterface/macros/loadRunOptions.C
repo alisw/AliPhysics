@@ -52,7 +52,7 @@ Bool_t *detectorVar[nNoOfDetectors] = {
 /// \param optionsfile the options file
 /// \param name the name to insert to search for its use
 /// \return 1 if use = yes, 0 if use = no, -1 if not found or error
-Int_t getUse(const ifstream &optionsfile, const char *name) {
+Int_t getUse(ifstream &optionsfile, const char *name) {
   TString currline;
   currline.ReadLine(optionsfile);
   while (currline.BeginsWith("#") || currline.IsWhitespace()) currline.ReadLine(optionsfile);
@@ -397,7 +397,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
 
     if (verb) printf(" Opening the data location file: %s\n", szDataLocFullFilename.Data());
     datalocfile.open(szDataLocFullFilename.Data());
-    if (datalocfile.fail()) { printf("ERROR: cannot open data location file %s in path %s\n", szDataLocFilename, path); return kFALSE; }
+    if (datalocfile.fail()) { printf("ERROR: cannot open data location file %s in path %s\n", szDataLocFilename.Data(), path); return kFALSE; }
 
     /* let's recover the original full file name for the error printouts */
     szDataLocFullFilename = Form("%s/%s", path, szDataLocFilename.Data());
@@ -452,7 +452,7 @@ Bool_t loadRunOptions(Bool_t verb,const char *path) {
         pszRunNo = new TObjString(currline);
         if (pszRunNo->GetString().BeginsWith(">")) {
           /* the run is included in the current analysis */
-          pszActiveRunNo = new TObjString(pszRunNo->GetString().Remove(0,1));
+          pszActiveRunNo = new TObjString(((TString)pszRunNo->GetString()).Remove(0,1));
           listOfActiveRuns.Add(pszActiveRunNo);
           listOfRuns.Add(pszActiveRunNo->Clone());
           delete pszRunNo;

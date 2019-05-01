@@ -18,10 +18,10 @@ class TArrayI;
 class TTree;
 class TObjArray;
 
-class AliEmcalTrackSelection;
 class AliVCluster;
 class AliVEvent;
 class AliVParticle;
+class AliEmcalTrackSelection;
 
 namespace HighPtTracks {
 
@@ -62,7 +62,7 @@ public:
 
 protected:
   Int_t                                                           fIndex;               ///< Index of the cut
-  AliEmcalTrackSelection                                          *fTrackSelection;     ///< Virtual track selection
+  AliEmcalTrackSelection                             *fTrackSelection;     ///< Virtual track selection
 
 private:
   AliReducedTrackSelectionContainer(AliReducedTrackSelectionContainer &);

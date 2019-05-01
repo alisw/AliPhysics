@@ -567,7 +567,7 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4Particle* calo =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    AliCaloTrackParticle* calo =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(iaod));
     
     //Bool_t bConverted = kFALSE;
     
@@ -575,19 +575,19 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
     //if (indexConverted[iaod]) continue;
         
     // Second cluster loop
-    AliAODPWG4Particle* calo2 = 0;
+    AliCaloTrackParticle* calo2 = 0;
     for(Int_t jaod = iaod + 1 ; jaod < naod ; jaod++)
     {
       // Check if set previously as converted couple, if so skip its use.
       //if (indexConverted[jaod]) continue;
       
       //printf("Check Conversion indeces %d and %d\n",iaod,jaod);
-      calo2 =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(jaod));
+      calo2 =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(jaod));
       
       //
       // Add both clusters
       //
-      fMomentum = *(calo->Momentum())+*(calo2->Momentum());
+      fMomentum = *(calo->GetMomentum())+*(calo2->GetMomentum());
       Float_t ptConvPair  = fMomentum.Pt();
       Float_t phiConvPair = fMomentum.Phi();
       Float_t etaConvPair = fMomentum.Eta();
@@ -935,7 +935,7 @@ void  AliAnaPhotonConvInCalo::MakeAnalysisFillHistograms()
           if(fAddConvertedPairsToAOD)
           {            
             // Create AOD of pair analysis
-            AliAODPWG4Particle aodpair = AliAODPWG4Particle(fMomentum);
+            AliCaloTrackParticle aodpair = AliCaloTrackParticle(fMomentum);
             aodpair.SetLabel(calo->GetLabel());
             
             // Set the indeces of the original caloclusters

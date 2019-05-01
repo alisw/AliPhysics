@@ -1,3 +1,12 @@
+ /// \file AliAnalysisTaskJetPP.h
+ /// \brief Declaration of the class AliAnalysisTaskJetPP
+ ///
+ /// In this header file the class AliAnalysisTaskJetPP is declared.
+ /// This is a task used to analyse pp collisions.
+ ///
+ /// \author Peter Pribeli <peter.pribeli@cern.ch>, Nuclear Physics Institute in Prague
+ /// \date Sep 12, 2017
+
 #ifndef ALIANALYSISTASKJETPP_H
 #define ALIANALYSISTASKJETPP_H
 
@@ -30,6 +39,12 @@ class AliClusterContainer;
 using std::vector;
 
 
+/**
+ * \class AliAnalysisTaskJetPP
+ * \brief Pure virtual base class for AliAnalysisTaskJetPP
+ *
+ * This pure virtual class provides a basic interface for AliAnalysisTaskJetPP
+ */
 
 class AliAnalysisTaskJetPP : public AliAnalysisTaskEmcalJet {
    public:
@@ -71,6 +86,8 @@ class AliAnalysisTaskJetPP : public AliAnalysisTaskEmcalJet {
    void        SetVertexCut(Double_t vz){ fZVertexCut = vz; }   
    void        SetMinTrackPt(Double_t mpt){ fMinTrackPt = mpt;}
 
+   void SetASPDCvsTCut(Float_t a) { fASPDCvsTCut = a; }//PILEUP
+   void SetBSPDCvsTCut(Float_t b) { fBSPDCvsTCut = b; }
 
    Bool_t   RetrieveEventObjects();
    Bool_t   Run();
@@ -80,11 +97,13 @@ class AliAnalysisTaskJetPP : public AliAnalysisTaskEmcalJet {
 
    Double_t EstimateBgKT(AliJetContainer *jetCont);  // median p/A of kt jets
    Double_t EstimateLocalBg(AliJetContainer *jetCont, AliParticleContainer *trkCont);  // local bg in a perpendicular cone
+   Double_t EstimateBgKTCMS(AliJetContainer *jetCont); //CMS-style background form kT jets
 
    Double_t Convert(Double_t input);
    // ######### CHECK FUNCTIONS
    Bool_t      IsTrackInAcceptance(AliVParticle* track, Bool_t isprimary=0);  
    Bool_t      IsEventInAcceptance(AliVEvent* event);     
+   Bool_t      IsSPDClusterVsTrackletBG(AliVEvent *event);
    Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet, Bool_t suppressGhost=1); 
 
 
@@ -93,76 +112,83 @@ class AliAnalysisTaskJetPP : public AliAnalysisTaskEmcalJet {
 
    // ########## USAGE TRIGGERS 
 
-   Bool_t              fUseDefaultVertexCut;   // trigger if automatic vertex cut from helper class should be done 
-   Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done
-   Bool_t              fIsMC;          // Use MC
+   Bool_t              fUseDefaultVertexCut;   ///< trigger if automatic vertex cut from helper class should be done 
+   Bool_t              fUsePileUpCut;          ///< trigger if pileup cut should be done
+   Bool_t              fIsMC;          ///< Use MC
 
    // ########## JET/DIJET/RC PROPERTIES
-   Double_t            fSignalJetRadius;       // Radius for the signal jets
+   Double_t            fSignalJetRadius;       ///< Radius for the signal jets
    // ########## CUTS 
-   Double_t            fSignalJetEtaWindow;    // +- window in eta for signal jets 
-   Double_t            fTrackEtaWindow;        //gc +- window in eta for tracks  
-   Double_t            fMinTrackPt;            //gc Min track pt to be accepted  
-   Double_t            fMinJetArea;            // Min jet area to be accepted
-   TString             fCentralityType;        //gc Used centrality estimate (V0A, V0C, V0M, ...) 
+   Double_t            fSignalJetEtaWindow;    ///< +- window in eta for signal jets 
+   Double_t            fTrackEtaWindow;        ///< gc +- window in eta for tracks  
+   Double_t            fMinTrackPt;            ///< gc Min track pt to be accepted  
+   Double_t            fMinJetArea;            ///< Min jet area to be accepted
+   TString             fCentralityType;        ///< gc Used centrality estimate (V0A, V0C, V0M, ...) 
 
-   Double_t            fZVertexCut;            //zvertex cut
+   Double_t            fZVertexCut;            ///< zvertex cut
+   Float_t             fASPDCvsTCut;           ///< SPD cluster-vs-tracklet cut
+   Float_t             fBSPDCvsTCut;           ///< SPD cluster-vs-tracklet cut
 
    // ########## GENERAL ////VARS
-   AliAnalysisUtils*   fHelperClass;           //! gc Vertex selection helper
-   Bool_t              fInitializedLocal;           //! gc trigger if tracks/jets are loaded  initiates calling   ExecOnce 
+   AliAnalysisUtils*   fHelperClass;           //!<! gc Vertex selection helper
+   Bool_t              fInitializedLocal;           //!<! gc trigger if tracks/jets are loaded  initiates calling   ExecOnce 
 
 
-   TH1D*  fhJetPt; //! pt spectrum of AKT jets
-   TH1D* fhKTJetPt; //! ptspectrum of KT jets 
-   TH1D*  fhJetPtRho; //! pt spectrum of AKT jets without kt bgk
-   TH1D*  fhJetPtConeRho; //! pt spectrum of AKT jets without local bgk
+   TH1D* fhJetPt; //!<! pt spectrum of AKT jets
+   TH1D* fhKTJetPt; //!<! pt spectrum of KT jets 
+   TH1D* fhJetPtRho; //!<! pt spectrum of AKT jets without kt bgk
+   TH1D* fhJetPtConeRho; //!<! pt spectrum of AKT jets without local bgk
+   TH1D* fhJetPtCMSRho; //!<! pt spectrum of AKT jets without CMS bgk
 
-   TH1D*  fhAtimesRho; //! Jet background times area
-   TH1D*  fhCuts; //! Histogram for pilup/vertex cuts 
-   TH1D* fhJetConstituentPt; //! Jet constituent pt
-   TH1D* fhTrackPt; //! Track pt
+   TH1D* fhAtimesRhoMedian; //!<! kt jet background times area
+   TH1D* fhAtimesRhoCone; //!<! cone jet background times area
+   TH1D* fhAtimesRhoCMS; //!<! CMS jet background times area
+   TH1D* fhCuts; //!<! histogram for pilup/vertex cuts 
+   TH1D* fhJetConstituentPt; //!<! Jet constituent pt
+   TH1D* fhTrackPt; //!<! Track pt
 
-   TH1D* fhRho; //! KT bgk
-   TH1D* fhConeRho; //! local KT bgk
-   TH2D* fhJetAreaPt; //! Jet Area-pt distribution
-   TH2D* fhJetEtaPt; //! Jet eta-pt distribution
+   TH1D* fhRho; //!<! KT bgk
+   TH1D* fhConeRho; //!<! local KT bgk
+   TH1D* fhCMSRho; //!<! CMS KT bgk
+   TH2D* fhJetAreaPt; //!<! Jet Area-pt distribution
+   TH2D* fhJetEtaPt; //!<! Jet eta-pt distribution
 
-   TH2D* fhAktJetEtaPhi; //! Jet et-phi distribution
-   TH2D* fhKtJetEtaPhi; //! Jet et-phi distribution
-   TH2D* fhTrackEtaPt; //! Track eta-pt distribution
-   TH2D* fhGenTrackEtaPt; //! Generated track eta-pt distribution
-   TH2D* fhJetPhiPt; //! Jet phi-pt distribution
+   TH2D* fhAktJetEtaPhi; //!<! Jet et-phi distribution
+   TH2D* fhKtJetEtaPhi; //!<! Jet et-phi distribution
+   TH2D* fhTrackEtaPt; //!<! Track eta-pt distribution
+   TH2D* fhGenTrackEtaPt; //!<! Generated track eta-pt distribution
+   TH2D* fhJetPhiPt; //!<! Jet phi-pt distribution
 
-   TH2D* fhTrackPhiPt; //! Track phi-pt distribution
-   TH2D* fhTrackEtaPhi; //! Track eta-phi distribution
-   TH2D* fhRemx; //! Response matrix
-   TH1D* fhZVertex; //! Z vertex
+   TH2D* fhTrackPhiPt; //!<! Track phi-pt distribution
+   TH2D* fhTrackEtaPhi; //!<! Track eta-phi distribution
+   TH2D* fhRemx; //!<! Response matrix
+   TH1D* fhZVertex; //!<! Z vertex
 
-   TH1D* fhZVertexBC; //! Z vertex before cut
-   TH1D* fhXVertex; //! X vertex
-   TH1D* fhYVertex; //! Y vertex
-   TH1D* fhPrimGenTrkPt; //! Pt spectrum of MC particle
+   TH1D* fhZVertexBC; //!<! Z vertex before cut
+   TH1D* fhXVertex; //!<! X vertex
+   TH1D* fhYVertex; //!<! Y vertex
+   TH1D* fhPrimGenTrkPt; //!<! Pt spectrum of MC particle
 
-   TH1D* fhGenJetPt; //! Pt spectrum of MC jets
-   TH1D* fhRecTrkPt; //! Pt spectrum of correctly reconstructed tracks
-   TH1D* fhFakeTrkPt; //! Pt spectrum of fake tracks
-   TH1D* fhMult; //! Multiplicity
+   TH1D* fhGenJetPt; //!<! Pt spectrum of MC jets
+   TH1D* fhRecTrkPt; //!<! Pt spectrum of correctly reconstructed tracks
+   TH1D* fhFakeTrkPt; //!<! Pt spectrum of fake tracks
+   TH1D* fhMult; //!<! Multiplicity
 
-   TH2D* fhTrackPhiCG; //! Global tracks
-   TH2D* fhTrackPhiTPCG; //! complementary tracks
-   TH2D* fhInvPtQVsPhi[2];//! Inverse pt vs phi
-   TH2D* fhInvPtQVsEta[2];//! Inverse pt vs eta
+   TH2D* fhTrackPhiCG; //!<! Global tracks
+   TH2D* fhTrackPhiTPCG; //!<! complementary tracks
+   TH2D* fhInvPtQVsPhi[2];//!<! Inverse pt vs phi
+   TH2D* fhInvPtQVsEta[2];//!<! Inverse pt vs eta
 
-   TH2D* fhInvPtQVsPhiASide[2];//! Inverse pt vs phi in away-side rapidity
-   TH2D* fhInvPtQVsPhiCSide[2];//! Inverse pt vs pi in close-side rapidity
-   TH2D* fhSigmaPtOverPtVsPt[2];//! Pt vs sigmaPt/Pt
+   TH2D* fhInvPtQVsPhiASide[2];//!<! Inverse pt vs phi in away-side rapidity
+   TH2D* fhInvPtQVsPhiCSide[2];//!<! Inverse pt vs pi in close-side rapidity
+   TH2D* fhSigmaPtOverPtVsPt[2];//!<! Pt vs sigmaPt/Pt
 
 
    AliAnalysisTaskJetPP(const AliAnalysisTaskJetPP&);
    AliAnalysisTaskJetPP& operator=(const AliAnalysisTaskJetPP&);
 
-   ClassDef(AliAnalysisTaskJetPP, 2); // Charged jet analysis for pA,,, increase the last parametre by 1 after a change !!!!!!!!!!!!
-
+   /// \cond CLASSIM
+   ClassDef(AliAnalysisTaskJetPP, 4); // Charged jet analysis for pA,,, increase the last parametre by 1 after a change 
+   /// \endcond
 };
 #endif

@@ -31,6 +31,7 @@
 #include <TVector3.h>
 #include <TROOT.h>
 #include <TH3F.h>
+#include <TRandom3.h>
 
 #include "AliLog.h"
 #include "AliRDHFCutsDStartoKpipi.h"
@@ -51,7 +52,7 @@
 #include "AliStack.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliVertexingHFUtils.h"
-
+#include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 
 ClassImp(AliAnalysisTaskSEDmesonsFilterCJ)
@@ -62,6 +63,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fUseRejTracks(kFALSE),
+  fTrackIneff(0),
   fUseReco(kTRUE),
   fCandidateType(0),
   fCandidateName(""),
@@ -79,9 +82,11 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fRejectDfromB(kTRUE),
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
+  fMCHeader(0),
+  fCounter(0),
+  fRan(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
-  fMCHeader(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -135,6 +140,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fUseRejTracks(kFALSE),
+  fTrackIneff(0),
   fUseReco(kTRUE),
   fCandidateType(candtype),
   fCandidateName(""),
@@ -152,9 +159,11 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fRejectDfromB(kTRUE),
   fKeepOnlyDfromB(kFALSE),
   fAodEvent(0),
+  fMCHeader(0),
+  fCounter(0),
+  fRan(0),
   fArrayDStartoD0pi(0),
   fMCarray(0),
-  fMCHeader(0),
   fCandidateArray(0),
   fSideBandArray(0),
   fCombinedDmesons(0),
@@ -249,6 +258,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   DefineOutput(5, TClonesArray::Class()); //array of candidates and event tracks
   DefineOutput(6, TClonesArray::Class()); //array of SB candidates and event tracks
   DefineOutput(7, TClonesArray::Class()); //array of MC D and event MC particles
+  DefineOutput(8, AliNormalizationCounter::Class()); // normalization counte; // normalization counter
 }
 
 //_______________________________________________________________________________
@@ -286,6 +296,12 @@ AliAnalysisTaskSEDmesonsFilterCJ::~AliAnalysisTaskSEDmesonsFilterCJ()
     delete fCombinedDmesonsBkg;
     fCombinedDmesonsBkg = 0;
   }
+
+  if (fCounter){
+    delete fCounter;
+    fCounter=0;
+  }
+
 }
 
 //_______________________________________________________________________________
@@ -376,12 +392,16 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
   fMCCombinedDmesons->SetOwner();
   fMCCombinedDmesons->SetName(GetOutputSlot(7)->GetContainer()->GetName());
 
+  fCounter = new AliNormalizationCounter("NormalizationCounter");
+  fCounter->Init();
+
   PostData(1, fOutput);
   PostData(3, fCandidateArray);
   PostData(4, fSideBandArray);
   PostData(5, fCombinedDmesons);
   PostData(6, fCombinedDmesonsBkg);
   PostData(7, fMCCombinedDmesons);
+  PostData(8, fCounter);
 
   Info("UserCreateOutputObjects","Data posted for task %s", GetName());
 }
@@ -463,6 +483,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
     AddObjectToEvent(fCombinedDmesonsBkg);
     if(fUseMCInfo) AddObjectToEvent(fMCCombinedDmesons);
   }
+  
+  fRan  = new TRandom3(0);
 
   AliAnalysisTaskEmcal::ExecOnce();
 }
@@ -492,6 +514,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   AliDebug(2, "TClonesArray cleared");
 
   fHistStat->Fill(0);
+  fCounter->StoreEvent(fAodEvent,fCuts,fUseMCInfo);
 
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
@@ -580,7 +603,7 @@ if(fUseMCInfo && fBuildRMEff){
           Int_t pdgDgDStartoD0pi[2] = { 421, 211 };  // D0,pi
           Int_t pdgDgD0toKpi[2] = { 321, 211 };      // K, pi
           
-          Int_t mcLabel = NULL;
+          Int_t mcLabel = 0;
           if (fCandidateType == kDstartoKpipi) mcLabel = dstar->MatchToMC(413, 421, pdgDgDStartoD0pi, pdgDgD0toKpi, fMCarray);
           else mcLabel = charmCand->MatchToMC(421, fMCarray, fNProngs, fPDGdaughters);
 
@@ -721,6 +744,7 @@ else {
   PostData(5, fCombinedDmesons);
   PostData(6, fCombinedDmesonsBkg);
   PostData(7, fMCCombinedDmesons);
+  PostData(8, fCounter);
 
   AliDebug(2, "Exiting method");
 
@@ -1401,12 +1425,16 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliPar
     }
    
     if (allDaughters.Remove(track) == 0) {
-      new ((*coll)[n]) AliEmcalParticle(track);
-      n++;
-      AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
+	if(fUseRejTracks){
+      	   if(fRan->Rndm() < fTrackIneff) continue;
+        }
+
+      	new ((*coll)[n]) AliEmcalParticle(track);
+      	n++;
+      	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
     }
     else {
-      AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
+      	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", tracks->GetCurrentID(), track->Pt(), track->Eta(), track->Phi()));
     }
   }
 }
@@ -1473,6 +1501,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliP
           bool isInj = IsMCTrackInjected(mcpart, fMCHeader, fMCarray);
           if(!isInj) continue;
         }
+      
+        
         if (allMCDaughters.Remove(mcpart) == 0) {
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
             n++;
@@ -1490,7 +1520,7 @@ Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddMCDaughters(AliAODMCParticle* mcDm
     // Add all the dauthers of cand in an array. Follows all the decay cascades.
 
     Int_t n = mcDmeson->GetNDaughters();
-    Int_t nD0 = mcDmeson->GetDaughter(0); // get label of the first daughter
+    Int_t nD0 = mcDmeson->GetDaughterLabel(0); // get label of the first daughter
     //Printf("AddDaughters: the number of dauhters is %d", n);
     Double_t pt = 0;
 
@@ -1559,7 +1589,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClo
   while (mother >= 0) {
     istep++;
     AliAODMCParticle* mcGranma = static_cast<AliAODMCParticle*>(mcArray->At(mother));
-    if (mcGranma >= 0) {
+    if (mcGranma != 0) {
       pdgGranma = mcGranma->GetPdgCode();
       abspdgGranma = TMath::Abs(pdgGranma);
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
@@ -1608,7 +1638,7 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack
   while (mother >= 0) {
     istep++;
     TParticle* mcGranma = stack->Particle(mother);
-    if (mcGranma >= 0) {
+    if (mcGranma != 0) {
       pdgGranma = mcGranma->GetPdgCode();
       abspdgGranma = TMath::Abs(pdgGranma);
       if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
@@ -1651,8 +1681,8 @@ Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part
 
   if (part->GetNDaughters() == 2) {
 
-    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
-    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(1)));
 
     if (!d1 || !d2) {
       return decay;

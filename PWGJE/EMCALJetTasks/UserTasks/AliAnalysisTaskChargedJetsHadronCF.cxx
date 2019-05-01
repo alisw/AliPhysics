@@ -30,6 +30,7 @@
 #include "AliPythia.h"
 #include "AliStack.h"
 
+#include "AliCentrality.h"
 #include "AliVTrack.h"
 #include "AliVHeader.h"
 #include "AliEmcalJet.h"
@@ -93,6 +94,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fNumRandomConesPerEvent(10),
   fUseDataConstituents(kTRUE),
   fUseMCConstituents(kTRUE),
+  fRemoveEventOutliers(kFALSE),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -143,6 +145,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fNumRandomConesPerEvent(10),
   fUseDataConstituents(kTRUE),
   fUseMCConstituents(kTRUE),
+  fRemoveEventOutliers(kFALSE),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -741,6 +744,15 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
   if(!fJetVetoJetByJet)
     vetoJet = GetLeadingVetoJet();
 
+  // Remove event outliers in LHC11h with code suggested by Redmer
+  if(fRemoveEventOutliers)
+  {
+    if(TMath::Abs(fInputEvent->GetPrimaryVertexSPD()->GetZ() - fInputEvent->GetPrimaryVertex()->GetZ()) > .5)
+      return kFALSE;
+    else if (TMath::Abs(fCent-fInputEvent->GetCentrality()->GetCentralityPercentile("TRK")) > 5.)
+      return kFALSE;
+  }
+
   // ####### Jet loop
   fAcceptedJets = 0;
   for(Int_t i = 0; i<fJetEmbeddingCuts.size(); i++)
@@ -760,7 +772,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       vetoJet = GetVetoJet(jet);
     for(Int_t i = 0; i<fJetEmbeddingCuts.size(); i++)
     {
-      AliChargedJetsHadronCFCuts currentCut = fJetEmbeddingCuts.at(i);
+      AliChargedJetsHadronCFCuts* currentCut = &fJetEmbeddingCuts.at(i);
       AliEmcalJet* refJet = GetReferenceJet(jet);
       Double_t trackRatio = 0.;
       Double_t ptRatio = 0.;
@@ -770,11 +782,11 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       if(vetoJet)
         vetoJetPt = vetoJet->Pt() - vetoJet->Area()*fJetsCont->GetRhoVal();
 
-      if(!currentCut.IsCutFulfilled(jet->Pt(), refJet->Pt(), fCent, ptRatio, vetoJetPt))
+      if(!currentCut->IsCutFulfilled(jet->Pt(), refJet->Pt(), fCent, ptRatio, vetoJetPt))
         continue;
 
-      FillHistogramsJets(jet, currentCut.fCutName.Data());
-      AddJetToOutputArray(jet, currentCut.fArrayIndex, currentCut.fAcceptedJets);
+      FillHistogramsJets(jet, currentCut->fCutName.Data());
+      AddJetToOutputArray(jet, currentCut->fArrayIndex, currentCut->fAcceptedJets);
     }
   }
 

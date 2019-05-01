@@ -23,7 +23,7 @@
 #include "AliCaloTrackReader.h"
 #include "AliAODJet.h"
 #include "AliAnaParticleJetFinderCorrelation.h" 
-#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliCaloTrackParticleCorrelation.h"
 #include "AliVTrack.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODEvent.h"
@@ -890,7 +890,7 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
 //_______________________________________________________
 void AliAnaParticleJetFinderCorrelation::InitParameters()
 {
-  SetInputAODName("PWG4Particle");
+  SetInputAODName("CaloTrackParticle");
   AddToHistogramsName("AnaJetFinderCorr_");
 
   fDeltaPhiMinCut    = 2.6 ;
@@ -923,7 +923,7 @@ void AliAnaParticleJetFinderCorrelation::InitParameters()
 /// Input for jets is TClonesArray *aodRecJets.
 /// \return the index of the jet that is opposite to the particle.
 //__________________________________________________________________
-Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * particle, TClonesArray *aodRecJets)
+Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliCaloTrackParticle * particle, TClonesArray *aodRecJets)
 {
   Double_t particlePt=particle->Pt();
   if(fUseBackgroundSubtractionGamma) {
@@ -1068,9 +1068,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     return; // Trick coverity
   }
   
-  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation"))
+  if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliCaloTrackParticleCorrelation"))
   {
-    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s>",
+    AliFatal(Form("Wrong type of AOD object, change AOD class name in input AOD: It should be <AliCaloTrackParticleCorrelation> and not <%s>",
                   GetInputAODBranch()->GetClass()->GetName()));
     return; // Trick coverity
   }
@@ -1150,9 +1150,9 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     //
     Double_t maxPt=0.;
     Int_t maxIndex=-1;
-    AliAODPWG4ParticleCorrelation* particlecorr =0;
+    AliCaloTrackParticleCorrelation* particlecorr =0;
     for(Int_t iaod = 0; iaod < ntrig ; iaod++){
-      particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+      particlecorr =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
       if(particlecorr->Pt() > maxPt) {
         maxPt = particlecorr->Pt();
         maxIndex = iaod;
@@ -1167,7 +1167,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
       Double_t *photonRhoArr=new Double_t[ntrig-1];
       Int_t photonRhoArrayIndex=0;
       for(Int_t iaod = 0; iaod < ntrig ; iaod++){
-        particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+        particlecorr =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
         if(iaod==maxIndex) continue;
 //        clusterIDtmp = particlecorr->GetCaloLabel(0) ;
 //        if(clusterIDtmp < 0) continue;
@@ -1195,11 +1195,11 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     //
     Double_t mostEnePhotonPt=0.;
     Int_t indexMostEnePhoton=-1;
-    AliAODPWG4ParticleCorrelation* particle =0;
+    AliCaloTrackParticleCorrelation* particle =0;
     Double_t ptCorrect=0.;
 //    Int_t nCells=0;
     for(Int_t iaod = 0; iaod < ntrig ; iaod++){
-      particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+      particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
 //      clusterIDtmp = particle->GetCaloLabel(0) ;
 //      if(!(clusterIDtmp<0)){
 //        cluster = FindCluster(clusters,clusterIDtmp,iclustmp);
@@ -1239,7 +1239,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     // assign jet to photon
     //
     if(indexMostEneJet>=0 && indexMostEnePhoton>=0){
-      particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(indexMostEnePhoton));
+      particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(indexMostEnePhoton));
       jet = dynamic_cast<AliAODJet*>(aodRecJets-> At(indexMostEneJet));
       if(jet)particle->SetRefJet(jet);
     }
@@ -1249,7 +1249,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     //Bool_t isJetFound=kFALSE;//new
     //Loop on stored AOD particles, trigger
     for(Int_t iaod = 0; iaod < ntrig ; iaod++){
-      AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+      AliCaloTrackParticleCorrelation* particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
       
       //Correlate with jets
       Int_t ijet = SelectJet(particle,aodRecJets);//input for jets is TClonesArray
@@ -1565,7 +1565,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
   for(Int_t iaod = 0; iaod < ntrig ; iaod++)
   {
-    AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particlecorr =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     tmpPt = particlecorr->Pt();
     if(tmpPt>maxPt)
     {
@@ -1610,7 +1610,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     Int_t photonRhoArrayIndex=0;
     //TObjArray* clusterstmp = GetEMCALClusters();
     for(Int_t iaod = 0; iaod < ntrig ; iaod++){
-      AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+      AliCaloTrackParticleCorrelation* particlecorr =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
       if( particlecorr->Pt() > sumPt/ntrig ) counterGamma++;
       if( particlecorr->Pt() > (sumPt-maxPt)/(ntrig-1) ) counterGammaMinus1++;
       
@@ -1646,7 +1646,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   
   for(Int_t iaod = 0; iaod < ntrig ; iaod++)
   {
-    AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particlecorr =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
 //    clusterID = particlecorr->GetCaloLabel(0) ;
 //    if(clusterID < 0) continue;
 //    cluster = FindCluster(clusters,clusterID,iclustmp);
@@ -1671,7 +1671,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     {
       if(iaod==iaod2) continue;
         
-      AliAODPWG4ParticleCorrelation* particlecorr2 =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod2));
+      AliCaloTrackParticleCorrelation* particlecorr2 =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod2));
 //      clusterID = particlecorr2->GetCaloLabel(0) ;
 //      if(clusterID < 0) continue;
 //      cluster2 = FindCluster(clusters,clusterID,iclustmp);
@@ -1727,7 +1727,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   //
   for(Int_t iaod = 0; iaod < ntrig ; iaod++)
   {
-    AliAODPWG4ParticleCorrelation* particlecorr =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
+    AliCaloTrackParticleCorrelation* particlecorr =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     fhCuts ->Fill(0., GetEventWeight());
     fhCuts2->Fill(0., (Double_t)nJets * GetEventWeight());
     AliDebug(1,Form("OnlyIsolated %d  !particlecorr->IsIsolated() %d \n",OnlyIsolated(), !particlecorr->IsIsolated()));

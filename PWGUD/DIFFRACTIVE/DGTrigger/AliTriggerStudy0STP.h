@@ -27,13 +27,14 @@ public:
 		      Int_t deltaPhiMin)
     : TObject()
     , fOTtype(otType)
+    , fOpeningAngle(otType == kOT_2_3    // w.r.t. outer layer
+		    ? 9*(deltaPhiMin-3)  // w.r.t. inner layer
+		    : 18*(deltaPhiMin-1))
     , fDeltaPhiMin(deltaPhiMin)
     , fDeltaPhiMax(otType == kOT_2_3
 		   ? 20                  // w.r.t. outer layer
 		   : 10)                 // w.r.t. inner layer
-    , fOpeningAngle(otType == kOT_2_3    // w.r.t. outer layer
-		    ? 9*(deltaPhiMin-3)  // w.r.t. inner layer
-		    : 18*(deltaPhiMin-1)) {}
+  {}
 
   virtual ~AliTriggerStudy0STP() {}
 

@@ -15,6 +15,8 @@ class EventStatStruct: public TObject
     /// object name (re-implemented)
     virtual const char*	GetName() const
     { return "eventStatStruct"; }
+
+    /// constructor
     EventStatStruct( void):
 
         kAllMB(kFALSE),
@@ -31,7 +33,10 @@ class EventStatStruct: public TObject
         nV(0),
         vX(0),
         vY(0),
-        vZ(0)
+        vZ(0),
+        EMCalClusters(0),
+        EMCalHijingClusters(0),
+        NTotalClusters(0)
     {}
 
     Bool_t  kAllMB;
@@ -50,6 +55,10 @@ class EventStatStruct: public TObject
     Float_t vX;
     Float_t vY;
     Float_t vZ;
+
+    Int_t   EMCalClusters;
+    Int_t   EMCalHijingClusters;
+    Int_t   NTotalClusters;
 
     ClassDef(EventStatStruct,1)
 

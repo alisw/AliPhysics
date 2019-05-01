@@ -16,4 +16,10 @@
 #pragma link C++ class std::pair<std::string, AliJetContainer*>+;
 #pragma link C++ class AliDJetVReader+;
 
+#pragma link C++ namespace PWG+;
+#pragma link C++ namespace PWG::JETFW+;
+#pragma link C++ class PWG::JETFW::AliEmcalJetConstituent+;
+#pragma link C++ class PWG::JETFW::AliEmcalParticleJetConstituent+;
+#pragma link C++ class PWG::JETFW::AliEmcalClusterJetConstituent+;
+
 #endif

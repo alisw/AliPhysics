@@ -68,7 +68,7 @@ AliTRDPIDTree::AliTRDPIDTree(const char *name)
     fNumTagsStored(0), fCollisionSystem(3),
     fpdg(0), frun(0), frunnumber(0), fcentrality(0), fTRDNcls(0), fTRDntracklets(0), fTRDntrackletsPID(0),
     fTRDtheta(0), fTRDTPCtgl(0), fTRDsignal(0), fTRDnclsdEdx(0), fTRDnch(0), fPDG(0), fTrackCharge(0), fPDGTRUE(0), fChi2(0),
-    fhtrackCuts(0), fhEventCount(0), fhArmenteros(0)
+    fhtrackCuts(0), fhEventCount(0), fhArmenteros(0), fUseExtraPileupCut(0), fHistV0MvsTPCoutBeforePileUpCuts(0), fHistV0MvsTPCoutAfterPileUpCuts(0)
 {
 
   //
@@ -164,10 +164,30 @@ void AliTRDPIDTree::UserCreateOutputObjects()
 
   SetupV0qa();
 
+  switch(fUseExtraPileupCut){
+    case kLHC15o :
+      printf("Using extra pile-up cut on TPCout <-> VZEROTotalMult correlation with parameters for LHC15o.\n");
+      break;
+
+    case kLHC18q :
+      printf("Using extra pile-up cut on TPCout <-> VZEROTotalMult correlation with parameters for LHC18q.\n");
+      break;
+  }
+
+  fHistV0MvsTPCoutBeforePileUpCuts = new TH2F("fHistV0MvsTPCoutBeforePileUpCuts","V0M amplitude vs TPCout tracks; TPCout tracks; V0M amplitude;",1000,0,20000,1000,0,40000);
+  fListQATRD->Add(fHistV0MvsTPCoutBeforePileUpCuts);
+  fHistV0MvsTPCoutAfterPileUpCuts = new TH2F("fHistV0MvsTPCoutAfterPileUpCuts","V0M amplitude vs TPCout tracks; TPCout tracks; V0M amplitude;",1000,0,20000,1000,0,40000);
+  fListQATRD->Add(fHistV0MvsTPCoutAfterPileUpCuts);  
   fhtrackCuts  = new TH1F("fhtrackCuts","TrackEventCuts QA",10,-0.5,9.5);
   fListQATRD->Add(fhtrackCuts);
   fhEventCount  = new TH1F("fhEventCount","Event Count",5,-0.5,4.5);
   fListQATRD->Add(fhEventCount);
+
+  fHistV0MvsTPCoutBeforePileUpCuts->SetMarkerStyle(20);
+  fHistV0MvsTPCoutBeforePileUpCuts->SetMarkerSize(1);
+  fHistV0MvsTPCoutAfterPileUpCuts->SetMarkerStyle(20);
+  fHistV0MvsTPCoutAfterPileUpCuts->SetMarkerSize(1);
+
   
   PostData(2,fListQATRD);
 
@@ -250,17 +270,55 @@ void AliTRDPIDTree::Process(AliESDEvent *const esdEvent, AliMCEvent *const mcEve
 
 
 
-
   const AliESDVertex* fESDEventvertex = esdEvent->GetPrimaryVertexTracks(); 
   if (!fESDEventvertex)
     return;
   
   Int_t ncontr = fESDEventvertex->GetNContributors();
 
+
+
+
   if (ncontr <= 0) return;
   frunnumber = fESDEvent->GetRunNumber();
 
   if(fESDEvent) fhEventCount->Fill(1,1);
+
+  //Extra Pile-up Cut
+  if(fUseExtraPileupCut!=0){
+    Int_t ntrkTPCout = 0;
+    for (int it = 0; it < esdEvent->GetNumberOfTracks(); it++) {
+      AliESDtrack* ESDTrk = (AliESDtrack*)esdEvent->GetTrack(it);
+      if ((ESDTrk->GetStatus() & AliESDtrack::kTPCout) && ESDTrk->GetID() > 0)
+        ntrkTPCout++;
+     }
+
+    Double_t multVZERO =0;
+    AliVVZERO *vzero = (AliVVZERO*)esdEvent->GetVZEROData();
+    if(vzero) {
+      for(int ich=0; ich < 64; ich++)
+      multVZERO += vzero->GetMultiplicity(ich);
+    }
+
+
+    fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
+
+    switch(fUseExtraPileupCut){
+      case kLHC15o :
+        if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+          return;
+        }
+        break;
+
+      case kLHC18q :
+        if (multVZERO < (-2800 + 3.165*ntrkTPCout + 2.5e-5*ntrkTPCout*ntrkTPCout))  {
+          return;
+        }
+        break;
+    }
+
+    fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
+  }
   
   // - Begin: track loop for electrons from V0 -
     for(Int_t itrack = 0; itrack < fV0electrons->GetEntries(); itrack++){

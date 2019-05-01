@@ -66,6 +66,7 @@ class AliAODRecoDecayHF2Prong : public AliAODRecoDecayHF {
 
   Bool_t   SelectBtoJPSI(const Double_t* cuts,Int_t &okB) const;
   
+  Int_t MatchToMCB2Prong(Int_t pdgabs,Int_t pdgabs2prong, Int_t *pdgDg, Int_t *pdgDg2prong, TClonesArray *mcArray) const;
   Int_t MatchToMCB3Prong(Int_t pdgabs,Int_t pdgabs3prong, Int_t *pdgBDg,Int_t *pdgDg3prong, TClonesArray *mcArray) const;
 
  private:

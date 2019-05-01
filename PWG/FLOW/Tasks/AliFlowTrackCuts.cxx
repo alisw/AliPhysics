@@ -74,6 +74,8 @@
 #include "AliAnalysisManager.h"
 #include "AliPIDResponse.h"
 #include "TF2.h"
+#include "AliNanoAODHeader.h"
+#include "AliNanoAODTrack.h"
 
 
 using std::cout;
@@ -777,7 +779,7 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   // Get PID response
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(man){
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+    AliVEventHandler* inputHandler = man->GetInputEventHandler();
     if(inputHandler) fPIDResponse=inputHandler->GetPIDResponse();
   }
 
@@ -1152,6 +1154,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   Bool_t isMCparticle = kFALSE; //some things are different for MC particles, check!
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*>(vparticle);
   AliAODTrack* aodTrack = NULL;
+  AliNanoAODTrack* aodNanoTrack = NULL;
   if (esdTrack)
   {
     //for an ESD track we do some magic sometimes like constructing TPC only parameters
@@ -1164,6 +1167,7 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
     //now check if produced particle is MC
     isMCparticle = (dynamic_cast<AliMCParticle*>(fTrack))!=NULL;
     aodTrack = dynamic_cast<AliAODTrack*>(vparticle); //keep the additional dynamic cast out of the way for ESDs
+    if (!aodTrack) aodNanoTrack = dynamic_cast<AliNanoAODTrack*>(vparticle);
   }
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
@@ -1195,7 +1199,8 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   //the case of ESD or AOD
   if (esdTrack) { if (!PassesESDcuts(esdTrack)) { pass=kFALSE; } }
   if (aodTrack) { if (!PassesAODcuts(aodTrack,pass)) { pass=kFALSE; } }
-
+  if (aodNanoTrack) { if (!PassesNanoAODcuts(aodNanoTrack,pass)) { pass=kFALSE; } }
+ 
   if (fQA)
   {
     if (fMCparticle)
@@ -1423,6 +1428,116 @@ Int_t AliFlowTrackCuts::GetITStype(const AliAODTrack* track) const
     }
   }
   return ITStype;
+}
+//_______________________________________________________________________
+Bool_t AliFlowTrackCuts::PassesNanoAODcuts(const AliNanoAODTrack* track, Bool_t passFid){
+    
+    //check cuts for AOD
+
+    Bool_t pass=passFid;
+    AliNanoAODHeader * nanoHeader = (AliNanoAODHeader*) fEvent->GetHeader();
+    
+    if (fCutNClustersTPC)
+    {
+        Int_t ntpccls = track->GetTPCNcls();
+        if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
+    }
+    
+    if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
+
+    Double_t chi2tpc =0.;
+    if (fCutChi2PerClusterTPC)
+    {
+        chi2tpc = track->Chi2perNDF();
+        if (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC) pass=kFALSE;
+    }
+    
+    Double_t dedx = track->GetTPCsignal();
+    if(fCutMinimalTPCdedx) {
+        if (dedx < fMinimalTPCdedx) pass=kFALSE;
+    }
+    
+    Double_t DCAxy = track->DCA();
+    Double_t DCAz = track->ZAtDCA();
+    
+    if(fCutDCAToVertexXYAOD || fCutDCAToVertexZAOD || fCutDCAToVertexXYPtDepAOD) {
+        if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
+            // re-evaluate the dca as it seems to not be natively present
+            // allowed only for tracks inside the beam pipe
+            Double_t pos[3] = {-99., -99., -99.};
+            track->GetPosition(pos);
+            if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
+                AliNanoAODTrack copy(*track);       // stack copy
+                Double_t b[2] = {-99., -99.};
+                Double_t bCov[3] = {-99., -99., -99.};
+                if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), nanoHeader->GetMagneticField(), 100., b, bCov)) {
+                    DCAxy = b[0];
+                    DCAz = b[1];
+                }
+            }
+        }
+        if (fCutDCAToVertexXYAOD) {
+            if (TMath::Abs(DCAxy)>fMaxDCAxyAOD) pass=kFALSE;
+        }
+        if (fCutDCAToVertexXYPtDepAOD) {
+            Double_t MaxDCAPtDep = 2.4;
+            if (fAODFilterBit!=128) MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
+            else MaxDCAPtDep = 0.4+0.2/pow(track->Pt(),0.3);
+            if (TMath::Abs(DCAxy)>MaxDCAPtDep) pass=kFALSE;
+        }
+        if (fCutDCAToVertexZAOD) {
+            if (TMath::Abs(DCAz)>fMaxDCAzAOD) pass=kFALSE;
+        }
+    }
+    Int_t ntpccls =0;
+    if (fCutFracSharedTPCCluster)
+    {
+        ntpccls = track->GetTPCncls();
+        if(ntpccls>0) {
+            Int_t ntpcclsS = track->GetTPCnclsS();
+            Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
+            if (fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
+        }
+    }
+
+    if (fQA) {
+    // changed 04062014 used to be filled before possible PID cut
+    Double_t momTPC = track->GetTPCmomentum();
+    //QAbefore( 0)->Fill(momTPC,GetBeta(track, kTRUE));
+    //if(pass) QAafter( 0)->Fill(momTPC, GetBeta(track, kTRUE));
+    QAbefore( 1)->Fill(momTPC,dedx);
+    QAbefore( 5)->Fill(track->Pt(),DCAxy);
+    QAbefore( 6)->Fill(track->Pt(),DCAz);
+    if (pass) QAafter( 1)->Fill(momTPC,dedx);
+    if (pass) QAafter( 5)->Fill(track->Pt(),DCAxy);
+    if (pass) QAafter( 6)->Fill(track->Pt(),DCAz);
+   /* QAbefore( 8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
+    if (pass) QAafter(  8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
+    QAbefore( 9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
+    if (pass) QAafter(  9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
+    QAbefore(10)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kPion]));
+    if (pass) QAafter( 10)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kPion]));
+    QAbefore(11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
+    if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
+    QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
+    if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));*/
+    if(ntpccls>0) {
+      QAbefore(18)->Fill(track->Pt(),chi2tpc);
+      if (pass) QAafter( 18)->Fill(track->Pt(),chi2tpc);
+     // QAbefore(19)->Fill(track->Pt(),fshtpccls);
+      //if (pass) QAafter(19)->Fill(track->Pt(),fshtpccls);
+    }
+   /* if(nitscls>0) {
+      //QAbefore(20)->Fill(track->Pt(),chi2its);
+      //if (pass) QAafter(20)->Fill(track->Pt(),chi2its);
+     //QAbefore(21)->Fill(track->Pt(),fshitscls);
+      //if (pass) QAafter(21)->Fill(track->Pt(),fshitscls);
+    }*/
+  }
+    
+    return pass;
+    
+    
 }
 
 //_______________________________________________________________________

@@ -59,18 +59,11 @@ class AliJCORRAN : public TObject
 	void SetNumberEvents( Int_t n ) { fnumberEvents = n; }
 
 	void SetTrackList( TClonesArray *a ) { fdmg->SetTrackList( a ); }
-	void SetPhotonList( TClonesArray *a ) { fdmg->SetPhotonList( a ); }
-	void SetCaloCellList( TClonesArray *a ) { fdmg->SetCaloCellList( a ); }
 	void SetMCTrackList( TClonesArray *a ) { fdmg->SetMCTrackList( a ); }
 	void SetHeaderList( TClonesArray *a ) { fdmg->SetHeaderList( a ); }
 	void SetRunHeader( AliJRunHeader *a ) { frunHeader = a; }
 	void SetRunInfoList( TList *a ) { fdmg->SetRunInfoList( a ); }
-	void SetESDVZERO( TObject *a ) { fdmg->SetESDVZERO( a ); }
  
-	//     void SetESDTZERO( AliESDTZERO *a ) { fdmg->SetESDTZERO( a ); }
-	//     void SetESDZDC( AliESDZDC *a ) { fdmg->SetESDZDC( a ); }
-
-
 	double DeltaPhi(double phi1, double phi2);
 	particleType  GetParticleType(char *inchar);
 	void ScaleNotEquidistantHisto(TH1D *hid, const double sc);
@@ -91,11 +84,8 @@ class AliJCORRAN : public TObject
 	AliJHistos *fhistos; //!
 	AliJCorrelations *fcorrelations; //!
   AliJAcceptanceCorrection *fAcceptanceCorrection; //! Class for acceptance correction
-	AliJEventPool *fphotonPool; //!
 	AliJEventPool *fassocPool; //! 
-	TClonesArray *fphotonList; //! 
 	TClonesArray *fchargedHadronList; //!
-	TClonesArray *fpizeroList; //!
 	TClonesArray *ftriggList; //! 
 	TClonesArray *fassocList; //!
 	TClonesArray *fpairList; //!

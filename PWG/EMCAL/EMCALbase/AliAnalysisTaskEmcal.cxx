@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <RVersion.h>
 #include <iostream>
 #include <memory>
@@ -55,6 +67,8 @@
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
+#include "AliNanoAODHeader.h"
+#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
@@ -77,6 +91,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -95,9 +110,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
+  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
   fMCLabelShift(0),
@@ -113,10 +130,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
+  fUseBuiltinEventSelection(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
+  fAliEventCuts(kFALSE),
   fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
   fGeom(nullptr),
@@ -138,6 +157,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
+  fPtHardInitialized(false),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -188,6 +208,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -206,9 +227,11 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
   fCentEst("V0M"),
+  fRecycleUnusedEmbeddedEventsMode(false),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
   fMCLabelShift(0),
@@ -224,10 +247,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
+  fUseBuiltinEventSelection(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
+  fAliEventCuts(kFALSE),
   fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
   fGeom(nullptr),
@@ -249,6 +274,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
+  fPtHardInitialized(false),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
@@ -281,6 +307,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fVertexSPD[2] = 0;
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
+  // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+  fAliEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
 
   if (fCreateHisto) {
     DefineOutput(1, AliEmcalList::Class());
@@ -289,6 +317,9 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
 
 AliAnalysisTaskEmcal::~AliAnalysisTaskEmcal()
 {
+  if(fOutput) delete fOutput;
+  if(fAliAnalysisUtils) delete fAliAnalysisUtils;
+  if(fPythiaInfo) delete fPythiaInfo;
 }
 
 void AliAnalysisTaskEmcal::SetClusPtCut(Double_t cut, Int_t c)
@@ -348,6 +379,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   else {
     AliError("Analysis manager not found!");
   }  
+
 
   if (!fCreateHisto)
     return;
@@ -473,22 +505,35 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 #else
   fHistEventRejection->SetCanExtend(TH1::kAllAxes);
 #endif
-  fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
-  fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
-  fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
-  fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
-  fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
-  fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
-  fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
-  fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
-  fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
-  fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
-  fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
-  fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-  fHistEventRejection->GetYaxis()->SetTitle("counts");
+  // We must keep track of the recycled embedded event count. If we use the builtin event selection, then
+  // this count is appended after all of the rest of the bins.
+  int recycleEmbeddedEventIndex = 1;
+  if(fUseBuiltinEventSelection){
+    fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
+    fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
+    fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
+    fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
+    fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
+    fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
+    fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
+    fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
+    fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
+    fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
+    fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
+    fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
+    fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
+    fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
+    recycleEmbeddedEventIndex = 15;
+    fHistEventRejection->GetYaxis()->SetTitle("counts");
+  }
+  // Finish setting up the event rejection histogram.
+  fHistEventRejection->GetXaxis()->SetBinLabel(recycleEmbeddedEventIndex,"RecycleEmbeddedEvent");
   fOutput->Add(fHistEventRejection);
+
+  // Finish setting up AliEventCuts
+  if (!fUseBuiltinEventSelection) {
+    fAliEventCuts.AddQAplotsToList(fOutput);
+  }
 
   fHistTriggerClasses = new TH1F("fHistTriggerClasses","fHistTriggerClasses",3,0,3);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
@@ -520,17 +565,22 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
   if (fIsPythia || fIsHerwig) {
-    fHistEventsAfterSel->Fill(fPtHardBin, 1);
-    fHistTrialsAfterSel->Fill(fPtHardBin, fNTrials);
-    fHistXsectionAfterSel->Fill(fPtHardBin, fXsection);
+    // Protection: In case the pt-hard bin handling is not initialized we fall back to the
+    // global pt-hard bin (usually 0) in order to aviod mismatch between histograms before
+    // and after selection
+    fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, 1);
+    fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fNTrials);
+    fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fXsection);
     fHistPtHard->Fill(fPtHard);
-    fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
-    fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
-    fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
+    if(fPtHardInitialized){
+    	fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
+    	fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
+    	fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
+    }
   }
 
 
-    fHistZVertex->Fill(fVertex[2]);
+  fHistZVertex->Fill(fVertex[2]);
 
   if (fForceBeamType != kpp) {
     fHistCentrality->Fill(fCent);
@@ -548,7 +598,7 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     // downscale-corrected number of events are calculated based on the min. bias reference
     // Formula: N_corr = N_MB * d_Trg/d_{Min_Bias}
     if(InputEvent()->GetFiredTriggerClasses().Contains(fMinBiasRefTrigger)){
-      AliEmcalDownscaleFactorsOCDB *downscalefactors = AliEmcalDownscaleFactorsOCDB::Instance();
+      PWG::EMCAL::AliEmcalDownscaleFactorsOCDB *downscalefactors = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
       Double_t downscaleref = downscalefactors->GetDownscaleFactorForTriggerClass(fMinBiasRefTrigger);
       for(auto t : downscalefactors->GetTriggerClasses()){
         Double_t downscaletrg = downscalefactors->GetDownscaleFactorForTriggerClass(t);
@@ -562,6 +612,18 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
+  // Recycle embedded events which do not pass the internal event selection in the embedding helper
+  if (fRecycleUnusedEmbeddedEventsMode) {
+    auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+    if (embeddingHelper && embeddingHelper->EmbeddedEventUsed() == false) {
+      if (fGeneralHistograms) {
+        fHistEventRejection->Fill("RecycleEmbeddedEvent",1);
+        fHistEventCount->Fill("Rejected",1);
+      }
+      return;
+    }
+  }
+
   if (!fLocalInitialized){
     ExecOnce();
     UserExecOnce();
@@ -581,24 +643,26 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   if(InputEvent()->GetRunNumber() != fRunNumber){
     fRunNumber = InputEvent()->GetRunNumber();
     RunChanged(fRunNumber);
-    if(fCountDownscaleCorrectedEvents) AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
+    if(fCountDownscaleCorrectedEvents) PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
   }
 
   // Apply fallback for pythia cross section if needed
   if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){
     AliDebugStream(1) << "Fallback to cross section from pythia header required" << std::endl;
+    /*
     // Get the pthard bin
     Float_t pthard = fPythiaHeader->GetPtHard();
     int pthardbin = 0;
     if(fPtHardBinning.GetSize()){
       for(int ib = 0; ib < fNPtHardBins; ib++){
-        if(pthard >= fPtHardBinning[ib] && pthard < fPtHardBinning[ib+1]) {
+        if(pthard >= static_cast<Float_t>(fPtHardBinning[ib]) && pthard < static_cast<Float_t>(fPtHardBinning[ib+1])) {
           pthardbin = ib;
           break;
         }
       }
     }
-    fHistXsection->Fill(pthardbin, fPythiaHeader->GetXsection());
+    */
+    fHistXsection->Fill(fPtHardBinGlobal, fPythiaHeader->GetXsection());
   }
 
   if (IsEventSelected()) {
@@ -814,6 +878,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
 }
 
 Bool_t AliAnalysisTaskEmcal::UserNotify(){
+  fPtHardInitialized = kFALSE;
   fFileChanged = kTRUE;
   return kTRUE;
 }
@@ -848,7 +913,15 @@ Bool_t AliAnalysisTaskEmcal::FileChanged(){
 
   fUseXsecFromHeader = false;
   PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
-  fPtHardBinGlobal = pthardbin;
+  if(fGetPtHardBinFromName) {
+    // Use the bin obtained from the path name
+    fPtHardBinGlobal = pthardbin;
+    fPtHardInitialized = kTRUE;
+  } else {
+    // Put everything in the first bin
+    fPtHardBinGlobal = 0;
+    pthardbin = 0;
+  }
 
   if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)){
     AliErrorStream() << GetName() << ": Invalid global pt-hard bin " << pthardbin << " detected" << std::endl;
@@ -1045,8 +1118,16 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
   return TESTBIT(fTriggers, trigger);
 }
 
-Bool_t AliAnalysisTaskEmcal::IsEventSelected()
+Bool_t AliAnalysisTaskEmcal::IsEventSelected(){
+  if(fUseBuiltinEventSelection) return IsEventSelectedInternal();
+  if(!IsTriggerSelected()) return false;
+  if(!CheckMCOutliers()) return false;
+  return fAliEventCuts.AcceptEvent(fInputEvent);
+}
+
+Bool_t AliAnalysisTaskEmcal::IsEventSelectedInternal()
 {
+  AliDebugStream(3) << "Using default event selection" << std::endl;
   if (fOffTrigger != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -1055,7 +1136,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     } else {
       const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
       if (aev) {
-        res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
+	      res = ((AliVAODHeader*)aev->GetHeader())->GetOfflineTrigger();
       }
     }
     if ((res & fOffTrigger) == 0) {
@@ -1064,67 +1145,9 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
   }
 
-  if (!fTrigClass.IsNull()) {
-    TString fired;
-    const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
-    if (eev) {
-      fired = eev->GetFiredTriggerClasses();
-    } else {
-      const AliAODEvent *aev = dynamic_cast<const AliAODEvent*>(InputEvent());
-      if (aev) {
-        fired = aev->GetFiredTriggerClasses();
-      }
-    }
-    if (!fired.Contains("-B-")) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
-
-    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
-    if (!arr) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
-    Bool_t match = 0;
-    for (Int_t i=0;i<arr->GetEntriesFast();++i) {
-      TObject *obj = arr->At(i);
-      if (!obj)
-        continue;
-
-      //Check if requested trigger was fired
-      TString objStr = obj->GetName();
-      if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
-          (objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
-        // This is relevant for EMCal triggers with 2 thresholds
-        // If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
-        TString trigType1 = "J1";
-        TString trigType2 = "J2";
-        if(objStr.Contains("G")) {
-          trigType1 = "G1";
-          trigType2 = "G2";
-        }
-        if(objStr.Contains(trigType2) && fired.Contains(trigType2.Data())) { //requesting low threshold + overlap
-          match = 1;
-          break;
-        } 
-        else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
-          match = 1;
-          break;
-        }
-      }
-      else {
-        // If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
-        // simply check that the trigger was fired
-        if (fired.Contains(obj->GetName())) {
-          match = 1;
-          break;
-        }
-      }
-    }
-    if (!match) {
-      if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
-      return kFALSE;
-    }
+  if(!IsTriggerSelected()) {
+    if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
+    return kFALSE;
   }
 
   if (fTriggerTypeSel != kND) {
@@ -1144,7 +1167,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   if (fUseAliAnaUtils) {
     if (!fAliAnalysisUtils)
       fAliAnalysisUtils = new AliAnalysisUtils();
-    fAliAnalysisUtils->SetMinVtxContr(2);
+    fAliAnalysisUtils->SetMinVtxContr(fMinVertexContrib);
     fAliAnalysisUtils->SetMaxVtxZ(999);
     if(fMinVz<-998.) fMinVz = -10.;
     if(fMaxVz>998.)  fMaxVz = 10.;
@@ -1254,9 +1277,62 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   return kTRUE;
 }
 
+Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
+  // Default implementation of trigger selection
+  // same as previously (code moved from IsEventSelected
+  // to trigger selection). Users should re-implement
+  // this function in case they have certain needs, in
+  // particular for EMCAL triggers
+  AliDebugStream(3) << "Using default trigger selection" << std::endl;
+  if (!fTrigClass.IsNull()) {
+    TString fired = InputEvent()->GetFiredTriggerClasses();
+    if (!fired.Contains("-B-")) return kFALSE;
+
+    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
+    if (!arr) return kFALSE;
+    Bool_t match = false;
+    for (Int_t i=0;i<arr->GetEntriesFast();++i) {
+      TObject *obj = arr->At(i);
+      if (!obj) continue;
+
+      //Check if requested trigger was fired
+      TString objStr = obj->GetName();
+      if(fEMCalTriggerMode == kOverlapWithLowThreshold &&
+          (objStr.Contains("J1") || objStr.Contains("J2") || objStr.Contains("G1") || objStr.Contains("G2"))) {
+        // This is relevant for EMCal triggers with 2 thresholds
+        // If the kOverlapWithLowThreshold was requested than the overlap between the two triggers goes with the lower threshold trigger
+        TString trigType1 = "J1";
+        TString trigType2 = "J2";
+        if(objStr.Contains("G")) {
+          trigType1 = "G1";
+          trigType2 = "G2";
+        }
+        if(objStr.Contains(trigType2) && fired.Contains(trigType2.Data())) { //requesting low threshold + overlap
+          match = 1;
+          break;
+        } else if(objStr.Contains(trigType1) && fired.Contains(trigType1.Data()) && !fired.Contains(trigType2.Data())) { //high threshold only
+          match = 1;
+          break;
+        }
+      }
+      else {
+        // If this is not an EMCal trigger, or no particular treatment of EMCal triggers was requested,
+        // simply check that the trigger was fired
+        if (fired.Contains(obj->GetName())) {
+          match = 1;
+          break;
+        }
+      }
+    }
+    if (!match) return kFALSE;
+  }
+  return kTRUE;
+}
+
 Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 {
   if (!fPythiaHeader || !fMCRejectFilter) return kTRUE;
+  AliDebugStream(2) << "Using custom outlier rejection" << std::endl;
 
   // Condition 1: Pythia jet / pT-hard > factor
   if (fPtHardAndJetPtFactor > 0.) {
@@ -1264,7 +1340,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
     Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
 
-    AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
+    AliDebug(2,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
 
     Float_t tmpjet[]={0,0,0,0};
     for (Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
@@ -1272,7 +1348,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
       jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
 
-      AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
+      AliDebug(2,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
 
       //Compare jet pT and pt Hard
       if (jet.Pt() > fPtHardAndJetPtFactor * fPtHard) {
@@ -1373,24 +1449,34 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   }
 
   fBeamType = GetBeamType();
-
+  TObject * header = InputEvent()->GetHeader();
   if (fBeamType == kAA || fBeamType == kpA ) {
     if (fUseNewCentralityEstimation) {
-      AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-      if (MultSelection) {
-        fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fCent=nanoHead->GetCentr(fCentEst.Data());
+      }else{
+        AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+        if (MultSelection) {
+          fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
+        }
+        else {
+          AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        }
       }
     }
     else { // old centrality estimation < 2015
-      AliCentrality *aliCent = InputEvent()->GetCentrality();
-      if (aliCent) {
-        fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fCent=nanoHead->GetCentr(fCentEst.Data());
+      }else{
+        AliCentrality *aliCent = InputEvent()->GetCentrality();
+        if (aliCent) {
+          fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+        }
+        else {
+          AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        }
       }
     }
 
@@ -1431,7 +1517,12 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
         fCentBin = fNcentBins-1;
       }
     }
-
+    if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fEPV0=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0"));
+        fEPV0A=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0A"));
+        fEPV0C=nanoHead->GetVar(nanoHead->GetVarIndex("cstEvPlaneV0C"));
+    }else{
     AliEventplane *aliEP = InputEvent()->GetEventplane();
     if (aliEP) {
       fEPV0  = aliEP->GetEventplane("V0" ,InputEvent());
@@ -1439,6 +1530,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fEPV0C = aliEP->GetEventplane("V0C",InputEvent());
     } else {
       AliWarning(Form("%s: Could not retrieve event plane information!", GetName()));
+    }
     }
   }
   else {
@@ -1469,7 +1561,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if(fPtHardBinning.GetSize()){
       // pt-hard binning defined for the corresponding dataset - automatically determine the bin
       for (fPtHardBin = 0; fPtHardBin < fNPtHardBins; fPtHardBin++) {
-        if (fPtHard >= fPtHardBinning[fPtHardBin] && fPtHard < fPtHardBinning[fPtHardBin+1])
+        if (fPtHard >= static_cast<float>(fPtHardBinning[fPtHardBin]) && fPtHard < static_cast<float>(fPtHardBinning[fPtHardBin+1]))
           break;
       }
     } else {
@@ -1477,8 +1569,11 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fPtHardBin = 0;
     }
 
-    if(fPtHardBin != fPtHardBinGlobal){
-      AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+    if(fPtHardInitialized){
+      // do check only in case the global pt-hard bin is initialized
+      if(fPtHardBin != fPtHardBinGlobal){
+        AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+      }
     }
 
     fXsection = fPythiaHeader->GetXsection();
@@ -1526,10 +1621,14 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   AliEmcalContainer* cont = 0;
 
   TIter nextPartColl(&fParticleCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))){
+    cont->NextEvent(InputEvent());
+  }
 
   TIter nextClusColl(&fClusterCollArray);
-  while ((cont = static_cast<AliParticleContainer*>(nextClusColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliParticleContainer*>(nextClusColl()))){
+    cont->NextEvent(InputEvent());
+  }
 
   return kTRUE;
 }

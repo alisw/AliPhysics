@@ -26,30 +26,29 @@ class TH2F;
 class AliFemtoModelCorrFctnKStar : public AliFemtoModelCorrFctn {
 public:
 
-  /**
-   * Default constructor
-   *
-   * Histograms are created with default titles/ranges. No other members are
-   * initialized - user **MUST** set pair type and PDG codes.
-   */
+  /// Default constructor
+  ///
+  /// Histograms are created with default titles/ranges.
+  /// No other members are initialized - user **MUST** set pair type
+  /// and PDG codes.
+  ///
   AliFemtoModelCorrFctnKStar();
 
-  /**
-   * Construct with histogram parameters
-   *
-   * KStar histograms use these parameters when constructing histograms. No
-   * other memebers are set - user **MUST** set pair type and PDG codes.
-   */
+  /// Construct with histogram parameters
+  ///
+  /// KStar histograms use these parameters when constructing
+  /// histograms. No other memebers are set - user **MUST** set pair
+  /// type and PDG codes.
+  ///
   AliFemtoModelCorrFctnKStar(const char *name,
                              const Int_t aNbins,
                              const Float_t aQinvLo,
                              const Float_t aQinvHi);
 
-  /**
-   * Copy Constructor
-   *
-   * Copies pair type & PDG codes. Clones histograms.
-   */
+  /// Copy Constructor
+  ///
+  /// Copies pair type & PDG codes. Clones histograms.
+  ///
   AliFemtoModelCorrFctnKStar(const AliFemtoModelCorrFctnKStar &);
 
   /// Destructor
@@ -64,6 +63,8 @@ public:
   virtual TList* GetOutputList();
 
   virtual TList* AppendOutputList(TList*);
+
+  virtual void AddOutputObjectsTo(TCollection &);
 
   /// Sets whether to expect pairs of Track+Track, Track+V0, or V0+V0 particles
   virtual void SetPairType(const AliFemtoAvgSepCorrFctn::PairType pairtype);
@@ -96,6 +97,9 @@ public:
                           AliFemtoTrack*&,
                           AliFemtoV0*&);
 
+private:
+  // AliFemtoModelCorrFctnKStar(const AliFemtoModelCorrFctnKStar&);
+  AliFemtoModelCorrFctnKStar& operator=(const AliFemtoModelCorrFctnKStar&);
 protected:
 
   /// The particle class combination types (track, V0, etc...)

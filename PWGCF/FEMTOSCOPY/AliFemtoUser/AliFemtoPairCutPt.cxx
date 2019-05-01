@@ -81,7 +81,7 @@ AliFemtoString AliFemtoPairCutPt::Report()
   TString report("AliFemtoPairCutPt Pair Cut\n");
   report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", (long int)fNPairsPassed, (long int)fNPairsFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //__________________
 

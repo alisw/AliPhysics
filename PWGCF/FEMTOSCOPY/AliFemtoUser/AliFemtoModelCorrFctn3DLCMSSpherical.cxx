@@ -13,12 +13,12 @@
 #include <TMath.h>
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoModelCorrFctn3DLCMSSpherical)
 #endif
 
 //____________________________
-  AliFemtoModelCorrFctn3DLCMSSpherical::AliFemtoModelCorrFctn3DLCMSSpherical(char* title, const int& nqbins, const float& QLo, const float& QHi, const int& nphibins, const int& ncthetabins):
+  AliFemtoModelCorrFctn3DLCMSSpherical::AliFemtoModelCorrFctn3DLCMSSpherical(const char* title, const int& nqbins, const float& QLo, const float& QHi, const int& nphibins, const int& ncthetabins):
   fTrueNumeratorSph(0),
   fFakeNumeratorSph(0),
   fDenominatorSph(0),
@@ -76,9 +76,9 @@ AliFemtoModelCorrFctn3DLCMSSpherical& AliFemtoModelCorrFctn3DLCMSSpherical::oper
   fFakeNumeratorSph = new TH3D(*aCorrFctn.fFakeNumeratorSph);
   if (fDenominatorSph) delete fDenominatorSph;
   fDenominatorSph = new TH3D(*aCorrFctn.fDenominatorSph);
-  
+
   fPairCut = aCorrFctn.fPairCut;
-  
+
   return *this;
 }
 
@@ -95,9 +95,9 @@ TList* AliFemtoModelCorrFctn3DLCMSSpherical::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fTrueNumeratorSph); 
-  tOutputList->Add(fFakeNumeratorSph); 
-  tOutputList->Add(fDenominatorSph);  
+  tOutputList->Add(fTrueNumeratorSph);
+  tOutputList->Add(fFakeNumeratorSph);
+  tOutputList->Add(fDenominatorSph);
 
   return tOutputList;
 }
@@ -127,7 +127,7 @@ AliFemtoString AliFemtoModelCorrFctn3DLCMSSpherical::Report(){
     stemp += ctemp;
   }
 
-  //  
+  //
   AliFemtoString returnThis = stemp;
   return returnThis;
 }

@@ -145,7 +145,7 @@ void AliEmcalCopyCollection::NewBranch()
   if (existingObject) {
     AliFatal(TString::Format("Attempted to create a new %d branch, \"%s\", with the same name as an existing branch! Check your configuration! Perhaps \"usedefault\" was used incorrectly?", fInputObjectType, fNewCollectionName.c_str()));
   }
-  TClonesArray * existingArray = dynamic_cast<TClonesArray *>(existingObject);
+  //TClonesArray * existingArray = dynamic_cast<TClonesArray *>(existingObject);
 
   if (fInputObjectType == AliEmcalContainerUtils::kCaloCells)
   {

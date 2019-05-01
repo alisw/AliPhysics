@@ -304,11 +304,9 @@ struct GRPData
        beam1.Set(beam1T);
        beam2.Set(beam2T);
      }
-     Info("", "Energy=%d",  beamEnergy);
      if (beam1.IsA() && beam2.IsA()) {
        // Revert calculation done in AliGRPObject - sigh
        beamEnergy *= 208./82;
-       Info("", "Beam energy now %d", beamEnergy);
      }
      // Massage the beam energy in case we had sqrt{s_NN} instead of
      // beam energy.
@@ -318,6 +316,8 @@ struct GRPData
        TMath::Sqrt(Float_t(beam1.z*beam2.z)/(beam1.a*beam2.a));
      energy = (TMath::Abs(sNN -  2760) < 10 ?  2760 :
 	       TMath::Abs(sNN -  5023) < 10 ?  5023 :
+	       TMath::Abs(sNN -  5100) < 30 ?  5100 :
+	       TMath::Abs(sNN -  5440) < 30 ?  5440 :
 	       TMath::Abs(sNN -  2360) < 10 ?  2360 :
 	       TMath::Abs(sNN -   900) < 10 ?   900 :
 	       TMath::Abs(sNN -  7000) < 10 ?  7000 :

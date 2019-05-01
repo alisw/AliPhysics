@@ -21,7 +21,7 @@ class THnSparse;
 class TObjString;
 class AliAODEvent;
 class AliESDEvent;
-class AliAODPWG4Particle;
+class AliAODCaloTrackParticle;
 class AliOADBContainer;
 class AliEMCALGeometry;
 class AliESDEvent;

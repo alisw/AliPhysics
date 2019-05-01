@@ -346,7 +346,8 @@ Bool_t AliPhysicsSelection::Initialize(const AliVEvent* event){
     if ((run>=136849 && run<=139517) ||
         (run>=166477 && run<=170593) ||
         (run>=243399 && run<=243984) ||
-        (run>=244913 && run<=246994)) fIsPP = kFALSE;
+        (run>=244913 && run<=246994) ||
+        (run>=295243)) fIsPP = kFALSE;
   }
   return Initialize(event->GetRunNumber());
 }
@@ -463,7 +464,6 @@ Bool_t AliPhysicsSelection::Initialize(Int_t runNumber){
       else h.ReadPITConditionsFromDB(runNumber,man->GetDefaultStorage()->GetURI().Data());
       AliITSTriggerConditions* tri = h.GetTriggerConditions();
       if (tri) {
-        Int_t thresholdInner = tri->GetAlgoParamValueLI("0SH1",0); // algorithm name and param index 0
         if (fTriggerOADB->GetSH1OuterThreshold()<0) {
           Int_t val = tri->GetAlgoParamValueLI("0SH1",1);
           AliInfo(Form("  SH1OuterThreshold set to %i",val));
@@ -554,7 +554,8 @@ void AliPhysicsSelection::FillStatistics(){
                         (fCurrentRun>=246672 && fCurrentRun<=244823) || //15o
                         (fCurrentRun>=244890 && fCurrentRun<=245060) || //15o
                         (fCurrentRun>=245062 && fCurrentRun<=245147) || //15o
-                        (fCurrentRun>=245149 && fCurrentRun<=246994)    //15o
+                        (fCurrentRun>=245149 && fCurrentRun<=246994) || //17n
+                        (fCurrentRun>=280234 && fCurrentRun<=280235)
                       )
           ) ||
           (// p-Pb

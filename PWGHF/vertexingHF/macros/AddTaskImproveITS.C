@@ -1,29 +1,31 @@
 AliAnalysisTaskSEImproveITS *AddTaskImproveITS(Bool_t isRunInVertexing=kFALSE, // set to kTRUE to run during AODvertexingHF creation
-					       const char *resfileCurURI="$ALICE_ROOT/PWGHF/vertexingHF/upgrade/ITSgraphs_Current.root",
-                                               const char *resfileUpgURI="$ALICE_ROOT/PWGHF/vertexingHF/upgrade/ITSgraphs_NewAll-X0.3-Res4um.root",
+					       const char *period="LHC15o",
+                           const char *systematic="central",
 					       Int_t ndebug=0) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddAliAnalysisTaskSEImproveITS", "No analysis manager to connect to.");
     return 0;
   }
+  if (!TGrid::Connect("alien://")) return 0;
                 
   AliAnalysisTaskSEImproveITS *task
     =new AliAnalysisTaskSEImproveITS("ITSImprover",
-                                     resfileCurURI,
-                                     resfileUpgURI,
+                                     period,
+                                     systematic,
                                      isRunInVertexing,
                                      ndebug);
   mgr->AddTask(task);
-                
-  TString outputFileName=AliAnalysisManager::GetCommonFileName();
-  outputFileName+=":ITSImprover";
+
+//  TString outputFileName=AliAnalysisManager::GetCommonFileName();
+  TString outputFileName="Improver.root";
+//  outputFileName+=":ITSImprover";
   AliAnalysisDataContainer *coutput
      =mgr->CreateContainer("debug",
-                           TNtuple::Class(),
+                           TList::Class(),
                            AliAnalysisManager::kOutputContainer,
-                           outputFileName);
-  
+                           outputFileName.Data());
+  coutput->SetSpecialOutput();
   mgr->ConnectInput (task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput);
 

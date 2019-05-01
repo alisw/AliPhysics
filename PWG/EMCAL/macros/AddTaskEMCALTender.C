@@ -30,7 +30,11 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Int_t  removeNMCGenerators  = 0,        // set number of accepted MC generators input (only for enableFracEMCRecalc=1)
   Bool_t enableMCGenRemovTrack= 1,        // apply the MC generators rejection also for track matching  
   TString removeMCGen1        = "",       // name of generator input to be accepted
-  TString removeMCGen2        = ""        // name of generator input to be accepted
+  TString removeMCGen2        = "",       // name of generator input to be accepted
+  TString customBCmap         = "",       // location of custom bad channel map (full path including file)
+  Bool_t useNewRWTempCalib    = kFALSE,   // switch for usage of new temperature calib parameters (available for run1 and run2)
+  TString customSMtemps       = "",       // location of custom SM-wise temperature OADB file (full path including file)
+  TString customTempParams    = ""        // location of custom temperature calibration parameters OADB file (full path including file)
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -73,7 +77,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
     configbuilder << (updateCellOnly ? "kTRUE" : "kFALSE") << ", ";
     configbuilder << timeMin << ", ";
     configbuilder << timeMax << ", ";
-    configbuilder << timeCut;
+    configbuilder << timeCut << ", ";
+    configbuilder << diffEAggregation;
     configbuilder << ")";
     std::string configbuilderstring = configbuilder.str();
     std::cout << "Running config macro " << configbuilderstring << std::endl;
@@ -89,7 +94,12 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   if (pass) 
     EMCALSupply->SetPass(pass);
-
+  if (customBCmap!="")
+    EMCALSupply->SetCustomBC(customBCmap);
+  if (useNewRWTempCalib)
+    EMCALSupply->SwitchUseNewRunDepTempCalib(useNewRWTempCalib);
+  if(customSMtemps!="" && customTempParams!="")
+    EMCALSupply->SetCustomTimeCalibration(customSMtemps,customTempParams);
   if (evhand->InheritsFrom("AliESDInputHandler")) {
     #ifdef __CLING__
         AliTender* alitender = dynamic_cast<AliTender *>(mgr->GetTopTasks()->FindObject("AliTender"));

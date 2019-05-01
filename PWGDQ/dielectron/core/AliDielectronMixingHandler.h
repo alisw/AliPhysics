@@ -77,7 +77,9 @@ private:
   Bool_t fMoveToSameVertex; //whether to move the mixed tracks to the same vertex position
   Bool_t fSkipFirstEvt;   //whether to skip the first event in the pool
 
-  TProcessID *fPID;             //! internal PID for references to buffered objects
+  TProcessID *fPID;       //! internal PID for references to buffered objects
+  UInt_t fPIDobjectCount; // object counter for TRefs to buffered objects
+                          // needed for event mixing, see AliDielectronMixingHandler.cxx
   
   void DoMixing(TClonesArray &pool, AliDielectron *diele);
 

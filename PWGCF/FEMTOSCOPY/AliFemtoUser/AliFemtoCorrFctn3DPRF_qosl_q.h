@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 // AliFemtoCorrFctn3DPRF_qosl_q: a class to calculate 3D correlation        //
-// for pairs of particles in PRF   
+// for pairs of particles in PRF
 //Written by Ashutosh Kumar Pandey (ashutosh.kumar.pandey@cern.ch) for Source Imaging//
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@
 
 class AliFemtoCorrFctn3DPRF_qosl_q : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctn3DPRF_qosl_q(char* title, const int& nbins, const float& QHi);
+  AliFemtoCorrFctn3DPRF_qosl_q(const char* title, const int& nbins, const float& QHi);
   AliFemtoCorrFctn3DPRF_qosl_q(const AliFemtoCorrFctn3DPRF_qosl_q& aCorrFctn);
   virtual ~AliFemtoCorrFctn3DPRF_qosl_q();
 
@@ -32,11 +32,12 @@ public:
   TH3F* Denominator();
   TH3F* NumeratorW();//Weighed by qinv
   TH3F* DenominatorW();
-  THnSparse* NumeratorS(); //numerator	
+  THnSparse* NumeratorS(); //numerator
   THnSparse* DenominatorS(); //denominator
 
   void WriteOutHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctn3DPRF_qosl_q(*this); }
 
 private:
 
@@ -44,7 +45,7 @@ private:
   TH3F* fDenominator;       // denominator
   TH3F* fNumeratorW;         // numerator
   TH3F* fDenominatorW;       // denominator
-  THnSparse* fNumS; //numerator	
+  THnSparse* fNumS; //numerator
   THnSparse* fDenS; //denominator
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctn3DPRF_qosl_q, 1)

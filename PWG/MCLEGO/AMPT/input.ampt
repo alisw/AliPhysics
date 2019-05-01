@@ -7,10 +7,10 @@ A               ! TARG
 208             ! IAT (target A number)
 82              ! IZT (target Z number)
 1000000		! NEVNT (total number of events)
-7.3             ! BMIN (mininum impact parameter in fm) 
-8.9		! BMAX (maximum impact parameter in fm, also see below)
+9.03              ! BMIN (mininum impact parameter in fm) 
+10.4		! BMAX (maximum impact parameter in fm, also see below)
 4		! ISOFT (D=1): select Default AMPT or String Melting(see below)
-1000		! NTMAX: number of timesteps (D=150), see below
+150		! NTMAX: number of timesteps (D=150), see below
 0.2		! DT: timestep in fm (hadron cascade time= DT*NTMAX) (D=0.2)
 0.3		! PARJ(41): parameter a in Lund symmetric splitting function
 0.15    	! PARJ(42): parameter b in Lund symmetric splitting function
@@ -48,6 +48,21 @@ A               ! TARG
 1		! Flag for random orientation of reaction plane (D=0,no; 1,yes)
 
 %%%%%%%%%% Further explanations:
+
+Centrality mapping to impact parameter
+
+For PbPb at 5.02 TeV:
+0-5%     0-3.77fm
+5-10%    3.77-5.37fm
+10-20%   5.37-7.44fm
+20-30%   7.44-9.03fm
+30-40%   9.03-10.40fm
+40-50%   10.40-11.64fm
+50-60%   11.64-12.77fm
+60-70%   12.77-13.80fm
+70-80%   13.80-14.72fm
+80-90%   14.72-15.76fm.
+
 BMAX:   the upper limit HIPR1(34)+HIPR1(35)=19.87fm (dAu), 25.60fm(AuAu).
 ISOFT:  1 Default, 
         4 String Melting.

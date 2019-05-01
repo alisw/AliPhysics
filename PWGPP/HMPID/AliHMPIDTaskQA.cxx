@@ -341,7 +341,7 @@ void AliHMPIDTaskQA::UserCreateOutputObjects() {
 //____________________________________________________________________________________________________________________________________
 Bool_t AliHMPIDTaskQA::Equal(Double_t x, Double_t y, Double_t tolerance)
 {
- return abs(x - y) <= tolerance ;
+  return TMath::Abs(x - y) <= tolerance ;
 }
    
 #endif

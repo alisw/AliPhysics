@@ -84,11 +84,11 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoParticle &aParticle):
 //_____________________
 AliFemtoParticle::~AliFemtoParticle()
 {
-  delete fTrack;
-  delete fV0;
-  delete fKink;
-  delete fXi;
-  delete fHiddenInfo;
+  if(fTrack)  delete fTrack;
+  if(fV0)     delete fV0;
+  if(fKink)   delete fKink;
+  if(fXi)     delete fXi;
+  if(fHiddenInfo) delete fHiddenInfo;
 }
 //_____________________
 AliFemtoParticle::AliFemtoParticle(const AliFemtoTrack *const hbtTrack, const double &mass):

@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -54,14 +54,22 @@
 #pragma link C++ class AliPerfAnalyzeInvPt+;
 #pragma link C++ class AliTPCPerformanceSummary+;
 #pragma link C++ class AliAnalysisNoiseTPC+;
-
+#pragma link C++ class AliMCTreeTools+;
+#pragma link C++ class AliPIDtools+;
+#pragma link C++ class std::map<int,AliTPCPIDResponse *>+;
+#pragma link C++ class std::map<int,AliPIDResponse *>+;
+#pragma link C++ class AliESDtools+;
 #pragma link C++ class AliIntSpotEstimator+;
 #pragma link C++ class AliAnalysisTaskIPInfo+;
 
 #pragma link C++ class AliAnalysisTaskVertexESD+;
 #pragma link C++ class AliAnalysisTaskCheckPileup+;
+#pragma link C++ class AliAnalysisTaskCheckVertexAOD+;
 #pragma link C++ class AliAnalysisTaskCheckESDTracks+;
 #pragma link C++ class AliAnalysisTaskCheckAODTracks+;
+#pragma link C++ class AliAnalysisTaskCountEvents+;
+#pragma link C++ class AliAnalysisTaskCheckGenKine+;
+#pragma link C++ class AliAnalysisTaskTrackingEffPID+;
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliAnalysisTaskITSTrackingCheck+;
 #pragma link C++ class AliAnalysisTaskITSsaTracks+;
@@ -91,6 +99,8 @@
 
 #pragma link C++ class AliTaskConfigOCDB+;
 
+#pragma link C++ class AliAnalysisTaskTrackRefsChecksMultipleSpecies+;
+#pragma link C++ class AliAnalysisTaskTrackRefsChecks+;
 
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;
@@ -124,6 +134,7 @@
 #pragma link C++ class  AliTRDPIDTree+;
 #pragma link C++ class  AliTRDPIDmatching+;
 #pragma link C++ class  AliTRDdigitsFilter;
+#pragma link C++ class  AliTRDdigitsTask;
 
 // TRD offline calibration classes
 #pragma link C++ class  AliTRDmultiplicity+;
@@ -167,6 +178,7 @@
 #pragma link C++ class  ADESDFriendUtils+;
 #pragma link C++ class  AliAnalysisTaskADCalib+;
 #pragma link C++ class  AliAnalysisTaskADChargeMonitoring+;
+#pragma link C++ class  AliAnalysisTaskADCent+;
 //Beam Gas Monitoring HMTF
 //#pragma link C++ class  AliAnalysisMBVeto+;
 #pragma link C++ class  AliAnalysisMultCorrTaskQA+;

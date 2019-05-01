@@ -150,13 +150,25 @@ struct CorrExtractor
     if (oRun && fRunNo <= 0)   fRunNo     = oRun->GetUniqueID();
     if (oSat)                  fSatellite = oSat->GetUniqueID();
 
-    if (fSys <= 0 || fSys > 3 || fSNN <= 0 || fField >= 999 || fRunNo <= 0 ){
-      Error("CorrExtractor", "Failed to get settings\n"
-	    "  sys=%d sNN=%d field=%d run=%ld", fSys, fSNN, fField, fRunNo);
-      Clear();
-      return false;
-    } 
-    return true;
+    Bool_t ret = true;
+    if (fSys <= 0 || fSys > 5) {
+      Error("CorrExtractor", "Invalid collision energy: %d", fSys);
+      ret = false;
+    }
+    if (fSNN <= 0) {
+      Error("CorrExtractor", "Invalid collision energy: %d", fSNN);
+      ret = false;
+    }
+    if (fField >= 999) {
+      Error("CorrExtractor", "Invalid field value: %d", fField);
+      ret = false;
+    }
+    if (fRunNo <= 0 ){
+      Error("CorrExtractor", "Invalid run number: %d", fRunNo);
+      ret = false;
+    }
+    if (!ret) Clear();
+    return ret;
   }
   /** 
    * Set whether this is MC or not

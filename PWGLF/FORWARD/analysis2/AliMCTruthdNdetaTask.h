@@ -178,8 +178,10 @@ protected:
      * @param marker      Marker style 
      * @param mclist      List of MC results 
      * @param truthlist   List of MC truth results 
+     *
+     * @return true on success 
      */
-    virtual void End(TList*      sums, 
+    virtual bool End(TList*      sums, 
 		     TList*      results,
 		     UShort_t    scheme,
 		     Double_t    trigEff,

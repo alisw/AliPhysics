@@ -770,7 +770,7 @@ void AliAnalysisNucleiMass::UserExec(Option_t *)
 	//-------------------------------------------------M2/Z2 vs Z-------------------------
 	
 
-	Double_t binCutPt[10] = {0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0};
+	// Double_t binCutPt[10] = {0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0};
 	Double_t Z=999.9;
 	if(Z2>0) Z=TMath::Sqrt(Z2);
 	

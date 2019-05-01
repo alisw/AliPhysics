@@ -91,18 +91,18 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties():
   fJetShapeOpeningAngleakt02SecondDer(0),
   fJetShapeOpeningAngleakt02FirstSub(0),
   fJetShapeOpeningAngleakt02SecondSub(0),
-  fJetShape1subjettinesscasdFirstDer(0),
-  fJetShape1subjettinesscasdSecondDer(0),
-  fJetShape1subjettinesscasdFirstSub(0),
-  fJetShape1subjettinesscasdSecondSub(0),
-  fJetShape2subjettinesscasdFirstDer(0),
-  fJetShape2subjettinesscasdSecondDer(0),
-  fJetShape2subjettinesscasdFirstSub(0),
-  fJetShape2subjettinesscasdSecondSub(0),
-  fJetShapeOpeningAnglecasdFirstDer(0),
-  fJetShapeOpeningAnglecasdSecondDer(0),
-  fJetShapeOpeningAnglecasdFirstSub(0),
-  fJetShapeOpeningAnglecasdSecondSub(0),
+  fJetShape1subjettinessonepasscaFirstDer(0),
+  fJetShape1subjettinessonepasscaSecondDer(0),
+  fJetShape1subjettinessonepasscaFirstSub(0),
+  fJetShape1subjettinessonepasscaSecondSub(0),
+  fJetShape2subjettinessonepasscaFirstDer(0),
+  fJetShape2subjettinessonepasscaSecondDer(0),
+  fJetShape2subjettinessonepasscaFirstSub(0),
+  fJetShape2subjettinessonepasscaSecondSub(0),
+  fJetShapeOpeningAngleonepasscaFirstDer(0),
+  fJetShapeOpeningAngleonepasscaSecondDer(0),
+  fJetShapeOpeningAngleonepasscaFirstSub(0),
+  fJetShapeOpeningAngleonepasscaSecondSub(0),
   fSoftDropZg(0),
   fSoftDropdR(0),
   fSoftDropPtfrac(0),
@@ -188,18 +188,18 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties(const AliEmcalJetShapePro
   fJetShapeOpeningAngleakt02SecondDer(jet.fJetShapeOpeningAngleakt02SecondDer),
   fJetShapeOpeningAngleakt02FirstSub(jet.fJetShapeOpeningAngleakt02FirstSub),
   fJetShapeOpeningAngleakt02SecondSub(jet.fJetShapeOpeningAngleakt02SecondSub),
-  fJetShape1subjettinesscasdFirstDer(jet.fJetShape1subjettinesscasdFirstDer),
-  fJetShape1subjettinesscasdSecondDer(jet.fJetShape1subjettinesscasdSecondDer),
-  fJetShape1subjettinesscasdFirstSub(jet.fJetShape1subjettinesscasdFirstSub),
-  fJetShape1subjettinesscasdSecondSub(jet.fJetShape1subjettinesscasdSecondSub),
-  fJetShape2subjettinesscasdFirstDer(jet.fJetShape2subjettinesscasdFirstDer),
-  fJetShape2subjettinesscasdSecondDer(jet.fJetShape2subjettinesscasdSecondDer),
-  fJetShape2subjettinesscasdFirstSub(jet.fJetShape2subjettinesscasdFirstSub),
-  fJetShape2subjettinesscasdSecondSub(jet.fJetShape2subjettinesscasdSecondSub),
-  fJetShapeOpeningAnglecasdFirstDer(jet.fJetShapeOpeningAnglecasdFirstDer),
-  fJetShapeOpeningAnglecasdSecondDer(jet.fJetShapeOpeningAnglecasdSecondDer),
-  fJetShapeOpeningAnglecasdFirstSub(jet.fJetShapeOpeningAnglecasdFirstSub),
-  fJetShapeOpeningAnglecasdSecondSub(jet.fJetShapeOpeningAnglecasdSecondSub),
+  fJetShape1subjettinessonepasscaFirstDer(jet.fJetShape1subjettinessonepasscaFirstDer),
+  fJetShape1subjettinessonepasscaSecondDer(jet.fJetShape1subjettinessonepasscaSecondDer),
+  fJetShape1subjettinessonepasscaFirstSub(jet.fJetShape1subjettinessonepasscaFirstSub),
+  fJetShape1subjettinessonepasscaSecondSub(jet.fJetShape1subjettinessonepasscaSecondSub),
+  fJetShape2subjettinessonepasscaFirstDer(jet.fJetShape2subjettinessonepasscaFirstDer),
+  fJetShape2subjettinessonepasscaSecondDer(jet.fJetShape2subjettinessonepasscaSecondDer),
+  fJetShape2subjettinessonepasscaFirstSub(jet.fJetShape2subjettinessonepasscaFirstSub),
+  fJetShape2subjettinessonepasscaSecondSub(jet.fJetShape2subjettinessonepasscaSecondSub),
+  fJetShapeOpeningAngleonepasscaFirstDer(jet.fJetShapeOpeningAngleonepasscaFirstDer),
+  fJetShapeOpeningAngleonepasscaSecondDer(jet.fJetShapeOpeningAngleonepasscaSecondDer),
+  fJetShapeOpeningAngleonepasscaFirstSub(jet.fJetShapeOpeningAngleonepasscaFirstSub),
+  fJetShapeOpeningAngleonepasscaSecondSub(jet.fJetShapeOpeningAngleonepasscaSecondSub),
   fSoftDropZg(jet.fSoftDropZg),
   fSoftDropdR(jet.fSoftDropdR),
   fSoftDropPtfrac(jet.fSoftDropPtfrac),
@@ -287,18 +287,18 @@ AliEmcalJetShapeProperties& AliEmcalJetShapeProperties::operator=(const AliEmcal
   fJetShapeOpeningAngleakt02SecondDer = jet.fJetShapeOpeningAngleakt02SecondDer;
   fJetShapeOpeningAngleakt02FirstSub  = jet.fJetShapeOpeningAngleakt02FirstSub;
   fJetShapeOpeningAngleakt02SecondSub = jet.fJetShapeOpeningAngleakt02SecondSub;
-  fJetShape1subjettinesscasdFirstDer  = jet.fJetShape1subjettinesscasdFirstDer;
-  fJetShape1subjettinesscasdSecondDer = jet.fJetShape1subjettinesscasdSecondDer;
-  fJetShape1subjettinesscasdFirstSub  = jet.fJetShape1subjettinesscasdFirstSub;
-  fJetShape1subjettinesscasdSecondSub = jet.fJetShape1subjettinesscasdSecondSub;
-  fJetShape2subjettinesscasdFirstDer  = jet.fJetShape2subjettinesscasdFirstDer;
-  fJetShape2subjettinesscasdSecondDer = jet.fJetShape2subjettinesscasdSecondDer;
-  fJetShape2subjettinesscasdFirstSub  = jet.fJetShape2subjettinesscasdFirstSub;
-  fJetShape2subjettinesscasdSecondSub = jet.fJetShape2subjettinesscasdSecondSub;
-  fJetShapeOpeningAnglecasdFirstDer  = jet.fJetShapeOpeningAnglecasdFirstDer;
-  fJetShapeOpeningAnglecasdSecondDer = jet.fJetShapeOpeningAnglecasdSecondDer;
-  fJetShapeOpeningAnglecasdFirstSub  = jet.fJetShapeOpeningAnglecasdFirstSub;
-  fJetShapeOpeningAnglecasdSecondSub = jet.fJetShapeOpeningAnglecasdSecondSub;
+  fJetShape1subjettinessonepasscaFirstDer  = jet.fJetShape1subjettinessonepasscaFirstDer;
+  fJetShape1subjettinessonepasscaSecondDer = jet.fJetShape1subjettinessonepasscaSecondDer;
+  fJetShape1subjettinessonepasscaFirstSub  = jet.fJetShape1subjettinessonepasscaFirstSub;
+  fJetShape1subjettinessonepasscaSecondSub = jet.fJetShape1subjettinessonepasscaSecondSub;
+  fJetShape2subjettinessonepasscaFirstDer  = jet.fJetShape2subjettinessonepasscaFirstDer;
+  fJetShape2subjettinessonepasscaSecondDer = jet.fJetShape2subjettinessonepasscaSecondDer;
+  fJetShape2subjettinessonepasscaFirstSub  = jet.fJetShape2subjettinessonepasscaFirstSub;
+  fJetShape2subjettinessonepasscaSecondSub = jet.fJetShape2subjettinessonepasscaSecondSub;
+  fJetShapeOpeningAngleonepasscaFirstDer  = jet.fJetShapeOpeningAngleonepasscaFirstDer;
+  fJetShapeOpeningAngleonepasscaSecondDer = jet.fJetShapeOpeningAngleonepasscaSecondDer;
+  fJetShapeOpeningAngleonepasscaFirstSub  = jet.fJetShapeOpeningAngleonepasscaFirstSub;
+  fJetShapeOpeningAngleonepasscaSecondSub = jet.fJetShapeOpeningAngleonepasscaSecondSub;
   //
   fSoftDropZg = jet.fSoftDropZg;
   fSoftDropdR = jet.fSoftDropdR;

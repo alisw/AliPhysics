@@ -38,6 +38,7 @@
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TF1.h>
+#include <TRegexp.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
 #include <TDatabasePDG.h>
@@ -61,9 +62,10 @@ AliGenEMCocktailV2::AliGenEMCocktailV2():AliGenCocktail(),
   fDecayer(0),
   fDecayMode(kAll),
   fWeightingMode(kNonAnalog),
-  fNPart(1000),
   fParametrizationFile(""),
   fParametrizationDir(""),
+  fV2ParametrizationDir(""),
+  fNPart(1000),
   fYieldArray(),
   fCollisionSystem(AliGenEMlibV2::kpp7TeV),
   fCentrality(AliGenEMlibV2::kpp),
@@ -71,7 +73,8 @@ AliGenEMCocktailV2::AliGenEMCocktailV2():AliGenCocktail(),
   fUseYWeighting(kFALSE),
   fDynPtRange(kFALSE),
   fForceConv(kFALSE),
-  fSelectedParticles(kGenHadrons)
+  fSelectedParticles(kGenHadrons),
+  fUseFixedEP(kFALSE)  
 {
   // Constructor
 }
@@ -136,7 +139,7 @@ Double_t AliGenEMCocktailV2::GetMaxPtStretchFactor(Int_t pdgCode) {
   Double_t massPi0 = TDatabasePDG::Instance()->GetParticle(111)->Mass();
 
   Double_t factor = massParticle/massPi0;
-  if (factor*fPtMax > 200) factor = 200./fPtMax; // so far the input pt parametrizations are defined up to pt = 200 GeV/c
+  if (factor*fPtMax > 300) factor = 300./fPtMax; // so far the input pt parametrizations are defined up to pt = 300 GeV/c
 
   return factor;
 }
@@ -187,6 +190,16 @@ void AliGenEMCocktailV2::CreateCocktail()
   SetMtScalingFactors();
   AliGenEMlibV2::SetPtParametrizations(fParametrizationFile, fParametrizationDir);
   SetPtParametrizations();
+  //Check consistency of pT and flow parameterizations: same centrality?
+  if(fV2ParametrizationDir.Length()>0){ //flow specified
+    TRegexp cent("_[0-9][0-9][0-9][0-9]_") ;
+    if(fParametrizationDir(cent)!=fV2ParametrizationDir(cent)){
+      AliWarning(Form("Centrality for pT parameterization %s differs from centrality for flow parameterization: %s\n",fParametrizationDir.Data(),fV2ParametrizationDir.Data())) ;   
+    }
+    AliGenEMlibV2::SetFlowParametrizations(fParametrizationFile, fV2ParametrizationDir);
+  }    
+  
+  
 
   if (fDynPtRange)
     AliInfo("Dynamical adaption of pT range was chosen, the number of generated particles will also be adapted");
@@ -742,8 +755,8 @@ void AliGenEMCocktailV2::CreateCocktail()
   if(fSelectedParticles&kGenDirectRealGamma){
     TDatabasePDG::Instance()->AddParticle("DirectRealGamma","DirectRealGamma",0,true,0,0,gammaPDG->ParticleClass(),220000);
     AliGenParam *genDirectRealG=0;
-    Char_t nameDirectRealG[10];
-    snprintf(nameDirectRealG,10,"DirectRealGamma");
+    Char_t nameDirectRealG[16];
+    snprintf(nameDirectRealG,16,"DirectRealGamma");
     // NOTE: the additional factors are set back to one as they are not the same for photons and electrons
     genDirectRealG = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kDirectRealGamma, "DUMMY");
     genDirectRealG->SetYRange(fYMin, fYMax);
@@ -759,8 +772,8 @@ void AliGenEMCocktailV2::CreateCocktail()
   if(fSelectedParticles&kGenDirectVirtGamma){
     TDatabasePDG::Instance()->AddParticle("DirectVirtGamma","DirectVirtGamma",0,true,0,0,gammaPDG->ParticleClass(),220001);
     AliGenParam *genDirectVirtG=0;
-    Char_t nameDirectVirtG[10];
-    snprintf(nameDirectVirtG,10,"DirectVirtGamma");
+    Char_t nameDirectVirtG[16];
+    snprintf(nameDirectVirtG,16,"DirectVirtGamma");
     // NOTE: the additional factors are set back to one as they are not the same for photons and electrons
     genDirectVirtG = new AliGenParam(fNPart, new AliGenEMlibV2(), AliGenEMlibV2::kDirectVirtGamma, "DUMMY");
     genDirectVirtG->SetYRange(fYMin, fYMax);
@@ -869,9 +882,11 @@ void AliGenEMCocktailV2::Generate()
   
   // Loop over generators and generate events
   Int_t igen = 0;
-  Float_t evPlane;
-  Rndm(&evPlane,1);
-  evPlane*=TMath::Pi()*2;
+  Float_t evPlane=0.;
+  if(!fUseFixedEP){
+     Rndm(&evPlane,1);
+     evPlane*=TMath::Pi()*2;
+  }
   while((entry = (AliGenCocktailEntry*)next())) {
     gen = entry->Generator();
     gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
@@ -890,7 +905,7 @@ void AliGenEMCocktailV2::Generate()
   // Setting weights for proper absolute normalization
   Int_t iPart, iMother, iGrandMother;
   Int_t pdgMother = 0;
-  Int_t pdgGrandMother = 0;
+//   Int_t pdgGrandMother = 0;
   Double_t weight = 0.;
   Double_t dNdy = 0.;
   Double_t yWeight = 0.;
@@ -906,7 +921,7 @@ void AliGenEMCocktailV2::Generate()
       iGrandMother = mother->GetFirstMother();
       if (iGrandMother>=0){
         grandmother = gAlice->GetMCApp()->Particle(iGrandMother);
-        pdgGrandMother = grandmother->GetPdgCode();
+//         pdgGrandMother = grandmother->GetPdgCode();
       }
       if(abs(part->GetPdgCode())==220011){
         // handle electrons from forced conversion

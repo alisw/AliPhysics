@@ -22,8 +22,9 @@
 #include <Riostream.h>
 #include <TFile.h>
 #include <TH1.h>
-#include <TStyle.h>
 #include <TROOT.h>
+#include <TStyle.h>
+#include <TLatex.h>
 #include <TCanvas.h>
 
 
@@ -37,8 +38,100 @@
 void SetHisto(TH1 *Histo,TString Xtitel,TString Ytitel,Bool_t longhisto);
 Bool_t IsCellMaskedByHand(Int_t cell, std::vector<Int_t> cellVector);
 void CreateCellCompPDF(TH2F* hAmpIDMasked, std::vector<Int_t> cellVector, TH1* goodCellsMerged, TH1* goodCellsRbR, TString pdfName);
-void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorRbR, std::vector<Int_t> cellVectorMerge);
+void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorMergeB, std::vector<Int_t> cellVectorMergeA);
 
+/// get all runnumbers from different groups
+/// and sort them to give a min and max range for the bad map.
+/// Run numbers are in your runList file.
+///________________________________________________________________________
+void Compare_RunNumbers(TString period="LHC15n",Int_t trainNo=603,TString runList1="",TString runList2="")
+{
+	//......................................................
+	//..PT. II open the 1st text file and save the run IDs into the RunId[] array
+	//......................................................
+	cout<<"o o o Open .txt file with run indices. Name = " << runList1 << endl;
+	TString RunPath1        = Form("./AnalysisInput/%s/Train_%i/%s",period.Data(),trainNo,runList1.Data());
+	cout<<"o o o Open .txt file with run indices = " << RunPath1 << endl;
+	FILE *pFile1 = fopen(RunPath1.Data(), "r");
+	if(!pFile1)
+	{
+		cout<<"couldn't open file "<<RunPath1<<"!"<<endl;
+		return;
+	}
+	Int_t q1;
+	Int_t ncols1;
+	Int_t nlines1 = 0 ;
+	std::vector<Int_t> RunIdVec1;
+	while (1)
+	{
+		ncols1 = fscanf(pFile1,"  %d ",&q1);
+		if (ncols1< 0) break;
+		RunIdVec1.push_back(q1);
+		nlines1++;
+	}
+	fclose(pFile1);
+	std::sort (RunIdVec1.begin(), RunIdVec1.end());
+	//......................................................
+	//..PT. II open the 2nd text file and save the run IDs into the RunId[] array
+	//......................................................
+	cout<<"o o o Open .txt file with run indices. Name = " << runList2 << endl;
+	TString RunPath2       = Form("./AnalysisInput/%s/Train_%i/%s",period.Data(),trainNo,runList2.Data());
+	cout<<"o o o Open .txt file with run indices = " << RunPath2 << endl;
+	FILE *pFile2 = fopen(RunPath2.Data(), "r");
+	if(!pFile2)
+	{
+		cout<<"couldn't open file "<<RunPath2<<"!"<<endl;
+		return;
+	}
+	Int_t q2;
+	Int_t ncols2;
+	Int_t nlines2 = 0 ;
+	std::vector<Int_t> RunIdVec2;
+	while (1)
+	{
+		ncols2 = fscanf(pFile2,"  %d ",&q2);
+		if (ncols2< 0) break;
+		RunIdVec2.push_back(q2);
+		nlines2++;
+	}
+	fclose(pFile2);
+	std::sort (RunIdVec2.begin(), RunIdVec2.end());
+
+	//......................................................
+	//..Find different elements in the runlists
+	//......................................................
+	//find runnumbers present in both lists
+
+	//this part is not yet working
+	//what it should do is find unique elements.
+	//means I compare list 1 and list 2 and I am interested in elements
+	//that are exclusivley in list1 or exclusivley in list2
+
+	std::vector<Int_t> RunIdVecSum;
+	cout<<"Elements in Vector Sum a ("<<RunIdVecSum.size()<<")"<<endl;
+	RunIdVecSum.insert( RunIdVecSum.end(),RunIdVec1.begin(), RunIdVec1.end());
+	cout<<"Elements in Vector Sum b("<<RunIdVecSum.size()<<")"<<endl;
+	RunIdVecSum.insert( RunIdVecSum.end(),RunIdVec2.begin(), RunIdVec2.end());
+	cout<<"Elements in Vector Sum c("<<RunIdVecSum.size()<<")"<<endl;
+	std::sort (RunIdVecSum.begin(), RunIdVecSum.end());
+
+	// using default comparison:
+	std::vector<int>::iterator it;
+	it = std::unique (RunIdVecSum.begin(), RunIdVecSum.end());
+	RunIdVecSum.resize( std::distance(RunIdVecSum.begin(),it) );
+	cout<<"Elements in Vector Sum d("<<RunIdVecSum.size()<<")"<<endl;
+
+
+	cout<<"Elements in Vector 1 ("<<RunIdVec1.size()<<")"<<endl;
+	cout<<"Elements in Vector 2 ("<<RunIdVec2.size()<<")"<<endl;
+
+	cout<<"##Unique elements in vector(not really) ("<<RunIdVecSum.size()<<"):"<<endl;
+	for(Int_t i=0;i<(Int_t)RunIdVecSum.size();i++)
+	{
+		cout<<RunIdVecSum.at(i)<<", "<<flush;
+	}
+	cout<<endl;
+}
 ///
 /// check where the bad cell is (row collumn), if you have only its ID
 /// or get it's ID if you have its row and collumn
@@ -92,17 +185,17 @@ void Compare2Blocks(TString period="LHC15n",Int_t trainNo=603,Int_t versionA=0, 
 	gStyle->SetOptStat(0); //..Do not plot stat boxes
     gStyle->SetPadLeftMargin(0.13);
     gStyle->SetPadRightMargin(0.1);
-    gStyle->SetPadBottomMargin(0.13);
-    gStyle->SetPadTopMargin(0.02);
+    gStyle->SetPadBottomMargin(0.12);
+    gStyle->SetPadTopMargin(0.06);
 
     Int_t noOfCells=17674;
     Int_t nBadCellMerged =noOfCells;
     Int_t nBadCellRbR    =noOfCells;
+	Int_t array_StartCellSM_Value[21]   ={0,1152,2304,3456,4608,5760,6912,8064,9216,10368,11520,11904,12288,13056,13824,14592,15360,16128,16896,17280,17664};
 
     //..............................................
     //..manually disable cells
     std::vector<Int_t> badcellsBlock1;
-
     //badcellsBlock1.insert(badcellsBlock1.end(),{6644,6655,10140,12036,12037,12038,12039,12040,12041,12926,13067,13066,13125});
     //badcellsBlock1.insert(badcellsBlock1.end(),{13133,13483,13971,13978,14116,14118,14122,14411,14593,14599,14600,14606,14699});
 
@@ -110,7 +203,7 @@ void Compare2Blocks(TString period="LHC15n",Int_t trainNo=603,Int_t versionA=0, 
 	std::vector<Int_t> vOnlyMaskedInMergedB;
 
 	//......................................................
-	//..Get the .root file from analyzing runs as 1 block together
+	//..Get the .root file from masking runs in Version1
 	//......................................................
 	cout<<"** Open file A with merged runlist analysis: "<<endl;
 	TString pathA        = Form("./AnalysisOutput/%s/Train_%i/Version%i",period.Data(),trainNo,versionA);
@@ -127,7 +220,7 @@ void Compare2Blocks(TString period="LHC15n",Int_t trainNo=603,Int_t versionA=0, 
 	TH1F* hCellFlagA         =(TH1F*)outputRootA->Get("fhCellFlag");
 
 	//......................................................
-	//..Get the .root file with run-by-run bad channel mask
+	//..Get the .root file from masking runs in Version2
 	//......................................................
 	cout<<endl;
 	cout<<"**Open file B with merged runlist analysis: "<<endl;
@@ -213,6 +306,54 @@ void Compare2Blocks(TString period="LHC15n",Int_t trainNo=603,Int_t versionA=0, 
 	projMaskedCellsA->DrawCopy("hist");
 	projMaskedCellsA->Multiply(projMaskedCellsB);
 
+	TLatex* textSM = new TLatex(0.1,0.1,"*test*");
+	textSM->SetTextSize(0.06);
+	textSM->SetTextColor(1);
+	textSM->SetNDC();
+
+	TCanvas *c1_projSM = new TCanvas("-1a-","Projections of A and B per SM",1200,900);
+	c1_projSM->Divide(5,4,0.001,0.001);
+	TH1* projEnergyMaskASM[20];
+	TH1* projEnergyMaskBSM[20];
+	for(Int_t iSM=0;iSM<20;iSM++)
+	{
+		c1_projSM->cd(iSM+1)->SetLogy();
+		gPad->SetTopMargin(0.03);
+		gPad->SetBottomMargin(0.11);
+		projEnergyMaskASM[iSM] = hCellAmplitudeBlockMaskA->ProjectionX(Form("%sMask_ProjSM%i",hCellAmplitudeBlockMaskA->GetName(),iSM),array_StartCellSM_Value[iSM],array_StartCellSM_Value[iSM+1]-1);
+		projEnergyMaskASM[iSM]->SetTitle("");
+		projEnergyMaskASM[iSM]->SetXTitle(Form("Cell Energy [GeV], SM%i",iSM));
+		projEnergyMaskASM[iSM]->GetYaxis()->SetTitleOffset(1.6);
+		projEnergyMaskASM[iSM]->GetYaxis()->SetLabelSize(0.06);
+		projEnergyMaskASM[iSM]->GetXaxis()->SetLabelSize(0.06);
+		projEnergyMaskASM[iSM]->GetXaxis()->SetRangeUser(0,20);
+		projEnergyMaskASM[iSM]->GetXaxis()->SetTitleSize(0.06);
+		projEnergyMaskASM[iSM]->SetLineColor(kGreen+1);
+		projEnergyMaskASM[iSM]->DrawCopy(" hist");
+
+		projEnergyMaskBSM[iSM] = hCellAmplitudeBlockMaskB->ProjectionX(Form("%s_ProjSM%i",hCellAmplitudeBlockMaskB->GetName(),iSM),array_StartCellSM_Value[iSM],array_StartCellSM_Value[iSM+1]-1);
+		projEnergyMaskBSM[iSM]->DrawCopy("same hist");
+
+		textSM->SetTitle(Form("Includes cell IDs %d-%d",array_StartCellSM_Value[iSM],array_StartCellSM_Value[iSM+1]-1));
+		textSM->DrawLatex(0.2,0.8,Form("Includes cell IDs %d-%d",array_StartCellSM_Value[iSM],array_StartCellSM_Value[iSM+1]-1));
+	}
+	TCanvas *c1_projSMR = new TCanvas("-1b-","Ratio of A/B per SM",1200,900);
+	c1_projSMR->Divide(5,4,0.001,0.001);
+	TH1* projEnergyMaskSM[20];
+	TH1* projEnergySM[20];
+	for(Int_t iSM=0;iSM<20;iSM++)
+	{
+		c1_projSMR->cd(iSM+1);
+		gPad->SetTopMargin(0.03);
+		gPad->SetBottomMargin(0.11);
+		projEnergyMaskASM[iSM]->Divide(projEnergyMaskBSM[iSM]);
+		projEnergyMaskASM[iSM]->SetLineColor(kGray+1);
+		projEnergyMaskASM[iSM]->DrawCopy(" hist");
+
+		textSM->SetTitle(Form("Includes cell IDs %d-%d",array_StartCellSM_Value[iSM],array_StartCellSM_Value[iSM+1]-1));
+		textSM->DrawLatex(0.2,0.8,Form("Includes cell IDs %d-%d",array_StartCellSM_Value[iSM],array_StartCellSM_Value[iSM+1]-1));
+	}
+
 	TCanvas* C3 = new TCanvas("-3-","2D of A and B",900,900);
 	C3->Divide(2,2);
 	C3->cd(1)->SetLogz();
@@ -236,20 +377,22 @@ void Compare2Blocks(TString period="LHC15n",Int_t trainNo=603,Int_t versionA=0, 
 		cout<<vOnlyMaskedInMergedA.at(i)<<","<<flush;
 	}
 	cout<<endl;
-	CreateCellCompPDF(hCellAmplitudeBlockMaskB,vOnlyMaskedInMergedA,projMaskedCellsA,projMaskedCellsB,"./cOnlyMergedBlockA.pdf");
+	TString outNameA = Form("./AnalysisOutput/%s/Train_%i/cOnlyMergedBlockA.pdf",period.Data(),trainNo);
+	CreateCellCompPDF(hCellAmplitudeBlockMaskB,vOnlyMaskedInMergedA,projMaskedCellsA,projMaskedCellsB,outNameA);
 	cout<<"  Cells masked in version B and not in version A ("<<vOnlyMaskedInMergedB.size()<<"):"<<endl;
 	for(Int_t i=0; i<(Int_t)vOnlyMaskedInMergedB.size();i++)
 	{
 		cout<<vOnlyMaskedInMergedB.at(i)<<","<<flush;
 	}
 	cout<<endl;
-	CreateCellCompPDF(hCellAmplitudeBlockMaskA,vOnlyMaskedInMergedB,projMaskedCellsA,projMaskedCellsB,"./cOnlyMergedBlockB.pdf");
+	TString outNameB = Form("./AnalysisOutput/%s/Train_%i/cOnlyMergedBlockB.pdf",period.Data(),trainNo);
+	CreateCellCompPDF(hCellAmplitudeBlockMaskA,vOnlyMaskedInMergedB,projMaskedCellsA,projMaskedCellsB,outNameB);
 
  	//......................................................
 	//..build two dimensional histogram with cells rejected from
 	//..the one or the other method
 	//......................................................
-	Plot2DCells("A",244917,vOnlyMaskedInMergedB,vOnlyMaskedInMergedA);
+	Plot2DCells("-",244917,vOnlyMaskedInMergedB,vOnlyMaskedInMergedA);
 }
 //-----------------------------------------------------------
 // All functions below this point are helping the
@@ -259,7 +402,7 @@ void Compare2Blocks(TString period="LHC15n",Int_t trainNo=603,Int_t versionA=0, 
 ///
 ///
 ///
-void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorRbR, std::vector<Int_t> cellVectorMerge)
+void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorMergeB, std::vector<Int_t> cellVectorMergeA)
 {
 	//......................................................
 	//..Initialize EMCal/DCal geometry
@@ -274,20 +417,20 @@ void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorRbR, s
 	Int_t fNMaxColsAbs = 2*48;
 	Int_t fNMaxRowsAbs = Int_t (nModules/2)*24; //multiply by number of supermodules
 
-	TH2F *plot2D_RbR   = new TH2F(Form("Block%s_MaskedRbR",Block.Data()),Form("Block%s_MaskedRbR",Block.Data()),fNMaxColsAbs+1,-0.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+1,-0.5,fNMaxRowsAbs+0.5);
-	plot2D_RbR->GetXaxis()->SetTitle("cell column (#eta direction)");
-	plot2D_RbR->GetYaxis()->SetTitle("cell row (#phi direction)");
-	TH2F *plot2D_Merge = new TH2F(Form("Block%s_MaskedMerge",Block.Data()),Form("Block%s_MaskedMerge",Block.Data()),fNMaxColsAbs+1,-0.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+1,-0.5,fNMaxRowsAbs+0.5);
-	plot2D_Merge->GetXaxis()->SetTitle("cell column (#eta direction)");
-	plot2D_Merge->GetYaxis()->SetTitle("cell row (#phi direction)");
+	TH2F *plot2D_VersionB   = new TH2F(Form("Block%s_VersionB",Block.Data()),Form("Block%s_VersionB",Block.Data()),fNMaxColsAbs+1,-0.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+1,-0.5,fNMaxRowsAbs+0.5);
+	plot2D_VersionB->GetXaxis()->SetTitle("cell column (#eta direction)");
+	plot2D_VersionB->GetYaxis()->SetTitle("cell row (#phi direction)");
+	TH2F *plot2D_VersionA = new TH2F(Form("Block%s_VersionA",Block.Data()),Form("Block%s_VersionA",Block.Data()),fNMaxColsAbs+1,-0.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+1,-0.5,fNMaxRowsAbs+0.5);
+	plot2D_VersionA->GetXaxis()->SetTitle("cell column (#eta direction)");
+	plot2D_VersionA->GetYaxis()->SetTitle("cell row (#phi direction)");
 
 	Int_t cellColumn=0,cellRow=0;
 	Int_t cellColumnAbs=0,cellRowAbs=0;
 	Int_t trash;
 
-	for(Int_t i = 0; i < (Int_t)cellVectorRbR.size(); i++)
+	for(Int_t i = 0; i < (Int_t)cellVectorMergeB.size(); i++)
 	{
-		Int_t cell=cellVectorRbR.at(i);
+		Int_t cell=cellVectorMergeB.at(i);
 		//..Do that only for cell ids also accepted by the code
 		if(!fCaloUtils->GetEMCALGeometry()->CheckAbsCellId(cell))continue;
 
@@ -299,11 +442,11 @@ void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorRbR, s
 			cout<<"current col: "<<cellColumnAbs<<", max col"<<fNMaxColsAbs<<endl;
 			cout<<"current row: "<<cellRowAbs<<", max row"<<fNMaxRowsAbs<<endl;
 		}
-		plot2D_RbR->Fill(cellColumnAbs,cellRowAbs);
+		plot2D_VersionB->Fill(cellColumnAbs,cellRowAbs);
 	}
-	for(Int_t i = 0; i < (Int_t)cellVectorMerge.size(); i++)
+	for(Int_t i = 0; i < (Int_t)cellVectorMergeA.size(); i++)
 	{
-		Int_t cell=cellVectorMerge.at(i);
+		Int_t cell=cellVectorMergeA.at(i);
 		//..Do that only for cell ids also accepted by the code
 		if(!fCaloUtils->GetEMCALGeometry()->CheckAbsCellId(cell))continue;
 
@@ -315,16 +458,16 @@ void Plot2DCells(TString Block, Int_t runNo, std::vector<Int_t> cellVectorRbR, s
 			cout<<"current col: "<<cellColumnAbs<<", max col"<<fNMaxColsAbs<<endl;
 			cout<<"current row: "<<cellRowAbs<<", max row"<<fNMaxRowsAbs<<endl;
 		}
-		plot2D_Merge->Fill(cellColumnAbs,cellRowAbs,1);
+		plot2D_VersionA->Fill(cellColumnAbs,cellRowAbs,1);
 	}
 	//. . . . . . . . . . . . . . . . . . . .
 	TCanvas *c1 = new TCanvas(Form("2DMapForBlock%s",Block.Data()),Form("2DMapForBlock%s",Block.Data()),900,500);
 	c1->ToggleEventStatus();
 	c1->Divide(2);
 	c1->cd(1);
-	plot2D_RbR->Draw("colz");
+	plot2D_VersionB->Draw("colz");
 	c1->cd(2);
-	plot2D_Merge->Draw("colz");
+	plot2D_VersionA->Draw("colz");
 }
 ///
 /// checks if the cell is part of manually masked cells
@@ -366,7 +509,7 @@ void CreateCellCompPDF(TH2F* hAmpIDMasked, std::vector<Int_t> cellVector,TH1* go
 		TH1 *hCell  = hAmpIDMasked->ProjectionX(Form("Cell %d",cellVector.at(cell)),cellVector.at(cell)+1,cellVector.at(cell)+1);
 		TH1 *hCell2 = (TH1*)hCell->Clone("hCell2");
 
-		c1->cd(cell%9 + 1);
+		c1->cd(cell%9 + 1)->SetLogy();
 		hCell->Divide(goodCellsRbR);
 		hCell2->Divide(goodCellsMerged);
 

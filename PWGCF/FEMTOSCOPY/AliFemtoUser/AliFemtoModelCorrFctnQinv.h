@@ -30,31 +30,31 @@ class TH2F;
 class AliFemtoModelCorrFctnQinv : public AliFemtoModelCorrFctn {
 public:
 
-  /**
-   * Default constructor
-   *
-   * Histograms are created with default titles/ranges. No other members are
-   * initialized - user **MUST** set pair type and PDG codes.
-   */
+  /// Default constructor
+  ///
+  /// Histograms are created with default titles/ranges. No other members are
+  /// initialized - user **MUST** set pair type and PDG codes.
+  ///
   AliFemtoModelCorrFctnQinv();
 
-  /**
-   * Construct with histogram parameters
-   *
-   * KStar histograms use these parameters when constructing histograms. No
-   * other memebers are set - user **MUST** set pair type and PDG codes.
-   */
+  /// Construct with histogram parameters
+  ///
+  /// KStar histograms use these parameters when constructing histograms. No
+  /// other memebers are set - user **MUST** set pair type and PDG codes.
+  ///
   AliFemtoModelCorrFctnQinv(const char *suffix,
                             const Int_t aNbins,
                             const Float_t aQinvLo,
                             const Float_t aQinvHi);
 
-  /**
-   * Copy Constructor
-   *
-   * Copies pair type & PDG codes. Clones histograms.
-   */
+  /// Copy Constructor
+  ///
+  /// Copies pair type & PDG codes. Clones histograms.
+  ///
   AliFemtoModelCorrFctnQinv(const AliFemtoModelCorrFctnQinv &);
+
+  /// assignment operator
+  AliFemtoModelCorrFctnQinv& operator=(const AliFemtoModelCorrFctnQinv &);
 
   /// Return a pointer to a clone of this correlation function.
   ///
@@ -62,7 +62,7 @@ public:
   /// all stored data.
   /// No pointers are shared between this object and the clone.
   ///
-  virtual AliFemtoModelCorrFctnQinv* Clone() const;
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
 
   /// Destructor
@@ -112,7 +112,7 @@ public:
 protected:
 
   /// Adds pair information to appropriate histogram points
-  void AddPair(const AliFemtoPair *, TH1F*, TH2F*);
+  void AddPair(const AliFemtoPair&, TH1F*, TH2F*);
 
   /// The particle class combination types (track, V0, etc...)
   AliFemtoAvgSepCorrFctn::PairType fPairType;
@@ -120,19 +120,13 @@ protected:
   Int_t fExpectedTrack1Code;
   Int_t fExpectedTrack2Code;
 
-  /// KStar numerator of reconstructed pairs
-  TH1F *fRecNum;
+  /// Numerator with axis for non-expected particle PID
+  TH2F *fNumPid;
 
-  /// KStar denominator of reconstructed pairs
-  TH1F *fRecDen;
-
-  /// Numerator of only true pairs
-  TH2F *fTrueNum;
-
-  /// Denominator of only true pairs
-  TH2F *fTrueDen;
-
+  /// Denominator with axis for non-expected particle PID
+  TH2F *fDenPid;
 };
+
 
 inline void
 AliFemtoModelCorrFctnQinv::SetPairType(const AliFemtoAvgSepCorrFctn::PairType pairtype)
@@ -204,8 +198,8 @@ AliFemtoModelCorrFctnQinv::CalcTrueQinv(const AliFemtoPair *pair)
   const AliFemtoThreeVector *momentum1 = info1->GetTrueMomentum(),
                             *momentum2 = info2->GetTrueMomentum();
 
-  const Float_t e1 = sqrt(mass1 * mass1 + momentum1->Mag2()),
-                e2 = sqrt(mass2 * mass2 + momentum2->Mag2());
+  const Float_t e1 = momentum1->MassHypothesis(mass1),
+                e2 = momentum2->MassHypothesis(mass2);
 
   return CalcQinv(AliFemtoLorentzVector(e1, *momentum1),
                   AliFemtoLorentzVector(e2, *momentum2));
@@ -223,7 +217,7 @@ inline double AliFemtoModelCorrFctnQinv::CalcQinv(
                q_inv = (p1 - p2).m2(),
            mass_diff = p1.m2() - p2.m2();
 
-  const double tQ = (p_inv == 0.0 ? 0.0 : ::pow(mass_diff, 2) / p_inv) - q_inv;
+  const double tQ = (p_inv == 0.0 ? 0.0 : (mass_diff * mass_diff) / p_inv) - q_inv;
   return ::sqrt(std::fabs(tQ));
 }
 

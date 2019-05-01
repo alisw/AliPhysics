@@ -628,7 +628,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
 
   // Branch AOD settings
   ana->SetOutputAODName(Form("Photon_%s_%s",calorimeter.Data(), kAnaPi0.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
   ana->AddToHistogramsName(Form("AnaPhoton_%s_TM%d_",calorimeter.Data(),tm));
@@ -811,7 +811,7 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   histoRanges->SetHistodRRangeAndNBins(0.,0.15,150);//QA
 
   // QA, electron, charged
-  histoRanges->SetHistoPOverERangeAndNBins(0,2.,200);
+  histoRanges->SetHistoEOverPRangeAndNBins(0,2.,200);
   histoRanges->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
@@ -860,9 +860,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   
   if(col.Contains("PbPb")) ana->SwitchOnFillHighMultiplicityHistograms();
   else                     ana->SwitchOffFillHighMultiplicityHistograms();
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 
   //
   // Debug

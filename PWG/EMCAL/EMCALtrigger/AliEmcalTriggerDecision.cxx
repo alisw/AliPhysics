@@ -1,65 +1,63 @@
-/**************************************************************************
- * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-/*
- * Object storing the result of the EMCAL trigger decision. The result is appended to the
- * input event and can be read out by consumer tasks.
- *
- * Author: Markus Fasel
- */
-
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include "AliEmcalTriggerDecision.h"
 #include "AliEMCALTriggerPatchInfo.h"
 
-ClassImp(AliEmcalTriggerDecision)
+ClassImp(PWG::EMCAL::AliEmcalTriggerDecision)
 
-//______________________________________________________________________________
+namespace PWG{
+
+namespace EMCAL{
+
 AliEmcalTriggerDecision::AliEmcalTriggerDecision():
   TNamed(),
   fMainPatch(NULL),
   fSelectionCuts(NULL),
   fAcceptedPatches()
 {
-  /*
-   * Dummy constructor, needed for I/O, not to be used by the user
-   */
   fAcceptedPatches.SetOwner(kFALSE);
 }
 
-//______________________________________________________________________________
 AliEmcalTriggerDecision::AliEmcalTriggerDecision(const char *name, const char *title):
   TNamed(name, title),
   fMainPatch(NULL),
   fSelectionCuts(NULL),
   fAcceptedPatches()
 {
-  /*
-   * The main (named) constructor. The decision object can be read out later by the consumer
-   * task according to the name.
-   *
-   * @param name: Name of the decision object
-   * @param title: Title of the decision object
-   */
   fAcceptedPatches.SetOwner(kFALSE);
 }
 
-//______________________________________________________________________________
+AliEmcalTriggerDecision::~AliEmcalTriggerDecision(){
+  fAcceptedPatches.Clear("nodelete");
+}
+
 void AliEmcalTriggerDecision::AddAcceptedPatch(AliEMCALTriggerPatchInfo * const acceptedPatch){
-  /*
-   * Add accepted patch to the trigger decision
-   *
-   * @param patch: the accepted patch
-   */
   fAcceptedPatches.Add(acceptedPatch);
+}
+
+}
 }

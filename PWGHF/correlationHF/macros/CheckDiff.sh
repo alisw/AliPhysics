@@ -160,4 +160,57 @@ echo "####################### "
 echo " CHECKING Restyle_pPb2016_Prel_Plots.C"
 echo "####################### "
 diff -b ${pathRef}/Restyle_pPb2016_Prel_Plots.C Restyle_pPb2016_Prel_Plots.C
+echo "####################### "
+echo " CHECKING CompareFitResults_ppVspPb_1_C"
+echo "####################### "
+diff -b ${pathRef}/CompareFitResults_ppVspPb_1.C CompareFitResults_ppVspPb_1.C
+echo "####################### "
+echo " CHECKING CompareFitResults_ppVspPb_2.C"
+echo "####################### "
+diff -b ${pathRef}/CompareFitResults_ppVspPb_2.C CompareFitResults_ppVspPb_2.C
+echo "####################### "
+echo " CHECKING CompareFitResultspp2017_vsPtAss.C"
+echo "####################### "
+diff -b ${pathRef}/CompareFitResultspp2017_vsPtAss.C CompareFitResultspp2017_vsPtAss.C
+echo "####################### "
+echo " CHECKING CompareFitResults_ppVspPb_vsPtAss.C"
+echo "####################### "
+diff -b ${pathRef}/CompareFitResults_ppVspPb_vsPtAss.C CompareFitResults_ppVspPb_vsPtAss.C
+echo "####################### "
+echo " CHECKING DrawSinglePanel_pp2017_CorrelationDistributions_1.C"
+echo "####################### "
+diff -b ${pathRef}/DrawSinglePanel_pp2017_CorrelationDistributions_1.C DrawSinglePanel_pp2017_CorrelationDistributions_1.C
+echo "####################### "
+echo " CHECKING DrawSinglePanel_pp2017_CorrelationDistributions_2.C"
+echo "####################### "
+diff -b ${pathRef}/DrawSinglePanel_pp2017_CorrelationDistributions_2.C DrawSinglePanel_pp2017_CorrelationDistributions_2.C
+echo "####################### "
+echo " CHECKING CompareFitResults_DiffppEnergies.C"
+echo "####################### "
+diff -b ${pathRef}/CompareFitResults_DiffppEnergies.C CompareFitResults_DiffppEnergies.C
+echo "####################### "
+echo " CHECKING CompareFitResultspp2017.C"
+echo "####################### "
+diff -b ${pathRef}/CompareFitResultspp2017.C CompareFitResultspp2017.C
+echo "####################### "
+echo " CHECKING DoComparison_pp2017VsMCallPanels.C"
+echo "####################### "
+diff -b ${pathRef}/DoComparison_pp2017VsMCallPanels.C DoComparison_pp2017VsMCallPanels.C
+echo "####################### "
+echo " CHECKING DoComparison_Distributions_DiffppEnergies.C"
+echo "####################### "
+diff -b ${pathRef}/DoComparison_Distributions_DiffppEnergies.C DoComparison_Distributions_DiffppEnergies.C
+echo "####################### "
+echo " CHECKING DoComparison_Distributions_ppVspPb_1.C"
+echo "####################### "
+diff -b ${pathRef}/DoComparison_Distributions_ppVspPb_1.C DoComparison_Distributions_ppVspPb_1.C
+echo "####################### "
+echo " CHECKING DoComparison_Distributions_ppVspPb_1.C"
+echo "####################### "
+diff -b ${pathRef}/DoComparison_Distributions_ppVspPb_1.C DoComparison_Distributions_ppVspPb_1.C
+echo "####################### "
+echo " CHECKING FitSystematicsAverage_pp2017.C"
+echo "####################### "
+diff -b ${pathRef}/FitSystematicsAverage_pp2017.C FitSystematicsAverage_pp2017.C
+
 

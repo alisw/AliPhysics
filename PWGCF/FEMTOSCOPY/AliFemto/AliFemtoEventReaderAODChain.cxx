@@ -58,10 +58,9 @@ AliFemtoEventReaderAODChain::~AliFemtoEventReaderAODChain()
 AliFemtoEventReaderAODChain& AliFemtoEventReaderAODChain::operator=(const AliFemtoEventReaderAODChain& aReader)
 {
   // assignment operator
-  if (this == &aReader)
-    return *this;
-
-  *this = aReader;
+  if (this != &aReader) {
+    AliFemtoEventReaderAOD::operator=(aReader);
+  }
 
   return *this;
 }
@@ -78,7 +77,9 @@ AliFemtoEvent* AliFemtoEventReaderAODChain::ReturnHbtEvent()
   // read in a next hbt event from the chain
   // convert it to AliFemtoEvent and return
   // for further analysis
-  if (!fEvent) return 0;
+  if (!fEvent) {
+    return nullptr;
+  }
 
   AliFemtoEvent *hbtEvent = 0;
 

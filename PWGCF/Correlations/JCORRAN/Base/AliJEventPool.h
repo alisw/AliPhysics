@@ -13,7 +13,7 @@
 
 using namespace std;
 
-#include <AliJConst.h>
+#include "AliJConst.h"
 
 class TClonesArray;
 class AliJBaseTrack;

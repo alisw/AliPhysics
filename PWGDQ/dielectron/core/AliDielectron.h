@@ -27,6 +27,7 @@
 #include "AliDielectronHistos.h"
 #include "AliDielectronHF.h"
 #include "AliDielectronCutQA.h"
+#include "AliDielectronEvtVsTrkHist.h"
 
 class AliEventplane;
 class AliVEvent;
@@ -74,6 +75,9 @@ public:
   AliAnalysisFilter& GetEventPlanePreFilter(){ return fEventPlanePreFilter; }
   AliAnalysisFilter& GetEventPlanePOIPreFilter(){ return fEventPlanePOIPreFilter; }
   AliDielectronQnEPcorrection* GetQnTPCACcuts(){ return fQnTPCACcuts; }
+
+  Bool_t GetEvtVsTrkHistExists() {return fEvtVsTrkHistExists;}
+  void SetEvtVsTrkHistExists(Bool_t doesExist = kTRUE) {fEvtVsTrkHistExists = doesExist;}
 
   void  SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
   void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2) { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
@@ -186,6 +190,8 @@ public:
   void SetUseGammaTracks(Bool_t setValue=kTRUE) { fUseGammaTracks=setValue; }
   void  FillHistogramsFromPairArray(Bool_t pairInfoOnly=kFALSE);
 
+  void FinishEvtVsTrkHistoClass();
+
 private:
 
   Bool_t fCutQA;                    // monitor cuts
@@ -245,6 +251,9 @@ private:
   Bool_t fRotateMM; // combine rotated negative tracks
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
   AliDielectronMixingHandler *fMixing; // handler for event mixing
+
+  AliDielectronEvtVsTrkHist *fEvtVsTrkHist;
+  Bool_t fEvtVsTrkHistExists; // Tells the Multi Analysis Task if it has to process the AliDielectronEvtVsTrkHist class
 
   Bool_t fPreFilterEventPlane;  //Filter for the Eventplane determination in TPC
   Bool_t fACremovalIsSetted;

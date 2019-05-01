@@ -60,7 +60,7 @@ The names in ``newBranchName`` determine the name of the new branches. In princi
 
 ### Configure the corrections for side-by-side testing
 
-Before beginning, be certain to read the introduction to YAML and configuring corrections available [here](\ref READMEemcCorrections).
+Before beginning, be certain to read the introduction to %YAML and configuring corrections available [here](\ref READMEemcCorrections).
 
 You can map the current corrections to the new ones with the following table. Note that each new correction is preceded by the name `AliEmcalCorrection`:
 
@@ -75,7 +75,7 @@ You can map the current corrections to the new ones with the following table. No
 | ClusTrackMatcher        | ClusterTrackMatcher       |
 | HadCorr                 | ClusterHadronicCorrection |
 
-Using the table above, we need to make sure that the current and the new corrections are configured the same. Compare the settings in your run macro with those in ``$ALICE_PHYSICS/PWG/EMCAL/config/AliEmcalCorrectionConfiguration.yaml``, known as the default file. In particular, check that each parameter value in the YAML file matches the value for that variable in your run macro (and not the other way around -- it is okay if there is no matching field for every field in the AddTask). The variable names should often be the same. If values are different in the YAML file, then modify the values in **``userTestConfiguration.yaml``**, not in ``AliEmcalCorrectionConfiguration.yaml``! To make the change, write it in yourself or copy the relevant structure of the default file to your user file and modify there. For instance, in the default file, the ``cellE`` parameter in the Clusterizer is to ``0.05``. If I wanted to change that in the user file, you would add:
+Using the table above, we need to make sure that the current and the new corrections are configured the same. Compare the settings in your run macro with those in ``$ALICE_PHYSICS/PWG/EMCAL/config/AliEmcalCorrectionConfiguration.yaml``, known as the default file. In particular, check that each parameter value in the %YAML file matches the value for that variable in your run macro (and not the other way around -- it is okay if there is no matching field for every field in the AddTask). The variable names should often be the same. If values are different in the %YAML file, then modify the values in **``userTestConfiguration.yaml``**, not in ``AliEmcalCorrectionConfiguration.yaml``! To make the change, write it in yourself or copy the relevant structure of the default file to your user file and modify there. For instance, in the default file, the ``cellE`` parameter in the Clusterizer is to ``0.05``. If I wanted to change that in the user file, you would add:
 
 ~~~
 Clusterizer:

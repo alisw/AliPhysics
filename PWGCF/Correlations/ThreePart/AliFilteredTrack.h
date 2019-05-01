@@ -109,7 +109,7 @@ class AliFilteredTrack : public AliVTrack {
   virtual const Double_t* PID() const {return NULL;}
   virtual Int_t GetID() const {return -1;}
   virtual UChar_t GetITSClusterMap() const {return 0;}
-  virtual ULong_t GetStatus() const {return 0;}
+  virtual ULong64_t GetStatus() const {return 0;}
   virtual Bool_t GetXYZ(Double_t*) const {return kFALSE;}
   virtual Bool_t GetCovarianceXYZPxPyPz(Double_t*) const {return kFALSE;}
   virtual Bool_t PropagateToDCA(const AliVVertex*, Double_t, Double_t, Double_t*, Double_t*) {return kFALSE;}

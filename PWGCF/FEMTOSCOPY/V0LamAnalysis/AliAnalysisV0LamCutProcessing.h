@@ -1,7 +1,12 @@
-#ifndef AliAnalysisV0LamCutProcessing_cxx
-#define AliAnalysisV0LamCutProcessing_cxx
+///
+/// \file V0LamAnalysis/AliAnalysisV0LamCutProcessing.h
+///
+
+#ifndef AliAnalysisV0LamCutProcessing_H
+#define AliAnalysisV0LamCutProcessing_H
 
 #include "AliAnalysisV0LamEventCollection.h"
+
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
@@ -33,14 +38,14 @@ public:
 		  kPt = 8,
 		  kMassLam = 9,
 		  kMassALam = 10};
-  
+
   AliAnalysisV0LamCutProcessing(TList *const outputList, Int_t varCutIndex);
   ~AliAnalysisV0LamCutProcessing();
   void SetCentralityBin(int centBin) {fCurrentCentralityBin = centBin;}
   void CheckIfV0PassesCuts(AliReconstructedV0 *v0);
   void DoV0Histogramming(AliReconstructedV0 *v0);
   int GetNumberOfVariableCutValues() const {return fNumberOfVariableCutValues;}
-  
+
  private:
   AliAnalysisV0LamCutProcessing(const AliAnalysisV0LamCutProcessing &processor); // Not implemented
   AliAnalysisV0LamCutProcessing operator=(const AliAnalysisV0LamCutProcessing &processor); // Not implemented
@@ -75,7 +80,7 @@ public:
   TH2F *fHistDcaALam;
   TH2F *fHistPtLam;
   TH2F *fHistPtALam;
-  TH2F *fHistMassLam; 
+  TH2F *fHistMassLam;
   TH2F *fHistMassALam;
   TH3F *fHistMassCentralityLam;
   TH3F *fHistMassCentralityALam;

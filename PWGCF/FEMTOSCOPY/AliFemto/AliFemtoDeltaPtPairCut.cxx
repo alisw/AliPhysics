@@ -61,7 +61,7 @@ AliFemtoString AliFemtoDeltaPtPairCut::Report()
   TString report("AliFemtoKT Pair Cut\n");
   report += TString::Format("Accept pair with DeltaPt in range %f , %f",fDeltaPtMin,fDeltaPtMax);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //__________________
 

@@ -32,9 +32,10 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/muon)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
-                    ${AliPhysics_SOURCE_DIR}/EVENTMIX
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
   )
 
 # Sources - alphabetical order
@@ -49,6 +50,7 @@ set(SRCS
   AliAnalysisMuMuGlobal.cxx
   AliAnalysisMuMuMCGene.cxx
   AliAnalysisMuMuMinv.cxx
+  AliAnalysisMuMuFlow.cxx
   AliAnalysisMuMuNch.cxx
   AliAnalysisMuMuSingle.cxx
   AliAnalysisMuMuTriggerResponse.cxx
@@ -101,6 +103,7 @@ set(SRCS
   AliMuonTriggerCombo.cxx
   AliOADBMuonTrackCutsParam.cxx
   AliTaskMuonTrackSmearing.cxx
+  AliTaskMuonTrackSmearingQA.cxx
   AliUtilityDimuonSource.cxx
   AliUtilityMuonAncestor.cxx
   AliVAnalysisMuon.cxx
@@ -122,7 +125,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice AOD CORRFW OADB STEERBase EventMixing)
+set(LIBDEPS ANALYSISalice AOD CORRFW OADB PWGPPevcharQn PWGPPevcharQnInterface STEERBase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library

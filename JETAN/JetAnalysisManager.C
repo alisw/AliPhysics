@@ -24,7 +24,7 @@ void JetAnalysisManager()
     //EvCuts->SetNChargedAbove1GeVRange(1, 1000);
     //EvCuts->SetMultiplicityRange(11,120);
     //EvCuts->SetNPionRange(2,10000);
-     TAlienCollection* coll = TAlienCollection::Open("tag100.xml");
+     TGridCollection* coll = gGrid->OpenCollection("tag100.xml");
      TGridResult* TagResult = coll->GetGridResult("", 0, 0);
      TagResult->Print();
      TagAna->ChainGridTags(TagResult);

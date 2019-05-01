@@ -19,7 +19,7 @@
 
 //---- AliRoot system ----
 #include "AliAnaRandomTrigger.h"
-#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliCaloTrackParticleCorrelation.h"
 #include "AliEMCALGeometry.h"
 
 /// \cond CLASSIMP
@@ -105,7 +105,9 @@ Bool_t AliAnaRandomTrigger::ExcludeDeadBadRegions(Float_t eta, Float_t phi)
   // Check if the cell or those around are bad
   //-------------------------------------
 
-  if(GetCaloUtils()->GetEMCALChannelStatus(sm,icol, irow) > 0) return kTRUE ; // trigger falls into a bad channel
+  Int_t status = 0;
+  if ( GetCaloUtils()->GetEMCALChannelStatus(sm,icol, irow,status) ) 
+    return kTRUE ; // trigger falls into a bad channel
 
   // Check if close there was a bad channel
 //  for(Int_t i = -1; i <= 1; i++)
@@ -194,7 +196,7 @@ TList *  AliAnaRandomTrigger::GetCreateOutputObjects()
 //________________________________________
 void AliAnaRandomTrigger::InitParameters()
 { 
-  SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   SetOutputAODName("RandomTrigger");
 
   AddToHistogramsName("AnaRandomTrigger_");
@@ -253,7 +255,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillAOD()
     // Create the AOD trigger object
     fMomentum.SetPtEtaPhiM(pt,eta,phi,0);
     
-    AliAODPWG4Particle trigger = AliAODPWG4Particle(fMomentum);
+    AliCaloTrackParticle trigger = AliCaloTrackParticle(fMomentum);
     trigger.SetDetectorTag(fTriggerDetector);
     trigger.SetSModNumber(GetModuleNumber(&trigger));
     
@@ -278,7 +280,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4Particle* trigger =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    AliCaloTrackParticle* trigger =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(iaod));
     
     fhPt    ->Fill(trigger->Pt (),                 GetEventWeight());
     fhE     ->Fill(trigger->E  (),                 GetEventWeight());
@@ -291,7 +293,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
 //_________________________________________________________
 /// Set the detrimeter for the analysis.
 //_________________________________________________________
-void AliAnaRandomTrigger::SetTriggerDetector(TString & det)
+void AliAnaRandomTrigger::SetTriggerDetector(TString det)
 {
   fTriggerDetectorString = det;
   

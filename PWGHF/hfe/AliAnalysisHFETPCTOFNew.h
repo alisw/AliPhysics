@@ -117,6 +117,9 @@ enum pi0etaType {kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kC
 	
 enum ESourceType {kNoMotherE, kPi0NoFeedDown, kEtaNoFeedDown, kGPi0NoFeedDown, kGEtaNoFeedDown, kDirectGamma, kOthersE};	
 
+//Correlation cuts between TPC and SPD vertexes
+    Bool_t PassCorrCuts(AliAODEvent *fAOD);
+
 // ------------------------------------------
 	
 

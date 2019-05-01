@@ -14,8 +14,10 @@ class AliPIDResponse;
 class AliAODEvent;
 class AliESDEvent;
 class AliTOFTriggerMask;
+class TBits;
+class TFile;
 
-#define ntrg 17
+#define ntrgMB 20
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
@@ -62,46 +64,54 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   Int_t fRunNum;
   UInt_t fPerNum, fOrbNum;
   //trigger
-  Bool_t fTrigger[ntrg];
-  Bool_t fTriggerInputsMC[ntrg];
+  Bool_t fTrigger[ntrgMB];
+  Bool_t fTriggerInputsMC[ntrgMB];
   UInt_t fL0inputs, fL1inputs;
   AliTOFTriggerMask *fTOFmask;
   Bool_t fIsPhysicsSelected;
   
-  Double_t fPIDTPCMuon[4];
-  Double_t fPIDTPCElectron[4];
-  Double_t fPIDTPCPion[4];
-  Double_t fPIDTPCKaon[4];
-  Double_t fPIDTPCProton[4];
+  Float_t fPIDTPCMuon[4];
+  Float_t fPIDTPCElectron[4];
+  Float_t fPIDTPCPion[4];
+  Float_t fPIDTPCKaon[4];
+  Float_t fPIDTPCProton[4];
   
-  Double_t fPIDTOFMuon[4];
-  Double_t fPIDTOFElectron[4];
-  Double_t fPIDTOFPion[4];
-  Double_t fPIDTOFKaon[4];
-  Double_t fPIDTOFProton[4];
+  Float_t fPIDTOFMuon[4];
+  Float_t fPIDTOFElectron[4];
+  Float_t fPIDTOFPion[4];
+  Float_t fPIDTOFKaon[4];
+  Float_t fPIDTOFProton[4];
   
   Int_t fVtxContrib;
-  Double_t fVtxPos[3];
-  Double_t fMCVtxPos[3];
-  Double_t fVtxErr[3];
-  Double_t fVtxChi2,fVtxNDF;
-  Double_t fKfVtxPos[3];
+  Float_t fVtxPos[3];
+  Float_t fMCVtxPos[3];
+  Float_t fVtxErr[3];
+  Float_t fVtxChi2,fVtxNDF;
+  Float_t fKfVtxPos[3];
   Int_t fSpdVtxContrib;
-  Double_t fSpdVtxPos[3];
+  Float_t fSpdVtxPos[3];
   
   Bool_t fIsVtxContributor[4];
   
   UShort_t fBCrossNum, fNtracklets, fNLooseTracks;
   //vzero, zdc
-  Double_t fZNAenergy, fZNCenergy;
-  Double_t fZPAenergy, fZPCenergy;
-  Double_t fZDCAtime, fZDCCtime;
+  Float_t fZNAenergy, fZNCenergy;
+  Float_t fZPAenergy, fZPCenergy;
+  Float_t fZNATDCm[4];
+  Float_t fZNCTDCm[4];
+  Float_t fZPATDCm[4];
+  Float_t fZPCTDCm[4];
   Int_t fV0Adecision, fV0Cdecision;
   Int_t fADAdecision, fADCdecision;
   //input data
   TObjString *fDataFilnam;
   Short_t fRecoPass;
   Long64_t fEvtNum;
+  //spd
+  TBits fFOFiredChips;
+  //PF protection
+  TBits fIR1Map;
+  TBits fIR2Map;
   //tracks
   TClonesArray *fJPsiAODTracks;
   TClonesArray *fJPsiESDTracks; 
@@ -112,7 +122,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   
   //EVE tree
   TTree *fEveTree;
-  Double_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fPIDsigma;
+  Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fPIDsigma;
   Int_t fChannel;
   
   TList *fListTrig;
@@ -127,17 +137,18 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH1D *fHistMBTriggersPerRun;
   TH1D *fHistCentralTriggersPerRun;
   TH1D *fHistSemiCentralTriggersPerRun;
-  
-  TH1D *fHistCTest58TriggersPerRun;
-  TH1D *fHistCTest59TriggersPerRun;
-  TH1D *fHistCTest60TriggersPerRun;
-  TH1D *fHistCTest61TriggersPerRun;
-  
+
   TH1D *fHistCcup8TriggersPerRun;
   TH1D *fHistCcup9TriggersPerRun;
   TH1D *fHistCcup10TriggersPerRun;
   TH1D *fHistCcup11TriggersPerRun;
   TH1D *fHistCcup12TriggersPerRun;
+  TH1D *fHistCcup25TriggersPerRun;
+  TH1D *fHistCcup26TriggersPerRun;
+  TH1D *fHistCcup27TriggersPerRun;
+  TH1D *fHistCcup29TriggersPerRun;
+  TH1D *fHistCcup30TriggersPerRun;
+  TH1D *fHistCcup31TriggersPerRun;
   TH1D *fHistCtrueTriggersPerRun;
   
   TList *fListHist;
@@ -152,18 +163,18 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH2D *fHistPsi2sMassVsPt;
   TH1D *fHistPsi2sMassCoherent;
   
-  TH1D *fHistZDCCuts;
-  
   TList *fListSystematics;
   TList *fListJPsiLoose;
   TList *fListJPsiTight;
-  TList *fListPsi2sLoose;
-  TList *fListPsi2sTight;
+  
+  TFile *fSPDfile;
+  TH1D *hBCmod4;
+  TH2D *hSPDeff;
   
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcPsi2s, 6); 
+  ClassDef(AliAnalysisTaskUpcPsi2s, 11); 
 };
 
 #endif

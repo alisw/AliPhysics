@@ -21,7 +21,7 @@ echo "</div>" >> index.html
 
 ## Write Canvas for Plots
 echo "<div class=\"rightDiv\">"  >> index.html
-echo "  <canvas width=\"800\" height=\"580\"  id=\"canvasDraw\"/>"  >> index.html
+echo "  <canvas width=\"800\" height=\"580\"  id=\"canvasDraw\"></canvas>"  >> index.html
 echo "</div>"  >> index.html
 echo "</div>"  >> index.html
 echo ""  >> index.html
@@ -32,10 +32,10 @@ echo "<table border=\"0\" cellpadding=\"1\" cellspacing=\"2\">"  >> index.html
 echo "    <tbody>" >> index.html
 echo "        <tr>"  >> index.html
 echo "            <td>Custom query:</td>"  >> index.html
-echo "            <td><input id=\"globalSelectionMI\" class=\"globalSelectionMI\" name=\"globalSelectionMI\" type=\"text\", size=\"50\"></td>"  >> index.html
+echo "            <td><input id=\"globalSelectionMI\" class=\"globalSelectionMI\" name=\"globalSelectionMI\" type=\"text\" size=\"50\"></td>"  >> index.html
 echo "        </tr>"  >> index.html
 echo "    </tbody>"  >> index.html
 echo "</table>"  >> index.html
 cat treeRunTable.inc     >> index.html ##### Run Table for the lower corner
 echo "</div>" >> index.html
-echo "</document>"       >> index.html
+#echo "</document>"       >> index.html

@@ -1,5 +1,6 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
+#include "TSystem.h"
 #include "TNtuple.h"
 #include "TString.h"
 #include "TGraphAsymmErrors.h"
@@ -54,19 +55,19 @@ void ComputeDmesonYield(){
 
   TString mesName="Dzero";
   Int_t mesCode=1;
-  Double_t brat=0.0393;
+  Double_t brat=0.0389;
   TString mesSymb="D^{0}";
   Float_t ptForExtrap=36.;
   if(mesonSpecie==kDplus){
     mesName="Dplus";
     mesCode=2;
-    brat=0.0946;
+    brat=0.0898;
     mesSymb="D^{+}";
     ptForExtrap=24.;
  }else if(mesonSpecie==kDstar){
     mesName="Dstar";
     mesCode=3;
-    brat=0.0393*0.677;
+    brat=0.0389*0.677;
     mesSymb="D^{*+}";
     ptForExtrap=24.;
   }else if(mesonSpecie==kDs){
@@ -114,8 +115,8 @@ void ComputeDmesonYield(){
   Int_t linewiaaC=2;
   Int_t markerppC=21;
   Int_t markeraaC=23;
-  Int_t msizppC=1.2;
-  Int_t msizaaC=1.2;
+  Double_t msizppC=1.2;
+  Double_t msizaaC=1.2;
   Float_t sizesystdata=0.4;
   Float_t sizesystfd=0.3;
   Float_t sizesystrb=0.2;
@@ -124,6 +125,10 @@ void ComputeDmesonYield(){
 
   // pp reference
 
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",filnamPPref.Data())) !=0){
+    printf("File %s with pp reference not found -> exiting\n",filnamPPref.Data());
+    return;
+  }
   TFile *filPP=new TFile(filnamPPref.Data());
   TH1D *hppRef = (TH1D*)filPP->Get("hReference");
   if(!hppRef) hppRef = (TH1D*)filPP->Get("fhScaledData");
@@ -198,6 +203,10 @@ void ComputeDmesonYield(){
 							  
   printf("--- %s events ---\n",collSyst.Data());
 
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",filnamChi.Data())) !=0){
+    printf("File %s with A-A (p-A) yield not found -> exiting\n",filnamChi.Data());
+    return;
+  }
   TFile *filChi= new TFile(filnamChi.Data());
   TH1D *hSpC = (TH1D*)filChi->Get("hRECpt");
   Float_t relstaterrPbPb[nPtBins];
@@ -243,6 +252,10 @@ void ComputeDmesonYield(){
     }
   }
 
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",filnamCnt.Data())) !=0){
+    printf("File %s with R_AA not found -> exiting\n",filnamCnt.Data());
+    return;
+  }
   TFile *filCnt=new TFile(filnamCnt.Data());
   Float_t relstaterrPbPb2[nPtBins];
   TH1D* hraaCcheck2=(TH1D*)filCnt->Get("hRABvsPt");
@@ -367,6 +380,10 @@ void ComputeDmesonYield(){
     }
   }
 
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",filnamCntS.Data())) !=0){
+    printf("File %s with R_AA (for syst) not found -> exiting\n",filnamCntS.Data());
+    return;
+  }
   TFile *filCntS=new TFile(filnamCntS.Data());
   TNtuple* ntCS=(TNtuple*)filCntS->Get("ntupleRAB");
   ntCS->SetBranchAddress("pt",&pt);
@@ -814,6 +831,7 @@ void ComputeDmesonYield(){
   TH2F *hempty=new TH2F("hempty","",100,0.,binlim[nPtBins]*1.02,100,ymin,ymax);
   hempty->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   hempty->GetYaxis()->SetTitle("d#it{N}/d#it{p}_{T}_{ }|_{ |#it{y}|<0.5} (1/GeV/#it{c})");
+  if(TMath::Abs(normToCsec-1)>0.001)  hempty->GetYaxis()->SetTitle("d#sigma/d#it{p}_{T}_{ }|_{ |#it{y}|<0.5} (#mub/GeV/#it{c})");
   hempty->GetYaxis()->SetTitleSize(0.05);
   hempty->GetXaxis()->SetTitleSize(0.05);
   hempty->GetYaxis()->SetTitleOffset(1.3);
@@ -851,7 +869,7 @@ void ComputeDmesonYield(){
   legC->SetFillColor(0);
   legC->SetTextFont(42);
   ent=legC->AddEntry(hppC,"p-p rescaled reference","PL");
-  ent=legC->AddEntry("","(#pm 6% norm. unc. not shown)","");
+  //  ent=legC->AddEntry("","(#pm 6% norm. unc. not shown)","");
   //ent->SetTextColor(hppC->GetLineColor());
   ent=legC->AddEntry(hAAC,collSyst.Data(),"PL");
   //ent->SetTextColor(hAAC->GetLineColor());

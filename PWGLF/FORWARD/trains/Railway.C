@@ -132,7 +132,7 @@ struct Railway
       gSystem->Load("libProofPlayer");
     }
     // (Always) recompile and with debug symbols 
-    gROOT->LoadMacro(Form("%s.C++g",cl.Data()));
+    gROOT->LoadMacro(Form("%s.C++g",cl.Data()));    
     Long_t ptr = gROOT->ProcessLine(Form("new %s(\"%s\", %d);", 
 					 cl.Data(), url.GetUrl(), verbose));
     if (verbose < 3) gSystem->RedirectOutput(0);
@@ -470,11 +470,12 @@ protected:
     : fUrl(url), fOptions(), fVerbose(verbose)
   {
     fOptions.Add("mc", "Assume simulation input");
+    Printf("URL is %s", fUrl.GetUrl());
   }
 
   virtual Bool_t ParseOptions()
   {
-    //std::cout << "Url options: \"" << fUrl.GetOptions() << "\"" << std::endl;
+    std::cout << "Url options: \"" << fUrl.GetOptions() << "\"" << std::endl;
     return fOptions.Parse(fUrl.GetOptions(), "&");
   }
   /** 
@@ -585,20 +586,27 @@ protected:
    */
   TChain* LocalChain()
   {
+    // --- Copy of URL -----------------------------------------------
+    TString su(fUrl.GetUrl());
+    if (su.BeginsWith("local", TString::kIgnoreCase))
+      su.Replace(0, 5, "file", 4);
+    TUrl url(su);
+
     // -- Check the source -------------------------------------------
-    TString  src       = fUrl.GetFile();
+    TString  src       = url.GetFile();
     if (src.IsNull()) {
-      Error("LocalChain", "No input source specified");
+      Error("LocalChain", "No input source specified: %s (%s)",
+	    url.GetUrl(), fUrl.GetUrl());
       return 0;
     }
 
     // --- Check possible pattern ------------------------------------
-    TString  pattern   = (fOptions.Has("pattern") ?fOptions.Get("pattern") :"");
+    TString  pattern   = fOptions.AsString("pattern", "");
     pattern.ReplaceAll("@", "#");
     pattern.ReplaceAll(":", "#");
 
     // --- Get the tree name -----------------------------------------
-    TString  treeName  = fUrl.GetAnchor();
+    TString  treeName  = url.GetAnchor();
 
     // --- Create flags for the chain builder ------------------------
     UShort_t flags     = 0;
@@ -622,8 +630,9 @@ protected:
     TChain* chain = ChainBuilder::Create(type, src, treeName, pattern, flags);
     if (!chain) { 
       Error("LocalChain", "No chain defined "
-	    "(src=%s, treeName=%s, pattern=%s, flags=0x%x)", 
-	    src.Data(), treeName.Data(), pattern.Data(), flags);
+	    "(url=%s, src=%s, treeName=%s, pattern=%s, flags=0x%x)", 
+	    url.GetUrl(), src.Data(), treeName.Data(), pattern.Data(), flags);
+      fOptions.Show(std::cout);
       return 0;
     }
     
@@ -741,10 +750,11 @@ Railway::Create(const TUrl& url, Int_t verbose)
 
   // --- Parse options -----------------------------------------------
   if (!helper->ParseOptions()) {
+    Error("Railway::Create", "Failed to parse options: %s", url.GetOptions());
     delete helper;
     helper = 0;
   }
-
+  Printf("URL of helper is %s", url.GetUrl());
   return helper;
 }
 

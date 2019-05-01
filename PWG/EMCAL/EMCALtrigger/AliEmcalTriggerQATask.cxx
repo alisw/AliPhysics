@@ -79,12 +79,15 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, EBeamType_t beamT
     SetForceBeamType(AliAnalysisTaskEmcalLight::kpp);
     switch (anaType) {
     case kTriggerOnlineAnalysis:
+      AliInfo("Using online QA component for pp");
       fEMCALTriggerQA.push_back(new AliEMCALTriggerOnlineQAPP(name));
       break;
     case kTriggerOfflineExpertAnalysis:
+      AliInfo("Using offline QA component for pp");
       fEMCALTriggerQA.push_back(new AliEMCALTriggerOfflineQAPP(name));
       break;
     case kTriggerOfflineLightAnalysis:
+      AliInfo("Using light offline QA component for pp");
       fEMCALTriggerQA.push_back(new AliEMCALTriggerOfflineLightQAPP(name));
       break;
     default:
@@ -185,8 +188,10 @@ Bool_t AliEmcalTriggerQATask::Run()
  */
 Bool_t AliEmcalTriggerQATask::FillHistograms()
 {
-  AliEMCALTriggerQA* triggerQA = GetTriggerQA(fCentBin);
-  if (!triggerQA) return kFALSE;
+  AliEMCALTriggerQA* triggerQA = GetTriggerQA(fBeamType == AliEmcalTriggerQATask::kAA ? fCentBin : 0);
+  if (!triggerQA) {
+    return kFALSE;
+  }
 
   if (fESDEvent) {
     if (fESDEvent->GetTimeStamp() < fMinTimeStamp) return kFALSE;
@@ -366,14 +371,17 @@ AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString trig
  * Add this task to the QA train
  * \param runnumber Run number
  */
-void AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
+TObjArray AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
 {
   EBeamType_t beam = BeamTypeFromRunNumber(runnumber);
   std::vector<std::string> triggerClasses = {"CINT7", "CEMC7", "CDMC7", "EG1", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2" };
+  AliEmcalTriggerQATask* task(nullptr);
+  TObjArray tasks; 
   for (auto triggerClass : triggerClasses) {
     TString suffix(triggerClass.c_str());
     suffix.ReplaceAll("-", "_");
-    AliEmcalTriggerQATask* task = AddTaskEmcalTriggerQA("EmcalTriggers", "", "", beam, kTriggerOfflineLightAnalysis, "CaloQA_default", suffix);
+    task = AddTaskEmcalTriggerQA("EmcalTriggers", "", "", beam, kTriggerOfflineLightAnalysis, "CaloQA_default", suffix);
+    tasks.Add(task);
     task->SetForceBeamType(beam);
     task->AddAcceptedTriggerClass(triggerClass.c_str());
     if (runnumber > 197692) {
@@ -403,4 +411,5 @@ void AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
       }
     }
   }
+  return tasks;
 }

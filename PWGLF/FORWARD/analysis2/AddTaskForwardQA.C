@@ -24,7 +24,7 @@
  *
  * @ingroup pwglf_forward_eloss
  */
-AliAnalysisTask*
+ AliForwardQATask*
 AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
 {
   // --- Load libraries ----------------------------------------------

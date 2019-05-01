@@ -10,7 +10,7 @@
 ///
 /// Class to collect two-photon invariant mass distributions for
 /// extracting raw pi0 or eta yields.
-/// Input is produced by AliAnaPhoton (or any other analysis producing output AliAODPWG4Particles),
+/// Input is produced by AliAnaPhoton (or any other analysis producing output AliCaloTrackParticles),
 /// it will do nothing if executed alone.
 ///
 /// Original author: Dmitri Peressounko (RRC "KI").
@@ -34,7 +34,7 @@ class TObjString;
 #include "AliAnaCaloTrackCorrBaseClass.h"
 class AliAODEvent ;
 class AliESDEvent ;
-class AliAODPWG4Particle ;
+class AliCaloTrackParticle ;
 
 class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
@@ -62,7 +62,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   // EVENT Bin Methods
   //-------------------------------
 
-  Int_t        GetEventIndex(AliAODPWG4Particle * part, Double_t * vert)  ;  
+  Int_t        GetEventIndex(AliCaloTrackParticle * part, Double_t * vert)  ;  
 
   //-------------------------------
   // Opening angle pair selection
@@ -79,6 +79,10 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillAngleHisto()         { fFillAngleHisto      = kTRUE  ; }
   void         SwitchOffFillAngleHisto()        { fFillAngleHisto      = kFALSE ; }
+
+  void         SwitchOnOneCellSeparation()      { fUseOneCellSeparation = kTRUE  ; }
+  void         SwitchOffOneCellSeparation()     { fUseOneCellSeparation = kFALSE ; }
+  Bool_t       CheckSeparation(Int_t absID1, Int_t absID2) ;
   
   //------------------------------------------
   // Do analysis only with clusters in same SM or different combinations of SM
@@ -189,6 +193,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fUseAngleEDepCut ;          ///<  Select pairs depending on their opening angle
   Float_t  fAngleCut ;                 ///<  Select pairs with opening angle larger than a threshold
   Float_t  fAngleMaxCut ;              ///<  Select pairs with opening angle smaller than a threshold
+  Bool_t   fUseOneCellSeparation ;     ///<  Select pairs with one cell in between of maxima
   
   Float_t  fPi0MassWindow[2];          ///<  Pi0 mass selection window
   Float_t  fEtaMassWindow[2];          ///<  Eta mass selection window
@@ -431,7 +436,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimEtaAccPtEventPlane ;  //!<! primary eta with accepted daughters reconstructed event plane vs pT
   
   // Primaries origin
-    
+  TH2F *   fhPrimChHadronPt  ;         //!<! Spectrum of generated K+- pi+-
   TH2F *   fhPrimPi0PtOrigin ;         //!<! Spectrum of generated pi0 vs mother
   TH2F *   fhPrimEtaPtOrigin ;         //!<! Spectrum of generated eta vs mother
   TH2F *   fhPrimNotResonancePi0PtOrigin ; //!<! Spectrum of generated pi0 vs mother
@@ -461,7 +466,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMCOrgAsym[17];            //!<! Asymmetry vs pt of real pairs, check common origin of pair
   TH2F *   fhMCOrgDeltaEta[17];        //!<! Delta Eta vs pt of real pairs, check common origin of pair
   TH2F *   fhMCOrgDeltaPhi[17];        //!<! Delta Phi vs pt of real pairs, check common origin of pair
-  
+
+  //reconstructed and validated (true) pi0 and eta either zero, one or two photons from conversion
+  TH2F *   fhMCOrgPi0MassPtConversion[3]; //!<! Mass vs pt of real pairs (with 0,1,2 conversion) with ancestor pi0
+  TH2F *   fhMCOrgEtaMassPtConversion[3]; //!<! Mass vs pt of real pairs (with 0,1,2 conversion) with ancestor eta
+    
   // Multiple cuts in simulation, origin pi0 or eta
     
   /// Real pi0 pairs, reconstructed mass vs reconstructed pt of original pair.
@@ -519,8 +528,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0ProdVertex;        //!<! Spectrum of primary pi0 vs production vertex
   TH2F *   fhPrimEtaProdVertex;        //!<! Spectrum of primary eta vs production vertex
 
-  TH2F *   fhMCPi0Radius[10] ;         //!<! reconstructed Pi0 production vertex vs pT for mother origin
-  TH2F *   fhMCEtaRadius[6] ;          //!<! reconstructed Eta production vertex vs pT for mother origin
+  TH2F *   fhMCPi0Radius ;             //!<! reconstructed Pi0 production vertex corrected by real vertex vs pT for mother origin
+  TH2F *   fhMCEtaRadius ;             //!<! reconstructed Eta production vertex corrected by real vertex vs pT for mother origin
 
   
   TH2F *   fhReMCFromConversion ;      //!<! Invariant mass of 2 clusters originated in conversions
@@ -601,7 +610,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,35) ;
+  ClassDef(AliAnaPi0,36) ;
   /// \endcond
   
 } ;

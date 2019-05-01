@@ -20,7 +20,7 @@
 //---- AliRoot system ----
 #include "AliAnaChargedParticles.h"
 #include "AliCaloTrackReader.h"
-#include "AliAODPWG4Particle.h"
+#include "AliCaloTrackParticle.h"
 #include "AliMCEvent.h"
 #include "AliFiducialCut.h"
 #include "AliVTrack.h"
@@ -842,8 +842,8 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
 //___________________________________________
 void AliAnaChargedParticles::InitParameters()
 { 
-  SetOutputAODClassName("AliAODPWG4Particle");
-  SetOutputAODName("PWG4Particle");
+  SetOutputAODClassName("AliCaloTrackParticle");
+  SetOutputAODName("CaloTrackParticle");
 
   AddToHistogramsName("AnaCharged_");
 }
@@ -1376,7 +1376,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     GetVertex(vert,evtIndex); 
     if(TMath::Abs(vert[2])> GetZvertexCut()) return; 
         
-    AliAODPWG4Particle tr = AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),0);
+    AliCaloTrackParticle tr = AliCaloTrackParticle(track->Px(),track->Py(),track->Pz(),0);
     tr.SetDetectorTag(kCTS);
     tr.SetLabel(track->GetLabel());
     tr.SetTrackLabel(GetReader()->GetTrackID(track),-1); // needed instead of track->GetID() since AOD needs some manipulations
@@ -1419,7 +1419,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4Particle* track =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    AliCaloTrackParticle* track =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(iaod));
     
     pt  = track->Pt();
     eta = track->Eta();

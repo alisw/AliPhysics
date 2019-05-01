@@ -47,7 +47,8 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(TString taskName = "HFe_
                                                         Int_t TPCNClusterPartner = 60,
                                                         Int_t TPCNClusterPID = 80,
                                                         Bool_t UseGlobalTracksForHadrons = kTRUE,
-                                                        Int_t CentralityEstimator = 0)
+                                                        Int_t CentralityEstimator = 0,
+                                                        Bool_t UseTOF = kTRUE)
 {
     
     
@@ -176,8 +177,15 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(TString taskName = "HFe_
     //Configure PID
     //_________________________
     //TPC+TOF PID
-    pid->AddDetector("TOF", 0);				//Add TOF PID
-    pid->AddDetector("TPC", 1);				//Add TPC PID
+    
+    if (UseTOF)
+    {
+        pid->AddDetector("TOF", 0);				//Add TOF PID
+        pid->AddDetector("TPC", 1);				//Add TPC PID
+    }
+    else
+        pid->AddDetector("TPC", 0);				//Add TPC PID
+
     
     //_________________________
     //Configure TPC cut

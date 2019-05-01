@@ -34,6 +34,7 @@ set(SRCS
   AliAnalysisTaskQAV0.cxx
   AliAnalysisTaskQAV0AOD.cxx
   AliAnalysisTaskQAMultistrange.cxx
+  AliAnalysisTaskLFefficiencies.cxx
   )
 
 # Headers from sources
@@ -51,6 +52,9 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Dependecies
 set(LIBDEPS ANALYSISalice CORRFW PWGLFSTRANGENESS)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Tracks UserTasks")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})

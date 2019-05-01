@@ -1149,7 +1149,8 @@ Int_t AliAlignmentDataFilterITS::WriteTrackPointsInIdealGeom(const Char_t *fin,
       hcov.SetRotation(hcovel);
       // now rotate in local system
       hcov.Multiply(svMatrix);
-      hcov.MultiplyLeft(&svMatrix->Inverse());
+      const TGeoHMatrix& invSvMatrix = svMatrix->Inverse();
+      hcov.MultiplyLeft(&invSvMatrix);
       // now hcov is LOCAL COVARIANCE MATRIX
       
       /// get original matrix of sens. vol.
@@ -1157,7 +1158,8 @@ Int_t AliAlignmentDataFilterITS::WriteTrackPointsInIdealGeom(const Char_t *fin,
       // modify global coordinates according with pre-aligment
       svOrigMatrix->LocalToMaster(pl,pg);
       // now rotate in local system
-      hcov.Multiply(&svOrigMatrix->Inverse());
+      const TGeoHMatrix& invSvOrigMatrix = svOrigMatrix->Inverse();
+      hcov.Multiply(&invSvOrigMatrix);
       hcov.MultiplyLeft(svOrigMatrix);
       // hcov is back in GLOBAL RF
       Float_t pcov[6];

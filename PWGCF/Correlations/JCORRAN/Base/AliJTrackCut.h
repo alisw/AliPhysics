@@ -10,7 +10,7 @@ class AliJTrack;
 
 class AliJTrackCut {
     public:
-        enum { kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJHybridAOD86, kJNTrackCuts };
+        enum { kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJHybridAOD86, kJHybridStep1, kJNTrackCuts };
 
         AliJTrackCut();
         ~AliJTrackCut(){;}

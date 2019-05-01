@@ -47,6 +47,8 @@ TH2F* AliGenEMlibV2::fPtYDistribution[]         = {0x0};
 Int_t AliGenEMlibV2::fgSelectedCollisionsSystem = AliGenEMlibV2::kpp7TeV;
 Int_t AliGenEMlibV2::fgSelectedCentrality       = AliGenEMlibV2::kpp;
 Int_t AliGenEMlibV2::fgSelectedV2Systematic     = AliGenEMlibV2::kNoV2Sys;
+TF1*  AliGenEMlibV2::fV2Parametrization[]={0x0} ;
+Int_t AliGenEMlibV2::fV2RefParameterization[] = {0} ;
 
 Double_t AliGenEMlibV2::CrossOverLc(double a, double b, double x){
   if(x<b-a/2) return 1.0;
@@ -146,7 +148,7 @@ const Double_t AliGenEMlibV2::fgkMtFactor[3][26] = {
 Double_t AliGenEMlibV2::PtExponential(const Double_t *px, const Double_t *c){
   const double &pt=px[0];
   Double_t invYield = c[0]*exp(-pt*c[1]);
-  
+
   return invYield*(2*TMath::Pi()*pt);
 }
 
@@ -154,7 +156,7 @@ Double_t AliGenEMlibV2::PtExponential(const Double_t *px, const Double_t *c){
 Double_t AliGenEMlibV2::PtModifiedHagedornPowerlaw(const Double_t *px, const Double_t *c){
   const double &pt=px[0];
   Double_t invYield = c[0]*pow(c[1]+pt*c[2],-c[3])*CrossOverLc(c[5],c[4],pt)+CrossOverRc(c[7],c[6],pt)*c[8]*pow(pt+0.001,-c[9]); //pt+0.001: prevent powerlaw from exploding for pt->0
-  
+
   return invYield*(2*TMath::Pi()*pt+0.001); //+0.001: be sure to be > 0
 }
 
@@ -174,7 +176,7 @@ Double_t AliGenEMlibV2::PtPromptRealGamma( const Double_t *px, const Double_t */
 {
   const static Double_t promptGammaPtParam[10] = { 1.908746e-02, 3.326402e-01, 7.525743e-01, 5.251425e+00, 9.275261e+00, 1.855052e+01, 9.855216e+00, 1.867316e+01, 1.198770e-01, 5.407858e+00 };
   //{ 2.146541e-02, 5.540414e-01, 6.664706e-01, 5.739829e+00, 1.816496e+01, 2.561591e+01, 1.121881e+01, 3.569223e+01, 6.624561e-02, 5.234547e+00 };
-  
+
   return PtModifiedHagedornPowerlaw(px,promptGammaPtParam)*GetTAA(fgSelectedCentrality)*1.15;
   //correction factor 1.15 comes from the global fit of all ALICE direct gamma measurements (see definition of fgkThermPtParam), showing that direct gamma is about 15% above the NLO expectation
 }
@@ -279,6 +281,12 @@ Double_t AliGenEMlibV2::YPizero( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlibV2::V2Pizero( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kPizero]){
+    return fV2Parametrization[kPizero]->Eval(px[0]) ;
+  }
+  
+  //else use build-in parameterizations  
   double n1,n2,n3,n4,n5;
   double v1,v2,v3,v4,v5;
   switch(fgSelectedCollisionsSystem|fgSelectedCentrality) {
@@ -320,7 +328,7 @@ Double_t AliGenEMlibV2::V2Pizero( const Double_t *px, const Double_t */*dummy*/ 
       // raw yeilds are not normalized per event
       return (n1*v1+n2*v2+n3*v3+n4*v4+n5*v5)/(n1+n2+n3+n4+n5);
       break;
-      
+
     default:
       return V2Param(px,fgkV2param[fgSelectedCentrality]);
   }
@@ -351,6 +359,11 @@ Double_t AliGenEMlibV2::YEta( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlibV2::V2Eta( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kEta])
+    return fV2Parametrization[kEta]->Eval(EtScalingV2(px[0], kEta,fV2RefParameterization[kEta]) ) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kEta); //V2Param(px,fgkV2param[1][fgSelectedV2Param]);
 }
 
@@ -379,6 +392,11 @@ Double_t AliGenEMlibV2::YRho0( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlibV2::V2Rho0( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kRho0])
+    return fV2Parametrization[kRho0]->Eval(EtScalingV2(px[0], kRho0,fV2RefParameterization[kRho0]) ) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kRho0);
 }
 
@@ -407,8 +425,12 @@ Double_t AliGenEMlibV2::YOmega( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlibV2::V2Omega( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kOmega])
+    return fV2Parametrization[kOmega]->Eval(EtScalingV2(px[0], kOmega,fV2RefParameterization[kOmega])) ;
+  //else use build-in parameterizations  
   return KEtScal(*px,kOmega);
-  
+
 }
 
 
@@ -432,11 +454,16 @@ Double_t AliGenEMlibV2::PtEtaprime( const Double_t *px, const Double_t */*dummy*
 Double_t AliGenEMlibV2::YEtaprime( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2Etaprime( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kEtaprime])
+    return fV2Parametrization[kEtaprime]->Eval(EtScalingV2(px[0], kEtaprime,fV2RefParameterization[kEtaprime])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kEtaprime);
 }
 
@@ -465,6 +492,11 @@ Double_t AliGenEMlibV2::YPhi( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlibV2::V2Phi( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kPhi])
+    return fV2Parametrization[kPhi]->Eval(EtScalingV2(px[0], kPhi,fV2RefParameterization[kPhi])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kPhi);
 }
 
@@ -493,6 +525,11 @@ Double_t AliGenEMlibV2::YJpsi( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlibV2::V2Jpsi( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kJpsi])
+    return fV2Parametrization[kJpsi]->Eval(EtScalingV2(px[0], kJpsi,fV2RefParameterization[kJpsi])) ;
+  
+  //else use build-in parameterizations  
   const static Double_t v2Param[16] = { 1.156000e-01, 8.936854e-01, 0.000000e+00, 4.000000e+00, 6.222375e+00, -1.600314e-01, 8.766676e-01, 7.824143e+00, 1.156000e-01, 3.484503e-02, 4.413685e-01, 0, 1, 3.484503e-02, 4.413685e-01, 7.2 };
   switch(fgSelectedCollisionsSystem|fgSelectedCentrality){
     case kPbPb|k2040: return V2Param(px,v2Param); break;
@@ -527,11 +564,16 @@ Double_t AliGenEMlibV2::PtSigma0( const Double_t *px, const Double_t */*dummy*/ 
 Double_t AliGenEMlibV2::YSigma0( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2Sigma0( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kSigma0])
+    return fV2Parametrization[kSigma0]->Eval(EtScalingV2(px[0], kSigma0,fV2RefParameterization[kSigma0])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kSigma0,3);
 }
 
@@ -556,11 +598,16 @@ Double_t AliGenEMlibV2::PtK0short( const Double_t *px, const Double_t */*dummy*/
 Double_t AliGenEMlibV2::YK0short( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2K0short( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kK0s])
+    return fV2Parametrization[kK0s]->Eval(EtScalingV2(px[0], kK0s,fV2RefParameterization[kK0s])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kK0s);
 }
 
@@ -585,11 +632,16 @@ Double_t AliGenEMlibV2::PtK0long( const Double_t *px, const Double_t */*dummy*/ 
 Double_t AliGenEMlibV2::YK0long( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2K0long( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kK0l])
+    return fV2Parametrization[kK0l]->Eval(EtScalingV2(px[0], kK0l,fV2RefParameterization[kK0l])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kK0l);
 }
 
@@ -614,11 +666,16 @@ Double_t AliGenEMlibV2::PtLambda( const Double_t *px, const Double_t */*dummy*/ 
 Double_t AliGenEMlibV2::YLambda( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2Lambda( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kLambda])
+    return fV2Parametrization[kLambda]->Eval(EtScalingV2(px[0], kLambda,fV2RefParameterization[kLambda])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kLambda);
 }
 
@@ -643,11 +700,16 @@ Double_t AliGenEMlibV2::PtDeltaPlPl( const Double_t *px, const Double_t */*dummy
 Double_t AliGenEMlibV2::YDeltaPlPl( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2DeltaPlPl( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kDeltaPlPl])
+    return fV2Parametrization[kDeltaPlPl]->Eval(EtScalingV2(px[0], kDeltaPlPl,fV2RefParameterization[kDeltaPlPl])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kDeltaPlPl,3);
 }
 
@@ -672,11 +734,16 @@ Double_t AliGenEMlibV2::PtDeltaPl( const Double_t *px, const Double_t */*dummy*/
 Double_t AliGenEMlibV2::YDeltaPl( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2DeltaPl( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kDeltaPl])
+    return fV2Parametrization[kDeltaPl]->Eval(EtScalingV2(px[0], kDeltaPl,fV2RefParameterization[kDeltaPl])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kDeltaPl,3);
 }
 
@@ -701,11 +768,16 @@ Double_t AliGenEMlibV2::PtDeltaMi( const Double_t *px, const Double_t */*dummy*/
 Double_t AliGenEMlibV2::YDeltaMi( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2DeltaMi( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kDeltaMi])
+    return fV2Parametrization[kDeltaMi]->Eval(EtScalingV2(px[0], kDeltaMi,fV2RefParameterization[kDeltaMi])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kDeltaMi,3);
 }
 
@@ -730,11 +802,16 @@ Double_t AliGenEMlibV2::PtDeltaZero( const Double_t *px, const Double_t */*dummy
 Double_t AliGenEMlibV2::YDeltaZero( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2DeltaZero( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kDeltaZero])
+    return fV2Parametrization[kDeltaZero]->Eval(EtScalingV2(px[0], kDeltaZero,fV2RefParameterization[kDeltaZero])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kDeltaZero,3);
 }
 
@@ -759,11 +836,16 @@ Double_t AliGenEMlibV2::PtRhoPl( const Double_t *px, const Double_t */*dummy*/ )
 Double_t AliGenEMlibV2::YRhoPl( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2RhoPl( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kRhoPl])
+    return fV2Parametrization[kRhoPl]->Eval(EtScalingV2(px[0], kRhoPl,fV2RefParameterization[kRhoPl])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kRhoPl);
 }
 
@@ -788,11 +870,16 @@ Double_t AliGenEMlibV2::PtRhoMi( const Double_t *px, const Double_t */*dummy*/ )
 Double_t AliGenEMlibV2::YRhoMi( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2RhoMi( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kRhoMi])
+    return fV2Parametrization[kRhoMi]->Eval(EtScalingV2(px[0], kRhoMi,fV2RefParameterization[kRhoMi])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kRhoMi);
 }
 
@@ -817,11 +904,16 @@ Double_t AliGenEMlibV2::PtK0star( const Double_t *px, const Double_t */*dummy*/ 
 Double_t AliGenEMlibV2::YK0star( const Double_t *py, const Double_t */*dummy*/ )
 {
   return YFlat(*py);
-  
+
 }
 
 Double_t AliGenEMlibV2::V2K0star( const Double_t *px, const Double_t */*dummy*/ )
 {
+  //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kK0star])
+    return fV2Parametrization[kK0star]->Eval(EtScalingV2(px[0], kK0star,fV2RefParameterization[kK0star])) ;
+  
+  //else use build-in parameterizations  
   return KEtScal(*px,kK0star);
 }
 
@@ -850,7 +942,12 @@ Double_t AliGenEMlibV2::YKPl( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlibV2::V2KPl( const Double_t *px, const Double_t */*dummy*/ )
 {
-  return KEtScal(*px,kKPl);
+   //If there are parameterizations read from file, use them  
+  if(fV2Parametrization[kKPl])
+     return fV2Parametrization[kKPl]->Eval(px[0]) ;
+  
+  else //use build-in parameterizations  
+     return KEtScal(*px,kKPl);
 }
 
 
@@ -878,7 +975,11 @@ Double_t AliGenEMlibV2::YKMi( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlibV2::V2KMi( const Double_t *px, const Double_t */*dummy*/ )
 {
-  return KEtScal(*px,kKMi);
+    //If there are parameterizations read from file, use them  
+    if(fV2Parametrization[kKPl])  //assume same flow for K+,K-
+       return fV2Parametrization[kKPl]->Eval(px[0]) ;
+    else
+       return KEtScal(*px,kKMi);
 }
 
 
@@ -996,7 +1097,7 @@ Double_t AliGenEMlibV2::V2XiMi( const Double_t *px, const Double_t */*dummy*/ )
 
 //--------------------------------------------------------------------------
 //
-//                             Simga(1385)+
+//                             Sigma(1385)+
 //
 //--------------------------------------------------------------------------
 Int_t AliGenEMlibV2::IpSigmaPl(TRandom *)
@@ -1024,7 +1125,7 @@ Double_t AliGenEMlibV2::V2SigmaPl( const Double_t *px, const Double_t */*dummy*/
 
 //--------------------------------------------------------------------------
 //
-//                             Simga(1385)-
+//                             Sigma(1385)-
 //
 //--------------------------------------------------------------------------
 Int_t AliGenEMlibV2::IpSigmaMi(TRandom *)
@@ -1076,11 +1177,11 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
   Double_t xmin, xmax;
   Int_t nPar;
   TString formulaBaseScaled, scaledPt;
-  
+
   // value meson/pi0 (baryon/p) at 5 GeV/c
   Double_t NormPt       = 5.;
   Double_t scaledNormPt, norm;
-  
+
   if (!isMeson && fPtParametrizationProton) {
     // scale baryons from protons
     fPtParametrizationProton->GetRange(xmin, xmax);
@@ -1098,7 +1199,7 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
     scaledNormPt          = TMath::Sqrt(NormPt*NormPt + fgkHM[np]*fgkHM[np] - fgkHM[0]*fgkHM[0]);
     norm                  = fMtFactorHisto->GetBinContent(np+1) * fPtParametrization[0]->Eval(NormPt) / fPtParametrization[0]->Eval(scaledNormPt);
   }
-  
+
   TString formulaBaseScaledTemp = "";
   TString sub1                  = "";
   TString sub2                  = "";
@@ -1110,7 +1211,7 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
     if (i<formulaBaseScaled.Length()-1)
       sub3                      = formulaBaseScaled(i+1, 1);
     else sub3                   = "";
-    
+
     if (sub2.CompareTo("x")!=0) {
       formulaBaseScaledTemp += sub2;
     } else if (sub2.CompareTo("x")==0) {
@@ -1126,7 +1227,7 @@ TF1* AliGenEMlibV2::MtScal(Int_t np, TString name, Bool_t isMeson)
     }
   }
   formulaBaseScaled = formulaBaseScaledTemp;
-  
+
   TF1* result = new TF1(name.Data(), Form("%.10f * (x/%s) * (%s)", norm, scaledPt.Data(), formulaBaseScaled.Data()), xmin, xmax);
   if (!isMeson && fPtParametrizationProton) {
     for (Int_t i=0; i<nPar; i++) {
@@ -1177,6 +1278,20 @@ Double_t AliGenEMlibV2::V2Flat(const Double_t */*px*/, const Double_t */*param*/
   return 0.0;
 }
 
+Double_t AliGenEMlibV2::EtScalingV2(Double_t ptPart, Int_t iPart, Int_t iRef)
+{
+  //Recalculates pT of a particle with number iPart to pT of reference particle of kind iRef
+  if(iPart==iRef) //aprticle and reference is the same
+    return ptPart ;  
+    
+  Double_t mPart=fgkHM[iPart];
+  Double_t mRef=fgkHM[iRef];
+  Double_t mtK=TMath::Sqrt(ptPart*ptPart+mPart*mPart)-mPart+mRef ;
+  Double_t x = mtK*mtK-mRef*mRef;
+  if(x<0.) return 0.;
+  else return TMath::Sqrt(x) ;
+}
+
 
 //--------------------------------------------------------------------------
 //
@@ -1211,17 +1326,21 @@ Double_t AliGenEMlibV2::GetTAA(Int_t cent){
 //
 //--------------------------------------------------------------------------
 Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
-  
+
   // open parametrizations file
   TFile* fParametrizationFile = TFile::Open(fileName.Data());
   if (!fParametrizationFile) AliFatalClass(Form("File %s not found",fileName.Data()));
   TDirectory* fParametrizationDir = (TDirectory*)fParametrizationFile->Get(dirName.Data());
   if (!fParametrizationDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
-  
+
   // check for pi0 parametrization
   TF1* fPtParametrizationTemp = (TF1*)fParametrizationDir->Get("111_pt");
   if (!fPtParametrizationTemp) AliFatalClass(Form("File %s doesn't contain pi0 parametrization",fileName.Data()));
-  fPtParametrization[0] = new TF1(*fPtParametrizationTemp);
+  // function needs to be recreated for ROOT6 compatibility
+  fPtParametrization[0] = new TF1("111_pt",fPtParametrizationTemp->GetExpFormula(),0,300);
+  for (Int_t iparam = 0; iparam < fPtParametrizationTemp->GetNpar(); iparam++ ){
+    fPtParametrization[0]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam));
+  }
   fPtParametrization[0]->SetName("111_pt");
 
   // check for proton parametrization (base for baryon mt scaling)
@@ -1230,20 +1349,29 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
     AliWarningClass(Form("File %s doesn't contain proton parametrization, scaling baryons from pi0.", fileName.Data()));
     fPtParametrizationProton = NULL;
   } else {
-    fPtParametrizationProton = new TF1(*fPtParametrizationProtonTemp);
+    // function needs to be recreated for ROOT6 compatibility
+    fPtParametrizationProton = new TF1("2212_pt",fPtParametrizationProtonTemp->GetExpFormula(),0,300);
+    for (Int_t iparam = 0; iparam < fPtParametrizationProtonTemp->GetNpar(); iparam++ ){
+      fPtParametrizationProton->SetParameter(iparam,fPtParametrizationProtonTemp->GetParameter(iparam));
+    }
     fPtParametrizationProton->SetName("2212_pt");
   }
-  
+
   AliGenEMlibV2 lib;
-  TRandom* rndm;
+  TRandom* rndm=NULL;
 
   // get parametrizations from file
   for (Int_t i=1; i<26; i++) {
     Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
     fPtParametrizationTemp = (TF1*)fParametrizationDir->Get(Form("%d_pt", ip));
     if (fPtParametrizationTemp) {
-      fPtParametrization[i] = new TF1(*fPtParametrizationTemp);
+      // function needs to be recreated for ROOT6 compatibility
+      fPtParametrization[i] = new TF1(Form("%d_pt", ip),fPtParametrizationTemp->GetExpFormula(),0,300);
+      for (Int_t iparam = 0; iparam < fPtParametrizationTemp->GetNpar(); iparam++ ){
+        fPtParametrization[i]->SetParameter(iparam,fPtParametrizationTemp->GetParameter(iparam));
+      }
       fPtParametrization[i]->SetName(Form("%d_pt", ip));
+
     } else {
       if (i==7 || i==9 || i==10 || i==11 || i==12 || i==17 || (i>=20 && i<=25))
         fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip), 0);
@@ -1251,13 +1379,77 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
         fPtParametrization[i] = (TF1*)MtScal(i, Form("%d_pt_mtScaled", ip), 1);
     }
   }
-  
+
   fParametrizationFile->Close();
   delete fParametrizationFile;
-  
+
   return kTRUE;
 }
 
+//--------------------------------------------------------------------------
+Bool_t AliGenEMlibV2::SetFlowParametrizations(TString fileName, TString dirName) {
+  //Define flow parameterizations:
+  //If dirname is not set (""), use built-in parametrizations
+  //If dirname is not zero, read parameterizations from file
+  //for particles with missing parametrizations the Mt scaling is applied
+
+  if(dirName.Length()==0){ //use built-in parameterizations, do nothing
+    return kTRUE;
+  }
+
+    
+  TFile* fV2ParametrizationFile = TFile::Open(fileName.Data());
+  if (!fV2ParametrizationFile) AliFatalClass(Form("File %s not found",fileName.Data()));
+  TDirectory* fV2ParametrizationDir = (TDirectory*)fV2ParametrizationFile->Get(dirName.Data());
+  if (!fV2ParametrizationDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
+  
+  
+  // check for pi0 parametrization
+  TF1* fv2ParametrizationPi0 = (TF1*)fV2ParametrizationDir->Get("111_v2_def");
+  if (!fv2ParametrizationPi0) AliFatalClass(Form("File %s, dir %s doesn't contain pi0 parametrization",fileName.Data(),dirName.Data()));
+  fV2Parametrization[0] = new TF1(*fv2ParametrizationPi0);
+  fV2Parametrization[0]->SetName("111_v2_def");
+    
+
+  // check for kaon parametrization (base for eta/omega mt scaling)
+  TF1* fv2ParametrizationK = (TF1*)fV2ParametrizationDir->Get("310_v2_def");
+  if (!fv2ParametrizationK) {
+    AliWarningClass(Form("File %s, dir %s doesn't contain kaon parametrization, scaling v2 mesons from pi0.", fileName.Data(),dirName.Data()));
+    fv2ParametrizationK = NULL;
+  }
+  
+  AliGenEMlibV2 lib;
+  TRandom* rndm=NULL;
+
+  // get parametrizations from file
+  for (Int_t i=1; i<27; i++) {
+    Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
+    TF1* fv2ParametrizationTemp = (TF1*)fV2ParametrizationDir->Get(Form("%d_v2_def", ip));
+    if (fv2ParametrizationTemp) { //Parameterization stored in the file
+      fV2Parametrization[i] = new TF1(*fv2ParametrizationTemp);
+      fV2Parametrization[i]->SetName(Form("%d_v2_def", ip));
+      fV2RefParameterization[i]=i; //same ref. particle
+    } else {
+      if(fv2ParametrizationK){  
+        //Use EKt-scaling from Kaon flow  
+        fV2Parametrization[i] = new TF1(*fv2ParametrizationK) ;
+        fV2Parametrization[i]->SetName(Form("%d_v2_def", ip));
+        fV2RefParameterization[i]=kK0s ; //remember kind of hadron used for parametrization for Etscaling
+       }
+       else{
+        //Use EKt-scaling from pion flow  
+        fV2Parametrization[i] = new TF1(*fv2ParametrizationPi0) ;
+        fV2Parametrization[i]->SetName(Form("%d_v2_def", ip));
+        fV2RefParameterization[i]=kPizero ; //remember kind of hadron used for parametrization for Etscaling
+       }
+    }
+  }
+
+  fV2ParametrizationFile->Close();
+  delete fV2ParametrizationFile;
+  return kTRUE;
+    
+}
 
 //--------------------------------------------------------------------------
 //
@@ -1280,7 +1472,7 @@ TF1* AliGenEMlibV2::GetPtParametrization(Int_t np) {
 //
 //--------------------------------------------------------------------------
 void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
-  
+
   // set collision system
   Int_t selectedCol;
   switch (fgSelectedCollisionsSystem){
@@ -1303,7 +1495,7 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
       selectedCol=0;
       printf("<AliGenEMlibV2::SetMtScalingFactors> no collision system has been given\n");
   }
-  
+
   // open file
   TFile*        fMtFactorFile = TFile::Open(fileName.Data());
   TDirectory*   fMtFactorDir  = (TDirectory*)fMtFactorFile->Get(dirName.Data());
@@ -1344,7 +1536,7 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
   if (fMtFactorDir) fMtFactorHistoTemp = (TH1D*)fMtFactorDir->Get("histoMtScaleFactor");
   if (fMtFactorHistoTemp) {
     AliGenEMlibV2 lib;
-    TRandom* rndm;
+    TRandom* rndm=NULL;
     for (Int_t i=0; i<26; i++) {
       Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
       Double_t factor = 0.;
@@ -1387,14 +1579,18 @@ TH1D* AliGenEMlibV2::GetMtScalingFactors() {
 Bool_t AliGenEMlibV2::SetPtYDistributions(TString fileName, TString dirName) {
 
   // open parametrizations file
-  TFile* fPtYDistributionFile = TFile::Open(fileName.Data());
+  TFile* fPtYDistributionFile       = TFile::Open(fileName.Data());
   if (!fPtYDistributionFile) AliFatalClass(Form("File %s not found",fileName.Data()));
-  TDirectory* fPtYDistributionDir = (TDirectory*)fPtYDistributionFile->Get(dirName.Data());
-  if (!fPtYDistributionDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
+
+  TObjArray *arr                    = dirName.Tokenize("_");
+  TString ptYDirName                = ((TObjString*)arr->At(0))->GetString();
+
+  TDirectory* fPtYDistributionDir   = (TDirectory*)fPtYDistributionFile->Get(ptYDirName.Data());
+  if (!fPtYDistributionDir) AliFatalClass(Form("Directory %s not found",ptYDirName.Data()));
 
   // check for pt-y parametrizations
   AliGenEMlibV2 lib;
-  TRandom* rndm;
+  TRandom* rndm=NULL;
   TH2F* ptYTemp = NULL;
   for (Int_t i=0; i<26; i++) {
     Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
@@ -1443,7 +1639,7 @@ GenFunc AliGenEMlibV2::GetPt(Int_t param, const char * tname) const
   // Return pointer to pT parameterisation
   GenFunc func=0;
   TString sname(tname);
-  
+
   switch (param) {
     case kDirectRealGamma:
       func=PtDirectRealGamma;
@@ -1541,7 +1737,7 @@ GenFunc AliGenEMlibV2::GetY(Int_t param, const char * tname) const
   // Return pointer to y- parameterisation
   GenFunc func=0;
   TString sname(tname);
-  
+
   switch (param) {
     case kDirectRealGamma:
       func=YDirectRealGamma;
@@ -1639,7 +1835,7 @@ GenFuncIp AliGenEMlibV2::GetIp(Int_t param, const char * tname) const
   // Return pointer to particle type parameterisation
   GenFuncIp func=0;
   TString sname(tname);
-  
+
   switch (param) {
     case kDirectRealGamma:
       func=IpDirectRealGamma;
@@ -1737,7 +1933,7 @@ GenFunc AliGenEMlibV2::GetV2(Int_t param, const char * tname) const
   // Return pointer to v2-parameterisation
   GenFunc func=0;
   TString sname(tname);
-  
+
   switch (param) {
     case kDirectRealGamma:
       func=V2DirectRealGamma;

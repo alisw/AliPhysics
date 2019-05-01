@@ -46,6 +46,10 @@ AliAnalysisTaskDmesonMCPerform::AliAnalysisTaskDmesonMCPerform():
   fHistNEvents(0x0),
   fHistNGenD(0x0),
   fHistNCand(0x0),
+  fNPtBins(16),
+  fMinPt(0.),
+  fMaxPt(16.),
+  fEnableExtraHistos(kFALSE),
   fAODProtection(1),
   fRDHFCuts(0x0),
   fRDHFCutsDplus(0x0)
@@ -55,7 +59,7 @@ AliAnalysisTaskDmesonMCPerform::AliAnalysisTaskDmesonMCPerform():
   //
 
   fRDHFCuts=new AliRDHFCutsD0toKpi("EvSelCuts");
-  fRDHFCuts->SetUsePhysicsSelection(kTRUE);
+  fRDHFCuts->SetUsePhysicsSelection(kFALSE);
   fRDHFCuts->SetUseAnyTrigger();
   fRDHFCuts->SetTriggerClass("");
   fRDHFCuts->SetMaxVtxZ(10.);
@@ -67,6 +71,7 @@ AliAnalysisTaskDmesonMCPerform::AliAnalysisTaskDmesonMCPerform():
   fPartName[2]="Dstar";
   fPartName[3]="Ds";
   fPartName[4]="Lc2pkpi";
+  fPartName[5]="Dminus";
 
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -92,6 +97,14 @@ AliAnalysisTaskDmesonMCPerform::~AliAnalysisTaskDmesonMCPerform()
       delete fHistXvtxResVsPt[j];
       delete fHistYvtxResVsPt[j];
       delete fHistZvtxResVsPt[j];
+      delete fHistXvtxResRotVsPt[j];
+      delete fHistYvtxResRotVsPt[j];
+      delete fHistXvtxResVsPhi[j];
+      delete fHistYvtxResVsPhi[j];
+      delete fHistZvtxResVsPhi[j];
+      delete fHistXvtxResVsDecLenVsPt[j];
+      delete fHistYvtxResVsDecLenVsPt[j];
+      delete fHistZvtxResVsDecLenVsPt[j];
       delete fHistInvMassVsPt[j];
       delete fHistDecLenVsPt[j];
       delete fHistNormDLxyVsPt[j];
@@ -140,7 +153,7 @@ void AliAnalysisTaskDmesonMCPerform::UserCreateOutputObjects()
   fHistNGenD->SetMinimum(0);
   fOutput->Add(fHistNGenD);
 
-  fHistNCand=new TH2F("fHistNCand","number of D meson candidates",5,-0.5,4.5,16,0.,16.);
+  fHistNCand=new TH2F("fHistNCand","number of D meson candidates",5,-0.5,4.5,fNPtBins,fMinPt,fMaxPt);
   fHistNCand->GetXaxis()->SetBinLabel(1,"D0#rightarrowK#pi");
   fHistNCand->GetXaxis()->SetBinLabel(2,"D+#rightarrowK#pi#pi");
   fHistNCand->GetXaxis()->SetBinLabel(3,"D*+#rightarrowD0#pi");
@@ -152,23 +165,23 @@ void AliAnalysisTaskDmesonMCPerform::UserCreateOutputObjects()
   for(Int_t j=0; j<kDecays; j++){
     for(Int_t i=0; i<2; i++){
       Int_t index=j*2+i;
-      fHistPtYMultGen[index]=new TH3F(Form("hPtYMult%sGen%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
-      fHistPtYMultGenDauInAcc[index]=new TH3F(Form("hPtYMult%sGenDauInAcc%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
-      fHistPtYMultReco[index]=new TH3F(Form("hPtYMult%sReco%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
-      fHistPtYMultRecoFilt[index]=new TH3F(Form("hPtYMult%sRecoFilt%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
-      fHistPtYMultRecoSel[index]=new TH3F(Form("hPtYMult%sRecoSel%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
+      fHistPtYMultGen[index]=new TH3F(Form("hPtYMult%sGen%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
+      fHistPtYMultGenDauInAcc[index]=new TH3F(Form("hPtYMult%sGenDauInAcc%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
+      fHistPtYMultReco[index]=new TH3F(Form("hPtYMult%sReco%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
+      fHistPtYMultRecoFilt[index]=new TH3F(Form("hPtYMult%sRecoFilt%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
+      fHistPtYMultRecoSel[index]=new TH3F(Form("hPtYMult%sRecoSel%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
       fOutput->Add(fHistPtYMultGen[index]);
       fOutput->Add(fHistPtYMultGenDauInAcc[index]);
       fOutput->Add(fHistPtYMultReco[index]);
       fOutput->Add(fHistPtYMultRecoFilt[index]);
       fOutput->Add(fHistPtYMultRecoSel[index]);
-      fHistXvtxResVsPt[index]=new TH2F(Form("hXvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; x_{v}(rec)-x_{v}(gen) (#mum)",16,0.,16.,100,-500.,500.);
-      fHistYvtxResVsPt[index]=new TH2F(Form("hYvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; y_{v}(rec)-y_{v}(gen) (#mum)",16,0.,16.,100,-500.,500.);
-      fHistZvtxResVsPt[index]=new TH2F(Form("hZvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; z_{v}(rec)-z_{v}(gen) (#mum)",16,0.,16.,100,-500.,500.);
-      fHistInvMassVsPt[index]=new TH2F(Form("hInvMassVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; Inv. Mass (GeV/c^{2})",16,0.,16.,300,1.75,2.35);
-      fHistDecLenVsPt[index]=new TH2F(Form("hDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; dec. len. (#mum)",16,0.,16.,100,0.,5000.);
-      fHistNormDLxyVsPt[index]=new TH2F(Form("hNormDLxyVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; dec. len. (#mum)",16,0.,16.,100,0.,20.);
-      fHistCosPointVsPt[index]=new TH2F(Form("hCosPointVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; cos(#vartheta_{point})",16,0.,16.,100,-1.,1.);
+      fHistXvtxResVsPt[index]=new TH2F(Form("hXvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; x_{v}(rec)-x_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+      fHistYvtxResVsPt[index]=new TH2F(Form("hYvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; y_{v}(rec)-y_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+      fHistZvtxResVsPt[index]=new TH2F(Form("hZvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; z_{v}(rec)-z_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+      fHistInvMassVsPt[index]=new TH2F(Form("hInvMassVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; Inv. Mass (GeV/c^{2})",fNPtBins,fMinPt,fMaxPt,300,1.75,2.35);
+      fHistDecLenVsPt[index]=new TH2F(Form("hDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; dec. len. (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,5000.);
+      fHistNormDLxyVsPt[index]=new TH2F(Form("hNormDLxyVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; dec. len. (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,20.);
+      fHistCosPointVsPt[index]=new TH2F(Form("hCosPointVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; cos(#vartheta_{point})",fNPtBins,fMinPt,fMaxPt,100,-1.,1.);
       fOutput->Add(fHistXvtxResVsPt[index]);
       fOutput->Add(fHistYvtxResVsPt[index]);
       fOutput->Add(fHistZvtxResVsPt[index]);
@@ -176,6 +189,25 @@ void AliAnalysisTaskDmesonMCPerform::UserCreateOutputObjects()
       fOutput->Add(fHistDecLenVsPt[index]);
       fOutput->Add(fHistNormDLxyVsPt[index]);
       fOutput->Add(fHistCosPointVsPt[index]);
+      
+      if(fEnableExtraHistos){
+	fHistXvtxResRotVsPt[index]=new TH2F(Form("hXvtxResRotVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; x'_{v}(rec)-x'_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+	fHistYvtxResRotVsPt[index]=new TH2F(Form("hYvtxResRotVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; y'_{v}(rec)-y'_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+	fHistXvtxResVsPhi[index]=new TH2F(Form("hXvtxResVsPhi%s%s",type[i].Data(),fPartName[j].Data())," ;  #varphi (rad) ; x_{v}(rec)-x_{v}(gen) (#mum)",36,0.,2*TMath::Pi(),100,-500.,500.);
+	fHistYvtxResVsPhi[index]=new TH2F(Form("hYvtxResVsPhi%s%s",type[i].Data(),fPartName[j].Data())," ;  #varphi (rad) ; y_{v}(rec)-y_{v}(gen) (#mum)",36,0.,2*TMath::Pi(),100,-500.,500.);
+	fHistZvtxResVsPhi[index]=new TH2F(Form("hZvtxResVsPhi%s%s",type[i].Data(),fPartName[j].Data())," ;  #varphi (rad) ; z_{v}(rec)-z_{v}(gen) (#mum)",36,0.,2*TMath::Pi(),100,-500.,500.);
+	fOutput->Add(fHistXvtxResRotVsPt[index]);
+	fOutput->Add(fHistYvtxResRotVsPt[index]);
+	fOutput->Add(fHistXvtxResVsPhi[index]);
+	fOutput->Add(fHistYvtxResVsPhi[index]);
+	fOutput->Add(fHistZvtxResVsPhi[index]);
+	fHistXvtxResVsDecLenVsPt[index]=new TH3F(Form("hXvtxResVsDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c)  ; dec. len. (#mum) ; x_{v}(rec)-x_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,5000.,100,-500.,500.);
+	fHistYvtxResVsDecLenVsPt[index]=new TH3F(Form("hYvtxResVsDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c)  ; dec. len. (#mum) ; y_{v}(rec)-y_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,5000.,100,-500.,500.);
+	fHistZvtxResVsDecLenVsPt[index]=new TH3F(Form("hZvtxResVsDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c)  ; dec. len. (#mum) ; z_{v}(rec)-z_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,5000.,100,-500.,500.);
+	fOutput->Add(fHistXvtxResVsDecLenVsPt[index]);
+	fOutput->Add(fHistYvtxResVsDecLenVsPt[index]);
+	fOutput->Add(fHistZvtxResVsDecLenVsPt[index]);
+     }
     }
   }
 
@@ -378,9 +410,11 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
   Int_t nCand=arrayDcand->GetEntriesFast();
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     AliAODRecoDecayHF *d=(AliAODRecoDecayHF*)arrayDcand->UncheckedAt(iCand);
+    if(!d) continue;
     Double_t ptCand=-999.;
     Int_t iSpec=-1;
     Int_t labD=-1;
+    Int_t charge=0;
     Double_t invMass=0.;
     if(idCase==0){
       if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
@@ -401,8 +435,11 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
       if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) fHistNCand->Fill(4.,ptCand);
       labD = d->MatchToMC(411,arrayMC,3,pdgp);
       if(labD>=0){
+	AliAODMCParticle *pdp = (AliAODMCParticle*)arrayMC->At(labD);
 	if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) iSpec=1;
 	invMass=((AliAODRecoDecayHF3Prong*)d)->InvMassDplus();
+	if(pdp->GetPdgCode()==411) charge=1;
+	else if(pdp->GetPdgCode()==-411) charge=-1;
       }else{
 	Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
 	AliAODMCParticle* pdau0=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
@@ -412,12 +449,18 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
 	  if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)) iSpec=3;
 	  if(pdgCode0==321) invMass=((AliAODRecoDecayHF3Prong*)d)->InvMassDsKKpi();
 	  else invMass=((AliAODRecoDecayHF3Prong*)d)->InvMassDspiKK();
+	  AliAODMCParticle *pds = (AliAODMCParticle*)arrayMC->At(labD);
+	  if(pds->GetPdgCode()==431) charge=1;
+	  else if(pds->GetPdgCode()==-431) charge=-1;
 	}else{
 	  labD = d->MatchToMC(4122,arrayMC,3,pdgl);
 	  if(labD>=0){
 	    if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) iSpec=4;
 	    if(pdgCode0==2212) invMass=((AliAODRecoDecayHF3Prong*)d)->InvMassLcpKpi();
 	    else invMass=((AliAODRecoDecayHF3Prong*)d)->InvMassLcpiKp();
+	    AliAODMCParticle *plc = (AliAODMCParticle*)arrayMC->At(labD);
+	    if(plc->GetPdgCode()==4122) charge=1;
+	    else if(plc->GetPdgCode()==-4122) charge=-1;
 	  }
 	}
       }
@@ -429,23 +472,42 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
       if(labD>=0){
 	iSpec=2;
 	invMass=((AliAODRecoCascadeHF*)d)->InvMassDstarKpipi();
+ 	  AliAODMCParticle *pdst = (AliAODMCParticle*)arrayMC->At(labD);
+	  if(pdst->GetPdgCode()==413) charge=1;
+	  else if(pdst->GetPdgCode()==-413) charge=-1;
       }
     }
     
     if(labD>=0 && iSpec>=0){
       AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+      if(!partD) continue;
       Double_t ptgen=partD->Pt();
+      Double_t phigen=partD->Phi();
       Double_t ygen=partD->Y();
       Double_t ptreco=d->Pt();
       Double_t dlen=d->DecayLength()*10000.; //um
       Double_t ndlenxy=d->NormalizedDecayLengthXY();
       Double_t cosp=d->CosPointingAngle();
-      Double_t dx=(d->Xv()-partD->Xv())*10000.;
-      Double_t dy=(d->Yv()-partD->Yv())*10000.;
-      Double_t dz=(d->Zv()-partD->Zv())*10000.;
+      Int_t iDau=partD->GetDaughterFirst();
+      AliAODMCParticle *dauD=0x0;
+      if(iDau>=0) dauD=(AliAODMCParticle*)arrayMC->At(iDau);
+      if(!dauD) continue;
+      Double_t dx=(d->Xv()-dauD->Xv())*10000.;
+      Double_t dy=(d->Yv()-dauD->Yv())*10000.;
+      Double_t dz=(d->Zv()-dauD->Zv())*10000.;
+      Double_t dlentruex=dauD->Xv()-partD->Xv();
+      Double_t dlentruey=dauD->Yv()-partD->Yv();
+      Double_t dlentruez=dauD->Zv()-partD->Zv();
+      //      Double_t dlenxytrue=TMath::Sqrt(dlentruex*dlentruex+dlentruey*dlentruey);
+      Double_t dlentrue=TMath::Sqrt(dlentruex*dlentruex+dlentruey*dlentruey+dlentruez*dlentruez);
+      Double_t phidecvert=TMath::Pi()+TMath::ATan2(-dlentruey,-dlentruex);
       Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,partD,kTRUE);//Prompt = 4, FeedDown = 5
       if(orig<4 || orig>5) continue;
       Int_t indexh=iSpec*2+(orig-4);
+      if(fEnableExtraHistos && iSpec==1 && charge==-1){
+	//D- kept separate
+	indexh=2*5+(orig-4);
+      }
       fHistPtYMultRecoFilt[indexh]->Fill(ptgen,ygen,evCentr);
       if(iSpec==1){
 	if(fRDHFCutsDplus){
@@ -462,6 +524,24 @@ void AliAnalysisTaskDmesonMCPerform::FillCandLevelHistos(Int_t idCase, AliAODEve
       fHistDecLenVsPt[indexh]->Fill(ptreco,dlen);
       fHistNormDLxyVsPt[indexh]->Fill(ptreco,ndlenxy);
       fHistCosPointVsPt[indexh]->Fill(ptreco,cosp);
+      if(fEnableExtraHistos){
+	fHistXvtxResVsPhi[indexh]->Fill(phigen,dx);
+	fHistYvtxResVsPhi[indexh]->Fill(phigen,dy);
+	fHistZvtxResVsPhi[indexh]->Fill(phigen,dz);
+	fHistXvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlentrue,dx);
+	fHistYvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlentrue,dy);
+	fHistZvtxResVsDecLenVsPt[indexh]->Fill(ptreco,dlentrue,dz);
+	//	Double_t xorigrot=partD->Xv()*TMath::Cos(phidecvert)+partD->Yv()*TMath::Sin(phidecvert);
+	//	Double_t yorigrot=-partD->Xv()*TMath::Sin(phidecvert)+partD->Yv()*TMath::Cos(phidecvert);
+	Double_t xdecgenrot=dauD->Xv()*TMath::Cos(phidecvert)+dauD->Yv()*TMath::Sin(phidecvert);
+	Double_t ydecgenrot=-dauD->Xv()*TMath::Sin(phidecvert)+dauD->Yv()*TMath::Cos(phidecvert);
+	Double_t xdecrecrot=d->Xv()*TMath::Cos(phidecvert)+d->Yv()*TMath::Sin(phidecvert);
+	Double_t ydecrecrot=-d->Xv()*TMath::Sin(phidecvert)+d->Yv()*TMath::Cos(phidecvert);
+	Double_t dxrot=(xdecrecrot-xdecgenrot)*10000.;
+	Double_t dyrot=(ydecrecrot-ydecgenrot)*10000.;
+	fHistXvtxResRotVsPt[indexh]->Fill(ptreco,dxrot);
+	fHistYvtxResRotVsPt[indexh]->Fill(ptreco,dyrot);
+      }
     }
   }
   delete vHF;

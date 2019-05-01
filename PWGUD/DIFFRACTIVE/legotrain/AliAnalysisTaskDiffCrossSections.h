@@ -15,8 +15,10 @@ class AliStack;
 #include <TString.h>
 #include <TBits.h>
 #include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TVector3.h>
 #include <TVectorD.h>
+#include <TCutG.h>
 #include <TMatrixD.h>
 
 #include "AliESDVertex.h"
@@ -55,6 +57,12 @@ public:
   }
   TString GetResultsFileName() const { return "results.root"; }
 
+  void SetTimeChargeCut(Int_t ch, TCutG* cut) {
+    fTimeChargeCuts.AddAt(cut, ch);
+  }
+
+  Bool_t DoTimeChargeCut(Int_t ch, Float_t time, Float_t charge) const;
+
   struct EventInfo {
     EventInfo()
       : fClassMask(0)
@@ -64,9 +72,10 @@ public:
       , fTimeStamp(0)
       , fL0Inputs(0)
       , fL1Inputs(0)
-      , fRunNumber(0)
       , fEventNumberInFile(0)
+      , fRunNumber(0)
       , fnTrklet(0)
+      , fL2Inputs(0)
       , fOrbitID(0)
       , fInputFileName("") {
       fnSPDClusters[0] = fnSPDClusters[1] = 0;
@@ -207,6 +216,7 @@ public:
       kFMD3i   = (1<< 8),
       kFMD3o   = (1<< 9),
       kFMD     = kFMD1 | kFMD2i | kFMD2o | kFMD3i | kFMD3o,
+      kFlagNotBB = (1<<29),
       kOnline  = (1<<30),
       kOffline = (1<<31)
     };
@@ -226,17 +236,18 @@ public:
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR, const TVector3 &vertexPosition) const;
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR) const;
 
-    inline void Sort() { fTracks.Sort(); }
-
     template<typename F> // F is a function (object) of type Bool_t f(const PseudoTrack&)
     Int_t ClassifyEvent(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
-			UInt_t mask, F& f) const {
+			UInt_t mask, F& f) {
       static TBits bits(10000);
+      SortIfNeeded();
       for (Int_t i=0, nt=fTracks.GetEntriesFast(); i<nt; ++i)
 	bits.SetBitNumber(i, f(GetTrackAt(i)));
       return ClassifyEventBits(iEtaL, iEtaR, etaGap, etaGapCenter, mask, bits);
     }
   protected:
+    void SortIfNeeded();
+
     Int_t ClassifyEventBits(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
 			    UInt_t mask, const TBits& bits) const;
   private:
@@ -244,7 +255,7 @@ public:
     PseudoTracks& operator=(const PseudoTracks& ); // not implemented
 
     mutable TClonesArray fTracks;
-    ClassDef(PseudoTracks, 2);
+    ClassDef(PseudoTracks, 3);
   } ;
 
   static TVector3 GetADPseudoTrack(Int_t ch);
@@ -277,7 +288,7 @@ public:
     TreeData(const TreeData&); // not implemented
     TreeData& operator=(const TreeData&); // not implemented
 
-    ClassDef(TreeData, 8);
+    ClassDef(TreeData, 9);
   } ;
 
   class MCInfo : public TObject {
@@ -327,6 +338,7 @@ private:
   TString          fDetectorsUsed;       //
   TString          fUseBranch;           //
   Float_t          fFMDMultLowCut;       //
+  TObjArray        fTimeChargeCuts;      // TCutG (time, charge) -> Bool_t for each channel
 
   AliTriggerAnalysis fTriggerAnalysis;   //!
   AliAnalysisUtils   fAnalysisUtils;     //!
@@ -339,6 +351,9 @@ private:
   TreeData         fTreeData;            //!
   MCInfo           fMCInfo;              //!
 
+  TBits            fIR1InteractionMap;   //!
+  TBits            fIR2InteractionMap;   //!
+
   TVectorD         fMeanVtxPos;          //!
   TMatrixD         fMeanVtxCov;          //!
   TMatrixD         fMeanVtxU;            //!
@@ -350,7 +365,7 @@ private:
   Float_t          fEtaR;         //!
   Float_t          fEtaGap;       //!
   Float_t          fEtaGapCenter; //!
-  ClassDef(AliAnalysisTaskDiffCrossSections, 2);
+  ClassDef(AliAnalysisTaskDiffCrossSections, 4);
 } ;
 
 #endif // ALIANALYSISTASKDIFFCROSSSECTIONS_H

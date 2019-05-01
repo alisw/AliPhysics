@@ -24,7 +24,7 @@
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDPhiStarDEta::AliFemtoCorrFctnDPhiStarDEta(char* title,
+AliFemtoCorrFctnDPhiStarDEta::AliFemtoCorrFctnDPhiStarDEta(const char* title,
                                                            double radius=0.8,
                                                            const int& aEtaBins=50,
                                                            double aEtaRangeLow=-0.1,
@@ -146,15 +146,16 @@ AliFemtoString AliFemtoCorrFctnDPhiStarDEta::Report()
   report += TString::Format("Number of entries in numerator:\t%E\n", fDPhiStarDEtaNumerator->GetEntries());
   report += TString::Format("Number of entries in denominator:\t%E\n", fDPhiStarDEtaDenominator->GetEntries());
   //  report += mCoulombWeight->Report();
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 //____________________________
 void AliFemtoCorrFctnDPhiStarDEta::AddRealPair(AliFemtoPair* pair)
 {
   // Add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   const AliFemtoTrack *track1 = pair->Track1()->Track(),
                       *track2 = pair->Track2()->Track();
@@ -214,8 +215,9 @@ void AliFemtoCorrFctnDPhiStarDEta::AddRealPair(AliFemtoPair* pair)
 //____________________________
 void AliFemtoCorrFctnDPhiStarDEta::AddMixedPair( AliFemtoPair* pair){
   // Add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   // Prepare variables:
 

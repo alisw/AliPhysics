@@ -1,7 +1,7 @@
 void RebinSpectrum(TH1** hi,TH1** hf,TF1* f,int n=1,int dofit=0,TH1* ht=0){
   /* Author: Anders G. Knospe, The University of Texas at Austin
      Created: 9 May 2014
-     Last Update: 22 September 2015
+     Last Update: 19 August 2017
 
      This macro rebins histograms, including cases with incompatible bins.
 
@@ -19,13 +19,13 @@ void RebinSpectrum(TH1** hi,TH1** hf,TF1* f,int n=1,int dofit=0,TH1* ht=0){
 
      EXAMPLE: Here is some example code that may be useful:
 
-     TFile* f=TFile::Open("measured_file.root");//open the file that contains your measured histogram
+     TFile* myfile=TFile::Open("measured_file.root");//open the file that contains your measured histogram
 
      TH1F* hi[3];//input histogram array
      int n=3;//size of arrays hi and hf
-     hi[0]=(TH1F*) f->Get("measured_histogram_stat");//get your measured histogram with statistical uncertainties
-     hi[1]=(TH1F*) f->Get("measured_histogram_sys1");//get your measured histogram with first type of systematic uncertainties
-     hi[2]=(TH1F*) f->Get("measured_histogram_sys2");//get your measured histogram with second type of systematic uncertainties
+     hi[0]=(TH1F*) myfile->Get("measured_histogram_stat");//get your measured histogram with statistical uncertainties
+     hi[1]=(TH1F*) myfile->Get("measured_histogram_sys1");//get your measured histogram with first type of systematic uncertainties
+     hi[2]=(TH1F*) myfile->Get("measured_histogram_sys2");//get your measured histogram with second type of systematic uncertainties
      //expand the array as necessary to include as many types of systematic uncertainties as you need
 
      TH1F* ht=(TH1F*) hi[0]->Clone("ht");
@@ -33,16 +33,16 @@ void RebinSpectrum(TH1** hi,TH1** hf,TF1* f,int n=1,int dofit=0,TH1* ht=0){
      //ht is the input histogram with total (uncorrelated) uncertainties. It should have the central values of hi[0] and the uncertainties should be the sum of the statistical and systematic uncertainties in hi. (You may want to exclude sources of systematic uncertainty that are correlated between pT bins.)  This is the histogram that will be fit if dofit==1 (if dofit==0, you can set ht=0).
 
      //define your new binning
-     int n=9;//the new number of bins here
+     int nbins=9;//the new number of bins here
      float bins[10]={0,1,2,3,};//new bin boundaries
      TH1F* hf[2];//output (rebinned) histogram array
-     hf[0]=new TH1F("rebinned_stat","",n,bins);//will be filled with rebinned central values and statistical uncertainties (added in quadrature)
-     hf[1]=new TH1F("rebinned_sys1","",n,bins);//will be filled with rebinned central values and first type of systematic uncertainties (added linearly)
-     hf[2]=new TH1F("rebinned_sys2","",n,bins);//will be filled with rebinned central values and second type of systematic uncertainties (added linearly)
+     hf[0]=new TH1F("rebinned_stat","",nbins,bins);//will be filled with rebinned central values and statistical uncertainties (added in quadrature)
+     hf[1]=new TH1F("rebinned_sys1","",nbins,bins);//will be filled with rebinned central values and first type of systematic uncertainties (added linearly)
+     hf[2]=new TH1F("rebinned_sys2","",nbins,bins);//will be filled with rebinned central values and second type of systematic uncertainties (added linearly)
      //The number of histograms in hf should be the same as the number in hi.
 
-     TF1* g=new TF1("fit","[0]*exp([1]*x)",0.,10.);//define your fit function
-     g->SetParameters(1.,-1.);//set its parameters
+     TF1* f=new TF1("fit","[0]*exp([1]*x)",0.,10.);//define your fit function
+     f->SetParameters(1.,-1.);//set its parameters
      //You can do the fit in your own code, or let RebinSpectrum do it over a limited range as needed (depending on the value of dofit).  This macro can be used even if no fit is needed, but a placeholder fit function will still need to be defined.
      int dofit=1;//let RebinSpectrum do the fit
 
@@ -51,7 +51,7 @@ void RebinSpectrum(TH1** hi,TH1** hf,TF1* f,int n=1,int dofit=0,TH1* ht=0){
      RebinSpectrum(hi,hf,f,n,dofit,ht);
      //hf now contains the rebinned histograms
 
-     f->Close();
+     myfile->Close();
   */
 
   int j,k,l;

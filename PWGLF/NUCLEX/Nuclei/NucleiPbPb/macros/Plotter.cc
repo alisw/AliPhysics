@@ -12,22 +12,26 @@ using std::string;
 
 using namespace RooFit;
 
-string input_name = "results/signal.root";
-string output_name = "results/plots.root";
+string output_name = "/Users/lbariogl/cernbox/Deuterons13TeV/macros/results/plots.root";
 
-string title = "ciaociao";
+void Plotter(bool short_mode = true){
 
-void Plotter(){
-
-  TFile file_in(input_name.data());
+  TFile file_in(kSignalOutput.data());
   TFile file_out(output_name.data(),"RECREATE");
 
   TCanvas* fCanvas= nullptr;
   int iPad = 0;
-  int nPads = 11;
+  int nPads = 0;
+
+  const int kPtBinLimit[kCentLength] = {14,13,13,12,12,11,10,15};
+
+  int counter = 0;
 
   for (auto list_key : *file_in.GetListOfKeys()) {
     /// Preliminary operation to read the list and create an output dir
+    if(short_mode)
+      if(counter>0) return;
+    counter++;
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
 
     TTList* list = (TTList*)file_in.Get(list_key->GetName());
@@ -38,23 +42,26 @@ void Plotter(){
       std::cout << "   " << kNames[iS] << std::endl;
       TDirectory* dir = base_dir->mkdir(kNames[iS].data());
       dir->cd();
-      for(int iC=0; iC<kNCentralityBins; iC++){
+      for(int iC=0; iC<kCentLength; iC++){
         std::cout << "      " << iC << std::endl;
         dir->mkdir(Form("cent_%d",iC));
         dir->cd(Form("cent_%d",iC));
-        iPad=0;
-        for(int iB=5; iB<=15; iB++){
-          if(iPad%9 == 0){
+        iPad = 0;
+        nPads = kPtBinLimit[iC] - 5 + 1;
+        for(int iB=5; iB<=kPtBinLimit[iC]; iB++){
+          if(iPad%6 == 0){
             if(fCanvas) delete fCanvas;
             fCanvas = new TCanvas(Form("Canvas_%d",iPad/6),Form("Canvas_%d",iPad/6),3200,2400);
             fCanvas->Divide(3,2);
           }
           //if(iPad==0) fCanvas->Print(Form("cent_%d_%c.pdf[",iC,kLetter[iS]));
-          fCanvas->cd(iPad%9+1);
-          string path = string(list_key->GetName()) + "/" + kNames[iS] + "/TailTail";
+          fCanvas->cd(iPad%6+1);
+          string path = string(list_key->GetName()) + "/" + kNames[iS] + "/TailTail/C_" + to_string(iC) ;
+          std::cout << "path " << path.data() << std::endl;
           RooPlot* fPlot = (RooPlot*)file_in.Get(Form("%s/d%i_%i",path.data(),iC,iB));
+          Requires(fPlot,"RooPlot");
           fPlot->Draw();
-          if((iPad+1)%9 == 0){
+          if((iPad+1)%6 == 0){
             //fCanvas->Print(Form("cent_%d_%c.pdf",iC,kLetter[iS]));
             fCanvas->Write();
           }

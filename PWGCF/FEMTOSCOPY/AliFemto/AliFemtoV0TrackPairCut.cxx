@@ -203,52 +203,15 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   // Test the average separation between the track and each daughter in TPC
   //
   {
-    // AliFemtoAvgSepCalculator avgsep_calc(track, V0);
-    //
-    // if (!avgsep_calc.track_v0_passes(fMinAvgSepTrackPos, fMinAvgSepTrackNeg)) {
-    //   fNPairsFailed++;
-    //   return false;
-    // }
+    Double_t pos_avgSep = pair->NominalTpcAverageSeparationTrackV0Pos(),
+             neg_avgSep = pair->NominalTpcAverageSeparationTrackV0Neg();
 
-    UInt_t pos_point_cnt = 0,
-           neg_point_cnt = 0;
-
-    Double_t pos_avgSep = 0.0,
-             neg_avgSep = 0.0;
-
-    // loop through NominalTpcPoints of the track and V0 daughters
-    for (int i = 0; i < 8; i++) {
-      // Grab references to each of the i'th points
-      const AliFemtoThreeVector &pos_p = V0->NominalTpcPointPos(i),
-                                &neg_p = V0->NominalTpcPointNeg(i),
-                              &track_p = track->NominalTpcPoint(i);
-
-      // if any track points are outside the boundary - skip
-      if (track_p.x() < -9990.0 || track_p.y() < -9990.0 || track_p.z() < -9990.0) {
-        continue;
-      }
-
-      // If the positive daughter points are not bad, increment point count and
-      // increase the cumulative average separation
-      if (!(pos_p.x() < -9990.0 || pos_p.y() < -9990.0 || pos_p.z() < -9990.0)) {
-        pos_avgSep += (pos_p - track_p).Mag();
-        pos_point_cnt++;
-      }
-
-      // If the negative daughter points are not bad, increment point count and
-      // increase the cumulative average separation
-      if (!(neg_p.x() < -9990.0 || neg_p.y() < -9990.0 || neg_p.z() < -9990.0)) {
-        neg_avgSep += (neg_p - track_p).Mag();
-        neg_point_cnt++;
-      }
-    }
-
-    if (pos_point_cnt == 0 || pos_avgSep / pos_point_cnt < fMinAvgSepTrackPos) {
+    if (pos_avgSep < fMinAvgSepTrackPos) {
       fNPairsFailed++;
       return false;
     }
 
-    if (neg_point_cnt == 0 || neg_avgSep / neg_point_cnt < fMinAvgSepTrackNeg) {
+    if (neg_avgSep < fMinAvgSepTrackNeg) {
       fNPairsFailed++;
       return false;
     }
@@ -281,23 +244,16 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
       ener1 = ::sqrt(temp1.Mag2() + ProtonMass * ProtonMass);
     }
 
-    AliFemtoLorentzVector fourMomentum1(ener1, temp1); // Particle momentum
-
-    // fourMomentum1.SetVect(temp1);
-    // fourMomentum1.SetE(ener1);
-
-    //AliFemtoLorentzVector fFourMomentum2; // Particle momentum
     AliFemtoThreeVector temp2 = track_p;
     double ener2 = 0;
 
     if (fSecondParticleType == kProton || fSecondParticleType == kAntiProton) {
       ener2 = ::sqrt(temp2.Mag2() + ProtonMass * ProtonMass);
     }
-    AliFemtoLorentzVector fourMomentum2; // Particle momentum
 
-
-    fourMomentum2.SetVect(temp2);
-    fourMomentum2.SetE(ener2);
+    // Particle momentum
+    const AliFemtoLorentzVector fourMomentum1(ener1, temp1);
+    const AliFemtoLorentzVector fourMomentum2(ener2, temp2);
 
     // Calculate qInv
     AliFemtoLorentzVector tDiff = (fourMomentum1 - fourMomentum2);
@@ -315,33 +271,34 @@ bool AliFemtoV0TrackPairCut::Pass(const AliFemtoPair *pair)
   //
   if (fMinRad > 0.0) {
 
-    AliFemtoV0 *V0 = const_cast<AliFemtoV0*>(V0);
-    double thetas1_pos = TMath::Pi()/2. - TMath::ATan(V0->NominalTpcPointPosShifted().z()/(fMinRad*1e2));
-    double thetas2_pos = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
-    double etas1_pos = -TMath::Log( TMath::Tan(thetas1_pos/2.) );
-    double etas2_pos = -TMath::Log( TMath::Tan(thetas2_pos/2.) );
-    double detas_pos = etas1_pos - etas2_pos;
-    double distSft_pos = TMath::Sqrt(TMath::Power(V0->NominalTpcPointPosShifted().x() -
-						  track->NominalTpcPointShifted().x(),2) +
-				     TMath::Power(V0->NominalTpcPointPosShifted().y() -
-						  track->NominalTpcPointShifted().y(),2));
-    double dPhiS_pos = 2.0 * TMath::ATan(distSft_pos/2./((fMinRad*1e2)));
+    const auto v0_shifted_tpc_point_pos = V0->NominalTpcPointPosShifted(),
+               v0_shifted_tpc_point_neg = V0->NominalTpcPointNegShifted(),
+               track_shifted_tpc_point = track->NominalTpcPointShifted();
 
-    double thetas1_neg = TMath::Pi()/2. - TMath::ATan(V0->NominalTpcPointNegShifted().z()/(fMinRad*1e2));
-    double thetas2_neg = TMath::Pi()/2. - TMath::ATan(track->NominalTpcPointShifted().z()/(fMinRad*1e2));
-    double etas1_neg = -TMath::Log( TMath::Tan(thetas1_neg/2.) );
-    double etas2_neg = -TMath::Log( TMath::Tan(thetas2_neg/2.) );
-    double detas_neg = etas1_neg - etas2_neg;
-    double distSft_neg = TMath::Sqrt(TMath::Power(V0->NominalTpcPointNegShifted().x() -
-						  track->NominalTpcPointShifted().x(),2) +
-				     TMath::Power(V0->NominalTpcPointNegShifted().y() -
-						  track->NominalTpcPointShifted().y(),2));
-    double dPhiS_neg = 2.0 * TMath::ATan(distSft_neg/2./((fMinRad*1e2)));
+    const auto diff_point_pos = v0_shifted_tpc_point_pos - track_shifted_tpc_point,
+               diff_point_neg = v0_shifted_tpc_point_neg - track_shifted_tpc_point;
+
+    const double thetas1_pos = TMath::Pi()/2. - TMath::ATan(v0_shifted_tpc_point_pos.z()/(fMinRad*1e2)),
+                 thetas1_neg = TMath::Pi()/2. - TMath::ATan(v0_shifted_tpc_point_neg.z()/(fMinRad*1e2)),
+                     thetas2 = TMath::Pi()/2. - TMath::ATan(track_shifted_tpc_point.z()/(fMinRad*1e2));
+
+    const double etas1_pos = -TMath::Log( TMath::Tan(thetas1_pos/2.) ),
+                 etas1_neg = -TMath::Log( TMath::Tan(thetas1_neg/2.) ),
+                     etas2 = -TMath::Log( TMath::Tan(thetas2/2.) );
+
+    const double detas_pos = etas1_pos - etas2,
+                 detas_neg = etas1_neg - etas2;
+
+    const double distSft_pos = diff_point_pos.Perp(),
+                 distSft_neg = diff_point_neg.Perp();
+
+    const double dPhiS_pos = 2.0 * TMath::ATan(distSft_pos/2./((fMinRad*1e2))),
+                 dPhiS_neg = 2.0 * TMath::ATan(distSft_neg/2./((fMinRad*1e2)));
 
     if ( (TMath::Abs(detas_pos) < fMinDEtaStarPos &&
-	  TMath::Abs(dPhiS_pos) < fMinDPhiStarPos) ||
-	 (TMath::Abs(detas_neg) < fMinDEtaStarNeg &&
-	  TMath::Abs(dPhiS_neg) < fMinDPhiStarNeg) ) {
+          TMath::Abs(dPhiS_pos) < fMinDPhiStarPos) ||
+         (TMath::Abs(detas_neg) < fMinDEtaStarNeg &&
+          TMath::Abs(dPhiS_neg) < fMinDPhiStarNeg) ) {
       fNPairsFailed++;
       return false;
     }
@@ -356,7 +313,7 @@ AliFemtoString AliFemtoV0TrackPairCut::Report()
   TString report = "AliFemtoV0 Pair Cut - remove shared and split pairs\n";
   report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //__________________
 
@@ -377,15 +334,13 @@ TList *AliFemtoV0TrackPairCut::ListSettings()
   TList *list = new TList();
 
   // The TString format patterns (F is float, I is integer, L is long)
-  const char ptrnF[] = "AliFemtoV0TrackPairCut.%s=%f",
-             ptrnI[] = "AliFemtoV0TrackPairCut.%s=%d",
-             ptrnL[] = "AliFemtoV0TrackPairCut.%s=%ld";
+  const TString prefix = "AliFemtoV0TrackPairCut.";
 
-  list->Add(new TObjString(TString::Format(ptrnF, "sharequalitymax", fShareQualityMax)));
-  list->Add(new TObjString(TString::Format(ptrnF, "sharefractionmax", fShareFractionMax)));
+  list->Add(new TObjString(prefix + Form("sharequalitymax=%g", fShareQualityMax)));
+  list->Add(new TObjString(prefix + Form("sharefractionmax=%g", fShareFractionMax)));
 
-  list->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
-  list->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
+  list->Add(new TObjString(prefix + Form("pairs_passed=%ld", fNPairsPassed)));
+  list->Add(new TObjString(prefix + Form("pairs_failed=%ld", fNPairsFailed)));
 
   return list;
 }

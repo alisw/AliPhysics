@@ -10,6 +10,8 @@
 #pragma link C++ class AliCaloPID+;
 #pragma link C++ class AliMCAnalysisUtils+;
 #pragma link C++ class AliIsolationCut+;
+#pragma link C++ class AliCaloTrackParticle+;
+#pragma link C++ class AliCaloTrackParticleCorrelation+;
 #pragma link C++ class AliCaloTrackReader+;
 #pragma link C++ class AliCaloTrackESDReader+;
 #pragma link C++ class AliCaloTrackAODReader+;

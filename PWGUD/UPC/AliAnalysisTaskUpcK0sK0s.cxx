@@ -543,7 +543,7 @@ void AliAnalysisTaskUpcK0sK0s::RunESDtree()
   if(nGoodNegTracks == 2 && nGoodPosTracks == 2){
   
   	Double_t fChi2max=33.; //max chi2
-  	Double_t fDmin=0.01;  //min imp parameter for the daughters
+  	// Double_t fDmin=0.01;  //min imp parameter for the daughters
   	Double_t fDCAmax=2.5;  //max DCA between the daughter tracks
   	Double_t fCPAmin=0.80;  //min cosine of V0's pointing angle
   	Double_t fRmin=0.1;    //min radius of the fiducial volume
@@ -557,7 +557,7 @@ void AliAnalysisTaskUpcK0sK0s::RunESDtree()
 			Int_t pidx =trkP->GetID();
 			Double_t b = esd->GetMagneticField();
 			//AliV0vertexer
-			Double_t dxn=TMath::Abs(trkN->GetD(fVtxPos[0],fVtxPos[1],b)), dxp=TMath::Abs(trkP->GetD(fVtxPos[0],fVtxPos[1],b));
+			// Double_t dxn=TMath::Abs(trkN->GetD(fVtxPos[0],fVtxPos[1],b)), dxp=TMath::Abs(trkP->GetD(fVtxPos[0],fVtxPos[1],b));
 			Double_t xn, xp, dca=trkN->GetDCA(trkP,b,xn,xp);
 			
         		AliExternalTrackParam nt(*trkN), pt(*trkP);

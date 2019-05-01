@@ -246,10 +246,13 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
 	fFFlucAna->SetDebugLevel(1);
-	fFFlucAna->SetIsPhiModule( kFALSE );
-	fFFlucAna->SetIsSCptdep( kTRUE );
-	fFFlucAna->SetSCwithQC( kTRUE );
-	fFFlucAna->SetEbEWeight( kTRUE ); // << this is important
+	//fFFlucAna->SetIsPhiModule( kFALSE );
+	//fFFlucAna->SetIsSCptdep( kTRUE );
+	//fFFlucAna->SetSCwithQC( kTRUE );
+	//fFFlucAna->SetEbEWeight( kTRUE ); // << this is important
+	fFFlucAna->AddFlags(
+		AliJFFlucAnalysis::FLUC_SCPT|
+		AliJFFlucAnalysis::FLUC_EBE_WEIGHTING);
 	fOutput->cd();
 	fFFlucAna->UserCreateOutputObjects();
 

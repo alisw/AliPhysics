@@ -80,8 +80,11 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 
 		// Cut Selection
     Bool_t PionIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEvent);
-	Bool_t TrackIsSelected(AliESDtrack* lTrack);
-	Bool_t PionIsSelected(AliESDtrack* lTrack);
+    Bool_t PionIsSelectedAODMC(Int_t labelParticle, TClonesArray *AODMCTrackArray);
+    Bool_t TrackIsSelected(AliESDtrack* lTrack);
+    Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack);
+    Bool_t PionIsSelected(AliESDtrack* lTrack);
+    Bool_t PionIsSelectedAOD(AliAODTrack* lTrack);
 	static AliPrimaryPionCuts * GetStandardCuts2010PbPb();
 	static AliPrimaryPionCuts * GetStandardCuts2010pp();
 	Bool_t InitPIDResponse();
@@ -91,6 +94,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	
 	void PrintCuts();
 	void PrintCutsWithValues();
+
+    void    SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
 	
 	void InitCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName="");
 	void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName=""){if(!fHistograms){InitCutHistograms(name,preCut,cutName);};}
@@ -115,14 +120,15 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	
 	// Request Flags
 	Double_t GetEtaCut(){ return  fEtaCut;}
-	Double_t GetNFindableClustersTPC(AliESDtrack* lTrack);
+    Double_t GetNFindableClustersTPC(AliVTrack* lTrack);
 	Bool_t   DoWeights(){return fDoWeights;}
 	Bool_t 	 DoMassCut(){return fDoMassCut;}
 	
 	protected:
 
-	TList *fHistograms;
-	AliPIDResponse *fPIDResponse;
+    TList           *fHistograms;
+    Bool_t          fDoLightOutput;             ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    AliPIDResponse  *fPIDResponse;
 	AliESDtrackCuts *fEsdTrackCuts;
 
 	Double_t fEtaCut; //eta cutç
@@ -180,7 +186,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,5)
+    ClassDef(AliPrimaryPionCuts,7)
 };
 
 #endif

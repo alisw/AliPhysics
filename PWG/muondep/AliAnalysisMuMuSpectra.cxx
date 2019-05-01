@@ -436,7 +436,10 @@ TH1* AliAnalysisMuMuSpectra::Plot(const char* what, const char* subresult, Bool_
     {
       TString sub(subresult);
       r = static_cast<AliAnalysisMuMuJpsiResult*>(r->SubResult(sub.Data()));
-      if (!r) continue;
+      if (!r) {
+        AliError(Form("Cannot find the subresult %s",sub.Data()));
+        continue;
+      }
     }
 
     const AliAnalysisMuMuBinning::Range& b = r->Bin();

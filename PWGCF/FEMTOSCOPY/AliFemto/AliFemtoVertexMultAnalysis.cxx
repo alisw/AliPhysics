@@ -185,7 +185,7 @@ AliFemtoString AliFemtoVertexMultAnalysis::Report()
           + TString::Format("Now adding AliFemtoSimpleAnalysis(base) Report\n")
           + AliFemtoSimpleAnalysis::Report();
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 TList* AliFemtoVertexMultAnalysis::ListSettings()

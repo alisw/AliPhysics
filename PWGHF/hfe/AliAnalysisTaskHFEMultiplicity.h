@@ -17,7 +17,6 @@ class AliMagF;
 class AliESDEvent;
 class AliAODEvent;
 class AliEMCALGeometry;
-class AliEMCALRecoUtils;
 class AliAnalysisFilter;
 class AliESDtrackCuts;
 class AliESDtrack;

@@ -14,7 +14,7 @@ Usage() {
 
 timebins=$1
 
-source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
+source $ALICE_ROOT/libexec/alilog4bash.sh
 #
 loadLibMacro="$ALICE_PHYSICS/PWGPP/CalibMacros/CPass1/LoadLibraries.C"
 inclMacro="$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/includeMacro.C"

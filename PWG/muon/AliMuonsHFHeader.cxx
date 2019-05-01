@@ -28,7 +28,7 @@
 #include <TH1D.h>
 #include <TList.h>
 
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 #include "AliAODMCHeader.h"
 #include "AliVEvent.h"
 #include "AliAODEvent.h"
@@ -163,7 +163,7 @@ AliMuonsHFHeader::~AliMuonsHFHeader()
 }
 
 //_____________________________________________________________________________
-void AliMuonsHFHeader::SetEventInfo(AliInputEventHandler* const handler)
+void AliMuonsHFHeader::SetEventInfo(AliVEventHandler* const handler)
 {
   // fill info at event level
 

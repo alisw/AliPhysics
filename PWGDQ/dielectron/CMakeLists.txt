@@ -36,6 +36,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/JPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/LMEE
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                    )
 
@@ -47,6 +48,7 @@ set(SRCS
       BtoJPSI/AliDielectronBtoJPSItoEle.cxx
       core/AliDielectronCF.cxx
       core/AliDielectronCFdraw.cxx
+      core/AliDielectronClusterCuts.cxx
       core/AliDielectronCutGroup.cxx
       core/AliDielectronCutQA.cxx
       core/AliDielectron.cxx
@@ -64,16 +66,19 @@ set(SRCS
       core/AliDielectronPID.cxx
       core/AliDielectronQnEPcorrection.cxx
       core/AliDielectronSignalMC.cxx
+      core/AliDielectronTMVACuts.cxx
       core/AliDielectronTrackCuts.cxx
       core/AliDielectronTrackRotator.cxx
       core/AliDielectronV0Cuts.cxx
       core/AliDielectronVarCuts.cxx
       core/AliDielectronVarManager.cxx
+      core/AliDielectronEvtVsTrkHist.cxx
       core/AliAnalysisTaskDielectronFilter.cxx
       core/AliAnalysisTaskDielectronReadAODBranch.cxx
       core/AliAnalysisTaskMultiDielectron.cxx
       core/AliAnalysisTaskRandomRejection.cxx
       core/AliAnalysisTaskElectronEfficiency.cxx
+      core/AliAnalysisTaskElectronEfficiencyV2.cxx
       JPSI/AliDielectronSignalBase.cxx
       JPSI/AliDielectronSignalExt.cxx
       JPSI/AliDielectronSignalFunc.cxx
@@ -88,6 +93,11 @@ set(SRCS
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
       LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
+      LMEE/AliCocktailSmearing.cxx
+      LMEE/AliAnalysisTaskCharm.cxx
+      LMEE/AliAnalysisTaskBeauty.cxx
+      LMEE/AliAnalysisTaskJpsi.cxx
+      LMEE/AlimakeJPsiTree.cxx
   )
 
 # Headers from sources
@@ -100,7 +110,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
+set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO TMVA Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase )
 set(ALIPHYSICS_DEPENCIES PWGPPevcharQnInterface)
 set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})

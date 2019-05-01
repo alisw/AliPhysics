@@ -1,7 +1,7 @@
 AliAnalysisVertexingHF* ConfigVertexingHF() {
 
   printf("Call to AliAnalysisVertexingHF parameters setting :\n");
-  vHF = new AliAnalysisVertexingHF();
+  AliAnalysisVertexingHF* vHF = new AliAnalysisVertexingHF();
   //--- switch-off candidates finding (default: all on)
   //vHF->SetD0toKpiOff();
   //vHF->SetJPSItoEleOff();
@@ -33,6 +33,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetTrackFilter(trkFilter);
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCutsSoftPi->SetRequireITSRefit(kTRUE);
   esdTrackCutsSoftPi->SetMinNClustersITS(2);
   esdTrackCutsSoftPi->SetEtaRange(-0.8,+0.8);
   AliAnalysisFilter *trkFilterSoftPi = new AliAnalysisFilter("trackFilterSoftPi");

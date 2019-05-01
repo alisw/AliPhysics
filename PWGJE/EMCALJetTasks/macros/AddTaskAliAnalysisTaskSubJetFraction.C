@@ -21,10 +21,10 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
 								    TString     trigClass      = "",
 								    TString     kEmcalTriggers = "",
 								    TString     tag            = "",
-								    AliAnalysisTaskSubJetFraction::JetShapeType jetShapeType,
-								    AliAnalysisTaskSubJetFraction::JetShapeSub jetShapeSub,
-								    AliAnalysisTaskSubJetFraction::JetSelectionType jetSelection,
-								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskSubJetFraction::DerivSubtrOrder derivSubtrOrder = 0  ) {
+								    AliAnalysisTaskSubJetFraction::JetShapeType jetShapeType = AliAnalysisTaskSubJetFraction::kTrue, // tobefixedbyauthor
+								    AliAnalysisTaskSubJetFraction::JetShapeSub jetShapeSub = AliAnalysisTaskSubJetFraction::kNoSub, // tobefixedbyauthor
+								    AliAnalysisTaskSubJetFraction::JetSelectionType jetSelection =AliAnalysisTaskSubJetFraction::kInclusive, // tobefixedbyauthor
+								    Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., AliAnalysisTaskSubJetFraction::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskSubJetFraction::kSecondOrder, Int_t SoftDropOn=0, Int_t MLOn=0) {
   
   
   
@@ -45,20 +45,24 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       return NULL;
     }
 
+  TString wagonName1, wagonName2,wagonName3;
   if (jetShapeType==AliAnalysisTaskSubJetFraction::kData || jetShapeType==AliAnalysisTaskSubJetFraction::kSim){
-    TString wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsData,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsData,trigClass.Data(),tag.Data());
+    wagonName3 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTreeTracks",njetsData,trigClass.Data(),tag.Data());
   }
   if (jetShapeType==AliAnalysisTaskSubJetFraction::kTrue || jetShapeType==AliAnalysisTaskSubJetFraction::kTrueDet || jetShapeType==AliAnalysisTaskSubJetFraction::kGenOnTheFly){
-    TString wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsTrue,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsTrue,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsTrue,trigClass.Data(),tag.Data());
+    wagonName3 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTreeTracks",njetsData,trigClass.Data(),tag.Data());
   }
   if (jetShapeType==AliAnalysisTaskSubJetFraction::kDetEmbPart){
-    TString wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
-    TString wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName1 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%s",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTree",njetsHybridS,trigClass.Data(),tag.Data());
+    wagonName3 = Form("AliAnalysisTaskSubJetFraction_%s_TC%s%sTreeTracks",njetsData,trigClass.Data(),tag.Data());
   }
   //Configure jet tagger task
-  AliAnalysisTaskSubJetFraction *task = new AliAnalysisTaskSubJetFraction(wagonName1.Data());
+  AliAnalysisTaskSubJetFraction *task = new AliAnalysisTaskSubJetFraction(wagonName1);
 
   //  task->SetNCentBins(4);
   task->SetJetShapeType(jetShapeType);
@@ -70,6 +74,8 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   task->SetJetRadius(R);
   task->SetSharedFractionPtMin(fSharedFractionPtMin);
   task->SetDerivativeSubtractionOrder(derivSubtrOrder);
+  task->SetSoftDropOn(SoftDropOn);
+  task->SetMLOn(MLOn);
   if (jetSelection == AliAnalysisTaskSubJetFraction::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
 
   // TString thename(njetsBase);
@@ -236,6 +242,8 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   //Connect output
   TString contName1(wagonName1);
   TString contName2(wagonName2);
+  TString contName3(wagonName3);
+  contName2 += "_Tracks";
   
   if (jetShapeType == AliAnalysisTaskSubJetFraction::kTrue){
     contName1 += "_True";
@@ -298,12 +306,23 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   if (SubJetAlgorithm==0) SubJetAlgorithmString="_ReclusteringAlgorithm_kT";
   else if (SubJetAlgorithm==1) SubJetAlgorithmString="_ReclusteringAlgorithm_CA";
   else if (SubJetAlgorithm==2) SubJetAlgorithmString="_ReclusteringAlgorithm_AkT";
+  else if (SubJetAlgorithm==3) SubJetAlgorithmString="_ReclusteringAlgorithm_WTA_kT";
+  else if (SubJetAlgorithm==4) SubJetAlgorithmString="_ReclusteringAlgorithm_WTA_CA";
+  else if (SubJetAlgorithm==5) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_kT";
+  else if (SubJetAlgorithm==6) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_CA";
+  else if (SubJetAlgorithm==7) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_AkT";
+  else if (SubJetAlgorithm==8) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_WTA_kT";
+  else if (SubJetAlgorithm==9) SubJetAlgorithmString="_ReclusteringAlgorithm_OnePass_WTA_CA";
   else if (SubJetAlgorithm==10) SubJetAlgorithmString="_ReclusteringAlgorithm_Min";
   contName1 += SubJetAlgorithmString;
   contName2 += SubJetAlgorithmString;
-  if (task->GetSoftDropOn()==1) {
+  if (SoftDropOn==1) {
     contName1 += "_SD";
     contName2 += "_SD";
+  }
+  if (MLOn==1) {
+    contName1 += "_ML";
+    contName2 += "_ML";
   }
 
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
@@ -311,6 +330,8 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   mgr->ConnectOutput(task,1,coutput1);
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contName2.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   mgr->ConnectOutput(task,2,coutput2);
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contName3.Data(), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  mgr->ConnectOutput(task,3,coutput3);
 
   return task;  
 

@@ -25,6 +25,7 @@ public:
       kDeltaCosRange,
       kPhiVRange,
       kContainsV0Daughter,
+      kMassRange,
       kTypes
    };
 

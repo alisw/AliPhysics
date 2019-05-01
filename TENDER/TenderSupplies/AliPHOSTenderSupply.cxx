@@ -54,8 +54,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fOCDBpass("local://OCDB")
   ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
-  ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
+  ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
   ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
@@ -69,6 +69,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fTask(0x0)
   ,fIsMC(kFALSE)
   ,fMCProduction("")
+  ,fDRN(-1)
 {
 	//
 	// default ctor
@@ -85,8 +86,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
   ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
-  ,fRunNumber(-1) //to be defined
   ,fRecoPass(-1)  //to be defined
+  ,fRunNumber(-1) //to be defined
   ,fUsePrivateBadMap(0)
   ,fPrivateOADBBadMap("")
   ,fUsePrivateCalib(0)
@@ -100,6 +101,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fTask(0x0)
   ,fIsMC(kFALSE)
   ,fMCProduction("")
+  ,fDRN(-1)
 {
 	//
 	// named ctor
@@ -154,6 +156,11 @@ void AliPHOSTenderSupply::InitTender()
         return ;
       }
     }   
+  }
+
+  if(fIsMC && fDRN > 0){
+    fRunNumber = fDRN;//only for single particle simulation
+    AliInfo(Form("A dummy run number is set. fRunNumber is %d",fRunNumber));
   }
 
   //In MC always reco pass 1
@@ -621,7 +628,7 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
       Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
       clu->SetTrackDistance(dx,dz); 
       Double_t r = 999. ; //Big distance
-      int nTracksMatched = clu->GetNTracksMatched();
+//      int nTracksMatched = clu->GetNTracksMatched();
       if(itr > 0) {
          r=TestCPV(dx, dz, pttrack,charge) ;    
       }
@@ -812,7 +819,40 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
     return en*(fNonlinearityParams[0]+fNonlinearityParams[1]*TMath::Exp(-en*fNonlinearityParams[2]))*(1.+fNonlinearityParams[3]*TMath::Exp(-en*fNonlinearityParams[4]))*(1.+fNonlinearityParams[6]/(en*en+fNonlinearityParams[5])) ;
   }
   if(fNonlinearityVersion=="Run2"){
-     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; ; 
+     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; 
+  }
+  if(fNonlinearityVersion=="Run2MC"){ //Default for Run2 + some correction
+    return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en)*fNonlinearityParams[0]*(1+fNonlinearityParams[1]/(1.+en*en/fNonlinearityParams[2]/fNonlinearityParams[2])) ;
+  }
+  if(fNonlinearityVersion=="Run2Tune"){ //Improved Run2 tune
+    if(en<=0.) return 0.;   
+    const Double_t x0=5.17 ;
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 6.483e-01 ;     
+    const Double_t d=-4.775e-01 ;    
+    const Double_t e= 1.205e-01 ;
+    const Double_t beta= b+2.*c/TMath::Sqrt(x0)+3.*d/x0+4.*e/x0/TMath::Sqrt(x0) ;
+    const Double_t alpha = a+b/TMath::Sqrt(x0)+c/x0+d/x0/TMath::Sqrt(x0)+e/(x0*x0)-beta/TMath::Sqrt(x0) ;
+    if(en<x0){
+      return 1.02384*(a*en+b*TMath::Sqrt(en)+c+d/TMath::Sqrt(en)+e/en) ;
+    }
+    else{
+      return 1.02384*(alpha*en+beta*TMath::Sqrt(en)) ;  
+    }
+  }
+  if(fNonlinearityVersion=="Run2TuneMC"){ //Improved Run2 tune for MC
+    if(en<=0.) return 0.;
+
+    const Double_t p0 = 1.04397;
+    const Double_t p1 = 0.512307;
+    const Double_t p2 = 0.133812;
+    const Double_t p3 = -0.150093;
+    const Double_t p4 = -0.455062;
+
+    const Double_t Nonlin = p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en);
+
+    return en * Nonlin;
   }
 
   return en ;
@@ -1176,7 +1216,7 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   
   Float_t tMax= 0.; //Time at the maximum
   Float_t eMax=0. ;
-  Float_t tMaxHG=0.; //HighGain only
+//  Float_t tMaxHG=0.; //HighGain only
   Float_t eMaxHG=0.; //High Gain only
   Bool_t isHGMax=kTRUE;
   Int_t absIdMax=-1,absIdMaxHG=-1 ;

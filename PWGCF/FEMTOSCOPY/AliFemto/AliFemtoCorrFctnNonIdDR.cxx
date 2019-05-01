@@ -210,7 +210,7 @@ AliFemtoString AliFemtoCorrFctnNonIdDR::Report()
   report += TString::Format("Number of entries in denominators:\t%E\n", fDenOutP->GetEntries() + fDenOutN->GetEntries());
 
   //  report += mCoulombWeight->Report();
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //____________________________
 void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair)
@@ -276,7 +276,7 @@ void AliFemtoCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair)
   Double_t py2 = pair->Track2()->FourMomentum().vect().y();
   Double_t pz2 = pair->Track2()->FourMomentum().vect().z();
   Double_t e2 = pair->Track2()->FourMomentum().e();
-  
+
   mNtuple->Fill(px1, py1, pz1, e1,px2, py2, pz2, e2);
   }
   //finish adding
@@ -299,7 +299,7 @@ void AliFemtoCorrFctnNonIdDR::Write()
   fkTMonitor->Write();
   if(fParticleP){
     mNtuple->Write();}
-  
+
 }
 
 TList* AliFemtoCorrFctnNonIdDR::GetOutputList()

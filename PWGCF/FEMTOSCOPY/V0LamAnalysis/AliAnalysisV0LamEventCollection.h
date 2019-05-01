@@ -1,12 +1,19 @@
-#ifndef AliAnalysisV0LamEventCollection_cxx
-#define AliAnalysisV0LamEventCollection_cxx
+///
+/// \file V0LamAnalysis/AliAnalysisV0LamEventCollection.h
+///
 
-#include <iostream>
+#pragma once
+
+#ifndef AliAnalysisV0LamEventCollection_H
+#define AliAnalysisV0LamEventCollection_H
+
+#include <TH1.h>
+#include <TH2.h>
+#include <TVector3.h>
+
 #include <string>
-#include "TH1.h"
-#include "TH2.h"
-#include "TVector3.h"
-using namespace std;
+#include <vector>
+#include <iostream>
 
 class AliReconstructedV0  // Reconstructed V0s
 {
@@ -37,7 +44,7 @@ class AliReconstructedV0  // Reconstructed V0s
   bool isLamCenter[10];
   bool isALamCenter[10];
   bool isDeemedUnworthy[10];
-  //vector<vector<bool> > hasPassedCut;
+  //std::vector<std::vector<bool> > hasPassedCut;
   bool hasPassedCut[10][10];
   bool isPassingAllReconstructionCuts;
   MCV0Origin_t mcOriginType;
@@ -58,10 +65,10 @@ class AliReconstructedV0  // Reconstructed V0s
   double daughterNegMomentumDCA[3]; //momentum of the negative daughter at DCA to primary
   double daughterPosCovariance[21]; //covariance matrix of the positive daughter
   double daughterNegCovariance[21]; //covariance matrix of the negative daughter
-  vector<TVector3> daughterPosGlobalPositions;
-  vector<TVector3> daughterNegGlobalPositions;
-  vector<TVector3> daughterPosCorrectedGlobalPositions;
-  vector<TVector3> daughterNegCorrectedGlobalPositions;
+  std::vector<TVector3> daughterPosGlobalPositions;
+  std::vector<TVector3> daughterNegGlobalPositions;
+  std::vector<TVector3> daughterPosCorrectedGlobalPositions;
+  std::vector<TVector3> daughterNegCorrectedGlobalPositions;
   /* TVector3 emissionPoint; */
 };
 
@@ -93,5 +100,6 @@ class AliAnalysisV0LamEventCollection
   short fFifoSize; //Size of the Event Storage buffer
   void SetBuffSize(short eventBuffSize){fFifoSize = eventBuffSize;}
 };
+
 #endif
 

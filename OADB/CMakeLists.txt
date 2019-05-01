@@ -52,6 +52,7 @@ set(SRCS
     COMMON/MULTIPLICITY/AliMultSelectionTask.cxx
     COMMON/MULTIPLICITY/AliMultSelectionCalibrator.cxx
     COMMON/MULTIPLICITY/AliMultSelectionCalibratorMC.cxx
+    COMMON/MULTIPLICITY/AliMultGlauberNBDFitter.cxx
 )
 
 # Headers from sources

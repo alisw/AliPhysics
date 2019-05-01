@@ -42,11 +42,11 @@ AliFemtoXiTrackPairCut &AliFemtoXiTrackPairCut::operator=(const AliFemtoXiTrackP
   if(fV0TrackPairCut) delete fV0TrackPairCut;
   fV0TrackPairCut = new AliFemtoV0TrackPairCut(*cut.fV0TrackPairCut);
 
-  return *this; 
+  return *this;
 }
 
 //__________________
-bool AliFemtoXiTrackPairCut::Pass(const AliFemtoPair *pair) 
+bool AliFemtoXiTrackPairCut::Pass(const AliFemtoPair *pair)
 {
   //Track1 - Xi
   //Track2 - track
@@ -130,7 +130,7 @@ AliFemtoString AliFemtoXiTrackPairCut::Report()
   TString report = "AliFemtoXi Pair Cut - remove shared and split pairs\n";
   report += TString::Format("Number of pairs which passed:\t%ld  Number which failed:\t%ld\n", fNPairsPassed, fNPairsFailed);
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //__________________
 
@@ -139,19 +139,18 @@ AliFemtoString AliFemtoXiTrackPairCut::Report()
 TList *AliFemtoXiTrackPairCut::ListSettings()
 {
   // return a list of settings in a writable form
-  TList *tListSetttings = new TList();
+  TList *tListSettings = new TList();
 
-  // The TString format patterns (F is float, I is integer, L is long)
-  const char ptrnF[] = "AliFemtoXiTrackPairCut.%s=%f",
-             ptrnI[] = "AliFemtoXiTrackPairCut.%s=%d",
-             ptrnL[] = "AliFemtoXiTrackPairCut.%s=%ld";
+  const TString prefix = "AliFemtoXiTrackPairCut.";
 
+  tListSettings->AddVector(
+    new TObjString(TString::Format(prefix + "datatype=%f", fDataType)),
+    new TObjString(TString::Format(prefix + "pairs_passed=%ld", fNPairsPassed)),
+    new TObjString(TString::Format(prefix + "pairs_failed=%ld", fNPairsFailed)),
+    nullptr
+  );
 
-  tListSetttings->Add(new TObjString(TString::Format(ptrnI, "datatype", fDataType)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_passed", fNPairsPassed)));
-  tListSetttings->Add(new TObjString(TString::Format(ptrnL, "pairs_failed", fNPairsFailed)));
-
-  return tListSetttings;
+  return tListSettings;
 }
 
 

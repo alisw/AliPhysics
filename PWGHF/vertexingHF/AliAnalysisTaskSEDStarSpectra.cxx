@@ -193,24 +193,24 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     return;
   }
   
-  
+  fCEvents->Fill(0);//all events
   if(fAODProtection>=0){
     //   Protection against different number of events in the AOD and deltaAOD
     //   In case of discrepancy the event is rejected.
     Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
     if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
       // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
-      fCEvents->Fill(11);
+      fCEvents->Fill(8);
       return;
     }
+    fCEvents->Fill(1);
   }
 
   fEvents++;
 
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   TClonesArray *arrayDStartoD0pi=0;
-
-  fCEvents->Fill(1);
+  TClonesArray *arrayD0toKpi=0;
 
   if(!aodEvent && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 
@@ -224,9 +224,11 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
       arrayDStartoD0pi=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+      arrayD0toKpi=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
     }
   } else {
     arrayDStartoD0pi=(TClonesArray*)aodEvent->GetList()->FindObject("Dstar");
+    arrayD0toKpi=(TClonesArray*)aodEvent->GetList()->FindObject("D0toKpi");
   }
 
   // fix for temporary bug in ESDfilter 
@@ -267,7 +269,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
   if(vtx1->GetNContributors()<1) return;
   fCEvents->Fill(4);
 
-  if (!arrayDStartoD0pi){
+  if (!arrayDStartoD0pi || !arrayD0toKpi){
     AliInfo("Could not find array of HF vertices, skipping the event");
     return;
   }else AliDebug(2, Form("Found %d vertices",arrayDStartoD0pi->GetEntriesFast())); 
@@ -285,11 +287,31 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
     // D* candidates and D0 from D*
     AliAODRecoCascadeHF* dstarD0pi = (AliAODRecoCascadeHF*)arrayDStartoD0pi->At(iDStartoD0pi);
-       Bool_t isDStarCand =kTRUE;
-       if(!(vHF->FillRecoCasc(aodEvent,dstarD0pi,isDStarCand))) {//Fill the data members of the candidate only if they are empty.
-         fCEvents->Fill(12); //monitor how often this fails 
-         continue;
-       }
+    AliAODRecoDecayHF2Prong *trackD0;
+    if(dstarD0pi->GetIsFilled()<1){
+      trackD0 = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->At(dstarD0pi->GetProngID(1));
+    } else {
+      trackD0 = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
+    }
+
+    fCEvents->Fill(10);
+    TObjArray arrTracks(3);
+    for(Int_t ipr=0;ipr<3;ipr++){
+      AliAODTrack *tr;
+      if(ipr == 0) tr=vHF->GetProng(aodEvent,dstarD0pi,ipr); //soft pion
+      else         tr=vHF->GetProng(aodEvent,trackD0,ipr-1); //D0 daughters
+      arrTracks.AddAt(tr,ipr);
+    }
+    if(!fCuts->PreSelect(arrTracks)){
+      fCEvents->Fill(13);
+      continue;
+    }
+    
+    Bool_t isDStarCand =kTRUE;
+    if(!(vHF->FillRecoCasc(aodEvent,dstarD0pi,isDStarCand))) {//Fill the data members of the candidate only if they are empty.
+      fCEvents->Fill(12); //monitor how often this fails
+      continue;
+    }
     if(!dstarD0pi->GetSecondaryVtx()) continue;
     AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
     if (!theD0particle) continue;
@@ -323,8 +345,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	AliAODMCParticle *partDSt = (AliAODMCParticle*)mcArray->At(mcLabel);
 	Int_t checkOrigin = CheckOrigin(mcArray,partDSt);
        	if(checkOrigin==5) isPrimary=kFALSE;
-	AliAODMCParticle *dg0 = (AliAODMCParticle*)mcArray->At(partDSt->GetDaughter(0));
-	//	AliAODMCParticle *dg01 = (AliAODMCParticle*)mcArray->At(dg0->GetDaughter(0));
+	AliAODMCParticle *dg0 = (AliAODMCParticle*)mcArray->At(partDSt->GetDaughterLabel(0));
+	//	AliAODMCParticle *dg01 = (AliAODMCParticle*)mcArray->At(dg0->GetDaughterLabel(0));
 	pdgCode=TMath::Abs(partDSt->GetPdgCode());
 	if(!isPrimary){
 	  trueImpParXY=GetTrueImpactParameterD0(mcHeader,mcArray,dg0)*1000.;
@@ -354,7 +376,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     Double_t arrayForSparse[3]={invMass,ptCand,impparXY};
     Double_t arrayForSparseTrue[3]={invMass,ptCand,trueImpParXY};
    
-  // set the D0 search window bin by bin - useful to calculate side band bkg
+  // set the D0 and D* search window  bin by bin - D* window useful to speed up the reconstruction and D0 window used *ONLY* to calculate side band bkg for the background subtraction methods, for the standard analysis the value in the cut file is considered
+    
     if (0<=Dstarpt && Dstarpt<0.5){
       if(fAnalysis==1){
 	fD0Window=0.035;
@@ -447,7 +470,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     
     if (TMath::Abs(invmassDelta-(mPDGDstar-mPDGD0))>fPeakWindow) continue;
     Int_t isSelected=fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kCandidate,aodEvent); //selected
-  
+    if(isSelected>0) fCEvents->Fill(11);
+
     // after cuts
     if(fDoImpParDstar && isSelected){
       fHistMassPtImpParTCDs[0]->Fill(arrayForSparse);
@@ -592,17 +616,23 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
 void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
   /// Create histograms
 
-  fCEvents = new TH1F("fCEvents","counter",13,0,13);
+  fCEvents = new TH1F("fCEvents","counter",14,0,14);
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetTitle("1");
   fCEvents->GetYaxis()->SetTitle("counts");
-  fCEvents->GetXaxis()->SetBinLabel(2,"no. of events");
+  fCEvents->GetXaxis()->SetBinLabel(1,"nEventsRead");
+  fCEvents->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
   fCEvents->GetXaxis()->SetBinLabel(3,"good prim vtx and B field");
   fCEvents->GetXaxis()->SetBinLabel(4,"no event selected");
   fCEvents->GetXaxis()->SetBinLabel(5,"no vtx contributors");
   fCEvents->GetXaxis()->SetBinLabel(6,"trigger for PbPb");
   fCEvents->GetXaxis()->SetBinLabel(7,"no z vtx");
-  fCEvents->GetXaxis()->SetBinLabel(12,"no. of D0 fail to be rec");
+  fCEvents->GetXaxis()->SetBinLabel(9,"nEvents Mismatched dAOD");
+  fCEvents->GetXaxis()->SetBinLabel(11, "no. of cascade candidates");
+  fCEvents->GetXaxis()->SetBinLabel(12, "no. of Dstar after selection cuts");
+  fCEvents->GetXaxis()->SetBinLabel(13, "no. of not on-the-fly rec Dstar");
+  fCEvents->GetXaxis()->SetBinLabel(14, "no. of Dstar rejected by preselect"); //toadd
+
   fOutput->Add(fCEvents);
 
   fTrueDiff2 = new TH2F("DiffDstar_pt","True Reco diff vs pt",200,0,15,900,0,0.3);
@@ -950,8 +980,7 @@ void AliAnalysisTaskSEDStarSpectra::FillSpectrum(AliAODRecoCascadeHF *part, Int_
   // D0 window
   Double_t mPDGD0=TDatabasePDG::Instance()->GetParticle(421)->Mass();
   Double_t invmassD0   = part->InvMassD0();  
-  if (TMath::Abs(invmassD0-mPDGD0)>fD0Window) return; 
-
+ 
 
   Int_t ptbin=cuts->PtBin(part->Pt());  
   Double_t pt = part->Pt();
@@ -1142,7 +1171,7 @@ Float_t AliAnalysisTaskSEDStarSpectra::GetTrueImpactParameterD0(const AliAODMCHe
   partDp->XvYvZv(origD);	  
   Short_t charge=partDp->Charge();
   Double_t pXdauTrue[3],pYdauTrue[3],pZdauTrue[3];
-  Int_t labelFirstDau = partDp->GetDaughter(0); 
+  Int_t labelFirstDau = partDp->GetDaughterLabel(0); 
 
   Int_t nDau=partDp->GetNDaughters();
 

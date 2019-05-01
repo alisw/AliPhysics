@@ -45,6 +45,7 @@ class AliESDInputHandler;
 class AliESDv0KineCuts;
 class AliAnalysisManager;
 class AliCentrality;
+class AliAnalysisUtils;
 class TTree;
 class TSystem;
 class TStyle;
@@ -55,6 +56,8 @@ class TH2;
 class TF1;
 class TH1;
 class TObjArray;
+class TCanvas;
+class TGraph;
 
 
 class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
@@ -86,7 +89,10 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   virtual void SetUseTPCCutMIGeo(Bool_t newValue) { fUseTPCCutMIGeo = newValue; };
   
   virtual Bool_t GetIsPbpOrpPb() const { return fIsPbpOrpPb; };
-  virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };
+  virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };  
+  
+  virtual Bool_t GetIsPbPb() const { return fIsPbPb; };
+  virtual void SetIsPbPb(Bool_t newValue) { fIsPbPb = newValue; };
   
   Double_t GetZvtxCutEvent() const { return fZvtxCutEvent; };
   virtual void SetZvtxCutEvent(Double_t newValue) { fZvtxCutEvent = newValue; };
@@ -108,16 +114,15 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Bool_t GetWriteAdditionalOutput() const { return fWriteAdditionalOutput; };
   virtual void   SetWriteAdditionalOutput(Bool_t flag = kTRUE) { fWriteAdditionalOutput = flag; };
 
-  
   virtual Int_t GetV0motherIndex(Int_t trackIndex) const;
   virtual Int_t GetV0motherPDG(Int_t trackIndex) const;
-  
   //
   // static functions for postprocessing
   //
   Bool_t ProcessV0Tree(TTree* tree, THnSparseF* h, const Int_t recoPass=4, const TString runList="", const Bool_t excludeRuns=kFALSE);
   THnSparseF* ProcessV0TreeFile(TString filePathName, const Int_t recoPass=4, const TString runList="", const Bool_t excludeRuns=kFALSE);
 
+  static void CreatePlotWithOwnParameters(THnSparseF * histPidQA, const Bool_t useV0s, const Char_t * type, const Char_t * system, const Double_t* parameters, AliTPCcalibResidualPID::FitType fitType, Float_t from = 0.9, Float_t to = 10e4);
   static Double_t* ExtractResidualPID(THnSparseF * histPidQA,
                                       const Bool_t useV0s = kTRUE,
                                       const Char_t * outFile = "out.root",
@@ -132,6 +137,12 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static  TObjArray * GetResidualGraphsMC(THnSparseF * histPidQA, const Char_t * system);
   static  TObjArray * GetSeparation(THnSparseF * histPidQA, Int_t kParticle1, Int_t kParticle2);
   static  TObjArray * GetResponseFunctions(TF1* parametrisation, TObjArray* inputGraphs, const Char_t * type, const Char_t * period, const Char_t * pass, const Char_t * system, const Char_t * dedxtype);
+  
+  static TF1* SetUpFitFunction(const Double_t * initialParameters, AliTPCcalibResidualPID::FitType fitType, Float_t from, Float_t to, Bool_t isPPb, Bool_t isMC, Double_t* parametersBBForward);
+  static void SetUpInputGraph(TGraphErrors* graphAll, Bool_t isMC, Bool_t useV0s);
+  static TCanvas* CreateBBCanvas(TObjArray* inputGraphs, Bool_t isMC, TF1* func);
+  static TCanvas* CreateResidualCanvas(TGraphErrors* graphAll, TF1* func);
+  
   static  TF1*        FitBB(TObjArray* inputGraphs, Bool_t isMC, Bool_t isPPb, const Bool_t useV0s,
                             const Double_t * initialParameters = 0x0, FitType = kSaturatedLund);
   static Int_t MergeGraphErrors(TGraphErrors* mergedGraph, TCollection* li);
@@ -148,6 +159,8 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static Bool_t TPCCutMIGeo(const AliVTrack* track, const AliInputEventHandler* evtHandler, TTreeStream* streamer = 0x0)
     { if (!evtHandler) return kFALSE; return TPCCutMIGeo(track, evtHandler->GetEvent(), streamer); };
 
+  static TString GetStringFitType(Int_t fitType);  
+    
   protected:
   static Double_t fgCutGeo;  // Cut variable for TPCCutMIGeo concerning geometry
   static Double_t fgCutNcr;  // Cut variable for TPCCutMIGeo concerning num crossed rows
@@ -155,9 +168,10 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   
   static Double_t Lund(Double_t* xx, Double_t* par);
   static Double_t SaturatedLund(Double_t* xx, Double_t* par);
+  static Double_t Aleph(Double_t* xx, Double_t* par);
   
   static void BinLogAxis(THnSparseF *h, Int_t axisNumber);
-  static THnSparseF* InitialisePIDQAHist(TString name, TString title);
+  static THnSparseF* InitialisePIDQAHist(TString name, TString title, Bool_t IsPbPb = kFALSE);
   static void  SetAxisNamesFromTitle(const THnSparseF *h);
 
   static void FitSlicesY(TH2 *hist, Double_t heightFractionForRange, Int_t cutThreshold, TString fitOption, TObjArray *arr);
@@ -184,9 +198,11 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   Bool_t fUseMCinfo;         // Use MC info, if available
   
   Bool_t fIsPbpOrpPb;      // Pbp/pPb collision or something else?
+  Bool_t fIsPbPb;          // PbPb collision?
   Double_t fZvtxCutEvent;  // Vertex z cut for the event (cm)
   
   AliESDv0KineCuts *fV0KineCuts;       //! ESD V0 kine cuts
+  AliAnalysisUtils *fAnaUtils; //! Object to use analysis utils like pile-up rejection
   Bool_t fCutOnProdRadiusForV0el;      // Cut on production radius for V0 electrons
   Int_t fNumTagsStored;     // Number of entries of fV0tags
   Char_t* fV0tags;         //! Pointer to array with tags for identified particles from V0 decays
@@ -250,6 +266,7 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   AliTPCcalibResidualPID(const AliTPCcalibResidualPID&); // not implemented
   AliTPCcalibResidualPID& operator=(const AliTPCcalibResidualPID&); // not implemented
   
-  ClassDef(AliTPCcalibResidualPID, 5); 
+  ClassDef(AliTPCcalibResidualPID, 6); 
 };
+
 #endif

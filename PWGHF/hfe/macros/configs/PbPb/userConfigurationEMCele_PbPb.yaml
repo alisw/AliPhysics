@@ -1,5 +1,5 @@
 configurationName: "EMCAL electron configuration"   # Optional - Simply for user convenience
-pass: ""                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
+pass: "pass#"                                            # Attempts to automatically retrieve the pass if not specified. Usually of the form "pass#".
 inputObjects:                                       # Define all of the input objects for the corrections
     clusterContainers:                              # Configure clusters
         defaultClusterContainer:                    # Name of a cluster input

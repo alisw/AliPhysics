@@ -17,7 +17,7 @@ class AliRsnCutTrue : public AliRsnCut {
 
 public:
 
-   AliRsnCutTrue(const char *name, Int_t pdg);
+   AliRsnCutTrue(const char *name, Long_t pdg);
    AliRsnCutTrue(const char *name, AliRsnDaughter::ESpecies species);
    AliRsnCutTrue(const AliRsnCutTrue &copy);
    AliRsnCutTrue &operator=(const AliRsnCutTrue &copy);
@@ -27,7 +27,7 @@ public:
 
 private:
 
-   ClassDef(AliRsnCutTrue,1)    // AliRsnCutTrue class
+   ClassDef(AliRsnCutTrue, 1)    // AliRsnCutTrue class
 
 };
 

@@ -10,12 +10,12 @@
 //#include "AliFemtoHisto.hh"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoShareQualityCorrFctn)
 #endif
 
 //____________________________
-AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
+AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi):
   AliFemtoCorrFctn(),
   fShareNumerator(0),
   fShareDenominator(0),
@@ -66,7 +66,7 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
 
   fQualityNumerator->Sumw2();
   fQualityDenominator->Sumw2();
-  
+
   fTPCSepNumerator->Sumw2();
   fTPCSepDenominator->Sumw2();
 }
@@ -167,30 +167,31 @@ AliFemtoString AliFemtoShareQualityCorrFctn::Report(){
 //____________________________
 void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   Int_t nh = 0;
   Int_t an = 0;
   Int_t ns = 0;
-  
+
   for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
     // If both have clusters in the same row
-    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) && 
+    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) &&
 	pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
       // Do they share it ?
       if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
 	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
 	{
 // 	  if (tQinv < 0.01) {
-// 	    cout << "Shared cluster in row " << imap << endl; 
+// 	    cout << "Shared cluster in row " << imap << endl;
 // 	  }
 	  an++;
 	  nh+=2;
 	  ns+=2;
 	}
-      
+
       // Different hits on the same padrow
       else {
 	an--;
@@ -247,12 +248,12 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
 //       else cout << " X ";
 //       cout << endl;
 //     }
-//     cout << "Momentum1 " 
-// 	 << pair->Track1()->Track()->P().x() << " " 
-// 	 << pair->Track1()->Track()->P().y() << " "  
-// 	 << pair->Track1()->Track()->P().z() << " "  
-// 	 << pair->Track1()->Track()->Label() << " "  
-// 	 << pair->Track1()->Track()->TrackId() << " "  
+//     cout << "Momentum1 "
+// 	 << pair->Track1()->Track()->P().x() << " "
+// 	 << pair->Track1()->Track()->P().y() << " "
+// 	 << pair->Track1()->Track()->P().z() << " "
+// 	 << pair->Track1()->Track()->Label() << " "
+// 	 << pair->Track1()->Track()->TrackId() << " "
 // 	 << pair->Track1()->Track()->Flags() << " "
 // 	 << pair->Track1()->Track()->KinkIndex(0) << " "
 // 	 << pair->Track1()->Track()->KinkIndex(1) << " "
@@ -262,13 +263,13 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
 // 	 << pair->Track1()->Track()->TPCchi2() << " "
 // 	 << pair->Track1()->Track()->TPCncls() << " "
 // 	 << endl;
-//     cout << "Momentum2 " 
-// 	 << pair->Track2()->Track()->P().x() << " "  
-// 	 << pair->Track2()->Track()->P().y() << " "  
-// 	 << pair->Track2()->Track()->P().z() << " "  
-// 	 << pair->Track2()->Track()->Label() << " "  
-// 	 << pair->Track2()->Track()->TrackId() << " "  
-// 	 << pair->Track2()->Track()->Flags() << " " 
+//     cout << "Momentum2 "
+// 	 << pair->Track2()->Track()->P().x() << " "
+// 	 << pair->Track2()->Track()->P().y() << " "
+// 	 << pair->Track2()->Track()->P().z() << " "
+// 	 << pair->Track2()->Track()->Label() << " "
+// 	 << pair->Track2()->Track()->TrackId() << " "
+// 	 << pair->Track2()->Track()->Flags() << " "
 // 	 << pair->Track2()->Track()->KinkIndex(0) << " "
 // 	 << pair->Track2()->Track()->KinkIndex(1) << " "
 // 	 << pair->Track2()->Track()->KinkIndex(2) << " "
@@ -294,32 +295,33 @@ void AliFemtoShareQualityCorrFctn::AddRealPair( AliFemtoPair* pair){
 //____________________________
 void AliFemtoShareQualityCorrFctn::AddMixedPair( AliFemtoPair* pair){
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   double weight = 1.0;
   double tQinv = fabs(pair->QInv());   // note - qInv() will be negative for identical pairs...
   Int_t nh = 0;
   Int_t an = 0;
   Int_t ns = 0;
-  
+
   for (unsigned int imap=0; imap<pair->Track1()->Track()->TPCclusters().GetNbits(); imap++) {
     // If both have clusters in the same row
-    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) && 
+    if (pair->Track1()->Track()->TPCclusters().TestBitNumber(imap) &&
 	pair->Track2()->Track()->TPCclusters().TestBitNumber(imap)) {
       // Do they share it ?
       if (pair->Track1()->Track()->TPCsharing().TestBitNumber(imap) &&
 	  pair->Track2()->Track()->TPCsharing().TestBitNumber(imap))
 	{
 	  //	  cout << "A shared cluster !!!" << endl;
-	  //	cout << "imap idx1 idx2 " 
+	  //	cout << "imap idx1 idx2 "
 	  //	     << imap << " "
 	  //	     << tP1idx[imap] << " " << tP2idx[imap] << endl;
 	  an++;
 	  nh+=2;
 	  ns+=2;
 	}
-      
+
       // Different hits on the same padrow
       else {
 	an--;
@@ -333,7 +335,7 @@ void AliFemtoShareQualityCorrFctn::AddMixedPair( AliFemtoPair* pair){
       nh++;
     }
   }
-  
+
   Float_t hsmval = 0.0;
   Float_t hsfval = 0.0;
 
@@ -363,7 +365,7 @@ void AliFemtoShareQualityCorrFctn::WriteHistos()
   fQualityDenominator->Write();
   fTPCSepNumerator->Write();
   fTPCSepDenominator->Write();
-  
+
 }
 //______________________________
 TList* AliFemtoShareQualityCorrFctn::GetOutputList()
@@ -371,12 +373,12 @@ TList* AliFemtoShareQualityCorrFctn::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = new TList();
 
-  tOutputList->Add(fShareNumerator); 
-  tOutputList->Add(fShareDenominator);  
-  tOutputList->Add(fQualityNumerator);  
-  tOutputList->Add(fQualityDenominator);  
-  tOutputList->Add(fTPCSepNumerator);  
-  tOutputList->Add(fTPCSepDenominator);  
+  tOutputList->Add(fShareNumerator);
+  tOutputList->Add(fShareDenominator);
+  tOutputList->Add(fQualityNumerator);
+  tOutputList->Add(fQualityDenominator);
+  tOutputList->Add(fTPCSepNumerator);
+  tOutputList->Add(fTPCSepDenominator);
 
   return tOutputList;
 }

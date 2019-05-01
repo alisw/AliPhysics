@@ -13,7 +13,7 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoModelCorrFctnDEtaDPhiRM)
 #endif
 
@@ -29,7 +29,7 @@ ClassImp(AliFemtoModelCorrFctnDEtaDPhiRM)
 //
 
 //____________________________
-AliFemtoModelCorrFctnDEtaDPhiRM::AliFemtoModelCorrFctnDEtaDPhiRM(char* title, const int& aPhiBins=20, const int& aEtaBins=20, const double m1=0.13956995, const double m2=0.13956995):
+AliFemtoModelCorrFctnDEtaDPhiRM::AliFemtoModelCorrFctnDEtaDPhiRM(const char* title, const int& aPhiBins=20, const int& aEtaBins=20, const double m1=0.13956995, const double m2=0.13956995):
   AliFemtoModelCorrFctn(),
   fDPhiDEtaNumeratorTrue(0),
   fDPhiDEtaNumeratorFake(0),
@@ -125,7 +125,7 @@ AliFemtoModelCorrFctnDEtaDPhiRM::AliFemtoModelCorrFctnDEtaDPhiRM(char* title, co
   strncat(tTitNum,title, 100);
   fPtSumDist = new TH1D(tTitNum,title,200,0,10);
   fPtSumDist->Sumw2();
-  
+
   char tTitInvMass[101] = "InvariantMassDist";
   strncat(tTitInvMass,title, 100);
   fInvMassDist = new TH1D(tTitInvMass,title,2000,0,4);
@@ -396,10 +396,11 @@ AliFemtoString AliFemtoModelCorrFctnDEtaDPhiRM::Report(){
   return returnThis;
 }
 //____________________________
-void AliFemtoModelCorrFctnDEtaDPhiRM::AddRealPair( AliFemtoPair* pair){
-
-   if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+void AliFemtoModelCorrFctnDEtaDPhiRM::AddRealPair( AliFemtoPair* pair)
+{
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   // add real (effect) pair
   double phi1 = pair->Track1()->Track()->P().Phi();
@@ -464,15 +465,18 @@ void AliFemtoModelCorrFctnDEtaDPhiRM::AddRealPair( AliFemtoPair* pair){
 
   double e1 = TMath::Sqrt(fM1*fM1 + p21);
   double e2 = TMath::Sqrt(fM2*fM2 + p22);
-   
+
   double minv = TMath::Sqrt(fM1*fM1 + fM2*fM2 + 2*(e1*e2 - Invpx1*Invpx2 - Invpy1*Invpy2 - Invpz1*Invpz2));
   fInvMassDist->Fill(minv);
   // cout<<"Corr: "<<minv<<" masses "<<fM1<<" "<<fM2<<endl;
 }
 //____________________________
-void AliFemtoModelCorrFctnDEtaDPhiRM::AddMixedPair( AliFemtoPair* pair){
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+void AliFemtoModelCorrFctnDEtaDPhiRM::AddMixedPair( AliFemtoPair* pair)
+{
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
+
   // add mixed (background) pair
   double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();

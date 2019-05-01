@@ -73,23 +73,23 @@
 #include "AliExternalTrackParam.h"
 using namespace std;
 
-// ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
-// Author Filip Krizek   (7.Oct. 2015)
+// Analyis of jets in pp collisions 
+// Author Peter Pribeli   (12.Sep. 2017)
 
+/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskJetPP)
-//________________________________________________________________________________________
+/// \endcond
 
+///Default constructor
 AliAnalysisTaskJetPP::AliAnalysisTaskJetPP(): 
 AliAnalysisTaskEmcalJet("AliAnalysisTaskJetPP", kTRUE),  
   fUseDefaultVertexCut(1), fUsePileUpCut(1), fIsMC(0), 
  fSignalJetRadius(0.4), 
-fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetArea(0.0),  
+fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fASPDCvsTCut(65.), fBSPDCvsTCut(4.), fMinJetArea(0.0),  
 fCentralityType("V0A"), fHelperClass(0), fInitializedLocal(0),
-fZVertexCut(10.0), fhJetPt(0x0), fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(0x0),fhJetEtaPt(0x0),fhAktJetEtaPhi(0x0),fhKtJetEtaPhi(0x0),fhJetAreaPt(0x0),fhJetPhiPt(0x0),fhZVertex(0x0),fhYVertex(0x0),fhXVertex(0x0),fhJetPtRho(0x0),fhJetPtConeRho(0x0),fhRho(0x0),fhConeRho(0x0),fhTrackEtaPt(0x0),fhGenTrackEtaPt(0x0),fhTrackPhiPt(0x0),fhTrackEtaPhi(0x0),fhKTJetPt(0x0),fhZVertexBC(0x0), fhRemx(0x0), fhPrimGenTrkPt(0x0), fhGenJetPt(0x0), fhRecTrkPt(0x0), fhFakeTrkPt(0x0),fhMult(0x0),fhTrackPhiCG(0x0),fhTrackPhiTPCG(0x0),fhAtimesRho(0x0)
+fZVertexCut(10.0), fhJetPt(0x0), fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(0x0),fhJetEtaPt(0x0),fhAktJetEtaPhi(0x0),fhKtJetEtaPhi(0x0),fhJetAreaPt(0x0),fhJetPhiPt(0x0),fhZVertex(0x0),fhYVertex(0x0),fhXVertex(0x0),fhJetPtRho(0x0),fhJetPtConeRho(0x0),fhJetPtCMSRho(0x0),fhRho(0x0),fhConeRho(0x0),fhCMSRho(0x0),fhTrackEtaPt(0x0),fhGenTrackEtaPt(0x0),fhTrackPhiPt(0x0),fhTrackEtaPhi(0x0),fhKTJetPt(0x0),fhZVertexBC(0x0), fhRemx(0x0), fhPrimGenTrkPt(0x0), fhGenJetPt(0x0), fhRecTrkPt(0x0), fhFakeTrkPt(0x0),fhMult(0x0),fhTrackPhiCG(0x0),fhTrackPhiTPCG(0x0),fhAtimesRhoMedian(0x0),fhAtimesRhoCone(0x0),fhAtimesRhoCMS(0x0)
 {
-   //default constructor
-         
-  //Initiate arrays= here in a cycle
+  //Arrays initiation
    for(int i=0;i<2;i++){
       fhInvPtQVsPhi[i] = NULL;   
       fhInvPtQVsEta[i] = NULL; 
@@ -99,18 +99,17 @@ fZVertexCut(10.0), fhJetPt(0x0), fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(
    }
 }
 
-//________________________________________________________________________
+/// Standard constructor
 AliAnalysisTaskJetPP::AliAnalysisTaskJetPP(const char *name) : 
 AliAnalysisTaskEmcalJet(name,kTRUE),  
   fUseDefaultVertexCut(1), fUsePileUpCut(1), fIsMC(0), 
  fSignalJetRadius(0.4), 
-fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetArea(0.0),  
+fSignalJetEtaWindow(0.9 - fSignalJetRadius), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fASPDCvsTCut(65.), fBSPDCvsTCut(4.), fMinJetArea(0.0),  
 fCentralityType("V0A"), fHelperClass(0), fInitializedLocal(0),
-fZVertexCut(10.0),fhJetPt(0x0),fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(0x0),fhJetEtaPt(0x0),fhAktJetEtaPhi(0x0),fhKtJetEtaPhi(0x0),fhJetAreaPt(0x0),fhJetPhiPt(0x0),fhZVertex(0x0),fhYVertex(0x0),fhXVertex(0x0),fhJetPtRho(0x0),fhJetPtConeRho(0x0),fhRho(0x0),fhConeRho(0x0),fhTrackEtaPt(0x0),fhTrackPhiPt(0x0),fhTrackEtaPhi(0x0),fhGenTrackEtaPt(0x0),fhKTJetPt(0x0),fhZVertexBC(0x0), fhRemx(0x0), fhPrimGenTrkPt(0x0), fhGenJetPt(0x0), fhRecTrkPt(0x0), fhFakeTrkPt(0x0),fhMult(0x0),fhTrackPhiCG(0x0),fhTrackPhiTPCG(0x0),fhAtimesRho(0x0)
+fZVertexCut(10.0),fhJetPt(0x0),fhCuts(0x0), fhTrackPt(0x0),fhJetConstituentPt(0x0),fhJetEtaPt(0x0),fhAktJetEtaPhi(0x0),fhKtJetEtaPhi(0x0),fhJetAreaPt(0x0),fhJetPhiPt(0x0),fhZVertex(0x0),fhYVertex(0x0),fhXVertex(0x0),fhJetPtRho(0x0),fhJetPtConeRho(0x0),fhJetPtCMSRho(0x0),fhRho(0x0),fhConeRho(0x0),fhCMSRho(0x0),fhTrackEtaPt(0x0),fhTrackPhiPt(0x0),fhTrackEtaPhi(0x0),fhGenTrackEtaPt(0x0),fhKTJetPt(0x0),fhZVertexBC(0x0), fhRemx(0x0), fhPrimGenTrkPt(0x0), fhGenJetPt(0x0), fhRecTrkPt(0x0), fhFakeTrkPt(0x0),fhMult(0x0),fhTrackPhiCG(0x0),fhTrackPhiTPCG(0x0),fhAtimesRhoMedian(0x0),fhAtimesRhoCone(0x0),fhAtimesRhoCMS(0x0)
 
 {
-//Constructor
-  //Initiate arrays= here in a cycle
+  //Arrays initiation
    for(int i=0;i<2;i++){
       fhInvPtQVsPhi[i] = NULL;   
       fhInvPtQVsEta[i] = NULL; 
@@ -130,38 +129,40 @@ Bool_t AliAnalysisTaskJetPP::IsEventInAcceptance(AliVEvent* event){
    if(!event) return kFALSE;
  
    //___________________________________________________
-   //TEST PILE UP
-   if(fUsePileUpCut){
-      if(!fHelperClass || fHelperClass->IsPileUpEvent(event)){ 
-         return kFALSE;
-      }
-      if(fHelperClass && !fHelperClass->IsPileUpEvent(event)) fhCuts->Fill(1.5);//events that passed the pileup cut
-   }
-
-   //___________________________________________________
    //BEFORE VERTEX CUT
-
    fhZVertexBC->Fill(event->GetPrimaryVertex()->GetZ()); 
    if(fUseDefaultVertexCut){
       if(!fHelperClass || !fHelperClass->IsVertexSelected2013pA(event)){
          return kFALSE;
       }
-      if(fHelperClass && fHelperClass->IsVertexSelected2013pA(event)) fhCuts->Fill(2.5);//events that passed the vertex cut
+      if(fHelperClass && fHelperClass->IsVertexSelected2013pA(event)) fhCuts->Fill(1.5);//events that passed the vertex cut
    }else{
 
-      if(TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fZVertexCut){  //DO VERTEX Z CUT
+      if(TMath::Abs(event->GetPrimaryVertex()->GetZ()) > fZVertexCut){ 
                  return kFALSE;
       }
-      else fhCuts->Fill(2.5);//events that passed the vertex cut
+      else fhCuts->Fill(1.5);//events that passed the vertex cut
    }
    fhZVertex->Fill(event->GetPrimaryVertex()->GetZ());
    fhXVertex->Fill(event->GetPrimaryVertex()->GetX());
    fhYVertex->Fill(event->GetPrimaryVertex()->GetY());
 
-    //vertex z po cutu
    //___________________________________________________
    //AFTER VERTEX CUT
    return kTRUE;
+}
+//PILEUP CUT
+Bool_t AliAnalysisTaskJetPP::IsSPDClusterVsTrackletBG(AliVEvent *event){ //NEW PILEUP
+   if(fUsePileUpCut){
+      Int_t nClustersLayer0 = event->GetNumberOfITSClusters(0);
+      Int_t nClustersLayer1 = event->GetNumberOfITSClusters(1);
+      Int_t nTracklets      = event->GetMultiplicity()->GetNumberOfTracklets();
+      if (nClustersLayer0 + nClustersLayer1 > fASPDCvsTCut + nTracklets*fBSPDCvsTCut){
+         return kTRUE;
+      }
+   }
+   fhCuts->Fill(2.5);
+   return kFALSE;
 }
 
 //________________________________________________________________________
@@ -198,7 +199,7 @@ Bool_t AliAnalysisTaskJetPP::IsSignalJetInAcceptance(AliEmcalJet *jet, Bool_t su
    return kFALSE;
 }
 
-//________________________________________________________________________
+/// Perform steps needed to initialize the analysis.
 void AliAnalysisTaskJetPP::ExecOnceLocal(){
    // Initialization of jet containers done in  AliAnalysisTaskEmcalJet::ExecOnce()
    //Read arrays of jets and tracks
@@ -211,18 +212,13 @@ void AliAnalysisTaskJetPP::ExecOnceLocal(){
    return;
 }
 
-
-//________________________________________________________________________
-Bool_t AliAnalysisTaskJetPP::FillHistograms(){ 
-   // executed in each event 
-   //called in AliAnalysisTaskEmcal::UserExec(Option_t *)
-   //   Analyze the event and Fill histograms
-
+/// Overloads base class method. Fills the output histograms
+/// return kTRUE if successful
+Bool_t AliAnalysisTaskJetPP::FillHistograms(){
    if(!InputEvent()){
       AliError("??? Event pointer == 0 ???");
       return kFALSE;
    }
-  
    fhCuts->Fill(0.5);
    //Execute only once:  Get tracks, jets from arrays if not already given 
    if(!fInitializedLocal) ExecOnceLocal(); 
@@ -232,12 +228,9 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
 
    //Select events (vertex, pile-up,...) 
    if(!IsEventInAcceptance(InputEvent())) return kFALSE; //post data is in UserExec
+   if(IsSPDClusterVsTrackletBG(InputEvent())) return kFALSE;
 
-   fhCuts->Fill(3.5); 
 
-   // END EVENT SELECTION
-
-  
    // JET+TRACK CONTAINERS
    AliJetContainer *jetContRecAKT = NULL; //AKTjet container from reconstruced tracks
    AliJetContainer *jetContRecKT = NULL; //KTjet container from reconstruced tracks
@@ -264,8 +257,6 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
    trkContRec     = GetParticleContainer(kContainerOne); //reconstructed hybrid tracks 
    if(fIsMC) parContGen     = GetParticleContainer(kContainerTwo); //MC particles 
 
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   //THIS IS LOOP OVER RECONSTRUCTED TRACKS
    Int_t fMultCounter;
    Double_t xyz[50];
    Double_t pxpypz[50];
@@ -274,15 +265,16 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
 
    AliAODTrack *constTrackRecAod=NULL;
 
+// Lop over reconstructed trcks
    if(trkContRec){
       fMultCounter=0;
-      trkContRec->ResetCurrentID();
-      while((constTrackRecAod = (AliAODTrack*) trkContRec->GetNextAcceptParticle())){ 
+      for (auto trackIterator : trkContRec->accepted_momentum()){
+         constTrackRecAod = (AliAODTrack*)trackIterator.second;
          if(!constTrackRecAod->IsHybridGlobalConstrainedGlobal()) continue;
          if(!constTrackRecAod) continue;
          if(!IsTrackInAcceptance(constTrackRecAod)) continue;
             Double_t phi = Convert(constTrackRecAod->Phi());        
-	    fhTrackPt->Fill(constTrackRecAod->Pt());
+	         fhTrackPt->Fill(constTrackRecAod->Pt());
             fhTrackEtaPt->Fill(constTrackRecAod->Eta(),constTrackRecAod->Pt()); 
             fhTrackPhiPt->Fill(phi,constTrackRecAod->Pt()); 
             fhTrackEtaPhi->Fill(constTrackRecAod->Eta(),phi);            
@@ -302,8 +294,6 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
             }else{
                fhInvPtQVsPhiCSide[itrkq]->Fill(phi, 1.0/constTrackRecAod->Pt());
             }
-            //get sigma pT / pT 
-            //Taken from AliEMCalTriggerExtraCuts::CalculateTPCTrackLength
             memset(cv, 0, sizeof(Double_t) * 21); //cleanup arrays
             memset(pxpypz, 0, sizeof(Double_t) * 50);
             memset(xyz, 0, sizeof(Double_t) * 50);
@@ -317,31 +307,36 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
       fhMult->Fill(fMultCounter);
    }
    //_________________________________________________   
-   //YOU CAN CALCULTE ENERGY DENSITY OF THE UNDERLYING EVENT (framework has for that also separate task, here i do it in my function)
-
+   // Background
    Double_t rho    = EstimateBgKT(jetContRecKT);
    fhRho->Fill(rho); 
 
    Double_t conerho = EstimateLocalBg(jetContRecAKT,trkContRec);
    fhConeRho->Fill(conerho); 
-   //_________________________________________________
-   //LOOP OVER AKT JETS
 
+   Double_t cmsrho = EstimateBgKTCMS(jetContRecKT);
+   fhCMSRho->Fill(cmsrho);
+   //_________________________________________________
+   // Loop over AKT jets
    if(jetContRecAKT){ 
       jetContRecAKT->ResetCurrentID();
-      while((jetRec = jetContRecAKT->GetNextAcceptJet())) { //loop over reconstructed jets
+      for(auto jetIterator : jetContRecAKT->accepted_momentum()) {//loop over reconstructed jets
+         jetRec=(AliEmcalJet*)jetIterator.second;
          if(!jetRec) continue;
          if(!IsSignalJetInAcceptance(jetRec)) continue; //check jet eta and pt
          Double_t phi = Convert(jetRec->Phi());
          fhJetPt->Fill(jetRec->Pt()); //fill AKT jet pT
          fhJetPtRho->Fill(jetRec->Pt()-rho*jetRec->Area()); //fill AKT jet pT without bkg
          fhJetPtConeRho->Fill(jetRec->Pt()-conerho*jetRec->Area()); //fill AKT jet pT without local bkg
+         fhJetPtCMSRho->Fill(jetRec->Pt()-cmsrho*jetRec->Area()); //fill AKT jet pT without CMS bkg
          fhJetEtaPt->Fill(jetRec->Eta(),jetRec->Pt());
          fhAktJetEtaPhi->Fill(jetRec->Eta(),phi);
          fhJetPhiPt->Fill(phi,jetRec->Pt());
          fhJetAreaPt->Fill(jetRec->Area(),jetRec->Pt());
-         fhAtimesRho->Fill(rho*jetRec->Area());
-	//loop over jet constituents
+         fhAtimesRhoMedian->Fill(rho*jetRec->Area());
+         fhAtimesRhoCone->Fill(conerho*jetRec->Area());
+         fhAtimesRhoCMS->Fill(cmsrho*jetRec->Area());
+
          for(Int_t iq=0; iq < jetRec->GetNumberOfTracks(); iq++){
             constTrackRec = static_cast<AliVParticle*> (jetRec->TrackAt(iq, trkContRec->GetArray())); //matched rec and emb tracks
             if(!constTrackRec) continue;
@@ -350,11 +345,10 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
          }
       }
    }
-
-  ////Loop over KT jets
+  // Loop over KT jets
   if(jetContRecKT){
-	jetContRecKT->ResetCurrentID();
-	while((jetRec = jetContRecKT->GetNextAcceptJet())) {
+   for(auto jetIterator : jetContRecKT->accepted_momentum()) {
+      jetRec=(AliEmcalJet*)jetIterator.second;
 	   if(!jetRec) continue;
 	   if(!IsSignalJetInAcceptance(jetRec)) continue;
 
@@ -362,12 +356,11 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
         }
    }
 
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   //SINGLE PARTICLE EFFICIENCY AND CONTAMINATION
+   // Single particle efficiency and contamination
    //primary particles spectrum
    if(parContGen){
-      parContGen->ResetCurrentID();
-      while((constTrackGen = (AliVParticle*)(parContGen->GetNextAcceptParticle()))){
+      for(auto trackIterator : parContGen->accepted_momentum()) {
+         constTrackGen=(AliVParticle*)trackIterator.second;
          if(!constTrackGen) continue;
          if(IsTrackInAcceptance(constTrackGen, kTRUE)){
             fhPrimGenTrkPt->Fill(constTrackGen->Pt()); //pT spectrum of generator level particles eta-pt, phi-pt, eta-phi histogram
@@ -380,15 +373,16 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
    //reconstructed primary + secondary particles
    Bool_t bRecPrim = kFALSE; //tags the reconstructed primary particles
    if(trkContRec && parContGen){
-      trkContRec->ResetCurrentID();
-      while((constTrackRecAod =(AliAODTrack*) (trkContRec->GetNextAcceptParticle()))){
+      for(auto trackIterator : trkContRec->accepted_momentum()) {
+         constTrackRecAod=(AliAODTrack*)trackIterator.second;
          if(!constTrackRecAod->IsHybridGlobalConstrainedGlobal()) continue;
          if(!constTrackRecAod) continue;
          if(!IsTrackInAcceptance(constTrackRecAod, kFALSE)) continue; //reconstructed level tracks
          bRecPrim = kFALSE; //reset matching flag
 
          parContGen->ResetCurrentID();
-         while((constTrackGen = (AliVParticle*)(parContGen->GetNextAcceptParticle()))){
+         for(auto trackIterator : parContGen->accepted_momentum()) {
+            constTrackGen=(AliAODTrack*)trackIterator.second;
             if(!constTrackGen) continue;
             if(!IsTrackInAcceptance(constTrackGen, kTRUE)) continue; //gen level physical primary
             if(TMath::Abs(constTrackRecAod->GetLabel()) == TMath::Abs(constTrackGen->GetLabel())){
@@ -402,33 +396,30 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
          }
       }
    }
- //+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   //2) FILL JET RESPONSE MATRIX
-   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   // Response matrix
    Double_t ptGenCorr; //GEN jet pt corrected for rho
    Double_t ptRecCorr; //REC jet pt corrected for rho
 
    //Response matrix normalization - spectrum of all generator level jets in acceptance
    if(jetContGenAKT){
-      jetContGenAKT->ResetCurrentID();
-      while((jetGen = jetContGenAKT->GetNextAcceptJet())){
+      for(auto jetIterator : jetContGenAKT->accepted_momentum()) {
+         jetGen=(AliEmcalJet*)jetIterator.second;
          if(!jetGen) continue;
          if(!IsSignalJetInAcceptance(jetGen,kTRUE)) continue; //cuts on eta, pT ,are
          fhGenJetPt->Fill(jetGen->Pt()); //Pt spectrum of MC jets 
       }
    }
       //Find closest gen level+rec level  jets
-   if(jetContRecAKT){  
-      jetContRecAKT->ResetCurrentID();
-      while((jetRec = jetContRecAKT->GetNextAcceptJet())) {
+   if(jetContRecAKT){ 
+      for(auto jetIterator : jetContRecAKT->accepted_momentum()) { 
+         jetRec=(AliEmcalJet*)jetIterator.second;
          if(!jetRec) continue;
          if(!IsSignalJetInAcceptance(jetRec,kTRUE)) continue; //cuts on eta, pT ,area
 
          jetGen = 0x0;
-         jetGen = jetRec->ClosestJet();  //z taggeru
+         jetGen = jetRec->ClosestJet(); 
 
          if(!jetGen){ //did not find matching generator level jet
-
             continue;     
          }
          fhRemx->Fill(jetRec->Pt(),jetGen->Pt());//response matrix
@@ -455,7 +446,6 @@ void AliAnalysisTaskJetPP::Terminate(Option_t *){
 //________________________________________________________________________
 AliAnalysisTaskJetPP::~AliAnalysisTaskJetPP(){
    // Destructor. Clean-up the output list, but not the histograms that are put inside
-   // (the list is owner and will clean-up these histograms). Protect in PROOF case.
    if(fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
    }
@@ -463,22 +453,21 @@ AliAnalysisTaskJetPP::~AliAnalysisTaskJetPP(){
  
 } 
 
-//________________________________________________________________________
+/// Overloads base class method. Creates output objects
 void AliAnalysisTaskJetPP::UserCreateOutputObjects(){
-  // called once to create user defined output objects like histograms, plots etc. 
-  // and to put it on the output list.
-  // Note: Saving to file with e.g. OpenFile(0) is must be before creating other objects.
-  //fOutput TList defined in the mother class
    AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
    Bool_t oldStatus = TH1::AddDirectoryStatus();
    TH1::AddDirectory(kFALSE);
    TString name;
 
-   //Define your histograms here
+   //Histograms
    fhJetPt = new TH1D("fhJetPt","Pt spectrum of the AKT jets",320,-20.0,300.0);
-   fhJetPtRho = new TH1D("fhJetPtRho","Pt spectrum of the AKT jets - bg",320,-20.0,300.0);
-   fhJetPtConeRho = new TH1D("fhJetPtConeRho","p_{T} spectrum of the a-k_{T} jets - bg",320,-20.0,300.0);
-   fhAtimesRho = new TH1D("fhAtimesRho","a-k_{T} background times area",320,-20.0,300.0);
+   fhJetPtRho = new TH1D("fhJetPtRho","Pt spectrum of the AKT jets - kt bg",320,-20.0,300.0);
+   fhJetPtConeRho = new TH1D("fhJetPtConeRho","p_{T} spectrum of the a-k_{T} jets - local kt bg",320,-20.0,300.0);
+   fhJetPtCMSRho = new TH1D("fhJetPtCMSRho","p_{T} spectrum of the a-k_{T} jets - CMS bg",320,-20.0,300.0);
+   fhAtimesRhoMedian = new TH1D("fhAtimesRhoMedian","a-k_{T} background times area",320,-20.0,300.0);
+   fhAtimesRhoCone = new TH1D("fhAtimesRhoCone","cone background times area",320,-20.0,300.0);
+   fhAtimesRhoCMS = new TH1D("fhAtimesRhoCMS","CMS a-k_{T} background times area",320,-20.0,300.0);
    fhJetConstituentPt = new TH1D("fhJetConstituentPt","Pt spectrum of the a-k_{T} jet constituents",300,0.0,300.0);
    fhTrackPt = new TH1D("fhTrackPt","p_{T} spectrum of tracks",300,0.0,300.0);
    fhJetAreaPt = new TH2D("fhJetAreaPt","Jet area vs pt",50,0.,2.,300,0.0,300.0);
@@ -494,9 +483,10 @@ void AliAnalysisTaskJetPP::UserCreateOutputObjects(){
    fhZVertexBC = new TH1D("fhZVertexBC","Z vertex before the cut",200,-50.0,50.0);
    fhXVertex = new TH1D("fhXVertex","X vertex",300,-15.0,15.0);
    fhYVertex = new TH1D("fhYVertex","Y vertex",300,-15.0,15.0);
-   fhCuts = new TH1D("fhCuts","Cuts statistics",4,0,4);
-   fhRho = new TH1D("fhRho","k_{T} jet background",500,0,50.0);//histo rho*A
+   fhCuts = new TH1D("fhCuts","Cuts statistics",3,0,3);
+   fhRho = new TH1D("fhRho","k_{T} jet background",500,0,50.0);
    fhConeRho = new TH1D("fhConeRho","Local a-k_{T} jet background",500,0,50.0);
+   fhCMSRho = new TH1D("fhCMSRho","CMS-style a-k_{T} jet background",500,0,50.0);
    fhKTJetPt = new TH1D("fhKTJetPt","KT jets p_{T} spectrum",300,0.0,300.0);
    fhPrimGenTrkPt = new TH1D("fhPrimGenTrkPt","MC track p_{T}",300,0.0,300.0);
    fhGenJetPt = new TH1D("fhGenJetPt","MC jet p_{T}",300,0.0,300.0);
@@ -510,57 +500,61 @@ void AliAnalysisTaskJetPP::UserCreateOutputObjects(){
    for(int i=0;i<2;i++){
       name = Form("fhSigmaPtOverPtVsPt%i",i); 
       fhSigmaPtOverPtVsPt[i] = new TH2D(name.Data(),"#sigma p_{T}/p_{T} vs p_{T}",100,0.0,100.0,300,0.0,3.0);
-      fOutput->Add((TH2D*)fhSigmaPtOverPtVsPt[i]);
+      fOutput->Add(fhSigmaPtOverPtVsPt[i]);
       name = Form("fhInvPtQVsPhi%i",i); 
       fhInvPtQVsPhi[i] = new TH2D(name.Data(),"Negative track azimuth vs 1/pt",50,-TMath::Pi(),TMath::Pi(),300,0.0,0.25);
-      fOutput->Add((TH2D*)fhInvPtQVsPhi[i]);
+      fOutput->Add(fhInvPtQVsPhi[i]);
       name = Form("fhInvPtQVsEta%i",i); 
       fhInvPtQVsEta[i] = new TH2D(name.Data(),"Negative track azimuth vs 1/pt",50,-fTrackEtaWindow,fTrackEtaWindow,300,0.0,0.25);
-      fOutput->Add((TH2D*)fhInvPtQVsEta[i]); 
+      fOutput->Add(fhInvPtQVsEta[i]); 
       name = Form("fhInvPtQVsPhiASide%i",i); 
       fhInvPtQVsPhiASide[i] = new TH2D(name.Data(),"Negative phi vs 1/pt A-eta",50,-TMath::Pi(),TMath::Pi(),300,0.0,0.25);
-      fOutput->Add((TH2D*)fhInvPtQVsPhiASide[i]);
+      fOutput->Add(fhInvPtQVsPhiASide[i]);
       name = Form("fhInvPtQVsPhiCSide%i",i); 
       fhInvPtQVsPhiCSide[i] = new TH2D(name.Data(),"Negative phi vs 1/pt C-eta",50,-TMath::Pi(),TMath::Pi(),300,0.0,0.25);
-      fOutput->Add((TH2D*)fhInvPtQVsPhiCSide[i]); 
+      fOutput->Add(fhInvPtQVsPhiCSide[i]); 
   }
 
-   fOutput->Add((TH1D*)fhJetPt);
-   fOutput->Add((TH1D*)fhJetPtRho);
-   fOutput->Add((TH1D*)fhJetPtConeRho);
-   fOutput->Add((TH1D*)fhAtimesRho);
-   fOutput->Add((TH2D*)fhJetAreaPt);
+   fOutput->Add(fhJetPt);
+   fOutput->Add(fhJetPtRho);
+   fOutput->Add(fhJetPtConeRho);
+   fOutput->Add(fhJetPtCMSRho);
+   fOutput->Add(fhAtimesRhoMedian);
+   fOutput->Add(fhAtimesRhoCone);
+   fOutput->Add(fhAtimesRhoCMS);
+   fOutput->Add(fhJetAreaPt);
 
-   fOutput->Add((TH1D*)fhJetConstituentPt);
-   fOutput->Add((TH1D*)fhTrackPt);
-   fOutput->Add((TH2D*)fhJetEtaPt);
-   fOutput->Add((TH2D*)fhTrackEtaPt);
-   fOutput->Add((TH2D*)fhJetPhiPt);
+   fOutput->Add(fhJetConstituentPt);
+   fOutput->Add(fhTrackPt);
+   fOutput->Add(fhJetEtaPt);
+   fOutput->Add(fhTrackEtaPt);
+   fOutput->Add(fhJetPhiPt);
 
-   fOutput->Add((TH2D*)fhTrackPhiPt);
-   fOutput->Add((TH1D*)fhZVertex);
-   fOutput->Add((TH1D*)fhXVertex);
-   fOutput->Add((TH1D*)fhYVertex);
-   fOutput->Add((TH1D*)fhCuts);
+   fOutput->Add(fhTrackPhiPt);
+   fOutput->Add(fhZVertex);
+   fOutput->Add(fhXVertex);
+   fOutput->Add(fhYVertex);
+   fOutput->Add(fhCuts);
 
-   fOutput->Add((TH1D*)fhRho);
-   fOutput->Add((TH1D*)fhConeRho);
-   fOutput->Add((TH1D*)fhKTJetPt);
-   fOutput->Add((TH1D*)fhZVertexBC);
-   fOutput->Add((TH1D*)fhPrimGenTrkPt);
+   fOutput->Add(fhRho);
+   fOutput->Add(fhConeRho);
+   fOutput->Add(fhCMSRho);
+   fOutput->Add(fhKTJetPt);
+   fOutput->Add(fhZVertexBC);
+   fOutput->Add(fhPrimGenTrkPt);
 
-   fOutput->Add((TH1D*)fhGenJetPt);
-   fOutput->Add((TH1D*)fhRecTrkPt);
-   fOutput->Add((TH1D*)fhFakeTrkPt);
-   fOutput->Add((TH2D*)fhRemx);
-   fOutput->Add((TH1D*)fhMult);
-   fOutput->Add((TH2D*)fhGenTrackEtaPt);
+   fOutput->Add(fhGenJetPt);
+   fOutput->Add(fhRecTrkPt);
+   fOutput->Add(fhFakeTrkPt);
+   fOutput->Add(fhRemx);
+   fOutput->Add(fhMult);
+   fOutput->Add(fhGenTrackEtaPt);
 
-   fOutput->Add((TH2D*)fhTrackPhiCG);
-   fOutput->Add((TH2D*)fhTrackPhiTPCG);
-   fOutput->Add((TH2D*)fhAktJetEtaPhi);
-   fOutput->Add((TH2D*)fhKtJetEtaPhi);
-   fOutput->Add((TH2D*)fhTrackEtaPhi);
+   fOutput->Add(fhTrackPhiCG);
+   fOutput->Add(fhTrackPhiTPCG);
+   fOutput->Add(fhAktJetEtaPhi);
+   fOutput->Add(fhKtJetEtaPhi);
+   fOutput->Add(fhTrackEtaPhi);
    // =========== Switch on Sumw2 for all histos ===========
    for(Int_t i=0; i<fOutput->GetEntries(); i++){
       TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
@@ -587,18 +581,17 @@ Bool_t AliAnalysisTaskJetPP::RetrieveEventObjects() {
  
    return kTRUE;
 }
-//________________________________________________________________________
+/// Run the nalysis
 Bool_t AliAnalysisTaskJetPP::Run()
 {
-   // Run analysis code here, if needed. It will be executed before FillHistograms().
    
    return kTRUE;
 }
 
-//________________________________________________________________________
-
+/// This function estimates the underlying event background based on the standard area based approach.
+/// @param jetCont The jet container
+/// @return rhoCone Background density
 Double_t AliAnalysisTaskJetPP::EstimateBgKT(AliJetContainer *jetCont){
-   //Estimate rho by the standard area based approach (from KT jet median)
    Double_t rhoCone    = 0.0;
  
    if(!jetCont) return rhoCone;   
@@ -608,8 +601,8 @@ Double_t AliAnalysisTaskJetPP::EstimateBgKT(AliJetContainer *jetCont){
    Int_t nJetAcc = 0;
    Double_t jetpt;
 
-   jetCont->ResetCurrentID();
-   while((jet = jetCont->GetNextAcceptJet())){ //loop over KT jets
+   for(auto jetIterator : jetCont->accepted_momentum()) {
+      jet=(AliEmcalJet*)jetIterator.second;
       if(!jet) continue;
       if(!IsSignalJetInAcceptance(jet,kFALSE)) continue; //check jet eta and pt
 
@@ -625,9 +618,11 @@ Double_t AliAnalysisTaskJetPP::EstimateBgKT(AliJetContainer *jetCont){
  
   return rhoCone; 
 }
-//________________________________________________________________________
+/// This function estimates the udnerlying event background based on two perpendicula cones to the leading jet.
+/// @param jetCont The jet container
+/// @param trkCont The track container
+/// @return rhoCone Background density
 Double_t AliAnalysisTaskJetPP::EstimateLocalBg(AliJetContainer *jetCont,AliParticleContainer *trkCont){
-   //Estimate background in a cone perpendicular to the leading jet
    Double_t rhoCone    = 0.0;
  
    if(!jetCont) return rhoCone;   
@@ -637,7 +632,7 @@ Double_t AliAnalysisTaskJetPP::EstimateLocalBg(AliJetContainer *jetCont,AliParti
    Double_t trackpt=0;
    Double_t tracketa=0;
    Double_t trackphi=0;
-   Double_t coner = 0.4;//<<<<<<<<<<<<<<<<<the radius of the perpendicular cone
+   Double_t coner = 0.4;//the radius of the perpendicular cone
    Double_t coner2 = coner*coner;
    Double_t highjetpt=-1;
    Double_t highjeteta=0;
@@ -650,8 +645,8 @@ Double_t AliAnalysisTaskJetPP::EstimateLocalBg(AliJetContainer *jetCont,AliParti
    Double_t Y=0;
    Double_t Z=0;
 
-   jetCont->ResetCurrentID();
-   while((jet = jetCont->GetNextAcceptJet())){ //loop over KT jets
+   for(auto jetIterator : jetCont->accepted_momentum()) {
+      jet=(AliEmcalJet*)jetIterator.second;
       if(!jet) continue;
       if(!IsSignalJetInAcceptance(jet)) continue; //check jet eta and pt
       if(jet->Pt()>highjetpt){ 
@@ -664,28 +659,67 @@ Double_t AliAnalysisTaskJetPP::EstimateLocalBg(AliJetContainer *jetCont,AliParti
    perpphi1=Convert(highjetphi+TMath::Pi()/2);//the two perpendicular angles
    perpphi2=Convert(highjetphi-TMath::Pi()/2);
 
-   trkCont->ResetCurrentID();
-   while((track = trkCont->GetNextAcceptParticle())){
+   for(auto trackIterator : trkCont->accepted_momentum()) {
+      track=(AliVParticle*)trackIterator.second;
       if(!((AliAODTrack*)track)->IsHybridGlobalConstrainedGlobal()) continue; 
       if(!track) continue;
       if(!IsTrackInAcceptance(track)) continue;
 
       trackpt = track->Pt();
       tracketa = track->Eta();
-      trackphi = track->Phi()-TMath::Pi();
+      trackphi = Convert(track->Phi());
       X=tracketa-highjeteta;
       Y=Convert(trackphi-perpphi1);
       Z=Convert(trackphi-perpphi2);     
 
-      if(X*X+Y*Y<coner2 || X*X+Y*Y<coner2){
+      if((X*X+Y*Y) < coner2 || (X*X+Z*Z) < coner2){
          bgpt=bgpt+trackpt;
       }
    }
-   rhoCone = bgpt/(2*TMath::Pi()*coner2); //take the median of pTjet/Ajet
+   rhoCone = bgpt/(2*TMath::Pi()*coner2); //calculate the pT density
     
    return rhoCone; 
 }
-Double_t AliAnalysisTaskJetPP::Convert(Double_t input){//Converts an angle to the range (-Pi,Pi)
-   return TMath::ATan2(TMath::Sin(input),TMath::Cos(input));
-}
+/// This function estimates the underlying event background based on the improved CMS method.
+/// @param jetCont The jet container
+/// @return rhoCMS Background density
+Double_t AliAnalysisTaskJetPP::EstimateBgKTCMS(AliJetContainer *jetCont){
+   Double_t rhoCMS    = 0.0;
+ 
+   if(!jetCont) return rhoCMS;   
 
+   AliEmcalJet*  jet        = NULL;
+   static Double_t rhovec[999];
+   Int_t nJetAcc = 0;
+   Double_t jetpt = 0.0;
+   Double_t physJetArea = 0.0;
+   Double_t allJetArea = 0.0; 
+
+   for(auto jetIterator : jetCont->accepted_momentum()) {
+      jet=(AliEmcalJet*)jetIterator.second;
+      if(!jet) continue;
+      if(!IsSignalJetInAcceptance(jet,kFALSE)) continue; //check jet eta and pt
+
+      if(jet->Pt() > 0.01){//Select only physical jets 
+         physJetArea += jet->Area(); //Area of physical jets 
+         jetpt = jet->Pt();          
+         rhovec[nJetAcc] = jetpt/jet->Area();
+         nJetAcc++;
+      }
+      allJetArea += jet->Area();//Area of all jets
+   }
+
+   if(nJetAcc>0 && allJetArea!=0){
+      rhoCMS = TMath::Median(nJetAcc, rhovec)*physJetArea/allJetArea; //Calculate the CMS background
+   }
+ 
+  return rhoCMS; 
+}
+/// This function convertes the range of pseudorapidity to the interval (-Pi,Pi)
+/// @param input Azimuth
+/// @return phi Converted azimuth
+Double_t AliAnalysisTaskJetPP::Convert(Double_t input){//Converts an angle to the range (-Pi,Pi)
+   Double_t phi;
+   phi = TMath::ATan2(TMath::Sin(input),TMath::Cos(input));
+   return phi;
+}

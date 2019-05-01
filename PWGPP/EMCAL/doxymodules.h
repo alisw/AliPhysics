@@ -93,3 +93,15 @@
  * + scanTemp.C
  *
  */
+
+/**
+ * \defgroup EMCALOfflineMacrosCalibPi0 EMCALOfflineMacrosCalibPi0 
+ * \ingroup EMCALOfflineMacros EMCALOfflineMacros
+ * \brief Macros for EMCal energy calibration with Pi0 
+ */
+
+/**
+ * \defgroup EMCAL_OADB EMCAL_OADB
+ * \ingroup EMCALOfflineMacros EMCALOfflineMacros
+ * \brief Macros for EMCal OADB files creation and checks
+ */

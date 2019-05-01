@@ -81,6 +81,10 @@ list ( APPEND HDRS
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
+
+# visualize all compiler warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
 set(ROOT_DEPENDENCIES Hist)
 
 # Generate the ROOT map

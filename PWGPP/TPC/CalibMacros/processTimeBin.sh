@@ -17,7 +17,7 @@ if [[ $# -lt 3 ]] ; then Usage ;fi
 
 echo "Arguments: 1 = $1, 2 = $2, 3 = $3"
 
-source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
+source $ALICE_ROOT/libexec/scripts/alilog4bash.sh
 #
 
 residualFileList="residualFilesList.log" # file containing the whole list of ResidualTrees.root files to be processed

@@ -197,7 +197,7 @@ void AliStrangenessModule::SetStandardMassFunctionsPbPb2015 () {
 }
 
 //________________________________________________________________
-TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputFile ){
+void AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputFile ){
     //Main analysis code
     
     //Report time at the end
@@ -217,28 +217,30 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     
     //Check if input has been provied
     if( !lDataInput ) {
-        AliWarning("Data input not defined!"); return 0x0;
+        AliWarning("Data input not defined!"); return;
     }
     if( !lDataCountersInput ) {
-        AliWarning("Data counters list not defined!"); return 0x0;
+        AliWarning("Data counters list not defined!"); return;
     }
     if( !lLSDataInput && lRequestLSSub ) {
-        AliWarning("Like-sign data input not defined!"); return 0x0;
+        AliWarning("Like-sign data input not defined!"); return;
     }
     if( !lLSDataCountersInput && lRequestLSSub ) {
-        AliWarning("Like-sign data counters list not defined!"); return 0x0;
+        AliWarning("Like-sign data counters list not defined!"); return;
     }
     if( !lMCInput && !lDoOnlyData ) {
-        AliWarning("MC input not defined!"); return 0x0;
+        AliWarning("MC input not defined!"); return;
     }
     if( !lMCCountersInput && !lDoOnlyData  ) {
-        AliWarning("MC counters list not defined!"); return 0x0;
+        AliWarning("MC counters list not defined!"); return;
     }
     
     //Open File for output: default name if not defined in DoAnalysis call
     if ( lOutputFile.EqualTo("") ) lOutputFile = Form("Results_%s.root",lConfiguration.Data() );
     
     TFile *fFileOut = new TFile(lOutputFile.Data(), "RECREATE");
+    //TDirectory *gDir = fFileOut->GetDirectory("");
+    
     TList *fListData = new TList();
     fListData->SetName("cListData");
     fListData->SetOwner(kTRUE);
@@ -253,7 +255,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     
     //In preparation: get number of events from real data
     TH1D *fHistCentrality = (TH1D*) lDataCountersInput->FindObject( "fHistCentrality" )->Clone("fHistCentralityClone");
-    fHistCentrality->SetDirectory(0);
+    //fHistCentrality->SetDirectory(0);
     Double_t lNEvents = fHistCentrality->Integral( fHistCentrality->GetXaxis()->FindBin( lLoMult+1e-5 ),
                                                   fHistCentrality->GetXaxis()->FindBin( lHiMult-1e-5 ) );
     cout<<"AliStrangenessModule -> Number of events in multiplicity class "<<lLoMult<<" to "<<lHiMult<<": "<<lNEvents<<endl;
@@ -262,14 +264,14 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     Double_t lNEventsMC = 0;
     if ( !lDoOnlyData ) {
         TH1D *fHistCentralityMC = (TH1D*) lMCCountersInput->FindObject( "fHistCentrality" )->Clone("fHistCentralityCloneMC");
-        fHistCentralityMC->SetDirectory(0);
+        //fHistCentralityMC->SetDirectory(0);
         lNEventsMC = fHistCentralityMC->Integral( fHistCentralityMC->GetXaxis()->FindBin( lLoMult+1e-5 ),
                                                  fHistCentralityMC->GetXaxis()->FindBin( lHiMult-1e-5 ) );
     }
     
     //Save number of events to output
     TH1D *fHistEventCounter = new TH1D("fHistEventCounter", "", 2,0,2);
-    fHistEventCounter->SetDirectory(0);
+    //fHistEventCounter->SetDirectory(0);
     
     fHistEventCounter->GetXaxis()->SetBinLabel(1, "# Events (Data)");
     fHistEventCounter->GetXaxis()->SetBinLabel(2, "# Events (MC)");
@@ -294,7 +296,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     //_________________________________________________
     // Process TH3Fs and expand into histograms of interest
     TH3F *f3dHistData = (TH3F*) lDataResult->GetHistogram()->Clone("f3dHistData");
-    f3dHistData->SetDirectory(0);
+    //f3dHistData->SetDirectory(0);
     fListData->Add(f3dHistData);
     
     //Check if multiplicity interval requested is possible
@@ -303,7 +305,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         AliWarning(" LS: Requested mult interval is inconsistent with the data provided!");
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-        return 0x0;
+        return;
     }
     
     //Check if pt interval requested is possible
@@ -312,7 +314,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         AliWarning(" LS: Requested pt binning is inconsistent with the data provided!");
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-        return 0x0;
+        return;
     }
     
     //Project into relevant invariant mass histograms
@@ -328,7 +330,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
                                               f3dHistData->GetYaxis()->FindBin( lPtBins[ibin  ]+1e-5 ),
                                               f3dHistData->GetYaxis()->FindBin( lPtBins[ibin+1]-1e-5 )
                                               );
-        lHistoData[ibin]->SetDirectory(0); 
+        //lHistoData[ibin]->SetDirectory(0);
         fListData->Add(lHistoData[ibin]);
     }
     
@@ -340,7 +342,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
                                                                   f3dHistData->GetYaxis()->FindBin( lPtBins[ibin  ]+1e-5 ),
                                                                   f3dHistData->GetYaxis()->FindBin( lPtBins[ibin+1]-1e-5 )
                                                                   );
-            lHistoDataIntegrated[ibin]->SetDirectory(0);
+            //lHistoDataIntegrated[ibin]->SetDirectory(0);
             fListData->Add(lHistoDataIntegrated[ibin]);
         }
     }
@@ -362,12 +364,12 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
             AliWarning(" with different selection criteria! Will stop here. Please ");
             AliWarning(" check your input files!");
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            return 0x0;
+            return;
         }
         //_________________________________________________
         // Process TH3Fs and expand into histograms of interest
         TH3F *f3dHistLSData = (TH3F*) lLSDataResult->GetHistogram()->Clone("f3dHistLSData");
-        f3dHistLSData->SetDirectory(0);
+        //f3dHistLSData->SetDirectory(0);
         fListData->Add(f3dHistLSData);
         //Check if multiplicity interval requested is possible
         Bool_t lCheckMult = CheckCompatibleMultiplicity ( f3dHistLSData );
@@ -375,7 +377,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
             AliWarning(" LS: Requested mult interval is inconsistent with the data provided!");
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            return 0x0;
+            return;
         }
         
         //Check if pt interval requested is possible
@@ -384,7 +386,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
             AliWarning(" LS: Requested pt binning is inconsistent with the data provided!");
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-            return 0x0;
+            return;
         }
         for( Long_t ibin = 0; ibin<lNPtBins; ibin++){
             lHistoLSData[ibin] = f3dHistLSData->ProjectionZ( Form("lHistoLSData_%.1f_%.1f", lPtBins[ibin], lPtBins[ibin+1]),
@@ -393,7 +395,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
                                                         f3dHistLSData->GetYaxis()->FindBin( lPtBins[ibin  ]+1e-5 ),
                                                         f3dHistLSData->GetYaxis()->FindBin( lPtBins[ibin+1]-1e-5 )
                                                         );
-            lHistoLSData[ibin]->SetDirectory(0);
+            //lHistoLSData[ibin]->SetDirectory(0);
             fListData->Add(lHistoLSData[ibin]);
         }
 
@@ -433,8 +435,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     Double_t lSigmaVsPt[100], lSigmaErrVsPt[100];
     TH1D* fHistMeanVsPt  = new TH1D("fHistMeanVsPt", "",lNPtBins,lPtBins);
     TH1D* fHistSigmaVsPt = new TH1D("fHistSigmaVsPt","",lNPtBins,lPtBins);
-    fHistMeanVsPt->SetDirectory(0);
-    fHistSigmaVsPt->SetDirectory(0);
+    //fHistMeanVsPt->SetDirectory(0);
+    //fHistSigmaVsPt->SetDirectory(0);
     if(!lVerbose) cout<<"AliStrangenessModule -> Initial fit (data):       ["<<flush;
     Bool_t lExtStatus = kTRUE;
     TH1D *lPointerToRelevantHisto = 0x0;
@@ -483,9 +485,9 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     //Perform actual signal extraction
     Double_t lSignalVsPt[100], lSignalErrVsPt[100];
     TH1D* fHistRawVsPt  = new TH1D("fHistRawVsPt", "",lNPtBins,lPtBins);
-    fHistRawVsPt->SetDirectory(0);
+    //fHistRawVsPt->SetDirectory(0);
     TH1D* fHistBgVsPt  = new TH1D("fHistBgVsPt", "",lNPtBins,lPtBins);
-    fHistBgVsPt->SetDirectory(0);
+    //fHistBgVsPt->SetDirectory(0);
     
     if(!lVerbose) cout<<"AliStrangenessModule -> Extracting signal (data): ["<<flush;
     lExtStatus = kTRUE;
@@ -528,7 +530,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         timer->Stop();
         cout<<"AliStrangenessModule -> Done! Total time: "<<timer->RealTime()<<"s (real), "<< timer->CpuTime() <<"s (cpu) (processed data only!)"<<endl;
         delete timer;
-        return 0x0;
+        return;
     }
     
     //Step N: Open MC data object
@@ -550,13 +552,13 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         AliWarning(" with different selection criteria! Will stop here. Please ");
         AliWarning(" check your input files!");
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-        return 0x0;
+        return;
     }
     
     //_________________________________________________
     // Process TH3Fs and expand into histograms of interest
     TH3F *f3dHistMC = (TH3F*) lMCResult->GetHistogram()->Clone("f3dHistMC");
-    f3dHistMC->SetDirectory(0);
+    //f3dHistMC->SetDirectory(0);
     fListMC->Add(f3dHistMC);
     
     //Check if multiplicity interval requested is possible
@@ -565,7 +567,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         AliWarning("Requested mult interval is inconsistent with the MC provided!");
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-        return 0x0;
+        return;
     }
     
     //Check if pt interval requested is possible
@@ -574,7 +576,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         AliWarning(" Requested pt binning is inconsistent with the MC provided!");
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
-        return 0x0;
+        return;
     }
     
     //Project into relevant invariant mass histograms
@@ -587,14 +589,14 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
                                                     f3dHistMC->GetYaxis()->FindBin( lPtBins[ibin  ]+1e-5 ),
                                                     f3dHistMC->GetYaxis()->FindBin( lPtBins[ibin+1]-1e-5 )
                                                     );
-        lHistoMC[ibin]->SetDirectory(0);
+        //lHistoMC[ibin]->SetDirectory(0);
         fListMC->Add(lHistoMC[ibin]);
     }
     
     //Perform actual signal extraction
     Double_t lSignalVsPtMC[100], lSignalErrVsPtMC[100];
     TH1D* fHistRawVsPtMC  = new TH1D("fHistRawVsPtMC", "",lNPtBins,lPtBins);
-    fHistRawVsPtMC->SetDirectory(0);
+    //fHistRawVsPtMC->SetDirectory(0);
     
     if(!lVerbose) cout<<"AliStrangenessModule -> Extracting signal (mc):   ["<<flush;
     lExtStatus = kTRUE;
@@ -620,7 +622,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     lGenObjName.Append( lDataResult->GetParticleName() ) ;
     TH3F *f3dHistGenMC = (TH3F*) lMCCountersInput->FindObject( lGenObjName.Data() )->Clone("f3dHistGenMC");
     f3dHistGenMC->Sumw2();
-    f3dHistGenMC->SetDirectory(0);
+    //f3dHistGenMC->SetDirectory(0);
     fListMC->Add(f3dHistGenMC);
     //Project this into a 1D histogram, please
     TH1D* fHistGeneratedOriginal = f3dHistGenMC -> ProjectionX( "fHistGeneratedOriginal",
@@ -629,11 +631,11 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
                                                        f3dHistGenMC->GetZaxis()->FindBin( lLoMult+1e-5 ),
                                                        f3dHistGenMC->GetZaxis()->FindBin( lHiMult-1e-5 )
                                                        );
-    fHistGeneratedOriginal->SetDirectory(0);
+    //fHistGeneratedOriginal->SetDirectory(0);
     
     //Rebin
     TH1D* fHistGenerated = (TH1D*) fHistGeneratedOriginal->Rebin( lNPtBins, "fHistGenerated", lPtBins );
-    fHistGenerated->SetDirectory(0);
+    //fHistGenerated->SetDirectory(0);
     
     //Save this as a very relevant histogram
     fListMC->Add(fHistGeneratedOriginal);
@@ -641,7 +643,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     
     //Generate Efficiency Histogram
     TH1D* fHistEfficiency = (TH1D*) fHistRawVsPtMC -> Clone ("fHistEfficiency") ;
-    fHistEfficiency->SetDirectory(0);
+    //fHistEfficiency->SetDirectory(0);
     fHistEfficiency->Divide(fHistGenerated);
     
     //Check if g3/f correction enabled 
@@ -666,7 +668,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
             lFuncG3FCorr->SetParameter(3, 4.43007e-02);
         }
         if( !lFuncG3FCorr ) {
-            AliWarning("Something went wrong with the determination of the G3/F correction!"); return 0x0;
+            AliWarning("Something went wrong with the determination of the G3/F correction!"); return;
         }
         
         fListMC->Add(lFuncG3FCorr); //add function to output for completeness
@@ -679,11 +681,11 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         
         TH1D *fHistG3FCorrection = new TH1D("fHistG3FCorrection", "", lNPtBins, lPtBins);
         TProfile * fProfProtonComplete = (TProfile*) lMCResult->GetProtonProfileToCopy()->Clone("fProfProtonComplete");
-        fProfProtonComplete->SetDirectory(0);
+        //fProfProtonComplete->SetDirectory(0);
         
         //rebin to match
         TProfile *fProfProton = (TProfile*) fProfProtonComplete->Rebin( lNPtBins, "fProfProton", lPtBins );
-        fProfProton->SetDirectory(0);
+        //fProfProton->SetDirectory(0);
         
         fListMC -> Add(fProfProtonComplete);
         fListMC -> Add(fProfProton);
@@ -713,7 +715,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     
     //Generate Corrected Spectrum
     TH1D *fHistSpectra = (TH1D*) fHistRawVsPt->Clone("fHistSpectra");
-    fHistSpectra->SetDirectory(0);
+    //fHistSpectra->SetDirectory(0);
     
     //Efficiency correction
     fHistSpectra->Divide(fHistEfficiency);
@@ -727,8 +729,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     //Add to output 
     fListOutput->Add(fHistSpectra);
     
-    TH1D *fHistSpectraToReturn = (TH1D*) fHistSpectra->Clone("fHistSpectraToReturn");
-    fHistSpectraToReturn->SetDirectory(0);
+    //TH1D *fHistSpectraToReturn = (TH1D*) fHistSpectra->Clone("fHistSpectraToReturn");
+    //fHistSpectraToReturn->SetDirectory(0);
     
     fFileOut->cd();
     //Save all objects owned by the TLists
@@ -737,6 +739,12 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     fListOutput->Write("cAnalysisOutput", TObject::kSingleKey);
     fFileOut->Write();
     fFileOut->Close();
+    
+    //Cleanup
+    lDataResult->Delete();
+    lMCResult->Delete();
+    lDataResult = 0x0;
+    lMCResult = 0x0;
     
     timer->Stop();
     cout<<"AliStrangenessModule -> Done! Total time: "<<timer->RealTime()<<"s (real), "<< timer->CpuTime() <<"s (cpu)"<<endl;
@@ -877,7 +885,7 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     TString lNameHistoPeak = lHisto->GetName();
     lNameHistoPeak.Append("_Peak");
     TH1D *lHistoPeak = (TH1D*) lHisto->Clone(lNameHistoPeak.Data());
-    lHistoPeak->SetDirectory(0);
+    //lHistoPeak->SetDirectory(0);
     lHistoPeak->Reset();
     for(Long_t ibin=lBinPeakLo; ibin<lBinPeakHi+1; ibin++){
         lHistoPeak->SetBinContent(ibin, lHisto->GetBinContent(ibin));

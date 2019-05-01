@@ -13,6 +13,7 @@
 #pragma link C++ class AliAnalysisTaskpypy+;
 #pragma link C++ class AliAnalysisTaskpzpz+;
 #pragma link C++ class AlianalysisTaskDptPID+;
+#pragma link C++ class AliAnalysisTaskHadronPhiCorr+;
 #pragma link C++ class AliAnalysisTask3PCorrelations+;
 #pragma link C++ class AliAnalysisTaskPhiCorrelations+;
 #pragma link C++ class AliAnalysisTaskCorrelationsDev+;
@@ -20,6 +21,7 @@
 #pragma link C++ class AliPhiCorrelationsQATask+;
 #pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
 #pragma link C++ class AliAnalysisTaskMinijet+;
+#pragma link C++ class AliAnalysisTaskMinijetV2+;
 #pragma link C++ class AliAnalysisTaskDiHadron+;
 #pragma link C++ class AliFunctionsDiHadronPID+;
 #pragma link C++ class AliTrackDiHadronPID+;
@@ -64,10 +66,23 @@
 #pragma link C++ class AliAnalysisTaskEPCorrAAMC+;
 #pragma link C++ class AliCorrReducedTrackAAMC+;
 #pragma link C++ class AliAnalysisTaskPIDBFDptDpt+;
+#pragma link C++ class AliAnalysisTaskGeneralBF+;
 #pragma link C++ class AliAnaTaskMomScan+;
 #pragma link C++ class AliCorrelationAnalysis+;
 #pragma link C++ class AliAnalysisTaskSEpPbCorrelationsYS+;
 #pragma link C++ class AliAssociatedTrackYS+;
 #pragma link C++ class AliMixTrackYS+;
 #pragma link C++ class AliAssociatedVZEROYS+;
+#pragma link C++ class AliAnalysisTaskCorrelationsStudies+;
+#pragma link C++ class AliCSAnalysisCutsBase+;
+#pragma link C++ class AliCSEventCuts+;
+#pragma link C++ class AliCSPairAnalysis+;
+#pragma link C++ class AliCSPIDCuts+;
+#pragma link C++ class AliCSTrackCutsBase+;
+#pragma link C++ class AliCSTrackCuts+;
+#pragma link C++ class AliCSTrackMaps+;
+#pragma link C++ class AliCSTrackSelection+;
+#pragma link C++ class AliDptDptCorrelations+;
+#pragma link C++ class AliAnalysisTaskDiHadCorrelHighPt+;
+#pragma link C++ class AliV0ChParticle+;
 #endif

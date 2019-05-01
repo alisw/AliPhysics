@@ -16,27 +16,40 @@ class AliFemtoBasicEventCut : public AliFemtoEventCut {
 public:
 
   AliFemtoBasicEventCut(); ///< Default Constructor
-  AliFemtoBasicEventCut(AliFemtoBasicEventCut& c);  ///< Copy Constructor
+  AliFemtoBasicEventCut(const AliFemtoBasicEventCut& c);  ///< Copy Constructor
   virtual ~AliFemtoBasicEventCut(); ///< Destructor
-  AliFemtoBasicEventCut& operator=(AliFemtoBasicEventCut& c);  ///< Assignment Operator
+  AliFemtoBasicEventCut& operator=(const AliFemtoBasicEventCut& c);  ///< Assignment Operator
 
   void SetEventMult(const int& lo,const int& hi);     ///< Set min and max acceptable event multiplicity
   void SetVertZPos(const float& lo, const float& hi); ///< Set min and max acceptable vertex z-coordinate
+  void SetEPVZERO(const float& lo, const float& hi); ///< Set the min and max allowed event reaction plane angle
   void SetAcceptBadVertex(bool b);  ///< Check if ZDC participants is greater than 1.0
-  int NEventsPassed() const;  ///< Number of events passed
-  int NEventsFailed() const;  ///< Number of events failed
-
-  bool GetAcceptBadVertex();
   /* bool GetAcceptOnlyPhysics(); */
   void SetTriggerSelection(int trig);  ///< Set the trigger cluster
 
-  void SetEPVZERO(const float& lo, const float& hi); ///< Set the min and max allowed event reaction plane angle
+  int NEventsPassed() const;  ///< Number of events passed
+  int NEventsFailed() const;  ///< Number of events failed
+
+  std::pair<int, int> GetEventMult() const
+    { return { fEventMult[0], fEventMult[1]}; }
+
+  std::pair<float, float> GetVertZPos() const
+    { return { fVertZPos[0], fVertZPos[1]}; }
+
+  std::pair<float, float> GetPsiEP() const
+    { return { fPsiEP[0], fPsiEP[1]}; }
+
+  bool GetAcceptBadVertex() const
+    { return fAcceptBadVertex; }
+
+  int GetSelectTrigger() const
+    { return fSelectTrigger; }
 
   virtual TList* AppendSettings(TList*, const TString& prefix="") const;
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
 
-  AliFemtoBasicEventCut* Clone();
+  virtual AliFemtoEventCut* Clone() const;
 
 private:   // here are the quantities I want to cut on...
 
@@ -89,13 +102,18 @@ inline void AliFemtoBasicEventCut::SetTriggerSelection(int trig)
   fSelectTrigger = trig;
 }
 
-inline AliFemtoBasicEventCut* AliFemtoBasicEventCut::Clone()
+inline void AliFemtoBasicEventCut::SetAcceptBadVertex(bool b)
+{
+  fAcceptBadVertex = b;
+}
+
+inline AliFemtoEventCut* AliFemtoBasicEventCut::Clone() const
 {
   AliFemtoBasicEventCut* c = new AliFemtoBasicEventCut(*this);
   return c;
 }
 
-inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c):
+inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(const AliFemtoBasicEventCut& c):
   AliFemtoEventCut(c),
   fAcceptBadVertex(c.fAcceptBadVertex),
   fNEventsPassed(0),
@@ -111,7 +129,7 @@ inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c):
   fPsiEP[1] = c.fPsiEP[1];
 }
 
-inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(AliFemtoBasicEventCut& c)
+inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(const AliFemtoBasicEventCut& c)
 {
   if (this != &c) {
     AliFemtoEventCut::operator=(c);
@@ -121,6 +139,9 @@ inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(AliFemtoBasicEven
     fVertZPos[1] = c.fVertZPos[1];
     fPsiEP[0] = c.fPsiEP[0];
     fPsiEP[1] = c.fPsiEP[1];
+
+    fAcceptBadVertex = c.fAcceptBadVertex;
+    fSelectTrigger = c.fSelectTrigger;
   }
 
   return *this;

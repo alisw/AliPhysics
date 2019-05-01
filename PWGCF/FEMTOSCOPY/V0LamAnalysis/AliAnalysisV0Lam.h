@@ -1,5 +1,10 @@
+///
+/// \file V0LamAnalysis/AliAnalysisV0Lam.h
+///
+
 #ifndef AliAnalysisV0Lam_cxx
 #define AliAnalysisV0Lam_cxx
+
 class TH1F;
 class TH1D;
 class TH2D;
@@ -33,26 +38,37 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     virtual void UserCreateOutputObjects();
     virtual void Exec(Option_t *option);
     virtual void Terminate(Option_t *);
-    enum 
+    enum
     {
       nCentBins   = 20,
       zVertexBins = 10
     };
     Int_t nEventsToMix;
-  
+
   private:
 
-    enum TwoTrackCut { kSameProtProt = 0, kSamePiPi = 1, kSameProtPi = 2,
-		       kDiffProtProt = 3, kDiffPiPi = 4, kDiffProtPi = 5, kNumberTTCTypes = 6};
-    enum PairType { kLamLam = 0,  kALamALam = 1,
-		    kLamALam = 2, kALamLam = 3};
+    enum TwoTrackCut {
+      kSameProtProt = 0,
+      kSamePiPi = 1,
+      kSameProtPi = 2,
+      kDiffProtProt = 3,
+      kDiffPiPi = 4,
+      kDiffProtPi = 5,
+      kNumberTTCTypes = 6,
+    };
 
-    
+    enum PairType {
+      kLamLam = 0,
+      kALamALam = 1,
+      kLamALam = 2,
+      kALamLam = 3,
+    };
+
     AliAODEvent    *fAOD; //! AOD object
     TList          *fOutputList; //! Compact Output list
     AliAODpidUtil  *fpidAOD; //!
     AliAnalysisV0LamCutProcessing *fCutProcessor; //!
-    
+
     // Variables that are constant, preset parameters (e.g. cut values)
     int    fMaxV0Mult;                    //maximum number of V0s, array size
     double fEtaDaughter;	          //maximum eta for daughter particles
@@ -61,7 +77,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     double fSigmaCutTOFPion;              //max NSigma allowed
     double fSigmaCutTPCPion;
     double fSigmaCutTOFProton;
-    double fSigmaCutTPCProton; 
+    double fSigmaCutTPCProton;
     double fPDGLambda, fPDGProton, fPDGPion; //true PDG masses
     int    fEventCount;
     SysStudy fSysStudyType;
@@ -82,7 +98,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     int fTotalLambda; //counts number of v0s found across all events
     int fTotalAntiLambda;
     int fV0Candidates;
-    
+
     // Histograms created in the analysis
     TH2F *fTPCVsPPosLam; //!
     TH2F *fTPCVsPNegLam; //!
@@ -121,7 +137,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     TH2F *fResMatrixLLMixedPure; //!
     TH2F *fResMatrixAAMixedPure; //!
     TH2F *fResMatrixLAMixedPure; //!
-    
+
     // MC info
     TH1F *fMCTruthPtLam; //!
     TH1F *fMCTruthPtALam; //!
@@ -137,14 +153,14 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     TH3F *fBkgALamALam; //!
     TH3F *fSignalLamALam; //!
     TH3F *fBkgLamALam; //!
-    // kT vs k* histograms 
+    // kT vs k* histograms
     TH3F *fSignalKtVsKstarLamLam; //!
     TH3F *fBkgKtVsKstarLamLam; //!
     TH3F *fSignalKtVsKstarALamALam; //!
     TH3F *fBkgKtVsKstarALamALam; //!
     TH3F *fSignalKtVsKstarLamALam; //!
     TH3F *fBkgKtVsKstarLamALam; //!
-    
+
     //Proper decay length difference
     TH1F *fHistSignalProperDecayLengthDiffLamLam;
     TH1F *fHistSignalProperDecayLengthDiffALamALam;
@@ -167,7 +183,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     TH3F *fBkgLamALamAntiProtPiMinusSep; //!
 
 
-    // opposite charged pair separation 
+    // opposite charged pair separation
     TH3F *fSignalLamLamPlusMinusSep; //!
     TH3F *fSignalALamALamPlusMinusSep; //!
     TH3F *fSignalLamALamProtSep; //!
@@ -180,8 +196,8 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
 
     //Functions
     void MyInit();
-    vector<TVector3> GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield);
-    Double_t GetAverageSeparation(const vector<TVector3> &globalPositions1st, const vector<TVector3> &globalPositions2nd);
+    std::vector<TVector3> GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, const Float_t bfield);
+    Double_t GetAverageSeparation(const std::vector<TVector3> &globalPositions1st, const std::vector<TVector3> &globalPositions2nd);
     TVector3 GetEmissionPoint(const AliAODMCParticle * const track, TVector3 primVertex);
     void DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const event, const int totalV0s);
     int DetermineWhichV0IsWorse(const AliAnalysisV0LamEvent * const event, const int V01, const int V02, const int Criterion, const int cutIndex);
@@ -197,8 +213,8 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     void FillReconstructedV0MCOrigin(const AliReconstructedV0 * v0, TH2F *histPassedCutsOrigin);
     bool IsInjectedParticle(AliAODv0 *v0, TClonesArray *mcArray, Int_t nLastHijingLabel);
     bool IsCorrectEventTrigger();
-    void AddV0ToMultiplicityCounts(AliReconstructedV0 *v0, vector<int> & lambdaCount, vector<int> & antiLambdaCount);
-    void HistogramEventMultiplicities(vector<int> & lambdaCount, vector<int> & antiLambdaCount, int centralityBin);
+    void AddV0ToMultiplicityCounts(AliReconstructedV0 *v0, std::vector<int> & lambdaCount, std::vector<int> & antiLambdaCount);
+    void HistogramEventMultiplicities(std::vector<int> & lambdaCount, std::vector<int> & antiLambdaCount, int centralityBin);
     void FillTPCSignalHists(const AliReconstructedV0 *v0, const double posDaughterP, const double posDaughterTPCSignal, const double negDaughterP, const double negDaughterTPCSignal);
     void CheckForFakeV0s(const AliReconstructedV0 *v0, TH1F *mcFakeParticleIdentity, TH1F *mcOtherV0Identity, const AliReconstructedV0::MCV0Origin_t mcV0Origin);
     double CalculateKstar(TVector3 p1, TVector3 p2, double mass1, double mass2);
@@ -208,14 +224,17 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     void FillAvgSepHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
     void FillCorrelationHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, const Bool_t isMixed, const Int_t cutBin, const Int_t centralityBin);
     void FillKtVsKstarHists(const PairType pairType, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, const Bool_t isMixed, const Int_t centralityBin);
-    vector<Bool_t> CheckAvgSepCut(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02);
+    std::vector<Bool_t> CheckAvgSepCut(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02);
     void FillMomentumResolutionMatrix(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02, Bool_t isMixedEvent);
     bool RejectEventCentFlat(float MagField, float CentPercent);
-    
+
 
     AliAnalysisV0Lam(const AliAnalysisV0Lam&); // not implemented
     AliAnalysisV0Lam& operator=(const AliAnalysisV0Lam&); // not implemented
-    ClassDef(AliAnalysisV0Lam, 1); 
+
+    /// \cond CLASSIMP
+    ClassDef(AliAnalysisV0Lam, 1);
+    /// \endcond
 };
 
 #endif

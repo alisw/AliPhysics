@@ -22,14 +22,14 @@ public TObject
   Float_t GetEta() const {return fEta;}; // get eta
   Float_t GetPhi() const {return fPhi;}; // get phi
   Int_t GetPdgCode() const {return fPdgCode;}; // get PDG code
-
+  Int_t GetMotherPdgCode() const {return fMotherPdgCode; }; //get mother PDG code
   Double_t GetY() const; // get Y
   Float_t GetSign() const; // get sign
   Int_t GetPID() const; // get MC PID
   Double_t GetMass() const; // get mass
 
   void Reset(); // reset
-  void Update(TParticle *particle, Int_t label); // update
+  void Update(TParticle *particle, Int_t label, Int_t MotherPDG); // update
   
  private:
 
@@ -38,11 +38,12 @@ public TObject
   Float_t fEta; // eta
   Float_t fPhi; // phi
   Int_t fPdgCode; // PDG code
+  Int_t fMotherPdgCode; //Mother PDG code
 
   /*** tools ***/
   static TLorentzVector fgLorentzVector;
 
-  ClassDef(AliAnalysisPIDParticle, 2);
+  ClassDef(AliAnalysisPIDParticle, 3);
 };
 
 #endif /* ALIANALYSISPIDPARTICLE_H */
