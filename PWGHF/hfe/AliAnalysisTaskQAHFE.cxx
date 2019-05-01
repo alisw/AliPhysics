@@ -53,7 +53,6 @@
 #include "AliHFEtools.h"
 #include  "AliTOFPIDResponse.h"
 #include  "AliTPCPIDResponse.h"
-#include  "AliHelperPID.h"
 
 #include "TChain.h"
 #include "TTree.h"
@@ -1565,7 +1564,7 @@ void AliAnalysisTaskQAHFE::UserExec(Option_t *)
 	for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) 
   {
 		AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
-   	//AliHelperPID *fHelPID;
+   	
     if(!track) AliFatal("Not a standard AOD");
   		
     Int_t tracktypeTrig=ClassifyTrack(track,pVtx);  //track classify

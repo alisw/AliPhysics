@@ -34,7 +34,6 @@ class AliVertexingHFUtils;
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisDataSlot.h"
-#include  "AliHelperPID.h"
 #include "AliCFManager.h"
 #include "AliMultSelection.h"
 #include "AliSelectNonHFE.h"
