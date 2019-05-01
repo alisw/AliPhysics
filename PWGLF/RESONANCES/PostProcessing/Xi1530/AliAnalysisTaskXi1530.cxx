@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/04/15
+//  Last Modified Date: 2019/05/01
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -74,8 +74,8 @@ enum {
     kINEL10,
     kINELg010,
     kAllType
-};                                        // for Physicsl Results
-enum { kIsSelected = 1, kPS, kAllNone };  // for V0M signal QA plot
+};                                                 // for Physicsl Results
+enum { kIsSelected = 1, kPS, kAllNone };           // for V0M signal QA plot
 enum {
     kTrueINELg0 = 1,
     kTrig_TrueINELg0,
@@ -112,13 +112,23 @@ enum {
     kXiMassWindowTight,
     kXiTrackCut
 };  // for Systematic study
+enum {
+    kALL = 1,
+    kTrigger,
+    kInCompleteDAQ,
+    kNoBG,
+    kNoPileUp,
+    kGoodVertex,
+    kZvtx10,
+    kIENLgtZERO,
+    kAliMultSelection
+};  // for Event Check
 AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable()
     : fCollisionType(kUnknownCollType) {
     ;
 }
 
-AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable(
-    Int_t runnumber) {
+AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable(Int_t runnumber) {
     // Need to be Modified
     if (runnumber >= 256504 && runnumber <= 260014)
         fCollisionType = kPP;  // LHC16kl
@@ -142,7 +152,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530()
 }
 //___________________________________________________________________
 AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(const char* name,
-                                                     const char* option)
+                                             const char* option)
     : AliAnalysisTaskSE(name),
       fOption(option),
       goodtrackindices(),
@@ -152,8 +162,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(const char* name,
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class());
 }
-AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(
-    const AliAnalysisTaskXi1530& ap)
+AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(const AliAnalysisTaskXi1530& ap)
     : fOption(ap.fOption),
       goodtrackindices(ap.goodtrackindices),
       goodcascadeindices(ap.goodcascadeindices),
@@ -202,22 +211,21 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
 
     fHistos = new THistManager("Xi1530hists");
 
-    auto binType = AxisStr("Type", {"DATA", "LS", "Mixing", "MCReco", "MCTrue",
-                                    "kMCTruePS", "INEL10", "INELg010"});
+    auto binType = AxisStr(
+        "Type", {"DATA", "LS", "Mixing", "MCReco", "MCTrue", "kMCTruePS", "INEL10", "INELg010"});
+    vector<double> centaxisbin;
     if (!IsMC) {
         if (IsAA && !IsHighMult)
-            binCent = AxisFix("Cent", 10, 0, 100);  // for AA study
+            centaxisbin = {0,10,20,30,40,50,60,70,80,90,100};  // for AA study
         else if (!IsHighMult)
-            binCent = AxisVar("Cent", {0, 1, 5, 10, 15, 20, 30, 40, 50, 70,
-                                       100});  // for kINT7 study
+            centaxisbin = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};  // for kINT7 study
         else
-            binCent = AxisVar(
-                "Cent", {0, 0.01, 0.03, 0.05, 0.07, 0.1});  // for HM study
+            centaxisbin = {0, 0.01, 0.03, 0.05, 0.07, 0.1};  // for HM study
     } else
-        binCent =
-            AxisVar("Cent", {0, 0.01, 0.03, 0.05, 0.07, 0.01, 1, 5, 10, 15, 20,
-                             30, 40, 50, 70, 100});  // for kINT7 study
+        centaxisbin =  {0, 0.01, 0.03, 0.05, 0.07, 0.01, 1, 5, 10, 15, 20,
+                             30, 40, 50, 70, 100};  // for kINT7 study
 
+    binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
     auto binPt = AxisFix("Pt", 200, 0, 20);
     auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
     binZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});
@@ -258,6 +266,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
 
     auto binTrklet =
         AxisVar("nTrklet", {0, 5, 10, 15, 20, 25, 30, 35, 40, 100});
+    
     if (IsMC) {
         // To get Trigger efficiency in each trk/V0M Multiplicity region
         auto MCType = AxisStr(
@@ -276,6 +285,13 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         fHistos->CreateTH1("hEventNumbers", "", ent.size(), 0, ent.size());
     for (auto i = 0u; i < ent.size(); i++)
         hNofEvt->GetXaxis()->SetBinLabel(i + 1, ent.at(i).Data());
+
+    // stupid method, should be modified later!
+    const double* centbin_array = &centaxisbin[0];
+    vector<double> eventbin = {0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5};
+    const double* eventbin_array = &eventbin[0];
+
+    fHistos->CreateTH2("hEventNumbers_multi", "", eventbin.size()-1, eventbin_array, centaxisbin.size()-1,centbin_array);
 
     // QA Histograms--------------------------------------------------
     //
@@ -556,8 +572,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         AliMultSelectionTask::HasGoodVertex2016(fEvt) &&
         AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(fEvt);
     Bool_t IsVtxInZCut = (fabs(fZ) < 10);
-    // Bool_t IsVtxInZCut =
-    // AliMultSelectionTask::IsAcceptedVertexPosition(fEvt);
+    // Bool_t IsVtxInZCut = AliMultSelectionTask::IsAcceptedVertexPosition(fEvt);
     Bool_t IsTrackletinEta1 =
         (AliESDtrackCuts::GetReferenceMultiplicity(
              ((AliESDEvent*)fEvt), AliESDtrackCuts::kTracklets, 1.0) >= 1);
@@ -589,10 +604,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     if (IsSelectedTrig && IsMultSelcted && fQA)
         fHistos->FillTH1("hMult_QA_onlyMult", (double)fCent);
     // Physics Selection------------------------------------------------------
-    IsPS = IsSelectedTrig       // CINT7 Trigger selected
-           && !IncompleteDAQ    // No IncompleteDAQ
-           && !SPDvsClustersBG  // No SPDvsClusters Background
-           && IsNotPileUp;      // PileUp rejection
+    IsPS = IsSelectedTrig        // CINT7 Trigger selected
+           && !IncompleteDAQ     // No IncompleteDAQ
+           && !SPDvsClustersBG   // No SPDvsClusters Background
+           && IsNotPileUp;        // PileUp rejection
 
     IsINEL0Rec =
         IsPS && IsGoodVertex &&
@@ -601,22 +616,39 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
 
     // Fill Numver of Events -------------------------------------------------
     fHistos->FillTH1("hEventNumbers", "All", 1);
-    if (IsSelectedTrig)
+    fHistos->FillTH2("hEventNumbers_multi", kALL, (double)fCent);
+    if (IsSelectedTrig){
         fHistos->FillTH1("hEventNumbers", "Trigger", 1);
-    if (IsSelectedTrig && !IncompleteDAQ)
+        fHistos->FillTH2("hEventNumbers_multi", kTrigger, (double)fCent);
+    }
+    if (IsSelectedTrig && !IncompleteDAQ){
         fHistos->FillTH1("hEventNumbers", "InCompleteDAQ", 1);
-    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG)
+        fHistos->FillTH2("hEventNumbers_multi", kInCompleteDAQ, (double)fCent);
+    }
+    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG){
         fHistos->FillTH1("hEventNumbers", "No BG", 1);
-    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG && IsNotPileUp)
+        fHistos->FillTH2("hEventNumbers_multi", kNoBG, (double)fCent);
+    }
+    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG && IsNotPileUp){
         fHistos->FillTH1("hEventNumbers", "No pile up", 1);
-    if (IsPS && IsGoodVertex)
+        fHistos->FillTH2("hEventNumbers_multi", kNoPileUp, (double)fCent);
+    }
+    if (IsPS && IsGoodVertex){
         fHistos->FillTH1("hEventNumbers", "Good vertex", 1);
-    if (IsPS && IsGoodVertex && IsVtxInZCut)
+        fHistos->FillTH2("hEventNumbers_multi", kGoodVertex, (double)fCent);
+    }
+    if (IsPS && IsGoodVertex && IsVtxInZCut){
         fHistos->FillTH1("hEventNumbers", "|Zvtx|<10cm", 1);
-    if (IsINEL0Rec)
+        fHistos->FillTH2("hEventNumbers_multi", kZvtx10, (double)fCent);
+    }   
+    if (IsINEL0Rec){
         fHistos->FillTH1("hEventNumbers", "IENLgtZERO", 1);
-    if (IsINEL0Rec && IsMultSelcted)
+        fHistos->FillTH2("hEventNumbers_multi", kIENLgtZERO, (double)fCent);
+    }
+    if (IsINEL0Rec && IsMultSelcted){
         fHistos->FillTH1("hEventNumbers", "AliMultSelection", 1);
+        fHistos->FillTH2("hEventNumbers_multi", kAliMultSelection, (double)fCent);
+    }
 
     if (IsMC && IsINEL0True)
         fHistos->FillTH1("hEventNumbers", "INELg0True",
@@ -653,17 +685,17 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         FillTHnSparse("htriggered_CINT7",
                       {(double)kTrue, (double)fCent, ftrackmult});
         if (IsSelectedTrig)
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kTrig, (double)fCent, ftrackmult});
+            FillTHnSparse("htriggered_CINT7", {(double)kTrig,
+                                               (double)fCent, ftrackmult});
         if (IsPS && IsGoodVertex)
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kGoodVtx, (double)fCent, ftrackmult});
+            FillTHnSparse("htriggered_CINT7", {(double)kGoodVtx,
+                                               (double)fCent, ftrackmult});
         if (IsPS && IsGoodVertex && IsVtxInZCut)
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kVzCutted, (double)fCent, ftrackmult});
+            FillTHnSparse("htriggered_CINT7", {(double)kVzCutted,
+                                               (double)fCent, ftrackmult});
         if (IsINEL0Rec && IsMultSelcted)
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kSelected, (double)fCent, ftrackmult});
+            FillTHnSparse("htriggered_CINT7", {(double)kSelected,
+                                               (double)fCent, ftrackmult});
     }
     // -----------------------------------------------------------------------
 
@@ -697,9 +729,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     // ----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
-    if (IsINEL0Rec &&
-        IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
-                          // IsVtxInZCut) && IsMultSelcted
+    if (IsINEL0Rec && IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
+                                        // IsVtxInZCut) && IsMultSelcted
         // Draw Multiplicity QA plot in only selected event.
         if (fQA) {
             FillTHnSparse("hMult", {(double)fCent});
@@ -1624,9 +1655,9 @@ void AliAnalysisTaskXi1530::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
                 {(double)kDefaultOption, (double)kINELg010, (double)fCent,
                  mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 2)
-            FillTHnSparse("hInvMass", {(double)kDefaultOption, (double)kINEL10,
-                                       (double)fCent, mcInputTrack->Pt(),
-                                       mcInputTrack->GetCalcMass()});
+            FillTHnSparse("hInvMass",
+                          {(double)kDefaultOption, (double)kINEL10, (double)fCent,
+                           mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 3)
             FillTHnSparse(
                 "hInvMass",
@@ -1638,8 +1669,7 @@ void AliAnalysisTaskXi1530::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
                                        mcInputTrack->GetCalcMass()});
     }
 }
-void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent,
-                                               Int_t check) {
+void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check) {
     // Fill MC input Xi1530 histogram
     // check = 1: INEL>0|10
     // check = 2: INEL10
@@ -1657,28 +1687,31 @@ void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent,
 
         if (check == 1)
             FillTHnSparse("hInvMass_dXi",
-                          {(double)kINELg010, (double)fCent, mcInputTrack->Pt(),
-                           mcInputTrack->GetCalcMass()});
+                          {(double)kINELg010, (double)fCent,
+                           mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 2)
-            FillTHnSparse("hInvMass_dXi",
-                          {(double)kINEL10, (double)fCent, mcInputTrack->Pt(),
-                           mcInputTrack->GetCalcMass()});
+            FillTHnSparse(
+                "hInvMass_dXi",
+                {(double)kINEL10, (double)fCent,
+                 mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 3)
-            FillTHnSparse("hInvMass_dXi",
-                          {(double)kMCTruePS, (double)fCent, mcInputTrack->Pt(),
-                           mcInputTrack->GetCalcMass()});
+            FillTHnSparse(
+                "hInvMass_dXi",
+                {(double)kMCTruePS, (double)fCent,
+                 mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 4)
-            FillTHnSparse("hInvMass_dXi",
-                          {(double)kMCTrue, (double)fCent, mcInputTrack->Pt(),
-                           mcInputTrack->GetCalcMass()});
+            FillTHnSparse(
+                "hInvMass_dXi",
+                {(double)kMCTrue, (double)fCent,
+                 mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
     }
 }
 
 THnSparse* AliAnalysisTaskXi1530::CreateTHnSparse(TString name,
-                                                      TString title,
-                                                      Int_t ndim,
-                                                      std::vector<TAxis> bins,
-                                                      Option_t* opt) {
+                                                  TString title,
+                                                  Int_t ndim,
+                                                  std::vector<TAxis> bins,
+                                                  Option_t* opt) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     const TAxis* axises[bins.size()];
@@ -1689,8 +1722,8 @@ THnSparse* AliAnalysisTaskXi1530::CreateTHnSparse(TString name,
 }
 
 Long64_t AliAnalysisTaskXi1530::FillTHnSparse(TString name,
-                                                  std::vector<Double_t> x,
-                                                  Double_t w) {
+                                              std::vector<Double_t> x,
+                                              Double_t w) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     auto hsparse = dynamic_cast<THnSparse*>(fHistos->FindObject(name));
@@ -1702,8 +1735,8 @@ Long64_t AliAnalysisTaskXi1530::FillTHnSparse(TString name,
 }
 
 Long64_t AliAnalysisTaskXi1530::FillTHnSparse(THnSparse* h,
-                                                  std::vector<Double_t> x,
-                                                  Double_t w) {
+                                              std::vector<Double_t> x,
+                                              Double_t w) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     if (int(x.size()) != h->GetNdimensions()) {
@@ -1715,9 +1748,9 @@ Long64_t AliAnalysisTaskXi1530::FillTHnSparse(THnSparse* h,
 }
 
 TAxis AliAnalysisTaskXi1530::AxisFix(TString name,
-                                         int nbin,
-                                         Double_t xmin,
-                                         Double_t xmax) {
+                                     int nbin,
+                                     Double_t xmin,
+                                     Double_t xmax) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(nbin, xmin, xmax);
@@ -1725,8 +1758,7 @@ TAxis AliAnalysisTaskXi1530::AxisFix(TString name,
     return axis;
 }
 
-TAxis AliAnalysisTaskXi1530::AxisStr(TString name,
-                                         std::vector<TString> bin) {
+TAxis AliAnalysisTaskXi1530::AxisStr(TString name, std::vector<TString> bin) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis ax = AxisFix(name, bin.size(), 0.5, bin.size() + 0.5);
@@ -1736,8 +1768,7 @@ TAxis AliAnalysisTaskXi1530::AxisStr(TString name,
     return ax;
 }
 
-TAxis AliAnalysisTaskXi1530::AxisVar(TString name,
-                                         std::vector<Double_t> bin) {
+TAxis AliAnalysisTaskXi1530::AxisVar(TString name, std::vector<Double_t> bin) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(bin.size() - 1, &bin.front());
@@ -1746,10 +1777,10 @@ TAxis AliAnalysisTaskXi1530::AxisVar(TString name,
 }
 
 TAxis AliAnalysisTaskXi1530::AxisLog(TString name,
-                                         int nbin,
-                                         Double_t xmin,
-                                         Double_t xmax,
-                                         Double_t xmin0) {
+                                     int nbin,
+                                     Double_t xmin,
+                                     Double_t xmax,
+                                     Double_t xmin0) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     int binoffset = (xmin0 < 0 || (xmin - xmin0) < 1e-9) ? 0 : 1;
@@ -1786,8 +1817,7 @@ Bool_t AliAnalysisTaskXi1530::IsMCEventTrueINEL0() {
     }
     return isINEL0;
 }
-Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi,
-                                               AliVTrack* pion) {
+Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion) {
     // Check if associated Xi1530 is true Xi1530 in MC set
     if (!Xi)
         return kFALSE;
