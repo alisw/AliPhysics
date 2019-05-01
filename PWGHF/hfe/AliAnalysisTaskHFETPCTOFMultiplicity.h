@@ -274,9 +274,7 @@ private:
     AliAnalysisTaskHFETPCTOFMultiplicity(const AliAnalysisTaskHFETPCTOFMultiplicity& ); // not implemented
     AliAnalysisTaskHFETPCTOFMultiplicity& operator=(const AliAnalysisTaskHFETPCTOFMultiplicity& ); // not implemented
     
-    ClassDef(AliAnalysisTaskHFETPCTOFMultiplicity,f1);
+    ClassDef(AliAnalysisTaskHFETPCTOFMultiplicity,1);
 };
-
-
 
 #endif
