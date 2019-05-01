@@ -47,11 +47,11 @@ class AlidNdPtTools : public TObject
         
         static AliESDtrackCuts* CreateESDtrackCuts(const char* option); // options   
 
-    public:
+    private:
         static THnSparseD*      fSparseTmp;    //! temporary histogram for internal use only
-        static TGraph           fGsscale;       // graph with scaling factors (nominal)
-        static TGraph           fGsscale1;      // graph with scaling factors (syst up)
-        static TGraph           fGsscale2;      // graph with scaling factors (syst down)
+        static TGraph*          fGsscale;       // graph with scaling factors (nominal)
+        static TGraph*          fGsscale1;      // graph with scaling factors (syst up)
+        static TGraph*          fGsscale2;      // graph with scaling factors (syst down)
     /// \cond CLASSIMP    
     ClassDef(AlidNdPtTools, 3);
     /// \endcond 

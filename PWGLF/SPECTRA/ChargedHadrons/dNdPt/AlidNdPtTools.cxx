@@ -18,7 +18,10 @@ ClassImp(AlidNdPtTools)
 //____________________________________________________________________________
 
 THnSparseD* AlidNdPtTools::fSparseTmp = 0;
-TGraph      AlidNdPtTools::fGsscale = TGraph(2);
+TGraph*     AlidNdPtTools::fGsscale = 0;
+TGraph*     AlidNdPtTools::fGsscale1 = 0;
+TGraph*     AlidNdPtTools::fGsscale2 = 0;
+
 
 //____________________________________________________________________________
 
@@ -699,8 +702,33 @@ Double_t AlidNdPtTools::MCScalingFactor(AliMCParticle* particle, AliMCEvent* eve
     ParticleType ptype = ParticleTypeFromPDG(particle->PdgCode());
     
     // for now use hard coded values
+    if (prod == kSecMaterial || prod == kSecDecay) {
+        if (systflag == 0) {        
+            if (!fGsscale) {           
+            Double_t x[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            Double_t y[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            fGsscale = new TGraph(17,x,y);
+            }
+        return fGsscale->Eval(mcpt);
+        } 
+        if (systflag == 1) {        
+            if (!fGsscale1) {           
+            Double_t x[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            Double_t y[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            fGsscale1 = new TGraph(17,x,y);
+            }
+        return fGsscale1->Eval(mcpt);
+        }        
+            if (systflag == -1) {        
+            if (!fGsscale2) {           
+            Double_t x[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            Double_t y[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            fGsscale2 = new TGraph(17,x,y);
+            }
+        return fGsscale2->Eval(mcpt);
+        }
+    }
 
-    
     //internally use the dummy function
     return MCScalingFactor(prod,ptype,mcpt);
 }
@@ -726,7 +754,7 @@ Double_t AlidNdPtTools::MCScalingFactor(AliMCParticle* particle, AliMCEvent* eve
 /// \return scaling factor accoring to the supplied arguments
 
 Double_t AlidNdPtTools::MCScalingFactor(ProductionType prod, ParticleType part, Double_t pt) 
-{
+{    
     //if prod or part type not set return scaling of 1
     if (prod == kUnknown || part  == kUndefined) return 1.0;
     //dummy function for testing, scaling sigmas up by a factor two
