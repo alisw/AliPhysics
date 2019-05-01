@@ -31,6 +31,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TChain.h>
+#include <TGrid.h>
 
 ClassImp(AliAnalysisTaskSEDmesonPIDSysProp)
 
@@ -470,6 +471,9 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
 //________________________________________________________________________
 int AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile()
 {  
+  if (!gGrid) {
+    TGrid::Connect("alien://");
+  }
   TFile* infile = TFile::Open(fSystFileName.Data());
   if(!infile) return 1;
   
