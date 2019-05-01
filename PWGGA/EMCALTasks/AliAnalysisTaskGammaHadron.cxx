@@ -61,7 +61,7 @@ fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
-fUDist(0),fUTildeDist(0),fVDist(0),fVTildeDist(0),fUMatrix(0),fVMatrix(0),fEMCalMultvZvtx(0),
+bLogPSMod(true),fUDist(0),fUTildeDist(0),fVDist(0),fVTildeDist(0),fUMatrix(0),fVMatrix(0),fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
@@ -91,7 +91,7 @@ fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
-fUDist(0),fUTildeDist(0),fVDist(0),fVTildeDist(0),fUMatrix(0),fVMatrix(0),
+bLogPSMod(true),fUDist(0),fUTildeDist(0),fVDist(0),fVTildeDist(0),fUMatrix(0),fVMatrix(0),
 fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
@@ -763,22 +763,40 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     Double_t *binEdgesThnModMatrix[7] = {0};
 
     const Int_t nBins2DMod = 500;
-    titleThnModMatrix[dimThnModMatrix] = "Mass Scaling";
     nBinsThnModMatrix[dimThnModMatrix] = nBins2DMod;
     Double_t ModMatrixArray[nBins2DMod+1];
     binEdgesThnModMatrix[dimThnModMatrix] = ModMatrixArray;
-    GenerateFixedBinArray(nBins2DMod,0,10.,ModMatrixArray);
-    minThnModMatrix[dimThnModMatrix] = 0.0;
-    maxThnModMatrix[dimThnModMatrix] = 10.;
+    if (bLogPSMod) {
+      // Log Version
+      titleThnModMatrix[dimThnModMatrix] = "Log Mass Scaling";
+      GenerateFixedBinArray(nBins2DMod,-5.,5.,ModMatrixArray);
+      minThnModMatrix[dimThnModMatrix] = -5.;
+      maxThnModMatrix[dimThnModMatrix] = 5.;
+    } else {
+      // Linear Version
+      titleThnModMatrix[dimThnModMatrix] = "Mass Scaling";
+      GenerateFixedBinArray(nBins2DMod,0,10.,ModMatrixArray);
+      minThnModMatrix[dimThnModMatrix] = 0.0;
+      maxThnModMatrix[dimThnModMatrix] = 10.;
+    }
     dimThnModMatrix++;
 
-    titleThnModMatrix[dimThnModMatrix] = "pT Scaling";
     nBinsThnModMatrix[dimThnModMatrix] = nBins2DMod;
     Double_t ModMatrixArray2[nBins2DMod+1];
     binEdgesThnModMatrix[dimThnModMatrix] = ModMatrixArray2;
-    GenerateFixedBinArray(nBins2DMod,0,10.,ModMatrixArray2);
-    minThnModMatrix[dimThnModMatrix] = 0.0;
-    maxThnModMatrix[dimThnModMatrix] = 10.;
+    if (bLogPSMod) {
+      // Log Version
+      titleThnModMatrix[dimThnModMatrix] = "Log pT Scaling";
+      GenerateFixedBinArray(nBins2DMod,-5.,5.,ModMatrixArray2);
+      minThnModMatrix[dimThnModMatrix] = -5.;
+      maxThnModMatrix[dimThnModMatrix] = 5.;
+    } else {
+      // Linear Version
+      titleThnModMatrix[dimThnModMatrix] = "pT Scaling";
+      GenerateFixedBinArray(nBins2DMod,0,10.,ModMatrixArray2);
+      minThnModMatrix[dimThnModMatrix] = 0.0;
+      maxThnModMatrix[dimThnModMatrix] = 10.;
+    }
     dimThnModMatrix++;
 
     titleThnModMatrix[dimThnModMatrix] = "Max Lambda_{0}^{2}";
@@ -2142,20 +2160,45 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                 ModArray[2] = f3MaxClusM02;
                 ModArray[3] = f3MinClusEnergy;
                 //UMatrix
-                ModArray[0] = TMath::Sqrt((1-TMath::Cos(Theta31))/(1-TMath::Cos(Theta32)));
+//                ModArray[0] = TMath::Sqrt((1-TMath::Cos(Theta31))/(1-TMath::Cos(Theta32)));
                 ModArray[1] = TMath::Cos(Theta31/2.) / TMath::Cos(Theta32/2.);
+                if (bLogPSMod) {
+                  // Could simplify computation further with log
+                  ModArray[0] = 0.5*(TMath::Log(1-TMath::Cos(Theta31)) - TMath::Log(1-TMath::Cos(Theta32)));
+                  //ModArray[0] = TMath::Log(ModArray[0]);
+                  ModArray[1] = TMath::Log(ModArray[1]);
+                } else {
+                  ModArray[0] = TMath::Sqrt((1-TMath::Cos(Theta31))/(1-TMath::Cos(Theta32)));
+                }
                 fUMatrix->Fill(ModArray,Weight);
-                ModArray[0] = 1./ModArray[0];
-                ModArray[1] = 1./ModArray[1];
+                if (bLogPSMod) {
+                  ModArray[0] = -ModArray[0];
+                  ModArray[1] = -ModArray[1];
+                } else {
+                  ModArray[0] = 1./ModArray[0];
+                  ModArray[1] = 1./ModArray[1];
+                }
                 fUMatrix->Fill(ModArray,Weight);
 
                 //VMatrix
-                ModArray[0] = TMath::Sqrt(cluster->GetNonLinCorrEnergy()/cluster2->GetNonLinCorrEnergy());
+//                ModArray[0] = TMath::Sqrt(cluster->GetNonLinCorrEnergy()/cluster2->GetNonLinCorrEnergy());
                 ModArray[1] = (cluster3->GetNonLinCorrEnergy() + cluster->GetNonLinCorrEnergy()) /
                 (cluster3->GetNonLinCorrEnergy() + cluster2->GetNonLinCorrEnergy());
+                if (bLogPSMod) {
+                  ModArray[0] = 0.5 * (TMath::Log(cluster->GetNonLinCorrEnergy()) - TMath::Log(cluster2->GetNonLinCorrEnergy()));
+                  //ModArray[0] = TMath::Log(ModArray[0]);
+                  ModArray[1] = TMath::Log(ModArray[1]);
+                } else {
+                  ModArray[0] = TMath::Sqrt(cluster->GetNonLinCorrEnergy()/cluster2->GetNonLinCorrEnergy());
+                }
                 fVMatrix->Fill(ModArray,Weight);
-                ModArray[0] = 1. / ModArray[0];
-                ModArray[1] = 1. / ModArray[1];
+                if (bLogPSMod) {
+                  ModArray[0] = -ModArray[0];
+                  ModArray[1] = -ModArray[1];
+                } else {
+                  ModArray[0] = 1./ModArray[0];
+                  ModArray[1] = 1./ModArray[1];
+                }
                 fVMatrix->Fill(ModArray,Weight);
 
 
@@ -2428,7 +2471,7 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 {
 	Double_t pi = TMath::Pi();
 
-	Double_t valueArray[9];
+	Double_t valueArray[11];
 	valueArray[0]=CaloClusterVecPi0.Pt();
 	valueArray[1]=CaloClusterVecPi0.M();
 	valueArray[2]=CaloClusterVec.Angle(CaloClusterVec2.Vect());

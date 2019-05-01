@@ -63,6 +63,7 @@ public:
   void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
   void                        SetDoClusMixing(Bool_t input)                         { fDoClusMixing      = input;}
   void                        SetDoPosSwapMixing(Int_t input)                       { fDoPosSwapMixing   = input;}
+  void                        SetPSCorrectionLogMode(Bool_t input)                  { bLogPSMod          = input;}
   void                        SetClusterDepth(Int_t input)                          { fClusterDepth      = input;}
   void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
@@ -233,6 +234,7 @@ public:
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
 
   // Position Swap Correction Histograms
+  Bool_t          bLogPSMod;            ///<  Whether to store the scaling factors in log form
   THnSparseF      *fUDist;                     //!<! Mass modification dist. for same E pairs
   THnSparseF      *fUTildeDist;                //!<! Pt modification dist. for same E pairs
   THnSparseF      *fVDist;                     //!<! Mass modification dist. for same Pos pairs
