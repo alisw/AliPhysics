@@ -1,7 +1,10 @@
 #include "TPDGCode.h"
 #include "THnSparse.h"
 #include "TH1.h"
+#include "TGraph.h"
 #include "AliESDtrackCuts.h"
+#include "AliMCParticle.h"
+#include "AliMCEvent.h"
 #include "AlidNdPtTools.h"
 
 class AlidNdPtTools;
@@ -15,6 +18,7 @@ ClassImp(AlidNdPtTools)
 //____________________________________________________________________________
 
 THnSparseD* AlidNdPtTools::fSparseTmp = 0;
+TGraph      fGsscale = TGraph(2);
 
 //____________________________________________________________________________
 
@@ -650,7 +654,63 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
 
 /// Retrieve the scaling factor for MC primaries and secondaries
 /// 
-/// WARNING! only dummy function - use only for testing
+/// WARNING! this is only for LHC17pq for now!
+///
+/// This method looks up the proper scaling factors and returns them
+/// for online use
+///
+/// there is the systflag parameter
+/// to determine the type of correction.
+/// currenlty implemented:
+///  0: nominal (average correction) 
+/// -1: systematic varation down (minimal correction)
+/// +1: systematic varation up (maximal correction)
+/// 
+/// TODO: add other fits, implement automatic switching
+/// 
+/// \param particle MC particle 
+/// \param event    ESD event
+/// \param systflag Flag for syst variation
+///
+/// \return scaling factor accoring to the supplied arguments
+
+Double_t AlidNdPtTools::MCScalingFactor(AliMCParticle* particle, AliMCEvent* event, Int_t systflag) 
+{
+    //event multiplicity is ignored for now
+    //TODO add multipclity dependence
+    
+    // protection
+    if (!particle) { return 1.0; }
+    if (!event) { return 1.0; }
+    
+    // protection
+    // apply correction only for mid-rapidity eta<1.5 and charged particles   
+    if (TMath::Abs(particle->Eta()) > 1.5) { return 1.0; }
+    if (particle->Charge() == 0) { return 1.0; }
+
+    // get all particle id, prodcution type and pt
+    Double_t mcpt  = particle->Pt();       
+    ProductionType prod = kUnknown;
+    
+    if (event->IsSecondaryFromMaterial(particle->GetLabel()))   { prod = kSecDecay; } 
+    if (event->IsSecondaryFromWeakDecay(particle->GetLabel()))  { prod = kSecMaterial; }   
+    if (event->IsPhysicalPrimary(particle->GetLabel()))         { prod = kPrim; }
+    
+    ParticleType = ParticleTypeFromPDG(particle->PdgCode());
+    
+    // for now use hard coded values
+    if (prod
+    
+    //internally use the dummy function
+    return MCScalingFactor(prod,part,mcpt);
+}
+
+
+//____________________________________________________________________________
+
+/// Retrieve the scaling factor for MC primaries and secondaries
+/// 
+/// WARNING! only dummy function - use only for testing and for 
 ///
 /// This method looks up the proper scaling factors and returns them
 /// for offline and -- especially -- online use
@@ -674,9 +734,10 @@ Double_t AlidNdPtTools::MCScalingFactor(ProductionType prod, ParticleType part, 
     //and leaves the rest unchanged
     // TODO this should call the ALiMCSpectra weights once they are ready
     // TODO and the corresponding solution for secondariy scaling
-    if (prod == kSecDecay) return 1.5;
+    if (prod == kSecDecay || (prod == kPrim)) return 1.0;
     if (prod == kPrim) {
-        if ( (part == kSigmaP) || (part == kSigmaM) ) return 2.0;        
+        //TODO add AliMCSpectraWeights here
+        if ( (part == kSigmaP) || (part == kSigmaM) ) return 1.0;        
     }
     // in other case return scaling factor 1
     return 1.0;

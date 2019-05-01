@@ -12,6 +12,7 @@
 
 #include "THnSparse.h"
 
+class TGraph;
 class AliESDtrackCuts;
 
 class AlidNdPtTools : public TObject
@@ -38,7 +39,8 @@ class AlidNdPtTools : public TObject
         static TH1D*           CreateLogHist(const char* name, const char* title);                
         static TH1D*           CreateLogHist(const char* name);         
         static void            Log(TH1D* h, const char* name) { if (h) h->Fill(name,1); }
-        static Double_t        MCScalingFactor(ProductionType prod, ParticleType part, Double_t pt);  // this is a temp solution, to be replace by MCSpectraWeights       
+        static Double_t        MCScalingFactor(ProductionType prod, ParticleType part, Double_t pt);          // this is a temp solution, to be replace by MCSpectraWeights       
+        static Double_t        MCScalingFactor(AliMCParticle* part, AliMCEvent* event, Int_t systflag = 0);  // access to the scaling
         static ParticleType    ParticleTypeFromPDG(Int_t pdgCode);
         static void            Range2Pi(Double_t &val) {while (val>=2*TMath::Pi()) val-=2*TMath::Pi(); while (val<0) val+=2*TMath::Pi(); } // change range: 0 <= val < 2Pi
         static void            Range1Pi(Double_t &val) {while (val>=TMath::Pi()) val-=2*TMath::Pi(); while (val<-TMath::Pi()) val+=2*TMath::Pi(); }  // change range: -Pi <= val < Pi
@@ -46,9 +48,12 @@ class AlidNdPtTools : public TObject
         static AliESDtrackCuts* CreateESDtrackCuts(const char* option); // options   
 
     private:
-        static THnSparseD*      fSparseTmp;     //! temporary histogram for internal use only
+        static THnSparseD*      fSparseTmp;    //! temporary histogram for internal use only
+        static TGraph           fGsscale;       // graph with scaling factors (nominal)
+        static TGraph           fGsscale1;      // graph with scaling factors (syst up)
+        static TGraph           fGsscale2;      // graph with scaling factors (syst down)
     /// \cond CLASSIMP    
-    ClassDef(AlidNdPtTools, 2);
+    ClassDef(AlidNdPtTools, 3);
     /// \endcond 
 };
 
