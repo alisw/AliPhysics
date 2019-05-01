@@ -28,7 +28,7 @@ public:
   enum VarForProp {kPt, kP};
 
   AliAnalysisTaskSEDmesonPIDSysProp();
-  AliAnalysisTaskSEDmesonPIDSysProp(int ch, AliRDHFCuts* cuts, TFile* systfile);
+  AliAnalysisTaskSEDmesonPIDSysProp(int ch, AliRDHFCuts* cuts);
   virtual ~AliAnalysisTaskSEDmesonPIDSysProp();
   
   virtual void   UserCreateOutputObjects();
@@ -36,7 +36,9 @@ public:
   virtual void   UserExec(Option_t *);
   
   void SetAODMismatchProtection(int opt=1) {fAODProtection=opt;}
-  void SetPIDEffSystFile(TFile* infile) {fSystFile=infile;}
+  int SetPIDEffSystFile(TFile* systfile) {
+    return LoadEffSystFile(systfile);
+  }
   void SetPIDStrategy(int PIDst=kStrongPID) {fPIDstrategy=PIDst;}
   void SetKaonHistoOptions(int tpcopt, int tofopt) {fKaonTPCHistoOpt=tpcopt; fKaonTOFHistoOpt=tofopt;}
   void SetVariableForUncProp(int var=kPt) {fVarForProp=var;}
@@ -44,7 +46,7 @@ public:
   int GetDecayChannel()const {return fDecayChannel;}
   
 private:
-  int LoadEffSystFile();
+  int LoadEffSystFile(TFile* systfile);
   double GetDmesonPIDuncertainty(AliAODTrack *track[], const int nDau, TClonesArray* arrayMC, double ptD);
   void GetSingleTrackSystAndProb(TH1F* hSingleTrackSyst, TH1F* hSingleTrackEff, int bin, double &syst, double &prob);
 
@@ -66,7 +68,6 @@ private:
   TString fPartName;              /// string for particle name
   AliPIDResponse *fPIDresp;       /// basic pid object
 
-  TFile* fSystFile;               /// File with single track syst. unc.
   int fPIDstrategy;               /// PID strategy (conservative, strong, nsigma..)
   double fnSigma;                 /// number of sigma PID if nsigma strategy enabled
     
