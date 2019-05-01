@@ -697,32 +697,32 @@ Double_t AlidNdPtTools::MCScalingFactor(AliMCParticle* particle, AliMCEvent* eve
     
     if (event->IsSecondaryFromMaterial(particle->GetLabel()))   { prod = kSecDecay; } 
     if (event->IsSecondaryFromWeakDecay(particle->GetLabel()))  { prod = kSecMaterial; }   
-    if (event->IsPhysicalPrimary(particle->GetLabel()))         { prod = kPrim; }
+    if (event->IsPhysicalPrimary(particle->GetLabel()))         { prod = kPrim;}
     
     ParticleType ptype = ParticleTypeFromPDG(particle->PdgCode());
-    
+
     // for now use hard coded values
     if (prod == kSecMaterial || prod == kSecDecay) {
         if (systflag == 0) {        
             if (!fGsscale) {           
-            Double_t x[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
-            Double_t y[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            Double_t x[17] = {0.05,0.125,0.175,0.225,0.275,0.35,0.45,0.55,0.65,0.8,1,1.2,1.4,1.75,3.5,27.5,125};                
+            Double_t y[17] = {1.07631,1.07631,1.07631,1.14635,1.22387,1.28186,1.37162,1.40387,1.42242,1.36301,1.35462,1.38724,1.39539,1.46115,1.48689,1.48689,1.48689};
             fGsscale = new TGraph(17,x,y);
             }
         return fGsscale->Eval(mcpt);
         } 
         if (systflag == 1) {        
             if (!fGsscale1) {           
-            Double_t x[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
-            Double_t y[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            Double_t x[17] = {0.05,0.125,0.175,0.225,0.275,0.35,0.45,0.55,0.65,0.8,1,1.2,1.4,1.75,3.5,27.5,125};
+            Double_t y[17] = {1.11695,1.11695,1.11695,1.18939,1.28676,1.36386,1.45975,1.46592,1.46357,1.39391,1.38146,1.43343,1.4839,1.56826,1.60185,1.60185,1.60185};
             fGsscale1 = new TGraph(17,x,y);
             }
         return fGsscale1->Eval(mcpt);
         }        
-            if (systflag == -1) {        
+        if (systflag == -1) {        
             if (!fGsscale2) {           
-            Double_t x[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
-            Double_t y[17] = {0.05, 0.125, 0.175, 0.225, 0.275, 0.35, 0.45, 0.55, 0.65, 0.8, 1.0, 1.2, 1.4, 1.75, 3.5, 27.5, 125.0};
+            Double_t x[17] = {0.05,0.125,0.175,0.225,0.275,0.35,0.45,0.55,0.65,0.8,1,1.2,1.4,1.75,3.5,27.5,125};
+            Double_t y[17] = {1.04527,1.04527,1.04527,1.09517,1.16257,1.19152,1.289,1.37694,1.39118,1.34851,1.2972,1.30618,1.26338,1.30091,1.30519,1.30519,1.30519};
             fGsscale2 = new TGraph(17,x,y);
             }
         return fGsscale2->Eval(mcpt);
