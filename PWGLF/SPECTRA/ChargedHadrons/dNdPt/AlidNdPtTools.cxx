@@ -18,7 +18,7 @@ ClassImp(AlidNdPtTools)
 //____________________________________________________________________________
 
 THnSparseD* AlidNdPtTools::fSparseTmp = 0;
-TGraph      fGsscale = TGraph(2);
+TGraph      AlidNdPtTools::fGsscale = TGraph(2);
 
 //____________________________________________________________________________
 
@@ -696,13 +696,13 @@ Double_t AlidNdPtTools::MCScalingFactor(AliMCParticle* particle, AliMCEvent* eve
     if (event->IsSecondaryFromWeakDecay(particle->GetLabel()))  { prod = kSecMaterial; }   
     if (event->IsPhysicalPrimary(particle->GetLabel()))         { prod = kPrim; }
     
-    ParticleType = ParticleTypeFromPDG(particle->PdgCode());
+    ParticleType ptype = ParticleTypeFromPDG(particle->PdgCode());
     
     // for now use hard coded values
-    if (prod
+
     
     //internally use the dummy function
-    return MCScalingFactor(prod,part,mcpt);
+    return MCScalingFactor(prod,ptype,mcpt);
 }
 
 

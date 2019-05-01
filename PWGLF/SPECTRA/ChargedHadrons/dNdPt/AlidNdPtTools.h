@@ -47,7 +47,7 @@ class AlidNdPtTools : public TObject
         
         static AliESDtrackCuts* CreateESDtrackCuts(const char* option); // options   
 
-    private:
+    public:
         static THnSparseD*      fSparseTmp;    //! temporary histogram for internal use only
         static TGraph           fGsscale;       // graph with scaling factors (nominal)
         static TGraph           fGsscale1;      // graph with scaling factors (syst up)
