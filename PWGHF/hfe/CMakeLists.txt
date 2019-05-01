@@ -128,6 +128,8 @@ set(SRCS
   AliAnalysisTaskCaloHFEpPbRun2.cxx
   AliAnalysisTaskHFEmultTPCTOF.cxx
   AliAnalysisTaskCaloHFEpp.cxx
+  AliAnalysisTaskHFEBESpectraEMC.cxx
+  AliAnalysisTaskHFETPCTOFMultiplicity.cxx
   AliAnalysisTaskQAHFE.cxx
   )
 
