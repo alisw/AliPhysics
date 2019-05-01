@@ -1410,8 +1410,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   if(hist)hist->Fill(cutIndex, pi0->Pt());
   cutIndex++;
 
-  // Undefined Rapidity -> Floating Point exception
-  if((pi0->E()+pi0->Pz())/(pi0->E()-pi0->Pz())<=0){
+  // Undefined Rapidity -> Floating Point exception (also catch E==pz case)
+  if(pi0->E()==pi0->Pz() || (pi0->E()+pi0->Pz())/(pi0->E()-pi0->Pz())<=0){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     cutIndex++;
     if (!IsSignal)cout << "undefined rapidity" << endl;
