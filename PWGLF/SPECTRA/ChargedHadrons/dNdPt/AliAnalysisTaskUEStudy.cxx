@@ -203,7 +203,7 @@ void AliAnalysisTaskUEStudy::AnaTrack(Int_t flag)
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskUEStudy::AnaMCParticle(Int_t flag)
+void AliAnalysisTaskUEStudy::AnaParticleMC(Int_t flag)
 {
     if (!fMCisPrim) return;    
     if (!fMCIsCharged) return;    
