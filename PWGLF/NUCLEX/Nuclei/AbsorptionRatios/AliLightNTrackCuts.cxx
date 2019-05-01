@@ -829,7 +829,7 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimProtonCuts(bool isMC,bool DCAPlots,b
     trackCuts->SetPlotContrib(ContribSplitting);
     trackCuts->SetIsMonteCarlo(isMC);
     
-    trackCuts->SetFilterBit(256);
+    trackCuts->SetFilterBit(16);
     trackCuts->SetPtRange(0.1,1e30);
     trackCuts->SetEtaRange(-0.8, 0.8);
     trackCuts->SetNClsTPC(70);
@@ -879,7 +879,7 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimDeuteronCuts(bool isMC,bool DCAPlots
     trackCuts->SetPlotContrib(ContribSplitting);
     trackCuts->SetIsMonteCarlo(isMC);
     
-    trackCuts->SetFilterBit(256);
+    trackCuts->SetFilterBit(16);
     trackCuts->SetPtRange(0.1,1e30);
     trackCuts->SetEtaRange(-0.8, 0.8);
     trackCuts->SetNClsTPC(70);
