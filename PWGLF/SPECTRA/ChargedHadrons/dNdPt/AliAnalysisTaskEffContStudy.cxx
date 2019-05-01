@@ -116,7 +116,7 @@ void AliAnalysisTaskEffContStudy::AnaTrackMC(Int_t flag)
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskEffContStudy::AnaMCParticle(Int_t flag)
+void AliAnalysisTaskEffContStudy::AnaParticleMC(Int_t flag)
 {            
     if (!fMCisPrim) return;    
     if (!fMCIsCharged) return;    
@@ -127,7 +127,9 @@ void AliAnalysisTaskEffContStudy::AnaMCParticle(Int_t flag)
     
     FillHist(fHistEffCont, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc, fMCnPrimPtCut, fMCnPrim08); 
     
+    cout<<"pt="<<fMCPt<<" scalingfactor="<<AlidNdPtTools::MCScalingFactor(fMCParticle, fMC, 0)<<endl;
     Double_t s = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);
+        
     while (s >= 1) {
         FillHist(fHistEffContScaled, fMCPt, fMCParticleType, 3, fMCChargeSign, fNTracksAcc); 
         s--;
