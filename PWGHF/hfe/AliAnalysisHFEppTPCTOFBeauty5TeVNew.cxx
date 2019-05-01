@@ -1740,8 +1740,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
   ///Getting primary vertex    
   AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
   
-  Double_t NcontV = vtTrc->GetNContributors();  // April 30
-  if(NcontV<2)return;     // Newly applied April 30
+ // Double_t NcontV = vtTrc->GetNContributors();  // April 30
+ // if(NcontV<2)return;     // Newly applied April 30
   ///Events with no vertex by tracks-------------------------------
   if(!vtTrc){
     fNevent_no_vertex->Fill(0);
@@ -1755,7 +1755,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
   ////////////////////
   //Correlation cuts//
   ////////////////////
- // if(!PassCorrCuts(fAOD)) return;
+  if(!PassCorrCuts(fAOD)) return;
 
   ///Number of events that passes the correlation cuts between SPD and track vertexes
   fNevent_corrcut->Fill(0);
@@ -1971,7 +1971,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 
     fExtraCuts->SetRecEventInfo(fAOD);
 
-   Double_t d0z0[2]={-999,-999}, cov[3]={999,999,999};
+    Double_t d0z0[2]={-999,-999}, cov[3]={999,999,999};
 
     //AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
     //if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 3., d0z0, cov))) continue; 
@@ -2007,9 +2007,9 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     }
 
     ///RecKine: ITS TPC cuts 
-   // if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue; //commented out for a while on April 30
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue; //commented out for a while on April 30
     
-   if(atrack->GetTPCNcls() < 100) continue;
+  /* if(atrack->GetTPCNcls() < 100) continue;
    if(atrack->GetITSNcls() < 3) continue;
    //if(atrack->GetTPCFoundFraction() < 0.6) continue;
    Double_t foundcls = 999, findablecls = 999;
@@ -2022,7 +2022,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
    //fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable); 
    if(atrack->GetTPCsignalN() < 80) continue;
    if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-       
+       */
     
    // if(!fIsMC) fDCAxy_pt_AfterMoreCuts->Fill(fPt,DCAxy*track->Charge()*signB);
     
@@ -2953,7 +2953,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fVevent = dynamic_cast<AliVEvent*>(InputEvent());
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
-    Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
+    
     Double_t DCAxyCut = 1.0, DCAzCut = 2;
     Int_t fPDGe1 = 11, fPDGe2 = 11;
 
@@ -3003,7 +3003,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
       }
 
       fExtraCuts->SetRecEventInfo(fAOD);
-
+      Double_t d0z0Asso[2]={-999,-999}, covAsso[3]={999,999,999};
       fExtraCuts->GetHFEImpactParameters(trackAsso, d0z0Asso, covAsso);
       //fExtraCuts->SetRequireITSpixel(AliHFEextraCuts::kAny); 
       //fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
@@ -3054,7 +3054,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fVevent = dynamic_cast<AliVEvent*>(InputEvent());
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
-    Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
+    //Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
     Double_t DCAxyCut = 1, DCAzCut = 2;
     Int_t fPDGe1 = 11, fPDGe2 = 11;
 
@@ -3104,7 +3104,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
       }
 
       fExtraCuts->SetRecEventInfo(fAOD);
-
+      Double_t d0z0Asso[2]={-999,-999}, covAsso[3]={999,999,999};
       fExtraCuts->GetHFEImpactParameters(trackAsso, d0z0Asso, covAsso);
      // fExtraCuts->SetRequireITSpixel(AliHFEextraCuts::kAny); 
       //fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
