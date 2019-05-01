@@ -31,7 +31,6 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TChain.h>
-#include <TGrid.h>
 
 ClassImp(AliAnalysisTaskSEDmesonPIDSysProp)
 
@@ -509,12 +508,12 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
+bool AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
 {    
   if(fPIDstrategy==kConservativePID || fPIDstrategy==kStrongPID) {
     fHistEffPionTPC[0] = (TH1F*)systfile->Get("hEffPionTPCDataV0tag_3sigma");
     fHistSystPionTPC[0] = (TH1F*)systfile->Get("hRatioEffPionTPCDataV0tag_3sigma");
-    if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return 1;
+    if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return false;
     if(fKaonTPCHistoOpt==kKaonTOFtag) {
       fHistEffKaonTPC[0] = (TH1F*)systfile->Get("hEffKaonTPCDataTOFtag_3sigma");
       fHistSystKaonTPC[0] = (TH1F*)systfile->Get("hRatioEffKaonTPCDataTOFtag_3sigma");
@@ -523,10 +522,10 @@ int AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
       fHistEffKaonTPC[0] = (TH1F*)systfile->Get("hEffKaonTPCDataKinktag_3sigma");
       fHistSystKaonTPC[0] = (TH1F*)systfile->Get("hRatioEffKaonTPCDataKinktag_3sigma");
     }
-    if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return 2;
+    if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return false;
     fHistEffPionTOF = (TH1F*)systfile->Get("hEffPionTOFDataV0tag_3sigma");
     fHistSystPionTOF = (TH1F*)systfile->Get("hRatioEffPionTOFDataV0tag_3sigma");
-    if(!fHistSystPionTOF || !fHistEffPionTOF) return 3;
+    if(!fHistSystPionTOF || !fHistEffPionTOF) return false;
     if(fKaonTOFHistoOpt==kKaonTPCtag) {
       fHistEffKaonTOF = (TH1F*)systfile->Get("hEffKaonTOFDataTPCtag_3sigma");
       fHistSystKaonTOF = (TH1F*)systfile->Get("hRatioEffKaonTOFDataTPCtag_3sigma");
@@ -535,11 +534,11 @@ int AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
       fHistEffKaonTOF = (TH1F*)systfile->Get("hEffPionTOFDataV0tag_3sigma");
       fHistSystKaonTOF = (TH1F*)systfile->Get("hRatioEffPionTOFDataV0tag_3sigma");
     }
-    if(!fHistSystKaonTOF || !fHistEffKaonTOF) return 4;
+    if(!fHistSystKaonTOF || !fHistEffKaonTOF) return false;
     if(fPIDstrategy==kStrongPID) {
       fHistEffPionTPC[1] = (TH1F*)systfile->Get("hEffPionTPCDataV0tag_2sigma");
       fHistSystPionTPC[1] = (TH1F*)systfile->Get("hRatioEffPionTPCDataV0tag_2sigma");
-      if(!fHistSystPionTPC[1] || !fHistEffPionTPC[1]) return 5;
+      if(!fHistSystPionTPC[1] || !fHistEffPionTPC[1]) return false;
       if(fKaonTPCHistoOpt==kKaonTOFtag) {
         fHistEffKaonTPC[1] = (TH1F*)systfile->Get("hEffKaonTPCDataTOFtag_2sigma");
         fHistSystKaonTPC[1] = (TH1F*)systfile->Get("hRatioEffKaonTPCDataTOFtag_2sigma");
@@ -548,13 +547,13 @@ int AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
         fHistEffKaonTPC[1] = (TH1F*)systfile->Get("hEffKaonTPCDataKinktag_2sigma");
         fHistSystKaonTPC[1] = (TH1F*)systfile->Get("hRatioEffKaonTPCDataKinktag_2sigma");
       }
-      if(!fHistSystKaonTPC[1] || !fHistEffKaonTPC[1]) return 6;
+      if(!fHistSystKaonTPC[1] || !fHistEffKaonTPC[1]) return false;
     }
   }
   else if(fPIDstrategy==knSigmaPID) {
     fHistEffPionTPC[0] = (TH1F*)systfile->Get(Form("hEffPionTPCDataV0tag_%0.fsigma",fnSigma));
     fHistSystPionTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffPionTPCDataV0tag_%0.fsigma",fnSigma));
-    if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return 7;
+    if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return false;
     if(fKaonTPCHistoOpt==kKaonTOFtag) {
       fHistEffKaonTPC[0] = (TH1F*)systfile->Get(Form("hEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
       fHistSystKaonTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
@@ -563,10 +562,10 @@ int AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
       fHistEffKaonTPC[0] = (TH1F*)systfile->Get(Form("hEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
       fHistSystKaonTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
     }
-    if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return 8;
+    if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return false;
     fHistEffPionTOF = (TH1F*)systfile->Get(Form("hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
     fHistSystPionTOF = (TH1F*)systfile->Get(Form("hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
-    if(!fHistSystPionTOF || !fHistEffPionTOF) return 9;
+    if(!fHistSystPionTOF || !fHistEffPionTOF) return false;
     if(fKaonTOFHistoOpt==kKaonTPCtag) {
       fHistEffKaonTOF = (TH1F*)systfile->Get(Form("hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
       fHistSystKaonTOF = (TH1F*)systfile->Get(Form("hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
@@ -577,10 +576,10 @@ int AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
     }
     fHistEffKaonTOF = (TH1F*)systfile->Get(Form("hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
     fHistSystKaonTOF = (TH1F*)systfile->Get(Form("hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
-    if(!fHistSystKaonTOF || !fHistEffKaonTOF) return 10;
+    if(!fHistSystKaonTOF || !fHistEffKaonTOF) return false;
   }
   
-  return 0;
+  return true;
 }
 
 //________________________________________________________________________

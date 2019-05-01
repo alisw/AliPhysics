@@ -45,8 +45,8 @@ AliAnalysisTaskSEDmesonPIDSysProp *AddTaskDmesonPIDSysProp(int ch = AliAnalysisT
     AliAnalysisTaskSEDmesonPIDSysProp *Task = new AliAnalysisTaskSEDmesonPIDSysProp(ch, analysiscuts);
     Task->SetDebugLevel(1);
     Task->SetPIDStrategy(pid);
-    int loadfile = Task->SetPIDEffSystFile(PIDsystfile);
-    if(loadfile>0) {
+    bool loadfile = Task->LoadEffSystFile(PIDsystfile);
+    if(!loadfile) {
         ::Fatal("AddTaskSingleTrackPIDSysPropagation", "Histos with single-track systematic not found: analysis will not start!\n");
     }
     mgr->AddTask(Task);

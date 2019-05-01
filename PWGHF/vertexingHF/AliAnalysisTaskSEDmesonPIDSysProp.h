@@ -36,17 +36,15 @@ public:
   virtual void   UserExec(Option_t *);
   
   void SetAODMismatchProtection(int opt=1) {fAODProtection=opt;}
-  int SetPIDEffSystFile(TFile* systfile) {
-    return LoadEffSystFile(systfile);
-  }
   void SetPIDStrategy(int PIDst=kStrongPID) {fPIDstrategy=PIDst;}
   void SetKaonHistoOptions(int tpcopt, int tofopt) {fKaonTPCHistoOpt=tpcopt; fKaonTOFHistoOpt=tofopt;}
   void SetVariableForUncProp(int var=kPt) {fVarForProp=var;}
 
   int GetDecayChannel()const {return fDecayChannel;}
-  
+
+  bool LoadEffSystFile(TFile* systfile);
+
 private:
-  int LoadEffSystFile(TFile* systfile);
   double GetDmesonPIDuncertainty(AliAODTrack *track[], const int nDau, TClonesArray* arrayMC, double ptD);
   void GetSingleTrackSystAndProb(TH1F* hSingleTrackSyst, TH1F* hSingleTrackEff, int bin, double &syst, double &prob);
 
