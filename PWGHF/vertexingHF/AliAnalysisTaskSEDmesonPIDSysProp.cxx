@@ -219,7 +219,7 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       return;
     }
   }
-  TClonesArray *arrayBranch=0;
+    TClonesArray *arrayBranch = nullptr, *arrayD0toKpi = nullptr;
   
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -233,20 +233,24 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
       if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi)
-      arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       else if(fDecayChannel == kD0toKpi)
-      arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
-      else if(fDecayChannel == kDstartoKpipi)
-      arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+      else if(fDecayChannel == kDstartoKpipi) {
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+        arrayD0toKpi=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+      }
     }
   }
   else {
     if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi)
-    arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+      arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     else if(fDecayChannel == kD0toKpi)
-    arrayBranch=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
-    else if(fDecayChannel == kDstartoKpipi)
-    arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+      arrayBranch=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    else if(fDecayChannel == kDstartoKpipi) {
+      arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+      arrayD0toKpi=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    }
   }
   
   if (!arrayBranch) {
@@ -359,26 +363,68 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
   for (int iCand = 0; iCand < nCand; iCand++) {
     
     AliAODRecoDecayHF* d = nullptr;
+    AliAODRecoDecayHF2Prong* dD0 = nullptr;
     bool isDStarCand = false;
+    int nDau = 0;
 
     if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi) {
       d = dynamic_cast<AliAODRecoDecayHF3Prong*>(arrayBranch->UncheckedAt(iCand));
+      nDau = 3;
+    }
+    else if(fDecayChannel == kD0toKpi) {
+      d = dynamic_cast<AliAODRecoDecayHF2Prong*>(arrayBranch->UncheckedAt(iCand));
+      nDau = 2;
+    }
+    else if(fDecayChannel == kDstartoKpipi) {
+      d = dynamic_cast<AliAODRecoCascadeHF*>(arrayBranch->UncheckedAt(iCand));
+      isDStarCand = true;
+      nDau = 3;
+
+      if(d && d->GetIsFilled()<1)
+        dD0 = dynamic_cast<AliAODRecoDecayHF2Prong*>(arrayD0toKpi->At(d->GetProngID(1)));
+      else
+        dD0 = (dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong();
+      if(!dD0)
+        continue;
+    }
+
+    if(!d) continue;
+
+    //Preselection to speed up task
+    TObjArray arrDauTracks(nDau);
+    AliAODTrack *track = nullptr;
+    if(fDecayChannel != kDstartoKpipi) {
+        for(int iDau=0; iDau<nDau; iDau++){
+            AliAODTrack *track = vHF->GetProng(aod,d,iDau);
+            arrDauTracks.AddAt(track,iDau);
+        }
+    }
+    else {
+        for(int iDau=0; iDau<nDau; iDau++){
+            if(iDau == 0) 
+                track=vHF->GetProng(aod,d,iDau); //soft pion
+            else
+                track=vHF->GetProng(aod,dD0,iDau-1); //D0 daughters
+            arrDauTracks.AddAt(track,iDau);
+        }
+    }
+    if(!fAnalysisCuts->PreSelect(arrDauTracks)){
+        continue;
+    }
+
+    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi) {
       if(!vHF->FillRecoCand(aod,dynamic_cast<AliAODRecoDecayHF3Prong*>(d))) {
         fHistNEvents->Fill(13);
         continue;
       }
     }
     else if(fDecayChannel == kD0toKpi) {
-      d = dynamic_cast<AliAODRecoDecayHF2Prong*>(arrayBranch->UncheckedAt(iCand));
       if(!vHF->FillRecoCand(aod,dynamic_cast<AliAODRecoDecayHF2Prong*>(d))) {
         fHistNEvents->Fill(13);
         continue;
       }
     }
     else if(fDecayChannel == kDstartoKpipi) {
-      d = dynamic_cast<AliAODRecoCascadeHF*>(arrayBranch->UncheckedAt(iCand));
-      if(!d) continue;
-      isDStarCand = true;
       if(!vHF->FillRecoCasc(aod,dynamic_cast<AliAODRecoCascadeHF*>(d),isDStarCand)) {
         fHistNEvents->Fill(13);
         continue;
