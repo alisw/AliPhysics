@@ -1760,9 +1760,16 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
       if(gMCEvent){
 	AliCollisionGeometry* headerH;
+	TString genName;
 	TList *ltgen = (TList*)gMCEvent->GetCocktailList();
 	if (ltgen) {
-	  headerH = dynamic_cast<AliCollisionGeometry*>(ltgen->FindObject("Hijing_0"));
+	  for(auto&& listObject: *ltgen){
+	    genName = Form("%s",listObject->GetName());
+	    if (genName.Contains("Hijing")) {
+		headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+		break;
+	      }
+	  }
 	}
 	else 
 	  headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
@@ -1977,10 +1984,17 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
 
     AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
     if(gMCEvent){
+      TString genName;
       AliCollisionGeometry* headerH;
       TList *ltgen = (TList*)gMCEvent->GetCocktailList();
       if (ltgen) {
-	headerH = dynamic_cast<AliCollisionGeometry*>(ltgen->FindObject("Hijing_0"));
+	for(auto&& listObject: *ltgen){
+	    genName = Form("%s",listObject->GetName());
+	    if (genName.Contains("Hijing")) {
+		headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+		break;
+	      }
+	  }
       }
       else 
 	headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());  
@@ -2897,6 +2911,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	// Remove neutral tracks
 	if( vCharge == 0 ) continue;
+
+	if(fUseMCPdgCode) {
+	  Int_t gPdgCode = aodTrack->PdgCode();
+	  if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+	    continue;
+	}
 	
 	//Exclude resonances
 	if(fExcludeResonancesInMC) {
