@@ -50,7 +50,7 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         virtual void            SetUseRandomSeed(Bool_t use=kTRUE) { fUseRandomSeed = use; }              
         virtual Bool_t          GetUseRandomSeed() { return fUseRandomSeed;  }        
              
-        static AliAnalysisTaskBaseWeights* AddTaskBaseWeights(const char* name = "TaskBaseWeights", const char* outfile = 0);
+        static AliAnalysisTaskBaseWeights* AddTaskBaseWeights(const char* name = "TaskBaseWeights", const char* outfile = 0, const char* collisionSystem = 0, Int_t sysFlag = 0, const char* prevTrainOutputPath = 0);
 
     protected:    
         // override the track and particle loops from the AliAnalysisTaskMKBase class
