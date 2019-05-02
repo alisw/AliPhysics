@@ -322,6 +322,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fBDTHistoVsCosPAK0S;           //!<! BDT classifier vs V0 cosine of pointing angle
   TH2D *fBDTHistoVsSignd0;             //!<! BDT classifier vs V0 proton signed d0
   TH2D *fBDTHistoVsCosThetaStar;       //!<! BDT classifier vs proton emission angle in pK0s pair rest frame
+  TH2D* fBDTHistoVsnSigmaTPCpr;       //!<! BDT classifier vs nSigmaTPCpr
+  TH2D* fBDTHistoVsnSigmaTOFpr;       //!<! BDT classifier vs nSigmaTOFpr
+  TH2D* fBDTHistoVsnSigmaTPCpi;       //!<! BDT classifier vs nSigmaTPCpi
+  TH2D* fBDTHistoVsnSigmaTPCka;       //!<! BDT classifier vs nSigmaTPCka
+  TH2D* fBDTHistoVsBachelorP;       //!<! BDT classifier vs bachelor p
+  TH2D* fBDTHistoVsBachelorTPCP;       //!<! BDT classifier vs bachelor p at TPC wall
   TH2D *fHistoNsigmaTPC;               //!<! 
   TH2D *fHistoNsigmaTOF;               //!<! 
 
@@ -334,7 +340,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 5); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 6); /// class for Lc->p K0
   /// \endcond    
 };
 

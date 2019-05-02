@@ -56,7 +56,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString libr
     return NULL;
   }
   
-  TString namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,combinedProtonProb,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
+  TString namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTPCpr,nSigmaTOFpr,nSigmaTPCpi,nSigmaTPCka,bachelorP,bachTPCmom";
 
   //CREATE THE TASK
   printf("CREATE TASK\n");
