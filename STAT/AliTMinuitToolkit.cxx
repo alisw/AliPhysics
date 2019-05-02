@@ -924,7 +924,7 @@ AliTMinuitToolkit * AliTMinuitToolkit::RegisterPlaneFitter(Int_t nPlanes, Int_t 
     fitter->SetName(TString::Format("hyp%dH", nPlanes).Data());
   }
   TMatrixD *initParam=new TMatrixD(nPlanes,4);
-  for (Int_t iPar=0; iPar<iPol+1; iPar++) (*initPar)(iPar,1)=1;
+  for (Int_t iPar=0; iPar<nPlanes; iPar++) (*initParam)(iPar,1)=1;
   fitter->SetInitialParam(initParam);
   AliTMinuitToolkit::SetPredefinedFitter(fitter->GetName(), fitter);
   return fitter;

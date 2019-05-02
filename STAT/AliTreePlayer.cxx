@@ -835,7 +835,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
       fprintf(default_fp,"</tr>\n");
     }
     //
-    if (isCSV){
+    if (isCSV){   ///dummy
       for (Int_t icol=0; icol<nCols; icol++){  // formula loop
         Int_t nData=rFormulaList[icol]->GetNdata();
         if (nData<=1){
@@ -853,6 +853,29 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
       }
       fprintf(default_fp,"\n");
     }
+    if (isCSV){   ///dummy
+      Int_t nDataMax=1;
+      for (Int_t icol=0; icol<nCols; icol++) {       // formula loop
+        Int_t nData = rFormulaList[icol]->GetNdata();
+        nDataMax=TMath::Max(nDataMax,nData);
+      }
+      for (Int_t iData=0; iData<nDataMax;iData++){  // array loop
+        for (Int_t icol=0; icol<nCols; icol++){  // formula loop
+          Int_t nData=rFormulaList[icol]->GetNdata();
+          if (nData<=1){
+            fprintf(default_fp,"%s\t",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+          }else{
+              fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
+              fprintf(default_fp,"\t");
+
+          }
+        }
+        fprintf(default_fp,"\n");
+      }
+    }
+
+
+
   }
   if (isJSON) fprintf(default_fp,"}\t]\n}\n");
   if (isHTML){
@@ -1625,7 +1648,9 @@ TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp,
     if (!isSelected) continue;
     ::Info("LoadTrees","Load file\t%s", fileName.Data());
     TString description = "";
-    TFile *finput = TFile::Open(fileName.Data());
+    TString option="";
+    if (fileName.Contains("http")) option="cacheread";
+    TFile *finput = TFile::Open(fileName.Data(),option.Data());
     if (finput == NULL) {
       ::Error("MakeResidualDistortionReport", "Invalid file name %s", fileName.Data());
       continue;
@@ -1638,7 +1663,7 @@ TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp,
       if (notReg.Match(keys->At(iKey)->GetName()) != 0) continue;     // is rejected
       TTree *tree = (TTree *) finput->Get(keys->At(iKey)->GetName()); // better to use dynamic cast
       if (treeBase == NULL) {
-        TFile *finput2 = TFile::Open(fileName.Data());
+        TFile *finput2 = TFile::Open(fileName.Data(),option.Data());
         treeBase = (TTree *) finput2->Get(keys->At(iKey)->GetName());
       }
       TString fileTitle=tagValue["Title"];
