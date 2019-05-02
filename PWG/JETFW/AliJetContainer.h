@@ -104,6 +104,7 @@ class AliJetContainer : public AliParticleContainer {
   void                        SetJetPtCutMax(Float_t cut)                          { SetMaxPt(cut)                      ; }
   void                        SetRunNumber(Int_t r)                                { fRunNumber = r;                      }
   void                        SetJetRadius(Float_t r)                              { fJetRadius      = r                ; } 
+  void                        SetJetType(EJetType_t type)                          { fJetType        = type             ; }
   void                        SetJetAreaCut(Float_t cut)                           { fJetAreaCut     = cut              ; }
   void                        SetPercAreaCut(Float_t p)                            { if(fJetRadius==0.) AliWarning("JetRadius not set. Area cut will be 0"); 
                                                                                      fJetAreaCut = p*TMath::Pi()*fJetRadius*fJetRadius; }
@@ -178,6 +179,7 @@ class AliJetContainer : public AliParticleContainer {
   Double_t                    GetJetPtCut()                         const    {return GetMinPt() ; }
   Double_t                    GetJetPtCutMax()                      const    {return GetMaxPt() ; }
 
+  UInt_t                      GetAcceptanceType()                   const    {return fJetAcceptanceType; }
   EJetType_t                  GetJetType()                          const    {return fJetType; }
   EJetAlgo_t                  GetJetAlgorithm()                     const    {return fJetAlgorithm; }
   ERecoScheme_t               GetRecombinationScheme()              const    {return fRecombinationScheme; }

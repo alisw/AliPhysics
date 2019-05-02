@@ -62,7 +62,9 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
     kMCTrue = 0,   // generated jets only
     kTrueDet =1,  // detector and generated jets  
     kData   = 2,  // raw data 
-    kDetEmbPart = 3,
+    kDetEmbPart = 3, // embedding
+    kDetEmbPartCorr = 4, // embedding, do embedded h+jet correlation
+    kDetPart = 5 // pp response
 //    kDetEmb = 3,  //detector embedded jets
 //    kPythiaDef = 5,
 //    kDetEmbPartPythia=6,
@@ -169,7 +171,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 8);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 9);
   /// \endcond
 };
 #endif

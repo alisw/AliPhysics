@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEff *AddTaskEfficiency()
+AliAnalysisTaskParticleEff *AddTaskEfficiency(TString containerName="femtolist",int method=3)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -41,7 +41,8 @@ AliAnalysisTaskParticleEff *AddTaskEfficiency()
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskParticleEff *taskEfficiency = new AliAnalysisTaskParticleEff("EfficiencyTask");
+  AliAnalysisTaskParticleEff *taskEfficiency = new AliAnalysisTaskParticleEff("EfficiencyTask",method);
+  taskEfficiency->SetPidMethod(method);
   mgr->AddTask(taskEfficiency);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
@@ -53,13 +54,18 @@ AliAnalysisTaskParticleEff *AddTaskEfficiency()
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer(containerName,  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
    mgr->ConnectInput(taskEfficiency, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskEfficiency, 1, cout_femto);
 
+   // std::ofstream ofile;
+   // ofile.open("test.txt", std::ofstream::app);
+   // ofile<<"AddTask:" <<method<<" "<<taskEfficiency->GetPidMethod()<<std::endl;								 
+   // ofile.close();
+   
    // Return task pointer at the end
    return taskEfficiency;
 }

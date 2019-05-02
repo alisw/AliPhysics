@@ -157,7 +157,9 @@ protected:
 
   Double_t  GetExternalRho(Bool_t isMC = kFALSE);
   Double_t  GetDeltaPtRandomCone(Double_t jetradius, Double_t rhovalue);
-  void  FillDeltaPt(Int_t, AliAODVertex* , vctr_pair_dbl_int, Double_t );      //newDeltaPt//
+  Int_t  FillDeltaPt(Double_t , Int_t , AliAODVertex* , vctr_pair_dbl_int ,  Double_t , Double_t ,  Int_t ); 	
+  //Int_t  FillDeltaPt(Int_t, AliAODVertex* , vctr_pair_dbl_int, Double_t, Int_t);      //newDeltaPt//
+  Double_t GetDeltaPtRandomConeWithoutSignalPt (Double_t, Double_t, Double_t, Double_t);	 
   Bool_t IsOutlier(); //FK// Tests if the event is pthard bin outlier 
 
 private:
@@ -189,20 +191,20 @@ private:
   //
   // MC weights
   //
-  Double_t    fMCWeight;             ///<  pT-hard bin MC weight. It is used only internally.
-  Double_t    fMCXsec;
-  Double_t    fMCAvgTrials;
+  Double_t    fMCWeight;             //!<!  pT-hard bin MC weight. It is used only internally.
+  Double_t    fMCXsec;               //!<!
+  Double_t    fMCAvgTrials;          //!<!
 
-  Float_t     fZNApercentile;		 // multiplicity percentile, ZNA estimator
+  Float_t     fZNApercentile;        //!<! multiplicity percentile, ZNA estimator
 
-  TString     fCurrFileName;         ///<  Current file path name.
+  TString     fCurrFileName;         //!<!  Current file path name.
 
   Bool_t      fCheckMCCrossSection;  ///<  Retrieve from the pyxsec.root file the cross section, only if requested.
-  Bool_t      fSkipWeightInfo;
+  Bool_t      fSkipWeightInfo;       //!<!
   Bool_t      fUseWeight;
-  Bool_t      fInitialized;
+  Bool_t      fInitialized;          //!<! 
 
-  TList*                      fOutputList;       // list of output objects
+  TList*                      fOutputList;       //!<! list of output objects
 
   // AliHFJetsContainerVertex
   AliHFJetsContainerVertex*   fhJetVtxSim;       //!<! properties of vertices within the jet MC
@@ -212,18 +214,19 @@ private:
   TH1F*                       fhEntries;         //!<!
   TH1F*	                      fhZNApercentQa;    //!<! QA histo for ZNA percentile
   TH1F*                       fhEvtRej;          //!<! Rejection criteria.
+  TH1F*                       fhEvtRejBitmap;          //!<! Rejection criteria bitmap.	
   TH1F*                       fhHFjetQa;         //!<! Various QA check on Jet.
-  TH1F*                       fhRhoQa;
-  TH1F*                       fhMCRhoQa;
-  TH1F*                       fhDeltaPt;         // delta pt distribution
-  TH1F*                       fhDeltaPtLxy5;    // delta pt distribution, Lxy=5 //newDeltaPt//
-  TH1F*                       fhDeltaPtLxy6;    // delta pt distribution, Lxy=6 //newDeltaPt//
-  TH1F*                       fhDeltaPtLxy7;    // delta pt distribution, Lxy=7 //newDeltaPt//	
-  TH1F*                       fhDeltaPtTrack10; // delta pt distribution, pt track > 10 //newDeltaPt//	
+  TH1F*                       fhRhoQa;           //!<! 
+  TH1F*                       fhMCRhoQa;         //!<! 
+  TH1F*                       fhDeltaPt;         //!<! delta pt distribution
+  TH1F*                       fhDeltaPtLxy5;     //!<! delta pt distribution, Lxy=5 //newDeltaPt//
+  TH1F*                       fhDeltaPtLxy6;     //!<! delta pt distribution, Lxy=6 //newDeltaPt//
+  TH1F*                       fhDeltaPtLxy7;     //!<! delta pt distribution, Lxy=7 //newDeltaPt//	
+  TH1F*                       fhDeltaPtTrack10;  //!<! delta pt distribution, pt track > 10 //newDeltaPt//	
 	
   TH1F*                       fZVertex;          //!<! Z vertex distribuition //AID//	
-  TH2F*                       fhTrackEta;         //!<! eta inclusive track distribuition //AID//	
-  TH2F*                       fhTrackPhi;         //!<! phi inclusive track distribuition //AID//	
+  TH2F*                       fhTrackEta;        //!<! eta inclusive track distribuition //AID//	
+  TH2F*                       fhTrackPhi;        //!<! phi inclusive track distribuition //AID//	
   TH2F*                       fhJetEta;          //!<! eta inclusive jet distribuition //AID//	
   TH2F*                       fhJetPhi;          //!<! phi inclusice jet distribuition //AID//		
   TH2F*                       fhOneOverPtVsPhiNeg;//!<! 1/p_T,track  versus phi for negative tracks //AID//		
@@ -236,6 +239,9 @@ private:
   TH2F*                       fhDCAinXVsPtSecondary; //!<! X DCA versus pT for secondaries //AID// 
   TH2F*                       fhDCAinYVsPtSecondary; //!<! Y DCA versus pT for secondaries //AID//
   TH2D*                       fhFractionOfSecInJet; //!<! Fraction of jet pT carried by secondaries //AID//
+  TH1D*                       fhPtTrkTruePrimRec; //!<! pt spectrum of true reconstructed primary tracks    
+  TH1D*                       fhPtTrkTruePrimGen; //!<! pt spectrum of true generated primary track    
+  TH1D*                       fhPtTrkSecOrFakeRec; //!<! pt spectrum of reconstructed fake or secondary tracks     
 	
   THnSparse*                  fhnDetRespMtx;     //!<! THnSparse to fill response matrix
   THn*                        fhnGenerated;      //!<! THn to fill MC generated histo
@@ -260,18 +266,18 @@ private:
 
   TClonesArray*               fHFvertexing;      //! Array of reconstructed secondary vertex (b-tagged jets)
 
-  map_int_bool*               fV0gTrkMap;
+  map_int_bool*               fV0gTrkMap;        //!
 
-  TRandom3*                   fRandom;     	 // used for throwing random cone
+  TRandom3*                   fRandom;     	 //! used for throwing random cone
 
-  Int_t                       fGlLogLevel;
-  Int_t                       fLcDebLevel;
-  Int_t                       fStartBin;
+  Int_t                       fGlLogLevel;       ///<
+  Int_t                       fLcDebLevel;       ///<
+  Int_t                       fStartBin;         //!
   Float_t                     fMaxFacPtHard;     //<! Cut on  pthat events. How many times can be jet pT larger than pthat //FK
   Double_t                    fPtCut;            //<! min cut on track pT   //AID  
   Double_t                    fEtaCut;           //<! cut on track eta   //AID  
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 7);  // analysis task for MC study //AID//
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 10);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------

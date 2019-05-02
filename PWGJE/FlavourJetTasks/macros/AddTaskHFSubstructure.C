@@ -1,16 +1,16 @@
-AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char * ntracksData,
+AliAnalysisTaskHFSubstructure* AddTaskHFSubstructure(const char * ntracksData,
                                                                     const char * ntracksDet,
                                                                     const char * ntracksTrue,
 								    const Double_t R,
 								    AliAnalysisTaskHFSubstructure::ECandidateType_t ECandidateType = AliAnalysisTaskHFSubstructure::kD0toKpi,
-								    AliAnalysisTaskHFSubstructure::JetShapeType jetShapeType = AliAnalysisTaskHFSubstructure::kData) {
+						     AliAnalysisTaskHFSubstructure::JetShapeType jetShapeType = AliAnalysisTaskHFSubstructure::kData, Bool_t IncludeInclusive=kFALSE) {
   
   
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
     {
-      Error("AddTaskAliAnalysisTaskHFSubstructure","No analysis manager found.");
+      Error("AddTaskHFSubstructure","No analysis manager found.");
       return 0;
     }
   Bool_t ismc=kFALSE;
@@ -26,12 +26,12 @@ AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char *
   TString wagonName1, wagonName2,wagonName3;
   TString tag="";
   if (ECandidateType == AliAnalysisTaskHFSubstructure::kD0toKpi) tag="kD0toKpi";
-  if (jetShapeType==AliAnalysisTaskHFSubstructure::kData){
+  if (jetShapeType==AliAnalysisTaskHFSubstructure::kData || jetShapeType==AliAnalysisTaskHFSubstructure::kDataInclusive){
     wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s",ntracksData,tag.Data());
     wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksData,tag.Data());
     wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksData,tag.Data());
   }
-  if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet || jetShapeType == AliAnalysisTaskHFSubstructure::kDet){
     wagonName1 = Form("AliAnalysisTaskHFSubstructure_%s_TC%s",ntracksDet,tag.Data());
     wagonName2 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTree",ntracksDet,tag.Data());
     wagonName3 = Form("AliAnalysisTaskHFSubstructure_%s_TC%sTreeSplittings",ntracksDet,tag.Data());
@@ -48,19 +48,31 @@ AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char *
   task->SetECandidateType_t(ECandidateType);
   task->SetJetShapeType(jetShapeType);
   task->SetJetRadius(R);
+  task->SetIncludeInclusive(IncludeInclusive);
+
+  // AliParticleContainer *trackContData=0x0;  //why not track containers?
+  //AliParticleContainer *trackContDet=0x0;
+  //AliParticleContainer *trackContTrue=0x0;
 
 
-  AliParticleContainer *trackContData=0x0;  //why not track containers?
-  AliParticleContainer *trackContDet=0x0;
-  AliParticleContainer *trackContTrue=0x0;
-
-
-  if (jetShapeType == AliAnalysisTaskHFSubstructure::kData) trackContData = task->AddTrackContainer(ntracksData);
-  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
-    trackContDet = task->AddTrackContainer(ntracksDet);
-    trackContTrue = task->AddMCParticleContainer(ntracksTrue);
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kData || jetShapeType == AliAnalysisTaskHFSubstructure::kDataInclusive){
+    AliHFTrackContainer* trackContData = new AliHFTrackContainer(ntracksData);
+    task->AdoptParticleContainer(trackContData);
   }
-  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kTrue) trackContTrue = task->AddMCParticleContainer(ntracksTrue);
+  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal || jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground || jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection || jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet || jetShapeType == AliAnalysisTaskHFSubstructure::kDet){
+    AliHFTrackContainer* trackContDet = new AliHFTrackContainer(ntracksDet);
+    task->AdoptParticleContainer(trackContDet);
+    AliMCParticleContainer* trackContTrue = new AliHFAODMCParticleContainer(ntracksTrue);
+    trackContTrue->SetEtaLimits(-1.5, 1.5);
+    trackContTrue->SetPtLimits(0, 1000);
+    task->AdoptParticleContainer(trackContTrue);
+  }
+  else if (jetShapeType == AliAnalysisTaskHFSubstructure::kTrue){
+    AliMCParticleContainer* trackContTrue = new AliHFAODMCParticleContainer(ntracksTrue);
+    trackContTrue->SetEtaLimits(-1.5, 1.5);
+    trackContTrue->SetPtLimits(0, 1000);
+    task->AdoptParticleContainer(trackContTrue);
+  }
 
   
 
@@ -83,31 +95,54 @@ AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char *
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kData){
     contName1 += "_Data";
     contName2 += "_Data";
+    contName3 += "_Data";
   }
 
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetSignal){
     contName1 += "_DetSignal";
     contName2 += "_DetSignal";
+    contName3 += "_DetSignal";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetBackground){
     contName1 += "_DetBackground";
     contName2 += "_DetBackgroundl";
+    contName3 += "_DetBackgroundl";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kDetReflection){
     contName1 += "_DetReflection";
     contName2 += "_DetReflection";
+    contName3 += "_DetReflection";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kTrueDet){
     contName1 += "_TrueDet";
     contName2 += "_TrueDet";
+    contName3 += "_TrueDet";
   }
   
   if (jetShapeType == AliAnalysisTaskHFSubstructure::kTrue){
     contName1 += "_True";
     contName2 += "_True";
+    contName3 += "_True";
+  }
+  if (IncludeInclusive){
+    contName1 += "_Inclusive";
+    contName2 += "_Inclusive";
+    contName3 += "_Inclusive";
+  }
+
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kDataInclusive){
+    contName1 += "_DataInclusive";
+    contName2 += "_DataInclusive";
+    contName3 += "_DataInclusive";
+  }
+
+  if (jetShapeType == AliAnalysisTaskHFSubstructure::kDet){
+    contName1 += "_Det";
+    contName2 += "_Det";
+    contName3 += "_Det";
   }
 
 

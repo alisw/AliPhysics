@@ -52,6 +52,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "FlowHarmonics",
     task1->SetPIDNumSigmasPionMax(3);
     task1->SetPIDNumSigmasKaonMax(3);
     task1->SetPIDNumSigmasProtonMax(3);
+    task1->SetPIDNumSigmasCombinedNoTOFrejection(kTRUE);
     if(PIDbayesian) task1->SetBayesianProbability(PIDprob);
     
 

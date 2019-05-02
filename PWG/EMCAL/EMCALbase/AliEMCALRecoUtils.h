@@ -382,8 +382,9 @@ public:
   void     SetMaxDCAToVertexXY(Float_t dist=1e10)    { fCutMaxDCAToVertexXY     = dist ; }
   void     SetMaxDCAToVertexZ(Float_t dist=1e10)     { fCutMaxDCAToVertexZ      = dist ; }
   void     SetDCAToVertex2D(Bool_t b=kFALSE)         { fCutDCAToVertex2D        = b    ; }
-  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone = b;} //Marcel
-  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA     = b;}
+  void     SetRequireITSStandAlone(Bool_t b=kFALSE)    {fCutRequireITSStandAlone= b    ; } //Marcel
+  void     SetRequireITSPureStandAlone(Bool_t b=kFALSE){fCutRequireITSpureSA    = b    ; }
+  void     SetRequireTrackDCA(Bool_t b=kFALSE)       { fUseTrackDCA             = b    ; }
   
   // getters								
   Double_t GetMinTrackPt()                     const { return fCutMinTrackPt           ; }
@@ -397,7 +398,8 @@ public:
   Float_t  GetMaxDCAToVertexXY()               const { return fCutMaxDCAToVertexXY     ; }
   Float_t  GetMaxDCAToVertexZ()                const { return fCutMaxDCAToVertexZ      ; }
   Bool_t   GetDCAToVertex2D()                  const { return fCutDCAToVertex2D        ; }
-  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel	
+  Bool_t   GetRequireITSStandAlone()           const { return fCutRequireITSStandAlone ; } //Marcel  
+  Bool_t   GetRequireTrackDCA()                const { return fUseTrackDCA             ; } 
 
   //----------------------------------------------------
   // Exotic cells / clusters
@@ -531,6 +533,7 @@ private:
   Double_t   fStepSurface;               ///< Length of step to extrapolate tracks to EMCal surface
   Double_t   fStepCluster;               ///< Length of step to extrapolate tracks to clusters
   Bool_t     fITSTrackSA;                ///< If track matching is to be done with ITS tracks standing alone, ESDs	
+  Bool_t     fUseTrackDCA;               ///< Activate use of aodtrack->GetXYZ or XvYxZv like in AliEMCALRecoUtilsBase::ExtrapolateTrackToEMCalSurface 
   Bool_t     fUseOuterTrackParam;        ///< Use OuterTrackParam not InnerTrackParam, ESDs
   Double_t   fEMCalSurfaceDistance;      ///< EMCal surface distance (= 430 by default, the last 10 cm are propagated on a cluster-track pair basis)
  
@@ -556,7 +559,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
   
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 27) ;
+  ClassDef(AliEMCALRecoUtils, 28) ;
   /// \endcond
 
 };

@@ -37,6 +37,9 @@ class AliFemtoDreamCorrHists {
     return fDomTBinning;
   }
   ;
+  bool GetDoPtQA() const {
+    return fPtQA;
+  }
   bool GetObtainMomentumResolution() {
     return fMomentumResolution;
   }
@@ -45,24 +48,19 @@ class AliFemtoDreamCorrHists {
     return fPhiEtaPlots;
   }
   ;
-  bool GetDoMCCommonAncest() {
-    return fDoMCCommonAncest;
-  }
-  ;
   bool GetDodPhidEtaPlots() {
     return fdPhidEtaPlots;
   }
   ;
+  bool GetDodPhidEtaPlotsSmallK() {
+    return fPhiEtaPlotsSmallK;
+  }
+  bool GetDodPhidEtamTPlots() {
+    return fmTDetaDPhi;
+  }
+  ;
   void FillSameEventDist(int i, float RelK) {
     fSameEventDist[i]->Fill(RelK);
-  }
-  ;
-  void FillSameEventCommonAncestDist(int i, float RelK) {
-    fSameEventCommonAncestDist[i]->Fill(RelK);
-  }
-  ;
-  void FillSameEventNonCommonAncestDist(int i, float RelK) {
-    fSameEventNonCommonAncestDist[i]->Fill(RelK);
   }
   ;
   void FillSameEventMultDist(int i, int iMult, float RelK) {
@@ -88,6 +86,12 @@ class AliFemtoDreamCorrHists {
     fMixedEventDist[i]->Fill(RelK);
   }
   ;
+  void FillPtQADist(int i, float kstar, float pt1, float pt2) {
+    // TODO for the moment the threshold is hardcoded to 200 MeV/c
+    if(fPtQADist[i] && kstar < 0.2) {
+      fPtQADist[i]->Fill(pt1, pt2);
+    }
+  }
   void FillMixedEventMultDist(int i, int iMult, float RelK) {
     if (fMixedEventMultDist[i])
       fMixedEventMultDist[i]->Fill(RelK, iMult);
@@ -126,7 +130,7 @@ class AliFemtoDreamCorrHists {
                            float dEta, float relk) {
     if (!fMinimalBooking && fPhiEtaPlots) {
       fRadiiEtaPhiSE[hist][iDaug][iRad]->Fill(dEta, dPhi);
-      if (relk < fRelKThreshold) {
+      if (relk < fRelKThreshold && fPhiEtaPlotsSmallK) {
         fRadiiEtaPhiSEsmallK[hist][iDaug][iRad]->Fill(dEta, dPhi);
       }
     }
@@ -135,19 +139,31 @@ class AliFemtoDreamCorrHists {
                            float dEta, float relk) {
     if (!fMinimalBooking && fPhiEtaPlots) {
       fRadiiEtaPhiME[hist][iDaug][iRad]->Fill(dEta, dPhi);
-      if (relk < fRelKThreshold) {
+      if (relk < fRelKThreshold && fPhiEtaPlotsSmallK) {
         fRadiiEtaPhiMEsmallK[hist][iDaug][iRad]->Fill(dEta, dPhi);
       }
     }
   }
-  void FilldPhidEtaSE(int iHist, float dPhi, float dEta) {
-    if (fdPhidEtaPlots)
-      fdEtadPhiSE[iHist]->Fill(dEta, dPhi);
+  void FillEtaPhiAverageSE(int hist, int iDaug, float dPhi, float dEta, bool BeforeOrAfter) {
+    if (!fMinimalBooking && fPhiEtaPlots) {
+      if (BeforeOrAfter) {
+        fIntRadiiQAEtaPhiSEBefore[hist][iDaug]->Fill(dEta, dPhi);
+      } else {
+        fIntRadiiQAEtaPhiSEAfter[hist][iDaug]->Fill(dEta, dPhi);
+      }
+    }
   }
-  void FilldPhidEtaME(int iHist, float dPhi, float dEta) {
-    if (fdPhidEtaPlots)
-      fdEtadPhiME[iHist]->Fill(dEta, dPhi);
+  void FillEtaPhiAverageME(int hist, int iDaug, float dPhi, float dEta, bool BeforeOrAfter) {
+    if (!fMinimalBooking && fPhiEtaPlots) {
+      if (BeforeOrAfter) {
+        fIntRadiiQAEtaPhiMEBefore[hist][iDaug]->Fill(dEta, dPhi);
+      } else {
+        fIntRadiiQAEtaPhiMEAfter[hist][iDaug]->Fill(dEta, dPhi);
+      }
+    }
   }
+  void FilldPhidEtaSE(int iHist, float dPhi, float dEta, float mT);
+  void FilldPhidEtaME(int iHist, float dPhi, float dEta, float mT);
   void FillEffectiveMixingDepth(int iHist, int iDepth) {
     if (!fMinimalBooking)
       fEffMixingDepth[iHist]->Fill(iDepth);
@@ -173,13 +189,12 @@ class AliFemtoDreamCorrHists {
   bool fPhiEtaPlots;
   float fRelKThreshold;
   TH1F **fSameEventDist;
-  TH1F **fSameEventCommonAncestDist;
-  TH1F **fSameEventNonCommonAncestDist;
   TH2F **fSameEventMultDist;
   TH2F **fSameEventCentDist;
   TH2F **fSameEventmTDist;
   TH2F **fSameEventkTDist;
   TH2F ***fSameEventkTCentDist;
+  TH2F **fPtQADist;
   TH2F **fPairCounterSE;
   TH1F **fMixedEventDist;
   TH2F **fMixedEventMultDist;
@@ -192,19 +207,29 @@ class AliFemtoDreamCorrHists {
   TH2F **fMomResolutionDist;
   TH2F ****fRadiiEtaPhiSE;
   TH2F ****fRadiiEtaPhiME;
+  TH2F ***fIntRadiiQAEtaPhiSEBefore;
+  TH2F ***fIntRadiiQAEtaPhiMEBefore;
+  TH2F ***fIntRadiiQAEtaPhiSEAfter;
+  TH2F ***fIntRadiiQAEtaPhiMEAfter;
   TH2F ****fRadiiEtaPhiSEsmallK;
   TH2F ****fRadiiEtaPhiMEsmallK;
   TH2F **fdEtadPhiSE;
   TH2F **fdEtadPhiME;
+  TH2F ***fdEtadPhiSEmT;
+  TH2F ***fdEtadPhiMEmT;
   TH1F **fEffMixingDepth;
   bool fDoMultBinning;
   bool fDoCentBinning;
   bool fDokTBinning;
   bool fDomTBinning;
+  bool fPtQA;
   bool fDokTCentralityBins;
-  bool fDoMCCommonAncest;
   bool fdPhidEtaPlots;
-  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,4)
+  bool fPhiEtaPlotsSmallK;
+  bool fmTDetaDPhi;
+  std::vector<float> fmTdEtadPhiBins;
+  std::vector<unsigned int> fWhichPairs;
+  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,6)
   ;
 };
 

@@ -83,7 +83,7 @@ AliFemtoManager*
 ConfigAnalysis(const TString& param_str="")
 {
   std::cout << "[ConfigAnalysis (PionPion)]\n";
-  AlifemtoConfigObject cfg = AliFemtoConfigObject::Parse(param_str);
+  AliFemtoConfigObject cfg = AliFemtoConfigObject::Parse(param_str);
 
   const double PionMass = 0.13956995;
 

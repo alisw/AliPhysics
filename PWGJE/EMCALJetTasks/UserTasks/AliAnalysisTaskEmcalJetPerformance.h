@@ -51,6 +51,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance(const char *name)                          ;
   virtual ~AliAnalysisTaskEmcalJetPerformance()                                 ;
   
+
   static AliAnalysisTaskEmcalJetPerformance* AddTaskEmcalJetPerformance(
     const char *ntracks            = "usedefault",
     const char *nclusters          = "usedefault",
@@ -112,6 +113,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
   void SetPlotJetHistograms(Bool_t b)                       { fPlotJetHistograms = b; }
   void SetPlotClusterHistograms(Bool_t b)                   { fPlotClusterHistograms = b; }
+  void SetPlotCellNonlinearityHistograms(Bool_t b)          { fPlotCellNonlinearityHistograms = b; }
   void SetPlotParticleCompositionHistograms(Bool_t b)       { fPlotParticleCompositionHistograms = b; }
   void SetComputeBackground(Bool_t b)                       { fComputeBackground = b; }
   void SetDoTriggerSimulation(Bool_t b)                     { fDoTriggerSimulation = b; }
@@ -121,11 +123,13 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetTrackMatchingDeltaPhiMax(Double_t dphi)           { fTrackMatchingDeltaPhiMax = dphi; }
   void SetPlotDCal(Bool_t b)                                { fPlotDCal = b; }
   void SetDoJetMatchingGeometrical(Bool_t b)                { fDoJetMatchingGeometrical = b; }
+  void SetDoDifferentialRM(Bool_t b)                        { fDoDifferentialRM = b; }
   void SetDoJetMatchingMCFraction(Bool_t b)                 { fDoJetMatchingMCFraction = b; }
   void SetRequireMatchedJetAccepted(Bool_t b)               { fRequireMatchedJetAccepted = b; }
   void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
   void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
   void SetMCJetMinMatchingPt(Double_t min)                  { fMCJetMinMatchingPt = min; }
+  void SetDetJetMinMatchingPt(Double_t min)                 { fDetJetMinMatchingPt = min; }
   void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
   void SetDoTriggerResponse(Bool_t b)                       { fDoTriggerResponse = b; };
   void SetDoClosureTest(Bool_t b)                           { fDoClosureTest = b; }
@@ -133,22 +137,24 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
 
 
  protected:
-  void                        ExecOnce()                                        ;
-  Bool_t                      FillHistograms()                                  ;
-  Bool_t                      Run()                                             ;
-  Bool_t                      IsEventSelected()                                 ;
-  void                        RunChanged(Int_t run)                             ;
+  virtual void                ExecOnce()                                        ;
+  virtual Bool_t              FillHistograms()                                  ;
+  virtual Bool_t              Run()                                             ;
+  virtual Bool_t              IsEventSelected()                                 ;
+  virtual void                RunChanged(Int_t run)                             ;
 
   // Analysis and plotting functions
   void                        GenerateHistoBins()                               ;
   void                        AllocateJetHistograms()                           ;
   void                        AllocateClusterHistograms()                       ;
+  void                        AllocateCellNonlinearityHistograms()              ;
   void                        AllocateParticleCompositionHistograms()           ;
   void                        AllocateBackgroundHistograms()                    ;
   void                        AllocateTriggerSimHistograms()                    ;
   void                        AllocateMatchedJetHistograms()                    ;
   void                        FillJetHistograms()                               ;
   void                        FillClusterHistograms()                           ;
+  void                        FillCellNonlinearityHistograms()                  ;
   void                        FillParticleCompositionHistograms()               ;
   void                        FillParticleCompositionClusterHistograms(const AliMCEvent* mcevent);
   void                        FillParticleCompositionJetHistograms(const AliMCEvent* mcevent);
@@ -160,6 +166,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        ComputeJetMatches(AliJetContainer* jetCont1, AliJetContainer* jetCont2, Bool_t bUseJetCont2Acceptance);
   void                        SetJetClosestCandidate(AliEmcalJet* jet1, AliEmcalJet* jet2);
   const AliEmcalJet*          GetMatchedPartLevelJet(const AliEmcalJet* jet, Double_t detJetPt);
+  Double_t                    GetAngularity(const AliEmcalJet* jet);
+  Double_t                    GetRelativePhi(Double_t mphi, Double_t vphi);
   
   // Utility functions
   Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
@@ -171,6 +179,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   // Analysis parameters
   Bool_t                      fPlotJetHistograms;                   ///< Set whether to enable inclusive jet histograms
   Bool_t                      fPlotClusterHistograms;               ///< Set whether to plot cluster histograms
+  Bool_t                      fPlotCellNonlinearityHistograms;      ///< Set whether to plot cell non-linearity histograms for embedding studies
   Bool_t                      fPlotParticleCompositionHistograms;   ///< Set whether to plot jet composition histograms
   Bool_t                      fComputeBackground;                   ///< Set whether to enable study of background
   Bool_t                      fDoTriggerSimulation;                 ///< Set whether to perform a simple trigger simulation
@@ -207,6 +216,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   // Embedding parameters
   Bool_t                      fDoJetMatchingGeometrical;            ///< Do geometrical matching between det-level and truth-level jet container
   Bool_t                      fDoJetMatchingMCFraction;             ///< Do MC-fraction based matching using PbPb det-level, pp det-level, and pp truth-level jet containers
+  Bool_t                      fDoDifferentialRM;                    ///< This allows a differential RM depenent on the angularity of the particle lvl jet
   AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
   AliJetContainer*            fMCJetContainer;                      //!<!Pointer to jet container of truth-level jets
   AliJetContainer*            fDetJetContainer;                     //!<!Pointer to jet container of det-level jets
@@ -215,6 +225,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    fJetMatchingR;                        ///< Jet matching R threshold
   Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
   Double_t                    fMCJetMinMatchingPt;                  ///< Min jet pT for MC jets being matched, for when container criteria is not applied
+  Double_t                    fDetJetMinMatchingPt;                 ///< Min jet pT for Det jets being matched, for when container criteria is not applied
   Double_t                    fPlotJetMatchCandThresh;              ///< Threshold for jet R to count candidates, affects plotting only
   
   // Event selection
@@ -234,7 +245,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 20);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 21);
   /// \endcond
 };
 #endif

@@ -1,10 +1,5 @@
 ///
-/// \class AliFemtoEvent
-/// \brief AliFemtoEvent holds the event information specific and a track list.
-///
-/// AliFemtoEvent is the "transient microDST". Objects of this class are
-/// generated from the input data by an AliFemtoEventReader, and then presented
-/// to the cuts of the various active Analyses.
+/// \file AliFemtoEvent.h
 ///
 
 #ifndef ALIFEMTOEVENT_H
@@ -22,11 +17,31 @@ class AliFemtoXiCut;
 class AliFemtoKinkCut;
 class AliEventplane;
 
+
+/// \class AliFemtoEvent
+/// \brief AliFemtoEvent holds the event information specific and a
+///        track list.
+///
+/// AliFemtoEvent is the "transient microDST".
+/// Objects of this class are generated from the input data by an
+/// AliFemtoEventReader, and then presented to the cuts of the
+/// various active Analyses.
+///
 class AliFemtoEvent {
 public:
+  /// default constructor
   AliFemtoEvent();
-  AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut=0, AliFemtoV0Cut* vCut=0,  AliFemtoXiCut* xCut=0, AliFemtoKinkCut* kCut=0); ///< copy constructor with track and v0 cuts
-  AliFemtoEvent(const AliFemtoEvent& ev); ///< copy constructor
+
+  /// copy constructor with track and v0 cuts
+  AliFemtoEvent(const AliFemtoEvent& ev,
+                AliFemtoTrackCut* tCut=NULL,
+                AliFemtoV0Cut* vCut=NULL,
+                AliFemtoXiCut* xCut=NULL,
+                AliFemtoKinkCut* kCut=NULL);
+
+  /// copy constructor
+  AliFemtoEvent(const AliFemtoEvent& ev);
+
   ~AliFemtoEvent();
   AliFemtoEvent& operator=(const AliFemtoEvent& aEvent);
 
@@ -56,14 +71,13 @@ public:
   float ReactionPlaneAngle() const;
   AliEventplane* EP() const;
 
-  void SetEventNumber(const unsigned short& s);
-  void SetRunNumber(const int& i);
-  void SetNumberOfTracks(const unsigned short& s);
-  void SetNormalizedMult(const int& i);
-  void SetMultiplicityEstimateITSTPC(const unsigned short &s);
-  void SetMultiplicityEstimateTracklets(const unsigned short &s);
-  void SetMultiplicityEstimateITSPure(const unsigned short &s);
-
+  void SetEventNumber(const unsigned short s);
+  void SetRunNumber(const int i);
+  void SetNumberOfTracks(const unsigned short s);
+  void SetNormalizedMult(const int i);
+  void SetMultiplicityEstimateITSTPC(const unsigned short s);
+  void SetMultiplicityEstimateTracklets(const unsigned short s);
+  void SetMultiplicityEstimateITSPure(const unsigned short s);
 
   void SetCentralityV0(const float &c);
   void SetCentralityV0A(const float &c);
@@ -80,10 +94,10 @@ public:
   void SetCentralitySPD1(const float &c);
 
 
-  void SetSPDMult(const int& i);
+  void SetSPDMult(const int i);
   void SetPrimVertPos(const AliFemtoThreeVector& v);
   void SetPrimVertCov(const double* v);
-  void SetMagneticField(const double& x);
+  void SetMagneticField(const double x);
   void SetIsCollisionCandidate(const bool& is);
 
    //functions for alice variables
@@ -173,6 +187,48 @@ private:
   Float_t         fReactionPlaneAngle;  ///< reconstructed reaction plane angle
   AliEventplane*  fEP;                  ///< pointer to full event plane information
 };
+
+
+inline
+void AliFemtoEvent::SetEventNumber(const unsigned short event)
+{ fEventNumber = event; }
+
+inline
+void AliFemtoEvent::SetRunNumber(const int runNum)
+{ fRunNumber = runNum; }
+
+inline
+void AliFemtoEvent::SetNumberOfTracks(const unsigned short tracks)
+{ fNumberOfTracks = tracks; }
+
+inline
+void AliFemtoEvent::SetNormalizedMult(const int i)
+{ fNormalizedMult = i; }
+
+inline
+void AliFemtoEvent::SetSPDMult(const int i)
+{ fSPDMult = i; }
+
+inline
+void AliFemtoEvent::SetPrimVertPos(const AliFemtoThreeVector& vp)
+{ fPrimVertPos = vp; }
+
+inline
+void AliFemtoEvent::SetMagneticField(const double magF)
+{ fMagneticField = magF; }
+
+inline
+void AliFemtoEvent::SetMultiplicityEstimateITSTPC(const unsigned short s)
+{ fEstimateITSTPC = s; }
+
+inline
+void AliFemtoEvent::SetMultiplicityEstimateTracklets(const unsigned short s)
+{ fEstimateTracklets = s; }
+
+inline
+void AliFemtoEvent::SetMultiplicityEstimateITSPure(const unsigned short s)
+{ fEstimateITSPure = s; }
+
 
 
 

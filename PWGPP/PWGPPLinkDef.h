@@ -55,7 +55,10 @@
 #pragma link C++ class AliTPCPerformanceSummary+;
 #pragma link C++ class AliAnalysisNoiseTPC+;
 #pragma link C++ class AliMCTreeTools+;
-
+#pragma link C++ class AliPIDtools+;
+#pragma link C++ class std::map<int,AliTPCPIDResponse *>+;
+#pragma link C++ class std::map<int,AliPIDResponse *>+;
+#pragma link C++ class AliESDtools+;
 #pragma link C++ class AliIntSpotEstimator+;
 #pragma link C++ class AliAnalysisTaskIPInfo+;
 
@@ -64,6 +67,7 @@
 #pragma link C++ class AliAnalysisTaskCheckVertexAOD+;
 #pragma link C++ class AliAnalysisTaskCheckESDTracks+;
 #pragma link C++ class AliAnalysisTaskCheckAODTracks+;
+#pragma link C++ class AliAnalysisTaskCountEvents+;
 #pragma link C++ class AliAnalysisTaskCheckGenKine+;
 #pragma link C++ class AliAnalysisTaskTrackingEffPID+;
 #pragma link C++ class AliAlignmentDataFilterITS+;

@@ -36,6 +36,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/JPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/LMEE
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                    )
 
@@ -47,6 +48,7 @@ set(SRCS
       BtoJPSI/AliDielectronBtoJPSItoEle.cxx
       core/AliDielectronCF.cxx
       core/AliDielectronCFdraw.cxx
+      core/AliDielectronClusterCuts.cxx
       core/AliDielectronCutGroup.cxx
       core/AliDielectronCutQA.cxx
       core/AliDielectron.cxx
@@ -91,6 +93,11 @@ set(SRCS
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
       LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
+      LMEE/AliCocktailSmearing.cxx
+      LMEE/AliAnalysisTaskCharm.cxx
+      LMEE/AliAnalysisTaskBeauty.cxx
+      LMEE/AliAnalysisTaskJpsi.cxx
+      LMEE/AlimakeJPsiTree.cxx
   )
 
 # Headers from sources

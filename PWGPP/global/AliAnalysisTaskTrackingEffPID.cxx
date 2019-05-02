@@ -5,7 +5,6 @@
 #include <TF1.h>
 #include <TList.h>
 #include <TMath.h>
-#include <TParticle.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TRandom3.h>
@@ -74,6 +73,7 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fFilterBit{4},
   fTrackCuts{0x0},
   fOutputList{0x0},
+  fListCuts{0x0},
   fHistNEvents{0x0}
 {
   // default: use the filter bit 4 cuts
@@ -88,6 +88,7 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 /// Standard destructor
@@ -95,6 +96,7 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
 AliAnalysisTaskTrackingEffPID::~AliAnalysisTaskTrackingEffPID(){
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fOutputList) delete fOutputList;
+  if (fListCuts) delete fListCuts;
   if (fTrackCuts) delete fTrackCuts;
 }
 
@@ -176,6 +178,20 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
     }
   }
   fEventCut.AddQAplotsToList(fOutputList);
+
+  fListCuts = new TList();
+  fListCuts->SetOwner();
+  if(fTrackCuts){
+    AliESDtrackCuts* ttosave=new AliESDtrackCuts(*fTrackCuts);
+    fListCuts->Add(ttosave);
+    TH1F* hAODCuts=new TH1F("hAODCuts","",2,0.,2.);
+    hAODCuts->GetXaxis()->SetBinLabel(1,"filter bit");
+    hAODCuts->SetBinContent(1,fFilterBit);
+    hAODCuts->GetXaxis()->SetBinLabel(2,"use track cuts for AOD");
+    hAODCuts->SetBinContent(2,fUseTrackCutsForAOD);
+    fListCuts->Add(hAODCuts);
+  }
+  PostData(2, fListCuts);
 
   PostData(1,fOutputList);
 }
@@ -294,8 +310,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(track); 
       if(fTrackCuts && !fTrackCuts->AcceptTrack(esdtrack)) continue;
     }else{
-      if(track->GetID() < 0) continue;
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track); 
+      if(fFilterBit<0 && aodtrack->GetID() < 0) continue;
       if(fFilterBit>=0 && !aodtrack->TestFilterBit(BIT(fFilterBit))) continue;
       if(fTrackCuts && fUseTrackCutsForAOD){
 	bool accept=ConvertAndSelectAODTrack(aodtrack,vESD,magField);

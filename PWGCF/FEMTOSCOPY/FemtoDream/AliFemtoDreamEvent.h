@@ -28,6 +28,7 @@ class AliFemtoDreamEvent {
   AliFemtoDreamEvent &operator=(const AliFemtoDreamEvent &obj);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
+  void SetEvent(AliVEvent *evt);
   void SetEvent(AliESDEvent *evt);
   TList *GetEvtCutList() const {
     return fEvtCutList;
@@ -77,12 +78,22 @@ class AliFemtoDreamEvent {
     return fSPDMult;
   }
   ;
-  void SetSPDCluster(int spdCluster) {
-    fNSPDCluster = spdCluster;
+  void SetSPDClusterLy1(int spdCluster) {
+    fNSPDClusterLy0 = spdCluster;
   }
   ;
-  int GetSPDCluster() const {
-    return fNSPDCluster;
+  void SetSPDClusterLy2(int spdCluster) {
+    fNSPDClusterLy1 = spdCluster;
+  }
+  ;
+  int GetSPDCluster(int ly) const {
+    if (ly == 0) {
+      return fNSPDClusterLy0;
+    } else if (ly == 1) {
+      return fNSPDClusterLy1;
+    } else {
+      return 0.;
+    }
   }
   ;
   void SetRefMult08(int refMult) {
@@ -195,7 +206,8 @@ class AliFemtoDreamEvent {
   float fzVtxSPD;             //!
   float fBField;              //!
   int fSPDMult;               //!
-  int fNSPDCluster;           //!
+  int fNSPDClusterLy0;        //!
+  int fNSPDClusterLy1;        //!
   int fRefMult08;             //!
   int fV0AMult;               //!
   int fV0CMult;               //!

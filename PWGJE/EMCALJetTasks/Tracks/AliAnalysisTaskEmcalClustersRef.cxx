@@ -352,6 +352,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     maxpoint[0] = supermoduleID;
   }
   for(const auto & trg : fSelectedTriggers){
+    if(std::find(supportedTriggers.begin(), supportedTriggers.end(), trg) == supportedTriggers.end()) continue;
     auto weight = GetTriggerWeight(trg);
     for(auto trgclust : fTriggerClusters) {
       maxpoint[5] = trgclust;

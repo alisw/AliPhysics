@@ -197,6 +197,11 @@ public:
     kLHC17j6,          ///< anchored LHC17n XeXe 5.44 TeV with ITS reco points
     kLHC17j7,          ///< anchored LHC17n XeXe 5.44 TeV general purpose
     ///@}
+    /// \name 2018
+    /// \brief 2018 periods
+    ///@{
+    kLHC18q,          ///< PbPb 5 TeV
+    ///@}
     /// \name fast MC productions
     ///@{
     kLHC13f3,         ///<  PbPb, AMPT, fast generation, 2.76TeV (min. bias)

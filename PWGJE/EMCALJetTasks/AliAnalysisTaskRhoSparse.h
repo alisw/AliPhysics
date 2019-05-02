@@ -53,7 +53,7 @@ class AliAnalysisTaskRhoSparse : public AliAnalysisTaskRhoBase {
   		const char    *nClusters   = "usedefault",
   		const char    *nRho        = "Rho",
   		Double_t       jetradius   = 0.2,
-  		UInt_t         acceptance  = AliEmcalJet::kTPCfid,
+  		UInt_t         acceptance  = AliEmcalJet::kTPC,
   		AliJetContainer::EJetType_t jetType    = AliJetContainer::kChargedJet,
   		AliJetContainer::ERecoScheme_t rscheme = AliJetContainer::pt_scheme,
   		const Bool_t   histo       = kFALSE,
@@ -66,9 +66,10 @@ class AliAnalysisTaskRhoSparse : public AliAnalysisTaskRhoBase {
   		);
 
   void             UserCreateOutputObjects();
-  void             SetExcludeLeadJets(UInt_t n)         { fNExclLeadJets = n       ; }
-  void             SetExcludeOverlapJets(Bool_t input)  { fExcludeOverlaps = input ; }
-  void             SetRhoCMS(Bool_t cms)                { fRhoCMS = cms            ; }
+  void             SetExcludeLeadJets(UInt_t n)           { fNExclLeadJets = n       ; }
+  void             SetExcludeOverlapJets(Bool_t input)    { fExcludeOverlaps = input ; }
+  void             SetRhoCMS(Bool_t cms)                  { fRhoCMS = cms            ; }
+  void             SetAreaCalculationDetails(Bool_t inputTPCArea, Bool_t inputExcludeJetArea){ fUseTPCArea = inputTPCArea ; fExcludeAreaExcludedJets = inputExcludeJetArea; }
   Bool_t           IsJetOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
   Bool_t           IsJetSignal(AliEmcalJet* jet1);
 
@@ -78,8 +79,9 @@ class AliAnalysisTaskRhoSparse : public AliAnalysisTaskRhoBase {
   UInt_t           fNExclLeadJets;                                    ///< number of leading jets to be excluded from the median calculation
   Bool_t           fExcludeOverlaps;                                  ///< exclude background jets that overlap (share at least one track) with anti-KT signal jets
   Bool_t           fRhoCMS;                                           ///< flag to run CMS method
-
-  TH2F            *fHistOccCorrvsCent;            				    //!<! occupancy correction vs. centrality
+  Bool_t           fUseTPCArea;                                       ///< use the full TPC area for the denominator of the occupancy calculation
+  Bool_t           fExcludeAreaExcludedJets;                          ///<
+  TH2F            *fHistOccCorrvsCent;            				                //!<! occupancy correction vs. centrality
 
   AliAnalysisTaskRhoSparse(const AliAnalysisTaskRhoSparse&);           ///< not implemented
   AliAnalysisTaskRhoSparse& operator=(const AliAnalysisTaskRhoSparse&);///< not implemented

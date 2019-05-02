@@ -1,12 +1,6 @@
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// AliFemtoCorrFctn3DSpherical: a class to calculate 3D correlation      //
-// for pairs of identical particles, binned in spherical coordinates.    //
-// In analysis the function should be first created in a macro, then     //
-// added to the analysis, and at the end of the macro the procedure to   //
-// write out histograms should be called.                                //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemto/AliFemtoCorrFctn3DSpherical.cxx
+///
 
 #include "AliFemtoCorrFctn3DSpherical.h"
 #include <TMath.h>
@@ -19,18 +13,22 @@
 #endif
 
 //____________________________
-  AliFemtoCorrFctn3DSpherical::AliFemtoCorrFctn3DSpherical(const char* title, const int& nqbins, const float& QLo, const float& QHi, const int& nphibins, const int& ncthetabins):
-  fNumerator(0),
-  fDenominator(0) //,
-							  //  fPairCut(0x0)
+AliFemtoCorrFctn3DSpherical::AliFemtoCorrFctn3DSpherical(const char* title,
+                                                         const int nqbins,
+                                                         const float QLo,
+                                                         const float QHi,
+                                                         const int nphibins,
+                                                         const int ncthetabins)
+
+  : AliFemtoCorrFctn()
+  , fNumerator(nullptr)
+  , fDenominator(nullptr)
 {
   // set up numerator
-  char tTitNum[101] = "Num";
-  strncat(tTitNum,title, 100);
+  TString tTitNum = TString("Num") + title;
   fNumerator = new TH3D(tTitNum,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
   // set up denominator
-  char tTitDen[101] = "Den";
-  strncat(tTitDen,title, 100);
+  TString tTitDen = TString("Den") + title;
   fDenominator = new TH3D(tTitDen,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
 
   // to enable error bar calculation...
@@ -38,19 +36,18 @@
   fDenominator->Sumw2();
 }
 
-AliFemtoCorrFctn3DSpherical::AliFemtoCorrFctn3DSpherical(const AliFemtoCorrFctn3DSpherical& aCorrFctn) :
-  AliFemtoCorrFctn(aCorrFctn),
-  fNumerator(0),
-  fDenominator(0) //,
-							//  fPairCut(0x0)
+AliFemtoCorrFctn3DSpherical::AliFemtoCorrFctn3DSpherical(const AliFemtoCorrFctn3DSpherical& aCorrFctn)
+  : AliFemtoCorrFctn(aCorrFctn)
+  , fNumerator(nullptr)
+  , fDenominator(nullptr)
 {
   // Copy constructor
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
-  //  fPairCut = aCorrFctn.fPairCut;
 }
 //____________________________
-AliFemtoCorrFctn3DSpherical::~AliFemtoCorrFctn3DSpherical(){
+AliFemtoCorrFctn3DSpherical::~AliFemtoCorrFctn3DSpherical()
+{
   // Destructor
   delete fNumerator;
   delete fDenominator;
@@ -62,18 +59,19 @@ AliFemtoCorrFctn3DSpherical& AliFemtoCorrFctn3DSpherical::operator=(const AliFem
   if (this == &aCorrFctn)
     return *this;
 
+  AliFemtoCorrFctn::operator=(aCorrFctn);
+
   if (fNumerator) delete fNumerator;
   fNumerator = new TH3D(*aCorrFctn.fNumerator);
   if (fDenominator) delete fDenominator;
   fDenominator = new TH3D(*aCorrFctn.fDenominator);
 
-  //  fPairCut = aCorrFctn.fPairCut;
-
   return *this;
 }
 
 //_________________________
-void AliFemtoCorrFctn3DSpherical::WriteOutHistos(){
+void AliFemtoCorrFctn3DSpherical::WriteOutHistos()
+{
   // Write out all histograms to file
   fNumerator->Write();
   fDenominator->Write();
@@ -91,39 +89,33 @@ TList* AliFemtoCorrFctn3DSpherical::GetOutputList()
 }
 
 //_________________________
-void AliFemtoCorrFctn3DSpherical::Finish(){
+void AliFemtoCorrFctn3DSpherical::Finish()
+{
   // here is where we should normalize, fit, etc...
 }
 
 //____________________________
-AliFemtoString AliFemtoCorrFctn3DSpherical::Report(){
+AliFemtoString AliFemtoCorrFctn3DSpherical::Report()
+{
   // Construct the report
-  string stemp = "PRF Frame Spherical 3D Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
-  stemp += ctemp;
+  AliFemtoString report = "PRF Frame Spherical 3D Correlation Function Report:\n";
+  report += Form("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
 
-  if (fPairCut){
-    snprintf(ctemp , 100, "Here is the PairCut specific to this CorrFctn\n");
-    stemp += ctemp;
-    stemp += fPairCut->Report();
-  }
-  else{
-    snprintf(ctemp , 100, "No PairCut specific to this CorrFctn\n");
-    stemp += ctemp;
+  if (fPairCut) {
+    report += "Here is the PairCut specific to this CorrFctn\n" + fPairCut->Report();
+  } else {
+    report += "No PairCut specific to this CorrFctn\n";
   }
 
-  //
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  return report;
 }
 //____________________________
-void AliFemtoCorrFctn3DSpherical::AddRealPair( AliFemtoPair* pair){
+void AliFemtoCorrFctn3DSpherical::AddRealPair(AliFemtoPair *pair)
+{
   // perform operations on real pairs
-  if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
   }
 
   double tKO = pair->KOut();
@@ -139,10 +131,11 @@ void AliFemtoCorrFctn3DSpherical::AddRealPair( AliFemtoPair* pair){
   fNumerator->Fill(tKR,tKP,tKC);
 }
 //____________________________
-void AliFemtoCorrFctn3DSpherical::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoCorrFctn3DSpherical::AddMixedPair(AliFemtoPair *pair)
+{
   // perform operations on mixed pairs
-  if (fPairCut){
-    if (!(fPairCut->Pass(pair))) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
   }
 
   double tKO = pair->KOut();

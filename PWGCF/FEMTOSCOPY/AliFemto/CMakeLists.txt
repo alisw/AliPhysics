@@ -56,6 +56,7 @@ set(SRCS
   AliFemtoEventReaderESDChain.cxx
   AliFemtoEventReaderESDChainKine.cxx
   AliFemtoEventReaderESDChainKineKK.cxx
+  AliFemtoEventReaderAlt.cxx
   AliFemtoModelHiddenInfo.cxx
   AliFemtoModelGlobalHiddenInfo.cxx
   AliFemtoModelGausLCMSFreezeOutGenerator.cxx
@@ -69,6 +70,7 @@ set(SRCS
   AliFemtoCutMonitorParticleVertPos.cxx
   AliFemtoCutMonitorParticlePID.cxx
   AliFemtoCutMonitorParticlePIDBeta.cxx
+  AliFemtoCutMonitorParticlePIDInnerMomentum.cxx
   AliFemtoCutMonitorEventMult.cxx
   AliFemtoCutMonitorEventVertex.cxx
   AliFemtoKTPairCut.cxx
@@ -167,7 +169,6 @@ set(HDRS ${HDRS}
   AliFemtoCorrFctnDPhiStarKStarAverageMergedPointsFraction.h
   AliFemtoBetaTPairCut.h
   AliFemtoCutMonitorPairBetaT.h
-  AliFemtoAvgSepCalculator.h
   AliFemtoTrioAnalysis.h
   AliFemtoTrioCut.h
   AliFemtoTrio.h

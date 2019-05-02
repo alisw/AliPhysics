@@ -158,6 +158,7 @@ fhEmbedElectronELambda0MostlyBkg(0),  fhEmbedElectronELambda0FullBkg(0)
     for(Int_t i = 0; i < 6; i++)
     {
       fhMCELambda0       [index][i] = 0;
+      fhMCELambda1       [index][i] = 0;
       fhMCEDispEta       [index][i] = 0;
       fhMCEDispPhi       [index][i] = 0;
       fhMCESumEtaPhi     [index][i] = 0;
@@ -381,7 +382,6 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
     Int_t index = -1;
 
     if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) &&
-        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
         !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0) &&
         !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta) )
     {
@@ -462,6 +462,7 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTa
     } // other particles
     
     fhMCELambda0[pidIndex][index]    ->Fill(energy, lambda0, GetEventWeight());
+    fhMCELambda1[pidIndex][index]    ->Fill(energy, lambda1, GetEventWeight());
     
     if ( GetCalorimeter() == kEMCAL && !fFillOnlySimpleSSHisto )
     {
@@ -913,7 +914,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     for(Int_t i = 0; i < fNOriginHistograms; i++)
     {
       fhMCdEdxvsE[i]  = new TH2F
-      (Form("hdEdx_clusE__MC%s",pname[i].Data()),
+      (Form("hdEdx_clusE_MC%s",pname[i].Data()),
        Form("matched track <d#it{E}/d#it{x}> vs cluster #it{E} from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
       fhMCdEdxvsE[i]->SetXTitle("#it{E} (GeV)");
@@ -921,7 +922,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCdEdxvsE[i]) ;
       
       fhMCdEdxvsP[i]  = new TH2F
-      (Form("hdEdx_TraP__MC%s",pname[i].Data()),
+      (Form("hdEdx_TraP_MC%s",pname[i].Data()),
        Form("matched track <d#it{E}/d#it{x}> vs track P from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
       fhMCdEdxvsP[i]->SetXTitle("#it{E} (GeV)");
@@ -929,7 +930,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCdEdxvsP[i]) ;
  
       fhMCNSigmavsE[i]  = new TH2F
-      (Form("hNSigma_clusE__MC%s",pname[i].Data()),
+      (Form("hNSigma_clusE_MC%s",pname[i].Data()),
        Form("matched track n#sigma vs cluster #it{E} from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
       fhMCNSigmavsE[i]->SetXTitle("#it{E} (GeV)");
@@ -937,7 +938,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCNSigmavsE[i]) ;
       
       fhMCNSigmavsP[i]  = new TH2F
-      (Form("hNSigma_TraP__MC%s",pname[i].Data()),
+      (Form("hNSigma_TraP_MC%s",pname[i].Data()),
        Form("matched track n#sigma vs track P from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax, nNSigmabins, nSigmamin, nSigmamax);
       fhMCNSigmavsP[i]->SetXTitle("#it{E} (GeV)");
@@ -945,7 +946,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCNSigmavsP[i]) ;
       
       fhMCEOverPvsE[i]  = new TH2F
-      (Form("hEOverP_clusE__MC%s",pname[i].Data()),
+      (Form("hEOverP_clusE_MC%s",pname[i].Data()),
        Form("matched track #it{E/p} vs cluster #it{E} from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
       fhMCEOverPvsE[i]->SetXTitle("#it{E} (GeV)");
@@ -953,7 +954,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhMCEOverPvsE[i]) ;
       
       fhMCEOverPvsP[i]  = new TH2F
-      (Form("hEOverP_TraP__MC%s",pname[i].Data()),
+      (Form("hEOverP_TraP_MC%s",pname[i].Data()),
        Form("matched track #it{E/p} vs track P from %s",ptype[i].Data()),
        nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
       fhMCEOverPvsP[i]->SetXTitle("#it{E} (GeV)");
@@ -963,7 +964,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       for(Int_t j = 0; j < 2; j++)
       {
         fhMCEOverPvsEAfterCuts[i][j]  = new TH2F
-        (Form("hEOverP_clusE__%s_MC%s",pidParticle[j].Data(), pname[i].Data()),
+        (Form("hEOverP_clusE_%s_MC%s",pidParticle[j].Data(), pname[i].Data()),
          Form("matched track #it{E/p} vs cluster #it{E}, id %s from MC %s",pidParticle[j].Data(),ptype[i].Data()),
          nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
         fhMCEOverPvsEAfterCuts[i][j]->SetXTitle("#it{E} (GeV)");
@@ -971,7 +972,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
         outputContainer->Add(fhMCEOverPvsEAfterCuts[i][j]) ;
         
         fhMCEOverPvsPAfterCuts[i][j]  = new TH2F
-        (Form("hEOverP_TraP__%s_MC%s",pidParticle[j].Data(),pname[i].Data()),
+        (Form("hEOverP_TraP_%s_MC%s",pidParticle[j].Data(),pname[i].Data()),
          Form("matched track #it{E/p} vs track P, id %s, from MC %s",pidParticle[j].Data(),ptype[i].Data()),
          nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
         fhMCEOverPvsPAfterCuts[i][j]->SetXTitle("#it{E} (GeV)");
@@ -1008,7 +1009,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhDPhivsE[indexPID][ich]) ;
 
       fhDEtavsP[indexPID][ich]  = new TH2F
-      (Form("hDEta_clusE_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+      (Form("hDEta_TraP_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
        Form("#Delta #eta of cluster - %s track vs #it{p}_{track}, ID: %s",
             sCharge[ich].Data(),pidParticle[indexPID].Data()),
        nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax);
@@ -1017,7 +1018,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhDEtavsP[indexPID][ich]) ;
       
       fhDPhivsP[indexPID][ich]  = new TH2F
-      (Form("hDPhi_clusE_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
+      (Form("hDPhi_TraP_%s_%s",sCharge[ich].Data(),pidParticle[indexPID].Data()),
        Form("#Delta #varphi of cluster - %s track vs #it{p}_{track}, ID: %s",
             sCharge[ich].Data(),pidParticle[indexPID].Data()),
        nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
@@ -1258,6 +1259,13 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
           fhMCELambda0[pidIndex][i]->SetYTitle("#sigma_{long}^{2}");
           fhMCELambda0[pidIndex][i]->SetXTitle("#it{E} (GeV)");
           outputContainer->Add(fhMCELambda0[pidIndex][i]) ; 
+  
+          fhMCELambda1[pidIndex][i]  = new TH2F(Form("h%sELambda1_MC%s",pidParticle[pidIndex].Data(),pnamess[i].Data()),
+                                                Form("%s like cluster from %s : #it{E} vs #sigma_{short}^{2}",pidParticle[pidIndex].Data(),ptypess[i].Data()),
+                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+          fhMCELambda1[pidIndex][i]->SetYTitle("#sigma_{short}^{2}");
+          fhMCELambda1[pidIndex][i]->SetXTitle("#it{E} (GeV)");
+          outputContainer->Add(fhMCELambda1[pidIndex][i]) ; 
           
           if ( GetCalorimeter()==kEMCAL && !fFillOnlySimpleSSHisto )
           {
@@ -1576,6 +1584,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   else if ( dataType == AliCaloTrackReader::kAOD ) 
     pidResponse = (dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetPIDResponse();
   
+  if ( !pidResponse )
+  {
+    AliFatal("AliPIDResponse not available, did you initialize the task?");
+    return; // not needed, coverity ...
+  }
+  
   //Init arrays, variables, get number of clusters
   Int_t nCaloClusters = pl->GetEntriesFast();
   //List to be used in conversion analysis, to tag the cluster as candidate for conversion
@@ -1831,8 +1845,11 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Int_t tag = -1 ;
     if ( IsDataMC() )
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC(),
-                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), 
+                                              calo->GetClusterMCEdepFraction(),
+                                              calo->GetNLabels(), GetMC(),
+                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                              cluE);
       
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
          
@@ -1845,9 +1862,12 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
         fhMCNSigmavsP[kmcPhoton]->Fill(traP, nSigma, GetEventWeight());
         fhMCEOverPvsE[kmcPhoton]->Fill(cluE, eOverp, GetEventWeight());
         fhMCEOverPvsP[kmcPhoton]->Fill(traP, eOverp, GetEventWeight());
- 
-        fhMCEOverPvsEAfterCuts[kmcPhoton][pidIndex]->Fill(cluE, eOverp, GetEventWeight());
-        fhMCEOverPvsPAfterCuts[kmcPhoton][pidIndex]->Fill(traP, eOverp, GetEventWeight());
+
+        if(pidIndex!=-1)
+        {
+          fhMCEOverPvsEAfterCuts[kmcPhoton][pidIndex]->Fill(cluE, eOverp, GetEventWeight());
+          fhMCEOverPvsPAfterCuts[kmcPhoton][pidIndex]->Fill(traP, eOverp, GetEventWeight());
+        }
         
         if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) )
         {
@@ -1897,8 +1917,11 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
         fhMCEOverPvsE[mcFlag]->Fill(cluE, eOverp, GetEventWeight());
         fhMCEOverPvsP[mcFlag]->Fill(traP, eOverp, GetEventWeight());
         
-        fhMCEOverPvsEAfterCuts[mcFlag][pidIndex]->Fill(cluE, eOverp, GetEventWeight());
-        fhMCEOverPvsPAfterCuts[mcFlag][pidIndex]->Fill(traP, eOverp, GetEventWeight());        
+        if(pidIndex!=-1)
+        {
+          fhMCEOverPvsEAfterCuts[mcFlag][pidIndex]->Fill(cluE, eOverp, GetEventWeight());
+          fhMCEOverPvsPAfterCuts[mcFlag][pidIndex]->Fill(traP, eOverp, GetEventWeight());       
+        }
       }
       
     }// set MC tag and fill Histograms with MC

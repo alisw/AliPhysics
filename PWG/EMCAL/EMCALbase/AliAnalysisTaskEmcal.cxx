@@ -1,17 +1,29 @@
-/**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <RVersion.h>
 #include <iostream>
 #include <memory>
@@ -79,6 +91,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -117,10 +130,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
+  fUseBuiltinEventSelection(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
+  fAliEventCuts(kFALSE),
   fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
   fGeom(nullptr),
@@ -193,6 +208,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMaxCent(-999),
   fMinVz(-999),
   fMaxVz(999),
+  fMinVertexContrib(1),
   fTrackPtCut(0),
   fMinNTrack(0),
   fZvertexDiff(0.5),
@@ -231,10 +247,12 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
+  fUseBuiltinEventSelection(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
+  fAliEventCuts(kFALSE),
   fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
   fGeom(nullptr),
@@ -289,6 +307,8 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fVertexSPD[2] = 0;
   fParticleCollArray.SetOwner(kTRUE);
   fClusterCollArray.SetOwner(kTRUE);
+  // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+  fAliEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
 
   if (fCreateHisto) {
     DefineOutput(1, AliEmcalList::Class());
@@ -359,6 +379,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   else {
     AliError("Analysis manager not found!");
   }  
+
 
   if (!fCreateHisto)
     return;
@@ -484,23 +505,35 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 #else
   fHistEventRejection->SetCanExtend(TH1::kAllAxes);
 #endif
-  fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
-  fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
-  fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
-  fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
-  fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
-  fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
-  fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
-  fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
-  fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
-  fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
-  fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
-  fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
-  fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
-  fHistEventRejection->GetXaxis()->SetBinLabel(15,"RecycleEmbeddedEvent");
-  fHistEventRejection->GetYaxis()->SetTitle("counts");
+  // We must keep track of the recycled embedded event count. If we use the builtin event selection, then
+  // this count is appended after all of the rest of the bins.
+  int recycleEmbeddedEventIndex = 1;
+  if(fUseBuiltinEventSelection){
+    fHistEventRejection->GetXaxis()->SetBinLabel(1,"PhysSel");
+    fHistEventRejection->GetXaxis()->SetBinLabel(2,"trigger");
+    fHistEventRejection->GetXaxis()->SetBinLabel(3,"trigTypeSel");
+    fHistEventRejection->GetXaxis()->SetBinLabel(4,"Cent");
+    fHistEventRejection->GetXaxis()->SetBinLabel(5,"vertex contr.");
+    fHistEventRejection->GetXaxis()->SetBinLabel(6,"Vz");
+    fHistEventRejection->GetXaxis()->SetBinLabel(7,"VzSPD");
+    fHistEventRejection->GetXaxis()->SetBinLabel(8,"trackInEmcal");
+    fHistEventRejection->GetXaxis()->SetBinLabel(9,"minNTrack");
+    fHistEventRejection->GetXaxis()->SetBinLabel(10,"VtxSel2013pA");
+    fHistEventRejection->GetXaxis()->SetBinLabel(11,"PileUp");
+    fHistEventRejection->GetXaxis()->SetBinLabel(12,"EvtPlane");
+    fHistEventRejection->GetXaxis()->SetBinLabel(13,"SelPtHardBin");
+    fHistEventRejection->GetXaxis()->SetBinLabel(14,"Bkg evt");
+    recycleEmbeddedEventIndex = 15;
+    fHistEventRejection->GetYaxis()->SetTitle("counts");
+  }
+  // Finish setting up the event rejection histogram.
+  fHistEventRejection->GetXaxis()->SetBinLabel(recycleEmbeddedEventIndex,"RecycleEmbeddedEvent");
   fOutput->Add(fHistEventRejection);
+
+  // Finish setting up AliEventCuts
+  if (!fUseBuiltinEventSelection) {
+    fAliEventCuts.AddQAplotsToList(fOutput);
+  }
 
   fHistTriggerClasses = new TH1F("fHistTriggerClasses","fHistTriggerClasses",3,0,3);
 #if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
@@ -1085,9 +1118,16 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
   return TESTBIT(fTriggers, trigger);
 }
 
-Bool_t AliAnalysisTaskEmcal::IsEventSelected()
+Bool_t AliAnalysisTaskEmcal::IsEventSelected(){
+  if(fUseBuiltinEventSelection) return IsEventSelectedInternal();
+  if(!IsTriggerSelected()) return false;
+  if(!CheckMCOutliers()) return false;
+  return fAliEventCuts.AcceptEvent(fInputEvent);
+}
+
+Bool_t AliAnalysisTaskEmcal::IsEventSelectedInternal()
 {
-  AliDebugStream(1) << "Using default event selection" << std::endl;
+  AliDebugStream(3) << "Using default event selection" << std::endl;
   if (fOffTrigger != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -1127,7 +1167,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
   if (fUseAliAnaUtils) {
     if (!fAliAnalysisUtils)
       fAliAnalysisUtils = new AliAnalysisUtils();
-    fAliAnalysisUtils->SetMinVtxContr(2);
+    fAliAnalysisUtils->SetMinVtxContr(fMinVertexContrib);
     fAliAnalysisUtils->SetMaxVtxZ(999);
     if(fMinVz<-998.) fMinVz = -10.;
     if(fMaxVz>998.)  fMaxVz = 10.;
@@ -1243,7 +1283,7 @@ Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
   // to trigger selection). Users should re-implement
   // this function in case they have certain needs, in
   // particular for EMCAL triggers
-  AliDebugStream(1) << "Using default trigger selection" << std::endl;
+  AliDebugStream(3) << "Using default trigger selection" << std::endl;
   if (!fTrigClass.IsNull()) {
     TString fired = InputEvent()->GetFiredTriggerClasses();
     if (!fired.Contains("-B-")) return kFALSE;
@@ -1292,6 +1332,7 @@ Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
 Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 {
   if (!fPythiaHeader || !fMCRejectFilter) return kTRUE;
+  AliDebugStream(2) << "Using custom outlier rejection" << std::endl;
 
   // Condition 1: Pythia jet / pT-hard > factor
   if (fPtHardAndJetPtFactor > 0.) {
@@ -1299,7 +1340,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
     Int_t nTriggerJets =  fPythiaHeader->NTriggerJets();
 
-    AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
+    AliDebug(2,Form("Njets: %d, pT Hard %f",nTriggerJets, fPtHard));
 
     Float_t tmpjet[]={0,0,0,0};
     for (Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
@@ -1307,7 +1348,7 @@ Bool_t AliAnalysisTaskEmcal::CheckMCOutliers()
 
       jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
 
-      AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
+      AliDebug(2,Form("jet %d; pycell jet pT %f",ijet, jet.Pt()));
 
       //Compare jet pT and pt Hard
       if (jet.Pt() > fPtHardAndJetPtFactor * fPtHard) {
@@ -1411,32 +1452,32 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   TObject * header = InputEvent()->GetHeader();
   if (fBeamType == kAA || fBeamType == kpA ) {
     if (fUseNewCentralityEstimation) {
-    if (header->InheritsFrom("AliNanoAODStorage")){
-       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
-       fCent=nanoHead->GetCentr(fCentEst.Data());
-    }else{
-      AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
-      if (MultSelection) {
-        fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
-      }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
+      if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fCent=nanoHead->GetCentr(fCentEst.Data());
+      }else{
+        AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+        if (MultSelection) {
+          fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
+        }
+        else {
+          AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        }
       }
     }
     else { // old centrality estimation < 2015
-    if (header->InheritsFrom("AliNanoAODStorage")){
-       AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
-       fCent=nanoHead->GetCentr(fCentEst.Data());
-    }else{
-      AliCentrality *aliCent = InputEvent()->GetCentrality();
-      if (aliCent) {
-        fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+      if (header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoHead = (AliNanoAODHeader*)header;
+        fCent=nanoHead->GetCentr(fCentEst.Data());
+      }else{
+        AliCentrality *aliCent = InputEvent()->GetCentrality();
+        if (aliCent) {
+          fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
+        }
+        else {
+          AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+        }
       }
-      else {
-        AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
-      }
-    }
     }
 
     if (fNcentBins==4) {

@@ -54,6 +54,9 @@ protected:
 private:
   THistManager              *fHistos;         //!<! Output histograms
 
+  AliAnalysisTaskGammaConvDtrue(const AliAnalysisTaskGammaConvDtrue &);
+  AliAnalysisTaskGammaConvDtrue &operator=(const AliAnalysisTaskGammaConvDtrue &);
+
   ClassDef(AliAnalysisTaskGammaConvDtrue, 1);
 };
 #endif

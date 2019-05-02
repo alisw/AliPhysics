@@ -81,14 +81,17 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.cxx
   Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
+  Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Add header only files
-set(HDRS 
+set(HDRS
   ${HDRS}
+  Lifetimes/MiniEvent.h
+  Lifetimes/HyperTriton2Body.h
   Lifetimes/MCparticle.h
   Lifetimes/MiniV0.h
   Lifetimes/Utils.h

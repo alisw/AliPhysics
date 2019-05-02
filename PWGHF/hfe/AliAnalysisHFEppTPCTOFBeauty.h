@@ -25,6 +25,7 @@ class AliESDtrackCuts;
 class AliESDtrack;
 class AliHFEcontainer;
 class AliHFEcuts;
+class AliHFEextraCuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
@@ -75,6 +76,8 @@ public:
     //Setter for the PID cuts (TPC and TOF)
     void SetPIDCuts(Float_t tpcPIDmincut, Float_t tpcPIDmaxcut, Float_t tofPIDmincut, Float_t tofPIDmaxcut);
     
+     
+    
     //Setter for the Eta cut
     void SetEtaCut(Float_t EtaMin, Float_t EtaMax);
     
@@ -106,6 +109,7 @@ public:
     void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
     
+    void SetHCFunction(TF1* HC) {fHC = HC;};
     
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
@@ -119,6 +123,22 @@ private:
     
     //Find Mothers (Find HFE and NonHFE from MC information)
     Bool_t FindMother(Int_t mcIndex);
+    
+   
+    // Returns the resolution Gaus which is correction to the resolution in different phi regions
+    Float_t GetDCAResolMC_phi1(Float_t x);
+    Float_t GetDCAResolMC_phi2(Float_t x);
+    Float_t GetDCAResolMC_phi3(Float_t x);
+    Float_t GetDCAResolMC_phi4(Float_t x);
+    
+    
+    // Returns the mean Gaus which is correction to the mean in different phi regions
+    Float_t GetDCAMeanMC_phi1(Float_t x);
+    Float_t GetDCAMeanMC_phi2(Float_t x);
+    Float_t GetDCAMeanMC_phi3(Float_t x);
+    Float_t GetDCAMeanMC_phi4(Float_t x);
+    
+    
     
     //Select HFE for the reconstruction efficiency calculation
     Bool_t IsHFelectronsMC(AliVTrack *track);
@@ -173,7 +193,7 @@ private:
     TList       			*fOutputList;
     AliPIDResponse 			*fPidResponse;
     AliSelectNonHFE 		*fNonHFE;
-    
+    AliHFEextraCuts 		*fExtraCuts;    
     
     //For the case of AOD analysis
     Bool_t					fIsAOD;					//flag for AOD analysis
@@ -229,6 +249,7 @@ private:
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
     TH2F                *fTPCnsigma_p_after_tof;//!
+    TH2F                *fTPCnsigma_proton_p_after_tof;//!
     TH2F                *fTPCnsigma_p_after_tof_p;//!
     TH2F                *fTPCnsigma_p_after_tof_pion;//!
     TH2F                *fTPCnsigma_p_after_tof_k;//!
@@ -256,6 +277,26 @@ private:
     TH2F                *fDCAxy_pt_BaryonB_beautybef;//!
     TH2F                *fDCAxy_pt_BaryonBD_beautybef;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA_phi1;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA_phi2;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA_phi3;//!
+    TH2F				*fDCAxy_pt_had_onlyDCA_phi4;//!
+    TH2F				*fDCAxy_pt_had_phi1_ChB;//!
+    TH2F				*fDCAxy_pt_had_phi1_B;//!
+    TH2F				*fDCAxy_pt_had_phi2_ChB;//!
+    TH2F				*fDCAxy_pt_had_phi2_B;//!
+    TH2F				*fDCAxy_pt_had_phi3_ChB;//!
+    TH2F				*fDCAxy_pt_had_phi3_B;//!
+    TH2F				*fDCAxy_pt_had_phi4_ChB;//!
+    TH2F				*fDCAxy_pt_had_phi4_B;//!
+    TH2F				*fDCAxy_pt_had_ResCorr_phi1;//!
+    TH2F				*fDCAxy_pt_had_ResCorr_phi2;//!
+    TH2F				*fDCAxy_pt_had_ResCorr_phi3;//!
+    TH2F				*fDCAxy_pt_had_ResCorr_phi4;//!
+    TH1F				*fResGausCorr_phi1;//!
+    TH1F				*fResGausCorr_phi2;//!
+    TH1F				*fResGausCorr_phi3;//!
+    TH1F				*fResGausCorr_phi4;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
@@ -267,6 +308,9 @@ private:
     TH1F                *hCharmMotherPt_corr2;//! pt of mothers of eletrons from mesons D weighted
 	
 	TH2F                *hBeautyMotherPt;//!
+	TH2F 		    *hDCAPtProtons;//!
+	TH2F 		    *hDCAPtProtons2;//!
+	TH2F 		    *hDCAPtProtons3;//!
 	TH2F                *hBeautyMotherPt2Daft;//!
 	TH1F                *hBeautyMotherPtbef;//!
 	TH1F                *hBeautyMotherPtaft;//!
@@ -307,7 +351,7 @@ private:
     TF1					*fDcorr20;
     TF1					*fDcorr21;
     TF1					*fDcorr22;
-    
+    TF1					*fHC;
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE
     AliCFManager 		*fCFM;                  // Correction Framework Manager
@@ -315,13 +359,13 @@ private:
     AliHFEpidQAmanager 	*fPIDqa;				// PID QA manager
     
     //Others
-    AliStack 			*fMCstack;	//!						
+ //   AliStack 			*fMCstack;	//!						
     Bool_t              fRejectKinkMother;	//!			
-    TParticle 			*fMCtrack;//!
-    TParticle 			*fMCtrackMother;//!
-    TParticle 			*fMCtrackGMother;//!
-    TParticle 			*fMCtrackGGMother;//!
-    TParticle 			*fMCtrackGGGMother;//!
+ //   TParticle 			*fMCtrack;//!
+ //   TParticle 			*fMCtrackMother;//!
+ //   TParticle 			*fMCtrackGMother;//!
+ //   TParticle 			*fMCtrackGGMother;//!
+ //   TParticle 			*fMCtrackGGGMother;//!
     TClonesArray 		*fMCarray;//!
     AliAODMCHeader 		*fMCheader;  //!
     AliAODMCParticle 	*fMCparticle; //!
@@ -337,7 +381,8 @@ private:
     Float_t				ftofPIDmaxcut;
     Float_t				fEtaMin;
     Float_t				fEtaMax;
-    
+    Int_t 				TOFcut;
+   
 	Int_t	            fNTotMCpart; //! N of total MC particles produced by generator
     Int_t               fNpureMC;//! N of particles from main generator (Hijing/Pythia)
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
@@ -346,6 +391,7 @@ private:
  
     THnSparseF           *fD0;//! DCA
     THnSparseF           *fD0Data;//! DCA data
+    THnSparseF           *fD0HC;//! DCA HC
     //______________________________________________________________________
     
     AliAnalysisHFEppTPCTOFBeauty(const AliAnalysisHFEppTPCTOFBeauty&); 			// not implemented

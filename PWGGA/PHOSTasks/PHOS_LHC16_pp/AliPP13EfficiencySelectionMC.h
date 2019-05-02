@@ -25,11 +25,6 @@
 class AliPP13EfficiencySelectionMC: public AliPP13SpectrumSelectionMC
 {
 public:
-	enum Particles
-	{
-		kGamma = 22, kPi0 = 111, kEta = 221, kK0s = 310
-	};
-
 	AliPP13EfficiencySelectionMC():
 		AliPP13SpectrumSelectionMC(),
 		fInvMass()
@@ -65,18 +60,6 @@ public:
 
 protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
-	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
-
-	// NB: Impelement these methods if needed
-	// 
-	void ConsiderGeneratedParticle(Int_t i, Double_t pt, Bool_t primary, const EventFlags & flags) 
-	{
-		(void) i;
-		(void) pt;
-		(void) primary;
-		(void) flags;
-
-	}
 	AliPP13EfficiencySelectionMC(const AliPP13EfficiencySelectionMC &);
 	AliPP13EfficiencySelectionMC & operator = (const AliPP13EfficiencySelectionMC &);
 	// NB: This data structure contains all necesary histograms

@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEIMPPARRESSPARSE_H
-#define ALIANALYSISTASKSEIMPPARRESSPARSE_H
+#ifndef AliAnalysisTaskSEImpParResSparse_H
+#define AliAnalysisTaskSEImpParResSparse_H
 
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -23,6 +23,8 @@ class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
 #include <THnSparse.h>
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
 
 
 class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
@@ -61,7 +63,16 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   void BinLogAxis(const THnSparseF *h, Int_t axisNumber);
   void BinLogPtAxis(TH1F *h);
   void SetTrackType(Int_t type=0) { fTrackType=type; }
-  void SetFillSparseForExpert(Bool_t a=kFALSE) { fFillSparseForExpert=a; }
+  void SetFillSparseForExpert(Bool_t a=kFALSE) {   fFillSparseForExpert=a; 
+                                                   if (!a) {
+                                                      SetFillSparse_ImpParrphiSparsePtBchargePhi(kFALSE);
+                                                      SetFillSparse_ImpParrphiSparsePtzVtxEtaPhi(kFALSE);
+                                                      SetFillSparse_ImpParzSparsePtBchargePhi(kFALSE);
+                                                      SetFillSparse_ImpParzSparsePtzVtxEtaPhi(kFALSE);
+                                                      SetFillSparse_ImpParPullrphiSparsePtBchargePhi(kFALSE);
+                                                      SetFillSparse_ImpParPullzSparsePtBchargePhi(kFALSE);
+                                                   }
+                                               }
   void SetUseTriggerSelection(Bool_t a=kFALSE) {fUseTriggerSelection=a;}
 
   void SetUsePtWeights(Int_t opt=0, Float_t scaling=1.){ fUseptWeights=opt; fScalingFactPtWeight=scaling;}
@@ -73,12 +84,28 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   void SetUsePhysicalPrimaries(Bool_t opt) {fUsePhysicalPrimary=opt;}
   void SetUseGenPt(Bool_t opt) {fUseGeneratedPt=opt;}
 
+  void SetUseFinerPhiBins(Bool_t flag) {fUseFinerPhiBins=flag;}   // mfaggin
+  void SetStoreSPDmodulesInfo(Bool_t flag) {fStoreSPDmodulesInfo=flag;}  // mfaggin
+  void SetFillSparse_ImpParrphiSparsePtBchargePhi(Bool_t flag) {fFillSparse_ImpParrphiSparsePtBchargePhi=flag;}   // mfaggin
+  void SetFillSparse_ImpParrphiSparsePtzVtxEtaPhi(Bool_t flag)   {fFillSparse_ImpParrphiSparsePtzVtxEtaPhi=flag;}  // mfaggin
+  void SetFillSparse_ImpParrphiSparsePtEtaPhi(Bool_t flag)   {fFillSparse_ImpParrphiSparsePtEtaPhi=flag;}   // mfaggin
+  void SetFillSparse_ImpParPullrphiSparsePtEtaPhi(Bool_t flag) {fFillSparse_ImpParPullrphiSparsePtEtaPhi=flag;}  // mfaggin
+  void SetFillSparse_ImpParPullrphiSparsePtBchargePhi(Bool_t flag)   {fFillSparse_ImpParPullrphiSparsePtBchargePhi=flag;} // mfaggin
+  void SetFillSparse_ImpParzSparsePtBchargePhi(Bool_t flag) {fFillSparse_ImpParzSparsePtBchargePhi=flag;}   // mfaggin
+  void SetFillSparse_ImpParzSparsePtzVtxEtaPhi(Bool_t flag) {fFillSparse_ImpParzSparsePtzVtxEtaPhi=flag;}   // mfaggin
+  void SetFillSparse_ImpParzSparsePtEtaPhi(Bool_t flag)  {fFillSparse_ImpParzSparsePtEtaPhi=flag;} // mfaggin
+  void SetFillSparse_ImpParPullzSparsePtEtaPhi(Bool_t flag) {fFillSparse_ImpParPullzSparsePtEtaPhi=flag;}   // mfaggin
+  void SetFillSparse_ImpParPullzSparsePtBchargePhi(Bool_t flag)   {fFillSparse_ImpParPullzSparsePtBchargePhi=flag;}  // mfaggin
+
+  // establish which tracks label an event as "high multiplicity"
+  void SetEstimatorHighMultEv(Bool_t flag)   {fUsetrkITSrefit_highMev=flag;}  // mfaggin
+
  private:
   
   AliAnalysisTaskSEImpParResSparse(const AliAnalysisTaskSEImpParResSparse &source);
   AliAnalysisTaskSEImpParResSparse& operator=(const AliAnalysisTaskSEImpParResSparse& source);  
   
-  Int_t PhiBin(Double_t phi) const;
+  Int_t PhiBin(Double_t phi, Bool_t usefinebinsphi=kFALSE) const; // mfaggin (added a new argument)
   Int_t ClusterTypeOnITSLayer(AliESDtrack *t,Int_t layer) const;
   Bool_t IsTrackSelected(AliVTrack *t,AliVVertex *v, AliESDtrackCuts *cuts, const AliVEvent* aod) const;
   Bool_t fIsAOD;  // flag to read AOD or ESD (default is ESD)
@@ -104,6 +131,21 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   Double_t fCutGeoNcrNclGeom1Pt; /// 3rd parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
+
+  // mfaggin
+  Bool_t fUseFinerPhiBins; /// flag to impose fine phi binning in fImpParrphiSparsePtEtaPhi sparse 
+  Bool_t fStoreSPDmodulesInfo; /// flag to decide wheter to store info about SPD modules (layer, detector index)
+  Bool_t fFillSparse_ImpParrphiSparsePtBchargePhi;       /// bool to switch on/off the fImpParrphiSparsePtBchargePhi
+  Bool_t fFillSparse_ImpParrphiSparsePtzVtxEtaPhi;       /// bool to switch on/off the fImpParrphiSparsePtzVtxEtaPhi
+  Bool_t fFillSparse_ImpParrphiSparsePtEtaPhi;           /// bool to switch on/off the fImpParrphiSparsePtEtaPhi
+  Bool_t fFillSparse_ImpParPullrphiSparsePtEtaPhi;       /// bool to switch on/off the fImpParPullrphiSparsePtEtaPhi
+  Bool_t fFillSparse_ImpParPullrphiSparsePtBchargePhi;   /// bool to switch on/off the fImpParPullrphiSparsePtBchargePhi
+  Bool_t fFillSparse_ImpParzSparsePtBchargePhi;          /// bool to switch on/off the fImpParzSparsePtBchargePhi
+  Bool_t fFillSparse_ImpParzSparsePtzVtxEtaPhi;          /// bool to switch on/off the fImpParzSparsePtzVtxEtaPhi
+  Bool_t fFillSparse_ImpParzSparsePtEtaPhi;              /// bool to switch on/off the fImpParzSparsePtEtaPhi
+  Bool_t fFillSparse_ImpParPullzSparsePtEtaPhi;          /// bool to switch on/off the fImpParPullzSparsePtEtaPhi
+  Bool_t fFillSparse_ImpParPullzSparsePtBchargePhi;      /// bool to switch on/off the fImpParPullzSparsePtBchargePhi
+
   Int_t fTrackType;
   Bool_t fFillSparseForExpert;
   THnSparseF *fImpParrphiSparsePtBchargePhi; //!<! sparse
@@ -116,6 +158,7 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   THnSparseF *fImpParzSparsePtEtaPhi; //!<! sparse
   THnSparseF *fImpParPullzSparsePtEtaPhi; //!<! sparse
   THnSparseF *fImpParPullzSparsePtBchargePhi; //!<! sparse
+  THnSparseF *fImpParrphiSparsePtEtaPhi_SPDmod; //!<! sparse   (mfaggin)
   TH1F *fPtDistrib; //!<!
   TH1F *fhPtWeights;           // histo with pt weights
   Int_t fUseptWeights;  //0 no weights, 1 pp weights, 2 pPb weights, 3 PbPb weights
@@ -125,7 +168,18 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   Bool_t fUsePhysicalPrimary; //
   Bool_t fUseGeneratedPt; //
 
-  ClassDef(AliAnalysisTaskSEImpParResSparse,5); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  // (mfaggin)
+  // establish which tracks label an event as "high multiplicity"
+  Bool_t fUsetrkITSrefit_highMev;   ///
+  // debug histogram for track counting 
+  TH1D* fCountTracks;      //!<!
+  // debug histogram for counting of number of tracks per event 
+  TH1D* fNumTracksperEv;   //!<!
+  // debug histogram for counting of number of contributors to the primary vertex
+  TH1D* fNumContributors;  //!<!
+
+                                             // mfaggin (number 9 inserted)
+  ClassDef(AliAnalysisTaskSEImpParResSparse,9); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif

@@ -31,18 +31,18 @@ class Getoutput {
   bool LoadOutputData(const char *filename="results3H1.root");
    void DrawResults();
   void ClearInputData();
-
+  void SetAcceptLikesign() {fRejectLikesign=kFALSE;}
   void SetMC(){fIsMC=kTRUE;}
   void SetAODCuts(){fUseAODCut=kTRUE;}
   void SetTOFpid(){fIncludePidTOF=kTRUE;}
   void Set3HPcut(Double_t pMin){f3HPcut=pMin;}
-  void BookOutputData();
+  void BookOutputData(const char *name="");
   Double_t GetInvMass (TVector3 vPos, TVector3 vNeg, Double_t mPos, Double_t mNeg);
   bool EventSelectionAOD(Double_t *arr);
 
   Bool_t fIsMC;
   Bool_t fIncludePidTOF;
-  Bool_t fRejectBkg; // useful in case like-sign V0 are produced
+  Bool_t fRejectLikesign; // useful in case like-sign V0 are produced
   Bool_t fUseAODCut;
   Int_t f3Hcharge;
   Double_t f3HPcut;
@@ -104,7 +104,7 @@ enum { kPposx, kPposy, kPposz, kPnegx, kPnegy, kPnegz,	//0-5
  kNSPi, kNSTri, kTriTOFmass, kPiTPCsignal, kTriTPCsignal,	// 6-10
  kV0mom, kPtArm, kAlphaArm,	// 11-13
  kDcaTriXY, kDcaTriZ, kV0dcaD, kDecayPath, kDecayPathXY,	// 14-18
- kV0Dca, kCosP, kV0VtxErrSum, kSign,	// 19-22
+ kV0Dca, kCosP, kSigElTof, kSign,	// 19-22
  kDcaPi, kIsTrdEle, kSigPiFromPiTof, kSigPrTof, kSigPiTof, kNclusITS, //23-27
  kTRDsig, //28 
  kPiPdgCode, kTriPdgCode, kMumPiPdgCode, kMumTriPdgCode // 29-32

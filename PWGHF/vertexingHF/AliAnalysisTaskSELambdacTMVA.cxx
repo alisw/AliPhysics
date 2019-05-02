@@ -1152,7 +1152,8 @@ void AliAnalysisTaskSELambdacTMVA::UserExec(Option_t */*option*/)
 		else fNentries->Fill(15);
 		if(isSelectedPID>0) FillEffHists(kIsSelectedPID);
 		//PID selection using maximum probability configuration
-		Int_t selectionProb = GetPIDselectionMaxProb(d);
+		Int_t selectionProb = 0;
+    if(fRDCutsAnalysis->GetPidHF()) selectionProb = GetPIDselectionMaxProb(d);
 
 		Int_t selection=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
 		if(!selection) continue;
@@ -1264,21 +1265,21 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 	IsInAcc=kTRUE;
 	if(TMath::Abs(part->GetPdgCode())!=4122) return 0;
 	// Int_t daughTmp[2];
-	// daughTmp[0]=part->GetDaughter(0);
-	// daughTmp[1]=part->GetDaughter(1);
+	// daughTmp[0]=part->GetDaughterLabel(0);
+	// daughTmp[1]=part->GetDaughterLabel(1);
 	Int_t nDaugh = (Int_t)part->GetNDaughters();
 	if(nDaugh<2) return 0;
 	if(nDaugh>3) return 0;
-	AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughter(0));
+	AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(0));
 	if(!pdaugh1) {return 0;}
 	Int_t number1 = TMath::Abs(pdaugh1->GetPdgCode());
-	AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughter(1));
+	AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(1));
 	if(!pdaugh2) {return 0;}
 	Int_t number2 = TMath::Abs(pdaugh2->GetPdgCode());
 
 	AliDebug(2,"Is non resonant?");
 	if(nDaugh==3){
-		Int_t thirdDaugh=part->GetDaughter(1)-1;
+		Int_t thirdDaugh=part->GetDaughterLabel(1)-1;
 		AliAODMCParticle* pdaugh3 = (AliAODMCParticle*)arrayMC->At(thirdDaugh);
 		Int_t number3 = TMath::Abs(pdaugh3->GetPdgCode());
 		if((number1==321 && number2==211 && number3==2212) ||
@@ -1307,8 +1308,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if((number1==2212 && number2==313)){
 			nfiglieK=pdaugh2->GetNDaughters();
 			if(nfiglieK!=2) return 0;
-			AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-			AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+			AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+			AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
 			if(!pdaughK1) return 0;
 			if(!pdaughK2) return 0;
 			if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
@@ -1324,8 +1325,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if((number1==313 && number2==2212)){
 			nfiglieK=pdaugh1->GetNDaughters();
 			if(nfiglieK!=2) return 0;
-			AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-			AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+			AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+			AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
 			if(!pdaughK1) return 0;
 			if(!pdaughK2) return 0;
 			if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
@@ -1343,8 +1344,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if(number1==321 && number2==2224){
 			nfiglieDelta=pdaugh2->GetNDaughters();
 			if(nfiglieDelta!=2) return 0;
-			AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-			AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+			AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+			AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
 			if(!pdaughD1) return 0;
 			if(!pdaughD2) return 0;
 			if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
@@ -1359,8 +1360,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if(number1==2224 && number2==321){
 			nfiglieDelta=pdaugh1->GetNDaughters();
 			if(nfiglieDelta!=2) return 0;
-			AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-			AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+			AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+			AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
 			if(!pdaughD1) return 0;
 			if(!pdaughD2) return 0;
 			if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
@@ -1379,8 +1380,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if(number1==3124 && number2==211){
 			nfiglieLa=pdaugh1->GetNDaughters();
 			if(nfiglieLa!=2) return 0;
-			AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(0));
-			AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughter(1));
+			AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+			AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
 			if(!pdaughL1) return 0;
 			if(!pdaughL2) return 0;
 			if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
@@ -1395,8 +1396,8 @@ Int_t AliAnalysisTaskSELambdacTMVA::LambdacDaugh(AliAODMCParticle *part, TClones
 		if(number1==211 && number2==3124){
 			nfiglieLa=pdaugh2->GetNDaughters();
 			if(nfiglieLa!=2) return 0;
-			AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(0));
-			AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughter(1));
+			AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+			AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
 			if(!pdaughL1) return 0;
 			if(!pdaughL2) return 0;
 			if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
@@ -1662,38 +1663,39 @@ void AliAnalysisTaskSELambdacTMVA::FillNtuple(AliAODEvent *aod,AliAODRecoDecayHF
 	AliVTrack *track0=dynamic_cast<AliVTrack*>(part->GetDaughter(0));
 	AliVTrack *track1=dynamic_cast<AliVTrack*>(part->GetDaughter(1));
 	AliVTrack *track2=dynamic_cast<AliVTrack*>(part->GetDaughter(2));
-	if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
-		//bayesian probabilities
-		Double_t prob0[AliPID::kSPECIES];
-		Double_t prob1[AliPID::kSPECIES];
-		Double_t prob2[AliPID::kSPECIES];
+  // PID
+  // fill w -1
+  for(Int_t iprob=18;iprob<=26;iprob++) {
+    tmp[iprob]=-1;
+  }
+  if(fRDCutsAnalysis->GetIsUsePID() ) {
+    if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
+      //bayesian probabilities
+      Double_t prob0[AliPID::kSPECIES];
+      Double_t prob1[AliPID::kSPECIES];
+      Double_t prob2[AliPID::kSPECIES];
 
-		if (!track0 || !track1 || !track2) {
-			AliError("AliVTrack missing - wont fill Ntuple");
-			return;
-		}
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track0,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob0);
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track1,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob1);
-		fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track2,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob2);
-		//if(prob0[AliPID::kPion] < 0.3 && prob0[AliPID::kProton] < 0.3) return;
-		//if(prob1[AliPID::kKaon] < 0.3) return;
-		//if(prob2[AliPID::kPion] < 0.3 && prob2[AliPID::kProton] < 0.3) return;
-		tmp[18]=prob0[AliPID::kPion];			//track 0, pion
-		tmp[19]=prob0[AliPID::kKaon];     		//kaon
-		tmp[20]=prob0[AliPID::kProton];			//proton
-		tmp[21]=prob1[AliPID::kPion];			//track 1, pion		
-		tmp[22]=prob1[AliPID::kKaon];     		//kaon
-		tmp[23]=prob1[AliPID::kProton];			//proton
-		tmp[24]=prob2[AliPID::kPion];			//track 2, pion
-		tmp[25]=prob2[AliPID::kKaon];     		//kaon
-		tmp[26]=prob2[AliPID::kProton];			//proton
-	}
-	else {
-		//fill w 0
-		for(Int_t iprob=18;iprob<=26;iprob++) {
-			tmp[iprob]=-1;
-		}
-	}
+      if (!track0 || !track1 || !track2) {
+        AliError("AliVTrack missing - wont fill Ntuple");
+        return;
+      }
+      fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track0,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob0);
+      fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track1,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob1);
+      fRDCutsAnalysis->GetPidHF()->GetPidCombined()->ComputeProbabilities(track2,fRDCutsAnalysis->GetPidHF()->GetPidResponse(),prob2);
+      //if(prob0[AliPID::kPion] < 0.3 && prob0[AliPID::kProton] < 0.3) return;
+      //if(prob1[AliPID::kKaon] < 0.3) return;
+      //if(prob2[AliPID::kPion] < 0.3 && prob2[AliPID::kProton] < 0.3) return;
+      tmp[18]=prob0[AliPID::kPion];			//track 0, pion
+      tmp[19]=prob0[AliPID::kKaon];     		//kaon
+      tmp[20]=prob0[AliPID::kProton];			//proton
+      tmp[21]=prob1[AliPID::kPion];			//track 1, pion		
+      tmp[22]=prob1[AliPID::kKaon];     		//kaon
+      tmp[23]=prob1[AliPID::kProton];			//proton
+      tmp[24]=prob2[AliPID::kPion];			//track 2, pion
+      tmp[25]=prob2[AliPID::kKaon];     		//kaon
+      tmp[26]=prob2[AliPID::kProton];			//proton
+    }
+  }
 	if(fFillNtuple>=2) { //fill with further variables
 		Double_t d00 = part->Getd0Prong(0);
 		Double_t d01 = part->Getd0Prong(1);
@@ -1945,7 +1947,7 @@ Int_t AliAnalysisTaskSELambdacTMVA::GetPIDselectionMaxProb(AliAODRecoDecayHF3Pro
 
 	Int_t selection = 0;
 
-	if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {//check this
+	if(fRDCutsAnalysis->GetPidHF()->GetUseCombined()) {// get triplet identity based on the maximum probability
 		AliVTrack *track0=dynamic_cast<AliVTrack*>(part->GetDaughter(0));
 		AliVTrack *track1=dynamic_cast<AliVTrack*>(part->GetDaughter(1));
 		AliVTrack *track2=dynamic_cast<AliVTrack*>(part->GetDaughter(2));
@@ -2035,7 +2037,7 @@ void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDec
 		if(daughLab<0) continue;
 		else{
 			AliAODMCParticle* pdaugh = dynamic_cast<AliAODMCParticle*>(arrayMC->At(daughLab));
-			isTOFpid[i] = fRDCutsAnalysis->GetPidHF()->CheckTOFPIDStatus(daugh);
+			isTOFpid[i] = fRDCutsAnalysis->GetIsUsePID() ? fRDCutsAnalysis->GetPidHF()->CheckTOFPIDStatus(daugh) : kFALSE;
 			MCpt[i] = pdaugh->Pt();
 		}
 	}
@@ -2049,7 +2051,8 @@ void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDec
 	// Selection
 	Int_t selectionCand=fRDCutsAnalysis->IsSelected(part,AliRDHFCuts::kCandidate,aod);
 	Int_t selectionPID=fRDCutsAnalysis->IsSelected(part,AliRDHFCuts::kPID,aod);
-	Int_t selectionPIDprob = GetPIDselectionMaxProb(part);
+  Int_t selectionPIDprob = 0;
+  if(fRDCutsAnalysis->GetIsUsePID()) selectionPIDprob = GetPIDselectionMaxProb(part);
 	tmp[12]=selectionCand;
 	tmp[13]=selectionPID;
 	tmp[14]=selectionPIDprob;

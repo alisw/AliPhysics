@@ -386,10 +386,11 @@ void AliAnalysisTaskSEBPlustoD0Pi::UserExec(Option_t *) {
   //
   //==================================================================================
 
-
-  BPlusPionSelection(aodEvent, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, mcHeader);
   D0Selection(aodEvent, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, D0TracksFromFriendFile, mcHeader);
-  BPlusSelection(aodEvent, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, D0TracksFromFriendFile, mcHeader);
+  if((Int_t)fD0Tracks->size() > 0){
+    BPlusPionSelection(aodEvent, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, mcHeader);
+    BPlusSelection(aodEvent, primaryVertex, bz, mcTrackArray, BPlustoD0PiLabelMatrix, D0TracksFromFriendFile, mcHeader);
+  }
 
   // Clear arrays and memory management:
   fD0Tracks->erase(fD0Tracks->begin(), fD0Tracks->end());
@@ -828,7 +829,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
   for (Int_t i = 0; i < 3; i++) {
 
     TString add_name = "";
-    TList * listout;
+    TList * listout = 0x0;
     if (i == 0) listout = fOutputD0FirstDaughter;
     if (i == 1) listout = fOutputD0SecondDaughter;
     if (i == 2) listout = fOutputBPlusPion;
@@ -986,7 +987,7 @@ void  AliAnalysisTaskSEBPlustoD0Pi::DefineHistograms() {
   for (Int_t i = 0; i < 3; i++) {
 
     TString add_name = "";
-    TList * listout;
+    TList * listout = 0x0;
     Int_t nHistogramSets = 0;
     if (i == 0) {listout = fOutputD0; nHistogramSets = 6 + 2 * fnPtBins;}
     if (i == 1) {listout = fOutputBPlus; nHistogramSets = 6 + 2 * fnPtBins;}
@@ -1626,7 +1627,7 @@ AliAODVertex* AliAnalysisTaskSEBPlustoD0Pi::RecalculateVertex(const AliVVertex *
   return vertexAOD;
 }
 //-------------------------------------------------------------------------------------
-void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mcTrackArray, AliAODEvent*  aodevent, TMatrix * BPlustoD0PiLabelMatrix, TList *listout) {
+void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mcTrackArray, AliAODEvent*  /*aodevent*/, TMatrix * BPlustoD0PiLabelMatrix, TList *listout) {
 
   TMatrix &particleMatrix = *BPlustoD0PiLabelMatrix;
   for (Int_t i = 0; i < mcTrackArray->GetEntriesFast(); i++) {
@@ -1666,20 +1667,20 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mc
       {
         for (Int_t iDaughterBPlus = 0; iDaughterBPlus < 2; iDaughterBPlus++)
         {
-          AliAODMCParticle* daughterBPlus = (AliAODMCParticle*)mcTrackArray->At(mcTrackParticle->GetDaughter(iDaughterBPlus));
+          AliAODMCParticle* daughterBPlus = (AliAODMCParticle*)mcTrackArray->At(mcTrackParticle->GetDaughterLabel(iDaughterBPlus));
           if (!daughterBPlus) break;
           Int_t pdgCodeDaughterBPlus = TMath::Abs(daughterBPlus->GetPdgCode());
 
           if (pdgCodeDaughterBPlus == 211) //if the track is a pion we save its monte carlo label
           {
-            mcLabelPionBPlus = mcTrackParticle->GetDaughter(iDaughterBPlus);
+            mcLabelPionBPlus = mcTrackParticle->GetDaughterLabel(iDaughterBPlus);
             mcPionBPlusPresent = kTRUE;
             ptMC[1] = daughterBPlus->Pt();
             yMC[1] = daughterBPlus->Y();
             pseudoYMC[1] = daughterBPlus->Eta();
           } else if (pdgCodeDaughterBPlus == 421) //if the track is a D0 we look at its daughters
           {
-            mcLabelD0 = mcTrackParticle->GetDaughter(iDaughterBPlus);
+            mcLabelD0 = mcTrackParticle->GetDaughterLabel(iDaughterBPlus);
             Int_t nDaughterD0 = daughterBPlus->GetNDaughters();
             ptMC[2] = daughterBPlus->Pt();
             yMC[2] = daughterBPlus->Y();
@@ -1689,12 +1690,12 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlustoD0PiSignalTracksInMC(TClonesArray * mc
             {
               for (Int_t iDaughterD0 = 0; iDaughterD0 < 2; iDaughterD0++)
               {
-                AliAODMCParticle* daughterD0 = (AliAODMCParticle*)mcTrackArray->At(daughterBPlus->GetDaughter(iDaughterD0));
+                AliAODMCParticle* daughterD0 = (AliAODMCParticle*)mcTrackArray->At(daughterBPlus->GetDaughterLabel(iDaughterD0));
                 if (!daughterD0) break;
                 Int_t pdgCodeDaughterD0 = TMath::Abs(daughterD0->GetPdgCode());
                 if (pdgCodeDaughterD0 == 211) //if the track is a pion we save its monte carlo label
                 {
-                  mcLabelPionD0 = daughterBPlus->GetDaughter(iDaughterD0);
+                  mcLabelPionD0 = daughterBPlus->GetDaughterLabel(iDaughterD0);
                   ptMC[3] = daughterD0->Pt();
                   yMC[3] = daughterD0->Y();
                   pseudoYMC[3] = daughterD0->Eta();
@@ -2283,8 +2284,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::BPlusPionSelection(AliAODEvent* aodEvent, Ali
     Int_t TOFok = 0;
 
     AliAODPidHF* trackPIDHF = (AliAODPidHF*)fCuts->GetPidHF();
-    TPCok = trackPIDHF->GetnSigmaTPC(aodTrack, pionPIDnumber, nSigmaTPC);
-    TOFok = trackPIDHF->GetnSigmaTOF(aodTrack, pionPIDnumber, nSigmaTOF);
+    if(trackPIDHF) TPCok = trackPIDHF->GetnSigmaTPC(aodTrack, pionPIDnumber, nSigmaTPC);
+    if(trackPIDHF) TOFok = trackPIDHF->GetnSigmaTOF(aodTrack, pionPIDnumber, nSigmaTOF);
 
     AliExternalTrackParam particleTrack;
     particleTrack.CopyFromVTrack(aodTrack);
@@ -3594,8 +3595,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
   AliAODTrack* selectedBPlusPion = (AliAODTrack*)selectedBPlus->GetDaughter(0);
   AliAODRecoDecayHF2Prong* selectedD0 = (AliAODRecoDecayHF2Prong*)selectedBPlus->GetDaughter(1);
 
-  AliAODTrack* selectedD0Pion;
-  AliAODTrack* selectedD0Kaon;
+  AliAODTrack* selectedD0Pion = 0x0;
+  AliAODTrack* selectedD0Kaon = 0x0;
 
   if (selectedBPlus->Charge() == 1) selectedD0Pion = (AliAODTrack*)selectedD0->GetDaughter(0);
   if (selectedBPlus->Charge() == -1) selectedD0Pion = (AliAODTrack*)selectedD0->GetDaughter(1);
@@ -3638,8 +3639,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
   numberOfTPC = selectedD0Pion->GetTPCNcls();
   totalNumberOfITS += numberOfITS;
   totalNumberOfTPC += numberOfTPC;
-  TPCok = trackPIDHF->GetnSigmaTPC(selectedD0Pion, pionPIDnumber, nSigmaTPC);
-  TOFok = trackPIDHF->GetnSigmaTOF(selectedD0Pion, pionPIDnumber, nSigmaTOF);
+  if(trackPIDHF) TPCok = trackPIDHF->GetnSigmaTPC(selectedD0Pion, pionPIDnumber, nSigmaTPC);
+  if(trackPIDHF) TOFok = trackPIDHF->GetnSigmaTOF(selectedD0Pion, pionPIDnumber, nSigmaTOF);
   if (TPCok != -1) nSigmaTPCtotal += nSigmaTPC * nSigmaTPC;
   if (TOFok != -1) nSigmaTOFtotal += nSigmaTOF * nSigmaTOF;
 
@@ -3721,8 +3722,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
   numberOfTPC = selectedD0Kaon->GetTPCNcls();
   totalNumberOfITS += numberOfITS;
   totalNumberOfTPC += numberOfTPC;
-  TPCok = trackPIDHF->GetnSigmaTPC(selectedD0Kaon, kaonPIDnumber, nSigmaTPC);
-  TOFok = trackPIDHF->GetnSigmaTOF(selectedD0Kaon, kaonPIDnumber, nSigmaTOF);
+  if(trackPIDHF) TPCok = trackPIDHF->GetnSigmaTPC(selectedD0Kaon, kaonPIDnumber, nSigmaTPC);
+  if(trackPIDHF) TOFok = trackPIDHF->GetnSigmaTOF(selectedD0Kaon, kaonPIDnumber, nSigmaTOF);
   if (TPCok != -1) nSigmaTPCtotal += nSigmaTPC * nSigmaTPC;
   if (TOFok != -1) nSigmaTOFtotal += nSigmaTOF * nSigmaTOF;
 
@@ -3802,8 +3803,8 @@ void AliAnalysisTaskSEBPlustoD0Pi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
   numberOfTPC = selectedBPlusPion->GetTPCNcls();
   totalNumberOfITS += numberOfITS;
   totalNumberOfTPC += numberOfTPC;
-  TPCok = trackPIDHF->GetnSigmaTPC(selectedBPlusPion, pionPIDnumber, nSigmaTPC);
-  TOFok = trackPIDHF->GetnSigmaTOF(selectedBPlusPion, pionPIDnumber, nSigmaTOF);
+  if(trackPIDHF) TPCok = trackPIDHF->GetnSigmaTPC(selectedBPlusPion, pionPIDnumber, nSigmaTPC);
+  if(trackPIDHF) TOFok = trackPIDHF->GetnSigmaTOF(selectedBPlusPion, pionPIDnumber, nSigmaTOF);
   if (TPCok != -1) nSigmaTPCtotal += nSigmaTPC * nSigmaTPC;
   if (TOFok != -1) nSigmaTOFtotal += nSigmaTOF * nSigmaTOF;
 

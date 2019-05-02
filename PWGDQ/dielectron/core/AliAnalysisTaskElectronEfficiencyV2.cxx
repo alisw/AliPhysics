@@ -1020,7 +1020,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
               if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
                   fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false){
                 if (!fDeactivateLS) {
-                  std::cout << "Deactivate" << std::endl;
+//                  std::cout << "Deactivate" << std::endl;
                  fHistGenPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
                 }
                 else {
@@ -1390,6 +1390,7 @@ void    AliAnalysisTaskElectronEfficiencyV2::FillTrackHistograms(AliVParticle* t
   // std::cout << "SITS    manager = " << values[AliDielectronVarManager::kNclsSITS] << std::endl;
   // std::cout << "TPCnSig manager = " << values[AliDielectronVarManager::kTPCnSigmaEle] << std::endl;
   // std::cout << fOutputListSupportHistos << std::endl;
+  TString genname;  
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(0)))->Fill(values[AliDielectronVarManager::kPt]);//hPt (reco)
   (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(1)))->Fill(values[AliDielectronVarManager::kP],   values[AliDielectronVarManager::kITSnSigmaEle]);
   (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(2)))->Fill(values[AliDielectronVarManager::kPIn], values[AliDielectronVarManager::kTPCnSigmaEle]);
@@ -1415,9 +1416,11 @@ void    AliAnalysisTaskElectronEfficiencyV2::FillTrackHistograms(AliVParticle* t
   // (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(21)))->Fill(values[AliDielectronVarManager::kPdgCode]);
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(21)))->Fill(mcTrack->PdgCode());
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(22)))->Fill( (fMC->GetTrack(TMath::Abs(mcTrack->GetMother())))->PdgCode());
+  if(fMC->GetCocktailGenerator(TMath::Abs(track->GetLabel()), genname))    (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(23)))->Fill( genname,1);
+  else (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(23)))->Fill( "none",1);
 }
 
-
+  
 // ############################################################################
 // ############################################################################
 AliAnalysisTaskElectronEfficiencyV2::Particle AliAnalysisTaskElectronEfficiencyV2::CreateParticle(AliVParticle* mcPart1){
@@ -1439,8 +1442,8 @@ void AliAnalysisTaskElectronEfficiencyV2::CheckIfFromMotherWithDielectronAsDaugh
       if (part.isMCSignal[k] == true && fDielectronPairNotFromSameMother[k] == true){
         AliAODMCParticle* mother = dynamic_cast<AliAODMCParticle*> (fMC->GetTrack(part.GetMotherID()));
         // int number_of_daugthers = mother->GetNDaughters() ;
-        int LabelFirstDaughter = mother->GetFirstDaughter();
-        int LabelLastDaughter = mother->GetLastDaughter();
+        int LabelFirstDaughter = mother->GetDaughterFirst();
+        int LabelLastDaughter = mother->GetDaughterLast();
         // std::cout << "number_of_daughters = " << number_of_daugthers << "  first_daugther = " << LabelFirstDaughter << "  last_daugther = " << LabelLastDaughter << std::endl;
 
         bool ele_from_same_mother = false;
@@ -1596,7 +1599,8 @@ void AliAnalysisTaskElectronEfficiencyV2::CreateSupportHistos()
   // TH2D* hPDGCode_PDGCodeMother = new TH2D("PDGCode_PDGCodeMother",";PDG code;PDG code Mother",
   // 10001,-5000,5000,10001,-5000,5000);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
   // fOutputListSupportHistos->AddAt(hPDGCode_PDGCodeMother, 21);
-
+  TH1D* hMCGenCode = new TH1D("MCGenerator","MCGenerator;#tracks",1, 0, 0);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  fOutputListSupportHistos->AddAt(hMCGenCode, 23);
 
 }
 

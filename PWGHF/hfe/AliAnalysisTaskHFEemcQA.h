@@ -204,6 +204,8 @@ private:
     TH2F        *fMCcheckDdecay;//!
     TH2F        *fMCcheckHFdecay;//!
     TH2F        *fHFmomCorr;//!
+    TH1F        *fMCphotonic0;
+    TH1F        *fMCphotonic1;
     TH2F        *fMCneutral;//!
     TH2F        *fEMCTrkMatch_Phi;//!
     TH2F        *fEMCTrkMatch_Eta;//!

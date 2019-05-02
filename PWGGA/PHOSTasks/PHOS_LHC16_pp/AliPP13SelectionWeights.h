@@ -101,10 +101,10 @@ struct AliPP13SelectionWeightsTOF: public AliPP13SelectionWeights
 	// NB: One needs default constructor for IO readsons
 	AliPP13SelectionWeightsTOF(
 	    Double_t la = -1.02802e+00,
-	    Double_t lb = 8.51857e+00,
-	    Double_t ls = 6.19420e-01,
-	    Double_t ea = 1.30498e+00,
-	    Double_t eal = -1.78716e+00
+	    Double_t lb = 8.57356e+00,
+	    Double_t ls = 6.09667e-01,
+	    Double_t ea = 1.29173e+00,
+	    Double_t eal = -1.76043e+00
 
 	):
 		AliPP13SelectionWeights(),
@@ -142,7 +142,7 @@ protected:
 struct AliPP13SelectionWeightsMC: public AliPP13SelectionWeights
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsMC(Double_t a = -0.035, Double_t s = 0.95, Double_t g = 1.02):
+	AliPP13SelectionWeightsMC(Double_t a = 0, Double_t s = 0, Double_t g = -1):
 		AliPP13SelectionWeights(),
 		fNonGlobal(g),
 		fNonA(a),
@@ -173,7 +173,7 @@ protected:
 struct AliPP13SelectionWeightsFeeddown: public AliPP13SelectionWeightsMC
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsFeeddown(Double_t a = -0.035, Double_t s = 0.95, Double_t g = 1.02):
+	AliPP13SelectionWeightsFeeddown(Double_t a = 0, Double_t s = 0, Double_t g = -1):
 		AliPP13SelectionWeightsMC(a, s, g),
 		fDataMCRatio(0)
 	{
@@ -213,7 +213,7 @@ protected:
 struct AliPP13SelectionWeightsSPMC: public AliPP13SelectionWeightsMC
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsSPMC(Double_t a = -0.035, Double_t s = 0.95, Double_t g = 1.02):
+	AliPP13SelectionWeightsSPMC(Double_t a = 0, Double_t s = 0, Double_t g = -1):
 		AliPP13SelectionWeightsMC(g, a, s),
 		fW0(0.014875782846110793),
 		fW1(0.28727403800708634),

@@ -79,9 +79,7 @@ public:
     void SetPlotV2SystSeparately(Bool_t k){
         if(!fIspPb){std::cout << "Warning:: Not p-Pb " << std::endl;}
         
-        fPlotV2SystSeparately = k;}
-    
-    
+        fPlotV2SystSeparately = k;}  
     
     void SetCombineSystematicsMode(SystCombination mode){fCombineSystematics = mode;}
     
@@ -116,17 +114,17 @@ public:
     void DrawRMSBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline);
     void DrawTotalBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline);
     void PrintAllSystematicsOnShell();
-    Bool_t DrawFinalPlots(){return DrawFinalPlots(kTRUE,kTRUE,kFALSE,kFALSE,kTRUE);}
-    Bool_t DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigma,Bool_t drawASy, Bool_t drawASsigma,Bool_t drawPed);
+    Bool_t DrawFinalPlots(){return DrawFinalPlots(kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE);}
+    Bool_t DrawFinalPlots(Bool_t drawNSy, Bool_t drawNSsigma,Bool_t drawASy, Bool_t drawASsigma,Bool_t drawPed, Bool_t drawBeta);
     Bool_t DrawFinalCorrelationPlot(){
-        return DrawFinalCorrelationPlot(kTRUE,kTRUE,kFALSE,kFALSE,kTRUE);
+        return DrawFinalCorrelationPlot(kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE);
     };
-    Bool_t DrawFinalCorrelationPlot(Bool_t drawNSy, Bool_t drawNSsigma,Bool_t drawASy, Bool_t drawASsigma,Bool_t drawPed);
+    Bool_t DrawFinalCorrelationPlot(Bool_t drawNSy, Bool_t drawNSsigma,Bool_t drawASy, Bool_t drawASsigma,Bool_t drawPed, Bool_t drawBeta);
     void DefinePaveText();
     void SetHisto(TH1D *&outputhist, TH1D * inputhist);
     //Bool_t ComputeSystematics();// main function that will compute all the systematics
     Bool_t ComputeRatios(TH1D *&historef, TH1D *&histosys, TH1D *&outputhisto);
-    
+    void SetBetaDir(TString str) {fBetaDir=str;}
     
     void SetOutputDirectory(TString outputdirectory){fOutputDirectory = outputdirectory;}
     void SaveCanvasesDotC();
@@ -179,7 +177,8 @@ private:
     Bool_t fIspPb;
     Bool_t fUseCorrelatedSystematicsForWidths;
     Bool_t fPlotV2SystSeparately;
-    
+    TString fBetaDir;
+
     Bool_t fSaveDotC;
     Bool_t fSaveRoot;
     Bool_t fSavePng;
@@ -211,6 +210,8 @@ private:
     Double_t *fRatioASSigma;
     Double_t *fValuePedestal;
     Double_t *fRatioPedestal;
+    Double_t *fValueBeta;
+    Double_t *fRatioBeta;
     
     
     Double_t *fValuev2NSYield;
@@ -218,48 +219,56 @@ private:
     Double_t *fValuev2ASYield;
     Double_t *fValuev2ASSigma;
     Double_t *fValuev2Pedestal;
+    Double_t *fValuev2Beta;
     
     Double_t *fSystValuev2NSYield;
     Double_t *fSystValuev2NSSigma;
     Double_t *fSystValuev2ASYield;
     Double_t *fSystValuev2ASSigma;
     Double_t *fSystValuev2Pedestal;
+    Double_t *fSystValuev2Beta;
     
     Double_t *fValueSystematicBaselineNSYield;
     Double_t *fValueSystematicBaselineNSSigma;
     Double_t *fValueSystematicBaselineASYield;
     Double_t *fValueSystematicBaselineASSigma;
     Double_t *fValueSystematicBaselinePedestal;
+    Double_t *fValueSystematicBaselineBeta;
 
     Double_t *fValueSystematicBaseline_FromBaselStatUp_NSYield;
     Double_t *fValueSystematicBaseline_FromBaselStatUp_NSSigma;
     Double_t *fValueSystematicBaseline_FromBaselStatUp_ASYield;
     Double_t *fValueSystematicBaseline_FromBaselStatUp_ASSigma;
     Double_t *fValueSystematicBaseline_FromBaselStatUp_Pedestal;
+    Double_t *fValueSystematicBaseline_FromBaselStatUp_Beta;
 
     Double_t *fValueSystematicBaseline_FromBaselStatLo_NSYield;
     Double_t *fValueSystematicBaseline_FromBaselStatLo_NSSigma;
     Double_t *fValueSystematicBaseline_FromBaselStatLo_ASYield;
     Double_t *fValueSystematicBaseline_FromBaselStatLo_ASSigma;
     Double_t *fValueSystematicBaseline_FromBaselStatLo_Pedestal;
+    Double_t *fValueSystematicBaseline_FromBaselStatLo_Beta;
     
     Double_t *fRMSRelative_NSYield;
     Double_t *fRMSRelative_NSSigma;
     Double_t *fRMSRelative_ASYield;
     Double_t *fRMSRelative_ASSigma;
-    Double_t *fRMSRelative_Pedestal;    
+    Double_t *fRMSRelative_Pedestal;   
+    Double_t *fRMSRelative_Beta;    
 
     Double_t *fValueSystematicNSYieldUp;
     Double_t *fValueSystematicNSSigmaUp;
     Double_t *fValueSystematicASYieldUp;
     Double_t *fValueSystematicASSigmaUp;
     Double_t *fValueSystematicPedestalUp;
+    Double_t *fValueSystematicBetaUp;
     
     Double_t *fValueSystematicNSYieldLow;
     Double_t *fValueSystematicNSSigmaLow;
     Double_t *fValueSystematicASYieldLow;
     Double_t *fValueSystematicASSigmaLow;
     Double_t *fValueSystematicPedestalLow;
+    Double_t *fValueSystematicBetaLow;
     
     TString fOutputFileName;
     TString fOutputDirectory;
@@ -278,6 +287,7 @@ private:
     TH1D *fReferenceHistoASYield;
     TH1D *fReferenceHistoASSigma;
     TH1D *fReferenceHistoPedestal;
+    TH1D *fReferenceHistoBeta;
     
     
     TH1D *fValueHistoNSYield;
@@ -290,6 +300,8 @@ private:
     TH1D *fRatioHistoASSigma;
     TH1D *fValueHistoPedestal;
     TH1D *fRatioHistoPedestal;
+    TH1D *fValueHistoBeta;
+    TH1D *fRatioHistoBeta;
     
     
     TH1D **fRMSHistoNSYield;
@@ -297,6 +309,7 @@ private:
     TH1D **fRMSHistoASYield;
     TH1D **fRMSHistoASSigma;
     TH1D **fRMSHistoPedestal;
+    TH1D **fRMSHistoBeta;
     
     
     TH1D *fSystematicSourcesNSYield;
@@ -304,25 +317,28 @@ private:
     TH1D *fSystematicSourcesASYield;
     TH1D *fSystematicSourcesASSigma;
     TH1D *fSystematicSourcesPedestal;
+    TH1D *fSystematicSourcesBeta;
     
     TCanvas *fCanvasSystematicSourcesNSYield;
     TCanvas *fCanvasSystematicSourcesNSSigma;
     TCanvas *fCanvasSystematicSourcesASYield;
     TCanvas *fCanvasSystematicSourcesASSigma;
     TCanvas *fCanvasSystematicSourcesPedestal;
+    TCanvas *fCanvasSystematicSourcesBeta;
     
     TCanvas *fCanvasTotalSystematicSourcesNSYield;
     TCanvas *fCanvasTotalSystematicSourcesNSSigma;
     TCanvas *fCanvasTotalSystematicSourcesASYield;
     TCanvas *fCanvasTotalSystematicSourcesASSigma;
     TCanvas *fCanvasTotalSystematicSourcesPedestal;
-    
-    
+    TCanvas *fCanvasTotalSystematicSourcesBeta;
+
     TCanvas *fCanvasFinalTrendNSYield;
     TCanvas *fCanvasFinalTrendNSSigma;
     TCanvas *fCanvasFinalTrendASYield;
     TCanvas *fCanvasFinalTrendASSigma;
     TCanvas *fCanvasFinalTrendPedestal;
+    TCanvas *fCanvasFinalTrendBeta;
     TCanvas *fCanvasVariationBaselineTrendPedestal;
     
     TH1D *fFinalTrendNSYield;
@@ -330,6 +346,7 @@ private:
     TH1D *fFinalTrendASYield;
     TH1D *fFinalTrendASSigma;
     TH1D *fFinalTrendPedestal;
+    TH1D *fFinalTrendBeta;
     
     TGraphAsymmErrors *fFullSystematicsNSYield;
     TGraphAsymmErrors *fv2SystematicsNSYield;
@@ -341,11 +358,13 @@ private:
     TGraphAsymmErrors *fv2SystematicsASSigma;
     TGraphAsymmErrors *fFullSystematicsPedestal;
     TGraphAsymmErrors *fv2SystematicsPedestal;
+    TGraphAsymmErrors *fFullSystematicsBeta;
+    TGraphAsymmErrors *fv2SystematicsBeta;
     TGraphAsymmErrors *fBaselineVariationSystematicsPedestal;
     TCanvas *fCanvasRefernce;
     TCanvas **fCanvasFitting;
 
-    ClassDef(AliHFCorrFitSystematics,4);    
+    ClassDef(AliHFCorrFitSystematics,5);    
     
 };
 

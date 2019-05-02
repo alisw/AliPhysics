@@ -92,6 +92,18 @@ public:
 	    fResolutionFunction[j] = f;
 	    return kTRUE;
 	}
+	Bool_t SetResFunctionb(TF1 *f, Int_t j){
+	    fResolutionFunctionb[j] = f;
+	    return kTRUE;
+	}
+	Bool_t SetResFunctionc(TF1 *f, Int_t j){
+	    fResolutionFunctionc[j] = f;
+	    return kTRUE;
+	}
+	Bool_t SetResFunctionlf(TF1 *f, Int_t j){
+	    fResolutionFunctionlf[j] = f;
+	    return kTRUE;
+	}
 
 	void ApplyV0Reconstruction(Bool_t val = kTRUE) {fApplyV0Rec = val;}
 	void ApplyV0RejectionAll(Bool_t val = kTRUE) {fApplyV0RejectionAll = val;}
@@ -148,9 +160,9 @@ private:
 	void   DoJetLoop(); //jet matching function 2/4
 	void   SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching=0); //jet matching function 3/4
 	void   GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const; //jet matching function 4/4
-  	Double_t CalculateTrackProb(Double_t significance, Int_t trclass);
-  	Double_t CalculateJetProb(AliEmcalJet * jet);//!
-  	void FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet);
+  	Double_t CalculateTrackProb(Double_t significance, Int_t trclass, Int_t jetFlavor);
+  	Double_t CalculateJetProb(AliEmcalJet * jet, Int_t jetFlavor);//!
+  	void FillResolutionFunctionHists(AliAODTrack * track,AliEmcalJet * jet, Int_t jetFlavor);
 
 	AliAODMCParticle* GetMCTrack( const AliAODTrack* _track);
 
@@ -284,20 +296,36 @@ private:
         TH2D * fh2dJetSignedImpParXYZ_Class1;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class1;//!
 
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class1;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class1;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class1;//!
+
         TH2D * fh2dJetSignedImpParXY_Class2;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class2;//!
         TH2D * fh2dJetSignedImpParXYZ_Class2;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class2;//!
+
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class2;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class2;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class2;//!
 
         TH2D * fh2dJetSignedImpParXY_Class3;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class3;//!
         TH2D * fh2dJetSignedImpParXYZ_Class3;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class3;//!
 
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class3;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class3;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class3;//!
+
         TH2D * fh2dJetSignedImpParXY_Class4;//!
         TH2D * fh2dJetSignedImpParXYSignificance_Class4;//!
         TH2D * fh2dJetSignedImpParXYZ_Class4;//!
         TH2D * fh2dJetSignedImpParXYZSignificance_Class4;//!
+
+        TH2D * fh2dJetSignedImpParXYSignificanceb_Class4;//!
+        TH2D * fh2dJetSignedImpParXYSignificancec_Class4;//!
+        TH2D * fh2dJetSignedImpParXYSignificancelf_Class4;//!
 
 
 	TH2D * fhistJetProbability;//!
@@ -575,6 +603,9 @@ private:
   AliAODVertex*		fPrimaryVertex; //! Event Primary Vertex
 
   TF1* fResolutionFunction[7];//
+  TF1* fResolutionFunctionb[7];//
+  TF1* fResolutionFunctionc[7];//
+  TF1* fResolutionFunctionlf[7];//
 
   //Secondary Vertex
   Bool_t fDoSVAnalysis;//
@@ -627,7 +658,7 @@ private:
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 54)
+	ClassDef(AliAnalysisTaskBJetTC, 57)
 };
 #endif
  //

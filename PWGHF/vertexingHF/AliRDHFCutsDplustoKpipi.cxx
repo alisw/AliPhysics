@@ -176,6 +176,14 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
 }
 
 //---------------------------------------------------------------------------
+AliRDHFCutsDplustoKpipi::~AliRDHFCutsDplustoKpipi(){
+  //
+  // Destructor
+  //
+  if(fMaxd0MeasMinusExp) delete [] fMaxd0MeasMinusExp;
+  if(fMaxd0) delete [] fMaxd0;
+}
+//---------------------------------------------------------------------------
 void AliRDHFCutsDplustoKpipi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval) {
   //
   // store the cuts
@@ -203,6 +211,35 @@ void AliRDHFCutsDplustoKpipi::Setd0Cut(Int_t nPtBins, Float_t *cutval) {
   for(Int_t ib=0; ib<fnPtBins; ib++) fMaxd0[ib] = cutval[ib];
   fUsed0Cut=kTRUE;
   return;
+}
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsDplustoKpipi::PreSelect(TObjArray aodTracks){
+  //
+  // apply pre selection
+  //
+  if(!fUsePreselect) return 3;
+  Int_t retVal=3;
+  
+  //compute pt
+  Double_t px=0, py=0;
+  AliAODTrack *track[3];
+  for(Int_t iDaught=0; iDaught<3; iDaught++) {
+    track[iDaught] = (AliAODTrack*)aodTracks.At(iDaught);
+    if(!track[iDaught]) return retVal;
+    px += track[iDaught]->Px();
+    py += track[iDaught]->Py();
+  }
+
+  Double_t ptD=TMath::Sqrt(px*px+py*py);
+
+  //not enabled for strong PID
+  Int_t pidoptmem = fUseStrongPid;
+  fUseStrongPid=kFALSE;
+  retVal=IsSelectedPID(ptD,aodTracks);
+  fUseStrongPid=pidoptmem;
+
+  return retVal;
 }
 
 //---------------------------------------------------------------------------
@@ -391,36 +428,60 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(AliAODRecoDecayHF *rd)
   //
   // PID selection, returns 3 if accepted, 0 if not accepted
   // 
-  if(!fUsePID || !rd) return 3;
+  Int_t retCode=3;
+  if(!fUsePID) return retCode;
+  if(rd) {
+    Double_t Pt = rd->Pt();
+    TObjArray aodtracks(3);
+    for(Int_t daught=0; daught<3; daught++) {
+      aodtracks.AddAt(rd->GetDaughter(daught),daught);
+    }
+    retCode = IsSelectedPID(Pt,aodtracks);
+  }
+  
+  return retCode;
+}
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsDplustoKpipi::IsSelectedPID(Double_t Pt, TObjArray aodtracks) {
+  //
+  // PID selection, returns 3 if accepted, 0 if not accepted
+  //
+  AliAODTrack *track[3];
+  for(Int_t daught=0; daught<3; daught++){
+    track[daught]=(AliAODTrack*)aodtracks.At(daught);
+  }
+  
+  if(!fUsePID || !track[0] || !track[1] || !track[2]) return 3;
+
+  Int_t sign = track[0]->Charge();
+
   //if(fUsePID)printf("i am inside the pid \n");
   Int_t nkaons=0;
   Int_t nNotKaons=0;
-  Int_t sign= rd->GetCharge(); 
   for(Int_t daught=0;daught<3;daught++){
-    AliAODTrack *track=(AliAODTrack*)rd->GetDaughter(daught);
-    Int_t isPion=fPidHF->MakeRawPid(track,AliPID::kPion);
-    Int_t isKaon=fPidHF->MakeRawPid(track,AliPID::kKaon);
-    Int_t isProton=fPidHF->MakeRawPid(track,AliPID::kProton);
+    Int_t isPion=fPidHF->MakeRawPid(track[daught],AliPID::kPion);
+    Int_t isKaon=fPidHF->MakeRawPid(track[daught],AliPID::kKaon);
+    Int_t isProton=fPidHF->MakeRawPid(track[daught],AliPID::kProton);
     
     if(isProton>0 &&  isKaon<0  && isPion<0) return 0;
     if(isKaon>0 && isPion<0) nkaons++;
-    if(isKaon<0) nNotKaons++;  
-    if(sign==track->Charge()){//pions
+    if(isKaon<0) nNotKaons++;
+    if(sign==track[daught]->Charge()){//pions
       if(isPion<0)return 0;
-      if(rd->Pt()<fMaxPtStrongPid && isPion<=0 && fUseStrongPid&2 && track->P()<fMaxPStrongPidpi)return 0;
+      if(Pt<fMaxPtStrongPid && isPion<=0 && fUseStrongPid&2 && track[daught]->P()<fMaxPStrongPidpi)return 0;
     }
     else{//kaons
       if(isKaon<0)return 0;
-	if(rd->Pt()<fMaxPtStrongPid && isKaon<=0 && fUseStrongPid&1&& track->P()<fMaxPStrongPidK)return 0;
+      if(Pt<fMaxPtStrongPid && isKaon<=0 && fUseStrongPid&1&& track[daught]->P()<fMaxPStrongPidK)return 0;
     }
   }
   
   if(nkaons>1)return 0;
   if(nNotKaons==3)return 0;
   
-  return 3;   
+  return 3;
 }
-
 
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod) {
@@ -724,7 +785,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   fPidHF->SetOldPid(kTRUE);
   SetRemoveDaughtersFromPrim(kTRUE);
   
-  PrintAll();
+  //  PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
   delete [] anacutsval;
@@ -862,7 +923,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   SetUseCentrality(AliRDHFCuts::kCentV0M);
   SetRemoveDaughtersFromPrim(kFALSE);
     
-  PrintAll();
+  //  PrintAll();
 
   for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
   delete [] anacutsval;

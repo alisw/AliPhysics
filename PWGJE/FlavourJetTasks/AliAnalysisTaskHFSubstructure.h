@@ -27,7 +27,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/*
+
 class TClonesArray;
 class AliRDHFCuts;
 class AliAODEvent;
@@ -47,7 +47,8 @@ class TTree;
 class AliEMCALGeometry;
 class TRandom;
 class AliRhoParameter;
-*/
+class TFile;
+
 //C++
 #include <exception>
 #include <list>
@@ -59,6 +60,8 @@ class AliRhoParameter;
 
 #include "AliAnalysisTaskEmcal.h"
 #include "AliJetContainer.h"
+#include "TFile.h"
+#include "AliRDHFCutsD0toKpi.h"
 
 
 class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
@@ -89,8 +92,10 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
    kDetSignal   = 1,  
    kDetBackground   = 2,  
    kDetReflection   = 3, 
-   kTrueDet   = 3,  
-   kTrue   = 4,  
+   kTrueDet   = 4,  
+   kTrue   = 5,
+   kDataInclusive   = 6,
+   kDet   = 7, 
  };
  enum EMesonOrigin_t {
    kUnknownQuark = BIT(0),
@@ -113,7 +118,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  enum TreeSize {
    nVar = 10,
-   nVar_Splittings =8
+   nVar_Splittings =12
   };
 
  //enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
@@ -154,8 +159,6 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Bool_t GetIsBDecay()                                             {return fIsBDecay;} 
  void SetBranchName(TString BranchName)                           {fBranchName = BranchName;}
  TString GetBranchName()                                          {return fBranchName;}
- void SetCutsFileName(TString CutsFileName)                       {fCutsFileName = CutsFileName;}
- TString GetCutsFileName()                                        {return fCutsFileName;}
  void SetCutsType(TString CutsType)                               {fCutsType = CutsType;}
  TString GetCutsType()                                            {return fCutsType;}
  void SetCandidatePDG(Int_t CandidatePDG)                         {fCandidatePDG = CandidatePDG;}
@@ -170,6 +173,11 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Bool_t GetRejectISR()                                            {return fRejectISR;}
  void SetPromptReject(Bool_t PromptReject)                        {fPromptReject = PromptReject;}
  Bool_t GetPromptRejectR()                                        {return fPromptReject;}
+ void SetAlienConnect(Bool_t AlienConnect)                        {fAlienConnect = AlienConnect;}
+ void SetCuts(TString CutsFileName)                               {TFile *fCutsFile = TFile::Open(CutsFileName);
+                                                                   TString cutsname="D0toKpiCuts";
+                                                                   if (fCutsType!="") cutsname += TString::Format("_%s", fCutsType.Data()); 
+                                                                   fRDHFCuts = dynamic_cast<AliRDHFCuts*>(fCutsFile->Get(cutsname));}
  
 
 
@@ -182,10 +190,10 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Bool_t                              fIncludeInclusive     ;
  Bool_t                              fIsBDecay             ;
  Bool_t                              fRejectISR            ;
- Bool_t                              fPromptReject         ;     
+ Bool_t                              fPromptReject         ;
+ Bool_t                              fAlienConnect         ;
  
  TString                            fBranchName            ; 
- TString                            fCutsFileName          ; 
  TString                            fCutsType;
  Int_t                              fCandidatePDG          ; 
  UInt_t                             fRejectedOrigin        ; 
@@ -193,7 +201,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  Double_t                           fJetRadius             ;
  Double_t                           fJetMinPt              ;
- Double_t                           fShapesVar[nVar]       ; 
+ Double_t                           fShapesVar[nVar]       ;
+
    
 
  TClonesArray                      *fCandidateArray        ; 
@@ -201,8 +210,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  AliAODEvent                       *fAodEvent              ; 
 
  AliRDHFCuts                       *fRDHFCuts              ; 
- AliFJWrapper                      *fFastJetWrapper        ;
- AliFJWrapper                      *fFastJetWrapper_Truth        ;
+ AliFJWrapper                      *fFastJetWrapper        ; //!<! 
+ AliFJWrapper                      *fFastJetWrapper_Truth  ; //!<! 
 
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_DeltaR;
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_DeltaR_Truth;
@@ -212,6 +221,10 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_LeadingSubJetpT_Truth;
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_HardestSubJetD0;
  std::vector<std::vector<Double_t>>            fShapesVar_Splittings_HardestSubJetD0_Truth;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorE;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorE_Truth;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorpT;
+ std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorpT_Truth;
  TTree                               *fTreeResponseMatrixAxis;
  TTree                               *fTreeSplittings;
 
@@ -229,7 +242,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  AliAnalysisTaskHFSubstructure(const AliAnalysisTaskHFSubstructure&);            
  AliAnalysisTaskHFSubstructure &operator=(const AliAnalysisTaskHFSubstructure&); 
 
- ClassDef(AliAnalysisTaskHFSubstructure, 1)
+ ClassDef(AliAnalysisTaskHFSubstructure, 2)
     
    };
 

@@ -228,7 +228,7 @@ private:
   AliCSEventCuts& operator=(const AliCSEventCuts&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSEventCuts,8);
+  ClassDef(AliCSEventCuts,10);
   /// \endcond
 };
 

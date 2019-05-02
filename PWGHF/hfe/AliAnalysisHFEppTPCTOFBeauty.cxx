@@ -55,6 +55,7 @@
 #include "AliPIDResponse.h"
 #include "AliHFEcontainer.h"
 #include "AliHFEcuts.h"
+#include "AliHFEextraCuts.h"
 #include "AliHFEpid.h"
 #include "AliHFEpidBase.h"
 #include "AliHFEpidQAmanager.h"
@@ -73,7 +74,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "TParticle.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "TRefArray.h"
@@ -122,6 +122,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fVevent(0)
 ,fOutputList(0)
 ,fPidResponse(0)
+,fExtraCuts(NULL)
 ,fNonHFE(new AliSelectNonHFE())
 ,fIsAOD(kFALSE)
 ,fIsPP(kFALSE)
@@ -167,6 +168,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_proton_p_after_tof(0)
 ,fTPCnsigma_p_after_tof_p(0)
 ,fTPCnsigma_p_after_tof_pion(0)
 ,fTPCnsigma_p_after_tof_k(0)
@@ -206,6 +208,26 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
 ,fDCAz_pt_had_WoPID(0)
+,fDCAxy_pt_had_onlyDCA_phi1(0)
+,fDCAxy_pt_had_onlyDCA_phi2(0)
+,fDCAxy_pt_had_onlyDCA_phi3(0)
+,fDCAxy_pt_had_onlyDCA_phi4(0)
+,fDCAxy_pt_had_phi1_ChB(0)
+,fDCAxy_pt_had_phi1_B(0)
+,fDCAxy_pt_had_phi2_ChB(0)
+,fDCAxy_pt_had_phi2_B(0)
+,fDCAxy_pt_had_phi3_ChB(0)
+,fDCAxy_pt_had_phi3_B(0)
+,fDCAxy_pt_had_phi4_ChB(0)
+,fDCAxy_pt_had_phi4_B(0)
+,fDCAxy_pt_had_ResCorr_phi1(0)
+,fDCAxy_pt_had_ResCorr_phi2(0)
+,fDCAxy_pt_had_ResCorr_phi3(0)
+,fDCAxy_pt_had_ResCorr_phi4(0)
+,fResGausCorr_phi1(0)
+,fResGausCorr_phi2(0)
+,fResGausCorr_phi3(0)
+,fResGausCorr_phi4(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -216,6 +238,9 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,hCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr2(0)
 ,hBeautyMotherPt(0)
+,hDCAPtProtons(0)
+,hDCAPtProtons2(0)
+,hDCAPtProtons3(0)
 ,hBeautyMotherPtbef(0)
 ,hBeautyMotherPtaft(0)
 ,hBeautyMotherPt2Daft(0)
@@ -236,13 +261,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fPIDqa(0)
 
 //For MC
-,fMCstack(0)
 ,fRejectKinkMother(kTRUE)
-,fMCtrack(0)
-,fMCtrackMother(0)
-,fMCtrackGMother(0)
-,fMCtrackGGMother(0)
-,fMCtrackGGGMother(0)
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
@@ -255,6 +274,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fPtMCeta(0)
 ,fD0(0)
 ,fD0Data(0)
+,fD0HC(0)
 ,fNpureMC(0)
 ,fNembMCpi0(0)
 ,fNembMCeta(0)
@@ -282,7 +302,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fDcorr20(0)
 ,fDcorr21(0)
 ,fDcorr22(0)
-
+,fHC(0)
 {
     //Named constructor
     // Define input and output slots here
@@ -320,6 +340,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fVevent(0)
 ,fOutputList(0)
 ,fPidResponse(0)
+,fExtraCuts(NULL)
 ,fNonHFE(new AliSelectNonHFE())
 ,fIsAOD(kFALSE)
 ,fIsPP(kFALSE)
@@ -364,6 +385,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_proton_p_after_tof(0)
 ,fTPCnsigma_p_after_tof_p(0)
 ,fTPCnsigma_p_after_tof_pion(0)
 ,fTPCnsigma_p_after_tof_k(0)
@@ -403,6 +425,26 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
 ,fDCAz_pt_had_WoPID(0)
+,fDCAxy_pt_had_onlyDCA_phi1(0)
+,fDCAxy_pt_had_onlyDCA_phi2(0)
+,fDCAxy_pt_had_onlyDCA_phi3(0)
+,fDCAxy_pt_had_onlyDCA_phi4(0)
+,fDCAxy_pt_had_phi1_ChB(0)
+,fDCAxy_pt_had_phi1_B(0)
+,fDCAxy_pt_had_phi2_ChB(0)
+,fDCAxy_pt_had_phi2_B(0)
+,fDCAxy_pt_had_phi3_ChB(0)
+,fDCAxy_pt_had_phi3_B(0)
+,fDCAxy_pt_had_phi4_ChB(0)
+,fDCAxy_pt_had_phi4_B(0)
+,fDCAxy_pt_had_ResCorr_phi1(0)
+,fDCAxy_pt_had_ResCorr_phi2(0)
+,fDCAxy_pt_had_ResCorr_phi3(0)
+,fDCAxy_pt_had_ResCorr_phi4(0)
+,fResGausCorr_phi1(0)
+,fResGausCorr_phi2(0)
+,fResGausCorr_phi3(0)
+,fResGausCorr_phi4(0)
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -413,6 +455,9 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,hCharmMotherPt_corr(0)
 ,hCharmMotherPt_corr2(0)
 ,hBeautyMotherPt(0)
+,hDCAPtProtons(0)
+,hDCAPtProtons2(0)
+,hDCAPtProtons3(0)
 ,hBeautyMotherPtbef(0)
 ,hBeautyMotherPtaft(0)
 ,hBeautyMotherPt2Daft(0)
@@ -433,13 +478,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fPIDqa(0)
 
 //For MC
-,fMCstack(0)
 ,fRejectKinkMother(kTRUE)
-,fMCtrack(0)
-,fMCtrackMother(0)
-,fMCtrackGMother(0)
-,fMCtrackGGMother(0)
-,fMCtrackGGGMother(0)
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
@@ -452,6 +491,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fPtMCeta(0)
 ,fD0(0)
 ,fD0Data(0)
+,fD0HC(0)
 ,fNpureMC(0)
 ,fNembMCpi0(0)
 ,fNembMCeta(0)
@@ -479,7 +519,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fDcorr20(0)
 ,fDcorr21(0)
 ,fDcorr22(0)
-
+,fHC(0)
 
 {
     // Constructor
@@ -712,6 +752,15 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hBeautyMotherPt);
     
+    hDCAPtProtons = new TH2F("hDCAPtProtons","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+    fOutputList->Add(hDCAPtProtons);
+    
+    hDCAPtProtons2 = new TH2F("hDCAPtProtons2","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+    fOutputList->Add(hDCAPtProtons2);
+    
+    hDCAPtProtons3 = new TH2F("hDCAPtProtons3","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+    fOutputList->Add(hDCAPtProtons3);
+    
     hBeautyMotherPt2Daft = new TH2F("hBeautyMotherPt2Daft","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hBeautyMotherPt2Daft);
 
@@ -735,64 +784,114 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fOutputList->Add(fPHad_f);
     fPHad_f->Sumw2();
        
-    fDCAxy_pt_had = new TH2F("fDCAxy_pt_had",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had = new TH2F("fDCAxy_pt_had",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had);
     
-    fDCAxy_pt_had_WoPID = new TH2F("fDCAxy_pt_had_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_WoPID = new TH2F("fDCAxy_pt_had_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_WoPID);
     
-    fDCAxy_pt_charmbef = new TH2F("fDCAxy_pt_charmbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_charmbef = new TH2F("fDCAxy_pt_charmbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_charmbef);
     
-    fDCAxy_pt_charmaft = new TH2F("fDCAxy_pt_charmaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_charmaft = new TH2F("fDCAxy_pt_charmaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_charmaft);
     
-    fDCAxy_pt_beautybef = new TH2F("fDCAxy_pt_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_beautybef = new TH2F("fDCAxy_pt_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_beautybef);
     
-    fDCAxy_pt_beautyaft = new TH2F("fDCAxy_pt_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_beautyaft = new TH2F("fDCAxy_pt_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_beautyaft); 
     
-    fDCAxy_pt_MesonB_beautybef = new TH2F("fDCAxy_pt_MesonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_MesonB_beautybef = new TH2F("fDCAxy_pt_MesonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_MesonB_beautybef);
     
-    fDCAxy_pt_MesonB_beautyaft = new TH2F("fDCAxy_pt_MesonB_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_MesonB_beautyaft = new TH2F("fDCAxy_pt_MesonB_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_MesonB_beautyaft);
     
-    fDCAxy_pt_MesonBD_beautybef = new TH2F("fDCAxy_pt_MesonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_MesonBD_beautybef = new TH2F("fDCAxy_pt_MesonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_MesonBD_beautybef);
     
-    fDCAxy_pt_MesonBD_beautyaft = new TH2F("fDCAxy_pt_MesonBD_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_MesonBD_beautyaft = new TH2F("fDCAxy_pt_MesonBD_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_MesonBD_beautyaft);
     
-    fDCAxy_pt_BaryonB_beautybef = new TH2F("fDCAxy_pt_BaryonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_BaryonB_beautybef = new TH2F("fDCAxy_pt_BaryonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_BaryonB_beautybef);
      
-    fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_BaryonBD_beautybef);
        
-    fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_WoPID);
     
-    fDCAxy_pt_had_onlyDCA = new TH2F("fDCAxy_pt_had_onlyDCA",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA = new TH2F("fDCAxy_pt_had_onlyDCA",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA);
     
-    fDCAxy_pt_had_onlyDCA_Hijing = new TH2F("fDCAxy_pt_had_onlyDCA_Hijing",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_Hijing = new TH2F("fDCAxy_pt_had_onlyDCA_Hijing",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_Hijing);
        
-    fDCAxy_pt_had_onlyDCA_Phytia = new TH2F("fDCAxy_pt_had_onlyDCA_Phytia",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_Phytia = new TH2F("fDCAxy_pt_had_onlyDCA_Phytia",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_Phytia);
        
-    fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,800,-0.2,0.2);
+    fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAz_pt_had);
     
-    fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_phi1 = new TH2F("fDCAxy_pt_had_onlyDCA_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi1);
+    
+    fDCAxy_pt_had_phi1_ChB = new TH2F("fDCAxy_pt_had_phi1_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_phi1_ChB);
+    
+    fDCAxy_pt_had_phi1_B = new TH2F("fDCAxy_pt_had_phi1_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_phi1_B);
+    
+    fDCAxy_pt_had_onlyDCA_phi2 = new TH2F("fDCAxy_pt_had_onlyDCA_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi2);
+    
+    fDCAxy_pt_had_phi2_ChB = new TH2F("fDCAxy_pt_had_phi2_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_phi2_ChB);
+    
+    fDCAxy_pt_had_phi2_B = new TH2F("fDCAxy_pt_had_phi2_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_phi2_B);
+    
+    fDCAxy_pt_had_onlyDCA_phi3 = new TH2F("fDCAxy_pt_had_onlyDCA_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi3);
+    
+    fDCAxy_pt_had_phi3_ChB = new TH2F("fDCAxy_pt_had_phi3_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_phi3_ChB);
+    
+    fDCAxy_pt_had_phi3_B = new TH2F("fDCAxy_pt_had_phi3_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_phi3_B);
+    
+    fDCAxy_pt_had_onlyDCA_phi4 = new TH2F("fDCAxy_pt_had_onlyDCA_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi4);
+    
+    fDCAxy_pt_had_phi4_ChB = new TH2F("fDCAxy_pt_had_phi4_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_phi4_ChB);
+    
+    fDCAxy_pt_had_phi4_B = new TH2F("fDCAxy_pt_had_phi4_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_phi4_B);
+    
+       
+    fDCAxy_pt_had_ResCorr_phi1 = new TH2F("fDCAxy_pt_had_ResCorr_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_ResCorr_phi1);
+    
+    fDCAxy_pt_had_ResCorr_phi2 = new TH2F("fDCAxy_pt_had_ResCorr_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_ResCorr_phi2);
+    
+    fDCAxy_pt_had_ResCorr_phi3 = new TH2F("fDCAxy_pt_had_ResCorr_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_ResCorr_phi3);
+    
+    fDCAxy_pt_had_ResCorr_phi4 = new TH2F("fDCAxy_pt_had_ResCorr_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+    fOutputList->Add(fDCAxy_pt_had_ResCorr_phi4);
+    
+    
+    fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAz_pt_had_WoPID);
     
-    fDCAxy_pt_ele = new TH2F("fDCAxy_pt_ele",";p_{t} (GeV/c);DCAxy ",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_ele = new TH2F("fDCAxy_pt_ele",";p_{t} (GeV/c);DCAxy ",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_ele);
     
-    fDCAz_pt_ele = new TH2F("fDCAz_pt_ele",";p_{t} (GeV/c);DCAz ",300,0,30,800,-0.2,0.2);
+    fDCAz_pt_ele = new TH2F("fDCAz_pt_ele",";p_{t} (GeV/c);DCAz ",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAz_pt_ele); 
     
     fPtMCeta = new TH1F("fPtMCeta",";p_{t} (GeV/c)",2000,0,100);
@@ -803,6 +902,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
     fTPCnsigma_p_after_tof_p = new TH2F("fTPCnsigma_p_after_tof_p","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof_p);
+    
+    fTPCnsigma_proton_p_after_tof = new TH2F("fTPCnsigma_proton_p_after_tof","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
+    fOutputList->Add(fTPCnsigma_proton_p_after_tof);
     
     fTPCnsigma_p_after_tof_pion = new TH2F("fTPCnsigma_p_after_tof_pion","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof_pion);
@@ -843,15 +945,18 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
       
     ///THnSparse to store DCA of different particle species in MC-------------
-    Int_t nBinspdg2 = 21;
+    Int_t nBinspdg2 = 30;
     Double_t minpdg2 = 0.;
-    Double_t maxpdg2 = 21.;
+    Double_t maxpdg2 = 30.;
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
-    Int_t nBinsdcaxy = 800;
-    Double_t mindcaxy = -0.2;
-    Double_t maxdcaxy = 0.2;
+  //  Int_t nBinsdcaxy = 3200; //0.000125 cm
+    Int_t nBinsdcaxy = 8000; //0.000125 cm
+   // Double_t mindcaxy = -0.2;
+   // Double_t maxdcaxy = 0.2;
+    Double_t mindcaxy = -0.5;
+    Double_t maxdcaxy = 0.5;
     Double_t binLimdcaxy[nBinsdcaxy+1];
     for(Int_t i=0; i<=nBinsdcaxy; i++) binLimdcaxy[i]=(Double_t)mindcaxy + (maxdcaxy-mindcaxy)/nBinsdcaxy*(Double_t)i ;
     
@@ -891,33 +996,47 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
      2.28928,2.58223,2.91267,3.2854,3.70582,4.18004,4.71494,5.3183,5.99886,6.76651,7.6324,8.60909,9.71076,10.9534,12.3551,13.9361,15.7195,17.731,20};//bin limits from the measured pi0 spectrum
      */
     
-    const Int_t nDima2=9;
-    Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha,nBinstype,nBinspdg2};
+    const Int_t nDima2=10;
+    Int_t nBina2[nDima2] = {32,nBinspdg2,nBinsdcaxy,nBinsg,nBinsR,nBinsITSchi2,nBinsITSsha,nBinstype,nBinspdg2,nBinsdcaxy};
     fD0 = new THnSparseF("fD0","fD0",nDima2,nBina2);
     fD0->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
-    fD0->SetBinEdges(1,binLimpdg2); /// electrons from D,charm baryons, B, beauty baryons, gamma, pi0, eta, Dcorrected, Dcorrected by weight, protons, kaons, D0_corr, D+-_corr,Ds_corr,Lc_corr, D0, D+-,Ds,Lc
-    fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution
+    fD0->SetBinEdges(1,binLimpdg2); /// storing particles (charm and beauty) before correction:
+    fD0->SetBinEdges(2,binLimdcaxy); ///dca distribution without Manual Mean and Sigma correction
     fD0->SetBinEdges(3,binLimg);  ///From which generator (Hijing, else, pi0, eta)
     fD0->SetBinEdges(4,binLimR); ///Position where the electron is created
     fD0->SetBinEdges(5,binLimITSchi2); ///ITS chi2 
     fD0->SetBinEdges(6,binLimITSsha); ///fraction ITS shared clusters 
     fD0->SetBinEdges(7,binLimtype); ///pi0 and eta type  ///kNoMother, kNoFeedDown, kNoIsPrimary, kLightMesons, kBeauty, kCharm, kKaonFromHF, kKaonFromNonHF
-    fD0->SetBinEdges(8,binLimpdg2); /// storing particles (charm and beauty) before correction: 
+    fD0->SetBinEdges(8,binLimpdg2);  /// electrons from D,charm baryons, B, beauty baryons, gamma, pi0, eta, Dcorrected, Dcorrected by weight, protons, kaons, D0_corr, D+-_corr,Ds_corr,Lc_corr, D0, D+-,Ds,Lc
+    fD0->SetBinEdges(9,binLimdcaxy); ///dca distribution with Manual Mean and Sigma correction
     fD0->Sumw2();
     fOutputList->Add(fD0);
     ///-----------------------------------------------------------------
     
     ///THnSparse to store DCA in Data
-    const Int_t nDima3=5;
-    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
+    const Int_t nDima3=6;
+    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2,nBinspdg2};
     fD0Data = new THnSparseF("fD0Data","fD0Data",nDima3,nBina3);
     fD0Data->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
     fD0Data->SetBinEdges(1,binLimdcaxy); ///dca distribution
     fD0Data->SetBinEdges(2,binLimITSchi2); ///ITS chi2 
     fD0Data->SetBinEdges(3,binLimITSsha); ///fraction ITS shared clusters 
     fD0Data->SetBinEdges(4,binLimpdg2); /// electrons and pions
+    fD0Data->SetBinEdges(5,binLimpdg2); /// electrons and pions
     fD0Data->Sumw2();
     fOutputList->Add(fD0Data);
+    
+    
+    const Int_t nDima4=5;
+    Int_t nBina4[nDima4] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
+    fD0HC = new THnSparseF("fD0HC","fD0HC",nDima4,nBina4);
+    fD0HC->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
+    fD0HC->SetBinEdges(1,binLimdcaxy); ///dca distribution
+    fD0HC->SetBinEdges(2,binLimITSchi2); ///ITS chi2 
+    fD0HC->SetBinEdges(3,binLimITSsha); ///fraction ITS shared clusters 
+    fD0HC->SetBinEdges(4,binLimpdg2); /// electrons and pions
+    fD0HC->Sumw2();
+    fOutputList->Add(fD0HC);
     
     
     PostData(1, fOutputList);
@@ -943,6 +1062,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     Double_t fITSnSigma = -999;
     Double_t fTPCnSigma_pion = -999;
     Double_t fTPCnSigma_proton = -999;
+    Double_t fTOFnSigma_proton = -999;
     Double_t fTPCnSigma_kaon = -999;
     Double_t fTPCsignal = -999;
     Double_t fPt = -999;
@@ -953,9 +1073,11 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     Int_t fTPCnClus = 99999;
     Double_t qadca[10];
 	Double_t qadcaData[10];
+	Double_t qadcaHC[10];
     for(int j=0;j<10;j++){
 		qadca[j] = 0;
 		qadcaData[j] = 0;
+		qadcaHC[j] = 0;
 	}
     
     ///Check Event
@@ -1019,7 +1141,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     
     
     
-    ////////////////////
+        ////////////////////
 	//Vertex Selection//
 	////////////////////
  
@@ -1029,11 +1151,6 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     ///Getting primary vertex    
     AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
     
-//     AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
-
-//  if (vtTrc->GetNContributors()<2 || vtSPD->GetNContributors()<1) return; // one of vertices is missing
-
-        
     ///Events with no vertex by tracks-------------------------------
     if(!vtTrc){
 		fNevent_no_vertex->Fill(0);
@@ -1086,7 +1203,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
      fNevent_passvertex->Fill(0); 
         
         
-    /////////////////////////
+        /////////////////////////
 	//Centrality Selection///
 	/////////////////////////
 	if(!fIsPP){  
@@ -1200,7 +1317,16 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         fEta = track->Eta();
         fPhi = track->Phi();
         fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
-        
+      /*  
+        if(fP <= 2.0 ){
+        ftofPIDmincut = -2;
+        ftofPIDmaxcut = 2;
+        }
+        else{
+        ftofPIDmincut = -3;
+        ftofPIDmaxcut = 3;
+        }
+        */
         fITSnClus =  track->GetNumberOfITSClusters();
         fTPCnClus =  track->GetNumberOfTPCClusters();
         
@@ -1210,6 +1336,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         fITSnSigma = fPidResponse->NumberOfSigmasITS(track, AliPID::kElectron);
         fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
         fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+        fTOFnSigma_proton = fPidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
         fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
         
         fTPC_p1->Fill(fP,fTPCsignal);
@@ -1297,7 +1424,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		NAnalizedTracks = NAnalizedTracks+1;
         
         ///Number of analysed tracks from Hijing:
-   /*     Int_t trkLabel = TMath::Abs(track->GetLabel());
+   	
+   	/*Int_t trkLabel = TMath::Abs(track->GetLabel());
 		Int_t labelm = GetPrimary(trkLabel,fMCarray);///gives the label of first mother
 		AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(labelm);
 		Int_t trkIndexPrimHFE= AODMCtrack->GetLabel();///gives index of the particle in original MCparticle array (labelm and trkIndexPrimHFE are the same, so I don't understand why this is done)
@@ -1322,16 +1450,31 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         ////////////////////
 		//Calculating DCA///
 		////////////////////
-        Double_t d0z0[2], cov[3];
-        AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
-        if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 100., d0z0, cov))) continue;
+		
+	 if(!fExtraCuts){
+			fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
+		}
+	
+	fExtraCuts->SetRecEventInfo(fAOD);
+	
+	Double_t d0z0[2], cov[3];
+
+        //AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+        // if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 3., d0z0, cov))) continue; 
+        //cout<<d0z0[0]<<"    "<<d0z0[1]<<endl;
+        fExtraCuts->GetHFEImpactParameters(track, d0z0, cov); // recalculation of vertex is done here, earlier was not done in the task and was the reason for "shoulder" shape in the DCA templates. Also, this is not giving effect for PbPb but only pp. ====> Sudhir 19 January, 2019 ///Solved
         Double_t DCAxy = d0z0[0];
         Double_t DCAz = d0z0[1];
         
+        //cout<<"After   "<<DCAxy<<"         "<<DCAz<<endl;
   
+  	if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+  	fTPCnsigma_proton_p_after_tof->Fill(fP,fTPCnSigma_proton);
+  	}
         ///Checking nsigmaTPC after PID cuts in tof and its
         if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
             fTPCnsigma_p_after_tof->Fill(fP,fTPCnSigma);
+            
             fTPCnsigma_pt_after_tof->Fill(fPt,fTPCnSigma);
             
 			///Cheking the hadron nsigmaTPC after TOF cut
@@ -1364,10 +1507,70 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		 ///////////////////
 		// With PID cuts //
 	       ///////////////////
+	       
+	       Double_t phi_d0 = (track->Phi()*180.0/TMath::Pi());
         if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
 			fDCAxy_pt_had_onlyDCA->Fill(fPt,DCAxy);
 			fDCAxy_pt_had->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAz_pt_had->Fill(fPt,DCAz);	
+			
+			if(phi_d0 > 315.0 || phi_d0 < 45.0){
+			fDCAxy_pt_had_onlyDCA_phi1->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_phi1_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAxy_pt_had_phi1_B->Fill(fPt,DCAxy*signB);
+			
+			float DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
+			float DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
+			float correction_phi1 = gRandom->Gaus(DCAMCMean_phi1,DCAMCRes_phi1); 
+			float DCAResCorr_phi1 =  DCAxy + correction_phi1;
+			
+			//fResGausCorr_phi1->Fill(correction_phi1);
+			fDCAxy_pt_had_ResCorr_phi1->Fill(fPt,DCAResCorr_phi1);
+			//cout<<"Phi1 value:===   "<<phi_d0<<endl;
+			}
+			
+			if(phi_d0 > 45.0 && phi_d0 < 135.0){
+			fDCAxy_pt_had_onlyDCA_phi2->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_phi2_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAxy_pt_had_phi2_B->Fill(fPt,DCAxy*signB);
+			float DCAMCRes_phi2 = GetDCAResolMC_phi2(fPt); ///resolution of the MC
+			float DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
+			float correction_phi2 = gRandom->Gaus(DCAMCMean_phi2,DCAMCRes_phi2); 
+			float DCAResCorr_phi2 =  DCAxy + correction_phi2;
+			
+			//fResGausCorr_phi2->Fill(correction_phi2);
+			fDCAxy_pt_had_ResCorr_phi2->Fill(fPt,DCAResCorr_phi2);
+			//cout<<"Phi2 value:===   "<<phi_d0<<endl;
+			}
+			
+			if(phi_d0 > 135.0 && phi_d0 < 225.0){
+			fDCAxy_pt_had_onlyDCA_phi3->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_phi3_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAxy_pt_had_phi3_B->Fill(fPt,DCAxy*signB);
+			float DCAMCRes_phi3 = GetDCAResolMC_phi3(fPt); ///resolution of the MC
+			float DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
+			float correction_phi3 = gRandom->Gaus(DCAMCMean_phi3,DCAMCRes_phi3); 
+			float DCAResCorr_phi3 =  DCAxy + correction_phi3;
+			
+			//fResGausCorr_phi3->Fill(correction_phi3);
+			fDCAxy_pt_had_ResCorr_phi3->Fill(fPt,DCAResCorr_phi3);
+			//cout<<"Phi3 value:===   "<<phi_d0<<endl;
+			}
+			
+			if(phi_d0 > 225.0 && phi_d0 < 315.0){
+			fDCAxy_pt_had_onlyDCA_phi4->Fill(fPt,DCAxy);
+			fDCAxy_pt_had_phi4_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
+			fDCAxy_pt_had_phi4_B->Fill(fPt,DCAxy*signB);
+			float DCAMCRes_phi4 = GetDCAResolMC_phi4(fPt); ///resolution of the MC
+			float DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
+			float correction_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4); 
+			float DCAResCorr_phi4 =  DCAxy + correction_phi4;
+			
+			//fResGausCorr_phi4->Fill(correction_phi4);
+			fDCAxy_pt_had_ResCorr_phi4->Fill(fPt,DCAResCorr_phi4);
+			//cout<<"Phi4 value:===   "<<phi_d0<<endl;
+			}
+			
 			
 			///Checking the effect of the improver in the resolution for hijing events separetely
 			if(fIsMC){
@@ -1396,6 +1599,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			
 			 qadcaData[4] = -1.;
 			
+			 qadcaData[5] = 10.;
 			 ///Charged pions
 			 if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
 				  qadcaData[4] = 0.5;
@@ -1404,6 +1608,24 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			 if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
 				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
 					qadcaData[4] = 1.5;					
+				}
+			 }
+			 
+			  ///Proton candidates
+			 if(fTPCnSigma_proton >= -3 && fTPCnSigma_proton <= 8){
+				if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+				hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+					//qadcaData[4] = 3.5;
+										
+				}
+			 }
+			 
+			   ///Proton candidates
+			 if(fTPCnSigma_proton >= -3 && fTPCnSigma_proton <= 3){
+				if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+				hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
+					qadcaData[5] = 3.5;
+										
 				}
 			 }
         
@@ -1427,10 +1649,60 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			//cout<<"fsharedclsITS = "<<fsharedclsITS<<endl;
             
 			qadcaData[3] = fsharedclsITS; 
-         
+         //cout<<fPt<<endl;
 			if(qadcaData[4]>0.) fD0Data->Fill(qadcaData);
         //}
         
+       
+       
+       
+        ///////////////////////////////////////////////////
+		//THnSparse to store the DCA information of Hadron Contamination///
+		///////////////////////////////////////////////////
+         //if(!fIsMC){
+			 qadcaHC[0] = fPt;
+         
+			 qadcaHC[1] = DCAxy*track->Charge()*signB;
+			
+			 qadcaHC[4] = -1.;
+			
+			 ///Charged pions
+			 if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
+				  qadcaHC[4] = 0.5;
+			 }
+			 ///Electron candidates
+			 if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
+				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+					qadcaHC[4] = 1.5;					
+				}
+			 }
+        
+			Double_t ITSNcls2 = atrack->GetITSNcls();
+			//cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
+            
+			///ITS Chi2            
+			qadcaHC[2] = atrack->GetITSchi2()/ITSNcls2; 
+			//cout<<"track->GetITSchi2() = "<<track->GetITSchi2()<<endl;
+            
+			///Fraction of shared clusters in the ITS
+			Bool_t HasSharedCls2 = kFALSE;
+			Double_t ITSNSharedcls2 = 0;
+			for(int itsL = 0; itsL < 6; itsL++){
+				HasSharedCls2 = atrack->HasSharedPointOnITSLayer(itsL);
+				if(HasSharedCls2) ITSNSharedcls2++;
+			}
+			//cout<<"ITSNSharedcls = "<<ITSNSharedcls<<endl;
+         
+			Double_t fsharedclsITS2 = ITSNSharedcls2/ITSNcls2;
+			//cout<<"fsharedclsITS = "<<fsharedclsITS<<endl;
+            
+			qadcaHC[3] = fsharedclsITS2; 
+         		Double_t WeightHC = fHC->Eval(fP);
+         		//cout<<WeightHC<<endl;
+			if(qadcaHC[4]>0.) fD0HC->Fill(qadcaHC, WeightHC);
+        //}
+        
+       
         
                
 		///Checking PID cuts separately (for the efficiency)	
@@ -1460,27 +1732,51 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			}
 			///----------------------------------------------------
 		}          
+   //     if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+   if(fIsMC && fIsAOD){
+   
+   	 if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
+            hDCAPtProtons2->Fill(fPt,DCAxy*track->Charge()*signB);
+           // cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
+            }
+   
+         if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
+        if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
+         //   hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+         //   cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
+            }
+
+        }
         
-               
+        if(fTPCnSigma >= -5 && fTPCnSigma <= 5){
+        if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
+         //   hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
+         //   cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
+            }
+
+        }
+      }
         //=======================================================================
         // Here the PID cuts defined in the file "Config.C" is applied
         //=======================================================================
-        /*Int_t pidpassed = 1;
+        Int_t pidpassed = 1;
         AliHFEpidObject hfetrack;
         hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
         hfetrack.SetRecTrack(track);
         hfetrack.SetPP();	//proton-proton analysis
         if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
-        cout<<"Before the pidpassed = = = = = = = = = = = ======================================"<<endl;
+        //cout<<"Before the pidpassed = = = = = = = = = = = ======================================"<<endl;
         if(pidpassed==0) continue;
-        cout<<"After  the pidpassed = = = = = = = = = = = ======================================"<<endl;*/
+        //cout<<"After  the pidpassed = = = = = = = = = = = ======================================"<<endl;
         
-     //   if(fTPCnSigma < ftpcPIDmincut || fTPCnSigma > ftpcPIDmaxcut && fTOFnSigma < ftofPIDmincut || fTOFnSigma > ftofPIDmaxcut) continue;   // Applying simultaneous pid cuts manually by sudhir, since above cut function does not work in grid...
-      //  if(fTOFnSigma == -999 || fTPCnSigma == -999)continue;
-           //   cout<<ftpcPIDmincut<<"    "<<fTPCnSigma<<"     "<<ftpcPIDmaxcut<<"       "<<ftofPIDmincut<<"     "<<fTOFnSigma<<"     "<<ftofPIDmaxcut<<endl;
-      if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut && fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
-       // cout<<fTPCnSigma<<"       "<<fTOFnSigma<<endl;
-        /////////////////////////
+        //if(fTPCnSigma < ftpcPIDmincut || fTPCnSigma > ftpcPIDmaxcut && fTOFnSigma < ftofPIDmincut || fTOFnSigma > ftofPIDmaxcut) continue;   // Applying simultaneous pid cuts manually by sudhir, since above cut function does not work in grid...
+        //if(fTOFnSigma == -999 || fTPCnSigma == -999)continue;
+        //cout<<ftpcPIDmincut<<"    "<<fTPCnSigma<<"     "<<ftpcPIDmaxcut<<"       "<<ftofPIDmincut<<"     "<<fTOFnSigma<<"     "<<ftofPIDmaxcut<<endl;
+        //if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut && fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
+        // cout<<fTPCnSigma<<"       "<<fTOFnSigma<<endl;
+        
+       // cout<<fP<<"      "<<ftofPIDmincut<<"      "<<ftofPIDmaxcut<<endl;
+                /////////////////////////
 		//AFTER PID SELECTION////
 		/////////////////////////
         ///Beauty reconstruction efficiency block-----------
@@ -1542,9 +1838,14 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             
             ///Selecting particle
             qadca[1]=-1.; 
-            
+             //cout<<"Hello:"<<endl;           
+            qadca[8]=29.5; //if noone passes the correction HFE then 29.5 is filled
             ///------------
-            if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212) qadca[1]=10.5; ///to check DCA of protons
+            if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
+            qadca[1]=10.5; ///to check DCA of protons
+            //hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+            //cout<<"Hello:"<<endl;
+            }
             if(TMath::Abs(fMCparticle->GetPdgCode()) == 321) qadca[1]=11.5; ///to check DCA of kaons
             ///------------
 
@@ -1556,14 +1857,37 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                 if(fIsFromD){
                     fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
                     fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                    fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                    fMCparticleGGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleGMother->GetMother());
                     pdg_mother = fMCparticleMother->GetPdgCode();
+                    float pdg_gmother = fMCparticleGMother->GetPdgCode();
+                    float pdg_ggmother = fMCparticleGGMother->GetPdgCode();
                     
                     if(TMath::Abs(pdg_mother)>400 && TMath::Abs(pdg_mother)<500){///charmed meson 
-						qadca[1]=0.5; 
-						if(TMath::Abs(pdg_mother) == 421) qadca[1]=16.5; ///to check DCA D0
-						if(TMath::Abs(pdg_mother) == 411) qadca[1]=17.5; ///to check DCA D+-
-						if(TMath::Abs(pdg_mother) == 433) qadca[1]=18.5; ///to check DCA Ds 
-											 
+						qadca[1]=7.5;
+						if(TMath::Abs(pdg_mother) == 421) qadca[1]=20.5; ///to check DCA  prompt D0 bef corr
+						if(TMath::Abs(pdg_mother) == 411) qadca[1]=23.5; ///to check DCA D+ bef corr
+						
+						if(TMath::Abs(pdg_mother) == 431) qadca[1]=25.5; ///to check DCA Ds+ bef corr
+						
+						if(TMath::Abs(pdg_gmother) == 413) qadca[1]=26.5; ///to check DCA Dstar+ bef corr
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 421){ 
+						qadca[1]=21.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						 
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 411){ 
+						qadca[1]=22.5; ///to check DCA Dstar+ bef corr
+						}
+						}
+						
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 431){ 
+						qadca[1]=24.5; ///to check DCA Dstar+ bef corr
+						}
+						}
 						 hCharmMotherPt->Fill(fMCparticleMother->Pt());
 						 hCharmMotherPt_vsElecPt->Fill(fPt,fMCparticleMother->Pt());
 						 hElecPt_vsCharmMotherPt->Fill(fMCparticleMother->Pt(),fPt);
@@ -1607,12 +1931,31 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						 //cout<<"fMCparticleMother->Pt() = "<<fMCparticleMother->Pt()<<endl;
 						 //cout<<"probAcceptD = "<<probAcceptD<<endl;
 						 //cout<<"a = "<<a<<endl;
-						 if(a < probAcceptD){
-							qadca[1]=7.5;
-							if(TMath::Abs(pdg_mother) == 421) qadca[1]=12.5; ///to check DCA D0 - corrected
-							if(TMath::Abs(pdg_mother) == 411) qadca[1]=13.5; ///to check DCA D+- - corrected
-							if(TMath::Abs(pdg_mother) == 433) qadca[1]=14.5; ///to check DCA Ds  - corrected	
-							
+						if(a < probAcceptD){
+						qadca[8]=7.5;
+						if(TMath::Abs(pdg_mother) == 421) qadca[8]=20.5; ///to check DCA  prompt D0 aft corr
+						if(TMath::Abs(pdg_mother) == 411) qadca[8]=23.5; ///to check DCA D+ aft corr
+						
+						if(TMath::Abs(pdg_mother) == 431) qadca[8]=25.5; ///to check DCA Ds+ aft corr
+						
+						if(TMath::Abs(pdg_gmother) == 413) qadca[8]=26.5; ///to check DCA Dstar+ aft corr
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 421){ 
+						qadca[8]=21.5; ///to check DCA Dstar+ aft corr
+						}
+						}
+						 
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 411){ 
+						qadca[8]=22.5; ///to check DCA Dstar+ aft corr
+						}
+						}
+						
+						if(TMath::Abs(pdg_gmother) == 413){ 
+						if(TMath::Abs(pdg_mother) == 431){ 
+						qadca[8]=24.5; ///to check DCA Dstar+ aft corr
+						}
+						}
 							hCharmMotherPt_corr->Fill(fMCparticleMother->Pt());
 							hCharmMotherPt_corr2->Fill(fMCparticleMother->Pt());
 							hCharmMotherPt_vsElecPt_corr->Fill(fPt,fMCparticleMother->Pt());
@@ -1623,7 +1966,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 					
 					if(TMath::Abs(pdg_mother)>4000 && TMath::Abs(pdg_mother)<5000){///charmed baryon
 						 qadca[1]=1.5;
-						 if(TMath::Abs(pdg_mother) == 4122) qadca[1]=15.5; ///to check DCA Lc
+						 if(TMath::Abs(pdg_mother) == 4122) qadca[1]=27.5; ///to check DCA prompt Lc+
+
+						
 					}
                 }//end of electrons from charm
                 
@@ -1702,7 +2047,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 							fDCAxy_pt_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB);
 							hBeautyMotherPtaft->Fill(fMCparticleMother->Pt());
 							hBeautyMotherPt2Daft->Fill(fMCparticleMother->Pt(),fPt);
-							qadca[1]=19.5;
+							qadca[8]=2.5;
 							
 						if(fIsFromMesonB){
                     					fDCAxy_pt_MesonB_beautyaft->Fill(fPt,DCAxy*track->Charge()*signB);
@@ -1745,8 +2090,40 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             }
 
      
-            ///DCAxy
-            qadca[2]=DCAxy*track->Charge()*signB;
+             ///DCAxy
+            	float DCAResCorr;
+            	
+           	if(phi_d0 > 315.0 || phi_d0 < 45.0){
+		float DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
+		float DCAMCMean_phi1 = GetDCAMeanMC_phi1(fPt); ///mean of the MC
+		float correction_phi1 = gRandom->Gaus(DCAMCMean_phi1,DCAMCRes_phi1); 
+		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi1;
+		}
+			
+		if(phi_d0 > 45.0 && phi_d0 < 135.0){
+		float DCAMCRes_phi2 = GetDCAResolMC_phi2(fPt); ///resolution of the MC
+		float DCAMCMean_phi2 = GetDCAMeanMC_phi2(fPt); ///mean of the MC
+		float correction_phi2 = gRandom->Gaus(DCAMCMean_phi2,DCAMCRes_phi2); 
+		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi2;
+		}
+			
+		if(phi_d0 > 135.0 && phi_d0 < 225.0){
+		float DCAMCRes_phi3 = GetDCAResolMC_phi3(fPt); ///resolution of the MC
+		float DCAMCMean_phi3 = GetDCAMeanMC_phi3(fPt); ///mean of the MC
+		float correction_phi3 = gRandom->Gaus(DCAMCMean_phi3,DCAMCRes_phi3); 
+		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi3;
+		}
+			
+		if(phi_d0 > 225.0 && phi_d0 < 315.0){
+		float DCAMCRes_phi4 = GetDCAResolMC_phi4(fPt); ///resolution of the MC
+		float DCAMCMean_phi4 = GetDCAMeanMC_phi4(fPt); ///mean of the MC
+		float correction_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4);  
+		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi4;
+		}
+		
+	    qadca[2]=DCAxy*track->Charge()*signB;	
+            
+            qadca[9]=DCAResCorr;
             
             Double_t ITSNcls = atrack->GetITSNcls();
             //cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
@@ -1773,7 +2150,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
             if(qadca[1]>0.) fD0->Fill(qadca);
         }
         
-       }
+    //   } // manual PID selection
 
     }//End of track loop
     
@@ -1906,7 +2283,7 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::FindMother(Int_t mcIndex)
         
         fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
         mpdg = TMath::Abs(fMCparticleMother->GetPdgCode());
-        
+
         if(fMCparticleMother->GetMother()<0)
         {
             gmpdg = 0;
@@ -1937,82 +2314,9 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::FindMother(Int_t mcIndex)
                 }
             }
         }
+            //    cout<<fMCparticle->GetMother()<<"   "<<mpdg<<"    "<<gmpdg<<"    "<<ggmpdg<<"    "<<gggmpdg<<endl;
     }
-    else
-    {
-        fMCtrack = fMCstack->Particle(mcIndex);
-        
-        pdg = TMath::Abs(fMCtrack->GetPdgCode());
-        
-        if(pdg!=11)
-        {
-            fIsHFE1 = kFALSE;
-            fIsHFE2 = kFALSE;
-            fIsNonHFE = kFALSE;
-            fIsFromD = kFALSE;
-            fIsFromBarionB = kFALSE;
-			fIsFromMesonB = kFALSE;
-			fIsFromBarionBD =kFALSE;
-			fIsFromMesonBD = kFALSE;
-            fIsFromPi0 = kFALSE;
-            fIsFromEta = kFALSE;
-            fIsFromGamma = kFALSE;
-            return kFALSE;
-        }
-        
-        if(fMCtrack->GetFirstMother()<0)
-        {
-            fIsHFE1 = kFALSE;
-            fIsHFE2 = kFALSE;
-            fIsNonHFE = kFALSE;
-            fIsFromD = kFALSE;
-            fIsFromBarionB = kFALSE;
-			fIsFromMesonB = kFALSE;
-			fIsFromBarionBD =kFALSE;
-			fIsFromMesonBD = kFALSE;
-            fIsFromPi0 = kFALSE;
-            fIsFromEta = kFALSE;
-            fIsFromGamma = kFALSE;
-            return kFALSE;
-        }
-        
-        fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
-        mpdg = TMath::Abs(fMCtrackMother->GetPdgCode());
-        
-        if(fMCtrackMother->GetFirstMother()<0)
-        {
-            gmpdg = 0;
-            ggmpdg = 0;
-            gggmpdg = 0;
-        }
-        else
-        {
-            fMCtrackGMother = fMCstack->Particle(fMCtrackMother->GetFirstMother());
-            gmpdg = TMath::Abs(fMCtrackGMother->GetPdgCode());
-            
-            if(fMCtrackGMother->GetFirstMother()<0)
-            {
-                ggmpdg = 0;
-                gggmpdg = 0;
-            }
-            else
-            {
-                fMCtrackGGMother = fMCstack->Particle(fMCtrackGMother->GetFirstMother());
-                ggmpdg = TMath::Abs(fMCtrackGGMother->GetPdgCode());
-                
-                if(fMCtrackGGMother->GetFirstMother()<0)
-                {
-                    gggmpdg = 0;
-                }
-                else
-                {
-                    fMCtrackGGGMother = fMCstack->Particle(fMCtrackGGMother->GetFirstMother());
-                    gggmpdg = TMath::Abs(fMCtrackGGGMother->GetPdgCode());
-                }
-            }
-        }
-    }
-    
+     
     ///Tag Electron Source
     if(mpdg==111 || mpdg==221 || mpdg==22)
     {
@@ -2367,6 +2671,287 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::PassCorrCuts(AliAODEvent *fAOD)
 	}
   
 }
+
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi1(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanGaus = 0.000109; 
+if (x >= 1.10 && x < 1.30) MeanGaus = 0.000086; 
+if (x >= 1.30 && x < 1.50) MeanGaus = 0.000126; 
+if (x >= 1.50 && x < 1.70) MeanGaus = 0.000155; 
+if (x >= 1.70 && x < 1.90) MeanGaus = 0.000173; 
+if (x >= 1.90 && x < 2.10) MeanGaus = 0.000231; 
+if (x >= 2.10 && x < 2.30) MeanGaus = 0.000254; 
+if (x >= 2.30 && x < 2.50) MeanGaus = 0.000261; 
+if (x >= 2.50 && x < 2.70) MeanGaus = 0.000310; 
+if (x >= 2.70 && x < 2.90) MeanGaus = 0.000329; 
+if (x >= 2.90 && x < 3.10) MeanGaus = 0.000383; 
+if (x >= 3.10 && x < 3.30) MeanGaus = 0.000344; 
+if (x >= 3.30 && x < 3.50) MeanGaus = 0.000367; 
+if (x >= 3.50 && x < 3.70) MeanGaus = 0.000382; 
+if (x >= 3.70 && x < 3.90) MeanGaus = 0.000365; 
+if (x >= 3.90 && x < 4.10) MeanGaus = 0.000374; 
+if (x >= 4.10 && x < 4.30) MeanGaus = 0.000394; 
+if (x >= 4.30 && x < 4.50) MeanGaus = 0.000420; 
+if (x >= 4.50 && x < 4.70) MeanGaus = 0.000411; 
+if (x >= 4.70 && x < 5.00) MeanGaus = 0.000426; 
+if (x >= 5.00 && x < 5.50) MeanGaus = 0.000371; 
+if (x >= 5.50 && x < 6.00) MeanGaus = 0.000495; 
+if (x >= 6.00 && x < 6.50) MeanGaus = 0.000400; 
+if (x >= 6.50 && x < 7.00) MeanGaus = 0.000422; 
+if (x >= 7.00 && x < 8.00) MeanGaus = 0.000379; 
+
+return MeanGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi2(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.001688; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.001688; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.001554; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.001371; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.001220; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.001140; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.001087; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.001022; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.000985; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000883; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000879; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000844; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000769; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000690; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000732; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000695; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000652; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000640; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000600; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000500; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000483; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000488; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000383; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000447; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000396;   
+
+return MeanGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi3(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.000696; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.000704; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.000601; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.000553; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.000481; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.000453; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.000442; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.000422; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.000403; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000317; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000334; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000247; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000291; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000297; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000216; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000255; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000140; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000185; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000150; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000205; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000106; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000172; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000188; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000045; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000096; 
+return MeanGaus;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi4(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float MeanGaus = 0;
+
+if (x >= 0.90 && x < 1.10) MeanGaus = -0.001975; 
+if (x >= 1.10 && x < 1.30) MeanGaus = -0.001952; 
+if (x >= 1.30 && x < 1.50) MeanGaus = -0.001801; 
+if (x >= 1.50 && x < 1.70) MeanGaus = -0.001590; 
+if (x >= 1.70 && x < 1.90) MeanGaus = -0.001448; 
+if (x >= 1.90 && x < 2.10) MeanGaus = -0.001278; 
+if (x >= 2.10 && x < 2.30) MeanGaus = -0.001204; 
+if (x >= 2.30 && x < 2.50) MeanGaus = -0.001104; 
+if (x >= 2.50 && x < 2.70) MeanGaus = -0.001036; 
+if (x >= 2.70 && x < 2.90) MeanGaus = -0.000929; 
+if (x >= 2.90 && x < 3.10) MeanGaus = -0.000852; 
+if (x >= 3.10 && x < 3.30) MeanGaus = -0.000819; 
+if (x >= 3.30 && x < 3.50) MeanGaus = -0.000760; 
+if (x >= 3.50 && x < 3.70) MeanGaus = -0.000689; 
+if (x >= 3.70 && x < 3.90) MeanGaus = -0.000655; 
+if (x >= 3.90 && x < 4.10) MeanGaus = -0.000534; 
+if (x >= 4.10 && x < 4.30) MeanGaus = -0.000568; 
+if (x >= 4.30 && x < 4.50) MeanGaus = -0.000500; 
+if (x >= 4.50 && x < 4.70) MeanGaus = -0.000443; 
+if (x >= 4.70 && x < 5.00) MeanGaus = -0.000412; 
+if (x >= 5.00 && x < 5.50) MeanGaus = -0.000367; 
+if (x >= 5.50 && x < 6.00) MeanGaus = -0.000361; 
+if (x >= 6.00 && x < 6.50) MeanGaus = -0.000272; 
+if (x >= 6.50 && x < 7.00) MeanGaus = -0.000374; 
+if (x >= 7.00 && x < 8.00) MeanGaus = -0.000201; 
+
+return MeanGaus;   
+}
+
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi1(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float sigmaG = 0;
+
+if (x >= 0.90 && x < 1.10) sigmaG = 0.003523; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.003597; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.003269; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.003005; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.002800; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.002715; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.002586; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.002534; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.002456; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.002425; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.002392; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.002368; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.002203; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.002209; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.002102; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.002033; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.002168; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.002091; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.001998; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.001942; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.001864; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.001783; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.001491; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.001569; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.001591;
+
+return sigmaG;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi2(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float sigmaG = 0;
+
+if (x >= 0.90 && x < 1.10) sigmaG = 0.004456; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.004643; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.004339; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.004005; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.003767; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.003611; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.003501; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.003461; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.003427; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.003316; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.003208; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.003076; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.003071; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.003018; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.002872; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.002829; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.002774; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.002707; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.002721; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.002718; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.002518; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.002492; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.002546; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.002241; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.001996; 
+
+return sigmaG;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi3(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float sigmaG = 0;
+
+if (x >= 0.90 && x < 1.10) sigmaG = 0.004687; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.004552; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.004081; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.003625; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.003370; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.003223; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.003101; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.003038; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.002978; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.002852; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.002712; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.002661; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.002737; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.002538; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.002447; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.002486; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.002483; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.002566; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.002467; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.002358; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.002283; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.002238; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.002261; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.002097; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.001937;   
+return sigmaG;   
+}
+
+Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAResolMC_phi4(Float_t x){
+    
+// Return the DCA resolution of the track (in MC) accordingly to its pT
+
+float sigmaG = 0;
+
+if (x >= 0.90 && x < 1.10) sigmaG = 0.004601; 
+if (x >= 1.10 && x < 1.30) sigmaG = 0.004646; 
+if (x >= 1.30 && x < 1.50) sigmaG = 0.004214; 
+if (x >= 1.50 && x < 1.70) sigmaG = 0.003825; 
+if (x >= 1.70 && x < 1.90) sigmaG = 0.003556; 
+if (x >= 1.90 && x < 2.10) sigmaG = 0.003325; 
+if (x >= 2.10 && x < 2.30) sigmaG = 0.003158; 
+if (x >= 2.30 && x < 2.50) sigmaG = 0.003140; 
+if (x >= 2.50 && x < 2.70) sigmaG = 0.003017; 
+if (x >= 2.70 && x < 2.90) sigmaG = 0.002917; 
+if (x >= 2.90 && x < 3.10) sigmaG = 0.002934; 
+if (x >= 3.10 && x < 3.30) sigmaG = 0.002827; 
+if (x >= 3.30 && x < 3.50) sigmaG = 0.002844; 
+if (x >= 3.50 && x < 3.70) sigmaG = 0.002636; 
+if (x >= 3.70 && x < 3.90) sigmaG = 0.002595; 
+if (x >= 3.90 && x < 4.10) sigmaG = 0.002581; 
+if (x >= 4.10 && x < 4.30) sigmaG = 0.002691; 
+if (x >= 4.30 && x < 4.50) sigmaG = 0.002451; 
+if (x >= 4.50 && x < 4.70) sigmaG = 0.002302; 
+if (x >= 4.70 && x < 5.00) sigmaG = 0.002417; 
+if (x >= 5.00 && x < 5.50) sigmaG = 0.002371; 
+if (x >= 5.50 && x < 6.00) sigmaG = 0.002210; 
+if (x >= 6.00 && x < 6.50) sigmaG = 0.002085; 
+if (x >= 6.50 && x < 7.00) sigmaG = 0.002134; 
+if (x >= 7.00 && x < 8.00) sigmaG = 0.002009; 
+
+return sigmaG;   
+}
+
 //=======================================================================
 
 

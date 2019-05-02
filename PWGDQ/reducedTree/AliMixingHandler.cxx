@@ -451,7 +451,8 @@ void AliMixingHandler::RunEventMixing(TClonesArray* leg1Pool, TClonesArray* leg2
               if(fMixingSetup==kMixResonanceLegs) fHistos->FillHistClass(histClassArr->At(ibit*3+1)->GetName(), values);
               if(fMixingSetup==kMixCorrelation) {
                 Int_t pairType = (reinterpret_cast<AliReducedPairInfo*>(ev1Leg1))->PairType();
-                fHistos->FillHistClass(histClassArr->At(ibit*3+pairType)->GetName(), values);
+                if (fMixLikeSign) fHistos->FillHistClass(histClassArr->At(ibit*3+pairType)->GetName(), values);
+                else              fHistos->FillHistClass(histClassArr->At(ibit)->GetName(), values);
               }
             }
           }  

@@ -21,68 +21,67 @@
 
 enum Method{kME,kRot,kLS,kSB};
 
-// input files and pt binning
-TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2210.root";
-TString suffix="3SigPID_Pt300_FidY_PilMV_EM1";
-TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train1169-1168.root";
-//TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train892-891.root";
-TString suffixMC="_3SigPID_Pt300_FidY_PilMV_EM1";
+TString configFileName="configfile4lowptanalysis.txt";
 
-// TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2104.root";
-// TString suffix="2SigPID_Pt300_FidY_PilSPD5_EM1";
-// //TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train870-869.root";
-// TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train868-867.root";
-// TString suffixMC="_Prompt_2SigPID_Pt300_FidY_PilSPD5_EM1";
+// input files and pt binning
+TString fileName="";
+TString suffix="";
+TString fileNameMC="";
+TString suffixMC="";
 
 TString meson="Dzero";
-const Int_t nPtBins=8;
-Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
-//Double_t binLims[nPtBins+1]={0.,0.5,1.,1.5,2.,2.5,3.,3.5,4.};
-Double_t sigmas[nPtBins]={0.006,0.008,0.009,0.010,0.011,0.012,0.013,0.013};
+const Int_t maxPtBins=30;
+Int_t nPtBins=8;
+Double_t binLims[maxPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
+
+// fit configuration
+Int_t rebin[maxPtBins]={4,6,7,8,9,10,10,12};
+Double_t minMass4Fit[maxPtBins]={1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72};
+Double_t maxMass4Fit[maxPtBins]={2.04,2.04,2.04,2.04,2.04,2.04,2.04,2.04};
+Int_t fixSigmaConf=1; // 0= all free, 1=all fixed, 2=use values per pt bin
+Bool_t fixSigma[maxPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+Double_t tuneSigmaOnData=-1.; // scaling factor for the Gaussian sigma, if -1. use MC out of the box
+Double_t sigmas[maxPtBins]={0.006,0.008,0.009,0.010,0.011,0.012,0.013,0.013};
+Int_t fixMeanConf=0; // 0= all free, 1=all fixed, 2=use values per pt bin
+Bool_t fixMean[maxPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+Double_t tuneMeanOnData=1.868; // if -1. use PDG value
+// objects and options related to side-band fit method
+Bool_t tryDirectFit=kTRUE;
+Double_t fitSBrangelow[maxPtBins]={1.74,1.74,1.74,1.72,1.72,1.72,1.72,1.72};
+Double_t fitSBrangeup[maxPtBins]={2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.04};
+Int_t nDegreeBackPol[maxPtBins]={4,4,4,2,2,2,2,2};             // degree of polynomial function describing the background
+
+Int_t optForNorm=1;
+Double_t rangeForNorm=0.05;
+Bool_t useEMwithLS=kTRUE;
+Int_t smoothLS=0;
+
+TString fitoption="E";
+Int_t typeb=2;
+// reflection option
+Bool_t correctForRefl=kTRUE;
+TString reflopt="2gaus";
+Double_t rOverSmodif=1;
+
+Int_t optBkgBinCount=1;
+Double_t nsigmaBinCounting=4.;      // defines the mass interval over which the signal is bin counted
 
 // outputfiles
 Bool_t saveCanvasAsRoot=kTRUE;
 Int_t saveCanvasAsEps=1;   //0=none, 1=main ones, 2=all
 
-// fit configuration
-Int_t rebin[nPtBins]={4,6,7,8,9,10,10,12};//8,9,10,12,12,12,12};
-Int_t fixSigmaConf=0; // 0= all free, 1=all fixed, 2=use values per pt bin
-Bool_t fixSigma[nPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
-Double_t tuneSigmaOnData=-1.00; // scaling factor for the Gaussian sigma, if -1. use MC out of the box
-Int_t fixMeanConf=0; // 0= all free, 1=all fixed, 2=use values per pt bin
-Bool_t fixMean[nPtBins]={kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
-Double_t minMass=1.72;
-Double_t maxMass=2.04;
-Int_t optForNorm=1;
-Double_t rangeForNorm=0.05;
-TString fitoption="E";
-Bool_t useEMwithLS=kTRUE;
-Int_t typeb=2;
-Double_t nsigmaBinCounting=4.;      // defines the mass interval over which the signal is bin counted
-Int_t optBkgBinCount=1;
-Double_t massD;
-
-Int_t smoothLS=0;
-
-// reflection option
-TString reflopt="2gaus";
-Bool_t correctForRefl=kTRUE;
-Double_t rOverSmodif=1;
-
-// objects and options related to side-band fit method
-Bool_t tryDirectFit=kTRUE;
-
-Int_t nparback=0;
-Double_t fitrangelow[nPtBins]={1.74,1.74,1.74,1.72,1.72,1.72,1.72,1.72};
-Double_t fitrangeup[nPtBins]={2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.04};
-Int_t nDegreeBackPol[nPtBins]={4,4,4,2,2,2,2,2};             // degree of polynomial function describing the background
 
 TH1D* hMCReflPtBin;
 TH1D* hMCSigPtBin;
+Double_t minMass=1.72;
+Double_t maxMass=2.04;
+Double_t massD;
 
 void WriteFitInfo(AliHFInvMassFitter *fitter, TH1D* histo);
 void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPtBin);
 TH1F* FitMCInvMassSpectra(TList* lMC);
+Bool_t ReadConfig(TString configName);
+void PrintConfig();
 
 AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit){
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
@@ -389,7 +388,21 @@ Double_t GetBackgroundNormalizationFactor(TH1D* hRatio, Int_t reb=1){
 
 void ProjectCombinHFAndFit(){
 
-  
+  if(configFileName.Length()>0){
+    if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",configFileName.Data()))==0){
+      printf("Read configuration from file %s\n",configFileName.Data());
+      Bool_t readOK=ReadConfig(configFileName);
+      if(!readOK){
+	printf("Error in reading configuration file\n");
+	return;
+      }
+    }
+  }
+  printf("***************************************************\n");
+  printf("*** This is the configuration that will be used ***\n");
+  PrintConfig();
+  printf("***                                             ***\n");
+  printf("***************************************************\n");
   
   TString dirName=Form("PWG3_D2H_InvMass%sLowPt%s",meson.Data(),suffix.Data());
   TString lstName=Form("coutput%s%s",meson.Data(),suffix.Data());
@@ -406,8 +419,12 @@ void ProjectCombinHFAndFit(){
   else if(fileNameMC.Contains("_G4")) suffix.Append("_Geant4MC");
   if(smoothLS!=0) suffix.Append(Form("_smoothLS%d",smoothLS));
 
-  if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
-  else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  if(tuneMeanOnData<0){
+    if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
+    else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
+  }else{
+    massD=tuneMeanOnData;
+  }
 
   Int_t nBinsWithFixSig=0;
   Int_t nBinsWithFixMean=0;
@@ -424,11 +441,27 @@ void ProjectCombinHFAndFit(){
     }
   }
 
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",fileName.Data())) !=0){
+    printf("File %s with raw data results does not exist -> exiting\n",fileName.Data());
+    return;
+  }
   TFile* fil=new TFile(fileName.Data());
+  if(!fil){
+    printf("File %s with raw data not opened -> exiting\n",fileName.Data());
+    return;
+  }
   TDirectoryFile* df=(TDirectoryFile*)fil->Get(dirName.Data());
-  
+  if(!df){
+    printf("TDirectoryFile %s not found in TFile\n",dirName.Data());
+    fil->ls();
+    return;
+  }
   
   AliNormalizationCounter *nC=(AliNormalizationCounter*)df->Get("NormalizationCounter");
+  if(!nC){
+    printf("AliNormalizationCounter object missing -> exiting\n");
+    return;
+  }
   TH1F* hnEv=new TH1F("hEvForNorm","events for normalization",1,0,1);
   printf("Number of Ev. for norm=%d\n",(Int_t)nC->GetNEventsForNorm());
   hnEv->SetBinContent(1,nC->GetNEventsForNorm());
@@ -438,7 +471,6 @@ void ProjectCombinHFAndFit(){
   TH1F* hBkgFitFuncSB=new TH1F("hBkgFitFuncSB","",nPtBins,binLims);
 
   TList* l=(TList*)df->Get(lstName.Data());
-  l->ls();
 
   TH3F* h3d=(TH3F*)l->FindObject("hMassVsPtVsY");
   TH3F* h3dr=(TH3F*)l->FindObject("hMassVsPtVsYRot");
@@ -453,9 +485,18 @@ void ProjectCombinHFAndFit(){
   TH3F* h3drefl=0x0;
   TH3F* h3dmcsig=0x0;
   TH1F* hSigmaMC=0x0;
+  if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",fileNameMC.Data())) !=0){
+    printf("File %s with MC results does not exist -> exiting\n",fileNameMC.Data());
+    return;
+  }  
   TFile* filMC=new TFile(fileNameMC.Data());
   if(filMC && filMC->IsOpen()){
     TDirectoryFile* dfMC=(TDirectoryFile*)filMC->Get(dirNameMC.Data());
+    if(!dfMC){
+      printf("TDirectoryFile %s not found in TFile for MC\n",dirNameMC.Data());
+      filMC->ls();
+      return;
+    }
     TList* lMC=(TList*)dfMC->Get(lstNameMC.Data());
     hSigmaMC=FitMCInvMassSpectra(lMC);
     if(nBinsWithFixSig>0 && !hSigmaMC){
@@ -628,6 +669,8 @@ void ProjectCombinHFAndFit(){
 
   for(Int_t iPtBin=0; iPtBin<nPtBins; iPtBin++){
 
+    minMass=minMass4Fit[iPtBin];
+    maxMass=maxMass4Fit[iPtBin];
     Int_t bin1=h3d->GetYaxis()->FindBin(binLims[iPtBin]);
     Int_t bin2=h3d->GetYaxis()->FindBin(binLims[iPtBin+1]-0.0001);
     printf("Bin %d   Pt range=%f %f\n",iPtBin,h3d->GetYaxis()->GetBinLowEdge(bin1),h3d->GetYaxis()->GetBinUpEdge(bin2));
@@ -812,7 +855,7 @@ void ProjectCombinHFAndFit(){
     if(tryDirectFit){
       TH1D *hMassDirectFit=(TH1D*)hMassPtBin->Clone(Form("hMassDirectFit_bin%d",iPtBin));
       hMassDirectFit=AliVertexingHFUtils::RebinHisto(hMassDirectFit,rebin[iPtBin]);
-      fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitrangelow[iPtBin],fitrangeup[iPtBin]);
+      fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitSBrangelow[iPtBin],fitSBrangeup[iPtBin]);
       out4=fitterSB[iPtBin]->MassFitter(0);//DirectFit(hMassDirectFit,iPtBin,hRawYieldSB);
 
       Double_t background,ebkg;
@@ -864,7 +907,7 @@ void ProjectCombinHFAndFit(){
 	Double_t ymax=1;
 	for(Int_t ibs=1; ibs<hsubTemp->GetNbinsX(); ibs++){
 	  Double_t binc=hsubTemp->GetBinCenter(ibs);
-	  if(binc>fitrangelow[iPtBin] && binc<fitrangeup[iPtBin]){
+	  if(binc>fitSBrangelow[iPtBin] && binc<fitSBrangeup[iPtBin]){
 	    Double_t yl=hsubTemp->GetBinContent(ibs)-hsubTemp->GetBinError(ibs);
 	    Double_t yu=hsubTemp->GetBinContent(ibs)+hsubTemp->GetBinError(ibs);
 	    if(yl<ymin) ymin=yl;
@@ -875,7 +918,7 @@ void ProjectCombinHFAndFit(){
 	else ymax*=0.8;
 	if(ymin<0) ymin*=1.2;
 	else ymin*=0.8;
-	hsubTemp->GetXaxis()->SetRangeUser(fitrangelow[iPtBin],fitrangeup[iPtBin]);
+	hsubTemp->GetXaxis()->SetRangeUser(fitSBrangelow[iPtBin],fitSBrangeup[iPtBin]);
 	hsubTemp->SetMinimum(ymin);
 	hsubTemp->SetMaximum(ymax);
 	hsubTemp->SetMarkerStyle(20);
@@ -883,7 +926,7 @@ void ProjectCombinHFAndFit(){
 	hsubTemp->DrawCopy();
 	hsubTempAllRange->DrawCopy("same");
 	hsubTemp->DrawCopy("same");
-	fpeak->SetRange(fitrangelow[iPtBin],fitrangeup[iPtBin]);
+	fpeak->SetRange(fitSBrangelow[iPtBin],fitSBrangeup[iPtBin]);
 	fpeak->SetParameter(0,funcAll->GetParameter(nDegreeBackPol[iPtBin]+1));
 	fpeak->SetParameter(1,funcAll->GetParameter(nDegreeBackPol[iPtBin]+2));
 	fpeak->SetParameter(2,funcAll->GetParameter(nDegreeBackPol[iPtBin]+3));
@@ -1597,4 +1640,280 @@ TH1F* FitMCInvMassSpectra(TList* lMC){
     hSigmaMC->SetBinError(iPtBin+1,errMCsigma);
   }
   return hSigmaMC;
+}
+void PrintConfig(){
+  printf("Meson: %s\n",meson.Data());
+  printf("Data file: %s\n", fileName.Data());
+  printf("Suffix Data: %s\n", suffix.Data());
+  printf("MC file: %s\n", fileNameMC.Data());
+  printf("Suffix MC: %s\n", suffixMC.Data());
+  printf("Number of pt bins = %d\n",nPtBins);
+  for(Int_t j=0; j<nPtBins+1; j++) printf(" %.1f",binLims[j]);
+  printf("\n");
+  for(Int_t j=0; j<nPtBins; j++) printf(" %d",rebin[j]);
+  printf("\n");
+  for(Int_t j=0; j<nPtBins; j++) printf(" %.2f",minMass4Fit[j]);
+  printf("\n");
+  for(Int_t j=0; j<nPtBins; j++) printf(" %.2f",maxMass4Fit[j]);
+  printf("\n");
+  printf("Gaussian sigma option: %d (tune on data = %f)\n",fixSigmaConf,tuneSigmaOnData);
+  for(Int_t j=0; j<nPtBins; j++) printf(" %d",fixSigma[j]);
+  printf("\n");
+  for(Int_t j=0; j<nPtBins; j++) printf(" %.3f",sigmas[j]);
+  printf("\n");
+  printf("Gaussian mean option: %d (tune on data = %f)\n",fixMeanConf,tuneMeanOnData);
+  for(Int_t j=0; j<nPtBins; j++) printf(" %d",fixMean[j]);
+  printf("\n");
+  printf("Background options: Norm=%d  NormRange=%.2f  UseLSinEvMex=%d  SmoothLS=%d\n",optForNorm,rangeForNorm,useEMwithLS,smoothLS);
+  printf("Direct fit: %d\n",tryDirectFit);
+  for(Int_t j=0; j<nPtBins; j++) printf(" %d",nDegreeBackPol[j]);
+  printf("\n");
+  for(Int_t j=0; j<nPtBins; j++) printf(" %.2f",fitSBrangelow[j]);
+  printf("\n");
+  for(Int_t j=0; j<nPtBins; j++) printf(" %.2f",fitSBrangeup[j]);
+  printf("\n");
+  printf("Fit Configuration: Option=%s  Background Func=%d\n",fitoption.Data(),typeb);
+  printf("Reflections: Use=%d  Func=%s  rOverSmodif=%f\n",correctForRefl,reflopt.Data(),rOverSmodif);
+  printf("BinCounting: Option=%d  nsigma=%.2f\n",optBkgBinCount,nsigmaBinCounting);
+}
+
+Bool_t ReadConfig(TString configName){
+  FILE* confFil=fopen(configName.Data(),"r");
+  char line[50];
+  char name[200];
+  int n;
+  float x;
+  bool readok;
+  while(!feof(confFil)){
+    readok=fscanf(confFil,"%s:",line);
+    if(strstr(line,"DataFile")){
+      readok=fscanf(confFil,"%s",name);
+      fileName=name;
+    }
+    else if(strstr(line,"SuffixData")){
+      readok=fscanf(confFil,"%s",name);
+      suffix=name;
+    }
+    else if(strstr(line,"MCFile")){
+      readok=fscanf(confFil,"%s",name);
+      fileNameMC=name;
+    }
+    else if(strstr(line,"SuffixMC")){
+      readok=fscanf(confFil,"%s",name);
+      suffixMC=name;
+    }
+    else if(strstr(line,"Meson")){
+      readok=fscanf(confFil,"%s",name);
+      meson=name;
+    }
+    else if(strstr(line,"NumOfPtBins")){
+      readok=fscanf(confFil,"%d",&n);
+      nPtBins=n;
+    }
+    else if(strstr(line,"BinLimits")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	readok=fscanf(confFil,"%f,",&x);
+	binLims[j]=x;
+	if(j>0 && binLims[j]<=binLims[j-1]){
+	  printf("ERROR in array of pt bin limits\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil,"%f",&x);
+      binLims[nPtBins]=x;
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"Rebin")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%d,",&n);
+	else readok=fscanf(confFil,"%d",&n);
+	rebin[j]=n;
+	if(rebin[j]<=0 || rebin[j]>20){
+	  printf("ERROR in array of rebin values\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"MinFit")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%f,",&x);
+	else readok=fscanf(confFil,"%f",&x);
+	minMass4Fit[j]=x;
+	if(minMass4Fit[j]<1.5 || minMass4Fit[j]>1.86){
+	  printf("ERROR in array of min mass values\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"MaxFit")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%f,",&x);
+	else readok=fscanf(confFil,"%f",&x);
+	maxMass4Fit[j]=x;
+	if(maxMass4Fit[j]<1.86 || maxMass4Fit[j]>2.2){
+	  printf("ERROR in array of max mass values\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"FixSigmaConf")){
+      readok=fscanf(confFil,"%d",&n);
+      fixSigmaConf=n;
+    }
+    else if(strstr(line,"FixSigmaPerBin")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%d,",&n);
+	else readok=fscanf(confFil,"%d",&n);
+	fixSigma[j]=n;
+	if(n<0 || n>1){
+	  printf("ERROR in array of fix-sigma settings\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"TuneSigmaOnData")){
+      readok=fscanf(confFil,"%f",&x);
+      tuneSigmaOnData=x;
+    }
+    else if(strstr(line,"SigmaManual")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%f,",&x);
+	else readok=fscanf(confFil,"%f",&x);
+	sigmas[j]=x;
+	if(sigmas[j]<0.001 || sigmas[j]>0.04){
+	  printf("ERROR in array of sigma values\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"FixMeanConf")){
+      readok=fscanf(confFil,"%d",&n);
+      fixMeanConf=n;
+    }
+    else if(strstr(line,"FixMeanPerBin")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%d,",&n);
+	else readok=fscanf(confFil,"%d",&n);
+	fixMean[j]=n;
+	if(n<0 || n>1){
+	  printf("ERROR in array of fix-sigma settings\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"TuneMeanOnData")){
+      readok=fscanf(confFil,"%f",&x);
+      tuneMeanOnData=x;
+    }
+    else if(strstr(line,"NormalizationOption")){
+      readok=fscanf(confFil,"%d",&n);
+      optForNorm=n;
+    }
+    else if(strstr(line,"RangeForNormalization")){
+      readok=fscanf(confFil,"%f",&x);
+      rangeForNorm=x;
+    }
+    else if(strstr(line,"UseEvMixWithLS")){
+      readok=fscanf(confFil,"%d",&n);
+      if(n<0 || n>1){
+	printf("ERROR in UseEvMixWithLS setting\n");
+	return kFALSE;
+      }
+      useEMwithLS=n;
+    }
+    else if(strstr(line,"SmoothLS")){
+      readok=fscanf(confFil,"%d",&n);
+      smoothLS=n;
+    }
+    else if(strstr(line,"TryDirectFit")){
+      readok=fscanf(confFil,"%d",&n);
+      if(n<0 || n>1){
+	printf("ERROR in TryDirectFit setting\n");
+	return kFALSE;
+      }
+      tryDirectFit=n;
+    }
+    else if(strstr(line,"MinSBFit")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%f,",&x);
+	else readok=fscanf(confFil,"%f",&x);
+	fitSBrangelow[j]=x;
+	if(fitSBrangelow[j]<1.5 || fitSBrangelow[j]>1.86){
+	  printf("ERROR in array of min mass SB values\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"MaxSBFit")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%f,",&x);
+	else readok=fscanf(confFil,"%f",&x);
+	fitSBrangeup[j]=x;
+	if(fitSBrangeup[j]<1.86 || fitSBrangeup[j]>2.2){
+	  printf("ERROR in array of max mass SB values\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"PolDegreeSB")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	if(j<nPtBins-1) readok=fscanf(confFil,"%d,",&n);
+	else readok=fscanf(confFil,"%d",&n);
+	nDegreeBackPol[j]=n;
+	if(nDegreeBackPol[j]<=0 || nDegreeBackPol[j]>10){
+	  printf("ERROR in array of polynomial degree values\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil," ] ");
+    }
+    else if(strstr(line,"FitOption")){
+      readok=fscanf(confFil,"%s",name);
+      fitoption=name;
+    }
+    else if(strstr(line,"BackgroundFunction")){
+      readok=fscanf(confFil,"%d",&n);
+      typeb=n;
+    }
+    else if(strstr(line,"CorrectForReflections")){
+      readok=fscanf(confFil,"%d",&n);
+      correctForRefl=n;
+    }
+    else if(strstr(line,"ReflectionOption")){
+      readok=fscanf(confFil,"%s",name);
+      reflopt=name;
+    }
+    else if(strstr(line,"ReflOverSignalModif")){
+      readok=fscanf(confFil,"%f",&x);
+      rOverSmodif=x;
+    }
+    else if(strstr(line,"BackgroundFuncOptionForBinCount")){
+      readok=fscanf(confFil,"%d",&n);
+      optBkgBinCount=n;
+    }
+    else if(strstr(line,"NumOfSigmaForBinCount")){
+      readok=fscanf(confFil,"%f",&x);
+      nsigmaBinCounting=x;
+    }
+   
+  }
+  return kTRUE;
 }

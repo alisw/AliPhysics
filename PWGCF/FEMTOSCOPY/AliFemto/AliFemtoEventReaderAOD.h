@@ -13,13 +13,13 @@
 #include "AliFemtoEnumeration.h"
 
 #include <string>
-#include <vector>
+
 #include "TTree.h"
 #include "TChain.h"
 #include "TBits.h"
 #include "THnSparse.h"
+
 #include "AliAODEvent.h"
-#include <list>
 //#include "AliPWG2AODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliFemtoV0.h"
@@ -92,7 +92,9 @@ public:
   void SetShiftedPositions(const AliAODTrack *track ,const Float_t bfield, Float_t posShifted[3], const Double_t radius=1.25);
 
   void SetUseAliEventCuts(Bool_t useAliEventCuts);
-  
+  void SetReadFullMCData(Bool_t should_read=true);
+  bool GetReadFullMCData() const;
+
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);
@@ -108,7 +110,7 @@ public:
   void Set1DCorrectionsTritonsMinus(TH1D *h1);
   void Set1DCorrectionsHe3sMinus(TH1D *h1);
   void Set1DCorrectionsAlphasMinus(TH1D *h1);
-   
+
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
@@ -122,7 +124,7 @@ public:
   void Set4DCorrectionsAll(THnSparse *h1);
   void Set4DCorrectionsLambdas(THnSparse *h1);
   void Set4DCorrectionsLambdasMinus(THnSparse *h1);
-  
+
   //Special MC analysis for pi,K,p,e slected by PDG code -->
   void SetPionAnalysis(Bool_t aSetPionAna);
   void SetKaonAnalysis(Bool_t aSetKaonAna);
@@ -133,8 +135,6 @@ public:
   void SetHe3Analysis(Bool_t aSetHe3Ana);
   void SetAlphaAnalysis(Bool_t aSetAlphaAna);
   //Special MC analysis for pi,K,p,e slected by PDG code <--
-  
-  
 
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
@@ -166,6 +166,9 @@ protected:
   AliEventCuts     *fEventCuts;
   Bool_t           fUseAliEventCuts;
 
+  /// Read generated particle info of "low quality" MC tracks
+  /// (i.e. tracks with negative labels)
+  Bool_t           fReadFullMCData;
 
 private:
 
@@ -219,19 +222,19 @@ private:
   THnSparse *f4DcorrectionsAll;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsLambdas;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
-  
+
   //Special MC analysis for pi,K,p,e slected by PDG code -->
   Bool_t fIsKaonAnalysis; // switch for Kaon analysis
   Bool_t fIsProtonAnalysis; // switch for Proton analysis
   Bool_t fIsPionAnalysis; // switch for Pion analysis
   Bool_t fIsElectronAnalysis; // e+e- are taken (for gamma cut tuning)
   //Special MC analysis for pi,K,p,e slected by PDG code <--
-  
+
   //
-  Bool_t fIsDeuteronAnalysis; 
-  Bool_t fIsTritonAnalysis; //
-  Bool_t fIsHe3Analysis; // 
-  Bool_t fIsAlphaAnalysis; // 
+  Bool_t fIsDeuteronAnalysis;
+  Bool_t fIsTritonAnalysis;
+  Bool_t fIsHe3Analysis;
+  Bool_t fIsAlphaAnalysis;
   //
 
 
@@ -242,5 +245,12 @@ private:
 #endif
 
 };
+
+
+inline void AliFemtoEventReaderAOD::SetReadFullMCData(bool read)
+  { fReadFullMCData = read; }
+
+inline bool AliFemtoEventReaderAOD::GetReadFullMCData() const
+  { return fReadFullMCData; }
 
 #endif

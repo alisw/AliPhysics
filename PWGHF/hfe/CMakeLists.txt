@@ -117,6 +117,9 @@ set(SRCS
   AliAnalysisTaskTPCCalBeauty.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
   AliAnalysisTaskHFEIPDistribution.cxx
+  AliAnalysisTaskHFEBeautyMCTemplates.cxx
+  AliAnalysisTaskHFEBeautyMCTemplatesRun2.cxx
+  AliAnalysisTaskHFEIPCorrection.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
   AliAnalysisTaskHFEtemplate.cxx
@@ -126,10 +129,13 @@ set(SRCS
   AliAnalysisTaskHaHFECorrel.cxx
   AliAnalysisHFETPCTOFNew.cxx
   AliAnalysisHFETPCTOFBeauty.cxx
-  AliAnalysisHFEppTPCTOFBeauty.cxx	
+  AliAnalysisHFEppTPCTOFBeauty.cxx
+  AliAnalysisHFEppTPCTOFBeauty5TeVNew.cxx	
   AliAnalysisTaskCaloHFEpPbRun2.cxx
   AliAnalysisTaskHFEmultTPCTOF.cxx
   AliAnalysisTaskCaloHFEpp.cxx
+  AliAnalysisTaskHFEBESpectraEMC.cxx
+  AliAnalysisTaskHFETPCTOFMultiplicity.cxx
   )
 
 # Headers from sources

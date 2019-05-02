@@ -374,7 +374,8 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
     AliInfoStream() << "Using user EMCal corrections configuration located at \"" << fUserConfigurationFilename << "\"\n";
   }
   else {
-    AliInfoStream() << "User file at \"" << fUserConfigurationFilename << "\" does not exist! All settings will be from the default file!\n";
+    // For any tasks to be enabled, we must have a user config. So we make a missing user config a fatal.
+    AliFatal(TString::Format("User config file at \"%s\" does not exist! Please check the user config filename!", fUserConfigurationFilename.c_str()));
   }
 
   // Initialize

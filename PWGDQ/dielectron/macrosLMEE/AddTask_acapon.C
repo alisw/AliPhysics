@@ -1,5 +1,4 @@
-//Names should contain a comma seperated list of cut settings
-//Current options: all, electrons, TTreeCuts, V0_TPCcorr, V0_ITScorr
+
 AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 TString names          = "kCutSet1",
                                 Bool_t SDDstatus       = kFALSE,
@@ -15,46 +14,47 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Bool_t useTPCcorr      = kTRUE,
                                 Bool_t useTOFcorr      = kTRUE,
                                 Bool_t plots3D         = kFALSE,
+                                Bool_t useRun1binning  = kFALSE,
                                 Bool_t getFromAlien    = kFALSE)
 {
   
-		TObjArray *arrNames = names.Tokenize(";");
-		Int_t nDie = arrNames->GetEntries();
+    TObjArray *arrNames = names.Tokenize(";");
+    Int_t nDie = arrNames->GetEntries();
     Printf("Number of implemented cuts: %i", nDie);
-		std::cout << "Output file name: " << outputFileName << std::endl;
-		std::cout << "Cut set         : " << names          << std::endl;
-		std::cout << "Use SDD         : " << SDDstatus      << std::endl;
-		std::cout << "Monte Carlo     : " << hasMC          << std::endl;
-		std::cout << "Wagon number    : " << wagonNum       << std::endl;
-		std::cout << "Pairing         : " << doPairing      << std::endl;
-		std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
-		std::cout << "Event mixing    : " << doMixing       << std::endl;
-		std::cout << "Track plots     : " << trackVarPlots  << std::endl;
-		std::cout << "Which det plots : " << whichDetPlots  << std::endl;
-		std::cout << "v0 plots        : " << v0plots        << std::endl;
-		std::cout << "Use ITScorr     : " << useITScorr     << std::endl;
-		std::cout << "Use TPCcorr     : " << useTPCcorr     << std::endl;
-		std::cout << "Use TOFcorr     : " << useTOFcorr     << std::endl;
-		std::cout << "3D plots        : " << plots3D        << std::endl;
+    std::cout << "Output file name: " << outputFileName << std::endl;
+    std::cout << "Cut set         : " << names          << std::endl;
+    std::cout << "Use SDD         : " << SDDstatus      << std::endl;
+    std::cout << "Monte Carlo     : " << hasMC          << std::endl;
+    std::cout << "Wagon number    : " << wagonNum       << std::endl;
+    std::cout << "Pairing         : " << doPairing      << std::endl;
+    std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
+    std::cout << "Event mixing    : " << doMixing       << std::endl;
+    std::cout << "Track plots     : " << trackVarPlots  << std::endl;
+    std::cout << "Which det plots : " << whichDetPlots  << std::endl;
+    std::cout << "v0 plots        : " << v0plots        << std::endl;
+    std::cout << "Use ITScorr     : " << useITScorr     << std::endl;
+    std::cout << "Use TPCcorr     : " << useTPCcorr     << std::endl;
+    std::cout << "Use TOFcorr     : " << useTOFcorr     << std::endl;
+    std::cout << "3D plots        : " << plots3D        << std::endl;
+    std::cout << "Using Run1 bins : " << useRun1binning << std::endl;
 
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if(!mgr){
-			Error("AddTask_acapon", "No analysis manager found.");
-			return 0;
+      Error("AddTask_acapon", "No analysis manager found.");
+      return 0;
     }
 
-    //TString configBasePath("/home/aaron/analyses/LHC16q/eeFrameworkQA/"); //Local
-    TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
+    TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
     TString configFile("Config_acapon.C");
     TString configLMEECutLib("LMEECutLib_acapon.C");
 
-    //Load updated macros from private ALIEN path
+    // Load updated macros from private ALIEN path
     TString myConfig ="alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/Config_acapon.C .";
     TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C ."; 
     if(getFromAlien && (!gSystem->Exec(myConfig)) && (!gSystem->Exec(myCutLib))){
-			std::cout << "Copy config from Alien" << std::endl;
-			configBasePath=Form("%s/",gSystem->pwd());
+      std::cout << "Copy config from Alien" << std::endl;
+      configBasePath=Form("%s/",gSystem->pwd());
     }
 
     TString configFilePath(configBasePath+configFile);
@@ -62,34 +62,34 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
 
     //load dielectron configuration files
     if(!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
-			gROOT->LoadMacro(configLMEECutLibPath.Data());
+      gROOT->LoadMacro(configLMEECutLibPath.Data());
     }
     if(!gROOT->GetListOfGlobalFunctions()->FindObject(configFile.Data())){
-			gROOT->LoadMacro(configFilePath.Data());
+      gROOT->LoadMacro(configFilePath.Data());
     }
 
-    // cut lib
+    // Cut lib
     LMEECutLib* cutlib = new LMEECutLib(SDDstatus);
 
-    //AOD Usage currently tested with Input handler
+    // AOD Usage currently tested with Input handler
     if(mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
-			::Info("AddTask_acapon", "no dedicated AOD configuration"); 
+      ::Info("AddTask_acapon", "no dedicated AOD configuration"); 
     }
     else if(mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class()){
-			::Info("AddTask_acapon","switching on ESD specific code");
-			//bESDANA = kTRUE;
+      ::Info("AddTask_acapon","switching on ESD specific code");
+      //bESDANA = kTRUE;
     }
 
     //create task and add it to the manager
     AliAnalysisTaskMultiDielectron* task = new AliAnalysisTaskMultiDielectron(Form("DielectronTask%d", wagonNum));
-		if(!task){
-			::Error("AddTask_acapon", "MultiDielectron trask not created");
-			return 0x0;
-		}
+    if(!task){
+      ::Error("AddTask_acapon", "MultiDielectron trask not created");
+      return 0x0;
+    }
 
-		// Add event filter (the same for all cut sets)
+    // Add event filter (the same for all cut sets)
     Int_t triggerNames = (AliVEvent::kINT7);
-    task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies));
+    task->SetEventFilter(cutlib->GetEventCuts());
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
     //task->SetRejectPileup(); //Rejection applied via train dependancy
@@ -98,21 +98,21 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     mgr->AddTask(task);
     // Add dielectron analysis with different cuts to the task
     for(Int_t i = 0; i < nDie; ++i){ 
-			TString dielTaskName(arrNames->At(i)->GetName());
-			AliDielectron* diel_low = Config_acapon(dielTaskName, hasMC, SDDstatus,
+      TString dielTaskName(arrNames->At(i)->GetName());
+      AliDielectron* diel_low = Config_acapon(dielTaskName, hasMC, SDDstatus,
                                               doPairing, applyPairCuts, doMixing, 
-																							trackVarPlots, whichDetPlots, v0plots,
-																							useITScorr, useTPCcorr, useTOFcorr,
-																							plots3D);
-			if(!diel_low){
-				continue;
-			}
-			task->AddDielectron(diel_low);
-			printf("successfully added AliDielectron: %s\n",diel_low->GetName());
+                                              trackVarPlots, whichDetPlots, v0plots,
+                                              useITScorr, useTPCcorr, useTOFcorr,
+                                              plots3D, useRun1binning);
+      if(!diel_low){
+        continue;
+      }
+      task->AddDielectron(diel_low);
+      printf("successfully added AliDielectron: %s\n",diel_low->GetName());
     }// End cut settings initialisation loop
 
 
-    //create output container
+    // Create output container
     AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer(Form("acapon_tree_%d",wagonNum),
                          TTree::Class(),

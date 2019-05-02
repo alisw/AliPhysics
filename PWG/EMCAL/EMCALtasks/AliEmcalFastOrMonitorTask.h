@@ -27,7 +27,7 @@
 #ifndef ALIEMCALFASTORMONITORTASK_H
 #define ALIEMCALFASTORMONITORTASK_H
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskEmcal.h"
 #include "AliEMCALTriggerDataGrid.h"
 #include <TString.h>
 
@@ -70,7 +70,7 @@ namespace EMCAL {
  *  AddEmcalFastOrMonitorTask();
  *  ~~~
  */
-class AliEmcalFastOrMonitorTask : public AliAnalysisTaskSE {
+class AliEmcalFastOrMonitorTask : public AliAnalysisTaskEmcal {
 public:
 
   /**
@@ -134,6 +134,13 @@ protected:
   virtual void UserCreateOutputObjects();
 
   /**
+   * @brief Perform event selection
+   * 
+   * Overwriting default event selection from AliAnalysisTaskEmcal
+   */
+  virtual bool IsEventSelected();
+
+  /**
    * @brief Event loop
    *
    * Processing of events: Filling the monitoring histograms for each FastOR:
@@ -144,7 +151,7 @@ protected:
    * - Position in the col-row space
    * @param
    */
-  virtual void UserExec(Option_t *);
+  virtual bool Run();
 
   /**
    * @brief Initialization of the task
@@ -154,7 +161,7 @@ protected:
    * within the event loop. At that step some basic event information is already
    * available,
    */
-  virtual void ExecOnce();
+  virtual void UserExecOnce();
 
   /**
    * @brief Run-dependent setup of the task
@@ -186,8 +193,7 @@ protected:
    */
   void LoadEventCellData();
 
-  THistManager                            *fHistos;           //!<! Histogram handler
-  AliEMCALGeometry                        *fGeom;             //!<! EMCAL Geometry object
+  THistManager                            *fHistosQA;           //!<! Histogram handler
   Bool_t                                  fLocalInitialized;  ///< Switch whether task is initialized (for ExecOnce)
   Int_t                                   fOldRun;            ///< Old Run (for RunChanged())
 

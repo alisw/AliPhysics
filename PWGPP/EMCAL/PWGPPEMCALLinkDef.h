@@ -11,6 +11,8 @@
 #pragma link C++ class AliAnalysisTaskEMCALPi0CalibSelection+;
 #pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEMCALTimeCalib+;
+#pragma link C++ struct AliAnalysisTaskEMCALTimeCalib::PARInfo+;
+#pragma link C++ class std::vector<AliAnalysisTaskEMCALTimeCalib::PARInfo>+;
 #pragma link C++ class BadChannelAna+;
 #pragma link C++ class ElectronForAlignment+;
 

@@ -39,6 +39,7 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 		task->SetJetContPartName(njetsPart);
 		task->SetJetContTrueName(njetsTrue);
 	}
+	if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) task->SetJetContPartName(njetsPart);
 	task->SetJetShapeType(jetShapeType);
 	task->SetTTLowRef(kTTminr);
 	task->SetTTUpRef(kTTmaxr);
@@ -63,6 +64,15 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
     trackContTrueLevel = task->AddTrackContainer("tracks");
     trackContPartLevel = task->AddMCParticleContainer("mcparticles");
 	}
+	else if (jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr) {
+		trackCont = task->AddTrackContainer("tracks");
+    trackContTrueLevel = task->AddTrackContainer("tracks");
+	}
+	else if (jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) {
+		trackCont = task->AddTrackContainer("tracks");
+    trackContPartLevel = task->AddMCParticleContainer("mcparticles");
+	}
+
   task->AddClusterContainer(clusName);
 
   // connect jet container 
@@ -71,7 +81,8 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
   AliJetContainer* jetContTrue = 0x0;
   AliJetContainer* jetContPart = 0x0;
 	if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kData ||
-			jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCTrue) { 
+			jetShapeType == AliAnalysisTaskJetCoreEmcal::kMCTrue ||
+			jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPartCorr) { 
 
 		jetContBase = task->AddJetContainer(njetsBase,typeStr,R);
 		jetContBase->SetRhoName(nRho);
@@ -96,6 +107,21 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 		jetContPart->SetIsParticleLevel(kTRUE);
 		jetContPart->SetPercAreaCut(0.0);
 	}
+
+	if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) {
+
+		jetContBase = task->AddJetContainer(njetsBase,typeStr,R);
+		jetContBase->SetRhoName(nRho);
+		jetContBase->ConnectParticleContainer(trackCont);
+		jetContBase->SetPercAreaCut(0.0);
+
+		jetContPart = task->AddJetContainer(njetsPart,typeStr,R);
+		jetContPart->SetRhoName(nRho);
+		jetContPart->ConnectParticleContainer(trackContPartLevel);
+		jetContPart->SetIsParticleLevel(kTRUE);
+		jetContPart->SetPercAreaCut(0.0);
+	}
+
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -122,11 +148,13 @@ AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 			Form("%s", AliAnalysisManager::GetCommonFileName()));
 	mgr->ConnectInput  (task, 0,  cinput1 );
 	mgr->ConnectOutput (task, 1, coutput1 );
-  if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
+  if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart || jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetPart) {
     AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2.Data(),
         TTree::Class(),AliAnalysisManager::kOutputContainer,
         Form("%s", AliAnalysisManager::GetCommonFileName()));
     mgr->ConnectOutput (task, 2, coutput2 );
+  }
+  if(jetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart ) {
     AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3.Data(),
         TTree::Class(),AliAnalysisManager::kOutputContainer,
         Form("%s", AliAnalysisManager::GetCommonFileName()));

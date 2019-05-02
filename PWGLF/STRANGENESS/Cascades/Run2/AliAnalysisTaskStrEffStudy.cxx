@@ -45,7 +45,9 @@ class AliAODVertex;
 class AliESDv0;
 class AliAODv0;
 
+#include <array>
 #include <numeric>
+#include <utility>
 
 #include <Riostream.h>
 #include "TList.h"
@@ -104,10 +106,30 @@ class AliAODv0;
 using std::cout;
 using std::endl;
 
+namespace {
+    struct TrackMC {
+        AliESDtrack* track;
+        TParticle* mother;
+        TParticle* particle;
+        int motherId;
+    };
+
+    struct CandidateMC {
+        AliESDtrack *track_deu;
+        AliESDtrack *track_p;
+        AliESDtrack *track_pi;
+        TParticle *part1;
+        TParticle *part2;
+        TParticle *part3;
+        TParticle *mother;
+        int motherId;
+    };
+}
+
 ClassImp(AliAnalysisTaskStrEffStudy)
 
 AliAnalysisTaskStrEffStudy::AliAnalysisTaskStrEffStudy()
-: AliAnalysisTaskSE(), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
+: AliAnalysisTaskSE(), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fTreeHyperTriton3Body(nullptr), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fEventCuts(), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
@@ -128,8 +150,6 @@ fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
-fPrecisionCutoffCascadeDCA(1e-4),
-fMaxIterationsCascadeDCA(27),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -137,6 +157,11 @@ fkDownScaleCascade      ( kTRUE  ),
 fDownScaleFactorCascade ( 0.001  ),
 fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
+
+//---> Flags controlling HyperTriton3Body TTree output
+fkSaveHyperTriton3BodyTree(false),
+fkDownScaleHyperTriton3Body(false),
+fDownScaleFactorHyperTriton3Body(1.),
 
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
@@ -149,6 +174,9 @@ fkSandboxCascade( kFALSE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
+
+fPrecisionCutoffCascadeDCA(1e-4),
+fMaxIterationsCascadeDCA(27),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
@@ -189,6 +217,12 @@ fTreeVariableDecayZ(0),
 fTreeVariableDecayXMC(0),
 fTreeVariableDecayYMC(0),
 fTreeVariableDecayZMC(0),
+fTreeVariableNegPxMC(0),
+fTreeVariableNegPyMC(0),
+fTreeVariableNegPzMC(0),
+fTreeVariablePosPxMC(0),
+fTreeVariablePosPyMC(0),
+fTreeVariablePosPzMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -209,6 +243,7 @@ fTreeVariableNegSigmaZ2(0),
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
 fTreeVariableOTFV0(0x0),
+fTreeVariableFoundOTFV0(kFALSE),
 fTreeVariableMagneticField(0),
 fTreeVariablePosOriginalX(0),
 fTreeVariableNegOriginalX(0),
@@ -220,6 +255,9 @@ fTreeVariableRun(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCentrality(0),
+fTreeCascVarPosSign(0),
+fTreeCascVarNegSign(0),
+fTreeCascVarBachSign(0),
 fTreeCascVarPosLength(0),
 fTreeCascVarNegLength(0),
 fTreeCascVarBachLength(0),
@@ -315,6 +353,7 @@ fTreeCascVarNegTrack(0),
 fTreeCascVarOTFV0(0x0),
 fTreeCascVarOTFV0NegBach(0x0),
 fTreeCascVarOTFV0PosBach(0x0),
+fTreeCascVarV0AsOTF(0),
 fTreeCascVarNegBachAsOTF(0),
 fTreeCascVarPosBachAsOTF(0),
 fTreeCascVarMagneticField(0),
@@ -325,6 +364,24 @@ fTreeCascVarPVx(0),
 fTreeCascVarPVy(0),
 fTreeCascVarPVz(0),
 fTreeCascVarAliESDvertex(0),
+
+/// Hypertriton 3 Body sandbox
+fTreeHyp3BodyVarTracks(),
+fTreeHyp3BodyVarPDGcodes(),
+fTreeHyp3BodyVarEventId(0u),
+fTreeHyp3BodyVarMotherId(0),
+fTreeHyp3BodyVarTruePx(0.f),
+fTreeHyp3BodyVarTruePy(0.f),
+fTreeHyp3BodyVarTruePz(0.f),
+fTreeHyp3BodyVarDecayVx(0.f),
+fTreeHyp3BodyVarDecayVy(0.f),
+fTreeHyp3BodyVarDecayVz(0.f),
+fTreeHyp3BodyVarDecayT(0.f),
+fTreeHyp3BodyVarPVx(0.f),
+fTreeHyp3BodyVarPVy(0.f),
+fTreeHyp3BodyVarPVz(0.f),
+fTreeHyp3BodyVarPVt(0.f),
+fTreeHyp3BodyVarMagneticField(0.f),
 
 //Histos
 fHistEventCounter(0),
@@ -344,11 +401,11 @@ fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
 //------------------------------------------------
 // Tree Variables
 {
-    
+
 }
 
-AliAnalysisTaskStrEffStudy::AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
-: AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
+AliAnalysisTaskStrEffStudy::AliAnalysisTaskStrEffStudy(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, Bool_t lSaveHyperTriton, const char *name, TString lExtraOptions)
+: AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fTreeHyperTriton3Body(nullptr),fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fEventCuts(), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
@@ -369,8 +426,6 @@ fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
 fkDebugOOBPileup(kFALSE),
 fkDoExtraEvSels( kTRUE ),
-fPrecisionCutoffCascadeDCA(1e-4),
-fMaxIterationsCascadeDCA(27),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -378,6 +433,11 @@ fkDownScaleCascade      ( kTRUE  ),
 fDownScaleFactorCascade ( 0.001  ),
 fMinPtToSave( 0.00   ) ,
 fMaxPtToSave( 100.00 ) ,
+
+//---> Flags controlling HyperTriton3Body TTree output
+fkSaveHyperTriton3BodyTree(lSaveHyperTriton),
+fkDownScaleHyperTriton3Body(false),
+fDownScaleFactorHyperTriton3Body(1.),
 
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
@@ -390,6 +450,9 @@ fkSandboxCascade( kFALSE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
+
+fPrecisionCutoffCascadeDCA(1e-4),
+fMaxIterationsCascadeDCA(27),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
@@ -430,6 +493,12 @@ fTreeVariableDecayZ(0),
 fTreeVariableDecayXMC(0),
 fTreeVariableDecayYMC(0),
 fTreeVariableDecayZMC(0),
+fTreeVariableNegPxMC(0),
+fTreeVariableNegPyMC(0),
+fTreeVariableNegPzMC(0),
+fTreeVariablePosPxMC(0),
+fTreeVariablePosPyMC(0),
+fTreeVariablePosPzMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -450,6 +519,7 @@ fTreeVariableNegSigmaZ2(0),
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
 fTreeVariableOTFV0(0x0),
+fTreeVariableFoundOTFV0(kFALSE),
 fTreeVariableMagneticField(0),
 fTreeVariablePosOriginalX(0),
 fTreeVariableNegOriginalX(0),
@@ -461,6 +531,9 @@ fTreeVariableRun(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCentrality(0),
+fTreeCascVarPosSign(0),
+fTreeCascVarNegSign(0),
+fTreeCascVarBachSign(0),
 fTreeCascVarPosLength(0),
 fTreeCascVarNegLength(0),
 fTreeCascVarBachLength(0),
@@ -486,6 +559,9 @@ fTreeCascVarV0Radius(0),
 fTreeCascVarV0DecayX(0),
 fTreeCascVarV0DecayY(0),
 fTreeCascVarV0DecayZ(0),
+fTreeCascVarV0DecayXMC(0),
+fTreeCascVarV0DecayYMC(0),
+fTreeCascVarV0DecayZMC(0),
 fTreeCascVarV0CosineOfPointingAngle(0),
 fTreeCascVarDCAV0ToPrimVtx(0),
 fTreeCascVarDCAxyV0ToPrimVtx(0),
@@ -498,6 +574,9 @@ fTreeCascVarCascPropagation(0),
 fTreeCascVarDecayX(0),
 fTreeCascVarDecayY(0),
 fTreeCascVarDecayZ(0),
+fTreeCascVarDecayXMC(0),
+fTreeCascVarDecayYMC(0),
+fTreeCascVarDecayZMC(0),
 fTreeCascVarCascCosPointingAngle(0),
 
 fTreeCascVarInvMassXiMinus(0),
@@ -550,6 +629,7 @@ fTreeCascVarNegTrack(0),
 fTreeCascVarOTFV0(0),
 fTreeCascVarOTFV0NegBach(0x0),
 fTreeCascVarOTFV0PosBach(0x0),
+fTreeCascVarV0AsOTF(0),
 fTreeCascVarNegBachAsOTF(0),
 fTreeCascVarPosBachAsOTF(0),
 fTreeCascVarMagneticField(0),
@@ -561,6 +641,23 @@ fTreeCascVarPVy(0),
 fTreeCascVarPVz(0),
 fTreeCascVarAliESDvertex(0),
 
+/// Hypertriton 3 Body sandbox
+fTreeHyp3BodyVarTracks(),
+fTreeHyp3BodyVarPDGcodes(),
+fTreeHyp3BodyVarEventId(0u),
+fTreeHyp3BodyVarMotherId(0),
+fTreeHyp3BodyVarTruePx(0.f),
+fTreeHyp3BodyVarTruePy(0.f),
+fTreeHyp3BodyVarTruePz(0.f),
+fTreeHyp3BodyVarDecayVx(0.f),
+fTreeHyp3BodyVarDecayVy(0.f),
+fTreeHyp3BodyVarDecayVz(0.f),
+fTreeHyp3BodyVarDecayT(0.f),
+fTreeHyp3BodyVarPVx(0.f),
+fTreeHyp3BodyVarPVy(0.f),
+fTreeHyp3BodyVarPVz(0.f),
+fTreeHyp3BodyVarPVt(0.f),
+fTreeHyp3BodyVarMagneticField(0.f),
 
 //Histos
 fHistEventCounter(0),
@@ -622,10 +719,10 @@ fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
     DefineOutput(3, TList::Class()); // Cascade Histogram Output
     
     //Optional output
-    if (fkSaveEventTree)
-        DefineOutput(4, TTree::Class()); // Event Tree output
+    DefineOutput(4, TTree::Class()); // Event Tree output
     DefineOutput(5, TTree::Class()); // V0 Tree output
     DefineOutput(6, TTree::Class()); // Cascade Tree output
+    DefineOutput(7, TTree::Class()); // HyperTriton Tree output
     
     //Special Debug Options (more to be added as needed)
     // A - Study Wrong PID for tracking bug
@@ -667,6 +764,10 @@ AliAnalysisTaskStrEffStudy::~AliAnalysisTaskStrEffStudy()
     if (fTreeCascade) {
         delete fTreeCascade;
         fTreeCascade = 0x0;
+    }    
+    if (fTreeHyperTriton3Body) {
+        delete fTreeHyperTriton3Body;
+        fTreeHyperTriton3Body = nullptr;
     }
     if (fUtils) {
         delete fUtils;
@@ -732,6 +833,14 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariableDecayXMC",&fTreeVariableDecayXMC,"fTreeVariableDecayXMC/F");
     fTreeV0->Branch("fTreeVariableDecayYMC",&fTreeVariableDecayYMC,"fTreeVariableDecayYMC/F");
     fTreeV0->Branch("fTreeVariableDecayZMC",&fTreeVariableDecayZMC,"fTreeVariableDecayZMC/F");
+    
+    fTreeV0->Branch("fTreeVariableNegPxMC",&fTreeVariableNegPxMC,"fTreeVariableNegPxMC/F");
+    fTreeV0->Branch("fTreeVariableNegPyMC",&fTreeVariableNegPyMC,"fTreeVariableNegPyMC/F");
+    fTreeV0->Branch("fTreeVariableNegPzMC",&fTreeVariableNegPzMC,"fTreeVariableNegPzMC/F");
+    fTreeV0->Branch("fTreeVariablePosPxMC",&fTreeVariablePosPxMC,"fTreeVariablePosPxMC/F");
+    fTreeV0->Branch("fTreeVariablePosPyMC",&fTreeVariablePosPyMC,"fTreeVariablePosPyMC/F");
+    fTreeV0->Branch("fTreeVariablePosPzMC",&fTreeVariablePosPzMC,"fTreeVariablePosPzMC/F");
+    
     fTreeV0->Branch("fTreeVariableInvMassK0s",       &fTreeVariableInvMassK0s,       "fTreeVariableInvMassK0s/F");
     fTreeV0->Branch("fTreeVariableInvMassLambda",    &fTreeVariableInvMassLambda,    "fTreeVariableInvMassLambda/F");
     fTreeV0->Branch("fTreeVariableInvMassAntiLambda",&fTreeVariableInvMassAntiLambda,"fTreeVariableInvMassAntiLambda/F");
@@ -756,6 +865,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
         fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
         fTreeV0->Branch("fTreeVariableOTFV0", &fTreeVariableOTFV0,16000,99);
+        fTreeV0->Branch("fTreeVariableFoundOTFV0", &fTreeVariableFoundOTFV0,"fTreeVariableFoundOTFV0/O");
         fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
         fTreeV0->Branch("fTreeVariablePosOriginalX",&fTreeVariablePosOriginalX,"fTreeVariablePosOriginalX/F");
         fTreeV0->Branch("fTreeVariableNegOriginalX",&fTreeVariableNegOriginalX,"fTreeVariableNegOriginalX/F");
@@ -889,8 +999,39 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         
         fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
     }
+    fTreeCascade->Branch("fTreeCascVarV0AsOTF",&fTreeCascVarV0AsOTF,"fTreeCascVarV0AsOTF/O");
     fTreeCascade->Branch("fTreeCascVarNegBachAsOTF",&fTreeCascVarNegBachAsOTF,"fTreeCascVarNegBachAsOTF/O");
     fTreeCascade->Branch("fTreeCascVarPosBachAsOTF",&fTreeCascVarPosBachAsOTF,"fTreeCascVarPosBachAsOTF/O");
+
+    fTreeHyperTriton3Body = new TTree("fTreeHyperTriton3Body","HyperTriton3BodyCandidates");
+    if (fkSaveHyperTriton3BodyTree) {
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTrack0", &fTreeHyp3BodyVarTracks[0],16000,99);
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTrack1", &fTreeHyp3BodyVarTracks[1],16000,99);
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTrack2", &fTreeHyp3BodyVarTracks[2],16000,99);
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPDGcode0", &fTreeHyp3BodyVarPDGcodes[0],"fTreeHyp3BodyVarPDGcode0/I");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPDGcode1", &fTreeHyp3BodyVarPDGcodes[1],"fTreeHyp3BodyVarPDGcode1/I");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPDGcode2", &fTreeHyp3BodyVarPDGcodes[2],"fTreeHyp3BodyVarPDGcode2/I");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarEventId",&fTreeHyp3BodyVarEventId,"fTreeHyp3BodyVarEventId/l");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarMotherId",&fTreeHyp3BodyVarMotherId,"fTreeHyp3BodyVarMotherId/I");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTruePx",&fTreeHyp3BodyVarTruePx,"fTreeHyp3BodyVarTruePx/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTruePy",&fTreeHyp3BodyVarTruePy,"fTreeHyp3BodyVarTruePy/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarTruePz",&fTreeHyp3BodyVarTruePz,"fTreeHyp3BodyVarTruePz/F");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarDecayVx",&fTreeHyp3BodyVarDecayVx,"fTreeHyp3BodyVarDecayVx/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarDecayVy",&fTreeHyp3BodyVarDecayVy,"fTreeHyp3BodyVarDecayVy/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarDecayVz",&fTreeHyp3BodyVarDecayVz,"fTreeHyp3BodyVarDecayVz/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarDecayT",&fTreeHyp3BodyVarDecayT,"fTreeHyp3BodyVarDecayT/F");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPVx",&fTreeHyp3BodyVarPVx,"fTreeHyp3BodyVarPVx/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPVy",&fTreeHyp3BodyVarPVy,"fTreeHyp3BodyVarPVy/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPVz",&fTreeHyp3BodyVarPVz,"fTreeHyp3BodyVarPVz/F");
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarPVt",&fTreeHyp3BodyVarPVt,"fTreeHyp3BodyVarPVt/F");
+
+        fTreeHyperTriton3Body->Branch("fTreeHyp3BodyVarMagneticField",&fTreeHyp3BodyVarMagneticField,"fTreeHyp3BodyVarMagneticField/F");
+    }
     //------------------------------------------------
 
     //------------------------------------------------
@@ -1022,6 +1163,7 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     PostData(4, fTreeEvent   );
     PostData(5, fTreeV0      );
     PostData(6, fTreeCascade );
+    PostData(7, fTreeHyperTriton3Body);
     
 }// end UserCreateOutputObjects
 
@@ -1085,32 +1227,30 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     //  --- Performed entirely via AliPPVsMultUtils
     // (except removal of incomplete events and SPDClusterVsTracklets cut)
     //------------------------------------------------
-    
+
     //Copy-paste of steps done in AliAnalysisTaskSkeleton
-    
+
     fHistEventCounter->Fill(0.5);
-    
+
     //------------------------------------------------
     // Primary Vertex Requirements Section:
     //  ---> pp: has vertex, |z|<10cm
     //------------------------------------------------
-    
+
     //classical Proton-proton like selection
     const AliESDVertex *lPrimaryBestESDVtx     = lESDevent->GetPrimaryVertex();
-    const AliESDVertex *lPrimaryTrackingESDVtx = lESDevent->GetPrimaryVertexTracks();
-    const AliESDVertex *lPrimarySPDVtx         = lESDevent->GetPrimaryVertexSPD();
-    
+
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
-    
+
     AliESDVertex lPVobject(*lPrimaryBestESDVtx), *lPVpointer=&lPVobject;
     fTreeVariableAliESDvertex = lPVpointer;
-    
+
     AliESDVertex lPVobject2(*lPrimaryBestESDVtx), *lPVpointer2=&lPVobject2;
     fTreeCascVarAliESDvertex = lPVpointer2;
-    
+
     fTreeVariableRun = lESDevent->GetRunNumber();
-    
+
     //sandbox info
     fTreeCascVarPVx = lBestPrimaryVtxPos[0];
     fTreeCascVarPVy = lBestPrimaryVtxPos[1];
@@ -1118,11 +1258,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     fTreeVariablePVx = lBestPrimaryVtxPos[0];
     fTreeVariablePVy = lBestPrimaryVtxPos[1];
     fTreeVariablePVz = lBestPrimaryVtxPos[2];
-    
+
     //------------------------------------------------
     // Multiplicity Information Acquistion
     //------------------------------------------------
-    
+
     Float_t lPercentile = 500;
     Float_t lPercentileEmbeddedSelection = 500;
     Int_t lEvSelCode = 100;
@@ -1166,6 +1306,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         PostData(4, fTreeEvent   );
         PostData(5, fTreeV0      );
         PostData(6, fTreeCascade );
+        PostData(7, fTreeHyperTriton3Body );
         return;
     }
     
@@ -1178,6 +1319,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             PostData(4, fTreeEvent   );
             PostData(5, fTreeV0      );
             PostData(6, fTreeCascade );
+            PostData(7, fTreeHyperTriton3Body );
             return;
         }
     }
@@ -1254,29 +1396,13 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     // Fill V0 Tree as needed
     //------------------------------------------------
     
-    //Variable definition
-    Int_t    lOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
-    Double_t lChi2V0 = 0;
-    Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
-    Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
-    Double_t lV0CosineOfPointingAngle = 0;
-    Double_t lV0Radius = 0, lPt = 0;
-    Double_t lRapK0Short = 0, lRapLambda = 0;
-    Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
-    Double_t lAlphaV0 = 0, lPtArmV0 = 0;
-    
-    Double_t fMinV0Pt = 0;
-    Double_t fMaxV0Pt = 100;
-    
     //-------------------------------------------------
     // V0s from scratch: locate findable V0 candidates
     //-------------------------------------------------
     
     //Particles of interest
-    const Int_t lNV0Types = 5;
+    constexpr Int_t lNV0Types = 5;
     Int_t lV0Types[lNV0Types]          = { 310, 3122, -3122,  1010010030, -1010010030};
-    Int_t lV0TypesPDau[lNV0Types]      = { 211, 2212,   211,  1000010030, -211};
-    Int_t lV0TypesNDau[lNV0Types]      = {-211, -211, -2212, -1000010030,  211};
     
     //Number of tracks
     Long_t lNTracks = lESDevent->GetNumberOfTracks();
@@ -1288,6 +1414,16 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     Long_t nTracksOfInterest = 0;
     
+    auto lRemoveDeltaRayFromDaughters = [](const AliMCEvent* lMCev, const TParticle* lMum) {
+        int lNDaughters = 0;
+        for (int iPart = lMum->GetFirstDaughter(); iPart <= lMum->GetLastDaughter(); ++iPart) {
+            TParticle* lParticle = lMCev->Particle(iPart);
+            if (lParticle->GetPdgCode() != 11)
+                lNDaughters++;
+        }
+        return lNDaughters;
+    };
+
     //____________________________________________________________________________
     //Step 1: establish list of tracks coming from desired type
     for(Long_t iTrack = 0; iTrack<lNTracks; iTrack++){
@@ -1307,13 +1443,18 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         
         //Skip three-body decays and the like
-        if ( lParticleMother->GetNDaughters()!=2 ) continue;
-        
-        Bool_t lOfDesiredType = kFALSE;
+        int lMotherType = -1;
         for(Int_t iType=0; iType<lNV0Types; iType++){
-            if( lParticleMotherPDG == lV0Types[iType] ) lOfDesiredType = kTRUE;
+            if( lParticleMotherPDG == lV0Types[iType] ) lMotherType = iType;
         }
-        if( !lOfDesiredType ) continue;
+        if( lMotherType < 0 ) continue;
+
+        int lNDaughters = lParticleMother->GetNDaughters();
+        if ( lMotherType > 2 ) { ///Count real hypertriton daughters
+            lNDaughters = lRemoveDeltaRayFromDaughters(lMCevent, lParticleMother);
+        }
+
+        if ( lNDaughters!=2 ) continue;
         
         //If here: this is a daughter of a mother particle of desired type, add
         lTrackArray        [nTracksOfInterest] = iTrack;
@@ -1408,7 +1549,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeVariableDcaV0DaughtersGeometric = -1;
         Double_t xn, xp, dca; //=esdTrackNeg->GetDCA(esdTrackPos,lMagneticField,xn,xp);
         
-        AliExternalTrackParam nt(*esdTrackNeg), pt(*esdTrackPos), *pointnt=&nt, *pointpt=&pt;
+        AliExternalTrackParam nt(*esdTrackNeg), pt(*esdTrackPos);//, *pointnt=&nt, *pointpt=&pt;
         dca=GetDCAV0Dau(&pt, &nt, xp, xn, lMagneticField);
         
         //Correct for beam pipe material
@@ -1442,7 +1583,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //lNegTrackArray[iV0], lPosTrackArray[iV0]
         Int_t nv0s = lESDevent->GetNumberOfV0s();
         
-        Bool_t lFoundOTF = kFALSE;
+        fTreeVariableFoundOTFV0 = kFALSE;
         
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
@@ -1457,11 +1598,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                 //Found corresponding OTF V0! Save it to TTree, please
                 AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
                 fTreeVariableOTFV0 = lPointerToV0ToStore;
-                lFoundOTF = kTRUE;
+                fTreeVariableFoundOTFV0 = kTRUE;
                 break; //stop looking
             }
         }
-        if( !lFoundOTF ) {
+        if( !fTreeVariableFoundOTFV0 ) {
             AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
             fTreeVariableOTFV0 = lPointerToV0ToStore;
         }
@@ -1534,7 +1675,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeVariableDecayXMC = mcPosV0Dghter->Vx();
         fTreeVariableDecayYMC = mcPosV0Dghter->Vy();
         fTreeVariableDecayZMC = mcPosV0Dghter->Vz();
-        
+
+        fTreeVariableNegPxMC = mcNegV0Dghter->Px();
+        fTreeVariableNegPyMC = mcNegV0Dghter->Py();
+        fTreeVariableNegPzMC = mcNegV0Dghter->Pz();
+        fTreeVariablePosPxMC = mcPosV0Dghter->Px();
+        fTreeVariablePosPyMC = mcPosV0Dghter->Py();
+        fTreeVariablePosPzMC = mcPosV0Dghter->Pz();
+
         fTreeVariablePIDPositive = mcPosV0Dghter -> GetPdgCode();
         fTreeVariablePIDNegative = mcNegV0Dghter -> GetPdgCode();
         
@@ -1575,7 +1723,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     Long_t nBachelorsOfInterest = 0;
     
-    //____________________________________________________________________________
+    //________________________________________________________________________fTreeCascade____
     //Step 1: establish list of bachelors from cascades
     for(Long_t iTrack = 0; iTrack<lNTracks; iTrack++){
         AliESDtrack *esdTrack = lESDevent->GetTrack(iTrack);
@@ -1595,38 +1743,35 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         //Skip three-body decays and the like (has to be bach+V0)
         if ( lParticleMother->GetNDaughters()!=2 ) continue;
-        
+
         Bool_t lOfDesiredType = kFALSE;
         for(Int_t iType=0; iType<4; iType++){
             if( lParticleMotherPDG == lCascadeTypes[iType] ) lOfDesiredType = kTRUE;
         }
         if( !lOfDesiredType ) continue;
-        
+
         //If here: this is a daughter of a mother particle of desired type, add
         lBachelorArray        [nBachelorsOfInterest] = iTrack;
         lBachelorMotherArray  [nBachelorsOfInterest] = lLabelMother;
         nBachelorsOfInterest++;
     }
     cout<<"Findable bachelors: "<<nBachelorsOfInterest<<endl;
-    
+
     TArrayI lCascPosTrackArray      (lNTracks);
     TArrayI lCascNegTrackArray      (lNTracks);
     TArrayI lCascBachTrackArray     (lNTracks);
     Long_t lFindableCascades = 0;
-    
+
     //____________________________________________________________________________
     //Step 2: Loop over findable V0s and check if they share a mother with bach
     for(Long_t iV0 = 0; iV0<lFindableV0s; iV0++){
         //Get the two tracks we're talking about
         AliESDtrack *esdTrackPos = lESDevent->GetTrack( lPosTrackArray[iV0] );
-        AliESDtrack *esdTrackNeg = lESDevent->GetTrack( lNegTrackArray[iV0] );
         
         //3c: Get perfect MC information for bookkeeping
         Int_t lblPosV0Dghter = (Int_t) TMath::Abs( esdTrackPos->GetLabel() );
-        Int_t lblNegV0Dghter = (Int_t) TMath::Abs( esdTrackNeg->GetLabel() );
         
         TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
-        TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
         
         Int_t lblMotherV0 = mcPosV0Dghter->GetFirstMother();
         TParticle* pThisV0 = lMCstack->Particle( lblMotherV0 );
@@ -1685,11 +1830,13 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         //lNegTrackArray[iV0], lPosTrackArray[iV0]
         Int_t nv0s = lESDevent->GetNumberOfV0s();
         
+        AliESDv0 lV0ToStorePosBach, *lPointerToV0ToStorePosBach=&lV0ToStorePosBach;
+        AliESDv0 lV0ToStoreNegBach, *lPointerToV0ToStoreNegBach=&lV0ToStoreNegBach;
+        
         Bool_t lFoundOTF = kFALSE;
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
-            
             if ( v0->GetOnFlyStatus()  &&
                 (
                  (v0->GetPindex() == lCascPosTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
@@ -1697,23 +1844,20 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
-                fTreeCascVarOTFV0PosBach = lPointerToV0ToStore;
+                fTreeCascVarOTFV0PosBach = v0;
                 lFoundOTF = kTRUE;
                 fTreeCascVarPosBachAsOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
-            fTreeCascVarOTFV0PosBach = lPointerToV0ToStore;
+            fTreeCascVarOTFV0PosBach = lPointerToV0ToStorePosBach;
         }
         //---->
         lFoundOTF = kFALSE;
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
-            
             if ( v0->GetOnFlyStatus()  &&
                 (
                  (v0->GetPindex() == lCascNegTrackArray[iCasc] && v0->GetNindex() == lCascBachTrackArray[iCasc] ) ||
@@ -1721,16 +1865,14 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
-                fTreeCascVarOTFV0NegBach = lPointerToV0ToStore;
+                fTreeCascVarOTFV0NegBach = v0;
                 lFoundOTF = kTRUE;
                 fTreeCascVarNegBachAsOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
-            fTreeCascVarOTFV0NegBach = lPointerToV0ToStore;
+            fTreeCascVarOTFV0NegBach = lPointerToV0ToStoreNegBach;
         }
         
         //=================================================================================
@@ -1738,7 +1880,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeCascVarOTFV0 = 0x0;
         
         lFoundOTF = kFALSE;
-        
+        AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
+        fTreeCascVarV0AsOTF = kFALSE;
         for(Long_t iOTFv0=0; iOTFv0<nv0s; iOTFv0++){
             AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iOTFv0);
             if (!v0) continue;
@@ -1751,14 +1894,13 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
                  )
                 ){
                 //Found corresponding OTF V0! Save it to TTree, please
-                AliESDv0 lV0ToStore(*v0), *lPointerToV0ToStore=&lV0ToStore;
-                fTreeCascVarOTFV0 = lPointerToV0ToStore;
+                fTreeCascVarOTFV0 = v0;
                 lFoundOTF = kTRUE;
+                fTreeCascVarV0AsOTF = kTRUE;
                 break; //stop looking
             }
         }
         if( !lFoundOTF ) {
-            AliESDv0 lV0ToStore, *lPointerToV0ToStore=&lV0ToStore;
             fTreeCascVarOTFV0 = lPointerToV0ToStore;
         }
         //=================================================================================
@@ -2001,7 +2143,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         Int_t lLabelMother = mcBachCascDghter->GetFirstMother();
         
         TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
-        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        //Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
         
         //Set tree variables
         fTreeCascVarPID   = lParticleMother->GetPdgCode(); //PDG Code
@@ -2035,7 +2177,134 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     }
     
     //--] END CASCADE PART [--------------------------
-    
+
+    //------------------------------------------------
+    // HyperTriton in 3 body from scratch: locate findable HyperTriton
+    //------------------------------------------------
+
+    //pos/neg daughters
+    std::vector<TrackMC> lTrackOfInterest;
+    lTrackOfInterest.reserve(lNTracks);
+
+    //_________________________________________________________
+    //Step 1: establish list of tracks coming from des
+    for(Long_t iTrack = 0; iTrack < lNTracks; iTrack++){
+        AliESDtrack *esdTrack = lESDevent->GetTrack(iTrack);
+        if (!esdTrack) continue;
+        /// The minimal TPC/ITS reconstruction criteria must be statisfied
+        if (((esdTrack->GetStatus() & AliVTrack::kTPCrefit) == 0 &&
+             (esdTrack->GetStatus() & AliVTrack::kITSrefit) == 0) ||
+            esdTrack->GetKinkIndex(0) > 0)
+            continue;
+        Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
+        TParticle* lParticle = lMCevent->Particle( lLabel );
+        const int pdgAbs = std::abs(lParticle->GetPdgCode());
+
+        Int_t lLabelMother = lParticle->GetFirstMother();
+        if (lLabelMother < 0) continue;
+
+        if (!lMCevent->IsPhysicalPrimary(lLabelMother)) continue;
+
+        TParticle *lParticleMother = lMCevent->Particle( lLabelMother );
+
+        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        if (std::abs(lParticleMotherPDG) != 1010010030) continue;
+        int lNDaughters = lRemoveDeltaRayFromDaughters(lMCevent, lParticleMother);
+        if (lNDaughters!=3) continue;
+        //If here: this is a daughter of a mother particle of desired type, add
+        lTrackOfInterest.push_back({esdTrack, lParticleMother, lParticle, lLabelMother});
+    }
+
+    if (!lTrackOfInterest.empty()) {
+        bool lNewEvent = true;
+        fTreeHyp3BodyVarMagneticField = b;
+        fTreeHyp3BodyVarEventId++;
+        fTreeHyp3BodyVarPVt = lTrackOfInterest.back().mother->T();
+        fTreeHyp3BodyVarPVx = lTrackOfInterest.back().mother->Vx();
+        fTreeHyp3BodyVarPVy = lTrackOfInterest.back().mother->Vy();
+        fTreeHyp3BodyVarPVz = lTrackOfInterest.back().mother->Vz();
+
+        /// This makes the output tree sorted, having possible clones close to each other.
+        /// At the same time this quick sort will speed up the following loops
+        std::sort(lTrackOfInterest.begin(), lTrackOfInterest.end(), [](const TrackMC & a, const TrackMC & b)
+        {
+            return a.motherId > b.motherId;
+        });
+        //____________________________________________________________________________
+        //Step 2: determine findable hypertritons
+        std::vector<CandidateMC> candidate;
+        for (size_t iTrack = 0; iTrack < lTrackOfInterest.size(); iTrack++) {
+            std::array<std::pair<int,int>,3> index;
+            Int_t pdg1 = lTrackOfInterest[iTrack].particle->GetPdgCode();
+            index[0] = {pdg1, iTrack};
+            //Start nested loop from iTrack+1: avoid permutations + combination with self
+            for (size_t jTrack = iTrack+1; jTrack < lTrackOfInterest.size(); jTrack++) {
+                if (lTrackOfInterest[iTrack].motherId != lTrackOfInterest[jTrack].motherId) continue;
+                Int_t pdg2 = lTrackOfInterest[jTrack].particle->GetPdgCode();
+                index[1] = {pdg2, jTrack};
+                for (size_t zTrack = jTrack+1; zTrack < lTrackOfInterest.size(); zTrack++) {
+                    if(lTrackOfInterest[iTrack].motherId != lTrackOfInterest[zTrack].motherId) continue;
+                    /// Reject all the triplets with +++ and ---
+                    if (lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[jTrack].track->GetSign() &&
+                        lTrackOfInterest[iTrack].track->GetSign() == lTrackOfInterest[zTrack].track->GetSign())
+                        continue;
+                    Int_t pdg3 = lTrackOfInterest[zTrack].particle->GetPdgCode();
+                    index[2] = {pdg3, zTrack};
+                    std::sort(index.begin(),index.end(),[](const std::pair<int,int> & a, const std::pair<int,int> & b)
+                    {
+                        return std::abs(a.first) > std::abs(b.first);
+                    });
+                    CandidateMC c;
+                    c.track_deu = lTrackOfInterest[index[0].second].track;
+                    c.track_p   = lTrackOfInterest[index[1].second].track;
+                    c.track_pi  = lTrackOfInterest[index[2].second].track;
+                    c.part1     = lTrackOfInterest[index[0].second].particle;
+                    c.part2     = lTrackOfInterest[index[1].second].particle;
+                    c.part3     = lTrackOfInterest[index[2].second].particle;
+                    c.mother    = lTrackOfInterest[index[0].second].mother;
+                    c.motherId  = lTrackOfInterest[index[0].second].motherId;
+                    candidate.push_back(c);
+                }
+            }
+        }
+        /// sorting hypertriton candidates respect the motherId
+        std::sort(candidate.begin(), candidate.end(), [](const CandidateMC &a, const CandidateMC &b)
+        { 
+            return a.motherId > b.motherId; 
+        });
+        //____________________________________________________________________________
+        // Step 3: checks on the candidate vector
+        for (size_t iCand = 0; iCand < candidate.size(); iCand++) {
+
+            fTreeHyp3BodyVarTracks[0] = candidate[iCand].track_deu;
+            fTreeHyp3BodyVarTracks[1] = candidate[iCand].track_p;
+            fTreeHyp3BodyVarTracks[2] = candidate[iCand].track_pi;
+            fTreeHyp3BodyVarPDGcodes[0] = candidate[iCand].part1->GetPdgCode();
+            fTreeHyp3BodyVarPDGcodes[1] = candidate[iCand].part2->GetPdgCode();
+            fTreeHyp3BodyVarPDGcodes[2] = candidate[iCand].part3->GetPdgCode();
+
+            TParticle* lHyperTriton = candidate[iCand].mother;
+            fTreeHyp3BodyVarTruePx = lHyperTriton->Px();
+            fTreeHyp3BodyVarTruePy = lHyperTriton->Py();
+            fTreeHyp3BodyVarTruePz = lHyperTriton->Pz();
+
+            TParticle* prong = candidate[iCand].part1;
+            fTreeHyp3BodyVarDecayVx = prong->Vx();
+            fTreeHyp3BodyVarDecayVy = prong->Vy();
+            fTreeHyp3BodyVarDecayVz = prong->Vz();
+            fTreeHyp3BodyVarDecayT =  prong->T();
+
+            fTreeHyp3BodyVarMotherId = candidate[iCand].motherId;
+            if (lNewEvent) {
+                fTreeHyp3BodyVarMotherId *= -1;
+                lNewEvent = false;
+            }
+            fTreeHyperTriton3Body->Fill();
+        }
+    }
+
+    //--] END HYPERTRITON3BODY PART [--------------------------
+
     // Post output data.
     PostData(1, fListHist    );
     PostData(2, fListV0      );
@@ -2043,6 +2312,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     PostData(4, fTreeEvent   );
     PostData(5, fTreeV0      );
     PostData(6, fTreeCascade );
+    PostData(7, fTreeHyperTriton3Body );
 }
 
 //________________________________________________________________________
@@ -2202,7 +2472,7 @@ Float_t AliAnalysisTaskStrEffStudy::GetDCAz(AliESDtrack *lTrack)
         AliDebug(1, "Estimated b resolution lower or equal to zero!");
         bCov[0]=0; bCov[2]=0;
     }
-    Float_t dcaToVertexXY = b[0];
+    //Float_t dcaToVertexXY = b[0];
     Float_t dcaToVertexZ = b[1];
     
     return dcaToVertexZ;
@@ -2227,7 +2497,8 @@ Float_t AliAnalysisTaskStrEffStudy::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack
     AliExternalTrackParam nt(*lNegClone), pt(*lPosClone);
     
     //Find DCA
-    Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,b,xn,xp);
+    Double_t xn, xp;
+    lNegClone->GetDCA(lPosClone,b,xn,xp);
     
     //Propagate to it
     nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
@@ -2698,14 +2969,14 @@ void AliAnalysisTaskStrEffStudy::Evaluate(const Double_t *h, Double_t t,
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskStrEffStudy::GetErrorInPosition(AliExternalTrackParam *t1) const {
-    Double_t alpha=t1->GetAlpha(), cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
+    Double_t alpha=t1->GetAlpha(), /*cs=TMath::Cos(alpha),*/ sn=TMath::Sin(alpha);
     Double_t tmp[3];
     t1->GetPxPyPz(tmp);
-    Double_t px1=tmp[0], py1=tmp[1], pz1=tmp[2];
+    //Double_t px1=tmp[0], py1=tmp[1], pz1=tmp[2];
     t1->GetXYZ(tmp);
-    Double_t  x1=tmp[0],  y1=tmp[1],  z1=tmp[2];
+    //Double_t  x1=tmp[0],  y1=tmp[1],  z1=tmp[2];
     const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
-    Double_t sx1=sn*sn*t1->GetSigmaY2()+ss, sy1=cs*cs*t1->GetSigmaY2()+ss;
+    Double_t sx1=sn*sn*t1->GetSigmaY2()+ss;// sy1=cs*cs*t1->GetSigmaY2()+ss;
     return sx1;
 }
 
@@ -2989,19 +3260,19 @@ Double_t AliAnalysisTaskStrEffStudy::GetDCAV0Dau( AliExternalTrackParam *pt, Ali
         
         t1+=dt1;
         t2+=dt2;
-        
+
     }
-    
+
     if (max<=0) AliDebug(1," too many iterations !");
-    
+
     Double_t cs=TMath::Cos(nt->GetAlpha());
     Double_t sn=TMath::Sin(nt->GetAlpha());
     xn=r1[0]*cs + r1[1]*sn;
-    
+
     cs=TMath::Cos(pt->GetAlpha());
     sn=TMath::Sin(pt->GetAlpha());
     xp=r2[0]*cs + r2[1]*sn;
-    
+
     return TMath::Sqrt(dm*TMath::Sqrt(dy2*dz2));
 }
 
@@ -3009,12 +3280,12 @@ Double_t AliAnalysisTaskStrEffStudy::GetDCAV0Dau( AliExternalTrackParam *pt, Ali
 void AliAnalysisTaskStrEffStudy::GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b){
     // Copied from AliV0ReaderV1::GetHelixCenter
     // Get Center of the helix track parametrization
-    
+
     Int_t charge=track->Charge();
-    
+
     Double_t	helix[6];
     track->GetHelixParameters(helix,b);
-    
+
     Double_t xpos =	helix[5];
     Double_t ypos =	helix[0];
     Double_t radius = TMath::Abs(1./helix[4]);
@@ -3030,16 +3301,16 @@ void AliAnalysisTaskStrEffStudy::GetHelixCenter(const AliExternalTrackParam *tra
             xpoint = - xpoint;
             ypoint = - ypoint;
         }
-        if(charge < 0){
+        /*if(charge < 0){
             xpoint =	xpoint;
             ypoint =	ypoint;
-        }
+        }*/
     }
     if(b>0){
-        if(charge > 0){
+        /*if(charge > 0){
             xpoint =	xpoint;
             ypoint =	ypoint;
-        }
+        }*/
         if(charge < 0){
             xpoint = - xpoint;
             ypoint = - ypoint;

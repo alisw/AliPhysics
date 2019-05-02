@@ -44,6 +44,12 @@ I getBinnedValue(F val, F binw, F min, F max)
     return 1 + I(std::floor((val - min) / binw));
 }
 
+template <typename I>
+I flipBits(I mask, I bits, bool flag)
+{
+  return (mask & ~bits) | (-flag & bits);
+}
+
 } // namespace Lifetimes
 
 #endif

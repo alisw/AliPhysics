@@ -10,19 +10,23 @@
 ClassImp(AliFemtoDreamPairCleaner)
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner()
     : fMinimalBooking(false),
+      fParticles(),
       fHists(0) {
 }
 
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(
     const AliFemtoDreamPairCleaner& cleaner)
     : fMinimalBooking(cleaner.fMinimalBooking),
+      fParticles(),
       fHists(cleaner.fHists) {
 }
 
 AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(int nTrackDecayChecks,
                                                    int nDecayDecayChecks,
-                                                   bool MinimalBooking) {
-  fMinimalBooking = MinimalBooking;
+                                                   bool MinimalBooking)
+    : fMinimalBooking(MinimalBooking),
+      fParticles(),
+      fHists(nullptr) {
   if (!fMinimalBooking) {
     fHists = new AliFemtoDreamPairCleanerHists(nTrackDecayChecks,
                                                nDecayDecayChecks, 2);

@@ -237,6 +237,10 @@ AliAnalysisManager* runEmbeddingAnalysis(
   embeddingHelper->SetNPtHardBins(11);
   embeddingHelper->SetMCRejectOutliers();
 
+  // Setup internal event selection and additional configuration options
+  embeddingHelper->SetConfigurationPath("EmbeddingConfigurationExample.yaml");
+
+  // Initialize the task to complete the setup.
   embeddingHelper->Initialize();
 
   if (fullJets) {
@@ -415,8 +419,8 @@ AliAnalysisManager* runEmbeddingAnalysis(
   ///////
   // Detector level PYTHIA sample task
   ///////
-  // Cells are left empty because special care is needed to retrieve the embedded cells. Such code is not in the sample task, but
-  // is available in the EMCal Correction Framework
+  // Cells are left empty because special care is needed to retrieve the embedded cells. Such code is not in the
+  // sample task, but is available in the EMCal Correction Framework
   AliAnalysisTaskEmcalJetSample * sampleTaskDetLevel = AliAnalysisTaskEmcalJetSample::AddTaskEmcalJetSample(tracksName.Data(), clustersName.Data(), "", "detLevelJets");
   // Tracks
   // Set embedding

@@ -95,8 +95,15 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA",
   if(!hyspd) hyspd=(TH2F*)l->FindObject("hYspdVsContrib");
   TH2F* hzspd=(TH2F*)l->FindObject("hZspdVsMult");
   if(!hzspd) hzspd=(TH2F*)l->FindObject("hZspdVsContrib");
+  TH2F* hxtrk=(TH2F*)l->FindObject("hXtrkVsMult");
+  if(!hxtrk) hxtrk=(TH2F*)l->FindObject("hXtrkVsContrib");
+  TH2F* hytrk=(TH2F*)l->FindObject("hYtrkVsMult");
+  if(!hytrk) hytrk=(TH2F*)l->FindObject("hYtrkVsContrib");
+  TH2F* hztrk=(TH2F*)l->FindObject("hZtrkVsMult");
+  if(!hztrk) hztrk=(TH2F*)l->FindObject("hZtrkVsContrib");
+
   Double_t maxContrib=20;
-  TH1D* hContrib=hxspd->ProjectionX();
+  TH1D* hContrib=hztrk->ProjectionX();
   for(Int_t jb=1; jb<=hContrib->GetNbinsX(); jb++){
     if(hContrib->GetBinContent(jb)>0) maxContrib=hContrib->GetBinLowEdge(jb+1);
   }
@@ -142,12 +149,6 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA",
 
   //-------------------
 
-  TH2F* hxtrk=(TH2F*)l->FindObject("hXtrkVsMult");
-  if(!hxtrk) hxtrk=(TH2F*)l->FindObject("hXtrkVsContrib");
-  TH2F* hytrk=(TH2F*)l->FindObject("hYtrkVsMult");
-  if(!hytrk) hytrk=(TH2F*)l->FindObject("hYtrkVsContrib");
-  TH2F* hztrk=(TH2F*)l->FindObject("hZtrkVsMult");
-  if(!hztrk) hztrk=(TH2F*)l->FindObject("hZtrkVsContrib");
 
   vecForTrend[5]=hxtrk->GetMean(2);
   vecForTrend[6]=hytrk->GetMean(2);

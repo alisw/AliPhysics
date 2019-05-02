@@ -32,6 +32,7 @@
 #include <TArrayD.h>
 
 class THistManager;
+class AliEventCuts;
 
 namespace EmcalTriggerJets {
 
@@ -52,32 +53,38 @@ public:
     kTrgClusterN
   };
   AliAnalysisTaskEmcalJetEnergySpectrum();
-  AliAnalysisTaskEmcalJetEnergySpectrum(const char *name);
+  AliAnalysisTaskEmcalJetEnergySpectrum(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
-  void SetNameJetContainer(const char *name) { fNameJetContainer = name; }
-  void SetNameTriggerDecisionContainer(const char *name) { fNameTriggerDecisionContainer = name; }
-  void SetTriggerSelection(UInt_t triggerbits, const char *triggerstring) { 
+  void SetNameJetContainer(EMCAL_STRINGVIEW name) { fNameJetContainer = name; }
+  void SetNameTriggerDecisionContainer(EMCAL_STRINGVIEW name) { fNameTriggerDecisionContainer = name; }
+  void SetTriggerSelection(UInt_t triggerbits, EMCAL_STRINGVIEW triggerstring) { 
     fTriggerSelectionBits = triggerbits;
     fTriggerSelectionString = triggerstring;
   }
   void SetUseDownscaleWeight(bool doUse) { fUseDownscaleWeight = doUse; }
+  void SetUseSumw2(Bool_t doUse) { fUseSumw2 = doUse; }
   void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
   void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasTrigger = minbiastrigger; }
   void SetUserPtBinning(int nbins, double *binning) { fUserPtBinning.Set(nbins+1, binning); }
   void SetRequestCentrality(bool doRequest) { fRequestCentrality = doRequest; }
   void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
-  void SetCentralityEstimator(const char *centest) { fCentralityEstimator = centest; }
+  void SetCentralityEstimator(EMCAL_STRINGVIEW centest) { fCentralityEstimator = centest; }
+  void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
 
-  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *trigger, const char *suffix = "");
+
+  static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix = "");
 
 protected:
   virtual void UserCreateOutputObjects();
   virtual bool Run();
   virtual bool IsTriggerSelected();
-  std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
-  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
+  virtual Bool_t CheckMCOutliers();
+  virtual void RunChanged(Int_t newrun);
+  std::vector<TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
+  bool IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const;
+  std::string MatchTrigger(EMCAL_STRINGVIEW striggerstring);
 
 private:
   AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);
@@ -85,6 +92,7 @@ private:
 
   THistManager                  *fHistos;                       ///< Histogram manager
   Bool_t                        fIsMC;                          ///< Running on simulated events
+  Bool_t                        fFillHSparse;                   ///< Fill THnSparses with more information
 	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits
   TString                       fTriggerSelectionString;        ///< Trigger selection string
   Bool_t                        fRequireSubsetMB;               ///< Require for triggers to be a subset of Min. Bias (for efficiency studies)
@@ -95,6 +103,8 @@ private:
   TString                       fNameJetContainer;              ///< Name of the jet container 
   Bool_t                        fRequestTriggerClusters;        ///< Request distinction of trigger clusters
   Bool_t                        fRequestCentrality;             ///< Request centrality
+  Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
+  Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
 

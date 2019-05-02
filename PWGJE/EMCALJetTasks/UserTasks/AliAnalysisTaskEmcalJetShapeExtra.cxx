@@ -206,7 +206,7 @@ Bool_t AliAnalysisTaskEmcalJetShapeExtra::FillHistograms()
       AliEmcalJet* jet3 = 0x0;
       fPtJet->Fill(jet1->Pt());
   
-        cout<<"Jet detector level Pt is"<<jet1->Pt()<<endl;
+ //       cout<<"Jet detector level Pt is"<<jet1->Pt()<<endl;
 
 
       
@@ -221,7 +221,7 @@ Bool_t AliAnalysisTaskEmcalJetShapeExtra::FillHistograms()
           continue;
         }
         
-          cout<<"jet3 particle level pt is"<<jet3->Pt()<<endl;
+  //        cout<<"jet3 particle level pt is"<<jet3->Pt()<<endl;
         fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
         
         

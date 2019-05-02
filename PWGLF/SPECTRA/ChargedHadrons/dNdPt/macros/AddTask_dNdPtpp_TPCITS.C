@@ -1,4 +1,4 @@
-AddTask_dNdPtpp_TPCITS(Int_t cutMode =223, char *controString ="default", char* eventTrigger="kINT7"){
+AddTask_dNdPtpp_TPCITS(Int_t cutMode =223, char *controlString ="default", char* eventTrigger="kINT7"){
  
    TString stEventTrigger(eventTrigger);
    //TString stParticleMode(particleMode);

@@ -188,6 +188,8 @@ fMCcheckDdecay(0),
 fMCcheckBdecay(0),
 fMCcheckHFdecay(0),
 fHFmomCorr(0),
+fMCphotonic0(0),
+fMCphotonic1(0),
 fMCneutral(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
@@ -333,6 +335,8 @@ fMCcheckDdecay(0),
 fMCcheckBdecay(0),
 fMCcheckHFdecay(0),
 fHFmomCorr(0),
+fMCphotonic0(0),
+fMCphotonic1(0),
 fMCneutral(0),
 fEMCTrkMatch_Phi(0),
 fEMCTrkMatch_Eta(0),
@@ -685,6 +689,11 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fOutputList->Add(fMCcheckHFdecay);
     fOutputList->Add(fHFmomCorr);
     
+    fMCphotonic0 = new TH1F("fMCphotonic0","MC enhanced photonic e (pi0+eta)",100,0,100);
+    fMCphotonic1 = new TH1F("fMCphotonic1","MC enhanced photonic e (pi0+eta) ID by inv. mass",100,0,100);
+    fOutputList->Add(fMCphotonic0);
+    fOutputList->Add(fMCphotonic1);
+
     fMCneutral = new TH2F("fMCneutral","pi0 and eta pT from Hijing and enhance",6,-0.5,5.5,500,0,50);
     fOutputList->Add(fMCneutral);
     
@@ -1343,6 +1352,12 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
                 if((MCinfo[5]==1.0 || MCinfo[5]==2.0) && TMath::Abs(MCinfo[1])==11.0)fMCcheckHFdecay->Fill(3,MCinfo[4]);
                 if((MCinfo[5]==1.0 || MCinfo[5]==2.0) && TMath::Abs(MCinfo[1])==11.0)fHFmomCorr->Fill(MCinfo[4],track->Pt());
 
+                if(MCinfo[0]==1.0 && TMath::Abs(MCinfo[1])==11.0 && (MCinfo[5]==3.0 || MCinfo[5]==4.0))
+                  {
+                   fMCphotonic0->Fill(track->Pt());
+                   if(!fFlagNonHFE)fMCphotonic1->Fill(track->Pt());
+                  }
+
                 Int_t fITSncls=0;
                 for(Int_t l=0;l<6;l++) {
                     if(TESTBIT(track->GetITSClusterMap(),l)) {
@@ -1581,8 +1596,8 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader, Int_t &Npure
             Int_t Ndecay = fMCparticle->GetNDaughters();
             if(Ndecay==3)
             {
-                Int_t firstCh = fMCparticle->GetDaughter(0);
-                Int_t lastCh = fMCparticle->GetDaughter(1);
+                Int_t firstCh = fMCparticle->GetDaughterLabel(0);
+                Int_t lastCh = fMCparticle->GetDaughterLabel(1);
                 //cout << "firstCh = " << firstCh << " ; lastCh = " << lastCh << endl;
                 
                 AliAODMCParticle* fMCpar0 = (AliAODMCParticle*) fMCarray->At(firstCh);

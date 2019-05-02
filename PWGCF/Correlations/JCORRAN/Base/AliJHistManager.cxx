@@ -131,28 +131,43 @@ int AliJBin::GetMode( TString mode ){
 }
 //_____________________________________________________
 AliJBin & AliJBin::SetBin( const int n, const float * v ){
-    for( int i=0;i<n;i++ ) AddBin( v[i] );FixBin();
+    for( int i=0;i<n;i++ ) {
+        AddBin( v[i] );
+    }
+    FixBin();
     return *this;
 }
 //_____________________________________________________
 AliJBin & AliJBin::SetBin( const int n, const double * v ){
-    for( int i=0;i<n;i++ ) AddBin( v[i] );FixBin();
+    for( int i=0;i<n;i++ ) {
+        AddBin( v[i] );
+    }
+    FixBin();
     return *this;
 }
 AliJBin & AliJBin::SetBin( TVector *v ){
-    for( int i=0;i<v->GetNrows();i++ ) AddBin( (v->GetMatrixArray())[i] );FixBin();
+    for( int i=0;i<v->GetNrows();i++ ) {
+        AddBin( (v->GetMatrixArray())[i] );
+    }
+    FixBin();
     return *this;
 }
 //_____________________________________________________
 AliJBin& AliJBin::SetBin(const TString  v){
     std::vector<TString> ar = Tokenize( v, "\t ,");
-    for( UInt_t i=0; i<ar.size();i++ ) AddBin( ar[i] );FixBin();
+    for( UInt_t i=0; i<ar.size();i++ ) {
+        AddBin( ar[i] );
+    }
+    FixBin();
     return *this;
 }
 
 //_____________________________________________________
 AliJBin& AliJBin::SetBin(const int  n){
-    for( UInt_t i=0; i<UInt_t(n);i++ ) AddBin( i );FixBin();
+    for( UInt_t i=0; i<UInt_t(n);i++ ) {
+        AddBin( i );
+    }
+    FixBin();
     return *this;
 }
 //_____________________________________________________

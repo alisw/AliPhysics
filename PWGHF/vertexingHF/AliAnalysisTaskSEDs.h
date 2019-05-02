@@ -31,8 +31,6 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {
  public:
     
-  enum ECentrality {kCentOff,kCentV0M,kCentV0A,kCentCL1,kCentZNA,kCentInvalid};
-
   AliAnalysisTaskSEDs();
   AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
   virtual ~AliAnalysisTaskSEDs();
@@ -55,16 +53,16 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetPhiMassRange4RotBkg(Double_t range) {fMaxDeltaPhiMass4Rot=range;}
   void SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   void SetFillTracklets(Bool_t flag) {fUseTrkl=flag;}
-  void SetFillCentralityAxis(Int_t flag=0);    /// see enum
+  void SetFillCentralityAxis(Bool_t usecentraxis=kTRUE) {fUseCentrAxis=usecentraxis;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   Bool_t GetUseWeight() const {return fUseWeight;}
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t nTracklets);
   void GenerateRotBkg(AliAODRecoDecayHF3Prong *d, Int_t dec, Int_t iPtBin);
   void CreateCutVarsAndEffSparses();
   void CreateImpactParameterSparses();
-  void CreateIPSparse();
   Float_t GetTrueImpactParameterDstoPhiPi(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDs) const;
-  
+  void GetCentralityAxisName(Int_t flag);
+
   void SetPtWeightsFromFONLL5anddataoverLHC16i2a();
   void SetPtWeightsFromFONLL5overLHC16i2abc();
   void SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc();
@@ -77,10 +75,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
   void SetSystem(Int_t system){fSystem = system;}
 
-  void SetMultSelectionObjectName(TString str){fMultSelectionObjectName=str;}
+  void SetUseFinePtBinsForSparse(bool usefinebins=kTRUE) {fUseFinPtBinsForSparse=kTRUE;} //use only in case of few candidates (e.g. MC signal only)
 
   Double_t GetPtWeightFromHistogram(Double_t pt);
-    
+
   /// Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -94,7 +92,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
 
-  enum {kMaxPtBins=24,knVarForSparse=15,knVarForSparseAcc=3,knVarForSparseIP=6,kVarForImpPar=3};
+  enum {kMaxPtBins=24,knVarForSparse=15,knVarForSparseAcc=3,kVarForImpPar=3};
     
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
   AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
@@ -108,6 +106,8 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH1F*   fMassHistK0st[4*kMaxPtBins];    //!<! hist. of mass spectra via K0* (sig,bkg,tot)
   TH1F*   fMassHistKK[kMaxPtBins];        //!<! hist. of mass spectra of KK
   TH1F*   fMassHistKpi[kMaxPtBins];       //!<! hist. of mass spectra of Kpi
+  TH2F*   fMassHistKKVsKKpi[kMaxPtBins];  //!<! hist. of mass spectra of KK vs. mass spectra of KKpi
+  TH2F*   fMassHistKpiVsKKpi[kMaxPtBins]; //!<! hist. of mass spectra of KK vs. mass spectra of KKpi
   TH1F*   fMassRotBkgHistPhi[kMaxPtBins]; //!<! hist. of bkg generated from rot. of the pion
   TH1F*   fMassLSBkgHistPhi[kMaxPtBins];  //!<! hist. of bkg generated from left phi sideband + pion
   TH1F*   fMassRSBkgHistPhi[kMaxPtBins];  //!<! hist. of bkg generated from right phi sideband + pion
@@ -130,15 +130,15 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F*   fDalitz[4*kMaxPtBins];          //!<! dalitz plot (sig,bkg,tot)
   TH2F*   fDalitzPhi[4*kMaxPtBins];       //!<! dalitz plot via phi (sig,bkg,tot)
   TH2F*   fDalitzK0st[4*kMaxPtBins];      //!<! dalitz plot via K0* (sig,bkg,tot)
-  TH2F *fPtVsMass;       //!<! hist. of pt vs. mass (prod. cuts)
-  TH2F *fPtVsMassPhi;    //!<! hist. of pt vs. mass (phi selection)
-  TH2F *fPtVsMassK0st;   //!<! hist. of pt vs. mass (K0* selection)
-  TH2F *fYVsPt;          //!<! hist. of Y vs. Pt (prod. cuts)
-  TH2F *fYVsPtSig;       //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
-  TH2F *fHistAllV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (all)
-  TH2F *fHistSelV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (sel)
-  TH1F *fHistCentrality[3];     //!<!hist. for cent distr (all,sel ev, )
-  TH2F *fHistCentralityMult[3]; //!<!hist. for cent distr vs mult (all,sel ev, )
+  TH2F*   fPtVsMass;       //!<! hist. of pt vs. mass (prod. cuts)
+  TH2F*   fPtVsMassPhi;    //!<! hist. of pt vs. mass (phi selection)
+  TH2F*   fPtVsMassK0st;   //!<! hist. of pt vs. mass (K0* selection)
+  TH2F*   fYVsPt;          //!<! hist. of Y vs. Pt (prod. cuts)
+  TH2F*   fYVsPtSig;       //!<! hist. of Y vs. Pt (MC, only sig, prod. cuts)
+  TH2F*   fHistAllV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (all)
+  TH2F*   fHistSelV0multNTPCout;  //!<! histo for V0mult vs #tracks TPCout (sel)
+  TH1F*   fHistCentrality[3];     //!<!hist. for cent distr (all,sel ev, )
+  TH2F*   fHistCentralityMult[3]; //!<!hist. for cent distr vs mult (all,sel ev, )
   TH3F*   fCosPHist3D;       //!<! cosP vs Ds mass vs pt
   TH3F*   fCosPxyHist3D;     //!<! cosPxy vs Ds mass vs pt
   TH3F*   fDLenHist3D;       //!<! Dlen vs Ds mass vs pt
@@ -157,11 +157,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   /// 1 for filling ntuple for events through Phi
   /// 2 for filling ntuple for events through K0Star
   /// 3 for filling all
-  Int_t   fUseCentrAxis; /// off =0 (default)
-  /// 1 = V0M
-  /// 2 = V0A
-  /// 3 = CL1
-  /// 4 = ZNA
+  Bool_t   fUseCentrAxis; /// off = kFALSE (default)
 
   Int_t   fSystem;                    /// 0 = pp, 1 = pPb,PbPb
   Bool_t  fReadMC;                    ///  flag for access to MC
@@ -188,12 +184,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Double_t fmaxMass;
   Double_t fMaxDeltaPhiMass4Rot;     ///flag to set mass window of phi meson (when using pion rotation to create bkg)
     
-    
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
     
   THnSparseF *fnSparse;       ///!<!THnSparse for candidates on data
-  THnSparseF *fnSparseIP;       ///!<!THnSparse for topomatic variable
   THnSparseF *fnSparseMC[4];  ///!<!THnSparse for MC
   ///[0]: Acc step prompt Ds
   ///[1]: Acc step FD Ds
@@ -205,9 +199,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
    
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
   TString fCentEstName; /// name of the centrality estimator (to fill axis of sparse)
-    
+  Bool_t fUseFinPtBinsForSparse; ///flag to fill pt axis of sparse with 0.1 GeV/c wide bins
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,27);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,30);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 

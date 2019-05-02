@@ -21,12 +21,12 @@ using std::vector;
 class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
 public:
 	AliAnalysisTaskGammaHadron();
-	AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Bool_t InputSameEventAnalysis,Bool_t InputMCorData);
+	AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int_t InputSameEventAnalysis,Bool_t InputMCorData);
 	virtual ~AliAnalysisTaskGammaHadron();
 
 	static AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 			Int_t       InputGammaOrPi0 = 0,
-			Bool_t      InputSeMe       = 0,
+			Int_t       InputSeMe       = 0,
 			Bool_t      InputMCorData   = 0,
 			UInt_t      evtTriggerType  = AliVEvent::kEMCEGA,
 			UInt_t      evtMixingType   = AliVEvent::kAnyINT,
@@ -43,17 +43,19 @@ public:
   //..setters for the analysis
   void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
+  void                        SetSaveTriggerPool(Bool_t input)                      { fSaveTriggerPool = input  ; }
+  void                        SetDownScaleMixTrigger(Float_t input)                 { fDownScaleMT     = input  ; }
   void                        SetPoolTrackDepth(Int_t input)                        { fTrackDepth      = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
-	void                        SetPi0MassSelection(Int_t input)                      { fPi0MassSelection= input  ; }
-  void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input; }
-  void                        SetSubDetector(Int_t input)                           { fSubDetector     = input; }
+  void                        SetPi0MassSelection(Int_t input)                      { fPi0MassSelection= input  ; }
+  void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input  ; }
+  void                        SetSubDetector(Int_t input)                           { fSubDetector     = input  ; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
-  void                        SetVetoTrigger(UInt_t input)                          { fVetoTrigger = input  ; }
-  void                        SetClEnergyMin(Double_t input)                        { fClEnergyMin     = input;}
-  void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
-  void                        SetNLM(Int_t input)                                   { fMaxNLM          = input;}
+  void                        SetVetoTrigger(UInt_t input)                          { fVetoTrigger     = input  ; }
+  void                        SetClEnergyMin(Double_t input)                        { fClEnergyMin     = input  ; }
+  void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input  ; }
+  void                        SetNLM(Int_t input)                                   { fMaxNLM          = input  ; }
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;} // dEta, dPhi = -1 or 0 will use pt parametrized cut
   void                        SetEOverPLimits(Double_t inputMin, Double_t inputMax) { fTrackMatchEOverPLow = inputMin; fTrackMatchEOverPHigh = inputMax; }
@@ -91,7 +93,7 @@ public:
   void                        UserCreateOutputObjects()        		                      ;
 
   //..Functions for mixed event purposes
-  void                        InitEventMixer()											  ;
+  void                        InitEventMixer(Int_t MixMode = 0); // 0: Init for Mixed Tracks.  1: Init for Mixed Triggers
   void                        InitClusMixer()											  ;
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
@@ -99,7 +101,7 @@ public:
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Int_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1);
+  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Int_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1, Int_t PosSwapStatus = 0); // Pos swap status 1 is for conserved energy pair, 2 is for conserved positions pair
   void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
   void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
   void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t Weight=1);
@@ -121,8 +123,10 @@ public:
   void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
   AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
 
-  Int_t                       fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0 or pi0 SB
-  Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
+  Int_t                       fGammaOrPi0;               ///< This tells me whether the correlation and the filling of histograms is done for gamma or pi0 or pi0 SB
+  Int_t                       fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
+	Bool_t                      fSaveTriggerPool;          ///< Whether to save an event pool of accepted triggers
+  Float_t                     fDownScaleMT;              ///< Downscale factor to restrict Mixed Trigger statistics/runtime. 1.0 -> no downscale. 0.5 -> cut stats in half.
   Int_t                       fSidebandChoice;           ///< This determines which sideband option is used
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
@@ -143,12 +147,15 @@ public:
   static const Int_t          kNcentBins=8;              ///< centrality bins in which the ME are mixed
   static const Int_t          kNClusVertBins=7;             ///< vertex bins in which the clusters are mixed
   static const Int_t          kNEMCalMultBins=4;              ///< EMCal multiplicity bins in which the clusters are mixed
+  static const Int_t          kUsedPi0TriggerPtBins = 5; ///< Number of Bins used for Pi0 Triggers in Correlation mode
   static const Int_t          kNoGammaBins=9;            ///< Bins in gamma pT
   static const Int_t          kNoZtBins=7;               ///< Bins in Zt
   static const Int_t          kNoXiBins=8;               ///< Bins in Xi
+  //static const Int_t          kNoHPtBins=8;               ///< Bins in hadron pT
   Double_t                    fArray_G_Bins[10];         ///< 10=kNoGammaBins+1
   Double_t                    fArray_ZT_Bins[8];         ///< 8=kNoZtBins+1
   Double_t                    fArray_XI_Bins[9];         ///< 9=kNoXiBins+1
+  //Double_t                    fArray_HPT_Bins[9];        ///< 9=kNoHPtBins+1
   Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
 
   //..cuts
@@ -171,6 +178,7 @@ public:
   TAxis                      *fMixBClusZvtx;             ///< TAxis for vertex bins for the mixed clusters
   AliEventPoolManager        *fPoolMgr;                  ///< event pool manager
   Int_t                       fTrackDepth;               ///<  #tracks to fill pool
+  Double_t                    fTargetFraction;           ///<  fraction of track depth before pool declared ready
   Int_t                       fClusterDepth;             ///<  #clusters to fill cluster mixing pool
   Int_t                       fPoolSize;                 ///<  Maximum number of events
   vector<vector<Double_t> >   fEventPoolOutputList;      //!<! ???vector representing a list of pools (given by value range) that will be saved
@@ -223,6 +231,17 @@ public:
   Int_t           fDoPosSwapMixing;            ///< Whether to use Position Swapping ME method.  (0: Not used, 1: Use 1 random cluster, 2: use all avail clusters.)
   Int_t           fNRotBkgSamples;             ///< How many samples to use in the rotational background
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
+
+  // Position Swap Correction Histograms
+  THnSparseF      *fUDist;                     //!<! Mass modification dist. for same E pairs
+  THnSparseF      *fUTildeDist;                //!<! Pt modification dist. for same E pairs
+  THnSparseF      *fVDist;                     //!<! Mass modification dist. for same Pos pairs
+  THnSparseF      *fVTildeDist;                //!<! Pt modification dist. for same Pos Pairs
+  // 2D Versions
+  THnSparseF      *fUMatrix;                   //!<! Mass and Pt modification matrix for same E Pairs
+  THnSparseF      *fVMatrix;                   //!<! Mass and Pt modification matrix for same Pos Pairs
+
+
   TH2							*fEMCalMultvZvtx;            //!<! Histogram investigating z-vertex, EMCal Multiplicity for mixed cluster pairs
 
 	// Monte Carlo Histograms

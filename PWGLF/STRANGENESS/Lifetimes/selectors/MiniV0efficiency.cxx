@@ -9,6 +9,8 @@
 #include <AliPDG.h>
 #include "MiniV0.h"
 #include "MCparticle.h"
+#include "HyperTriton2Body.h"
+#include "Riostream.h"
 using namespace Lifetimes;
 using namespace std;
 
@@ -76,9 +78,10 @@ void MiniV0efficiency::SlaveBegin(TTree * /*tree*/) {
       new TH1D("fHistV0ctDataH", ";V0 #it{ct} (#it{cm}); Counts", 40, 0., 40.);
   fHistV0ctMC[2] =
       new TH1D("fHistV0ctMCH", ";V0 #it{ct} (#it{cm}); Counts", 40, 0., 40.);
-  fHistV0ptDataNC= new TH1D("fHistV0ptDataNC", ";V0 #it{p}_{T} (GeV/#it{c}); Counts", 40, 0., 10.);    
 
-  ctAnalysis[2]=new TH2D("ctAnalysisH","H_ct_Analysis",40,-1.,1.,40,0.,40.);
+  ptAnalysisH = new TH2D("ptAnalysisH","H_pt_Analysis",40,-1.,1.,40,0.,10.);
+
+  ctAnalysis[2]=new TH2D("ctAnalysisH","H_ct_Analysis",40,-2.,2.,40,0.,40.);
   ctAnalysis[2]->SetXTitle("ctRec-ctGen(#it{cm})");
   ctAnalysis[2]->SetYTitle("ctGen(#it{cm})");
 
@@ -105,43 +108,48 @@ Bool_t MiniV0efficiency::Process(Long64_t entry) {
   // Use fStatus to set the return value of TTree::Process().
   //
   // The return value is currently not used.
-
   fReader.SetEntry(entry);
   int p_vec[3]={310,3122,1010010030};
   for(int i=0;i<(static_cast<int>(MCparticles.GetSize()));i++){
     auto& miniMC=MCparticles[i];
     if(miniMC.IsPrimary()){ 
       int part=miniMC.GetPDGcode();
-      if(miniMC.GetNBodies()==3 || part!=p_vec[2]){  
-        int ind=miniMC.GetRecoIndex();
-        for (int j=0;j<3;j++){
-          if(p_vec[j]==part){
-            float MCmass=miniMC.GetMass();
+      int ind=miniMC.GetRecoIndex();
+      for (int j=0;j<3;j++){
+        if(p_vec[j]==part){
+          float MCmass=miniMC.GetMass();
+          if(miniMC.GetNBodies()==2 || part!=p_vec[2]){
             fHistV0ptMC[j]->Fill(miniMC.GetPt());
             fHistV0ctMC[j]->Fill(MCmass*(miniMC.GetDistOverP()));
-            if(ind>=0){
-            auto& minidata= V0s[ind];  
-            if(minidata.GetCandidateInvMass(j)!=-1){ 
-              fHistV0ptData[j]->Fill(minidata.GetV0pt());
-              fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));
-              ctAnalysis[j]->Fill(MCmass*(minidata.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));}
-            else{
-              if(j==2){fHistV0ptDataNC->Fill(minidata.GetV0pt()); } 
-
-            }  
-            }
           }
+          if(ind>=0){
+            if(miniMC.GetNBodies()==2 && part==p_vec[2]){
+              auto& minihyper= V0Hyper[ind];  
+              if(minihyper.GetCandidateInvMass()!=-1){ 
+                fHistV0ptData[2]->Fill(minihyper.GetV0pt());
+                fHistV0ctData[2]->Fill(MCmass*(minihyper.GetDistOverP()));
+                ctAnalysis[2]->Fill(MCmass*(minihyper.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));
+                ptAnalysisH->Fill(miniMC.GetPt()-minihyper.GetV0pt(),miniMC.GetPt());            
 
+              }
+            }  
+            else if(part!=p_vec[2]){              
+                auto& minidata= V0s[ind];  
+                fHistV0ptData[j]->Fill(minidata.GetV0pt());
+                fHistV0ctData[j]->Fill(MCmass*(minidata.GetDistOverP()));
+                ctAnalysis[j]->Fill(MCmass*(minidata.GetDistOverP())-MCmass*(miniMC.GetDistOverP()),MCmass*(miniMC.GetDistOverP()));
+            }
+          }  
         }
-      }
-    }
+ 
+     }      
   }
+}
+
+return kTRUE;
 
 
-  return kTRUE;
-
-
-  } 
+} 
 
 
 
@@ -176,7 +184,7 @@ void MiniV0efficiency::Terminate() {
     GetOutputList()->Add(Effvsct[j]); 
     GetOutputList()->Add(ctAnalysis[j]);
    }
-  GetOutputList()->Add(fHistV0ptDataNC);
+  GetOutputList()->Add(ptAnalysisH);
   TFile output(Form("results/%s", fOutputFileName.data()),"RECREATE");
   GetOutputList()->Write();
   output.Close();

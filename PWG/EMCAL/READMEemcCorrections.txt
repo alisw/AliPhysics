@@ -22,6 +22,7 @@ The following correction components are available:
 - [Clusterizer](\ref AliEmcalCorrectionClusterizer) -- Clusterizes a collection of cells into a collection of clusters.
 - [ClusterExotics](\ref AliEmcalCorrectionClusterExotics) -- Flags exotic clusters for removal from the cluster collection.
 - [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
+- [ClusterNonLinearityMCAfterburner](\ref AliEmcalCorrectionClusterNonLinearityMCAfterburner.h) -- This is an additional correction for MC. The effect is that the pi0 mass position is the same for data and MC. It is only defined for specific periods.
 - [ClusterTrackMatcher](\ref AliEmcalCorrectionClusterTrackMatcher) -- Matches each track to a single cluster, if they are in close enough proximity.
 - [ClusterHadronicCorrection](\ref AliEmcalCorrectionClusterHadronicCorrection) -- For clusters that have one or more matched tracks, reduces the cluster energy in order to avoid overestimating the particle's energy.
 - [PHOSCorrection](\ref AliEmcalCorrectionPHOSCorrections) -- Perform PHOS correction via an interface to the PHOS tender.
@@ -188,7 +189,7 @@ Clusterizer:
     clusterBranchName: "sharedParameters:clusterBranchName"
     # Sets the Clusterizer type based on the same familiar enumeration.
     # Note that you should _not_ include the prefix as you usually would for setting an enumeration. Only list the value.
-    clusterizer: kClusterizerv2
+    clusterizer: kClusterizerv3
     cellE: 0.05
     seedE: 0.1
     cellTimeMin: -1                    # Min cell time (s)

@@ -23,6 +23,7 @@ public:
 		AliPP13SpectrumSelectionMC(name, title, cuts, sw),
 		fInvariantMass(),
 		fMixInvariantMass(),
+		fPtPrimaryPi0(),
 		fPrecisionA(precA),
 		fPrecisionSigma(precSigma)
 	{
@@ -42,12 +43,11 @@ public:
 		}
 	}
 
+	virtual void ConsiderGeneratedParticles(const EventFlags & eflags);
 	virtual void InitSelectionHistograms();
 protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
-
-	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
-	virtual TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const;
+	virtual TLorentzVector ClusterMomentumBinned(const AliVCluster * c1, const EventFlags & eflags, Int_t ia, Int_t ib) const;
 
 	AliPP13NonlinearityScanSelection(const AliPP13NonlinearityScanSelection &);
 	AliPP13NonlinearityScanSelection & operator = (const AliPP13NonlinearityScanSelection &);
@@ -60,6 +60,7 @@ private:
 	// Parameters of nonlinearity parametrization
 	TH1 * fInvariantMass[kNbinsA][kNbinsSigma];    //!
 	TH1 * fMixInvariantMass[kNbinsA][kNbinsSigma]; //!
+	TH1 * fPtPrimaryPi0; //!
 
 	Float_t fPrecisionA;
 	Float_t fPrecisionSigma;

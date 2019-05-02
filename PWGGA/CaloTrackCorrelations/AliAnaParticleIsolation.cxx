@@ -506,7 +506,8 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliCaloTrackParticleCorrelatio
   Float_t ptTrig    = pCandidate->Pt() ;
   Float_t phiTrig   = pCandidate->Phi();
   Float_t etaTrig   = pCandidate->Eta();
-  
+  Float_t weightTrig= pCandidate->GetWeight();
+
   for(Int_t icluster=0; icluster < pl->GetEntriesFast(); icluster++)
   {
     AliVCluster* cluster = (AliVCluster *) pl->At(icluster);
@@ -532,13 +533,13 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliCaloTrackParticleCorrelatio
     
     // Histograms of eta and phi for all clusters
     if(fFillUEBandSubtractHistograms > 1)
-      fhEtaPhiCluster->Fill(fMomentum.Eta(), fMomentum.Phi(), GetEventWeight());
+      fhEtaPhiCluster->Fill(fMomentum.Eta(), fMomentum.Phi(), GetEventWeight()*weightTrig);
   
     if(rad < conesize)
     {
     	// Histograms for all clusters in cone
       if(fFillUEBandSubtractHistograms > 1)
-        fhEtaPhiInConeCluster->Fill(fMomentum.Eta(), fMomentum.Phi(), GetEventWeight());
+        fhEtaPhiInConeCluster->Fill(fMomentum.Eta(), fMomentum.Phi(), GetEventWeight()*weightTrig);
      
       continue ;
     }
@@ -548,8 +549,8 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliCaloTrackParticleCorrelatio
     {
       phiBandPtSum+=fMomentum.Pt();
       if(fFillUEBandSubtractHistograms > 1) 
-        fhPhiBandClusterEtaPhi->Fill(fMomentum.Eta(), fMomentum.Phi(), GetEventWeight());
-      fhPhiBandClusterPt    ->Fill(ptTrig, fMomentum.Pt (), GetEventWeight());      
+        fhPhiBandClusterEtaPhi->Fill(fMomentum.Eta(), fMomentum.Phi(), GetEventWeight()*weightTrig);
+      fhPhiBandClusterPt    ->Fill(ptTrig, fMomentum.Pt (), GetEventWeight()*weightTrig);      
     }
     
     // Fill histogram for UE in eta band in EMCal acceptance
@@ -557,18 +558,18 @@ void AliAnaParticleIsolation::CalculateCaloUEBand(AliCaloTrackParticleCorrelatio
     {
       etaBandPtSum+=fMomentum.Pt();
       if(fFillUEBandSubtractHistograms > 1)
-        fhEtaBandClusterEtaPhi->Fill(fMomentum.Eta(), fMomentum.Phi(), GetEventWeight());
-      fhEtaBandClusterPt ->Fill(ptTrig, fMomentum.Pt(), GetEventWeight());
+        fhEtaBandClusterEtaPhi->Fill(fMomentum.Eta(), fMomentum.Phi(), GetEventWeight()*weightTrig);
+      fhEtaBandClusterPt ->Fill(ptTrig, fMomentum.Pt(), GetEventWeight()*weightTrig);
     }
   }
   
-  fhConeSumPtEtaBandUECluster->Fill(ptTrig, etaBandPtSum, GetEventWeight());
-  fhConeSumPtPhiBandUECluster->Fill(ptTrig, phiBandPtSum, GetEventWeight());
+  fhConeSumPtEtaBandUECluster->Fill(ptTrig, etaBandPtSum, GetEventWeight()*weightTrig);
+  fhConeSumPtPhiBandUECluster->Fill(ptTrig, phiBandPtSum, GetEventWeight()*weightTrig);
   
   if(fFillUEBandSubtractHistograms > 1)
   {
-    fhConeSumPtEtaBandUEClusterTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSum *GetEventWeight()); // Check
-    fhConeSumPtPhiBandUEClusterTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSum *GetEventWeight()); // Check
+    fhConeSumPtEtaBandUEClusterTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSum *GetEventWeight()*weightTrig); // Check
+    fhConeSumPtPhiBandUEClusterTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSum *GetEventWeight()*weightTrig); // Check
   }
 }
 
@@ -721,12 +722,13 @@ void AliAnaParticleIsolation::CalculateCaloCellUEBand(AliCaloTrackParticleCorrel
     }
   }
   
-  Float_t ptTrig = pCandidate->Pt();
-  
+  Float_t ptTrig     = pCandidate->Pt();
+  Float_t weightTrig = pCandidate->GetWeight();
+
   fhConeSumPtEtaBandUECell          ->Fill(ptTrig ,          etaBandPtSumCells, GetEventWeight());
-  fhConeSumPtPhiBandUECell          ->Fill(ptTrig ,          phiBandPtSumCells, GetEventWeight());
-  fhConeSumPtEtaBandUECellTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSumCells *GetEventWeight()); // Check
-  fhConeSumPtPhiBandUECellTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSumCells *GetEventWeight()); // Check
+  fhConeSumPtPhiBandUECell          ->Fill(ptTrig ,          phiBandPtSumCells, GetEventWeight()*weightTrig);
+  fhConeSumPtEtaBandUECellTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSumCells *GetEventWeight()*weightTrig); // Check
+  fhConeSumPtPhiBandUECellTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSumCells *GetEventWeight()*weightTrig); // Check
 }
 
 //________________________________________________________________________________________________
@@ -759,7 +761,8 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
   Float_t ptTrig    = pCandidate->Pt() ;
   Float_t phiTrig   = pCandidate->Phi();
   Float_t etaTrig   = pCandidate->Eta();
-  
+  Float_t weightTrig= pCandidate->GetWeight();
+
   Double_t bz = GetReader()->GetInputEvent()->GetMagneticField();
   
   TObjArray * trackList   = GetCTSTracks() ;
@@ -791,7 +794,7 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
     
     // Histogram of eta:phi for all tracks
     if(fFillUEBandSubtractHistograms > 1)
-      fhEtaPhiTrack->Fill(track->Eta(), track->Phi(), GetEventWeight());
+      fhEtaPhiTrack->Fill(track->Eta(), track->Phi(), GetEventWeight()*weightTrig);
     
     //exclude particles in cone
     Float_t rad = GetIsolationCut()->Radius(etaTrig, phiTrig, track->Eta(), track->Phi());
@@ -799,7 +802,7 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
     {
       // Histogram of eta:phi for all tracks in cone
       if(fFillUEBandSubtractHistograms > 1)
-        fhEtaPhiInConeTrack->Fill(track->Eta(), track->Phi(), GetEventWeight());
+        fhEtaPhiInConeTrack->Fill(track->Eta(), track->Phi(), GetEventWeight()*weightTrig);
       continue ;
     }
     
@@ -808,8 +811,8 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
     {
       phiBandPtSum+=track->Pt();
       if(fFillUEBandSubtractHistograms > 1) 
-        fhPhiBandTrackEtaPhi->Fill(track->Eta(), track->Phi(), GetEventWeight());
-      fhPhiBandTrackPt->Fill(ptTrig      , track->Pt (), GetEventWeight());
+        fhPhiBandTrackEtaPhi->Fill(track->Eta(), track->Phi(), GetEventWeight()*weightTrig);
+      fhPhiBandTrackPt->Fill(ptTrig      , track->Pt (), GetEventWeight()*weightTrig);
     }
     
     // Fill histogram for UE in eta band in EMCal acceptance
@@ -817,8 +820,8 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
     {
       etaBandPtSum+=track->Pt();
       if(fFillUEBandSubtractHistograms > 1)
-        fhEtaBandTrackEtaPhi->Fill(track->Eta(), track->Phi(), GetEventWeight());
-      fhEtaBandTrackPt    ->Fill(ptTrig      , track->Pt (), GetEventWeight());
+        fhEtaBandTrackEtaPhi->Fill(track->Eta(), track->Phi(), GetEventWeight()*weightTrig);
+      fhEtaBandTrackPt    ->Fill(ptTrig      , track->Pt (), GetEventWeight()*weightTrig);
     }
      
     // Fill the histograms at +-45 degrees in phi from trigger particle, perpedicular to trigger axis in phi
@@ -831,11 +834,11 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
     {
       sumptPerp+=track->Pt();
 
-      fhPtInPerpCone->Fill(ptTrig, track->Pt(), GetEventWeight());
+      fhPtInPerpCone->Fill(ptTrig, track->Pt(), GetEventWeight()*weightTrig);
       
       if(fStudyTracksInCone)
       {
-        fhEtaPhiInPerpCone->Fill(track->Eta(),track->Phi(), GetEventWeight());
+        fhEtaPhiInPerpCone->Fill(track->Eta(),track->Phi(), GetEventWeight()*weightTrig);
 
         ULong_t status = track->GetStatus();
         Bool_t okTOF = (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ;
@@ -844,8 +847,8 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
         
         if(okTOF && trackBC == 0)
         {
-          fhPtInPerpConeTOFBC0->Fill(ptTrig, track->Pt(), GetEventWeight());
-          fhEtaPhiInPerpConeTOFBC0->Fill(track->Eta(),track->Phi(), GetEventWeight());
+          fhPtInPerpConeTOFBC0->Fill(ptTrig, track->Pt(), GetEventWeight()*weightTrig);
+          fhEtaPhiInPerpConeTOFBC0->Fill(track->Eta(),track->Phi(), GetEventWeight()*weightTrig);
           
           sumptPerpBC0+=track->Pt();
         }
@@ -854,16 +857,16 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
         //Bool_t bITSRefit    = (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
         if(!bConstrained) 
         {
-          fhPtInPerpConeITSRefitOnSPDOn->Fill(ptTrig, track->Pt(), GetEventWeight());
-          fhEtaPhiInPerpConeITSRefitOnSPDOn->Fill(track->Eta(),track->Phi(), GetEventWeight());
+          fhPtInPerpConeITSRefitOnSPDOn->Fill(ptTrig, track->Pt(), GetEventWeight()*weightTrig);
+          fhEtaPhiInPerpConeITSRefitOnSPDOn->Fill(track->Eta(),track->Phi(), GetEventWeight()*weightTrig);
           
           sumptPerpITSSPD+=track->Pt();
         }
         
         if(okTOF && trackBC == 0 && !bConstrained)
         {
-          fhPtInPerpConeTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, track->Pt(), GetEventWeight());
-          fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn->Fill(track->Eta(),track->Phi(), GetEventWeight());
+          fhPtInPerpConeTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, track->Pt(), GetEventWeight()*weightTrig);
+          fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn->Fill(track->Eta(),track->Phi(), GetEventWeight()*weightTrig);
           
           sumptPerpBC0ITSSPD+=track->Pt();
         }
@@ -890,11 +893,11 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
         }
       }
       
-      fhPtInPerpCone->Fill(ptTrig, track->Pt(), GetEventWeight());
+      fhPtInPerpCone->Fill(ptTrig, track->Pt(), GetEventWeight()*weightTrig);
             
       if(fStudyTracksInCone)
       {
-        fhEtaPhiInPerpCone->Fill(track->Eta(),track->Phi(), GetEventWeight());
+        fhEtaPhiInPerpCone->Fill(track->Eta(),track->Phi(), GetEventWeight()*weightTrig);
 
         ULong_t status = track->GetStatus();
         Bool_t okTOF = (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ;
@@ -903,8 +906,8 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
         
         if(okTOF && trackBC == 0)
         {
-          fhPtInPerpConeTOFBC0->Fill(ptTrig, track->Pt(), GetEventWeight());
-          fhEtaPhiInPerpConeTOFBC0->Fill(track->Eta(),track->Phi(), GetEventWeight());
+          fhPtInPerpConeTOFBC0->Fill(ptTrig, track->Pt(), GetEventWeight()*weightTrig);
+          fhEtaPhiInPerpConeTOFBC0->Fill(track->Eta(),track->Phi(), GetEventWeight()*weightTrig);
           
           sumptPerpBC0+=track->Pt();
         }
@@ -913,16 +916,16 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
         //Bool_t bITSRefit    = (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit;
         if(!bConstrained) 
         {
-          fhPtInPerpConeITSRefitOnSPDOn->Fill(ptTrig, track->Pt(), GetEventWeight());
-          fhEtaPhiInPerpConeITSRefitOnSPDOn->Fill(track->Eta(),track->Phi(), GetEventWeight());
+          fhPtInPerpConeITSRefitOnSPDOn->Fill(ptTrig, track->Pt(), GetEventWeight()*weightTrig);
+          fhEtaPhiInPerpConeITSRefitOnSPDOn->Fill(track->Eta(),track->Phi(), GetEventWeight()*weightTrig);
           
           sumptPerpITSSPD+=track->Pt();
         }
         
         if(okTOF && trackBC == 0 && !bConstrained)
         {
-          fhPtInPerpConeTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, track->Pt(), GetEventWeight());
-          fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn->Fill(track->Eta(),track->Phi(), GetEventWeight());
+          fhPtInPerpConeTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, track->Pt(), GetEventWeight()*weightTrig);
+          fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn->Fill(track->Eta(),track->Phi(), GetEventWeight()*weightTrig);
           
           sumptPerpBC0ITSSPD+=track->Pt();
         }
@@ -943,12 +946,12 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
                     
           if(dcaCons == -999)
           {
-            fhPtTrackInPerpConeDCA[0]->Fill(track->Pt(),  dca[0], GetEventWeight());
-            fhPtTrackInPerpConeDCA[1]->Fill(track->Pt(),  dca[1], GetEventWeight());
+            fhPtTrackInPerpConeDCA[0]->Fill(track->Pt(),  dca[0], GetEventWeight()*weightTrig);
+            fhPtTrackInPerpConeDCA[1]->Fill(track->Pt(),  dca[1], GetEventWeight()*weightTrig);
           }
           else
           {
-            fhPtTrackInPerpConeDCA[2]->Fill(track->Pt(), dcaCons, GetEventWeight());
+            fhPtTrackInPerpConeDCA[2]->Fill(track->Pt(), dcaCons, GetEventWeight()*weightTrig);
           }
         } // trigger pt cut for DCA
         
@@ -956,21 +959,21 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
     } // r in cone
   } // track loop
   
-  fhPerpConeSumPt           ->Fill(ptTrig, sumptPerp   , GetEventWeight());
-  fhConeSumPtEtaBandUETrack ->Fill(ptTrig, etaBandPtSum, GetEventWeight());
-  fhConeSumPtPhiBandUETrack ->Fill(ptTrig, phiBandPtSum, GetEventWeight());
+  fhPerpConeSumPt           ->Fill(ptTrig, sumptPerp   , GetEventWeight()*weightTrig);
+  fhConeSumPtEtaBandUETrack ->Fill(ptTrig, etaBandPtSum, GetEventWeight()*weightTrig);
+  fhConeSumPtPhiBandUETrack ->Fill(ptTrig, phiBandPtSum, GetEventWeight()*weightTrig);
   
   if(fStudyPtCutInCone)
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      fhPerpConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumPerpTrackPerMinCut[icut], GetEventWeight());
-      fhPerpConeNTrackPerMinPtCut    ->Fill(icut+1, coneNPerpTrackPerMinCut    [icut], GetEventWeight());
+      fhPerpConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumPerpTrackPerMinCut[icut], GetEventWeight()*weightTrig);
+      fhPerpConeNTrackPerMinPtCut    ->Fill(icut+1, coneNPerpTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
       
       if ( ptTrig > 10 ) 
       {
-        fhPerpConeSumPtTrackPerMinPtCutLargePtTrig->Fill(icut+1, coneptsumPerpTrackPerMinCut[icut], GetEventWeight());   
-        fhPerpConeNTrackPerMinPtCutLargePtTrig    ->Fill(icut+1, coneNPerpTrackPerMinCut    [icut], GetEventWeight());   
+        fhPerpConeSumPtTrackPerMinPtCutLargePtTrig->Fill(icut+1, coneptsumPerpTrackPerMinCut[icut], GetEventWeight()*weightTrig);   
+        fhPerpConeNTrackPerMinPtCutLargePtTrig    ->Fill(icut+1, coneNPerpTrackPerMinCut    [icut], GetEventWeight()*weightTrig);   
       }
     }
   }
@@ -978,15 +981,15 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliCaloTrackParticleCorrelati
   
   if(fFillUEBandSubtractHistograms > 1)
   {
-    fhConeSumPtEtaBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSum *GetEventWeight()); // check
-    fhConeSumPtPhiBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSum *GetEventWeight()); // check
+    fhConeSumPtEtaBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSum *GetEventWeight()*weightTrig); // check
+    fhConeSumPtPhiBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, phiBandPtSum *GetEventWeight()*weightTrig); // check
   }
   
   if(fStudyTracksInCone) 
   {
-    fhPerpConeSumPtTOFBC0         ->Fill(ptTrig, sumptPerpBC0   , GetEventWeight());
-    fhPerpConeSumPtITSRefitOnSPDOn->Fill(ptTrig, sumptPerpITSSPD, GetEventWeight());
-    fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, sumptPerpBC0ITSSPD, GetEventWeight());
+    fhPerpConeSumPtTOFBC0         ->Fill(ptTrig, sumptPerpBC0   , GetEventWeight()*weightTrig);
+    fhPerpConeSumPtITSRefitOnSPDOn->Fill(ptTrig, sumptPerpITSSPD, GetEventWeight()*weightTrig);
+    fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, sumptPerpBC0ITSSPD, GetEventWeight()*weightTrig);
   }
 
 }
@@ -1017,7 +1020,8 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
   Float_t pt        = pCandidate->Pt();
   Float_t m02       = pCandidate->GetM02();
   Int_t  mcTag      = pCandidate->GetTag() ;
-  
+  Float_t weightTrig= pCandidate->GetWeight();
+
   // ------ //
   // Tracks //
   // ------ //
@@ -1036,8 +1040,8 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
     // Fill histograms
     if(fFillUEBandSubtractHistograms > 1)
     {
-      fhConeSumPtVSUETracksEtaBand->Fill(coneptsumTrack, etaUEptsumTrack, GetEventWeight());
-      fhConeSumPtVSUETracksPhiBand->Fill(coneptsumTrack, phiUEptsumTrack, GetEventWeight());
+      fhConeSumPtVSUETracksEtaBand->Fill(coneptsumTrack, etaUEptsumTrack, GetEventWeight()*weightTrig);
+      fhConeSumPtVSUETracksPhiBand->Fill(coneptsumTrack, phiUEptsumTrack, GetEventWeight()*weightTrig);
     }
     
     Float_t correctConeSumTrack    = 1;
@@ -1051,11 +1055,11 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
     coneptsumTrackSubPhi = coneptsumTrack - phiUEptsumTrackNorm;
     coneptsumTrackSubEta = coneptsumTrack - etaUEptsumTrackNorm;
     
-    fhConeSumPtPhiUESubTrack  ->Fill(ptTrig, coneptsumTrackSubPhi, GetEventWeight());
-    fhConeSumPtEtaUESubTrack  ->Fill(ptTrig, coneptsumTrackSubEta, GetEventWeight());
+    fhConeSumPtPhiUESubTrack  ->Fill(ptTrig, coneptsumTrackSubPhi, GetEventWeight()*weightTrig);
+    fhConeSumPtEtaUESubTrack  ->Fill(ptTrig, coneptsumTrackSubEta, GetEventWeight()*weightTrig);
 
-    fhConeSumPtPhiUENormTrack ->Fill(ptTrig, phiUEptsumTrackNorm , GetEventWeight());
-    fhConeSumPtEtaUENormTrack ->Fill(ptTrig, etaUEptsumTrackNorm , GetEventWeight());
+    fhConeSumPtPhiUENormTrack ->Fill(ptTrig, phiUEptsumTrackNorm , GetEventWeight()*weightTrig);
+    fhConeSumPtEtaUENormTrack ->Fill(ptTrig, etaUEptsumTrackNorm , GetEventWeight()*weightTrig);
 
     if(coneptsumTrack > 0)
     {
@@ -1065,16 +1069,16 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
     
     if(fFillUEBandSubtractHistograms > 1)
     {       
-      fhConeSumPtPhiUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubPhi *GetEventWeight()); // check
-      fhConeSumPtEtaUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubEta *GetEventWeight()); // check
+      fhConeSumPtPhiUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubPhi *GetEventWeight()*weightTrig); // check
+      fhConeSumPtEtaUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubEta *GetEventWeight()*weightTrig); // check
       
-      fhFractionTrackOutConeEta          ->Fill(ptTrig ,         correctConeSumTrack-1, GetEventWeight());
-      fhFractionTrackOutConeEtaTrigEtaPhi->Fill(etaTrig, phiTrig,correctConeSumTrack-1 *GetEventWeight()); // check
+      fhFractionTrackOutConeEta          ->Fill(ptTrig ,         correctConeSumTrack-1, GetEventWeight()*weightTrig);
+      fhFractionTrackOutConeEtaTrigEtaPhi->Fill(etaTrig, phiTrig,correctConeSumTrack-1 *GetEventWeight()*weightTrig); // check
       
-      fhConeSumPtSubvsConeSumPtTotPhiTrack    ->Fill(coneptsumTrack, coneptsumTrackSubPhi    , GetEventWeight());
-      fhConeSumPtSubNormvsConeSumPtTotPhiTrack->Fill(coneptsumTrack, coneptsumTrackSubPhiNorm, GetEventWeight());
-      fhConeSumPtSubvsConeSumPtTotEtaTrack    ->Fill(coneptsumTrack, coneptsumTrackSubEta    , GetEventWeight());
-      fhConeSumPtSubNormvsConeSumPtTotEtaTrack->Fill(coneptsumTrack, coneptsumTrackSubEtaNorm, GetEventWeight());
+      fhConeSumPtSubvsConeSumPtTotPhiTrack    ->Fill(coneptsumTrack, coneptsumTrackSubPhi    , GetEventWeight()*weightTrig);
+      fhConeSumPtSubNormvsConeSumPtTotPhiTrack->Fill(coneptsumTrack, coneptsumTrackSubPhiNorm, GetEventWeight()*weightTrig);
+      fhConeSumPtSubvsConeSumPtTotEtaTrack    ->Fill(coneptsumTrack, coneptsumTrackSubEta    , GetEventWeight()*weightTrig);
+      fhConeSumPtSubNormvsConeSumPtTotEtaTrack->Fill(coneptsumTrack, coneptsumTrackSubEtaNorm, GetEventWeight()*weightTrig);
     }
   }
   
@@ -1106,8 +1110,8 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
     // Fill histograms
     if(fFillUEBandSubtractHistograms > 1)
     {
-      fhConeSumPtVSUEClusterEtaBand->Fill(coneptsumCluster, etaUEptsumCluster, GetEventWeight());
-      fhConeSumPtVSUEClusterPhiBand->Fill(coneptsumCluster, phiUEptsumCluster, GetEventWeight());
+      fhConeSumPtVSUEClusterEtaBand->Fill(coneptsumCluster, etaUEptsumCluster, GetEventWeight()*weightTrig);
+      fhConeSumPtVSUEClusterPhiBand->Fill(coneptsumCluster, phiUEptsumCluster, GetEventWeight()*weightTrig);
     }
     
     Float_t correctConeSumClusterEta = 1;
@@ -1130,10 +1134,10 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
     coneptsumClusterSubPhi = coneptsumCluster - phiUEptsumClusterNorm;
     coneptsumClusterSubEta = coneptsumCluster - etaUEptsumClusterNorm;
         
-    fhConeSumPtPhiUENormCluster          ->Fill(ptTrig ,          phiUEptsumClusterNorm , GetEventWeight());
-    fhConeSumPtPhiUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubPhi, GetEventWeight());
-    fhConeSumPtEtaUENormCluster          ->Fill(ptTrig ,          etaUEptsumClusterNorm , GetEventWeight());
-    fhConeSumPtEtaUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubEta, GetEventWeight());
+    fhConeSumPtPhiUENormCluster          ->Fill(ptTrig ,          phiUEptsumClusterNorm , GetEventWeight()*weightTrig);
+    fhConeSumPtPhiUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubPhi, GetEventWeight()*weightTrig);
+    fhConeSumPtEtaUENormCluster          ->Fill(ptTrig ,          etaUEptsumClusterNorm , GetEventWeight()*weightTrig);
+    fhConeSumPtEtaUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubEta, GetEventWeight()*weightTrig);
     
     if(coneptsumCluster!=0)
     {
@@ -1143,18 +1147,18 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
     
     if(fFillUEBandSubtractHistograms > 1)
     {
-      fhConeSumPtPhiUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubPhi *GetEventWeight()); // check
-      fhConeSumPtEtaUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubEta *GetEventWeight()); // check
+      fhConeSumPtPhiUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubPhi *GetEventWeight()*weightTrig); // check
+      fhConeSumPtEtaUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubEta *GetEventWeight()*weightTrig); // check
       
-      fhFractionClusterOutConeEta          ->Fill(ptTrig ,          correctConeSumClusterEta-1, GetEventWeight());
-      fhFractionClusterOutConeEtaTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumClusterEta-1 *GetEventWeight()); // check
-      fhFractionClusterOutConePhi          ->Fill(ptTrig ,          correctConeSumClusterPhi-1, GetEventWeight());
-      fhFractionClusterOutConePhiTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumClusterPhi-1 *GetEventWeight()); // check
+      fhFractionClusterOutConeEta          ->Fill(ptTrig ,          correctConeSumClusterEta-1, GetEventWeight()*weightTrig);
+      fhFractionClusterOutConeEtaTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumClusterEta-1 *GetEventWeight()*weightTrig); // check
+      fhFractionClusterOutConePhi          ->Fill(ptTrig ,          correctConeSumClusterPhi-1, GetEventWeight()*weightTrig);
+      fhFractionClusterOutConePhiTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumClusterPhi-1 *GetEventWeight()*weightTrig); // check
       
-      fhConeSumPtSubvsConeSumPtTotPhiCluster    ->Fill(coneptsumCluster,coneptsumClusterSubPhi    , GetEventWeight());
-      fhConeSumPtSubNormvsConeSumPtTotPhiCluster->Fill(coneptsumCluster,coneptsumClusterSubPhiNorm, GetEventWeight());
-      fhConeSumPtSubvsConeSumPtTotEtaCluster    ->Fill(coneptsumCluster,coneptsumClusterSubEta    , GetEventWeight());
-      fhConeSumPtSubNormvsConeSumPtTotEtaCluster->Fill(coneptsumCluster,coneptsumClusterSubEtaNorm, GetEventWeight());
+      fhConeSumPtSubvsConeSumPtTotPhiCluster    ->Fill(coneptsumCluster,coneptsumClusterSubPhi    , GetEventWeight()*weightTrig);
+      fhConeSumPtSubNormvsConeSumPtTotPhiCluster->Fill(coneptsumCluster,coneptsumClusterSubPhiNorm, GetEventWeight()*weightTrig);
+      fhConeSumPtSubvsConeSumPtTotEtaCluster    ->Fill(coneptsumCluster,coneptsumClusterSubEta    , GetEventWeight()*weightTrig);
+      fhConeSumPtSubNormvsConeSumPtTotEtaCluster->Fill(coneptsumCluster,coneptsumClusterSubEtaNorm, GetEventWeight()*weightTrig);
     }
 
     // ----------- //
@@ -1207,25 +1211,25 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
       coneptsumCellSubPhi = coneptsumCell*correctConeSumCellEta*correctConeSumCellPhi - phiUEptsumCellNorm;
       coneptsumCellSubEta = coneptsumCell*correctConeSumCellEta*correctConeSumCellPhi - etaUEptsumCellNorm;
       
-      fhConeSumPtPhiUESubCell           ->Fill(ptTrig ,          coneptsumCellSubPhi, GetEventWeight());
-      fhConeSumPtPhiUESubCellTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumCellSubPhi *GetEventWeight()); // check
-      fhConeSumPtEtaUESubCell           ->Fill(ptTrig ,          coneptsumCellSubEta, GetEventWeight());
-      fhConeSumPtEtaUESubCellTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumCellSubEta *GetEventWeight()); // check
+      fhConeSumPtPhiUESubCell           ->Fill(ptTrig ,          coneptsumCellSubPhi, GetEventWeight()*weightTrig);
+      fhConeSumPtPhiUESubCellTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumCellSubPhi *GetEventWeight()*weightTrig); // check
+      fhConeSumPtEtaUESubCell           ->Fill(ptTrig ,          coneptsumCellSubEta, GetEventWeight()*weightTrig);
+      fhConeSumPtEtaUESubCellTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumCellSubEta *GetEventWeight()*weightTrig); // check
       
-      fhFractionCellOutConeEta          ->Fill(ptTrig ,          correctConeSumCellEta-1, GetEventWeight());
-      fhFractionCellOutConeEtaTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumCellEta-1 *GetEventWeight()); // check
-      fhFractionCellOutConePhi          ->Fill(ptTrig ,          correctConeSumCellPhi-1, GetEventWeight());
-      fhFractionCellOutConePhiTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumCellPhi-1 *GetEventWeight()); // check
+      fhFractionCellOutConeEta          ->Fill(ptTrig ,          correctConeSumCellEta-1, GetEventWeight()*weightTrig);
+      fhFractionCellOutConeEtaTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumCellEta-1 *GetEventWeight()*weightTrig); // check
+      fhFractionCellOutConePhi          ->Fill(ptTrig ,          correctConeSumCellPhi-1, GetEventWeight()*weightTrig);
+      fhFractionCellOutConePhiTrigEtaPhi->Fill(etaTrig, phiTrig, correctConeSumCellPhi-1 *GetEventWeight()*weightTrig); // check
       if ( coneptsumCell > 0.01 )
       {
         coneptsumCellSubPhiNorm = coneptsumCellSubPhi/coneptsumCell;
         coneptsumCellSubEtaNorm = coneptsumCellSubEta/coneptsumCell;
       }
       
-      fhConeSumPtSubvsConeSumPtTotPhiCell    ->Fill(coneptsumCell,coneptsumCellSubPhi    , GetEventWeight());
-      fhConeSumPtSubNormvsConeSumPtTotPhiCell->Fill(coneptsumCell,coneptsumCellSubPhiNorm, GetEventWeight());
-      fhConeSumPtSubvsConeSumPtTotEtaCell    ->Fill(coneptsumCell,coneptsumCellSubEta    , GetEventWeight());
-      fhConeSumPtSubNormvsConeSumPtTotEtaCell->Fill(coneptsumCell,coneptsumCellSubEtaNorm, GetEventWeight());
+      fhConeSumPtSubvsConeSumPtTotPhiCell    ->Fill(coneptsumCell,coneptsumCellSubPhi    , GetEventWeight()*weightTrig);
+      fhConeSumPtSubNormvsConeSumPtTotPhiCell->Fill(coneptsumCell,coneptsumCellSubPhiNorm, GetEventWeight()*weightTrig);
+      fhConeSumPtSubvsConeSumPtTotEtaCell    ->Fill(coneptsumCell,coneptsumCellSubEta    , GetEventWeight()*weightTrig);
+      fhConeSumPtSubNormvsConeSumPtTotEtaCell->Fill(coneptsumCell,coneptsumCellSubEtaNorm, GetEventWeight()*weightTrig);
     }
   }
   
@@ -1237,21 +1241,21 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
     // --------------------------- //
     // Tracks and clusters in cone //
     // --------------------------- //
-    fhConeSumPtPhiUESub ->Fill(ptTrig,  sumPhiUESub, GetEventWeight());
-    fhConeSumPtEtaUESub ->Fill(ptTrig,  sumEtaUESub, GetEventWeight());
+    fhConeSumPtPhiUESub ->Fill(ptTrig,  sumPhiUESub, GetEventWeight()*weightTrig);
+    fhConeSumPtEtaUESub ->Fill(ptTrig,  sumEtaUESub, GetEventWeight()*weightTrig);
     
     if(fFillUEBandSubtractHistograms > 1)
     {
-      fhConeSumPtPhiUESubTrigEtaPhi->Fill(etaTrig, phiTrig, sumPhiUESub *GetEventWeight()); // check
-      fhConeSumPtEtaUESubTrigEtaPhi->Fill(etaTrig, phiTrig, sumEtaUESub *GetEventWeight()); // check
+      fhConeSumPtPhiUESubTrigEtaPhi->Fill(etaTrig, phiTrig, sumPhiUESub *GetEventWeight()*weightTrig); // check
+      fhConeSumPtEtaUESubTrigEtaPhi->Fill(etaTrig, phiTrig, sumEtaUESub *GetEventWeight()*weightTrig); // check
       
-      fhEtaBandClustervsTrack    ->Fill(etaUEptsumCluster    ,etaUEptsumTrack    , GetEventWeight());
-      fhPhiBandClustervsTrack    ->Fill(phiUEptsumCluster    ,phiUEptsumTrack    , GetEventWeight());
-      fhEtaBandNormClustervsTrack->Fill(etaUEptsumClusterNorm,etaUEptsumTrackNorm, GetEventWeight());
-      fhPhiBandNormClustervsTrack->Fill(phiUEptsumClusterNorm,phiUEptsumTrackNorm, GetEventWeight());
+      fhEtaBandClustervsTrack    ->Fill(etaUEptsumCluster    ,etaUEptsumTrack    , GetEventWeight()*weightTrig);
+      fhPhiBandClustervsTrack    ->Fill(phiUEptsumCluster    ,phiUEptsumTrack    , GetEventWeight()*weightTrig);
+      fhEtaBandNormClustervsTrack->Fill(etaUEptsumClusterNorm,etaUEptsumTrackNorm, GetEventWeight()*weightTrig);
+      fhPhiBandNormClustervsTrack->Fill(phiUEptsumClusterNorm,phiUEptsumTrackNorm, GetEventWeight()*weightTrig);
       
-      fhConeSumPtEtaUESubClustervsTrack->Fill(coneptsumClusterSubEta, coneptsumTrackSubEta, GetEventWeight());
-      fhConeSumPtPhiUESubClustervsTrack->Fill(coneptsumClusterSubPhi, coneptsumTrackSubPhi, GetEventWeight());
+      fhConeSumPtEtaUESubClustervsTrack->Fill(coneptsumClusterSubEta, coneptsumTrackSubEta, GetEventWeight()*weightTrig);
+      fhConeSumPtPhiUESubClustervsTrack->Fill(coneptsumClusterSubPhi, coneptsumTrackSubPhi, GetEventWeight()*weightTrig);
       
       
       // Get the sum of pt in cone after UE subtraction
@@ -1275,9 +1279,9 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
         {
           AliDebug(1,Form("\t Sum bin %d [%2.2f,%2.2f]" , ptsumAfterEtaBandUESubBin ,fBkgBinLimit[ptsumAfterEtaBandUESubBin] ,fBkgBinLimit[ptsumAfterEtaBandUESubBin +1]));
           
-          fhSumPtConeAfterEtaBandUESubBin[ptsumAfterEtaBandUESubBin]->Fill(pt, GetEventWeight());
+          fhSumPtConeAfterEtaBandUESubBin[ptsumAfterEtaBandUESubBin]->Fill(pt, GetEventWeight()*weightTrig);
           
-          if(fFillSSHisto) fhSumPtConeAfterEtaBandUESubBinLambda0[ptsumAfterEtaBandUESubBin]->Fill(pt, m02, GetEventWeight());
+          if(fFillSSHisto) fhSumPtConeAfterEtaBandUESubBinLambda0[ptsumAfterEtaBandUESubBin]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
         
         if(IsDataMC())
@@ -1286,8 +1290,8 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
           
           if( ptsumAfterEtaBandUESubBin  >=0 )
           {
-            fhSumPtConeAfterEtaBandUESubBinMC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, GetEventWeight());
-            if(fFillSSHisto)  fhSumPtConeAfterEtaBandUESubBinLambda0MC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, m02, GetEventWeight());
+            fhSumPtConeAfterEtaBandUESubBinMC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, GetEventWeight()*weightTrig);
+            if(fFillSSHisto)  fhSumPtConeAfterEtaBandUESubBinLambda0MC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
           }
           
           if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
@@ -1296,8 +1300,8 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
             
             if( ptsumAfterEtaBandUESubBin  >=0 )
             {
-              fhSumPtConeAfterEtaBandUESubBinMC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, GetEventWeight());
-              if(fFillSSHisto)  fhSumPtConeAfterEtaBandUESubBinLambda0MC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, m02, GetEventWeight());
+              fhSumPtConeAfterEtaBandUESubBinMC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, GetEventWeight()*weightTrig);
+              if(fFillSSHisto)  fhSumPtConeAfterEtaBandUESubBinLambda0MC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
             }
           }
           
@@ -1318,7 +1322,7 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
             if( ptsumAfterEtaBandUESubBin  >=0 )
             {
               fhSumPtConeAfterEtaBandUESubBinMC [ ptsumAfterEtaBandSubBinMC]->Fill(pt);
-              if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, m02, GetEventWeight());
+              if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumAfterEtaBandSubBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
             }
             
           } // check decays with lost pairs
@@ -1337,18 +1341,18 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliCaloTrackPa
       Double_t sumPhiUESubTrackCell = coneptsumCellSubPhi + coneptsumTrackSubPhi;
       Double_t sumEtaUESubTrackCell = coneptsumCellSubEta + coneptsumTrackSubEta;
       
-      fhConeSumPtPhiUESubTrackCell          ->Fill(ptTrig ,          sumPhiUESubTrackCell, GetEventWeight());
-      fhConeSumPtPhiUESubTrackCellTrigEtaPhi->Fill(etaTrig, phiTrig, sumPhiUESubTrackCell *GetEventWeight()); // check
-      fhConeSumPtEtaUESubTrackCell          ->Fill(ptTrig ,          sumEtaUESubTrackCell, GetEventWeight());
-      fhConeSumPtEtaUESubTrackCellTrigEtaPhi->Fill(etaTrig, phiTrig, sumEtaUESubTrackCell *GetEventWeight()); // check
+      fhConeSumPtPhiUESubTrackCell          ->Fill(ptTrig ,          sumPhiUESubTrackCell, GetEventWeight()*weightTrig);
+      fhConeSumPtPhiUESubTrackCellTrigEtaPhi->Fill(etaTrig, phiTrig, sumPhiUESubTrackCell *GetEventWeight()*weightTrig); // check
+      fhConeSumPtEtaUESubTrackCell          ->Fill(ptTrig ,          sumEtaUESubTrackCell, GetEventWeight()*weightTrig);
+      fhConeSumPtEtaUESubTrackCellTrigEtaPhi->Fill(etaTrig, phiTrig, sumEtaUESubTrackCell *GetEventWeight()*weightTrig); // check
       
-      fhEtaBandCellvsTrack    ->Fill(etaUEptsumCell    , etaUEptsumTrack    , GetEventWeight());
-      fhPhiBandCellvsTrack    ->Fill(phiUEptsumCell    , phiUEptsumTrack    , GetEventWeight());
-      fhEtaBandNormCellvsTrack->Fill(etaUEptsumCellNorm, etaUEptsumTrackNorm, GetEventWeight());
-      fhPhiBandNormCellvsTrack->Fill(phiUEptsumCellNorm, phiUEptsumTrackNorm, GetEventWeight());
+      fhEtaBandCellvsTrack    ->Fill(etaUEptsumCell    , etaUEptsumTrack    , GetEventWeight()*weightTrig);
+      fhPhiBandCellvsTrack    ->Fill(phiUEptsumCell    , phiUEptsumTrack    , GetEventWeight()*weightTrig);
+      fhEtaBandNormCellvsTrack->Fill(etaUEptsumCellNorm, etaUEptsumTrackNorm, GetEventWeight()*weightTrig);
+      fhPhiBandNormCellvsTrack->Fill(phiUEptsumCellNorm, phiUEptsumTrackNorm, GetEventWeight()*weightTrig);
       
-      fhConeSumPtEtaUESubCellvsTrack->Fill(coneptsumCellSubEta, coneptsumTrackSubEta, GetEventWeight());
-      fhConeSumPtPhiUESubCellvsTrack->Fill(coneptsumCellSubPhi, coneptsumTrackSubPhi, GetEventWeight());
+      fhConeSumPtEtaUESubCellvsTrack->Fill(coneptsumCellSubEta, coneptsumTrackSubEta, GetEventWeight()*weightTrig);
+      fhConeSumPtPhiUESubCellvsTrack->Fill(coneptsumCellSubPhi, coneptsumTrackSubPhi, GetEventWeight()*weightTrig);
     }
   }
 }
@@ -1364,22 +1368,23 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
   
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
 
-  Float_t ptTrig = aodParticle->Pt();
-  
+  Float_t ptTrig     = aodParticle->Pt();
+  Float_t weightTrig = aodParticle->GetWeight();
+
   // Recover reference arrays with clusters and tracks
   TObjArray * refclusters = aodParticle->GetObjArray(GetAODObjArrayName()+"Clusters");
   if(!refclusters)
   {
-    fhConeSumPtCluster ->Fill(ptTrig, 0., GetEventWeight());
-    fhConePtLeadCluster->Fill(ptTrig, 0., GetEventWeight());
+    fhConeSumPtCluster ->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
+    fhConePtLeadCluster->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
     if(fStudyExoticTrigger && fIsExoticTrigger)
-      fhConeSumPtClusterExoTrigger->Fill(ptTrig, 0., GetEventWeight());
+      fhConeSumPtClusterExoTrigger->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
 
     if(fFillPerSMHistograms)     
-      fhConeSumPtClusterPerSM[aodParticle->GetSModNumber()]->Fill(ptTrig,0., GetEventWeight());
+      fhConeSumPtClusterPerSM[aodParticle->GetSModNumber()]->Fill(ptTrig,0., GetEventWeight()*weightTrig);
 
     if(fFillPerTCardIndexHistograms)     
-      fhConeSumPtClusterPerTCardIndex[fTCardIndex]->Fill(ptTrig,0., GetEventWeight());
+      fhConeSumPtClusterPerTCardIndex[fTCardIndex]->Fill(ptTrig,0., GetEventWeight()*weightTrig);
     
     if(coneptLeadCluster > 0  || coneptsumCluster > 0) 
       AliError(Form("No ref tracks!!! sum %f, lead %f",coneptsumCluster,coneptLeadCluster));
@@ -1449,39 +1454,39 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
     
     ptcone = fMomentum.Pt();
     
-    fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight());
-    fhPtClusterInCone->Fill(ptTrig, ptcone, GetEventWeight());
+    fhPtInCone       ->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+    fhPtClusterInCone->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
     
     if(fFillPerSMHistograms) 
     {
-      fhPtInConePerSM       [aodParticle->GetSModNumber()]->Fill(ptTrig, ptcone, GetEventWeight());
-      fhPtClusterInConePerSM[aodParticle->GetSModNumber()]->Fill(ptTrig, ptcone, GetEventWeight());
+      fhPtInConePerSM       [aodParticle->GetSModNumber()]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+      fhPtClusterInConePerSM[aodParticle->GetSModNumber()]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
     }
  
     if(fFillPerTCardIndexHistograms) 
     {
-      fhPtInConePerTCardIndex       [fTCardIndex]->Fill(ptTrig, ptcone, GetEventWeight());
-      fhPtClusterInConePerTCardIndex[fTCardIndex]->Fill(ptTrig, ptcone, GetEventWeight());
+      fhPtInConePerTCardIndex       [fTCardIndex]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+      fhPtClusterInConePerTCardIndex[fTCardIndex]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
     }
     
     if(fStudyExoticTrigger && fIsExoticTrigger)
     {
-      fhPtInConeExoTrigger        ->Fill(ptTrig , ptcone, GetEventWeight());
-      fhPtClusterInConeExoTrigger ->Fill(ptTrig , ptcone, GetEventWeight());
+      fhPtInConeExoTrigger        ->Fill(ptTrig , ptcone, GetEventWeight()*weightTrig);
+      fhPtClusterInConeExoTrigger ->Fill(ptTrig , ptcone, GetEventWeight()*weightTrig);
     }
     
     if(IsPileUpAnalysisOn())
     {
-      if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, ptcone, GetEventWeight());
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, ptcone, GetEventWeight());
+      if(GetReader()->IsPileUpFromSPD())               fhPtInConePileUp[0]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, ptcone, GetEventWeight()*weightTrig);
     }
     
-    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), ptcone, GetEventWeight());
+    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), ptcone, GetEventWeight()*weightTrig);
     
     coneptsumCluster+=ptcone;
     if(ptcone > coneptLeadCluster) coneptLeadCluster = ptcone;
@@ -1508,8 +1513,8 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
         if ( distance < fRCutInCone[icut] ) 
         {
           coneptsumClusterPerRCut[icut]+=ptcone;
-          fhPtClusterInConePerRCut->Fill(icut+1, ptcone, GetEventWeight());
-          if(ptTrig > 10) fhPtClusterInConePerRCutLargePtTrig->Fill(icut+1, ptcone, GetEventWeight());
+          fhPtClusterInConePerRCut->Fill(icut+1, ptcone, GetEventWeight()*weightTrig);
+          if(ptTrig > 10) fhPtClusterInConePerRCutLargePtTrig->Fill(icut+1, ptcone, GetEventWeight()*weightTrig);
         }
       }
     }
@@ -1524,8 +1529,8 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
         if ( fNCellsWithWeight >= fNCellsInCandidate[icut] ) 
         {
           coneptsumClusterPerNCellCut[icut]+=ptcone;
-          fhPtClusterInConePerNCellCut->Fill(icut+1, ptcone, GetEventWeight());
-          if(ptTrig > 10) fhPtClusterInConePerNCellCutLargePtTrig->Fill(icut+1, ptcone, GetEventWeight());
+          fhPtClusterInConePerNCellCut->Fill(icut+1, ptcone, GetEventWeight()*weightTrig);
+          if(ptTrig > 10) fhPtClusterInConePerNCellCutLargePtTrig->Fill(icut+1, ptcone, GetEventWeight()*weightTrig);
         }
       }
     }
@@ -1537,24 +1542,24 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
         if ( fClusterExoticity < fExoCutInCandidate[icut] ) 
         {
           coneptsumClusterPerExoCut[icut]+=ptcone;
-          fhPtClusterInConePerExoCut->Fill(icut+1, ptcone, GetEventWeight());
-          if(ptTrig > 10) fhPtClusterInConePerExoCutLargePtTrig->Fill(icut+1, ptcone, GetEventWeight());
+          fhPtClusterInConePerExoCut->Fill(icut+1, ptcone, GetEventWeight()*weightTrig);
+          if(ptTrig > 10) fhPtClusterInConePerExoCutLargePtTrig->Fill(icut+1, ptcone, GetEventWeight()*weightTrig);
         }
       }
     }
   }
   
-  fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
-  fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster, GetEventWeight());
+  fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight()*weightTrig);
+  fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster, GetEventWeight()*weightTrig);
   
   if(fStudyExoticTrigger && fIsExoticTrigger)
-    fhConeSumPtClusterExoTrigger  ->Fill(ptTrig, coneptsumCluster  , GetEventWeight());
+    fhConeSumPtClusterExoTrigger  ->Fill(ptTrig, coneptsumCluster  , GetEventWeight()*weightTrig);
   
   if(fFillPerSMHistograms)     
-    fhConeSumPtClusterPerSM[aodParticle->GetSModNumber()]->Fill(ptTrig,coneptsumCluster, GetEventWeight());
+    fhConeSumPtClusterPerSM[aodParticle->GetSModNumber()]->Fill(ptTrig,coneptsumCluster, GetEventWeight()*weightTrig);
  
   if(fFillPerTCardIndexHistograms)     
-    fhConeSumPtClusterPerTCardIndex[fTCardIndex]->Fill(ptTrig,coneptsumCluster, GetEventWeight());
+    fhConeSumPtClusterPerTCardIndex[fTCardIndex]->Fill(ptTrig,coneptsumCluster, GetEventWeight()*weightTrig);
   
   aodParticle->SetNeutralLeadPtInCone(coneptLeadCluster);
   aodParticle->SetNeutralPtSumInCone(coneptsumCluster);
@@ -1563,15 +1568,15 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      fhConeNClusterPerMinPtCut    ->Fill(icut, coneNClusterPerMinCut    [icut], GetEventWeight());
-      fhConeSumPtClusterPerMinPtCut->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventWeight());
-      fhConeSumPtClusterPerMaxPtCut->Fill(icut, coneptsumClusterPerMaxCut[icut], GetEventWeight());
+      fhConeNClusterPerMinPtCut    ->Fill(icut, coneNClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
+      fhConeSumPtClusterPerMinPtCut->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventWeight()*weightTrig);
+      fhConeSumPtClusterPerMaxPtCut->Fill(icut, coneptsumClusterPerMaxCut[icut], GetEventWeight()*weightTrig);
 
       if ( ptTrig > 10 ) 
       {
-        fhConeNClusterPerMinPtCutLargePtTrig    ->Fill(icut, coneNClusterPerMinCut    [icut], GetEventWeight());
-        fhConeSumPtClusterPerMinPtCutLargePtTrig->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventWeight());
-        fhConeSumPtClusterPerMaxPtCutLargePtTrig->Fill(icut, coneptsumClusterPerMaxCut[icut], GetEventWeight());
+        fhConeNClusterPerMinPtCutLargePtTrig    ->Fill(icut, coneNClusterPerMinCut    [icut], GetEventWeight()*weightTrig);
+        fhConeSumPtClusterPerMinPtCutLargePtTrig->Fill(icut, coneptsumClusterPerMinCut[icut], GetEventWeight()*weightTrig);
+        fhConeSumPtClusterPerMaxPtCutLargePtTrig->Fill(icut, coneptsumClusterPerMaxCut[icut], GetEventWeight()*weightTrig);
       }
     }
   }
@@ -1580,8 +1585,8 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
   {
     for(Int_t icut = 0; icut < fNRCutsInCone; icut++) 
     {
-      fhConeSumPtClusterPerRCut->Fill(icut, coneptsumClusterPerRCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtClusterPerRCutLargePtTrig->Fill(icut, coneptsumClusterPerRCut[icut], GetEventWeight());      
+      fhConeSumPtClusterPerRCut->Fill(icut, coneptsumClusterPerRCut[icut], GetEventWeight()*weightTrig);
+      if ( ptTrig > 10 ) fhConeSumPtClusterPerRCutLargePtTrig->Fill(icut, coneptsumClusterPerRCut[icut], GetEventWeight()*weightTrig);      
     }
   }
 
@@ -1592,8 +1597,8 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
 
     for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
     {
-      fhConeSumPtClusterPerNCellCut->Fill(icut, coneptsumClusterPerNCellCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtClusterPerNCellCutLargePtTrig->Fill(icut, coneptsumClusterPerNCellCut[icut], GetEventWeight());      
+      fhConeSumPtClusterPerNCellCut->Fill(icut, coneptsumClusterPerNCellCut[icut], GetEventWeight()*weightTrig);
+      if ( ptTrig > 10 ) fhConeSumPtClusterPerNCellCutLargePtTrig->Fill(icut, coneptsumClusterPerNCellCut[icut], GetEventWeight()*weightTrig);      
     }
   }
   
@@ -1601,8 +1606,8 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliCaloTrackParticleCorr
   { 
     for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
     {
-      fhConeSumPtClusterPerExoCut->Fill(icut, coneptsumClusterPerExoCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtClusterPerExoCutLargePtTrig->Fill(icut, coneptsumClusterPerExoCut[icut], GetEventWeight());      
+      fhConeSumPtClusterPerExoCut->Fill(icut, coneptsumClusterPerExoCut[icut], GetEventWeight()*weightTrig);
+      if ( ptTrig > 10 ) fhConeSumPtClusterPerExoCutLargePtTrig->Fill(icut, coneptsumClusterPerExoCut[icut], GetEventWeight()*weightTrig);      
     }
   }  
 }
@@ -1624,7 +1629,8 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliCaloTrackParticle
   Float_t  phiTrig = aodParticle->Phi();
   if(phiTrig<0) phiTrig += TMath::TwoPi();
   Float_t  etaTrig = aodParticle->Eta();
-  
+  Float_t  weightTrig= aodParticle->GetWeight();
+
   if(aodParticle->GetDetectorTag()==kEMCAL)
   {
     AliEMCALGeometry* eGeom = AliEMCALGeometry::GetInstance();
@@ -1679,7 +1685,7 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliCaloTrackParticle
             Int_t iabsId = eGeom->GetAbsCellIdFromCellIndexes(inSupMod,irowLoc,icolLoc);
             if(!eGeom->CheckAbsCellId(iabsId)) continue;
             
-            fhPtCellInCone->Fill(ptTrig, cells->GetCellAmplitude(iabsId), GetEventWeight());
+            fhPtCellInCone->Fill(ptTrig, cells->GetCellAmplitude(iabsId), GetEventWeight()*weightTrig);
             coneptsumCell += cells->GetCellAmplitude(iabsId);
           }
         }
@@ -1687,7 +1693,7 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliCaloTrackParticle
     }
   }
   
-  fhConeSumPtCell->Fill(ptTrig, coneptsumCell, GetEventWeight());
+  fhConeSumPtCell->Fill(ptTrig, coneptsumCell, GetEventWeight()*weightTrig);
 }
 
 //___________________________________________________________________________________________________________
@@ -1700,35 +1706,36 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
   coneptsumTrack  = 0;
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyNeutral ) return ;
   
-  Float_t  ptTrig = aodParticle->Pt();
-  
+  Float_t  ptTrig     = aodParticle->Pt();
+  Float_t  weightTrig = aodParticle->GetWeight();
+
   // Recover reference arrays with clusters and tracks
   TObjArray * reftracks   = aodParticle->GetObjArray(GetAODObjArrayName()+"Tracks");
   if(!reftracks)
   {
-    fhConeSumPtTrack      ->Fill(ptTrig, 0., GetEventWeight());
+    fhConeSumPtTrack      ->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
     
     if(fStudyExoticTrigger && fIsExoticTrigger)
-      fhConeSumPtTrackExoTrigger->Fill(ptTrig, 0., GetEventWeight());
+      fhConeSumPtTrackExoTrigger->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
     
     if(fFillPerSMHistograms)     
-      fhConeSumPtTrackPerSM[aodParticle->GetSModNumber()]->Fill(ptTrig,0., GetEventWeight());
+      fhConeSumPtTrackPerSM[aodParticle->GetSModNumber()]->Fill(ptTrig,0., GetEventWeight()*weightTrig);
  
     if(fFillPerTCardIndexHistograms)     
-      fhConeSumPtTrackPerTCardIndex[fTCardIndex]->Fill(ptTrig,0., GetEventWeight());
+      fhConeSumPtTrackPerTCardIndex[fTCardIndex]->Fill(ptTrig,0., GetEventWeight()*weightTrig);
     
     if(fStudyTracksInCone)
     {
-      fhConeSumPtTrackTOFNo ->Fill(ptTrig, 0., GetEventWeight());
-      fhConeSumPtTrackTOFBC0->Fill(ptTrig, 0., GetEventWeight());
-      fhConeSumPtTrackTOFBCN->Fill(ptTrig, 0., GetEventWeight());
-      fhConeSumPtTrackITSRefitOnSPDOn  ->Fill(ptTrig, 0., GetEventWeight());
-      fhConeSumPtTrackITSRefitOffSPDOff->Fill(ptTrig, 0., GetEventWeight());
-      fhConeSumPtTrackITSRefitOnSPDOff ->Fill(ptTrig, 0., GetEventWeight());
-      fhConeSumPtTrackTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, 0., GetEventWeight());
+      fhConeSumPtTrackTOFNo ->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
+      fhConeSumPtTrackTOFBC0->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
+      fhConeSumPtTrackTOFBCN->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
+      fhConeSumPtTrackITSRefitOnSPDOn  ->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
+      fhConeSumPtTrackITSRefitOffSPDOff->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
+      fhConeSumPtTrackITSRefitOnSPDOff ->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
+      fhConeSumPtTrackTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
     }
     
-    fhConePtLeadTrack     ->Fill(ptTrig, 0., GetEventWeight());
+    fhConePtLeadTrack     ->Fill(ptTrig, 0., GetEventWeight()*weightTrig);
     
     if(coneptLeadTrack > 0  || coneptsumTrack > 0) 
       AliError(Form("No ref tracks!!! sum %f, lead %f",coneptsumTrack,coneptLeadTrack));
@@ -1810,19 +1817,19 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
     
     pTtrack  = track->Pt();
     
-    fhPtInCone      ->Fill(ptTrig , pTtrack, GetEventWeight());
-    fhPtTrackInCone ->Fill(ptTrig , pTtrack, GetEventWeight());
+    fhPtInCone      ->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
+    fhPtTrackInCone ->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
     
     if(fFillPerSMHistograms)   
     {
-      fhPtInConePerSM     [aodParticle->GetSModNumber()]->Fill(ptTrig, pTtrack, GetEventWeight());
-      fhPtTrackInConePerSM[aodParticle->GetSModNumber()]->Fill(ptTrig, pTtrack, GetEventWeight());
+      fhPtInConePerSM     [aodParticle->GetSModNumber()]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+      fhPtTrackInConePerSM[aodParticle->GetSModNumber()]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
     }
 
     if(fFillPerTCardIndexHistograms)   
     {
-      fhPtInConePerTCardIndex     [fTCardIndex]->Fill(ptTrig, pTtrack, GetEventWeight());
-      fhPtTrackInConePerTCardIndex[fTCardIndex]->Fill(ptTrig, pTtrack, GetEventWeight());
+      fhPtInConePerTCardIndex     [fTCardIndex]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+      fhPtTrackInConePerTCardIndex[fTCardIndex]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
     }
     
     if( IsDataMC() && GetMC() )
@@ -1843,19 +1850,19 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
         else if ( TMath::Abs(partInConePDG) == 321  )  mcChTag = 1; 
         else if ( TMath::Abs(partInConePDG) == 2212 )  mcChTag = 2; 
         if(physPrimary)
-          fhPtTrackInConeMCPrimary  [mcChTag]->Fill(ptTrig , pTtrack, GetEventWeight());
+          fhPtTrackInConeMCPrimary  [mcChTag]->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
         else
-          fhPtTrackInConeMCSecondary[mcChTag]->Fill(ptTrig , pTtrack, GetEventWeight());
+          fhPtTrackInConeMCSecondary[mcChTag]->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
       }
     }
     
     if(fStudyExoticTrigger && fIsExoticTrigger)
     {
-      fhPtInConeExoTrigger      ->Fill(ptTrig , pTtrack, GetEventWeight());
-      fhPtTrackInConeExoTrigger ->Fill(ptTrig , pTtrack, GetEventWeight());
+      fhPtInConeExoTrigger      ->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
+      fhPtTrackInConeExoTrigger ->Fill(ptTrig , pTtrack, GetEventWeight()*weightTrig);
     }
     
-    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), pTtrack, GetEventWeight());
+    if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), pTtrack, GetEventWeight()*weightTrig);
     
     coneptsumTrack+=pTtrack;
     if(pTtrack > coneptLeadTrack) coneptLeadTrack = pTtrack;
@@ -1890,8 +1897,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
         if ( distance < fRCutInCone[icut] ) 
         {
           coneptsumTrackPerRCut[icut]+=pTtrack;
-          fhPtTrackInConePerRCut->Fill(icut+1, pTtrack, GetEventWeight());
-          if(ptTrig > 10) fhPtTrackInConePerRCutLargePtTrig->Fill(icut+1, pTtrack, GetEventWeight());
+          fhPtTrackInConePerRCut->Fill(icut+1, pTtrack, GetEventWeight()*weightTrig);
+          if(ptTrig > 10) fhPtTrackInConePerRCutLargePtTrig->Fill(icut+1, pTtrack, GetEventWeight()*weightTrig);
         }
       }
     }
@@ -1906,8 +1913,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
         if ( fNCellsWithWeight >= fNCellsInCandidate[icut] ) 
         {
           coneptsumTrackPerNCellCut[icut]+=pTtrack;
-          fhPtTrackInConePerNCellCut->Fill(icut+1, pTtrack, GetEventWeight());
-          if(ptTrig > 10) fhPtTrackInConePerNCellCutLargePtTrig->Fill(icut+1, pTtrack, GetEventWeight());
+          fhPtTrackInConePerNCellCut->Fill(icut+1, pTtrack, GetEventWeight()*weightTrig);
+          if(ptTrig > 10) fhPtTrackInConePerNCellCutLargePtTrig->Fill(icut+1, pTtrack, GetEventWeight()*weightTrig);
         }
       }
     }
@@ -1919,8 +1926,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
         if ( fClusterExoticity < fExoCutInCandidate[icut] ) 
         {
           coneptsumTrackPerExoCut[icut]+=pTtrack;
-          fhPtTrackInConePerExoCut->Fill(icut+1, pTtrack, GetEventWeight());
-          if(ptTrig > 10) fhPtTrackInConePerExoCutLargePtTrig->Fill(icut+1, pTtrack, GetEventWeight());
+          fhPtTrackInConePerExoCut->Fill(icut+1, pTtrack, GetEventWeight()*weightTrig);
+          if(ptTrig > 10) fhPtTrackInConePerExoCutLargePtTrig->Fill(icut+1, pTtrack, GetEventWeight()*weightTrig);
         }
       }
     }
@@ -1932,9 +1939,9 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
       phitrack = track->Phi();
       etatrack = track->Eta();
 
-      fhPhiTrackInCone->Fill(pTtrack, phitrack, GetEventWeight());
-      fhEtaTrackInCone->Fill(pTtrack, etatrack, GetEventWeight());
-      fhEtaPhiTrackInCone->Fill(etatrack, phitrack, GetEventWeight());
+      fhPhiTrackInCone->Fill(pTtrack, phitrack, GetEventWeight()*weightTrig);
+      fhEtaTrackInCone->Fill(pTtrack, etatrack, GetEventWeight()*weightTrig);
+      fhEtaPhiTrackInCone->Fill(etatrack, phitrack, GetEventWeight()*weightTrig);
       
       // TOF
       ULong_t status = track->GetStatus();
@@ -1943,39 +1950,39 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
       Double32_t tof = track->GetTOFsignal()*1e-3;    
       
       Int_t vtxBC = GetReader()->GetVertexBC();
-      if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA) fhPtTrackInConeVtxBC0->Fill(ptTrig, pTtrack, GetEventWeight());
+      if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA) fhPtTrackInConeVtxBC0->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
       
       if(okTOF)
       {
-        fhTrackTOFInCone->Fill(pTtrack,tof,GetEventWeight());
+        fhTrackTOFInCone->Fill(pTtrack,tof,GetEventWeight()*weightTrig);
         
         if(fStudyExoticTrigger && fIsExoticTrigger)
-          fhTrackTOFInConeExoTrigger->Fill(pTtrack,tof,GetEventWeight());
+          fhTrackTOFInConeExoTrigger->Fill(pTtrack,tof,GetEventWeight()*weightTrig);
         
         if(trackBC == 0) 
         {
-          fhPtTrackInConeTOFBC0 ->Fill(ptTrig , pTtrack , GetEventWeight());
-          fhPhiTrackInConeTOFBC0->Fill(pTtrack, phitrack, GetEventWeight());
-          fhEtaTrackInConeTOFBC0->Fill(pTtrack, etatrack, GetEventWeight());
-          fhEtaPhiTrackInConeTOFBC0->Fill(etatrack, phitrack, GetEventWeight());
-          fhTrackTOFInConeBC0   ->Fill(pTtrack, tof     , GetEventWeight());
+          fhPtTrackInConeTOFBC0 ->Fill(ptTrig , pTtrack , GetEventWeight()*weightTrig);
+          fhPhiTrackInConeTOFBC0->Fill(pTtrack, phitrack, GetEventWeight()*weightTrig);
+          fhEtaTrackInConeTOFBC0->Fill(pTtrack, etatrack, GetEventWeight()*weightTrig);
+          fhEtaPhiTrackInConeTOFBC0->Fill(etatrack, phitrack, GetEventWeight()*weightTrig);
+          fhTrackTOFInConeBC0   ->Fill(pTtrack, tof     , GetEventWeight()*weightTrig);
           coneptsumTrackTOFBC0 += pTtrack;
         }
         else 
         {
-          fhPtTrackInConeTOFBCN ->Fill(ptTrig , pTtrack , GetEventWeight());
-          fhPhiTrackInConeTOFBCN->Fill(pTtrack, phitrack, GetEventWeight());
-          fhEtaTrackInConeTOFBCN->Fill(pTtrack, etatrack, GetEventWeight());
-          fhEtaPhiTrackInConeTOFBCN->Fill(etatrack, phitrack, GetEventWeight());
+          fhPtTrackInConeTOFBCN ->Fill(ptTrig , pTtrack , GetEventWeight()*weightTrig);
+          fhPhiTrackInConeTOFBCN->Fill(pTtrack, phitrack, GetEventWeight()*weightTrig);
+          fhEtaTrackInConeTOFBCN->Fill(pTtrack, etatrack, GetEventWeight()*weightTrig);
+          fhEtaPhiTrackInConeTOFBCN->Fill(etatrack, phitrack, GetEventWeight()*weightTrig);
           coneptsumTrackTOFBCN += pTtrack;
         }
       }
       else
       {
-        fhPtTrackInConeTOFNo ->Fill(ptTrig, pTtrack , GetEventWeight());
-        fhPhiTrackInConeTOFNo->Fill(ptTrig, phitrack, GetEventWeight());
-        fhEtaTrackInConeTOFNo->Fill(ptTrig, etatrack, GetEventWeight());
-        fhEtaPhiTrackInConeTOFNo->Fill(etatrack, phitrack, GetEventWeight());
+        fhPtTrackInConeTOFNo ->Fill(ptTrig, pTtrack , GetEventWeight()*weightTrig);
+        fhPhiTrackInConeTOFNo->Fill(ptTrig, phitrack, GetEventWeight()*weightTrig);
+        fhEtaTrackInConeTOFNo->Fill(ptTrig, etatrack, GetEventWeight()*weightTrig);
+        fhEtaPhiTrackInConeTOFNo->Fill(etatrack, phitrack, GetEventWeight()*weightTrig);
         coneptsumTrackTOFNo  += pTtrack;
       }
       
@@ -1990,35 +1997,35 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
         if(bITSRefit)
         {
           coneptsumTrackITSRefitOnSPDOff  += pTtrack;
-          fhPtTrackInConeITSRefitOnSPDOff ->Fill(ptTrig, pTtrack , GetEventWeight());
-          fhPhiTrackInConeITSRefitOnSPDOff->Fill(ptTrig, phitrack, GetEventWeight());
-          fhEtaTrackInConeITSRefitOnSPDOff->Fill(ptTrig, etatrack, GetEventWeight());
-          fhEtaPhiTrackInConeITSRefitOnSPDOff->Fill(etatrack, phitrack, GetEventWeight());
+          fhPtTrackInConeITSRefitOnSPDOff ->Fill(ptTrig, pTtrack , GetEventWeight()*weightTrig);
+          fhPhiTrackInConeITSRefitOnSPDOff->Fill(ptTrig, phitrack, GetEventWeight()*weightTrig);
+          fhEtaTrackInConeITSRefitOnSPDOff->Fill(ptTrig, etatrack, GetEventWeight()*weightTrig);
+          fhEtaPhiTrackInConeITSRefitOnSPDOff->Fill(etatrack, phitrack, GetEventWeight()*weightTrig);
         }
         else
         {
           coneptsumTrackITSRefitOffSPDOff += pTtrack;
-          fhPtTrackInConeITSRefitOffSPDOff ->Fill(ptTrig, pTtrack , GetEventWeight());
-          fhPhiTrackInConeITSRefitOffSPDOff->Fill(ptTrig, phitrack, GetEventWeight());
-          fhEtaTrackInConeITSRefitOffSPDOff->Fill(ptTrig, etatrack, GetEventWeight());
-          fhEtaPhiTrackInConeITSRefitOffSPDOff->Fill(etatrack, phitrack, GetEventWeight());
+          fhPtTrackInConeITSRefitOffSPDOff ->Fill(ptTrig, pTtrack , GetEventWeight()*weightTrig);
+          fhPhiTrackInConeITSRefitOffSPDOff->Fill(ptTrig, phitrack, GetEventWeight()*weightTrig);
+          fhEtaTrackInConeITSRefitOffSPDOff->Fill(ptTrig, etatrack, GetEventWeight()*weightTrig);
+          fhEtaPhiTrackInConeITSRefitOffSPDOff->Fill(etatrack, phitrack, GetEventWeight()*weightTrig);
         }
       }
       else
       {
         coneptsumTrackITSRefitOnSPDOn   += pTtrack;
-        fhPtTrackInConeITSRefitOnSPDOn ->Fill(ptTrig, pTtrack , GetEventWeight());
-        fhPhiTrackInConeITSRefitOnSPDOn->Fill(ptTrig, phitrack, GetEventWeight());
-        fhEtaTrackInConeITSRefitOnSPDOn->Fill(ptTrig, etatrack, GetEventWeight());
-        fhEtaPhiTrackInConeITSRefitOnSPDOn->Fill(etatrack, phitrack, GetEventWeight());
+        fhPtTrackInConeITSRefitOnSPDOn ->Fill(ptTrig, pTtrack , GetEventWeight()*weightTrig);
+        fhPhiTrackInConeITSRefitOnSPDOn->Fill(ptTrig, phitrack, GetEventWeight()*weightTrig);
+        fhEtaTrackInConeITSRefitOnSPDOn->Fill(ptTrig, etatrack, GetEventWeight()*weightTrig);
+        fhEtaPhiTrackInConeITSRefitOnSPDOn->Fill(etatrack, phitrack, GetEventWeight()*weightTrig);
       }
       
       if(okTOF && trackBC == 0 && !bConstrained)
       {
-        fhPtTrackInConeTOFBC0ITSRefitOnSPDOn ->Fill(ptTrig , pTtrack , GetEventWeight());
-        fhPhiTrackInConeTOFBC0ITSRefitOnSPDOn->Fill(pTtrack, phitrack, GetEventWeight());
-        fhEtaTrackInConeTOFBC0ITSRefitOnSPDOn->Fill(pTtrack, etatrack, GetEventWeight());
-        fhEtaPhiTrackInConeTOFBC0ITSRefitOnSPDOn->Fill(etatrack, phitrack, GetEventWeight());
+        fhPtTrackInConeTOFBC0ITSRefitOnSPDOn ->Fill(ptTrig , pTtrack , GetEventWeight()*weightTrig);
+        fhPhiTrackInConeTOFBC0ITSRefitOnSPDOn->Fill(pTtrack, phitrack, GetEventWeight()*weightTrig);
+        fhEtaTrackInConeTOFBC0ITSRefitOnSPDOn->Fill(pTtrack, etatrack, GetEventWeight()*weightTrig);
+        fhEtaPhiTrackInConeTOFBC0ITSRefitOnSPDOn->Fill(etatrack, phitrack, GetEventWeight()*weightTrig);
         coneptsumTrackTOFBC0ITSRefitOnSPDOn += pTtrack;
       }
       
@@ -2040,12 +2047,12 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
                 
         if(dcaCons == -999)
         {
-          fhPtTrackInConeDCA[0]->Fill(pTtrack,  dca[0], GetEventWeight());
-          fhPtTrackInConeDCA[1]->Fill(pTtrack,  dca[1], GetEventWeight());
+          fhPtTrackInConeDCA[0]->Fill(pTtrack,  dca[0], GetEventWeight()*weightTrig);
+          fhPtTrackInConeDCA[1]->Fill(pTtrack,  dca[1], GetEventWeight()*weightTrig);
         }
         else
         {
-          fhPtTrackInConeDCA[2]->Fill(pTtrack, dcaCons, GetEventWeight());
+          fhPtTrackInConeDCA[2]->Fill(pTtrack, dcaCons, GetEventWeight()*weightTrig);
         }
       } // trigger pt cut
     }
@@ -2054,46 +2061,46 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
     {
       if(GetReader()->IsPileUpFromSPD())             
       {  
-        fhPtInConePileUp[0]            ->Fill(ptTrig, pTtrack, GetEventWeight());
+        fhPtInConePileUp[0]            ->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
         if(fStudyTracksInCone)
         {
-          if(okTOF && trackBC!=0 )                         fhPtTrackInConeOtherBCPileUpSPD->Fill(ptTrig, pTtrack, GetEventWeight());
-          if(okTOF && trackBC==0 )                         fhPtTrackInConeBC0PileUpSPD    ->Fill(ptTrig, pTtrack, GetEventWeight()); 
+          if(okTOF && trackBC!=0 )                         fhPtTrackInConeOtherBCPileUpSPD->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+          if(okTOF && trackBC==0 )                         fhPtTrackInConeBC0PileUpSPD    ->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig); 
         }
       }
       
-      if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, pTtrack, GetEventWeight());
+      if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, pTtrack, GetEventWeight()*weightTrig);
     }
   }
 
-  fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight());
-  fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, GetEventWeight());
+  fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight()*weightTrig);
+  fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, GetEventWeight()*weightTrig);
   
   if(fFillPerSMHistograms)     
-    fhConeSumPtTrackPerSM[aodParticle->GetSModNumber()]->Fill(ptTrig, coneptsumTrack, GetEventWeight());
+    fhConeSumPtTrackPerSM[aodParticle->GetSModNumber()]->Fill(ptTrig, coneptsumTrack, GetEventWeight()*weightTrig);
   
   if(fFillPerTCardIndexHistograms)     
-    fhConeSumPtTrackPerTCardIndex[fTCardIndex]->Fill(ptTrig, coneptsumTrack, GetEventWeight());
+    fhConeSumPtTrackPerTCardIndex[fTCardIndex]->Fill(ptTrig, coneptsumTrack, GetEventWeight()*weightTrig);
   
   if(fStudyExoticTrigger && fIsExoticTrigger)
-    fhConeSumPtTrackExoTrigger  ->Fill(ptTrig, coneptsumTrack  , GetEventWeight());
+    fhConeSumPtTrackExoTrigger  ->Fill(ptTrig, coneptsumTrack  , GetEventWeight()*weightTrig);
   
   if(fStudyTracksInCone)
   {
-    fhConeSumPtTrackTOFBC0->Fill(ptTrig, coneptsumTrackTOFBC0, GetEventWeight());
-    fhConeSumPtTrackTOFBCN->Fill(ptTrig, coneptsumTrackTOFBCN, GetEventWeight());
-    fhConeSumPtTrackTOFNo ->Fill(ptTrig, coneptsumTrackTOFNo , GetEventWeight());
+    fhConeSumPtTrackTOFBC0->Fill(ptTrig, coneptsumTrackTOFBC0, GetEventWeight()*weightTrig);
+    fhConeSumPtTrackTOFBCN->Fill(ptTrig, coneptsumTrackTOFBCN, GetEventWeight()*weightTrig);
+    fhConeSumPtTrackTOFNo ->Fill(ptTrig, coneptsumTrackTOFNo , GetEventWeight()*weightTrig);
 
-    fhConeSumPtTrackITSRefitOnSPDOn  ->Fill(ptTrig, coneptsumTrackITSRefitOnSPDOn  , GetEventWeight());
-    fhConeSumPtTrackITSRefitOffSPDOff->Fill(ptTrig, coneptsumTrackITSRefitOffSPDOff, GetEventWeight());
-    fhConeSumPtTrackITSRefitOnSPDOff ->Fill(ptTrig, coneptsumTrackITSRefitOnSPDOff , GetEventWeight());
+    fhConeSumPtTrackITSRefitOnSPDOn  ->Fill(ptTrig, coneptsumTrackITSRefitOnSPDOn  , GetEventWeight()*weightTrig);
+    fhConeSumPtTrackITSRefitOffSPDOff->Fill(ptTrig, coneptsumTrackITSRefitOffSPDOff, GetEventWeight()*weightTrig);
+    fhConeSumPtTrackITSRefitOnSPDOff ->Fill(ptTrig, coneptsumTrackITSRefitOnSPDOff , GetEventWeight()*weightTrig);
     
-    fhConeSumPtTrackTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, coneptsumTrackTOFBC0ITSRefitOnSPDOn, GetEventWeight());
+    fhConeSumPtTrackTOFBC0ITSRefitOnSPDOn->Fill(ptTrig, coneptsumTrackTOFBC0ITSRefitOnSPDOn, GetEventWeight()*weightTrig);
   }
   
   aodParticle->SetChargedLeadPtInCone(coneptLeadTrack);
@@ -2103,15 +2110,15 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      fhConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight());
-      fhConeSumPtTrackPerMaxPtCut->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight());
-      fhConeNTrackPerMinPtCut    ->Fill(icut+1, coneNTrackPerMinCut    [icut], GetEventWeight());
+      fhConeSumPtTrackPerMinPtCut->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight()*weightTrig);
+      fhConeSumPtTrackPerMaxPtCut->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight()*weightTrig);
+      fhConeNTrackPerMinPtCut    ->Fill(icut+1, coneNTrackPerMinCut    [icut], GetEventWeight()*weightTrig);
 
       if ( ptTrig > 10 ) 
       {
-        fhConeSumPtTrackPerMinPtCutLargePtTrig->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight());   
-        fhConeSumPtTrackPerMaxPtCutLargePtTrig->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight());
-        fhConeNTrackPerMinPtCutLargePtTrig    ->Fill(icut+1, coneNTrackPerMinCut    [icut], GetEventWeight());   
+        fhConeSumPtTrackPerMinPtCutLargePtTrig->Fill(icut+1, coneptsumTrackPerMinCut[icut], GetEventWeight()*weightTrig);   
+        fhConeSumPtTrackPerMaxPtCutLargePtTrig->Fill(icut+1, coneptsumTrackPerMaxCut[icut], GetEventWeight()*weightTrig);
+        fhConeNTrackPerMinPtCutLargePtTrig    ->Fill(icut+1, coneNTrackPerMinCut    [icut], GetEventWeight()*weightTrig);   
       }
     }
   }
@@ -2120,8 +2127,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
   {
     for(Int_t icut = 0; icut < fNEtaCutsInCone; icut++) 
     {
-      fhConeSumPtTrackPerEtaCut ->Fill(icut+1, coneptsumTrackPerEtaCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtTrackPerEtaCutLargePtTrig->Fill(icut+1, coneptsumTrackPerEtaCut[icut], GetEventWeight());
+      fhConeSumPtTrackPerEtaCut ->Fill(icut+1, coneptsumTrackPerEtaCut[icut], GetEventWeight()*weightTrig);
+      if ( ptTrig > 10 ) fhConeSumPtTrackPerEtaCutLargePtTrig->Fill(icut+1, coneptsumTrackPerEtaCut[icut], GetEventWeight()*weightTrig);
     }
   }
   
@@ -2129,8 +2136,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
   {
     for(Int_t icut = 0; icut < fNRCutsInCone; icut++) 
     {
-      fhConeSumPtTrackPerRCut ->Fill(icut+1, coneptsumTrackPerRCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtTrackPerRCutLargePtTrig->Fill(icut+1, coneptsumTrackPerRCut[icut], GetEventWeight());
+      fhConeSumPtTrackPerRCut ->Fill(icut+1, coneptsumTrackPerRCut[icut], GetEventWeight()*weightTrig);
+      if ( ptTrig > 10 ) fhConeSumPtTrackPerRCutLargePtTrig->Fill(icut+1, coneptsumTrackPerRCut[icut], GetEventWeight()*weightTrig);
     }
   }
   
@@ -2141,8 +2148,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
 
     for(Int_t icut = 0; icut < fNNCellsInCandidate; icut++) 
     {
-      fhConeSumPtTrackPerNCellCut->Fill(icut, coneptsumTrackPerNCellCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtTrackPerNCellCutLargePtTrig->Fill(icut, coneptsumTrackPerNCellCut[icut], GetEventWeight());      
+      fhConeSumPtTrackPerNCellCut->Fill(icut, coneptsumTrackPerNCellCut[icut], GetEventWeight()*weightTrig);
+      if ( ptTrig > 10 ) fhConeSumPtTrackPerNCellCutLargePtTrig->Fill(icut, coneptsumTrackPerNCellCut[icut], GetEventWeight()*weightTrig);      
     }
   }
   
@@ -2150,8 +2157,8 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliCaloTrackParticleCor
   { 
     for(Int_t icut = 0; icut < fNExoCutInCandidate; icut++) 
     {
-      fhConeSumPtTrackPerExoCut->Fill(icut, coneptsumTrackPerExoCut[icut], GetEventWeight());
-      if ( ptTrig > 10 ) fhConeSumPtTrackPerExoCutLargePtTrig->Fill(icut, coneptsumTrackPerExoCut[icut], GetEventWeight());      
+      fhConeSumPtTrackPerExoCut->Fill(icut, coneptsumTrackPerExoCut[icut], GetEventWeight()*weightTrig);
+      if ( ptTrig > 10 ) fhConeSumPtTrackPerExoCutLargePtTrig->Fill(icut, coneptsumTrackPerExoCut[icut], GetEventWeight()*weightTrig);      
     }
   }
 }
@@ -2246,8 +2253,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
   Float_t pt     = pCandidate->Pt();
   Float_t eta    = pCandidate->Eta();
   Float_t phi    = GetPhi(pCandidate->Phi());
-  Int_t iSM      = pCandidate->GetSModNumber();
-  
+  Int_t   iSM    = pCandidate->GetSModNumber();
+  Float_t weightTrig = pCandidate->GetWeight();
+
   // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
   //
   if(fFillTaggedDecayHistograms)
@@ -2259,26 +2267,26 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     {
       if(!GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit])) continue;
       
-      if(fFillSSHisto) fhPtLambda0Decay[isolated][ibit]->Fill(pt, m02, GetEventWeight());
+      if(fFillSSHisto) fhPtLambda0Decay[isolated][ibit]->Fill(pt, m02, GetEventWeight()*weightTrig);
       
       // In case it was not done on the trigger selection task
       // apply here a shower shape cut to select photons
       if( m02 > fDecayTagsM02Cut ) continue;
       
-      fhPtDecay    [isolated][ibit]->Fill(pt,       GetEventWeight());
-      fhEtaPhiDecay[isolated][ibit]->Fill(eta, phi, GetEventWeight());
+      fhPtDecay    [isolated][ibit]->Fill(pt,       GetEventWeight()*weightTrig);
+      fhEtaPhiDecay[isolated][ibit]->Fill(eta, phi, GetEventWeight()*weightTrig);
       
       if(IsDataMC())
       {
-        fhPtDecayMC[isolated][ibit][mcIndex]->Fill(pt, GetEventWeight());
+        fhPtDecayMC[isolated][ibit][mcIndex]->Fill(pt, GetEventWeight()*weightTrig);
         
         if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
-          fhPtDecayMC[isolated][ibit][kmcPhoton]->Fill(pt, GetEventWeight());
+          fhPtDecayMC[isolated][ibit][kmcPhoton]->Fill(pt, GetEventWeight()*weightTrig);
         
         if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
         {
-          if     ( mcIndex == kmcPi0Decay ) fhPtDecayMC[isolated][ibit][kmcPi0DecayLostPair]->Fill(pt, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtDecayMC[isolated][ibit][kmcEtaDecayLostPair]->Fill(pt, GetEventWeight());
+          if     ( mcIndex == kmcPi0Decay ) fhPtDecayMC[isolated][ibit][kmcPi0DecayLostPair]->Fill(pt, GetEventWeight()*weightTrig);
+          else if( mcIndex == kmcEtaDecay ) fhPtDecayMC[isolated][ibit][kmcEtaDecayLostPair]->Fill(pt, GetEventWeight()*weightTrig);
         }
       }
     } // bit loop
@@ -2307,10 +2315,10 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     {
       AliDebug(1,Form("\t Lead bin %d [%2.2f,%2.2f]", leadptBin,fBkgBinLimit[leadptBin],fBkgBinLimit[leadptBin+1]));
       
-      fhPtLeadConeBin[leadptBin]->Fill(pt, GetEventWeight());
+      fhPtLeadConeBin[leadptBin]->Fill(pt, GetEventWeight()*weightTrig);
       
       if(fFillSSHisto)
-        fhPtLeadConeBinLambda0[leadptBin]->Fill(pt, m02, GetEventWeight());
+        fhPtLeadConeBinLambda0[leadptBin]->Fill(pt, m02, GetEventWeight()*weightTrig);
       
       if ( leadptBin == 0 )
         AliDebug(1,Form("No track/clusters in isolation cone: cand pt %2.2f GeV/c, track multiplicity %d, N clusters %d",
@@ -2321,9 +2329,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     {
       AliDebug(1,Form("\t Sum bin %d [%2.2f,%2.2f]" , ptsumBin ,fBkgBinLimit[ptsumBin] ,fBkgBinLimit[ptsumBin +1]));
       
-      fhSumPtConeBin[ptsumBin]->Fill(pt, GetEventWeight());
+      fhSumPtConeBin[ptsumBin]->Fill(pt, GetEventWeight()*weightTrig);
       
-      if(fFillSSHisto) fhSumPtConeBinLambda0[ptsumBin]->Fill(pt, m02, GetEventWeight());
+      if(fFillSSHisto) fhSumPtConeBinLambda0[ptsumBin]->Fill(pt, m02, GetEventWeight()*weightTrig);
     }
     
     // Check if it was a decay
@@ -2338,8 +2346,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
         {
           Int_t leadptBinDecay = leadptBin+ibit*fNBkgBin;
           Int_t  ptsumBinDecay =  ptsumBin+ibit*fNBkgBin;
-          if( leadptBin >=0 ) fhPtLeadConeBinDecay[leadptBinDecay]->Fill(pt, GetEventWeight());
-          if( ptsumBin  >=0 ) fhSumPtConeBinDecay [ ptsumBinDecay]->Fill(pt, GetEventWeight());
+          if( leadptBin >=0 ) fhPtLeadConeBinDecay[leadptBinDecay]->Fill(pt, GetEventWeight()*weightTrig);
+          if( ptsumBin  >=0 ) fhSumPtConeBinDecay [ ptsumBinDecay]->Fill(pt, GetEventWeight()*weightTrig);
         }
       }
     }
@@ -2351,14 +2359,14 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
       
       if( leadptBin >=0 )
       {
-        fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight());
-        if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight());
+        fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight()*weightTrig);
+        if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
       }
       
       if( ptsumBin  >=0 )
       {
-        fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt, GetEventWeight());
-        if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight());
+        fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt, GetEventWeight()*weightTrig);
+        if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
       }
       
       if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
@@ -2367,14 +2375,14 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
         ptsumBinMC  =  ptsumBin+kmcPhoton*fNBkgBin;
         if( leadptBin >=0 )
         {
-          fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight());
-          if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight());
+          fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight()*weightTrig);
+          if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
         
         if( ptsumBin  >=0 )
         {
-          fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt, GetEventWeight());
-          if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight());
+          fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt, GetEventWeight()*weightTrig);
+          if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
       }
       
@@ -2396,14 +2404,14 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
         
         if( leadptBin >=0 )
         {
-          fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight());
-          if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight());
+          fhPtLeadConeBinMC[leadptBinMC]->Fill(pt, GetEventWeight()*weightTrig);
+          if(fFillSSHisto) fhPtLeadConeBinLambda0MC[leadptBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
         
         if( ptsumBin  >=0 )
         {
           fhSumPtConeBinMC [ ptsumBinMC]->Fill(pt);
-          if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight());
+          if(fFillSSHisto)  fhSumPtConeBinLambda0MC [ ptsumBinMC]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
         
       } // check decays with lost pairs
@@ -2425,24 +2433,24 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     {
       AliDebug(1,Form("Trigger pT %f, bin %d [%2.2f,%2.2f]",pt,ptTrigBin,fPtTrigBinLimit[ptTrigBin],fPtTrigBinLimit[ptTrigBin+1]));
       
-      fhPtTrigBinPtLeadCone[ptTrigBin]->Fill(coneleadpt, GetEventWeight());
-      fhPtTrigBinSumPtCone [ptTrigBin]->Fill(coneptsum , GetEventWeight());
+      fhPtTrigBinPtLeadCone[ptTrigBin]->Fill(coneleadpt, GetEventWeight()*weightTrig);
+      fhPtTrigBinSumPtCone [ptTrigBin]->Fill(coneptsum , GetEventWeight()*weightTrig);
       
       if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
       {
-        fhPtTrigBinSumPtTrackCone  [ptTrigBin]->Fill(coneptsumTrack, GetEventWeight());
-        fhPtTrigBinSumPtClusterCone[ptTrigBin]->Fill(coneptsumClust, GetEventWeight());
+        fhPtTrigBinSumPtTrackCone  [ptTrigBin]->Fill(coneptsumTrack, GetEventWeight()*weightTrig);
+        fhPtTrigBinSumPtClusterCone[ptTrigBin]->Fill(coneptsumClust, GetEventWeight()*weightTrig);
       }
       
       if(fFillSSHisto)
       {
-        fhPtTrigBinLambda0vsPtLeadCone[ptTrigBin]->Fill(coneleadpt, m02, GetEventWeight());
-        fhPtTrigBinLambda0vsSumPtCone [ptTrigBin]->Fill(coneptsum , m02, GetEventWeight());
+        fhPtTrigBinLambda0vsPtLeadCone[ptTrigBin]->Fill(coneleadpt, m02, GetEventWeight()*weightTrig);
+        fhPtTrigBinLambda0vsSumPtCone [ptTrigBin]->Fill(coneptsum , m02, GetEventWeight()*weightTrig);
         
         if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
         {
-          fhPtTrigBinLambda0vsSumPtTrackCone  [ptTrigBin]->Fill(coneptsumTrack, m02, GetEventWeight());
-          fhPtTrigBinLambda0vsSumPtClusterCone[ptTrigBin]->Fill(coneptsumClust, m02, GetEventWeight());
+          fhPtTrigBinLambda0vsSumPtTrackCone  [ptTrigBin]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+          fhPtTrigBinLambda0vsSumPtClusterCone[ptTrigBin]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
         }
       }
       
@@ -2459,13 +2467,13 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
             Int_t binDecay = ptTrigBin+ibit*fNPtTrigBin;
             if( binDecay > 0 )
             {
-              fhPtTrigBinPtLeadConeDecay[binDecay]->Fill(coneleadpt, GetEventWeight());
-              fhPtTrigBinSumPtConeDecay [binDecay]->Fill(coneptsum , GetEventWeight());
+              fhPtTrigBinPtLeadConeDecay[binDecay]->Fill(coneleadpt, GetEventWeight()*weightTrig);
+              fhPtTrigBinSumPtConeDecay [binDecay]->Fill(coneptsum , GetEventWeight()*weightTrig);
               
               if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
               {
-                fhPtTrigBinSumPtTrackConeDecay  [binDecay]->Fill(coneptsumTrack, GetEventWeight());
-                fhPtTrigBinSumPtClusterConeDecay[binDecay]->Fill(coneptsumClust, GetEventWeight());
+                fhPtTrigBinSumPtTrackConeDecay  [binDecay]->Fill(coneptsumTrack, GetEventWeight()*weightTrig);
+                fhPtTrigBinSumPtClusterConeDecay[binDecay]->Fill(coneptsumClust, GetEventWeight()*weightTrig);
               }
             }
           }
@@ -2476,13 +2484,13 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
       {
         Int_t ptTrigBinMC = ptTrigBin+mcIndex*fNPtTrigBin;
         
-        fhPtTrigBinPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt    , GetEventWeight());
-        fhPtTrigBinSumPtConeMC [ptTrigBinMC]->Fill(coneptsum     , GetEventWeight());
+        fhPtTrigBinPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt    , GetEventWeight()*weightTrig);
+        fhPtTrigBinSumPtConeMC [ptTrigBinMC]->Fill(coneptsum     , GetEventWeight()*weightTrig);
        
         if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
         {
-          fhPtTrigBinSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, GetEventWeight());
-          fhPtTrigBinSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, GetEventWeight());
+          fhPtTrigBinSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, GetEventWeight()*weightTrig);
+          fhPtTrigBinSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, GetEventWeight()*weightTrig);
         }
       } // MC
       
@@ -2496,31 +2504,31 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
   {
     //fhPtLambda0Eiso->Fill(pt, m02, coneptsum);
     
-    fhELambda0 [isolated]->Fill(energy, m02, GetEventWeight());
-    fhPtLambda0[isolated]->Fill(pt,     m02, GetEventWeight());
+    fhELambda0 [isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
+    fhPtLambda0[isolated]->Fill(pt,     m02, GetEventWeight()*weightTrig);
     //fhELambda1 [isolated]->Fill(energy, m20);
     
     if ( fFillPerSMHistograms )
     {
-      fhPtPerSM       [isolated]     ->Fill(pt,iSM, GetEventWeight());
-      fhPtLambda0PerSM[isolated][iSM]->Fill(pt,m02, GetEventWeight());
+      fhPtPerSM       [isolated]     ->Fill(pt,iSM, GetEventWeight()*weightTrig);
+      fhPtLambda0PerSM[isolated][iSM]->Fill(pt,m02, GetEventWeight()*weightTrig);
       
       if ( fStudyNCellsCut )
       {
         if ( fNCellsWithWeight > 4 ) 
-          fhPtLambda0PerSMNCellCut[isolated][iSM]->Fill(pt, m02, GetEventWeight());
+          fhPtLambda0PerSMNCellCut[isolated][iSM]->Fill(pt, m02, GetEventWeight()*weightTrig);
         
-        fhPtNCellPerSM[isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
+        fhPtNCellPerSM[isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight()*weightTrig);
         
-        if      ( m02 > 0.1 && m02 <= 0.3 ) fhPtNCellLowM02PerSM [isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
-        else if ( m02 > 0.5 && m02 <= 2   ) fhPtNCellHighM02PerSM[isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
+        if      ( m02 > 0.1 && m02 <= 0.3 ) fhPtNCellLowM02PerSM [isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight()*weightTrig);
+        else if ( m02 > 0.5 && m02 <= 2   ) fhPtNCellHighM02PerSM[isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight()*weightTrig);
       }
     }
 
     if ( fFillPerTCardIndexHistograms )
     {
-      fhPtPerTCardIndex       [isolated]             ->Fill(pt,fTCardIndex, GetEventWeight());
-      fhPtLambda0PerTCardIndex[isolated][fTCardIndex]->Fill(pt,m02, GetEventWeight());
+      fhPtPerTCardIndex       [isolated]             ->Fill(pt,fTCardIndex, GetEventWeight()*weightTrig);
+      fhPtLambda0PerTCardIndex[isolated][fTCardIndex]->Fill(pt,m02, GetEventWeight()*weightTrig);
     }
     
     //
@@ -2530,38 +2538,38 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     {
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
       {
-        fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+        fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
         if ( fNCellsWithWeight > 4 &&  fStudyNCellsCut )
-          fhPtLambda0MCNCellCut[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+          fhPtLambda0MCNCellCut[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
       }
       
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
       {
-        if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-        else if( mcIndex == kmcEtaDecay ) fhPtLambda0MC[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+        if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
+        else if( mcIndex == kmcEtaDecay ) fhPtLambda0MC[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
         if ( fNCellsWithWeight > 4 && fStudyNCellsCut )
         {
-          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCNCellCut[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCNCellCut[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()); 
+          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCNCellCut[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
+          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCNCellCut[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig); 
         }
       }
       
-      fhPtLambda0MC[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+      fhPtLambda0MC[mcIndex][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
       if ( fNCellsWithWeight > 4 && fStudyNCellsCut )
-        fhPtLambda0MCNCellCut[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+        fhPtLambda0MCNCellCut[mcIndex][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
 
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
       {
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtLambda0MCConv[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+          fhPtLambda0MCConv[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
         {
-          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConv[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConv[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConv[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
+          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConv[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
         }
         
-        fhPtLambda0MCConv[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+        fhPtLambda0MCConv[mcIndex][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
       } // Conversion
       
       //
@@ -2577,83 +2585,83 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
                                                        GetMC(), overpdg, overlab);
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtNOverlap[kmcPhoton][isolated]->Fill(pt, noverlaps, GetEventWeight());
+          fhPtNOverlap[kmcPhoton][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
         {
-          if     ( mcIndex == kmcPi0Decay ) fhPtNOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtNOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight());
+          if     ( mcIndex == kmcPi0Decay ) fhPtNOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
+          else if( mcIndex == kmcEtaDecay ) fhPtNOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
         }
         
-        fhPtNOverlap[mcIndex][isolated]->Fill(pt, noverlaps, GetEventWeight());
+        fhPtNOverlap[mcIndex][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
         {
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtNOverlapConv[kmcPhoton][isolated]->Fill(pt, noverlaps, GetEventWeight());
+            fhPtNOverlapConv[kmcPhoton][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
           
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
           {
-            if     ( mcIndex == kmcPi0Decay ) fhPtNOverlapConv[kmcPi0DecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight());
-            else if( mcIndex == kmcEtaDecay ) fhPtNOverlapConv[kmcEtaDecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight());
+            if     ( mcIndex == kmcPi0Decay ) fhPtNOverlapConv[kmcPi0DecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
+            else if( mcIndex == kmcEtaDecay ) fhPtNOverlapConv[kmcEtaDecayLostPair][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
           }
           
-          fhPtNOverlapConv[mcIndex][isolated]->Fill(pt, noverlaps, GetEventWeight());
+          fhPtNOverlapConv[mcIndex][isolated]->Fill(pt, noverlaps, GetEventWeight()*weightTrig);
         } // Conversion
         
         
         if ( noverlaps == 1 )
         {
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtLambda0MCWith1Overlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+            fhPtLambda0MCWith1Overlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
           
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
           {
-            if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCWith1Overlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-            else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCWith1Overlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+            if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCWith1Overlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
+            else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCWith1Overlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
           }
           
-          fhPtLambda0MCWith1Overlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+          fhPtLambda0MCWith1Overlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
           
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
           {
             if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-              fhPtLambda0MCConvWith1Overlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+              fhPtLambda0MCConvWith1Overlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
             
             if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
             {
-              if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConvWith1Overlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-              else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConvWith1Overlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+              if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConvWith1Overlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
+              else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConvWith1Overlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
             }
             
-            fhPtLambda0MCConvWith1Overlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+            fhPtLambda0MCConvWith1Overlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
           } // Conversion
         } // At least 1 overlap
         else if (noverlaps == 0 ) // No overlap
         {
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtLambda0MCWithNoOverlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+            fhPtLambda0MCWithNoOverlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
           
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
           {
-            if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCWithNoOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-            else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCWithNoOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+            if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCWithNoOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
+            else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCWithNoOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
           }
           
-          fhPtLambda0MCWithNoOverlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+          fhPtLambda0MCWithNoOverlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
           
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
           {
             if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-              fhPtLambda0MCConvWithNoOverlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+              fhPtLambda0MCConvWithNoOverlap[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
             
             if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
             {
-              if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConvWithNoOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
-              else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConvWithNoOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+              if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCConvWithNoOverlap[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
+              else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCConvWithNoOverlap[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
             }
             
-            fhPtLambda0MCConvWithNoOverlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+            fhPtLambda0MCConvWithNoOverlap[mcIndex][isolated]->Fill(pt, m02, GetEventWeight()*weightTrig);
           } // Conversion
         } // more than 1 overlap
       }
@@ -2670,48 +2678,48 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
         
         if ( ptTrigBin >= 0 )
         {
-          fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMC]->Fill(coneptsum , m02, GetEventWeight());
-          fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt, m02, GetEventWeight());
+          fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMC]->Fill(coneptsum , m02, GetEventWeight()*weightTrig);
+          fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMC]->Fill(coneleadpt, m02, GetEventWeight()*weightTrig);
 
           if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
           {
-            fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
-            fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight());
+            fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+            fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
           }
           
           if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
           {
-            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCPhoton]->Fill(coneptsum , m02, GetEventWeight());
-            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCPhoton]->Fill(coneleadpt, m02, GetEventWeight());
+            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCPhoton]->Fill(coneptsum , m02, GetEventWeight()*weightTrig);
+            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCPhoton]->Fill(coneleadpt, m02, GetEventWeight()*weightTrig);
 
             if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
             {
-              fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCPhoton]->Fill(coneptsumTrack, m02, GetEventWeight());
-              fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMCPhoton]->Fill(coneptsumClust, m02, GetEventWeight());
+              fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCPhoton]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+              fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMCPhoton]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
             }
           }
           
           if( mcIndex == kmcPi0Decay )
           {
-            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCPi0Lost]->Fill(coneptsum , m02, GetEventWeight());
-            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCPi0Lost]->Fill(coneleadpt, m02, GetEventWeight());
+            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCPi0Lost]->Fill(coneptsum , m02, GetEventWeight()*weightTrig);
+            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCPi0Lost]->Fill(coneleadpt, m02, GetEventWeight()*weightTrig);
 
             if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
             {
-              fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCPi0Lost]->Fill(coneptsumTrack, m02, GetEventWeight());
-              fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMCPi0Lost]->Fill(coneptsumClust, m02, GetEventWeight());
+              fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCPi0Lost]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+              fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMCPi0Lost]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
             }
           }
           
           if( mcIndex == kmcEtaDecay )
           {
-            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCEtaLost]->Fill(coneptsum , m02, GetEventWeight());
-            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCEtaLost]->Fill(coneleadpt, m02, GetEventWeight());
+            fhPtTrigBinLambda0vsSumPtConeMC [ptTrigBinMCEtaLost]->Fill(coneptsum , m02, GetEventWeight()*weightTrig);
+            fhPtTrigBinLambda0vsPtLeadConeMC[ptTrigBinMCEtaLost]->Fill(coneleadpt, m02, GetEventWeight()*weightTrig);
 
             if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
             {
-              fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCEtaLost]->Fill(coneptsumTrack, m02, GetEventWeight());
-              fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMCEtaLost]->Fill(coneptsumClust, m02, GetEventWeight());
+              fhPtTrigBinLambda0vsSumPtTrackConeMC  [ptTrigBinMCEtaLost]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+              fhPtTrigBinLambda0vsSumPtClusterConeMC[ptTrigBinMCEtaLost]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
             }
           }
           
@@ -2719,44 +2727,44 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
           {
             if ( noverlaps == 0 )
             {
-              fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[ptTrigBinMC]->Fill(coneptsum, m02, GetEventWeight());
+              fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[ptTrigBinMC]->Fill(coneptsum, m02, GetEventWeight()*weightTrig);
               
               if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
               {
-                fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
-                fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight());
+                fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+                fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
               }
               
               if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
               {
-                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[ptTrigBinMCPhoton]->Fill(coneptsum, m02, GetEventWeight());
+                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[ptTrigBinMCPhoton]->Fill(coneptsum, m02, GetEventWeight()*weightTrig);
                 
                 if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
                 {
-                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  [ptTrigBinMCPhoton]->Fill(coneptsumTrack, m02, GetEventWeight());
-                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[ptTrigBinMCPhoton]->Fill(coneptsumClust, m02, GetEventWeight());
+                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  [ptTrigBinMCPhoton]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[ptTrigBinMCPhoton]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
                 }
               }
               
               if( mcIndex == kmcPi0Decay )
               {
-                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[ptTrigBinMCPi0Lost]->Fill(coneptsum, m02, GetEventWeight());
+                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[ptTrigBinMCPi0Lost]->Fill(coneptsum, m02, GetEventWeight()*weightTrig);
                 
                 if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
                 {
-                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  [ptTrigBinMCPi0Lost]->Fill(coneptsumTrack, m02, GetEventWeight());
-                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[ptTrigBinMCPi0Lost]->Fill(coneptsumClust, m02, GetEventWeight());
+                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  [ptTrigBinMCPi0Lost]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[ptTrigBinMCPi0Lost]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
                 }
               }
               
               if( mcIndex == kmcEtaDecay )
               {
-                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[ptTrigBinMCEtaLost]->Fill(coneptsum, m02, GetEventWeight());
+                fhPtTrigBinLambda0vsSumPtConeMCNoOverlap[ptTrigBinMCEtaLost]->Fill(coneptsum, m02, GetEventWeight()*weightTrig);
                 
                 if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
                 {
-                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  [ptTrigBinMCEtaLost]->Fill(coneptsumTrack, m02, GetEventWeight());
-                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[ptTrigBinMCEtaLost]->Fill(coneptsumClust, m02, GetEventWeight());
+                  fhPtTrigBinLambda0vsSumPtTrackConeMCNoOverlap  [ptTrigBinMCEtaLost]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+                  fhPtTrigBinLambda0vsSumPtClusterConeMCNoOverlap[ptTrigBinMCEtaLost]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
                 }
               }
               
@@ -2764,42 +2772,42 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
             } // nover = 0
             else if ( noverlaps == 1 )
             {
-              fhPtTrigBinLambda0vsSumPtConeMC1Overlap[ptTrigBinMC]->Fill(coneptsum, m02, GetEventWeight());
+              fhPtTrigBinLambda0vsSumPtConeMC1Overlap[ptTrigBinMC]->Fill(coneptsum, m02, GetEventWeight()*weightTrig);
               if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
               {
-                fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight());
-                fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight());
+                fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  [ptTrigBinMC]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+                fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[ptTrigBinMC]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
               }
               
               if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
               {
-                fhPtTrigBinLambda0vsSumPtConeMC1Overlap[ptTrigBinMCPhoton]->Fill(coneptsum, m02, GetEventWeight());
+                fhPtTrigBinLambda0vsSumPtConeMC1Overlap[ptTrigBinMCPhoton]->Fill(coneptsum, m02, GetEventWeight()*weightTrig);
                 
                 if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
                 {
-                  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  [ptTrigBinMCPhoton]->Fill(coneptsumTrack, m02, GetEventWeight());
-                  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[ptTrigBinMCPhoton]->Fill(coneptsumClust, m02, GetEventWeight());
+                  fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  [ptTrigBinMCPhoton]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+                  fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[ptTrigBinMCPhoton]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
                 }
                 
                 if( mcIndex == kmcPi0Decay )
                 {
-                  fhPtTrigBinLambda0vsSumPtConeMC1Overlap[ptTrigBinMCPi0Lost]->Fill(coneptsum, m02, GetEventWeight());
+                  fhPtTrigBinLambda0vsSumPtConeMC1Overlap[ptTrigBinMCPi0Lost]->Fill(coneptsum, m02, GetEventWeight()*weightTrig);
                   
                   if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
                   {
-                    fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  [ptTrigBinMCPi0Lost]->Fill(coneptsumTrack, m02, GetEventWeight());
-                    fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[ptTrigBinMCPi0Lost]->Fill(coneptsumClust, m02, GetEventWeight());
+                    fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  [ptTrigBinMCPi0Lost]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+                    fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[ptTrigBinMCPi0Lost]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
                   }
                 }
                 
                 if( mcIndex == kmcEtaDecay )
                 {
-                  fhPtTrigBinLambda0vsSumPtConeMC1Overlap[ptTrigBinMCEtaLost]->Fill(coneptsum, m02, GetEventWeight());
+                  fhPtTrigBinLambda0vsSumPtConeMC1Overlap[ptTrigBinMCEtaLost]->Fill(coneptsum, m02, GetEventWeight()*weightTrig);
                   
                   if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged )
                   {
-                    fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  [ptTrigBinMCEtaLost]->Fill(coneptsumTrack, m02, GetEventWeight());
-                    fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[ptTrigBinMCEtaLost]->Fill(coneptsumClust, m02, GetEventWeight());
+                    fhPtTrigBinLambda0vsSumPtTrackConeMC1Overlap  [ptTrigBinMCEtaLost]->Fill(coneptsumTrack, m02, GetEventWeight()*weightTrig);
+                    fhPtTrigBinLambda0vsSumPtClusterConeMC1Overlap[ptTrigBinMCEtaLost]->Fill(coneptsumClust, m02, GetEventWeight()*weightTrig);
                   }
                 }
               }
@@ -2814,28 +2822,28 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     if(GetCalorimeter() == kEMCAL &&  GetFirstSMCoveredByTRD() >= 0 &&
        GetModuleNumber(pCandidate) >= GetFirstSMCoveredByTRD()  )
     {
-      fhELambda0TRD [isolated]->Fill(energy, m02, GetEventWeight());
-      fhPtLambda0TRD[isolated]->Fill(pt    , m02, GetEventWeight());
+      fhELambda0TRD [isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
+      fhPtLambda0TRD[isolated]->Fill(pt    , m02, GetEventWeight()*weightTrig);
       //fhELambda1TRD [isolated]->Fill(energy, m20 );
     }
     
     if(fFillNLMHistograms)
     {
-      fhNLocMax[isolated]->Fill(energy, nMaxima, GetEventWeight());
+      fhNLocMax[isolated]->Fill(energy, nMaxima, GetEventWeight()*weightTrig);
       if     (nMaxima==1)
       {
-        fhELambda0LocMax1[isolated]->Fill(energy, m02, GetEventWeight());
-        fhELambda1LocMax1[isolated]->Fill(energy, m02, GetEventWeight());
+        fhELambda0LocMax1[isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
+        fhELambda1LocMax1[isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
       }
       else if(nMaxima==2)
       {
-        fhELambda0LocMax2[isolated]->Fill(energy, m02, GetEventWeight());
-        fhELambda1LocMax2[isolated]->Fill(energy, m02, GetEventWeight());
+        fhELambda0LocMax2[isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
+        fhELambda1LocMax2[isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
       }
       else
       {
-        fhELambda0LocMaxN[isolated]->Fill(energy, m02, GetEventWeight());
-        fhELambda1LocMaxN[isolated]->Fill(energy, m02, GetEventWeight());
+        fhELambda0LocMaxN[isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
+        fhELambda1LocMaxN[isolated]->Fill(energy, m02, GetEventWeight()*weightTrig);
       }
     }
   } // SS histo fill
@@ -2855,14 +2863,14 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
     if(fhTrackMatchedDEta[isolated] && TMath::Abs(dR) < 999)
     {
-      fhTrackMatchedDEta[isolated]->Fill(energy, dZ, GetEventWeight());
-      fhTrackMatchedDPhi[isolated]->Fill(energy, dR, GetEventWeight());
-      if(energy > 0.5) fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ, dR, GetEventWeight());
+      fhTrackMatchedDEta[isolated]->Fill(energy, dZ, GetEventWeight()*weightTrig);
+      fhTrackMatchedDPhi[isolated]->Fill(energy, dR, GetEventWeight()*weightTrig);
+      if(energy > 0.5) fhTrackMatchedDEtaDPhi[isolated]->Fill(dZ, dR, GetEventWeight()*weightTrig);
       if(IsDataMC())
       {
-        fhTrackMatchedDEtaMC[mcIndex][isolated]->Fill(energy, dZ, GetEventWeight());
-        fhTrackMatchedDPhiMC[mcIndex][isolated]->Fill(energy, dR, GetEventWeight());
-        if(energy > 0.5) fhTrackMatchedDEtaDPhiMC[mcIndex][isolated]->Fill(dZ, dR, GetEventWeight());
+        fhTrackMatchedDEtaMC[mcIndex][isolated]->Fill(energy, dZ, GetEventWeight()*weightTrig);
+        fhTrackMatchedDPhiMC[mcIndex][isolated]->Fill(energy, dR, GetEventWeight()*weightTrig);
+        if(energy > 0.5) fhTrackMatchedDEtaDPhiMC[mcIndex][isolated]->Fill(dZ, dR, GetEventWeight()*weightTrig);
       }
     }
     
@@ -2875,10 +2883,10 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
       if(track)
       {
         Float_t dEdx = track->GetTPCsignal();
-        fhdEdx[isolated]->Fill(fCluster->E(), dEdx, GetEventWeight());
+        fhdEdx[isolated]->Fill(fCluster->E(), dEdx, GetEventWeight()*weightTrig);
         
         Float_t eOverp = fCluster->E()/track->P();
-        fhEOverP[isolated]->Fill(fCluster->E(),  eOverp, GetEventWeight());
+        fhEOverP[isolated]->Fill(fCluster->E(),  eOverp, GetEventWeight()*weightTrig);
       }
       //else
       //  printf("AliAnaParticleIsolation::FillTrackMatchingShowerShapeHistograms() - Residual OK but (dR, dZ)= (%2.4f,%2.4f) no track associated WHAT? \n", dR,dZ);
@@ -2889,19 +2897,19 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
         if ( !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion)  )
         {
           if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
-                     GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 2.5, GetEventWeight());
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 0.5, GetEventWeight());
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 1.5, GetEventWeight());
-          else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 3.5, GetEventWeight());
+                     GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 2.5, GetEventWeight()*weightTrig);
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 0.5, GetEventWeight()*weightTrig);
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 1.5, GetEventWeight()*weightTrig);
+          else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 3.5, GetEventWeight()*weightTrig);
           
         }
         else
         {
           if       ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)      ||
-                     GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 6.5, GetEventWeight());
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 4.5, GetEventWeight());
-          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 5.5, GetEventWeight());
-          else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 7.5, GetEventWeight());
+                     GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 6.5, GetEventWeight()*weightTrig);
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 4.5, GetEventWeight()*weightTrig);
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle[isolated]->Fill(energy, 5.5, GetEventWeight()*weightTrig);
+          else                                                                                   fhTrackMatchedMCParticle[isolated]->Fill(energy, 7.5, GetEventWeight()*weightTrig);
         }
       }  // MC
     } // match window
@@ -7419,8 +7427,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t eta        = aod->Eta();
     Float_t m02        = aod->GetM02();
     Int_t   iSM        = aod->GetSModNumber();
-    
-    AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d",pt, eta, phi, isolated));
+    Float_t weightTrig = aod->GetWeight();
+
+    AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d, weight %2.3f",pt, eta, phi, isolated, weightTrig));
        
     //---------------------------------------------------------------
     // Recover original cluster if requested, needed for some studies
@@ -7528,34 +7537,34 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged)
     {
-      fhConeSumPtClustervsTrack ->Fill(coneptsumCluster, coneptsumTrack , GetEventWeight());
-      fhConePtLeadClustervsTrack->Fill(coneptLeadCluster,coneptLeadTrack, GetEventWeight());
+      fhConeSumPtClustervsTrack ->Fill(coneptsumCluster, coneptsumTrack , GetEventWeight()*weightTrig);
+      fhConePtLeadClustervsTrack->Fill(coneptLeadCluster,coneptLeadTrack, GetEventWeight()*weightTrig);
 
-      if(coneptsumTrack  > 0) fhConeSumPtClusterTrackFrac ->Fill(pt, coneptsumCluster /coneptsumTrack , GetEventWeight());
-      if(coneptLeadTrack > 0) fhConePtLeadClusterTrackFrac->Fill(pt, coneptLeadCluster/coneptLeadTrack, GetEventWeight());
+      if(coneptsumTrack  > 0) fhConeSumPtClusterTrackFrac ->Fill(pt, coneptsumCluster /coneptsumTrack , GetEventWeight()*weightTrig);
+      if(coneptLeadTrack > 0) fhConePtLeadClusterTrackFrac->Fill(pt, coneptLeadCluster/coneptLeadTrack, GetEventWeight()*weightTrig);
 
       if(fFillCellHistograms)
       {
-        fhConeSumPtCellvsTrack        ->Fill(coneptsumCell, coneptsumTrack,               GetEventWeight());
-        fhConeSumPtCellTrack          ->Fill(pt,            coneptsumTrack+coneptsumCell, GetEventWeight());
-        fhConeSumPtCellTrackTrigEtaPhi->Fill(eta,      phi, coneptsumTrack+coneptsumCell *GetEventWeight()); // check
+        fhConeSumPtCellvsTrack        ->Fill(coneptsumCell, coneptsumTrack,               GetEventWeight()*weightTrig);
+        fhConeSumPtCellTrack          ->Fill(pt,            coneptsumTrack+coneptsumCell, GetEventWeight()*weightTrig);
+        fhConeSumPtCellTrackTrigEtaPhi->Fill(eta,      phi, coneptsumTrack+coneptsumCell *GetEventWeight()*weightTrig); // check
       }
     }
     
-    fhConeSumPt              ->Fill(pt,       coneptsumTrack+coneptsumCluster, GetEventWeight());
-    fhConeSumPtTrigEtaPhi    ->Fill(eta, phi, coneptsumTrack+coneptsumCluster *GetEventWeight()); // check
+    fhConeSumPt              ->Fill(pt,       coneptsumTrack+coneptsumCluster, GetEventWeight()*weightTrig);
+    fhConeSumPtTrigEtaPhi    ->Fill(eta, phi, coneptsumTrack+coneptsumCluster *GetEventWeight()*weightTrig); // check
     if(fStudyExoticTrigger && fIsExoticTrigger)
-      fhConeSumPtExoTrigger  ->Fill(pt, coneptsumTrack+coneptsumCluster, GetEventWeight());
+      fhConeSumPtExoTrigger  ->Fill(pt, coneptsumTrack+coneptsumCluster, GetEventWeight()*weightTrig);
     
     if(fFillPerSMHistograms)     
-      fhConeSumPtPerSM[aod->GetSModNumber()]->Fill(pt,coneptsumTrack+coneptsumCluster, GetEventWeight());
+      fhConeSumPtPerSM[aod->GetSModNumber()]->Fill(pt,coneptsumTrack+coneptsumCluster, GetEventWeight()*weightTrig);
  
     if(fFillPerTCardIndexHistograms)     
-      fhConeSumPtPerTCardIndex[fTCardIndex]->Fill(pt,coneptsumTrack+coneptsumCluster, GetEventWeight());
+      fhConeSumPtPerTCardIndex[fTCardIndex]->Fill(pt,coneptsumTrack+coneptsumCluster, GetEventWeight()*weightTrig);
     
     Float_t coneptLead = coneptLeadTrack;
     if(coneptLeadCluster > coneptLeadTrack) coneptLead = coneptLeadCluster;
-    fhConePtLead->Fill(pt, coneptLead, GetEventWeight());
+    fhConePtLead->Fill(pt, coneptLead, GetEventWeight()*weightTrig);
     
     AliDebug(1,Form("Particle %d Energy Sum in Isolation Cone %2.2f, Leading pT in cone %2.2f",
              iaod, coneptsumTrack+coneptsumCluster, coneptLead));
@@ -7594,16 +7603,16 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {
       AliDebug(1,Form("Particle %d ISOLATED: fill histograms", iaod));
       
-      fhEIso      ->Fill(energy,      GetEventWeight());
-      fhPtIso     ->Fill(pt    ,      GetEventWeight());
-      fhPhiIso    ->Fill(pt    , phi, GetEventWeight());
-      fhEtaIso    ->Fill(pt    , eta, GetEventWeight());
-      fhEtaPhiIso ->Fill(eta   , phi, GetEventWeight());
+      fhEIso      ->Fill(energy,      GetEventWeight()*weightTrig);
+      fhPtIso     ->Fill(pt    ,      GetEventWeight()*weightTrig);
+      fhPhiIso    ->Fill(pt    , phi, GetEventWeight()*weightTrig);
+      fhEtaIso    ->Fill(pt    , eta, GetEventWeight()*weightTrig);
+      fhEtaPhiIso ->Fill(eta   , phi, GetEventWeight()*weightTrig);
       
       if(fStudyExoticTrigger && fIsExoticTrigger)
       {
-        fhEIsoExoTrigger ->Fill(energy,  GetEventWeight());
-        fhPtIsoExoTrigger->Fill(pt,      GetEventWeight());        
+        fhEIsoExoTrigger ->Fill(energy,  GetEventWeight()*weightTrig);
+        fhPtIsoExoTrigger->Fill(pt,      GetEventWeight()*weightTrig);        
       }
       
       if(IsDataMC())
@@ -7611,50 +7620,50 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         // For histograms in arrays, index in the array, corresponding to any particle origin
         if(GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton))
         {
-          fhPtIsoMC [kmcPhoton]->Fill(pt,      GetEventWeight());
-          fhPhiIsoMC[kmcPhoton]->Fill(pt, phi, GetEventWeight());
-          fhEtaIsoMC[kmcPhoton]->Fill(pt, eta, GetEventWeight());
+          fhPtIsoMC [kmcPhoton]->Fill(pt,      GetEventWeight()*weightTrig);
+          fhPhiIsoMC[kmcPhoton]->Fill(pt, phi, GetEventWeight()*weightTrig);
+          fhEtaIsoMC[kmcPhoton]->Fill(pt, eta, GetEventWeight()*weightTrig);
         }
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
         {
           if     ( mcIndex == kmcPi0Decay )
           {
-            fhPtIsoMC [kmcPi0DecayLostPair]->Fill(pt,      GetEventWeight());
-            fhPhiIsoMC[kmcPi0DecayLostPair]->Fill(pt, phi, GetEventWeight());
-            fhEtaIsoMC[kmcPi0DecayLostPair]->Fill(pt, eta, GetEventWeight());
+            fhPtIsoMC [kmcPi0DecayLostPair]->Fill(pt,      GetEventWeight()*weightTrig);
+            fhPhiIsoMC[kmcPi0DecayLostPair]->Fill(pt, phi, GetEventWeight()*weightTrig);
+            fhEtaIsoMC[kmcPi0DecayLostPair]->Fill(pt, eta, GetEventWeight()*weightTrig);
           }
           else if( mcIndex == kmcEtaDecay )
           {
-            fhPtIsoMC [kmcEtaDecayLostPair]->Fill(pt,      GetEventWeight());
-            fhPhiIsoMC[kmcEtaDecayLostPair]->Fill(pt, phi, GetEventWeight());
-            fhEtaIsoMC[kmcEtaDecayLostPair]->Fill(pt, eta, GetEventWeight());
+            fhPtIsoMC [kmcEtaDecayLostPair]->Fill(pt,      GetEventWeight()*weightTrig);
+            fhPhiIsoMC[kmcEtaDecayLostPair]->Fill(pt, phi, GetEventWeight()*weightTrig);
+            fhEtaIsoMC[kmcEtaDecayLostPair]->Fill(pt, eta, GetEventWeight()*weightTrig);
           }
         }
 
-        fhPtIsoMC [mcIndex]->Fill(pt,      GetEventWeight());
-        fhPhiIsoMC[mcIndex]->Fill(pt, phi, GetEventWeight());
-        fhEtaIsoMC[mcIndex]->Fill(pt, eta, GetEventWeight());
+        fhPtIsoMC [mcIndex]->Fill(pt,      GetEventWeight()*weightTrig);
+        fhPhiIsoMC[mcIndex]->Fill(pt, phi, GetEventWeight()*weightTrig);
+        fhEtaIsoMC[mcIndex]->Fill(pt, eta, GetEventWeight()*weightTrig);
       }//Histograms with MC
       
       if(fFillNLMHistograms)
-        fhPtNLocMaxIso ->Fill(pt, aod->GetNLM(), GetEventWeight()) ;
+        fhPtNLocMaxIso ->Fill(pt, aod->GetNLM(), GetEventWeight()*weightTrig) ;
       
       if(IsHighMultiplicityAnalysisOn())
       {
-        fhPtCentralityIso ->Fill(pt, GetEventCentrality(), GetEventWeight()) ;
-        fhPtEventPlaneIso ->Fill(pt, GetEventPlaneAngle(), GetEventWeight()) ;
+        fhPtCentralityIso ->Fill(pt, GetEventCentrality(), GetEventWeight()*weightTrig) ;
+        fhPtEventPlaneIso ->Fill(pt, GetEventPlaneAngle(), GetEventWeight()*weightTrig) ;
       }
 
       if(IsPileUpAnalysisOn())
       {
-        if(GetReader()->IsPileUpFromSPD())               { fhEIsoPileUp[0] ->Fill(energy, GetEventWeight()) ; fhPtIsoPileUp[0]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromEMCal())             { fhEIsoPileUp[1] ->Fill(energy, GetEventWeight()) ; fhPtIsoPileUp[1]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhEIsoPileUp[2] ->Fill(energy, GetEventWeight()) ; fhPtIsoPileUp[2]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromSPDAndEMCal())       { fhEIsoPileUp[3] ->Fill(energy, GetEventWeight()) ; fhPtIsoPileUp[3]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhEIsoPileUp[4] ->Fill(energy, GetEventWeight()) ; fhPtIsoPileUp[4]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhEIsoPileUp[5] ->Fill(energy, GetEventWeight()) ; fhPtIsoPileUp[5]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhEIsoPileUp[6] ->Fill(energy, GetEventWeight()) ; fhPtIsoPileUp[6]->Fill(pt, GetEventWeight()) ; }
+        if(GetReader()->IsPileUpFromSPD())               { fhEIsoPileUp[0] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtIsoPileUp[0]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromEMCal())             { fhEIsoPileUp[1] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtIsoPileUp[1]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromSPDOrEMCal())        { fhEIsoPileUp[2] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtIsoPileUp[2]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromSPDAndEMCal())       { fhEIsoPileUp[3] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtIsoPileUp[3]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())    { fhEIsoPileUp[4] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtIsoPileUp[4]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())    { fhEIsoPileUp[5] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtIsoPileUp[5]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) { fhEIsoPileUp[6] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtIsoPileUp[6]->Fill(pt, GetEventWeight()*weightTrig) ; }
         
         // Fill histograms to undertand pile-up before other cuts applied
         // Remember to relax time cuts in the reader
@@ -7666,42 +7675,42 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {
       AliDebug(1,Form("Particle %d NOT ISOLATED, fill histograms", iaod));
       
-      fhENoIso        ->Fill(energy,  GetEventWeight());
-      fhPtNoIso       ->Fill(pt,      GetEventWeight());
-      fhEtaPhiNoIso   ->Fill(eta,phi, GetEventWeight());
+      fhENoIso        ->Fill(energy,  GetEventWeight()*weightTrig);
+      fhPtNoIso       ->Fill(pt,      GetEventWeight()*weightTrig);
+      fhEtaPhiNoIso   ->Fill(eta,phi, GetEventWeight()*weightTrig);
       
       if(fStudyExoticTrigger && fIsExoticTrigger)
       {
-        fhENoIsoExoTrigger ->Fill(energy,  GetEventWeight());
-        fhPtNoIsoExoTrigger->Fill(pt,      GetEventWeight());        
+        fhENoIsoExoTrigger ->Fill(energy,  GetEventWeight()*weightTrig);
+        fhPtNoIsoExoTrigger->Fill(pt,      GetEventWeight()*weightTrig);        
       }
       
       if(IsDataMC())
       {
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
-          fhPtNoIsoMC[kmcPhoton]->Fill(pt, GetEventWeight());
+          fhPtNoIsoMC[kmcPhoton]->Fill(pt, GetEventWeight()*weightTrig);
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost)  )
         {
-          if     ( mcIndex == kmcPi0Decay ) fhPtNoIsoMC[kmcPi0DecayLostPair]->Fill(pt, GetEventWeight());
-          else if( mcIndex == kmcEtaDecay ) fhPtNoIsoMC[kmcEtaDecayLostPair]->Fill(pt, GetEventWeight());
+          if     ( mcIndex == kmcPi0Decay ) fhPtNoIsoMC[kmcPi0DecayLostPair]->Fill(pt, GetEventWeight()*weightTrig);
+          else if( mcIndex == kmcEtaDecay ) fhPtNoIsoMC[kmcEtaDecayLostPair]->Fill(pt, GetEventWeight()*weightTrig);
         }
         
-        fhPtNoIsoMC[mcIndex]->Fill(pt, GetEventWeight());
+        fhPtNoIsoMC[mcIndex]->Fill(pt, GetEventWeight()*weightTrig);
       }
       
       if(fFillNLMHistograms)
-        fhPtNLocMaxNoIso ->Fill(pt, aod->GetNLM(), GetEventWeight());
+        fhPtNLocMaxNoIso ->Fill(pt, aod->GetNLM(), GetEventWeight()*weightTrig);
       
       if(IsPileUpAnalysisOn())
       {
-        if(GetReader()->IsPileUpFromSPD())                { fhENoIsoPileUp[0] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[0]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromEMCal())              { fhENoIsoPileUp[1] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[1]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromSPDOrEMCal())         { fhENoIsoPileUp[2] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[2]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromSPDAndEMCal())        { fhENoIsoPileUp[3] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[3]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromSPDAndNotEMCal())     { fhENoIsoPileUp[4] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[4]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhENoIsoPileUp[5] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[5]->Fill(pt, GetEventWeight()) ; }
-        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhENoIsoPileUp[6] ->Fill(energy, GetEventWeight()) ; fhPtNoIsoPileUp[6]->Fill(pt, GetEventWeight()) ; }
+        if(GetReader()->IsPileUpFromSPD())                { fhENoIsoPileUp[0] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtNoIsoPileUp[0]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromEMCal())              { fhENoIsoPileUp[1] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtNoIsoPileUp[1]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromSPDOrEMCal())         { fhENoIsoPileUp[2] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtNoIsoPileUp[2]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromSPDAndEMCal())        { fhENoIsoPileUp[3] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtNoIsoPileUp[3]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromSPDAndNotEMCal())     { fhENoIsoPileUp[4] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtNoIsoPileUp[4]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromEMCalAndNotSPD())     { fhENoIsoPileUp[5] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtNoIsoPileUp[5]->Fill(pt, GetEventWeight()*weightTrig) ; }
+        if(GetReader()->IsPileUpFromNotSPDAndNotEMCal())  { fhENoIsoPileUp[6] ->Fill(energy, GetEventWeight()*weightTrig) ; fhPtNoIsoPileUp[6]->Fill(pt, GetEventWeight()*weightTrig) ; }
       }
     } // non iso
     
@@ -7731,7 +7740,12 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
   Int_t    mcIndex   =  0 ;
   Int_t    nprim     = GetMC()->GetNumberOfTracks();
   
+  Bool_t   ok        = kFALSE;
+  Int_t    momLabel  = -1;
+  
   AliVParticle * primary = 0;
+  
+  TString genName = "";
   
   // Calorimeter cluster merging angle
   // angle smaller than 3 cells  6 cm (0.014) in EMCal, 2.2 cm in PHOS (0.014*(2.2/6))
@@ -7808,7 +7822,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
     tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
-                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept());
+                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                            photonE); // Not used, should be cluster
     
     if(pdg == 22 && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -7818,6 +7833,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       continue;
     }
+    
+    /// Particle ID and pT dependent Weight
+    Int_t index     = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
+    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
+    ///
     
     // Check the origin of the photon or if it is a pi0, assing a tag
     Int_t pi0d1Label = -1, pi0d2Label = -1;
@@ -7868,11 +7888,15 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     }
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
     {
-      mcIndex = kmcPrimPi0Decay;
+      mcIndex   = kmcPrimPi0Decay;
+      fMomentum = GetMCAnalysisUtils()->GetMotherWithPDG(i, 111, GetMC(),ok, momLabel);        
+      weightPt  = GetParticlePtWeight(fMomentum.Pt(), 111, genName, index) ; 
     }
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
     {
-      mcIndex = kmcPrimEtaDecay;
+      mcIndex   = kmcPrimEtaDecay;
+      fMomentum = GetMCAnalysisUtils()->GetMotherWithPDG(i, 221, GetMC(),ok, momLabel);        
+      weightPt  = GetParticlePtWeight(fMomentum.Pt(), 221, genName, index) ; 
     }
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) )
     {
@@ -7986,9 +8010,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         else if ( TMath::Abs(partInConePDG) == 2212 )  mcChTag = 2; 
         
         if(physPrimary)
-          fhPtTrackInConeMCPrimaryGener  [mcChTag]->Fill(photonPt, partInConePt, GetEventWeight());
+          fhPtTrackInConeMCPrimaryGener  [mcChTag]->Fill(photonPt, partInConePt, GetEventWeight()*weightPt);
         else
-          fhPtTrackInConeMCSecondaryGener[mcChTag]->Fill(photonPt, partInConePt, GetEventWeight());
+          fhPtTrackInConeMCSecondaryGener[mcChTag]->Fill(photonPt, partInConePt, GetEventWeight()*weightPt);
 
         //printf("Selected particles pdg %d, status %d\n", partInConePDG, partInConeStatus);
       }
@@ -8008,15 +8032,15 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     // Fill the histograms, only those in the defined calorimeter acceptance
     
-    fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt, photonEta, GetEventWeight()) ;
-    fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt, photonPhi, GetEventWeight()) ;
-    fhEPrimMC  [kmcPrimPhoton]->Fill(photonE ,            GetEventWeight()) ;
-    fhPtPrimMC [kmcPrimPhoton]->Fill(photonPt,            GetEventWeight()) ;
+    fhEtaPrimMC[kmcPrimPhoton]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
+    fhPhiPrimMC[kmcPrimPhoton]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
+    fhEPrimMC  [kmcPrimPhoton]->Fill(photonE ,            GetEventWeight()*weightPt) ;
+    fhPtPrimMC [kmcPrimPhoton]->Fill(photonPt,            GetEventWeight()*weightPt) ;
     
-    fhEtaPrimMC[mcIndex]->Fill(photonPt, photonEta, GetEventWeight()) ;
-    fhPhiPrimMC[mcIndex]->Fill(photonPt, photonPhi, GetEventWeight()) ;
-    fhEPrimMC  [mcIndex]->Fill(photonE ,            GetEventWeight()) ;
-    fhPtPrimMC [mcIndex]->Fill(photonPt,            GetEventWeight()) ;
+    fhEtaPrimMC[mcIndex]->Fill(photonPt, photonEta, GetEventWeight()*weightPt) ;
+    fhPhiPrimMC[mcIndex]->Fill(photonPt, photonPhi, GetEventWeight()*weightPt) ;
+    fhEPrimMC  [mcIndex]->Fill(photonE ,            GetEventWeight()*weightPt) ;
+    fhPtPrimMC [mcIndex]->Fill(photonPt,            GetEventWeight()*weightPt) ;
     
     // In case the photon is a decay from pi0 or eta,
     // study how the decay kinematics affects the isolation
@@ -8091,17 +8115,17 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           // Second decay out of cone
           if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
                dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
-            fhPtPrimMCPi0DecayPairOutOfCone->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCPi0DecayPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
           if(!ok2 || !d2Acc || fMomDaugh2.E() <= minECalo)
           {
-            fhPtPrimMCPi0DecayPairOutOfAcceptance->Fill(photonPt, GetEventWeight());
-            if(!overlap) fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCPi0DecayPairOutOfAcceptance->Fill(photonPt, GetEventWeight()*weightPt);
+            if(!overlap) fhPtPrimMCPi0DecayPairOutOfAcceptanceNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           }
           
           // Not Overlapped decay
-          if(!overlap) fhPtPrimMCPi0DecayPairNoOverlap->Fill(photonPt, GetEventWeight());
+          if(!overlap) fhPtPrimMCPi0DecayPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
@@ -8109,11 +8133,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
                dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
           {
-            fhPtPrimMCPi0DecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCPi0DecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
             if(!overlap)
             {
-              fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt, GetEventWeight());
-              if(fMomDaugh2.E() > minECalo) fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt, GetEventWeight());
+              fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
+              if(fMomDaugh2.E() > minECalo) fhPtPrimMCPi0DecayPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt, GetEventWeight()*weightPt);
             }
           }
         } // pi0 decay
@@ -8122,17 +8146,17 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           // Second decay out of cone
           if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
                dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
-            fhPtPrimMCEtaDecayPairOutOfCone->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCEtaDecayPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
           if(!ok2 || !d2Acc || fMomDaugh2.E() <= minECalo)
           {
-            fhPtPrimMCEtaDecayPairOutOfAcceptance->Fill(photonPt, GetEventWeight());
-            if(!overlap) fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCEtaDecayPairOutOfAcceptance->Fill(photonPt, GetEventWeight()*weightPt);
+            if(!overlap) fhPtPrimMCEtaDecayPairOutOfAcceptanceNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           }
           
           // Not Overlapped decay
-          if(!overlap) fhPtPrimMCEtaDecayPairNoOverlap->Fill(photonPt, GetEventWeight());
+          if(!overlap) fhPtPrimMCEtaDecayPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay pt smaller than threshold
           if ( d2Acc && 
@@ -8140,11 +8164,11 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
                dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold())
           {
-            fhPtPrimMCEtaDecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCEtaDecayPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
             if(!overlap)
             {
-              fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt, GetEventWeight());
-              if(fMomDaugh2.E() > minECalo) fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt, GetEventWeight());
+              fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
+              if(fMomDaugh2.E() > minECalo) fhPtPrimMCEtaDecayPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt, GetEventWeight()*weightPt);
             }
           }
         } // eta decay
@@ -8153,8 +8177,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
       if(overlapPi0)
       {
-        if( mcIndex == kmcPrimPi0) fhPtPrimMCPi0Overlap->Fill(photonPt, GetEventWeight());
-        if( mcIndex == kmcPrimEta) fhPtPrimMCEtaOverlap->Fill(photonPt, GetEventWeight());
+        if( mcIndex == kmcPrimPi0) fhPtPrimMCPi0Overlap->Fill(photonPt, GetEventWeight()*weightPt);
+        if( mcIndex == kmcPrimEta) fhPtPrimMCEtaOverlap->Fill(photonPt, GetEventWeight()*weightPt);
       }
     }
     
@@ -8173,26 +8197,26 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     if(isolated)
     {
-      fhPtPrimMCiso [mcIndex]      ->Fill(photonPt, GetEventWeight()) ;
-      fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt, GetEventWeight()) ;
+      fhPtPrimMCiso [mcIndex]      ->Fill(photonPt, GetEventWeight()*weightPt) ;
+      fhPtPrimMCiso [kmcPrimPhoton]->Fill(photonPt, GetEventWeight()*weightPt) ;
       
       if(fMakePrimaryPi0DecayStudy)
       {
         if( mcIndex == kmcPrimPi0Decay )
         {
           // Not Overlapped decay
-          if(!overlap) fhPtPrimMCPi0DecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight());
+          if(!overlap) fhPtPrimMCPi0DecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of cone
           if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
                dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
-            fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCPi0DecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
           if(!ok2 || !d2Acc || fMomDaugh2.E() <= minECalo)
           {
-            fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->Fill(photonPt, GetEventWeight());
-            if(!overlap) fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCPi0DecayIsoPairOutOfAcceptance->Fill(photonPt, GetEventWeight()*weightPt);
+            if(!overlap) fhPtPrimMCPi0DecayIsoPairOutOfAcceptanceNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           }
           
           // Second decay pt smaller than threshold
@@ -8201,29 +8225,29 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
                dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold() )
           {
-            fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
             if(!overlap)
             {
-              fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt, GetEventWeight());
-              if(fMomDaugh2.E() > minECalo) fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt, GetEventWeight());
+              fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
+              if(fMomDaugh2.E() > minECalo) fhPtPrimMCPi0DecayIsoPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt, GetEventWeight()*weightPt);
             }
           }
         }// pi0 decay
         else if( mcIndex == kmcPrimEtaDecay )
         {
           // Not Overlapped decay
-          if(!overlap) fhPtPrimMCEtaDecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight());
+          if(!overlap) fhPtPrimMCEtaDecayIsoPairNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of cone
           if ( dRdaugh2 > GetIsolationCut()->GetConeSize() || 
                dRdaugh2 < GetIsolationCut()->GetMinDistToTrigger() )
-            fhPtPrimMCEtaDecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCEtaDecayIsoPairOutOfCone->Fill(photonPt, GetEventWeight()*weightPt);
           
           // Second decay out of acceptance
           if(!ok2 || !d2Acc || fMomDaugh2.E() <= minECalo)
           {
-            fhPtPrimMCEtaDecayIsoPairOutOfAcceptance->Fill(photonPt, GetEventWeight());
-            if(!overlap) fhPtPrimMCEtaDecayIsoPairOutOfAcceptanceNoOverlap->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCEtaDecayIsoPairOutOfAcceptance->Fill(photonPt, GetEventWeight()*weightPt);
+            if(!overlap) fhPtPrimMCEtaDecayIsoPairOutOfAcceptanceNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
           }
           
           // Second decay pt smaller than threshold
@@ -8232,19 +8256,19 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
                dRdaugh2 > GetIsolationCut()->GetMinDistToTrigger() &&
                fMomDaugh2.E() < GetIsolationCut()->GetPtThreshold() )
           {
-            fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight());
+            fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPt->Fill(photonPt, GetEventWeight()*weightPt);
             if(!overlap)
             {
-              fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt, GetEventWeight());
-              if(fMomDaugh2.E() > minECalo) fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt, GetEventWeight());
+              fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
+              if(fMomDaugh2.E() > minECalo) fhPtPrimMCEtaDecayIsoPairAcceptInConeLowPtNoOverlapCaloE->Fill(photonPt, GetEventWeight()*weightPt);
             }
           }
         }// eta decay
         
         if(overlapPi0)
         {
-          if( mcIndex == kmcPrimPi0 ) fhPtPrimMCPi0IsoOverlap->Fill(photonPt, GetEventWeight());
-          if( mcIndex == kmcPrimEta ) fhPtPrimMCEtaIsoOverlap->Fill(photonPt, GetEventWeight());
+          if( mcIndex == kmcPrimPi0 ) fhPtPrimMCPi0IsoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
+          if( mcIndex == kmcPrimEta ) fhPtPrimMCEtaIsoOverlap->Fill(photonPt, GetEventWeight()*weightPt);
         }
       }
     } // isolated
@@ -8266,6 +8290,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
   Float_t phiC  = ph->Phi();
   if(phiC<0) phiC += TMath::TwoPi();
   Int_t   tag   = ph->GetTag();
+  Float_t weightTrig = ph->GetWeight();
 
   Int_t   decayTag = 0;
   if(fFillTaggedDecayHistograms)
@@ -8288,22 +8313,22 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
   Bool_t  isolated  = kFALSE;
   
   // Fill hist with all particles before isolation criteria
-  fhENoIso     ->Fill(ph->E(),   GetEventWeight());
-  fhPtNoIso    ->Fill(ptC,       GetEventWeight());
-  fhEtaPhiNoIso->Fill(etaC,phiC, GetEventWeight());
+  fhENoIso     ->Fill(ph->E(),   GetEventWeight()*weightTrig);
+  fhPtNoIso    ->Fill(ptC,       GetEventWeight()*weightTrig);
+  fhEtaPhiNoIso->Fill(etaC,phiC, GetEventWeight()*weightTrig);
   
   if(IsDataMC())
   {
     if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-      fhPtNoIsoMC[kmcPhoton]->Fill(ptC, GetEventWeight());
+      fhPtNoIsoMC[kmcPhoton]->Fill(ptC, GetEventWeight()*weightTrig);
     
     if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) )
     {
-      if     ( mcIndex==kmcPi0Decay ) fhPtNoIsoMC[kmcPi0DecayLostPair]->Fill(ptC, GetEventWeight());
-      else if( mcIndex==kmcEtaDecay ) fhPtNoIsoMC[kmcEtaDecayLostPair]->Fill(ptC, GetEventWeight());
+      if     ( mcIndex==kmcPi0Decay ) fhPtNoIsoMC[kmcPi0DecayLostPair]->Fill(ptC, GetEventWeight()*weightTrig);
+      else if( mcIndex==kmcEtaDecay ) fhPtNoIsoMC[kmcEtaDecayLostPair]->Fill(ptC, GetEventWeight()*weightTrig);
     }
     
-    fhPtNoIsoMC[mcIndex]->Fill(ptC, GetEventWeight());
+    fhPtNoIsoMC[mcIndex]->Fill(ptC, GetEventWeight()*weightTrig);
   }
   
   // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
@@ -8313,21 +8338,21 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
     {
       if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit]))
       {
-        fhPtDecay    [0][ibit]->Fill(ptC),      GetEventWeight();
-        fhEtaPhiDecay[0][ibit]->Fill(etaC,phiC, GetEventWeight());
+        fhPtDecay    [0][ibit]->Fill(ptC ,      GetEventWeight()*weightTrig);
+        fhEtaPhiDecay[0][ibit]->Fill(etaC,phiC, GetEventWeight()*weightTrig);
         
         if(IsDataMC())
         {
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-            fhPtDecayMC[0][ibit][kmcPhoton]->Fill(ptC, GetEventWeight());
+            fhPtDecayMC[0][ibit][kmcPhoton]->Fill(ptC, GetEventWeight()*weightTrig);
 
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) )
           {
-           if      (mcIndex==kmcPi0Decay) fhPtDecayMC[0][ibit][kmcPi0DecayLostPair]->Fill(ptC, GetEventWeight());
-           else if (mcIndex==kmcEtaDecay) fhPtDecayMC[0][ibit][kmcEtaDecayLostPair]->Fill(ptC, GetEventWeight());
+           if      (mcIndex==kmcPi0Decay) fhPtDecayMC[0][ibit][kmcPi0DecayLostPair]->Fill(ptC, GetEventWeight()*weightTrig);
+           else if (mcIndex==kmcEtaDecay) fhPtDecayMC[0][ibit][kmcEtaDecayLostPair]->Fill(ptC, GetEventWeight()*weightTrig);
           }
           
-          fhPtDecayMC[0][ibit][mcIndex]->Fill(ptC, GetEventWeight());
+          fhPtDecayMC[0][ibit][mcIndex]->Fill(ptC, GetEventWeight()*weightTrig);
         }
       } // bit ok
     } // bit loop
@@ -8381,7 +8406,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
         
       if(TMath::Sqrt(arg) < fConeSizes[icone])
       {
-        fhPerpPtLeadingPt[icone]->Fill(ptC, pTrack, GetEventWeight());
+        fhPerpPtLeadingPt[icone]->Fill(ptC, pTrack, GetEventWeight()*weightTrig);
         sumptPerp+=track->Pt();
       }
       
@@ -8389,12 +8414,12 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
       arg  = dPhi*dPhi + dEta*dEta;
       if(TMath::Sqrt(arg) < fConeSizes[icone])
       {
-        fhPerpPtLeadingPt[icone]->Fill(ptC, pTrack, GetEventWeight());
+        fhPerpPtLeadingPt[icone]->Fill(ptC, pTrack, GetEventWeight()*weightTrig);
         sumptPerp+=track->Pt();
       }
     }
     
-    fhPerpSumPtLeadingPt[icone]->Fill(ptC, sumptPerp, GetEventWeight());
+    fhPerpSumPtLeadingPt[icone]->Fill(ptC, sumptPerp, GetEventWeight()*weightTrig);
     
     // Tracks in isolation cone, pT distribution and sum
     if(reftracks && GetIsolationCut()->GetParticleTypeInCone()!= AliIsolationCut::kOnlyNeutral)
@@ -8407,7 +8432,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
         
         if(rad > fConeSizes[icone]) continue ;
         
-        fhPtLeadingPt[icone]->Fill(ptC, track->Pt(), GetEventWeight());
+        fhPtLeadingPt[icone]->Fill(ptC, track->Pt(), GetEventWeight()*weightTrig);
         coneptsum += track->Pt();
       }
     }
@@ -8425,25 +8450,25 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
         
         if(rad > fConeSizes[icone]) continue ;
         
-        fhPtLeadingPt[icone]->Fill(ptC, fMomentum.Pt(), GetEventWeight());
+        fhPtLeadingPt[icone]->Fill(ptC, fMomentum.Pt(), GetEventWeight()*weightTrig);
         coneptsum += fMomentum.Pt();
       }
     }
     
-    fhSumPtLeadingPt[icone]->Fill(ptC, coneptsum, GetEventWeight());
+    fhSumPtLeadingPt[icone]->Fill(ptC, coneptsum, GetEventWeight()*weightTrig);
     
     if(IsDataMC())
     {
       if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-        fhSumPtLeadingPtMC[kmcPhoton][icone]->Fill(ptC, coneptsum, GetEventWeight()) ;
+        fhSumPtLeadingPtMC[kmcPhoton][icone]->Fill(ptC, coneptsum, GetEventWeight()*weightTrig) ;
       
       if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) )
       {
-        if      ( mcIndex==kmcPi0Decay ) fhSumPtLeadingPtMC[kmcPi0DecayLostPair][icone]->Fill(ptC, coneptsum, GetEventWeight()) ;
-        else if ( mcIndex==kmcEtaDecay ) fhSumPtLeadingPtMC[kmcEtaDecayLostPair][icone]->Fill(ptC, coneptsum, GetEventWeight()) ;
+        if      ( mcIndex==kmcPi0Decay ) fhSumPtLeadingPtMC[kmcPi0DecayLostPair][icone]->Fill(ptC, coneptsum, GetEventWeight()*weightTrig) ;
+        else if ( mcIndex==kmcEtaDecay ) fhSumPtLeadingPtMC[kmcEtaDecayLostPair][icone]->Fill(ptC, coneptsum, GetEventWeight()*weightTrig) ;
       }
       
-      fhSumPtLeadingPtMC[mcIndex][icone]->Fill(ptC, coneptsum, GetEventWeight()) ;
+      fhSumPtLeadingPtMC[mcIndex][icone]->Fill(ptC, coneptsum, GetEventWeight()*weightTrig) ;
     }
     
     ///////////////////
@@ -8473,30 +8498,30 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
       {
         AliDebug(1,"Filling pt threshold loop");
         
-        fhPtThresIsolated [icone][ipt]->Fill(ptC,        GetEventWeight());
-        fhEtaPhiPtThresIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight());
+        fhPtThresIsolated [icone][ipt]->Fill(ptC,        GetEventWeight()*weightTrig);
+        fhEtaPhiPtThresIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig);
         
         if( fFillTaggedDecayHistograms && decayTag > 0 && fNDecayBits > 0)
         {
           if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[0]))
           {
-            fhPtPtThresDecayIso    [icone][ipt]->Fill(ptC,        GetEventWeight());
-            fhEtaPhiPtThresDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight());
+            fhPtPtThresDecayIso    [icone][ipt]->Fill(ptC,        GetEventWeight()*weightTrig);
+            fhEtaPhiPtThresDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig);
           }
         }
         
         if(IsDataMC())
         {
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) )
-            fhPtThresIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+            fhPtThresIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
           
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) )
           {
-            if     (mcIndex == kmcPi0Decay) fhPtThresIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()) ;
-            else if(mcIndex == kmcEtaDecay) fhPtThresIsolatedMC[kmcEtaDecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+            if     (mcIndex == kmcPi0Decay) fhPtThresIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
+            else if(mcIndex == kmcEtaDecay) fhPtThresIsolatedMC[kmcEtaDecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
           }
           
-          fhPtThresIsolatedMC[mcIndex][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+          fhPtThresIsolatedMC[mcIndex][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
           
         }
       }
@@ -8506,30 +8531,30 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
       {
         AliDebug(1,"Filling frac loop");
         
-        fhPtFracIsolated [icone][ipt]->Fill(ptC ,       GetEventWeight());
-        fhEtaPhiPtFracIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight());
+        fhPtFracIsolated [icone][ipt]->Fill(ptC ,       GetEventWeight()*weightTrig);
+        fhEtaPhiPtFracIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig);
         
         if( fFillTaggedDecayHistograms && decayTag > 0 && fNDecayBits > 0)
         {
           if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[0]))
           {
-            fhPtPtFracDecayIso    [icone][ipt]->Fill(ptC ,       GetEventWeight());
-            fhEtaPhiPtFracDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight());
+            fhPtPtFracDecayIso    [icone][ipt]->Fill(ptC ,       GetEventWeight()*weightTrig);
+            fhEtaPhiPtFracDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig);
           }
         }
         
         if(IsDataMC())
         {
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-            fhPtFracIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+            fhPtFracIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
           
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) )
           {
-            if     ( mcIndex == kmcPi0Decay ) fhPtFracIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()) ;
-            else if( mcIndex == kmcEtaDecay ) fhPtFracIsolatedMC[kmcEtaDecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+            if     ( mcIndex == kmcPi0Decay ) fhPtFracIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
+            else if( mcIndex == kmcEtaDecay ) fhPtFracIsolatedMC[kmcEtaDecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
           }
           
-          fhPtFracIsolatedMC[mcIndex][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+          fhPtFracIsolatedMC[mcIndex][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
         }
       }
       
@@ -8540,30 +8565,30 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
       {
         AliDebug(1,"Filling sum loop");
         
-        fhSumPtIsolated [icone][ipt]->Fill(ptC,        GetEventWeight()) ;
-        fhEtaPhiPtSumIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()) ;
+        fhSumPtIsolated [icone][ipt]->Fill(ptC,        GetEventWeight()*weightTrig) ;
+        fhEtaPhiPtSumIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig) ;
         
         if( fFillTaggedDecayHistograms && decayTag > 0 && fNDecayBits > 0)
         {
           if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[0]))
           {
-            fhPtPtSumDecayIso[icone][ipt]->Fill(ptC,            GetEventWeight());
-            fhEtaPhiPtSumDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()) ;
+            fhPtPtSumDecayIso[icone][ipt]->Fill(ptC,            GetEventWeight()*weightTrig);
+            fhEtaPhiPtSumDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig) ;
           }
         }
         
         if(IsDataMC())
         {
           if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-            fhSumPtIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+            fhSumPtIsolatedMC[kmcPhoton][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
           
           if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCDecayPairLost) )
           {
-            if     ( mcIndex == kmcPi0Decay ) fhSumPtIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()) ;
-            else if( mcIndex == kmcEtaDecay ) fhSumPtIsolatedMC[kmcEtaDecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+            if     ( mcIndex == kmcPi0Decay ) fhSumPtIsolatedMC[kmcPi0DecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
+            else if( mcIndex == kmcEtaDecay ) fhSumPtIsolatedMC[kmcEtaDecayLostPair][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
           }
           
-          fhSumPtIsolatedMC[mcIndex][icone][ipt]->Fill(ptC, GetEventWeight()) ;
+          fhSumPtIsolatedMC[mcIndex][icone][ipt]->Fill(ptC, GetEventWeight()*weightTrig) ;
         }
       }
       
@@ -8574,15 +8599,15 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
       {
         AliDebug(1,"Filling PtFrac PtSum loop");
         
-        fhPtFracPtSumIso    [icone][ipt]->Fill(ptC,        GetEventWeight()) ;
-        fhEtaPhiFracPtSumIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()) ;
+        fhPtFracPtSumIso    [icone][ipt]->Fill(ptC,        GetEventWeight()*weightTrig) ;
+        fhEtaPhiFracPtSumIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig) ;
         
         if( fFillTaggedDecayHistograms && decayTag > 0 && fNDecayBits > 0)
         {
           if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[0]))
           {
-            fhPtFracPtSumDecayIso    [icone][ipt]->Fill(ptC,        GetEventWeight());
-            fhEtaPhiFracPtSumDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight());
+            fhPtFracPtSumDecayIso    [icone][ipt]->Fill(ptC,        GetEventWeight()*weightTrig);
+            fhEtaPhiFracPtSumDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig);
           }
         }
       }
@@ -8593,15 +8618,15 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
       {
         AliDebug(1,"Filling density loop");
         
-        fhPtSumDensityIso    [icone][ipt]->Fill(ptC ,       GetEventWeight()) ;
-        fhEtaPhiSumDensityIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()) ;
+        fhPtSumDensityIso    [icone][ipt]->Fill(ptC ,       GetEventWeight()*weightTrig) ;
+        fhEtaPhiSumDensityIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig) ;
         
         if( fFillTaggedDecayHistograms && decayTag > 0 && fNDecayBits > 0)
         {
           if(GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[0]))
           {
-            fhPtSumDensityDecayIso    [icone][ipt]->Fill(ptC ,       GetEventWeight());
-            fhEtaPhiSumDensityDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight());
+            fhPtSumDensityDecayIso    [icone][ipt]->Fill(ptC ,       GetEventWeight()*weightTrig);
+            fhEtaPhiSumDensityDecayIso[icone][ipt]->Fill(etaC, phiC, GetEventWeight()*weightTrig);
           }
         }
       }

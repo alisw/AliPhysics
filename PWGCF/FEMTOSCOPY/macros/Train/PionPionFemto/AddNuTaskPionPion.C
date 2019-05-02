@@ -5,6 +5,8 @@
 
 #if !defined(__CINT__) && !defined(__CLING__)
 
+#include <TROOT.h>
+
 #include <TString.h>
 #include <TList.h>
 #include <TObjArray.h>
@@ -79,6 +81,7 @@ AliAnalysisTask* AddNuTaskPionPion(TString container,
   TString macro = DEFAULT_MACRO,
           output_filename = mgr->GetCommonFileName(),
           output_container = DEFAULT_OUTPUT_CONTAINER,
+          subwagon_array = "",
           subwagon_type = DEFAULT_SUBWAGON_TYPE;
 
   bool verbose = kFALSE;
@@ -105,16 +108,20 @@ AliAnalysisTask* AddNuTaskPionPion(TString container,
 
   // Dealing with subwagons
   if (!subwagon_suffix.IsWhitespace()) {
-    subwagon_type.ToLower();
-
-    if (subwagon_type == "centrality") {
-      params = TString::Format("~use_subwagon_centrality=true; ~subwagon_centrality='%s';", subwagon_suffix.Data()) + params.Data();
-    } else {
-      std::cerr << "AddTaskPionPion - Unexpected subwagon_type '" << subwagon_type << "' - Ignoring\n";
+    Int_t index = subwagon_suffix.Atoi();
+    TObjArray *values = subwagon_array.Tokenize(",");
+    TIter next_value(values);
+    for (int i=0; i<index; ++i) {
+      next_value();
     }
+    TString ss = ((TObjString*)next_value())->String();
+    params += Form("%s = %s;", subwagon_type.Data(), ss.Data());
+
+    container += "_" + subwagon_suffix;
   }
 
   cout << "[AddTaskPionPion]\n"
+          "   container: " << container << "\n"
           "   output: '" << output_filename << "'\n"
           "   macro: '" << macro << "'\n"
           "   params: '" << params << "'\n";

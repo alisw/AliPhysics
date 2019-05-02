@@ -41,7 +41,7 @@ public:
     virtual TH3F* GetHistogramFeeddown       ()       { return 0x0; }
     virtual TH3F* GetHistogramFeeddownToCopy () const { return 0x0; }
     virtual Bool_t HasSameCuts( AliVWeakResult *lCompare, Bool_t lCheckdEdx = kTRUE ) { return kFALSE; }
-    virtual void Print() {};
+    virtual void Print(Option_t *option="") {};
     
 private:
     ClassDef(AliVWeakResult, 3)

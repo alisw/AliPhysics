@@ -15,6 +15,7 @@
 /// Headers needed by this particular selector
 #include "MiniV0.h"
 #include "MCparticle.h"
+#include "HyperTriton2Body.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include <TGraph.h>
@@ -28,8 +29,10 @@ public:
 
   /// Readers to access the data
   TTreeReaderValue<float>  fMultiplicity = {fReader, "fMultiplicity"};
-  TTreeReaderArray<Lifetimes::MiniV0<3>> V0s = {fReader, "V0s"};
-  TTreeReaderArray<Lifetimes::MCparticle> MCparticles = {fReader, "MCparticles"};       
+  TTreeReaderArray<Lifetimes::MiniV0> V0s = {fReader, "V0s"};
+  TTreeReaderArray<Lifetimes::HyperTriton2Body> V0Hyper = {fReader, "V0Hyper"};  
+  TTreeReaderArray<Lifetimes::MCparticle> MCparticles = {fReader, "MCparticles"};    
+
   /// standard selector methods
   MiniV0efficiency(TTree * /*tree*/ =0);
   virtual ~MiniV0efficiency() { }
@@ -59,13 +62,13 @@ public:
   TH1D* fHistV0ptData[3];
   TH1D* fHistV0ctMC[3];
   TH1D* fHistV0ctData[3]; 
-  TH1D* fHistV0ptDataNC; 
   TH1D* EffvsPt[3];
   TH1D* Effvsct[3];
   TH2D* ctAnalysis[3];
+  TH2D* ptAnalysisH;  
 
 
-  ClassDef(MiniV0efficiency,0);
+  ClassDef(MiniV0efficiency,2);
 
 };
 

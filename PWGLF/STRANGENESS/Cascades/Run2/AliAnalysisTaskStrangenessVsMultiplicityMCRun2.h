@@ -112,6 +112,15 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+    void SetHypertritonMode ( Bool_t lOpt = kTRUE) {
+        fkHypertritonMode = lOpt;
+    }
+    void SetHeavyDaughterPID ( Bool_t lOpt = kTRUE) {
+        fkHeavyDaughterPID = lOpt;
+    }
+    void SetSandboxV0Prongs ( Bool_t lOpt = kTRUE) {
+        fkSandboxV0Prongs = lOpt;
+    }
     //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
@@ -126,8 +135,15 @@ public:
     void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
         fkUseOldCentrality = lUseOldCent;
     }
+    void SetMaxPVR2D ( Float_t lOpt = 1e+5) {
+        fkMaxPVR2D = lOpt;
+    }
     //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
+    void SetDownScaleEvent ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
+        fkDownScaleEvent = lOpt;
+        fDownScaleFactorEvent = lVal;
+    }
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
         fkDownScaleV0 = lOpt;
         fDownScaleFactorV0 = lVal;
@@ -242,11 +258,13 @@ public:
     void SetupLooseVertexing();
     // 2- Standard Topological Selection QA Sweeps
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
-    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
+    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100 , TString lSweepOptions = "");
     // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweepLooseTight = kFALSE, Int_t lSweepFullNumb = 0);
+    void AddStandardV0RadiusSweep(); 
     void AddStandardCascadeConfiguration(Bool_t lUseFull=kFALSE, Bool_t lDoSystematics = kTRUE);
     void AddCascadeConfiguration276TeV();
+    void AddCascadeConfigurationPreliminaryCrosscheck();
     //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
@@ -263,6 +281,11 @@ public:
                   Double_t g[3],  //first defivatives
                   Double_t gg[3]); //second derivatives
     Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
+    //---------------------------------------------------------------------------------------
+    void SetSaveSpecificCascadeConfig(TString lConfig){
+        fkConfigToSave = lConfig;
+        fkSaveSpecificConfig = kTRUE;
+    }
     //---------------------------------------------------------------------------------------
     
 private:
@@ -294,6 +317,8 @@ private:
     
     //Objects Controlling Task Behaviour
     Bool_t fkSaveEventTree;           //if true, save Event TTree
+    Bool_t fkDownScaleEvent;
+    Double_t fDownScaleFactorEvent;
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
@@ -311,6 +336,7 @@ private:
     Bool_t fkDoExtraEvSels; //use AliEventCuts for event selection
     Int_t fkPileupRejectionMode; //pileup rejection mode (0=none, 1=ionut, 2=anti-ionut)
     Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
+    Float_t fkMaxPVR2D; 
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
@@ -320,7 +346,11 @@ private:
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
     
     //if true, save sandbox mode info (beware large files!)
-    Bool_t fkSandboxMode; 
+    Bool_t fkSandboxMode;
+    
+    //if true, fill cascade TTree with a config with a given name
+    Bool_t fkSaveSpecificConfig;
+    TString fkConfigToSave; 
     
 		//Cuts for Sibling Tagging
     Float_t fSibCutDcaV0ToPrimVertex      ;
@@ -335,6 +365,10 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    
+    Bool_t fkHypertritonMode; //if true, save everything in hypertriton mass window
+    Bool_t fkHeavyDaughterPID; //if true, save everything that has perfect PID in heavy daughters (akin to dedx)
+    Bool_t fkSandboxV0Prongs; //if true, sandbox mode will save the V0 prongs and not ESD track parametrizations
     
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     
@@ -548,6 +582,8 @@ private:
     Float_t fTreeCascVarDCABachToBaryon;              //!
     Float_t fTreeCascVarWrongCosPA;                   //!
     Int_t   fTreeCascVarLeastNbrClusters;             //!
+    Int_t fTreeCascVarLeastNbrCrossedRows;
+    Float_t fTreeCascVarNbrCrossedRowsOverLength;
     Float_t fTreeCascVarDistOverTotMom;               //!
     Float_t fTreeCascVarMaxChi2PerCluster; //!
     Float_t fTreeCascVarMinTrackLength; //!

@@ -319,11 +319,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiDecays.push_back(*fFemtov0);
     }
   }
-  //  std::cout << "=====================================\n" ;
-  //  std::cout << "=====================================\n" ;
-  //  std::cout << "==========New event==================\n" ;
-  //  std::cout << "=====================================\n" ;
-  //  std::cout << "=====================================\n" ;
 
   std::vector<AliFemtoDreamBasePart> XiDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiDecays;
@@ -404,6 +399,7 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
 }
 
 void AliFemtoDreamAnalysis::Make(AliESDEvent *evt, AliMCEvent *mcEvent) {
+  std::cout << "New Event \n";
   if (!evt) {
     AliFatal("No Input Event");
   }

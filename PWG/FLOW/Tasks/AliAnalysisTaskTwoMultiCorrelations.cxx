@@ -1,3 +1,4 @@
+
 /*************************************************************************
 * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -14,880 +15,1322 @@
 **************************************************************************/
 
 //--------------------------------------------------------------------------------------//
-// Analysis task for the data analysis of the correlations between the anisotropic flow //
-// harmonics v_n with the Pb-Pb data taken by the ALICE experiment.                     //
-// The current script computes the multiparticle correlators using the method of the    //
-// Q-vectors for a maximum of 6 different harmonics and 8 particles).                   //
+// Analysis task for the computation of the multiparticle correlations for the flow     //
+// harmonics v_1 to v_6. This version of the script compute the 2-, 4- and 6- particle  //
+// correlations for all the useful combinations of these six harmonics. It can take     //
+// Monte Carlo simulations data (e.g. HIJING), as well as the experimental Pb-Pb data   //
+// taken by the ALICE experiment.                                                       //
+// The method used to compute the multiparticle correlations is the Generic Framework   //
+// based on Q-vectors. A setter lets open the possibility to cross-check the results    //
+// with nested loops.                                                                   //
 //                                                                                      //
 // Author: Cindy Mordasini (cindy.mordasini@cern.ch)                                    //
+// Version: 27.02.2019                                                                  //
 //--------------------------------------------------------------------------------------//
 
-#include "Riostream.h"
-#include <vector>
 #include "AliAnalysisTaskTwoMultiCorrelations.h"
 #include "AliLog.h"
+#include "AliAnalysisManager.h"
+#include "Riostream.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
-#include "AliAnalysisManager.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliMultSelection.h"
-#include "TFile.h"
-#include "TComplex.h"
+#include "AliAODVertex.h"
+#include "AliAODTrack.h"
+#include "AliMCVertex.h"
+#include "AliAODMCParticle.h"
 #include "TMath.h"
+#include "TComplex.h"
+#include "TFile.h"
+#include "TList.h"
+#include <vector>
+#include "TH1D.h"
+#include "TH1I.h"
 
 using std::cout;
 using std::endl;
 
 ClassImp(AliAnalysisTaskTwoMultiCorrelations)
 
+//######################################################################################//
+// Mandatory methods for AliAnalysisTaskSE.
 //======================================================================================//
-
-AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights):
-  AliAnalysisTaskSE(name),
-  fMaxNumberCorrelations(8), // General parameters
-  fHighHarmonic(6),
-  fNumberDifferentHarmonics(2),
+AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
+  AliAnalysisTaskSE(),
+// Structure of the output file.
+  fMainList(NULL),
+  fQAListBeforeSelection(NULL),
+  fQAListAfterSelection(NULL),
+  fListCorrelations(NULL),
+// General parameters.
+  fMaxNumberOfParticlesInCorrelations(8),
+  fHighestFlowHarmonic(6),
   fUseParticleWeights(kFALSE),
-  fComputeNestedLoops(kFALSE),
-  fComputeSine(kFALSE),
-  fHarmonicOne(2),  // Harmonics
-  fHarmonicTwo(-2),
-  fHarmonicThree(4),
-  fHarmonicFour(-4),
-  fHarmonicFive(0),
-  fHarmonicSix(0),
-  fHarmonicSeven(0),
-  fHarmonicEight(0),
-  fMinCentrality(0.0),  // Ranges
-  fMaxCentrality(100.0),
-  fMinPtCut(0.2),
-  fMaxPtCut(5.0),
-  fMinEtaCut(-0.8),
-  fMaxEtaCut(0.8),
-  fOutputMainList(NULL),  // Structure of the output file
-  fPreCutControlList(NULL),
-  fPostCutControlList(NULL),
-  fCorrelationResultsList(NULL),
-  fCentralityPreCutHisto(NULL), // Control histograms before the cuts
-  fMultiplicityPreCutHisto(NULL),
-  fPtPreCutControlHisto(NULL),
-  fEtaPreCutControlHisto(NULL),
-  fPhiPreCutHisto(NULL),
-  fMultiplicityPostCutHisto(NULL),  // Control histograms after the cuts
-  fPtPostCutControlHisto(NULL),
-  fEtaPostCutControlHisto(NULL),
-  fPhiPostCutHisto(NULL)
+  fCrossCheckFourParticleCorrelations(kFALSE),
+  fCrossCheckWithNestedLoops(kFALSE),
+// Type of files used in the analysis.
+  fProcessOnlyAOD(kFALSE),
+  fProcessOnlyMC(kFALSE),
+  fProcessBothMCandAOD(kFALSE),
+// Determination of the centrality.
+  fCentralityFromVZero(kFALSE),
+  fCentralityFromSPD(kFALSE),
+  fCentralityMin(0.),
+  fCentralityMax(100.),
+// Event selection.
+  fCutOnVertexX(kFALSE),
+  fVertexMinX(-44.),
+  fVertexMaxX(-44.),
+  fCutOnVertexY(kFALSE),
+  fVertexMinY(-44.),
+  fVertexMaxY(-44.),
+  fCutOnVertexZ(kFALSE),
+  fVertexMinZ(-10.),
+  fVertexMaxZ(10.),
+  fNumberOfTracksMin(6),
+  fCutOnTracksMax(kFALSE),
+  fNumberOfTracksMaxZero(0),
+  fNumberOfTracksMaxFive(0),
+  fNumberOfTracksMaxTen(0),
+  fNumberOfTracksMaxTwenty(0),
+  fNumberOfTracksMaxThirty(0),
+  fNumberOfTracksMaxForty(0),
+  fNumberOfTracksMaxFifty(0),
+  fNumberOfTracksMaxSixty(0),
+  fNumberOfTracksMaxSeventy(0),
+// Track selection.
+  fCutOnPt(kFALSE),
+  fPtMin(0.2),
+  fPtMax(5.),
+  fCutOnEta(kFALSE),
+  fEtaMin(-0.8),
+  fEtaMax(0.8),
+  fFilter(128),
+  fCutOnNumberOfTPC(kFALSE),
+  fNumberOfTPCMin(70),
+  fCutOnChiSquarePInTPC(kFALSE),
+  fChiSquarePInTPCMin(0.1),
+  fChiSquarePInTPCMax(4.),
+  fCutOnDCA(kFALSE),
+  fDCAxyMax(3.2),
+  fDCAzMax(2.4),
+  fCutOnCharge(kFALSE),
+  fCharge(0),
+// TH1D with the observables for the event selection.
+  fHistoCentrality(NULL),
+  fHistoInitialNumberOfTracks(NULL),
+  fHistoNumberOfTracksBeforeTrackSelection(NULL),
+  fHistoFinalNumberOfTracks(NULL),
+  fHNOTNumberOfBins(30000),
+  fHNOTMax(30000.),
+  fHistoVertexXBeforeSelection(NULL),
+  fHistoVertexXAfterSelection(NULL),
+  fHistoVertexYBeforeSelection(NULL),
+  fHistoVertexYAfterSelection(NULL),
+  fHistoVertexZBeforeSelection(NULL),
+  fHistoVertexZAfterSelection(NULL),
+// TH1D with the observables for the track selection.
+  fHistoPtBeforeSelection(NULL),
+  fHistoPtAfterSelection(NULL),
+  fHistoEtaBeforeSelection(NULL),
+  fHistoEtaAfterSelection(NULL),
+  fHistoPhiBeforeSelection(NULL),
+  fHistoPhiAfterSelection(NULL),
+  fHistoTPCClustersBeforeSelection(NULL),
+  fHistoTPCClustersAfterSelection(NULL),
+  fHistoTPCChiSquareBeforeSelection(NULL),
+  fHistoTPCChiSquareAfterSelection(NULL),
+  fHistoDCAXYBeforeSelection(NULL),
+  fHistoDCAXYAfterSelection(NULL),
+  fHistoDCAZBeforeSelection(NULL),
+  fHistoDCAZAfterSelection(NULL),
+  fHistoChargeBeforeSelection(NULL),
+  fHistoChargeAfterSelection(NULL),
+// TProfiles with the final multiparticle correlations.
+  fProfileTwoParticleCorrelations(NULL),
+  fProfileFourParticleCorrelations(NULL),
+  fProfileFourParticleCorrelationsCrossCheck(NULL),
+  fProfileSixParticleCorrelations(NULL),
+  fProfileTwoParticleCorrelationsNestedLoops(NULL),
+  fProfileFourParticleCorrelationsNestedLoops(NULL)
 {
-// Constructor of the class
+/* Dummy constructor of the class. */
   AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights)");
 
-// Creation of a new main list
-  fOutputMainList = new TList();
-  fOutputMainList->SetName("outputAnalysis");
-  fOutputMainList->SetOwner(kTRUE);
+// Initialise 'fQvectors' to zero.
+  InitialiseArraysOfQvectors();
+}
 
-// Definition of the input and output slots
+//======================================================================================//
+AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights) :
+  AliAnalysisTaskSE(name),
+// Structure of the output file.
+  fMainList(NULL),
+  fQAListBeforeSelection(NULL),
+  fQAListAfterSelection(NULL),
+  fListCorrelations(NULL),
+// General parameters.
+  fMaxNumberOfParticlesInCorrelations(8),
+  fHighestFlowHarmonic(6),
+  fUseParticleWeights(kFALSE),
+  fCrossCheckFourParticleCorrelations(kFALSE),
+  fCrossCheckWithNestedLoops(kFALSE),
+// Type of files used in the analysis.
+  fProcessOnlyAOD(kFALSE),
+  fProcessOnlyMC(kFALSE),
+  fProcessBothMCandAOD(kFALSE),
+// Determination of the centrality.
+  fCentralityFromVZero(kFALSE),
+  fCentralityFromSPD(kFALSE),
+  fCentralityMin(0.),
+  fCentralityMax(100.),
+// Event selection.
+  fCutOnVertexX(kFALSE),
+  fVertexMinX(-44.),
+  fVertexMaxX(-44.),
+  fCutOnVertexY(kFALSE),
+  fVertexMinY(-44.),
+  fVertexMaxY(-44.),
+  fCutOnVertexZ(kFALSE),
+  fVertexMinZ(-10.),
+  fVertexMaxZ(10.),
+  fNumberOfTracksMin(6),
+  fCutOnTracksMax(kFALSE),
+  fNumberOfTracksMaxZero(0),
+  fNumberOfTracksMaxFive(0),
+  fNumberOfTracksMaxTen(0),
+  fNumberOfTracksMaxTwenty(0),
+  fNumberOfTracksMaxThirty(0),
+  fNumberOfTracksMaxForty(0),
+  fNumberOfTracksMaxFifty(0),
+  fNumberOfTracksMaxSixty(0),
+  fNumberOfTracksMaxSeventy(0),
+// Track selection.
+  fCutOnPt(kFALSE),
+  fPtMin(0.2),
+  fPtMax(5.),
+  fCutOnEta(kFALSE),
+  fEtaMin(-0.8),
+  fEtaMax(0.8),
+  fFilter(128),
+  fCutOnNumberOfTPC(kFALSE),
+  fNumberOfTPCMin(70),
+  fCutOnChiSquarePInTPC(kFALSE),
+  fChiSquarePInTPCMin(0.1),
+  fChiSquarePInTPCMax(4.),
+  fCutOnDCA(kFALSE),
+  fDCAxyMax(3.2),
+  fDCAzMax(2.4),
+  fCutOnCharge(kFALSE),
+  fCharge(0),
+// TH1D with the observables for the event selection.
+  fHistoCentrality(NULL),
+  fHistoInitialNumberOfTracks(NULL),
+  fHistoNumberOfTracksBeforeTrackSelection(NULL),
+  fHistoFinalNumberOfTracks(NULL),
+  fHNOTNumberOfBins(30000),
+  fHNOTMax(30000.),
+  fHistoVertexXBeforeSelection(NULL),
+  fHistoVertexXAfterSelection(NULL),
+  fHistoVertexYBeforeSelection(NULL),
+  fHistoVertexYAfterSelection(NULL),
+  fHistoVertexZBeforeSelection(NULL),
+  fHistoVertexZAfterSelection(NULL),
+// TH1D with the observables for the track selection.
+  fHistoPtBeforeSelection(NULL),
+  fHistoPtAfterSelection(NULL),
+  fHistoEtaBeforeSelection(NULL),
+  fHistoEtaAfterSelection(NULL),
+  fHistoPhiBeforeSelection(NULL),
+  fHistoPhiAfterSelection(NULL),
+  fHistoTPCClustersBeforeSelection(NULL),
+  fHistoTPCClustersAfterSelection(NULL),
+  fHistoTPCChiSquareBeforeSelection(NULL),
+  fHistoTPCChiSquareAfterSelection(NULL),
+  fHistoDCAXYBeforeSelection(NULL),
+  fHistoDCAXYAfterSelection(NULL),
+  fHistoDCAZBeforeSelection(NULL),
+  fHistoDCAZAfterSelection(NULL),
+  fHistoChargeBeforeSelection(NULL),
+  fHistoChargeAfterSelection(NULL),
+// TProfiles with the final multiparticle correlations.
+  fProfileTwoParticleCorrelations(NULL),
+  fProfileFourParticleCorrelations(NULL),
+  fProfileFourParticleCorrelationsCrossCheck(NULL),
+  fProfileSixParticleCorrelations(NULL),
+  fProfileTwoParticleCorrelationsNestedLoops(NULL),
+  fProfileFourParticleCorrelationsNestedLoops(NULL)
+{
+/* Constructor of the class. */
+  AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights)");
+
+// Create the mother list.
+  fMainList = new TList();
+  fMainList->SetName("outputAnalysis");
+  fMainList->SetOwner(kTRUE); // Gives ownership of the elements inside the TList to the TList itself.
+
+// Define the input and output slots.
   DefineOutput(1, TList::Class());
 
-// Initialisation of the fQvectors to zero
+// Initialise 'fQvectors' to zero.
   InitialiseArraysOfQvectors();
 
-// Initialisation of the pointers for the TProfiles to NULL
-  InitialiseArraysOfTProfiles();
-
-// Use of the particle weights
-  if(useParticleWeights)
+// Define the procedure to follow if non-unit particle weights are used.
+  /*if (fUseParticleWeights)
   {
-    // not needed for the time being, maybe insert here the call for the file with particle weights???
-  }
-} // End of the constructor
+    // TBA, needed for data periods after 2010.
+  }*/
+}
 
 //======================================================================================//
-
-AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations():
-  AliAnalysisTaskSE(),
-  fMaxNumberCorrelations(8), // General parameters
-  fHighHarmonic(6),
-  fNumberDifferentHarmonics(2),
-  fUseParticleWeights(kFALSE),
-  fComputeNestedLoops(kFALSE),
-  fComputeSine(kFALSE),
-  fHarmonicOne(2),  // Harmonics
-  fHarmonicTwo(-2),
-  fHarmonicThree(4),
-  fHarmonicFour(-4),
-  fHarmonicFive(0),
-  fHarmonicSix(0),
-  fHarmonicSeven(0),
-  fHarmonicEight(0),
-  fMinCentrality(0.0),  // Ranges
-  fMaxCentrality(100.0),
-  fMinPtCut(0.2),
-  fMaxPtCut(5.0),
-  fMinEtaCut(-0.8),
-  fMaxEtaCut(0.8),
-  fOutputMainList(NULL),  // Structure of the output file
-  fPreCutControlList(NULL),
-  fPostCutControlList(NULL),
-  fCorrelationResultsList(NULL),
-  fCentralityPreCutHisto(NULL), // Control histograms before the cuts
-  fMultiplicityPreCutHisto(NULL),
-  fPtPreCutControlHisto(NULL),
-  fEtaPreCutControlHisto(NULL),
-  fPhiPreCutHisto(NULL),
-  fMultiplicityPostCutHisto(NULL),  // Control histograms after the cuts
-  fPtPostCutControlHisto(NULL),
-  fEtaPostCutControlHisto(NULL),
-  fPhiPostCutHisto(NULL)
-  //fEstimatedFlowWithQcProfile(NULL) // Anisotropic flow estimated with Q-cumulants
-{
-// Dummy constructor of the class
-
-    AliDebug(2, "AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights)");
-
-// Initialisation of the ffQvectors to zero
-  InitialiseArraysOfQvectors();
-
-// Initialisation of the pointers for the TProfiles to NULL
-  InitialiseArraysOfTProfiles();
-} // End of the dummy constructor
-
-//======================================================================================//
-
 AliAnalysisTaskTwoMultiCorrelations::~AliAnalysisTaskTwoMultiCorrelations()
 {
-// Destructor of the class
-  // Delete the main TList => delete automatically everything holds in it
-
-  if(fOutputMainList) {delete fOutputMainList;}
-} // End of the destructor
+/* Destructor of the class. */
+  if (fMainList) {delete fMainList;}
+}
 
 //======================================================================================//
-
 void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 {
-// Method called at every worker node to initialise the lists
-
-// First part of the trick to avoid name clashes
-  Bool_t oldHistAddStatus = TH1::AddDirectoryStatus(); 
+/* Define the outputs of the task at the beginning of the analysis. */
+// Avoid name clashes.
+  Bool_t oldHistAddStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-// Booking and nesting of all the lists
-  this->BookAndNestAllLists();
+// Book all the lists.
+  this->BookAllLists();
 
-// Booking of all the secondary lists
-  this->BookPreCutControlList();
-  this->BookPostCutControlList();
-  this->BookCorrelationResultsList();
+// Book the histograms in all the daughter lists.
+  this->BookQAListBeforeSelection();
+  this->BookQAListAfterSelection();
+  this->BookListCorrelations();
 
-// Second part of the trick to avoid name clashes
+// Continue to avoid name clashes.
   TH1::AddDirectory(oldHistAddStatus);
-
-  PostData(1,fOutputMainList);
-} // End of AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
+  PostData(1, fMainList);
+}
 
 //======================================================================================//
-
 void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
 {
-// Method called for each event, contains all the calculations
-/// Note to self: find a way to include non-unit particle weights and select them via fUseParticleWeights
+/* Execute the analysis for each event. */
+/// TBA: non-unit particle weight for non-uniform acceptance.
+  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)";
 
-// Obtention of the pointer to the AOD event (from TaskSE)
-  AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!currentEvent){return;}  // Protection against NULL pointer
+// Select the type of file for the analysis (MC/AOD) from TaskSE.
+  AliAODEvent *currentAODEvent = dynamic_cast<AliAODEvent*>(InputEvent()); // Pointer to an AOD event.
+  AliMCEvent *currentMCEvent = MCEvent(); // Pointer to a Monte Carlo event.
 
-// Gestion of the centrality
-  AliMultSelection *ams = (AliMultSelection*)currentEvent->FindListObject("MultSelection");
-  if(!ams){return;}
-  if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
+  if ((Int_t)fProcessOnlyAOD + (Int_t)fProcessOnlyMC + (Int_t)fProcessBothMCandAOD != 1)
   {
-    fCentralityPreCutHisto->Fill(ams->GetMultiplicityPercentile("V0M"));
+    Fatal(sMethodName.Data(), "ERROR: only one fProcess must be kTRUE in 'SetAnalysisType'.");
   }
-  else {return;} // This event does not belong to the centrality class specified for this particular analysis
+  else if (fProcessOnlyAOD) {AnalyseAODevent(currentAODEvent);}
+  else if (fProcessOnlyMC) {AnalyseMCevent(currentMCEvent);}
+  else if (fProcessBothMCandAOD) {Fatal(sMethodName.Data(),"ERROR: TBA.");}
 
-// Loop over the multiplicity of the event
-  Int_t nParticles = currentEvent->GetNumberOfTracks(); // Number of particles in the event
-  Int_t nParticlesAfterCuts = 0;  // Number of particles remaining after the cuts
-  Int_t *goodIndices = new Int_t[nParticles](); // Array where the index of a particle which passes the cuts is saved with 1 and if not with 0
-
-  // Filling of the control histogram for the multiplicity before the cuts
-  fMultiplicityPreCutHisto->Fill(nParticles);
-
-  for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
-  {
-  // Obtention of the pointer to the current particle
-    AliAODTrack *currentParticle = dynamic_cast<AliAODTrack*>(currentEvent->GetTrack(iParticle));
-    if(!currentParticle){continue;} // Protection against NULL pointer
-    if(!currentParticle->TestFilterBit(128)){continue;} // Filter bit 128 denotes TPC-only tracks
-
-  // Filling of some control histograms before the application of the cuts
-    Double_t preCutPt = currentParticle->Pt();  // Transverse momentum
-    Double_t preCutEta = currentParticle->Eta();  // Pseudorapidity
-    Double_t preCutPhi = currentParticle->Phi(); // Azimuthal angles
-
-    fPtPreCutControlHisto->Fill(preCutPt);
-    fEtaPreCutControlHisto->Fill(preCutEta);
-    fPhiPreCutHisto->Fill(preCutPhi);
-
-  // Determination of the number of particles which pass the cuts and set the flag 1/0 of goodIndices[iParticle]
-    if ( (fMinEtaCut < preCutEta) && (preCutEta < fMaxEtaCut) && (fMinPtCut < preCutPt) && (preCutPt < fMaxPtCut) )
-    {
-      nParticlesAfterCuts++;
-      goodIndices[iParticle] = 1;
-    }
-    else {goodIndices[iParticle] = 0;}
-
-  } // End: for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
-
-// Filling of the control histogram for the multiplicity after the cuts
-  fMultiplicityPostCutHisto->Fill(nParticlesAfterCuts);
-
-// Definition of the varibles for the analysis
-  Double_t *pt = new Double_t[nParticlesAfterCuts](); // Array of transverse momenta
-  Double_t *eta = new Double_t[nParticlesAfterCuts](); // Array of pseudorapidity
-  Double_t *phi = new Double_t[nParticlesAfterCuts]();  // Array of azimuthal angles
-  Double_t *particleWeights = new Double_t[nParticlesAfterCuts]();  // Array of üarticle weights
-  Int_t fullHarmonicsArray[8] = {fHarmonicOne, fHarmonicTwo, fHarmonicThree, fHarmonicFour, fHarmonicFive, fHarmonicSix, fHarmonicSeven, fHarmonicEight};  // Harmonics (n_1,... n_8)
-  Int_t *harmonics = new Int_t[2*fNumberDifferentHarmonics]();
-  Int_t index = 0;  // Index of the "good index", increased when the loop reaches a 1 in goodIndices
-
-// Filling of the harmonics' array
-  for (Int_t iArray = 0; iArray < 2*fNumberDifferentHarmonics; iArray++)
-  {
-    harmonics[iArray] = fullHarmonicsArray[iArray];
-  } // End: for (Int_t iArray = 0; iArray < 2*fNumberDifferentHarmonics; iArray++)
-
-// Do the analysis only if the number of particles after the cuts is higher than the one for the m-particle correlation (in order to avoid the division by zero) 
-  if (nParticlesAfterCuts > (2*fNumberDifferentHarmonics))
-  {
-  // Loop over the initial number of particles, index takes care of keeping only the ones which pass the cuts
-    for (Int_t iiParticle = 0; iiParticle < nParticles; iiParticle++)
-    {
-    // Obtention of the pointer to the current particle
-      AliAODTrack *keptParticle = dynamic_cast<AliAODTrack*>(currentEvent->GetTrack(iiParticle));
-      if(!keptParticle){continue;} // Protection against NULL pointer
-      if(!keptParticle->TestFilterBit(128)){continue;} // Filter bit 128 denotes TPC-only tracks
-
-    // Filling of the azimuthal angles and particle weights and the control histograms only if goodIndices[iiParticle] == 1
-      if (goodIndices[iiParticle] == 1)
-      {
-        pt[index] = keptParticle->Pt();
-        eta[index] = keptParticle->Eta(); 
-        phi[index] = keptParticle->Phi();
-        particleWeights[index] = 1.;
-        //if (fUseParticleWeights) {continue;}  // Note to self: add the gestion of non-unit weight from external file
-        //else {particleWeights[iiParticle] = 1.;}
-
-        fPtPostCutControlHisto->Fill(pt[index]);
-        fEtaPostCutControlHisto->Fill(eta[index]);
-        fPhiPostCutHisto->Fill(phi[index]);
-
-        index++;
-      }
-      else {continue;} // End of if ( (-0.8 < eta) && (eta < 0.8) && (0.2 < pT) && (pT < 5.0) )
-    } // End: for (Int_t iiParticle = 0; iiParticle < nParticlesAfterCuts; iiParticle++)
-
-  // Computation of the Q-vectors for the current event
-    CalculateQvectors(nParticlesAfterCuts, phi, particleWeights);
-
-  // Computation of the multiparticle correlations
-  /// 2-particle correlation
-    for (Int_t iDiffHarmo = 0; iDiffHarmo < fNumberDifferentHarmonics; iDiffHarmo++)
-    {
-      Int_t numeratorFirstTwoParticle[2] = {harmonics[2*iDiffHarmo],harmonics[(2*iDiffHarmo)+1]};  // iDiffHarmo-th pair of harmonics for the numerator
-      Int_t numeratorLastTwoParticle[2] = {harmonics[2],harmonics[3]};  // the alternative expression is computed only for 2 different harmonics, which implies harmonics has a length of 4
-      ComputeTwoParticleCorrelationWithQvectors(numeratorFirstTwoParticle, numeratorLastTwoParticle, iDiffHarmo);
-
-      if (fComputeNestedLoops) {ComputeCorrelationsWithTwoNestedLoops(numeratorFirstTwoParticle, numeratorLastTwoParticle, iDiffHarmo, nParticles, phi, particleWeights);}
-    } // End: for (Int_t iDiffHarmo = 0; iDiffHarmo < fNumberDifferentHarmonics; iDiffHarmo++)
-
-  /// 4-particle correlation
-    if (fNumberDifferentHarmonics >= 2)
-    {
-      Int_t iCombi = 0; // i-th combination of 4 ordonnated elements without repetition out of fNumberDifferentHarmonics*2
-      for (Int_t i = 0; i < fNumberDifferentHarmonics-1; i++)
-      {
-      // Loop for the first two particles' harmonics
-        for (Int_t j = i+1; j < fNumberDifferentHarmonics; j++)
-        {
-          Int_t numeratorFourParticle[4] = {harmonics[2*i],harmonics[(2*i)+1], harmonics[2*j],harmonics[(2*j)+1]};
-          ComputeFourParticleCorrelationWithQvectors(numeratorFourParticle, iCombi);
-
-          if (fComputeNestedLoops) {ComputeCorrelationsWithFourNestedLoops(numeratorFourParticle, iCombi, nParticles, phi, particleWeights);}
-          iCombi++;
-        } // End: for (Int_t j = i+1; j <= fkNumberDifferentHarmonics; j++)
-      } // End: for (Int_t i = 0; i < fkNumberDifferentHarmonics, i++)
-    } // End: if (fNumberDifferentHarmonics >= 2)
-
-  /// 6-particle correlation
-    if (fNumberDifferentHarmonics >= 3)
-    {
-      Int_t jCombi = 0; // (i-1)-th combination of 6 ordonnated elements without repetition out of fkNumberDifferentHarmonics*2
-      for (Int_t i = 0; i < fNumberDifferentHarmonics-2; i++)
-      {
-      // Loop over the first two particles' harmonics
-        for (Int_t j = i+1; j < fNumberDifferentHarmonics-1; j++)
-        {
-        // Loop over the second particle pair's harmonics
-          for (Int_t k = j+1; k < fNumberDifferentHarmonics; k++)
-          {
-          // Loop over the third particle pair's harmonics
-            Int_t numeratorSixParticle[6] = {harmonics[2*i],harmonics[(2*i)+1], harmonics[2*j],harmonics[(2*j)+1],harmonics[2*k],harmonics[(2*k)+1]};
-            ComputeSixParticleCorrelationWithQvectors(numeratorSixParticle, jCombi);
-            jCombi++;
-          } // End: for (Int_t k = j+1; k < fNumberDifferentHarmonics; k++)
-        } // End: for (Int_t j = i+1; j < fNumberDifferentHarmonics-1; j++)
-      } // End: for (Int_t i = 0; i < fNumberDifferentHarmonics-2; i++)
-    } // End: if (fNumberDifferentHarmonics >= 3)
-
-  /// 8-particle correlation
-    if (fNumberDifferentHarmonics >= 4)
-    {
-      ComputeEightParticleCorrelationWithQvectors(harmonics);
-    } // End: if (fNumberDifferentHarmonics >= 4)   
-
-  // Release of the allocated memory
-    delete [] harmonics;
-    delete [] goodIndices;
-    delete [] pt;
-    delete [] eta;
-    delete [] phi;
-    delete [] particleWeights;
-
-  } // End of if (nParticlesAfterCuts >= fNparticlesCorrelations)
-
-// PostData
-  PostData(1,fOutputMainList);
-} // End of void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
+// PostData.
+  PostData(1, fMainList);
+}
 
 //======================================================================================//
-
 void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
 {
-// Method called at the end of the execution, once the run over the events is over
-// Organisation of the method
-  // 1.) Access to the merged output list
-  // 2.) Estimation of anisotropic flow with Q-cumulants
-  // 3.) Creation of the output file and save of the main list in it
+/* Save the outputs after the running over the events. */
+// Access the mother list.
+  fMainList = (TList*)GetOutputData(1);
+  if (!fMainList) {exit(1);}
 
-// 1.) Access to the merged output list
-  fOutputMainList = (TList*)GetOutputData(1);
-  if(!fOutputMainList){exit(1);}
-
-// 3.) Creation of the output file and save of the main list in it
+// Create the output file and save the mother list inside.
   TFile *outputFile = new TFile("AnalysisResults.root", "RECREATE");
-  fOutputMainList->Write(fOutputMainList->GetName(),TObject::kSingleKey);
+  fMainList->Write(fMainList->GetName(),TObject::kSingleKey);
   delete outputFile;
-} // End of void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
+}
 
+//######################################################################################//
+// Methods called in the constructors.
 //======================================================================================//
-
 void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfQvectors()
 {
-// Method to initialise the Q-vectors to zero
-  for (Int_t iHarmo = 0; iHarmo < (fHighHarmonic*fMaxNumberCorrelations)+1; iHarmo++)
+/* Initialise all the elements in 'fQvectors' to zero. */
+  for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
   {
-    for (Int_t iPower = 0; iPower < fMaxNumberCorrelations+1; iPower++)
+    for (Int_t iPower = 0; iPower < 9; iPower++)
     {
       fQvectors[iHarmo][iPower] = TComplex(0.,0.);
-    } // End: for (Int_t iPower = 0; iPower < fMaxNumberCorrelations+1; iPower++)
-  } // End: for (Int_t iHarmo = 0; iHarmo < maxHarmo; iHarmo++)
+    }
+  }
+}
 
-} // End: void InitialiseArraysOffQvectors() 
+//######################################################################################//
+// Methods called in 'UserCreateOutputObjects'.
+//======================================================================================//
+void AliAnalysisTaskTwoMultiCorrelations::BookAllLists()
+{
+/* Book all the lists in the output file */
+// Check if the mother list exists.
+  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::BookAllLists()";
+  if (!fMainList) {Fatal(sMethodName.Data(), "Error: 'fMainList' is NULL.");}
+
+// Daughter list with the observables involved in the event selection.
+  fQAListBeforeSelection = new TList();
+  fQAListBeforeSelection->SetName("fQAListBeforeSelection");
+  fQAListBeforeSelection->SetOwner(kTRUE);
+  fMainList->Add(fQAListBeforeSelection);
+
+// Daughter list with the observables involved in the track selection.
+  fQAListAfterSelection = new TList();
+  fQAListAfterSelection->SetName("fQAListAfterSelection");
+  fQAListAfterSelection->SetOwner(kTRUE);
+  fMainList->Add(fQAListAfterSelection);
+
+// Daughter list with the multiparticle correlations.
+  fListCorrelations = new TList();
+  fListCorrelations->SetName("fListCorrelations");
+  fListCorrelations->SetOwner(kTRUE);
+  fMainList->Add(fListCorrelations);
+}
 
 //======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::InitialiseArraysOfTProfiles()
+void AliAnalysisTaskTwoMultiCorrelations::BookQAListBeforeSelection()
 {
-// Method to initialise the 1-d and 2-d arrays of TProfiles containing the results
-  for (Int_t cs = 0; cs < 2; cs++)
+/* Book the TH1D with the observables involved in the event selection. */
+// Distribution of the centrality.
+  fHistoCentrality = new TH1D("fHistoCentrality", "Distribution of the centrality before the event selection", 100, 0., 100.);
+  fHistoCentrality->SetStats(kTRUE);
+  fHistoCentrality->GetXaxis()->SetTitle("Centrality percentile");
+  fQAListBeforeSelection->Add(fHistoCentrality);
+
+// Distribution of the initial number of tracks.
+  fHistoInitialNumberOfTracks = new TH1I("fHistoInitialNumberOfTracks", "Initial distribution of the number of tracks", fHNOTNumberOfBins, 0., fHNOTMax);
+  fHistoInitialNumberOfTracks->SetStats(kTRUE);
+  fHistoInitialNumberOfTracks->GetXaxis()->SetTitle("Number of tracks");
+  fQAListBeforeSelection->Add(fHistoInitialNumberOfTracks);
+
+// Distribution of the number of tracks before the track selection.
+  fHistoNumberOfTracksBeforeTrackSelection = new TH1I("fHistoNumberOfTracksBeforeTrackSelection", "Distribution of the number of tracks before the track selection", fHNOTNumberOfBins, 0., fHNOTMax);
+  fHistoNumberOfTracksBeforeTrackSelection->SetStats(kTRUE);
+  fHistoNumberOfTracksBeforeTrackSelection->GetXaxis()->SetTitle("Number of tracks");
+  fQAListBeforeSelection->Add(fHistoNumberOfTracksBeforeTrackSelection);
+
+// Distribution of the x-position of the PV.
+  fHistoVertexXBeforeSelection = new TH1D("fHistoVertexXBeforeSelection", "Distribution of PV_{x} before the selection", 1000, -20., 20.);
+  fHistoVertexXBeforeSelection->SetStats(kTRUE);
+  fHistoVertexXBeforeSelection->GetXaxis()->SetTitle("PV_{x}");
+  fQAListBeforeSelection->Add(fHistoVertexXBeforeSelection);
+
+// Distribution of the y-position of the PV.
+  fHistoVertexYBeforeSelection = new TH1D("fHistoVertexYBeforeSelection", "Distribution of PV_{y} before the selection", 1000, -20., 20.);
+  fHistoVertexYBeforeSelection->SetStats(kTRUE);
+  fHistoVertexYBeforeSelection->GetXaxis()->SetTitle("PV_{y}");
+  fQAListBeforeSelection->Add(fHistoVertexYBeforeSelection);
+
+// Distribution of the z-position of the PV.
+  fHistoVertexZBeforeSelection = new TH1D("fHistoVertexZBeforeSelection", "Distribution of PV_{z} before the selection", 1000, -20., 20.);
+  fHistoVertexZBeforeSelection->SetStats(kTRUE);
+  fHistoVertexZBeforeSelection->GetXaxis()->SetTitle("PV_{z}");
+  fQAListBeforeSelection->Add(fHistoVertexZBeforeSelection);
+
+// Distribution of the transverse momentum.
+  fHistoPtBeforeSelection = new TH1D("fHistoPtBeforeSelection", "Distribution of p_{T} before the track selection", 1000, 0., 20.);
+  fHistoPtBeforeSelection->SetStats(kTRUE);
+  fHistoPtBeforeSelection->GetXaxis()->SetTitle("p_{T}");
+  fQAListBeforeSelection->Add(fHistoPtBeforeSelection);
+
+// Distribution of the pseudorapidity.
+  fHistoEtaBeforeSelection = new TH1D("fHistoEtaBeforeSelection", "Distribution of #eta before the track selection", 1000, -5.5, 5.5);
+  fHistoEtaBeforeSelection->SetStats(kTRUE);
+  fHistoEtaBeforeSelection->GetXaxis()->SetTitle("#eta");
+  fQAListBeforeSelection->Add(fHistoEtaBeforeSelection);
+
+// Distribution of the azimuthal angles.
+  fHistoPhiBeforeSelection = new TH1D("fHistoPhiBeforeSelection", "Distributiion of #phi before the track selection", 1000, 0., 6.3);
+  fHistoPhiBeforeSelection->SetStats(kTRUE);
+  fHistoPhiBeforeSelection->GetXaxis()->SetTitle("#phi");
+  fQAListBeforeSelection->Add(fHistoPhiBeforeSelection);
+
+// Distribution of the number of TPC clusters.
+  fHistoTPCClustersBeforeSelection = new TH1I("fHistoTPCClustersBeforeSelection", "Distribution of the number of TPC clusters before the track selection", 1000, 0., 170.);
+  fHistoTPCClustersBeforeSelection->SetStats(kTRUE);
+  fHistoTPCClustersBeforeSelection->GetXaxis()->SetTitle("Number of TPC clusters");
+  fQAListBeforeSelection->Add(fHistoTPCClustersBeforeSelection);
+
+// Distribution of the chi square of the track momentum in the TPC.
+  fHistoTPCChiSquareBeforeSelection = new TH1D("fHistoTPCChiSquareBeforeSelection", "Distribution of the #chi^{2} of the track momentum in the TPC before the track selection", 1000, 0., 20.);
+  fHistoTPCChiSquareBeforeSelection->SetStats(kTRUE);
+  fHistoTPCChiSquareBeforeSelection->GetXaxis()->SetTitle("#chi^{2}/NDF in TPC");
+  fQAListBeforeSelection->Add(fHistoTPCChiSquareBeforeSelection);
+
+// Distribution of the xy-plane of the DCA.
+  fHistoDCAXYBeforeSelection = new TH1D("fHistoDCAXYBeforeSelection", "Distribution of DCA_{xy} before the track selection", 1000, 0., 10.);
+  fHistoDCAXYBeforeSelection->SetStats(kTRUE);
+  fHistoDCAXYBeforeSelection->GetXaxis()->SetTitle("DCA_{xy}");
+  fQAListBeforeSelection->Add(fHistoDCAXYBeforeSelection);
+
+// Distribution of the z-coordinate of the DCA.
+  fHistoDCAZBeforeSelection = new TH1D("fHistoDCAZBeforeSelection", "Distribution of DCA_{z} before the track selection", 1000, 0., 10.);
+  fHistoDCAZBeforeSelection->SetStats(kTRUE);
+  fHistoDCAZBeforeSelection->GetXaxis()->SetTitle("DCA_{z}");
+  fQAListBeforeSelection->Add(fHistoDCAZBeforeSelection);
+
+// Distribution of the electric charge.
+  fHistoChargeBeforeSelection = new TH1I("fHistoChargeBeforeSelection", "Distribution of the electric charge before the track selection", 2, -2, 2);
+  fHistoChargeBeforeSelection->SetStats(kTRUE);
+  fHistoChargeBeforeSelection->GetXaxis()->SetTitle("Charge");
+  fQAListBeforeSelection->Add(fHistoChargeBeforeSelection);
+}
+
+//======================================================================================//
+void AliAnalysisTaskTwoMultiCorrelations::BookQAListAfterSelection()
+{
+/* Book the TH1D with the observables involved in the track selection. */
+// Final number of tracks after both the event and track selection.
+  fHistoFinalNumberOfTracks = new TH1I("fHistoFinalNumberOfTracks", "Final distribution of the number of tracks", fHNOTNumberOfBins, 0., fHNOTMax);
+  fHistoFinalNumberOfTracks->SetStats(kTRUE);
+  fHistoFinalNumberOfTracks->GetXaxis()->SetTitle("Number of tracks");
+  fQAListAfterSelection->Add(fHistoFinalNumberOfTracks);
+
+// Distribution of the x-position of the PV.
+  fHistoVertexXAfterSelection = new TH1D("fHistoVertexXAfterSelection", "Distribution of PV_{x} after the full selection", 1000, -20., 20.);
+  fHistoVertexXAfterSelection->SetStats(kTRUE);
+  fHistoVertexXAfterSelection->GetXaxis()->SetTitle("PV_{x}");
+  fQAListAfterSelection->Add(fHistoVertexXAfterSelection);
+
+// Distribution of the y-position of the PV.
+  fHistoVertexYAfterSelection = new TH1D("fHistoVertexYAfterSelection", "Distribution of PV_{y} after the full selection", 1000, -20., 20.);
+  fHistoVertexYAfterSelection->SetStats(kTRUE);
+  fHistoVertexYAfterSelection->GetXaxis()->SetTitle("PV_{y}");
+  fQAListAfterSelection->Add(fHistoVertexYAfterSelection);
+
+// Distribution of the z-position of the PV.
+  fHistoVertexZAfterSelection = new TH1D("fHistoVertexZAfterSelection", "Distribution of PV_{z} after the full selection", 1000, -20., 20.);
+  fHistoVertexZAfterSelection->SetStats(kTRUE);
+  fHistoVertexZAfterSelection->GetXaxis()->SetTitle("PV_{z}");
+  fQAListAfterSelection->Add(fHistoVertexZAfterSelection);
+
+// Distribution of the transverse momentum.
+  fHistoPtAfterSelection = new TH1D("fHistoPtAfterSelection", "Distribution of p_{T} after the full selection", 1000, 0., 20.);
+  fHistoPtAfterSelection->SetStats(kTRUE);
+  fHistoPtAfterSelection->GetXaxis()->SetTitle("p_{T}");
+  fQAListAfterSelection->Add(fHistoPtAfterSelection);
+
+// Distribution of the pseudorapidity.
+  fHistoEtaAfterSelection = new TH1D("fHistoEtaAfterSelection", "Distribution of #eta after the full selection", 1000, -5.5, 5.5);
+  fHistoEtaAfterSelection->SetStats(kTRUE);
+  fHistoEtaAfterSelection->GetXaxis()->SetTitle("#eta");
+  fQAListAfterSelection->Add(fHistoEtaAfterSelection);
+
+// Distribution of the azimuthal angles.
+  fHistoPhiAfterSelection = new TH1D("fHistoPhiAfterSelection", "Distribution of #phi after the full selection", 1000, 0., 6.3);
+  fHistoPhiAfterSelection->SetStats(kTRUE);
+  fHistoPhiAfterSelection->GetXaxis()->SetTitle("#phi");
+  fQAListAfterSelection->Add(fHistoPhiAfterSelection);
+
+// Distribution of the number of TPC clusters.
+  fHistoTPCClustersAfterSelection = new TH1I("fHistoTPCClustersAfterSelection", "Distribution of the number of TPC clusters after the full selection", 1000, 0., 170.);
+  fHistoTPCClustersAfterSelection->SetStats(kTRUE);
+  fHistoTPCClustersAfterSelection->GetXaxis()->SetTitle("Number of TPC clusters");
+  fQAListAfterSelection->Add(fHistoTPCClustersAfterSelection);
+
+// Distribution of the chi square of the track momentum in the TPC.
+  fHistoTPCChiSquareAfterSelection = new TH1D("fHistoTPCChiSquareAfterSelection", "Distribution of the #chi^{2} of the track momentum in the TPC after the full selection", 1000, 0., 20.);
+  fHistoTPCChiSquareAfterSelection->SetStats(kTRUE);
+  fHistoTPCChiSquareAfterSelection->GetXaxis()->SetTitle("#chi^{2}/NDF in TPC");
+  fQAListAfterSelection->Add(fHistoTPCChiSquareAfterSelection);
+
+// Distribution of the xy-plane of the DCA.
+  fHistoDCAXYAfterSelection = new TH1D("fHistoDCAXYAfterSelection", "Distribution of DCA_{xy} after the full selection", 1000, 0., 10.);
+  fHistoDCAXYAfterSelection->SetStats(kTRUE);
+  fHistoDCAXYAfterSelection->GetXaxis()->SetTitle("DCA_{xy}");
+  fQAListAfterSelection->Add(fHistoDCAXYAfterSelection);
+
+// Distribution of the z-coordinate of the DCA.
+  fHistoDCAZAfterSelection = new TH1D("fHistoDCAZAfterSelection", "Distribution of DCA_{z} after the full selection", 1000, 0., 10.);
+  fHistoDCAZAfterSelection->SetStats(kTRUE);
+  fHistoDCAZAfterSelection->GetXaxis()->SetTitle("DCA_{z}");
+  fQAListAfterSelection->Add(fHistoDCAZAfterSelection);
+
+// Distribution of the electric charge.
+  fHistoChargeAfterSelection = new TH1I("fHistoChargeAfterSelection", "Distribution of the electric charge after the full selection", 2, -2, 2);
+  fHistoChargeAfterSelection->SetStats(kTRUE);
+  fHistoChargeAfterSelection->GetXaxis()->SetTitle("Charge");
+  fQAListAfterSelection->Add(fHistoChargeAfterSelection);
+}
+
+//======================================================================================//
+void AliAnalysisTaskTwoMultiCorrelations::BookListCorrelations()
+{
+/* Book the TProfiles with the multiparticle correlations. */
+// 2-particle correlations.
+  fProfileTwoParticleCorrelations = new TProfile("fProfileTwoParticleCorrelations", "2-particle correlations", 6, 0., 6.);
+  fProfileTwoParticleCorrelations->SetStats(kTRUE);
+  fProfileTwoParticleCorrelations->Sumw2();
+  fProfileTwoParticleCorrelations->GetXaxis()->SetTitle("n");
+  fProfileTwoParticleCorrelations->GetYaxis()->SetTitle("#LT#LT2#GT#GT_{n,-n}");
+  fListCorrelations->Add(fProfileTwoParticleCorrelations);
+
+  if (fCrossCheckWithNestedLoops)
   {
-    for (Int_t t = 0; t < 4; t++) // 2-p and 6-p correlations
-    {
-      fTwoParticleCorrelationProfile[cs][t] = NULL;
-      fSixParticleCorrelationProfile[cs][t] = NULL;
-      fTwoCosineAverageProfile[cs][t] = NULL;
-      fTwoNestedCorrelationProfile[cs][t] = NULL;  
-      fTwoCosineAverageNestedProfile[cs][t] = NULL;
-    } // End: for (Int_t t = 0; t < 4; t++)
+    fProfileTwoParticleCorrelationsNestedLoops = new TProfile("fProfileTwoParticleCorrelationsNestedLoops", "2-particle correlations with nested loops", 6, 0., 6.);
+    fProfileTwoParticleCorrelationsNestedLoops->SetStats(kTRUE);
+    fProfileTwoParticleCorrelationsNestedLoops->Sumw2();
+    fProfileTwoParticleCorrelationsNestedLoops->GetXaxis()->SetTitle("n");
+    fProfileTwoParticleCorrelationsNestedLoops->GetYaxis()->SetTitle("#LT#LT2#GT#GT_{n,-n}");
+    fListCorrelations->Add(fProfileTwoParticleCorrelationsNestedLoops);
+  }
 
-    for (Int_t f = 0; f < 6; f++) // 4-p correlations
-    {
-      fFourParticleCorrelationProfile[cs][f] = NULL;
-      fFourNestedCorrelationProfile[cs][f] = NULL;
-    } // End: for (Int_t f = 0; f < 6; f++)
+// 4-particle correlations.
+  fProfileFourParticleCorrelations = new TProfile("fProfileFourParticleCorrelations", "4-particle correlations", 21, 0., 21.);
+  fProfileFourParticleCorrelations->SetStats(kTRUE);
+  fProfileFourParticleCorrelations->Sumw2();
+  fProfileFourParticleCorrelations->GetXaxis()->SetTitle("(m,n)");
+  fProfileFourParticleCorrelations->GetYaxis()->SetTitle("#LT#LT4#GT#GT_{m,n,-m,-n}");
+  fListCorrelations->Add(fProfileFourParticleCorrelations);
 
-    fEightParticleCorrelationProfile[cs] = NULL;  // 8-p correlations
-
-  } // End: for (Int_t cs = 0; cs < endCs; cs++)
-} // End: void InitialiseArraysOfTProfiles()
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::BookAndNestAllLists()
-{
-// Method to book and nest all the lists where the results are kept in the output file
-
-  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::BookAndNestAllLists()";
-  if(!fOutputMainList){Fatal(sMethodName.Data(),"Main list fOutputMainList is NULL");}
-
-// Control histograms before the cuts
-  fPreCutControlList = new TList();
-  fPreCutControlList->SetName("PreCutControlList");
-  fPreCutControlList->SetOwner(kTRUE);
-  fOutputMainList->Add(fPreCutControlList);
-
-// Control histograms after the cuts
-  fPostCutControlList = new TList();
-  fPostCutControlList->SetName("PostCutControlList");
-  fPostCutControlList->SetOwner(kTRUE);
-  fOutputMainList->Add(fPostCutControlList);
-
-// Results for the multiparticle correlations
-  fCorrelationResultsList = new TList();
-  fCorrelationResultsList->SetName("CorrelationResultsList");
-  fCorrelationResultsList->SetOwner(kTRUE);
-  fOutputMainList->Add(fCorrelationResultsList);
-} // End: AliAnalysisTaskTwoMultiCorrelations::BookAndNestAllLists()
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::BookPreCutControlList()
-{
-// Method to prepare the list with the control histograms before the application of the cuts
-/// Centrality distribution
-/// Multiplicity distribution
-/// Transverse momentum distribution
-/// Pseudorapidity distribution
-/// Azimuthal angles
-
-// Centrality distribution
-  fCentralityPreCutHisto = new TH1D("fCentralityPreCutHisto", "Centrality distribution before the cuts", 100, 0., 100.);
-  fCentralityPreCutHisto->SetStats(kTRUE);
-  fCentralityPreCutHisto->GetXaxis()->SetTitle("Centrality percentile");
-  fPreCutControlList->Add(fCentralityPreCutHisto);
-
-// Multiplicity distribution
-  fMultiplicityPreCutHisto = new TH1D("fMultiplicityPreCutHisto", "Multiplicity distribution before the cuts", 10000000, 0., 10000000.);
-  fMultiplicityPreCutHisto->SetStats(kTRUE);
-  fMultiplicityPreCutHisto->GetXaxis()->SetTitle("Multiplicity");
-  fPreCutControlList->Add(fMultiplicityPreCutHisto);
-
-// Transverse momentum distribution
-  fPtPreCutControlHisto = new TH1D("fPtPreCutControlHisto", "Transverse momentum distribution before the cuts", 1000, 0., 20.);
-  fPtPreCutControlHisto->SetStats(kTRUE);
-  fPtPreCutControlHisto->GetXaxis()->SetTitle("p_{T}");
-  fPreCutControlList->Add(fPtPreCutControlHisto);
-
-// Pseudorapidity distribution
-  fEtaPreCutControlHisto = new TH1D("fEtaPreCutControlHisto", "Pseudorapidity distribution before the cuts", 1000, -1., 1.);
-  fEtaPreCutControlHisto->SetStats(kTRUE);
-  fEtaPreCutControlHisto->GetXaxis()->SetTitle("eta");
-  fPreCutControlList->Add(fEtaPreCutControlHisto);
-
-// Azimuthal angles
-  fPhiPreCutHisto = new TH1D("fPhiPreCutHisto", "Azimuthal angles distribution before the cuts", 1000, 0., 6.3);
-  fPhiPreCutHisto->SetStats(kTRUE);
-  fPhiPreCutHisto->GetXaxis()->SetTitle("phi");
-  fPreCutControlList->Add(fPhiPreCutHisto);
-} // End: void AliAnalysisTaskTwoMultiCorrelations::BookPreCutControlList()
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::BookPostCutControlList()
-{
-// Method to prepare the list with the control histograms after the application of the cuts
-/// Multiplicity distribution
-/// Transverse momentum distribution
-/// Pseudorapidity distribution
-/// Azimuthal angles
-
-// Multiplicity distribution
-  fMultiplicityPostCutHisto = new TH1D("fMultiplicityPostCutHisto", "Multiplicity distribution after the cuts", 10000000, 0., 10000000.);
-  fMultiplicityPostCutHisto->SetStats(kTRUE);
-  fMultiplicityPostCutHisto->GetXaxis()->SetTitle("Multiplicity");
-  fPostCutControlList->Add(fMultiplicityPostCutHisto);
-
-// Transverse momentum distribution
-  fPtPostCutControlHisto = new TH1D("fPtPostCutControlHisto", "Transverse momentum distribution after the cuts", 1000, 0., 20.);
-  fPtPostCutControlHisto->SetStats(kTRUE);
-  fPtPostCutControlHisto->GetXaxis()->SetTitle("p_{T}");
-  fPostCutControlList->Add(fPtPostCutControlHisto);
-
-// Pseudorapidity distribution
-  fEtaPostCutControlHisto = new TH1D("fEtaPostCutControlHisto", "Pseudorapidity distribution after the cuts", 1000, -1., 1.);
-  fEtaPostCutControlHisto->SetStats(kTRUE);
-  fEtaPostCutControlHisto->GetXaxis()->SetTitle("eta");
-  fPostCutControlList->Add(fEtaPostCutControlHisto);
-
-// Azimuthal angles
-  fPhiPostCutHisto = new TH1D("fPhiPostCutHisto", "Azimuthal angles distribution after the cuts", 1000, 0., 6.3);
-  fPhiPostCutHisto->SetStats(kTRUE);
-  fPhiPostCutHisto->GetXaxis()->SetTitle("phi");
-  fPostCutControlList->Add(fPhiPostCutHisto);
-} // End: void AliAnalysisTaskTwoMultiCorrelations::BookPreCutControlList()
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::BookCorrelationResultsList()
-{
-// Method to prepare the list with the results from the computation of Q-vectors and nested loops
-/// TProfiles for 2-p and 6-p correlations
-/// TProfiles for 4-p correlations
-/// TProfiles for 8-p correlations
-
-  Int_t endCs = 1;  // Number of components to save (1: only Cosine, 2: Cosine and Sine)
-  if (fComputeSine) {endCs = 2;}
-
-  for (Int_t cs = 0; cs < endCs; cs++)
+  if (fCrossCheckFourParticleCorrelations)
   {
-    for (Int_t t = 0; t < 4; t++)
-    {
-    // TProfiles for 2-p and 6-p correlations
-    // cs: {cos, sin}, t: {m,n,p,q} for 2-p and t: {mnp, mnq, mpq, npq} for 6-p
-      fTwoParticleCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-      fTwoParticleCorrelationProfile[cs][t]->SetStats(kTRUE);
-      fTwoParticleCorrelationProfile[cs][t]->SetName(Form("fTwoParticleCorrelationProfile_cs%d_combi%d", cs, t));
-      fTwoParticleCorrelationProfile[cs][t]->SetTitle(Form("Q-vectors, #LT #LT 2 #GT #GT, cs = %d, combi = %d", cs, t));
-      fTwoParticleCorrelationProfile[cs][t]->Sumw2();
-      fTwoParticleCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 2 #GT #GT");
-      fCorrelationResultsList->Add(fTwoParticleCorrelationProfile[cs][t]);
+    fProfileFourParticleCorrelationsCrossCheck = new TProfile("fProfileFourParticleCorrelationsCrossCheck", "4-particle correlations for cross-check", 15, 0., 15.);
+    fProfileFourParticleCorrelationsCrossCheck->SetStats(kTRUE);
+    fProfileFourParticleCorrelationsCrossCheck->Sumw2();
+    fProfileFourParticleCorrelationsCrossCheck->GetXaxis()->SetTitle("(m,n)");
+    fProfileFourParticleCorrelationsCrossCheck->GetYaxis()->SetTitle("#LT#LT4#GT#GT_{m,n,-m,-n}");
+    fListCorrelations->Add(fProfileFourParticleCorrelationsCrossCheck);
+  }
 
-      fSixParticleCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-      fSixParticleCorrelationProfile[cs][t]->SetStats(kTRUE);
-      fSixParticleCorrelationProfile[cs][t]->SetName(Form("fSixParticleCorrelationProfile_cs%d_combi%d", cs, t));
-      fSixParticleCorrelationProfile[cs][t]->SetTitle(Form("Q-vectors, #LT #LT 6 #GT #GT, cs = %d, combi = %d", cs, t));
-      fSixParticleCorrelationProfile[cs][t]->Sumw2();
-      fSixParticleCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 6 #GT #GT");
-      fCorrelationResultsList->Add(fSixParticleCorrelationProfile[cs][t]);
-
-      fTwoCosineAverageProfile[cs][t] = new TProfile("", "", 2, 0., 2.);
-      fTwoCosineAverageProfile[cs][t]->SetStats(kTRUE);
-      fTwoCosineAverageProfile[cs][t]->SetName(Form("fTwoCosineAverageProfile_cs%d_combi%d", cs, t));
-      fTwoCosineAverageProfile[cs][t]->SetTitle(Form("Q-vectors, #LT #LT cos(m (phi1-phi2)) #GT #LT cos(n (phi1-phi2)) #GT #GT, cs = %d, combi = %d", cs, t)); // only [cos,sin][0] is useful)
-      fTwoCosineAverageProfile[cs][t]->Sumw2();
-      fTwoCosineAverageProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT cos(m (phi1-phi2)) #GT #LT cos(n (phi1-phi2)) #GT #GT");
-      fCorrelationResultsList->Add(fTwoCosineAverageProfile[cs][t]);
-
-      if (fComputeNestedLoops)
-      {
-        fTwoNestedCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-        fTwoNestedCorrelationProfile[cs][t]->SetStats(kTRUE);
-        fTwoNestedCorrelationProfile[cs][t]->SetName(Form("fTwoNestedCorrelationProfile_cs%d_combi%d", cs, t));
-        fTwoNestedCorrelationProfile[cs][t]->SetTitle(Form("Nested loops, #LT #LT 2 #GT #GT, cs = %d, combi = %d", cs, t));
-        fTwoNestedCorrelationProfile[cs][t]->Sumw2();
-        fTwoNestedCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 2 #GT #GT");
-        fCorrelationResultsList->Add(fTwoNestedCorrelationProfile[cs][t]);
-
-        fTwoCosineAverageNestedProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-        fTwoCosineAverageNestedProfile[cs][t]->SetStats(kTRUE);
-        fTwoCosineAverageNestedProfile[cs][t]->SetName(Form("fTwoCosineAverageNestedProfile_cs%d_combi%d", cs, t));
-        fTwoCosineAverageNestedProfile[cs][t]->SetTitle(Form("Nested loops, #LT #LT cos(m (phi1-phi2)) #GT #LT cos(n (phi1-phi2)) #GT #GT, cs = %d, combi = %d", cs, t));
-        fTwoCosineAverageNestedProfile[cs][t]->Sumw2();
-        fTwoCosineAverageNestedProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT cos(m (phi1-phi2)) #GT #LT cos(n (phi1-phi2)) #GT #GT");
-        fCorrelationResultsList->Add(fTwoCosineAverageNestedProfile[cs][t]);
-      } // End: if (fComputeNestedLoops)
-    } // End: for (Int_t t = 0; t < 4; t++)
-
-    for (Int_t t = 0; t < 6; t++)
-    {
-    // TProfiles for 4-p correlations
-    // cs: {cos, sin}, f: {mn,mp,mq,np,nq,pq}
-      fFourParticleCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-      fFourParticleCorrelationProfile[cs][t]->SetStats(kTRUE);
-      fFourParticleCorrelationProfile[cs][t]->SetName(Form("fFourParticleCorrelationProfile_cs%d_combi%d", cs, t));
-      fFourParticleCorrelationProfile[cs][t]->SetTitle(Form("Q-vectors, #LT #LT 4 #GT #GT, cs = %d, combi = %d", cs, t));
-      fFourParticleCorrelationProfile[cs][t]->Sumw2();
-      fFourParticleCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 4 #GT #GT");
-      fCorrelationResultsList->Add(fFourParticleCorrelationProfile[cs][t]);
-
-      if (fComputeNestedLoops)
-      {
-        fFourNestedCorrelationProfile[cs][t] = new TProfile("", "", 1, 0., 1.);
-        fFourNestedCorrelationProfile[cs][t]->SetStats(kTRUE);
-        fFourNestedCorrelationProfile[cs][t]->SetName(Form("fFourNestedCorrelationProfile_cs%d_combi%d", cs, t));
-        fFourNestedCorrelationProfile[cs][t]->SetTitle(Form("Nested loops, #LT #LT 4 #GT #GT, cs = %d, combi = %d", cs, t));
-        fFourNestedCorrelationProfile[cs][t]->Sumw2();
-        fFourNestedCorrelationProfile[cs][t]->GetXaxis()->SetTitle("#LT #LT 4 #GT #GT");
-        fCorrelationResultsList->Add(fFourNestedCorrelationProfile[cs][t]);
-      } // End: if (fComputeNestedLoops)
-    } // End: for (Int_t t = 0; t < 6; t++)
-
-    // TProfiles for 8-p correlations
-    fEightParticleCorrelationProfile[cs] = new TProfile("", "", 1, 0., 1.);
-    fEightParticleCorrelationProfile[cs]->SetStats(kTRUE);
-    fEightParticleCorrelationProfile[cs]->SetName(Form("fEightParticleCorrelationProfile_cs%d", cs));
-    fEightParticleCorrelationProfile[cs]->SetTitle(Form("Q-vectors, #LT #LT 8 #GT #GT, cs = %d", cs));
-    fEightParticleCorrelationProfile[cs]->Sumw2();
-    fEightParticleCorrelationProfile[cs]->GetXaxis()->SetTitle("#LT #LT 8 #GT #GT");
-    fCorrelationResultsList->Add(fEightParticleCorrelationProfile[cs]);
-  } // End: for (Int_t cs = 0; cs < endCs; cs++)
-} // End: void AliAnalysisTaskTwoMultiCorrelations::BookCorrelationResultsList()
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(Int_t nParticles, Double_t phi[], Double_t particleWeight[])
-{
-// Method calculating the "general" definition of the Q-vector Q_(n,p) for arbitrary (n,p)
-  Double_t pWeightPowerP = 0.;  // Particle weight rised to the power p
-
-// Filling of the array of Q-vectors
-  for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
+  if (fCrossCheckWithNestedLoops)
   {
-    for (Int_t iHarmo = 0; iHarmo < (fHighHarmonic*fMaxNumberCorrelations)+1; iHarmo++)
+    fProfileFourParticleCorrelationsNestedLoops = new TProfile("fProfileFourParticleCorrelationsNestedLoops", "4-particle correlations with nested loops", 21, 0., 21.);
+    fProfileFourParticleCorrelationsNestedLoops->SetStats(kTRUE);
+    fProfileFourParticleCorrelationsNestedLoops->Sumw2();
+    fProfileFourParticleCorrelationsNestedLoops->GetXaxis()->SetTitle("(m,n)");
+    fProfileFourParticleCorrelationsNestedLoops->GetYaxis()->SetTitle("#LT#LT4#GT#GT_{m,n,-m,-n}");
+    fListCorrelations->Add(fProfileFourParticleCorrelationsNestedLoops);
+  }
+
+// 6-particle correlations.
+  fProfileSixParticleCorrelations = new TProfile("fProfileSixParticleCorrelations", "6-particle correlations", 20, 0., 20.);
+  fProfileSixParticleCorrelations->SetStats(kTRUE);
+  fProfileSixParticleCorrelations->Sumw2();
+  fProfileSixParticleCorrelations->GetXaxis()->SetTitle("(l,m,n)");
+  fProfileSixParticleCorrelations->GetYaxis()->SetTitle("#LT#LT6#GT#GT_{l,m,n,-l,-m,-n}");
+  fListCorrelations->Add(fProfileSixParticleCorrelations);
+}
+
+//######################################################################################//
+// Methods called in 'UserExec'.
+//======================================================================================//
+void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent)
+{
+/* Execute the analysis for the provided AOD event. */
+  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent)";
+
+// Check if there is an event or not.
+  if (!aAODevent) {Fatal(sMethodName.Data(), "ERROR: no AOD event found.");}
+
+// Select the detector to use for the estimation of the centrality.
+  TString centralityEstimator = "centralityEstimator";  // Name of the detector used for the centrality estimation.
+  if ((Int_t)fCentralityFromVZero + (Int_t)fCentralityFromSPD != 1)
+  {
+    Fatal(sMethodName.Data(), "ERROR: only one detector must be selected in 'SetCentralityEstimation'.");
+  }
+  else if (fCentralityFromVZero) {centralityEstimator = "V0M";}
+  else if (fCentralityFromSPD) {centralityEstimator = "CL1";}
+
+// Determine if the event belongs to this centrality range.
+  AliMultSelection *ams = (AliMultSelection*)aAODevent->FindListObject("MultSelection");
+  if (!ams) {return;} // Protection against NULL pointer.
+  Double_t aCentrality = ams->GetMultiplicityPercentile(Form("%s", centralityEstimator.Data()));  // Centrality of the given event.
+  if ((aCentrality >= fCentralityMin) && (aCentrality < fCentralityMax))
+  {
+    fHistoCentrality->Fill(aCentrality);
+  }
+  else {return;}  // This event does not belong to this centrality range.
+
+// Get the number of tracks before the event selection.
+  long long initialNumberOfTracks = aAODevent->GetNumberOfTracks();
+  fHistoInitialNumberOfTracks->Fill(initialNumberOfTracks);
+
+// Cuts on the position of the Primary Vertex.
+  AliAODVertex *avtx = (AliAODVertex*)aAODevent->GetPrimaryVertex();  // 3d position of the PV.
+  fHistoVertexXBeforeSelection->Fill(avtx->GetX());
+  fHistoVertexYBeforeSelection->Fill(avtx->GetY());
+  fHistoVertexZBeforeSelection->Fill(avtx->GetZ());
+
+  if (fCutOnVertexX)
+  {
+    if ((avtx->GetX() < fVertexMinX) || (avtx->GetX() > fVertexMaxX)) {return;}
+  }
+  if (fCutOnVertexY)
+  {
+    if ((avtx->GetY() < fVertexMinY) || (avtx->GetY() > fVertexMaxY)) {return;}
+  }
+  if (fCutOnVertexZ)
+  {
+    if ((avtx->GetZ() < fVertexMinZ) || (avtx->GetZ() > fVertexMaxZ)) {return;}
+  }
+
+/// TBA: more event cuts?
+
+// Preparations for the track selection.
+  long long numberOfTracksBeforeTrackSelection = aAODevent->GetNumberOfTracks();  // Number of tracks before the track selection.
+  fHistoNumberOfTracksBeforeTrackSelection->Fill(numberOfTracksBeforeTrackSelection);
+  long long finalNumberOfTracks = 0;  // Number of tracks after the full selection.
+  Int_t *IsTrackSelected = new Int_t[numberOfTracksBeforeTrackSelection](); // Flag to indicate a track passed the track selection (1) or not (0).
+
+  Double_t pT = 0.; // Transverse momentum.
+  Double_t eta = 0.;  // Pseudorapidity.
+  Double_t phi = 0.;  // Azimuthal angle.
+  Int_t numberOfTPCClusters = 0;  // Number of TPC clusters.
+  Double_t chiSquareInTPC = 0.; // Chi square of the track momentum in the TPC.
+  Double_t DCAx = 0.; // x-value of the DCA.
+  Double_t DCAy = 0.; // y-value of the DCA.
+  Double_t DCAz = 0.; // z-value of the DCA.
+  Double_t DCAxy = 0.;  // xy-value of the DCA.
+  Int_t charge = 0; // Electric charge.
+
+// Look at each track in the event to mark them as selected or not.
+  for (long long iTrack = 0; iTrack < numberOfTracksBeforeTrackSelection; iTrack++)
+  {
+    AliAODTrack *currentTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(iTrack));  // Pointer to the AOD track.
+    if (!currentTrack) {continue;}  // Protection against NULL pointer.
+    if (!currentTrack->TestFilterBit(fFilter)) {continue;}  // Filter bit 128 denotes TPC-only tracks.
+
+  // Get all the observables for the track selection.
+    pT = currentTrack->Pt();
+    eta = currentTrack->Eta();
+    phi = currentTrack->Phi();
+    numberOfTPCClusters = currentTrack->GetTPCNcls();
+    chiSquareInTPC = currentTrack->Chi2perNDF();
+    DCAx = currentTrack->XAtDCA();
+    DCAy = currentTrack->YAtDCA();
+    DCAz = currentTrack->ZAtDCA();
+    charge = currentTrack->Charge();
+
+    DCAxy = TMath::Sqrt((DCAx*DCAx) + (DCAy*DCAy));
+
+  // Fill the histograms before the track selection.
+    fHistoPtBeforeSelection->Fill(pT);
+    fHistoEtaBeforeSelection->Fill(eta);
+    fHistoPhiBeforeSelection->Fill(phi);
+    fHistoTPCClustersBeforeSelection->Fill(numberOfTPCClusters);
+    fHistoTPCChiSquareBeforeSelection->Fill(chiSquareInTPC);
+    fHistoDCAXYBeforeSelection->Fill(DCAxy);
+    fHistoDCAZBeforeSelection->Fill(DCAz);
+    fHistoChargeBeforeSelection->Fill(charge);
+
+  // Apply the track selection to the provided track.
+    if (ApplyTrackSelection(pT, eta, numberOfTPCClusters, chiSquareInTPC, DCAxy, DCAz, charge))  // The track passed the selection.
     {
-      for (Int_t iPower = 0; iPower < fMaxNumberCorrelations+1; iPower++)
-      {
-        pWeightPowerP = pow(particleWeight[iParticle], iPower);
-        fQvectors[iHarmo][iPower] += TComplex(pWeightPowerP*TMath::Cos(iHarmo*phi[iParticle]),pWeightPowerP*TMath::Sin(iHarmo*phi[iParticle]));
-      } // End: for (Int_t iPower = 0; iPower < maxPower; iPower++)
-    } // End: for (Int_t iHarmo = 0; iHarmo < maxHarmo; iHarmo++)
-  } // End: for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
-} // End: void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(Int_t nParticles, Double_t phi[], Double_t particleWeight[])
+      IsTrackSelected[iTrack] = 1;
+      finalNumberOfTracks++;
+    }
+    else {IsTrackSelected[iTrack] = 0;}  // The track failed the selection.
+  }
+
+// Remove the events with too few or too many tracks.
+  Int_t cutValueMaxNumberOfTracks = 0;  // Value of the cut on the maximum number of tracks.
+  if (finalNumberOfTracks <= fNumberOfTracksMin) {return;}
+  if (fCutOnTracksMax)  // If the cuts on the maximum numbers of tracks are enabled.
+  {
+  // Determine the value to cut depending on the centrality.
+    if ((aCentrality >= 0.) && (aCentrality < 5.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxZero;}
+    else if ((aCentrality >= 5.) && (aCentrality < 10.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxFive;}
+    else if ((aCentrality >= 10.) && (aCentrality < 20.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxTen;}
+    else if ((aCentrality >= 20.) && (aCentrality < 30.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxTwenty;}
+    else if ((aCentrality >= 30.) && (aCentrality < 40.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxThirty;}
+    else if ((aCentrality >= 40.) && (aCentrality < 50.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxForty;}
+    else if ((aCentrality >= 50.) && (aCentrality < 60.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxFifty;}
+    else if ((aCentrality >= 60.) && (aCentrality < 70.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxSixty;}
+    else if ((aCentrality >= 70.) && (aCentrality < 80.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxSeventy;}
+
+  // Apply the cut.
+    if (finalNumberOfTracks >= cutValueMaxNumberOfTracks) {return;}
+  }
+
+// Fill all the event histograms after the full selection.
+  fHistoFinalNumberOfTracks->Fill(finalNumberOfTracks);
+  fHistoVertexXAfterSelection->Fill(avtx->GetX());
+  fHistoVertexYAfterSelection->Fill(avtx->GetY());
+  fHistoVertexZAfterSelection->Fill(avtx->GetZ());
+
+// Define the arrays for the azimuthal angles and particle weights to use in the analysis.
+  Double_t *phiArray = new Double_t[finalNumberOfTracks](); // Azimuthal angles.
+  Double_t *particleWeightArray = new Double_t[finalNumberOfTracks](); // Particle weights.
+  Int_t indexInNewArrays = 0; // New index of the track if it passed the selection.
+
+// Loop over the tracks to keep only the selected ones.
+  for (long long iTrack = 0; iTrack < numberOfTracksBeforeTrackSelection; iTrack++)
+  {
+    AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(iTrack));  // Pointer to the AOD track.
+    if (!aTrack) {continue;}  // Protection against NULL pointer.
+    if (!aTrack->TestFilterBit(fFilter)) {continue;}  // Filter bit 128 denotes TPC-only tracks.
+
+    if (IsTrackSelected[iTrack] == 1) // The particle passed the selection.
+    {
+    // Get all the observables used in the track selection.
+      pT = aTrack->Pt();
+      eta = aTrack->Eta();
+      phiArray[indexInNewArrays] = aTrack->Phi();
+      numberOfTPCClusters = aTrack->GetTPCNcls();
+      chiSquareInTPC = aTrack->Chi2perNDF();
+      DCAx = aTrack->XAtDCA();
+      DCAy = aTrack->YAtDCA();
+      DCAz = aTrack->ZAtDCA();
+      DCAxy = TMath::Sqrt((DCAx*DCAx) + (DCAy*DCAy));
+      charge = aTrack->Charge();
+
+      if (fUseParticleWeights) {Fatal(sMethodName.Data(), "ERROR: TBA.");}
+      else {particleWeightArray[indexInNewArrays] = 1.;}
+
+    // Fill all the track histograms after the full selection.
+      fHistoPtAfterSelection->Fill(pT);
+      fHistoEtaAfterSelection->Fill(eta);
+      fHistoPhiAfterSelection->Fill(phiArray[indexInNewArrays]);
+      fHistoTPCClustersAfterSelection->Fill(numberOfTPCClusters);
+      fHistoTPCChiSquareAfterSelection->Fill(chiSquareInTPC);
+      fHistoDCAXYAfterSelection->Fill(DCAxy);
+      fHistoDCAZAfterSelection->Fill(DCAz);
+      fHistoChargeAfterSelection->Fill(charge);
+
+    // Increase the value of 'indexInNewArrays' by one.
+      indexInNewArrays++;
+    }
+    else {continue;}
+  }
+
+// Calculate the Q-vectors for the current event.
+  CalculateQvectors(finalNumberOfTracks, phiArray, particleWeightArray);
+
+// Compute all the multiparticle correlations for the current event.
+  ComputeMultiparticleCorrelations(finalNumberOfTracks, phiArray, particleWeightArray);
+
+// Reset everything to zero for the next event.
+  numberOfTracksBeforeTrackSelection = 0;
+  cutValueMaxNumberOfTracks = 0;
+  finalNumberOfTracks = 0;
+  delete [] IsTrackSelected;
+  pT = 0.;
+  eta = 0.;
+  phi = 0.;
+  numberOfTPCClusters = 0;
+  chiSquareInTPC = 0.;
+  DCAx = 0.;
+  DCAy = 0.;
+  DCAz = 0.;
+  charge = 0;
+  delete [] phiArray;
+  delete [] particleWeightArray;
+  indexInNewArrays = 0;
+}
 
 //======================================================================================//
+void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)
+{
+/* Execute the analysis for the provided MC event. */
+  TString sMethodName = "void AliAnalysisTaskTwoMultiCorrelations::AnalyseMCevent(AliMCEvent *aMCevent)";
 
+// Check if there is an event or not.
+  if (!aMCevent) {Fatal(sMethodName.Data(), "ERROR: no MC event found.");}
+
+// Select the detector to use for the estimation of the centrality.
+  TString centralityEstimator = "centralityEstimator";  // Name of the detector used for the centrality estimation.
+  if ((Int_t)fCentralityFromVZero + (Int_t)fCentralityFromSPD != 1)
+  {
+    Fatal(sMethodName.Data(), "ERROR: only one detector must be selected in 'SetCentralityEstimation'.");
+  }
+  else if (fCentralityFromVZero) {centralityEstimator = "V0M";}
+  else if (fCentralityFromSPD) {centralityEstimator = "CL1";}
+
+// Determine if the event belongs to this centrality range (for reconstructed particles only).
+  Double_t aCentrality = 0.;  // Centrality of the given event.
+  if (!fProcessOnlyMC)
+  {
+    AliMultSelection *ams = (AliMultSelection*)aMCevent->FindListObject("MultSelection");
+    if (!ams) {return;} // Protection against NULL pointer.
+    aCentrality = ams->GetMultiplicityPercentile(Form("%s", centralityEstimator.Data()));
+    if ((aCentrality >= fCentralityMin) && (aCentrality < fCentralityMax))
+    {
+      fHistoCentrality->Fill(aCentrality);
+    }
+    else {return;}  // This event does not belong to this centrality range.
+  }
+
+// Get the number of tracks before the event selection.
+  long long initialNumberOfTracks = aMCevent->GetNumberOfTracks();
+  fHistoInitialNumberOfTracks->Fill(initialNumberOfTracks);
+
+// Cuts on the position of the Primary Vertex.
+  AliMCVertex *avtx = (AliMCVertex*)aMCevent->GetPrimaryVertex(); // 3d position of the PV.
+  fHistoVertexXBeforeSelection->Fill(avtx->GetX());
+  fHistoVertexYBeforeSelection->Fill(avtx->GetY());
+  fHistoVertexZBeforeSelection->Fill(avtx->GetZ());
+
+  if (fCutOnVertexX)
+  {
+    if ((avtx->GetX() < fVertexMinX) || (avtx->GetX() > fVertexMaxX)) {return;}
+  }
+  if (fCutOnVertexY)
+  {
+    if ((avtx->GetY() < fVertexMinY) || (avtx->GetY() > fVertexMaxY)) {return;}
+  }
+  if (fCutOnVertexZ)
+  {
+    if ((avtx->GetZ() < fVertexMinZ) || (avtx->GetZ() > fVertexMaxZ)) {return;}
+  }
+
+/// TBA: more event cuts?
+
+// Preparations for the track selection.
+  long long numberOfTracksBeforeTrackSelection = aMCevent->GetNumberOfTracks();  // Number of tracks before the track selection.
+  fHistoNumberOfTracksBeforeTrackSelection->Fill(numberOfTracksBeforeTrackSelection);
+  long long finalNumberOfTracks = 0;  // Number of tracks after the full selection.
+  Int_t *IsTrackSelected = new Int_t[numberOfTracksBeforeTrackSelection](); // Flag to indicate a track passed the track selection (1) or not (0).
+
+  Double_t pT = 0.; // Transverse momentum.
+  Double_t eta = 0.;  // Pseudorapidity.
+  Double_t phi = 0.;  // Azimuthal angle.
+  Int_t charge = 0; // Electric charge.
+
+// Look at each track in the event to mark them as selected or not.
+  for (long long iTrack = 0; iTrack < numberOfTracksBeforeTrackSelection; iTrack++)
+  {
+    AliAODMCParticle *currentTrack = dynamic_cast<AliAODMCParticle*>(aMCevent->GetTrack(iTrack));  // Pointer to the MC track.
+    if (!currentTrack) {continue;}  // Protection against NULL pointer.
+
+  // Get all the observables for the track selection.
+    pT = currentTrack->Pt();
+    eta = currentTrack->Eta();
+    phi = currentTrack->Phi();
+    charge = currentTrack->Charge();
+
+  // Fill the histograms before the track selection.
+    fHistoPtBeforeSelection->Fill(pT);
+    fHistoEtaBeforeSelection->Fill(eta);
+    fHistoPhiBeforeSelection->Fill(phi);
+    fHistoChargeBeforeSelection->Fill(charge);
+
+  // Apply the track selection to the provided track.
+    Bool_t cutOnCharge = kTRUE; // Set to kTRUE by default in case no selection over the charge is done.
+    if (fCutOnCharge) // Check if the track passes the cut in case it is applied.
+    {
+      if (charge != fCharge) {cutOnCharge = kFALSE;}
+    }
+
+    if ((fPtMin <= pT) && (pT <= fPtMax) && (fEtaMin <= eta) && (eta <= fEtaMax) && (cutOnCharge))  // Apply the cuts to the track.
+    {
+      IsTrackSelected[iTrack] = 1;
+      finalNumberOfTracks++;
+    }
+    else {IsTrackSelected[iTrack] = 0;}  // The track failed the selection.
+  }
+
+// Remove the events with too few or too many tracks.
+  Int_t cutValueMaxNumberOfTracks = 0;  // Value of the cut on the maximum number of tracks.
+  if (finalNumberOfTracks <= fNumberOfTracksMin) {return;}
+  if (fCutOnTracksMax)  // If the cuts on the maximum numbers of tracks are enabled.
+  {
+  // Determine the value to cut depending on the centrality.
+    if ((aCentrality >= 0.) && (aCentrality < 5.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxZero;}
+    else if ((aCentrality >= 5.) && (aCentrality < 10.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxFive;}
+    else if ((aCentrality >= 10.) && (aCentrality < 20.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxTen;}
+    else if ((aCentrality >= 20.) && (aCentrality < 30.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxTwenty;}
+    else if ((aCentrality >= 30.) && (aCentrality < 40.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxThirty;}
+    else if ((aCentrality >= 40.) && (aCentrality < 50.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxForty;}
+    else if ((aCentrality >= 50.) && (aCentrality < 60.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxFifty;}
+    else if ((aCentrality >= 60.) && (aCentrality < 70.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxSixty;}
+    else if ((aCentrality >= 70.) && (aCentrality < 80.)) {cutValueMaxNumberOfTracks = fNumberOfTracksMaxSeventy;}
+
+  // Apply the cut.
+    if (finalNumberOfTracks >= cutValueMaxNumberOfTracks) {return;}
+  }
+
+// Fill all the event histograms after the full selection.
+  fHistoFinalNumberOfTracks->Fill(finalNumberOfTracks);
+  fHistoVertexXAfterSelection->Fill(avtx->GetX());
+  fHistoVertexYAfterSelection->Fill(avtx->GetY());
+  fHistoVertexZAfterSelection->Fill(avtx->GetZ());
+
+// Define the arrays for the azimuthal angles and particle weights to use in the analysis.
+  Double_t *phiArray = new Double_t[finalNumberOfTracks](); // Azimuthal angles.
+  Double_t *particleWeightArray = new Double_t[finalNumberOfTracks](); // Particle weights.
+  Int_t indexInNewArrays = 0; // New index of the track if it passed the selection.
+
+// Loop over the tracks to keep only the selected ones.
+  for (long long iTrack = 0; iTrack < numberOfTracksBeforeTrackSelection; iTrack++)
+  {
+    AliAODMCParticle *aTrack = dynamic_cast<AliAODMCParticle*>(aMCevent->GetTrack(iTrack)); // Pointer to the MC track.
+    if (!aTrack) {continue;}  // Protection against NULL pointer.
+
+    if (IsTrackSelected[iTrack] == 1) // The particle passed the selection.
+    {
+    // Get all the observables used in the track selection.
+      pT = aTrack->Pt();
+      eta = aTrack->Eta();
+      phiArray[indexInNewArrays] = aTrack->Phi();
+      charge = aTrack->Charge();
+
+      if (fUseParticleWeights) {Fatal(sMethodName.Data(), "ERROR: TBA.");}
+      else {particleWeightArray[indexInNewArrays] = 1.;}
+
+    // Fill all the track histograms after the full selection.
+      fHistoPtAfterSelection->Fill(pT);
+      fHistoEtaAfterSelection->Fill(eta);
+      fHistoPhiAfterSelection->Fill(phiArray[indexInNewArrays]);
+      fHistoChargeAfterSelection->Fill(charge);
+
+    // Increase the value of 'indexInNewArrays' by one.
+      indexInNewArrays++;
+    }
+    else {continue;}
+  }
+
+// Calculate the Q-vectors for the current event.
+  CalculateQvectors(finalNumberOfTracks, phiArray, particleWeightArray);
+
+// Compute all the multiparticle correlations for the current event.
+  ComputeMultiparticleCorrelations(finalNumberOfTracks, phiArray, particleWeightArray);
+
+// Reset everything to zero for the next event.
+  aCentrality = 0.;
+  numberOfTracksBeforeTrackSelection = 0;
+  cutValueMaxNumberOfTracks = 0;
+  finalNumberOfTracks = 0;
+  delete [] IsTrackSelected;
+  pT = 0.;
+  eta = 0.;
+  phi = 0.;
+  charge = 0;
+  delete [] phiArray;
+  delete [] particleWeightArray;
+  indexInNewArrays = 0;
+}
+
+//======================================================================================//
+Bool_t AliAnalysisTaskTwoMultiCorrelations::ApplyTrackSelection(Double_t momentum, Double_t pseudorapidity, Int_t NclustersInTPC, Double_t TPCchiSquare, Double_t xyDCA, Double_t zDCA, Int_t eCharge)
+{
+/* Apply the track selection to the arguments and return if it is passed or not. */
+  Bool_t testOfPt = kTRUE;  // Cut on the transverse momentum.
+  Bool_t testOfEta = kTRUE; // Cut on the pseudorapidity.
+  Bool_t testOfNumberOfTPC = kTRUE; // Cut on the number of TPC clusters.
+  Bool_t testOfChiSquareTPC = kTRUE;  // Cut on the chi^2 of the momentum in the TPC.
+  Bool_t testOfDCAxy = kTRUE; // Cut on the DCA of the track in the xy-plane.
+  Bool_t testOfDCAz = kTRUE;  // Cut on the DCA of the track along the z-direction.
+  Bool_t testOfCharge = kTRUE;  // Cut on the electric charge.
+
+  if (fCutOnPt) {testOfPt = (fPtMin <= momentum) && (momentum <= fPtMax);}
+  if (fCutOnEta) {testOfEta = (fEtaMin <= pseudorapidity) && (pseudorapidity <= fEtaMax);}
+  if (fCutOnNumberOfTPC) {testOfNumberOfTPC = (fNumberOfTPCMin < NclustersInTPC);}
+  if (fCutOnChiSquarePInTPC) {testOfChiSquareTPC = (fChiSquarePInTPCMin <= TPCchiSquare) && (TPCchiSquare <= fChiSquarePInTPCMax);}
+  if (fCutOnDCA) {testOfDCAxy = (xyDCA < fDCAxyMax); testOfDCAz = (zDCA < fDCAzMax);}
+  if (fCutOnCharge) {testOfCharge = (eCharge == fCharge);}
+
+  return testOfPt && testOfEta && testOfNumberOfTPC && testOfChiSquareTPC && testOfDCAxy && testOfDCAz && testOfCharge;
+}
+
+//======================================================================================//
+void AliAnalysisTaskTwoMultiCorrelations::CalculateQvectors(long long numberOfParticles, Double_t angles[], Double_t pWeights[])
+{
+/* Calculate all the Q-vectors for the given arrays of azimuthal angles and particle weights. */
+  Double_t iAngle = 0.; // Azimuthal angle of the current particle.
+  Double_t iWeight = 0.;  // Particle weight of the current particle.
+  Double_t iWeightToPowerP = 0.;  // Particle weight rised to the power p.
+
+// Ensure all the Q-vectors are initially zero.
+  for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
+  {
+    for (Int_t iPower = 0; iPower < 9; iPower++)
+    {
+      fQvectors[iHarmo][iPower] = TComplex(0.,0.);
+    }
+  }
+
+// Compute the Q-vectors.
+  for (long long iTrack = 0; iTrack < numberOfParticles; iTrack++)
+  {
+    iAngle = angles[iTrack];
+    iWeight = pWeights[iTrack];
+    for (Int_t iHarmo = 0; iHarmo < 49; iHarmo++)
+    {
+      for (Int_t iPower = 0; iPower < 9; iPower++)
+      {
+        iWeightToPowerP = TMath::Power(iWeight, iPower);
+        fQvectors[iHarmo][iPower] += TComplex(iWeightToPowerP*TMath::Cos(iHarmo*iAngle), iWeightToPowerP*TMath::Sin(iHarmo*iAngle));
+      }
+    }
+  }
+}
+
+//======================================================================================//
 TComplex AliAnalysisTaskTwoMultiCorrelations::Q(Int_t n, Int_t p)
 {
-// Method used to simply the usage of the Q-vectors with the fact that Q(-n,p)=Q(n,p)*
+/* Simplify the use of the Q-vectors. */
   if (n >= 0) {return fQvectors[n][p];}
-  return TComplex::Conjugate(fQvectors[-n][p]);
-} // End: TComplex AliAnalysisTaskTwoMultiCorrelations::Q(Int_t n, Int_p) 
+  return TComplex::Conjugate(fQvectors[-n][p]); // Use that Q*(n,p) = Q(-n,p).
+}
 
 //======================================================================================//
-
-TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursionWithQvectors(Int_t nPartCorr, Int_t harmonics[], Int_t p, Int_t skip)
+void AliAnalysisTaskTwoMultiCorrelations::ComputeMultiparticleCorrelations(long long numberOfParticles, Double_t angles[], Double_t pWeights[])
 {
-// Calculate the recursion for the numerator of the m-particle correlations using the Q-vectors according to the generic framework
-// The recursion method was originally developped by Kristjan Gulbrandsen (gulbrand@nbi.dk)
-  Int_t nMinusOne = 0;  // Harmonic n-1
-  TComplex stopQvector = TComplex(0.,0.); // Stop condition of the recusion
-  Int_t pPlusOne = 0; // Power p+1
-  Int_t nMinusTwo = 0;  // Harmonic n-2
-  Int_t counterOne = 0; // First counter for the intermediate indices
-  Int_t hHold = 0;  // Temporary harmonic
-  TComplex tempQvector = TComplex(0,0); // Temporary Q-vector
-  Int_t counterTwo = 0; // Second counter for the intermediate indices
+/* Compute the considered 2-, 4- and 6-particle correlations for the harmonics v_1 to v_6. */
+// Compute the 2-particle correlations.
+  Int_t twoZerosArray[2] = {0}; // Zero array for the denominator.
+  Double_t twoParticleDenominator = CalculateRecursion(2, twoZerosArray).Re();  // 2-particle event weight.
 
-// Stop conditions of the recursion
-  nMinusOne = nPartCorr-1;
-  stopQvector = Q(harmonics[nMinusOne],p);
-
-  if (nMinusOne == 0) {return stopQvector;}
-  stopQvector *= CalculateRecursionWithQvectors(nMinusOne, harmonics);
-  if (nMinusOne == skip) {return stopQvector;}
-
-// Computation of the recursion itself
-  pPlusOne = p+1;
-  nMinusTwo = nPartCorr-2;
-  hHold = harmonics[counterOne];
-  harmonics[counterOne] = harmonics[nMinusTwo];
-  harmonics[nMinusTwo] = hHold + harmonics[nMinusOne];
-  tempQvector = CalculateRecursionWithQvectors(nMinusOne, harmonics, pPlusOne, nMinusTwo);
-  counterTwo = nPartCorr-3;
-
-  while (counterTwo >= skip)
+  Int_t twoParticleArray[2] = {0};  // Array to save the harmonics with the format: cos(nphi1 - nphi2).
+  TComplex twoParticleComplex = TComplex(0., 0.); // Complex value for the 2-particle correlation.
+  Double_t twoParticleValue = 0.; // Real part of the 2-particle correlation.
+  Double_t iBinTwoMiddle = 0.;  // Index of the corresponding bin in the TProfile.
+  for (Int_t n = 1; n < 7; n++)
   {
-    harmonics[nMinusTwo] = harmonics[counterOne];
-    harmonics[counterOne] = hHold;
-    ++counterOne;
-    
-    hHold = harmonics[counterOne];
-    harmonics[counterOne] = harmonics[nMinusTwo];
-    harmonics[nMinusTwo] = hHold + harmonics[nMinusOne];
-    tempQvector += CalculateRecursionWithQvectors(nMinusOne, harmonics, pPlusOne, counterTwo);
-    --counterTwo;
-  } // End: while (counterTwo >= skip)
+  // Compute the correlation.
+    twoParticleArray[0] = n;
+    twoParticleArray[1] = -1*n;
+    twoParticleComplex = (CalculateRecursion(2, twoParticleArray))/twoParticleDenominator;
+    twoParticleValue = twoParticleComplex.Re();
 
-  harmonics[nMinusTwo] = harmonics[counterOne];
-  harmonics[counterOne] = hHold;
+  // Fill the corresponding bin in the TProfile.
+    iBinTwoMiddle = (1.*n) - 0.5;
+    fProfileTwoParticleCorrelations->Fill(iBinTwoMiddle, twoParticleValue, twoParticleDenominator);
+    fProfileTwoParticleCorrelations->GetXaxis()->SetBinLabel(n, Form("%d", n));
 
-// Return of the result after the recursion
-  if (p == 1) {return stopQvector - tempQvector;}
-  return stopQvector - (Double_t(p)*tempQvector);
-
-// Reset of the variables to zero
-  nMinusOne = 0;
-  stopQvector = TComplex(0.,0.);
-  pPlusOne = 0;
-  nMinusTwo = 0;
-  counterOne = 0;
-  hHold = 0;
-  tempQvector = TComplex(0,0);
-  counterTwo = 0;
-
-} // End: TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursionWithQvectors(TComplex Qvectors[][9], Int_t nPartCorr, Int_t harmonics[], Int_t p, Int_t skip)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeTwoParticleCorrelationWithQvectors(Int_t numeratorFirstTwoParticleHarmonics[], Int_t numeratorLastTwoParticleHarmonics[], Int_t indexTProfile)
-{
-// Method to compute the 2-p correlation with the Q-vectors (<<cos(h1*phi1+h2*phi2)>>,<<sin(h1*phi1+h2*phi2)>>)
-  Int_t denominatorTwoParticleHarmonics[2] = {0,0}; // Harmonics with value 0 for the denominator
-  Double_t denominator = 0.;  // Denominator (and event weight of the TProfile)
-  TComplex firstTwoParticleCorrelation = TComplex(0.,0.); // 2-p correlation for the two first particle, used in the "normal" expression
-  TComplex lastTwoParticleCorrelation = TComplex(0.,0.);  // 2-p correlation to compute <<cos(m(phi1-phi2))><cos(n(phi1-phi2))>>
-
-// Computation of the 2-p correlations
-  denominator = (CalculateRecursionWithQvectors(2, denominatorTwoParticleHarmonics)).Re();
-  firstTwoParticleCorrelation = (CalculateRecursionWithQvectors(2, numeratorFirstTwoParticleHarmonics))/denominator;
-  lastTwoParticleCorrelation = (CalculateRecursionWithQvectors(2, numeratorLastTwoParticleHarmonics))/denominator;
-
-// Filling of the TProfiles
-  fTwoParticleCorrelationProfile[0][indexTProfile]->Fill(0.5,firstTwoParticleCorrelation.Re(),denominator);  // Cosine component
-  fTwoCosineAverageProfile[0][indexTProfile]->Fill(1.5,lastTwoParticleCorrelation.Re());
-  fTwoCosineAverageProfile[0][indexTProfile]->Fill(0.5,(fTwoParticleCorrelationProfile[0][indexTProfile]->GetBinContent(1))*(fTwoCosineAverageProfile[0][indexTProfile]->GetBinContent(2)));
-  if (fComputeSine) {fTwoParticleCorrelationProfile[1][indexTProfile]->Fill(0.5,firstTwoParticleCorrelation.Im(),denominator);} // Sine component
-
-// Reset of the variables to zero
-  denominator = 0;
-  firstTwoParticleCorrelation = TComplex(0.,0.);
-  lastTwoParticleCorrelation = TComplex(0.,0.);
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeTwoParticleCorrelationWithQvectors(Int_t numeratorFirstTwoParticleHarmonics[], Int_t numeratorLastTwoParticleHarmonics[], Int_t indexTProfile)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeFourParticleCorrelationWithQvectors(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile)
-{
-// Method to compute the 4-p correlation with the Q-vectors (<<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>>,<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>>)
-  Int_t denominatorFourParticleHarmonics[4] = {0,0,0,0};  // Harmonics with value 0 for the denominator
-  Double_t denominator = 0.;  // Denominator (and event weight of the TProfile)
-  TComplex fourParticleCorrelation = TComplex(0.,0.); // 4-p correlation
-
-// Computation of the 4-p correlation
-  denominator = (CalculateRecursionWithQvectors(4, denominatorFourParticleHarmonics)).Re();
-  fourParticleCorrelation = CalculateRecursionWithQvectors(4, numeratorFourParticleHarmonics)/denominator;
-
-// Filling of the TProfiles
-  fFourParticleCorrelationProfile[0][indexTProfile]->Fill(0.5,fourParticleCorrelation.Re(),denominator); // Cosine component 
-  if (fComputeSine) {fFourParticleCorrelationProfile[1][indexTProfile]->Fill(0.5,fourParticleCorrelation.Im(),denominator);} // Sine component
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeFourParticleCorrelationWithQvectors(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeSixParticleCorrelationWithQvectors(Int_t numeratorSixParticleHarmonics[], Int_t indexTProfile)
-{
-// Method to compute the 6-p correlation with the Q-vectors (<<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>,<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>)
-  Int_t denominatorSixParticleHarmonics[6] = {0,0,0,0,0,0}; // Harmonics with value 0 for the denominator
-  Double_t denominator = 0.;  // Denominator = event weight for the TProfile
-  TComplex sixParticleCorrelation = TComplex(0.,0.);  // 6-p correlation
-
-// Computation of the 6-p correlation
-  denominator = (CalculateRecursionWithQvectors(6, denominatorSixParticleHarmonics)).Re();
-  sixParticleCorrelation = CalculateRecursionWithQvectors(6, numeratorSixParticleHarmonics)/denominator;
-
-// Filling of the TProfiles
-  fSixParticleCorrelationProfile[0][indexTProfile]->Fill(0.5, sixParticleCorrelation.Re(), denominator); // Cosine component
-  if (fComputeSine) {fSixParticleCorrelationProfile[1][indexTProfile]->Fill(0.5, sixParticleCorrelation.Im(), denominator);} // Sine component
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeSixParticleCorrelationWithQvectors(Int_t numeratorSixParticleHarmonics[], Int_t indexTProfile)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeEightParticleCorrelationWithQvectors(Int_t numeratorEightParticleHarmonics[])
-{
-// Method to compute the 8-p correlation with the Q-vectors (<<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>,<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>)
-  Int_t denominatorEightParticleHarmonics[8] = {0,0,0,0,0,0,0,0}; // Harmonics with value 0 for the denominator
-  Double_t denominator = 0.;  // Denominator = event weight for the TProfile
-  TComplex eightParticleCorrelation = TComplex(0.,0.);  // (<<cos>>,<<sin>>)
-
-// Computation of the 8-p correlation
-  denominator = (CalculateRecursionWithQvectors(8, denominatorEightParticleHarmonics)).Re();
-  eightParticleCorrelation = CalculateRecursionWithQvectors(8, numeratorEightParticleHarmonics)/denominator;
-
-// Filling of the TProfiles
-  fEightParticleCorrelationProfile[0]->Fill(0.5, eightParticleCorrelation.Re(), denominator); // Cosine component
-  if(fComputeSine) {fEightParticleCorrelationProfile[1]->Fill(0.5, eightParticleCorrelation.Im(), denominator);} // Sine component
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeEightParticleCorrelationWithQvectors(Int_t numeratorEightParticleHarmonics[], Int_t indexTProfile)
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithTwoNestedLoops(Int_t numeratorTwoParticleHarmonics[], Int_t numeratorTwoLastParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[])
-{
-// Method to compute the 2-particle correlation with two nested loops (for cross-checking results)
-  Double_t twoParticleCos = 0.;  // Cos component of the correlation = single-event 2-p correlation, <2>_(n1...nm)
-  Double_t twoParticleSecondCos = 0.; // Second cosine average in the average with two cosine
-  Double_t twoParticleSin = 0.; // Sin component of the correlation
-  Double_t totalParticleWeight = 0.;  // Particle weight for the 2-p correlation
-
-// Computation of the 2-p single-event average, <2>
-  for (Int_t k = 0; k < nParticles; k++)
-  {
-    for (Int_t l = 0; l < nParticles; l++)
+  // Cross-check with nested loops if needed.
+    if (fCrossCheckWithNestedLoops)
     {
-    // Removal of the autocorrelations k == l 
-      if (k == l) {continue;}
-      
-    // Computation of <2> for a pair of particles
-      twoParticleCos = TMath::Cos(numeratorTwoParticleHarmonics[0]*phi[k] + numeratorTwoParticleHarmonics[1]*phi[l]);
-      twoParticleSecondCos = TMath::Cos(numeratorTwoLastParticleHarmonics[0]*phi[k] + numeratorTwoLastParticleHarmonics[1]*phi[l]);
+    // Fill the corresponding bin in the TProfile.
+      ComputeTwoNestedLoops(numberOfParticles, twoParticleArray, angles, pWeights, fProfileTwoParticleCorrelationsNestedLoops, iBinTwoMiddle);
+      fProfileTwoParticleCorrelationsNestedLoops->GetXaxis()->SetBinLabel(n, Form("%d", n));
+    }
 
-      if (fComputeSine) {twoParticleSin = TMath::Sin(numeratorTwoParticleHarmonics[0]*phi[k] + numeratorTwoParticleHarmonics[1]*phi[l]);}
-      totalParticleWeight = particleWeight[k] * particleWeight[l];
+  // Reset of the variables for the next harmonic.
+    twoParticleComplex = TComplex(0., 0.);
+    twoParticleValue = 0.;
+    iBinTwoMiddle = 0.;
+  }
 
-    // Filling of the TProfile
-      fTwoNestedCorrelationProfile[0][indexTProfile]->Fill(0.5, twoParticleCos,totalParticleWeight);
-      fTwoCosineAverageNestedProfile[0][indexTProfile]->Fill(1.5,twoParticleSecondCos);
-      if (fComputeSine) {fTwoNestedCorrelationProfile[1][indexTProfile]->Fill(0.5, twoParticleSin,totalParticleWeight);}
-    } // End of the loop over the second particle of the pair
-  } // End of the loop over the first particle of the pair
+// Compute the 4-particle correlations.
+  Int_t fourZerosArray[4] = {0};  // Zero array for the denominator.
+  Double_t fourParticleDenominator = CalculateRecursion(4, fourZerosArray).Re();  // 4-particle event weight.
 
-// Filling of the TProfile bin for <<cos><cos>>
-  fTwoCosineAverageNestedProfile[0][indexTProfile]->Fill(0.5,(fTwoNestedCorrelationProfile[0][indexTProfile]->GetBinContent(1))*(fTwoCosineAverageNestedProfile[0][indexTProfile]->GetBinContent(2)));
-
-// Reset of the local variables before changing the event
-  twoParticleCos = 0.;
-  twoParticleSecondCos = 0.;
-  twoParticleSin = 0.;
-  totalParticleWeight = 0.;
-
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithTwoNestedLoops(Int_t numeratorTwoParticleHarmonics[], Int_t numeratorTwoLastParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[])
-
-//======================================================================================//
-
-void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithFourNestedLoops(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[])
-{
-// Method to compute the 4-particle correlation with four nested loops (for cross-checking results)
-  Double_t fourParticleCos = 0.;  // Cos component of the correlation = single-event 4-p correlation, <4>_(n1,... nm)
-  Double_t fourParticleSin = 0.;  // Sin component of the correlation
-  Double_t totalParticleWeight = 0.;  // Particle weight for the 4-p correlation
-
-// Computation of the 4-p correlation, <4>
-  for (Int_t k = 0; k < nParticles; k++)
+  Int_t fourParticleArray[4] = {0}; // Array to save the harmonics with the format: cos(mphi1 + nphi2 - mphi3 - nphi4).
+  TComplex fourParticleComplex = TComplex(0., 0.);  // Complex value for the 4-particle correlation.
+  Double_t fourParticleValue = 0.;  // Real part of the 4-particle correlation.
+  Int_t iBinFour = 1; // Index of the corresponding bin in the TProfile.
+  Int_t iBinFourMiddle = 0.;  // Middle of the corresponding bin in the TProfile.
+  for(Int_t m = 1; m < 7; m++)
   {
-    for (Int_t l = 0; l < nParticles; l++)
+    for (Int_t n = m; n < 7; n++)
     {
-      // Removal of the autocorrelations k == l
-      if (k == l) {continue;}
+    // Compute the correlation.
+      fourParticleArray[0] = m;
+      fourParticleArray[1] = n;
+      fourParticleArray[2] = -1*m;
+      fourParticleArray[3] = -1*n;
+      fourParticleComplex = (CalculateRecursion(4, fourParticleArray))/fourParticleDenominator;
+      fourParticleValue = fourParticleComplex.Re();
 
-      for (Int_t m = 0; m < nParticles; m++)
+    // Fill the corresponding bin in the TProfile.
+      iBinFourMiddle = (1.*iBinFour) - 0.5;
+      fProfileFourParticleCorrelations->Fill(iBinFourMiddle, fourParticleValue, fourParticleDenominator);
+      fProfileFourParticleCorrelations->GetXaxis()->SetBinLabel(iBinFour, Form("(%d,%d)", m, n));
+
+    // Cross-check with nested loops if needed.
+      if (fCrossCheckWithNestedLoops)
       {
-        // Removal of the autocorrelations k == m, l == m
-        if ((k == m) || (l == m)) {continue;}
+      // Fill the corresponding bin in the TProfile.
+        ComputeFourNestedLoops(numberOfParticles, fourParticleArray, angles, pWeights, fProfileFourParticleCorrelationsNestedLoops, iBinFourMiddle);
+        fProfileFourParticleCorrelationsNestedLoops->GetXaxis()->SetBinLabel(iBinFour, Form("(%d,%d)", m, n));
+      }
 
-        for (Int_t n = 0; n < nParticles; n++)
+    // Reset of the variables for the next pair of harmonics.
+      iBinFour++;
+      fourParticleComplex = TComplex(0., 0.);
+      fourParticleValue = 0.;
+      iBinFourMiddle = 0.;
+    }
+  }
+
+// Compute the 4-particle correlations for the cross-check if needed.
+  if (fCrossCheckFourParticleCorrelations)
+  {
+    Int_t fourParticleCrossCheckArray[4] = {0}; // Array to save the harmonics with the format: cos(mphi1 + nphi2 - mphi3 - nphi4).
+    TComplex fourParticleCrossCheckComplex = TComplex(0., 0.);  // Complex value for the 4-particle correlation.
+    Double_t fourParticleCrossCheckValue = 0.;  // Real part of the 4-particle correlation.
+    Int_t iBinFourCrossCheck = 1; // Index of the corresponding bin in the TProfile.
+    Int_t iBinFourCrossCheckMiddle = 0.;  // Middle of the corresponding bin in the TProfile.
+    for(Int_t m = 2; m < 7; m++)
+    {
+      for (Int_t n = 1; n < m; n++)
+      {
+      // Compute the correlation.
+        fourParticleCrossCheckArray[0] = m;
+        fourParticleCrossCheckArray[1] = n;
+        fourParticleCrossCheckArray[2] = -1*m;
+        fourParticleCrossCheckArray[3] = -1*n;
+        fourParticleCrossCheckComplex = (CalculateRecursion(4, fourParticleCrossCheckArray))/fourParticleDenominator;
+        fourParticleCrossCheckValue = fourParticleCrossCheckComplex.Re();
+
+      // Fill the corresponding bin in the TProfile.
+        iBinFourCrossCheckMiddle = (1.*iBinFourCrossCheck) - 0.5;
+        fProfileFourParticleCorrelationsCrossCheck->Fill(iBinFourCrossCheckMiddle, fourParticleCrossCheckValue, fourParticleDenominator);
+        fProfileFourParticleCorrelationsCrossCheck->GetXaxis()->SetBinLabel(iBinFourCrossCheck, Form("(%d,%d)", m, n));
+
+      // Reset of the variables for the next pair of harmonics.
+        iBinFourCrossCheck++;
+        fourParticleCrossCheckComplex = TComplex(0., 0.);
+        fourParticleCrossCheckValue = 0.;
+        iBinFourCrossCheckMiddle = 0.;
+      }
+    }
+  // Reset the variables for the next event.
+    iBinFourCrossCheck =1;
+  }
+
+// Compute the 6-particle correlations.
+  Int_t sixZerosArray[6] = {0}; // Zero array for the denominator.
+  Double_t sixParticleDenominator = CalculateRecursion(6, sixZerosArray).Re();  // 6-particle event weight.
+
+  Int_t sixParticleArray[6] = {0};  // Array to save the harmonics with the format: cos(lphi1 + mphi2 + nphi3 - lphi4 - mphi5 - nphi6).
+  TComplex sixParticleComplex = TComplex(0., 0.); // Complex value for the 6-particle correlation.
+  Double_t sixParticleValue = 0.; // Real part of the 6-particle correlation.
+  Int_t iBinSix = 1;  // Index of the corresponding bin in the TProfile.
+  Int_t iBinSixMiddle = 0.; // Middle of the corresponding bin in the TProfile.
+  for (Int_t l = 1; l < 5; l++)
+  {
+    for (Int_t m = 2; m < 6; m++)
+    {
+      if (l >= m) {continue;}
+      for (Int_t n = 3; n < 7; n++)
+      {
+        if ((l >= n) || (m >= n)) {continue;}
+
+      // Compute the correlation.
+        sixParticleArray[0] = l;
+        sixParticleArray[1] = m;
+        sixParticleArray[2] = n;
+        sixParticleArray[3] = -1*l;
+        sixParticleArray[4] = -1*m;
+        sixParticleArray[5] = -1*n;
+        sixParticleComplex = (CalculateRecursion(6, sixParticleArray))/sixParticleDenominator;
+        sixParticleValue = sixParticleComplex.Re();
+
+      // Fill the corresponding bin in the TProfile.
+        iBinSixMiddle = (1.*iBinSix) - 0.5;
+        fProfileSixParticleCorrelations->Fill(iBinSixMiddle, sixParticleValue, sixParticleDenominator);
+        fProfileSixParticleCorrelations->GetXaxis()->SetBinLabel(iBinSix, Form("(%d,%d,%d)", l, m, n));
+
+      // Reset of the variables for the next pair of harmonics.
+        iBinSix++;
+        sixParticleComplex = TComplex(0., 0.);
+        sixParticleValue = 0.;
+        iBinSixMiddle = 0.; 
+      }
+    }
+  }
+
+// Reset the variables for the next event.
+  twoParticleDenominator = 0.;
+  fourParticleDenominator = 0.;
+  sixParticleDenominator = 0.;
+  iBinFour = 1;
+  iBinSix = 1;
+}
+
+//======================================================================================//
+TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateRecursion(Int_t n, Int_t *harmonic, Int_t mult, Int_t skip)
+{
+/* Calculate the multi-particle correlators by using the recursion method (an improved faster version) originally developed by Kristjan Gulbrandsen (gulbrand@nbi.dk). */
+  Int_t nm1 = n-1;
+  TComplex c(Q(harmonic[nm1], mult));
+  if (nm1 == 0) return c;
+  c *= CalculateRecursion(nm1, harmonic);
+  if (nm1 == skip) return c;
+
+  Int_t multp1 = mult+1;
+  Int_t nm2 = n-2;
+  Int_t counter1 = 0;
+  Int_t hhold = harmonic[counter1];
+  harmonic[counter1] = harmonic[nm2];
+  harmonic[nm2] = hhold + harmonic[nm1];
+  TComplex c2(CalculateRecursion(nm1, harmonic, multp1, nm2));
+  Int_t counter2 = n-3;
+
+  while (counter2 >= skip) {
+    harmonic[nm2] = harmonic[counter1];
+    harmonic[counter1] = hhold;
+    ++counter1;
+    hhold = harmonic[counter1];
+    harmonic[counter1] = harmonic[nm2];
+    harmonic[nm2] = hhold + harmonic[nm1];
+    c2 += CalculateRecursion(nm1, harmonic, multp1, counter2);
+    --counter2;
+  }
+  harmonic[nm2] = harmonic[counter1];
+  harmonic[counter1] = hhold;
+
+  if (mult == 1) return c-c2;
+  return c-Double_t(mult)*c2;
+}
+
+//======================================================================================//
+void AliAnalysisTaskTwoMultiCorrelations::ComputeTwoNestedLoops(long long nParticles, Int_t *harmonic, Double_t aAngles[], Double_t weights[], TProfile *profile, Double_t middleBin)
+{
+/* Compute the 2-particle correlations using nested loops. */
+  Double_t twoParticleCosine = 0.;  // cos(kphi_1 + lphi_2)).
+  Double_t twoParticleWeight = 1.;  // Total particle weights.
+
+  for (long long m = 0; m < nParticles; m++)
+  {
+    for (long long n = 0; n < nParticles; n++)
+    {
+      if (m == n) {continue;} // Remove the autocorrelations.
+
+      twoParticleCosine = TMath::Cos(harmonic[0]*aAngles[m] + harmonic[1]*aAngles[n]);
+      twoParticleWeight = weights[m] + weights[n];
+      profile->Fill(middleBin, twoParticleCosine, twoParticleWeight);
+
+    // Reset the variables.
+      twoParticleCosine = 0.;
+      twoParticleWeight = 1.;
+    }
+  }
+}
+
+//======================================================================================//
+void AliAnalysisTaskTwoMultiCorrelations::ComputeFourNestedLoops(long long nParticles, Int_t *harmonic, Double_t aAngles[], Double_t weights[], TProfile *profile, Double_t middleBin)
+{
+/* Compute the 4-particle correlations using nested loops. */
+  Double_t fourParticleCosine = 0.; // cos(kphi_1 +l phi_2 + mphi_3 + nphi_4).
+  Double_t fourParticleWeight = 1.; // Total particle weights.
+
+  for (long long k = 0; k < nParticles; k++)
+  {
+    for (long long l = 0; l < nParticles; l++)
+    {
+      if (k == l) {continue;} // Remove the autocorrelations.
+      for (long long m = 0; m < nParticles; m++)
+      {
+        if ((k == m) || (l == m)) {continue;}
+        for (long long n = 0; n < nParticles; n++)
         {
-          // Removal of the autocorrelations k == n, l == n, m == n
           if ((k == n) || (l == n) || (m == n)) {continue;}
 
-          // Computation of <4> for a quadruplet of particles
-          fourParticleCos = TMath::Cos(numeratorFourParticleHarmonics[0]*phi[k] + numeratorFourParticleHarmonics[1]*phi[l] + numeratorFourParticleHarmonics[2]*phi[m] + numeratorFourParticleHarmonics[3]*phi[n]);
-          if (fComputeSine) {fourParticleSin = TMath::Sin(numeratorFourParticleHarmonics[0]*phi[k] + numeratorFourParticleHarmonics[1]*phi[l] + numeratorFourParticleHarmonics[2]*phi[m] + numeratorFourParticleHarmonics[3]*phi[n]);}
-          totalParticleWeight = particleWeight[k]*particleWeight[l]*particleWeight[m]*particleWeight[n];
+          fourParticleCosine = TMath::Cos(harmonic[0]*aAngles[k] + harmonic[1]*aAngles[l] + harmonic[2]*aAngles[m] + harmonic[3]*aAngles[n]);
+          fourParticleWeight = weights[k] + weights[l] + weights[m] + weights[n];
+          profile->Fill(middleBin, fourParticleCosine, fourParticleWeight);
 
-          // Filling of the TProfile
-          fFourNestedCorrelationProfile[0][indexTProfile]->Fill(0.5, fourParticleCos,totalParticleWeight);
-          if (fComputeSine) {fFourNestedCorrelationProfile[1][indexTProfile]->Fill(0.5, fourParticleSin,totalParticleWeight);}
+        // Reset the variables.
+          fourParticleCosine = 0.;
+          fourParticleWeight = 1.;
+        }
+      }
+    }
+  }
+}
 
-        } // End of the loop over the fourth particle of the quadruplet
-      } // End of the loop over the third particle of the quadruplet
-    } // End of the loop over the second particle of the quadruplet
-  } // End of the loop over the first particle of the quadruplet
-
-// 3.) Reset of the local variables before changing the event
-  fourParticleCos = 0.;
-  fourParticleSin = 0.;
-  totalParticleWeight = 0.;
-
-} // End: void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithFourNestedLoops(Int_t numeratorFourParticleHarmonics[], Int_t indexTProfile, Int_t nParticles, Double_t phi[], Double_t particleWeight[])
-
+//######################################################################################//
+// Methods called in 'Terminate'.
 //======================================================================================//
+
+

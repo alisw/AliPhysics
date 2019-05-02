@@ -38,6 +38,7 @@
 #include "TObjString.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliAODMCParticle.h"
 #include "TList.h"
 class iostream;
 
@@ -291,6 +292,22 @@ Bool_t AliPrimaryPionCuts::PionIsSelectedMC(Int_t labelParticle,AliMCEvent *mcEv
 	return kTRUE;
 }
 
+///________________________________________________________________________
+Bool_t AliPrimaryPionCuts::PionIsSelectedAODMC(Int_t labelParticle,TClonesArray *AODMCTrackArray){
+
+    if( labelParticle < 0 || labelParticle >= AODMCTrackArray->GetSize()) return kFALSE;
+// 	if( mcEvent->IsPhysicalPrimary(labelParticle) == kFALSE ) return kFALSE;  // moved to actual tasks
+
+    AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(labelParticle));
+
+    if( TMath::Abs( particle->GetPdgCode() ) != 211 )  return kFALSE;
+    if( fDoEtaCut ){
+    if( particle->Eta() > (fEtaCut + fEtaShift) || particle->Eta() < (-fEtaCut + fEtaShift) )
+        return kFALSE;
+    }
+
+    return kTRUE;
+}
 
 ///________________________________________________________________________
 Bool_t AliPrimaryPionCuts::PionIsSelected(AliESDtrack* lTrack){
@@ -322,7 +339,7 @@ Bool_t AliPrimaryPionCuts::PionIsSelected(AliESDtrack* lTrack){
 
 	
 	if ( ! lTrack->GetConstrainedParam() ){
-		return kFALSE;
+      return kFALSE;
 	}
 	AliVTrack * track = dynamic_cast<AliVTrack*>(lTrack);
 
@@ -336,7 +353,6 @@ Bool_t AliPrimaryPionCuts::PionIsSelected(AliESDtrack* lTrack){
 	if( ! dEdxCuts( track ) ) {
 		if(fHistCutIndex)fHistCutIndex->Fill(kdEdxCuts);
 		return kFALSE;
-
 	}
 
 	//Pion passed the cuts
@@ -349,30 +365,113 @@ Bool_t AliPrimaryPionCuts::PionIsSelected(AliESDtrack* lTrack){
 }
 
 ///________________________________________________________________________
+Bool_t AliPrimaryPionCuts::PionIsSelectedAOD(AliAODTrack* lTrack){
+    //Selection of Reconstructed electrons
+
+    Float_t b[2];
+    Float_t bCov[3];
+    if (lTrack == NULL){
+        if (fHistCutIndex) fHistCutIndex->Fill(kNoTracks);
+        return kFALSE;
+    }
+
+
+    if (fHistCutIndex) fHistCutIndex->Fill(kPionIn);
+
+
+    AliVTrack * track = dynamic_cast<AliVTrack*>(lTrack);
+
+    // Track Cuts
+    if( !TrackIsSelectedAOD(lTrack) ){
+        if (fHistCutIndex) fHistCutIndex->Fill(kTrackCuts);
+        return kFALSE;
+    }
+
+    // this would throw a warning for AOD tracks that are not defined at the X of vertex (mainly tracks that do
+    // not pass the track selection). The plotting of DCAxy and DCAz BEFORE has therefore been moved to after the track selection
+    // for AODs to avoid undefined x values.
+    lTrack->GetImpactParameters(b,bCov);
+
+    if (bCov[0]<=0 || bCov[2]<=0) {
+        AliDebug(1, "Estimated b resolution lower or equal zero!");
+        bCov[0]=0; bCov[2]=0;
+    }
+
+    Float_t dcaToVertexXY = b[0];
+    Float_t dcaToVertexZ  = b[1];
+    Double_t clsToF = GetNFindableClustersTPC(lTrack);
+
+
+    if (fHistTrackDCAxyPtbefore) fHistTrackDCAxyPtbefore->Fill(dcaToVertexXY,lTrack->Pt());
+    if (fHistTrackDCAzPtbefore) fHistTrackDCAzPtbefore->Fill( dcaToVertexZ, lTrack->Pt());
+    if (fHistTrackNFindClsPtTPCbefore) fHistTrackNFindClsPtTPCbefore->Fill( clsToF, lTrack->Pt());
+
+    // dEdx Cuts
+    if( ! dEdxCuts( track ) ) { // TODO: check if these still work for AODs
+        if(fHistCutIndex)fHistCutIndex->Fill(kdEdxCuts);
+        return kFALSE;
+
+    }
+
+
+    //Pion passed the cuts
+    if (fHistCutIndex) fHistCutIndex->Fill(kPionOut);
+    if (fHistTrackDCAxyPtafter) fHistTrackDCAxyPtafter->Fill(dcaToVertexXY,lTrack->Pt());
+    if (fHistTrackDCAzPtafter) fHistTrackDCAzPtafter->Fill(dcaToVertexZ,lTrack->Pt());
+    if (fHistTrackNFindClsPtTPCafter) fHistTrackNFindClsPtTPCafter->Fill( clsToF, lTrack->Pt());
+
+    return kTRUE;
+}
+
+///________________________________________________________________________
 Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
-	// Track Selection for Photon Reconstruction
-	
-	Double_t clsToF = GetNFindableClustersTPC(lTrack);
-	
-	if( ! fEsdTrackCuts->AcceptTrack(lTrack) ){
-		return kFALSE;
-	}
-		
-	if( fDoEtaCut ) {
-		if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
-			return kFALSE;
-		}
-	}
-	
-	if( lTrack->Pt() < fPtCut ) {
-		return kFALSE;		
-	}
+  // Track Selection for Photon Reconstruction
+  Double_t clsToF = GetNFindableClustersTPC(lTrack);
 
-	if( clsToF < fMinClsTPCToF){
-		return kFALSE;
-	}
+  if( ! fEsdTrackCuts->AcceptTrack(lTrack) ){
+    return kFALSE;
+  }
 
-	return kTRUE;
+  if( fDoEtaCut ) {
+    if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
+      return kFALSE;
+    }
+  }
+
+  if( lTrack->Pt() < fPtCut ) {
+    return kFALSE;
+  }
+
+  if( clsToF < fMinClsTPCToF){
+    return kFALSE;
+  }
+
+  return kTRUE;
+}
+///________________________________________________________________________
+Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
+  // Track Selection for Photon Reconstruction
+  Double_t clsToF = GetNFindableClustersTPC(lTrack);
+
+  if( ! lTrack->IsHybridGlobalConstrainedGlobal() ){
+    return kFALSE;
+  }
+
+  if( fDoEtaCut ) {
+    if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
+      return kFALSE;
+    }
+  }
+
+  if( lTrack->Pt() < fPtCut ) {
+    return kFALSE;
+  }
+
+  if( clsToF < fMinClsTPCToF){
+    return kFALSE;
+  }
+
+  return kTRUE;
 }
 
 ///________________________________________________________________________
@@ -465,7 +564,7 @@ AliVTrack *AliPrimaryPionCuts::GetTrack(AliVEvent * event, Int_t label){
 }
 
 ///________________________________________________________________________
-Double_t AliPrimaryPionCuts::GetNFindableClustersTPC(AliESDtrack* lTrack){
+Double_t AliPrimaryPionCuts::GetNFindableClustersTPC(AliVTrack* lTrack){
 
 	Double_t clsToF=0;
 	if ( !fUseCorrectedTPCClsInfo ){
@@ -865,6 +964,11 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fChi2PerClsTPC = 4;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
+            break;
+        case 12:  // 80 + refit
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             break;
 
 		default:

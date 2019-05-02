@@ -126,6 +126,8 @@ private:
   Double_t                        fMinimum;           ///< Minimum of the binning
   Bool_t                          fMinimumSet;        ///< Define whether minimum is set. Attention: Bin edges will not be created without minimum
   std::map<double, double>        fSteps;             ///< List of ranges with common bin width
+
+  ClassDef(TCustomBinning, 1);
 };
 
 #endif /* TCUSTOMBINNING_H */

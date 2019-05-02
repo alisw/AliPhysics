@@ -89,6 +89,7 @@ fAutoSBRange(kFALSE),
 fAutoSignRange(kTRUE),
 fSBOuterSigmas(8),
 fSBInnerSigmas(4),
+fSignSingleBin(kFALSE),
 fSBSingleBin(kTRUE),
 fDeltaEtaMin(-1.0),
 fDeltaEtaMax(1.0),
@@ -188,6 +189,7 @@ fAutoSBRange(source.fAutoSBRange),
 fAutoSignRange(source.fAutoSignRange),
 fSBOuterSigmas(source.fSBOuterSigmas),
 fSBInnerSigmas(source.fSBInnerSigmas),
+fSignSingleBin(source.fSignSingleBin),
 fSBSingleBin(source.fSBSingleBin),
 fDeltaEtaMin(source.fDeltaEtaMin),
 fDeltaEtaMax(source.fDeltaEtaMax),
@@ -803,7 +805,7 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
         hSE_Sideb_PtInt[iPool] = (TH2D*)hSE_Sideb[iPool][iBin]->Clone(Form("hSE_Sideb_PtInt_p%d",iPool));
         hME_Sideb_PtInt[iPool] = (TH2D*)hME_Sideb[iPool][iBin]->Clone(Form("hME_Sideb_PtInt_p%d",iPool));
         if(fSubtractSoftPiME) {
-	      hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));
+	        hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));
           hME_Sideb_SoftPi_PtInt[iPool] = (TH2D*)hME_Sideb_SoftPi[iPool][iBin]->Clone(Form("hME_Sideb_SoftPi_PtInt_p%d",iPool));
         }
       }
@@ -813,7 +815,7 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
         hSE_Sideb_PtInt[iPool]->Add(hSE_Sideb[iPool][iBin]);
         hME_Sideb_PtInt[iPool]->Add(hME_Sideb[iPool][iBin]);
         if(fSubtractSoftPiME) {
-	      hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
+	        hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
           hME_Sideb_SoftPi_PtInt[iPool]->Add(hME_Sideb_SoftPi[iPool][iBin]);
         }
       }
@@ -1576,26 +1578,37 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB,
     if(fDebug>=2 && pool==0) printf("Bin ranges - pT: %d-%d, dEta: %d-%d\n",ptBinTrMin,ptBinTrMax,etaLowBin,etaHighBin);
     h3D = (TH3D*)hsparse->Projection(1,2,0);//x,y,z axes
   }
+
   //now restrict to signal or to sidebands
   if(SorSB==kSign) {
-    h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
-    if(fDebug>=2 && pool==0) printf("Signal range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
-    h2D = (TH2D*)h3D->Project3D("yz");
-  } else if (SorSB==kSideb) {
-    TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
-    if(!fSBSingleBin) {
-      h3Da->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
-      h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
-      if(fDebug>=2 && pool==0) printf("SB1 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
-      if(fDebug>=2 && pool==0) printf("SB2 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
-    } else {
-      h3Da->GetXaxis()->SetRange(h3Da->GetXaxis()->GetNbins(),h3Da->GetXaxis()->GetNbins());
-      h3D->GetXaxis()->SetRange(1,1);
+    if(!fSignSingleBin) { //normal bins for signal
+      h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+      if(fDebug>=2 && pool==0) printf("Signal range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
     }
-    TH2D* h2Da = (TH2D*)h3Da->Project3D("yz"); 
-    h2D = (TH2D*)h3D->Project3D("yz"); 
-    h2D->Add(h2Da);
+    else h3D->GetXaxis()->SetRange(1,1); //lightweight option! ->Take only bin1 (which contains all signal region entries)
+    h2D = (TH2D*)h3D->Project3D("yz");
+
+  } else if (SorSB==kSideb) { //here also the value of fSignSingleBin has influence, due to the fSpeed options:
+     if(fSignSingleBin) {  //in this case (fSpeed==2 in the task), also the SB region is automatically compressed in only one bin, the 2nd!
+        h3D->GetXaxis()->SetRange(2,2); //...and so we just take bin2!
+        h2D = (TH2D*)h3D->Project3D("yz"); 
+     } else { //the standard approach (i.e. either fSpeed==0, meaning all bins for DB, or fSpeed==1, meaning one bin for LSB, one for RSB)
+      TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
+      if(!fSBSingleBin) {
+        h3Da->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+        h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+        if(fDebug>=2 && pool==0) printf("SB1 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+        if(fDebug>=2 && pool==0) printf("SB2 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+      } else {
+        h3Da->GetXaxis()->SetRange(h3Da->GetXaxis()->GetNbins(),h3Da->GetXaxis()->GetNbins());
+        h3D->GetXaxis()->SetRange(1,1);
+      }
+      TH2D* h2Da = (TH2D*)h3Da->Project3D("yz"); 
+      h2D = (TH2D*)h3D->Project3D("yz"); 
+      h2D->Add(h2Da);
+    }
   }
+
   h3D->SetName(Form("%s_SE-ME%d_S-SB%d_3D",h3D->GetName(),SEorME,SorSB));      
   h2D->SetName(Form("%s_SE-ME%d_S-SB%d_2D",h2D->GetName(),SEorME,SorSB));
   return h2D;
@@ -2041,7 +2054,7 @@ if(!fAutoSBRange && !fSBSingleBin) {
 //___________________________________________________________________________________________
 void AliDhCorrelationExtraction::SetSignRanges(Double_t* rangesSignL, Double_t* rangesSignR) {
 
-if(!fAutoSignRange) {
+if(!fAutoSignRange && !fSignSingleBin) {
   printf("*** WARNING! You are passing external signal ranges to the framework! ***\n");
   printf("*** This is perfectly fine, provided that you match mass bins of THnSparse and of invariant mass plots! ***\n");
   if(fRebinMassPlots!=1) {
@@ -2147,6 +2160,16 @@ void AliDhCorrelationExtraction::GetSignalAndBackgroundForNorm_WithRefl(Int_t i,
 
 //___________________________________________________________________________________________
 void AliDhCorrelationExtraction::GetSBScalingFactor(Int_t i, TH1F* &histo) {
+
+  //first, safety for signal region, if passed from the outside and single bin used: it must match with mass bin edges!
+  if(!fAutoSignRange) {
+     Bool_t check = CheckSignRegionInMassBinEdges(i);
+     if(!check) {
+        printf("Error! Signal region passed from outside and not matching mass bin edges! Results will be biased, you shall exit...\n");
+        getchar();
+        return;
+     }
+  }
 
   switch(fSBscaling) {
 
@@ -2319,6 +2342,23 @@ void AliDhCorrelationExtraction::RescaleSidebandsInMassBinEdges(Int_t i) {
     printf("Bin %d - renormalization of SB scaling factor by %1.3f (from %1.3f to %1.3f)\n",fFirstpTbin+i,renorm,fScaleFactor[i]/renorm,fScaleFactor[i]);
     printf("--- integrals of bkg function are %1.4f and %1.4f, region from %1.4f to %1.4f, %1.4f to %1.4f \n",fitInt_invmassSBwidth,fitInt_corrSBwidth,fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fRangesSB1L[i]+0.00001)),fMassHisto[i]->GetXaxis()->GetBinUpEdge(fMassHisto[i]->FindBin(fRangesSB1R[i]-0.00001)),fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fRangesSB2L[i]+0.00001)),fMassHisto[i]->GetXaxis()->GetBinUpEdge(fMassHisto[i]->FindBin(fRangesSB2R[i]-0.00001)));
   }
+}
+
+//___________________________________________________________________________________________
+Bool_t AliDhCorrelationExtraction::CheckSignRegionInMassBinEdges(Int_t i) {
+
+  Bool_t outcome=kTRUE;
+
+  Double_t fitInt_invmassSignwidth, fitInt_corrSignwidth;
+  fitInt_invmassSignwidth = fBkgFit[i]->Integral(fMassHisto[i]->GetXaxis()->GetBinLowEdge(fMassHisto[i]->FindBin(fRangesSignL[i]+0.00001)),fMassHisto[i]->GetXaxis()->GetBinUpEdge(fMassHisto[i]->FindBin(fRangesSignR[i]-0.00001)));
+  fitInt_corrSignwidth = fBkgFit[i]->Integral(fRangesSignL[i],fRangesSignR[i]); 
+
+  Double_t ratio =  fitInt_invmassSignwidth/fitInt_corrSignwidth;
+
+  if(TMath::Abs(ratio-1)>0.001) outcome = kFALSE;
+
+  return outcome;
+
 }
 
 //___________________________________________________________________________________________

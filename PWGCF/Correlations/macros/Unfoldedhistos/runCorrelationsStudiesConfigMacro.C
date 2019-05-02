@@ -1,14 +1,13 @@
-#ifdef __ECLIPSE_IDE
-//  few includes and external declarations just for the IDE
 #include <Riostream.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TObjString.h>
 
-#endif // #ifdef __ECLIPSE_IDE
-
 #include "runCorrelationsStudiesConfigMacro.H"
 
+void load2010bTestRunNumber();
+void load2010cTestRunNumber();
+void load2010bRunNumbers();
 void loadLocal2010hMCTestRunNumber();
 void load2010hTestRunNumber();
 void load2010hAODTestRunNumber();
@@ -38,6 +37,7 @@ void loadAMPT2015oHIRTestRunNumber();
 void load2017nRunNumbers();
 void load2017nMCRunNumbers();
 void loadAMPT2760RunNumbers();
+void load2018qRunNumbers();
 
 void runCorrelationsStudiesConfigMacro() {
 
@@ -61,13 +61,14 @@ void runCorrelationsStudiesConfigMacro() {
   szpass = "2";
 
   /* Running conditions */
-  szAliPhysicsVersion = "vAN-20171222-1";
+  szAliPhysicsVersion = "vAN-20181128_ROOT6-1";
 
   /* the number of files we want to test */
   nNoOfInputFiles = 30;
   nNoOfTestFiles = 2;
 
   /* load the run numbers */
+  // load2010bTestRunNumber();
   // loadLocal2010hMCTestRunNumber();
   // load2010hTestRunNumber();
   // load2010hMCTestRunNumber();
@@ -81,11 +82,12 @@ void runCorrelationsStudiesConfigMacro() {
   // load2016kTestRunNumber();
   // load2013bAODTestRunNumber();
   // load2013bAODRunNumbers();
-  loadMC2013b2_efixRunNumbers();
+  // loadMC2013b2_efixRunNumbers();
   // loadMCAMPT2010hCentrality("0-5");
   // loadAMPT2015oHIRTestRunNumber();
   // load2017nRunNumbers();
-  // loadAMPT2760RunNumbers();
+  loadAMPT2760RunNumbers();
+  // load2018qRunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
 
@@ -122,6 +124,70 @@ static const char *bpp2010hRunNumbers[nNoOf2010hBppRuns] = {
     "138652", "138638", "138624", "138621", "138583", "138582", "138579", "138578", "138534", "138469",
     "138442", "138439", "138438", "138396", "138364"
 };
+
+void load2010bTestRunNumber() {
+  bUseESD                    = kTRUE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_2010bTest";
+
+  /* 2010b */
+  szDataDir = "/alice/data/2010/LHC10b";
+
+  /* 2010b */
+  szDataPattern = "*pass4/*/AliESDs.root";
+
+  /* the list of runs to analyze */
+  listOfActiveRuns.Add(new TObjString("114918"));
+}
+
+void load2010cTestRunNumber() {
+  bUseESD                    = kTRUE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_2010cTest";
+
+  /* 2010b */
+  szDataDir = "/alice/data/2010/LHC10c";
+
+  /* 2010b */
+  szDataPattern = "*pass4/*/AliESDs.root";
+
+  /* the list of runs to analyze */
+  listOfActiveRuns.Add(new TObjString("120616"));
+}
+
+void load2010bRunNumbers() {
+  const int nRuns = 45;
+  const char *runnumber[nRuns] = {
+      "114786","114798","114918","114920","114924","114930","114931","115186","115193","115310",
+      "115318","115322","115328","115335","115345","115393","115399","115401","115414","115521",
+      "116079","116081","116102","116288","116402","116403","116562","116571","116574","116643",
+      "116645","117048","117050","117052","117053","117059","117060","117063","117092","117099",
+      "117109","117112","117116","117220","117222"
+  };
+
+  bUseESD                    = kTRUE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_2010bTest";
+
+  /* 2010b */
+  szDataDir = "/alice/data/2010/LHC10b";
+
+  /* 2010b */
+  szDataPattern = "*pass4/*/AliESDs.root";
+
+  /* the list of runs to analyze */
+  for (Int_t run = 0; run < nRuns; run++)
+    listOfActiveRuns.Add(new TObjString(runnumber[run]));
+}
+
+
+
 
 void load2010hTestRunNumber() {
   bUseESD                    = kTRUE;
@@ -727,5 +793,46 @@ void loadAMPT2760RunNumbers() {
   /* the list of runs to analyze */
   for (Int_t run = 0; run < nNoOf2013f3aRuns; run++)
     listOfActiveRuns.Add(new TObjString(s2013f3aRuns[run]));
+
+}
+
+void load2018qRunNumbers() {
+  const Int_t nruns = 14;
+  const char *runs[nruns] = {
+      "296068",
+      "296066",
+      "296065",
+      "296063",
+      "296062",
+      "296061",
+      "296060",
+      "295589",
+      "295588",
+      "295587",
+      "295586",
+      "295585",
+      "295584",
+      "295581"
+  };
+
+  bUseESD                    = kTRUE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_LHC2018q";
+
+  bMC = kFALSE;
+
+  /* reco pass */
+  szpass = "1";
+
+  /* 2018q */
+  szDataDir = "/alice/data/2018/LHC18q";
+  /* 2018q uncalibrated pass 1 */
+  szDataPattern = "*/pass1_uncalibrated/*/AliESDs.root";
+
+  /* the list of runs to analyze 2015o HIR*/
+  for (Int_t i = 0; i < nruns; i++)
+    listOfActiveRuns.Add(new TObjString(runs[i]));
 
 }

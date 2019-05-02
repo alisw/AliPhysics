@@ -202,6 +202,7 @@ void AliAnalysisTaskTransTask::RunAOD()
     fADADecision = dataAD->GetADADecision();
     fADCDecision = dataAD->GetADCDecision();
     }
+
   // fill the tree
   fAnaTree->Fill();
   
@@ -286,6 +287,7 @@ void AliAnalysisTaskTransTask::RunESD()
     fADADecision = dataAD->GetADADecision();
     fADCDecision = dataAD->GetADCDecision();
     }
+
   // fill the tree
   fAnaTree->Fill();
   

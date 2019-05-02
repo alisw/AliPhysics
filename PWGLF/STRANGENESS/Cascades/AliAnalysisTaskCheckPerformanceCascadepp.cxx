@@ -1900,8 +1900,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
               partEnergy_B = lCurrentParticleaod_B->E();  partPz_B = lCurrentParticleaod_B->Pz();  partP_B  = lCurrentParticleaod_B->P();   partPt_B = lCurrentParticleaod_B->Pt();
               partMass_B   = lCurrentParticleaod_B->M();  partVx_B = lCurrentParticleaod_B->Xv();  partVy_B = lCurrentParticleaod_B->Yv();  partVz_B = lCurrentParticleaod_B->Zv();
               PDGcode_B = lCurrentParticleaod_B->GetPdgCode();
-              if (lCurrentParticleaod_B->GetDaughter(0) >= 0) {
-                   mcBachaod_B = 0x0;  mcBachaod_B = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod_B->GetDaughter(0));
+              if (lCurrentParticleaod_B->GetDaughterLabel(0) >= 0) {
+                   mcBachaod_B = 0x0;  mcBachaod_B = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod_B->GetDaughterLabel(0));
                    if (mcBachaod_B) { bacVx_B = mcBachaod_B->Xv();  bacVy_B = mcBachaod_B->Yv();  bacVz_B = mcBachaod_B->Zv(); }
               } 
          }
@@ -2511,8 +2511,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                     if (!(lCurrentParticleaod->PdgCode() == lPdgCodeCasc)) continue;
                     partEnergy = lCurrentParticleaod->E();     partPz = lCurrentParticleaod->Pz();    partEta = lCurrentParticleaod->Eta();   partP = lCurrentParticleaod->P();    partPt = lCurrentParticleaod->Pt();   
                     partTheta = lCurrentParticleaod->Theta();  partMass = lCurrentParticleaod->M();   partVx = lCurrentParticleaod->Xv();     partVy = lCurrentParticleaod->Yv();  partVz = lCurrentParticleaod->Zv();
-                    if (lCurrentParticleaod->GetDaughter(0) >= 0) {
-                         mcBachaod = 0x0;  mcBachaod = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod->GetDaughter(0));
+                    if (lCurrentParticleaod->GetDaughterLabel(0) >= 0) {
+                         mcBachaod = 0x0;  mcBachaod = (AliAODMCParticle*) arrayMC->At(lCurrentParticleaod->GetDaughterLabel(0));
                          if (mcBachaod) {  bacVx = mcBachaod->Xv();  bacVy = mcBachaod->Yv();  bacVz = mcBachaod->Zv();  } 
                     }
                }
@@ -2598,10 +2598,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                     // - Cascade level
                     xiMCaod = 0x0;  xiMCaod = (AliAODMCParticle*) arrayMC->At(iCurrentLabelStack);
                     if (xiMCaod->GetNDaughters() != 2) continue;
-                    if (xiMCaod->GetDaughter(0) < 0 )  continue;
-                    if (xiMCaod->GetDaughter(1) < 0 )  continue;
-                    lDght0ofXiaod = 0x0;  lDght0ofXiaod = (AliAODMCParticle*) arrayMC->At(xiMCaod->GetDaughter(0));
-                    lDght1ofXiaod = 0x0;  lDght1ofXiaod = (AliAODMCParticle*) arrayMC->At(xiMCaod->GetDaughter(1));
+                    if (xiMCaod->GetDaughterLabel(0) < 0 )  continue;
+                    if (xiMCaod->GetDaughterLabel(1) < 0 )  continue;
+                    lDght0ofXiaod = 0x0;  lDght0ofXiaod = (AliAODMCParticle*) arrayMC->At(xiMCaod->GetDaughterLabel(0));
+                    lDght1ofXiaod = 0x0;  lDght1ofXiaod = (AliAODMCParticle*) arrayMC->At(xiMCaod->GetDaughterLabel(1));
                     lLambdaaod = 0x0;   lBachaod = 0x0;
                     // -- Case 1
                     if ( lDght0ofXiaod->PdgCode() == lPdgCodeLambda  &&  lDght1ofXiaod->PdgCode() == lPdgCodeBach ){ 
@@ -2624,10 +2624,10 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                     // - V0 level 
                     lDghtBarV0aod = 0x0;  lDghtMesV0aod = 0x0;
                     if( lLambdaaod->GetNDaughters() != 2 )  continue;
-                    if( lLambdaaod->GetDaughter(0) < 0 )    continue;
-                    if( lLambdaaod->GetDaughter(1) < 0 )    continue;
-                    lDght0ofLambdaaod = 0x0;  lDght0ofLambdaaod = (AliAODMCParticle*) arrayMC->At(lLambdaaod->GetDaughter(0));
-                    lDght1ofLambdaaod = 0x0;  lDght1ofLambdaaod = (AliAODMCParticle*) arrayMC->At(lLambdaaod->GetDaughter(1));
+                    if( lLambdaaod->GetDaughterLabel(0) < 0 )    continue;
+                    if( lLambdaaod->GetDaughterLabel(1) < 0 )    continue;
+                    lDght0ofLambdaaod = 0x0;  lDght0ofLambdaaod = (AliAODMCParticle*) arrayMC->At(lLambdaaod->GetDaughterLabel(0));
+                    lDght1ofLambdaaod = 0x0;  lDght1ofLambdaaod = (AliAODMCParticle*) arrayMC->At(lLambdaaod->GetDaughterLabel(1));
                     // -- Case 1
                     if ( lDght0ofLambdaaod->PdgCode() == lPdgCodeDghtBarV0 && lDght1ofLambdaaod->PdgCode() == lPdgCodeDghtMesV0 ) { 
                             lDghtBarV0aod = lDght0ofLambdaaod;   // dghter0 = Proton

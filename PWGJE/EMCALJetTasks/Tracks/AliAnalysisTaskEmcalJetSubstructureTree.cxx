@@ -36,6 +36,12 @@
 #include <fastjet/ClusterSequence.hh>
 #include <fastjet/contrib/Nsubjettiness.hh>
 #include <fastjet/contrib/SoftDrop.hh>
+#include <fastjet/config.h>
+#if FASJET_VERSION_NUMBER >= 30302
+#include <fastjet/tools/Recluster.hh>
+#else 
+#include <fastjet/contrib/Recluster.hh>
+#endif
 
 #include <THistManager.h>
 #include <TLinearBinning.h>
@@ -614,8 +620,12 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
 AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParameters(const fastjet::PseudoJet &jet, const AliSoftdropDefinition &cutparameters) const {
   fastjet::contrib::SoftDrop softdropAlgorithm(cutparameters.fBeta, cutparameters.fZ);
   softdropAlgorithm.set_verbose_structure(kTRUE);
-  std::unique_ptr<fastjet::contrib::Recluster> reclusterizer(new fastjet::contrib::Recluster(cutparameters.fRecluserAlgo, 1, true));
-  softdropAlgorithm.set_reclustering(kTRUE, reclusterizer.get());
+#if FASTJET_VERSION_NUMBER >= 30302
+  fastjet::Recluster reclusterizer(cutparameters.fRecluserAlgo, 1, fastjet::Recluster::keep_only_hardest);
+#else
+  fastjet::contrib::Recluster reclusterizer(cutparameters.fRecluserAlgo, 1, true);
+#endif
+  softdropAlgorithm.set_reclustering(kTRUE, &reclusterizer);
   AliDebugStream(4) << "Jet has " << jet.constituents().size() << " constituents" << std::endl;
   auto groomed = softdropAlgorithm(jet);
   try {

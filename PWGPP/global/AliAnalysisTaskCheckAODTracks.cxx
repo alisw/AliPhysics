@@ -71,6 +71,13 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistNtracksFb5VsV0befEvSel{nullptr},
   fHistNtracksFb4VsV0aftEvSel{nullptr},
   fHistNtracksFb5VsV0aftEvSel{nullptr},
+  fHistNtracksFb0{nullptr},
+  fHistNtracksFb1{nullptr},
+  fHistNtracksFb4{nullptr},
+  fHistNtracksFb5{nullptr},
+  fHistNtracksFb6{nullptr},
+  fHistNtracksFb7{nullptr},
+  fHistNtracksFb8{nullptr},
   fHistEtaPhiPtTPCsel{nullptr},
   fHistEtaPhiPtTPCselITSref{nullptr},
   fHistEtaPhiPtTPCselSPDany{nullptr},
@@ -202,6 +209,13 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistNtracksFb5VsV0befEvSel;
     delete fHistNtracksFb4VsV0aftEvSel;
     delete fHistNtracksFb5VsV0aftEvSel;
+    delete fHistNtracksFb0;
+    delete fHistNtracksFb1;
+    delete fHistNtracksFb4;
+    delete fHistNtracksFb5;
+    delete fHistNtracksFb6;
+    delete fHistNtracksFb7;
+    delete fHistNtracksFb8;
     delete fHistEtaPhiPtTPCsel;
     delete fHistEtaPhiPtTPCselITSref;
     delete fHistEtaPhiPtTPCselSPDany;
@@ -392,7 +406,23 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistNtracksFb5VsV0befEvSel);
   fOutput->Add(fHistNtracksFb4VsV0aftEvSel);
   fOutput->Add(fHistNtracksFb5VsV0aftEvSel);
-  
+
+  Int_t nMultBins=(Int_t)(fMaxMult+1.00001);
+  if(fMaxMult>1000.) nMultBins=500;
+  fHistNtracksFb0=new TH1F("hNtracksFb0"," ; N_{tracks,FilBit0}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb1=new TH1F("hNtracksFb1"," ; N_{tracks,FilBit1}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb4=new TH1F("hNtracksFb4"," ; N_{tracks,FilBit4}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb5=new TH1F("hNtracksFb5"," ; N_{tracks,FilBit5}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb6=new TH1F("hNtracksFb6"," ; N_{tracks,FilBit6}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb7=new TH1F("hNtracksFb7"," ; N_{tracks,FilBit7}",nMultBins,-0.5,fMaxMult+0.5);
+  fHistNtracksFb8=new TH1F("hNtracksFb8"," ; N_{tracks,FilBit8}",nMultBins,-0.5,fMaxMult+0.5);
+  fOutput->Add(fHistNtracksFb0);
+  fOutput->Add(fHistNtracksFb1);
+  fOutput->Add(fHistNtracksFb4);
+  fOutput->Add(fHistNtracksFb5);
+  fOutput->Add(fHistNtracksFb6);
+  fOutput->Add(fHistNtracksFb7);
+  fOutput->Add(fHistNtracksFb8);
 
   fHistEtaPhiPtTPCsel = new TH3F("hEtaPhiPtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtTPCselITSref = new TH3F("hEtaPhiPtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -607,13 +637,23 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   Int_t totITSclusters=0;
   for(Int_t il=0; il<6; il++) totITSclusters+=aod->GetNumberOfITSClusters(il);
   Int_t totTPCclusters=aod->GetNumberOfTPCClusters();
+  Int_t ntracksFB0=0;
+  Int_t ntracksFB1=0;
   Int_t ntracksFB4=0;
   Int_t ntracksFB5=0;
+  Int_t ntracksFB6=0;
+  Int_t ntracksFB7=0;
+  Int_t ntracksFB8=0;
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliAODTrack * track = (AliAODTrack*)aod->GetTrack(iTrack);
     if (!track) continue;
+    if(track->TestFilterBit(1)) ntracksFB0++;
+    if(track->TestFilterBit(1<<1)) ntracksFB1++;
     if(track->TestFilterBit(1<<4)) ntracksFB4++;
     if(track->TestFilterBit(1<<5)) ntracksFB5++;
+    if(track->TestFilterBit(1<<6)) ntracksFB6++;
+    if(track->TestFilterBit(1<<7)) ntracksFB7++;
+    if(track->TestFilterBit(1<<8)) ntracksFB8++;
   }
   Double_t vZEROampl=0;
   for(Int_t i=0;i<64;i++) vZEROampl+=aod->GetVZEROData()->GetMultiplicity(i);
@@ -657,6 +697,17 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
   fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
 
+  Bool_t iskINT7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+  if(iskINT7){
+    fHistNtracksFb0->Fill(ntracksFB0);
+    fHistNtracksFb1->Fill(ntracksFB1);
+    fHistNtracksFb4->Fill(ntracksFB4);
+    fHistNtracksFb5->Fill(ntracksFB5);
+    fHistNtracksFb6->Fill(ntracksFB6);
+    fHistNtracksFb7->Fill(ntracksFB7);
+    fHistNtracksFb8->Fill(ntracksFB8);
+  }
+  
   Double_t pos[3],cov[6];
   vtTrc->GetXYZ(pos);
   vtTrc->GetCovarianceMatrix(cov);

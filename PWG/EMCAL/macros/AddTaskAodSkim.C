@@ -1,23 +1,25 @@
 // $Id: AddTaskSkim.C 4586 2013-01-16 15:32:16Z loizides $
 
-AliAodSkimTask *AddTaskAodSkim(const Double_t mine           = -1,
-                               const Double_t ycutmc         = 0.7,
-                               const char *gammabr           = 0,
-                               const UInt_t trigsel          = AliVEvent::kAny,
-			       const Bool_t doCopyTOF        = kTRUE,
-			       const Bool_t doCopyTracklets  = kTRUE,
-			       const Bool_t doCopyTracks     = kTRUE,
-			       const Bool_t doCopyTrigger    = kTRUE,
-			       const Bool_t doCopyPTrigger   = kTRUE,
-			       const Bool_t doCopyCells      = kTRUE,
-			       const Bool_t doCopyPCells     = kTRUE,
-			       const Bool_t doCopyClusters   = kTRUE,
-			       const Bool_t doCopyDiMuons    = kFALSE,
-			       const Bool_t doCopyTrdTracks  = kFALSE,
-			       const Bool_t doCopyCascades   = kFALSE,
-			       const Bool_t doCopyV0s        = kFALSE,
-			       const Bool_t doCopyMC         = kTRUE,
-                               const char *name=0) 
+AliAodSkimTask *AddTaskAodSkim( const Double_t mine           = -1,
+                                const Double_t minpt          = -1,
+                                const Bool_t doBothMinEandPt  = kFALSE,
+                                const Double_t ycutmc         = 0.7,
+                                const char *gammabr           = 0,
+                                const UInt_t trigsel          = AliVEvent::kAny,
+                                const Bool_t doCopyTOF        = kTRUE,
+                                const Bool_t doCopyTracklets  = kTRUE,
+                                const Bool_t doCopyTracks     = kTRUE,
+                                const Bool_t doCopyTrigger    = kTRUE,
+                                const Bool_t doCopyPTrigger   = kTRUE,
+                                const Bool_t doCopyCells      = kTRUE,
+                                const Bool_t doCopyPCells     = kTRUE,
+                                const Bool_t doCopyClusters   = kTRUE,
+                                const Bool_t doCopyDiMuons    = kFALSE,
+                                const Bool_t doCopyTrdTracks  = kFALSE,
+                                const Bool_t doCopyCascades   = kFALSE,
+                                const Bool_t doCopyV0s        = kFALSE,
+                                const Bool_t doCopyMC         = kTRUE,
+                                const char *name=0)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -26,7 +28,7 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine           = -1,
   }
 
   TString tname(name);
-  if (name==0) 
+  if (name==0)
     tname = Form("aodskim_mine%.1f_trigsel%u",mine,trigsel);
 
   TString fname(tname);
@@ -35,9 +37,9 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine           = -1,
   cout << "Calling AddTaskAodSkim with " << endl;
   cout << "-> mine=" << mine << endl;
   cout << "-> trigsel=" << trigsel << endl;
-  if (name) 
+  if (name)
     cout << "-> name=" << name << endl;
-  else 
+  else
     cout << "-> name=0" << endl;
   cout << "Writing skimmed aod tree to " << fname.Data() << endl;
 
@@ -55,6 +57,8 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine           = -1,
   AliAODInputHandler *input = (AliAODInputHandler*)mgr->GetInputEventHandler();
   AliAodSkimTask *task = new AliAodSkimTask(tname);
   task->SetClusMinE(mine);
+  task->SetTrackMinPt(minpt);
+  task->SetDoBothMinTrackAndClus(doBothMinEandPt);
   if (gammabr) {
     task->SetGammaBrName(gammabr);
     task->SetCopyConv(kTRUE);
@@ -95,10 +99,10 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine           = -1,
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
   TString contName(tname);
   contName += "_histos";
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(contName.Data(), 
-							   TList::Class(),
-							   AliAnalysisManager::kOutputContainer,
-							   Form("%s_histos.root", tname.Data()));
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer( contName.Data(),
+                                                            TList::Class(),
+                                                            AliAnalysisManager::kOutputContainer,
+                                                            Form("%s_histos.root", tname.Data()));
   mgr->ConnectInput  (task, 0,  cinput );
   mgr->ConnectOutput (task, 1, coutput );
 

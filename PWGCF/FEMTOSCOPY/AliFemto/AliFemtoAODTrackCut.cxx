@@ -219,75 +219,53 @@ AliFemtoString AliFemtoAODTrackCut::Report()
 {
   /// Prepare report from the execution
 
-  string tStemp;
-  char tCtemp[100];
-  snprintf(tCtemp, 100, "Particle mass:\t%E\n", this->Mass());
-  tStemp = tCtemp;
-  snprintf(tCtemp, 100, "Particle charge:\t%d\n", fCharge);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Particle pT:\t%E - %E\n", fPt[0], fPt[1]);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Particle rapidity:\t%E - %E\n", fRapidity[0], fRapidity[1]);
-  tStemp += tCtemp;
-  snprintf(tCtemp, 100, "Number of tracks which passed:\t%ld  Number which failed:\t%ld\n", fNTracksPassed, fNTracksFailed);
-  tStemp += tCtemp;
-  AliFemtoString returnThis = tStemp;
-  return returnThis;
+  AliFemtoString report;
+  report += Form("Particle mass:\t%E\n", this->Mass());
+  report += Form("Particle charge:\t%d\n", fCharge);
+  report += Form("Particle pT:\t%E - %E\n", fPt[0], fPt[1]);
+  report += Form("Particle rapidity:\t%E - %E\n", fRapidity[0], fRapidity[1]);
+  report += Form("Number of tracks which passed:\t%ld  Number which failed:\t%ld\n", fNTracksPassed, fNTracksFailed);
+  return report;
 }
+
 TList *AliFemtoAODTrackCut::ListSettings()
 {
   /// return a list of settings in a writable form
 
   TList *tListSetttings = new TList();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoAODTrackCut.mass=%f", this->Mass());
-  tListSetttings->AddLast(new TObjString(buf));
+  tListSetttings->AddVector(
+    new TObjString(Form("AliFemtoAODTrackCut.mass=%f", this->Mass())),
+    new TObjString(Form("AliFemtoAODTrackCut.charge=%i", fCharge)),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobpion.minimum=%f", fPidProbPion[0])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobpion.maximum=%f", fPidProbPion[1])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobkaon.minimum=%f", fPidProbKaon[0])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobkaon.maximum=%f", fPidProbKaon[1])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobproton.minimum=%f", fPidProbProton[0])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobproton.maximum=%f", fPidProbProton[1])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobelectron.minimum=%f", fPidProbElectron[0])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobelectron.maximum=%f", fPidProbElectron[1])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobMuon.minimum=%f", fPidProbMuon[0])),
+    new TObjString(Form("AliFemtoAODTrackCut.pidprobMuon.maximum=%f", fPidProbMuon[1])),
+    new TObjString(Form("AliFemtoAODTrackCut.pt.minimum=%f", fPt[0])),
+    new TObjString(Form("AliFemtoAODTrackCut.pt.maximum=%f", fPt[1])),
+    new TObjString(Form("AliFemtoAODTrackCut.rapidity.minimum=%f", fRapidity[0])),
+    new TObjString(Form("AliFemtoAODTrackCut.rapidity.maximum=%f", fRapidity[1])),
+    new TObjString(Form("AliFemtoAODTrackCut.maxchindof=%f", fMaxchiNdof)),
+    new TObjString(Form("AliFemtoAODTrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex)),
+    nullptr);
 
-  snprintf(buf, 200, "AliFemtoAODTrackCut.charge=%i", fCharge);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobpion.minimum=%f", fPidProbPion[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobpion.maximum=%f", fPidProbPion[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobkaon.minimum=%f", fPidProbKaon[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobkaon.maximum=%f", fPidProbKaon[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobproton.minimum=%f", fPidProbProton[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobproton.maximum=%f", fPidProbProton[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobelectron.minimum=%f", fPidProbElectron[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobelectron.maximum=%f", fPidProbElectron[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobMuon.minimum=%f", fPidProbMuon[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pidprobMuon.maximum=%f", fPidProbMuon[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pt.minimum=%f", fPt[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.pt.maximum=%f", fPt[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.rapidity.minimum=%f", fRapidity[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.rapidity.maximum=%f", fRapidity[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.maxchindof=%f", fMaxchiNdof);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoAODTrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex);
-  tListSetttings->AddLast(new TObjString(buf));
   if (fMostProbable) {
-    if (fMostProbable == 2)
-      snprintf(buf, 200, "AliFemtoAODTrackCut.mostprobable=%s", "Pion");
-    if (fMostProbable == 3)
-      snprintf(buf, 200, "AliFemtoAODTrackCut.mostprobable=%s", "Kaon");
-    if (fMostProbable == 4)
-      snprintf(buf, 200, "AliFemtoAODTrackCut.mostprobable=%s", "Proton");
-    tListSetttings->AddLast(new TObjString(buf));
+    const char *type = (fMostProbable == 2) ? "Pion"
+                     : (fMostProbable == 3) ? "Kaon"
+                     : (fMostProbable == 4) ? "Proton"
+                                            : "Unknown";
+
+    tListSetttings->Add(new TObjString(Form("AliFemtoAODTrackCut.mostprobable=%s", type)));
   }
+
   return tListSetttings;
 }
+
 // electron
 // 0.13 - 1.8
 // 0       7.594129e-02    8.256141e-03
