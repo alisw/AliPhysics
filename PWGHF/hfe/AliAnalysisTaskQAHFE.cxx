@@ -16,7 +16,7 @@
 // QA task
 // 
 // Authors:
-//   Shreyasi Acharya <shreyasi.acharya@cern.ch>
+// Shreyasi Acharya <shreyasi.acharya@cern.ch>
 //
 
 #include <Riostream.h>
