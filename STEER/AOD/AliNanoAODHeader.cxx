@@ -3,6 +3,8 @@
 
 ClassImp(AliNanoAODHeader)
 
+Bool_t AliNanoAODHeader::fFatalMode = kFALSE;
+
 AliNanoAODHeader::AliNanoAODHeader():
   AliVAODHeader(),
   AliNanoAODStorage(),
@@ -187,5 +189,8 @@ Int_t AliNanoAODHeader::GetVarIndex(TString varName){
 } 
 
 void AliNanoAODHeader::NotImplemented(void) const {
-  AliError("Not implemented");
+  if (fFatalMode)
+    AliFatal("Not implemented");
+  else
+    AliError("Not implemented");
 }
