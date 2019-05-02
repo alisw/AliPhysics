@@ -3364,7 +3364,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidates(AliAODConversion
         // --> c) which are from conversions? Just additonal information
         if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && (Photon->GetMother(0)>-1)){
           fHistoTruePrimaryClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
-          fHistoTruePrimaryClusConvGammaESDPtMCPt[fiCut]->Fill(TruePhotonCandidate->Pt(),((TParticle*)fMCEvent->Particle(Photon->GetMother(0)))->Pt(),fWeightJetJetMC);
+          if(Photon->GetMother(0) > -1){
+            fHistoTruePrimaryClusConvGammaESDPtMCPt[fiCut]->Fill(TruePhotonCandidate->Pt(),((TParticle*)fMCEvent->Particle(Photon->GetMother(0)))->Pt(),fWeightJetJetMC);
+          }
         }
       // --> d) how do the secondaries look like
       }else {
@@ -3513,8 +3515,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
         fHistoTruePrimaryClusGammaESDPtMCPt[fiCut]->Fill(TruePhotonCandidate->Pt(),Photon->Pt(),fWeightJetJetMC);
         if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
           fHistoTruePrimaryClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
-          AliAODMCParticle *Mother = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
-          fHistoTruePrimaryClusConvGammaESDPtMCPt[fiCut]->Fill(TruePhotonCandidate->Pt(),Mother->Pt(),fWeightJetJetMC);
+          if(Photon->GetMother()>-1){
+            AliAODMCParticle *Mother = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
+            fHistoTruePrimaryClusConvGammaESDPtMCPt[fiCut]->Fill(TruePhotonCandidate->Pt(),Mother->Pt(),fWeightJetJetMC);
+          }
         }
       }else {
         Int_t secondaryClass    = -1;

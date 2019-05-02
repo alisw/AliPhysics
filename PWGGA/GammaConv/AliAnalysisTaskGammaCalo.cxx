@@ -4234,8 +4234,10 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
       fHistoTrueClusElectronPt[fiCut]->Fill(TruePhotonCandidate->Pt(), tempPhotonWeight);
     if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()) {
       fHistoTrueClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), tempPhotonWeight);
-      AliAODMCParticle *motherPart = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
-      fHistoTrueClusConvGammaMCPt[fiCut]->Fill(motherPart->Pt(), tempPhotonWeight);
+      if(Photon->GetMother()>-1){
+        AliAODMCParticle *motherPart = (AliAODMCParticle*) AODMCTrackArray->At(Photon->GetMother());
+        fHistoTrueClusConvGammaMCPt[fiCut]->Fill(motherPart->Pt(), tempPhotonWeight);
+      }
     }
     if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion() && TruePhotonCandidate->IsConversionFullyContained())
       fHistoTrueClusConvGammaFullyPt[fiCut]->Fill(TruePhotonCandidate->Pt(), tempPhotonWeight);
