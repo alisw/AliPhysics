@@ -317,11 +317,11 @@ void ComputeEfficiencyFromCombinHF(){
   hEffB->DrawCopy("same");
 
   TLegend* legpf=new TLegend(0.6,0.16,0.89,0.36);
-  legpf->AddEntry("hEffPromptVsPtNoWeight","Effic. prompt","P");
-  legpf->AddEntry(hEffFd,"Effic. feeddown","P");
+  legpf->AddEntry(Form("%s_copy",hEffPr->GetName()),"Effic. prompt","P");
+  legpf->AddEntry(Form("%s_copy",hEffFd->GetName()),"Effic. feeddown","P");
   legpf->AddEntry(hAccToy,"Acceptance","P");
-  legpf->AddEntry(hEffD,"Acc x eff prompt","P");
-  legpf->AddEntry(hEffB,"Acc x eff feeddown","P");
+  legpf->AddEntry(Form("%s_copy",hEffD->GetName()),"Acc x eff prompt","P");
+  legpf->AddEntry(Form("%s_copy",hEffB->GetName()),"Acc x eff feeddown","P");
   legpf->Draw();
 
   outup->cd();  
