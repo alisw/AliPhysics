@@ -18,8 +18,8 @@ AlidNdPtUnifiedAnalysisTask* AddTask_Unified_pPb(Int_t cutModeLow=123, Int_t cut
     Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
     AlidNdPtUnifiedAnalysisTask* task125 = NULL; 
-
-    for(Int_t cutMode=cutModeLow; cutMode <= cutModeHigh; cutMode++)
+    
+    for(Int_t cutMode=125; cutMode <= 125; cutMode++)
     {
     AlidNdPtUnifiedAnalysisTask *task = new AlidNdPtUnifiedAnalysisTask(Form("AlidNdPtUnifiedAnalysisTask_%d", cutMode));
     if(cutMode==125) {task125 = task;}

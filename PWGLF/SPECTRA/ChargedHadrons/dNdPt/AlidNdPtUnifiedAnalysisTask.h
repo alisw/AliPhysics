@@ -66,7 +66,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     void SetUseMultiplicity(Bool_t useMult){fUseMultiplicity = useMult;}
     void SetUseCentrality(){fUseMultiplicity = kFALSE;}
     void SetCentralityEstimator(WhichCentralityEstimator iCentEst);
-    void FillCentCorrel();
+    void FillCentCorrel(Double_t V0MCent, Double_t CL0Cent, Double_t CL1Cent, Double_t SPDTCent, Double_t pt);
     void FillCentDiff();
 
     // Binning

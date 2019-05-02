@@ -190,9 +190,9 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     Double_t maxRelPtReso[3] = {fBinsPtReso->GetAt(fBinsPtReso->GetSize()-1), fBinsPt->GetAt(fBinsPt->GetSize()-1), fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
 
     /// binning of correlation of centrality estimators
-    Int_t iBinCentCorr[4] = {20, 20, 20, 20};
-    Double_t iMinCentCorr[4] = {0, 0, 0, 0};
-    Double_t iMaxCentCorr[4] = {100, 100, 100, 100};
+    Int_t iBinCentCorr[5] = {20, 20, 20, 20, fBinsPt->GetSize()-1};
+    Double_t iMinCentCorr[5] = {0, 0, 0, 0, fBinsPt->GetAt(0)};
+    Double_t iMaxCentCorr[5] = {100, 100, 100, 100, fBinsPt->GetAt(fBinsPt->GetSize()-1)};
 
     Int_t iBinCentCorrDiscr[2] = {20, 20};
     Double_t iMinCentCorrDiscr[2] = {0, 0};
@@ -227,6 +227,7 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fEventCount->GetAxis(3)->SetTitle("All");
     fEventCount->Sumw2();   
 
+    
     fHistCentDiffSPDT = new THnF("fHistCentDiffSPDT", "SPDT discrepancy to V0M", 2, iBinCentCorrDiscr, iMinCentCorrDiscr, iMaxCentCorrDiscr);
     fHistCentDiffSPDT->GetAxis(0)->SetTitle("Centrality distribution V0M");
     fHistCentDiffSPDT->GetAxis(1)->SetTitle("Centrality distribution SPD Tracklets");
@@ -259,13 +260,15 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistCentMean->GetAxis(1)->SetTitle("Mean centrality V0M CL0");
     fHistCentMean->GetAxis(2)->SetTitle("Mean centrality V0M CL1");
     fHistCentMean->Sumw2();
+    
 
-
-    fHistCentCorrel = new THnF("fHistCentCorrel", "Histogram for CentEst correlation", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
-    fHistCentCorrel->GetAxis(0)->SetTitle("Cent distribution V0M");
-    fHistCentCorrel->GetAxis(1)->SetTitle("Cent distribution SPD Tracklets");
-    fHistCentCorrel->GetAxis(2)->SetTitle("Cent distribution CL0");
-    fHistCentCorrel->GetAxis(3)->SetTitle("Cent distribution CL1");
+    fHistCentCorrel = new THnF("fHistCentCorrel", "Centrality Correlation", 5, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
+    fHistCentCorrel->GetAxis(0)->SetTitle("Centrality V0M");
+    fHistCentCorrel->GetAxis(1)->SetTitle("Centrality SPD Tracklets");
+    fHistCentCorrel->GetAxis(2)->SetTitle("Centrality CL0");
+    fHistCentCorrel->GetAxis(3)->SetTitle("Centrality CL1");
+    fHistCentCorrel->GetAxis(4)->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fHistCentCorrel->SetBinEdges(4,fBinsPt->GetArray());
     fHistCentCorrel->Sumw2();
 
     fHistRelPtResoFromCov = new THnF("fHistRelPtResoFromCov", "Relative pT resolution from covariance matrix", 3, nBinsRelPtReso, minRelPtReso, maxRelPtReso);
@@ -370,12 +373,12 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
 
     fOutputList->Add(fHistTrack);
     fOutputList->Add(fHistCentCorrel);
-    fOutputList->Add(fHistCentDiffSPDT);
-    fOutputList->Add(fHistCentDiffCL0);
-    fOutputList->Add(fHistCentDiffCL1);
-    fOutputList->Add(fHistCentAbsDiff);
-    fOutputList->Add(fHistCentMean);
-    fOutputList->Add(fHistCentRatio);
+    //fOutputList->Add(fHistCentDiffSPDT);
+    //fOutputList->Add(fHistCentDiffCL0);
+    //fOutputList->Add(fHistCentDiffCL1);
+    //fOutputList->Add(fHistCentAbsDiff);
+    //fOutputList->Add(fHistCentMean);
+    //fOutputList->Add(fHistCentRatio);
     fOutputList->Add(fHistEvent);
     fOutputList->Add(fEventCount);
     fOutputList->Add(fHistRelPtResoFromCov);
@@ -436,7 +439,18 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
     Bool_t isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
     Double_t multEvent = GetEventMultCent(fEvent);
-    FillCentCorrel();
+    
+    //TODO make here all cent estimators
+    AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
+    if(!MultSelection) return;
+    
+    Double_t V0MCent = MultSelection->GetMultiplicityPercentile("V0M");
+    Double_t CL0Cent = MultSelection->GetMultiplicityPercentile("CL0");
+    Double_t CL1Cent = MultSelection->GetMultiplicityPercentile("CL1");
+    Double_t SPDTCent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+    //delete MultSelection;  //TODO maybe wrong
+    //TODO end
+
     FillCentDiff();
     Double_t zVertEvent = fEvent->GetPrimaryVertex()->GetZ();
     Double_t eventValues[2] = {zVertEvent, multEvent};
@@ -511,6 +525,9 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
         Double_t dpT = track->Pt();
         Double_t trackValues[4] = {dpT, track->Eta(), zVertEvent, multEvent};
         fHistTrack->Fill(trackValues, dWeight);
+        Double_t trackCorrelValues[5] = {V0MCent, SPDTCent, CL0Cent, CL1Cent, dpT};
+        fHistCentCorrel->Fill(trackCorrelValues);
+//        FillCentCorrel(V0MCent, SPDTCent, CL0Cent, CL1Cent, dpT);
 
         /// Histo needed to secondary scaling
         Float_t b[2], bCov[3];
@@ -802,25 +819,23 @@ void AlidNdPtUnifiedAnalysisTask::FillCentDiff()
 }
 
 
-void AlidNdPtUnifiedAnalysisTask::FillCentCorrel()
+/*void AlidNdPtUnifiedAnalysisTask::FillCentCorrel(Double_t V0MCent, Double_t SPDCent, Double_t CL0Cent, Double_t CL1Cent, Double_t pT)
 {
-    Double_t CentValue[4] = {0};
-    AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
-    if(!MultSelection) return;
-    CentValue[0] = MultSelection->GetMultiplicityPercentile("V0M");
-    CentValue[1] = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-    CentValue[2] = MultSelection->GetMultiplicityPercentile("CL0");
-    CentValue[3] = MultSelection->GetMultiplicityPercentile("CL1");
-
-    printf("Cent: %lf, %lf, %lf, %lf\n", CentValue[0], CentValue[1], CentValue[2], CentValue[3]);
+    Double_t CentValue[5] = {0};
+    CentValue[0] = V0MCent;
+    CentValue[1] = SPDTCent;
+    CentValue[2] = CL0Cent;
+    CentValue[3] = CL1Cent;
+    CentValue[4] = pT;
     fHistCentCorrel->Fill(CentValue);
-}
+}*/
 
 /// Function to either fill Multiplicity or centrality
 ///
 /// \param AliVEvent event to be analised
 ///
 /// \return Double_t with centrality or multiplicity
+
 Double_t AlidNdPtUnifiedAnalysisTask::GetEventMultCent(AliVEvent *event)
 {
     if(fUseMultiplicity)
