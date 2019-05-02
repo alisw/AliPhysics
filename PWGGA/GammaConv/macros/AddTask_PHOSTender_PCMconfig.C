@@ -63,7 +63,7 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
       PHOSSupply->SetMCProduction(options.Data()) ;
     }
   }
-  if (isRun2 && !isMC)
+  if (isRun2 && isMC)
     PHOSSupply->ApplyZeroSuppression(0.020);
 
 

@@ -23,9 +23,16 @@ class AliAnalysisTaskTransTask : public AliAnalysisTaskSE
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
 
+        virtual void            RunAOD();
+        virtual void            RunESD();
+
     private:
         AliAODEvent*            fAOD;           //! input event
+        AliESDEvent*            fESD;           //! input event
         TList*                  fOutputList;    //! output list
+
+       	Int_t fType; // AOD or ESD
+
 	TTree *fAnaTree; //! analysis tree
 	Int_t fRunNum;
 	Int_t fTracklets;

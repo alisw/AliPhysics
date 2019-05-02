@@ -136,6 +136,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         virtual Bool_t          InitTrackCuts(); //check all track cuts and set corresponding variables
         virtual Bool_t          InitTrackIP();  //initialize inner params 
         virtual Bool_t          InitTrackTPC();  //initialize inner params tpc
+        virtual Bool_t          InitTrackPID(); //initilaize PID related quantities
         
         virtual Bool_t          InitMCTrack();
         
@@ -260,6 +261,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         // track related properties
         AliESDtrack*                    fESDTrack;                  //!<! current esd track                                                 --
         Double_t                        fPt;                        //!<! track pT                                                          --InitTrack()
+        Double_t                        fP;                         //!<! track p                                                           --InitTrack()
         Double_t                        fEta;                       //!<! track Eta                                                         --InitTrack()
         Double_t                        fPhi;                       //!<! track Phi                                                         --InitTrack()
         Float_t                         fDCA[2];                    //!<! impact parameter (DCA)                                            --InitTrack()

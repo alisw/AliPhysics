@@ -25,6 +25,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/TMVA
 # Sources - alphabetical order
 set(SRCS
   LHC19c2b_TMVAClassification_BDT_12_25.class.cxx
+  LHC19c2b_TMVAClassification_BDT_2_4.class.cxx
   LHC19c2b_TMVAClassification_BDT_3_4.class.cxx
   LHC19c2b_TMVAClassification_BDT_4_5.class.cxx
   LHC19c2b_TMVAClassification_BDT_4_6.class.cxx
@@ -41,6 +42,7 @@ set(SRCS
 
 set(HDRS
   LHC19c2b_TMVAClassification_BDT_12_25.class.h
+  LHC19c2b_TMVAClassification_BDT_2_4.class.h
   LHC19c2b_TMVAClassification_BDT_3_4.class.h
   LHC19c2b_TMVAClassification_BDT_4_5.class.h
   LHC19c2b_TMVAClassification_BDT_4_6.class.h

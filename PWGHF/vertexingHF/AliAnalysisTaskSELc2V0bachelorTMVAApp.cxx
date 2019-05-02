@@ -208,6 +208,12 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fBDTHistoVsCosPAK0S(0),
   fBDTHistoVsSignd0(0),
   fBDTHistoVsCosThetaStar(0),
+  fBDTHistoVsnSigmaTPCpr(0),
+  fBDTHistoVsnSigmaTOFpr(0),
+  fBDTHistoVsnSigmaTPCpi(0),
+  fBDTHistoVsnSigmaTPCka(0),
+  fBDTHistoVsBachelorP(0),
+  fBDTHistoVsBachelorTPCP(0),
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
@@ -344,6 +350,12 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fBDTHistoVsCosPAK0S(0),
   fBDTHistoVsSignd0(0),
   fBDTHistoVsCosThetaStar(0),
+  fBDTHistoVsnSigmaTPCpr(0),
+  fBDTHistoVsnSigmaTOFpr(0),
+  fBDTHistoVsnSigmaTPCpi(0),
+  fBDTHistoVsnSigmaTPCka(0),
+  fBDTHistoVsBachelorP(0),
+  fBDTHistoVsBachelorTPCP(0),
   fHistoNsigmaTPC(0),
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
@@ -713,6 +725,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 1000, -1, 1, 100, 0.9, 1);
     fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 1000, -1, 1, 100, -1, 1);
     fBDTHistoVsSignd0 = new TH2D("fBDTHistoVsSignd0", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
+    fBDTHistoVsnSigmaTPCpr = new TH2D("fBDTHistoVsnSigmaTPCpr", "nSigmaTPCpr vs bdt output; bdt; n_{#sigma}^{TPC}_{pr}", 1000, -1, 1, 1000, -10, 10);
+    fBDTHistoVsnSigmaTOFpr = new TH2D("fBDTHistoVsnSigmaTOFpr", "nSigmaTOFpr vs bdt output; bdt; n_{#sigma}^{TOF}_{pr}", 1000, -1, 1, 1000, -10, 10);
+    fBDTHistoVsnSigmaTPCpi = new TH2D("fBDTHistoVsnSigmaTPCpi", "nSigmaTPCpi vs bdt output; bdt; n_{#sigma}^{TPC}_{pi}", 1000, -1, 1, 1000, -10, 10);
+    fBDTHistoVsnSigmaTPCka = new TH2D("fBDTHistoVsnSigmaTPCka", "nSigmaTPCka vs bdt output; bdt; n_{#sigma}^{TPC}_{ka}", 1000, -1, 1, 1000, -10, 10);
+    fBDTHistoVsBachelorP = new TH2D("fBDTHistoVsBachelorP", "bachelor p vs bdt output; bdt; p_{bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
+    fBDTHistoVsBachelorTPCP = new TH2D("fBDTHistoVsBachelorTPCP", "bachelor TPC momentum vs bdt output; bdt; p_{TPC, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
     fHistoNsigmaTPC = new TH2D("fHistoNsigmaTPC", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TPC} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
     fHistoNsigmaTOF = new TH2D("fHistoNsigmaTOF", "; #it{p} (GeV/#it{c}); n_{#sigma}^{TOF} (proton hypothesis)", 500, 0, 5, 1000, -5, 5);
   }
@@ -745,6 +763,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fOutput->Add(fBDTHistoVsCosPAK0S);
     fOutput->Add(fBDTHistoVsCosThetaStar);
     fOutput->Add(fBDTHistoVsSignd0);
+    fOutput->Add(fBDTHistoVsnSigmaTPCpr);
+    fOutput->Add(fBDTHistoVsnSigmaTOFpr);
+    fOutput->Add(fBDTHistoVsnSigmaTPCpi);
+    fOutput->Add(fBDTHistoVsnSigmaTPCka);
+    fOutput->Add(fBDTHistoVsBachelorP);
+    fOutput->Add(fBDTHistoVsBachelorTPCP);
     fOutput->Add(fHistoNsigmaTPC);
     fOutput->Add(fHistoNsigmaTOF);
   }
@@ -960,7 +984,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
       inputNamesVec.push_back(tmpvar);
     }
     void* lib = dlopen(fTMVAlibName.Data(), RTLD_NOW);
-    void* p = dlsym(lib, Form("ReadBDT_Default_maker%s", fTMVAlibPtBin.Data()));
+    void* p = dlsym(lib, Form("%s", fTMVAlibPtBin.Data()));
     IClassifierReader* (*maker1)(std::vector<std::string>&) = (IClassifierReader* (*)(std::vector<std::string>&)) p;
     fBDTReader = maker1(inputNamesVec);
   }
@@ -1941,16 +1965,21 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     
     if(!fFillTree){
       
-      std::vector<Double_t> inputVars(9);
+      std::vector<Double_t> inputVars(14);
       inputVars[0] = invmassK0s;
       inputVars[1] = part->Getd0Prong(0);
       inputVars[2] = part->Getd0Prong(1);
       inputVars[3] = bachelor->Pt();
-      inputVars[4] = probProton;
-      inputVars[5] = (part->DecayLengthV0())*0.497/(v0part->P());
-      inputVars[6] = part->CosV0PointingAngle();
-      inputVars[7] = cts;
-      inputVars[8] = signd0;
+      inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
+      inputVars[5] = part->CosV0PointingAngle();
+      inputVars[6] = cts;
+      inputVars[7] = signd0;
+      inputVars[8] = nSigmaTPCpr;
+      inputVars[9] = nSigmaTOFpr;
+      inputVars[10] = nSigmaTPCpi;
+      inputVars[11] = nSigmaTPCka;
+      inputVars[12] = bachelor->P();
+      inputVars[13] = bachelor->GetTPCmomentum();
       
       
       Double_t BDTResponse = -1;
@@ -1966,7 +1995,12 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
 	fBDTHistoVsCosPAK0S->Fill(BDTResponse, part->CosV0PointingAngle());
 	fBDTHistoVsSignd0->Fill(BDTResponse, signd0);
 	fBDTHistoVsCosThetaStar->Fill(BDTResponse, cts);
-	
+	fBDTHistoVsnSigmaTPCpr->Fill(BDTResponse, nSigmaTPCpr);
+	fBDTHistoVsnSigmaTOFpr->Fill(BDTResponse, nSigmaTOFpr);
+	fBDTHistoVsnSigmaTPCpi->Fill(BDTResponse, nSigmaTPCpi);
+	fBDTHistoVsnSigmaTPCka->Fill(BDTResponse, nSigmaTPCka);
+	fBDTHistoVsBachelorP->Fill(BDTResponse, bachelor->P());
+	fBDTHistoVsBachelorTPCP->Fill(BDTResponse, bachelor->GetTPCmomentum());
 	fHistoNsigmaTPC->Fill(bachelor->P(), nSigmaTPCpr);
 	fHistoNsigmaTOF->Fill(bachelor->P(), nSigmaTOFpr);
       }

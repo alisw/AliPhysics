@@ -790,7 +790,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistNLMVsEAfterQA->GetXaxis()->SetTitle("N_{LM} in cluster");
     fHistNLMVsEAfterQA->GetYaxis()->SetTitle("E_{cl} (GeV)");
     fHistograms->Add(fHistNLMVsEAfterQA);
-    if(fExtendedMatchAndQA > 1 || fIsPureCalo > 0){
+    if(fExtendedMatchAndQA > 0 || fIsPureCalo > 0){
       fHistClusterEM02AfterQA       = new TH2F(Form("EVsM02_afterClusterQA %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",nBinsClusterE, arrClusEBinning,400,0,5);
       fHistClusterEM02AfterQA->GetYaxis()->SetTitle("#sigma_{long}^2");
       fHistClusterEM02AfterQA->GetXaxis()->SetTitle("E_{cl} (GeV)");
@@ -834,7 +834,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 //       fHistNLMAvsNLMBBeforeQA->Sumw2();
       fHistNLMVsNCellsAfterQA->Sumw2();
       fHistNLMVsEAfterQA->Sumw2();
-      if(fExtendedMatchAndQA > 1 || fIsPureCalo > 0){
+      if(fExtendedMatchAndQA > 0 || fIsPureCalo > 0){
         fHistClusterEM02AfterQA->Sumw2();
         fHistClusterEM02BeforeQA->Sumw2();
         fHistClusterM02M20BeforeQA->Sumw2();
@@ -4277,6 +4277,26 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
     if (!fUseTimeDiff) fUseTimeDiff=1;
     fMinTimeDiff=-130e-9;
     fMaxTimeDiff=130e-9;
+    break;
+  case 12:
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-110e-9;
+    fMaxTimeDiff=110e-9;
+    break;
+  case 13:
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-120e-9;
+    fMaxTimeDiff=120e-9;
+    break;
+  case 14:
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-90e-9;
+    fMaxTimeDiff=90e-9;
+    break;
+  case 15:
+    if (!fUseTimeDiff) fUseTimeDiff=1;
+    fMinTimeDiff=-80e-9;
+    fMaxTimeDiff=80e-9;
     break;
   default:
     AliError(Form("Timing Cut not defined %d",timing));

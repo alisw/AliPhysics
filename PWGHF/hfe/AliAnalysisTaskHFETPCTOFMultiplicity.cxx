@@ -100,7 +100,7 @@ class AliAnalysisTaskHFETPCTOFMultiplicity;
 using namespace std;
 ClassImp(AliAnalysisTaskHFETPCTOFMultiplicity)
 
-c::AliAnalysisTaskHFETPCTOFMultiplicity() : AliAnalysisTaskSE(),
+AliAnalysisTaskHFETPCTOFMultiplicity::AliAnalysisTaskHFETPCTOFMultiplicity() : AliAnalysisTaskSE(),
 
 //Event Cut
 fCutNcontV(2),

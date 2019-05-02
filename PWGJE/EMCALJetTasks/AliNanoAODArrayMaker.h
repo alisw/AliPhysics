@@ -52,11 +52,11 @@ class AliNanoAODArrayMaker : public AliAnalysisTaskSE {
 
   TList* fOutputList;
 
-  AliNanoAODArrayMaker(const AliNanoAODArrayMaker&); // not implemented
-  AliNanoAODArrayMaker& operator=(const AliNanoAODArrayMaker&); // not implemented   
+  AliNanoAODArrayMaker(const AliNanoAODArrayMaker&); /// not implemented
+  AliNanoAODArrayMaker& operator=(const AliNanoAODArrayMaker&); /// not implemented
 
   
-  ClassDef(AliNanoAODArrayMaker, 2); // NanoAOD array maker for embedded tracks
+  ClassDef(AliNanoAODArrayMaker, 2); /// NanoAOD array maker for embedded tracks
 };
 
 #endif
