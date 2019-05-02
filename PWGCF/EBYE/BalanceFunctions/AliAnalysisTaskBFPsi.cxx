@@ -204,6 +204,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseOfflineTrigger(kFALSE),
   fCheckFirstEventInChunk(kFALSE),
   fCheckPileUp(kFALSE),
+  fUsePileUpSPD(kFALSE),
   fCheckPrimaryFlagAOD(kFALSE),
   fUseMCforKinematics(kFALSE),
   fRebinCorrHistos(kFALSE),
@@ -1283,6 +1284,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   AliAnalysisUtils ut;
   if(fCheckPileUp){
     fUtils->SetUseMVPlpSelection(kTRUE);
+    if (fUsePileUpSPD) fUtils->SetUseMVPlpSelection(kFALSE);
     // fUtils->SetUseOutOfBunchPileUp(kTRUE);
     if(fUtils->IsPileUpEvent(event))
       return -1.;
