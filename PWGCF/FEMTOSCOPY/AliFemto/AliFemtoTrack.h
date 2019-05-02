@@ -12,6 +12,8 @@
 #include "TBits.h"
 #include "AliFemtoHiddenInfo.h"
 
+#include <algorithm>
+
 
 /// \class AliFemtoTrack
 /// \brief Main class holding track information (before identification)

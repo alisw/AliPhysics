@@ -24,7 +24,7 @@ class AliFemtoDreamBasePart {
   AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent);
   AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent);
   AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma,
-                        const AliAODTrack *pos, const AliAODTrack *neg,
+                        const AliVTrack *pos, const AliVTrack *neg,
                         const AliVEvent *inputEvent);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
@@ -249,7 +249,10 @@ class AliFemtoDreamBasePart {
     fGTI = GTI;
     fTrackBufferSize = size;
   }
-  ;
+  void SetGlobalTrackInfo(AliVTrack **VGTI, Int_t size) {
+    fVGTI = VGTI;
+    fTrackBufferSize = size;
+  }
   int GetEventMultiplicity() const {
     return fEvtMultiplicity;
   }
@@ -259,6 +262,7 @@ class AliFemtoDreamBasePart {
  protected:
   bool fIsReset;
   AliAODTrack **fGTI;
+  AliVTrack **fVGTI;
   int fTrackBufferSize;
   TVector3 fP;
   TVector3 fMCP;
@@ -293,7 +297,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
   //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-  ClassDef(AliFemtoDreamBasePart, 4);
+  ClassDef(AliFemtoDreamBasePart, 5);
 };
 
 #endif /* ALIFEMTODREAMBASEPART_H_ */

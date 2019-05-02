@@ -91,7 +91,7 @@ public:
     void SetEtaCut(Float_t EtaMin, Float_t EtaMax);
   //  void SetAssoEtaCut(Float_t AssoEtaMin, Float_t AssoEtaMax);
     //Setter for the B correction function
-    void SetBcorrFunction(TF1* BcorrF) {fBcorr = BcorrF;};
+    void SetBcorrFunction(TGraphErrors* BcorrF) {fBcorr = BcorrF;};
 	
 	
     //Setter for the D correction function
@@ -117,6 +117,8 @@ public:
     void SetDcorrFunction20(TF1* DcorrF20) {fDcorr20 = DcorrF20;};
     void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
+   // void SetDcorrFunction(TF1* DcorrF) {fDcorr = DcorrF;};
+    
     void SetDcorrFunction(TF1* DcorrF) {fDcorr = DcorrF;};
     
     void SetHCFunction(TF1* HC) {fHC = HC;};
@@ -129,8 +131,9 @@ public:
     void InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     void InvMassCheckMCDenom(AliVTrack *track);
     
-    void InvMassCheckMCDenomNew(AliVTrack *track);
-    void InvMassCheckMCNew(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
+    void GetMCTemplateWeight(TClonesArray *mcArray);
+  //  void InvMassCheckMCDenomNew(AliVTrack *track);
+  //  void InvMassCheckMCNew(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
 
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
@@ -158,6 +161,7 @@ private:
     Float_t GetDCAMeanMC_phi2(Float_t x);
     Float_t GetDCAMeanMC_phi3(Float_t x);
     Float_t GetDCAMeanMC_phi4(Float_t x);
+    
     
     
     
@@ -299,6 +303,7 @@ private:
     TH2F                *fDCAxy_pt_beautybef;//!
     TH2F                *fDCAxy_pt_beautyaft;//!
     TH2F                *fDCAxy_pt_beautybaryons;//!
+    TH2F                *fDCAxy_pt_beautybaryons_corr;//!
     TH2F		*fDCAxy_pt_DstarDplusbef;//!
     TH2F		*fDCAxy_pt_Dplusbef;//!
     TH2F		*fDCAxy_pt_DstarDzerobef;//!
@@ -315,6 +320,8 @@ private:
     TH2F		*fDCAxy_pt_charmmesonsAft;//!
     TH2F		*fDCAxy_pt_Lc;//!
     TH2F		*fDCAxy_pt_charmbaryons;//!
+     TH2F		*fDCAxy_pt_Lc_corr;//!
+    TH2F		*fDCAxy_pt_charmbaryons_corr;//!
     TH2F                *fDCAxy_pt_MesonB_beautybef;//!
     TH2F                *fDCAxy_pt_MesonB_beautyaft;//!
     TH2F                *fDCAxy_pt_MesonBD_beautybef;//!
@@ -322,7 +329,7 @@ private:
     TH2F                *fDCAxy_pt_BaryonB_beautybef;//!
     TH2F                *fDCAxy_pt_BaryonBD_beautybef;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
-    TH2F				*fDCAxy_pt_had_onlyDCA_phi1;//!
+  /*  TH2F				*fDCAxy_pt_had_onlyDCA_phi1;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi2;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi3;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi4;//!
@@ -341,7 +348,7 @@ private:
     TH1F				*fResGausCorr_phi1;//!
     TH1F				*fResGausCorr_phi2;//!
     TH1F				*fResGausCorr_phi3;//!
-    TH1F				*fResGausCorr_phi4;//!
+    TH1F				*fResGausCorr_phi4;//!*/
     TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
@@ -367,6 +374,19 @@ private:
 	TH2F 		    *hDCAPtProtons3;//!
         TH1F                *hPtElectrons;//!
         TH1F                *hPtHadrons;//!
+        
+        TH1F                *fBHadpT;//!
+        TH1F                *fBMesonpT;//!
+        TH1F                *fBMesonpT_Corr;//!
+     //   TH1F                *fBMesonpTG;//!
+       // TH1F                *fBMesonpTGG;//!
+        TH1F                *fDHadpT;//!
+        TH1F                *fDMesonpT;//!
+        TH1F                *fBDHadpT;//!
+        TH1F                *fD0pT;//!
+        TH1F                *fLambdaCpT;//!
+        
+        
         TH1F                *hDCAElectrons;//!
         TH1F                *hDCAHadrons;//!
 	TH2F                *hBeautyMotherPt2Daft;//!
@@ -395,7 +415,7 @@ private:
         TH1F				*fMCEnhPtEleEtaGeneratedAft;//!
 
     TH1F                *fRealInclsElecPt;//!
-    TH1F                *fPtElePi0GeneratedAft_NewNoWeight;//!
+/*    TH1F                *fPtElePi0GeneratedAft_NewNoWeight;//!
     TH1F                *fPtElePi0EtaGeneratedAft_NewNoWeight;//!
     TH1F                *fMCMBPtElePi0EtaGeneratedAft_New;//!
     TH1F                *fMCEnhPtElePi0EtaGeneratedAft_New;//!
@@ -414,14 +434,14 @@ private:
     TH1F                *fPtEleEtaFoundAft_NewNoWeight;//!
     TH1F                *fMCMBPtEleEtaFoundAft_New;//!
     TH1F                *fMCEnhPtEleEtaFoundAft_New;//!
-        
+        */
     TH2F				*hCharmMotherPt_vsElecPt;//!
     TH2F				*hElecPt_vsCharmMotherPt;//!
     
     TH2F				*hCharmMotherPt_vsElecPt_corr;//!
     TH2F				*hElecPt_vsCharmMotherPt_corr;//!
     
-    TF1					*fBcorr;
+    TGraphErrors			*fBcorr;
     TF1					*fDcorr;
     TF1					*fDcorr1;
     TF1					*fDcorr2;

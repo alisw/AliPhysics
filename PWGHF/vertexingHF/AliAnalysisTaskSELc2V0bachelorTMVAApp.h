@@ -149,6 +149,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   void SetAODMismatchProtection(Int_t opt = 1) {fAODProtection = opt;}
   Int_t GetAODMismatchProtection() const {return fAODProtection;}
+
+  void SetUsePIDresponseForNsigma(Bool_t flag) {fUsePIDresponseForNsigma = flag;}
+  Bool_t GetUsePIDresponseForNsigma() const {return fUsePIDresponseForNsigma;}
   
  private:
   
@@ -327,8 +330,11 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   Int_t fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
                                   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
+  Bool_t fUsePIDresponseForNsigma;  /// flag to decide if to take the nSigma from the PIDresponse or from AliAODPidHF
+
+  
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 4); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 5); /// class for Lc->p K0
   /// \endcond    
 };
 

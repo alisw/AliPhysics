@@ -104,6 +104,7 @@ class AliHFQnVectorHandler : public TObject
     double ComputeEventPlaneAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}  
     
     short GetVertexZbin() const;
+    short GetCentBin() const;
     bool OpenInfoCalbration();
 
     bool IsTrackSelected(AliAODTrack* track);
@@ -172,7 +173,8 @@ class AliHFQnVectorHandler : public TObject
     TH1D* fQx2sV0C[14];                                        /// sigma Qxn V0C
     TH1D* fQy2sV0C[14];                                        /// sigma Qyn V0C
 
-    TH1D* fWeightsTPC;                                         /// Weights for TPC --> to be defined
+    TH1D* fWeightsTPCPosEta[9];                                /// Weights for TPC tracks with eta > 0
+    TH1D* fWeightsTPCNegEta[9];                                /// Weights for TPC tracks with eta < 0
     bool fEnablePhiDistrHistos;                                /// Enable phi distribution histos
     TH2F* fPhiVsCentrTPC[2];                                   /// Phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
 
@@ -181,7 +183,7 @@ class AliHFQnVectorHandler : public TObject
     AliQnCorrectionsManager *fQnVectorMgr;                     /// Qn-framework manager
 
   /// \cond CLASSIMP
-  ClassDef(AliHFQnVectorHandler,2); /// 
+  ClassDef(AliHFQnVectorHandler,3); /// 
   /// \endcond
 };
 

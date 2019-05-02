@@ -199,7 +199,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
-      fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0)
+      fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -324,7 +326,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
-      fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0)
+      fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0)
 {
     FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -772,14 +776,52 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
         new TH2F( "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
                   "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
-                  80, -4, 4, 80, -1, 1);
+                  80, -1, 1,
+                  80, -4, 4
+                  );
   fOutputList->Add(fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
 
   fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
         new TH2F( "fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
                   "fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
-                  80, -4, 4, 80, -1, 1);
+                  80, -1, 1,
+                  80, -4, 4
+                  );
   fOutputList->Add(fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
+
+  /* - Variable binning for CosTheta and Phi.
+     - Adopting same binning as inclusive people's.
+     -
+   */
+  const Int_t XBINS = 19;
+  const Int_t YBINS = 20;
+  Double_t CosThetaBinning[ XBINS + 1 ] = { -1. , -0.8, -0.7 , -0.6 , -0.5, -0.4,
+                                            -0.3, -0.2, -0.12, -0.04,  0.04, 0.12,
+                                             0.2,  0.3,  0.4,   0.5,   0.6,  0.7,
+                                             0.8,  1
+                                             };
+  Double_t PhiBinning[ YBINS + 1 ] = { -3.142, -2.639, -2.136, -1.885, -1.696,
+                                       -1.571, -1.445, -1.257, -1.005, -0.502,
+                                        0.,     0.502,  1.005,  1.257,  1.445,
+                                        1.571,  1.696,  1.885,  2.136,  2.639,
+                                        3.142
+                                      };
+  fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH =
+        new TH2F( "fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  "fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  XBINS, CosThetaBinning,
+                  YBINS, PhiBinning
+                  );
+  fOutputList->Add(fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH);
+
+  fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH =
+        new TH2F( "fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  "fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  XBINS, CosThetaBinning,
+                  YBINS, PhiBinning
+                  );
+  fOutputList->Add(fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH);
+
 
   //_______________________________
   // - End of the function
@@ -1361,6 +1403,16 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
                                                                                              possibleJPsiCopy
                                                                                              )
                                                                         );
+    fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                      muonsCopy2[1],
+                                                                                      possibleJPsiCopy
+                                                                                      ),
+                                                               CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                    muonsCopy2[1],
+                                                                                    possibleJPsiCopy
+                                                                                    )
+                                                               );
+
 
   }
 
@@ -1633,6 +1685,15 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                                              possibleJPsiMC
                                                                                                              )
                                                                                         );
+                  fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                                      muonsMCcopy[1],
+                                                                                                      possibleJPsiMC
+                                                                                                      ),
+                                                                               CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                                    muonsMCcopy[1],
+                                                                                                    possibleJPsiMC
+                                                                                                    )
+                                                                               );
           } else  {
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
@@ -1744,7 +1805,15 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                                              possibleJPsiMC
                                                                                                              )
                                                                                         );
-
+                  fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                                      muonsMCcopy[0],
+                                                                                                      possibleJPsiMC
+                                                                                                      ),
+                                                                               CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                                    muonsMCcopy[0],
+                                                                                                    possibleJPsiMC
+                                                                                                    )
+                                                                               );
           }
       }
     }

@@ -76,6 +76,7 @@ AliAnalysisTaskCheckVertexAOD::AliAnalysisTaskCheckVertexAOD() :
   fHistZspdVsCent{nullptr},
   fHistZspdOnlyZVsCent{nullptr},
   fHistContrSpdVsCent{nullptr},
+  fHistContrSpdOnlyZVsCent{nullptr},
   fHistXtrkVsCent{nullptr},
   fHistYtrkVsCent{nullptr},
   fHistZtrkVsCent{nullptr},
@@ -142,6 +143,7 @@ AliAnalysisTaskCheckVertexAOD::~AliAnalysisTaskCheckVertexAOD(){
     delete fHistZspdVsCent;
     delete fHistZspdOnlyZVsCent;
     delete fHistContrSpdVsCent;
+    delete fHistContrSpdOnlyZVsCent;
     delete fHistXtrkVsCent;
     delete fHistYtrkVsCent;
     delete fHistZtrkVsCent;
@@ -264,6 +266,7 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fHistZspdVsCent=new TH2F("hZspdVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
   fHistZspdOnlyZVsCent=new TH2F("hZspdOnlyZVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
   fHistContrSpdVsCent=new TH2F("hContrSpdVsCent","  ; V0M centrality ; nContributors",100,0.,100.,100,0.,fMaxMult);
+  fHistContrSpdOnlyZVsCent=new TH2F("hContrSpdOnlyZVsCent","  ; V0M centrality ; nContributors",100,0.,100.,100,0.,fMaxMult);
   fHistXtrkVsCent=new TH2F("hXtrkVsCent"," ; V0M centrality ; x_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistYtrkVsCent=new TH2F("hYtrkVsCent"," ; V0M centrality ; y_{Vertex} (cm)",100,0.,100.,1000,-1.,1.);
   fHistZtrkVsCent=new TH2F("hZtrkVsCent"," ; V0M centrality ; z_{Vertex} (cm)",100,0.,100.,300,-20.,20.);
@@ -277,6 +280,7 @@ void AliAnalysisTaskCheckVertexAOD::UserCreateOutputObjects() {
   fOutput->Add(fHistZspdVsCent);
   fOutput->Add(fHistZspdOnlyZVsCent);
   fOutput->Add(fHistContrSpdVsCent);
+  fOutput->Add(fHistContrSpdOnlyZVsCent);
   fOutput->Add(fHistXtrkVsCent);
   fOutput->Add(fHistYtrkVsCent);
   fOutput->Add(fHistZtrkVsCent);
@@ -444,7 +448,7 @@ void AliAnalysisTaskCheckVertexAOD::UserExec(Option_t *)
       if(cs>=1){
 	fHistZspdOnlyZVsMult->Fill(ntracklets,zs);
 	fHistZspdOnlyZVsCent->Fill(centr,zs);
-	fHistContrSpdVsCent->Fill(centr,cs);
+	fHistContrSpdOnlyZVsCent->Fill(centr,cs);
       }
     }
   }

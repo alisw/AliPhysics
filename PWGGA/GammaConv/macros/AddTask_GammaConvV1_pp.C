@@ -916,6 +916,12 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72.
     cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
 
+  //----------------------------- configuration for Jet analysis ----------------------------------------------------
+  } else if ( trainConfig == 500){ // Jet analysis pp 5 TeV 2017
+    cuts.AddCutPCM("00010113","00200009327000008250400000","2152103500000000"); //
+  } else if ( trainConfig == 501){
+    cuts.AddCutPCM("00010113","00200009327000008250400000","3152103500000000"); // Jet QA
+
    //----------------------Cuts by A. Marin for 13 TeV-----------------
 
  // Low B Field
@@ -1145,6 +1151,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 764) { // RBins studies, ITS with large weights spplited 
     cuts.AddCutPCM("00010113", "0dh00009267300008250404000", "0152103500000000"); // eta < 0.8   5-13 cm
     cuts.AddCutPCM("00010113", "0di00009267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5
+
 
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
   } else if (trainConfig == 1001){

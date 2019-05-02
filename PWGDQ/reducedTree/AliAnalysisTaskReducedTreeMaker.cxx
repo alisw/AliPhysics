@@ -364,6 +364,9 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
 		if(!fFillEventPlaneInfo) {
 			fTree->SetBranchStatus("fEventPlane.*", 0);
 		}
+
+    // if calorimeter cluster is filled, switch on cluster ID branch
+    if (fFillCaloClusterInfo) fTree->SetBranchStatus("fCaloClusters.fClusterID", 1);
 	}
 
   /*if(fFillBayesianPIDInfo) {
@@ -879,6 +882,16 @@ void AliAnalysisTaskReducedTreeMaker::AddTrackFilter(AliAnalysisCuts * const fil
 }
 
 //_________________________________________________________________________________
+void AliAnalysisTaskReducedTreeMaker::AddCaloClusterFilter(AliAnalysisCuts * const filter)
+{
+  //
+  // add cluster filter to cluster filter list
+  //
+  if (fClusterFilter.GetEntries()<32) fClusterFilter.Add(filter);
+  else printf("AliAnalysisTaskReducedTreeMaker::AddCaloClusterFilter() WARNING: Cluster filter list full (%d entries), will not add another filter!\n", fClusterFilter.GetEntries());
+}
+
+//_________________________________________________________________________________
 Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision)
 {
   //
@@ -916,6 +929,24 @@ Bool_t AliAnalysisTaskReducedTreeMaker::IsSelectedTrackRequestedBaseTrack(std::v
       isBaseTrack = kFALSE;
   }
   return isBaseTrack;
+}
+
+//_________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeMaker::IsClusterSelected(AliVCluster* cluster, std::vector<Bool_t>& filterDecision) {
+  //
+  // check if cluster is selected and write filter decision to vector
+  //
+  Bool_t clusterIsSelected = kFALSE;
+  for (Int_t i=0; i<fClusterFilter.GetEntries(); i++) {
+    AliAnalysisCuts* filter = (AliAnalysisCuts*)fClusterFilter.At(i);
+    if (filter->IsSelected(cluster)) {
+      filterDecision.push_back(kTRUE);
+      clusterIsSelected = kTRUE;
+    } else {
+      filterDecision.push_back(kFALSE);
+    }
+  }
+  return clusterIsSelected;
 }
 
 //_________________________________________________________________________________
@@ -1345,10 +1376,16 @@ void AliAnalysisTaskReducedTreeMaker::FillCaloClusters() {
   eventInfo->fNCaloClusters = 0;
   for(Int_t iclus=0; iclus<nclusters; ++iclus) {
     AliVCluster* cluster = event->GetCaloCluster(iclus);
+
+    Bool_t clusterFilterDecision = kTRUE;
+    std::vector<Bool_t> individualFilterDecisions;
+    if (fClusterFilter.GetEntries()>0)  clusterFilterDecision = IsClusterSelected(cluster, individualFilterDecisions);
+    if (!clusterFilterDecision) continue;
     
     TClonesArray& clusters = *(eventInfo->fCaloClusters);
     AliReducedCaloClusterInfo *reducedCluster=new(clusters[eventInfo->fNCaloClusters]) AliReducedCaloClusterInfo();
     
+    reducedCluster->fClusterID = iclus;
     reducedCluster->fType    = (cluster->IsEMCAL() ? AliReducedCaloClusterInfo::kEMCAL : AliReducedCaloClusterInfo::kPHOS);
     reducedCluster->fEnergy  = cluster->E();
     reducedCluster->fTrackDx = cluster->GetTrackDx();
@@ -1356,6 +1393,7 @@ void AliAnalysisTaskReducedTreeMaker::FillCaloClusters() {
     reducedCluster->fM20     = cluster->GetM20();
     reducedCluster->fM02     = cluster->GetM02();
     reducedCluster->fDispersion = cluster->GetDispersion();
+    reducedCluster->fNMatchedTracks = cluster->GetNTracksMatched();
     cluster->GetPosition(reducedCluster->fPosition);
     reducedCluster->fTOF = cluster->GetTOF();
     reducedCluster->fNCells = cluster->GetNCells();

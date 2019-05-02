@@ -9,6 +9,7 @@ ClassImp(AliAnalysisTaskFemtoDreamPhi)
     AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi()
     : AliAnalysisTaskSE(),
       fIsMC(false),
+      fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
       fTrack(),
@@ -17,6 +18,8 @@ ClassImp(AliAnalysisTaskFemtoDreamPhi)
       fPosKaonCuts(),
       fNegKaonCuts(),
       fPhiCuts(),
+      fTrackCutsPartProton(),
+      fTrackCutsPartAntiProton(),
       fConfig(),
       fPairCleaner(),
       fPartColl(),
@@ -27,6 +30,7 @@ AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi(const char *name,
                                                            bool isMC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
+      fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
       fTrack(),
@@ -35,6 +39,8 @@ AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi(const char *name,
       fPosKaonCuts(),
       fNegKaonCuts(),
       fPhiCuts(),
+      fTrackCutsPartProton(),
+      fTrackCutsPartAntiProton(),
       fConfig(),
       fPairCleaner(),
       fPartColl(),
@@ -50,7 +56,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
   fOutput->SetName("Output");
   fOutput->SetOwner();
 
-  fEvent = new AliFemtoDreamEvent(false, true, AliVEvent::kINT7);
+  fEvent = new AliFemtoDreamEvent(false, true, fTrigger);
   fOutput->Add(fEvent->GetEvtCutList());
 
   fTrack = new AliFemtoDreamTrack();
@@ -108,6 +114,28 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
     fOutput->Add(fPhiCuts->GetMCQAHists());
   }
 
+  if (!fTrackCutsPartProton) {
+    AliFatal("Track Cuts for Proton not set!");
+  }
+  fTrackCutsPartProton->Init();
+  fTrackCutsPartProton->SetName("Proton");
+  fOutput->Add(fTrackCutsPartProton->GetQAHists());
+  if (fTrackCutsPartProton->GetIsMonteCarlo()) {
+    fTrackCutsPartProton->SetMCName("MCProton");
+    fOutput->Add(fTrackCutsPartProton->GetMCQAHists());
+  }
+
+  if (!fTrackCutsPartAntiProton) {
+    AliFatal("Track Cuts for AntiProton not set!");
+  }
+  fTrackCutsPartAntiProton->Init();
+  fTrackCutsPartAntiProton->SetName("AntiProton");
+  fOutput->Add(fTrackCutsPartAntiProton->GetQAHists());
+  if (fTrackCutsPartAntiProton->GetIsMonteCarlo()) {
+    fTrackCutsPartAntiProton->SetMCName("MCAntiProton");
+    fOutput->Add(fTrackCutsPartAntiProton->GetMCQAHists());
+  }
+
   fPairCleaner =
       new AliFemtoDreamPairCleaner(3, 0, fConfig->GetMinimalBookingME());
   fOutput->Add(fPairCleaner->GetHistList());
@@ -129,10 +157,10 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
 
   fEvent->SetEvent(Event);
   if (!fEventCuts->isSelected(fEvent)) return;
-
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(iTrack));
+
     if (!track) continue;
     StoreGlobalTrackReference(track);
   }
@@ -144,37 +172,52 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   AntiParticles.clear();
   static std::vector<AliFemtoDreamBasePart> V0Particles;
   V0Particles.clear();
+  static std::vector<AliFemtoDreamBasePart> Protons;
+  Protons.clear();
+  static std::vector<AliFemtoDreamBasePart> AntiProtons;
+  AntiProtons.clear();
+
+  static float massKaon =
+      TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
 
   for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
     AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(iTrack));
+
     if (!track) continue;
     fTrack->SetTrack(track);
+    fTrack->SetInvMass(massKaon);
     if (fPosKaonCuts->isSelected(fTrack)) {
       Particles.push_back(*fTrack);
     }
     if (fNegKaonCuts->isSelected(fTrack)) {
       AntiParticles.push_back(*fTrack);
     }
+    if (fTrackCutsPartProton->isSelected(fTrack)) {
+      Protons.push_back(*fTrack);
+    }
+    if (fTrackCutsPartAntiProton->isSelected(fTrack)) {
+      AntiProtons.push_back(*fTrack);
+    }
   }
 
-  static float massKaon =
-      TDatabasePDG::Instance()->GetParticle(fPosKaonCuts->GetPDGCode())->Mass();
   fPhiParticle->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (const auto &posK : Particles) {
     for (const auto &negK : AntiParticles) {
-      fPhiParticle->Setv0(posK, massKaon, negK, massKaon);
+      fPhiParticle->Setv0(posK, negK);
       if (fPhiCuts->isSelected(fPhiParticle)) {
         V0Particles.push_back(*fPhiParticle);
       }
     }
   }
 
-  fPairCleaner->CleanTrackAndDecay(&Particles, &AntiParticles, 0);
-  fPairCleaner->CleanTrackAndDecay(&Particles, &V0Particles, 1);
-  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &V0Particles, 2);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &AntiProtons, 0);
+  fPairCleaner->CleanTrackAndDecay(&Protons, &V0Particles, 1);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &V0Particles, 2);
+
   fPairCleaner->ResetArray();
-  fPairCleaner->StoreParticle(Particles);
-  fPairCleaner->StoreParticle(AntiParticles);
+
+  fPairCleaner->StoreParticle(Protons);
+  fPairCleaner->StoreParticle(AntiProtons);
   fPairCleaner->StoreParticle(V0Particles);
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
@@ -191,7 +234,6 @@ void AliAnalysisTaskFemtoDreamPhi::ResetGlobalTrackReference() {
 void AliAnalysisTaskFemtoDreamPhi::StoreGlobalTrackReference(
     AliAODTrack *track) {
   // for documentation see AliFemtoDreamAnalysis
-
   const int trackID = track->GetID();
   if (trackID < 0) {
     return;

@@ -29,23 +29,25 @@ class AliAnalysisTaskPtResStudy : public AliAnalysisTaskMKBase
                                 AliAnalysisTaskPtResStudy(const char *name);
         virtual                 ~AliAnalysisTaskPtResStudy();
 
-        virtual void            AddOutput(); //called at the beginning
-        virtual void            AnaTrack();  //called once for every track
-        virtual void            AnaEvent();  //called once for every event        
+        virtual void            AddOutput();                     //called at the beginning
+        virtual Bool_t          IsEventSelected();               //called for each event
+        virtual void            AnaEvent();                      //called once for every selected event        
+        virtual void            AnaTrack(Int_t flag = 0);        //called once for every track
         
         static AliAnalysisTaskPtResStudy* AddTaskPtResStudy(const char* name = "TaskPtResStudy", const char* outfile = 0);
 
     protected:    
-        THnSparseD*             fHistPtResCov;     //-> pt resolution from covariance matrix
-        THnSparseD*             fHistPtResMC;      //-> pt resolution from mc
-        THnSparseD*             fHistPtRes;        //-> pt resolution, combination of covariance and track fit
+        THnSparseD*             fHistPtResCov;        //-> pt resolution from covariance matrix
+        THnSparseD*             fHistPtResCovHighPt;  //-> pt resolution from covariance matrix smaller binning for highest pt
+        THnSparseD*             fHistPtResMC;         //-> pt resolution from mc
+        THnSparseD*             fHistPtRes;           //-> pt resolution, combination of covariance and track fit
         
     private:
         AliAnalysisTaskPtResStudy(const AliAnalysisTaskPtResStudy&); // not implemented
         AliAnalysisTaskPtResStudy& operator=(const AliAnalysisTaskPtResStudy&); // not implemented
         
     /// \cond CLASSIMP    
-        ClassDef(AliAnalysisTaskPtResStudy, 1);
+        ClassDef(AliAnalysisTaskPtResStudy, 2);
     /// \endcond        
 };
 

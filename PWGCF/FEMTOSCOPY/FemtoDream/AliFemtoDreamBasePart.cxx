@@ -13,6 +13,7 @@
 ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
     : fIsReset(false),
       fGTI(0),
+      fVGTI(0),
       fTrackBufferSize(0),
       fP(),
       fMCP(),
@@ -45,6 +46,7 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
     : fIsReset(part.fIsReset),
       fGTI(part.fGTI),
+      fVGTI(part.fVGTI),
       fTrackBufferSize(part.fTrackBufferSize),
       fP(part.fP),
       fMCP(part.fMCP),
@@ -81,6 +83,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   }
   fIsReset = obj.fIsReset;
   fGTI = 0;
+  fVGTI = 0;
   fTrackBufferSize = obj.fTrackBufferSize;
   fP = obj.fP;
   fMCPt = obj.fMCPt;
@@ -114,6 +117,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
     const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent)
     : fIsReset(false),
       fGTI(0),
+      fVGTI(0),
       fTrackBufferSize(0),
       fP(TVector3(mother.GetPx(), mother.GetPy(), mother.GetPz())),
       fMCP(TVector3(mother.GetPxMC(), mother.GetPyMC(), mother.GetPzMC())),
@@ -217,6 +221,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
     const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent)
     : fIsReset(false),
       fGTI(0),
+      fVGTI(0),
       fTrackBufferSize(0),
       fP(TVector3(daughter.GetPx(), daughter.GetPy(), daughter.GetPz())),
       fMCP(
@@ -299,10 +304,11 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
 }
 
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(
-    const AliAODConversionPhoton *gamma, const AliAODTrack *posTrack,
-    const AliAODTrack *negTrack, const AliVEvent *inputEvent)
+    const AliAODConversionPhoton *gamma, const AliVTrack *posTrack,
+    const AliVTrack *negTrack, const AliVEvent *inputEvent)
     : fIsReset(false),
       fGTI(0),
+      fVGTI(0),
       fTrackBufferSize(0),
       fP(TVector3(gamma->GetPx(), gamma->GetPy(), gamma->GetPz())),
       fMCP(),

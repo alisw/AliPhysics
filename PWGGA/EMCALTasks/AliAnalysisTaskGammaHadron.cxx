@@ -1946,7 +1946,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 //                clusters->GetMomentum(CaloClusterVecPi0Swap, cluster3); //recycling pi0swap
 
                 // ======================================================================
-                // Set swap cluster to have energy of cluster2 (swapping pos 2 with pos 1)
+                // Set swap cluster to have energy of cluster2 (swapping pos 3 with pos 2)
                 CaloClusterVecSwap = CaloClusterVec2;
                 CaloClusterVecSwap.SetPhi(CaloClusterVec3.Phi());
                 CaloClusterVecSwap.SetTheta(CaloClusterVec3.Theta());
@@ -2625,6 +2625,13 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 
 	//!!double check these cuts carefully with the experts!!
 
+
+	//-----------------------------
+	//..Check if the cluster energy is above set threshold
+  if (caloCluster->GetNonLinCorrEnergy() < fClEnergyMin) {
+    return 0;
+  }
+
 	//-----------------------------
 	//..at least 2 cells in cluster
 	if(caloCluster->GetNCells()<2)
@@ -2699,6 +2706,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusPairForAna(AliVCluster* cluster1, AliV
 	Double_t fE1 = cluster1->GetNonLinCorrEnergy();
 	Double_t fE2 = cluster2->GetNonLinCorrEnergy();
 
+  // This check should be redundant now ...
   if (fE1<fClEnergyMin || fE2<fClEnergyMin) return 0;  // Check cluster energy min.
 
 	Double_t fAsym = (fE1+fE2 > 0.000001) ? TMath::Abs(fE2-fE1)/(fE1+fE2) : 0; //Don't divide by zero

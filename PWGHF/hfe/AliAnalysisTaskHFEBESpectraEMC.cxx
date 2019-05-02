@@ -59,6 +59,8 @@
 #include "AliKFVertex.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALGeometry.h"
+#include "AliVertexerTracks.h"
+#include "AliESDVertex.h"
 
 //#include "AliQnCorrectionsManager.h"
 
@@ -89,6 +91,7 @@ fFlagClsTypeDCAL(kTRUE),
 fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
+fRecalIP(kTRUE),
 fTPCnSigma(-999.0),
 fTPCnSigmaMin(-1),
 fTPCnSigmaMax(3),
@@ -321,6 +324,7 @@ fFlagClsTypeDCAL(kTRUE),
 fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
+fRecalIP(kTRUE),
 fTPCnSigma(-999.0),
 fTPCnSigmaMin(-1),
 fTPCnSigmaMax(3),
@@ -1358,15 +1362,17 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
         }
         
         //other cuts
-        Double_t d0z0[2]={-999,-999}, cov[3];
+        Double_t d0z0[2]={-999,-999}, cov[3]={999,999,999};
         Double_t DCAxyCut = 0.25, DCAzCut = 1;
         
         if(atrack->GetTPCNcls() < 80) continue;
         if(atrack->GetITSNcls() < 3) continue;
         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
-            
-        if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
+        
+        if(fRecalIP) RecalImpactParam(atrack, d0z0, cov);
+        else atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov);
+        
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
         
         fTrkDCA = -999.0;
@@ -1688,8 +1694,10 @@ void AliAnalysisTaskHFEBESpectraEMC::SelectPhotonicElectron(Int_t itrack, AliVTr
             if(aAssotrack->GetTPCNcls() < 70) continue;
             if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             
-            if(aAssotrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
-                if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
+            if(fRecalIP) RecalImpactParam(aAssotrack, d0z0, cov);
+            else aAssotrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov);
+            
+            if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
         }
         
         //-------loose cut on partner electron
@@ -2579,7 +2587,7 @@ Bool_t AliAnalysisTaskHFEBESpectraEMC::GetMCDCATemplates(AliVTrack *track, Doubl
             if(MomPDG == 421) fpidSort = 12; //Mom is D0
             if(MomPDG == 413) fpidSort = 14; //Mom is D*+
             if(MomPDG == 431) fpidSort = 15; //Mom is Ds
-            if(MomPDG > 430 && MomPDG < 436) fpidSort = 16; //Mom is other Ds
+            if(MomPDG > 431 && MomPDG < 436) fpidSort = 16; //Mom is other Ds
             if(MomPDG == 4122) fpidSort = 17; //Mom is Lambda c
             if(MomPDG == 443) fpidSort = 6; //Mom is J/Psi
             
@@ -2722,6 +2730,87 @@ void AliAnalysisTaskHFEBESpectraEMC::GetDWeight(AliAODMCParticle *Part, Double_t
     DMaxWeight = fDDown->GetBinContent(bin);
     
     return;
+}
+//________________________________________________________________________
+void AliAnalysisTaskHFEBESpectraEMC::RecalImpactParam(const AliVTrack * const track, Double_t dcaD[2], Double_t covD[3])
+{
+    //Recalculate impact parameter by recalculating primary vertex
+    
+    const Double_t kBeampiperadius=3.0;
+    Bool_t isRecalcVertex = kFALSE;
+
+    AliAODVertex *vtxAODSkip  = fAOD->GetPrimaryVertex();
+    if(!vtxAODSkip) return;
+    
+    Double_t fMagField = fAOD->GetMagneticField();
+
+    const AliAODTrack *tmptrack = dynamic_cast<const AliAODTrack *>(track);
+    if(tmptrack){
+        if(vtxAODSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+            
+            vtxAODSkip = RemoveDaughtersFromPrimaryVtx(track);
+            isRecalcVertex = kTRUE;
+        }
+        
+        if(vtxAODSkip){
+            AliAODTrack aodtrack(*tmptrack);
+            AliExternalTrackParam etp;
+            etp.CopyFromVTrack(&aodtrack);
+            
+            etp.PropagateToDCA(vtxAODSkip, fMagField, kBeampiperadius, dcaD, covD);
+            
+            if(isRecalcVertex) delete vtxAODSkip;
+        }
+    }
+}
+//________________________________________________________________________
+AliAODVertex* AliAnalysisTaskHFEBESpectraEMC::RemoveDaughtersFromPrimaryVtx(const AliVTrack * const track)
+{
+    // This method returns a primary vertex without the daughter tracks of the
+    // candidate and it recalculates the impact parameters and errors for AOD tracks.
+    
+    AliAODVertex *vtxAOD = fAOD->GetPrimaryVertex();
+    if(!vtxAOD) return 0;
+    TString title=vtxAOD->GetTitle();
+    if(!title.Contains("VertexerTracks")) return 0;
+
+    AliVertexerTracks vertexer(fAOD->GetMagneticField());
+    
+    vertexer.SetITSMode();
+    vertexer.SetMinClusters(3);
+    vertexer.SetConstraintOff();
+    
+    if(title.Contains("WithConstraint")) {
+        Float_t diamondcovxy[3];
+        fAOD->GetDiamondCovXY(diamondcovxy);
+        Double_t pos[3]={fAOD->GetDiamondX(),fAOD->GetDiamondY(),0.};
+        Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+        AliESDVertex diamond(pos,cov,1.,1);
+        vertexer.SetVtxStart(&diamond);
+    }
+    Int_t skipped[2]; for(Int_t i=0;i<2;i++) skipped[i]=-1;
+    Int_t id = (Int_t)track->GetID();
+    if(!(id<0)) skipped[0] = id;
+    
+    vertexer.SetSkipTracks(1,skipped);
+    AliESDVertex *vtxESDNew = vertexer.FindPrimaryVertex(fAOD);
+    
+    if(!vtxESDNew) return 0;
+    if(vtxESDNew->GetNContributors()<=0) {
+        delete vtxESDNew; vtxESDNew=NULL;
+        return 0;
+    }
+    
+    // convert to AliAODVertex
+    Double_t pos[3],cov[6],chi2perNDF;
+    vtxESDNew->GetXYZ(pos); // position
+    vtxESDNew->GetCovMatrix(cov); //covariance matrix
+    chi2perNDF = vtxESDNew->GetChi2toNDF();
+    delete vtxESDNew; vtxESDNew=NULL;
+    
+    AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
+    
+    return vtxAODNew;
 }
 //________________________________________________________________________
 void AliAnalysisTaskHFEBESpectraEMC::Terminate(Option_t *)

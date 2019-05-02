@@ -121,7 +121,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
    if(useESD)
      
      {
-       if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->UseESDTriggerMask(triggerMask); //esd
+       if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->UseESDTriggerMask(triggerMask); //ESD
      }
    else {
      if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->SelectCollisionCandidates(triggerMask); //AOD
@@ -230,7 +230,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
 
   //  if (Sp) AliRsnMiniAnalysisTask::SetComputeSpherocity();
   
-  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 1000,0.,1.0);
+  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 500,0.,1.0);
   task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
    
    //

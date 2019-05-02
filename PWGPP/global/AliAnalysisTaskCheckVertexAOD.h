@@ -90,6 +90,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   TH2F* fHistZspdVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZspdOnlyZVsCent;         //!<!  histo of vtx coord.
   TH2F* fHistContrSpdVsCent;          //!<!  histo of vtx contrib
+  TH2F* fHistContrSpdOnlyZVsCent;          //!<!  histo of vtx contrib
   TH2F* fHistXtrkVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistYtrkVsCent;              //!<!  histo of vtx coord.
   TH2F* fHistZtrkVsCent;              //!<!  histo of vtx coord.
@@ -117,7 +118,7 @@ class AliAnalysisTaskCheckVertexAOD : public AliAnalysisTaskSE {
   Bool_t  fReadMC;                    // flag read/not-read MC truth info
 
 
-  ClassDef(AliAnalysisTaskCheckVertexAOD,8);
+  ClassDef(AliAnalysisTaskCheckVertexAOD,9);
 };
 
 

@@ -21,21 +21,6 @@
 class TH1D;
 class TH2D;
 
-class HyperTritonCandidate {
-public:
-  HyperTritonCandidate(AliESDtrack *track1, AliESDtrack *track2, AliESDtrack *track3);
-
-  AliESDtrack fDaughterTrack[3];
-  int fPDG[3];
-  int fMId;
-  float fTrueP[3];
-  float fTrueDecayVtx[4];
-  float fPrimaryVtx[4];
-  float fMagField;
-  bool fIsGoodCandidate;
-  bool fIsClone;
-};
-
 class AliSelectorFindableHyperTriton3Body : public TSelector {
 public:
   TTreeReader fReader; //! the tree reader
@@ -60,7 +45,7 @@ public:
                                                        {fReader, "fTreeHyp3BodyVarPVz"},
                                                        {fReader, "fTreeHyp3BodyVarPVt"}};
   TTreeReaderValue<Float_t> fTreeHyp3BodyVarMagneticField = {fReader, "fTreeHyp3BodyVarMagneticField"};
-  TTreeReaderValue<Bool_t> fTreeHyp3BodyVarIsFakeCand    = {fReader, "fTreeHyp3BodyVarIsFakeCand"};
+  TTreeReaderValue<UChar_t> fTreeHyp3BodyVarCandStat      = {fReader, "fTreeHyp3BodyVarCandStat"};
 
   AliSelectorFindableHyperTriton3Body(TString outputName = "output.root", TString outputPath = ".",
                                       TTree * /*tree*/ = 0);
@@ -91,8 +76,6 @@ public:
 
   AliPIDResponse *fPIDResponse = {nullptr};
 
-  std::vector<HyperTritonCandidate> fClonesVector;
-
   AliVertexerHyperTriton3Body fHypertritonVertexer;
   AliVertexerHyperTriton3Body fHypertritonVertexerHard;
 
@@ -101,29 +84,22 @@ public:
   ULong_t fCurrentEventId = 0ull;
   int fLastMother         = -1;
 
-  TH2D *fHistInvMass[2][4][2] = {{{nullptr}}};
-  TH1D *fHistPt[2][4][2]      = {{{nullptr}}};
-  // TH1D *fHistVertexChi2[2]       = {nullptr};
-  // TH2D *fHistResDecayVtx[3]      = {nullptr};
-  // TH1D *fHistCosPAngle[2]        = {nullptr};
-  // TH2D *fHistDCA2pV[3][2]        = {{nullptr}};
-  // TH2D *fHistDCA2dV[3][2]        = {{nullptr}};
-  // TH1D *fHistTrackDistance[3][2] = {{nullptr}};
+  TH2D *fHistInvMass[2][3][3]    = {{{nullptr}}};
+  TH1D *fHistPt[2][3][3]         = {{{nullptr}}};
+  TH1D *fHistDaughterPt[3][3][3] = {{{nullptr}}};
+  // TH1D *fHistNClsTPC[3][3][2]    = {{{nullptr}}};
+  TH1D *fHistResDecayVtx[3]      = {nullptr};
+  TH1D *fHistVertexChi2[2]       = {nullptr};
+  TH1D *fHistCosPAngle[2]        = {nullptr};
+  TH1D *fHistDCA2pV[3][2]        = {{nullptr}};
+  TH1D *fHistDCA2dV[3][2]        = {{nullptr}};
+  TH1D *fHistTrackDistance[3][2] = {{nullptr}};
+  TH1D *fHistDecayLenght[2]      = {nullptr};
 
-  // TH1D *fHistPDGCheck[4]       = {nullptr};
-  // TH2D *fHistPDG               = {nullptr};
-  TH1D *fHistChargeCheck   = {nullptr};
-  TH1D *fHistTrackCheck[4] = {nullptr};
-  TH1D *fHistCheckPID[4]   = {nullptr};
-  TH1D *fHistPassCheck[2]  = {nullptr};
-  // TH1D *fHistClonesCheck       = {nullptr};
-  // TH1D *fHistSameTrackCheck[4] = {nullptr};
-
-  TH1D *fHistNSigma[3]          = {nullptr};
-  TH1D *fHistNSigmaCheck[4]     = {nullptr};
-  TH1D *fHistNSigmaFakeCheck[4] = {nullptr};
-
-  // TH1D *fHistCheckPDGTrackPID = {nullptr};
+  TH1D *fHistTrackCheck[4]  = {nullptr};
+  TH1D *fHistNSigma[3][2]   = {nullptr};
+  TH1D *fHistCheckPID[4][2] = {nullptr};
+  TH1D *fHistPassCheck[2]   = {nullptr};
 
   ClassDef(AliSelectorFindableHyperTriton3Body, 0);
 };

@@ -7,9 +7,8 @@
  - grid.py (grid macro for systematics)
    - extract.jdl
    - extract.sh
- - Xi1530PlotSystematics.C (systematic)
+ - Xi1530Systematics.C (systematic)
  - YieldMean.C
- - FitParticle.C
  - DrawXi1530forXi1820.C
 
 ## How to use ##
@@ -121,7 +120,7 @@ python grid.py local
 # will try to run all remains task in local.
 ```
 
-### Xi1530PlotSystematics.C ###
+### Xi1530Systematics.C ###
 Prototype systematic macro
 (will be updated to separtated class, "SystematicHelper" later)
 
@@ -129,6 +128,5 @@ It needs all the outputs from grid.py in ./data folder
 
 Basic usage:
 ```
-root -l -b -q Xi1530PlotSystematics.C
-# will produce many figures(pdf) and AnalysisResults_Xi1530_systematic.root file including spectra with sys, stat error
+root -l -b -q Xi1530Systematics.C
 ```

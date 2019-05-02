@@ -7,6 +7,7 @@ class TH2D;
 class TList;
 class TTree;
 
+#include <TObjString.h>
 #include <TString.h>
 #include <string>
 #include <vector>
@@ -34,8 +35,8 @@ struct RHyperTritonHe3pi {
   Double32_t fTPCmomHe3;            //[0.0,10.24,8]
   Double32_t fTPCmomPi;             //[0.0,10.24,8]
   Double32_t fChi2V0;               //[0.0,10.24,8] V0 fit chi2
-  Double32_t fDcaHe32PrimaryVertex; //[0.0,0.256,8] DCA of the negative prong to the PV
-  Double32_t fDcaPi2PrimaryVertex;  //[0.0,0.256,8]  DCA of the positive prong to the PV
+  Double32_t fDcaHe32PrimaryVertex; //[0.0,1.0,8] DCA of the negative prong to the PV
+  Double32_t fDcaPi2PrimaryVertex;  //[0.0,1.0,8]  DCA of the positive prong to the PV
   Double32_t fDcaV0daughters;       //[0.0,2.56,8] DCA between the two prongs
   Double32_t fLeastXedOverFindable; //[0.36,1.0,8] Min xed roads/findable clusters
   Double32_t fMaxChi2PerCluster;    //[0,6.4,8] Max chi2 per cluster in TPC
@@ -64,8 +65,16 @@ struct RCollision {
   float fCent;
 };
 
+struct RTracklet {
+  float fTheta;
+  float fPhi;
+  Double32_t fDeltaTheta;    //[8,-0.12,0.12]
+  Double32_t fDeltaPhi;      //[8,-0.12,0.12]
+};
+
 struct SHyperTritonHe3pi {
   int   fRecoIndex;  /// To connect with the reconstructed information
+  int   fRecoTracklet; /// To connect with the reconstructed information of the tracklets
   int   fPdgCode;
   float fDecayX;
   float fDecayY;
@@ -121,8 +130,15 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
     fMinTPCclusters = minCl;
   }
 
+  void SetMaxDeltaTheta(float maxDeltaTheta) { fMaxDeltaTheta = maxDeltaTheta; }
+  void SetMaxDeltaPhi(float maxDeltaPhi) { fMaxDeltaPhi = maxDeltaPhi; }
+  void SetMinTrackletCosP(float minTrackletCosP) { fMinTrackletCosP = minTrackletCosP; }
+
   AliEventCuts fEventCuts;  /// Event cuts class
   bool fFillGenericV0s;
+  bool fFillTracklet;
+  bool fSaveFileNames;
+  bool fPropagetToPV;
 
  private:
   TList* fListHist;  //! List of Cascade histograms
@@ -142,6 +158,9 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   TH2D* fHistNsigmaPi;           //! # sigma TPC pion for the negative prong
   TH2D* fHistInvMass;            //! # Invariant mass histogram
   TH2D* fHistTPCdEdx[2];         //! # TPC dE/dx for V0s
+  TH2D* fHistTrackletThetaPhi;   //! # tracklet theta vs phi
+  TH2D* fHistTrackletDThetaDPhi;   //! # tracklet delta_theta vs delta_phi
+  TH1D* fHistTrackletCosP;       //! # tracklet-V0 cosine of pointing angle
 
   float fMinPtToSave;  // minimum pt
   float fMaxPtToSave;  // maximum pt
@@ -150,9 +169,17 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   float fMinHe3pt;
   unsigned char fMinTPCclusters;
 
+  float fMaxDeltaPhi;
+  float fMaxDeltaTheta;
+  float fMinTrackletCosP;
+
+  TTree*     fFileNameTree;
+  TObjString fCurrentFileName;
+
   std::vector<SHyperTritonHe3pi> fSHyperTriton;
   std::vector<SGenericV0> fSGenericV0;
   std::vector<RHyperTritonHe3pi> fRHyperTriton;
+  std::vector<RTracklet> fRTracklets;
   RCollision fRCollision;
 
   AliAnalysisTaskHyperTriton2He3piML(

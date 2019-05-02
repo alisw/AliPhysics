@@ -14,6 +14,7 @@
 #define ALIANALYSISTASKNANOAODESEFILTER_H
 
 class AliNanoAODCustomSetter;
+class AliNanoFilterNormalisation;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisCuts.h"
@@ -69,6 +70,8 @@ protected:
 
   TString fInputArrayName; // name of TObjectArray of Tracks
   TString fOutputArrayName; // name of TObjectArray of AliNanoAODTracks
+
+  AliNanoFilterNormalisation* fNormalisation;          //!<! Normalisation object
 
   AliAnalysisTaskNanoAODFilter(const AliAnalysisTaskNanoAODFilter&); // not implemented
   AliAnalysisTaskNanoAODFilter& operator=(const AliAnalysisTaskNanoAODFilter&); // not implemented

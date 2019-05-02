@@ -3903,12 +3903,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     Double_t threshold = thresholdEMCalL0[binRun];
 
     if (isMC && spreadEMCalL0[binRun] != 0.){
-      TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
-      triggerSmearing->SetParameter(0, 1/(spreadEMCalL0[binRun]*TMath::Sqrt(TMath::Pi()*2)));
-      triggerSmearing->SetParameter(1, thresholdEMCalL0[binRun]);
-      triggerSmearing->SetParameter(2, spreadEMCalL0[binRun]);
-      threshold = triggerSmearing->GetRandom();
-      delete triggerSmearing;
+      threshold = fRandom.Gaus(thresholdEMCalL0[binRun], spreadEMCalL0[binRun]);
     }
 
 //     cout << "modified" << "\t"<< threshold << endl;
@@ -3982,11 +3977,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       Double_t threshold = thresholdEMCalL1[binRun];
 
       if (isMC && spreadEMCalL1[binRun] != 0.){
-        TF1 triggerSmearing("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
-        triggerSmearing.SetParameter(0, 1/(spreadEMCalL1[binRun]*TMath::Sqrt(TMath::Pi()*2)));
-        triggerSmearing.SetParameter(1, thresholdEMCalL1[binRun]);
-        triggerSmearing.SetParameter(2, spreadEMCalL1[binRun]);
-        threshold = triggerSmearing.GetRandom();
+        threshold = fRandom.Gaus(thresholdEMCalL1[binRun], spreadEMCalL1[binRun]);
       }
 
 //       cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
@@ -4053,11 +4044,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       if (binRun==19) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
       if (isMC && spreadEMCalL1G2[binRun] != 0.){
-        TF1 triggerSmearing("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
-        triggerSmearing.SetParameter(0, 1/(spreadEMCalL1G2[binRun]*TMath::Sqrt(TMath::Pi()*2)));
-        triggerSmearing.SetParameter(1, thresholdEMCalL1G2[binRun]);
-        triggerSmearing.SetParameter(2, spreadEMCalL1G2[binRun]);
-        threshold = triggerSmearing.GetRandom();
+        threshold = fRandom.Gaus(thresholdEMCalL1G2[binRun], spreadEMCalL1G2[binRun]);
       }
 //       cout << "\t L2 mod\t"<< threshold << endl;
 

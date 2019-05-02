@@ -93,8 +93,8 @@ Int_t AlidNdPtTools::AddAxis(const char* label, const char* title, const char* o
         return AddAxis(label, title, nbins, xbins);    
     }
     if (o.Contains("ptveryfew")) {
-        const Int_t nbins = 5;
-        Double_t xbins[6] = {0.0, 0.5, 1.0, 1.5, 2.0, 200.0};
+        const Int_t nbins = 8;
+        Double_t xbins[9] = {0.0, 0.15, 0.5, 1.0, 2.0, 5.0, 10, 25.0, 200.0};
         return AddAxis(label, title, nbins, xbins);    
     }
     if (o.Contains("ptmario")) {   

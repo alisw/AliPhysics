@@ -58,7 +58,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     AddAxis("DCAxy",5000,-1,1);
     AddAxis("pt");    
     AddAxis("nTracks","mult6kcoarse");
-    AddAxis("MCinfo",3,-0.5,2.5); // 0=prim, 1=decay 2=material
+    AddAxis("MCinfo",4,-1.5,2.5); // 0=prim, 1=decay 2=material -1=data
     fHistDCA = CreateHist("fHistDCA");
     fOutputList->Add(fHistDCA);
     
@@ -66,7 +66,7 @@ void AliAnalysisTaskDCArStudy::AddOutput()
     AddAxis("DCAxy",5000,-20,20); 
     AddAxis("TPCpt","pt");    
     AddAxis("nTracks","mult6kcoarse");
-    AddAxis("MCinfo",3,-0.5,2.5); // 0=prim, 1=decay 2=material
+    AddAxis("MCinfo",4,-1.5,2.5); // 0=prim, 1=decay 2=material -1=data
     fHistDCATPC = CreateHist("fHistDCATPC");
     fOutputList->Add(fHistDCATPC);
     
@@ -76,27 +76,35 @@ void AliAnalysisTaskDCArStudy::AddOutput()
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskDCArStudy::AnaEvent()
+Bool_t AliAnalysisTaskDCArStudy::IsEventSelected()
 {
-   InitEvent();
-   InitEventMult();
-   InitEventCent();
-   InitMCEvent();   
-   if (fEventCutsPassed) LoopOverAllTracks();
-   
+    return fIsAcceptedAliEventCuts;
 }
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskDCArStudy::AnaTrack()
-{    
-    InitTrack();
-    InitMCTrack();
-    InitTrackIP();
-    InitTrackTPC();
-    if (fESDtrackCuts[0]->AcceptTrack(fESDTrack)) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
-    if (fESDtrackCuts[1]->AcceptTrack(fESDTrack)) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
+
+void AliAnalysisTaskDCArStudy::AnaEvent()
+{
+    LoopOverAllTracks();
 }
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskDCArStudy::AnaTrackMC(Int_t flag)
+{
+    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, fMCPrimSec); }
+    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, fMCPrimSec); }
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskDCArStudy::AnaTrackDATA(Int_t flag)
+{
+    if (fAcceptTrack[0]) { FillHist(fHistDCATPC, fDCArTPC, fPtInnerTPC, fNTracksAcc, -1); }
+    if (fAcceptTrack[1]) { FillHist(fHistDCA, fDCAr, fPt, fNTracksAcc, -1); }
+}
+
 
 //_____________________________________________________________________________
 

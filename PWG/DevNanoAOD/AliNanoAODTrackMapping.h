@@ -30,6 +30,7 @@ public:
   
 
   const char * GetVarName(Int_t index) const;
+  const char * GetVarNameInt(Int_t index) const;
   Int_t GetVarIndex(TString varName); // cannot be const (uses stl map)
 
   //TODO: implement custom variables
@@ -37,6 +38,7 @@ public:
   // Getters
   //  Internal
   Int_t GetSize()             const { return fSize;             }  
+  Int_t GetSizeInt()          const { return fSizeInt;          }  
   //  Kin vars
   Int_t GetPt()               const { return fPt;               }
   Int_t GetPhi()              const { return fPhi;              }
@@ -50,6 +52,8 @@ public:
   Int_t GetPDCAZ()            const { return fPDCAZ;            }
   Int_t GetPosDCAx()          const { return fPosDCAx;          }
   Int_t GetPosDCAy()          const { return fPosDCAy;          }
+  Int_t GetPosDCAz()          const { return fPosDCAz;          }
+  Int_t GetDCA()              const { return fDCA;              }
   Int_t GetRAtAbsorberEnd()   const { return fRAtAbsorberEnd;   }
   Int_t GetTPCncls()          const { return fTPCncls;          }
   Int_t GetID()               const { return fID;               }
@@ -72,7 +76,8 @@ public:
   Int_t GetTRDsignal()        const { return fTRDsignal;        }
   Int_t GetTRDChi2()          const { return fTRDChi2;          }
   Int_t GetTRDnSlices()       const { return fTRDnSlices;       }
-  Int_t GetIsMuonTrack()      const { return fIsMuonTrack;      }
+  Int_t GetTRDntrackletsPID() const { return fTRDntrackletsPID; }
+  Int_t GetTRDnClusters()     const { return fTRDnClusters;     }
   Int_t GetTPCnclsS()         const { return fTPCnclsS;         }
   Int_t GetFilterMap()        const { return fFilterMap;        }
   Int_t GetTOFBunchCrossing() const { return fTOFBunchCrossing; }
@@ -88,8 +93,8 @@ private:
   static void  LoadInstance() ;
   
   Int_t fSize; ///< Number of variables actually allocated
-  void  SetSize (Int_t var) { fSize = var;}
-  // FIXME: should this be static?
+  Int_t fSizeInt; ///< Number of int variables actually allocated
+  
   Int_t fPt;      	  ///< Mapping variable
   Int_t fPhi;		  ///< Mapping variable
   Int_t fTheta;		  ///< Mapping variable
@@ -102,6 +107,8 @@ private:
   Int_t fPDCAZ;		  ///< Mapping variable
   Int_t fPosDCAx;	  ///< Mapping variable
   Int_t fPosDCAy;	  ///< Mapping variable
+  Int_t fPosDCAz;	  ///< Mapping variable
+  Int_t fDCA;	  ///< Mapping variable
   Int_t fRAtAbsorberEnd;  ///< Mapping variable
   Int_t fTPCncls;	  ///< Mapping variable
   Int_t fID;		  ///< Mapping variable
@@ -124,19 +131,20 @@ private:
   Int_t fTRDsignal;	  ///< Mapping variable
   Int_t fTRDChi2;	  ///< Mapping variable
   Int_t fTRDnSlices;	  ///< Mapping variable
-  Int_t fIsMuonTrack;     ///< Mapping variable
+  Int_t fTRDntrackletsPID; ///< Mapping variable
+  Int_t fTRDnClusters;    ///< Mapping variable
   Int_t fTPCnclsS;    ///< Mapping variable
   Int_t fFilterMap;      ///< Mapping variable
   Int_t fTOFBunchCrossing;      ///< Mapping variable
   Int_t fcovmat[21];          ///< Mapping variables
   Int_t fTOFchi2;  ///< Mapping variables
   Int_t fTOFsignalDz;  ///< Mapping variables 
-  Int_t fTOFsignalDx;  ///< Mapping variables 
+  Int_t fTOFsignalDx;  ///< Mapping variables
 
   static AliNanoAODTrackMapping * fInstance; ///< instance, needed for the singleton implementation
   static TString fMappingString; ///< the string which this class was initialized with
   std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
-  ClassDef(AliNanoAODTrackMapping, 2)
+  ClassDef(AliNanoAODTrackMapping, 3)
   
 };
 

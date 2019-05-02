@@ -189,7 +189,7 @@ Clusterizer:
     clusterBranchName: "sharedParameters:clusterBranchName"
     # Sets the Clusterizer type based on the same familiar enumeration.
     # Note that you should _not_ include the prefix as you usually would for setting an enumeration. Only list the value.
-    clusterizer: kClusterizerv2
+    clusterizer: kClusterizerv3
     cellE: 0.05
     seedE: 0.1
     cellTimeMin: -1                    # Min cell time (s)

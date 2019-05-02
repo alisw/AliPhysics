@@ -6,10 +6,9 @@
 
 ClassImp(AliNanoFilterNormalisation);
 
-AliNanoFilterNormalisation::AliNanoFilterNormalisation(TString name, TString title, int nMultBins) : TNamed(name, title) {
-  fCandidateEvents = new TH2D("fCandidateEvents",";Multiplicity estimator;",1+nMultBins,-1,nMultBins,5,-0.5,4.5);
-  fSelectedEvents = new TH2D("fSelectedEvents",";Multiplicity estimator;",1+nMultBins,-1,nMultBins,5,-0.5,4.5);
-
+AliNanoFilterNormalisation::AliNanoFilterNormalisation(TString name, TString title, int nMultBins, float multBegin, float multEnd) : TNamed(name, title) {
+  fCandidateEvents = new TH2D("fCandidateEvents", ";Multiplicity estimator;", nMultBins, multBegin, multEnd, 5, -0.5, 4.5);
+  fSelectedEvents  = (TH2D*) fCandidateEvents->Clone("fSelectedEvents");
 
   std::string labels[5]{"Input events", "Triggered events", "Triggered + Quality cuts", "Triggered + QC + Reco vertex", "Analysis events"};
   for (int iType{0}; iType < 5; ++iType) {
@@ -49,7 +48,7 @@ void AliNanoFilterNormalisation::FillCandidate(bool triggered, bool nonVertexRel
   fCandidateEvents->Fill(mult, kAnyEvent);
   if (triggered) fCandidateEvents->Fill(mult, kTriggeredEvent);
   if (nonVertexRelatedSel) fCandidateEvents->Fill(mult, kTriggeredEventWithQualityCuts);
-  if (recoVertex) fCandidateEvents->Fill(mult, kTriggeredEventWithQualityCuts);
+  if (recoVertex) fCandidateEvents->Fill(mult, kTriggeredEventWithQualityCutsAndRecoVertex);
   if (allCuts) fCandidateEvents->Fill(mult, kAnalysisEvent);
 }
 
@@ -57,7 +56,7 @@ void AliNanoFilterNormalisation::FillSelected(bool triggered, bool nonVertexRela
   fSelectedEvents->Fill(mult, kAnyEvent);
   if (triggered) fSelectedEvents->Fill(mult, kTriggeredEvent);
   if (nonVertexRelatedSel) fSelectedEvents->Fill(mult, kTriggeredEventWithQualityCuts);
-  if (recoVertex) fSelectedEvents->Fill(mult, kTriggeredEventWithQualityCuts);
+  if (recoVertex) fSelectedEvents->Fill(mult, kTriggeredEventWithQualityCutsAndRecoVertex);
   if (allCuts) fSelectedEvents->Fill(mult, kAnalysisEvent);
 }
 

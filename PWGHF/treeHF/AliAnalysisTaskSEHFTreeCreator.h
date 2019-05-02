@@ -125,6 +125,11 @@ public:
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
     AliAODVertex* ReconstructBplusVertex(const AliVVertex *primary, TObjArray *tracks, Double_t bField, Double_t dispersion);
   
+    void SetNsigmaTPCDataDrivenCorrection(Int_t syst) {
+        fEnableNsigmaTPCDataCorr=true; 
+        fSystemForNsigmaTPCDataCorr=syst; 
+    }
+
     // Jets
     //-----------------------------------------------------------------------------------------------
     void SetFillNJetTrees(Int_t n){fWriteNJetTrees=n;}
@@ -286,8 +291,11 @@ private:
     bool                    fFillMass;                             ///< Mass
     bool                    fFillMatchingJetID;                    ///< jet matching
   
+    bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
+    int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
+
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,12);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,13);
     /// \endcond
 };
 

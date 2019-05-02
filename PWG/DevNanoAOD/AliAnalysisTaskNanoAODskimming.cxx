@@ -6,7 +6,6 @@
 #include <AliInputEventHandler.h>
 #include <AliNanoFilterNormalisation.h>
 #include <AliVEvent.h>
-#include <AliVTrack.h>
 
 #include <TChain.h>
 #include <TObject.h>
@@ -25,7 +24,8 @@ AliAnalysisTaskNanoAODskimming::AliAnalysisTaskNanoAODskimming(std::string taskN
 }
 
 AliAnalysisTaskNanoAODskimming::~AliAnalysisTaskNanoAODskimming() {
-  delete fNormalisation;
+  if (fNormalisation)
+    delete fNormalisation;
 }
 
 void AliAnalysisTaskNanoAODskimming::UserCreateOutputObjects() {
@@ -62,9 +62,29 @@ void AliAnalysisTaskNanoAODskimming::UserExec(Option_t* /*option*/) {
 void AliAnalysisTaskNanoAODskimming::FinishTaskOutput() {
   // We save here the user info
 
+  int anyBin = fNormalisation->GetCandidateEventsHistogram()->GetYaxis()->FindBin(AliNanoFilterNormalisation::kAnyEvent);
+  double nCan = fNormalisation->GetCandidateEventsHistogram()->Integral(0,-1,anyBin,anyBin);
+  int analysisBin = fNormalisation->GetSelectedEventsHistogram()->GetYaxis()->FindBin(AliNanoFilterNormalisation::kAnalysisEvent);
+  double nSel = fNormalisation->GetSelectedEventsHistogram()->Integral(0,-1,analysisBin,analysisBin);
+  std::cout << "****************************************************************" << std::endl;
+  std::cout << "* AliAnalysisTaskNanoAODskimming summary" << std::endl;
+  std::cout << "* Number of processed events:" << nCan << std::endl;
+  std::cout << "* Number of selected events:" << nSel << std::endl;
+  std::cout << "****************************************************************" << std::endl;
+
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+  if (!handler) return;
   AliAODExtension *extNanoAOD = handler->GetFilteredAOD("AliAOD.NanoAOD.root");
-  extNanoAOD->GetTree()->GetUserInfo()->Add(fNormalisation);
+  if (!extNanoAOD) return;
+  TTree* nanoTree = extNanoAOD->GetTree();
+  if (!nanoTree) return;
+  TList* userInfo = nanoTree->GetUserInfo();
+  if (!userInfo) return;
+  userInfo->Add(fNormalisation);
+}
+
+void AliAnalysisTaskNanoAODskimming::Terminate(Option_t *) {
+
 }
 
 AliAnalysisTaskNanoAODskimming* AliAnalysisTaskNanoAODskimming::AddTask(std::string name) {

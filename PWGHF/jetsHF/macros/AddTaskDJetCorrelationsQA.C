@@ -26,7 +26,8 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
   Float_t jptcut = 10.,
   const char *cutType = "TPC",
   Double_t percjetareacut = -1.,
-  AliAnalysisTaskDJetCorrelationsQA::ECorrelationMethod CorrMethod = AliAnalysisTaskDJetCorrelationsQA::kConstituent
+  AliAnalysisTaskDJetCorrelationsQA::ECorrelationMethod CorrMethod = AliAnalysisTaskDJetCorrelationsQA::kConstituent,
+  Bool_t isPPData = kTRUE
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -88,6 +89,7 @@ AliAnalysisTaskDJetCorrelationsQA *AddTaskDJetCorrelationsQA(
   taskCorr->SetCorrelationMethod(CorrMethod);
   taskCorr->SetMC(theMCon);
   taskCorr->SetUseReco(reco);
+  taskCorr->SetIsPPData(isPPData);
   
   AliParticleContainer *trackCont  = taskCorr->AddParticleContainer(trackArrname);
   

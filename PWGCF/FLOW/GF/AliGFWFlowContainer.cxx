@@ -92,7 +92,7 @@ Long64_t AliGFWFlowContainer::Merge(TCollection *collist) {
     if(!tpro) {
       fProf = (TProfile2D*)spro->Clone(spro->GetName());
       fProf->SetDirectory(0);
-    } else 
+    } else
       tpro->Add(spro);
     nmerged++;
     TObjArray *tarr = l_FC->GetSubProfiles();
@@ -146,7 +146,7 @@ void AliGFWFlowContainer::PickAndMerge(TFile *tfi) {
   if(!tpro) {
     fProf = (TProfile2D*)spro->Clone(spro->GetName());
     fProf->SetDirectory(0);
-  } else 
+  } else
     tpro->Add(spro);
   TObjArray *tarr = lfc->GetSubProfiles();
   if(!tarr) {
@@ -225,42 +225,39 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsMulti(const char *order, Int_t l_pti) 
 TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmulti, Double_t lmaxmulti) {
   Int_t minm = 1;
   Int_t maxm = fProf->GetXaxis()->GetNbins();
-  //This is hardcoded for now. There must be a better (convenient) way to set this
-  Int_t fNbinsPt=27;
+  Int_t fNbinsPt=24;
   Double_t fbinsPt[] = {
     0.2, 0.4, 0.6, 0.8, 1.0,
     1.2, 1.4, 1.6, 1.8, 2.0,
     2.2, 2.4, 2.6, 3.0, 3.4,
     3.8, 4.2, 4.6, 5.2, 5.8,
-    6.6, 8.0, 12.0, 16.0, 20.,
-    26.0, 32.0, 40.};
+    6.6, 8.0, 12.0, 16.0, 20.};
 
   if(lminmulti>0) {
     minm=fProf->GetXaxis()->FindBin(lminmulti);
     maxm=minm;
   };
   if(lmaxmulti>lminmulti) maxm=fProf->GetXaxis()->FindBin(lmaxmulti);
-  TProfile *projection = (TProfile*)fProf->ProfileY("tempproj",minm,maxm);
+  AliProfileSubset *rhProfSub = new AliProfileSubset(*fProf);
   TProfile *retSubset=0;
   TString l_name("");
   Ssiz_t l_pos=0;
   while(fIDName.Tokenize(l_name,l_pos)) {
-    const char *ybl1 = Form("%s%s_pt_1",l_name.Data(),order);
-    const char *ybl2 = Form("%s%s_pt_%i",l_name.Data(),order,fNbinsPt);
-    Int_t ybn1 = fProf->GetYaxis()->FindBin(ybl1);
-    Int_t ybn2 = fProf->GetYaxis()->FindBin(ybl2);
-    TProfile *rethist = new TProfile("temp_prof","temp_prof", fNbinsPt, fbinsPt);
-    AliProfileSubset *rhSubset = new AliProfileSubset(rethist);
-    delete rethist;
-    rhSubset->CopyFromProfile(ybn1,ybn2,projection);
-    if(fPtRebin>1) rhSubset->RebinX(fPtRebin);
+    //printf("working on \"%s\"\n",l_name.Data());
+    TString ybl1(Form("%s%s_pt_1",l_name.Data(),order));
+    TString ybl2(Form("%s%s_pt_%i",l_name.Data(),order,fNbinsPt));
+    Int_t ybn1 = fProf->GetYaxis()->FindBin(ybl1.Data());
+    Int_t ybn2 = fProf->GetYaxis()->FindBin(ybl2.Data());
+    rhProfSub->GetYaxis()->SetRange(ybn1,ybn2);
+    TProfile *tempprof = rhProfSub->GetSubset(kFALSE,"tempprof",minm,maxm,fNbinsPt,fbinsPt);
     if(!retSubset) {
-      const char *profname = Form("%s_MultiB_%i_%i",order,minm,maxm);
-      retSubset = (TProfile*)rhSubset->Clone(profname);
-      delete rhSubset;
-    } else { retSubset->Add(rhSubset); delete rhSubset; };
+      TString profname = Form("%s_MultiB_%i_%i",order,minm,maxm);
+      retSubset = (TProfile*)tempprof->Clone(profname.Data());
+    } else retSubset->Add(tempprof);
+    delete tempprof;
   };
-  delete projection;
+  delete rhProfSub;
+  retSubset->RebinX(fPtRebin);
   return retSubset;
 };
 TH1D *AliGFWFlowContainer::ProfToHist(TProfile *inpf) {
@@ -688,17 +685,27 @@ TH1D *AliGFWFlowContainer::GetVNN(Int_t n, Int_t c, Bool_t onPt, Double_t arg1, 
   return GetVN2VsX(n,onPt,arg1,arg2);
 };
 TProfile *AliGFWFlowContainer::GetRefFlowProfile(const char *order, Double_t m1, Double_t m2) {
-  TProfile *tpf = GetCorrXXVsMulti(order,0);
-  Int_t b1 = tpf->FindBin(m1);
-  Int_t b2 = tpf->FindBin(m2);
-  if(b1<1) b1 = 1;
-  if(b2<1) b2 = tpf->GetNbinsX();
-  TProfile *tpf2 = new TProfile("verytempprof","vtpf",b2-b1+1,b1,b2);
-  AliProfileSubset *tpf2SS = new AliProfileSubset(tpf2);
-  delete tpf2;
-  tpf2SS->CopyFromProfile(b1,b2,tpf);
-  delete tpf;
-  return tpf2SS;
+  Int_t nStartBin = fProf->GetXaxis()->FindBin(m1);
+  Int_t nStopBin = fProf->GetXaxis()->FindBin(m2);
+  Int_t nBins = nStopBin-nStartBin+1;
+  Double_t *l_bins = new Double_t[nBins+1];
+  for(Int_t i=0;i<=nBins;i++) l_bins[i] = i; //dummy bins, will be merged anyways
+  TProfile *retpf=0;
+  TString l_name("");
+  Ssiz_t l_pos=0;
+  AliProfileSubset *rhSubset = new AliProfileSubset(*fProf);
+  rhSubset->GetXaxis()->SetRange(nStartBin,nStopBin);
+  while(fIDName.Tokenize(l_name,l_pos)) {
+    l_name.Append(order);
+    Int_t ybin = fProf->GetYaxis()->FindBin(l_name.Data());
+    TProfile *tempprof = rhSubset->GetSubset(kTRUE,"tempprof",ybin,ybin,nBins,l_bins);
+    if(!retpf) retpf = (TProfile*)tempprof->Clone("RefFlowProf");
+    else retpf->Add(tempprof);
+    delete tempprof;
+  };
+  delete rhSubset;
+  retpf->RebinX(nBins);
+  return retpf;
 };
 
 //{2} particle correlations
@@ -711,22 +718,27 @@ Double_t AliGFWFlowContainer::CN2Error(Double_t cor2e) {
   return cor2e;
 };
 Double_t AliGFWFlowContainer::VN2Value(Double_t cor2) {
+  if(cor2<0) return -2; //Return -2, which is not ok
   return TMath::Sqrt(cor2);
 };
 Double_t AliGFWFlowContainer::VN2Error(Double_t cor2, Double_t cor2e) {
+  if(cor2<0) return 0;
   if(!fPropagateErrors) return 0;
   return 0.5*cor2e/TMath::Sqrt(cor2);
 };
 Double_t AliGFWFlowContainer::VDN2Value(Double_t cor2d, Double_t cor2) {
+  if(cor2<0) return -2; //Return -2, which is not ok
   return cor2d/TMath::Sqrt(cor2);
 };
 Double_t AliGFWFlowContainer::VDN2Error(Double_t cor2d, Double_t cor2de, Double_t cor2, Double_t cor2e) {
   if(!fPropagateErrors) return 0;
-  return TMath::Sqrt(cor2de*cor2de/cor2 + 0.25*cor2d*cor2d*cor2e*cor2e/(cor2*cor2*cor2));
+  Double_t sqrtv = cor2de*cor2de/cor2 + 0.25*cor2d*cor2d*cor2e*cor2e/(cor2*cor2*cor2);
+  if(sqrtv<0) return 0;
+  return TMath::Sqrt(sqrtv);
 };
 
 
-//C{4} and V{4} calculations 
+//C{4} and V{4} calculations
 Double_t AliGFWFlowContainer::CN4Value(Double_t cor4, Double_t cor2) {
   return cor4 - 2*TMath::Power(cor2,2);
 };
@@ -742,18 +754,22 @@ Double_t AliGFWFlowContainer::DN4Error(Double_t cor4de, Double_t cor2d, Double_t
   return TMath::Sqrt(cor4de*cor4de + 4*cor2*cor2*cor2de*cor2de + 4*cor2d*cor2d*cor2e*cor2e);
 };
 Double_t AliGFWFlowContainer::VN4Value(Double_t c4) {
+  if(c4>0) return -2; //Return -2 if cannot calculate
   return TMath::Power(-c4,1./4);
 };
 Double_t AliGFWFlowContainer::VN4Error(Double_t c4, Double_t c4e) {
+  if(c4>0) return 0;
   if(!fPropagateErrors) return 0;
   return TMath::Power(-c4,(-3./4))*c4e/4;
 };
 Double_t AliGFWFlowContainer::VDN4Value(Double_t d4, Double_t c4) {
+  if(c4>0) return -2; //Return -2 if cannot calculate
   return -d4*TMath::Power(-c4,(-3./4));
 };
 Double_t AliGFWFlowContainer::VDN4Error(Double_t d4, Double_t d4e, Double_t c4, Double_t c4e) {
   if(!fPropagateErrors) return 0;
-  return TMath::Sqrt(TMath::Power(-c4, -6./4)*d4e*d4e + 
+  if(c4>0) return 0;
+  return TMath::Sqrt(TMath::Power(-c4, -6./4)*d4e*d4e +
 		     TMath::Power(-c4,-14./4)*d4*d4*c4e*c4e*9./16);
 };
 
@@ -790,17 +806,21 @@ Double_t AliGFWFlowContainer::DN6Error(Double_t d6e, Double_t d4, Double_t d4e, 
   return TMath::Sqrt(sum);
 };
 Double_t AliGFWFlowContainer::VN6Value(Double_t c6) {
+  if(c6<0) return -2; //Return -2 if not ok
   return TMath::Power(c6/4, 1./6);
 };
 Double_t AliGFWFlowContainer::VN6Error(Double_t c6, Double_t c6e) {
+  if(c6<0) return 0;
   if(!fPropagateErrors) return 0;
   return c6e/6*TMath::Power(4,-1./6)*TMath::Power(c6,-5./6);
 };
 Double_t AliGFWFlowContainer::VDN6Value(Double_t d6, Double_t c6) {
+  if(c6<0) return -2; //Return -2 if not ok
   return d6*TMath::Power(4,-1./6)*TMath::Power(c6,-5./6);
 };
 Double_t AliGFWFlowContainer::VDN6Error(Double_t d6, Double_t d6e, Double_t c6, Double_t c6e) {
   if(!fPropagateErrors) return 0;
+  if(c6<0) return 0;
   Double_t vdn6 = VDN6Value(d6, c6);
   Double_t dp = d6e/d6;
   Double_t cp = 5*c6e/6;
@@ -828,7 +848,7 @@ Double_t AliGFWFlowContainer::DN8Value(Double_t cor8d, Double_t cor6d, Double_t 
   return cor8d - 12*cor6d*cor2 - 4*cor2d*cor6 - 18*cor4d*cor4 + 72*cor4d*cor2*cor2
     + 72*cor4*cor2*cor2d-144*cor2d*cor2*cor2*cor2;
 };
-Double_t AliGFWFlowContainer::DN8Error(Double_t d8e, Double_t d6, Double_t d6e, Double_t d4, 
+Double_t AliGFWFlowContainer::DN8Error(Double_t d8e, Double_t d6, Double_t d6e, Double_t d4,
 				 Double_t d4e, Double_t d2, Double_t d2e, Double_t c6,
 				 Double_t c6e, Double_t c4, Double_t c4e, Double_t c2,
 				 Double_t c2e) {
@@ -846,20 +866,23 @@ Double_t AliGFWFlowContainer::DN8Error(Double_t d8e, Double_t d6, Double_t d6e, 
   return TMath::Sqrt(retval);
 };
 Double_t AliGFWFlowContainer::VN8Value(Double_t c8) {
+  if(c8>0) return -2; //Return -2 if not ok
   return TMath::Power(-c8/33, 1./8);
 };
 Double_t AliGFWFlowContainer::VN8Error(Double_t c8, Double_t c8e) {
+  if(c8>0) return 0;
   if(!fPropagateErrors) return 0;
   return c8e * 1./(8*c8) * VN8Value(c8);
 };
 Double_t AliGFWFlowContainer::VDN8Value(Double_t d8, Double_t c8) {
+  if(c8>0) return -2; //Return -2 if not OK
   return d8/c8 * VN8Value(c8);
 };
 Double_t AliGFWFlowContainer::VDN8Error(Double_t d8, Double_t d8e, Double_t c8, Double_t c8e) {
+  if(c8>0) return 0;
   if(!fPropagateErrors) return 0;
   Double_t vdn8v = VDN8Value(d8,c8);
   Double_t dd = d8e/d8;
   Double_t dc = -7*c8e/(8*c8);
   return vdn8v * TMath::Sqrt(dd*dd+dc*dc);
 };
-

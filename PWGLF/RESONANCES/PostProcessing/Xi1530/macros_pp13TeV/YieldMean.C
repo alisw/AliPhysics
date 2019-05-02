@@ -58,7 +58,8 @@ TH1* YieldMean(TH1* hstat,
                Option_t* opt = "0q",
                TString logfilename = "log.root",
                Double_t minfit = 0.0,
-               Double_t maxfit = 10.0) {
+               Double_t maxfit = 10.0,
+               Int_t trylimit = 10) {
     if (maxfit > max)
         max = maxfit;
     if (minfit < min)
@@ -67,7 +68,6 @@ TH1* YieldMean(TH1* hstat,
     /* set many iterations when fitting the data so we don't
        stop minimization with MAX_CALLS */
     TVirtualFitter::SetMaxIterations(1000000);
-    Int_t trylimit = 99999;
     /* create output histo */
     Double_t integral, mean, extra;
     TH1* hout = new TH1D("hout", "", 9, 0, 9);
@@ -301,6 +301,20 @@ TH1* YieldMean(TH1* hstat,
     cCanvasSys->cd(2);
     f->SetLineColor(4);
     f->DrawCopy("same");
+    TFile* filewithfits2 = TFile::Open(logfilename.Data(), "UPDATE");
+    hout->Write();
+    filewithfits2->Close();
+    delete filewithfits2;
+
+    trials = 0;
+    do {
+        fitres = htot->Fit(f, opt, "", minfit, maxfit);
+        Printf("Trial: %d", trials++);
+        if (trials > trylimit) {
+            Printf("FIT DOES NOT CONVERGE IN LINE %d", __LINE__);
+            break;
+        }
+    } while (fitres != 0);
 
     return hout;
 }
