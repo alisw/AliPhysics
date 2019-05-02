@@ -1008,7 +1008,6 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
       Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
       if(ip<200000) fOrigContainer[ip]=orig;
       Bool_t isInj=AliVertexingHFUtils::IsTrackInjected(ip,mcHeader,arrayMC);
-      fHistCheckOrigin->Fill(orig,isInj);
       Int_t deca=0;
       Bool_t isGoodDecay=kFALSE;
       Int_t labDau[4]={-1,-1,-1,-1};
@@ -1023,17 +1022,18 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
         deca=AliVertexingHFUtils::CheckDsDecay(arrayMC,part,labDau);
         if(deca==1) isGoodDecay=kTRUE;
       }
-      fHistCheckDecChan->Fill(deca);
       if(labDau[0]==-1){
         //	printf(Form("Meson %d Label of daughters not filled correctly -- %d\n",fMeson,isGoodDecay));
         continue; //protection against unfilled array of labels
       }
+      fHistCheckDecChan->Fill(deca);
       Bool_t isInAcc=CheckAcceptance(arrayMC,nProng,labDau);
       if(isInAcc) fHistCheckDecChanAcc->Fill(deca);
       if(isGoodDecay){
         Double_t ptgen=part->Pt();
         Double_t ygen=part->Y();
 	if(fAnalysisCuts->IsInFiducialAcceptance(ptgen,ygen)){
+	  fHistCheckOrigin->Fill(orig,isInj);
 	  if(orig==4){
 	    fPtVsYVsMultGenPrompt->Fill(ptgen,ygen,fMultiplicity);
 	    if(TMath::Abs(ygen)<0.5) fPtVsYVsMultGenLimAccPrompt->Fill(ptgen,ygen,fMultiplicity);
