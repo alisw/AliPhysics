@@ -32,6 +32,7 @@ AliAnalysisTaskBaseWeights::AliAnalysisTaskBaseWeights()
     , fUseMCWeights(kTRUE)
     , fUseRandomSeed(kFALSE)
     , fRand(0)
+    , fMCSpectraWeights(0)
     , fMCweight(1)
 {
     // default contructor    
@@ -44,6 +45,7 @@ AliAnalysisTaskBaseWeights::AliAnalysisTaskBaseWeights(const char* name)
     , fUseMCWeights(kTRUE)
     , fUseRandomSeed(kFALSE)
     , fRand(0)   
+    , fMCSpectraWeights(0)
     , fMCweight(1)
 {
     // constructor
@@ -84,9 +86,9 @@ void AliAnalysisTaskBaseWeights::LoopOverAllTracks(Int_t flag)
     for (Int_t i = 0; i < fNTracksESD; i++) {
         fESDTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(i));
         if (!fESDTrack) { Err("noESDtrack"); continue; }
-        InitTrack();        
-        // the implementation in AlidNdPtTools is temporary for testing puposes
-        fMCweight = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);
+        InitTrack();     
+        // get the scaling factor      
+        fMCweight = MCScalingFactor();        
         Double_t s = fMCweight;        
         while (s >= 1) {
             BaseAnaTrack(flag);
@@ -117,8 +119,8 @@ void AliAnalysisTaskBaseWeights::LoopOverAllParticles(Int_t flag)
         if (!fMCParticle) { Err("noMCParticle"); continue; }         
         fMCLabel = i;
         InitMCParticle();
-        // the implementation in AlidNdPtTools is temporary for testing puposes
-        fMCweight = AlidNdPtTools::MCScalingFactor(fMCProdcutionType,fMCParticleType, fMCPt);
+        // get the scaling factor      
+        fMCweight = MCScalingFactor();
         Double_t s = fMCweight;
         while (s >= 1) {
             BaseAnaParticleMC(flag);
@@ -134,7 +136,53 @@ void AliAnalysisTaskBaseWeights::LoopOverAllParticles(Int_t flag)
 
 //_____________________________________________________________________________
 
-AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(const char* name, const char* outfile) 
+Double_t AliAnalysisTaskMKBase::MCScalingFactor()
+{
+    // determine the MC scaling factor for the current particle
+    
+    // in case the weights are not activated, they are always unity
+    if (!fUseMCWeights) { retun 1.0; }
+    
+    // in case mcspectraweights are there we use them for primary particles
+    if (fMCSpectraWeights && fMCisPrim) {
+        // for now I pass the V0M multiplicity percentile
+        // TODO check if this the correct one or what should be passed
+        // TODO maybe ideal is to pass simply the event and let the SpectraWeights decide on which mult to use                    
+        return fMCSpectraWeights->GetMCSpectraWeight(fMCParticle->Particle(); ,fMultPercentileV0M);
+    } 
+    
+    // if there are no spectraweights or for secondaries we use the static tools function
+    // TODO this has to be modified, currently values for the LCH17pq are hardcoded
+    // TODO also the systematic varation should be set in the addtask somewhere
+    // now always nominal values are used
+    return     AlidNdPtTools::MCScalingFactor(fMCParticle, fMC, 0) 
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskMKBase::FillDefaultHistograms(Int_t step)
+{   
+    // fill the spectra weights if needed
+    // but do it before any event selection
+    // because this might depent on the derived task    
+    
+    //protection
+    if (fMCSpectraWeights && step=0) {
+        if(fMCSpectraWeights->GetTaskStatus() < AliMCSpectraWeights::TaskState::kMCSpectraObtained) {
+            // for now I pass the V0M multiplicity percentile
+            // TODO check if this the correct one or what should be passed
+            // TODO maybe ideal is to pass simply the event and let the SpectraWeights decide on which mult to use
+            fMCSpectraWeights->FillMCSpectra(fMC, fMultPercentileV0M);
+        }
+    }
+    
+    //also fill the default histograms
+    AliAnalysisTaskMKBase::FillDefaultHistograms(step);
+    
+}
+//_____________________________________________________________________________
+
+AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(const char* name, const char* outfile, const* char collisionSystem, Int_t sysFlag, const char* prevTrainOutputPath) 
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -169,6 +217,16 @@ AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(const
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
     task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    
+    // configure the use of AliMCSpectraWeights
+    //===========================================================================
+    if (collisionSystem) {
+        AliMCSpectraWeights* weights = new AliMCSpectraWeights(collisionSystem, "fMCSpectraWeights", sysFlag); 
+        if (prevTrainOutputPath) { weights->SetMCSpectraFile(prevTrainOutputPath); } // path to previous train output
+        weights->Init();    
+        task->fMCSpectraWeights = weights;
+    }
+
     
     // attach the task to the manager and configure in and ouput
     //===========================================================================
