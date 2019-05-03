@@ -255,6 +255,9 @@ class AliOtonOmegaAnalysis {
   Float_t fTProtonPx[150];
   Float_t fTProtonPy[150];
   Float_t fTProtonPz[150];
+  Float_t fTProtonVPx[150];
+  Float_t fTProtonVPy[150];
+  Float_t fTProtonVPz[150];
   Float_t fTProtonPt[150];
   Float_t fTProtonmT[150];
   Float_t fTProtonTPCmom[150];
