@@ -28,6 +28,8 @@
 #include "AliVParticle.h"
 #include "AliAODVertex.h"
 #include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 
 #include "AliAnalysisTaskTrackingEffPID.h"
 
@@ -72,9 +74,15 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fIsAA{false},
   fFilterBit{4},
   fTrackCuts{0x0},
+  fSelectOnGenerator{false},
+  fGenerToKeep{""},
+  fGenerToExclude{""},
+  fKeepOnlyInjected{false},
+  fKeepOnlyUE{false},
   fOutputList{0x0},
   fListCuts{0x0},
-  fHistNEvents{0x0}
+  fHistNEvents{0x0},
+  fHistNTracks{0x0}
 {
   // default: use the filter bit 4 cuts
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
@@ -108,12 +116,20 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",3,-0.5,2.5);
+  fHistNEvents = new TH1F("hNEvents", "Number of processed events",4,-0.5,3.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"All events");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"MC selected");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"Reco Selected");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"Generator name selected");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"MC selected");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Reco Selected");
   fOutputList->Add(fHistNEvents);
 
+  fHistNTracks = new TH1D("hNTracks", "Number of tracks",5,-0.5,4.5);
+  fHistNTracks->GetXaxis()->SetBinLabel(1,"All tracks");
+  fHistNTracks->GetXaxis()->SetBinLabel(2,"After track sel.");
+  fHistNTracks->GetXaxis()->SetBinLabel(3,"Phys. Primary");
+  fHistNTracks->GetXaxis()->SetBinLabel(4,"Injected/UE sel.");
+  fHistNTracks->GetXaxis()->SetBinLabel(5,"Species sel.");
+  fOutputList->Add(fHistNTracks);
 
   TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)"};
   const int nPtBins=32;
@@ -218,6 +234,35 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
   fHistNEvents->Fill(0);
 
+  // check the generator name
+  TList *lh=0x0;
+  if(fSelectOnGenerator || fKeepOnlyInjected || fKeepOnlyUE){
+    if(isAOD){
+      AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+      lh=mcHeader->GetCocktailHeaders();
+    }else{
+      TString genname=fMCEvent->GenEventHeader()->ClassName();
+      if(genname.Contains("CocktailEventHeader")){
+	AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)fMCEvent->GenEventHeader();
+	lh=cockhead->GetHeaders();
+      }
+    }
+    if(fSelectOnGenerator && lh){
+      Bool_t keep=kTRUE;
+      if(fGenerToExclude.Length()==0) keep=kFALSE;
+      Int_t nh=lh->GetEntries();
+      for(Int_t i=0;i<nh;i++){
+	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+	TString genname=gh->GetName();
+	if(fGenerToKeep.Length()>0 && genname.Contains(fGenerToKeep.Data())) keep=kTRUE;
+	if(fGenerToExclude.Length()>0 && genname.Contains(fGenerToExclude.Data())) keep=kFALSE;
+      }
+      if(!keep) return;
+    }
+  }
+
+  fHistNEvents->Fill(1);
+
   double zMCVertex =99999;
   int nTracklets = 0;
   if(isAOD){
@@ -244,7 +289,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     PostData(1, fOutputList);
     return;
   }
-  fHistNEvents->Fill(1);
+  fHistNEvents->Fill(2);
 
   const AliVVertex* vtTrc = fInputEvent->GetPrimaryVertex();
   double pos[3],cov[6];
@@ -299,13 +344,14 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     PostData(1, fOutputList);
     return;
   }
-  fHistNEvents->Fill(2);
+  fHistNEvents->Fill(3);
 
 
   for (int iT = 0; iT < (int)fInputEvent->GetNumberOfTracks(); ++iT) {
     /// Get the track and do the minimal cuts
     AliVTrack *track = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(iT));
-
+    fHistNTracks->Fill(0);
+    
     if(!isAOD){
       AliESDtrack *esdtrack = dynamic_cast<AliESDtrack*>(track); 
       if(fTrackCuts && !fTrackCuts->AcceptTrack(esdtrack)) continue;
@@ -318,8 +364,10 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 	if(!accept) continue;
       }
     }
-
-    AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
+    fHistNTracks->Fill(1);
+    
+    int lab=TMath::Abs(track->GetLabel());
+    AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(lab);
     if(!mcPart) continue;
     if (fPrimarySelectionOpt==1 && !mcPart->IsPhysicalPrimary()) continue;
     if(fPrimarySelectionOpt==2){
@@ -328,6 +376,14 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       double distz=TMath::Abs(mcPart->Zv()-zMCVertex);
       if(pRad2>8 || distz>1) continue;
     }
+    fHistNTracks->Fill(2);
+    if(lh && (fKeepOnlyInjected || fKeepOnlyUE)){
+      bool isInjected=IsInjectedParticle(lab,lh);
+      if(fKeepOnlyInjected && !isInjected) continue;
+      if(fKeepOnlyUE && isInjected) continue;
+    }
+    fHistNTracks->Fill(3);
+
     const int iCharge = mcPart->Charge() > 0 ? 1 : 0;
     int iSpecies = -1;
     for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
@@ -337,6 +393,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       }
     }
     if (iSpecies < 0) continue;
+    fHistNTracks->Fill(4);
 
     const double pt = fUseGeneratedKine ? mcPart->Pt() : track->Pt() * AliPID::ParticleCharge(iSpecies);
     const double eta = fUseGeneratedKine ? mcPart->Eta() : track->Eta();
@@ -404,4 +461,37 @@ bool AliAnalysisTaskTrackingEffPID::ConvertAndSelectAODTrack(AliAODTrack* aTrack
   AliAODVertex* av=aTrack->GetProdVertex();
   if(av->GetType()==AliAODVertex::kKink) return kFALSE;
   return fTrackCuts->AcceptTrack(&esdTrack);
+}
+
+//______________________________________________________________________________
+TString AliAnalysisTaskTrackingEffPID::GetGenerator(int label, TList *lh){
+  /// get the name of the generator that produced a given particle
+  
+  Int_t nsumpart=0;
+  Int_t nh=lh->GetEntries();
+  for(Int_t i=0;i<nh;i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+    TString genname=gh->GetName();
+    Int_t npart=gh->NProduced();
+    if(label>=nsumpart && label<(nsumpart+npart)) return genname;
+    nsumpart+=npart;
+  }
+  TString empty="";
+  return empty;
+}
+
+//______________________________________________________________________________
+bool AliAnalysisTaskTrackingEffPID::IsInjectedParticle(int lab, TList *lh){
+  /// check if a particle is injected signal or hijing UE
+  TString nameGen=GetGenerator(lab,lh);
+  while(nameGen.IsWhitespace()){
+    AliVParticle* mcpart=(AliVParticle*)fMCEvent->GetTrack(lab);
+    if(!mcpart) break;
+    int mother=fMCEvent->GetLabelOfParticleMother(lab);
+    if(mother<0) break;
+    lab=mother;
+    nameGen=GetGenerator(lab,lh);
+  }
+  if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
+  else return kTRUE;
 }
