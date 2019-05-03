@@ -55,7 +55,7 @@ maxpt(5),
 dodNdeta(kTRUE),
 fTrackDensity(),
 fState(),
-fMaxConsequtiveStrips(3),
+fMaxConsequtiveStrips(2),
 fLowCutvalue(0),
 fTrackGammaToPi0(false),
 fStored(0)
@@ -683,7 +683,7 @@ void AliForwardFlowUtil::FillFromPrimariesAODFMD(TH2D*& fwd) const
     if (p->Charge() == 0) continue;
 
     if (p->Eta() < 5 /*fwd->GetXaxis()-GetXmax()*/ && p->Eta() > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(p->Eta()) >= 1.7){
+      if (TMath::Abs(p->Eta()) >= 1.1){
         fwd->Fill(p->Eta(),p->Phi(),1);
         // if (dodNdeta) dNdeta->Fill(p->Eta(),1);
       }
@@ -700,9 +700,9 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
     // Using a dphi cut in units of mrad; This cut is motivated in
     // https://aliceinfo.cern.ch/Notes/sites/aliceinfo.cern.ch.Notes/files/notes/analysis/lmilano/2017-Aug-11-analysis_note-note.pdf
     auto dphi  = mult->GetDeltaPhi(i);
-    if (TMath::Abs(dphi) * 1000 > 5) {
-      continue;
-    }
+     if (TMath::Abs(dphi) * 1000 > 5) {
+       continue;
+     }
     auto eta   = -TMath::Log(TMath::Tan(mult->GetTheta(i)/2));
     // Drop everything outside of -1.7 < eta 1.7 to avoid overlas with the FMD
     if (eta < -1.7 || eta > 1.7) {

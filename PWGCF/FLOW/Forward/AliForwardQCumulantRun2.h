@@ -47,9 +47,9 @@ public:
    *
    * @param cent Event centrality
    */
-  void CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent,double vertexpos, UInt_t r,TString detType);
+  void CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent,double vertexpos, TString detType);
 
-void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpos,UInt_t r, TString detType);
+  void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r);
 
   /**
    * Constants
@@ -253,10 +253,6 @@ void saveEvent(TH2D& dNdetadphi, TList* outputList, double cent, double vertexpo
 
   TH2D fCumuRef;     // Accumulated reference particles
   TH2D fCumuDiff;    // Accumulated differential particles
-  TH3D fCumuNUARef;  // Accumulated NUA reference terms
-  TH3D fCumuNUADiff; // Accumulated NUA differential terms
-  Double_t fSumOfWeights;
-  Double_t fSumOfWeightsSquared;
   bool useEvent;
 
 
