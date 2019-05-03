@@ -1974,11 +1974,11 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       inputVars[5] = part->CosV0PointingAngle();
       inputVars[6] = cts;
       inputVars[7] = signd0;
-      inputVars[8] = nSigmaTPCpr;
+      inputVars[8] = bachelor->P();
       inputVars[9] = nSigmaTOFpr;
-      inputVars[10] = nSigmaTPCpi;
-      inputVars[11] = nSigmaTPCka;
-      inputVars[12] = bachelor->P();
+      inputVars[10] = nSigmaTPCpr;
+      inputVars[11] = nSigmaTPCpi;
+      inputVars[12] = nSigmaTPCpr;
       inputVars[13] = bachelor->GetTPCmomentum();
       
       
