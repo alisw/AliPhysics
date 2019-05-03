@@ -17,6 +17,12 @@
 class AliMuonTrackCuts; 											// Include class for standard muon tack cuts
 
 /**
+ * \class MatrixTH1F
+ * \brief Alias for a 2D vector of TH1F, roughly speaking an arary of TH1F.
+ */
+typedef std::vector< std::vector< TH1F* > >  MatrixTH1F;
+
+/**
  * \file AliAnalysisTaskUPCforward.h
  * \brief Contains the declaration of the AliAnalysisTaskUPCforward class
  */
@@ -836,6 +842,56 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH2F*                   fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH;  //!
 
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 5 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F***                 fInvariantMassDistributionForSignalExtractionHelicityFrameH;  //!
+
+        //                         /**
+        //                          * This histogram shows the invariant mass
+        //                          * distribution of the dimuon pairs in terms
+        //                          * of bins of cos theta of the positive muon
+        //                          * in the helicity frame of the J/Psi.
+        //                          *
+        //                          * What it means is that we divide in 5 bins of
+        //                          * possible CosTheta of the decaying J/Psi,
+        //                          * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+        //                          * (-0.4,-0.2) and so on until (0.8,1). We fill
+        //                          * the invariant mass distribution of the
+        //                          * dimuons in this many bins.
+        //                          *
+        //                          * The next step is to fit this invariant mass
+        //                          * distributions, so as to obtain the relative
+        //                          * contribution of J/Psi and GammaGamma to the
+        //                          * angular distributions. This should help in
+        //                          * validating our results...
+        //                          *
+        //                          * NEW: the mass range has been extended.
+        //                          * Meaning there are no bounds on the invariant
+        //                          * mass range BEFORE signal extraction.
+        //                          */
+        // MatrixTH1F              fInvariantMassDistributionForSignalExtractionHelicityFrameH;  //!
+
 
         //_______________________________
         // CUTS
@@ -897,7 +953,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 14);
+        ClassDef(AliAnalysisTaskUPCforward, 15);
 };
 
 #endif
