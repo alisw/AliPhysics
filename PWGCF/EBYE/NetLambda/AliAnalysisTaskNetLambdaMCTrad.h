@@ -114,7 +114,7 @@ protected:
     
     Int_t    GetPtBin(Double_t pt);
     
-    ClassDef(AliAnalysisTaskNetLambdaTrad,5);
+    ClassDef(AliAnalysisTaskNetLambdaMCTrad,4);
 };
 
 
