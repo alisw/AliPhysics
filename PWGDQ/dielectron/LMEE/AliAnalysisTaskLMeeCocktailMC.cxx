@@ -501,9 +501,9 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   Int_t   histBinM  = 1200; //600
   Float_t histMinM  = 0.;
   Float_t histMaxM  = 6.; //10.
-  Int_t   histBinPt = 160; //80
+  Int_t   histBinPt = 400; //160//80
   Float_t histMinPt = 0.;
-  Float_t histMaxPt = 8.; //8.
+  Float_t histMaxPt = 10.; //8.
   Int_t   histBinPhi = 240; //320;
   Float_t histMinPhi = 0.;
   Float_t histMaxPhi = TMath::TwoPi(); //3.2; 
