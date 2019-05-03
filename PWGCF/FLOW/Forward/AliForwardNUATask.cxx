@@ -118,8 +118,8 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     Double_t centralEtaMin = (fSettings.useSPD ? -2.5 : fSettings.useITS ? -4 : -1.5);
     Double_t centralEtaMax = (fSettings.useSPD ? 2.5 : fSettings.useITS ? 6 : 1.5);
 
-    Int_t forwardBinsEta = (fSettings.use_primaries ? 200 : 200);
-    Int_t forwardBinsPhi = (fSettings.use_primaries ? 20 : 20);
+    Int_t forwardBinsEta = (fSettings.use_primaries_fwd ? 200 : 200);
+    Int_t forwardBinsPhi = (fSettings.use_primaries_fwd ? 20 : 20);
 
     nua_cen = new TH3D("NUA_cen","NUA_cen", centralEtaBins, centralEtaMin, centralEtaMax, centralPhiBins, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);
     nua_fmd = new TH3D("NUA_fwd","NUA_fwd", forwardBinsEta, -4.0, 6.0, forwardBinsPhi, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);

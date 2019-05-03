@@ -57,7 +57,7 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
 
       // Fill into Cos() and Sin() hists
       //fFMDHits->Fill(weight);
-      if ((fSettings.fFlowFlags & fSettings.kEtaGap) && (fabs(eta) > 0.4 && fabs(eta) < 0.8)) {
+      if ((fSettings.etagap) && (fabs(eta) > 0.4 && fabs(eta) < 0.8)) {
         fCumuRef.Fill(refEta, 0., weight);// mult goes in underflowbin kWA2
       }
       else if (detType == "central") fCumuRef.Fill(refEta, 0., weight);// mult goes in underflowbin
@@ -74,7 +74,7 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
         fCumuDiff.Fill(eta, sinBin, sinnPhi);
 
         // fill ref
-        if ((fSettings.fFlowFlags & fSettings.kEtaGap) &&  ((fabs(eta) > 0.4) && (fabs(eta) < 0.8) ) ){
+        if ((fSettings.etagap) &&  ((fabs(eta) > 0.4) && (fabs(eta) < 0.8) ) ){
             fCumuRef.Fill(refEta, cosBin, cosnPhi);
             fCumuRef.Fill(refEta, sinBin, sinnPhi);
         }
@@ -120,7 +120,7 @@ void AliForwardQCumulantRun2::saveEvent(TList* outputList, double cent, double v
       Double_t refEtaA = fCumuRef.GetXaxis()->GetBinCenter(refEtaBinA);
       Double_t refEtaBinB = fCumuRef.GetXaxis()->FindBin(eta);
 
-      if ((fSettings.fFlowFlags & fSettings.kEtaGap)) refEtaBinB = fCumuRef.GetXaxis()->FindBin(-eta);
+      if ((fSettings.etagap)) refEtaBinB = fCumuRef.GetXaxis()->FindBin(-eta);
 
       multA   = fCumuRef.GetBinContent(refEtaBinA, 0);
       dQnReA  = fCumuRef.GetBinContent(refEtaBinA, GetBinNumberCos(n));
@@ -139,7 +139,7 @@ void AliForwardQCumulantRun2::saveEvent(TList* outputList, double cent, double v
 
       // The reference flow is calculated
       // 2-particle
-        if ((fSettings.fFlowFlags & fSettings.kEtaGap)){
+        if ((fSettings.etagap)){
           w2 = multA * multB;
           two = (dQnReA*dQnReB + dQnImA*dQnImB);
         }
@@ -169,7 +169,7 @@ void AliForwardQCumulantRun2::saveEvent(TList* outputList, double cent, double v
         x[4] = Double_t(fSettings.kSinphi1B);
         cumuRef->Fill(x, dQnImB);
 
-        if (!(fSettings.fFlowFlags & fSettings.kEtaGap)) {
+        if (!(fSettings.etagap)) {
           //Double_t w3 = (mp*multA-2.*mq)*(multA-1.);
 
           w4 = multA * (multA - 1.) * (multA - 2.) * (multA - 3.);
@@ -217,7 +217,7 @@ void AliForwardQCumulantRun2::saveEvent(TList* outputList, double cent, double v
       Double_t qnIm  = 0;
       Double_t q2nRe = 0;
       Double_t q2nIm = 0;
-      if (!(fSettings.fFlowFlags & fSettings.kEtaGap)){// && detType == "central"){
+      if (!(fSettings.etagap)){// && detType == "central"){
         qnRe  = pnRe;
         qnIm  = pnIm;
         q2nRe = p2nRe;
@@ -240,7 +240,7 @@ void AliForwardQCumulantRun2::saveEvent(TList* outputList, double cent, double v
       x[4] = Double_t(fSettings.kWA);
       cumuDiff->Fill(x, mp);
 
-      if ((fSettings.fFlowFlags & fSettings.kEtaGap)) continue;
+      if ((fSettings.etagap)) continue;
 
       Double_t w4p = (mp * multA - 3.*mq)*(multA - 1.)*(multA - 2.);
       Double_t fourPrime = calcFourPrime(dQnReA, dQnImA, qnRe, qnIm, pnRe, pnIm, q2nRe, q2nIm, dQ2nReA, dQ2nImA, mq, multA);

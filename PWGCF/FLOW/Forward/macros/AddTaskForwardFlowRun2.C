@@ -86,6 +86,41 @@ AliAnalysisDataContainer* makeWeightContainerSec(TString sec_file, TString conta
 }
 
 
+
+AliAnalysisDataContainer* makeEmptyContainer(){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisDataContainer* weights;
+
+  TList* weights_list = new TList();
+  weights_list->SetName("empty");
+  
+  weights = mgr->CreateContainer("emptyContainer",TList::Class(), AliAnalysisManager::kInputContainer,Form("%s", mgr->GetCommonFileName()));
+
+  return weights;
+}
+
+
+void connectContainer(TString mode, AliAnalysisDataContainer* container,AliForwardFlowRun2Task* task){
+
+  if (mode.Contains("diff")){
+    task->fSettings.nuacentral = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("nuacentral") );
+    task->fSettings.nuaforward = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("nuaforward") );
+    task->fSettings.nuacentral->SetDirectory(0);
+    task->fSettings.nuaforward->SetDirectory(0);
+  }
+  else if (mode.Contains("ref")){
+    task->fSettings.nuacentral_ref = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("nuacentral") );
+    task->fSettings.nuaforward_ref = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("nuaforward") );
+    task->fSettings.nuacentral_ref->SetDirectory(0);
+    task->fSettings.nuaforward_ref->SetDirectory(0);    
+  }
+  else { // secondary file
+    task->fSettings.seccorr_fwd = static_cast<TH3F*>( static_cast<TList*>(container->GetData())->FindObject("sec_corr") );
+    task->fSettings.seccorr_fwd->SetDirectory(0);
+  }
+}
+
+
 AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles, 
                                           TString nua_file, TString ref_nua_file, 
                                           UShort_t nua_mode, 
@@ -105,19 +140,12 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
   if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  TString name = suffix;
-
-  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(name);
+  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(suffix);
 
   if (doetagap){
     // if etagap otherwise comment out, and it will be standard
-    task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
     task->fSettings.fNRefEtaBins = 1;
     task->fSettings.gap = gap;
-
-//    resName += std::to_string((int)(10*gap));
-
-    //resName += std::to_string(gap);
   }
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
@@ -135,11 +163,9 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
   task->fSettings.esd = esd;
   std::cout << "Using tracktype = " << tracktype << std::endl;
   if (tracktype == 0){
-    task->fSettings.fFlowFlags = task->fSettings.kSPD;
     task->fSettings.useSPD = kTRUE;
   }
   else{
-    task->fSettings.fFlowFlags = task->fSettings.kTPC;
     if (tracktype == 768){
       task->fSettings.tracktype = AliForwardSettings::kHybrid;
     }
@@ -163,11 +189,9 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
   task->fSettings.minpt = minpt;
   task->fSettings.maxpt = maxpt;
   
-
   task->fSettings.doNUA = doNUA;
   task->fSettings.nua_mode = nua_mode; 
   task->fSettings.centrality_estimator = centrality; // "V0M";// RefMult08; // "V0M" // "SPDTracklets";
-
 
   TString combName = suffix;
 
@@ -176,113 +200,105 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA, bool makeFakeHoles,
 
   mgr->AddTask(task);
   AliAnalysisDataContainer *coutput_recon =
-  mgr->CreateContainer(suffix,//combName,
+  mgr->CreateContainer(suffix,
    TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());
   mgr->ConnectOutput(task, 1, coutput_recon);
-
-
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
 
   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
-  task->ConnectInput(1,valid);
-
-
-/*
-if (task->fSettings.doNUA){
-    if (nua_file.Contains("alien:")) TGrid::Connect("alien:");
-
-
-    TFile *file = TFile::Open(nua_file);//new TFile(nua_file);
-
-
-    // if (nua_mode == AliForwardSettings::kInterpolate)
-    //   resName += "_NUA_interpolate";
-    // if (nua_mode == AliForwardSettings::kFill)
-    //   resName += "_NUA_fill";
-    // if (nua_mode == AliForwardSettings::kNormal)
-    //   resName += "_NUA_normal";
-
-    task->fSettings.nua_mode = nua_mode; 
-
-    file->GetObject("nuacentral", task->fSettings.nuacentral);
-    task->fSettings.nuacentral->SetDirectory(0);
-    file->GetObject("nuaforward", task->fSettings.nuaforward);
-    task->fSettings.nuaforward->SetDirectory(0);
-    file->Close();
-
-
-    TFile *file_ref = TFile::Open(ref_nua_file);
-    file_ref->GetObject("nuacentral", task->fSettings.nuacentral_ref);
-    task->fSettings.nuacentral_ref->SetDirectory(0);
-    file_ref->GetObject("nuaforward", task->fSettings.nuaforward_ref);
-    task->fSettings.nuaforward_ref->SetDirectory(0);
-
-    file_ref->Close();
-    if (sec_file_fwd != ""){
-
-    TFile *file_sec = TFile::Open(sec_file_fwd);
-    file_sec->GetObject("correction", task->fSettings.seccorr_fwd);
-    task->fSettings.seccorr_fwd->SetDirectory(0);
-
-    file_sec->Close();
-   
-    }
-}*/
-
-
+  mgr->ConnectInput(task,1,valid);
 
 
   if (doNUA){
-
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* weights;
     
+    // mc recon.
     if (nua_file.Contains("reco") || ref_nua_file.Contains("reco")){
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("reco");
 
       if (!weights) weights = makeWeightContainer(nua_file,ref_nua_file,"reco");   
-      if (nua_file.Contains("reco")) task->ConnectInput(2,weights);
-      if (ref_nua_file.Contains("reco")) task->ConnectInput(3,weights);         
+      if (nua_file.Contains("reco")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("reco")) connectContainer("ref", weights, task);
     }
-        if (nua_file.Contains("prim") || ref_nua_file.Contains("prim")){
+    // mc prim.
+    if (nua_file.Contains("prim") || ref_nua_file.Contains("prim")){
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("prim");
 
       if (!weights) weights = makeWeightContainer(nua_file,ref_nua_file,"prim");   
-      if (nua_file.Contains("prim")) task->ConnectInput(2,weights);
-      if (ref_nua_file.Contains("prim")) task->ConnectInput(3,weights);         
+      if (nua_file.Contains("prim")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("prim")) connectContainer("ref", weights, task);
     }
-
-    // ITS NUA
-    if (nua_file.Contains("ITS") || ref_nua_file.Contains("ITS")) 
+    
+    // global tracks NUA
+    if  (nua_file.Contains("cluster70")||ref_nua_file.Contains("cluster70")) 
     {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("ITSclusters");
+      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("cluster70");
     
       if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: ITS weights not defined - reading now. " << std::endl;
-        
-        weights = makeWeightContainer(nua_file,ref_nua_file,"ITSclusters");
-      }
-      if (nua_file.Contains("ITS")) task->ConnectInput(2,weights);
-      if (ref_nua_file.Contains("ITS")) task->ConnectInput(3,weights);
+        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
+        weights = makeWeightContainer(nua_file,ref_nua_file,"cluster70");
+      }  
+      if (nua_file.Contains("cluster70")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("cluster70")) connectContainer("ref", weights, task);
     }
-
-    // SPD NUA
-    if  (nua_file.Contains("SPD")||ref_nua_file.Contains("SPD")) 
+        // global tracks NUA
+    if  (nua_file.Contains("cluster80")||ref_nua_file.Contains("cluster80")) 
     {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("SPDtracklets");
+      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("cluster80");
     
       if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: SPD weights not defined - reading now. " << std::endl;
-        weights = makeWeightContainer(nua_file,ref_nua_file,"SPDtracklets");
-      }
-      if (nua_file.Contains("SPD")) task->ConnectInput(2,weights);
-      if (ref_nua_file.Contains("SPD")) task->ConnectInput(3,weights);
+        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
+        weights = makeWeightContainer(nua_file,ref_nua_file,"cluster80");
+      }  
+      if (nua_file.Contains("cluster80")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("cluster80")) connectContainer("ref", weights, task);
+    }
+        // global tracks NUA
+    if  (nua_file.Contains("cluster90")||ref_nua_file.Contains("cluster90")) 
+    {
+      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("cluster90");
+    
+      if (!weights){
+        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
+        weights = makeWeightContainer(nua_file,ref_nua_file,"cluster90");
+      }  
+      if (nua_file.Contains("cluster90")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("cluster90")) connectContainer("ref", weights, task);
+    }
+        // global tracks NUA
+    if  (nua_file.Contains("cluster100")||ref_nua_file.Contains("cluster100")) 
+    {
+      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("cluster100");
+    
+      if (!weights){
+        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
+        weights = makeWeightContainer(nua_file,ref_nua_file,"cluster100");
+      }  
+      if (nua_file.Contains("cluster100")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("cluster100")) connectContainer("ref", weights, task);
+    }
+
+
+
+
+    // global tracks NUA
+    if  (nua_file.Contains("globaltrackz")||ref_nua_file.Contains("globaltrackz")) 
+    {
+      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("globaltrackz");
+    
+      if (!weights){
+        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
+        weights = makeWeightContainer(nua_file,ref_nua_file,"globaltrackz");
+      }  
+      if (nua_file.Contains("globaltrackz")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("globaltrackz")) connectContainer("ref", weights, task);
     }
 
     // global tracks NUA
-    if  (nua_file.Contains("global")||ref_nua_file.Contains("global")) 
+    if  (nua_file.Contains("globaltracks")||ref_nua_file.Contains("globaltracks")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("globaltracks");
     
@@ -290,27 +306,24 @@ if (task->fSettings.doNUA){
         std::cout << "I-AddTaskForwardFlowRun2: Global tracks weights not defined - reading now. " << std::endl;
         weights = makeWeightContainer(nua_file,ref_nua_file,"globaltracks");
       }  
-      if (nua_file.Contains("global")) task->ConnectInput(2,weights);
-      if (ref_nua_file.Contains("global")) task->ConnectInput(3,weights);
+      if (nua_file.Contains("globaltracks")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("globaltracks")) connectContainer("ref", weights, task);
     }
-
     // hybrid tracks NUA
-    if  (nua_file.Contains("hybrid")||ref_nua_file.Contains("hybrid")) 
+    if  (nua_file.Contains("hybridtracks") || ref_nua_file.Contains("hybridtracks")) 
     {
       weights = (AliAnalysisDataContainer*) taskContainers->FindObject("hybridtracks");
     
       if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Global tracks weights not defined - reading now. " << std::endl;
+        std::cout << "I-AddTaskForwardFlowRun2: Hybrid tracks weights not defined - reading now. " << std::endl;
         weights = makeWeightContainer(nua_file,ref_nua_file,"hybridtracks");
       }  
-      if (nua_file.Contains("hybrid")) task->ConnectInput(2,weights);
-      if (ref_nua_file.Contains("hybrid")) task->ConnectInput(3,weights);
+      if (nua_file.Contains("hybridtracks")) connectContainer("diff", weights, task);
+      if (ref_nua_file.Contains("hybridtracks")) connectContainer("ref", weights, task);
     }
     //else printf("E-AddTaskForwardFlowRun2: Invalid detector for NUA weights!\n");
   }
-  
 
-/*
   if (sec_file_fwd != ""){
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* sec_weights;
@@ -318,26 +331,8 @@ if (task->fSettings.doNUA){
     sec_weights = (AliAnalysisDataContainer*) taskContainers->FindObject("ft_fft");
 
     if (!sec_weights) sec_weights = makeWeightContainerSec(sec_file_fwd,"ft_fft");   
-    task->ConnectInput(4,sec_weights);
+    connectContainer("second", sec_weights, task);
   }
-*/
-  //if (task->fSettings.doNUA){
-
-    // task->fSettings.nuacentral = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(2))->FindObject("nuacentral") );
-    // task->fSettings.nuaforward = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(2))->FindObject("nuaforward") );
-    // task->fSettings.nuacentral_ref = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(3))->FindObject("nuacentral") );
-    // task->fSettings.nuaforward_ref = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(3))->FindObject("nuaforward") );
-    // task->fSettings.nuacentral->SetDirectory(0);
-    // task->fSettings.nuaforward->SetDirectory(0);
-    // task->fSettings.nuacentral_ref->SetDirectory(0);
-    // task->fSettings.nuaforward_ref->SetDirectory(0);
-
-    // if (task->fSettings.sec_corr){
-    //   task->fSettings.seccorr_fwd = static_cast<TH3F*>( static_cast<TList*>(task->GetInputData(4))->FindObject("sec_corr") );
-    //   task->fSettings.seccorr_fwd->SetDirectory(0);
-    // }
-  //}
-
 
   return task;
 }

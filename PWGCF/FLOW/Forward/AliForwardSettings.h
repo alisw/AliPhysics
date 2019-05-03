@@ -39,15 +39,11 @@ class AliForwardSettings : public TObject {
   // Number of bins used along Z_vtx
   Int_t fNZvtxBins;
 
-  // type of analysis
-  TString qctype;
 
   Int_t fnoSamples;
   Int_t fNRefEtaBins; // eta bins in reference histograms
   Int_t fNDiffEtaBins; // eta bins in differential histograms
   Int_t fCentBins; // bins in centrality
-
-  UShort_t fFlowFlags;     //  Flow flags, e.g., eta-gap, sat. vtx.
 
   TH3F* nuacentral;
   TH3F* nuaforward;
@@ -70,7 +66,6 @@ class AliForwardSettings : public TObject {
   Bool_t useTPC;
   Bool_t useSPD;
   Bool_t useITS;
-  Bool_t use_primaries;
   Bool_t use_primaries_cen;
   Bool_t use_primaries_fwd;
   Bool_t useEventcuts;
@@ -83,6 +78,7 @@ class AliForwardSettings : public TObject {
   Bool_t doPt;
   Bool_t stdQC;
   Bool_t sec_corr;
+  Bool_t a5;
   // return true if good event
 
   // flags used for method of cumulant
@@ -167,20 +163,33 @@ class AliForwardSettings : public TObject {
   //   kSinphi1phi2phi3p,  // <sin(phi1+phi2-phi3)>
   // };
 
-  enum {
-    kW2A =1,               // <w2>
-    kW2B,               // <w2>
-    kW2TwoA,            // <w2*two>
-    kW2TwoB,            // <w2*two>
-    kW4A,               // <w4>
-    kW4B,               // <w4>
-    kW4FourA,           // <w4*four>
-    kW4FourB,           // <w4*four>
-    kW4FourTwoA,
-    kW4FourTwoB,
-    kW4ThreeTwoA,
-    kW4ThreeTwoB
-  };
+  // enum {
+  //   kW2A =1,               // <w2>
+  //   kW2B,               // <w2>
+  //   kW2TwoA,            // <w2*two>
+  //   kW2TwoB,            // <w2*two>
+  //   kW4A,               // <w4>
+  //   kW4B,               // <w4>
+  //   kW4FourA,           // <w4*four>
+  //   kW4FourB,           // <w4*four>
+  //   kW4FourTwoA,
+  //   kW4FourTwoB,
+  //   kW4ThreeTwoA,
+  //   kW4ThreeTwoB
+  // };
+
+  Int_t kW2A = 1;
+  Int_t kW2B = 2;               // <w2>
+  Int_t kW2TwoA = 3;           // <w2*two>
+  Int_t kW2TwoB = 4;            // <w2*two>
+  Int_t kW4A = 5;               // <w4>
+  Int_t kW4B = 6;               // <w4>
+  Int_t kW4FourA = 7;           // <w4*four>
+  Int_t kW4FourB = 8;           // <w4*four>
+  Int_t kW4FourTwoA = 9;
+  Int_t kW4FourTwoB = 10;
+  Int_t kW4ThreeTwoA = 11;
+  Int_t kW4ThreeTwoB = 12;
 
   enum {
     kW2 =1,               // <w2>

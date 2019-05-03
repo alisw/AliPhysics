@@ -108,8 +108,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 
     if (weight == 0) continue; 
     for (Int_t n = 0; n <= 5; n++) {
-/*
-      if (detType == "forward"){
+
+      if (detType == "forward" && fSettings.sec_corr){
 
         if ((fSettings.ref_mode & fSettings.kFMDref)){ //doRefFlow && 
           if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
@@ -122,19 +122,8 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
           }
         }
       }
-*/
-      /*
-      if (doRefFlow && (fSettings.ref_mode & fSettings.kITSref)){
-        if (!fSettings.use_primaries_cen && n>=2 && n<=4) {
-          Double_t seceta = fSettings.seccorr_cen->GetXaxis()->FindBin(eta);
-          Double_t secvtz = fSettings.seccorr_cen->GetYaxis()->FindBin(zvertex);
-          Double_t secn = fSettings.seccorr_cen->GetZaxis()->FindBin(n-2);
-          weight = weight*fSettings.seccorr_cen->GetBinContent(seceta,secvtz,secn);
-        }
-      }
-      */
-      if (weight == 0) continue;
 
+      if (weight == 0) continue;
 
       for (Int_t p = 1; p <= 4; p++) {
         Double_t realPart = TMath::Power(weight, p)*TMath::Cos(n*phi);
@@ -318,7 +307,6 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
       } // if w2 > 0
     } //eta
   } // moment
-
   return;
 }
 

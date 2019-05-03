@@ -683,7 +683,7 @@ void AliForwardFlowUtil::FillFromPrimariesAODFMD(TH2D*& fwd) const
     if (p->Charge() == 0) continue;
 
     if (p->Eta() < 5 /*fwd->GetXaxis()-GetXmax()*/ && p->Eta() > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(p->Eta()) >= 1.7){
+      if (TMath::Abs(p->Eta()) >= 1.1){
         fwd->Fill(p->Eta(),p->Phi(),1);
         // if (dodNdeta) dNdeta->Fill(p->Eta(),1);
       }

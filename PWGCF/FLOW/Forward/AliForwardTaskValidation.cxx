@@ -233,7 +233,7 @@ void AliForwardTaskValidation::CreateQAHistograms(TList* outlist) {
     }
   }
 }
-if (fSettings.use_primaries_fwd  || fSettings.use_primaries_cen){
+if (fSettings.mc){
   TAxis *discardedEvtsAx = this->fQA_event_discard_flow_MC->GetXaxis();
 
   for (UInt_t idx = 0; idx < this->fEventValidatorsMC.size(); idx++) {
