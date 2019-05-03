@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated Apr 27
+// Updated May 3
 
 
 #include "AliAnalysisManager.h"
@@ -143,7 +143,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     //V0 hists//
 
     
-    f3fHistCentVsInvMassLambda1point0 = new TH3F("f3fHistCentVsInvMassLambda1point0","Cent vs. #Lambda Inv Mass vs. pT(deltaEta 1)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
+    f3fHistCentVsInvMassLambda1point0 = new TH3F("f3fHistCentVsInvMassLambda1point0","Cent vs. #Lambda Inv Mass vs. pT(deltaEta 0.6)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
     fListHist->Add(f3fHistCentVsInvMassLambda1point0);
     
     f3fHistCentVsInvMassLambda1point0Masscut = new TH3F("f3fHistCentVsInvMassLambda1point0Masscut","Cent vs. #Lambda Inv Mass vs. pT(deltaEta 1)",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
@@ -510,7 +510,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         {
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.) //Default
             {
-              if(TMath::Abs(eta) < 0.5)
+              if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassLambda1point0->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -528,7 +528,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 2.5 && TMath::Abs(negpion)  <= 2.5) //tight
             {
                 
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassLambda1point0Sigtwo->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -546,7 +546,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 4 && TMath::Abs(negpion)  <= 4)//loose
             {
                 
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassLambda1point0Sigfour->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -565,7 +565,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.13  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
             {
                 
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassLambda1point0postight->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -583,7 +583,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.08  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
             {
                 
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassLambda1point0posloose->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -603,7 +603,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.3 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
             {
                 
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassLambda1point0negtight->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -621,7 +621,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.2 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
             {
                 
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassLambda1point0negloose->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
@@ -639,7 +639,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
            // Bar-L
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
             {
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -658,7 +658,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
               //bar-L nsig
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 2.5 && TMath::Abs(pospion)  <= 2.5) //tight
             {
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0Sigtwo->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -674,7 +674,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             }
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 4 && TMath::Abs(pospion)  <= 4) //loose
             {
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0Sigfour->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -693,7 +693,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
              //Bar-L Pos to PV
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.3 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
             {
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0postight->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -709,7 +709,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             }
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.2 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
             {
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0posloose->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -726,7 +726,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             //Bar-L Neg to PV
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.13 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
             {
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0negtight->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -742,7 +742,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             }
             if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.08 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
             {
-                if(TMath::Abs(eta) < 0.5)
+                if(TMath::Abs(eta) < 0.3)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0negloose->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
