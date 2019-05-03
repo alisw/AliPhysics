@@ -31,6 +31,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
     AntiTrackCuts->SetMinimalBooking(true);
   }
 
+
+
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
 
@@ -41,6 +43,57 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
     TrackPosKaonCuts->SetMinimalBooking(true);
     TrackNegKaonCuts->SetMinimalBooking(true);
   }
+
+  if (suffix == "1") {
+      TrackPosKaonCuts->SetPtRange(0.2,999);
+      TrackNegKaonCuts->SetPtRange(0.2,999);
+  }
+  if (suffix == "2") {
+      TrackPosKaonCuts->SetPtRange(0.3,999);
+      TrackNegKaonCuts->SetPtRange(0.3,999);
+  }
+  if (suffix == "3") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.45, 2);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.45, 2);
+  }
+  if (suffix == "4") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.45, 3);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.45, 3);
+  }
+  if (suffix == "5") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.45, 4);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.45, 4);
+  }
+  if (suffix == "6") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.45, 5);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.45, 5);
+  }
+  if (suffix == "7") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.45, 6);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.45, 6);
+  }
+  if (suffix == "8") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 2);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 2);
+  }
+  if (suffix == "9") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 3);
+  }
+  if (suffix == "10") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 4);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 4);
+  }
+  if (suffix == "11") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 5);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 5);
+  }
+  if (suffix == "12") {
+      TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 6);
+      TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 6);
+  }
+
+
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetAxisInvMassPlots(400, 0.9, 1.2);
@@ -56,6 +109,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   if (suffix != "0") {
     TrackCutsPhi->SetMinimalBooking(true);
   }
+  if (suffix == "13") {
+     TrackCutsPhi->SetCutInvMass(0.006);
+  }
+  if (suffix == "14") {
+     TrackCutsPhi->SetCutInvMass(0.008);
+  }
+
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor

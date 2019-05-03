@@ -205,6 +205,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     for (const auto &negK : AntiParticles) {
       fPhiParticle->Setv0(posK, negK);
       if (fPhiCuts->isSelected(fPhiParticle)) {
+        fPhiParticle->SetCPA(gRandom->Uniform()); //cpacode needed for CleanDecay v0;
         V0Particles.push_back(*fPhiParticle);
       }
     }
@@ -213,7 +214,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->CleanTrackAndDecay(&Protons, &AntiProtons, 0);
   fPairCleaner->CleanTrackAndDecay(&Protons, &V0Particles, 1);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &V0Particles, 2);
-
+  fPairCleaner->CleanDecay(&V0Particles, 3);
   fPairCleaner->ResetArray();
 
   fPairCleaner->StoreParticle(Protons);
