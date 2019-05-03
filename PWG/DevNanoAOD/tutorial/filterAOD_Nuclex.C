@@ -6,7 +6,7 @@
 #include "AliAnalysisTaskWeakDecayVertexer.h"
 #include "AliPhysicsSelectionTask.h"
 #include "AliAODHandler.h"
-#include "AliESDInputHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliNanoAODTrack.h"
 #include "AliNanoFilterPID.h"
@@ -17,11 +17,11 @@
 #include <TInterpreter.h>
 #endif
 
-void filterESD_Nuclex()
+void filterAOD_Nuclex()
 {
   AliAnalysisManager* mgr = new AliAnalysisManager("NanoAOD Filter", "NanoAOD filter for nanoAOD production");
-    
-  AliESDInputHandler* iH = new AliESDInputHandler();
+
+  AliAODInputHandler* iH = new AliAODInputHandler();
   mgr->SetInputEventHandler(iH);
 
   // Define aod output handler
@@ -51,13 +51,6 @@ void filterESD_Nuclex()
   for (int iN{0}; iN < 4; ++iN)
     mySkimmingCuts->fTrackFilter.TriggerOnSpecies(AliPID::EParticleType(AliPID::kDeuteron+iN), nucleiCuts, 1 << 4,  5., nucleiTPCpt[iN], nucleiTOFsigma[iN], nucleiTOFpt[iN]);
   mySkimmingTask->AddEventCut(mySkimmingCuts);
-
-  // OCDB
-  AliAnalysisTaskSE* ocdbTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGPP/TPC/macros/AddTaskConfigOCDB.C(\"raw://\")"));
-  
-  // ESD filter
-  AliAnalysisTaskSE* aodFilterTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C(kFALSE, kFALSE, kFALSE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, 1500, 3, kTRUE, kFALSE, kFALSE, kFALSE)"));
-  aodFilterTask->SelectCollisionCandidates(AliVEvent::kAny);
 
   AliAnalysisTaskNanoAODFilter* nanoFilterTask = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/AddTaskNanoAODFilter.C(0, kFALSE)");
   nanoFilterTask->SelectCollisionCandidates(AliVEvent::kAny);  
@@ -92,9 +85,9 @@ void filterESD_Nuclex()
   mgr->PrintStatus();
   
   // Input files
-  TChain * chain = new TChain("esdTree");
-  chain->Add("AliESDs.root");
+  TChain * chain = new TChain("aodTree");
+  chain->Add("AliAOD.root");
 
   Printf("Starting Analysis....");
-  mgr->StartAnalysis("local", chain, 20);
+  mgr->StartAnalysis("local", chain, 1000);
 }
