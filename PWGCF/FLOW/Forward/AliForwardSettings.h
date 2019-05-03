@@ -47,8 +47,6 @@ class AliForwardSettings : public TObject {
 
   TH3F* nuacentral;
   TH3F* nuaforward;
-  TH3F* nuacentral_ref;
-  TH3F* nuaforward_ref;
   TH3F* seccorr_fwd;
   TH3F* seccorr_cen;
 

@@ -19,8 +19,6 @@ AliForwardSettings::AliForwardSettings() :
   fCentBins(100),
   nuacentral(),
   nuaforward(),
-  nuacentral_ref(),
-  nuaforward_ref(),
   seccorr_fwd(),
   seccorr_cen(),
   doNUA(false),

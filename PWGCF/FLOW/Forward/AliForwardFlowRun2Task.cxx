@@ -169,8 +169,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
         static_cast<THnD*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
       }
     }
-    std::cout << "doNUA = " << boolalpha << fSettings.doNUA << std::endl;
-    std::cout << "sec_corr = " << boolalpha << fSettings.sec_corr << std::endl;
 
 
   PostData(1, fOutputList);
@@ -269,11 +267,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(cent);
   static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(zvertex);
   AliForwardGenericFramework calculator = AliForwardGenericFramework();
-  //AliForwardQCumulantRun2 qc_calculator = AliForwardQCumulantRun2();
   
   calculator.fSettings = fSettings;
 
-  //if (!fSettings.stdQC){
   if (fSettings.a5){
     calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"forward",true,false);
 
@@ -290,52 +286,11 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     else calculator.CumulantsAccumulate(*refDist, fOutputList, cent, zvertex,"central",true,false);
   }
   calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward",false,true);
-  // }
-  // else {
-  //   qc_calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central");
-  //   qc_calculator.CumulantsAccumulate(*forwardDist, fOutputList, cent, zvertex,"forward");
-  // }
 
+  calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
+  UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
+  calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
 
-  // if (!fSettings.stdQC){
-  //   Int_t ptnmax =  (fSettings.doPt ? 9 : 0);
-
-  //   TH1F pthist = TH1F("pthist", "", ptnmax+1, fSettings.minpt, fSettings.maxpt);
-
-  //   if (fSettings.doPt){
-  //     for (Int_t ptn = 0; ptn <=ptnmax; ptn ++ ){
-        
-  //       fUtil.fSettings.minpt = pthist.GetXaxis()->GetBinLowEdge(ptn+1);
-  //       fUtil.fSettings.maxpt = pthist.GetXaxis()->GetBinUpEdge(ptn+1);
-
-  //       centralDist->Reset();
-
-  //       // Fill centralDist
-  //       fUtil.FillDataCentral(centralDist);
-
-  //       UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-
-  //       calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
-  //       calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, ptn);    
-  //       calculator.fpvector->Reset();
-  //     }
-  //   }
-  //   else{
-      calculator.CumulantsAccumulate(*centralDist, fOutputList, cent, zvertex,"central",false,true);  
-      UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-      calculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
-  //   }
-  // }
-  // else{
-  //   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-  //   qc_calculator.saveEvent(fOutputList, cent, zvertex,  randomInt);//, 0);  
-  // }
-
-  // centralDist->Reset();
-  // forwardDist->Reset();
-  // refDist->Reset();
-  // calculator.reset();
-  //qc_calculator.reset();
   PostData(1, fOutputList);
 
   return;

@@ -74,35 +74,19 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 
         if ((fSettings.nua_mode & fSettings.kInterpolate) && detType == "forward") weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
 
-        if (doRefFlow){
-          if (detType == "central" && !fSettings.use_primaries_cen) {
-            Double_t nuaeta = fSettings.nuacentral_ref->GetXaxis()->FindBin(eta);
-            Double_t nuaphi = fSettings.nuacentral_ref->GetYaxis()->FindBin(phi);
-            Double_t nuavtz = fSettings.nuacentral_ref->GetZaxis()->FindBin(zvertex);
-            weight = weight*fSettings.nuacentral_ref->GetBinContent(nuaeta,nuaphi,nuavtz);
-          }
 
-          if (detType == "forward" && !fSettings.use_primaries_fwd) {
-            Double_t nuaeta = fSettings.nuaforward_ref->GetXaxis()->FindBin(eta);
-            Double_t nuaphi = fSettings.nuaforward_ref->GetYaxis()->FindBin(phi);
-            Double_t nuavtz = fSettings.nuaforward_ref->GetZaxis()->FindBin(zvertex);
-            weight = weight*fSettings.nuaforward_ref->GetBinContent(nuaeta,nuaphi,nuavtz);
-          }
+        if (detType == "central" && !fSettings.use_primaries_cen) {
+          Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
+          Double_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
+          Double_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
+          weight = weight*fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
-        else{
-          if (detType == "central" && !fSettings.use_primaries_cen) {
-            Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
-            Double_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
-            Double_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
-            weight = weight*fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz);
-          }
 
-          if (detType == "forward" && !fSettings.use_primaries_fwd) {
-            Double_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
-            Double_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
-            Double_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
-            weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz);
-          }
+        if (detType == "forward" && !fSettings.use_primaries_fwd) {
+          Double_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
+          Double_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
+          Double_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
+          weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
       }
 
@@ -113,12 +97,10 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
 
         if ((fSettings.ref_mode & fSettings.kFMDref)){ //doRefFlow && 
           if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
-            //std::cout << "before = " << weight << endl;
             Double_t seceta = fSettings.seccorr_fwd->GetXaxis()->FindBin(eta);
             Double_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
             Double_t secn = fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
             weight = weight*fSettings.seccorr_fwd->GetBinContent(seceta,secvtz,secn);
-            //std::cout << "after = " << weight << endl;
           }
         }
       }
