@@ -1517,7 +1517,7 @@ TProfile* AliAnalysisTaskSEDvsMultiplicity::GetEstimatorHistogram(const AliVEven
     if(runNo>=287000  && runNo<=287977)period = 3;//18f
     if(runNo>=288619  && runNo<=288750)period = 4;//18g
     if(runNo>=288804  && runNo<=288806)period = 5;//18h
-    if(runNo>=288909  && runNo<=288861 )period = 6;//18i
+    if(runNo>=288861  && runNo<=288909 )period = 6;//18i
     if(runNo==288943)period = 7;//18j
     if(runNo>=289165   && runNo<=289201)period = 8;//18k
     if(runNo>=289240  && runNo<=289971)period = 9;//18l
