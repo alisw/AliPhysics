@@ -114,7 +114,7 @@ AliMCSpectraWeights::AliMCSpectraWeights(const char *collisionSystem, const char
     fstPartTypes[AliMCSpectraWeights::ParticleType::kRest] = "Rest";
 
     fbTaskStatus = AliMCSpectraWeights::TaskState::kAllEmpty;
-    fstFilePublished = "alien://alice/cern.ch/user/p/phuhn/AllPublishedFractions.root";
+    fstFilePublished = "alien:///alice/cern.ch/user/p/phuhn/AllPublishedFractions.root";
     // fstFilePublished = "/home/alidock/particle-composition-correction/data/published/ppMult/ppDataMultFractions.root";
   }
 
