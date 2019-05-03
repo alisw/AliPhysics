@@ -58,13 +58,14 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         virtual void            LoopOverAllParticles(Int_t flag = 0); // loops over all MC particles in the event, calls AnaParticleMC() for each particle
         virtual void            FillDefaultHistograms(Int_t step); // overwrite this function to include the filling of the MCSpectraWeights histograms
         virtual Double_t        MCScalingFactor();  //internal method to determine the proper scaling factor for primaries and secondaries
+        virtual void            BaseAddOutput();   // add even more output
         
         virtual UInt_t          GetSeed();
         
         Bool_t               fUseMCWeights;      ///  use mc weights (default) or do nothing
         Bool_t               fUseRandomSeed;     ///  use a random seed or a deterministic one (default)        
         TRandom*             fRand;              //-> random generator to be used
-        AliMCSpectraWeights* fMCSpectraWeights;  //-> object to determine efficiency scaling
+        AliMCSpectraWeights* fMCSpectraWeights;  //-> object to determine efficiency scaling        
         Double_t             fMCweight;          //!<! MC weight of the current track/particle
         
     private:
@@ -72,7 +73,7 @@ class AliAnalysisTaskBaseWeights : public AliAnalysisTaskMKBase
         AliAnalysisTaskBaseWeights& operator=(const AliAnalysisTaskBaseWeights&); // not implemented
         
     /// \cond CLASSIMP    
-        ClassDef(AliAnalysisTaskBaseWeights, 2);
+        ClassDef(AliAnalysisTaskBaseWeights, 3);
     /// \endcond        
 };
 

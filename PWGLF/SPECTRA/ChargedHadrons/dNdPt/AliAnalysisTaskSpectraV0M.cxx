@@ -99,7 +99,6 @@ void AliAnalysisTaskSpectraV0M::AnaEvent()
 //    if (fIsMC) LoopOverAllParticles();
    
    FillHist(fHistEvent, fMultPercentileV0M, fMultV0MmultSelection, fNTracksAcc);
-   
 }
 
 //_____________________________________________________________________________
@@ -108,7 +107,7 @@ void AliAnalysisTaskSpectraV0M::AnaTrack(Int_t flag)
 {
     if (!fAcceptTrackM) return;
     
-    FillHist(fHistTrack, fMultPercentileV0M, fPt, fMultV0MmultSelection);
+    FillHist(fHistTrack, fMultPercentileV0M, fMultV0MmultSelection, fPt);
 }
 
 //_____________________________________________________________________________
@@ -120,7 +119,7 @@ void AliAnalysisTaskSpectraV0M::AnaTrackMC(Int_t flag)
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("RecTrack.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("RecTrack.Q>1.PDG.",fMCPDGCode); }
     
-    // FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType); 
+    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, fMCProdcutionType); 
 
 }
 
@@ -135,7 +134,7 @@ void AliAnalysisTaskSpectraV0M::AnaParticleMC(Int_t flag)
     if (fMCParticleType==AlidNdPtTools::kOther) { Log("GenPrim.PDG.",fMCPDGCode); }
     if (TMath::Abs(fMCQ > 1)) { Log("GenPrim.Q>1.PDG.",fMCPDGCode); }
     
-    // FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3);     
+    FillHist(fHistEffCont, fMultPercentileV0M, fNTracksAcc, fMCPt, fMCChargeSign, fMCParticleType, 3);     
 
 }
 

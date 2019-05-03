@@ -388,13 +388,8 @@ AliAnalysisTaskMKBase::~AliAnalysisTaskMKBase()
 }
 
 //_____________________________________________________________________________
-
-void AliAnalysisTaskMKBase::UserCreateOutputObjects()
+void AliAnalysisTaskMKBase::BaseAddOutput()
 {
-    // create output list
-    fOutputList = new TList(); 
-    fOutputList->SetOwner(kTRUE); 
-    
     // create defualt event histograms    
     
     fLogHist = CreateLogHist("fLogHist");
@@ -423,8 +418,21 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
     
     fTrigHistSelected = CreateLogHist("fTrigHistSelected");
     fOutputList->Add(fTrigHistSelected);
+    
+}
 
+//_____________________________________________________________________________
 
+void AliAnalysisTaskMKBase::UserCreateOutputObjects()
+{
+    // create output list
+    fOutputList = new TList(); 
+    fOutputList->SetOwner(kTRUE); 
+    
+    //add default histograms
+    BaseAddOutput();
+    
+    //add user histograms
     AddOutput();
     // postdata 
     PostData(1, fOutputList);

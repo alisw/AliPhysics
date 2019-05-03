@@ -61,6 +61,23 @@ AliAnalysisTaskBaseWeights::~AliAnalysisTaskBaseWeights()
 
 //_____________________________________________________________________________
 
+void AliAnalysisTaskBaseWeights::BaseAddOutput()
+{
+    // add also all the default output from the base class    
+    AliAnalysisTaskMKBase::BaseAddOutput();
+    
+    // TODO add some control histograms here
+    
+    // if there are weights and they are used add them to the ouput
+    if (fMCSpectraWeights && fUseMCWeights) {
+        fOutputList->Add(fMCSpectraWeights);
+    }
+
+}
+
+
+//_____________________________________________________________________________
+
 UInt_t AliAnalysisTaskBaseWeights::GetSeed()
 {
     if (fUseRandomSeed) { return 0; }
@@ -181,6 +198,7 @@ void AliAnalysisTaskBaseWeights::FillDefaultHistograms(Int_t step)
     AliAnalysisTaskMKBase::FillDefaultHistograms(step);
     
 }
+
 //_____________________________________________________________________________
 
 AliAnalysisTaskBaseWeights* AliAnalysisTaskBaseWeights::AddTaskBaseWeights(const char* name, const char* outfile, const char* collisionSystem, Int_t sysFlag, const char* prevTrainOutputPath) 
