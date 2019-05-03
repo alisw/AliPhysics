@@ -171,6 +171,8 @@
 #pragma link C++ class AliFemtoKKTrackCutTest;
 // Sphericity for KK analysis in pp13TeV
 #pragma link C++ class AliFemtoSphericityEventCutKK;
+//3may2019
+#pragma link C++ class AliFemtoSphericityEventCutKK1;
 // Sphericity monitor
 #pragma link C++ class AliFemtoCutMonitorEventSphericity;
 
