@@ -147,6 +147,7 @@ set(SRCS
   AliFemtoV0PurityBgdEstimator.cxx
   AliFemtoPairCutRadialDistanceKKdist.cxx
   AliFemtoSphericityEventCutKK.cxx #  Sphericity for KK analysis in pp13TeV
+  AliFemtoSphericityEventCutKK1.cxx #  3may2019!! Sphericity for KK analysis in pp13TeV
   AliFemtoCutMonitorEventSphericity.cxx # Sphericity monitor
   AliFemtoKKTrackCutTest.cxx # new class
   AliFemtoCorrFctnInvMass.cxx
