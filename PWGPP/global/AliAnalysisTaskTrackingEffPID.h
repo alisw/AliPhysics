@@ -107,6 +107,7 @@ private:
   TList* fOutputList;                                     //!<! Output list
   TList* fListCuts;                                       //!<! Output with cuts
   TH1F*  fHistNEvents;                                    //!<!  histo with N of events  
+  TH1D*  fHistNParticles;                                    //!<!  histo with N of particles
   TH1D*  fHistNTracks;                                    //!<!  histo with N of tracks
   THnSparseF* fGenerated[AliPID::kSPECIESC][2];           //!<! Generated particles (pt, eta, phi, mult, zvert)
   THnSparseF* fGeneratedEvSel[AliPID::kSPECIESC][2];      //!<! Generated particles after event selection
@@ -116,7 +117,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 5);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 6);
   /// \endcond
 };
 
