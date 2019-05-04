@@ -231,6 +231,7 @@ class AliAnalysisTaskQAHFE : public AliAnalysisTaskSE {
 	TH2F        *fPtHFEMC_SPD;//! HFE pt before track cut	
 	TH2F        *fPtHFEMC_V0M;//! HFE pt before track cut	
 	
+	TH1F *fPtHFEMC_afterfilterbit;//!
 	TH1F        *fPtHFEMC_aftertrackcuts;//!  
 	TH2F        *fPtHFEMC_aftertrackcuts_SPD;//! 
 	TH2F        *fPtHFEMC_aftertrackcuts_V0M;//! 
