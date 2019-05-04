@@ -234,6 +234,7 @@ fPtHFEMC(0),
 fPtHFEMC_SPD(0),
 fPtHFEMC_V0M(0),
 
+fPtHFEMC_afterfilterbit(0),
 fPtHFEMC_aftertrackcuts(0),  
 fPtHFEMC_aftertrackcuts_SPD(0),  
 fPtHFEMC_aftertrackcuts_V0M(0), 
@@ -401,7 +402,8 @@ fPtHFEMCtot(0),fPtHFEMCtot_SPD(0),fPtHFEMCtot_V0M(0),
 fPtHFEMC(0),
 fPtHFEMC_SPD(0),
 fPtHFEMC_V0M(0),
-  
+
+fPtHFEMC_afterfilterbit(0),
 fPtHFEMC_aftertrackcuts(0),  
 fPtHFEMC_aftertrackcuts_SPD(0),  
 fPtHFEMC_aftertrackcuts_V0M(0), 
@@ -820,6 +822,10 @@ void AliAnalysisTaskQAHFE::UserCreateOutputObjects()
   fPtHFEMC_V0M = new TH2F("fPtHFEMC_V0M",";p_{t} (GeV/c)",300,0,15,1000,0,1000);
   fPtHFEMC_V0M->Sumw2();
   //fOutputList->Add(fPtHFEMC_V0M);
+
+  fPtHFEMC_afterfilterbit= new TH1F("fPtHFEMC_afterfilterbit",";p_{t} (GeV/c)",300,0,15.);
+  fPtHFEMC_afterfilterbit->Sumw2();
+  fOutputList->Add(fPtHFEMC_afterfilterbit);
   
   fPtHFEMC_aftertrackcuts= new TH1F("fPtHFEMC_aftertrackcuts",";p_{t} (GeV/c)",300,0,15.);
   fPtHFEMC_aftertrackcuts->Sumw2();
@@ -1261,9 +1267,9 @@ void AliAnalysisTaskQAHFE::UserExec(Option_t *)
 	if (!fAOD) { return;}
   
 	fNentries->Fill(0);                //No. of Events Analyzed 
-	//Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
+	Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);
 	//Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kHighMultV0);
-	Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ftrigger);
+	//Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & ftrigger);
   
 	if(!isSelected) return;  
 	fNentries->Fill(1);                 //No. of Events Accepted
@@ -1567,13 +1573,28 @@ void AliAnalysisTaskQAHFE::UserExec(Option_t *)
    	
     if(!track) AliFatal("Not a standard AOD");
   		
+
+	if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; 
+
+	if(fIsMC && track->GetLabel()>=0)
+   		{
+   			fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
+				pdg = fMCparticle->GetPdgCode();
+				if(TMath::Abs(pdg) == 11)
+				{		
+					Int_t IsElecHf=GetHFE(fMCparticle,fMCarray);
+					if((IsElecHf==kBeauty) || (IsElecHf==kCharm)){
+					fPtHFEMC_afterfilterbit->Fill(track->Pt());
+					}
+				}
+   		}
     Int_t tracktypeTrig=ClassifyTrack(track,pVtx);  //track classify
     
     fDCAZvsPt->Fill(track->Pt(),fDCAz);
 	 fDCAXYvsPt->Fill(track->Pt(),fDCAxy);
     	
     if(tracktypeTrig!=1) continue;  //if(tracktype==0) continue; if(tracktype==1) //tracks "not" passed AliAODTrack::kPrimary at  	
-     																	//reconstructed level & have proper TPC PID response(?)
+     				  													//reconstructed level & have proper TPC PID response(?)
 	  // Reject kink mother
  
 		Bool_t kinkmotherpass = kTRUE;
@@ -1588,7 +1609,7 @@ void AliAnalysisTaskQAHFE::UserExec(Option_t *)
 		if(!kinkmotherpass) continue;
 		
 		if(fIsMC && track->GetLabel()>=0)
-   	{
+   		{
    		fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
 			pdg = fMCparticle->GetPdgCode();
 			if(TMath::Abs(pdg) == 11)
@@ -2072,7 +2093,7 @@ Int_t AliAnalysisTaskQAHFE::ClassifyTrack(AliAODTrack* track,const AliVVertex* p
 	Double_t phi = track->Phi();
 	Float_t dx,dy,dxy, dz;
 
-	if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return 0; //fitler bit 
+	//if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return 0; //fitler bit 
   if(pt< 0.3 ) return 0;  
 	if (TMath::Abs(eta)>=fEtarange) return 0; 
 	
