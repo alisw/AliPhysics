@@ -82,7 +82,9 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
   // Create histograms
   // Called once
     Double_t ptbinningX[19] = {0., 0.1, 0.3, 0.5, 0.7, 0.9, 1.1, 1.3, 1.5, 2., 2.5, 3., 4., 6., 8., 10., 12., 16., 20.}; // Apr 2018 binning
-    Double_t CentBins[11] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
+    //Double_t CentBins[11] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
+    Double_t * CentBins = new Double_t[51];
+    for(int i=0;i<51;i++) CentBins[i] = 0. + 2.*double(i);
     Double_t SourceBins[6]=  {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5};
     Double_t * IPbins = new Double_t[401];
     for(int i=0;i<401;i++) IPbins[i] = -0.2 + 0.4/400.*double(i);
@@ -121,7 +123,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fDCABeautyNewRAAIP = new TH2D(Form("fDCABeautyNewRAAIP"),Form("fDCABeautyNewRAAIP"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCABeautyNewRAAOOP = new TH2D(Form("fDCABeautyNewRAAOOP"),Form("fDCABeautyNewRAAOOP"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCAConversionNew = new TH2D(Form("fDCAConversionNew"),Form("fDCAConversionNew"), 18, ptbinningX, 400, -0.2, 0.2);
-    fDCAConversionNewCent = new TH3D(Form("fDCAConversionNewCent"),Form("fDCAConversionNewCent"), 18, ptbinningX, 400, IPbins, 10, CentBins);
+    fDCAConversionNewCent = new TH3D(Form("fDCAConversionNewCent"),Form("fDCAConversionNewCent"), 18, ptbinningX, 400, IPbins, 50, CentBins);
     fDCADalitzNew = new TH2D(Form("fDCADalitzNew"),Form("fDCADalitzNew"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCADalitzCharm = new TH2D(Form("fDCADalitzCharm"),Form("fDCADalitzCharm"), 18, ptbinningX, 400, -0.2, 0.2);
     fDCADalitzBeauty = new TH2D(Form("fDCADalitzBeauty"),Form("fDCADalitzBeauty"), 18, ptbinningX, 400, -0.2, 0.2);
@@ -585,9 +587,9 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
           if(rndm < CorrCharm3050) fDCACharmNew3050->Fill(pt, IP);
           if(rndm < CorrCharm3050*IPCorrection) fDCACharmNew3050IP->Fill(pt, IP);
           if(rndm < CorrCharm3050*OOPCorrection) fDCACharmNew3050OOP->Fill(pt, IP);
-          fDCACharmWeightedNew3050->Fill(pt, IP, CharmSource(mcple, fMCEvent), CorrCharm3050);
-          fDCACharmWeightedNew3050IP->Fill(pt, IP, CharmSource(mcple, fMCEvent), CorrCharm3050*IPCorrection);
-          fDCACharmWeightedNew3050OOP->Fill(pt, IP, CharmSource(mcple, fMCEvent), CorrCharm3050*OOPCorrection);
+          fDCACharmWeightedNew3050->Fill(pt, IP, CharmSource(mcple, fMCEvent), TMath::Min(1., CorrCharm3050));
+          fDCACharmWeightedNew3050IP->Fill(pt, IP, CharmSource(mcple, fMCEvent), TMath::Min(1., CorrCharm3050*IPCorrection));
+          fDCACharmWeightedNew3050OOP->Fill(pt, IP, CharmSource(mcple, fMCEvent), TMath::Min(1., CorrCharm3050*OOPCorrection));
         }
         if(SourceNew == 1)
         {
