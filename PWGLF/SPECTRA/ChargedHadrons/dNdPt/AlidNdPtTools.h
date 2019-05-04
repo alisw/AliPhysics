@@ -14,6 +14,8 @@
 
 class TGraph;
 class AliESDtrackCuts;
+class AliMCParticle;
+class AliMCEvent;
 
 class AlidNdPtTools : public TObject
 {
