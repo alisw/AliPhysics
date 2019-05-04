@@ -480,7 +480,7 @@ AliESDtrackCuts* AlidNdPtTools::CreateESDtrackCuts(const char* option)
         cuts->SetEtaRange(-0.5,0.5);
         o.ReplaceAll("eta05","");
     } else if ( o.Contains("eta08") ) {
-        cuts->SetEtaRange(-0.5,0.5);
+        cuts->SetEtaRange(-0.8,0.8);
         o.ReplaceAll("eta08","");
     } else if ( o.Contains("eta10") ) {
         cuts->SetEtaRange(-1.0,1.0);
