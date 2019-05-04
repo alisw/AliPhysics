@@ -82,6 +82,7 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fOutputList{0x0},
   fListCuts{0x0},
   fHistNEvents{0x0},
+  fHistNParticles{0x0},
   fHistNTracks{0x0}
 {
   // default: use the filter bit 4 cuts
@@ -122,6 +123,12 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(3,"MC selected");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"Reco Selected");
   fOutputList->Add(fHistNEvents);
+
+  fHistNParticles = new TH1D("hNParticles", "Number of particles",3,-0.5,2.5);
+  fHistNParticles->GetXaxis()->SetBinLabel(1,"All particles");
+  fHistNParticles->GetXaxis()->SetBinLabel(2,"Phys. Primary");
+  fHistNParticles->GetXaxis()->SetBinLabel(3,"Injected/UE sel.");
+  fOutputList->Add(fHistNParticles);
 
   fHistNTracks = new TH1D("hNTracks", "Number of tracks",5,-0.5,4.5);
   fHistNTracks->GetXaxis()->SetBinLabel(1,"All tracks");
@@ -321,6 +328,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
   for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
     AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
+    fHistNParticles->Fill(0);
     if(fPrimarySelectionOpt==1 && !part->IsPhysicalPrimary()) continue;
     if(fPrimarySelectionOpt==2){
       // primary particle selection based on origin of particle
@@ -328,6 +336,13 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       double distz=TMath::Abs(part->Zv()-zMCVertex);
       if(pRad2>8 || distz>1) continue;
     }
+    fHistNParticles->Fill(1);
+    if(lh && (fKeepOnlyInjected || fKeepOnlyUE)){
+      bool isInjected=IsInjectedParticle(iMC,lh);
+      if(fKeepOnlyInjected && !isInjected) continue;
+      if(fKeepOnlyUE && isInjected) continue;
+    }
+    fHistNParticles->Fill(2);
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
