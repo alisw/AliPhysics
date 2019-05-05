@@ -662,6 +662,25 @@ public:
     StringValue_t pop_str(const Key_t &key, const char* _default)
       { StringValue_t res(_default); pop_and_load(key, res); return res; }
 
+    /// Pop generic number (int or float) out of object
+    FloatValue_t pop_num(const Key_t &key, FloatValue_t _default=NAN)
+      {
+        double res(_default);
+        if (const AliFemtoConfigObject *found = find(key)) {
+          if (found->is_float()) {
+            res = found->as_float();
+          }
+          else if (found->is_int()) {
+            res = found->as_int();
+          }
+          else {
+            return _default;
+          }
+          pop(key);
+        }
+        return res;
+      }
+
   #undef IMPL_POP_ITEM
 
 

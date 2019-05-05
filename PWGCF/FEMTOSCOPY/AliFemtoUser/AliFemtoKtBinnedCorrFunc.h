@@ -11,7 +11,7 @@
 #include <TString.h>
 #include <vector>
 
-class TH1I;
+class TH1D;
 
 
 /// \class AliFemtoKtBinnedCorrFunc
@@ -124,7 +124,7 @@ protected:
   std::vector<std::pair<Float_t, Float_t> > fRanges;
 
   /// Histogram monitoring kT distribution
-  TH1I* fKtMonitor;
+  TH1D* fKtMonitor;
 };
 
   // std::vector<std::pair<std::pair<Float_t, Float_t>, A >> fRanges;

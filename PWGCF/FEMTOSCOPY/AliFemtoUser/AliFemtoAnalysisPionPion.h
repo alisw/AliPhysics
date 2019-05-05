@@ -106,6 +106,9 @@ public:
   /// namespace.
   void AddStanardCutMonitors();
 
+  /// Return configuration object describing analysis
+  virtual AliFemtoConfigObject GetConfiguration() const;
+
   /// Returns a TList of all objects
   virtual TList* GetOutputList();
 
