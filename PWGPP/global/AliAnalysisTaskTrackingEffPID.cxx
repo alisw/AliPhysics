@@ -140,7 +140,7 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
 
   TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)"};
   const int nPtBins=32;
-  const int nMultBins=8;
+  const int nMultBins=10;
   int nbins[5]={10,18,nPtBins,nMultBins,4};
   double xmin[5]={-1.,0.,0.,0,-10.};
   double xmax[5]={1.,2*TMath::Pi(),30.,200.,10.};
@@ -149,18 +149,21 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
 			      0.60,0.70,0.80,0.90,1.00,1.25,1.50,1.75,2.00,2.50,
 			      3.00,3.50,4.00,4.50,5.00,6.00,7.00,8.00,10.0,12.0,
 			      16.0,20.0,30.0};
-  double multBins[nMultBins+1] = {0.,5.,10.,20.,30.,40.,50.,80.,200.};
+  double multBins[nMultBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,80.,100.,200.};
   if(fIsAA){
     multBins[0]=0.;
     multBins[1]=100.;
     multBins[2]=500.;
     multBins[3]=1000.;
-    multBins[4]=2000.;
-    multBins[5]=3000.;
-    multBins[6]=4000.;
-    multBins[7]=5000.;
-    multBins[8]=10000.;
+    multBins[4]=1500.;
+    multBins[5]=2000.;
+    multBins[6]=2500.;
+    multBins[7]=3000.;
+    multBins[8]=4000.;
+    multBins[9]=5000.;
+    multBins[10]=7500.;
   }
+  xmax[3]=multBins[nMultBins];
 
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
