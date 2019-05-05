@@ -745,19 +745,13 @@ static TObjArray* GetPassFailOutputList(const TString &name,
   return res;
 }
 
-TList* AliFemtoAnalysisPionPion::GetOutputList()
+AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfiguration() const
 {
-  TList *outputlist = nullptr;
-  TSeqCollection *output = nullptr;
+  auto event_cut_cfg = GetConfigurationOf(*fEventCut);
+  auto track_cut_cfg = GetConfigurationOf(static_cast<const AliFemtoTrackCut&>(*fFirstParticleCut));
+  auto pair_cut_cfg = GetConfigurationOf(*fPairCut);
 
-  auto write_configobj = [&] (TCollection *output)
-    {
-      auto event_cut_cfg = GetConfigurationOf(*fEventCut);
-      auto track_cut_cfg = GetConfigurationOf(static_cast<const AliFemtoTrackCut&>(*fFirstParticleCut));
-      auto pair_cut_cfg = GetConfigurationOf(*fPairCut);
-
-      output->Add(
-        new AliFemtoConfigObject(AliFemtoConfigObject::BuildMap()
+  return AliFemtoConfigObject::BuildMap()
                   ("_class", "AliFemtoAnalysisPionPion")
                   ("is_mc", fMCAnalysis)
                   ("events_to_mix", NumEventsToMix())
@@ -768,8 +762,18 @@ TList* AliFemtoAnalysisPionPion::GetOutputList()
                   ("mix_mult_range", std::make_pair(fMult[0], fMult[1]))
                   ("event_cut", event_cut_cfg)
                   ("track_cut", track_cut_cfg)
-                  ("pair_cut", pair_cut_cfg))
-                );
+                  ("pair_cut", pair_cut_cfg);
+}
+
+TList* AliFemtoAnalysisPionPion::GetOutputList()
+{
+  TList *outputlist = nullptr;
+  TSeqCollection *output = nullptr;
+
+  auto write_configobj = [&] (TCollection *output)
+    {
+      auto cfg = GetConfiguration();
+      output->Add(new AliFemtoConfigObject(std::move(cfg)));
     };
 
   // get "standard" outputs - that's what we output
