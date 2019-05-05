@@ -68,7 +68,7 @@ struct PairCutTrackAttrAvgSep {
     }
 
   PairCutTrackAttrAvgSep(AliFemtoConfigObject &cfg)
-    : avgsep_min(cfg.pop_float("avgsep_min", 0.0))
+    : avgsep_min(cfg.pop_num("avgsep_min", 0.0))
     {
     }
 
@@ -200,8 +200,8 @@ struct PairCutTrackAttrShareQuality {
     {}
 
   PairCutTrackAttrShareQuality(AliFemtoConfigObject &cfg)
-    : share_fraction_max(cfg.pop_float("share_fraction_max", 1.0))
-    , share_quality_max(cfg.pop_float("share_quality_max", 1.0))
+    : share_fraction_max(cfg.pop_num("share_fraction_max", 1.0))
+    , share_quality_max(cfg.pop_num("share_quality_max", 1.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -252,9 +252,9 @@ struct PairCutTrackAttrDetaDphiStar {
    }
 
   PairCutTrackAttrDetaDphiStar(AliFemtoConfigObject &cut)
-   : delta_eta_min(cut.pop_float("delta_eta_min", 0.0))
-   , delta_phistar_min(cut.pop_float("delta_phistar_min", 0.0))
-   , phistar_radius(cut.pop_float("phistar_radius", 1.2))
+   : delta_eta_min(cut.pop_num("delta_eta_min", 0.0))
+   , delta_phistar_min(cut.pop_num("delta_phistar_min", 0.0))
+   , phistar_radius(cut.pop_num("phistar_radius", 1.2))
    , fCurrentMagneticField(0.0)
    {
    }
@@ -324,8 +324,8 @@ struct PairCutTrackAttrDetaDphi {
     {}
 
   PairCutTrackAttrDetaDphi(AliFemtoConfigObject &cfg)
-    : min_delta_eta(cfg.pop_float("min_delta_eta", 0.0))
-    , min_delta_phi(cfg.pop_float("min_delta_phi", 0.0))
+    : min_delta_eta(cfg.pop_num("min_delta_eta", 0.0))
+    , min_delta_phi(cfg.pop_num("min_delta_phi", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
@@ -504,7 +504,7 @@ struct PairCutTrackAttrRemoveEE {
     {}
 
   PairCutTrackAttrRemoveEE(AliFemtoConfigObject &cfg)
-    : ee_minv_min(cfg.pop_float("ee_minv_min", 0.0))
+    : ee_minv_min(cfg.pop_num("ee_minv_min", 0.0))
     {}
 
   void FillConfiguration(AliFemtoConfigObject &cfg) const
