@@ -8,14 +8,12 @@
 #include "AliFemtoCorrFctn3DLCMSSym.h"
 
 #include <TObjArray.h>
-#include <TH1I.h>
+#include <TH1D.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <tuple>
-
-
 
 
 AliFemtoKtBinnedCorrFunc::AliFemtoKtBinnedCorrFunc(const TString& name, AliFemtoCorrFctn *cf)
@@ -126,7 +124,7 @@ void AliFemtoKtBinnedCorrFunc::AddPair(AliFemtoPair *pair, bool is_same_event)
 }
 
 inline
-TH1I* build_kt_monitor(const std::vector<std::pair<float, float>> ranges)
+TH1D* build_kt_monitor(const std::vector<std::pair<float, float>> ranges)
 {
   // determinte high and low points
   auto low = ranges.front().first,
@@ -142,7 +140,7 @@ TH1I* build_kt_monitor(const std::vector<std::pair<float, float>> ranges)
   // determine best limit
   auto nbins = std::min(small_bins, max_bins);
 
-  auto hist = new TH1I("kTDist", "k_{T} Distribution", nbins, low, high);
+  auto hist = new TH1D("kTDist", "k_{T} Distribution", nbins, low, high);
   return hist;
 }
 
