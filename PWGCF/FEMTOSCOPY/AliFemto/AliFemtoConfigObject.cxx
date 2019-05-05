@@ -13,6 +13,7 @@
 #include <TROOT.h>
 
 #include <regex>
+#include <cmath>
 #include <cctype>
 #include <sstream>
 #include <iostream>
@@ -82,6 +83,40 @@ AliFemtoConfigObject::operator==(const AliFemtoConfigObject &rhs) const
 
 //  const AliFemtoConfigObject::TypeTagEnum_t AliFemtoConfigObject::enum_from_type< AliFemtoConfigObject::BoolValue_t >::value = static_cast<AliFemtoConfigObject::TypeTagEnum_t>(1);
 
+static TString fmt_number(const double f)
+{
+  double int_part = NAN,
+         frac_part = std::modf(f, &int_part);
+
+  char *fmt = "%g";
+
+  if (frac_part == 0.0) {
+    // if 'short' integer, print with trailing '.0' to prevent '%g'
+    // from truncating decimal
+    if (log10(std::fabs(int_part) + 0.5) < 10.0) {
+      fmt = "%0.1f";
+    }
+  }
+  // if there are nonzero values between (1e-5,1e-9), force
+  // longer precision
+  else if (double ff = std::fmod(frac_part * 1e9, 1e4)) {
+    if (std::fmod(ff, 1)) {
+      fmt = "%0.10g";
+    }
+    else if (std::fmod(ff, 10)) {
+      fmt = "%0.9g";
+    }
+    else if (std::fmod(ff, 100)) {
+      fmt = "%0.8g";
+    }
+    else if (std::fmod(ff, 1000)) {
+      fmt = "%0.7g";
+    }
+  }
+  return TString::Format(fmt, f);
+}
+
+
 TString
 AliFemtoConfigObject::Stringify(bool pretty, int deep) const
 {
@@ -90,7 +125,7 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
     case kEMPTY: return "";
     case kBOOL: return fValueBool ? "true" : "false";
     case kINT: return TString::Format("%lld", fValueInt);
-    case kFLOAT: return TString::Format("%g", fValueFloat);
+    case kFLOAT: return fmt_number(fValueFloat);
     case kSTRING: return TString::Format("'%s'", fValueString.c_str());
     case kRANGE: return TString::Format("%g:%g", fValueRange.first, fValueRange.second);
     case kARRAY: {
@@ -160,7 +195,7 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
           prefix = (pretty)
                  ? ((STRINGIFY_COMPACT) ? "\n" + TString(' ', deep*INDENTSTEP) + ", "
                                         : "," + prefix)
-                 : ", ";
+                 : TString(", ");
           prefix_needs_update = false;
         }
       }
@@ -968,7 +1003,6 @@ AliFemtoConfigObject
 AliFemtoConfigObject::Parse(StringIter_t& it, const StringIter_t stop)
 {
   std::smatch match;
-  // std::cout << "Parsing value:\n";
 
   // skip leading whitespace
   while (it != stop && std::isspace(*it)) {
