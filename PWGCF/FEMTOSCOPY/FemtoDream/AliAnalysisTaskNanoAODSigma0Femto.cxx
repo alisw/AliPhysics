@@ -491,9 +491,9 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   //    fPhotonQA->InitCutHistograms(TString("Photon"));
   //    fPhotonHistList = fPhotonQA->GetCutHistograms();
   //  } else {
-  //    fPhotonHistList = new TList();
-  //    fPhotonHistList->SetName("V0_Photon");
-  //    fPhotonHistList->SetOwner(true);
+      fPhotonHistList = new TList();
+      fPhotonHistList->SetName("V0_Photon");
+      fPhotonHistList->SetOwner(true);
   //  }
 
   if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
