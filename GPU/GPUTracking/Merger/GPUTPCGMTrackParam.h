@@ -23,6 +23,7 @@
 #include "GPUTPCDef.h"
 #include "GPUTPCGMMergedTrackHit.h"
 #include "GPUCommonMath.h"
+#include "GPUdEdxInfo.h"
 
 #ifndef __OPENCL__
 #include <cstddef>
@@ -41,7 +42,6 @@ class GPUTPCGMPhysicalTrackModel;
 class GPUTPCGMPolynomialField;
 class GPUTPCGMMergedTrack;
 class GPUTPCGMPropagator;
-struct GPUdEdxInfo;
 
 /**
  * @class GPUTPCGMTrackParam

@@ -623,7 +623,7 @@ void* GPUTPCTrackerComponent::TrackerDoEvent(void* par)
       }
       nClusters[slice] = pCluster - clusterData[slice];
       nClustersTotal += nClusters[slice];
-      HLTDebug("Read %d->%d hits for slice %d", nClustersSliceTotal, clusterData[slice].NumberOfClusters(), slice);
+      HLTDebug("Read %d->%d hits for slice %d", nClustersSliceTotal, nClusters[slice], slice);
     }
   }
 
@@ -644,6 +644,12 @@ void* GPUTPCTrackerComponent::TrackerDoEvent(void* par)
 
   // reconstruct the event
   fBenchmark.Start(1);
+  try {
+    fRec->PrepareEvent();
+  } catch (const std::bad_alloc& e) {
+    printf("Memory Allocation Error\n");
+    return ((void*)(size_t)-EINVAL);
+  }
   fChain->RunTPCTrackingSlices();
   fBenchmark.Stop(1);
   HLTInfo("Processed %d clusters", nClustersTotal);

@@ -74,6 +74,7 @@ class GPUChainTracking : public GPUChain, GPUReconstructionHelpers::helperDelega
   void RegisterPermanentMemoryAndProcessors() override;
   void RegisterGPUProcessors() override;
   int Init() override;
+  int PrepareEvent() override;
   int Finalize() override;
   int RunStandalone() override;
   void MemorySize(size_t& gpuMem, size_t& pageLockedHostMem) override;
@@ -139,8 +140,9 @@ class GPUChainTracking : public GPUChain, GPUReconstructionHelpers::helperDelega
   void DumpSettings(const char* dir = "") override;
   void ReadSettings(const char* dir = "") override;
 
-  // Converter functions
-  void ConvertNativeToClusterData();
+  // Converter / loader functions
+  int ConvertNativeToClusterData();
+  void ConvertNativeToClusterDataLegacy();
 
   // Getters for external usage of tracker classes
   GPUTRDTracker* GetTRDTracker() { return &processors()->trdTracker; }

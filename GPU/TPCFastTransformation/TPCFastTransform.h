@@ -24,7 +24,8 @@
 
 #include "FlatObject.h"
 #include "TPCDistortionIRS.h"
-#include <cmath>
+#include "GPUCommonDef.h"
+#include "GPUCommonMath.h"
 
 namespace GPUCA_NAMESPACE
 {
@@ -137,7 +138,7 @@ class TPCFastTransform : public FlatObject
   void setTimeStamp(long int v) { mTimeStamp = v; }
 
   /// Gives a reference for external initialization of TPC distortions
-  const TPCDistortionIRS& getDistortion() const { return mDistortion; }
+  GPUd() const TPCDistortionIRS& getDistortion() const { return mDistortion; }
 
   /// Gives a reference for external initialization of TPC distortions
   TPCDistortionIRS& getDistortionNonConst() { return mDistortion; }
@@ -150,17 +151,17 @@ class TPCFastTransform : public FlatObject
   /// Transforms raw TPC coordinates to local XYZ withing a slice
   /// taking calibration + alignment into account.
   ///
-  int Transform(int slice, int row, float pad, float time, float& x, float& y, float& z, float vertexTime = 0) const;
-  int TransformInTimeFrame(int slice, int row, float pad, float time, float& x, float& y, float& z, float maxTimeBin) const;
+  GPUd() int Transform(int slice, int row, float pad, float time, float& x, float& y, float& z, float vertexTime = 0) const;
+  GPUd() int TransformInTimeFrame(int slice, int row, float pad, float time, float& x, float& y, float& z, float maxTimeBin) const;
 
-  int convPadTimeToUV(int slice, int row, float pad, float time, float& u, float& v, float vertexTime) const;
-  int convUVtoYZ(int slice, int row, float x, float u, float v, float& y, float& z) const;
-  int getTOFcorrection(int slice, int row, float x, float y, float z, float& dz) const;
+  GPUd() int convPadTimeToUV(int slice, int row, float pad, float time, float& u, float& v, float vertexTime) const;
+  GPUd() int convUVtoYZ(int slice, int row, float x, float u, float v, float& y, float& z) const;
+  GPUd() int getTOFcorrection(int slice, int row, float x, float y, float z, float& dz) const;
 
-  int convYZtoUV(int slice, int row, float x, float y, float z, float& u, float& v) const;
-  int convUVtoPadTime(int slice, int row, float u, float v, float& pad, float& time) const;
+  GPUd() int convYZtoUV(int slice, int row, float x, float y, float z, float& u, float& v) const;
+  GPUd() int convUVtoPadTime(int slice, int row, float u, float v, float& pad, float& time) const;
 
-  int convPadTimeToUVInTimeFrame(int slice, int row, float pad, float time, float& u, float& v, float maxTimeBin) const;
+  GPUd() int convPadTimeToUVInTimeFrame(int slice, int row, float pad, float time, float& u, float& v, float maxTimeBin) const;
 
   void setApplyDistortionFlag(bool flag) { mApplyDistortion = flag; }
   bool getApplyDistortionFlag() { return mApplyDistortion; }
@@ -177,10 +178,10 @@ class TPCFastTransform : public FlatObject
   long int getTimeStamp() const { return mTimeStamp; }
 
   /// Gives slice info
-  const SliceInfo& getSliceInfo(int slice) const { return mSliceInfos[slice]; }
+  GPUd() const SliceInfo& getSliceInfo(int slice) const { return mSliceInfos[slice]; }
 
   /// Gives TPC row info
-  const RowInfo& getRowInfo(int row) const { return mRowInfoPtr[row]; }
+  GPUd() const RowInfo& getRowInfo(int row) const { return mRowInfoPtr[row]; }
 
   /// Print method
   void Print() const;
@@ -269,7 +270,7 @@ inline void TPCFastTransform::setTPCrow(int iRow, float x, int nPads, float padW
   mConstructionCounter++;
 }
 
-inline int TPCFastTransform::convPadTimeToUV(int slice, int row, float pad, float time, float& u, float& v, float vertexTime) const
+GPUdi() int TPCFastTransform::convPadTimeToUV(int slice, int row, float pad, float time, float& u, float& v, float vertexTime) const
 {
   if (slice < 0 || slice >= NumberOfSlices || row < 0 || row >= mNumberOfRows) {
     return -1;
@@ -290,7 +291,7 @@ inline int TPCFastTransform::convPadTimeToUV(int slice, int row, float pad, floa
   return 0;
 }
 
-inline int TPCFastTransform::convPadTimeToUVInTimeFrame(int slice, int row, float pad, float time, float& u, float& v, float maxTimeBin) const
+GPUdi() int TPCFastTransform::convPadTimeToUVInTimeFrame(int slice, int row, float pad, float time, float& u, float& v, float maxTimeBin) const
 {
   if (slice < 0 || slice >= NumberOfSlices || row < 0 || row >= mNumberOfRows) {
     return -1;
@@ -307,7 +308,7 @@ inline int TPCFastTransform::convPadTimeToUVInTimeFrame(int slice, int row, floa
   float y = sideC ? -u : u; // pads are mirrorred on C-side
   float yLab = y * sliceInfo.cosAlpha + x * sliceInfo.sinAlpha;
 
-  v = (time - maxTimeBin) * (mVdrift + mVdriftCorrY * yLab); // drift length cm
+  v = (time - mT0 - maxTimeBin) * (mVdrift + mVdriftCorrY * yLab) + mLdriftCorr; // drift length cm
 
   if (sideC) {
     v += mTPCzLengthC;
@@ -318,7 +319,7 @@ inline int TPCFastTransform::convPadTimeToUVInTimeFrame(int slice, int row, floa
   return 0;
 }
 
-inline int TPCFastTransform::convUVtoPadTime(int slice, int row, float u, float v, float& pad, float& time) const
+GPUdi() int TPCFastTransform::convUVtoPadTime(int slice, int row, float u, float v, float& pad, float& time) const
 {
   if (slice < 0 || slice >= NumberOfSlices || row < 0 || row >= mNumberOfRows) {
     return -1;
@@ -338,7 +339,7 @@ inline int TPCFastTransform::convUVtoPadTime(int slice, int row, float u, float 
   return 0;
 }
 
-inline int TPCFastTransform::convUVtoYZ(int slice, int row, float x, float u, float v, float& y, float& z) const
+GPUdi() int TPCFastTransform::convUVtoYZ(int slice, int row, float x, float u, float v, float& y, float& z) const
 {
   if (slice < 0 || slice >= NumberOfSlices || row < 0 || row >= mNumberOfRows) {
     return -1;
@@ -359,7 +360,7 @@ inline int TPCFastTransform::convUVtoYZ(int slice, int row, float x, float u, fl
   return 0;
 }
 
-inline int TPCFastTransform::convYZtoUV(int slice, int row, float x, float y, float z, float& u, float& v) const
+GPUdi() int TPCFastTransform::convYZtoUV(int slice, int row, float x, float y, float z, float& u, float& v) const
 {
   if (slice < 0 || slice >= NumberOfSlices || row < 0 || row >= mNumberOfRows) {
     return -1;
@@ -378,7 +379,7 @@ inline int TPCFastTransform::convYZtoUV(int slice, int row, float x, float y, fl
   return 0;
 }
 
-inline int TPCFastTransform::getTOFcorrection(int slice, int row, float x, float y, float z, float& dz) const
+GPUdi() int TPCFastTransform::getTOFcorrection(int slice, int row, float x, float y, float z, float& dz) const
 {
   // calculate time of flight correction for  z coordinate
   if (slice < 0 || slice >= NumberOfSlices || row < 0 || row >= mNumberOfRows) {
@@ -391,7 +392,7 @@ inline int TPCFastTransform::getTOFcorrection(int slice, int row, float x, float
   return 0;
 }
 
-inline int TPCFastTransform::Transform(int slice, int row, float pad, float time, float& x, float& y, float& z, float vertexTime) const
+GPUdi() int TPCFastTransform::Transform(int slice, int row, float pad, float time, float& x, float& y, float& z, float vertexTime) const
 {
   /// _______________ The main method: cluster transformation _______________________
   ///
@@ -427,7 +428,7 @@ inline int TPCFastTransform::Transform(int slice, int row, float pad, float time
   return 0;
 }
 
-inline int TPCFastTransform::TransformInTimeFrame(int slice, int row, float pad, float time, float& x, float& y, float& z, float maxTimeBin) const
+GPUdi() int TPCFastTransform::TransformInTimeFrame(int slice, int row, float pad, float time, float& x, float& y, float& z, float maxTimeBin) const
 {
   /// _______________ Special cluster transformation for a time frame _______________________
   ///
