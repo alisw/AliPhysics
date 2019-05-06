@@ -165,7 +165,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     Int_t phibins = 4001;
     Int_t etabins = 50;
     fSettings.fnoSamples = 1;
-    fSettings.fCentBins = 5;
+    fSettings.fCentBins = 1;
     Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 5, etabins} ;
     Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
@@ -310,22 +310,76 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     Int_t nTracks   = fAOD->GetNumberOfTracks();// stack->GetNtrack();
 
     Int_t nPrim     = fAOD->GetNumberOfPrimaries();//fAOD->GetNumberOfPrimaries();
-    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-      AliMCParticle* particle =
-        static_cast<AliMCParticle*>(fAOD->GetTrack(iTr));
+    
 
-      // Check if this charged and a primary
-      if (particle->Charge() == 0) continue;
+    static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(v0cent);
+    static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
+    THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    THnD* delta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    THnD* delta_phi_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    THnD* delta_eta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
 
-      Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < nPrim;
+  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
 
-      AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fAOD);
-      if (!mother) mother = particle;
-      // IF the track corresponds to a primary, pass that as both
-      // arguments.
-      ProcessTrack(particle, mother,listOfMothers, randomInt,event_vtx_z,v0cent);
+    // Ignore things that do not make a signal in the FMD
+    AliTrackReference* tr = fUtil.IsHitFMD(p);
+    if (tr && p->Charge() != 0){
 
-    } // Loop over tracks
+      AliMCParticle* mother = GetMother(p);
+      //if (!mother) continue;
+      if (!mother) mother = p;
+
+      Double_t eta_mother = mother->Eta();
+      Double_t phi_mother = Wrap02pi(mother->Phi());
+
+      Double_t *etaPhi = new Double_t[2];
+      this->GetTrackRefEtaPhi(tr, etaPhi);
+
+      Double_t phi_tr = Wrap02pi(etaPhi[1]);
+      Double_t eta_tr = etaPhi[0];
+
+      // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
+      Double_t phi[5] = {randomInt,event_vtx_z, Wrap02pi(phi_mother - phi_tr), v0cent, eta_tr};
+      Double_t eta[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, phi_tr};
+
+      //if (!(fabs(eta_tr - eta_mother) < 0.1)) continue;
+      delta_phi_eta->Fill(phi,1);
+      delta_eta_phi->Fill(eta,1);
+
+      phi[4] = phi_tr;
+      eta[4] = eta_tr;
+
+      delta_phi->Fill(phi,1);
+      delta_eta->Fill(eta,1);
+
+      Double_t x_prim[4] =  {randomInt,event_vtx_z,v0cent,eta_tr};
+      Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
+      if (!isNewPrimary){
+        listOfMothers.push_back(mother->GetLabel());
+        fnoPrim->Fill(x_prim,1);
+      }
+    }
+  }
+
+
+    // for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+    //   AliMCParticle* particle =
+    //     static_cast<AliMCParticle*>(fAOD->GetTrack(iTr));
+
+    //   // Check if this charged and a primary
+    //   if (particle->Charge() == 0) continue;
+
+    //   Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < nPrim;
+
+    //   AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fAOD);
+    //   if (!mother) mother = particle;
+    //   // IF the track corresponds to a primary, pass that as both
+    //   // arguments.
+    //   ProcessTrack(particle, mother,listOfMothers, randomInt,event_vtx_z,v0cent);
+
+    // } // Loop over tracks
 
     PostData(1, fOutputList);
   } // End of useEvent
