@@ -96,9 +96,13 @@ Int_t AliGenReaderHepMC::NextEvent()
       Int_t npart = fGenEvent->particles_size();
       for (Int_t i = 0; i < npart; i++) {
 	   TParticle * particle = (TParticle*)fParticleIterator->Next();
-	   particle->SetProductionVertex(particle->Vx(), particle->Vy(), particle->Vz(),
+	   if(particle){
+		particle->SetProductionVertex(particle->Vx(), particle->Vy(), particle->Vz(),
 					 particle->T() * conv);
-	   
+	   }
+	   else{
+		AliWarning(Form("Particle %d = NULL",i));
+	   }
       }
       fParticleIterator->Reset();
       //
