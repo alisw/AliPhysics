@@ -79,6 +79,8 @@
 #pragma link C++ class std::vector<RHyperTritonHe3pi>+;
 #pragma link C++ class std::vector<SHyperTritonHe3pi>+;
 #pragma link C++ class RCollision+;
+#pragma link C++ class RTracklet+;
+#pragma link C++ class std::vector<RTracklet>+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
