@@ -197,13 +197,6 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
   mgr->ConnectInput(task,1,valid);
 
-
-  TObjArray *tx = nua_file.Tokenize("/");
-  TObjArray *ty = ((TObjString *)(tx->At(tx->GetEntries()-1)))->String().Tokenize(".");
-  TString nuaobject =  ((TObjString *)(ty->At(0)))->String();
-  std::cout << nuaobject << std::endl;
-
-
   if (doNUA){
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* weights;

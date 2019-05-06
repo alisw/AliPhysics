@@ -189,14 +189,21 @@ class AliForwardSettings : public TObject {
   Int_t kW4ThreeTwoA = 11;
   Int_t kW4ThreeTwoB = 12;
 
-  enum {
-    kW2 =1,               // <w2>
-    kW2Two,             // <w2*two>
-    kW4,               // <w4>
-    kW4Four,           // <w4*four>
-    kW4FourTwo,
-    kW4ThreeTwo
-  };
+  Int_t  kW2 =1;               // <w2>
+  Int_t  kW2Two=2;             // <w2*two>
+  Int_t  kW4=3;               // <w4>
+  Int_t  kW4Four=4;           // <w4*four>
+  Int_t  kW4FourTwo=5;
+  Int_t  kW4ThreeTwo=6;
+
+  // enum {
+  //   kW2 =1,               // <w2>
+  //   kW2Two,             // <w2*two>
+  //   kW4,               // <w4>
+  //   kW4Four,           // <w4*four>
+  //   kW4FourTwo,
+  //   kW4ThreeTwo
+  // };
   // definition of different variables to save
   enum {
     kN2 = 1,
@@ -204,6 +211,6 @@ class AliForwardSettings : public TObject {
   };
 
 private:
-  ClassDef(AliForwardSettings, 2);
+  ClassDef(AliForwardSettings, 1);
 };
 #endif

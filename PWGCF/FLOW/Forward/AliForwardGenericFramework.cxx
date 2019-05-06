@@ -155,8 +155,8 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   TList* analysisList = static_cast<TList*>(outputList->FindObject("Analysis"));
   TList* refList = static_cast<TList*>(analysisList->FindObject("Reference"));
   TList* autoList = static_cast<TList*>(analysisList->FindObject("AutoCorrection"));
-  THnD*  fQcorrfactor = static_cast<THnD*>(autoList->FindObject("fQcorrfactor"));
-  THnD*  fpcorrfactor = static_cast<THnD*>(autoList->FindObject("fpcorrfactor"));
+  //THnD*  fQcorrfactor = static_cast<THnD*>(autoList->FindObject("fQcorrfactor"));
+  //THnD*  fpcorrfactor = static_cast<THnD*>(autoList->FindObject("fpcorrfactor"));
   TList* difList = static_cast<TList*>(analysisList->FindObject("Differential"));
 
   THnD* cumuRef = 0;
@@ -200,20 +200,20 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
           double two = Two(n, -n, refEtaBinA, refEtaBinB).Re();
           double dn2 = Two(0,0, refEtaBinA, refEtaBinB).Re();
 
-          Double_t x[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW4FourA)};
-          x[4] = Double_t(fSettings.kW2TwoA);
+          Double_t x[5] = {noSamples, zvertex, refEtaA, cent, Double_t(fSettings.kW4Four)};//kW4FourA
+          x[4] = Double_t(fSettings.kW2TwoA);//kW2TwoA
 
           cumuRef->Fill(x, two);
-          x[4] = Double_t(fSettings.kW2A);
+          x[4] = Double_t(fSettings.kW2A);//kW2A
           cumuRef->Fill(x, dn2);
 
           // four-particle cumulant
           double four = Four(n, n, -n, -n, refEtaBinA, refEtaBinB).Re();
           double dn4 = Four(0,0,0,0 , refEtaBinA, refEtaBinB).Re();
 
-          x[4] = Double_t(fSettings.kW4FourA);
+          x[4] = Double_t(fSettings.kW4FourA);//kW4FourA
           cumuRef->Fill(x, four);
-          x[4] = Double_t(fSettings.kW4A);
+          x[4] = Double_t(fSettings.kW4A);//kW4A
           cumuRef->Fill(x, dn4);
 
           prevRefEtaBin = kFALSE;
@@ -228,12 +228,13 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         double twodiff = TwoDiff(n, -n, refEtaBinB, etaBin).Re();
         double dn2diff = TwoDiff(0,0, refEtaBinB, etaBin).Re();
 
-        Double_t y[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2TwoB)};
+        Double_t y[5] = {noSamples, zvertex, eta, cent, Double_t(fSettings.kW2TwoB)};//kW2TwoB
         cumuDiff->Fill(y, twodiff);
-        y[4] = Double_t(fSettings.kW2B);
+        y[4] = Double_t(fSettings.kW2B);//kW2B
         cumuDiff->Fill(y, dn2diff);
 
         // A side
+        
         twodiff = TwoDiff(n, -n, refEtaBinA, etaBin).Re();
         dn2diff = TwoDiff(0,0, refEtaBinA, etaBin).Re();
 
@@ -241,31 +242,35 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         cumuDiff->Fill(y, twodiff);
         y[4] = Double_t(fSettings.kW2A);
         cumuDiff->Fill(y, dn2diff);
+        
 
         // four-particle cumulant
         double fourdiff = FourDiff(n, n, -n, -n, refEtaBinB, etaBin,etaBin).Re();
         double dn4diff = FourDiff(0,0,0,0, refEtaBinB, etaBin,etaBin).Re();
 
-        y[4] = Double_t(fSettings.kW4FourB);
+        y[4] = Double_t(fSettings.kW4FourB);//kW4FourB
         cumuDiff->Fill(y, fourdiff);
-        y[4] = Double_t(fSettings.kW4B);
+        y[4] = Double_t(fSettings.kW4B);//kW4B
         cumuDiff->Fill(y, dn4diff);
 
         // four-particle cumulant SC(4,2)
+        
         double fourtwodiff = FourDiff(4, 2, -4, -2, refEtaBinB, etaBin,etaBin).Re();
 
-        y[4] = Double_t(fSettings.kW4FourTwoB);
+        y[4] = Double_t(fSettings.kW4FourTwoB);//kW4FourTwoB
         cumuDiff->Fill(y, fourtwodiff);
 
         // four-particle cumulant SC(3,2)
         double threetwodiff = FourDiff(3, 2, -3, -2, refEtaBinB, etaBin,etaBin).Re();
 
-        y[4] = Double_t(fSettings.kW4ThreeTwoB);
+        y[4] = Double_t(fSettings.kW4ThreeTwoB);//kW4ThreeTwoB
         cumuDiff->Fill(y, threetwodiff);
+        
 
 
         // A side
-                // four-particle cumulant
+        // four-particle cumulant
+        
         fourdiff = FourDiff(n, n, -n, -n, refEtaBinA, etaBin,etaBin).Re();
         dn4diff = FourDiff(0,0,0,0, refEtaBinA, etaBin,etaBin).Re();
 
@@ -274,6 +279,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
         y[4] = Double_t(fSettings.kW4A);
         cumuDiff->Fill(y, dn4diff);
 
+        
         // four-particle cumulant SC(4,2)
         fourtwodiff = FourDiff(4, 2, -4, -2, refEtaBinA, etaBin,etaBin).Re();
 
@@ -285,6 +291,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
 
         y[4] = Double_t(fSettings.kW4ThreeTwoA);
         cumuDiff->Fill(y, threetwodiff);
+        
 
       } // if w2 > 0
     } //eta
