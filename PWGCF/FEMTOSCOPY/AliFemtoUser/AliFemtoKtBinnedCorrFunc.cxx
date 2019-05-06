@@ -49,11 +49,6 @@ UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
   const auto offset = std::distance(fRanges.begin(), loc);
   const auto cf_insert_loc = std::next(fCFBuffer.begin(), offset);
 
-  // std::cout << "Adding "
-  //           << Form("{%g, %g}", low, high)
-  //           << " to location: " << offset << "/" << fCFBuffer.size()
-  //           << "\n";
-
   fCFBuffer.insert(cf_insert_loc, clone);
 
   return offset;
@@ -82,16 +77,7 @@ void AliFemtoKtBinnedCorrFunc::AddPair(AliFemtoPair *pair, bool is_same_event)
                       : cf->AddMixedPair(pair);
     };
 
-  // auto add_pair_to = mixed
-  //                  ? [pair] (AliFemtoCorrFctn *cf) { cf->AddMixedPair(pair); }
-  //                  : [pair] (AliFemtoCorrFctn *cf) { cf->AddRealPair(pair); };
-
   const Float_t kt = pair->KT();
-
-  // auto lower = std::lower_bound(fRanges.begin(), fRanges.end(), kt,
-  //                               [](std::pair<Float_t, Float_t> r, float kt) {
-  //                                 return r.first <= kt; });
-  // std::size_t idx = std::distance(fRanges.begin(), lower);
 
   std::size_t idx = 0;
   for (; idx < fRanges.size(); ++idx) {

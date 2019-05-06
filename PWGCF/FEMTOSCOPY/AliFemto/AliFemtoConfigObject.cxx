@@ -88,32 +88,82 @@ static TString fmt_number(const double f)
   double int_part = NAN,
          frac_part = std::modf(f, &int_part);
 
-  char *fmt = "%g";
+  // 7-digit auto-exponentiation
+  const char *fmt = "%0.7g";
 
   if (frac_part == 0.0) {
     // if 'short' integer, print with trailing '.0' to prevent '%g'
     // from truncating decimal
-    if (log10(std::fabs(int_part) + 0.5) < 10.0) {
+    if (std::log10(std::fabs(int_part) + 0.5) < 10.0) {
       fmt = "%0.1f";
     }
   }
-  // if there are nonzero values between (1e-5,1e-9), force
-  // longer precision
-  else if (double ff = std::fmod(frac_part * 1e9, 1e4)) {
-    if (std::fmod(ff, 1)) {
-      fmt = "%0.10g";
-    }
-    else if (std::fmod(ff, 10)) {
-      fmt = "%0.9g";
-    }
-    else if (std::fmod(ff, 100)) {
-      fmt = "%0.8g";
-    }
-    else if (std::fmod(ff, 1000)) {
-      fmt = "%0.7g";
+  return TString::Format(fmt, f);
+}
+
+static TString fmt_range(const AliFemtoConfigObject::RangeValue_t r)
+{
+  const double
+    frac1_part = std::fmod(r.first, 1.0),
+    frac2_part = std::fmod(r.second, 1.0);
+
+  const char *fmt = "%g:%g";
+
+  if (frac1_part == 0 && frac2_part != 0) {
+    fmt = "%0.1f:%g";
+  }
+  else if (frac1_part != 0 && frac2_part == 0) {
+    fmt = "%g:%0.1f";
+  }
+
+  return TString::Format(fmt, r.first, r.second);
+}
+
+static TString fmt_range(const AliFemtoConfigObject::RangeListValue_t &rlist)
+{
+  if (rlist.empty()) {
+    return "()";
+  }
+
+  bool all_integers = true,
+       all_floats = true;
+
+  auto is_int = [] (double f)
+    { return std::fmod(f, 1.0) == 0.0; };
+
+  for (auto &r : rlist) {
+    const bool int_1st = is_int(r.first),
+               int_2nd = is_int(r.second);
+
+    all_integers &= int_1st && int_2nd;
+    all_floats &= !int_1st && !int_2nd;
+  }
+
+  auto fmt = [=] (double x)
+    {
+      if (all_floats || all_integers || !is_int(x)) {
+        return Form("%g", x);
+      }
+      else {
+        return Form("%0.1f", x);
+      }
+    };
+
+  auto it = rlist.cbegin(),
+       end = rlist.cend();
+
+  TString result = TString::Format("(%s:%s", fmt(it->first), fmt(it->second));
+
+  while (++it != end) {
+    if (it->first == std::prev(it)->second) {
+      result += TString::Format(":%s", fmt(it->second));
+    } else {
+      result += TString::Format(", %s:%s", fmt(it->first), fmt(it->second));
     }
   }
-  return TString::Format(fmt, f);
+
+  result += ')';
+  return result;
 }
 
 
@@ -127,7 +177,8 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
     case kINT: return TString::Format("%lld", fValueInt);
     case kFLOAT: return fmt_number(fValueFloat);
     case kSTRING: return TString::Format("'%s'", fValueString.c_str());
-    case kRANGE: return TString::Format("%g:%g", fValueRange.first, fValueRange.second);
+    case kRANGE: return fmt_range(fValueRange);
+    case kRANGELIST: return fmt_range(fValueRangeList);
     case kARRAY: {
       TString result = "[";
       auto it = fValueArray.cbegin(),
@@ -139,23 +190,6 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
         result += ", " + it->Stringify(pretty);
       }
       result += ']';
-      return result;
-    }
-    case kRANGELIST: {
-      TString result = '(';
-      auto it = fValueRangeList.cbegin(),
-          end = fValueRangeList.cend();
-      if (it != end) {
-        result += TString::Format("%g:%g", it->first, it->second);
-      }
-      for (++it; it != end; ++it) {
-        if (it->first == std::prev(it)->second) {
-          result += TString::Format(":%g", it->second);
-        } else {
-          result += TString::Format(", %g:%g", it->first, it->second);
-        }
-      }
-      result += ')';
       return result;
     }
     case kMAP: {

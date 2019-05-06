@@ -355,7 +355,7 @@ struct TrackCutAttrRemoveNegLabel {
 
   bool Pass(const AliFemtoTrack &track) const
     {
-      return !remove_neg_label || track.Label() < 0;
+      return !remove_neg_label || track.Label() >= 0;
     }
 
   TrackCutAttrRemoveNegLabel()
