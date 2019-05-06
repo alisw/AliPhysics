@@ -191,7 +191,7 @@ Bool_t AliGFWFlowContainer::OverrideMainWithSub(Int_t ind, Bool_t ExcludeChosen)
     fProf=0;
     for(Int_t i=0;i<fProfRand->GetEntries();i++) {
       if(i==ind) continue;
-      TProfile2D *tarprof = (TProfile2D*)fProfRand->At(ind);
+      TProfile2D *tarprof = (TProfile2D*)fProfRand->At(i);
       if(!fProf)
 	     fProf = (TProfile2D*)tarprof->Clone(ts.Data());
       else
@@ -219,12 +219,15 @@ Bool_t AliGFWFlowContainer::RandomizeProfile(Int_t nSubsets) {
 Bool_t AliGFWFlowContainer::CreateStatisticsProfile(StatisticsType StatType, Int_t arg) {
   switch(StatType) {
     case kSingleSample:
+      //printf("Called kSingleSample\n");
       return OverrideMainWithSub(arg,kFALSE);
       break; //Just dummy
     case kJackKnife:
+      //printf("Called JackKnife\n");
       return OverrideMainWithSub(arg,kTRUE);
       break; //Just dummy
     case kBootstrap:
+      //printf("Called proper bootstrap\n");
       return RandomizeProfile(arg);
       break; //Just dummy
     default:
