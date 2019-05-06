@@ -60,8 +60,37 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 4.) Setters and getters:
   void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
   TList* GetControlHistogramsList() const {return this->fControlHistogramsList;} 
+
   void SetFinalResultsList(TList* const frl) {this->fFinalResultsList = frl;};
   TList* GetFinalResultsList() const {return this->fFinalResultsList;}
+
+  void SetBoolMultCut(Bool_t top){this->bBruteMultCut = top;} 
+  Bool_t GetBoolMultCut() const {return this->bBruteMultCut;}
+
+  void SetMultCut(Int_t top){this->fMultCut = top;} 
+  Int_t GetMultCut() const {return this->fMultCut;}
+
+  void SetFilter(Int_t top){this->fFilter = top;} 
+  Int_t GetFilter() const {return this->fFilter;}
+
+  void SetCorrNumber(Int_t top){this->fNumber = top;} 
+  Int_t GetCorrNumber() const {return this->fNumber;}
+
+  void SetMinNuPar(Int_t top){this->fMinNumberPart = top;} 
+  Int_t GetMinNuPar() const {return this->fMinNumberPart;}
+
+  void SetCorrSet1(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h)
+  {this->fh1=a; this->fh2=b; this->fh3=c; this->fh4=d; this->fh5=e; this->fh6=f; this->fh7=g; this->fh8=h;}
+
+   void SetCorrSet2(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h)
+  {this->fa1=a; this->fa2=b; this->fa3=c; this->fa4=d; this->fa5=e; this->fa6=f; this->fa7=g; this->fa8=h;}
+
+  void SetMinCent(Float_t top){this->fMinCentrality = top;} 
+  Float_t GetMinCent() const {return this->fMinCentrality;}
+
+  void SetMaxCent(Float_t top){this->fMaxCentrality = top;} 
+  Float_t GetMaxCent() const {return this->fMaxCentrality;}
+  
 
   void SetBinning(Int_t const nbins, Float_t min, Float_t max)
   {
@@ -90,8 +119,8 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Float_t fMaxBin;               // min bin 
   TH1F *fPhiHist;                // atrack->Phi()
   TH1F *fEtaHist;                // atrack->Eta()
-
-
+  TH1F *fMultPreCut;         // Multiplicity before brute cut
+  TH1F *fMultPostCut;         // Multiplicity after brute cut
   TH1F *fMultiHisto;             // multiplicity histogram atrack->nTracks
 
   //2.) Variables for the correlation:
@@ -100,22 +129,25 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   TProfile *fRecursionSecond[2][8];    //!
   Bool_t bUseWeights; 
 
-  const Int_t kNumber;           //number of correlation
+  Bool_t bBruteMultCut;
+  Int_t fMultCut;
+  Int_t fFilter;           //for filter selection
+  Int_t fNumber;           //number of correlation
+  Int_t fMinNumberPart;           //minimal number of particles to do correlation
 
-  const Int_t kh1, kh2, kh3, kh4, kh5, kh6, kh7, kh8;  //harmonics
-  const Int_t ka1, ka2, ka3, ka4, ka5, ka6, ka7, ka8;  //second set of harmonics
+  Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8;  //harmonics
+  Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8;  //second set of harmonics
+
    
   const Int_t kSum; 
   const Int_t kMaxHarmonic; 
   const Int_t kMaxPower; 
   Int_t fParticles;
-  Float_t fCentral;
   Float_t fMinCentrality;        // min centrality
   Float_t fMaxCentrality;        // max centrality
   TArrayD *fAngles;              //! Azimuthal angles 
   TArrayD *fWeights;            //! Particle weights
   TArrayI *fBin;                   //! Bins for particle weight
-  TF1 *func1;
   
   TComplex Qvector[17][9];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
@@ -123,12 +155,13 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
    
   TProfile *fCentrality;         // final centrality result
   TProfile *fCentralitySecond;         // final centrality result for second harmonics 
+  TProfile *fEvCentrality;         // final centrality result for event version
   TH1F *fCounterHistogram;       // for some checks
   TList *fFinalResultsList;      // list to hold all histograms with final results
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,8);
+  ClassDef(AliAnalysisTaskStudentsML,9);
 
 };
 
