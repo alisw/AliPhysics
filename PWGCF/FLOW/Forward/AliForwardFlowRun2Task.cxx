@@ -206,7 +206,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   Double_t cent = fUtil.GetCentrality(fSettings.centrality_estimator);
   if (cent > 60.0){
-    PostData(1, fOutputList);
+    //PostData(1, fOutputList);
     return;
   }
 
