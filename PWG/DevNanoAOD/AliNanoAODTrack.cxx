@@ -42,6 +42,7 @@ AliNanoAODTrack::AliNanoAODTrack() :
   fLabel(0),
   fProdVertex(0),
   fNanoFlags(0),
+  fDetectorPID(0),
   fAODEvent(NULL)
 {
   // default constructor
@@ -54,6 +55,7 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
   fLabel(0),
   fProdVertex(0),
   fNanoFlags(0),
+  fDetectorPID(0),
   fAODEvent(NULL)
 {
   // constructor
@@ -117,7 +119,10 @@ AliNanoAODTrack::AliNanoAODTrack(AliAODTrack * aodTrack, const char * vars) :
       for (Int_t i=0;i<21;i++)
           SetVar(AliNanoAODTrackMapping::GetInstance()->GetCovMat(i)       , covMatrix[i]                        );
   }
-
+  if (AliNanoAODTrackMapping::GetInstance()->GetStatus() != -1)   {
+    SetVarInt(AliNanoAODTrackMapping::GetInstance()->GetStatus(), aodTrack->GetStatus() >> 32);
+    SetVarInt(AliNanoAODTrackMapping::GetInstance()->GetStatus()+1, aodTrack->GetStatus() & 0xffffffff);
+  }
 
   fLabel = aodTrack->GetLabel();
   
@@ -570,4 +575,12 @@ Bool_t AliNanoAODTrack::InitPIDIndex()
 void  AliNanoAODTrack::GetImpactParameters(Float_t &xy,Float_t &z) const {
   xy = DCA();
   z = ZAtDCA();
+}
+
+void AliNanoAODTrack::SetDetectorPID(const AliDetectorPID *pid)
+{
+  /// Set the detector PID
+
+  if (fDetectorPID) delete fDetectorPID;
+  fDetectorPID=pid;
 }

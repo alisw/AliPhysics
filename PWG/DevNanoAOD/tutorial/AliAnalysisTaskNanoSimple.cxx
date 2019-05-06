@@ -94,6 +94,8 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     
     // for custom variables, cast to nano AOD track
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
+    //Printf("  DCA = %f", nanoTrack->DCA());
+
     // NOTE Access to custom variables. Use static here for caching of index
     static Bool_t bPIDAvailable = AliNanoAODTrack::InitPIDIndex();
     static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
@@ -101,7 +103,16 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     if (nanoTrack && bPIDAvailable)
       Printf("  TPC_sigma_proton = %f  hasTOF = %d  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->HasTOFPID(), nanoTrack->GetVar(kcstNSigmaTOFPr));
 
-//     Printf("  DCA = %f", nanoTrack->DCA());
+    // Applying PID response on nano track
+    static AliPIDResponse* pidResponse = 0;
+    if (!pidResponse) {
+      AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+      pidResponse = inputHandler->GetPIDResponse();
+    }
+    if (pidResponse)
+      Printf("  TPC_sigma_proton = %f", pidResponse->NumberOfSigmasTPC(track, AliPID::kProton));
+      //Printf("  TPC_sigma_proton = %f               TOF_sigma_proton = %f", pidResponse->NumberOfSigmasTPC(track, AliPID::kProton), pidResponse->NumberOfSigmasTOF(track, AliPID::kProton));
   }
   
   // V0 access - as usual
