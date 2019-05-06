@@ -145,7 +145,7 @@ public:
 
 
   // Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
-  ULong64_t GetStatus() const { AliFatal("Not implemented"); return 0; }
+  ULong64_t GetStatus() const { return (ULong64_t(GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetStatus())) << 32) + GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetStatus()+1); }
   // ULong_t GetFlags() const { return fFlags; }
 
   Int_t   GetID() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetID()); }
@@ -367,9 +367,11 @@ public:
   // Dummy: FIXME why is this dummy?
   Int_t    PdgCode() const {return 0;}
 
+  // Trasient PID object, is owned by the track
+  virtual void  SetDetectorPID(const AliDetectorPID *pid);
+  virtual const AliDetectorPID* GetDetectorPID() const { return fDetectorPID; }
+
   //  needed  to inherit from VTrack, but not implemented
-  virtual void  SetDetectorPID(const AliDetectorPID */*pid*/)  {AliFatal("Not Implemented"); return ;}; 
-  virtual const AliDetectorPID* GetDetectorPID() const {AliFatal("Not Implemented"); return 0;}; 
   virtual UChar_t  GetTRDntrackletsPID() const  { return GetVarInt(AliNanoAODTrackMapping::GetInstance()->GetTRDntrackletsPID()); }; 
   virtual void      GetHMPIDpid(Double_t */*p*/) const  {AliFatal("Not Implemented"); return;}; 
   virtual Double_t GetBz() const  {AliFatal("Not Implemented"); return 0;}; 
@@ -402,6 +404,8 @@ private :
   TRef          fProdVertex;        // vertex of origin
   UInt_t        fNanoFlags;  // nano flags
   
+  mutable const AliDetectorPID* fDetectorPID; //!<! transient object to cache calibrated PID information
+
   static Int_t fgPIDIndexes[ENanoPIDResponse::kLAST][AliPID::kSPECIESC];
   
   const AliAODEvent* fAODEvent;     //! 
