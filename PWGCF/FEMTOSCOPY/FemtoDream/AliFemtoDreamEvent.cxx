@@ -17,6 +17,7 @@ ClassImp(AliFemtoDreamEvent)
 AliFemtoDreamEvent::AliFemtoDreamEvent()
     : fUtils(nullptr),
       fEvtCuts(nullptr),
+      fuseAliEvtCuts(false),
       fEvtCutList(nullptr),
       fxVtx(0),
       fyVtx(0),
@@ -43,9 +44,10 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
 }
 
 AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
-                                       UInt_t trigger)
+                                       UInt_t trigger, bool useEvtCuts)
     : fUtils(new AliAnalysisUtils()),
-      fEvtCuts(new AliEventCuts()),
+      fEvtCuts(nullptr),
+      fuseAliEvtCuts(useEvtCuts),
       fEvtCutList(nullptr),
       fxVtx(0),
       fyVtx(0),
@@ -68,6 +70,14 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fisSelected(false),
       fEstimator(kRef08),
       fspher(0) {
+  if (fuseAliEvtCuts) {
+    fEvtCuts = new AliEventCuts();
+    if (trigger != AliVEvent::kINT7) {
+      std::cout << "Setting up Event Cuts correspondingly for pp trigger: "
+                << trigger << std::endl;
+      fEvtCuts->OverrideAutomaticTriggerSelection(trigger);
+    }
+  }
   if (mvPileUp) {
     //For pPb this is necessary according to DPG Processing status news
     //(week 29 April - 5 May 2017)
@@ -77,12 +87,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
     fUtils->SetMinPlpContribSPD(3);
   }
 
-  if (trigger != AliVEvent::kINT7) {
-    std::cout << "Setting up Track Cuts correspondingly for pp trigger: "
-              << trigger << std::endl;
-    fEvtCuts->OverrideAutomaticTriggerSelection(trigger);
-  }
-  if (EvtCutQA) {
+  if (EvtCutQA&&fuseAliEvtCuts) {
     fEvtCutList = new TList();
     fEvtCutList->SetName("AliEventCuts");
     fEvtCutList->SetOwner(true);
@@ -156,10 +161,12 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   } else {
     this->fisPileUp = false;
   }
-  if (fEvtCuts->AcceptEvent(evt)) {
-    this->fPassAliEvtSelection = true;
-  } else {
-    this->fPassAliEvtSelection = false;
+  if (fuseAliEvtCuts) {
+    if (fEvtCuts->AcceptEvent(evt)) {
+      this->fPassAliEvtSelection = true;
+    } else {
+      this->fPassAliEvtSelection = false;
+    }
   }
   this->fSPDMult = CalculateITSMultiplicity(evt);
   this->fNSPDClusterLy0 = evt->GetNumberOfITSClusters(0);
@@ -330,14 +337,17 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
   if (numOfTracks < 3)
     return -9999.;
 
-  int nTracks = 0;
   for (int iTrack = 0; iTrack < numOfTracks; iTrack++) {
 
     AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(evt->GetTrack(iTrack));
-
     double pt = aodtrack->Pt();
+    double eta = aodtrack->Eta();
     double px = aodtrack->Px();
     double py = aodtrack->Py();
+    if(!aodtrack->TestFilterBit(96)) continue;
+    if (TMath::Abs(pt) < 0.5 || TMath::Abs(eta) > 0.8) {
+      continue;
+    }
 
     ptTot += pt;
 
@@ -345,7 +355,6 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
     s01 += px * py / pt;
     s10 = s01;
     s11 += py * py / pt;
-    nTracks++;
   }
 
   //normalize to total Pt to obtain a linear form:
