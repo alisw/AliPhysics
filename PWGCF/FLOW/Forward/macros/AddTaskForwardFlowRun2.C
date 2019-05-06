@@ -198,107 +198,30 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   mgr->ConnectInput(task,1,valid);
 
 
+  TObjArray *tx = nua_file.Tokenize("/");
+  TObjArray *ty = ((TObjString *)(tx->At(tx->GetEntries()-1)))->String().Tokenize(".");
+  TString nuaobject =  ((TObjString *)(ty->At(0)))->String();
+  std::cout << nuaobject << std::endl;
+
+
   if (doNUA){
     TObjArray* taskContainers = mgr->GetContainers();
     AliAnalysisDataContainer* weights;
     
-    // mc recon.
-    if (nua_file.Contains("reco")){
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("reco");
+    TObjArray *tx = nua_file.Tokenize("/");
+    TObjArray *ty = ((TObjString *)(tx->At(tx->GetEntries()-1)))->String().Tokenize(".");
+    TString nuaobject =  ((TObjString *)(ty->At(0)))->String();
+    std::cout << nuaobject << std::endl;
 
-      if (!weights) weights = makeWeightContainer(nua_file,"reco");   
-      if (nua_file.Contains("reco")) connectContainer( weights, task);
-    }
-    // mc prim.
-    if (nua_file.Contains("prim") ){
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("prim");
+    weights = (AliAnalysisDataContainer*) taskContainers->FindObject(nuaobject);
 
-      if (!weights) weights = makeWeightContainer(nua_file,"prim");   
-      if (nua_file.Contains("prim")) connectContainer(weights, task);
+    if (!weights) {
+      std::cout << "I-AddTaskForwardFlowRun2: " << nuaobject << " weights not defined - reading now. " << std::endl;
+      weights = makeWeightContainer(nua_file,nuaobject);
     }
-    
-    // global tracks NUA
-    if  (nua_file.Contains("cluster70")) 
-    {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("cluster70");
-    
-      if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
-        weights = makeWeightContainer(nua_file,"cluster70");
-      }  
-      if (nua_file.Contains("cluster70")) connectContainer(weights, task);
-    }
-        // global tracks NUA
-    if  (nua_file.Contains("cluster80")) 
-    {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("cluster80");
-    
-      if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
-        weights = makeWeightContainer(nua_file,"cluster80");
-      }  
-      if (nua_file.Contains("cluster80")) connectContainer(weights, task);
-    }
-        // global tracks NUA
-    if  (nua_file.Contains("cluster90")) 
-    {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("cluster90");
-    
-      if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
-        weights = makeWeightContainer(nua_file,"cluster90");
-      }  
-      if (nua_file.Contains("cluster90")) connectContainer(weights, task);
-    }
-        // global tracks NUA
-    if  (nua_file.Contains("cluster100")) 
-    {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("cluster100");
-    
-      if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
-        weights = makeWeightContainer(nua_file,"cluster100");
-      }  
-      connectContainer(weights, task);
-    }
-
-
-    // global tracks NUA
-    if  (nua_file.Contains("globaltrackz")) 
-    {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("globaltrackz");
-    
-      if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Globalz tracks weights not defined - reading now. " << std::endl;
-        weights = makeWeightContainer(nua_file,"globaltrackz");
-      }  
-      if (nua_file.Contains("globaltrackz")) connectContainer(weights, task);
-    }
-
-    // global tracks NUA
-    if  (nua_file.Contains("globaltracks")) 
-    {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("globaltracks");
-    
-      if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Global tracks weights not defined - reading now. " << std::endl;
-        weights = makeWeightContainer(nua_file,"globaltracks");
-      }  
-      if (nua_file.Contains("globaltracks")) connectContainer(weights, task);
-    }
-    // hybrid tracks NUA
-    if  (nua_file.Contains("hybridtracks") ) 
-    {
-      weights = (AliAnalysisDataContainer*) taskContainers->FindObject("hybridtracks");
-    
-      if (!weights){
-        std::cout << "I-AddTaskForwardFlowRun2: Hybrid tracks weights not defined - reading now. " << std::endl;
-        weights = makeWeightContainer(nua_file,"hybridtracks");
-      }  
-      if (nua_file.Contains("hybridtracks")) connectContainer(weights, task);
-    }
-    //else printf("E-AddTaskForwardFlowRun2: Invalid detector for NUA weights!\n");
+    connectContainer( weights, task);
   }
+  
 
   if (sec_file_fwd != ""){
     TObjArray* taskContainers = mgr->GetContainers();
