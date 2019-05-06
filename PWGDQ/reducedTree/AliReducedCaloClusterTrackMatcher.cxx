@@ -83,6 +83,7 @@ Bool_t AliReducedCaloClusterTrackMatcher::IsClusterMatchedToTrack(AliReducedTrac
   
   TVector3 clusterVector(cluster->X(), cluster->Y(), cluster->Z());
   Float_t clusterPhi = clusterVector.Phi();
+  if (clusterPhi<0) clusterPhi += 2*TMath::Pi();
   Float_t clusterEta = clusterVector.Eta();
 
   deltaPhi  = trackPhi-clusterPhi;

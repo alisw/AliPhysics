@@ -623,6 +623,8 @@ class AliReducedVarManager : public TObject {
     kEMCALdispersion,
     kEMCALnCells,
     kEMCALnMatchedTracks,
+    kEMCALclusterPhi,
+    kEMCALclusterEta,
     kNEMCALvars,            // variable to mark end of EMCal vars, introduce new EMCal vars before this one
     // Track flags -----------------------------------------------------
     kTrackingFlag,
