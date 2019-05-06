@@ -418,6 +418,10 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetHistograms()
       histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
 
+      histname = TString::Format("%s/histJetPtLow_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, 50, 0., 0.5);
+
       histname = TString::Format("%s/histJetArea_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;#it{A}_{jet};counts", histname.Data());
       fHistManager.CreateTH1(histname, histtitle, fNbins / 2, 0, 3);
@@ -443,6 +447,11 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetHistograms()
         histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), cent);
         histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} (GeV/#it{c});counts", histname.Data());
         fHistManager.CreateTH1(histname, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2);
+
+        histname = TString::Format("%s/histJetCorrPtLeadingTrackPt_%d", groupname.Data(), cent);
+        histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} (GeV/#it{c});#it{p}_{T,leading} (GeV/#it{c});counts", histname.Data());
+        fHistManager.CreateTH2(histname, histtitle, fNbins, -fMaxBinPt / 2, fMaxBinPt / 2, 1000,0.,100.);
+
       }
     }
   }
@@ -1081,6 +1090,9 @@ void AliAnalysisTaskJetCoreEmcal::DoJetLoop()
       histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, jet->Pt());
 
+      histname = TString::Format("%s/histJetPtLow_%d", groupname.Data(), fCentBin);
+      fHistManager.FillTH1(histname, jet->Pt());
+
       histname = TString::Format("%s/histJetArea_%d", groupname.Data(), fCentBin);
       fHistManager.FillTH1(histname, jet->Area());
 
@@ -1093,6 +1105,10 @@ void AliAnalysisTaskJetCoreEmcal::DoJetLoop()
       if (jetCont->GetRhoParameter()) {
         histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
         fHistManager.FillTH1(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area());
+
+        histname = TString::Format("%s/histJetCorrPtLeadingTrackPt_%d", groupname.Data(), fCentBin);
+        fHistManager.FillTH2(histname, jet->Pt() - jetCont->GetRhoVal() * jet->Area(), jet->GetLeadingTrack()->Pt());
+
       }
     }
     histname = TString::Format("%s/histNJets_%d", groupname.Data(), fCentBin);
