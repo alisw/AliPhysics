@@ -20,6 +20,7 @@ class AliGFWFlowContainer:public TNamed {
   AliGFWFlowContainer();
   AliGFWFlowContainer(const char *name);
   ~AliGFWFlowContainer();
+  enum StatisticsType {kSingleSample, kJackKnife, kBootstrap};
   void Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t *multiBins, Int_t nRandomized=0);
   void Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t MultiMin, Double_t MultiMax, Int_t nRandomized=0);
   void RebinMulti(Int_t rN) { if(fProf) fProf->RebinX(rN); };
@@ -30,6 +31,8 @@ class AliGFWFlowContainer:public TNamed {
   void ReadAndMerge(const char *infile);
   void PickAndMerge(TFile *tfi);
   Bool_t OverrideMainWithSub(Int_t subind, Bool_t ExcludeChosen);
+  Bool_t RandomizeProfile(Int_t nSubsets=0);
+  Bool_t CreateStatisticsProfile(StatisticsType StatType, Int_t arg);
   TObjArray *GetSubProfiles() { return fProfRand; };
   Long64_t Merge(TCollection *collist);
   void SetIDName(TString newname); //! do not store
