@@ -1,21 +1,11 @@
 #include "TROOT.h"
 #include "TSystem.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliPIDResponse.h"
-#include "AliAnalysisTaskPIDResponse.h"
-#include "AliAnalysisTaskFemtoDream.h"
-
-AliAnalysisTaskSE* AddTaskForLudmilla(bool isMC = false, bool isESD = false,
-                                      TString CentEst = "kInt7", bool notpp =
-                                          true,  //1
-                                      bool etaPhiPlotsAtTPCRadii = false,  //5
-                                      bool mTkTPlot = false,  //7
-                                      bool dPhidEtaPlots = false,  //10
-                                      bool DeltaEtaDeltaPhiCut = false,  //17
-                                      bool excludeUnwantedPairs = false,  //20
-                                      bool stricterPileUpRej = false,  //21
-                                      float dPhidEta = 0.01)  //22
+AliAnalysisTaskSE* AddTaskForLudmilla(bool isMC = false, //1
+                                      bool etaPhiPlotsAtTPCRadii = false,  //2
+                                      bool dPhidEtaPlots = false,  //3
+                                      bool DeltaEtaDeltaPhiCut = false,  //4
+                                      bool excludeUnwantedPairs = false,  //5
+                                      float dPhidEta = 0.04)  //6
                                       {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
@@ -23,6 +13,7 @@ AliAnalysisTaskSE* AddTaskForLudmilla(bool isMC = false, bool isESD = false,
   bool fineBinning = true;  //2
   bool eventMixing = true;  //13
   bool InvMassPairs = false;  //20
+  bool stricterPileUpRej = false;
 
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -61,13 +52,13 @@ AliAnalysisTaskSE* AddTaskForLudmilla(bool isMC = false, bool isESD = false,
   evtCuts->SetSphericityCuts(0.7, 1.0);
 
   //Track Cuts
-  AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts();
+  AliFemtoDreamTrackCuts *TrackCuts = new AliFemtoDreamTrackCuts();
   TrackCuts->SetPtRange(0.13, 4.0);
   TrackCuts->SetEtaRange(-1.2, 1.2);
   TrackCuts->SetNClsTPC(70);
   TrackCuts->SetDCAReCalculation(true);
-  TrackCuts->SetCutDCAVtxXY(0.3);
-  TrackCuts->SetCutDCAVtxZ(0.3);
+  TrackCuts->SetDCAVtxXY(0.3);
+  TrackCuts->SetDCAVtxZ(0.3);
   TrackCuts->SetFilterBit(96);
   TrackCuts->SetCutSharedCls(true);
   TrackCuts->SetCutTPCCrossedRows(true, 70, 0.5);
@@ -75,13 +66,13 @@ AliAnalysisTaskSE* AddTaskForLudmilla(bool isMC = false, bool isESD = false,
   TrackCuts->SetCutSmallestSig(true);
   TrackCuts->SetCutCharge(1);
 
-  AliFemtoDreamTrackCuts *AntiTrackCuts = AliFemtoDreamTrackCuts();
+  AliFemtoDreamTrackCuts *AntiTrackCuts = new AliFemtoDreamTrackCuts();
   AntiTrackCuts->SetPtRange(0.13, 4.0);
   AntiTrackCuts->SetEtaRange(-1.2, 1.2);
   AntiTrackCuts->SetNClsTPC(70);
   AntiTrackCuts->SetDCAReCalculation(true);
-  AntiTrackCuts->SetCutDCAVtxXY(0.3);
-  AntiTrackCuts->SetCutDCAVtxZ(0.3);
+  AntiTrackCuts->SetDCAVtxXY(0.3);
+  AntiTrackCuts->SetDCAVtxZ(0.3);
   AntiTrackCuts->SetFilterBit(96);
   AntiTrackCuts->SetCutSharedCls(true);
   AntiTrackCuts->SetCutTPCCrossedRows(true, 70, 0.5);
@@ -315,8 +306,7 @@ AliAnalysisTaskSE* AddTaskForLudmilla(bool isMC = false, bool isESD = false,
   }
 
   config->SetMultBinning(true);
-  if (notpp)
-    config->SetCentBinning(true);
+  config->SetCentBinning(false);
   config->SetkTBinning(true);
   config->SetmTBinning(true);
 
@@ -351,7 +341,7 @@ AliAnalysisTaskSE* AddTaskForLudmilla(bool isMC = false, bool isESD = false,
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
   AliAnalysisTaskFemtoDream *task = new AliAnalysisTaskFemtoDream(
-      "FemtoDreamDefault", isESD, isMC);
+      "FemtoDreamDefault", false, isMC);
   task->SelectCollisionCandidates(AliVEvent::kMB);
   std::cout << "Added kMB Trigger \n";
   //	task->SetDebugLevel(0);
@@ -375,11 +365,7 @@ AliAnalysisTaskSE* AddTaskForLudmilla(bool isMC = false, bool isESD = false,
 
   AliAnalysisDataContainer *coutputQA;
   TString addon = "";
-  if (CentEst == "kInt7") {
-    addon += "MB";
-  } else if (CentEst == "kHM") {
-    addon += "HM";
-  }
+  addon += "MB";
   std::cout << "CONTAINTER NAME: " << addon.Data() << std::endl;
   TString QAName = Form("%sQA", addon.Data());
   coutputQA = mgr->CreateContainer(
