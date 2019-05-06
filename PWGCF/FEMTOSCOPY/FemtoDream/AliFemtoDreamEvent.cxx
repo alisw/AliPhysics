@@ -330,14 +330,16 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
   if (numOfTracks < 3)
     return -9999.;
 
-  int nTracks = 0;
   for (int iTrack = 0; iTrack < numOfTracks; iTrack++) {
 
     AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(evt->GetTrack(iTrack));
-
     double pt = aodtrack->Pt();
+    double eta = aodtrack->Eta();
     double px = aodtrack->Px();
     double py = aodtrack->Py();
+    if (TMath::Abs(pt) < 0.5 || TMath::Abs(eta) > 0.8) {
+      continue;
+    }
 
     ptTot += pt;
 
@@ -345,7 +347,6 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
     s01 += px * py / pt;
     s10 = s01;
     s11 += py * py / pt;
-    nTracks++;
   }
 
   //normalize to total Pt to obtain a linear form:
