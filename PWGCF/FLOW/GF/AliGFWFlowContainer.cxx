@@ -193,13 +193,45 @@ Bool_t AliGFWFlowContainer::OverrideMainWithSub(Int_t ind, Bool_t ExcludeChosen)
       if(i==ind) continue;
       TProfile2D *tarprof = (TProfile2D*)fProfRand->At(ind);
       if(!fProf)
-	fProf = (TProfile2D*)tarprof->Clone(ts.Data());
+	     fProf = (TProfile2D*)tarprof->Clone(ts.Data());
       else
-	fProf->Add(tarprof);
+	     fProf->Add(tarprof);
     };
     return kTRUE;
   };
 };
+Bool_t AliGFWFlowContainer::RandomizeProfile(Int_t nSubsets) {
+  if(!fProfRand) {
+    printf("Cannot randomize profile, random array does not exist.\n");
+    return kFALSE;
+  };
+  Int_t l_Subsets = nSubsets?nSubsets:fProfRand->GetEntries();
+  TRandom *rndm = new TRandom(0);
+  for(Int_t i=0; i<l_Subsets; i++) {
+    Int_t rInd = TMath::FloorNint(rndm->Rndm()*fProfRand->GetEntries());
+    if(!i) {
+      TString ts(fProf->GetName());
+      delete fProf;
+      fProf = (TProfile2D*)fProfRand->At(rInd)->Clone(ts.Data());
+    } else fProf->Add((TProfile2D*)fProfRand->At(rInd));
+  }
+}
+Bool_t AliGFWFlowContainer::CreateStatisticsProfile(StatisticsType StatType, Int_t arg) {
+  switch(StatType) {
+    case kSingleSample:
+      return OverrideMainWithSub(arg,kFALSE);
+      break; //Just dummy
+    case kJackKnife:
+      return OverrideMainWithSub(arg,kTRUE);
+      break; //Just dummy
+    case kBootstrap:
+      return RandomizeProfile(arg);
+      break; //Just dummy
+    default:
+      return kFALSE;
+      break; //Just dummy
+  };
+}
 void AliGFWFlowContainer::SetIDName(TString newname) {
   fIDName = newname;
 };
