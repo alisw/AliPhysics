@@ -17,6 +17,7 @@ ClassImp(AliFemtoDreamEvent)
 AliFemtoDreamEvent::AliFemtoDreamEvent()
     : fUtils(nullptr),
       fEvtCuts(nullptr),
+      fuseAliEvtCuts(false),
       fEvtCutList(nullptr),
       fxVtx(0),
       fyVtx(0),
@@ -43,9 +44,10 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
 }
 
 AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
-                                       UInt_t trigger)
+                                       UInt_t trigger, bool useEvtCuts)
     : fUtils(new AliAnalysisUtils()),
-      fEvtCuts(new AliEventCuts()),
+      fEvtCuts(nullptr),
+      fuseAliEvtCuts(useEvtCuts),
       fEvtCutList(nullptr),
       fxVtx(0),
       fyVtx(0),
@@ -68,6 +70,14 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fisSelected(false),
       fEstimator(kRef08),
       fspher(0) {
+  if (fuseAliEvtCuts) {
+    fEvtCuts = new AliEventCuts();
+    if (trigger != AliVEvent::kINT7) {
+      std::cout << "Setting up Event Cuts correspondingly for pp trigger: "
+                << trigger << std::endl;
+      fEvtCuts->OverrideAutomaticTriggerSelection(trigger);
+    }
+  }
   if (mvPileUp) {
     //For pPb this is necessary according to DPG Processing status news
     //(week 29 April - 5 May 2017)
@@ -77,12 +87,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
     fUtils->SetMinPlpContribSPD(3);
   }
 
-  if (trigger != AliVEvent::kINT7) {
-    std::cout << "Setting up Track Cuts correspondingly for pp trigger: "
-              << trigger << std::endl;
-    fEvtCuts->OverrideAutomaticTriggerSelection(trigger);
-  }
-  if (EvtCutQA) {
+  if (EvtCutQA&&fuseAliEvtCuts) {
     fEvtCutList = new TList();
     fEvtCutList->SetName("AliEventCuts");
     fEvtCutList->SetOwner(true);
@@ -156,10 +161,12 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   } else {
     this->fisPileUp = false;
   }
-  if (fEvtCuts->AcceptEvent(evt)) {
-    this->fPassAliEvtSelection = true;
-  } else {
-    this->fPassAliEvtSelection = false;
+  if (fuseAliEvtCuts) {
+    if (fEvtCuts->AcceptEvent(evt)) {
+      this->fPassAliEvtSelection = true;
+    } else {
+      this->fPassAliEvtSelection = false;
+    }
   }
   this->fSPDMult = CalculateITSMultiplicity(evt);
   this->fNSPDClusterLy0 = evt->GetNumberOfITSClusters(0);
