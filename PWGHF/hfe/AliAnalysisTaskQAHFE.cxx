@@ -161,6 +161,7 @@ fDCAzCut(2),
 	
 fpTMin(0.3),
 fEtarange(0.8),
+fFilterbit(AliAODTrack::kTrkGlobalNoDCA),
 fTPCnsigmin(-1),
 fTPCnsigmax(3),
 fTOFnsig(3),
@@ -333,6 +334,7 @@ fDCAzCut(2),
 	
 fpTMin(0.3),
 fEtarange(0.8),
+fFilterbit(AliAODTrack::kTrkGlobalNoDCA),
 fTPCnsigmin(-1),
 fTPCnsigmax(3),
 fTOFnsig(3),
@@ -779,24 +781,7 @@ void AliAnalysisTaskQAHFE::UserCreateOutputObjects()
   fPte_LS_multSPD->Sumw2();
   //fOutputList->Add(fPte_LS_multSPD);
   
- /* fPte_ULS_multV0M_KF = new TH2F("fPte_ULS_multV0M_KF", "ULS electron pt in percentile",300,0,15,1000,0,1000);
-	fPte_ULS_multV0M_KF->Sumw2();
-  fOutputList->Add(fPte_ULS_multV0M_KF);
-  
-  fPte_LS_multV0M_KF = new TH2F("fPte_LS_multV0M_KF", "LS electron pt in percentile",300,0,15,1000,0,1000);
-  fPte_LS_multV0M_KF->Sumw2();
-  fOutputList->Add(fPte_LS_multV0M_KF);
-  
  
-  fPte_ULS_multSPD_KF = new TH2F("fPte_ULS_multSPD_KF", "ULS electron pt in percentile",300,0,15,200,0,200);
-  fPte_ULS_multSPD_KF->Sumw2();
-  fOutputList->Add(fPte_ULS_multSPD_KF);
-  
-  fPte_LS_multSPD_KF = new TH2F("fPte_LS_multSPD_KF", "LS electron pt in percentile",300,0,15,200,0,200);
-  fPte_LS_multSPD_KF->Sumw2();
-  fOutputList->Add(fPte_LS_multSPD_KF);
-  
- */
   
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   fPtHFEMCtot = new TH1F("fPtHFEMCtot",";p_{t} (GeV/c)",300,0,15);
@@ -1187,7 +1172,7 @@ void AliAnalysisTaskQAHFE::UserCreateOutputObjects()
  //===================================================================================================//
  
  
-  fNentries2=new TH1F("CutSet", "", 19,-0.5,18.5);
+  fNentries2=new TH1F("CutSet", "", 20,-0.5,19.5);
   fNentries2->GetXaxis()->SetBinLabel(1,"trigger");
   fNentries2->GetXaxis()->SetBinLabel(2,"TPCNclus");
   fNentries2->GetXaxis()->SetBinLabel(3,"ITSNclus");
@@ -1207,6 +1192,7 @@ void AliAnalysisTaskQAHFE::UserCreateOutputObjects()
   fNentries2->GetXaxis()->SetBinLabel(17,"AssopTMin");
   fNentries2->GetXaxis()->SetBinLabel(18,"AssoEtarange");
   fNentries2->GetXaxis()->SetBinLabel(19,"AssoTPCnsig");
+  fNentries2->GetXaxis()->SetBinLabel(19,"Filterbit");
    fOutputList->Add(fNentries2);
   
   fNentries2->SetBinContent(1, ftrigger);
@@ -1228,6 +1214,8 @@ void AliAnalysisTaskQAHFE::UserCreateOutputObjects()
   fNentries2->SetBinContent(17,fAssopTMin);
   fNentries2->SetBinContent(18,fAssoEtarange);
   fNentries2->SetBinContent(19,fAssoTPCnsig);
+  fNentries2->SetBinContent(20,fFilterbit);
+
    
   //==================================================================================================//
   //==================================================================================================//
@@ -1572,10 +1560,15 @@ void AliAnalysisTaskQAHFE::UserExec(Option_t *)
 		AliAODTrack* track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(iTracks));
    	
     if(!track) AliFatal("Not a standard AOD");
-  		
-
-	if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; 
-
+  			Double_t pt=0., p=0., eta=-999, dEdx_TPC=-999., Signal_TOF=-999., TOFbeta=-999., fTPCnSigma=-999.0, fTOFnSigma=-999.0;    
+    
+		pt = track->Pt();
+		p = track->P();  
+		eta=track->Eta();
+	
+	if (TMath::Abs(eta)>=fEtarange) continue; 
+	if(!track->TestFilterMask(fFilterbit)) continue; 
+   
 	if(fIsMC && track->GetLabel()>=0)
    		{
    			fMCparticle=(AliAODMCParticle*)fMCarray->At(track->GetLabel());
@@ -1625,11 +1618,6 @@ void AliAnalysisTaskQAHFE::UserExec(Option_t *)
    	
 		num++;
     	
-		Double_t pt=0., p=0., eta=-999, dEdx_TPC=-999., Signal_TOF=-999., TOFbeta=-999., fTPCnSigma=-999.0, fTOFnSigma=-999.0;    
-    
-		pt = track->Pt();
-		p = track->P();  
-		eta=track->Eta();
 		dEdx_TPC = track->GetTPCsignal();
      	
 		TOFbeta=Beta(track);
@@ -2095,7 +2083,7 @@ Int_t AliAnalysisTaskQAHFE::ClassifyTrack(AliAODTrack* track,const AliVVertex* p
 
 	//if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return 0; //fitler bit 
   if(pt< 0.3 ) return 0;  
-	if (TMath::Abs(eta)>=fEtarange) return 0; 
+	//if (TMath::Abs(eta)>=fEtarange) return 0; 
 	
 	Double_t nclus = track->GetTPCNcls();  // TPC cluster information
 	Double_t nclusF = track->GetTPCNclsF();

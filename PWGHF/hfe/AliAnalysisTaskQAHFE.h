@@ -113,7 +113,7 @@ class AliAnalysisTaskQAHFE : public AliAnalysisTaskSE {
 	void SetAssopTMin(Double_t AssopTMin){fAssopTMin = AssopTMin;}
 	void SetAssoEtarange(Double_t AssoEtarange){fAssoEtarange=AssoEtarange;}
 	void SetAssoTPCnsig(Double_t AssoTPCnsig){fAssoTPCnsig=AssoTPCnsig;}
-	
+	void SetFilterBit(Double_t Filterbit){fFilterbit=Filterbit;}
 	
 	private:
 	
@@ -129,7 +129,8 @@ class AliAnalysisTaskQAHFE : public AliAnalysisTaskSE {
 	Double_t fDCAxyCut;  
 	Double_t fDCAzCut;  
 	Double_t fpTMin;  
-	Double_t fEtarange;  
+	Double_t fEtarange; 
+	Double_t    fFilterbit;
 	Double_t fTPCnsigmin;  
 	Double_t fTPCnsigmax;  
 	Double_t fTOFnsig;  
