@@ -144,8 +144,8 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fGroundStateBeautyMotherpT = new TH1D(Form("fGroundStateBeautyMotherpT"),Form("fGroundStateBeautyMotherpT"), 40, 0., 20.);
     fGroundStateCharmMotherpT = new TH1D(Form("fGroundStateCharmMotherpT"),Form("fGroundStateCharmMotherpT"), 40, 0., 20.);
 
-    fPionV0pTRNoCuts = new TH3D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
-    fPionV0pTRWithCuts = new TH3D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 40, 0., 10., 80, 0., 20., 10, 0., 100.);
+    fPionV0pTRNoCuts = new TH3D(Form("fPionV0pTRNoCuts"),Form("fPionV0pTRNoCuts"), 40, 0., 10., 80, 0., 20., 50, 0., 100.);
+    fPionV0pTRWithCuts = new TH3D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 40, 0., 10., 80, 0., 20., 50, 0., 100.);
 
     fRd = new TRandom3(0);
     
