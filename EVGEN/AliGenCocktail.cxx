@@ -33,7 +33,11 @@
 #include "AliRun.h"
 #include "AliLog.h"
 #include "AliMC.h"
+#include "AliHeader.h"
+#include "AliVertexGenFile.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
 
 ClassImp(AliGenCocktail)
 
@@ -221,11 +225,27 @@ void AliGenCocktail::Generate()
       //
       if (entry->Formula() != 0)
       {
-        if (!collentry) {
+        AliCollisionGeometry* coll = NULL;
+	
+	if (!collentry) {
+	  const AliVertexGenFile* vtxGen =  (AliVertexGenFile*)gAlice->GetMCApp()->Generator()->GetVertexGenerator();
+	  if(vtxGen){
+	    const AliHeader* hBg = vtxGen->GetHeader();
+	    if(hBg){	
+	  	AliGenEventHeader* genHeader = hBg->GenEventHeader();
+	  	coll = (AliCollisionGeometry*)genHeader;
+	    }
+	  }
+	}
+	else{
+	  coll = (collentry->Generator())->CollisionGeometry();
+	}
+	
+	if (!coll) {
           Fatal("Generate()", "No Collision Geometry Provided");
           return;
         }
-        AliCollisionGeometry* coll = (collentry->Generator())->CollisionGeometry();
+	
         Float_t b  = coll->ImpactParameter();
         Int_t nsig = Int_t(entry->Formula()->Eval(b));
         Int_t bin = entry->Bin() - 100;
