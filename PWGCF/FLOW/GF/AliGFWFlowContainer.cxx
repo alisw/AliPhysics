@@ -228,7 +228,7 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmul
   Int_t minm = 1;
   Int_t maxm = fProf->GetXaxis()->GetNbins();
   Int_t fNbinsPt=24;
-  Double_t fbinsPt[] = {
+  Double_t fbinsPt[] = {//0.2,3.,6.};
     0.2, 0.4, 0.6, 0.8, 1.0,
     1.2, 1.4, 1.6, 1.8, 2.0,
     2.2, 2.4, 2.6, 3.0, 3.4,
@@ -695,6 +695,8 @@ TH1D *AliGFWFlowContainer::GetVNN(Int_t n, Int_t c, Bool_t onPt, Double_t arg1, 
 TProfile *AliGFWFlowContainer::GetRefFlowProfile(const char *order, Double_t m1, Double_t m2) {
   Int_t nStartBin = fProf->GetXaxis()->FindBin(m1);
   Int_t nStopBin = fProf->GetXaxis()->FindBin(m2);
+  if(nStartBin==0) nStartBin=1;
+  if(nStopBin<nStartBin) nStopBin=fProf->GetXaxis()->GetNbins();
   Int_t nBins = nStopBin-nStartBin+1;
   Double_t *l_bins = new Double_t[nBins+1];
   for(Int_t i=0;i<=nBins;i++) l_bins[i] = i; //dummy bins, will be merged anyways
