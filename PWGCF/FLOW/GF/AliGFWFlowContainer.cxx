@@ -219,15 +219,15 @@ Bool_t AliGFWFlowContainer::RandomizeProfile(Int_t nSubsets) {
 Bool_t AliGFWFlowContainer::CreateStatisticsProfile(StatisticsType StatType, Int_t arg) {
   switch(StatType) {
     case kSingleSample:
-      printf("Called kSingleSample\n");
+      //printf("Called kSingleSample\n");
       return OverrideMainWithSub(arg,kFALSE);
       break; //Just dummy
     case kJackKnife:
-      printf("Called JackKnife\n");
+      //printf("Called JackKnife\n");
       return OverrideMainWithSub(arg,kTRUE);
       break; //Just dummy
     case kBootstrap:
-      printf("Called proper bootstrap\n");
+      //printf("Called proper bootstrap\n");
       return RandomizeProfile(arg);
       break; //Just dummy
     default:
