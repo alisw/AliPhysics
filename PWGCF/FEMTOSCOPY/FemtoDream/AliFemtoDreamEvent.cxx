@@ -337,6 +337,7 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
     double eta = aodtrack->Eta();
     double px = aodtrack->Px();
     double py = aodtrack->Py();
+    if(!aodtrack->TestFilterBit(128)) continue;
     if (TMath::Abs(pt) < 0.5 || TMath::Abs(eta) > 0.8) {
       continue;
     }
