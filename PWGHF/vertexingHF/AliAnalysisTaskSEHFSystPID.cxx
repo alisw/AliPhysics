@@ -80,7 +80,10 @@ fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
 fNPbinsNsigmaTPCDataCorr(0),
 fEtalimitsNsigmaTPCDataCorr{},
-fNEtabinsNsigmaTPCDataCorr(0)
+fNEtabinsNsigmaTPCDataCorr(0),
+fUseAliEventCuts(false),
+fAliEventCuts(),
+fApplyPbPbOutOfBunchPileupCuts()
 {
   //
   // default constructur
@@ -99,6 +102,8 @@ fNEtabinsNsigmaTPCDataCorr(0)
   for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
     fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
+  
+  fAliEventCuts.SetManualMode();
 }
 
 //________________________________________________________________________
@@ -157,7 +162,10 @@ fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
 fNPbinsNsigmaTPCDataCorr(0),
 fEtalimitsNsigmaTPCDataCorr{},
-fNEtabinsNsigmaTPCDataCorr(0)
+fNEtabinsNsigmaTPCDataCorr(0),
+fUseAliEventCuts(false),
+fAliEventCuts(),
+fApplyPbPbOutOfBunchPileupCuts()
 {
   //
   // standard constructur
@@ -176,6 +184,8 @@ fNEtabinsNsigmaTPCDataCorr(0)
   for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
     fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
+
+  fAliEventCuts.SetManualMode();
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -220,7 +230,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",8,-1.5,6.5);
+  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",12,-1.5,10.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
@@ -232,6 +242,9 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Error on zVertex>0.5");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"|zVertex|>10");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"Good Z vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"Cent corr cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"V0mult vs. nTPC cls");  
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"Selected events");  
   fOutputList->Add(fHistNEvents);
 
   TString armenteronames[5] = {"All","K0s","Lambda","AntiLambda","Gamma"};
@@ -285,6 +298,10 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fPIDtree->Branch("tag",&fTag,"tag/b");
   if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/S");
 
+  if(fUseAliEventCuts) { //add QA plots if event cuts used
+    fAliEventCuts.AddQAplotsToList(fOutputList,true);
+  }
+
   // post data
   PostData(1, fOutputList);
   PostData(2, fPIDtree);
@@ -319,6 +336,9 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
   }
 
+  if(fUseAliEventCuts)
+    fAliEventCuts.AcceptEvent(fAOD); //for QA plots
+
   if(TMath::Abs(fAOD->GetMagneticField())<0.001) return;
 
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -346,6 +366,17 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     PostData(1, fOutputList);
     return;
   }
+
+  if(fUseAliEventCuts) {
+    int sel = IsEventSelectedWithAliEventCuts();
+    if(sel>0) {
+      fHistNEvents->Fill(sel);   
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+
+  fHistNEvents->Fill(10);   
 
   // load MC particles
   TClonesArray *arrayMC=0;
@@ -807,4 +838,33 @@ void AliAnalysisTaskSEHFSystPID::GetNsigmaTPCMeanSigmaData(float &mean, float &s
       break;
     }
   }
+}
+
+//________________________________________________________________
+int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
+
+  int run = fAOD->GetRunNumber();
+  if(fAOD->GetRunNumber()!=fRunNumberPrevEvent) {
+    if(run >= 244917 && run <= 246994)
+      fAliEventCuts.SetupRun2PbPb();
+    else if(run >= 295369 && run <= 297624)
+      fAliEventCuts.SetupPbPb2018();
+  }
+  
+  // cut on correlations for out of bunch pileup in PbPb run2  
+  if(fApplyPbPbOutOfBunchPileupCuts==1){
+    if(!fAliEventCuts.PassedCut(AliEventCuts::kCorrelations))
+      return 8;
+  }
+  else if(fApplyPbPbOutOfBunchPileupCuts==2 && run >= 295369 && run <= 297624){
+    // Ionut cut on V0multiplicity vs. n TPC clusters (Pb-Pb 2018)
+    AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)fAOD)->GetVZEROData();
+    float mTotV0=v0data->GetMTotV0A()+v0data->GetMTotV0C();
+    int nTPCcls=((AliAODEvent*)fAOD)->GetNumberOfTPCClusters();
+    float mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
+    if(mTotV0<mV0TPCclsCut){
+      return 9;
+    }
+  }
+  return 0;
 }
