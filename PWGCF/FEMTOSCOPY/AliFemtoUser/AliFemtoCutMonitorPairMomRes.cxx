@@ -88,8 +88,12 @@ void AliFemtoCutMonitorPairMomRes::Fill(const AliFemtoPair* aPair)
 
       AliFemtoLorentzVector p1(::sqrt(tInfo1->GetTrueMomentum()->Mag2() + fMassPart1*fMassPart1), *tInfo1->GetTrueMomentum());
       AliFemtoLorentzVector p2(::sqrt(tInfo2->GetTrueMomentum()->Mag2() + fMassPart2*fMassPart2), *tInfo2->GetTrueMomentum());
-
+    
+      if((abs(tInfo1->GetPDGPid()) != 321) || (abs(tInfo2->GetPDGPid()) != 2212))
+	return;
       
+      //cout<<tInfo1->GetPDGPid()<<" "<<abs(tInfo2->GetPDGPid())<<endl;
+  
       const double
 	px1 = p1.x(),
 	py1 = p1.y(),
