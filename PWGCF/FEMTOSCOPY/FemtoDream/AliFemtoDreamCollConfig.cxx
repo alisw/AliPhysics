@@ -409,8 +409,8 @@ std::vector<int> AliFemtoDreamCollConfig::GetStandardPairs() {
   pairs.push_back(11);        // barp barp
   pairs.push_back(0);         // barp Lambda
   pairs.push_back(12);        // barp barLambda
-  pairs.push_back(13);         // barp Xi
-  pairs.push_back(0);         // barp barXi
+  pairs.push_back(0);         // barp Xi
+  pairs.push_back(13);         // barp barXi
   pairs.push_back(0);         // Lambda Lambda
   pairs.push_back(0);         // Lambda barLambda
   pairs.push_back(0);         // Lambda Xi
