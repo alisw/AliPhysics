@@ -71,6 +71,8 @@ private:
   TH2F *fHistNTracksFB4VsV0Cent;         //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksBC0VsV0Cent;         //!<! Centrality-multiplicity correl
   TH2F *fHistNTrackletsVsV0Cent;         //!<! Centrality-multiplicity correl
+  TH2F *fHistNTrackletsGoldenVsV0Cent;   //!<! Centrality-multiplicity correl
+  TH1F *fHistPhiTrackelts;               //!<! Control plot
   TH2F *fHistNTracksTPCoutVsNTracklets;  //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksFB4VsNTracklets;     //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksBC0VsNTracksFB4;     //!<! Centrality-multiplicity correl
@@ -86,7 +88,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,5);
+  ClassDef(AliAnalysisTaskCheckEvSel,6);
 };
 
 #endif

@@ -64,6 +64,8 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNTracksFB4VsV0Cent(0x0),
   fHistNTracksBC0VsV0Cent(0x0),
   fHistNTrackletsVsV0Cent(0x0),
+  fHistNTrackletsGoldenVsV0Cent(0x0),
+  fHistPhiTrackelts(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
   fHistNTracksBC0VsNTracksFB4(0x0),
@@ -106,6 +108,8 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNTracksFB4VsV0Cent(0x0),
   fHistNTracksBC0VsV0Cent(0x0),
   fHistNTrackletsVsV0Cent(0x0),
+  fHistNTrackletsGoldenVsV0Cent(0x0),
+  fHistPhiTrackelts(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
   fHistNTracksBC0VsNTracksFB4(0x0),
@@ -151,6 +155,8 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNTracksFB4VsV0Cent;
     delete fHistNTracksBC0VsV0Cent;
     delete fHistNTrackletsVsV0Cent;
+    delete fHistNTrackletsGoldenVsV0Cent;
+    delete fHistPhiTrackelts;
     delete fHistNTracksTPCoutVsNTracklets;
     delete fHistNTracksFB4VsNTracklets;
     delete fHistNTracksBC0VsNTracksFB4;
@@ -216,6 +222,7 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fHistNTracksFB4VsV0Cent = new TH2F("hNTracksFB4VsV0Cent"," ; Centrality ; N_{tracks, FiltBit4}",105,0.,105.,200,-0.5,maxMult-0.5);
   fHistNTracksBC0VsV0Cent = new TH2F("hNTracksBC0VsV0Cent"," ; Centrality ; N_{tracks, TOFBC=0}",105,0.,105.,200,-0.5,maxMult-0.5);  
   fHistNTrackletsVsV0Cent = new TH2F("hNTrackletsVsV0Cent"," ; Centrality ; N_{tracklets}",105,0.,105.,200,-0.5,maxMult-0.5);
+  fHistNTrackletsGoldenVsV0Cent = new TH2F("hNTrackletsGoldenVsV0Cent"," ; Centrality ; N_{tracklets}",105,0.,105.,200,-0.5,maxMult-0.5);
   fHistNTracksTPCoutVsNTracklets = new TH2F("hNTracksTPCoutVsNTracklets"," ; N_{tracklets} ; N_{tracks, TPCout}",200,-0.5,maxMult-0.5,200,-0.5,2*maxMult-0.5);
   fHistNTracksFB4VsNTracklets = new TH2F("hNTracksFB4VsNTracklets"," ; N_{tracklets} ; N_{tracks, FiltBit4}",200,-0.5,maxMult-0.5,200,-0.5,maxMult-0.5);
   fHistNTracksBC0VsNTracksFB4 = new TH2F("hNTracksBC0VsNTracksFB4"," ; N_{tracks, FiltBit4}; N_{tracks, TOFBC=0}",200,-0.5,maxMult-0.5,200,-0.5,maxMult-0.5);
@@ -223,10 +230,14 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fOutput->Add(fHistNTracksFB4VsV0Cent);
   fOutput->Add(fHistNTracksBC0VsV0Cent);
   fOutput->Add(fHistNTrackletsVsV0Cent);
+  fOutput->Add(fHistNTrackletsGoldenVsV0Cent);
   fOutput->Add(fHistNTracksTPCoutVsNTracklets);
   fOutput->Add(fHistNTracksFB4VsNTracklets);
   fOutput->Add(fHistNTracksBC0VsNTracksFB4);
 
+  fHistPhiTrackelts = new TH1F("hPhiTrackelts"," ; #varphi (rad)",200,0.,2.*TMath::Pi());
+  fOutput->Add(fHistPhiTrackelts);
+  
   fHistZVertexSPDBeforeCuts = new TH2F("hZVertexSPDBeforeCuts"," ; z_{SPDvertex} ; z_{TRKvertex}",400,-20.,20.,400,-20.,20.);
   fOutput->Add(fHistZVertexSPDBeforeCuts);
   fHistZVertexSPDBeforeSPDCut = new TH2F("hZVertexSPDBeforeSPDCut"," ; z_{SPDvertex} ; z_{TRKvertex}",400,-20.,20.,400,-20.,20.);
@@ -322,7 +333,18 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   Double_t centrCL0=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentCL0);
   const AliVVertex *vertex = aod->GetPrimaryVertex();
   const AliVVertex *vertexSPD = aod->GetPrimaryVertexSPD();
-  Double_t ntrkl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
+  Double_t ntrkl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
+  Double_t nTrackletsGolden=0;
+  AliAODTracklets* tracklets=aod->GetTracklets();
+  Int_t nTr=tracklets->GetNumberOfTracklets();
+  for(Int_t iTr=0; iTr<nTr; iTr++){
+    // Double_t theta=tracklets->GetTheta(iTr);
+    // Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+    Double_t phi=tracklets->GetPhi(iTr);
+    fHistPhiTrackelts->Fill(phi);
+    if(phi>3.9) nTrackletsGolden+=1.;
+  }
+
   Double_t ncl1 = aod->GetNumberOfITSClusters(1);
   Double_t zvSPD=vertexSPD->GetZ();
   Double_t zvTRK=vertex->GetZ();
@@ -479,6 +501,7 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNTracksFB4VsV0Cent->Fill(centr,ntracksFB4);
     fHistNTracksBC0VsV0Cent->Fill(centr,ntracksBC0);
     fHistNTrackletsVsV0Cent->Fill(centr,ntrkl);
+    fHistNTrackletsGoldenVsV0Cent->Fill(centr,nTrackletsGolden);
     fHistNTracksTPCoutVsNTracklets->Fill(ntracksTPCout,ntrkl);
     fHistNTracksFB4VsNTracklets->Fill(ntracksFB4,ntrkl);
     fHistNTracksBC0VsNTracksFB4->Fill(ntracksBC0,ntracksFB4);
