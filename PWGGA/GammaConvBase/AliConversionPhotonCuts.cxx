@@ -1106,12 +1106,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
     if(photon->GetPhotonP()!=0 && electronCandidate->P()!=0)fHistoAsymmetrybefore->Fill(photon->GetPhotonP(),electronCandidate->P()/photon->GetPhotonP());
   }
   // Gamma selection based on QT from Armenteros
-  if(fDoQtGammaSelection == 1){
-    if(!ArmenterosQtCut(photon)){
-      if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //1
-      return kFALSE;
-    }
-  } else if(fDoQtGammaSelection == 2){
+  if(fDoQtGammaSelection == 1 || fDoQtGammaSelection == 2){
     if(!ArmenterosQtCut(photon)){
       if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //1
       return kFALSE;
