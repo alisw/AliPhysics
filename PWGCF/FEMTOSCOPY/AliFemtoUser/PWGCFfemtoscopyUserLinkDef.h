@@ -74,6 +74,7 @@
 //#pragma link C++ class AliFemtoPhiPairCut;
 #pragma link C++ class AliFemtoQinvCorrFctnEMCIC;
 #pragma link C++ class AliFemtoCorrFctn3DSphericalEMCIC;
+#pragma link C++ class AliFemtoCorrFctnPtKstar;
 #pragma link C++ class AliFemtoBPLCMS3DCorrFctnEMCIC;
 #pragma link C++ class AliFemtoPairCutPt;
 #pragma link C++ class AliFemtoAvgSepCorrFctn;
