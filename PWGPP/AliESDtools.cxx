@@ -810,7 +810,9 @@ Int_t AliESDtools::DumpEventVariables() {
     return 0;
   }
   Int_t tpcClusterMultiplicity   = fEvent->GetNumberOfTPCClusters();
+  Int_t tpcTrackBeforeClean=fEvent->etNTPCTrackBeforeClean();
   const AliMultiplicity *multObj = fEvent->GetMultiplicity();
+
   Int_t itsNumberOfTracklets   = multObj->GetNumberOfTracklets();
 
   TVectorF phiCountA(36);
@@ -848,6 +850,7 @@ Int_t AliESDtools::DumpEventVariables() {
   ULong64_t periodID     = (ULong64_t)fEvent->GetPeriodNumber();
   ULong64_t gid = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
   Short_t   fEventMult = fEvent->GetNumberOfTracks();
+  ULong64_t triggerMask = event->GetTriggerMask();
   /// centrality
   //if (MultSelection) {
   //    if (fUseCouts)  std::cout << " Info::marsland: Centralitity is taken from MultSelection " << std::endl;
@@ -876,6 +879,7 @@ Int_t AliESDtools::DumpEventVariables() {
                      "bField="               << bField                   <<  // b field
                      "gid="                  << gid              <<  // global event ID
                      "timestamp="            << timeStamp             <<  // timestamp
+                     "triggerMask="          << triggerMask           <<  //trigger mask
                      "vz="                   << fVz                    <<  // vertex Z
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
@@ -883,6 +887,7 @@ Int_t AliESDtools::DumpEventVariables() {
                      "eventMult="            << fEventMult             <<  //  event multiplicity
                      "primMult="             << primMult         <<  //  #prim tracks
                      "tpcClusterMult="       << tpcClusterMultiplicity <<  // tpc cluster multiplicity
+                     "tpcTrackBeforeClean=" << tpcTrackBeforeClean <<   // tpc track before cleaning
                      "itsTracklets="         << itsNumberOfTracklets   <<  // number of ITS tracklets
                      //
                      "tZeroMult.="           << &tZeroMult             <<  // T0 multiplicity
