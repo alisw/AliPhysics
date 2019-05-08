@@ -141,9 +141,9 @@ private:
    TH1F                *fHEventStat;      //!<! histogram of event statistics
    TH1F                *fHAEventsVsMulti; //!<! histogram of event statistics
    TH1F                *fHAEventsVsTracklets; //!<! histogram of event statistics
-   TH2F                *fHAEventVzCent;       //!<! histogram of vertex-z vs. multiplicity/centrality
-   TH2F                *fHAEventSpherocityCent; //!<! histogram of spherocity vs. multiplicity/centrality
-   TH2F                *fHAEventMultiCent;    //!<! histogram of multiplicity vs. centrality
+   TH2F                *fHAEventVzCent;       ///< histogram of vertex-z vs. multiplicity/centrality
+   TH2F                *fHAEventSpherocityCent; ///< histogram of spherocity vs. multiplicity/centrality
+   TH2F                *fHAEventMultiCent;    ///< histogram of multiplicity vs. centrality
    TH2F                *fHAEventRefMultiCent; //!<! histogram of reference multiplicity vs. centrality
    TH2F                *fHAEventPlane;        //!<! histogram of event plane vs. multiplicity/centrality
 
