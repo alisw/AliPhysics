@@ -961,7 +961,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
   ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
   TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
-  ULong64_t triggerMask = event->GetTriggerMask();
+  ULong64_t triggerMask = esdEvent->GetTriggerMask();
   Float_t bz = esdEvent->GetMagneticField();
   Int_t runNumber = esdEvent->GetRunNumber();
   Int_t evtTimeStamp = esdEvent->GetTimeStamp();

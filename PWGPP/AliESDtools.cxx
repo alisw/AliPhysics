@@ -810,7 +810,7 @@ Int_t AliESDtools::DumpEventVariables() {
     return 0;
   }
   Int_t tpcClusterMultiplicity   = fEvent->GetNumberOfTPCClusters();
-  Int_t tpcTrackBeforeClean=fEvent->etNTPCTrackBeforeClean();
+  Int_t tpcTrackBeforeClean=fEvent->GetNTPCTrackBeforeClean();
   const AliMultiplicity *multObj = fEvent->GetMultiplicity();
 
   Int_t itsNumberOfTracklets   = multObj->GetNumberOfTracklets();
@@ -850,7 +850,7 @@ Int_t AliESDtools::DumpEventVariables() {
   ULong64_t periodID     = (ULong64_t)fEvent->GetPeriodNumber();
   ULong64_t gid = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
   Short_t   fEventMult = fEvent->GetNumberOfTracks();
-  ULong64_t triggerMask = event->GetTriggerMask();
+  ULong64_t triggerMask = fEvent->GetTriggerMask();
   /// centrality
   //if (MultSelection) {
   //    if (fUseCouts)  std::cout << " Info::marsland: Centralitity is taken from MultSelection " << std::endl;
