@@ -90,7 +90,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,6);
+  ClassDef(AliAnalysisTaskCheckEvSel,7);
 };
 
 #endif
