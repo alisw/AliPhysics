@@ -129,7 +129,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
-    fAnalysisList->Add(new TList());
+    //fAnalysisList->Add(new TList());
     static_cast<TList*>(fAnalysisList->At(0))->SetName("Reference");
     static_cast<TList*>(fAnalysisList->At(1))->SetName("Differential");
     //static_cast<TList*>(fAnalysisList->At(2))->SetName("AutoCorrection");
@@ -141,33 +141,33 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     Int_t fMaxMoment = 5;
     Int_t dimensions = 5;
 
-    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)+1} ;
-    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)+1} ;
+    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)+1} ;
+    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)+1} ;
     Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
-    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
+    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4Four)+1};
 
-    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnSparseF("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
-    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnSparseF("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
+    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
+    //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
     Int_t ptnmax =  (fSettings.doPt ? 10 : 0);
 
     // create a THn for each harmonic
     for (Int_t n = 2; n <= fMaxMoment; n++) {
       for (Int_t ptn = 0; ptn <= ptnmax; ptn++){
 
-        static_cast<TList*>(fAnalysisList->At(0))->Add(new THnSparseF(Form("cumuRef_v%d_pt%d", n,ptn), Form("cumuRef_v%d_pt%d", n,ptn), dimensions, rbins, xmin, xmax));
-        static_cast<TList*>(fAnalysisList->At(1))->Add(new THnSparseF(Form("cumuDiff_v%d_pt%d", n,ptn),Form("cumuDiff_v%d_pt%d", n,ptn), dimensions, dbins, xmin, xmax));
+        static_cast<TList*>(fAnalysisList->At(0))->Add(new THnF(Form("cumuRef_v%d_pt%d", n,ptn), Form("cumuRef_v%d_pt%d", n,ptn), dimensions, rbins, xmin, xmax));
+        static_cast<TList*>(fAnalysisList->At(1))->Add(new THnF(Form("cumuDiff_v%d_pt%d", n,ptn),Form("cumuDiff_v%d_pt%d", n,ptn), dimensions, dbins, xmin, xmax));
         // The THn has dimensions [random samples, vertex position, eta, centrality, kind of variable to store]
         // set names
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
-        static_cast<THnSparseF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(0))   ->FindObject(Form("cumuRef_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(0)->SetName("samples");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(1)->SetName("vertex");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(2)->SetName("eta");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(3)->SetName("cent");
+        static_cast<THnF*>(static_cast<TList*>(fAnalysisList->At(1))   ->FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)))->GetAxis(4)->SetName("identifier");
       }
     }
 
