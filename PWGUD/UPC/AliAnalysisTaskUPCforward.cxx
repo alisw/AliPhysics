@@ -1021,9 +1021,13 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   }
   fCounterH->Fill(iSelectionCounter);
   iSelectionCounter++;
+  fCounterH->Fill(12);
+
 
   fV0ADecision = dataVZERO->GetV0ADecision();
+  fCounterH->Fill(13);
   fV0CDecision = dataVZERO->GetV0CDecision();
+  fCounterH->Fill(14);
 
 
   //_____________________________________
@@ -1035,17 +1039,21 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - them I move on to the next event.
      -
    */
-   auto findRunNumber = std::find(  std::begin(fVectorGoodRunNumbers),
-                                    std::end(fVectorGoodRunNumbers),
-                                    fRunNum
-                                    );
-   if (findRunNumber != std::end(fVectorGoodRunNumbers)) {
-        // std::cout << "fVectorGoodRunNumbers DOES     contain: " << fRunNum << std::endl;
-   } else {
-        // std::cout << "fVectorGoodRunNumbers does not contain: " << fRunNum << std::endl;
-        PostData(1, fOutputList);
-        return;
-   }
+  auto findRunNumber = std::find(  std::begin(fVectorGoodRunNumbers),
+                                   std::end(fVectorGoodRunNumbers),
+                                   fRunNum
+                                   );
+  if (findRunNumber != std::end(fVectorGoodRunNumbers)) {
+      // std::cout << "fVectorGoodRunNumbers DOES     contain: " << fRunNum << std::endl;
+      fCounterH->Fill(15);
+  } else {
+      // std::cout << "fVectorGoodRunNumbers does not contain: " << fRunNum << std::endl;
+      fCounterH->Fill(16);
+      PostData(1, fOutputList);
+      return;
+  }
+  fCounterH->Fill(17);
+
   // END RUN SELECTION
   //_____________________________________
 
@@ -1074,6 +1082,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         // std::cout << "fV0Hits[iV0Hits = " << iV0Hits << ", fRunNum=" << fRunNum << "] = " << fV0Hits[iV0Hits] << endl;
         // std::cout << "fV0TotalNCells (fRunNum = " << fRunNum << ") = " << fV0TotalNCells << endl;
   }
+  fCounterH->Fill(18);
 
   /* - AD: we try to find the AD object data in the nano-AOD. If we cannot,
      - we return, because there would be no way to actually select the events
@@ -1085,13 +1094,18 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   */
   // AD
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
+  fCounterH->Fill(19);
   if(dataAD) {
         fCounterH->Fill(iSelectionCounter);
         iSelectionCounter++;
+        fCounterH->Fill(20);
 
         fADADecision = dataAD->GetADADecision();
         fADCDecision = dataAD->GetADCDecision();
+        fCounterH->Fill(21);
   }
+  fCounterH->Fill(22);
+
   // END EVENT DATA EXTRACTION
   //_______________________________
   // EVENT SELECTION
