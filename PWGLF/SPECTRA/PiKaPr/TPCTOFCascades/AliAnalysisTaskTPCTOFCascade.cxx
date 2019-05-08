@@ -602,7 +602,7 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
     // Begin to evaluate Dca, Pointing Angle & Spatial position of Cascade
     Double_t lDcaXiDaughters          = casc->GetDcaXiDaughters();
     Double_t lXiCosineOfPointingAngle = casc->GetCascadeCosineOfPointingAngle(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);   
-    Double_t lDcaXiToPrimVertex = casc->GetD(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);
+    //Double_t lDcaXiToPrimVertex = casc->GetD(lPrimaryVtxPosition[0], lPrimaryVtxPosition[1], lPrimaryVtxPosition[2]);
 
     Double_t lPosXi[3] = {-1000.0, -1000.0, -1000.0};
     casc->GetXYZcascade(lPosXi[0], lPosXi[1], lPosXi[2]);
@@ -610,9 +610,11 @@ void AliAnalysisTaskTPCTOFCascade::ProcessCascades() {
     // Begin to evaluate Dca, Pointing Angle & Spatial position of V0
     Double_t lDcaV0DaughtersXi = casc->GetDcaV0Daughters();
     Double_t lV0toXiCosineOfPointingAngle = casc->GetV0CosineOfPointingAngle(lPosXi[0], lPosXi[1], lPosXi[2]);
-    Double_t lDcaV0ToPrimVertexXi = casc->GetD(lPosXi[0], lPosXi[1], lPosXi[2]);
+    Double_t lDcaXiToPrimVertex = casc->GetD(lPosXi[0], lPosXi[1], lPosXi[2]);
+    // Double_t lDcaV0ToPrimVertexXi = casc->GetD(lPosXi[0], lPosXi[1], lPosXi[2]);
     Double_t lPosV0[3] = {-1000.0, -1000.0, -1000.0};
     casc->GetXYZ(lPosV0[0], lPosV0[1], lPosV0[2]);
+    Double_t lDcaV0ToPrimVertexXi = casc->GetD(lPosV0[0], lPosV0[1], lPosV0[2]);
 /////////////////////////////////////////////////////////////////////////////
     //Calculate Radius for both V0 and Cascade
     Double_t lXiRadius = TMath::Sqrt(lPosXi[0]*lPosXi[0] + lPosXi[1]*lPosXi[1]); 
@@ -828,7 +830,7 @@ AliAnalysisTaskTPCTOFCascade::UserExec(Option_t *option)
       if ((!fMCEvent->IsPhysicalPrimary(ipart))&&(!OWSave)) continue;
 
       /* check charged */
-      if ((particlePDG->Charge()==0.)&&(!OWSave)) continue;
+      //if ((particlePDG->Charge()==0.)&&(!OWSave)) continue;
       mcmulti++;
       /* check rapidity and pt cuts */
        if ( (TMath::Abs(particle->Energy() - particle->Pz()) < 1e-6)  ) continue;
