@@ -60,6 +60,7 @@ fDoDeltaPtWithSignal(kFALSE),
 fDiamond(0x0),
 fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
+fDoJetMass(kFALSE),
 fDoPtRelAnalysis(0),
 fDoSelectionPtRel(0),
 //Bjet Cuts
@@ -312,6 +313,28 @@ fh2dJetSignedImpParXYSignificancec_Class4(0x0),
 fh2dJetSignedImpParXYSignificancelf_Class4(0x0),
 fh2dJetSignedImpParXYZ_Class4(0x0),
 fh2dJetSignedImpParXYZSignificance_Class4(0x0),
+//Jet Mass
+fhistJetMass(0x0),
+fhistJetMass_Unidentified(0x0),
+fhistJetMass_udsg(0x0),
+fhistJetMass_c(0x0),
+fhistJetMass_b(0x0),
+fhistJetMassFirst(0x0),
+fhistJetMassSecond(0x0),
+fhistJetMassThird(0x0),
+fhistJetMass_UnidentifiedFirst(0x0),
+fhistJetMass_udsgFirst(0x0),
+fhistJetMass_cFirst(0x0),
+fhistJetMass_bFirst(0x0),
+fhistJetMass_UnidentifiedSecond(0x0),
+fhistJetMass_udsgSecond(0x0),
+fhistJetMass_cSecond(0x0),
+fhistJetMass_bSecond(0x0),
+fhistJetMass_UnidentifiedThird(0x0),
+fhistJetMass_udsgThird(0x0),
+fhistJetMass_cThird(0x0),
+fhistJetMass_bThird(0x0),
+//Jet Probability
 fhistJetProbability(0x0),
 fhistJetProbability_Unidentified(0x0),
 fhistJetProbability_udsg(0x0),
@@ -484,6 +507,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fhnV0InJetLambda(0x0),
 		fhnV0InJetALambda(0x0),
 		fDoJetProbabilityAnalysis(kFALSE),
+		fDoJetMass(kFALSE),
 		fDoPtRelAnalysis(0),
 		fDoSelectionPtRel(0),
 		fh1dEventRejectionRDHFCuts(0x0),
@@ -673,7 +697,28 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fh2dJetSignedImpParXYSignificanceudsgForth(0x0),
 		fh2dJetSignedImpParXYSignificancebForth(0x0),
 		fh2dJetSignedImpParXYSignificancecForth(0x0),
-		//Jet Probabilty
+		//Jet Mass
+		fhistJetMass(0x0),
+		fhistJetMass_Unidentified(0x0),
+		fhistJetMass_udsg(0x0),
+		fhistJetMass_c(0x0),
+		fhistJetMass_b(0x0),
+		fhistJetMassFirst(0x0),
+		fhistJetMassSecond(0x0),
+		fhistJetMassThird(0x0),
+		fhistJetMass_UnidentifiedFirst(0x0),
+		fhistJetMass_udsgFirst(0x0),
+		fhistJetMass_cFirst(0x0),
+		fhistJetMass_bFirst(0x0),
+		fhistJetMass_UnidentifiedSecond(0x0),
+		fhistJetMass_udsgSecond(0x0),
+		fhistJetMass_cSecond(0x0),
+		fhistJetMass_bSecond(0x0),
+		fhistJetMass_UnidentifiedThird(0x0),
+		fhistJetMass_udsgThird(0x0),
+		fhistJetMass_cThird(0x0),
+		fhistJetMass_bThird(0x0),
+		//Jet Probability
 		fh2dJetSignedImpParXY_Class1(0x0),
 		fh2dJetSignedImpParXYSignificance_Class1(0x0),
 		fh2dJetSignedImpParXYSignificanceb_Class1(0x0),
@@ -1299,8 +1344,37 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			}
 			
 
+			Double_t Mass = jetrec->M();
+
+			if(fDoJetMass){
+
+			      	fhistJetMass->Fill(fJetPt,Mass ,fPythiaEventWeight);
+			    		
+			  	if(fIsPythia){
+			      	    switch(fJetFlavor)
+					{
+					case 0:
+						fhistJetMass_Unidentified->Fill(fJetPt,jetrec->M(),fPythiaEventWeight);
+						break;
+					case 1:
+						fhistJetMass_udsg->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					case 2:
+						fhistJetMass_c->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					case 3:
+						fhistJetMass_b->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					default:
+						break;
+					}
+			    	}
+			}
+
+
 			fValJetProb = -1.;
 			fLogJetProb = -1.;
+
 
 			if(fDoJetProbabilityAnalysis && fResolutionFunction[0]){
 
@@ -1552,6 +1626,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					   }
 				}
 
+				if(fDoJetMass && sImpParXY.at(0) >= fThresholdIP){
+					   fhistJetMassFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+					   }
+				}
+
 
 				if(fIsPythia){
 					
@@ -1639,6 +1731,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
 
 
+				if(fDoJetMass && sImpParXY.at(1) >= fThresholdIP){
+					   fhistJetMassSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+					   }
+				}
+
 				if(fIsPythia){
 					
 					if(fJetFlavor ==0){
@@ -1720,6 +1830,24 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						}
 						else if(fJetFlavor ==3){
 							   fhistJetProbability_bLogThird->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
+						}
+					   }
+				}
+
+				if(fDoJetMass && sImpParXY.at(2) >= fThresholdIP){
+					   fhistJetMassThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
 						}
 					   }
 				}
@@ -2812,6 +2940,42 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 	fh1dJetRecEtaPhiAccepted = new TH2D("fh1dJetRecEtaPhiAccepted","detector level jet;#eta;phi",200,-1.0,1.0,200,0.,TMath::TwoPi());
 
+	//Jet Mass
+	if (fDoJetMass){
+		fhistJetMass = new TH2D("fhistJetMass","fJetMass;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+		if(fDoTrackCountingAnalysis){
+			fhistJetMassFirst = new TH2D("fhistJetMassFirst","fJetMass N=1;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMassSecond = new TH2D("fhistJetMassSecond","fJetMass N=2;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMassThird = new TH2D("fhistJetMassThird","fJetMass N=3;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+		}
+
+		if(fIsPythia){
+			fhistJetMass_Unidentified = new TH2D("fhistJetMass_Unidentified","fhistJetMass_Unidentified;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_udsg = new TH2D("fhistJetMass_udsg","fhistJetMass_udsg;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_c = new TH2D("fhistJetMass_c","fhistJetMass_c;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_b = new TH2D("fhistJetMass_b","fhistJetMass_b;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+			if(fDoTrackCountingAnalysis){
+
+				fhistJetMass_UnidentifiedFirst = new TH2D("fhistJetMass_UnidentifiedFirst","fhistJetMass_UnidentifiedFirst;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgFirst = new TH2D("fhistJetMass_udsgFirst","fhistJetMass_udsgFirst;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cFirst = new TH2D("fhistJetMass_cFirst","fhistJetMass_cFirst;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bFirst = new TH2D("fhistJetMass_bFirst","fhistJetMass_bFirst;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+				fhistJetMass_UnidentifiedSecond = new TH2D("fhistJetMass_UnidentifiedSecond","fhistJetMass_UnidentifiedSecond;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgSecond = new TH2D("fhistJetMass_udsgSecond","fhistJetMass_udsgSecond;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cSecond = new TH2D("fhistJetMass_cSecond","fhistJetMass_cSecond;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bSecond = new TH2D("fhistJetMass_bSecond","fhistJetMass_bSecond;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+				fhistJetMass_UnidentifiedThird = new TH2D("fhistJetMass_UnidentifiedThird","fhistJetMass_UnidentifiedThird;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgThird = new TH2D("fhistJetMass_udsgThird","fhistJetMass_udsgThird;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cThird = new TH2D("fhistJetMass_cThird","fhistJetMass_cThird;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bThird = new TH2D("fhistJetMass_bThird","fhistJetMass_bThird;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+			}
+		}
+
+	}
 
 	if(fDoJetProbabilityAnalysis){
 		if(!fResolutionFunction[0]){
@@ -2858,6 +3022,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		}else{	
 			fhistJetProbability = new TH2D("fhistJetProbability","JetProbability;p_{T,jet};JP",250,0,250,1000,0,1);
 			fhistJetProbabilityLog = new TH2D("fhistJetProbabilityLog","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+
 			if(fDoTrackCountingAnalysis){
 				fhistJetProbabilityLogFirst = new TH2D("fhistJetProbabilityLogFirst","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
 				fhistJetProbabilityLogSecond = new TH2D("fhistJetProbabilityLogSecond","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
@@ -3334,6 +3499,37 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		fOutput->Add(f2histRhoVsDeltaPtWithSignalThird);
 	}
 
+	//Jet Mass
+	if(fDoJetMass){
+		fOutput->Add(fhistJetMass);
+		if(fDoTrackCountingAnalysis){
+			fOutput->Add(fhistJetMassFirst);
+			fOutput->Add(fhistJetMassSecond);
+			fOutput->Add(fhistJetMassThird);
+		}
+		if(fIsPythia){
+			fOutput->Add(fhistJetMass_Unidentified);
+			fOutput->Add(fhistJetMass_udsg);
+			fOutput->Add(fhistJetMass_c);
+			fOutput->Add(fhistJetMass_b);
+
+			if(fDoTrackCountingAnalysis){
+				fOutput->Add(fhistJetMass_UnidentifiedFirst);
+				fOutput->Add(fhistJetMass_udsgFirst);
+				fOutput->Add(fhistJetMass_cFirst);
+				fOutput->Add(fhistJetMass_bFirst);
+				fOutput->Add(fhistJetMass_UnidentifiedSecond);
+				fOutput->Add(fhistJetMass_udsgSecond);
+				fOutput->Add(fhistJetMass_cSecond);
+				fOutput->Add(fhistJetMass_bSecond);
+				fOutput->Add(fhistJetMass_UnidentifiedThird);
+				fOutput->Add(fhistJetMass_udsgThird);
+				fOutput->Add(fhistJetMass_cThird);
+				fOutput->Add(fhistJetMass_bThird);
+			}
+		}
+	}
+
 	//JetProbability
 	if(fDoJetProbabilityAnalysis){
 		if(!fResolutionFunction[0]){
@@ -3374,6 +3570,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		}else{
 			fOutput->Add(fhistJetProbability);
 			fOutput->Add(fhistJetProbabilityLog);
+
 			if(fDoTrackCountingAnalysis){
 				fOutput->Add(fhistJetProbabilityLogFirst);
 				fOutput->Add(fhistJetProbabilityLogSecond);
