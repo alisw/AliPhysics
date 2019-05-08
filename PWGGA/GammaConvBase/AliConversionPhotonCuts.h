@@ -314,7 +314,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fPIDMinPKaonRejectionLowP;            ///< Momentum limit to apply kaon rejection
     Double_t          fPIDMinPProtonRejectionLowP;          ///< Momentum limit to apply proton rejection
     Double_t          fPIDMinPPionRejectionLowP;            ///< Momentum limit to apply proton rejection
-    Bool_t            fDoQtGammaSelection;                  ///< Select gammas using qtMax
+    Int_t             fDoQtGammaSelection;                  ///< Select gammas using qtMax
     Bool_t            fDo2DQt;                              ///< Select gammas using ellipse cut
     Double_t          fQtMax;                               ///< Maximum Qt from Armenteros to select Gammas
     Double_t          fNSigmaMass;                          ///< nsigma cut
@@ -327,6 +327,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TF1 *             fFAsymmetryCut;                       ///<
     Double_t          fMinPPhotonAsymmetryCut;              ///< Min Momentum for Asymmetry Cut
     Double_t          fMinPhotonAsymmetry;                  ///< Asymmetry Cut
+    Double_t          fMaxPhotonAsymmetry;                  ///< Asymmetry Cut
     Bool_t            fUseCorrectedTPCClsInfo;              ///< flag to use corrected tpc cl info
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
@@ -405,7 +406,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,21)
+    ClassDef(AliConversionPhotonCuts,22)
     /// \endcond
 };
 
