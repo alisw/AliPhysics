@@ -1047,20 +1047,20 @@ AliFemtoPair::NominalTpcAverageSeparationV0PosV0Pos() const
 }
 
 void
-AliFemtoPair::CalcTrackShareQualFractions(double &frac, double &quality) const
+AliFemtoPair::CalcTrackShareQualFractions(double &share_frac, double &quality) const
 {
   if (!std::isnan(fSharingCache[0])) {
-    frac = fSharingCache[0];
+    share_frac = fSharingCache[0];
     quality = fSharingCache[1];
     return;
   }
 
   CalcShareQualFractions(*Track1()->Track(),
                          *Track2()->Track(),
-                         frac,
+                         share_frac,
                          quality);
 
-  fSharingCache[0] = frac;
+  fSharingCache[0] = share_frac;
   fSharingCache[1] = quality;
   return;
 }
