@@ -18,6 +18,50 @@
 
 namespace pwgfemto {
 
+#if __cplusplus < 201103L
+
+// Old C++ not supported
+template <typename T>
+bool call_pair_passes(T &, const AliFemtoPair &)
+{
+  return false;
+}
+
+#elif true
+
+/// called if the cut expects two tracks
+template <typename T>
+bool
+call_pair_passes(
+  typename std::enable_if<
+    std::is_same<
+      decltype(std::declval<T>().Pass(std::declval<const AliFemtoTrack &>(), std::declval<const AliFemtoTrack &>())),
+      bool
+      >::value,
+    T>::type &obj,
+  const AliFemtoPair &pair)
+{
+  const AliFemtoTrack &track1 = *pair.Track1()->Track(),
+                      &track2 = *pair.Track2()->Track();
+  return obj.Pass(track1, track2);
+}
+
+/// called if the cut expects a pair
+template <typename T>
+bool
+call_pair_passes(
+  typename std::enable_if<
+    std::is_same<
+      decltype(std::declval<T>().Pass(std::declval<const AliFemtoPair &>())),
+      bool
+      >::value,
+    T>::type &obj,
+  const AliFemtoPair &pair)
+{
+  return obj.Pass(pair);
+}
+
+#endif
 
 /// \class AddPairCutAttrs
 /// \brief Join cut-types together
@@ -25,9 +69,10 @@ namespace pwgfemto {
 template <typename T1, typename T2>
 struct AddPairCutAttrs : public T1, public T2 {
 
-  bool Pass(const AliFemtoTrack &track1, const AliFemtoTrack &track2)
+  bool Pass(const AliFemtoPair &pair)
     {
-      return T1::Pass(track1, track2) && T2::Pass(track1, track2);
+      return call_pair_passes<T1>(static_cast<T1&>(*this), pair)
+          && call_pair_passes<T2>(static_cast<T2&>(*this), pair);
     }
 
   AddPairCutAttrs()
@@ -566,7 +611,7 @@ public:
 
   virtual bool Pass(const AliFemtoPair *pair)
     {
-      return CutAttrs::Pass(*pair->Track1()->Track(), *pair->Track2()->Track());
+      return CutAttrs::Pass(*pair);
     }
 
   void StoreConfiguration(AliFemtoConfigObject &cfg) const
