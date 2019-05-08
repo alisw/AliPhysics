@@ -44,16 +44,13 @@ Bool_t Config_Lambdapi( // From Anders's master macro.
   Int_t       EventCuts=0,
   Int_t       TrackCutsLambda=0,
   Int_t       TrackCutsPi=0);
-AliRsnMiniAnalysisTask *AddTaskSigmaStar_pp13TeV
-(
+AliRsnMiniAnalysisTask *AddTaskSigmaStar_pp13TeV(
     Bool_t      isMC,
     Int_t       system=0,
     Int_t       EventCuts=0,
     Int_t       TrackCuts1=0,
     Int_t       TrackCuts2=0,
-    TString     outNameSuffix = "Sigma1385"
- )
-{  
+    TString     outNameSuffix = "Sigma1385"){
     // retrieve analysis manager
     AliAnalysisManager* mgr=AliAnalysisManager::GetAnalysisManager();
     if(!mgr){
@@ -223,14 +220,13 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar_pp13TeV
 
 Bool_t Config_Lambdapi(
   AliRsnMiniAnalysisTask *task,
-  TString     lname="Lambdapi",
-  Bool_t      isMC=kFALSE,
-  Int_t       system=0,
-  Int_t       EventCuts=0,
-  Int_t       TrackCutsLambda=0,
-  Int_t       TrackCutsPi=0
-){
-    bool isPP=false;
+  TString     lname,
+  Bool_t      isMC,
+  Int_t       system,
+  Int_t       EventCuts,
+  Int_t       TrackCutsLambda,
+  Int_t       TrackCutsPi){
+  bool isPP=false;
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
