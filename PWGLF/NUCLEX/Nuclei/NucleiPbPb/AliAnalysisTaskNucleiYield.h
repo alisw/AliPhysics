@@ -163,7 +163,7 @@ private:
   int   PassesPIDSelection(AliAODTrack *t);
   int   PassesPIDSelection(AliNanoAODTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
-  float  GetTOFsigmas(AliVTrack* t, bool nano);
+  float  GetTOFsigmas(AliVTrack* t);
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
@@ -254,6 +254,7 @@ private:
   TH3F                 *fDCASecondaryWeak[2][2]; //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from Weak Decay
 
   // Data histograms
+  TH3F                 *fTOFnSigma[2];           //!<! *(Data only)* TOF nSigma counts for (anti-)matter
   TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fTPCsignalTpl[2];        //!<! *(Data only)* TPC counts for (anti-)matter
@@ -365,7 +366,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = (track->Charge() > 0) ? 1 : 0;
 
     float tpc_n_sigma = GetTPCsigmas(track);
-    float tof_n_sigma = iTof ? GetTOFsigmas(track,nano) : -999.f;
+    float tof_n_sigma = iTof ? GetTOFsigmas(track) : -999.f;
 
     for (int iR = iTof; iR >= 0; iR--) {
       /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
@@ -389,6 +390,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     if (!pid_check) return;
     /// \f$ m = \frac{p}{\beta\gamma} \f$
     fTOFsignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+    fTOFnSigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
 
   }
 }

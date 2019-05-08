@@ -180,6 +180,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCASecondaryWeak{{nullptr}}
    ,fTOFsignal{nullptr}
    ,fTPCcounts{nullptr}
+   ,fTOFnSigma{nullptr}
    ,fTPCsignalTpl{nullptr}
    ,fTPCbackgroundTpl{nullptr}
    ,fDCAxy{{nullptr}}
@@ -301,6 +302,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       fTOFsignal[iC] = new TH3F(Form("f%cTOFsignal",letter[iC]),
           ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{m}^{2}-m_{PDG}^{2} (GeV/#it{c}^{2})^{2}",
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
+      fTOFnSigma[iC] = new TH3F(Form("f%cTOFnSigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
       fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
       fTPCsignalTpl[iC] = new TH3F(Form("f%cTPCsignalTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
@@ -309,6 +312,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
       fHist2Phi[iC] = new TH2F(Form("fHist2Phi%c", letter[iC]), Form("%c; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", letter[iC]), 100, 0, TMath::TwoPi(), 100, 0, 7);
       fList->Add(fTOFsignal[iC]);
+      fList->Add(fTOFnSigma[iC]);
       fList->Add(fTPCcounts[iC]);
       fList->Add(fTPCsignalTpl[iC]);
       fList->Add(fTPCbackgroundTpl[iC]);
@@ -578,7 +582,7 @@ float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
   }
 }
 
-float AliAnalysisTaskNucleiYield::GetTOFsigmas(AliVTrack* t, bool nano) {
+float AliAnalysisTaskNucleiYield::GetTOFsigmas(AliVTrack* t) {
   AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(t);
   return nanoT ? nanoT->GetVar(nanoT->GetPIDIndex(AliNanoAODTrack::kSigmaTOF, fParticle)) : fPID->NumberOfSigmasTOF(t, fParticle);
 }
