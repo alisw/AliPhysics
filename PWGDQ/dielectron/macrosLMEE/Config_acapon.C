@@ -53,6 +53,13 @@ AliDielectron* Config_acapon(TString cutDefinition,
     die->SetNoPairing();
   }
 
+  // Event mixing handler. Will be set after cut sets are set up due to flag
+  // described below
+  AliDielectronMixingHandler* mix = 0x0;
+  // One "standard" setting used for mixing unless doing specific mixing tests
+  // Flag will be switched if one of those cut sets are chosen
+  Bool_t nonStandardMixing = kFALSE;
+
   die->SetPreFilterUnlikeOnly(kTRUE);
 
   std::cout << "cutDefinition = " << cutDefinition << std::endl;
@@ -367,19 +374,61 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
+  // Cut set to imitate pPb FAST+woSDD analysis
   else if(cutDefinition == "kScheidCuts"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kScheidCuts));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  // Two cut settings to check PID efficiency using V0 electrons 
-  // (does not work MC, checked 2019.05.08)
+  // Two cut settings to check PID efficiency using V0 electrons
+  // (does not work for MC, checked 2019.05.08)
   else if(cutDefinition == "kV0_TTreeCutPID"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kTTreeCuts));
   }
   else if(cutDefinition == "kV0_MVAePID"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kCutSet1));
+  }
+  // ######## Different R factor bin mixing schemes #################
+  else if(cutDefinition == "kMixScheme1"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+    nonStandardMixing = kTRUE;
+    mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme1);
+  }
+  else if(cutDefinition == "kMixScheme2"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+    nonStandardMixing = kTRUE;
+    mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme2);
+  }
+  else if(cutDefinition == "kMixScheme3"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+    nonStandardMixing = kTRUE;
+    mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme3);
+  }
+  else if(cutDefinition == "kMixScheme4"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+    nonStandardMixing = kTRUE;
+    mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme4);
+  }
+  else if(cutDefinition == "kMixScheme5"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+    nonStandardMixing = kTRUE;
+    mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme5);
   }
   else{
     cout << " =============================== " << endl;
@@ -392,9 +441,10 @@ AliDielectron* Config_acapon(TString cutDefinition,
   // The default setting is on though because......yep.....
   die->SetUseKF(kFALSE);
 
-  AliDielectronMixingHandler* mix = 0x0;
   if(doMixing){
-    mix = LMcutlib->GetMixingHandler(LMEECutLib::kCutSet1);
+    if(!nonStandardMixing){
+      mix = LMcutlib->GetMixingHandler(LMEECutLib::kCutSet1);
+    }
     die->SetMixingHandler(mix);
   }
 
@@ -406,7 +456,6 @@ AliDielectron* Config_acapon(TString cutDefinition,
 //______________________________________________________________________________________
 
 void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning){
-    // Define histogram names based on cut value, in order to avoid mem. warning error
 
     // Setup histogram Manager
     AliDielectronHistos *histos = new AliDielectronHistos(die->GetName(),die->GetTitle());
