@@ -25,7 +25,7 @@
 #include <TList.h>
 #include <TH1F.h>
 #include <TH2F.h>
-
+#include <TH3F.h>
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
@@ -65,6 +65,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNTracksBC0VsV0Cent(0x0),
   fHistNTrackletsVsV0Cent(0x0),
   fHistNTrackletsGoldenVsV0Cent(0x0),
+  fHistNTrackletsGoldenVsV0CentVsZvert(0x0),
   fHistPhiTrackelts(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
@@ -109,6 +110,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNTracksBC0VsV0Cent(0x0),
   fHistNTrackletsVsV0Cent(0x0),
   fHistNTrackletsGoldenVsV0Cent(0x0),
+  fHistNTrackletsGoldenVsV0CentVsZvert(0x0),
   fHistPhiTrackelts(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
@@ -156,6 +158,7 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNTracksBC0VsV0Cent;
     delete fHistNTrackletsVsV0Cent;
     delete fHistNTrackletsGoldenVsV0Cent;
+    delete fHistNTrackletsGoldenVsV0CentVsZvert;
     delete fHistPhiTrackelts;
     delete fHistNTracksTPCoutVsNTracklets;
     delete fHistNTracksFB4VsNTracklets;
@@ -223,6 +226,7 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fHistNTracksBC0VsV0Cent = new TH2F("hNTracksBC0VsV0Cent"," ; Centrality ; N_{tracks, TOFBC=0}",105,0.,105.,200,-0.5,maxMult-0.5);  
   fHistNTrackletsVsV0Cent = new TH2F("hNTrackletsVsV0Cent"," ; Centrality ; N_{tracklets}",105,0.,105.,200,-0.5,maxMult-0.5);
   fHistNTrackletsGoldenVsV0Cent = new TH2F("hNTrackletsGoldenVsV0Cent"," ; Centrality ; N_{tracklets}",105,0.,105.,200,-0.5,maxMult-0.5);
+  fHistNTrackletsGoldenVsV0CentVsZvert = new TH3F("hNTrackletsGoldenVsV0CentVsZvert"," ; Centrality ; N_{tracklets} ; z_{vertex} (cm)",105,0.,105.,200,-0.5,maxMult-0.5,30,-15.,15.);
   fHistNTracksTPCoutVsNTracklets = new TH2F("hNTracksTPCoutVsNTracklets"," ; N_{tracklets} ; N_{tracks, TPCout}",200,-0.5,maxMult-0.5,200,-0.5,2*maxMult-0.5);
   fHistNTracksFB4VsNTracklets = new TH2F("hNTracksFB4VsNTracklets"," ; N_{tracklets} ; N_{tracks, FiltBit4}",200,-0.5,maxMult-0.5,200,-0.5,maxMult-0.5);
   fHistNTracksBC0VsNTracksFB4 = new TH2F("hNTracksBC0VsNTracksFB4"," ; N_{tracks, FiltBit4}; N_{tracks, TOFBC=0}",200,-0.5,maxMult-0.5,200,-0.5,maxMult-0.5);
@@ -231,6 +235,7 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fOutput->Add(fHistNTracksBC0VsV0Cent);
   fOutput->Add(fHistNTrackletsVsV0Cent);
   fOutput->Add(fHistNTrackletsGoldenVsV0Cent);
+  fOutput->Add(fHistNTrackletsGoldenVsV0CentVsZvert);
   fOutput->Add(fHistNTracksTPCoutVsNTracklets);
   fOutput->Add(fHistNTracksFB4VsNTracklets);
   fOutput->Add(fHistNTracksBC0VsNTracksFB4);
@@ -502,6 +507,7 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNTracksBC0VsV0Cent->Fill(centr,ntracksBC0);
     fHistNTrackletsVsV0Cent->Fill(centr,ntrkl);
     fHistNTrackletsGoldenVsV0Cent->Fill(centr,nTrackletsGolden);
+    fHistNTrackletsGoldenVsV0CentVsZvert->Fill(centr,nTrackletsGolden,zvSPD);
     fHistNTracksTPCoutVsNTracklets->Fill(ntracksTPCout,ntrkl);
     fHistNTracksFB4VsNTracklets->Fill(ntracksFB4,ntrkl);
     fHistNTracksBC0VsNTracksFB4->Fill(ntracksBC0,ntracksFB4);
