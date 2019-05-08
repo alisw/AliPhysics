@@ -77,6 +77,7 @@ set(SRCS
   AliAnalysisTaskSEDs.cxx
   AliAnalysisTaskSELambdac.cxx
   AliAnalysisTaskSED0Mass.cxx
+  AliAnalysisTaskSED0MassTMVA.cxx
   AliAnalysisTaskSELambdacTMVA.cxx
   AliAnalysisTaskSED0MassCutVarFDSub.cxx
   AliAnalysisTaskSECharmFraction.cxx
@@ -124,6 +125,7 @@ set(SRCS
   charmFlow/AliAnalysisTaskFlowD2H.cxx
   charmFlow/AliHFQnVectorHandler.cxx
   charmFlow/AliAnalysisTaskSEHFTenderQnVectors.cxx
+  charmFlow/AliAnalysisTaskSECharmHadronvn.cxx  
   cutVarFDsub/AliHFCutVarFDsubAnalysisManager.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerD0.cxx
   cutVarFDsub/AliHFCutVarFDsubAnalysisManagerDplus.cxx

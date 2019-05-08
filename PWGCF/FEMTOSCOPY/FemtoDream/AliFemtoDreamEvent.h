@@ -24,10 +24,11 @@ class AliFemtoDreamEvent {
     kV0C = 4,
   };
   AliFemtoDreamEvent();
-  AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA, UInt_t trigger);
+  AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA, UInt_t trigger, bool useEvtCuts = true);
   AliFemtoDreamEvent &operator=(const AliFemtoDreamEvent &obj);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
+  void SetEvent(AliVEvent *evt);
   void SetEvent(AliESDEvent *evt);
   TList *GetEvtCutList() const {
     return fEvtCutList;
@@ -77,12 +78,22 @@ class AliFemtoDreamEvent {
     return fSPDMult;
   }
   ;
-  void SetSPDCluster(int spdCluster) {
-    fNSPDCluster = spdCluster;
+  void SetSPDClusterLy1(int spdCluster) {
+    fNSPDClusterLy0 = spdCluster;
   }
   ;
-  int GetSPDCluster() const {
-    return fNSPDCluster;
+  void SetSPDClusterLy2(int spdCluster) {
+    fNSPDClusterLy1 = spdCluster;
+  }
+  ;
+  int GetSPDCluster(int ly) const {
+    if (ly == 0) {
+      return fNSPDClusterLy0;
+    } else if (ly == 1) {
+      return fNSPDClusterLy1;
+    } else {
+      return 0.;
+    }
   }
   ;
   void SetRefMult08(int refMult) {
@@ -187,6 +198,7 @@ class AliFemtoDreamEvent {
   double CalculateSphericityEvent(AliAODEvent *evt);
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!
+  bool fuseAliEvtCuts;        //!
   TList *fEvtCutList;         //!
   float fxVtx;                //!
   float fyVtx;                //!
@@ -195,7 +207,8 @@ class AliFemtoDreamEvent {
   float fzVtxSPD;             //!
   float fBField;              //!
   int fSPDMult;               //!
-  int fNSPDCluster;           //!
+  int fNSPDClusterLy0;        //!
+  int fNSPDClusterLy1;        //!
   int fRefMult08;             //!
   int fV0AMult;               //!
   int fV0CMult;               //!
@@ -208,7 +221,7 @@ class AliFemtoDreamEvent {
   bool fisSelected;           //!
   MultEstimator fEstimator;   //!
   double fspher;            //!
-ClassDef(AliFemtoDreamEvent,4)
+ClassDef(AliFemtoDreamEvent,5)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */

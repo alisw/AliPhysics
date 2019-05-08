@@ -74,6 +74,7 @@
 #include "AliDielectronHelper.h"
 #include "AliDielectronQnEPcorrection.h"
 
+#include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVZEROEPSelectionTask.h"
@@ -81,6 +82,10 @@
 #include "AliQnCorrectionsManager.h"
 #include "AliQnCorrectionsQnVector.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
+
+#include "AliFlowVector.h"
+#include "AliFlowEvent.h"
+#include "AliAnalysisTaskZDCEP.h"
 
 #include "AliAODMCHeader.h"
 #include "AliTRDgeometry.h"
@@ -316,7 +321,7 @@ public:
     kDeltaPhiRandomRP,        //delta phi of the pair
 
     kPairPlaneMagInPro,      // Inner Product of strong magnetic field and ee plane
-    kPairPlaneMagInProTPC,   // Inner Product of strong magnetic field and ee plane (from TPC correction framework)
+    kPairPlaneMagInProZDC,   // Inner Product of strong magnetic field and ee plane (from Qn correction framework - ZDC)
     kCos2PhiCS,              // Cosine of 2*phi in mother's rest frame in the Collins-Soper picture
     kCosTilPhiCS,            // Shifted phi depending on kThetaCS
     kCosPhiH2,               // cosine of pair phi for 2nd harmonic
@@ -362,11 +367,20 @@ public:
     kLeg1DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
     kLeg1DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
     kLeg1DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
+    kLeg1DCAsigXYZ,            //DCA in sigma for first daughter of the pair in xy-plane
+    kLeg1DCAabsXYZ,            //DCA in cm for first daughter of the pair in xy-plane
+    kLeg2DCAsigXY,            //DCA in sigma for first daughter of the pair in xy-plane
+    kLeg2DCAabsXY,            //DCA in cm for first daughter of the pair in xy-plane
+    kLeg2DCAresXY,            //resolution from kov matrix for first daughter of the pair in xy-plane
+    kLeg2DCAsigXYZ,            //DCA in sigma for first daughter of the pair in xy-plane
+    kLeg2DCAabsXYZ,           //DCA in cm for first daughter of the pair in xy-plane
     // pair dinstance of closest approach (dca) variables
     kPairDCAsigXY,             // dca in xy-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAsigZ,              // dca in z-plane calculated in orders of sigma calculated as sqrt(dcaD1^2 + dcaD2^2)
+    kPairDCAsigXYZ,
     kPairDCAabsXY,             // dca in xy-plane in absolute values (cm) calculated as sqrt(dcaD1^2 + dcaD2^2)
     kPairDCAabsZ,              // dca in z-plane in absolute values (cm) calculated as sqrt(dcaD1^2 + dcaD2^2)
+    kPairDCAabsXYZ,
     kPairLinDCAsigXY,          // dca in xy-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAsigZ,           // dca in z-plane calculated in orders of sigma calculated as (dcaD1 + dcaD2)/2)
     kPairLinDCAabsXY,          // dca in xy-plane in absolute values (cm) calculated as (dcaD1 + dcaD2)/2)
@@ -514,8 +528,12 @@ public:
     kQnFMDCrpH2,               // FMDA eventplane from QnCorrections framework
     kQnFMDCxH2,
     kQnFMDCyH2,
-    kQnZDCArpH2,               // ZDCA eventplane from QnCorrections framework
-    kQnZDCCrpH2,               // ZDCC eventplane from QnCorrections framework
+    kQnZDCArpH1,               // ZDCA eventplane from QnCorrections framework or ZDC Event plane task (1st harmonic)
+    kQnZDCCrpH1,               // ZDCC eventplane from QnCorrections framework or ZDC Event plane task (1st harmonic)
+    kQnZDCAX,                  // ZDCA Q vector, X component from ZDC Event plane task
+    kQnZDCAY,                  // ZDCA Q vector, Y component from ZDC Event plane task
+    kQnZDCCX,                  // ZDCC Q vector, X component from ZDC Event plane task
+    kQnZDCCY,                  // ZDCC Q vector, Y component from ZDC Event plane task
  
     // Average Eventplane differences for 2nd harmonics from QnCorrections framework est. 2016 - as input for 3 sub-detector method
     // Returns cos(2(psi_DetA-psi_DetB))
@@ -781,6 +799,7 @@ private:
   static void FillVarMCEvent(const AliMCEvent *event,                Double_t * const values);
   static void FillVarTPCEventPlane(const AliEventplane *evplane,     Double_t * const values);
   static void FillQnEventplanes(TList *qnlist,                       Double_t * const values);
+  static void FillZDCEventPlane(Double_t * const values);
 
   static void InitVZEROCalibrationHistograms(Int_t runNo);
   static void InitVZERORecenteringHistograms(Int_t runNo);
@@ -914,7 +933,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   if (!esdTrack) return;
   esdTrack->SetTPCsignal(origdEdx/AliDielectronPID::GetEtaCorr(esdTrack)/AliDielectronPID::GetCorrValdEdx(),esdTrack->GetTPCsignalSigma(),esdTrack->GetTPCsignalN());
 
-  
+
   // Fill AliESDtrack interface specific information
   Double_t tpcNcls=particle->GetTPCNcls();
   Double_t tpcNclsS = particle->GetTPCnclsS();
@@ -2032,20 +2051,30 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   //calculate pair dca in sigma and cm
   values[AliDielectronVarManager::kPairDCAsigXY]     = -999.;
   values[AliDielectronVarManager::kPairDCAsigZ]      = -999.;
+  values[AliDielectronVarManager::kPairDCAsigXYZ]    = -999.;
   values[AliDielectronVarManager::kPairDCAabsXY]     = -999.;
   values[AliDielectronVarManager::kPairDCAabsZ]      = -999.;
+  values[AliDielectronVarManager::kPairDCAabsXYZ]    = -999.;
   values[AliDielectronVarManager::kPairLinDCAsigXY]  = -999.;
   values[AliDielectronVarManager::kPairLinDCAsigZ]   = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsXY]  = -999.;
   values[AliDielectronVarManager::kPairLinDCAabsZ]   = -999.;
   values[AliDielectronVarManager::kLeg1DCAsigXY]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAabsXY]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAsigXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg1DCAabsXYZ]     = -999.;
   values[AliDielectronVarManager::kLeg1DCAresXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsXY]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAsigXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAabsXYZ]     = -999.;
+  values[AliDielectronVarManager::kLeg2DCAresXY]     = -999.;
 
   // check if calculation is requested
-  if(Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
-     Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ)) {
-
+  if( Req(kPairDCAsigXY) || Req(kPairDCAsigZ) || Req(kPairDCAabsXY) || Req(kPairDCAabsZ) ||
+      Req(kPairLinDCAsigXY) || Req(kPairLinDCAsigZ) || Req(kPairLinDCAabsXY) || Req(kPairLinDCAabsZ) ||
+      Req(kPairDCAsigXYZ) || Req(kPairDCAabsXYZ) )
+     {
     // get track references from pair
     AliVParticle* d1 = pair-> GetFirstDaughterP();
     AliVParticle* d2 = pair->GetSecondDaughterP();
@@ -2060,17 +2089,13 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         Double_t dca1[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig1[2]    = {-999.,-999.};      // xy,z sigma values
         Double_t dcaRes1[3]    = {-999.,-999.,-999.};// Covariance matrix
-        //Float_t dcaTPC1[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
-        //Float_t dcaSigTPC1[2] = {-999.,-999.};      // xy,z TPC-only sigma values
-        //Float_t dcaResTPC1[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
+
 
         ////// second daughter
         Double_t dca2[2]       = {-999.,-999.};      // xy,z absolute values
         Double_t dcaSig2[2]    = {-999.,-999.};      // xy,z sigma values
         Double_t dcaRes2[3]    = {-999.,-999.,-999.};// Covariance matrix
-        //Float_t dcaTPC2[2]    = {-999.,-999.};      // xy,z TPC-only absolute values
-        //Float_t dcaSigTPC2[2] = {-999.,-999.};      // xy,z TPC-only sigma values
-        //Float_t dcaResTPC2[3] = {-999.,-999.,-999.};// Covariance matrix TPC-only
+
 
         if (isESD) {
           // 'Float_t' needed for 'virtual void AliESDtrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const'
@@ -2104,10 +2129,40 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         //if(dcaResTPC2[0]>0.) dcaSigTPC2[0] = dcaTPC2[0]/TMath::Sqrt(dcaResTPC2[0]);
         //if(dcaResTPC2[2]>0.) dcaSigTPC2[1] = dcaTPC2[1]/TMath::Sqrt(dcaResTPC2[2]);
 
+	// DCAxyz in sigma
+	Double_t tmp_leg1dcaXYZsig = -1.;
+	Double_t tmp_leg2dcaXYZsig = -1.;
+	Double_t chi22 = -1.;
+	Double_t chi21 = -1.;
+	Double_t det2  = -1.;                // Determinant of covariance matrix
+	Double_t det1  = -1.;                // Determinant of covariance matrix
+	det1 = dcaRes1[0]*dcaRes1[2] - dcaRes1[1]*dcaRes1[1];
+	det2 = dcaRes2[0]*dcaRes2[2] - dcaRes2[1]*dcaRes2[1];
+	if(det1>0.) {
+	  chi21 = (dca1[0]*dca1[0]*dcaRes1[2] + dca1[1]*dca1[1]*dcaRes1[0] - 2*dca1[0]*dca1[1]*dcaRes1[1])/det1;
+	  tmp_leg1dcaXYZsig = TMath::Sqrt(TMath::Abs(chi21/2.));
+	}
+	if(det2>0.) {
+	  chi22 = (dca2[0]*dca2[0]*dcaRes2[2] + dca2[1]*dca2[1]*dcaRes2[0] - 2*dca2[0]*dca2[1]*dcaRes2[1])/det2;
+	  tmp_leg2dcaXYZsig = TMath::Sqrt(TMath::Abs(chi22/2.));
+	}
+	// dcaxyz is Sqrt(chi2/NDF) with NDF = 2 for xyz and 1 for xy or z
+
+	
         // set first daughter variables for cross-checks
         values[AliDielectronVarManager::kLeg1DCAabsXY]   = dca1[0];
         values[AliDielectronVarManager::kLeg1DCAsigXY]   = dcaSig1[0];
         values[AliDielectronVarManager::kLeg1DCAresXY]   = dcaRes1[0];
+        Double_t tmp_leg1dcaXYZabs = TMath::Sqrt(dca1[0]*dca1[0] + dca1[1]*dca1[1]); // keep this for the moment
+        values[AliDielectronVarManager::kLeg1DCAabsXYZ]  = tmp_leg1dcaXYZabs;
+        values[AliDielectronVarManager::kLeg1DCAsigXYZ]  = tmp_leg1dcaXYZsig;
+
+        values[AliDielectronVarManager::kLeg2DCAabsXY]   = dca2[0];
+        values[AliDielectronVarManager::kLeg2DCAsigXY]   = dcaSig2[0];
+        values[AliDielectronVarManager::kLeg2DCAresXY]   = dcaRes2[0];
+        Double_t tmp_leg2dcaXYZabs   = TMath::Sqrt(dca2[0]*dca2[0] + dca2[1]*dca2[1]);
+        values[AliDielectronVarManager::kLeg2DCAabsXYZ]  = tmp_leg2dcaXYZabs;
+        values[AliDielectronVarManager::kLeg2DCAsigXYZ]  = tmp_leg2dcaXYZsig;
 
         // set pair dca values
         // quadratic summation
@@ -2115,6 +2170,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
         values[AliDielectronVarManager::kPairDCAabsZ]        = TMath::Sqrt( (dca1[1]*dca1[1] + dca2[1]*dca2[1]) / 2 );
         values[AliDielectronVarManager::kPairDCAsigXY]       = TMath::Sqrt( (dcaSig1[0]*dcaSig1[0] + dcaSig2[0]*dcaSig2[0]) / 2 );
         values[AliDielectronVarManager::kPairDCAsigZ]        = TMath::Sqrt( (dcaSig1[1]*dcaSig1[1] + dcaSig2[1]*dcaSig2[1]) / 2 );
+        values[AliDielectronVarManager::kPairDCAabsXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZabs*tmp_leg1dcaXYZabs + tmp_leg2dcaXYZabs*tmp_leg2dcaXYZabs) / 2 );
+        if(tmp_leg1dcaXYZsig>0. && tmp_leg2dcaXYZsig > 0.) values[AliDielectronVarManager::kPairDCAsigXYZ]      = TMath::Sqrt( (tmp_leg1dcaXYZsig*tmp_leg1dcaXYZsig + tmp_leg2dcaXYZsig*tmp_leg2dcaXYZsig) / 2 );
+
         // linear summation
         values[AliDielectronVarManager::kPairLinDCAabsXY]    = (TMath::Abs(dca1[0]) + TMath::Abs(dca2[0])) / 2;
         values[AliDielectronVarManager::kPairLinDCAabsZ]     = (TMath::Abs(dca1[1]) + TMath::Abs(dca2[1])) / 2;
@@ -2383,9 +2441,9 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kQnSPDrpH2FlowSPV2]    = uDielectronSP * qVec2SPD;
   }
 
-  // calculate inner Product of strong magnetic field (from TPC event plane, correction framework) and ee plane 
-  if(Req(kPairPlaneMagInProTPC)) values[AliDielectronVarManager::kPairPlaneMagInProTPC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnTPCrpH2]);
-  
+  // calculate inner Product of strong magnetic field (from ZDC 1st order event plane, correction framework) and ee plane
+  if(Req(kPairPlaneMagInProZDC)) values[AliDielectronVarManager::kPairPlaneMagInProZDC] = pair->PairPlaneMagInnerProduct(values[AliDielectronVarManager::kQnZDCCrpH1]);
+
 
 
   AliDielectronMC *mc = AliDielectronMC::Instance();
@@ -2674,7 +2732,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   // If QnCorrections framework (est. 2016) task should be used run the AddTask with your train. The following function will overwrite the existing AliEventplane object with the information extracted from the QnCorrections Task. Then the following code can be used as usual. The current implementation uses only the second harmonic but this could be adaptet if needed.
   if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
-      dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) )
+      dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) ){
     if(flowQnVectorTask != NULL){
       AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
       TList *qnlist = flowQnVectorMgr->GetQnVectorList();
@@ -2685,6 +2743,11 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
         }
       }
     }
+  }// end if QnCorrections framework
+  else if (dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"))){
+    // else fill ZDC event plane from charged particle and D meson v1 analysis)
+    FillZDCEventPlane(values);
+  }
 
   // v2 calculation variables with eventplane estimators from run1 commented out to reduce the memory usage
   // ep angle interval [todo, fill]
@@ -2853,8 +2916,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 
   // values[AliDielectronVarManager::kv0ZDCrpRes] = cos(2*(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kv0ArpH2]));
   // values[AliDielectronVarManager::kZDCrpResH1] = cos(values[AliDielectronVarManager::kZDCArpH1] - values[AliDielectronVarManager::kZDCCrpH1]);
-
-
 
 }
 
@@ -3980,8 +4041,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   TVector2 *qVectorZDCA = new TVector2(-200.,-200.);
   if(qVecQnFrameworkZDCA != NULL){
     bZDCAqVector = kTRUE;
-    qVectorZDCA->Set(qVecQnFrameworkZDCA->Qx(2),qVecQnFrameworkZDCA->Qy(2));
-    values[AliDielectronVarManager::kQnZDCArpH2] = TVector2::Phi_mpi_pi(qVectorZDCA->Phi())/2;
+    qVectorZDCA->Set(qVecQnFrameworkZDCA->Qx(1),qVecQnFrameworkZDCA->Qy(1));
+    values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(qVectorZDCA->Phi())/2;
   }
   delete qVectorZDCA;
 
@@ -3991,8 +4052,8 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   TVector2 *qVectorZDCC = new TVector2(-200.,-200.);
   if(qVecQnFrameworkZDCC != NULL){
     bZDCCqVector = kTRUE;
-    qVectorZDCC->Set(qVecQnFrameworkZDCC->Qx(2),qVecQnFrameworkZDCC->Qy(2));
-    values[AliDielectronVarManager::kQnZDCCrpH2] = TVector2::Phi_mpi_pi(qVectorZDCC->Phi())/2;
+    qVectorZDCC->Set(qVecQnFrameworkZDCC->Qx(1),qVecQnFrameworkZDCC->Qy(1));
+    values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(qVectorZDCC->Phi())/2;
   }
   delete qVectorZDCC;
 
@@ -4146,6 +4207,45 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     // values[kQnCorrFMDAy_FMDCx] = values[kQnFMDAyH2] * values[kQnFMDCxH2];
     // values[kQnCorrFMDAy_FMDCy] = values[kQnFMDAyH2] * values[kQnFMDCyH2];
   }
+}
+
+//________________________________________________________________
+inline void AliDielectronVarManager::FillZDCEventPlane(Double_t * const values){
+
+  AliFlowVector vQarray[2];
+  
+  AliAnalysisTaskZDCEP *fZDCEPTask = dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"));
+
+  if (fZDCEPTask != NULL) {
+
+    // get ZDC Q-vectors
+    TObjArray* dataContainers               = (AliAnalysisManager::GetAnalysisManager())->GetContainers();
+    AliAnalysisDataContainer* dataContainer = dynamic_cast<AliAnalysisDataContainer*>(dataContainers->FindObject("ZDCEPExchangeContainer"));
+    AliFlowEvent* anEvent                   = dynamic_cast<AliFlowEvent*>(dataContainer->GetData());
+    if(anEvent) {
+      // Get Q vectors for the subevents
+      anEvent->GetZDC2Qsub(vQarray);
+     } else { 
+      Printf("Flowevent not found. Aborting!!!\n");
+      return;
+    }
+  } 
+  else {
+    Printf("This task needs AliAnalysisTaskZDCEP and it is not present. Aborting!!!");
+    return;
+  }
+
+  // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
+  values[AliDielectronVarManager::kQnZDCCrpH1] = TVector2::Phi_mpi_pi(vQarray[0].Phi())/2;
+  values[AliDielectronVarManager::kQnZDCArpH1] = TVector2::Phi_mpi_pi(vQarray[1].Phi())/2;
+
+  // for QA store also components
+  values[AliDielectronVarManager::kQnZDCCX] = vQarray[0].X();
+  values[AliDielectronVarManager::kQnZDCCY] = vQarray[0].Y();
+  values[AliDielectronVarManager::kQnZDCAX] = vQarray[1].X();
+  values[AliDielectronVarManager::kQnZDCAY] = vQarray[1].Y();
+  
+  return;
 }
 
 //________________________________________________________________

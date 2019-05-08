@@ -1,12 +1,12 @@
 /***************************************************************************
  *
- * $Id: AliFemtoQATrackCut.cxx 24360 2008-03-10 09:48:27Z akisiel $ 
+ * $Id: AliFemtoQATrackCut.cxx 24360 2008-03-10 09:48:27Z akisiel $
  *
- * 
+ *
  ***************************************************************************
  *
- * 
- *              
+ *
+ *
  *
  ***************************************************************************
  *
@@ -46,7 +46,7 @@
 #include "AliFemtoQATrackCut.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoQATrackCut)
 #endif
 
@@ -83,8 +83,9 @@ ClassImp(AliFemtoQATrackCut)
 
 
 AliFemtoQATrackCut::AliFemtoQATrackCut() :
+    AliFemtoTrackCut(),
     fCharge(0),
-    fLabel(0),
+    fLabel(false),
     fStatus(0),
     fminTPCclsF(0),
     fminTPCncls(0),
@@ -111,10 +112,6 @@ AliFemtoQATrackCut::AliFemtoQATrackCut() :
   fPidProbKaon[0]=-1;fPidProbKaon[1]=2;
   fPidProbProton[0]=-1;fPidProbProton[1]=2;
   fPidProbMuon[0]=-1;fPidProbMuon[1]=2;
-  fLabel=false;
-  fStatus=0;
-  fminTPCclsF=0;
-  fminITScls=0;
   fTPCnclsExclusionSwitch = false;
   fTPCnclsExclusion[0] = 0;
   fTPCnclsExclusion[1] = 1000;
@@ -129,11 +126,11 @@ AliFemtoQATrackCut::~AliFemtoQATrackCut(){
 //------------------------------
 bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
 {
-  // test the particle and return 
+  // test the particle and return
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
   float tMost[5];
-  
+
   //cout<<"AliFemtoESD  cut"<<endl;
   //cout<<fPidProbPion[0]<<" < pi ="<<track->PidProbPion()<<" <"<<fPidProbPion[1]<<endl;
   if (fStatus!=0)
@@ -144,7 +141,7 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
 	  //	  cout<<track->Flags()<<" "<<fStatus<<" no go through status"<<endl;
 	  return false;
 	}
-	
+
     }
   if (fRemoveKinks) {
     if ((track->KinkIndex(0)) || (track->KinkIndex(1)) || (track->KinkIndex(2)))
@@ -168,9 +165,9 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
     if ( (fMaxTPCncls < track->TPCncls()) || (fTPCnclsExclusion[1] > track->TPCncls()) ) {
       //cout<<" No go because TPC Number of Cls"<<fMaxTPCclsF<< " "<<track->TPCnclsF()<<endl;
       outTPCnclsExclusionZone[1] = true;
-    } 
-    if ( outTPCnclsExclusionZone[0] * outTPCnclsExclusionZone[1] ) { return false; }
-  } 
+    }
+    if ( outTPCnclsExclusionZone[0] && outTPCnclsExclusionZone[1] ) { return false; }
+  }
   else {
     if (fminTPCncls > track->TPCncls()) {
       //cout<<" No go because TPC Number of ClsF"<<fminTPCclsF<< " "<<track->TPCnclsF()<<endl;
@@ -187,37 +184,40 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
       //cout<<" No go because ITS Number of Cls"<<fminITScls<< " "<<track->ITSncls()<<endl;
       return false;
     }
-	
+
   if (fMaxSigmaToVertex < track->SigmaToVertex()) {
     return false;
   }
-  
-  if (track->ITSncls() > 0) 
-    if ((track->ITSchi2()/track->ITSncls()) > fMaxITSchiNdof) {
-      return false;
-    }
+
+  if (track->ITSncls() > 0 && (track->ITSchi2()/track->ITSncls()) > fMaxITSchiNdof) {
+    return false;
+  }
+
+  const double tpc_chi2 = track->TPCchi2perNDF();
 
   // TPC chiNdof of tracks:
   if (fTPCchiNdofExclusionSwitch && (track->TPCncls() > 0)) {
     bool outTPCchiNdofExclusionZone[2];
       outTPCchiNdofExclusionZone[0] = false;
       outTPCchiNdofExclusionZone[1] = false;
-    if ( (fminTPCchiNdof > (track->TPCchi2()/track->TPCncls())) || (fTPCchiNdofExclusion[0] < (track->TPCchi2()/track->TPCncls())) ) {
+    if ( (fminTPCchiNdof > tpc_chi2) || (fTPCchiNdofExclusion[0] < tpc_chi2) ) {
       //cout<<" No go because TPC Number of ClsF"<<fminTPCclsF<< " "<<track->TPCnclsF()<<endl;
       outTPCchiNdofExclusionZone[0] = true;
     }
-    if ( (fMaxTPCchiNdof < (track->TPCchi2()/track->TPCncls())) || (fTPCchiNdofExclusion[1] > (track->TPCchi2()/track->TPCncls())) ) {
+    if ( (fMaxTPCchiNdof < tpc_chi2) || (fTPCchiNdofExclusion[1] > tpc_chi2) ) {
       //cout<<" No go because TPC Number of Cls"<<fMaxTPCclsF<< " "<<track->TPCnclsF()<<endl;
       outTPCchiNdofExclusionZone[1] = true;
-    } 
-    if ( outTPCchiNdofExclusionZone[0] * outTPCchiNdofExclusionZone[1] ) { return false; }
-  } 
+    }
+    if ( outTPCchiNdofExclusionZone[0] && outTPCchiNdofExclusionZone[1] ) {
+      return false;
+    }
+  }
   else {
-    if (fminTPCchiNdof > (track->TPCchi2()/track->TPCncls())) {
+    if (fminTPCchiNdof > tpc_chi2) {
       //cout<<" No go because TPC Number of ClsF"<<fminTPCclsF<< " "<<track->TPCnclsF()<<endl;
       return false;
     }
-    if (fMaxTPCchiNdof < (track->TPCchi2()/track->TPCncls())) {
+    if (fMaxTPCchiNdof < tpc_chi2) {
       //cout<<" No go because TPC Number of Cls"<<fMaxTPCclsF<< " "<<track->TPCnclsF()<<endl;
       return false;
     }
@@ -232,13 +232,14 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
 	  //   cout<<"No Go Through the cut"<<endl;
 	  //  cout<<fLabel<<" Label="<<track->Label()<<endl;
 	  return false;
-	}    
+	}
     }
+
   if (fCharge!=0)
-    {              
+    {
       //cout<<"AliFemtoESD  cut ch "<<endl;
       //cout<<fCharge<<" Charge="<<track->Charge()<<endl;
-      if (track->Charge()!= fCharge)	
+      if (track->Charge()!= fCharge)
 	{
 	  fNTracksFailed++;
 	  //  cout<<"No Go Through the cut"<<endl;
@@ -252,7 +253,7 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
   if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
     {
       fNTracksFailed++;
-      //cout<<"No Go Through the cut"<<endl;   
+      //cout<<"No Go Through the cut"<<endl;
       //cout<<fRapidity[0]<<" < Rapidity ="<<tRapidity<<" <"<<fRapidity[1]<<endl;
       return false;
     }
@@ -263,15 +264,15 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
       //cout<<fPt[0]<<" < Pt ="<<Pt<<" <"<<fPt[1]<<endl;
       return false;
     }
-//   cout << "Track has pids: " 
-//        << track->PidProbElectron() << " " 
-//        << track->PidProbMuon() << " " 
-//        << track->PidProbPion() << " " 
-//        << track->PidProbKaon() << " " 
-//        << track->PidProbProton() << " " 
+//   cout << "Track has pids: "
+//        << track->PidProbElectron() << " "
+//        << track->PidProbMuon() << " "
+//        << track->PidProbPion() << " "
+//        << track->PidProbKaon() << " "
+//        << track->PidProbProton() << " "
 //        << track->PidProbElectron()+track->PidProbMuon()+track->PidProbPion()+track->PidProbKaon()+track->PidProbProton() << endl;
 
-    
+
   if ((track->PidProbElectron()<fPidProbElectron[0])||(track->PidProbElectron()>fPidProbElectron[1]))
     {
       fNTracksFailed++;
@@ -320,7 +321,7 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
       if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
     if (imost != fMostProbable) return false;
   }
-  
+
   // cout<<"Go Through the cut"<<endl;
   // cout<<fLabel<<" Label="<<track->Label()<<endl;
   // cout<<fCharge<<" Charge="<<track->Charge()<<endl;
@@ -333,86 +334,57 @@ bool AliFemtoQATrackCut::Pass(const AliFemtoTrack* track)
   //cout<<fPidProbMuon[0]<<" <  mi="<<track->PidProbMuon()<<" <"<<fPidProbMuon[1]<<endl;
   fNTracksPassed++ ;
   return true;
-    
-    
 }
 //------------------------------
 AliFemtoString AliFemtoQATrackCut::Report()
 {
   // Prepare report from the execution
-  string tStemp;
-  char tCtemp[100];
-  snprintf(tCtemp , 100, "Particle mass:\t%E\n",this->Mass());
-  tStemp=tCtemp;
-  snprintf(tCtemp , 100, "Particle charge:\t%d\n",fCharge);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
-  tStemp+=tCtemp;
-  snprintf(tCtemp , 100, "Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
-  tStemp += tCtemp;
-  AliFemtoString returnThis = tStemp;
-  return returnThis;
+  AliFemtoString report;
+  report += Form("Particle mass:\t%E\n",this->Mass());
+  report += Form("Particle charge:\t%d\n",fCharge);
+  report += Form("Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
+  report += Form("Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
+  report += Form("Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
+  return report;
 }
+
 TList *AliFemtoQATrackCut::ListSettings()
 {
   // return a list of settings in a writable form
   TList *tListSetttings = new TList();
-  char buf[200];
-  snprintf(buf, 200, "AliFemtoQATrackCut.mass=%f", this->Mass());
-  tListSetttings->AddLast(new TObjString(buf));
+  tListSetttings->AddVector(
+    new TObjString(Form("AliFemtoQATrackCut.mass=%f", this->Mass())),
+    new TObjString(Form("AliFemtoQATrackCut.charge=%i", fCharge)),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobpion.minimum=%f", fPidProbPion[0])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobpion.maximum=%f", fPidProbPion[1])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobkaon.minimum=%f", fPidProbKaon[0])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobkaon.maximum=%f", fPidProbKaon[1])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobproton.minimum=%f", fPidProbProton[0])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobproton.maximum=%f", fPidProbProton[1])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobelectron.minimum=%f", fPidProbElectron[0])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobelectron.maximum=%f", fPidProbElectron[1])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobMuon.minimum=%f", fPidProbMuon[0])),
+    new TObjString(Form("AliFemtoQATrackCut.pidprobMuon.maximum=%f", fPidProbMuon[1])),
+    new TObjString(Form("AliFemtoQATrackCut.minimumtpcclusters=%i", fminTPCclsF)),
+    new TObjString(Form("AliFemtoQATrackCut.minimumitsclusters=%i", fminITScls)),
+    new TObjString(Form("AliFemtoQATrackCut.pt.minimum=%f", fPt[0])),
+    new TObjString(Form("AliFemtoQATrackCut.pt.maximum=%f", fPt[1])),
+    new TObjString(Form("AliFemtoQATrackCut.rapidity.minimum=%f", fRapidity[0])),
+    new TObjString(Form("AliFemtoQATrackCut.rapidity.maximum=%f", fRapidity[1])),
+    new TObjString(Form("AliFemtoQATrackCut.removekinks=%i", fRemoveKinks)),
+    new TObjString(Form("AliFemtoQATrackCut.maxitschindof=%f", fMaxITSchiNdof)),
+    new TObjString(Form("AliFemtoQATrackCut.maxtpcchindof=%f", fMaxTPCchiNdof)),
+    new TObjString(Form("AliFemtoQATrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex)),
+    nullptr
+  );
 
-  snprintf(buf, 200, "AliFemtoQATrackCut.charge=%i", fCharge);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobpion.minimum=%f", fPidProbPion[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobpion.maximum=%f", fPidProbPion[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobkaon.minimum=%f", fPidProbKaon[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobkaon.maximum=%f", fPidProbKaon[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobproton.minimum=%f", fPidProbProton[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobproton.maximum=%f", fPidProbProton[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobelectron.minimum=%f", fPidProbElectron[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobelectron.maximum=%f", fPidProbElectron[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobMuon.minimum=%f", fPidProbMuon[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pidprobMuon.maximum=%f", fPidProbMuon[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.minimumtpcclusters=%i", fminTPCclsF);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.minimumitsclusters=%i", fminTPCclsF);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pt.minimum=%f", fPt[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.pt.maximum=%f", fPt[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.rapidity.minimum=%f", fRapidity[0]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.rapidity.maximum=%f", fRapidity[1]);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.removekinks=%i", fRemoveKinks);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.maxitschindof=%f", fMaxITSchiNdof);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.maxtpcchindof=%f", fMaxTPCchiNdof);
-  tListSetttings->AddLast(new TObjString(buf));
-  snprintf(buf, 200, "AliFemtoQATrackCut.maxsigmatovertex=%f", fMaxSigmaToVertex);
-  tListSetttings->AddLast(new TObjString(buf));
   if (fMostProbable) {
     if (fMostProbable == 2)
-      snprintf(buf, 200, "AliFemtoQATrackCut.mostprobable=%s", "Pion");
+      tListSetttings->AddLast(new TObjString("AliFemtoQATrackCut.mostprobable=Pion"));
     if (fMostProbable == 3)
-      snprintf(buf, 200, "AliFemtoQATrackCut.mostprobable=%s", "Kaon");
+      tListSetttings->AddLast(new TObjString("AliFemtoQATrackCut.mostprobable=Kaon"));
     if (fMostProbable == 4)
-      snprintf(buf, 200, "AliFemtoQATrackCut.mostprobable=%s", "Proton");
-    tListSetttings->AddLast(new TObjString(buf));
+      tListSetttings->AddLast(new TObjString("AliFemtoQATrackCut.mostprobable=Proton"));
   }
   return tListSetttings;
 }
@@ -420,7 +392,7 @@ void AliFemtoQATrackCut::SetRemoveKinks(const bool& flag)
 {
   fRemoveKinks = flag;
 }
-			    
+
 			    // electron
 // 0.13 - 1.8
 // 0       7.594129e-02    8.256141e-03
@@ -435,13 +407,13 @@ float AliFemtoQATrackCut::PidFractionElectron(float mom) const
   // Provide a parameterized fraction of electrons dependent on momentum
   if (mom<0.13) return 0.0;
   if (mom>1.8) return 0.0;
-  return (7.594129e-02 
-	  -5.535827e-01*mom	   
-	  +1.728591e+00*mom*mom    
-	  -2.827893e+00*mom*mom*mom 
-	  +2.503553e+00*mom*mom*mom*mom	   
-	  -1.125965e+00*mom*mom*mom*mom*mom      
-	  +2.009036e-01*mom*mom*mom*mom*mom*mom);   
+  return (7.594129e-02
+	  -5.535827e-01*mom
+	  +1.728591e+00*mom*mom
+	  -2.827893e+00*mom*mom*mom
+	  +2.503553e+00*mom*mom*mom*mom
+	  -1.125965e+00*mom*mom*mom*mom*mom
+	  +2.009036e-01*mom*mom*mom*mom*mom*mom);
 }
 
 // pion
@@ -471,8 +443,8 @@ float AliFemtoQATrackCut::PidFractionKaon(float mom) const
   if (mom<0.18) return 0.0;
   if (mom>2.0) return 0.0;
   return (-7.289406e-02
-	  +4.415666e-01*mom	   
-	  -2.996790e-01*mom*mom    
+	  +4.415666e-01*mom
+	  -2.996790e-01*mom*mom
 	  +6.704652e-02*mom*mom*mom);
 }
 
@@ -487,8 +459,8 @@ float AliFemtoQATrackCut::PidFractionProton(float mom) const
   // Provide a parameterized fraction of protons dependent on momentum
   if (mom<0.26) return  0.0;
   if (mom>2.0) return 0.0;
-  return (-3.730200e-02  
-	  +1.163684e-01*mom	      
-	  +8.354116e-02*mom*mom       
-	  -4.608098e-02*mom*mom*mom);  
+  return (-3.730200e-02
+	  +1.163684e-01*mom
+	  +8.354116e-02*mom*mom
+	  -4.608098e-02*mom*mom*mom);
 }

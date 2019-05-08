@@ -71,6 +71,15 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
   void   SetUsePythia(Bool_t theUsePythia) 	{ fUsePythia = theUsePythia	; }
   Bool_t GetUsePythia() const 			{ return fUsePythia		; }
 
+  void   SetUseMultPythia(Bool_t theUseMultPythia) 	{ fMultPythiaHeader = theUseMultPythia	; }
+  Bool_t GetUseMultPythia() const 			{ return fMultPythiaHeader		; }
+
+  void SetPythiaEvent(Int_t c)				{ fPythiaEvent = c				;}
+  Int_t GetPythiaEvent() const				{ return fPythiaEvent			;}
+
+  void SetUseHijing(Bool_t theUseHijing)	{ fUseHijing = theUseHijing; }
+  Bool_t GetUseHijing() const				{ return fUseHijing;	 }
+
   // set track fraction rejection for JES systematics
   void SetJESsys(Bool_t c) 		{ fUseRejTracks = c	; }
   Bool_t GetJESsys() const 		{ return fUseRejTracks	; }
@@ -112,13 +121,11 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
 
   static Int_t CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray); // AOD
   static Int_t CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray); // AOD
-  static Int_t CheckOrigin(AliAODRecoDecay* cand, AliStack* stack); // ESD
-  static Int_t CheckOrigin(Int_t ipart, AliStack* stack); // ESD
   
   static Int_t CheckDecayChannel(AliAODMCParticle* part, TClonesArray* mcArray); // AOD
-  static Int_t CheckDecayChannel(Int_t ipart, AliStack* stack); // ESD
   
   void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
+  void GetTrackPrimaryGenerator(AliAODMCParticle *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
   void GetMCTrackPrimaryGenerator(AliAODMCParticle *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
   Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
   Bool_t IsMCTrackInjected(AliAODMCParticle *track,AliAODMCHeader *header,TClonesArray *arrayMC);
@@ -136,10 +143,13 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
   
 
   Bool_t          fUseMCInfo;              //  Use MC info
-  Bool_t 	  fBuildRMEff;		   //  MC RM or efficiency studies
-  Bool_t 	  fUsePythia;		   //  Use Pythia info only for MC
-  Bool_t	  fUseRejTracks;	   //  Reject tracks for JES systematics
-  Double_t	  fTrackIneff;		   //  Tracking inefficiency for JES systematics
+  Bool_t          fBuildRMEff;		   //  MC RM or efficiency studies
+  Bool_t          fUsePythia;		   //  Use Pythia info only for MC
+  Bool_t          fMultPythiaHeader;		// Use Pythia info only, with multiple Pythia events per one MB event
+  Int_t           fPythiaEvent;			// Pythia event to be analysed, for MC with more than one Pythia event
+  Bool_t          fUseHijing;				// Use only Hijing info for MC
+  Bool_t          fUseRejTracks;	   //  Reject tracks for JES systematics
+  Double_t        fTrackIneff;		   //  Tracking inefficiency for JES systematics
   Bool_t          fUseReco;                //  use reconstructed tracks when running on MC
   UInt_t          fCandidateType;          //  Dstar or D0
   TString         fCandidateName;          //  Dstar or D0
@@ -207,7 +217,7 @@ class AliAnalysisTaskDmesonsFilterCJ : public AliAnalysisTaskEmcal
   AliAnalysisTaskDmesonsFilterCJ(const AliAnalysisTaskDmesonsFilterCJ &source);
   AliAnalysisTaskDmesonsFilterCJ& operator=(const AliAnalysisTaskDmesonsFilterCJ& source); 
 
-  ClassDef(AliAnalysisTaskDmesonsFilterCJ, 1); // task for selecting D mesons to be used as an input for D-Jet correlations
+  ClassDef(AliAnalysisTaskDmesonsFilterCJ, 2); // task for selecting D mesons to be used as an input for D-Jet correlations
 };
 
 #endif

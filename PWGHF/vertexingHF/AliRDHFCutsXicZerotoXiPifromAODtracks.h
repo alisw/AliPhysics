@@ -8,6 +8,7 @@
 //***********************************************************
 /// \class Class AliRDHFCutsXicZerotoXiPifromAODtracks
 /// \brief class for cuts on AOD reconstructed Xic-> Xi pi
+//  \Modified by Jianhui Zhu, zjh@mail.ccnu.edu.cn
 //***********************************************************
 
 #include "AliRDHFCuts.h"
@@ -51,11 +52,16 @@ class AliRDHFCutsXicZerotoXiPifromAODtracks : public AliRDHFCuts
       fPidObjCascPr=new AliAODPidHF(*pidProton);
       }
   AliAODPidHF* GetPidCascPr() const {return fPidObjCascPr;}
+  void SetPidCascKa(AliAODPidHF* pidKaon) { 
+      if(fPidObjCascKa) delete fPidObjCascKa;
+      fPidObjCascKa=new AliAODPidHF(*pidKaon);
+      }
+  AliAODPidHF* GetPidCascKa() const {return fPidObjCascKa;}
 
 
   Bool_t SingleTrkCuts(AliAODTrack *trk);
-  Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert);
-  Bool_t SingleCascadeCutsRef(AliAODcascade *casc, Double_t *vert);
+  Bool_t SingleCascadeCuts(AliAODcascade *casc, Double_t *vert, Bool_t anaOmegacZero);
+  Bool_t SingleCascadeCutsRef(AliAODcascade *casc, Double_t *vert, Bool_t anaOmegaZero);
   Bool_t SelectWithRoughCuts(AliAODcascade *casc, AliAODTrack *trk1);
 
   void SetProdTrackPtMin(Double_t a){fProdTrackPtMin=a;}
@@ -63,6 +69,7 @@ class AliRDHFCutsXicZerotoXiPifromAODtracks : public AliRDHFCuts
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
   void SetProdMassTolLambda(Double_t a){fProdMassTolLambda=a;}
   void SetProdMassTolXi(Double_t a){fProdMassTolXi=a;}
+  void SetProdMassTolOmega(Double_t a){fProdMassTolOmega=a;}
   void SetProdMassRejOmega(Double_t a){fProdMassRejOmega=a;}
   void SetProdRfidMinV0(Double_t a){fProdRfidMinV0=a;}
   void SetProdRfidMaxV0(Double_t a){fProdRfidMaxV0=a;}
@@ -87,6 +94,7 @@ class AliRDHFCutsXicZerotoXiPifromAODtracks : public AliRDHFCuts
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
   Double_t GetProdMassTolLambda(){return fProdMassTolLambda;}
   Double_t GetProdMassTolXi(){return fProdMassTolXi;}
+  Double_t GetProdMassTolOmega(){return fProdMassTolOmega;}
   Double_t GetProdMassRejOmega(){return fProdMassRejOmega;}
   Double_t GetProdRfidMinV0(){return fProdRfidMinV0;}
   Double_t GetProdRfidMaxV0(){return fProdRfidMaxV0;}
@@ -116,12 +124,14 @@ class AliRDHFCutsXicZerotoXiPifromAODtracks : public AliRDHFCuts
   Bool_t fUseCascadePID;            /// Use PID for cascade or not
   AliAODPidHF *fPidObjCascPi;         /// PID object for cascade-pion
   AliAODPidHF *fPidObjCascPr;         /// PID object for cascade-proton
+  AliAODPidHF *fPidObjCascKa;         /// PID object for cascade-kaon
 
   Double_t fProdTrackPtMin;         /// Minimum Bachelor pT
   Double_t fProdTrackEtaRange;      /// Bachelor Eta range
   Bool_t   fProdUseAODFilterBit;    /// Use AODfilterBit or not
   Double_t fProdMassTolLambda;      /// Tolerance of Lambda mass from PDG value
   Double_t fProdMassTolXi;          /// Tolerance of Xi mass from PDG value
+  Double_t fProdMassTolOmega;          /// Tolerance of Omega mass from PDG value
   Double_t fProdMassRejOmega;          /// Rejection range of Omega mass from PDG value
   Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
   Double_t fProdRfidMaxV0;          /// Max Decay vertex of V0
@@ -142,7 +152,7 @@ class AliRDHFCutsXicZerotoXiPifromAODtracks : public AliRDHFCuts
   Double_t fProdRoughPtMin;         /// Minimum pT of Xic
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXicZerotoXiPifromAODtracks,1); 
+  ClassDef(AliRDHFCutsXicZerotoXiPifromAODtracks, 2); 
   /// \endcond
 };
 

@@ -23,6 +23,9 @@ AliPHOSTenderTask * AddTenderTaskCustomParameters(Bool_t isMC = kFALSE, TString 
 	AliPHOSTenderSupply * PHOSSupply = tenderPHOS->GetPHOSTenderSupply();
 	// IMPORTANT: Set the map of bad channels
 	PHOSSupply->ForceUsingBadMap(badmap.Data());
+
+    TString nonlinearity = isMC ? "Run2TuneMC": "Run2Tune";
+	PHOSSupply->SetNonlinearityVersion(nonlinearity); 
 	if (isMC)
 	{
 		// Important: Keep track of this variable

@@ -140,6 +140,10 @@ public:
     }
     //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
+    void SetDownScaleEvent ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
+        fkDownScaleEvent = lOpt;
+        fDownScaleFactorEvent = lVal;
+    }
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
         fkDownScaleV0 = lOpt;
         fDownScaleFactorV0 = lVal;
@@ -278,6 +282,11 @@ public:
                   Double_t gg[3]); //second derivatives
     Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
     //---------------------------------------------------------------------------------------
+    void SetSaveSpecificCascadeConfig(TString lConfig){
+        fkConfigToSave = lConfig;
+        fkSaveSpecificConfig = kTRUE;
+    }
+    //---------------------------------------------------------------------------------------
     
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -308,6 +317,8 @@ private:
     
     //Objects Controlling Task Behaviour
     Bool_t fkSaveEventTree;           //if true, save Event TTree
+    Bool_t fkDownScaleEvent;
+    Double_t fDownScaleFactorEvent;
     Bool_t fkSaveV0Tree;              //if true, save TTree
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
@@ -335,7 +346,11 @@ private:
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
     
     //if true, save sandbox mode info (beware large files!)
-    Bool_t fkSandboxMode; 
+    Bool_t fkSandboxMode;
+    
+    //if true, fill cascade TTree with a config with a given name
+    Bool_t fkSaveSpecificConfig;
+    TString fkConfigToSave; 
     
 		//Cuts for Sibling Tagging
     Float_t fSibCutDcaV0ToPrimVertex      ;

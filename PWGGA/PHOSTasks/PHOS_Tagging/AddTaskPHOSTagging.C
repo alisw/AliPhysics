@@ -31,9 +31,16 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
   
   Int_t binLimits[8]={5,10,15,20,30,50,70,100};
   TArrayI multBins(8,binLimits) ;
-  task->SetMultiplicityBins(multBins) ;
+  task->SetMultiplicityBins(&multBins) ;
   
- 
+  if (TString(options)=="MC"){
+    task->SetMC(kTRUE);
+  }
+  if (TString(options)=="FastMC"){
+    task->SetMC(kTRUE);
+    task->SetFastMC();
+  }
+  
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   

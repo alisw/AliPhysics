@@ -47,7 +47,6 @@ fHistSystPionTOF(nullptr),
 fHistSystKaonTOF(nullptr),
 fPartName(""),
 fPIDresp(nullptr),
-fSystFileName(""),
 fPIDstrategy(kConservativePID),
 fnSigma(3.),
 fDecayChannel(kD0toKpi),
@@ -56,7 +55,8 @@ fKaonTOFHistoOpt(kSamePionV0tag),
 fAODProtection(1),
 fNPtBins(0),
 fPtLimits(nullptr),
-fAnalysisCuts(nullptr)
+fAnalysisCuts(nullptr),
+fVarForProp(kPt)
 {
   for(int iHist=0; iHist<2; iHist++) {
     fHistEffPionTPC[iHist]=nullptr;
@@ -70,7 +70,7 @@ fAnalysisCuts(nullptr)
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEDmesonPIDSysProp::AliAnalysisTaskSEDmesonPIDSysProp(int ch, AliRDHFCuts* cuts, TString systfilename):
+AliAnalysisTaskSEDmesonPIDSysProp::AliAnalysisTaskSEDmesonPIDSysProp(int ch, AliRDHFCuts* cuts):
 AliAnalysisTaskSE("taskPIDSysProp"),
 fOutput(nullptr),
 fHistNEvents(nullptr),
@@ -82,7 +82,6 @@ fHistSystPionTOF(nullptr),
 fHistSystKaonTOF(nullptr),
 fPartName(""),
 fPIDresp(nullptr),
-fSystFileName(systfilename),
 fPIDstrategy(kConservativePID),
 fnSigma(3.),
 fDecayChannel(ch),
@@ -91,7 +90,8 @@ fKaonTOFHistoOpt(kSamePionV0tag),
 fAODProtection(1),
 fNPtBins(0),
 fPtLimits(nullptr),
-fAnalysisCuts(cuts)
+fAnalysisCuts(cuts),
+fVarForProp(kPt)
 {
   for(int iHist=0; iHist<2; iHist++) {
     fHistEffPionTPC[iHist]=nullptr;
@@ -99,7 +99,7 @@ fAnalysisCuts(cuts)
     fHistSystPionTPC[iHist]=nullptr;
     fHistSystKaonTPC[iHist]=nullptr;
   }
-  
+    
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
@@ -118,20 +118,16 @@ AliAnalysisTaskSEDmesonPIDSysProp::~AliAnalysisTaskSEDmesonPIDSysProp()
     
     delete fHistPtDauVsD;
     delete fHistSystPIDEffD;
-    delete fOutput;
   }
   if(fPIDresp) delete fPIDresp;
   if(fAnalysisCuts) delete fAnalysisCuts;
   if(fPtLimits) delete[] fPtLimits; 
-  fOutput = nullptr;
+  delete fOutput;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskSEDmesonPIDSysProp::UserCreateOutputObjects()
 {  
-  int load = LoadEffSystFile();
-  if(load>0) AliFatal("Impossible to load single track systematic file, check if it is correct! Exit.");
-
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
@@ -166,8 +162,14 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserCreateOutputObjects()
   }
   if(fPtLimits[fNPtBins]>100) fPtLimits[fNPtBins] = 100.;
   
-  fHistSystPIDEffD = new TH2F("fHistSystPIDEffD","PID efficiency systematic uncertainty; #it{p}_{T}^{D} (GeV/#it{c}); relative systematic uncertainty",fNPtBins,fPtLimits,150,0.,0.15);
-  fHistPtDauVsD = new TH2F("fHistPtDauVsD","#it{p}_{T} Dau vs #it{p}_{T} D; #it{p}_{T}^{D} (GeV/#it{c}); #it{p}_{T}^{daugh} (GeV/#it{c})",static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins],static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins]);
+  TString varname = "";
+  if(fVarForProp==kPt) 
+    varname = "#it{p}_{T}";
+  else if(fVarForProp==kP) 
+    varname = "#it{p}";
+
+  fHistSystPIDEffD = new TH2F("fHistSystPIDEffD","PID efficiency systematic uncertainty; #it{p}_{T}^{D} (GeV/#it{c}); relative systematic uncertainty",fNPtBins,fPtLimits,500,0.,0.5);
+  fHistPtDauVsD = new TH2F("fHistPtDauVsD",Form("%s Dau vs #it{p}_{T} D; #it{p}_{T}^{D} (GeV/#it{c}); %s^{daugh} (GeV/#it{c})",varname.Data(),varname.Data()),static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins],static_cast<int>(fPtLimits[fNPtBins] * 10),0.,fPtLimits[fNPtBins]);
   fOutput->Add(fHistSystPIDEffD);
   fOutput->Add(fHistPtDauVsD);
     
@@ -211,7 +213,7 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       return;
     }
   }
-  TClonesArray *arrayBranch=0;
+    TClonesArray *arrayBranch = nullptr, *arrayD0toKpi = nullptr;
   
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD
@@ -225,20 +227,24 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
       AliAODEvent *aodFromExt = ext->GetAOD();
       if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi)
-      arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       else if(fDecayChannel == kD0toKpi)
-      arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
-      else if(fDecayChannel == kDstartoKpipi)
-      arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+      else if(fDecayChannel == kDstartoKpipi) {
+        arrayBranch=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+        arrayD0toKpi=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+      }
     }
   }
   else {
     if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi)
-    arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
+      arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     else if(fDecayChannel == kD0toKpi)
-    arrayBranch=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
-    else if(fDecayChannel == kDstartoKpipi)
-    arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+      arrayBranch=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    else if(fDecayChannel == kDstartoKpipi) {
+      arrayBranch=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+      arrayD0toKpi=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    }
   }
   
   if (!arrayBranch) {
@@ -258,7 +264,6 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
   fHistNEvents->Fill(3); // count event
   
   bool isEvSel  = fAnalysisCuts->IsEventSelected(aod);
-  float ntracks = aod->GetNumberOfTracks();
   
   if(fAnalysisCuts->IsEventRejectedDueToTrigger()) fHistNEvents->Fill(5);
   if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) fHistNEvents->Fill(6);
@@ -352,26 +357,68 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
   for (int iCand = 0; iCand < nCand; iCand++) {
     
     AliAODRecoDecayHF* d = nullptr;
+    AliAODRecoDecayHF2Prong* dD0 = nullptr;
     bool isDStarCand = false;
+    int nDau = 0;
 
     if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi) {
       d = dynamic_cast<AliAODRecoDecayHF3Prong*>(arrayBranch->UncheckedAt(iCand));
+      nDau = 3;
+    }
+    else if(fDecayChannel == kD0toKpi) {
+      d = dynamic_cast<AliAODRecoDecayHF2Prong*>(arrayBranch->UncheckedAt(iCand));
+      nDau = 2;
+    }
+    else if(fDecayChannel == kDstartoKpipi) {
+      d = dynamic_cast<AliAODRecoCascadeHF*>(arrayBranch->UncheckedAt(iCand));
+      isDStarCand = true;
+      nDau = 3;
+
+      if(d && d->GetIsFilled()<1)
+        dD0 = dynamic_cast<AliAODRecoDecayHF2Prong*>(arrayD0toKpi->At(d->GetProngID(1)));
+      else
+        dD0 = (dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong();
+      if(!dD0)
+        continue;
+    }
+
+    if(!d) continue;
+
+    //Preselection to speed up task
+    TObjArray arrDauTracks(nDau);
+    AliAODTrack *track = nullptr;
+    if(fDecayChannel != kDstartoKpipi) {
+        for(int iDau=0; iDau<nDau; iDau++){
+            AliAODTrack *track = vHF->GetProng(aod,d,iDau);
+            arrDauTracks.AddAt(track,iDau);
+        }
+    }
+    else {
+        for(int iDau=0; iDau<nDau; iDau++){
+            if(iDau == 0) 
+                track=vHF->GetProng(aod,d,iDau); //soft pion
+            else
+                track=vHF->GetProng(aod,dD0,iDau-1); //D0 daughters
+            arrDauTracks.AddAt(track,iDau);
+        }
+    }
+    if(!fAnalysisCuts->PreSelect(arrDauTracks)){
+        continue;
+    }
+
+    if(fDecayChannel == kDplustoKpipi || fDecayChannel == kDstoKKpi) {
       if(!vHF->FillRecoCand(aod,dynamic_cast<AliAODRecoDecayHF3Prong*>(d))) {
         fHistNEvents->Fill(13);
         continue;
       }
     }
     else if(fDecayChannel == kD0toKpi) {
-      d = dynamic_cast<AliAODRecoDecayHF2Prong*>(arrayBranch->UncheckedAt(iCand));
       if(!vHF->FillRecoCand(aod,dynamic_cast<AliAODRecoDecayHF2Prong*>(d))) {
         fHistNEvents->Fill(13);
         continue;
       }
     }
     else if(fDecayChannel == kDstartoKpipi) {
-      d = dynamic_cast<AliAODRecoCascadeHF*>(arrayBranch->UncheckedAt(iCand));
-      if(!d) continue;
-      isDStarCand = true;
       if(!vHF->FillRecoCasc(aod,dynamic_cast<AliAODRecoCascadeHF*>(d),isDStarCand)) {
         fHistNEvents->Fill(13);
         continue;
@@ -388,24 +435,41 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
     
     bool recVtx=false;
     AliAODVertex *origownvtx = nullptr;
-    
+    if(fAnalysisCuts->GetIsPrimaryWithoutDaughters()){
+	    if(d->GetOwnPrimaryVtx()) 
+        origownvtx = new AliAODVertex(*d->GetOwnPrimaryVtx());
+	    if(fAnalysisCuts->RecalcOwnPrimaryVtx(d,aod))
+        recVtx = true;
+	    else fAnalysisCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
+    }
+
     double ptD = d->Pt();
     double rapid  = d->Y(pdgcode);
     bool isFidAcc = fAnalysisCuts->IsInFiducialAcceptance(ptD,rapid);
     
     if(isFidAcc){
       int retCodeAnalysisCuts = fAnalysisCuts->IsSelectedPID(d);
-      if(retCodeAnalysisCuts==0) continue;
+      int retCodeAnalysisTrackCuts = fAnalysisCuts->IsSelected(d,AliRDHFCuts::kTracks,aod); //reject also 
+      if(retCodeAnalysisCuts==0 || retCodeAnalysisTrackCuts==0) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       fHistNEvents->Fill(12);
 
       int mcLabel=-1;
       int orig = 0;
       if(!isDStarCand) mcLabel = d->MatchToMC(pdgcode,arrayMC,nprongs,pdgDaughter);
       else mcLabel = (dynamic_cast<AliAODRecoCascadeHF*>(d))->MatchToMC(pdgcode,421,pdgDaughter,pdg2Daughter,arrayMC);
-      if(mcLabel<0) continue;
+      if(mcLabel<0) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       AliAODMCParticle* partD = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcLabel));
-      if(partD) orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partD,kTRUE);
-      if(orig<4) continue;
+      if(partD) orig = AliVertexingHFUtils::CheckOrigin(arrayMC,partD,true);
+      if(orig<4) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       
       const int nDau = d->GetNDaughters();
       AliAODTrack* dautrack[nDau];
@@ -416,6 +480,7 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       else {
         AliAODRecoDecayHF2Prong* D0prong = dynamic_cast<AliAODRecoDecayHF2Prong*>((dynamic_cast<AliAODRecoCascadeHF*>(d))->Get2Prong());
         if(!D0prong) {
+          if(unsetvtx) d->UnsetOwnPrimaryVtx();
           continue;
         }
         for(int iDau=0; iDau<nDau; iDau++) {
@@ -424,9 +489,14 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
       }
 
       double syst = GetDmesonPIDuncertainty(dautrack,nDau,arrayMC,ptD);
-      if(syst==-999. || syst==0.) continue;
+      if(syst==-999. || syst==0.) {
+        if(unsetvtx) d->UnsetOwnPrimaryVtx();
+        continue;
+      }
       fHistSystPIDEffD->Fill(ptD,syst);
     }
+
+    if(recVtx) fAnalysisCuts->CleanOwnPrimaryVtx(d,aod,origownvtx);
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
@@ -438,81 +508,78 @@ void AliAnalysisTaskSEDmesonPIDSysProp::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile()
-{  
-  TFile* infile = TFile::Open(fSystFileName.Data());
-  if(!infile) return 1;
-  
+bool AliAnalysisTaskSEDmesonPIDSysProp::LoadEffSystFile(TFile* systfile)
+{    
   if(fPIDstrategy==kConservativePID || fPIDstrategy==kStrongPID) {
-    fHistEffPionTPC[0] = (TH1F*)infile->Get("hEffPionTPCDataV0tag_3sigma");
-    fHistSystPionTPC[0] = (TH1F*)infile->Get("hRatioEffPionTPCDataV0tag_3sigma");
-    if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return 2;
+    fHistEffPionTPC[0] = (TH1F*)systfile->Get("hEffPionTPCDataV0tag_3sigma");
+    fHistSystPionTPC[0] = (TH1F*)systfile->Get("hRatioEffPionTPCDataV0tag_3sigma");
+    if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return false;
     if(fKaonTPCHistoOpt==kKaonTOFtag) {
-      fHistEffKaonTPC[0] = (TH1F*)infile->Get("hEffKaonTPCDataTOFtag_3sigma");
-      fHistSystKaonTPC[0] = (TH1F*)infile->Get("hRatioEffKaonTPCDataTOFtag_3sigma");
+      fHistEffKaonTPC[0] = (TH1F*)systfile->Get("hEffKaonTPCDataTOFtag_3sigma");
+      fHistSystKaonTPC[0] = (TH1F*)systfile->Get("hRatioEffKaonTPCDataTOFtag_3sigma");
     }
     else if(fKaonTPCHistoOpt==kKaonKinkstag) {
-      fHistEffKaonTPC[0] = (TH1F*)infile->Get("hEffKaonTPCDataKinktag_3sigma");
-      fHistSystKaonTPC[0] = (TH1F*)infile->Get("hRatioEffKaonTPCDataKinktag_3sigma");
+      fHistEffKaonTPC[0] = (TH1F*)systfile->Get("hEffKaonTPCDataKinktag_3sigma");
+      fHistSystKaonTPC[0] = (TH1F*)systfile->Get("hRatioEffKaonTPCDataKinktag_3sigma");
     }
-    if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return 3;
-    fHistEffPionTOF = (TH1F*)infile->Get("hEffPionTOFDataV0tag_3sigma");
-    fHistSystPionTOF = (TH1F*)infile->Get("hRatioEffPionTOFDataV0tag_3sigma");
-    if(!fHistSystPionTOF || !fHistEffPionTOF) return 4;
+    if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return false;
+    fHistEffPionTOF = (TH1F*)systfile->Get("hEffPionTOFDataV0tag_3sigma");
+    fHistSystPionTOF = (TH1F*)systfile->Get("hRatioEffPionTOFDataV0tag_3sigma");
+    if(!fHistSystPionTOF || !fHistEffPionTOF) return false;
     if(fKaonTOFHistoOpt==kKaonTPCtag) {
-      fHistEffKaonTOF = (TH1F*)infile->Get("hEffKaonTOFDataTPCtag_3sigma");
-      fHistSystKaonTOF = (TH1F*)infile->Get("hRatioEffKaonTOFDataTPCtag_3sigma");
+      fHistEffKaonTOF = (TH1F*)systfile->Get("hEffKaonTOFDataTPCtag_3sigma");
+      fHistSystKaonTOF = (TH1F*)systfile->Get("hRatioEffKaonTOFDataTPCtag_3sigma");
     }
     else if(fKaonTOFHistoOpt==kSamePionV0tag) {
-      fHistEffKaonTOF = (TH1F*)infile->Get("hEffPionTOFDataV0tag_3sigma");
-      fHistSystKaonTOF = (TH1F*)infile->Get("hRatioEffPionTOFDataV0tag_3sigma");
+      fHistEffKaonTOF = (TH1F*)systfile->Get("hEffPionTOFDataV0tag_3sigma");
+      fHistSystKaonTOF = (TH1F*)systfile->Get("hRatioEffPionTOFDataV0tag_3sigma");
     }
-    if(!fHistSystKaonTOF || !fHistEffKaonTOF) return 5;
+    if(!fHistSystKaonTOF || !fHistEffKaonTOF) return false;
     if(fPIDstrategy==kStrongPID) {
-      fHistEffPionTPC[1] = (TH1F*)infile->Get("hEffPionTPCDataV0tag_2sigma");
-      fHistSystPionTPC[1] = (TH1F*)infile->Get("hRatioEffPionTPCDataV0tag_2sigma");
-      if(!fHistSystPionTPC[1] || !fHistEffPionTPC[1]) return 6;
+      fHistEffPionTPC[1] = (TH1F*)systfile->Get("hEffPionTPCDataV0tag_2sigma");
+      fHistSystPionTPC[1] = (TH1F*)systfile->Get("hRatioEffPionTPCDataV0tag_2sigma");
+      if(!fHistSystPionTPC[1] || !fHistEffPionTPC[1]) return false;
       if(fKaonTPCHistoOpt==kKaonTOFtag) {
-        fHistEffKaonTPC[1] = (TH1F*)infile->Get("hEffKaonTPCDataTOFtag_2sigma");
-        fHistSystKaonTPC[1] = (TH1F*)infile->Get("hRatioEffKaonTPCDataTOFtag_2sigma");
+        fHistEffKaonTPC[1] = (TH1F*)systfile->Get("hEffKaonTPCDataTOFtag_2sigma");
+        fHistSystKaonTPC[1] = (TH1F*)systfile->Get("hRatioEffKaonTPCDataTOFtag_2sigma");
       }
       else if(fKaonTPCHistoOpt==kKaonKinkstag) {
-        fHistEffKaonTPC[1] = (TH1F*)infile->Get("hEffKaonTPCDataKinktag_2sigma");
-        fHistSystKaonTPC[1] = (TH1F*)infile->Get("hRatioEffKaonTPCDataKinktag_2sigma");
+        fHistEffKaonTPC[1] = (TH1F*)systfile->Get("hEffKaonTPCDataKinktag_2sigma");
+        fHistSystKaonTPC[1] = (TH1F*)systfile->Get("hRatioEffKaonTPCDataKinktag_2sigma");
       }
-      if(!fHistSystKaonTPC[1] || !fHistEffKaonTPC[1]) return 7;
+      if(!fHistSystKaonTPC[1] || !fHistEffKaonTPC[1]) return false;
     }
   }
   else if(fPIDstrategy==knSigmaPID) {
-    fHistEffPionTPC[0] = (TH1F*)infile->Get(Form("hEffPionTPCDataV0tag_%0.fsigma",fnSigma));
-    fHistSystPionTPC[0] = (TH1F*)infile->Get(Form("hRatioEffPionTPCDataV0tag_%0.fsigma",fnSigma));
-    if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return 8;
+    fHistEffPionTPC[0] = (TH1F*)systfile->Get(Form("hEffPionTPCDataV0tag_%0.fsigma",fnSigma));
+    fHistSystPionTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffPionTPCDataV0tag_%0.fsigma",fnSigma));
+    if(!fHistSystPionTPC[0] || !fHistEffPionTPC[0]) return false;
     if(fKaonTPCHistoOpt==kKaonTOFtag) {
-      fHistEffKaonTPC[0] = (TH1F*)infile->Get(Form("hEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
-      fHistSystKaonTPC[0] = (TH1F*)infile->Get(Form("hRatioEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
+      fHistEffKaonTPC[0] = (TH1F*)systfile->Get(Form("hEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
+      fHistSystKaonTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffKaonTPCDataTOFtag_%0.fsigma",fnSigma));
     }
     else if(fKaonTPCHistoOpt==kKaonKinkstag) {
-      fHistEffKaonTPC[0] = (TH1F*)infile->Get(Form("hEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
-      fHistSystKaonTPC[0] = (TH1F*)infile->Get(Form("hRatioEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
+      fHistEffKaonTPC[0] = (TH1F*)systfile->Get(Form("hEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
+      fHistSystKaonTPC[0] = (TH1F*)systfile->Get(Form("hRatioEffKaonTPCDataKinktag_%0.fsigma",fnSigma));
     }
-    if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return 9;
-    fHistEffPionTOF = (TH1F*)infile->Get(Form("hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
-    fHistSystPionTOF = (TH1F*)infile->Get(Form("hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
-    if(!fHistSystPionTOF || !fHistEffPionTOF) return 10;
+    if(!fHistSystKaonTPC[0] || !fHistEffKaonTPC[0]) return false;
+    fHistEffPionTOF = (TH1F*)systfile->Get(Form("hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
+    fHistSystPionTOF = (TH1F*)systfile->Get(Form("hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
+    if(!fHistSystPionTOF || !fHistEffPionTOF) return false;
     if(fKaonTOFHistoOpt==kKaonTPCtag) {
-      fHistEffKaonTOF = (TH1F*)infile->Get(Form("hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
-      fHistSystKaonTOF = (TH1F*)infile->Get(Form("hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
+      fHistEffKaonTOF = (TH1F*)systfile->Get(Form("hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
+      fHistSystKaonTOF = (TH1F*)systfile->Get(Form("hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
     }
     else if(fKaonTOFHistoOpt==kSamePionV0tag) {
-      fHistEffKaonTOF = (TH1F*)infile->Get(Form("hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
-      fHistSystKaonTOF = (TH1F*)infile->Get(Form("hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
+      fHistEffKaonTOF = (TH1F*)systfile->Get(Form("hEffPionTOFDataV0tag_%0.fsigma",fnSigma));
+      fHistSystKaonTOF = (TH1F*)systfile->Get(Form("hRatioEffPionTOFDataV0tag_%0.fsigma",fnSigma));
     }
-    fHistEffKaonTOF = (TH1F*)infile->Get(Form("hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
-    fHistSystKaonTOF = (TH1F*)infile->Get(Form("hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
-    if(!fHistSystKaonTOF || !fHistEffKaonTOF) return 11;
+    fHistEffKaonTOF = (TH1F*)systfile->Get(Form("hEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
+    fHistSystKaonTOF = (TH1F*)systfile->Get(Form("hRatioEffKaonTOFDataTPCtag_%0.fsigma",fnSigma));
+    if(!fHistSystKaonTOF || !fHistEffKaonTOF) return false;
   }
   
-  return 0;
+  return true;
 }
 
 //________________________________________________________________________
@@ -538,13 +605,19 @@ double AliAnalysisTaskSEDmesonPIDSysProp::GetDmesonPIDuncertainty(AliAODTrack *t
     
     int daupdgcode = TMath::Abs(p->GetPdgCode());
     double daupt = track[iDau]->Pt();
+    double daupTPC = track[iDau]->GetTPCmomentum();
+    double dauvar = -1.;
+    if(fVarForProp==kPt)
+      dauvar = daupt;
+    else if(fVarForProp==kP)
+      dauvar = daupTPC;
 
     bool isTPCok = false;
     bool isTOFok = false;
     if(fPIDresp->CheckPIDStatus(AliPIDResponse::kTPC,track[iDau]) == AliPIDResponse::kDetPidOk) isTPCok = true;
     if(fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track[iDau]) == AliPIDResponse::kDetPidOk) isTOFok = true;
 
-    int bin = fHistSystPionTPC[0]->GetXaxis()->FindBin(daupt);
+    int bin = fHistSystPionTPC[0]->GetXaxis()->FindBin(dauvar);
     double systTPC=0.;
     double systTOF=0.;
     double probTPC=0.;
@@ -602,7 +675,7 @@ double AliAnalysisTaskSEDmesonPIDSysProp::GetDmesonPIDuncertainty(AliAODTrack *t
       probTPCandTOF = probTPC*probTOF;
       if(probTPCandTOF>1.e-20) syst += TMath::Sqrt(probTPC*probTPC*systTOF*systTOF+probTOF*probTOF*systTPC*systTPC)/probTPCandTOF;
     }
-    fHistPtDauVsD->Fill(ptD,daupt);
+    fHistPtDauVsD->Fill(ptD,dauvar);
   }
   
   return TMath::Abs(syst);

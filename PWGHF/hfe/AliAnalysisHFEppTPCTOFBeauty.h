@@ -249,6 +249,7 @@ private:
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
     TH2F                *fTPCnsigma_p_after_tof;//!
+    TH2F                *fTPCnsigma_proton_p_after_tof;//!
     TH2F                *fTPCnsigma_p_after_tof_p;//!
     TH2F                *fTPCnsigma_p_after_tof_pion;//!
     TH2F                *fTPCnsigma_p_after_tof_k;//!
@@ -358,13 +359,13 @@ private:
     AliHFEpidQAmanager 	*fPIDqa;				// PID QA manager
     
     //Others
-    AliStack 			*fMCstack;	//!						
+ //   AliStack 			*fMCstack;	//!						
     Bool_t              fRejectKinkMother;	//!			
-    TParticle 			*fMCtrack;//!
-    TParticle 			*fMCtrackMother;//!
-    TParticle 			*fMCtrackGMother;//!
-    TParticle 			*fMCtrackGGMother;//!
-    TParticle 			*fMCtrackGGGMother;//!
+ //   TParticle 			*fMCtrack;//!
+ //   TParticle 			*fMCtrackMother;//!
+ //   TParticle 			*fMCtrackGMother;//!
+ //   TParticle 			*fMCtrackGGMother;//!
+ //   TParticle 			*fMCtrackGGGMother;//!
     TClonesArray 		*fMCarray;//!
     AliAODMCHeader 		*fMCheader;  //!
     AliAODMCParticle 	*fMCparticle; //!

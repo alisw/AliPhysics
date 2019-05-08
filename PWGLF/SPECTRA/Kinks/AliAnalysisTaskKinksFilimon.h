@@ -447,8 +447,8 @@ Bool_t AliAnalysisTaskKinksFilimon::GetPrimaryVertexQuality(const AliVVertex* co
 Int_t AliAnalysisTaskKinksFilimon::GetDaughterIdx(const AliMCParticle* const mcTrack, const Int_t mcNtracks, Int_t& firstDaughterIdx, Int_t& lastDaughterIdx) const {
 	
   if ( !(mcNtracks && mcTrack) ) return(-1);
-	firstDaughterIdx = mcTrack->GetFirstDaughter();
-	lastDaughterIdx = mcTrack->GetLastDaughter();
+	firstDaughterIdx = mcTrack->GetDaughterFirst();
+	lastDaughterIdx = mcTrack->GetDaughterLast();
 	if ( (firstDaughterIdx < 0) || (lastDaughterIdx < 0) || (firstDaughterIdx > mcNtracks) || (lastDaughterIdx > mcNtracks) ) return(-1); // Invalid decay
   return(lastDaughterIdx-firstDaughterIdx+1);
 	

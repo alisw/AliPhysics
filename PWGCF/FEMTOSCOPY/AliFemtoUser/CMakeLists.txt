@@ -66,6 +66,11 @@ set(SRCS
   AliFemtoModelCorrFctnKK.cxx
   AliFemtoModelCorrFctnKpKp.cxx
   AliFemtoNSigmaFilter.cxx
+  AliFemtoCutAttrEvent.cxx
+  AliFemtoCutAttrPairTrack.cxx
+  AliFemtoCutAttrTrack.cxx
+  AliFemtoAnalysisPionPionCuts.cxx
+  AliFemtoAnalysisPionPionObjectConstructor.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
   AliFemtoCutMonitorParticlePtPDG.cxx
@@ -86,12 +91,15 @@ set(SRCS
   AliFemtoCorrFctnDirectYlm.cxx
   AliFemtoCorrFctnTPCNcls.cxx
   AliFemtoCorrFctnDEtaDPhi.cxx
+  AliFemtoCorrFctnDEtaDPhiStar.cxx
   AliFemtoCorrFctnDEtaDPhiTHn.cxx
   AliFemtoCorrFctnDEtaDPhiCorrections.cxx
   AliFemtoCorrFctnDYDPhi.cxx
   AliFemtoCorrFctnKStar.cxx
   AliFemtoCorrFctnGammaMonitor.cxx
+  AliFemtoCorrFctnQLCMS.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
+  AliFemtoCorrFctnPtKstar.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoBPLCMS3DCorrFctnEMCIC.cxx
   AliFemtoPairCutAntiGamma.cxx
@@ -140,10 +148,12 @@ set(SRCS
   AliFemtoV0PurityBgdEstimator.cxx
   AliFemtoPairCutRadialDistanceKKdist.cxx
   AliFemtoSphericityEventCutKK.cxx #  Sphericity for KK analysis in pp13TeV
+  AliFemtoSphericityEventCutKK1.cxx #  3may2019!! Sphericity for KK analysis in pp13TeV
   AliFemtoCutMonitorEventSphericity.cxx # Sphericity monitor
   AliFemtoKKTrackCutTest.cxx # new class
   AliFemtoCorrFctnInvMass.cxx
   AliFemtoCutMonitorV0CosPointingAngle.cxx
+  AliFemtoCutMonitorPairMomRes.cxx
   )
 
 

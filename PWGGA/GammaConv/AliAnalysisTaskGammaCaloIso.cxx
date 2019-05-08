@@ -4092,8 +4092,8 @@ void AliAnalysisTaskGammaCaloIso::ProcessAODMCParticles()
 
         if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))
           ->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-          AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-          AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+          AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+          AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
           Float_t weighted= 1;
           if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent)){
             if (particle->Pt()>0.005){
@@ -4233,8 +4233,8 @@ void AliAnalysisTaskGammaCaloIso::ProcessAODMCParticles()
 
       if(fDoMesonAnalysis){
         if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedAODMC(particle,AODMCTrackArray,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
-          AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(0)));
-          AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughter(1)));
+          AliAODMCParticle* daughter0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(0)));
+          AliAODMCParticle* daughter1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetDaughterLabel(1)));
           AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother()));
           Int_t pdgCode = mother->GetPdgCode();
           if(particle->GetPdgCode() == 111){
@@ -4863,8 +4863,8 @@ void AliAnalysisTaskGammaCaloIso::ProcessTrueIsolatedClustersAOD(AliVCluster *cl
           cout << "______________________________________________________________________________________________________ " << endl;
       cout << "Label (partLead) : " << particleLead->Label() << endl;
       cout << "Energy (partLead): " << particleLead->Pt() << endl;
-      cout << "GetFirstDaughter (partLead): " << particleLead->GetFirstDaughter() << endl;
-      cout << "GetLastDaughter (partLead): " << particleLead->GetLastDaughter() << endl;
+      cout << "GetFirstDaughter (partLead): " << particleLead->GetDaughterFirst() << endl;
+      cout << "GetLastDaughter (partLead): " << particleLead->GetDaughterLast() << endl;
       cout << "Is Primary: " << particleLead->IsPrimary() << endl;
       cout << "Is Secondary Material: " << particleLead->IsSecondaryFromMaterial() << endl;
       cout << "Is Secondary Weak Decay: " << particleLead->IsSecondaryFromWeakDecay() << endl;

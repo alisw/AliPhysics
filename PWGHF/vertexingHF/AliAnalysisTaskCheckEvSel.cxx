@@ -52,16 +52,20 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNEvents(0x0),
   fHistNEventsVsCent(0x0),
   fHistNEventsVsCL1(0x0),
+  fHistWhyRej(0x0),
   fHistNEventsVsWhyRej(0x0),
   fHistNTrackletsBeforePileup(0x0),
   fHistNTrackletsAfterPileup(0x0),
   fHistNCL1BeforePileup(0x0),
   fHistNCL1AfterPileup(0x0),
   fHistCentrality(0x0),
+  fHistCL0vsV0MCentrality(0x0),
   fHistNTracksTPCoutVsV0Cent(0x0),
   fHistNTracksFB4VsV0Cent(0x0),
   fHistNTracksBC0VsV0Cent(0x0),
   fHistNTrackletsVsV0Cent(0x0),
+  fHistNTrackletsGoldenVsV0Cent(0x0),
+  fHistPhiTrackelts(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
   fHistNTracksBC0VsNTracksFB4(0x0),
@@ -71,6 +75,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistZVertexSPDBadTrackVert(0x0),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
+  fUseAliEventCuts(kFALSE),
   fCounter(0),
   fAnalysisCuts(0x0)
 {
@@ -91,16 +96,20 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNEvents(0x0),
   fHistNEventsVsCent(0x0),
   fHistNEventsVsCL1(0x0),
+  fHistWhyRej(0x0),
   fHistNEventsVsWhyRej(0x0),
   fHistNTrackletsBeforePileup(0x0),
   fHistNTrackletsAfterPileup(0x0),
   fHistNCL1BeforePileup(0x0),
   fHistNCL1AfterPileup(0x0),
   fHistCentrality(0x0),
+  fHistCL0vsV0MCentrality(0x0),
   fHistNTracksTPCoutVsV0Cent(0x0),
   fHistNTracksFB4VsV0Cent(0x0),
   fHistNTracksBC0VsV0Cent(0x0),
   fHistNTrackletsVsV0Cent(0x0),
+  fHistNTrackletsGoldenVsV0Cent(0x0),
+  fHistPhiTrackelts(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
   fHistNTracksBC0VsNTracksFB4(0x0),
@@ -110,6 +119,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistZVertexSPDBadTrackVert(0x0),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
+  fUseAliEventCuts(kFALSE),
   fCounter(0),
   fAnalysisCuts(cuts)
 {
@@ -133,16 +143,20 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNEvents;
     delete fHistNEventsVsCent;
     delete fHistNEventsVsCL1;
+    delete fHistWhyRej;
     delete fHistNEventsVsWhyRej;
     delete fHistNTrackletsBeforePileup;
     delete fHistNTrackletsAfterPileup;
     delete fHistNCL1BeforePileup;
     delete fHistNCL1AfterPileup;
     delete fHistCentrality;
+    delete fHistCL0vsV0MCentrality;
     delete fHistNTracksTPCoutVsV0Cent;
     delete fHistNTracksFB4VsV0Cent;
     delete fHistNTracksBC0VsV0Cent;
     delete fHistNTrackletsVsV0Cent;
+    delete fHistNTrackletsGoldenVsV0Cent;
+    delete fHistPhiTrackelts;
     delete fHistNTracksTPCoutVsNTracklets;
     delete fHistNTracksFB4VsNTracklets;
     delete fHistNTracksBC0VsNTracksFB4;
@@ -171,20 +185,22 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",18,-0.5,17.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",20,-0.5,19.5);
   ConfigureEvSelAxis(fHistNEvents->GetXaxis());
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
   
-  fHistNEventsVsCent = new TH2F("hNEventsVsCent", " ; ; Centrality ",18,-0.5,17.5,101,0.,101.);
+  fHistNEventsVsCent = new TH2F("hNEventsVsCent", " ; ; Centrality ",20,-0.5,19.5,101,0.,101.);
   ConfigureEvSelAxis(fHistNEventsVsCent->GetXaxis());
   fOutput->Add(fHistNEventsVsCent);
 
-  fHistNEventsVsCL1 = new TH2F("hNEventsVsCL1", " ; ; N_{CL1}",18,-0.5,17.5,200,-0.5,2*maxMult-0.5);
+  fHistNEventsVsCL1 = new TH2F("hNEventsVsCL1", " ; ; N_{CL1}",20,-0.5,19.5,200,-0.5,2*maxMult-0.5);
   ConfigureEvSelAxis(fHistNEventsVsCL1->GetXaxis());
   fOutput->Add(fHistNEventsVsCL1);
 
-  fHistNEventsVsWhyRej = new TH2F("hNEventsVsWhyRej", " ; ; WhyRej ",18,-0.5,17.5,11,-0.5,10.5);
+  fHistWhyRej = new TH1F("hWhyRej"," ; WhyRej",11,-0.5,10.5);
+  fOutput->Add(fHistWhyRej);
+  fHistNEventsVsWhyRej = new TH2F("hNEventsVsWhyRej", " ; ; WhyRej ",20,-0.5,19.5,11,-0.5,10.5);
   ConfigureEvSelAxis(fHistNEventsVsWhyRej->GetXaxis());
   fOutput->Add(fHistNEventsVsWhyRej);
 
@@ -198,12 +214,15 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fOutput->Add(fHistNCL1AfterPileup);
 
   fHistCentrality = new TH1F("hCentrality"," ; Centrality ; ",105,0.,105.);
+  fHistCL0vsV0MCentrality = new TH2F("hCL0vsV0MCentrality"," ; Centrality V0M ; Centrality CL0",105,0.,105.,105,0.,105.);
   fOutput->Add(fHistCentrality);
+  fOutput->Add(fHistCL0vsV0MCentrality);
 
   fHistNTracksTPCoutVsV0Cent = new TH2F("hNTracksTPCoutVsV0Cent"," ; Centrality ; N_{tracks, TPCout}",105,0.,105.,200,-0.5,2*maxMult-0.5);
   fHistNTracksFB4VsV0Cent = new TH2F("hNTracksFB4VsV0Cent"," ; Centrality ; N_{tracks, FiltBit4}",105,0.,105.,200,-0.5,maxMult-0.5);
   fHistNTracksBC0VsV0Cent = new TH2F("hNTracksBC0VsV0Cent"," ; Centrality ; N_{tracks, TOFBC=0}",105,0.,105.,200,-0.5,maxMult-0.5);  
   fHistNTrackletsVsV0Cent = new TH2F("hNTrackletsVsV0Cent"," ; Centrality ; N_{tracklets}",105,0.,105.,200,-0.5,maxMult-0.5);
+  fHistNTrackletsGoldenVsV0Cent = new TH2F("hNTrackletsGoldenVsV0Cent"," ; Centrality ; N_{tracklets}",105,0.,105.,200,-0.5,maxMult-0.5);
   fHistNTracksTPCoutVsNTracklets = new TH2F("hNTracksTPCoutVsNTracklets"," ; N_{tracklets} ; N_{tracks, TPCout}",200,-0.5,maxMult-0.5,200,-0.5,2*maxMult-0.5);
   fHistNTracksFB4VsNTracklets = new TH2F("hNTracksFB4VsNTracklets"," ; N_{tracklets} ; N_{tracks, FiltBit4}",200,-0.5,maxMult-0.5,200,-0.5,maxMult-0.5);
   fHistNTracksBC0VsNTracksFB4 = new TH2F("hNTracksBC0VsNTracksFB4"," ; N_{tracks, FiltBit4}; N_{tracks, TOFBC=0}",200,-0.5,maxMult-0.5,200,-0.5,maxMult-0.5);
@@ -211,10 +230,14 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fOutput->Add(fHistNTracksFB4VsV0Cent);
   fOutput->Add(fHistNTracksBC0VsV0Cent);
   fOutput->Add(fHistNTrackletsVsV0Cent);
+  fOutput->Add(fHistNTrackletsGoldenVsV0Cent);
   fOutput->Add(fHistNTracksTPCoutVsNTracklets);
   fOutput->Add(fHistNTracksFB4VsNTracklets);
   fOutput->Add(fHistNTracksBC0VsNTracksFB4);
 
+  fHistPhiTrackelts = new TH1F("hPhiTrackelts"," ; #varphi (rad)",200,0.,2.*TMath::Pi());
+  fOutput->Add(fHistPhiTrackelts);
+  
   fHistZVertexSPDBeforeCuts = new TH2F("hZVertexSPDBeforeCuts"," ; z_{SPDvertex} ; z_{TRKvertex}",400,-20.,20.,400,-20.,20.);
   fOutput->Add(fHistZVertexSPDBeforeCuts);
   fHistZVertexSPDBeforeSPDCut = new TH2F("hZVertexSPDBeforeSPDCut"," ; z_{SPDvertex} ; z_{TRKvertex}",400,-20.,20.,400,-20.,20.);
@@ -256,11 +279,13 @@ void AliAnalysisTaskCheckEvSel::ConfigureEvSelAxis(TAxis* ax){
   ax->SetBinLabel(11,"Rejected for bad track vertex");
   ax->SetBinLabel(12,"Rejected for vertex out of accept");
   ax->SetBinLabel(13,"Rejected for pileup events");
-  ax->SetBinLabel(14,"Passing Phys sel + trigger");
-  ax->SetBinLabel(15,"Passing Phys sel + trigger + Pileup");
-  ax->SetBinLabel(16,"Passing Phys sel + trigger + Pileup + zVertex");
-  ax->SetBinLabel(17,"Passing Phys sel + trigger + Pileup + zVertex + Centrality");
-  ax->SetBinLabel(18,"Passing IsEventSelected");
+  ax->SetBinLabel(14,"Rejected due to centrality correlations");
+  ax->SetBinLabel(15,"Rejected due to mult vs. V0 cut");
+  ax->SetBinLabel(16,"Passing Phys sel + trigger");
+  ax->SetBinLabel(17,"Passing Phys sel + trigger + Pileup");
+  ax->SetBinLabel(18,"Passing Phys sel + trigger + Pileup + zVertex");
+  ax->SetBinLabel(19,"Passing Phys sel + trigger + Pileup + zVertex + Centrality");
+  ax->SetBinLabel(20,"Passing IsEventSelected");
   ax->SetNdivisions(1,kFALSE);
 }
 //________________________________________________________________________
@@ -301,15 +326,31 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   // Post the data already here
 
   Bool_t isEvSel=fAnalysisCuts->IsEventSelected(aod);
+  if(fUseAliEventCuts) isEvSel=fAnalysisCuts->IsEventSelectedWithAliEventCuts(aod);
   Int_t wrej=fAnalysisCuts->GetWhyRejection();
-  Double_t centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentZNA);
+  Double_t centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentV0M);
+  if(fSystem==2) centr=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentZNA);// p-Pb
+  Double_t centrCL0=fAnalysisCuts->GetCentrality(aod,AliRDHFCuts::kCentCL0);
   const AliVVertex *vertex = aod->GetPrimaryVertex();
   const AliVVertex *vertexSPD = aod->GetPrimaryVertexSPD();
-  Double_t ntrkl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
+  Double_t ntrkl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
+  Double_t nTrackletsGolden=0;
+  AliAODTracklets* tracklets=aod->GetTracklets();
+  Int_t nTr=tracklets->GetNumberOfTracklets();
+  for(Int_t iTr=0; iTr<nTr; iTr++){
+    // Double_t theta=tracklets->GetTheta(iTr);
+    // Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+    Double_t phi=tracklets->GetPhi(iTr);
+    fHistPhiTrackelts->Fill(phi);
+    if(phi>3.9) nTrackletsGolden+=1.;
+  }
+
   Double_t ncl1 = aod->GetNumberOfITSClusters(1);
   Double_t zvSPD=vertexSPD->GetZ();
   Double_t zvTRK=vertex->GetZ();
 
+  if(!isEvSel)fHistWhyRej->Fill(wrej); 
+    
   if(fEnableVertexNtuple) {
     Float_t wrej4ntuple = (Float_t)wrej;
     if(isEvSel) wrej4ntuple = -1;
@@ -337,8 +378,11 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()) fHistNEventsVsWhyRej->Fill(10,wrej);
   if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) fHistNEventsVsWhyRej->Fill(11,wrej);
   if(fAnalysisCuts->IsEventRejectedDueToPileup()) fHistNEventsVsWhyRej->Fill(12,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToCentralityEstimCorrel()) fHistNEventsVsWhyRej->Fill(13,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToTRKV0CentralityCorrel()) fHistNEventsVsWhyRej->Fill(14,wrej);
 
   fHistZVertexSPDBeforeCuts->Fill(zvSPD,zvTRK);
+  
   if(!fAnalysisCuts->IsEventRejectedDueToTrigger() &&
      !fAnalysisCuts->IsEventRejectedDuePhysicsSelection() &&
      !fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() &&
@@ -376,12 +420,14 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
       else binToFill=7;
     }else{
       if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() || fAnalysisCuts->IsEventRejectedDueToVertexContributors() || fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()){
-	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) binToFill=9;
+	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) binToFill=8;
 	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors()) binToFill=9;
 	if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()) binToFill=10;
       }else{
 	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) binToFill=11;
 	else if(fAnalysisCuts->IsEventRejectedDueToPileup()) binToFill=12;
+	else if(fAnalysisCuts->IsEventRejectedDueToCentralityEstimCorrel()) binToFill=13;
+	else if(fAnalysisCuts->IsEventRejectedDueToTRKV0CentralityCorrel())  binToFill=14;
       }
     }
   }
@@ -391,25 +437,25 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNEventsVsCL1->Fill(binToFill,ncl1);
   }
   if(fAnalysisCuts->IsEventRejectedDueToTrigger()==0 && fAnalysisCuts->IsEventRejectedDuePhysicsSelection()==0){
-    fHistNEvents->Fill(13);
-    fHistNEventsVsCent->Fill(13,centr);
-    fHistNEventsVsCL1->Fill(13,ncl1);
-    fHistNEventsVsWhyRej->Fill(13,wrej);    
+    fHistNEvents->Fill(15);
+    fHistNEventsVsCent->Fill(15,centr);
+    fHistNEventsVsCL1->Fill(15,ncl1);
+    fHistNEventsVsWhyRej->Fill(15,wrej);    
     if(fAnalysisCuts->IsEventRejectedDueToPileup()==0){
-      fHistNEvents->Fill(14);
-      fHistNEventsVsCent->Fill(14,centr);
-      fHistNEventsVsCL1->Fill(14,ncl1);
-      fHistNEventsVsWhyRej->Fill(14,wrej);
+      fHistNEvents->Fill(16);
+      fHistNEventsVsCent->Fill(16,centr);
+      fHistNEventsVsCL1->Fill(16,ncl1);
+      fHistNEventsVsWhyRej->Fill(16,wrej);
       if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()==0){
-	fHistNEvents->Fill(15);
-	fHistNEventsVsCent->Fill(15,centr);
-	fHistNEventsVsCL1->Fill(15,ncl1);
-	fHistNEventsVsWhyRej->Fill(15,wrej);
+	fHistNEvents->Fill(17);
+	fHistNEventsVsCent->Fill(17,centr);
+	fHistNEventsVsCL1->Fill(17,ncl1);
+	fHistNEventsVsWhyRej->Fill(17,wrej);
 	if(fAnalysisCuts->IsEventRejectedDueToCentrality()==0 && fAnalysisCuts->IsEventRejectedDueToCentralityFlattening()==0){
-	  fHistNEvents->Fill(16);
-	  fHistNEventsVsCent->Fill(16,centr);
-	  fHistNEventsVsCL1->Fill(16,ncl1);
-	  fHistNEventsVsWhyRej->Fill(16,wrej);
+	  fHistNEvents->Fill(18);
+	  fHistNEventsVsCent->Fill(18,centr);
+	  fHistNEventsVsCL1->Fill(18,ncl1);
+	  fHistNEventsVsWhyRej->Fill(18,wrej);
 	}
       }
     }
@@ -419,10 +465,10 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNCL1BeforePileup->Fill(ncl1);
   }
   if(isEvSel){
-    fHistNEvents->Fill(17);
-    fHistNEventsVsCent->Fill(17,centr);
-    fHistNEventsVsCL1->Fill(17,ncl1);
-    fHistNEventsVsWhyRej->Fill(17,wrej);
+    fHistNEvents->Fill(19);
+    fHistNEventsVsCent->Fill(19,centr);
+    fHistNEventsVsCL1->Fill(19,ncl1);
+    fHistNEventsVsWhyRej->Fill(19,wrej);
     fHistNTrackletsAfterPileup->Fill(ntrkl);
     fHistNCL1AfterPileup->Fill(ncl1);
   }
@@ -450,10 +496,12 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
       }
     }
     fHistCentrality->Fill(centr);
+    fHistCL0vsV0MCentrality->Fill(centr,centrCL0);
     fHistNTracksTPCoutVsV0Cent->Fill(centr,ntracksTPCout);
     fHistNTracksFB4VsV0Cent->Fill(centr,ntracksFB4);
     fHistNTracksBC0VsV0Cent->Fill(centr,ntracksBC0);
     fHistNTrackletsVsV0Cent->Fill(centr,ntrkl);
+    fHistNTrackletsGoldenVsV0Cent->Fill(centr,nTrackletsGolden);
     fHistNTracksTPCoutVsNTracklets->Fill(ntracksTPCout,ntrkl);
     fHistNTracksFB4VsNTracklets->Fill(ntracksFB4,ntrkl);
     fHistNTracksBC0VsNTracksFB4->Fill(ntracksBC0,ntracksFB4);

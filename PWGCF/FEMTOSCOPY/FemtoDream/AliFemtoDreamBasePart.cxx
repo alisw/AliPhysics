@@ -13,6 +13,7 @@
 ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
     : fIsReset(false),
       fGTI(0),
+      fVGTI(0),
       fTrackBufferSize(0),
       fP(),
       fMCP(),
@@ -29,6 +30,7 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
       fIDTracks(0),
       fCharge(0),
       fCPA(0),
+      fInvMass(0),
       fOrigin(kUnknown),
       fPDGCode(0),
       fMCPDGCode(0),
@@ -44,6 +46,7 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
 AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
     : fIsReset(part.fIsReset),
       fGTI(part.fGTI),
+      fVGTI(part.fVGTI),
       fTrackBufferSize(part.fTrackBufferSize),
       fP(part.fP),
       fMCP(part.fMCP),
@@ -60,6 +63,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fIDTracks(part.fIDTracks),
       fCharge(part.fCharge),
       fCPA(part.fCPA),
+      fInvMass(part.fInvMass),
       fOrigin(part.fOrigin),
       fPDGCode(part.fPDGCode),
       fMCPDGCode(part.fMCPDGCode),
@@ -79,6 +83,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   }
   fIsReset = obj.fIsReset;
   fGTI = 0;
+  fVGTI = 0;
   fTrackBufferSize = obj.fTrackBufferSize;
   fP = obj.fP;
   fMCPt = obj.fMCPt;
@@ -93,6 +98,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fIDTracks = obj.fIDTracks;
   fCharge = obj.fCharge;
   fCPA = obj.fCPA;
+  fInvMass = obj.fInvMass;
   fOrigin = obj.fOrigin;
   fPDGCode = obj.fPDGCode;
   fMCPDGCode = obj.fMCPDGCode;
@@ -111,6 +117,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
     const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent)
     : fIsReset(false),
       fGTI(0),
+      fVGTI(0),
       fTrackBufferSize(0),
       fP(TVector3(mother.GetPx(), mother.GetPy(), mother.GetPz())),
       fMCP(TVector3(mother.GetPxMC(), mother.GetPyMC(), mother.GetPzMC())),
@@ -127,6 +134,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fIDTracks(),
       fCharge(0),
       fCPA(0),
+      fInvMass(0),
       fOrigin(kUnknown),
       fPDGCode(mother.GetPDGCode()),
       fMCPDGCode(mother.GetPDGCode()),
@@ -213,6 +221,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
     const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent)
     : fIsReset(false),
       fGTI(0),
+      fVGTI(0),
       fTrackBufferSize(0),
       fP(TVector3(daughter.GetPx(), daughter.GetPy(), daughter.GetPz())),
       fMCP(
@@ -230,6 +239,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fIDTracks(),
       fCharge(0),
       fCPA(0),
+      fInvMass(0),
       fOrigin(kUnknown),
       fPDGCode(daughter.GetPDGcode()),
       fMCPDGCode(daughter.GetPDGcode()),
@@ -293,6 +303,91 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   }
 }
 
+AliFemtoDreamBasePart::AliFemtoDreamBasePart(
+    const AliAODConversionPhoton *gamma, const AliVTrack *posTrack,
+    const AliVTrack *negTrack, const AliVEvent *inputEvent)
+    : fIsReset(false),
+      fGTI(0),
+      fVGTI(0),
+      fTrackBufferSize(0),
+      fP(TVector3(gamma->GetPx(), gamma->GetPy(), gamma->GetPz())),
+      fMCP(),
+      fPt(gamma->GetPhotonPt()),
+      fMCPt(0),
+      fP_TPC(0),
+      fEta(),
+      fTheta(),
+      fMCTheta(),
+      fPhi(),
+      fPhiAtRadius(0),
+      fXYZAtRadius(0),
+      fMCPhi(),
+      fIDTracks(),
+      fCharge(0),
+      fCPA(0),
+      fInvMass(gamma->GetPhotonMass()),
+      fOrigin(kUnknown),
+      fPDGCode(),
+      fMCPDGCode(),
+      fPDGMotherWeak(0),
+      fMotherID(-1),
+      fMotherPDG(0),
+      fEvtNumber(0),
+      fIsMC(-1),
+      fUse(true),
+      fIsSet(true),
+      fEvtMultiplicity(-1) {
+  double momV0[3] = {0, 0, 0};
+  momV0[0] = gamma->Px();
+  momV0[1] = gamma->Py();
+  momV0[2] = gamma->Pz();
+
+  // Recalculated V0 Position vector
+  double PosV0[3] = {
+      gamma->GetConversionX() - inputEvent->GetPrimaryVertex()->GetX(),
+      gamma->GetConversionY() - inputEvent->GetPrimaryVertex()->GetY(),
+      gamma->GetConversionZ() - inputEvent->GetPrimaryVertex()->GetZ()};
+
+  double momV02 = fP[0] * fP[0] + fP[1] * fP[1] + fP[2] * fP[2];
+  double PosV02 =
+      PosV0[0] * PosV0[0] + PosV0[1] * PosV0[1] + PosV0[2] * PosV0[2];
+
+  double cosinePointingAngle =
+      (momV02 * PosV02 > 0.0)
+          ? (PosV0[0] * momV0[0] + PosV0[1] * momV0[1] + PosV0[2] * momV0[2]) /
+                TMath::Sqrt(momV02 * PosV02)
+          : -999.f;
+  fCPA = cosinePointingAngle;
+
+  const int posLabel = gamma->GetTrackLabelPositive();
+  const int negLabel = gamma->GetTrackLabelNegative();
+  fIDTracks.push_back(posLabel);
+  fIDTracks.push_back(negLabel);
+
+  fEta.push_back(gamma->GetPhotonEta());
+  fEta.push_back(posTrack->Eta());
+  fEta.push_back(negTrack->Eta());
+
+  fTheta.push_back(gamma->GetPhotonTheta());
+  fTheta.push_back(posTrack->Theta());
+  fTheta.push_back(negTrack->Theta());
+
+  fPhi.push_back(gamma->GetPhotonPhi());
+  fPhi.push_back(posTrack->Phi());
+  fPhi.push_back(negTrack->Phi());
+
+  std::vector<float> phiAtRadiiPos;
+  std::vector<float> phiAtRadiiNeg;
+  PhiAtRadii(posTrack, inputEvent->GetMagneticField(), phiAtRadiiPos);
+  PhiAtRadii(negTrack, inputEvent->GetMagneticField(), phiAtRadiiNeg);
+  fPhiAtRadius.push_back(phiAtRadiiPos);
+  fPhiAtRadius.push_back(phiAtRadiiNeg);
+
+  fCharge.push_back(posTrack->Charge() + negTrack->Charge());
+  fCharge.push_back(posTrack->Charge());
+  fCharge.push_back(negTrack->Charge());
+}
+
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {}
 
 void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
@@ -329,4 +424,18 @@ void AliFemtoDreamBasePart::ResetMCInfo() {
   this->fIsSet = false;
   this->SetUse(false);
   this->fIsReset = true;
+}
+
+void AliFemtoDreamBasePart::PhiAtRadii(const AliVTrack *track,
+                                       const float bfield,
+                                       std::vector<float> &tmpVec) {
+  float TPCradii[9] = {85., 105., 125., 145., 165., 185., 205., 225., 245.};
+  float phi0 = track->Phi();
+  ;
+  float pt = track->Pt();
+  float chg = track->Charge();
+  for (int radius = 0; radius < 9; radius++) {
+    tmpVec.push_back(phi0 - TMath::ASin(0.1 * chg * bfield * 0.3 *
+                                        TPCradii[radius] * 0.01 / (2. * pt)));
+  }
 }

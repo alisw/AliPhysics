@@ -123,6 +123,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetTrackMatchingDeltaPhiMax(Double_t dphi)           { fTrackMatchingDeltaPhiMax = dphi; }
   void SetPlotDCal(Bool_t b)                                { fPlotDCal = b; }
   void SetDoJetMatchingGeometrical(Bool_t b)                { fDoJetMatchingGeometrical = b; }
+  void SetDoDifferentialRM(Bool_t b)                        { fDoDifferentialRM = b; }
   void SetDoJetMatchingMCFraction(Bool_t b)                 { fDoJetMatchingMCFraction = b; }
   void SetRequireMatchedJetAccepted(Bool_t b)               { fRequireMatchedJetAccepted = b; }
   void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
@@ -165,6 +166,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        ComputeJetMatches(AliJetContainer* jetCont1, AliJetContainer* jetCont2, Bool_t bUseJetCont2Acceptance);
   void                        SetJetClosestCandidate(AliEmcalJet* jet1, AliEmcalJet* jet2);
   const AliEmcalJet*          GetMatchedPartLevelJet(const AliEmcalJet* jet, Double_t detJetPt);
+  Double_t                    GetAngularity(const AliEmcalJet* jet);
+  Double_t                    GetRelativePhi(Double_t mphi, Double_t vphi);
   
   // Utility functions
   Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
@@ -213,6 +216,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   // Embedding parameters
   Bool_t                      fDoJetMatchingGeometrical;            ///< Do geometrical matching between det-level and truth-level jet container
   Bool_t                      fDoJetMatchingMCFraction;             ///< Do MC-fraction based matching using PbPb det-level, pp det-level, and pp truth-level jet containers
+  Bool_t                      fDoDifferentialRM;                    ///< This allows a differential RM depenent on the angularity of the particle lvl jet
   AliEmcalEmbeddingQA         fEmbeddingQA;                         //!<! QA hists for embedding (will only be added if embedding)
   AliJetContainer*            fMCJetContainer;                      //!<!Pointer to jet container of truth-level jets
   AliJetContainer*            fDetJetContainer;                     //!<!Pointer to jet container of det-level jets

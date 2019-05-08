@@ -469,15 +469,15 @@ cout << "FIT PLOTS " << Form("%s/FitPlots.C",localcode.Data()) << endl;
       else {
 	strsystnametempl=strsystem;
       }
-        cout << "Templates for on pp... Loading Perugia0, Perugia2010, Perugia2011" << endl;
-        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia0=Form("%s/%sCorrelationPlotsPerugia0Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        cout << "Templates for on pp... Loading Perugia2011, Perugia2010, PYTHIA8" << endl;
+        templPromptPerugia0=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia0=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
 
         templPromptPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
         templPerugia2010=Form("%s/%sCorrelationPlotsPerugia2010Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
 
-        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
-        templPerugia2011=Form("%s/%sCorrelationPlotsPerugia2011Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPromptPerugia2011=Form("%s/%sCorrelationPlotsPYTHIA8Pt%sfromC%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
+        templPerugia2011=Form("%s/%sCorrelationPlotsPYTHIA8Pt%sfromB%.0fTo%.0f_ptAssall%.1fto%.1f_DeltaEta10.root",strdirTempl.Data(),strsystnametempl.Data(),strmes.Data(),ptmin,ptmax,ptassoc,ptassocMax);
     }
     
     else if(system ==1){

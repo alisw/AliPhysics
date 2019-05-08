@@ -111,6 +111,7 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   fEfficiencyVariableIndex(-1),
   fVerboseFlag(kFALSE),
   fUseMixingVars(kFALSE),
+  fIntegrateDeltaEta(),
   fResonanceFits(0x0),
   fOptionBkgMethod(kBkgNone),
   fBkgFitFunction(0x0),
@@ -124,6 +125,7 @@ AliCorrelationExtraction::AliCorrelationExtraction() :
   //
   // default constructor
   //
+  for (Int_t i=0; i<kNBackgroundMethods; ++i) fIntegrateDeltaEta[i] = kFALSE;
   fMassSignalRange[0] = -1;
   fMassSignalRange[1] = -1;
   for(Int_t i=0; i<kNMaxVariables; ++i) {
@@ -242,6 +244,13 @@ void AliCorrelationExtraction::SetPairHistograms(THnF* sepp/*=0x0*/, THnF* semm/
   fMEOSPair = meos;
   fMEPPPair = mepp;
   fMEMMPair = memm;
+  fProcessDone = kFALSE;
+}
+
+//_______________________________________________________________________________
+void AliCorrelationExtraction::SetBackgroundMethod(Int_t method, Bool_t integrateDeltaEta/*=kFALSE*/) {
+  fOptionBkgMethod = method;
+  if (fOptionBkgMethod>-1 && integrateDeltaEta) fIntegrateDeltaEta[fOptionBkgMethod] = kTRUE;
   fProcessDone = kFALSE;
 }
 
@@ -615,14 +624,14 @@ Bool_t AliCorrelationExtraction::NormalizeToNearSidePeak(TH2D* h) {
   if (!h) return kFALSE;
   Double_t signsA[4]  = {1.0, 1.0, -1.0, -1.0};
   Double_t signsB[4]  = {1.0, -1.0, -1.0, 1.0};
-  std::vector<Double_t> binNumbers;
+  std::vector<Int_t> binNumbers;
   for (Int_t i=0; i<4; i++) {
     Double_t tempX = 0.+signsA[i]*EPSILON;
     Double_t tempY = 0.+signsB[i]*EPSILON;
     if (h->GetXaxis()->GetXmin()>tempX || h->GetXaxis()->GetXmax()<tempX) continue;
     if (h->GetYaxis()->GetXmin()>tempY || h->GetYaxis()->GetXmax()<tempY) continue;
     Int_t tempBin = h->FindBin(tempX, tempY);
-    if(std::find(binNumbers.begin(), binNumbers.end(), tempBin) != binNumbers.end()) continue;
+    if (std::find(binNumbers.begin(), binNumbers.end(), tempBin) != binNumbers.end()) continue;
     binNumbers.push_back(tempBin);
   }
   if (!binNumbers.size()) return kFALSE;
@@ -849,6 +858,7 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
 Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
   //
   // calculate background and signal correlation from fitting method
+  // TODO: add fit range for inv. mass
   //
   
   // calculate inclusive correlation in inv. mass slices
@@ -856,7 +866,9 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
   else if (fSEOSSparse) fInclusiveCF3D = (TH3D*)fSEOSSparse->Projection(fMassVariableIndex, fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
   Int_t nMassBins = fInclusiveCF3D->GetNbinsX();
   Int_t nPhiBins  = fInclusiveCF3D->GetNbinsY();
+  if (fIntegrateDeltaEta[kBkgFitting]) fInclusiveCF3D = (TH3D*)fInclusiveCF3D->RebinZ(fInclusiveCF3D->GetNbinsZ());
   Int_t nEtaBins  = fInclusiveCF3D->GetNbinsZ();
+
   THnBase*  seosthnftmp = NULL;
   THnBase*  meosthnftmp = NULL;
   TH2D*     seostmp     = NULL;
@@ -884,10 +896,10 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
       meostmp = (TH2D*)meosthnftmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
       seostmp->SetName(Form("projSEOS_%.6f", gRandom->Rndm()));
       meostmp->SetName(Form("projMEOS_%.6f", gRandom->Rndm()));
-      
+
       // normalize same event
       if (fDeltaPhiVariable==AliReducedVarManager::kDeltaPhiSym) seostmp->Scale(1./2.);  // normalize to symmetric delta phi range
-      if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) seostmp->Scale(1./2.);  // normalize to absolute delta eta range, NOTE: do we need this?
+      if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) seostmp->Scale(1./2.);  // normalize to absolute delta eta range
       
       // normalize mixed event to near-side peak
       Bool_t meosNormFlag = NormalizeToNearSidePeak(meostmp);
@@ -906,6 +918,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
       CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, seosthnftmp, meosthnftmp, inclCF2Dtmp);
       inclCF2Dtmp->SetName(Form("inclCF2D_%.6f", gRandom->Rndm()));
     }
+    if (fIntegrateDeltaEta[kBkgFitting]) inclCF2Dtmp = (TH2D*)inclCF2Dtmp->RebinX(inclCF2Dtmp->GetNbinsX());
 
     // fill 3D inclusive correlation histogram
     for (Int_t phiBin=1; phiBin<=nPhiBins; ++phiBin) {
@@ -929,16 +942,12 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
   }
   
   // define signal and background correlation histogram
-  fBackgroundCF2D = (TH2D*)fInclusiveCF2D->Clone("backgroundCF_2D");
-  fSignalCF2D     = (TH2D*)fInclusiveCF2D->Clone("signalCF_2D");
-  for (Int_t phiBin=1; phiBin<=nPhiBins; ++phiBin) {
-    for (Int_t etaBin=1; etaBin<=nEtaBins; ++etaBin) {
-      fBackgroundCF2D->SetBinContent( etaBin, phiBin, 0.);
-      fBackgroundCF2D->SetBinError(   etaBin, phiBin, 0.);
-      fSignalCF2D->SetBinContent(     etaBin, phiBin, 0.);
-      fSignalCF2D->SetBinError(       etaBin, phiBin, 0.);
-    }
-  }
+  fBackgroundCF2D = (TH2D*)fInclusiveCF3D->Project3D("yzoe");
+  fBackgroundCF2D->SetName("backgroundCF_2D");
+  fBackgroundCF2D->Reset("ICESM");
+  fSignalCF2D = (TH2D*)fInclusiveCF3D->Project3D("yzoe");
+  fSignalCF2D->SetName("signalCF_2D");
+  fSignalCF2D->Reset("ICESM");
 
   // fit inv. mass using specified background ranges
   for (Int_t phiBin=0; phiBin<nPhiBins; ++phiBin) {
@@ -1009,7 +1018,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
                                                                                         sigPlusBkgErr);
       Double_t sig            = sigPlusBkg - bkg;
       Double_t sigErr         = TMath::Sqrt(sigPlusBkgErr*sigPlusBkgErr + bkgErr*bkgErr);
-      // alternatively take signal correlation from inv. mass dist.
+      // NOTE: signal correlation could also be taken directly from inv. mass dist. after bkg. sub
       //Double_t sigErr = 0.;
       //Double_t sig    = fSignalCF1DInvMass[phiBin][etaBin]->IntegralAndError(fSignalCF1DInvMass[phiBin][etaBin]->FindBin(fMassSignalRange[0]+EPSILON),
       //                                                                       fSignalCF1DInvMass[phiBin][etaBin]->FindBin(fMassSignalRange[1]-EPSILON),
@@ -1019,10 +1028,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
     }
   }
   
-  // normalize background and signal correlation to bin width (delta eta, delta phi)
-  fBackgroundCF2D->Scale( 1., "width");
-  fSignalCF2D->Scale(     1., "width");
-
   // normalize background and signal correlation to number of triggers
   if (!fTrigValSig[kSig] || !fTrigValSig[kBkg]) {
     cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() Fatal: There was an issue with the J/psi signal extraction!" << endl;
@@ -1049,9 +1054,18 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
     }
   }
   
+  // normalize background and signal correlation to bin width (delta eta, delta phi)
+  fBackgroundCF2D->Scale( 1., "width");
+  fSignalCF2D->Scale(     1., "width");
+
   // project 1D correlation from 2D
-  fBackgroundCF1D = ProjectToDeltaPhi(fBackgroundCF2D,  "backgroundCF_1D");
-  fSignalCF1D     = ProjectToDeltaPhi(fSignalCF2D,      "signalCF_1D");
+  if (!fIntegrateDeltaEta[kBkgFitting]) {
+    fBackgroundCF1D = ProjectToDeltaPhi(fBackgroundCF2D,  "backgroundCF_1D");
+    fSignalCF1D     = ProjectToDeltaPhi(fSignalCF2D,      "signalCF_1D");
+  } else {
+    fBackgroundCF1D = (TH1D*)fBackgroundCF2D->ProjectionY("backgroundCF_1D",  1, fBackgroundCF2D->GetNbinsX(),  "e");
+    fSignalCF1D     = (TH1D*)fSignalCF2D->ProjectionY(    "signalCF_1D",      1, fSignalCF2D->GetNbinsX(),      "e");
+  }
 
   delete seosthnftmp;
   delete meosthnftmp;
@@ -1937,11 +1951,14 @@ void AliCorrelationExtraction::PrintUserOptions() {
 
   if (fMassVariableIndexPair>=0) cout << "LS pair mass variable set: index = " << fMassVariableIndexPair << endl;
   cout << "general user options: +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-  cout << "fVerboseFlag     = " << fVerboseFlag << endl;
-  cout << "fUseMixingVars   = " << fUseMixingVars << endl;
-  cout << "fResonanceFits   = " << fResonanceFits << " (" << fResonanceFits->GetName() << ")" << endl;
-  cout << "fOptionBkgMethod = " << fOptionBkgMethod << endl;
-  if (fBkgFitFunction) cout << "fBkgFitFunction  = " << fBkgFitFunction << " (" << fBkgFitFunction->GetName() << ")" << endl;
+  cout << "fVerboseFlag       = " << fVerboseFlag << endl;
+  cout << "fUseMixingVars     = " << fUseMixingVars << endl;
+  cout << "fIntegrateDeltaEta = ";
+  for (Int_t i=0; i<kNBackgroundMethods; ++i) cout << fIntegrateDeltaEta[i] << " ";
+  cout << endl;
+  cout << "fResonanceFits     = " << fResonanceFits << " (" << fResonanceFits->GetName() << ")" << endl;
+  cout << "fOptionBkgMethod   = " << fOptionBkgMethod << endl;
+  if (fBkgFitFunction) cout << "fBkgFitFunction    = " << fBkgFitFunction << " (" << fBkgFitFunction->GetName() << ")" << endl;
   cout << "mass ranges: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
   cout << "signal mass range      = [" << fMassSignalRange[0] << ", " << fMassSignalRange[1] << "]" << endl;
   cout << "fNBackgroundMassRanges = " << fNBackgroundMassRanges << endl;

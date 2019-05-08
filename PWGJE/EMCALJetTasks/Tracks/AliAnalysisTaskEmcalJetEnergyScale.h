@@ -46,17 +46,22 @@ public:
   void SetNamePartJetContainer(const char *name) { fNameParticleJets = name; }
   void SetTriggerName(const char *name)          { fTriggerSelectionString = name; }
   void SetFractionResponseClosure(double fraction);
+  void SetFillHSparse(Bool_t doFill)             { fFillHSparse = doFill; }
 
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
     AliJetContainer::EJetType_t       jetType,
+    AliJetContainer::ERecoScheme_t    recoscheme,
     Double_t                          radius,
     Bool_t                            useDCAL,
-    const char *                      trigger
+    const char *                      namepartcont,
+    const char *                      trigger,
+    const char *                      suffix
   );
 
 protected:
   virtual void UserCreateOutputObjects();
   virtual Bool_t Run(); 
+  virtual Bool_t CheckMCOutliers();
   bool IsSelectEmcalTriggers(const TString &triggerstring) const;
 
 private:
@@ -66,6 +71,7 @@ private:
   TString                     fTriggerSelectionString;        ///< Trigger selection string
   TString                     fNameTriggerDecisionContainer;  ///< Global trigger decision container
   Double_t                    fFractionResponseClosure;       ///< Fraction of jets used for response in closure test
+  Bool_t                      fFillHSparse;                   ///< Fill THnSparses
   TRandom                     *fSampleSplitter;               //!<! Sample splitter
 
   AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &);

@@ -20,6 +20,7 @@
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
 #include "AliESDtrack.h"
+#include "AliRDHFCuts.h"
 
 ClassImp(AliAnalysisTaskSEHFSystPID)
 
@@ -43,6 +44,7 @@ fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fEta(-9999),
 fPDGcode(-1),
 fTag(0),
 fNsigmaMaxForTag(0.02),
@@ -63,7 +65,25 @@ fV0cuts(nullptr),
 fFillTreeWithNsigmaPIDOnly(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
-fPtMaxDownSampling(1.5)
+fPtMaxDownSampling(1.5),
+fDownSamplingOpt(0),
+fAODProtection(1),
+fRunNumberPrevEvent(-1),
+fEnableNsigmaTPCDataCorr(false),
+fSystNsigmaTPCDataCorr(AliAODPidHF::kNone),
+fMeanNsigmaTPCPionData{},
+fMeanNsigmaTPCKaonData{}, 
+fMeanNsigmaTPCProtonData{},
+fSigmaNsigmaTPCPionData{},
+fSigmaNsigmaTPCKaonData{},
+fSigmaNsigmaTPCProtonData{},
+fPlimitsNsigmaTPCDataCorr{},
+fNPbinsNsigmaTPCDataCorr(0),
+fEtalimitsNsigmaTPCDataCorr{},
+fNEtabinsNsigmaTPCDataCorr(0),
+fUseAliEventCuts(false),
+fAliEventCuts(),
+fApplyPbPbOutOfBunchPileupCuts()
 {
   //
   // default constructur
@@ -75,6 +95,15 @@ fPtMaxDownSampling(1.5)
     fHistNsigmaTPCvsPt[iHisto] = nullptr;
     fHistNsigmaTOFvsPt[iHisto] = nullptr;
   }
+
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
+    fPlimitsNsigmaTPCDataCorr[iP] = 0.;
+  }
+  for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
+  }
+  
+  fAliEventCuts.SetManualMode();
 }
 
 //________________________________________________________________________
@@ -97,6 +126,7 @@ fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fEta(-9999),
 fPDGcode(-1),
 fTag(0),
 fNsigmaMaxForTag(0.02),
@@ -117,7 +147,25 @@ fV0cuts(nullptr),
 fFillTreeWithNsigmaPIDOnly(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
-fPtMaxDownSampling(1.5)
+fPtMaxDownSampling(1.5),
+fDownSamplingOpt(0),
+fAODProtection(1),
+fRunNumberPrevEvent(-1),
+fEnableNsigmaTPCDataCorr(false),
+fSystNsigmaTPCDataCorr(AliAODPidHF::kNone),
+fMeanNsigmaTPCPionData{},
+fMeanNsigmaTPCKaonData{}, 
+fMeanNsigmaTPCProtonData{},
+fSigmaNsigmaTPCPionData{},
+fSigmaNsigmaTPCKaonData{},
+fSigmaNsigmaTPCProtonData{},
+fPlimitsNsigmaTPCDataCorr{},
+fNPbinsNsigmaTPCDataCorr(0),
+fEtalimitsNsigmaTPCDataCorr{},
+fNEtabinsNsigmaTPCDataCorr(0),
+fUseAliEventCuts(false),
+fAliEventCuts(),
+fApplyPbPbOutOfBunchPileupCuts()
 {
   //
   // standard constructur
@@ -129,6 +177,15 @@ fPtMaxDownSampling(1.5)
     fHistNsigmaTPCvsPt[iHisto] = nullptr;
     fHistNsigmaTOFvsPt[iHisto] = nullptr;
   }
+
+  for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
+    fPlimitsNsigmaTPCDataCorr[iP] = 0.;
+  }
+  for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
+    fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
+  }
+
+  fAliEventCuts.SetManualMode();
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -173,17 +230,21 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",8,-1.5,6.5);
+  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",12,-1.5,10.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"Pass Phys. Sel. + Trig");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"No vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Vertex contributors < 1");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"Without SPD vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"Error on zVertex>0.5");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"|zVertex|>10");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"Good Z vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"Mismatch AOD");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"Pass Phys. Sel. + Trig");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"No vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Vertex contributors < 1");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Without SPD vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Error on zVertex>0.5");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"|zVertex|>10");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"Good Z vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"Cent corr cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"V0mult vs. nTPC cls");  
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"Selected events");  
   fOutputList->Add(fHistNEvents);
 
   TString armenteronames[5] = {"All","K0s","Lambda","AntiLambda","Gamma"};
@@ -223,9 +284,10 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
     fPIDtree->Branch(PIDbranchnames[iVar].Data(),&fPIDNsigma[iVar],Form("%s/S",PIDbranchnames[iVar].Data()));
   }
   fPIDtree->Branch("pT",&fPt,"pT/s");
+  fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
+  fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
+  fPIDtree->Branch("eta",&fEta,"eta/S");
   if(!fFillTreeWithNsigmaPIDOnly) {
-    fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
-    fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
     fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
     fPIDtree->Branch("ToF",&fToF,"ToF/s");
     fPIDtree->Branch("NclusterTPC",&fTPCNcls,"NclusterTPC/b");
@@ -235,6 +297,10 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   }
   fPIDtree->Branch("tag",&fTag,"tag/b");
   if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/S");
+
+  if(fUseAliEventCuts) { //add QA plots if event cuts used
+    fAliEventCuts.AddQAplotsToList(fOutputList,true);
+  }
 
   // post data
   PostData(1, fOutputList);
@@ -258,6 +324,21 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   }
   fHistNEvents->Fill(-1);
 
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    int matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fHistNEvents->Fill(0);
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+
+  if(fUseAliEventCuts)
+    fAliEventCuts.AcceptEvent(fAOD); //for QA plots
+
   if(TMath::Abs(fAOD->GetMagneticField())<0.001) return;
 
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -278,13 +359,24 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     return;
   }
 
-  fHistNEvents->Fill(0);
+  fHistNEvents->Fill(1);
 
   if (!IsVertexAccepted()) {
-    fHistNEvents->Fill(1);
+    fHistNEvents->Fill(2);
     PostData(1, fOutputList);
     return;
   }
+
+  if(fUseAliEventCuts) {
+    int sel = IsEventSelectedWithAliEventCuts();
+    if(sel>0) {
+      fHistNEvents->Fill(sel);   
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+
+  fHistNEvents->Fill(10);   
 
   // load MC particles
   TClonesArray *arrayMC=0;
@@ -298,6 +390,13 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
 
   //get pid response
   if(!fPIDresp) fPIDresp = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+
+  //load data correction for NsigmaTPC, if enabled
+  if(fEnableNsigmaTPCDataCorr) {
+    if(fAOD->GetRunNumber()!=fRunNumberPrevEvent) {
+      AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fAOD->GetRunNumber(), fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
+    }
+  }
 
   // V0 selection
   if(fSystem==0) fV0cuts->SetMode(AliAODv0KineCuts::kPurity,AliAODv0KineCuts::kPP);
@@ -323,22 +422,24 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     //applying ESDtrackCut
     if(!fESDtrackCuts->IsSelected(track)) continue;
 
-    if(fEnabledDownSampling && track->Pt()<fPtMaxDownSampling) {
-      double pseudoRand = track->Pt()*1000.-(long)(track->Pt()*1000.);
-      if(pseudoRand>fFracToKeepDownSampling) continue;
+    if(fEnabledDownSampling && fFracToKeepDownSampling<1. && track->Pt()<fPtMaxDownSampling) {
+      double pseudoRand = track->Pt()*1000.-(long)(track->Pt()*1000);
+      if(fDownSamplingOpt==0 && pseudoRand>fFracToKeepDownSampling) continue; //keep tracks with pseudorand < fFracToKeepDownSampling
+      else if(fDownSamplingOpt==1 && pseudoRand<(1-fFracToKeepDownSampling)) continue; //keep tracks with pseudorand > 1-fFracToKeepDownSampling
     }
 
     fPt = ConvertFloatToUnsignedShort(track->Pt()*1000);
+    fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
+    fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
+    fEta = ConvertFloatToShort(track->Eta()*1000);
 
     if(!fFillTreeWithNsigmaPIDOnly) {
       //TPC variables
       fTPCNcls = static_cast<unsigned char>(track->GetTPCNcls());
-      fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
       fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*100);
       fTPCNclsPID = static_cast<unsigned char>(track->GetTPCsignalN());
       
       //TOF variables
-      fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
       fTrackLength = ConvertFloatToUnsignedShort(track->GetIntegratedLength()*10);
       fStartTimeRes = ConvertFloatToUnsignedShort(fPIDresp->GetTOFResponse().GetStartTimeRes(track->P())*100);
 
@@ -361,9 +462,26 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track) == AliPIDResponse::kDetPidOk) isTOFok = true;
 
     if(isTPCok) {
-      fPIDNsigma[0] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTPC(track,AliPID::kPion)*100);
-      fPIDNsigma[1] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon)*100);
-      fPIDNsigma[2] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton)*100);
+      float nSigmaTPCPion = fPIDresp->NumberOfSigmasTPC(track,AliPID::kPion);
+      float nSigmaTPCKaon = fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon);
+      float nSigmaTPCProton = fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton);
+      if(fEnableNsigmaTPCDataCorr) {
+        float meanPion = 0., meanKaon = 0., meanProton = 0., sigmaPion = 1., sigmaKaon = 1., sigmaProton = 1.;
+        GetNsigmaTPCMeanSigmaData(meanPion, sigmaPion, AliPID::kPion, track->GetTPCmomentum(), track->Eta());
+        GetNsigmaTPCMeanSigmaData(meanKaon, sigmaKaon, AliPID::kKaon, track->GetTPCmomentum(), track->Eta());
+        GetNsigmaTPCMeanSigmaData(meanProton, sigmaProton, AliPID::kProton, track->GetTPCmomentum(), track->Eta());
+
+        if(nSigmaTPCPion>-990.)
+          nSigmaTPCPion = (nSigmaTPCPion-meanPion) / sigmaPion;
+        if(nSigmaTPCKaon>-990.)
+          nSigmaTPCKaon = (nSigmaTPCKaon-meanKaon) / sigmaKaon;
+        if(nSigmaTPCProton>-990.)
+          nSigmaTPCProton = (nSigmaTPCProton-meanProton) / sigmaProton;
+      }
+
+      fPIDNsigma[0] = ConvertFloatToShort(nSigmaTPCPion*100);
+      fPIDNsigma[1] = ConvertFloatToShort(nSigmaTPCKaon*100);
+      fPIDNsigma[2] = ConvertFloatToShort(nSigmaTPCProton*100);
     }
     else for(int iVar=0; iVar<3; iVar++) fPIDNsigma[iVar] = numeric_limits<short>::min();
     if(isTOFok) {
@@ -427,6 +545,8 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
   idElectronFromGamma.clear();
   idKaonFromKinks.clear();
 
+  fRunNumberPrevEvent = fAOD->GetRunNumber();
+
   // Post output data
   PostData(1, fOutputList);
 }
@@ -437,27 +557,27 @@ bool AliAnalysisTaskSEHFSystPID::IsVertexAccepted()
   // function to check if a proper vertex is reconstructed and write z-position in vertexZ
   const AliAODVertex *vertex = fAOD->GetPrimaryVertex();
   if(!vertex){
-    fHistNEvents->Fill(1);
+    fHistNEvents->Fill(2);
     return false;
   }
   else{
     TString title=vertex->GetTitle();
     if(title.Contains("Z") || title.Contains("3D")) return false;
     if(vertex->GetNContributors()<1) {
-      fHistNEvents->Fill(2);
+      fHistNEvents->Fill(3);
       return false;
     }
   }
 
   const AliVVertex *vSPD = fAOD->GetPrimaryVertexSPD();
   if(!vSPD || (vSPD && vSPD->GetNContributors()<1)){
-    fHistNEvents->Fill(3);
+    fHistNEvents->Fill(4);
     return false;
   }
   else{
     double dz = vSPD->GetZ()-vertex->GetZ();
     if(TMath::Abs(dz)>0.5) {
-      fHistNEvents->Fill(4);
+      fHistNEvents->Fill(5);
       return false;
     }
     double covTrc[6],covSPD[6];
@@ -467,16 +587,16 @@ bool AliAnalysisTaskSEHFSystPID::IsVertexAccepted()
     double errTrc = TMath::Sqrt(covTrc[5]);
     double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
     if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) {
-      fHistNEvents->Fill(4);
+      fHistNEvents->Fill(5);
       return false;
     }
   }
 
   if(TMath::Abs(vertex->GetZ())>10.) {
-    fHistNEvents->Fill(5);
+    fHistNEvents->Fill(6);
     return false;
   }
-  fHistNEvents->Fill(6);
+  fHistNEvents->Fill(7);
 
   return true;
 }
@@ -679,4 +799,72 @@ unsigned short AliAnalysisTaskSEHFSystPID::ConvertFloatToUnsignedShort(float num
   else if(num<=static_cast<float>(numeric_limits<unsigned short>::min())) return numeric_limits<unsigned short>::min();
  
   return static_cast<unsigned short>(num);
+}
+
+//________________________________________________________________
+void AliAnalysisTaskSEHFSystPID::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta) {
+    
+  int bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
+  if(bin<0) bin=0; //underflow --> equal to min value
+  else if(bin>fNPbinsNsigmaTPCDataCorr-1) bin=fNPbinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
+
+  int etabin = TMath::BinarySearch(fNEtabinsNsigmaTPCDataCorr,fEtalimitsNsigmaTPCDataCorr,TMath::Abs(eta));
+  if(etabin<0) etabin=0; //underflow --> equal to min value
+  else if(etabin>fNEtabinsNsigmaTPCDataCorr-1) etabin=fNEtabinsNsigmaTPCDataCorr-1; //overflow --> equal to max value
+
+  switch(species) {
+    case AliPID::kPion: 
+    {
+      mean = fMeanNsigmaTPCPionData[etabin][bin];
+      sigma = fSigmaNsigmaTPCPionData[etabin][bin];
+      break;
+    }
+    case AliPID::kKaon: 
+    {
+      mean = fMeanNsigmaTPCKaonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCKaonData[etabin][bin];
+      break;
+    }
+    case AliPID::kProton: 
+    {
+      mean = fMeanNsigmaTPCProtonData[etabin][bin];
+      sigma = fSigmaNsigmaTPCProtonData[etabin][bin];
+      break;
+    }
+    default: 
+    {
+      mean = 0.;
+      sigma = 1.;
+      break;
+    }
+  }
+}
+
+//________________________________________________________________
+int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
+
+  int run = fAOD->GetRunNumber();
+  if(fAOD->GetRunNumber()!=fRunNumberPrevEvent) {
+    if(run >= 244917 && run <= 246994)
+      fAliEventCuts.SetupRun2PbPb();
+    else if(run >= 295369 && run <= 297624)
+      fAliEventCuts.SetupPbPb2018();
+  }
+  
+  // cut on correlations for out of bunch pileup in PbPb run2  
+  if(fApplyPbPbOutOfBunchPileupCuts==1){
+    if(!fAliEventCuts.PassedCut(AliEventCuts::kCorrelations))
+      return 8;
+  }
+  else if(fApplyPbPbOutOfBunchPileupCuts==2 && run >= 295369 && run <= 297624){
+    // Ionut cut on V0multiplicity vs. n TPC clusters (Pb-Pb 2018)
+    AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)fAOD)->GetVZEROData();
+    float mTotV0=v0data->GetMTotV0A()+v0data->GetMTotV0C();
+    int nTPCcls=((AliAODEvent*)fAOD)->GetNumberOfTPCClusters();
+    float mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
+    if(mTotV0<mV0TPCclsCut){
+      return 9;
+    }
+  }
+  return 0;
 }

@@ -57,6 +57,7 @@ AliAnalysisTaskHadronPhiCorr::AliAnalysisTaskHadronPhiCorr(const char *name, Boo
 fVevent(0),
 fPoolMgr(0x0),
 fLSPoolMgr(0x0),
+fTruePoolMgr(0x0),
 fHHPoolMgr(0x0),
 fESD(0),
 fAOD(0),
@@ -64,6 +65,9 @@ fpidResponse(0),
 fOutputList(0),
 fNevents(0),
 fNumTracks(0),
+fphiEff(0),
+fhEff(0),
+ftrigEff(0),
 fVtxZ(0),
 fVtxX(0),
 fVtxY(0),
@@ -102,6 +106,9 @@ fHHMixStatZVtx(0),
 fHHMixTrackStatZVtx(0),
 fHHNoMixEvents(0),
 fDphiHPhi(0),
+fDphiTrueHPhi(0),
+fDphiTrueHPhiMixed(0),
+fDphiTrueAcceptanceHPhi(0),
 fDphiHKK(0),
 fDphiHPhiMixed(0),
 fDphiHKKMixed(0),
@@ -121,6 +128,11 @@ fDphiHHMixed(0)
     MULT_LOW = multLow;
     MULT_HIGH = multHigh;
 
+    IS_MC_TRUE = kFALSE;
+    IS_MC_KAON = kFALSE;
+    IS_MC_KTRACK = kFALSE;
+    USE_ACCPT = kFALSE;
+
     KAON_ETA_CUT = 0.8;
     KAON_TPC_CUT = 3.0;
     KAON_TOF_CUT = 3.0;
@@ -137,6 +149,9 @@ fDphiHHMixed(0)
     CENT_ESTIMATOR = "V0A";
 
     fDphiHPhi = new THnSparseF*[Z_VTX_NBINS];
+    fDphiTrueHPhi = new THnSparseF*[Z_VTX_NBINS];
+    fDphiTrueHPhiMixed = new THnSparseF*[Z_VTX_NBINS];
+    fDphiTrueAcceptanceHPhi = new THnSparseF*[Z_VTX_NBINS];
     fDphiHKK = new THnSparseF*[Z_VTX_NBINS];
     fDphiHPhiMixed = new THnSparseF*[Z_VTX_NBINS];
     fDphiHKKMixed = new THnSparseF*[Z_VTX_NBINS];
@@ -149,6 +164,7 @@ AliAnalysisTaskHadronPhiCorr::AliAnalysisTaskHadronPhiCorr()
 fVevent(0),
 fPoolMgr(0x0),
 fLSPoolMgr(0x0),
+fTruePoolMgr(0x0),
 fHHPoolMgr(0x0),
 fESD(0),
 fAOD(0),
@@ -156,6 +172,9 @@ fpidResponse(0),
 fOutputList(0),
 fNevents(0),
 fNumTracks(0),
+fphiEff(0),
+fhEff(0),
+ftrigEff(0),
 fVtxZ(0),
 fVtxX(0),
 fVtxY(0),
@@ -194,6 +213,9 @@ fHHMixStatZVtx(0),
 fHHMixTrackStatZVtx(0),
 fHHNoMixEvents(0),
 fDphiHPhi(0),
+fDphiTrueHPhi(0),
+fDphiTrueHPhiMixed(0),
+fDphiTrueAcceptanceHPhi(0),
 fDphiHKK(0),
 fDphiHPhiMixed(0),
 fDphiHKKMixed(0),
@@ -209,6 +231,11 @@ fDphiHHMixed(0)
     // DefineOutput(1, TH1I::Class());
     DefineOutput(1, TList::Class());
     //DefineOutput(3, TTree::Class());
+
+    IS_MC_TRUE = kFALSE;
+    IS_MC_KAON = kFALSE;
+    IS_MC_KTRACK = kFALSE;
+    USE_ACCPT = kFALSE;
 
     IS_HH = kFALSE;
     MULT_LOW = 0.0;
@@ -230,6 +257,9 @@ fDphiHHMixed(0)
     CENT_ESTIMATOR = "V0A";
 
     fDphiHPhi = new THnSparseF*[Z_VTX_NBINS];
+    fDphiTrueHPhi = new THnSparseF*[Z_VTX_NBINS];
+    fDphiTrueAcceptanceHPhi = new THnSparseF*[Z_VTX_NBINS];
+    fDphiTrueHPhiMixed = new THnSparseF*[Z_VTX_NBINS];
     fDphiHKK = new THnSparseF*[Z_VTX_NBINS];
     fDphiHPhiMixed = new THnSparseF*[Z_VTX_NBINS];
     fDphiHKKMixed = new THnSparseF*[Z_VTX_NBINS];
@@ -247,16 +277,48 @@ AliAnalysisTaskHadronPhiCorr::~AliAnalysisTaskHadronPhiCorr()
     delete fDphiHKKMixed;
     delete fDphiHH;
     delete fDphiHHMixed;
+    delete fDphiTrueHPhi;
+    delete fDphiTrueHPhiMixed;
+    delete fDphiTrueAcceptanceHPhi;
 
     delete fPoolMgr;
     delete fLSPoolMgr;
     delete fHHPoolMgr;
 }
 //________________________________________________________________________
+void AliAnalysisTaskHadronPhiCorr::LoadEfficiencies(TFile* filename){
+    //TFile* effFile = TFile::Open(filename.Data());
+    TFile* effFile = filename;
+    //TFile* effFile = TFile::Open("/home/alidock/alirepos/utaustin/efficiency/fits_17f2bCENTTPC80efficiency.root");
+   /* if(!effFile){
+        printf("\n\n\nNo Efficiency File!!!\n\n\n");
+        AliFatal(Form("No Efficiency file was found at %s!", filename.Data()));
+    }
+   */
+    
+    fphiEff = (TF1*)(effFile->Get("phiFit")->Clone("fphiEff"));
+    if(!fphiEff){
+        AliFatal("No phi Eff found!!");
+    }
+
+    fhEff = (TF1*)(effFile->Get("hFit")->Clone("fhEff"));
+    if(!fhEff){
+        AliFatal("No h Eff found!!");
+    }
+    
+    ftrigEff = (TF1*)(effFile->Get("trigFit")->Clone("ftrigEff"));
+    if(!ftrigEff){
+        AliFatal("No trig Eff found!!");
+    }
+    
+    //printf("Testing Efficiencies before close: %f\n\n", fphiEff->Eval(3.21017));*/
+    //effFile->Close("R");
+    //printf("Testing Efficiencies after close: %f\n\n", fphiEff->Eval(3.21017));
+
+}
+//________________________________________________________________________
 void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
 {
-    //printf("\n!!!!!\n Starting UserCreateOutputObjects \n\n");
-    //fflush(stdout);
     // Create histograms
     // Called once
     AliDebug(3, "Creating Output Objects");
@@ -301,6 +363,8 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
     fLSPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
     fHHPoolMgr = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, Z_VTX_NBINS, vtxZBins);
     fHHPoolMgr->SetTargetValues(trackDepth, 0.1, 5);
+    fTruePoolMgr = new AliEventPoolManager(poolSize, trackDepth, numMultBins, multBins, Z_VTX_NBINS, vtxZBins);
+    fTruePoolMgr->SetTargetValues(trackDepth, 0.1, 5);
 
 
     ////////////////
@@ -384,6 +448,7 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
     Double_t trigMax[3] = {20.1, 6.28, 2.0};
 
     fTrigDist = new THnSparseF("fTrigDist", "Distribution for trigger particles", 3, trigBins, trigMin, trigMax);
+    fTrigDist->Sumw2();
     fOutputList->Add(fTrigDist);
 
      //Trigger Distribution for doing trigger particle scaling (same and mixed, hadron triggers for US or LS pairs are separate) 
@@ -426,14 +491,16 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
 
     
     // Additional Histograms for US and LS Kaon pairs:
-    Int_t bins[4] = {20, 80, 32, 32}; //pt, invmass, phi, eta
+    Int_t bins[4] = {20, 80, 32, 40}; //pt, invmass, phi, eta
     Double_t min[4] = {0.0, 0.99, 0, -2.0};
     Double_t max[4] = {10.0, 1.07, 6.28, 2.0};
  
     fKKUSDist = new THnSparseF("fkkUSDist", "Distribution for all US Kaon pairs", 4, bins, min, max);
+    fKKUSDist->Sumw2();
     fOutputList->Add(fKKUSDist);
 
     fKKLSDist = new THnSparseF("fkkLSDist", "Distribution for all LS Kaon pairs", 4, bins, min, max);
+    fKKLSDist->Sumw2();
     fOutputList->Add(fKKLSDist);
 
     fkplusPerEvent = new TH1D("fkplusPerEvent", "K^{+} per Event", 100, 0, 100);
@@ -450,27 +517,50 @@ void AliAnalysisTaskHadronPhiCorr::UserCreateOutputObjects()
   
     // Delta-phi histograms for different hadron-particle correlations (trigger pT, correlation pT, delta-phi, delta-eta, inv mass)
     Int_t dphi_bins[5]=    {10,   18,   16,    20,  80};
-    Double_t dphi_min[5] = { 2.0,  1.0, -1.57, -2.0, 0.99};
-    Double_t dphi_max[5] = {12.0, 10.0,  4.71,  2.0, 1.07};
+    Double_t dphi_min[5] = { 2.0,  1.0, -1.0*TMath::Pi()/2.0, -2.0, 0.99};
+    Double_t dphi_max[5] = {12.0, 10.0,  3.0*TMath::Pi()/2.0,  2.0, 1.07};
 
     for(int izvtx = 0; izvtx < Z_VTX_NBINS; izvtx++){
-        fDphiHPhi[izvtx] = new THnSparseF(Form("fDphiHPhiz%i", izvtx), "Hadron-#Phi #Delta#phi correlations", 5, dphi_bins, dphi_min, dphi_max);
-        fOutputList->Add(fDphiHPhi[izvtx]);
 
-        fDphiHKK[izvtx] = new THnSparseF(Form("fDphiHKKz%i", izvtx), "Hadron-#KK likesign #Delta#phi correlations", 5, dphi_bins, dphi_min, dphi_max);
-        fOutputList->Add(fDphiHKK[izvtx]);
+        if(IS_MC_TRUE){
+            fDphiTrueHPhi[izvtx] = new THnSparseF(Form("fDphiTrueHPhiz%i", izvtx), "MC True Hadron-#phi Correlations", 5, dphi_bins, dphi_min, dphi_max);
+            fDphiTrueHPhi[izvtx]->Sumw2();
+            fOutputList->Add(fDphiTrueHPhi[izvtx]);
 
-        fDphiHPhiMixed[izvtx] = new THnSparseF(Form("fDphiHPhiMixedz%i", izvtx), "Hadron-#Phi #Delta#phi mixed event Correlations", 5, dphi_bins, dphi_min, dphi_max);
-        fOutputList->Add(fDphiHPhiMixed[izvtx]);
+            fDphiTrueAcceptanceHPhi[izvtx] = new THnSparseF(Form("fDphiTrueAcceptanceHPhiz%i", izvtx), "MC TrueAcceptance Hadron-#phi Correlations", 5, dphi_bins, dphi_min, dphi_max);
+            fDphiTrueAcceptanceHPhi[izvtx]->Sumw2();
+            fOutputList->Add(fDphiTrueAcceptanceHPhi[izvtx]);
 
-        fDphiHKKMixed[izvtx] = new THnSparseF(Form("fDphiHKKMixedz%i", izvtx), "Hadron-#KK likesign #Delta#phi mixed event Correlations", 5, dphi_bins, dphi_min, dphi_max);
-        fOutputList->Add(fDphiHKKMixed[izvtx]);
+
+            fDphiTrueHPhiMixed[izvtx] = new THnSparseF(Form("fDphiTrueHPhiMixedz%i", izvtx), "True Hadron-#phi #Delta#phi mixed event Correlations", 5, dphi_bins, dphi_min, dphi_max);
+            fDphiTrueHPhiMixed[izvtx]->Sumw2();
+            fOutputList->Add(fDphiTrueHPhiMixed[izvtx]);
+
+        }else{
+            fDphiHPhi[izvtx] = new THnSparseF(Form("fDphiHPhiz%i", izvtx), "Hadron-#phi #Delta#phi correlations", 5, dphi_bins, dphi_min, dphi_max);
+            fDphiHPhi[izvtx]->Sumw2();
+            fOutputList->Add(fDphiHPhi[izvtx]);
+
+            fDphiHKK[izvtx] = new THnSparseF(Form("fDphiHKKz%i", izvtx), "Hadron-#KK likesign #Delta#phi correlations", 5, dphi_bins, dphi_min, dphi_max);
+            fDphiHKK[izvtx]->Sumw2();
+            fOutputList->Add(fDphiHKK[izvtx]);
+
+            fDphiHPhiMixed[izvtx] = new THnSparseF(Form("fDphiHPhiMixedz%i", izvtx), "Hadron-#phi #Delta#phi mixed event Correlations", 5, dphi_bins, dphi_min, dphi_max);
+            fDphiHPhiMixed[izvtx]->Sumw2();
+            fOutputList->Add(fDphiHPhiMixed[izvtx]);
+
+            fDphiHKKMixed[izvtx] = new THnSparseF(Form("fDphiHKKMixedz%i", izvtx), "Hadron-#KK likesign #Delta#phi mixed event Correlations", 5, dphi_bins, dphi_min, dphi_max);
+            fDphiHKKMixed[izvtx]->Sumw2();
+            fOutputList->Add(fDphiHKKMixed[izvtx]);
+        }
 
         fDphiHH[izvtx] = new THnSparseF(Form("fDphiHHz%i", izvtx), "Hadron-Hadron correlations", 4, dphi_bins, dphi_min, dphi_max);
+        fDphiHH[izvtx]->Sumw2();
         fOutputList->Add(fDphiHH[izvtx]);
 
-        fDphiHHMixed[izvtx] = new THnSparseF(Form("fDPhiHHMixedz%i", izvtx), "Hadron-Hadron mixed event correlations", 4, dphi_bins, dphi_min, dphi_max);
-        fOutputList->Add(fDphiHHMixed[izvtx]);
+        fDphiHHMixed[izvtx] = new THnSparseF(Form("fDphiHHMixedz%i", izvtx), "Hadron-Hadron mixed event correlations", 4, dphi_bins, dphi_min, dphi_max);
+        fDphiHHMixed[izvtx]->Sumw2();
+        fOutputList->Add(fDphiHHMixed[izvtx]); 
     }
 
     PostData(1,fOutputList);
@@ -482,6 +572,56 @@ Bool_t AliAnalysisTaskHadronPhiCorr::MakeCorrelations(Int_t triggerIndex, AliVPa
 
     Double_t dphi_point[5];
     AliPhiContainer phi;
+    //for MC true case, change triggerIndex to trigger stack position
+    if(IS_MC_TRUE || IS_MC_KAON){
+        AliVParticle *vpart = dynamic_cast<AliVParticle*>(fVevent->GetTrack(triggerIndex));
+        AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(vpart);
+        Int_t tracklabel = aodtrack->GetLabel();
+        if(tracklabel < 0) tracklabel = -99;
+        triggerIndex = tracklabel;
+    }
+
+    /*for(int iphi = 0; iphi < phiVec.size(); iphi++){
+        phi = phiVec[iphi];
+        if(triggerIndex == phi.daughter1TrackNum || triggerIndex == phi.daughter2TrackNum) return kTRUE; //skip if trigger hadron is one of the daughter particles
+    }*/
+
+    dphi_point[0] = trigger->Pt();
+    for(int iphi = 0; iphi < phiVec.size(); iphi++){
+        phi = phiVec[iphi];
+        if(triggerIndex == phi.daughter1TrackNum || triggerIndex == phi.daughter2TrackNum) continue;
+        dphi_point[1] = phi.particle.Pt();
+        dphi_point[2] = trigger->Phi() - phi.particle.Phi();
+        if(dphi_point[2] < -TMath::Pi()/2.0){
+            dphi_point[2] += 2.0*TMath::Pi();
+        }else if(dphi_point[2] > 3.0*TMath::Pi()/2.0){
+            dphi_point[2] -= 2.0*TMath::Pi();
+        }
+        dphi_point[3] = trigger->Eta() - phi.particle.Eta();
+        //dphi_point[4] = zVtx;
+        dphi_point[4] = phi.particle.M();
+
+        Double_t weight = 1.0;
+        if(!IS_MC_TRUE && !IS_MC_KAON && fphiEff!=0){
+            if((phi.particle.Pt() > 1.0 && phi.particle.Pt() < 8.0) && trigger->Pt() > 3.0 && trigger->Pt() < 9.0){
+                weight = 1.0/fphiEff->Eval(phi.particle.Pt());
+                weight = weight*(1.0/ftrigEff->Eval(trigger->Pt()));
+                //weight = 21.0;
+            }
+        }else if(IS_MC_KAON && ftrigEff!=0){
+            weight = weight*1.0/ftrigEff->Eval(trigger->Pt());
+        }
+        fDphi->Fill(dphi_point, weight);
+    }
+    return kFALSE;
+}
+
+//___________________________________________________________________________
+Bool_t AliAnalysisTaskHadronPhiCorr::MakeCorrelations(Int_t triggerIndex, AliAODMCParticle *trigger, std::vector<AliPhiContainer> phiVec, THnSparse *fDphi, Double_t zVtx){
+
+    Double_t dphi_point[5];
+    AliPhiContainer phi;
+        
     for(int iphi = 0; iphi < phiVec.size(); iphi++){
         phi = phiVec[iphi];
         if(triggerIndex == phi.daughter1TrackNum || triggerIndex == phi.daughter2TrackNum) return kTRUE; //skip if trigger hadron is one of the daughter particles
@@ -533,7 +673,16 @@ void AliAnalysisTaskHadronPhiCorr::MakeMixCorrelations(AliPhiContainer* phi, THn
             dphi_point[3] = hadron->Eta() - phi->particle.Eta();
             //dphi_point[4] = zVtx;
             dphi_point[4] = phi->particle.M();
-            fDphiMixed->Fill(dphi_point);
+
+            Double_t weight = 1.0;
+            if(!IS_MC_TRUE && !IS_MC_KAON && fphiEff!=0 && ftrigEff!=0){
+                if((phi->particle.Pt() > 1.0 && phi->particle.Pt() < 8.0) && hadron->Pt() > 3.0){
+                    weight = 1.0/fphiEff->Eval(phi->particle.Pt());
+                    weight = weight*(1.0/ftrigEff->Eval(hadron->Pt()));
+                    //weight = 21.0;
+                }
+            }
+            fDphiMixed->Fill(dphi_point, weight);
         }
     }
     if(isLS){
@@ -582,7 +731,12 @@ void AliAnalysisTaskHadronPhiCorr::MakeHHMixCorrelations(AliCFParticle *assocPar
                 }
                 dphi_point[3] = hadron->Eta() - assocPart->Eta();
                 //dphi_point[4] = zVtx;
-                fDphiMixed->Fill(dphi_point);
+                Double_t weight = 1.0;
+                if(fhEff !=0 && ftrigEff != 0){
+                    weight = 1.0/fhEff->Eval(assocPart->Pt());
+                    weight = weight*(1.0/ftrigEff->Eval(hadron->Pt()));
+                }
+                fDphiMixed->Fill(dphi_point, weight);
             }
         }
     }
@@ -694,6 +848,8 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
 
     //Initialize the vectors/points that will be used to fill the histograms
     std::vector<AliPhiContainer> phiCandidates;
+    std::vector<AliPhiContainer> truePhi;
+    std::vector<AliPhiContainer> truePhiAcceptance;
     std::vector<AliPhiContainer> phiLikeSignCandidates;
     std::vector<AliKaonContainer> kPlusList;
     std::vector<AliKaonContainer> kMinusList;
@@ -708,196 +864,289 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
     AliAODTrack *aKaonTrack = 0x0;
     AliVParticle *vKaonTrack = 0x0;
 
-    /* First Loop - Filling two vector for all Kaons (plus and minus) */
-    for(Int_t itrack = 0; itrack < ntracks; itrack++){
-        vKaonTrack = 0x0;
-        vKaonTrack = fVevent->GetTrack(itrack);
 
-        if(!vKaonTrack){
-            printf("Error: Could not receive track %d\n", itrack);
-            continue;
+    //if MC events, do 
+    if(IS_MC_TRUE || IS_MC_KAON){
+        TClonesArray* MCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+        if(!MCArray){
+            AliError("Array of MC particles not found");
+            return;
         }
-        kaonTrack = dynamic_cast<AliVTrack*>(vKaonTrack);
-        eKaonTrack = dynamic_cast<AliESDtrack*>(vKaonTrack);
-        aKaonTrack = dynamic_cast<AliAODTrack*>(vKaonTrack);
 
-        if(fAOD)
-            if(!aKaonTrack->TestFilterMask(KAON_TRK_BIT)) continue; //mimimum cuts
+        for(Int_t imcpart=0; imcpart< MCArray->GetEntries(); imcpart++){
+            AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)MCArray->At(imcpart);
+            Int_t pdgcode = AODMCtrack->GetPdgCode();
+            //select phi for IS_MC_TRUE
+            if(IS_MC_TRUE){
+                if(TMath::Abs(pdgcode) != 333) continue;
+                Int_t indexFirstDaughter = 0, indexSecondDaughter = 0;
+                indexFirstDaughter = AODMCtrack->GetDaughterFirst();
+                indexSecondDaughter = AODMCtrack->GetDaughterLast();
 
-        if(fESD)
-            if(!esdTrackCutsH->AcceptTrack(eKaonTrack)) continue;
+                if(indexFirstDaughter < 0 || indexSecondDaughter < 0) continue;
+                AliAODMCParticle* firstDaughter = (AliAODMCParticle*)MCArray->At(indexFirstDaughter);
+                AliAODMCParticle* secondDaughter = (AliAODMCParticle*)MCArray->At(indexSecondDaughter);
 
-        // Cut on pT and eta for possible Kaons
-        if(kaonTrack->Pt() > 0.15 && TMath::Abs(kaonTrack->Eta()) < KAON_ETA_CUT){
-            Double_t fTPCnSigma = -999;
-            Double_t fTOFnSigma = -999;
-            Double_t fpiTPCnSigma = -999;
-            //check for labels
-            Int_t label = 0;
-            label = kaonTrack->GetLabel();
-
-            fTPCnSigma = fpidResponse->NumberOfSigmasTPC(kaonTrack, AliPID::kKaon);
-            fTOFnSigma = fpidResponse->NumberOfSigmasTOF(kaonTrack, AliPID::kKaon);
-            //Cut on kaon candidates
-            Bool_t acceptKaon = kFALSE;
-            if(IS_KAON_TOF_VETO){
-                acceptKaon = ((TMath::Abs(fTPCnSigma) <= KAON_TPC_CUT) && (((TMath::Abs(fTOFnSigma) <= KAON_TOF_CUT)) || ( fTOFnSigma == -999)));
+                //select only phi that decay to two kaons
+                if(TMath::Abs(firstDaughter->GetPdgCode()) == 321 && TMath::Abs(secondDaughter->GetPdgCode()) == 321 && (firstDaughter->GetPdgCode())*(secondDaughter->GetPdgCode()) <0){
+                    AliPhiContainer phi;
+                    phi.particle.SetPx(AODMCtrack->Px());
+                    phi.particle.SetPy(AODMCtrack->Py());
+                    phi.particle.SetPz(AODMCtrack->Pz());
+                    phi.particle.SetE(AODMCtrack->E());
+                    phi.daughter1TrackNum = indexFirstDaughter;
+                    phi.daughter2TrackNum = indexSecondDaughter;
+                    truePhi.push_back(phi);
+                    if(TMath::Abs(firstDaughter->Eta()) <= KAON_ETA_CUT && TMath::Abs(secondDaughter->Eta()) <= KAON_ETA_CUT && TMath::Abs(phi.particle.Eta()) < KAON_ETA_CUT){
+                        truePhiAcceptance.push_back(phi);
+                    }
+                }
             }else{
-                acceptKaon = ((TMath::Abs(fTPCnSigma) <= KAON_TPC_CUT) && (TMath::Abs(fTOFnSigma) <= KAON_TOF_CUT));
-            }
-            if(acceptKaon){
+                if(TMath::Abs(pdgcode) != 321) continue;
                 AliKaonContainer kaon;
-                kaon.trackNum = itrack;
-                kaon.particle.SetPx(kaonTrack->Px());
-                kaon.particle.SetPy(kaonTrack->Py());
-                kaon.particle.SetPz(kaonTrack->Pz());
-                Double_t calcP = TMath::Sqrt(kaonTrack->Px()*kaonTrack->Px() + kaonTrack->Py()*kaonTrack->Py() + kaonTrack->Pz()*kaonTrack->Pz());
+                kaon.trackNum = imcpart;
+                kaon.particle.SetPx(AODMCtrack->Px());
+                kaon.particle.SetPy(AODMCtrack->Py());
+                kaon.particle.SetPz(AODMCtrack->Pz());
+                Double_t calcP = TMath::Sqrt(AODMCtrack->Px()*AODMCtrack->Px() + AODMCtrack->Py()*AODMCtrack->Py() + AODMCtrack->Pz()*AODMCtrack->Pz());
                 Double_t calcE = TMath::Sqrt(0.4937*0.4937 + calcP*calcP);
                 kaon.particle.SetE(calcE);
 
-                if(kaonTrack->Charge() == 1){
-                    kPlusList.push_back(kaon);
-                }else{
-                    kMinusList.push_back(kaon);
+                if(pdgcode == 321){
+                    if(!USE_ACCPT || TMath::Abs(AODMCtrack->Eta()) < 0.8){ 
+                        kPlusList.push_back(kaon);
+                    }
+                }else if(pdgcode == -321){
+                    if(!USE_ACCPT || TMath::Abs(AODMCtrack->Eta()) < 0.8){ 
+                        kMinusList.push_back(kaon);
+                    }
                 }
-                fKaonPID->Fill(kaon.particle.Pt(), fTPCnSigma, fTOFnSigma);
+                //fKaonPID->Fill(kaon.particle.Pt(), fTPCnSigma, fTOFnSigma);
                 fKaonDist->Fill(kaon.particle.Pt(), kaon.particle.Phi(), kaon.particle.Eta());
+
+            }
+        }
+
+    }else{
+
+        /* First Loop - Filling two vector for all Kaons (plus and minus) */
+        for(Int_t itrack = 0; itrack < ntracks; itrack++){
+            vKaonTrack = 0x0;
+            vKaonTrack = fVevent->GetTrack(itrack);
+
+            if(!vKaonTrack){
+                printf("Error: Could not receive track %d\n", itrack);
+                continue;
+            }
+            kaonTrack = dynamic_cast<AliVTrack*>(vKaonTrack);
+            eKaonTrack = dynamic_cast<AliESDtrack*>(vKaonTrack);
+            aKaonTrack = dynamic_cast<AliAODTrack*>(vKaonTrack);
+
+            if(fAOD)
+                if(!aKaonTrack->TestFilterMask(KAON_TRK_BIT)) continue; //mimimum cuts
+
+            if(fESD)
+                if(!esdTrackCutsH->AcceptTrack(eKaonTrack)) continue;
+
+            // Cut on pT and eta for possible Kaons
+            if(kaonTrack->Pt() > 0.15 && TMath::Abs(kaonTrack->Eta()) < KAON_ETA_CUT){
+                Double_t fTPCnSigma = -999;
+                Double_t fTOFnSigma = -999;
+                Double_t fpiTPCnSigma = -999;
+                //check for labels
+                Int_t label = 0;
+                label = kaonTrack->GetLabel();
+
+                fTPCnSigma = fpidResponse->NumberOfSigmasTPC(kaonTrack, AliPID::kKaon);
+                fTOFnSigma = fpidResponse->NumberOfSigmasTOF(kaonTrack, AliPID::kKaon);
+                //Cut on kaon candidates
+                Bool_t acceptKaon = kFALSE;
+                if(IS_MC_KTRACK){
+                    if(label>0){
+                        TClonesArray* MCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+                        if(!MCArray){
+                            AliError("Array of MC particles not found");
+                            return;
+                        }
+                        AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)MCArray->At(label);
+                        Int_t pdgcode = AODMCtrack->GetPdgCode();
+                        //only accept tracks that have TOF hit that correspond to real Kaons
+                        if(TMath::Abs(pdgcode) == 321 && fTOFnSigma != -999){
+                            acceptKaon = kTRUE;
+                        }
+                    }
+                }else{
+                    if(IS_KAON_TOF_VETO){
+                        acceptKaon = ((TMath::Abs(fTPCnSigma) <= KAON_TPC_CUT) && (((TMath::Abs(fTOFnSigma) <= KAON_TOF_CUT)) || ( fTOFnSigma == -999)));
+                    }else{
+                        acceptKaon = ((TMath::Abs(fTPCnSigma) <= KAON_TPC_CUT) && (TMath::Abs(fTOFnSigma) <= KAON_TOF_CUT));
+                        //change min number of TPC crossed rows required
+                        //acceptKaon = (acceptKaon && (aKaonTrack->GetTPCCrossedRows() > 80));
+                    }
+                }
+                if(acceptKaon){
+                    AliKaonContainer kaon;
+                    kaon.trackNum = itrack;
+                    kaon.particle.SetPx(kaonTrack->Px());
+                    kaon.particle.SetPy(kaonTrack->Py());
+                    kaon.particle.SetPz(kaonTrack->Pz());
+                    Double_t calcP = TMath::Sqrt(kaonTrack->Px()*kaonTrack->Px() + kaonTrack->Py()*kaonTrack->Py() + kaonTrack->Pz()*kaonTrack->Pz());
+                    Double_t calcE = TMath::Sqrt(0.4937*0.4937 + calcP*calcP);
+                    kaon.particle.SetE(calcE);
+
+                    if(kaonTrack->Charge() == 1){
+                        kPlusList.push_back(kaon);
+                    }else{
+                        kMinusList.push_back(kaon);
+                    }
+                    fKaonPID->Fill(kaon.particle.Pt(), fTPCnSigma, fTOFnSigma);
+                    fKaonDist->Fill(kaon.particle.Pt(), kaon.particle.Phi(), kaon.particle.Eta());
+                }
             }
         }
     }
+        //if there aren't enough kaons to make pairs in this event, return
+        //if((kPlusList.size() + kMinusList.size()) < 2) return;
 
-    //if there aren't enough kaons to make pairs in this event, return
-    //if((kPlusList.size() + kMinusList.size()) < 2) return;
 
-    // Go through the Kaon lists and create the phi candidates and like sign pairs
-    // Also fill in the US and LS K pair distribution histograms
-    AliPhiContainer phi;
-    for(Int_t i_kplus = 0; i_kplus < (int)kPlusList.size(); i_kplus++){
-        for(Int_t j_kplus = i_kplus+1; j_kplus < (int)kPlusList.size(); j_kplus++){
-            phi.particle.SetPx(kPlusList[i_kplus].particle.Px() + kPlusList[j_kplus].particle.Px());
-            phi.particle.SetPy(kPlusList[i_kplus].particle.Py() + kPlusList[j_kplus].particle.Py());
-            phi.particle.SetPz(kPlusList[i_kplus].particle.Pz() + kPlusList[j_kplus].particle.Pz());
-            phi.particle.SetE(kPlusList[i_kplus].particle.E() + kPlusList[j_kplus].particle.E());
-            phi.daughter1TrackNum = kPlusList[i_kplus].trackNum;
-            phi.daughter2TrackNum = kPlusList[j_kplus].trackNum;
-            
-            distPoint[0] = phi.particle.Pt();
-            distPoint[1] = phi.particle.M();
-            distPoint[2] = phi.particle.Phi();
-            if(distPoint[2] < 0){
-                distPoint[2] += 2.0*TMath::Pi(); //change from range (-Pi, Pi) to (0, 2Pi)
+        // Go through the Kaon lists and create the phi candidates and like sign pairs
+        // Also fill in the US and LS K pair distribution histograms
+    if(!IS_MC_TRUE){    
+        AliPhiContainer phi;
+        for(Int_t i_kplus = 0; i_kplus < (int)kPlusList.size(); i_kplus++){
+            for(Int_t j_kplus = i_kplus+1; j_kplus < (int)kPlusList.size(); j_kplus++){
+                phi.particle.SetPx(kPlusList[i_kplus].particle.Px() + kPlusList[j_kplus].particle.Px());
+                phi.particle.SetPy(kPlusList[i_kplus].particle.Py() + kPlusList[j_kplus].particle.Py());
+                phi.particle.SetPz(kPlusList[i_kplus].particle.Pz() + kPlusList[j_kplus].particle.Pz());
+                phi.particle.SetE(kPlusList[i_kplus].particle.E() + kPlusList[j_kplus].particle.E());
+                phi.daughter1TrackNum = kPlusList[i_kplus].trackNum;
+                phi.daughter2TrackNum = kPlusList[j_kplus].trackNum;
+
+                distPoint[0] = phi.particle.Pt();
+                distPoint[1] = phi.particle.M();
+                distPoint[2] = phi.particle.Phi();
+                if(distPoint[2] < 0){
+                    distPoint[2] += 2.0*TMath::Pi(); //change from range (-Pi, Pi) to (0, 2Pi)
+                }
+                distPoint[3] = phi.particle.Eta();
+
+                //accept only those kaon pairs that fall within our mass range:
+                if(phi.particle.M() > 1.07 || phi.particle.M()<0.98) continue;
+                //cut out all reconstructed phi at wide eta
+                if(TMath::Abs(phi.particle.Eta()) >0.8) continue;
+
+                //check for eta-phi range set for efficiency crosscheck
+                if(ETA_PHI_REGION <= 0){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);
+                }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);
+                }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);   
+                }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint); 
+                }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
+                    phiLikeSignCandidates.push_back(phi);
+                    fKKLSDist->Fill(distPoint);
+                }       
             }
-            distPoint[3] = phi.particle.Eta();
- 
-            //accept only those kaon pairs that fall within our mass range:
-            if(phi.particle.M() > 1.07 || phi.particle.M()<0.98) continue;
+            for(Int_t i_kminus =0; i_kminus < (int)kMinusList.size(); i_kminus++){
+                phi.particle.SetPx(kPlusList[i_kplus].particle.Px() + kMinusList[i_kminus].particle.Px());
+                phi.particle.SetPy(kPlusList[i_kplus].particle.Py() + kMinusList[i_kminus].particle.Py());
+                phi.particle.SetPz(kPlusList[i_kplus].particle.Pz() + kMinusList[i_kminus].particle.Pz());
+                phi.particle.SetE(kPlusList[i_kplus].particle.E() + kMinusList[i_kminus].particle.E());
+                phi.daughter1TrackNum = kPlusList[i_kplus].trackNum;
+                phi.daughter2TrackNum = kMinusList[i_kminus].trackNum;
 
-            //check for eta-phi range set for efficiency crosscheck
-            if(ETA_PHI_REGION <= 0){
-                phiLikeSignCandidates.push_back(phi);
-                fKKLSDist->Fill(distPoint);
-            }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
-                phiLikeSignCandidates.push_back(phi);
-                fKKLSDist->Fill(distPoint);
-            }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
-                phiLikeSignCandidates.push_back(phi);
-                fKKLSDist->Fill(distPoint);   
-            }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
-                phiLikeSignCandidates.push_back(phi);
-                fKKLSDist->Fill(distPoint); 
-            }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
-                phiLikeSignCandidates.push_back(phi);
-                fKKLSDist->Fill(distPoint);
-            }       
+                distPoint[0] = phi.particle.Pt();
+                distPoint[1] = phi.particle.M();
+                distPoint[2] = phi.particle.Phi();
+                if(distPoint[2] < 0){
+                    distPoint[2] += 2.0*TMath::Pi();
+                }
+                distPoint[3] = phi.particle.Eta();
+
+                //cut out all reconstructed phi at wide eta
+                if(TMath::Abs(phi.particle.Eta()) >0.8) continue;
+
+                //accept only those kaon pairs that fall within our mass range:
+                if(phi.particle.M() < 1.07 && phi.particle.M() > 0.98){
+                    //check for eta-phi range set for efficiency crosscheck
+                    if(ETA_PHI_REGION <= 0){
+                        phiCandidates.push_back(phi);
+                        fKKUSDist->Fill(distPoint);
+                    }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
+                        phiCandidates.push_back(phi);
+                        fKKUSDist->Fill(distPoint);
+                    }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
+                        phiCandidates.push_back(phi);
+                        fKKUSDist->Fill(distPoint);    
+                    }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
+                        phiCandidates.push_back(phi);
+                        fKKUSDist->Fill(distPoint);  
+                    }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
+                        phiCandidates.push_back(phi);
+                        fKKUSDist->Fill(distPoint);
+                    }
+                }
+            }
         }
         for(Int_t i_kminus =0; i_kminus < (int)kMinusList.size(); i_kminus++){
-            phi.particle.SetPx(kPlusList[i_kplus].particle.Px() + kMinusList[i_kminus].particle.Px());
-            phi.particle.SetPy(kPlusList[i_kplus].particle.Py() + kMinusList[i_kminus].particle.Py());
-            phi.particle.SetPz(kPlusList[i_kplus].particle.Pz() + kMinusList[i_kminus].particle.Pz());
-            phi.particle.SetE(kPlusList[i_kplus].particle.E() + kMinusList[i_kminus].particle.E());
-            phi.daughter1TrackNum = kPlusList[i_kplus].trackNum;
-            phi.daughter2TrackNum = kMinusList[i_kminus].trackNum;
+            for(Int_t j_kminus = i_kminus+1; j_kminus < (int)kMinusList.size(); j_kminus++){
+                phi.particle.SetPx(kMinusList[i_kminus].particle.Px() + kMinusList[j_kminus].particle.Px());
+                phi.particle.SetPy(kMinusList[i_kminus].particle.Py() + kMinusList[j_kminus].particle.Py());
+                phi.particle.SetPz(kMinusList[i_kminus].particle.Pz() + kMinusList[j_kminus].particle.Pz());
+                phi.particle.SetE(kMinusList[i_kminus].particle.E() + kMinusList[j_kminus].particle.E());
+                phi.daughter1TrackNum = kMinusList[i_kminus].trackNum;
+                phi.daughter2TrackNum = kMinusList[j_kminus].trackNum;
 
-            distPoint[0] = phi.particle.Pt();
-            distPoint[1] = phi.particle.M();
-            distPoint[2] = phi.particle.Phi();
-            if(distPoint[2] < 0){
-                distPoint[2] += 2.0*TMath::Pi();
-            }
-            distPoint[3] = phi.particle.Eta();
-            
- 
-            //accept only those kaon pairs that fall within our mass range:
-            if(phi.particle.M() < 1.07 && phi.particle.M() > 0.98){
-                //check for eta-phi range set for efficiency crosscheck
-                if(ETA_PHI_REGION <= 0){
-                    phiCandidates.push_back(phi);
-                    fKKUSDist->Fill(distPoint);
-                }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
-                    phiCandidates.push_back(phi);
-                    fKKUSDist->Fill(distPoint);
-                }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
-                    phiCandidates.push_back(phi);
-                    fKKUSDist->Fill(distPoint);    
-                }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
-                    phiCandidates.push_back(phi);
-                    fKKUSDist->Fill(distPoint);  
-                }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
-                    phiCandidates.push_back(phi);
-                    fKKUSDist->Fill(distPoint);
+
+                distPoint[0] = phi.particle.Pt();
+                distPoint[1] = phi.particle.M();
+                distPoint[2] = phi.particle.Phi();
+                if(distPoint[2] < 0){
+                    distPoint[2] += 2.0*TMath::Pi();
                 }
-            }
-       }
+                distPoint[3] = phi.particle.Eta();
+
+                //cut out all reconstructed phi at wide eta
+                if(TMath::Abs(phi.particle.Eta()) >0.8) continue;
+                
+                //accept only those kaon pairs that fall within our mass range for our phi list:
+                if(phi.particle.M() < 1.07 && phi.particle.M() > 0.98){ 
+                    //check for eta-phi range set for efficiency crosscheck
+                    if(ETA_PHI_REGION <= 0){
+                        phiLikeSignCandidates.push_back(phi);
+                        fKKLSDist->Fill(distPoint);
+                    }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
+                        phiLikeSignCandidates.push_back(phi);
+                        fKKLSDist->Fill(distPoint);     
+                    }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
+                        phiLikeSignCandidates.push_back(phi);
+                        fKKLSDist->Fill(distPoint);    
+                    }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
+                        phiLikeSignCandidates.push_back(phi);
+                        fKKLSDist->Fill(distPoint);  
+                    }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
+                        phiLikeSignCandidates.push_back(phi);
+                        fKKLSDist->Fill(distPoint);
+                    }
+
+                }
+            }        
+        }        
+
+
+        // Record how many kaons and kaon pairs are in the event
+        fkplusPerEvent->Fill(kPlusList.size());
+        fkminusPerEvent->Fill(kMinusList.size());
+        fLSpairsPerEvent->Fill(phiLikeSignCandidates.size());
+        fUSpairsPerEvent->Fill(phiCandidates.size());
+
     }
-    for(Int_t i_kminus =0; i_kminus < (int)kMinusList.size(); i_kminus++){
-        for(Int_t j_kminus = i_kminus+1; j_kminus < (int)kMinusList.size(); j_kminus++){
-            phi.particle.SetPx(kMinusList[i_kminus].particle.Px() + kMinusList[j_kminus].particle.Px());
-            phi.particle.SetPy(kMinusList[i_kminus].particle.Py() + kMinusList[j_kminus].particle.Py());
-            phi.particle.SetPz(kMinusList[i_kminus].particle.Pz() + kMinusList[j_kminus].particle.Pz());
-            phi.particle.SetE(kMinusList[i_kminus].particle.E() + kMinusList[j_kminus].particle.E());
-            phi.daughter1TrackNum = kMinusList[i_kminus].trackNum;
-            phi.daughter2TrackNum = kMinusList[j_kminus].trackNum;
-
-
-            distPoint[0] = phi.particle.Pt();
-            distPoint[1] = phi.particle.M();
-            distPoint[2] = phi.particle.Phi();
-            if(distPoint[2] < 0){
-                distPoint[2] += 2.0*TMath::Pi();
-            }
-            distPoint[3] = phi.particle.Eta();
- 
-            //accept only those kaon pairs that fall within our mass range for our phi list:
-            if(phi.particle.M() < 1.07 && phi.particle.M() > 0.98){ 
-                //check for eta-phi range set for efficiency crosscheck
-                if(ETA_PHI_REGION <= 0){
-                    phiLikeSignCandidates.push_back(phi);
-                    fKKLSDist->Fill(distPoint);
-                }else if(ETA_PHI_REGION == 1 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] < TMath::Pi()){
-                    phiLikeSignCandidates.push_back(phi);
-                    fKKLSDist->Fill(distPoint);     
-                }else if(ETA_PHI_REGION == 2 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] < TMath::Pi()){
-                    phiLikeSignCandidates.push_back(phi);
-                    fKKLSDist->Fill(distPoint);    
-                }else if(ETA_PHI_REGION == 3 && TMath::Abs(phi.particle.Eta()) > 0.2 && distPoint[2] >= TMath::Pi()){
-                    phiLikeSignCandidates.push_back(phi);
-                    fKKLSDist->Fill(distPoint);  
-                }else if(ETA_PHI_REGION == 4 && TMath::Abs(phi.particle.Eta()) <= 0.2 && distPoint[2] >= TMath::Pi()){
-                    phiLikeSignCandidates.push_back(phi);
-                    fKKLSDist->Fill(distPoint);
-                }
-
-            }
-      }        
-    }        
-
-       
-    // Record how many kaons and kaon pairs are in the event
-    fkplusPerEvent->Fill(kPlusList.size());
-    fkminusPerEvent->Fill(kMinusList.size());
-    fLSpairsPerEvent->Fill(phiLikeSignCandidates.size());
-    fUSpairsPerEvent->Fill(phiCandidates.size());
-
     ///////////////////////////////
     // Building d-phi histograms //
     ///////////////////////////////
@@ -910,160 +1159,238 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
     TObjArray* fArrayHHTracksMix = new TObjArray;
     fArrayHHTracksMix->SetOwner(kTRUE);
 
+    TObjArray* fArrayTrueTracksMix = new TObjArray;
+    fArrayTrueTracksMix->SetOwner(kTRUE);
+
     AliVTrack *triggerTrack = 0x0;
     AliESDtrack *etriggerTrack = 0x0;
     AliAODTrack *atriggerTrack = 0x0;
     AliVParticle* VtriggerTrack = 0x0;   
     AliCFParticle *cfPart = 0x0;
     AliCFParticle *hhAssoc = new AliCFParticle(0.0, 0.0, 0.0, 0, 0);
-    for (Int_t itrack = 0; itrack < ntracks; itrack++) {
 
-        VtriggerTrack = 0x0;
-        VtriggerTrack  = fVevent->GetTrack(itrack);
-        
-        if (!VtriggerTrack) {
-            printf("ERROR: Could not receive track %d\n", itrack);
-            continue;
-        }
-        triggerTrack = dynamic_cast<AliVTrack*>(VtriggerTrack);
-        etriggerTrack = dynamic_cast<AliESDtrack*>(VtriggerTrack);
-        atriggerTrack = dynamic_cast<AliAODTrack*>(VtriggerTrack);
-        
-        //fill hybrid track histos if the track is hybridTPC
-        if(triggerTrack->Pt() > 0.15 && TMath::Abs(triggerTrack->Eta()) < 0.8 && atriggerTrack->IsHybridTPCConstrainedGlobal()){
-            fHybridTrkPt->Fill(triggerTrack->Pt());
-            fHybridTrketa->Fill(triggerTrack->Eta());
-            fHybridTrkphi->Fill(triggerTrack->Phi());
+   /* if(IS_MC_TRUE){
+        TClonesArray* MCArray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+        if(!MCArray){
+            AliError("Array of MC particles not found");
+            return;
         }
 
-        //fill hybrid track histos if the track is hybridGlobal
-        if(triggerTrack->Pt() > 0.15 && TMath::Abs(triggerTrack->Eta()) < 0.8 && atriggerTrack->IsHybridGlobalConstrainedGlobal()){
-            fHybridGlobalTrkPt->Fill(triggerTrack->Pt());
-            fHybridGlobalTrketa->Fill(triggerTrack->Eta());
-            fHybridGlobalTrkphi->Fill(triggerTrack->Phi());
-        }
+        for(Int_t imcpart=0; imcpart< MCArray->GetEntries(); imcpart++){
+            AliAODMCParticle *AODMCtrig = (AliAODMCParticle*)MCArray->At(imcpart);
+            Int_t triggerpdgcode = TMath::Abs(AODMCtrig->GetPdgCode());
+            if((TMath::Abs(triggerpdgcode)==211 || TMath::Abs(triggerpdgcode)==2212 || TMath::Abs(triggerpdgcode)==11 || TMath::Abs(triggerpdgcode)==321 || TMath::Abs(triggerpdgcode)==13) && TMath::Abs(AODMCtrig->Eta()) < 0.8 && AODMCtrig->Pt() > 2.0 && AODMCtrig->IsPhysicalPrimary()){
+                trigPoint[0] = AODMCtrig->Pt();
+                trigPoint[1] = AODMCtrig->Phi();
+                trigPoint[2] = AODMCtrig->Eta();
+                fTrigDist->Fill(trigPoint);
 
-        //fill global track histos if the track is global
-        if( triggerTrack->Pt() > 0.15 && TMath::Abs(triggerTrack->Eta()) < 0.8 && atriggerTrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
-            fTrkPt->Fill(triggerTrack->Pt());
-            fTrketa->Fill(triggerTrack->Eta());
-            fTrkphi->Fill(triggerTrack->Phi());
-        }
+                Bool_t isTrueDaughter = MakeCorrelations(imcpart, AODMCtrig, truePhi, fDphiTrueHPhi[indexZVtx], Zvertex);
+                Bool_t isTrueAcceptanceDaughter = MakeCorrelations(imcpart, AODMCtrig, truePhiAcceptance, fDphiTrueAcceptanceHPhi[indexZVtx], Zvertex);
+                if(!isTrueAcceptanceDaughter){
+                    cfPart = new AliCFParticle(AODMCtrig->Pt(), AODMCtrig->Eta(), AODMCtrig->Phi(), AODMCtrig->Charge(), 0);
+                    fArrayTrueTracksMix->Add(cfPart);
+                  }
 
-        ////////////////////
-        //Apply track cuts//
-        ////////////////////
-        if(fAOD)
-            if(!atriggerTrack->TestBit(TRIG_TRK_BIT)) continue; //selecting just hybrid-global tracks for trigger, continue otherwise
-        
-        if(fESD)
-            if(!esdTrackCutsH->AcceptTrack(etriggerTrack))continue;
-        
-        
-        ////////////////////
-        //Track properties//
-        ////////////////////
-        Double_t dEdx =-999, fTPCnSigma=-999;
-        dEdx = triggerTrack->GetTPCsignal();
-       
-        //Cut on p_T and eta
-        if(triggerTrack->Pt() > 2.0 && TMath::Abs(triggerTrack->Eta()) < 0.8){
-            //fTrkPt->Fill(triggerTrack->Pt());
-            //fTrketa->Fill(triggerTrack->Eta());
-            //fTrkphi->Fill(triggerTrack->Phi());
-            fdEdx->Fill(triggerTrack->P(),dEdx);
-            fTPCNpts->Fill(triggerTrack->P(),triggerTrack->GetTPCsignalN());
-            
-            Double_t trigger_phi = triggerTrack->Phi();
-            dphi_point[0] = triggerTrack->Pt();
-            //check for labels
-            Int_t label = 0;
-            label = triggerTrack->GetLabel();
-
-            trigPoint[0] = triggerTrack->Pt();
-            trigPoint[1] = triggerTrack->Phi();
-            trigPoint[2] = triggerTrack->Eta();
-            fTrigDist->Fill(trigPoint);
-            
-            //hadron-phi correlations
-            if(!IS_HH){
-                Bool_t isTriggerDaughter = MakeCorrelations(itrack, VtriggerTrack, phiCandidates, fDphiHPhi[indexZVtx], Zvertex);
-                Bool_t isTriggerLSDaughter = MakeCorrelations(itrack, VtriggerTrack, phiLikeSignCandidates, fDphiHKK[indexZVtx], Zvertex);
-
-                if(!isTriggerDaughter){
-                    cfPart = new AliCFParticle(triggerTrack->Pt(), triggerTrack->Eta(), triggerTrack->Phi(), triggerTrack->Charge(), 0);
-                    fTrigSameUSDist->Fill(triggerTrack->Pt(), Zvertex); //filled once per trigger, only if the trigger isn't a US pair daughter
-                    fArrayTracksMix->Add(cfPart);
-                }
-                if(!isTriggerLSDaughter){
-                    cfPart = new AliCFParticle(triggerTrack->Pt(), triggerTrack->Eta(), triggerTrack->Phi(), triggerTrack->Charge(), 0);
-                    fTrigSameLSDist->Fill(triggerTrack->Pt(), Zvertex); //filled once per trigger, only if the trigger isn't a LS pair daughter
-                    fArrayLSTracksMix->Add(cfPart);
-                }
             }
-            //di-hadron correlations
-            if(IS_HH){
-                for(Int_t jtrack = 0; jtrack < ntracks; jtrack++){
-                    if(itrack != jtrack){
-                        AliVTrack *assocTrack = 0x0;
-                        AliESDtrack *eassocTrack = 0x0;
-                        AliAODTrack *aassocTrack = 0x0;
-                        AliVParticle* VassocTrack = 0x0;
-                        VassocTrack = fVevent->GetTrack(jtrack);
+        }
+    }else{*/
+        for (Int_t itrack = 0; itrack < ntracks; itrack++) {
 
-                        aassocTrack = dynamic_cast<AliAODTrack*>(VassocTrack);
+            VtriggerTrack = 0x0;
+            VtriggerTrack  = fVevent->GetTrack(itrack);
 
-                        if(aassocTrack->TestFilterMask(ASSOC_TRK_BIT) && aassocTrack->Pt() > 0.15 && TMath::Abs(aassocTrack->Eta())<0.8){
-                            hhdphi_point[0] = trigPoint[0];
-                            hhdphi_point[1] = aassocTrack->Pt();
-                            hhdphi_point[2] = trigPoint[1] - aassocTrack->Phi();
-                            if(hhdphi_point[2] < -TMath::Pi()/2.0){
-                                hhdphi_point[2] += 2.0*TMath::Pi();
-                            }else if(hhdphi_point[2] > 3.0*TMath::Pi()/2.0){
-                                hhdphi_point[2] -= 2.0*TMath::Pi();
-                            }
-                            hhdphi_point[3] = trigPoint[2] - aassocTrack->Eta();
-                            //hhdphi_point[4] = Zvertex;
-                            //hhdphi_point[4] = multPercentile;
-                            fDphiHH[indexZVtx]->Fill(hhdphi_point);
-                            hhAssoc->SetPt(aassocTrack->Pt());
-                            hhAssoc->SetEta(aassocTrack->Eta());
-                            hhAssoc->SetPhi(aassocTrack->Phi());
-                            hhAssoc->SetCharge(aassocTrack->Charge());
-                            if(fHHPoolMgr->GetEventPool(multPercentile, Zvertex)->IsReady()){
-                                MakeHHMixCorrelations(hhAssoc, fDphiHHMixed[indexZVtx], multPercentile, Zvertex);
-                            }
+            if (!VtriggerTrack) {
+                printf("ERROR: Could not receive track %d\n", itrack);
+                continue;
+            }
+            triggerTrack = dynamic_cast<AliVTrack*>(VtriggerTrack);
+            etriggerTrack = dynamic_cast<AliESDtrack*>(VtriggerTrack);
+            atriggerTrack = dynamic_cast<AliAODTrack*>(VtriggerTrack);
+
+            //fill hybrid track histos if the track is hybridTPC
+            if(triggerTrack->Pt() > 0.15 && TMath::Abs(triggerTrack->Eta()) < 0.8 && atriggerTrack->IsHybridTPCConstrainedGlobal()){
+                fHybridTrkPt->Fill(triggerTrack->Pt());
+                fHybridTrketa->Fill(triggerTrack->Eta());
+                fHybridTrkphi->Fill(triggerTrack->Phi());
+            }
+
+            //fill hybrid track histos if the track is hybridGlobal
+            if(triggerTrack->Pt() > 0.15 && TMath::Abs(triggerTrack->Eta()) < 0.8 && atriggerTrack->IsHybridGlobalConstrainedGlobal()){
+                fHybridGlobalTrkPt->Fill(triggerTrack->Pt());
+                fHybridGlobalTrketa->Fill(triggerTrack->Eta());
+                fHybridGlobalTrkphi->Fill(triggerTrack->Phi());
+            }
+
+            //fill global track histos if the track is global
+            if( triggerTrack->Pt() > 0.15 && TMath::Abs(triggerTrack->Eta()) < 0.8 && atriggerTrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
+                fTrkPt->Fill(triggerTrack->Pt());
+                fTrketa->Fill(triggerTrack->Eta());
+                fTrkphi->Fill(triggerTrack->Phi());
+            }
+
+            ////////////////////
+            //Apply track cuts//
+            ////////////////////
+            if(fAOD)
+                if(!atriggerTrack->TestBit(TRIG_TRK_BIT)) continue; //selecting just hybrid-global tracks for trigger, continue otherwise
+
+            if(fESD)
+                if(!esdTrackCutsH->AcceptTrack(etriggerTrack))continue;
+                
+            ////////////////////
+            //Track properties//
+            ////////////////////
+            Double_t dEdx =-999, fTPCnSigma=-999;
+            dEdx = triggerTrack->GetTPCsignal();
+
+            //Cut on p_T and eta
+            if(triggerTrack->Pt() > 2.0 && TMath::Abs(triggerTrack->Eta()) < 0.8){
+                //fTrkPt->Fill(triggerTrack->Pt());
+                //fTrketa->Fill(triggerTrack->Eta());
+                //fTrkphi->Fill(triggerTrack->Phi());
+                fdEdx->Fill(triggerTrack->P(),dEdx);
+                fTPCNpts->Fill(triggerTrack->P(),triggerTrack->GetTPCsignalN());
+
+                Double_t trigger_phi = triggerTrack->Phi();
+                //check for labels
+                Int_t label = 0;
+                label = triggerTrack->GetLabel();
+
+                trigPoint[0] = triggerTrack->Pt();
+                trigPoint[1] = triggerTrack->Phi();
+                trigPoint[2] = triggerTrack->Eta();
+                Float_t weight = 1.0;
+                if(triggerTrack->Pt() < 12.0 && ftrigEff !=0){ //&& !IS_MC_TRUE && !IS_MC_KAON){
+                    if(ftrigEff->Eval(triggerTrack->Pt()) == 0){
+                        AliFatal(Form("Trigger Efficiency Evaluated to 0 for pT %f", triggerTrack->Pt()));
+                    }else{
+                        weight = 1.0/ftrigEff->Eval(triggerTrack->Pt());
+                        //weight = 7.0;
+                    }
+                }
+                fTrigDist->Fill(trigPoint, weight);
+
+                //hadron-phi correlations
+                if(!IS_HH){
+
+                    Bool_t isTriggerDaughter = kTRUE;
+                    Bool_t isTriggerLSDaughter = kTRUE;
+                    Bool_t isTriggerAccptDaughter = kTRUE;
+                    Bool_t isTriggerTrueDaughter = kTRUE;
+                    if(IS_MC_TRUE){
+                        isTriggerTrueDaughter = MakeCorrelations(itrack, VtriggerTrack, truePhi, fDphiTrueHPhi[indexZVtx], Zvertex);
+                        isTriggerAccptDaughter = MakeCorrelations(itrack, VtriggerTrack, truePhiAcceptance, fDphiTrueAcceptanceHPhi[indexZVtx], Zvertex);
+                        if(!isTriggerAccptDaughter){
+                            cfPart = new AliCFParticle(VtriggerTrack->Pt(), VtriggerTrack->Eta(), VtriggerTrack->Phi(), VtriggerTrack->Charge(), 0);
+                            fArrayTrueTracksMix->Add(cfPart);
                         }
-                    }   
+                    }else{
+                        isTriggerDaughter = MakeCorrelations(itrack, VtriggerTrack, phiCandidates, fDphiHPhi[indexZVtx], Zvertex);
+                        isTriggerLSDaughter = MakeCorrelations(itrack, VtriggerTrack, phiLikeSignCandidates, fDphiHKK[indexZVtx], Zvertex);
+                    }
+                    
+                    
+                    if(!isTriggerDaughter){
+                        cfPart = new AliCFParticle(VtriggerTrack->Pt(), VtriggerTrack->Eta(), VtriggerTrack->Phi(), VtriggerTrack->Charge(), 0);
+                        fTrigSameUSDist->Fill(VtriggerTrack->Pt(), Zvertex); //filled once per trigger, only if the trigger isn't a US pair daughter
+                        fArrayTracksMix->Add(cfPart);
+                    }
+                    if(!isTriggerLSDaughter){
+                        cfPart = new AliCFParticle(VtriggerTrack->Pt(), VtriggerTrack->Eta(), VtriggerTrack->Phi(), VtriggerTrack->Charge(), 0);
+                        fTrigSameLSDist->Fill(VtriggerTrack->Pt(), Zvertex); //filled once per trigger, only if the trigger isn't a LS pair daughter
+                        fArrayLSTracksMix->Add(cfPart);
+                    }
                 }
-                if(multPercentile <= 100.0){
-                    cfPart = new AliCFParticle(triggerTrack->Pt(), triggerTrack->Eta(), triggerTrack->Phi(), triggerTrack->Charge(), 0);
-                    fTrigHHDist->Fill(triggerTrack->Pt(), Zvertex);
-                    fArrayHHTracksMix->Add(cfPart);
+                //di-hadron correlations
+                if(IS_HH){
+                    for(Int_t jtrack = 0; jtrack < ntracks; jtrack++){
+                        if(itrack != jtrack){
+                            AliVTrack *assocTrack = 0x0;
+                            AliESDtrack *eassocTrack = 0x0;
+                            AliAODTrack *aassocTrack = 0x0;
+                            AliVParticle* VassocTrack = 0x0;
+                            VassocTrack = fVevent->GetTrack(jtrack);
+
+                            aassocTrack = dynamic_cast<AliAODTrack*>(VassocTrack);
+
+                            if(aassocTrack->TestFilterMask(ASSOC_TRK_BIT) && aassocTrack->Pt() > 0.15 && TMath::Abs(aassocTrack->Eta())<0.8){
+                                hhdphi_point[0] = trigPoint[0];
+                                hhdphi_point[1] = aassocTrack->Pt();
+                                hhdphi_point[2] = trigPoint[1] - aassocTrack->Phi();
+                                if(hhdphi_point[2] < -TMath::Pi()/2.0){
+                                    hhdphi_point[2] += 2.0*TMath::Pi();
+                                }else if(hhdphi_point[2] > 3.0*TMath::Pi()/2.0){
+                                    hhdphi_point[2] -= 2.0*TMath::Pi();
+                                }
+                                hhdphi_point[3] = trigPoint[2] - aassocTrack->Eta();
+                                //hhdphi_point[4] = Zvertex;
+                                //hhdphi_point[4] = multPercentile;
+                                Double_t weight = 1.0;
+                                if(fhEff !=0 && ftrigEff !=0){
+                                    weight = 1.0/fhEff->Eval(aassocTrack->Pt());
+                                    weight = weight*(1.0/ftrigEff->Eval(trigPoint[0]));
+                                }
+                                fDphiHH[indexZVtx]->Fill(hhdphi_point, weight);
+                                hhAssoc->SetPt(aassocTrack->Pt());
+                                hhAssoc->SetEta(aassocTrack->Eta());
+                                hhAssoc->SetPhi(aassocTrack->Phi());
+                                hhAssoc->SetCharge(aassocTrack->Charge());
+                                if(fHHPoolMgr->GetEventPool(multPercentile, Zvertex)->IsReady()){
+                                    MakeHHMixCorrelations(hhAssoc, fDphiHHMixed[indexZVtx], multPercentile, Zvertex);
+                                }
+                            }
+                        }   
+                    }
+                    if(multPercentile <= 100.0){
+                        cfPart = new AliCFParticle(triggerTrack->Pt(), triggerTrack->Eta(), triggerTrack->Phi(), triggerTrack->Charge(), 0);
+                        fTrigHHDist->Fill(triggerTrack->Pt(), Zvertex);
+                        fArrayHHTracksMix->Add(cfPart);
+                    }
                 }
             }
-        }
-    } //track loop
-    delete hhAssoc;
+        } //track loop
+        delete hhAssoc;
+    //}
 
     ntracks = fVevent->GetNumberOfTracks();
 
     if(multPercentile <= 100.){
         if(!IS_HH){
-            if(phiCandidates.size() > 0){
-                AliEventPool *fPool = 0x0;
-                fPool = fPoolMgr->GetEventPool(multPercentile, Zvertex); // Get the buffer associated with the current centrality and z-vtx
-                if(!fPool){
-                    AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, Zvertex));
-                    return;
-                }else{
-                    if(fPool->IsReady()){
-                        for(int i =0; i< phiCandidates.size(); i++){
-                            MakeMixCorrelations(&phiCandidates[i], fDphiHPhiMixed[indexZVtx], multPercentile, Zvertex, fPool, kFALSE);
+            if(IS_MC_TRUE){
+                if(truePhiAcceptance.size() > 0){
+                    AliEventPool *fTruePool = 0x0;
+                    fTruePool = fTruePoolMgr->GetEventPool(multPercentile, Zvertex);
+                    if(!fTruePool){
+                        AliFatal(Form("No true pool found for multiplicity = %f, zVtx = %i", multPercentile, Zvertex));
+                        return;
+                    }else{
+                        if(fTruePool->IsReady()){
+                            for(int i = 0; i < truePhiAcceptance.size(); i++){
+                                MakeMixCorrelations(&truePhiAcceptance[i], fDphiTrueHPhiMixed[indexZVtx], multPercentile, Zvertex, fTruePool, kFALSE);
+                            }
+                        }
+                        if(fArrayTrueTracksMix->GetEntries() > 0){
+                            fTruePool->UpdatePool(fArrayTrueTracksMix);
                         }
                     }
-                    if(fArrayTracksMix->GetEntries() > 0){
-                        fPool->UpdatePool(fArrayTracksMix);
+                }
+            }else{
+                if(phiCandidates.size() > 0){
+                    AliEventPool *fPool = 0x0;
+                    fPool = fPoolMgr->GetEventPool(multPercentile, Zvertex); // Get the buffer associated with the current centrality and z-vtx
+                    if(!fPool){
+                        AliFatal(Form("No pool found for multiplicity = %f, zVtx = %f", multPercentile, Zvertex));
+                        return;
+                    }else{
+                        if(fPool->IsReady()){
+                            for(int i =0; i< phiCandidates.size(); i++){
+                                MakeMixCorrelations(&phiCandidates[i], fDphiHPhiMixed[indexZVtx], multPercentile, Zvertex, fPool, kFALSE);
+                            }
+                        }
+                        if(fArrayTracksMix->GetEntries() > 0){
+                            fPool->UpdatePool(fArrayTracksMix);
+                        }
                     }
                 }
             }
@@ -1084,6 +1411,7 @@ void AliAnalysisTaskHadronPhiCorr::UserExec(Option_t *){
                     }
                 }
             }
+
         }
         //di-hadron event pool
         if(IS_HH){

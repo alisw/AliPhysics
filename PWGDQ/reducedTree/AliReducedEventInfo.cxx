@@ -48,6 +48,8 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fVtxCovMatrix(),
   fVtxTPC(),
   fNVtxTPCContributors(0),
+  fTPCpileupZ(),
+  fTPCpileupContributors(),
   fVtxSPD(),
   fVtxMC(),
   fNVtxSPDContributors(0),
@@ -85,6 +87,7 @@ AliReducedEventInfo::AliReducedEventInfo() :
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i]=0.;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<2; ++i) {fTPCpileupZ[i]=-999.;fTPCpileupContributors[i]=-999;}
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
@@ -129,6 +132,8 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fIRIntClosestIntMap(),
   fVtxTPC(),
   fNVtxTPCContributors(0),
+  fTPCpileupZ(),
+  fTPCpileupContributors(),
   fVtxSPD(),
   fVtxMC(),
   fNVtxSPDContributors(0),
@@ -165,6 +170,7 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   //
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<2; ++i) {fTPCpileupZ[i]=-999.;fTPCpileupContributors[i]=-999;}
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
@@ -230,6 +236,7 @@ void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
    for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i] = other->fVtxCovMatrix[i];
    for(Int_t i=0; i<3; ++i) fVtxTPC[i] = other->fVtxTPC[i];
    fNVtxTPCContributors = other->fNVtxTPCContributors;
+   for(Int_t i=0; i<2; ++i) {fTPCpileupZ[i] = other->fTPCpileupZ[i]; fTPCpileupContributors[i] = other->fTPCpileupContributors[i];}
    for(Int_t i=0; i<3; ++i) fVtxSPD[i] = other->fVtxSPD[i];
    for(Int_t i=0; i<3; ++i) fVtxMC[i] = other->fVtxMC[i];
    fNVtxSPDContributors = other->fNVtxSPDContributors;
@@ -309,6 +316,7 @@ void AliReducedEventInfo::ClearEvent() {
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = 0;
   for(Int_t i=0; i<8; ++i) fNch[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
+  for(Int_t i=0; i<2; ++i) {fTPCpileupZ[i] = -999.; fTPCpileupContributors[i] = -999;}
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
   for(Int_t i=0; i<13; ++i) fMultiplicityEstimators[i]=-999.;
@@ -326,6 +334,20 @@ void AliReducedEventInfo::ClearEvent() {
   fT0zVertex = -999.;
   fT0start = -999.;
   fT0sattelite = kFALSE;
+}
+
+//_______________________________________________________________________________
+AliReducedCaloClusterInfo* AliReducedEventInfo::GetCaloClusterFromID(Int_t clusterID) const {
+  //
+  // get calorimeter cluster from ID
+  //
+  TIter nextCluster(fCaloClusters);
+  AliReducedCaloClusterInfo* cluster = NULL;
+  for (Int_t i=0; i<fCaloClusters->GetEntries(); ++i) {
+    cluster = (AliReducedCaloClusterInfo*)nextCluster();
+    if (clusterID==cluster->ClusterID()) return cluster;
+  }
+  return NULL;
 }
 
 //_______________________________________________________________________________

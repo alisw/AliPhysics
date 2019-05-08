@@ -29,6 +29,7 @@ Detailed description
 #include <TMath.h>
 
 #include "AliDielectronTrackCuts.h"
+#include "AliDielectronClusterCuts.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
 
@@ -46,7 +47,10 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
   fTPCNclRobustCut(-1),
   fTPCcrossedOverFindable(-1.),
   fAODFilterBit(kSwitchOff),
-  fWaiveITSNcls(-1)
+  fWaiveITSNcls(-1),
+  fRequireTRDUpdate(kFALSE),
+  fRequireCaloClusterMatch(kFALSE),
+  fClusterMatchCaloType(AliDielectronClusterCuts::kAny)
 {
   //
   // Default Constructor
@@ -70,7 +74,10 @@ AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* tit
   fTPCNclRobustCut(-1),
   fTPCcrossedOverFindable(-1.),
   fAODFilterBit(kSwitchOff),
-  fWaiveITSNcls(-1)
+  fWaiveITSNcls(-1),
+  fRequireTRDUpdate(kFALSE),
+  fRequireCaloClusterMatch(kFALSE),
+  fClusterMatchCaloType(AliDielectronClusterCuts::kAny)
 {
   //
   // Named Constructor
@@ -160,6 +167,20 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
     }
   }
 
+  // TRD update
+  if (fRequireTRDUpdate) accept*=(vtrack->GetStatus()&AliVTrack::kTRDupdate)>0;
+
+  // calo cluster-track match
+  if (fRequireCaloClusterMatch) {
+    Int_t fCaloIndex = vtrack->GetEMCALcluster();
+    if (fCaloIndex!=AliVTrack::kEMCALNoMatch) {
+      if (fClusterMatchCaloType==AliDielectronClusterCuts::kEMCal)  accept*=vtrack->IsEMCAL();
+      if (fClusterMatchCaloType==AliDielectronClusterCuts::kPHOS)   accept*=vtrack->IsPHOS();
+      if (fClusterMatchCaloType==AliDielectronClusterCuts::kAny)    accept*=kTRUE;
+    } else {
+      accept*=kFALSE;
+    }
+  }
 
   return accept;
 }

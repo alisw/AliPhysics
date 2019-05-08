@@ -27,9 +27,12 @@ include_directories(${ROOT_INCLUDE_DIRS}
 		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
 		    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
   )
@@ -46,6 +49,7 @@ set(SRCS
   AliHFTreeHandlerBplustoD0pi.cxx
   AliHFTreeHandlerDstartoKpipi.cxx
   AliHFTreeHandlerLc2V0bachelor.cxx
+  AliJetTreeHandler.cxx
 
   )
 
@@ -62,7 +66,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF)
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF PWGEMCALbase PWGJETFW PWGTools)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -71,7 +75,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
 
-# Public include folders that will be propagated to the dependecies
+# Public include folders that will be propagated to the dependencies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # System dependent: Modify the way the library is build

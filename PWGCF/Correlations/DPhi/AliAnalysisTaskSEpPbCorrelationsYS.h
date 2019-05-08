@@ -55,7 +55,7 @@ public:
   virtual void SetDatatype(Bool_t mode) { fDataType = mode; }
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
   virtual void SetFilterBit(Int_t mode) { ffilterbit = mode; }
-
+  virtual void SetFMDcut(Bool_t mode) {fFMDcut=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
   virtual void SetAnalysisCollisionType(TString mode) { fcollisiontype = mode; }
 
@@ -135,7 +135,9 @@ private:
   TString fcollisiontype;
   Bool_t fDataType;
   Bool_t frun2;
+  Bool_t fFMDcut;
   Bool_t fQA;
+ 
   Bool_t fOnfly;
   TString fAnaMode;
   TString fasso;

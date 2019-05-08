@@ -25,6 +25,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fSameEventmTDist(nullptr),
       fSameEventkTDist(nullptr),
       fSameEventkTCentDist(nullptr),
+      fPtQADist(nullptr),
       fPairCounterSE(nullptr),
       fMixedEventDist(nullptr),
       fMixedEventMultDist(nullptr),
@@ -37,6 +38,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fMomResolutionDist(nullptr),
       fRadiiEtaPhiSE(nullptr),
       fRadiiEtaPhiME(nullptr),
+      fIntRadiiQAEtaPhiSEBefore(nullptr),
+      fIntRadiiQAEtaPhiMEBefore(nullptr),
+      fIntRadiiQAEtaPhiSEAfter(nullptr),
+      fIntRadiiQAEtaPhiMEAfter(nullptr),
       fRadiiEtaPhiSEsmallK(nullptr),
       fRadiiEtaPhiMEsmallK(nullptr),
       fdEtadPhiSE(nullptr),
@@ -48,8 +53,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fDoCentBinning(false),
       fDokTBinning(false),
       fDomTBinning(false),
+      fPtQA(false),
       fDokTCentralityBins(false),
       fdPhidEtaPlots(false),
+      fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
       fmTdEtadPhiBins(),
       fWhichPairs(),
@@ -72,6 +79,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fSameEventmTDist(hists.fSameEventmTDist),
       fSameEventkTDist(hists.fSameEventkTDist),
       fSameEventkTCentDist(hists.fSameEventkTCentDist),
+      fPtQADist(hists.fPtQADist),
       fPairCounterSE(hists.fPairCounterSE),
       fMixedEventDist(hists.fMixedEventDist),
       fMixedEventMultDist(hists.fMixedEventMultDist),
@@ -84,6 +92,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fMomResolutionDist(hists.fMomResolutionDist),
       fRadiiEtaPhiSE(hists.fRadiiEtaPhiSE),
       fRadiiEtaPhiME(hists.fRadiiEtaPhiME),
+      fIntRadiiQAEtaPhiSEBefore(hists.fIntRadiiQAEtaPhiSEBefore),
+      fIntRadiiQAEtaPhiMEBefore(hists.fIntRadiiQAEtaPhiMEBefore),
+      fIntRadiiQAEtaPhiSEAfter(hists.fIntRadiiQAEtaPhiSEAfter),
+      fIntRadiiQAEtaPhiMEAfter(hists.fIntRadiiQAEtaPhiMEAfter),
       fRadiiEtaPhiSEsmallK(hists.fRadiiEtaPhiSEsmallK),
       fRadiiEtaPhiMEsmallK(hists.fRadiiEtaPhiMEsmallK),
       fdEtadPhiSE(hists.fdEtadPhiSE),
@@ -95,8 +107,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fDoCentBinning(hists.fDoCentBinning),
       fDokTBinning(hists.fDokTBinning),
       fDomTBinning(hists.fDomTBinning),
+      fPtQA(hists.fPtQA),
       fDokTCentralityBins(hists.fDokTCentralityBins),
       fdPhidEtaPlots(hists.fdPhidEtaPlots),
+      fPhiEtaPlotsSmallK(hists.fPhiEtaPlotsSmallK),
       fmTDetaDPhi(hists.fmTDetaDPhi),
       fmTdEtadPhiBins(hists.fmTdEtadPhiBins),
       fWhichPairs(hists.fWhichPairs),
@@ -119,6 +133,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventmTDist(nullptr),
       fSameEventkTDist(nullptr),
       fSameEventkTCentDist(nullptr),
+      fPtQADist(nullptr),
       fPairCounterSE(nullptr),
       fMixedEventDist(nullptr),
       fMixedEventMultDist(nullptr),
@@ -131,6 +146,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fMomResolutionDist(nullptr),
       fRadiiEtaPhiSE(nullptr),
       fRadiiEtaPhiME(nullptr),
+      fIntRadiiQAEtaPhiSEBefore(nullptr),
+      fIntRadiiQAEtaPhiMEBefore(nullptr),
+      fIntRadiiQAEtaPhiSEAfter(nullptr),
+      fIntRadiiQAEtaPhiMEAfter(nullptr),
       fRadiiEtaPhiSEsmallK(nullptr),
       fRadiiEtaPhiMEsmallK(nullptr),
       fdEtadPhiSE(nullptr),
@@ -142,8 +161,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fDoCentBinning(false),
       fDokTBinning(false),
       fDomTBinning(false),
+      fPtQA(false),
       fDokTCentralityBins(false),
       fdPhidEtaPlots(false),
+      fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
       fmTdEtadPhiBins(),
       fWhichPairs(),
@@ -155,8 +176,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fDokTBinning = conf->GetDokTBinning();
   fDokTCentralityBins = conf->GetDokTCentralityBinning();
   fDomTBinning = conf->GetDomTBinning();
+  fPtQA = conf->GetDoPtQA();
   fPhiEtaPlots = conf->GetDoPhiEtaBinning();
   fdPhidEtaPlots = conf->GetdPhidEtaPlots();
+  fPhiEtaPlotsSmallK = conf->GetdPhidEtaPlotsSmallK();
   fmTDetaDPhi = conf->GetdPhidEtamTPlots();
   if (fDokTCentralityBins && !fDokTBinning) {
     AliWarning(
@@ -221,11 +244,21 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     if (fPhiEtaPlots) {
       fRadiiEtaPhiSE = new TH2F***[nHists];
       fRadiiEtaPhiME = new TH2F***[nHists];
-      fRadiiEtaPhiSEsmallK = new TH2F***[nHists];
-      fRadiiEtaPhiMEsmallK = new TH2F***[nHists];
+      fIntRadiiQAEtaPhiSEBefore = new TH2F**[nHists];
+      fIntRadiiQAEtaPhiMEBefore = new TH2F**[nHists];
+      fIntRadiiQAEtaPhiSEAfter = new TH2F**[nHists];
+      fIntRadiiQAEtaPhiMEAfter = new TH2F**[nHists];
+      if (fPhiEtaPlotsSmallK) {
+        fRadiiEtaPhiSEsmallK = new TH2F***[nHists];
+        fRadiiEtaPhiMEsmallK = new TH2F***[nHists];
+      }
     } else {
       fRadiiEtaPhiSE = nullptr;
       fRadiiEtaPhiME = nullptr;
+      fIntRadiiQAEtaPhiSEBefore = nullptr;
+      fIntRadiiQAEtaPhiMEBefore = nullptr;
+      fIntRadiiQAEtaPhiSEAfter = nullptr;
+      fIntRadiiQAEtaPhiMEAfter = nullptr;
       fRadiiEtaPhiSEsmallK = nullptr;
       fRadiiEtaPhiMEsmallK = nullptr;
     }
@@ -239,6 +272,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fMomResolutionDist = nullptr;
     fRadiiEtaPhiSE = nullptr;
     fRadiiEtaPhiME = nullptr;
+    fIntRadiiQAEtaPhiSEBefore = nullptr;
+    fIntRadiiQAEtaPhiMEBefore = nullptr;
+    fIntRadiiQAEtaPhiSEAfter = nullptr;
+    fIntRadiiQAEtaPhiMEAfter = nullptr;
     fRadiiEtaPhiSEsmallK = nullptr;
     fRadiiEtaPhiMEsmallK = nullptr;
   }
@@ -280,6 +317,11 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   } else {
     fSameEventmTDist = nullptr;
     fMixedEventmTDist = nullptr;
+  }
+  if (fPtQA) {
+    fPtQADist = new TH2F*[nHists];
+  } else {
+    fPtQADist = nullptr;
   }
   if (fdPhidEtaPlots) {
     if (!fmTDetaDPhi) {
@@ -426,17 +468,23 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                        iPar2);
         fSameEventmTDist[Counter] = new TH2F(SamemTEventName.Data(),
                                              SamemTEventName.Data(), *itNBins,
-                                             *itKMin, *itKMax, *itNBins / 10,
-                                             *itKMin, *itKMax * 1.5);
+                                             *itKMin, *itKMax, 225, 0, 4.5);
         fPairs[Counter]->Add(fSameEventmTDist[Counter]);
 
         TString MixedmTEventName = Form("MEmTDist_Particle%d_Particle%d", iPar1,
                                         iPar2);
         fMixedEventmTDist[Counter] = new TH2F(MixedmTEventName.Data(),
                                               MixedmTEventName.Data(), *itNBins,
-                                              *itKMin, *itKMax, *itNBins / 10,
-                                              *itKMin, *itKMax * 1.5);
+                                              *itKMin, *itKMax, 225, 0, 4.5);
         fPairs[Counter]->Add(fMixedEventmTDist[Counter]);
+      }
+
+      if (fillHists && fPtQA) {
+        TString PtQAName = Form("PtQA_Particle%d_Particle%d", iPar1, iPar2);
+        fPtQADist[Counter] = new TH2F(PtQAName.Data(), PtQAName.Data(), 50, 0, 10, 50, 0, 10);
+        fPtQADist[Counter]->GetXaxis()->SetTitle(Form("#it{p}_{T} Particle %d (GeV/#it{c})", iPar1));
+        fPtQADist[Counter]->GetYaxis()->SetTitle(Form("#it{p}_{T} Particle %d (GeV/#it{c})", iPar2));
+        fPairs[Counter]->Add(fPtQADist[Counter]);
       }
 
       if (fillHists && fdPhidEtaPlots) {
@@ -557,16 +605,24 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         }
         if (fillHists && fPhiEtaPlots) {
           const unsigned int nDaug1 = (unsigned int) DoThisPair / 10;
-          if (nDaug1 > 9) {
-            AliWarning("you are doing something wrong \n");
+          if (nDaug1 > 3) {
+            AliWarning("you are doing something wrong, maximum of 3 Daughters supported \n");
           }
           const unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
-          const int nDaugComb = nDaug1 * nDaug2;
+          const int nDaugComb = 9;
           fRadiiEtaPhiSE[Counter] = new TH2F**[nDaugComb];  //maximum of 9 combinations
           fRadiiEtaPhiME[Counter] = new TH2F**[nDaugComb];
 
-          fRadiiEtaPhiSEsmallK[Counter] = new TH2F**[nDaugComb];
-          fRadiiEtaPhiMEsmallK[Counter] = new TH2F**[nDaugComb];
+          fIntRadiiQAEtaPhiSEBefore[Counter] = new TH2F*[nDaugComb];  //maximum of 9 combinations
+          fIntRadiiQAEtaPhiMEBefore[Counter] = new TH2F*[nDaugComb];
+
+          fIntRadiiQAEtaPhiSEAfter[Counter] = new TH2F*[nDaugComb];  //maximum of 9 combinations
+          fIntRadiiQAEtaPhiMEAfter[Counter] = new TH2F*[nDaugComb];
+
+          if(fPhiEtaPlotsSmallK) {
+            fRadiiEtaPhiSEsmallK[Counter] = new TH2F**[nDaugComb];
+            fRadiiEtaPhiMEsmallK[Counter] = new TH2F**[nDaugComb];
+          }
 
           const int nRad = conf->GetNRadii();
           for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
@@ -574,8 +630,61 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
               int DaugIndex = iDaug1 * 3 + iDaug2;
               fRadiiEtaPhiSE[Counter][DaugIndex] = new TH2F*[nRad];
               fRadiiEtaPhiME[Counter][DaugIndex] = new TH2F*[nRad];
-              fRadiiEtaPhiSEsmallK[Counter][DaugIndex] = new TH2F*[nRad];
-              fRadiiEtaPhiMEsmallK[Counter][DaugIndex] = new TH2F*[nRad];
+              if (fPhiEtaPlotsSmallK) {
+                fRadiiEtaPhiSEsmallK[Counter][DaugIndex] = new TH2F*[nRad];
+                fRadiiEtaPhiMEsmallK[Counter][DaugIndex] = new TH2F*[nRad];
+              }
+
+              TString RadIntNameSE_Before = Form(
+                  "SERadQA_Before_Particle%d_Particle%d_DaugMix%d", iPar1, iPar2,
+                  DaugIndex);
+              TString RadIntNameME_Before = Form(
+                  "MERadQA_Before_Particle%d_Particle%d_DaugMix%d", iPar1, iPar2,
+                  DaugIndex);
+              fIntRadiiQAEtaPhiSEBefore[Counter][DaugIndex] = new TH2F(
+                  RadIntNameSE_Before.Data(), RadIntNameSE_Before.Data(), 300,
+                  -0.15, 0.15, 400, -0.2, 0.2);
+              fIntRadiiQAEtaPhiSEBefore[Counter][DaugIndex]->GetXaxis()->SetTitle(
+                  "#Delta#eta");
+              fIntRadiiQAEtaPhiSEBefore[Counter][DaugIndex]->GetYaxis()->SetTitle(
+                  "#Delta#phi");
+              fPairQA[Counter]->Add(
+                  fIntRadiiQAEtaPhiSEBefore[Counter][DaugIndex]);
+              fIntRadiiQAEtaPhiMEBefore[Counter][DaugIndex] = new TH2F(
+                  RadIntNameME_Before.Data(), RadIntNameME_Before.Data(), 300,
+                  -0.15, 0.15, 400, -0.2, 0.2);
+              fIntRadiiQAEtaPhiMEBefore[Counter][DaugIndex]->GetXaxis()->SetTitle(
+                  "#Delta#eta");
+              fIntRadiiQAEtaPhiMEBefore[Counter][DaugIndex]->GetYaxis()->SetTitle(
+                  "#Delta#phi");
+              fPairQA[Counter]->Add(
+                  fIntRadiiQAEtaPhiMEBefore[Counter][DaugIndex]);
+
+              TString RadIntNameSE_After = Form(
+                  "SERadQA_After_Particle%d_Particle%d_DaugMix%d", iPar1, iPar2,
+                  DaugIndex);
+              TString RadIntNameME_After = Form(
+                  "MERadQA_after_Particle%d_Particle%d_DaugMix%d", iPar1, iPar2,
+                  DaugIndex);
+              fIntRadiiQAEtaPhiSEAfter[Counter][DaugIndex] = new TH2F(
+                  RadIntNameSE_After.Data(), RadIntNameSE_After.Data(), 300,
+                  -0.15, 0.15, 400, -0.2, 0.2);
+              fIntRadiiQAEtaPhiSEAfter[Counter][DaugIndex]->GetXaxis()->SetTitle(
+                  "#Delta#eta");
+              fIntRadiiQAEtaPhiSEAfter[Counter][DaugIndex]->GetYaxis()->SetTitle(
+                  "#Delta#phi");
+              fPairQA[Counter]->Add(
+                  fIntRadiiQAEtaPhiSEAfter[Counter][DaugIndex]);
+              fIntRadiiQAEtaPhiMEAfter[Counter][DaugIndex] = new TH2F(
+                  RadIntNameME_After.Data(), RadIntNameME_After.Data(), 300,
+                  -0.15, 0.15, 400, -0.2, 0.2);
+              fIntRadiiQAEtaPhiMEAfter[Counter][DaugIndex]->GetXaxis()->SetTitle(
+                  "#Delta#eta");
+              fIntRadiiQAEtaPhiMEAfter[Counter][DaugIndex]->GetYaxis()->SetTitle(
+                  "#Delta#phi");
+              fPairQA[Counter]->Add(
+                  fIntRadiiQAEtaPhiMEAfter[Counter][DaugIndex]);
+
               for (int iRad = 0; iRad < nRad; ++iRad) {
                 TString RadNameSE = Form(
                     "SERad_%i_Particle%d_Particle%d_DaugMix%d", iRad, iPar1,
@@ -600,27 +709,29 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                     "#Delta#phi");
                 fPairQA[Counter]->Add(fRadiiEtaPhiME[Counter][DaugIndex][iRad]);
 
-                RadNameSE += "_smallK";
-                RadNameME += "_smallK";
+                if(fPhiEtaPlotsSmallK) {
+                  RadNameSE += "_smallK";
+                  RadNameME += "_smallK";
 
-                fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad] = new TH2F(
-                    RadNameSE.Data(), RadNameSE.Data(), 300, -0.15, 0.15, 400,
-                    -0.2, 0.2);
-                fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
-                    ->SetTitle("#Delta#eta");
-                fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
-                    ->SetTitle("#Delta#phi");
-                fPairQA[Counter]->Add(
-                    fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]);
-                fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad] = new TH2F(
-                    RadNameME.Data(), RadNameME.Data(), 300, -0.15, 0.15, 400,
-                    -0.2, 0.2);
-                fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
-                    ->SetTitle("#Delta#eta");
-                fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
-                    ->SetTitle("#Delta#phi");
-                fPairQA[Counter]->Add(
-                    fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]);
+                  fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad] = new TH2F(
+                      RadNameSE.Data(), RadNameSE.Data(), 300, -0.15, 0.15, 400,
+                      -0.2, 0.2);
+                  fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
+                      ->SetTitle("#Delta#eta");
+                  fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
+                      ->SetTitle("#Delta#phi");
+                  fPairQA[Counter]->Add(
+                      fRadiiEtaPhiSEsmallK[Counter][DaugIndex][iRad]);
+                  fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad] = new TH2F(
+                      RadNameME.Data(), RadNameME.Data(), 300, -0.15, 0.15, 400,
+                      -0.2, 0.2);
+                  fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetXaxis()
+                      ->SetTitle("#Delta#eta");
+                  fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]->GetYaxis()
+                      ->SetTitle("#Delta#phi");
+                  fPairQA[Counter]->Add(
+                      fRadiiEtaPhiMEsmallK[Counter][DaugIndex][iRad]);
+                }
               }
             }
           }
@@ -649,6 +760,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fSameEventCentDist = hists.fSameEventCentDist;
     this->fSameEventmTDist = hists.fSameEventmTDist;
     this->fSameEventkTDist = hists.fSameEventkTDist;
+    this->fPtQADist = hists.fPtQADist;
     this->fSameEventkTCentDist = hists.fSameEventkTCentDist;
     this->fPairCounterSE = hists.fPairCounterSE;
     this->fMixedEventDist = hists.fMixedEventDist;
@@ -662,6 +774,8 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fMomResolutionDist = hists.fMomResolutionDist;
     this->fRadiiEtaPhiSE = hists.fRadiiEtaPhiSE;
     this->fRadiiEtaPhiME = hists.fRadiiEtaPhiME;
+    this->fIntRadiiQAEtaPhiSEAfter = hists.fIntRadiiQAEtaPhiSEAfter;
+    this->fIntRadiiQAEtaPhiMEAfter = hists.fIntRadiiQAEtaPhiMEAfter;
     this->fRadiiEtaPhiSEsmallK = hists.fRadiiEtaPhiSEsmallK;
     this->fRadiiEtaPhiMEsmallK = hists.fRadiiEtaPhiMEsmallK;
     this->fdEtadPhiSE = hists.fdEtadPhiSE;
@@ -673,6 +787,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fDoCentBinning = hists.fDoCentBinning;
     this->fDokTBinning = hists.fDokTBinning;
     this->fDomTBinning = hists.fDomTBinning;
+    this->fPtQA = hists.fPtQA;
     this->fDokTCentralityBins = hists.fDokTCentralityBins;
     this->fdPhidEtaPlots = hists.fdPhidEtaPlots;
     this->fCentBins = hists.fCentBins;
@@ -695,6 +810,9 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists() {
   if (fSameEventmTDist) {
     delete[] fSameEventmTDist;
     delete fSameEventmTDist;
+  }
+  if(fPtQADist) {
+    delete[] fPtQADist;
   }
   if (fSameEventkTDist) {
     delete[] fSameEventkTDist;

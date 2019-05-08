@@ -140,9 +140,9 @@ Double_t WrapPi(Double_t phi);
   AliTrackReference* IsHitITS(AliMCParticle* p);
 
   // Get an iterable container of all the daughters of a given particle
-  std::vector< AliMCParticle* > GetDaughters(AliMCParticle* p);
+  //std::vector< AliMCParticle* > GetDaughters(AliMCParticle* p);
   // Get the number of hits which p's chain causes on the FMD
-  Int_t ParticleProducedNHitsOnFMD(AliMCParticle* p);
+  //Int_t ParticleProducedNHitsOnFMD(AliMCParticle* p);
   // Modified IsPhysicalPrimary check to regard pi0s as stable. Nont that this implementation
   // is not "orthogonal" to AliStack::IsFromWeakDecay and AliStack::IsSecondaryFromMaterial
   Bool_t IsRedefinedPhysicalPrimary(AliMCParticle* p);
@@ -159,8 +159,8 @@ Double_t WrapPi(Double_t phi);
   //TList* fDiffList; //!
   TList* fEventList; //!
   TList* fDeltaList; //!
-  AliFMDMCTrackDensity* fTrackDensity; //!
   TRandom fRandom;
+  AliFMDMCTrackDensity* fTrackDensity; //!
 
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
@@ -194,7 +194,8 @@ TF1 *fMultCentLowCut; //!
   TCutG *fFMD3;  //!
   TCutG *fPipe;  //!
   TCutG *fEarlyDecay;  //!
-
+  TH1D* phihist; //!
+  AliTrackReference* fStored; //! Last stored
   enum {
     kTPCOnly = 128, // TPC only tracks
     kHybrid = 768, // TPC only tracks
@@ -280,6 +281,7 @@ protected:
   // etaPhi is a 2-element array where the values will be written in.
   // If no FMD-reference was created, etaPhi will be NULL
   void GetTrackRefEtaPhi(AliMCParticle* p, Double_t* etaPhi);
+  void GetTrackRefEtaPhi(AliTrackReference* ref, Double_t* etaPhi);
 
   // Get the phi coordinate where the track ref was created
   // Double_t GetTrackRefPhi(AliTrackReference* ref);

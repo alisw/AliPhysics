@@ -22,13 +22,13 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
       fUseV0AMult(false),
       fUseV0CMult(false),
       fUseRef08Mult(false),
-	  fUseMultPercentileCut(false),
-	  fMultPercentileMax(999.f),
+      fUseMultPercentileCut(false),
+      fMultPercentileMax(999.f),
       fUseAliEvtCuts(false),
       fCentVsMultPlots(false),
       fDoSpherCuts(false),
       fSpherCutsLow(0.f),
-      fSpherCutsUp(1.f)        {
+      fSpherCutsUp(1.f) {
 }
 
 AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
@@ -47,8 +47,8 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts(
       fUseV0AMult(cuts.fUseV0AMult),
       fUseV0CMult(cuts.fUseV0CMult),
       fUseRef08Mult(cuts.fUseRef08Mult),
-	  fUseMultPercentileCut(cuts.fUseMultPercentileCut),
-	  fMultPercentileMax(cuts.fMultPercentileMax),
+      fUseMultPercentileCut(cuts.fUseMultPercentileCut),
+      fMultPercentileMax(cuts.fMultPercentileMax),
       fUseAliEvtCuts(cuts.fUseAliEvtCuts),
       fCentVsMultPlots(cuts.fCentVsMultPlots),
       fDoSpherCuts(cuts.fDoSpherCuts),
@@ -181,7 +181,7 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
     }
   }
 
-  if( pass & fUseMultPercentileCut) {
+  if (pass & fUseMultPercentileCut) {
     if (evt->GetV0MCentrality() > fMultPercentileMax) {
       pass = false;
     } else {
@@ -232,8 +232,13 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillMultV0A(i, evt->GetV0AMult());
         fHist->FillMultV0C(i, evt->GetV0CMult());
         fHist->FillMultRef08(i, evt->GetRefMult08());
-        fHist->FillSPDTrackletsVsCluster(i, evt->GetSPDMult(),
-                                         evt->GetSPDCluster());
+        fHist->FillSPDTrackletsVsCluster(
+            i, evt->GetSPDMult(),
+            evt->GetSPDCluster(0) + evt->GetSPDCluster(1));
+        fHist->FillSPDTrackletsLyVsCluster(i, 0, evt->GetSPDMult(),
+                                           evt->GetSPDCluster(0));
+        fHist->FillSPDTrackletsLyVsCluster(i, 1, evt->GetSPDMult(),
+                                           evt->GetSPDCluster(1));
         fHist->FillEvtVtxZTrackvsSPD(i, evt->GetZVertexSPD(),
                                      evt->GetZVertexTracks());
         fHist->FillMagneticField(i, evt->GetBField());

@@ -108,10 +108,10 @@ fUseVtxAxis(kFALSE),
 fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
+fRandomizeReactionPlane(kFALSE),
 fV0CL1PileUp(0),
 fESDTPCTrackPileUp(0),
 fTPCITSTOFPileUp(0),
-fRandomizeReactionPlane(kFALSE),
 fHelperPID(0x0),
 fAnalysisUtils(0x0),
 fMap(0x0),
@@ -490,7 +490,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   // If some bins of the pool should be saved, fEventPoolOutputList must be given
   // using AddEventPoolToOutput()
   // Note that this is in principle also possible, if an external poolmanager was given
-  for(Int_t i = 0; i < fEventPoolOutputList.size(); i++)
+  for(UInt_t i = 0; i < fEventPoolOutputList.size(); i++)
   {
     Double_t minCent = fEventPoolOutputList[i][0];
     Double_t maxCent = fEventPoolOutputList[i][1];
@@ -652,7 +652,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (!fAnalyseUE->VertexSelection(vertexSupplier, 0, fZVertex)) 
     return;
     
-    Float_t zVtx = 0;
+  Float_t zVtx = 0;
   if (fAOD)
     zVtx = ((AliAODMCHeader*) vertexSupplier)->GetVtxZ();
   else
@@ -1798,8 +1798,7 @@ void AliAnalysisTaskPhiCorrelations::RemoveWeakDecaysInMC(TObjArray* tracks, TOb
     if (!particle) 
       continue;
   
-    Bool_t kExcludeParticle = kFALSE;
-    Int_t motherIndex = particle->GetFirstMother();
+    Int_t motherIndex = particle->GetMother(0);
     if (motherIndex == -1)
       continue;
     

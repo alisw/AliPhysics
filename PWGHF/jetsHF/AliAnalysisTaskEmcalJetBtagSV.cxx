@@ -99,6 +99,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fhEntries(NULL),
   fhZNApercentQa(NULL),
   fhEvtRej(NULL),
+  fhEvtRejBitmap(NULL),
   fhHFjetQa(NULL),
   fhRhoQa(NULL),
   fhMCRhoQa(NULL),
@@ -192,6 +193,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fhEntries(NULL),
   fhZNApercentQa(NULL),
   fhEvtRej(NULL),
+  fhEvtRejBitmap(NULL),
   fhHFjetQa(NULL),
   fhRhoQa(NULL),
   fhMCRhoQa(NULL),  
@@ -292,18 +294,18 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
       // detector response matrix for unfolding (from Gyulnara)
       // dimensions: pt_reco, pt_gen, eta_reco, eta_gen, flavor{g=1, L=2, C=3, B=4} BH and BP
       const int kNbins = 6;
-      Int_t bins[kNbins]    = {200, 200,  20, 20,    5,   5};
+      Int_t bins[kNbins]    = {300, 300,  20, 20,    5,   5};
       Double_t xmin[kNbins] = {  0,   0, -1., -1., -.5, -.5};
-      Double_t xmax[kNbins] = {200, 200,  1.,  1., 4.5, 4.5};
+      Double_t xmax[kNbins] = {300, 300,  1.,  1., 4.5, 4.5};
       fhnDetRespMtx = new THnSparseF("fhnDetRespMtx", "Detector response matrix", kNbins, bins, xmin, xmax);
       fOutputList->Add(fhnDetRespMtx);
       
       // MC generated histogram is needed to calculate efficiency during unfolding
       // dimensions: pt_gen, eta_gen, flavor{g=1, L=2, C=3, B=4} BH and BP
       const Int_t kNhbins = 4;
-      Int_t binsh[kNhbins]  =   {200,  20,    5,   5};
+      Int_t binsh[kNhbins]  =   {300,  20,    5,   5};
       Double_t xminh[kNhbins] = {  0,  -1., -.5, -.5};
-      Double_t xmaxh[kNhbins] = {200,   1., 4.5, 4.5};
+      Double_t xmaxh[kNhbins] = {300,   1., 4.5, 4.5};
       fhnGenerated = new THnF("fhnGenerated", "MC Generated histogram", kNhbins, binsh, xminh, xmaxh);
       fOutputList->Add(fhnGenerated);
     }
@@ -406,8 +408,14 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
   fhEntries->GetXaxis()->SetBinLabel(11, "nEvPtHardOutlier");
   fOutputList->Add(fhEntries);
 
-  fhEvtRej  = new TH1F("fhEvtRej", "Event rejection criteria", 10, -.5, 10.5);
+  fhEvtRej  = new TH1F("fhEvtRej", "Event rejection criteria", 11, -.5, 10.5);
   fOutputList->AddLast(fhEvtRej);
+  
+  fhEvtRejBitmap  = new TH1F("fhEvtRejBitmap", "Event rejection criteria bitmap", 2049, -.5, 2048.5);
+  fOutputList->AddLast(fhEvtRejBitmap);	
+	
+	
+	
 
   fhZNApercentQa = new TH1F("fhZNApercentQa", "ZNA multiplicity percentile;percent;dN/d(percent)", 100, 0., 100.);
   fOutputList->Add(fhZNApercentQa);
@@ -554,6 +562,8 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t* /*option*/)
   if (!fCutsHFjets->IsEventSelected((AliAODEvent*)fEvent)) {
     AliDebug(5, MSGDEBUG("Event did not pass event selection from AliRDHFJetsCuts!"));
     fhEvtRej->Fill(fCutsHFjets->GetWhyRejection(), 1);
+	fhEvtRejBitmap->Fill(fCutsHFjets->GetEventRejectionBitMap(),1);
+	  
     return;
   }
 

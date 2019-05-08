@@ -74,7 +74,6 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-#include "TParticle.h"
 #include "AliLog.h"
 #include "AliAnalysisTaskSE.h"
 #include "TRefArray.h"
@@ -169,6 +168,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_proton_p_after_tof(0)
 ,fTPCnsigma_p_after_tof_p(0)
 ,fTPCnsigma_p_after_tof_pion(0)
 ,fTPCnsigma_p_after_tof_k(0)
@@ -261,13 +261,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fPIDqa(0)
 
 //For MC
-,fMCstack(0)
 ,fRejectKinkMother(kTRUE)
-,fMCtrack(0)
-,fMCtrackMother(0)
-,fMCtrackGMother(0)
-,fMCtrackGGMother(0)
-,fMCtrackGGGMother(0)
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
@@ -391,6 +385,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fTPCnsigma_pt2(0)
 ,fTPCnsigma_pt3(0)
 ,fTPCnsigma_p_after_tof(0)
+,fTPCnsigma_proton_p_after_tof(0)
 ,fTPCnsigma_p_after_tof_p(0)
 ,fTPCnsigma_p_after_tof_pion(0)
 ,fTPCnsigma_p_after_tof_k(0)
@@ -483,13 +478,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fPIDqa(0)
 
 //For MC
-,fMCstack(0)
 ,fRejectKinkMother(kTRUE)
-,fMCtrack(0)
-,fMCtrackMother(0)
-,fMCtrackGMother(0)
-,fMCtrackGGMother(0)
-,fMCtrackGGGMother(0)
 ,fMCarray(0)
 ,fMCheader(0)
 ,fMCparticle(0)
@@ -763,13 +752,13 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
     fOutputList->Add(hBeautyMotherPt);
     
-    hDCAPtProtons = new TH2F("hDCAPtProtons","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    hDCAPtProtons = new TH2F("hDCAPtProtons","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
     fOutputList->Add(hDCAPtProtons);
     
-    hDCAPtProtons2 = new TH2F("hDCAPtProtons2","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    hDCAPtProtons2 = new TH2F("hDCAPtProtons2","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
     fOutputList->Add(hDCAPtProtons2);
     
-    hDCAPtProtons3 = new TH2F("hDCAPtProtons3","; p_{T} [GeV/c]; Count",32,ptbinning,800,-0.2,0.2);
+    hDCAPtProtons3 = new TH2F("hDCAPtProtons3","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
     fOutputList->Add(hDCAPtProtons3);
     
     hBeautyMotherPt2Daft = new TH2F("hBeautyMotherPt2Daft","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
@@ -795,114 +784,114 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fOutputList->Add(fPHad_f);
     fPHad_f->Sumw2();
        
-    fDCAxy_pt_had = new TH2F("fDCAxy_pt_had",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had = new TH2F("fDCAxy_pt_had",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had);
     
-    fDCAxy_pt_had_WoPID = new TH2F("fDCAxy_pt_had_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_WoPID = new TH2F("fDCAxy_pt_had_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_WoPID);
     
-    fDCAxy_pt_charmbef = new TH2F("fDCAxy_pt_charmbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_charmbef = new TH2F("fDCAxy_pt_charmbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_charmbef);
     
-    fDCAxy_pt_charmaft = new TH2F("fDCAxy_pt_charmaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_charmaft = new TH2F("fDCAxy_pt_charmaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_charmaft);
     
-    fDCAxy_pt_beautybef = new TH2F("fDCAxy_pt_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_beautybef = new TH2F("fDCAxy_pt_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_beautybef);
     
-    fDCAxy_pt_beautyaft = new TH2F("fDCAxy_pt_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_beautyaft = new TH2F("fDCAxy_pt_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_beautyaft); 
     
-    fDCAxy_pt_MesonB_beautybef = new TH2F("fDCAxy_pt_MesonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_MesonB_beautybef = new TH2F("fDCAxy_pt_MesonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_MesonB_beautybef);
     
-    fDCAxy_pt_MesonB_beautyaft = new TH2F("fDCAxy_pt_MesonB_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_MesonB_beautyaft = new TH2F("fDCAxy_pt_MesonB_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_MesonB_beautyaft);
     
-    fDCAxy_pt_MesonBD_beautybef = new TH2F("fDCAxy_pt_MesonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_MesonBD_beautybef = new TH2F("fDCAxy_pt_MesonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_MesonBD_beautybef);
     
-    fDCAxy_pt_MesonBD_beautyaft = new TH2F("fDCAxy_pt_MesonBD_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_MesonBD_beautyaft = new TH2F("fDCAxy_pt_MesonBD_beautyaft",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_MesonBD_beautyaft);
     
-    fDCAxy_pt_BaryonB_beautybef = new TH2F("fDCAxy_pt_BaryonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_BaryonB_beautybef = new TH2F("fDCAxy_pt_BaryonB_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_BaryonB_beautybef);
      
-    fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_BaryonBD_beautybef);
        
-    fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_WoPID);
     
-    fDCAxy_pt_had_onlyDCA = new TH2F("fDCAxy_pt_had_onlyDCA",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA = new TH2F("fDCAxy_pt_had_onlyDCA",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA);
     
-    fDCAxy_pt_had_onlyDCA_Hijing = new TH2F("fDCAxy_pt_had_onlyDCA_Hijing",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_Hijing = new TH2F("fDCAxy_pt_had_onlyDCA_Hijing",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_Hijing);
        
-    fDCAxy_pt_had_onlyDCA_Phytia = new TH2F("fDCAxy_pt_had_onlyDCA_Phytia",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_Phytia = new TH2F("fDCAxy_pt_had_onlyDCA_Phytia",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_Phytia);
        
-    fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,800,-0.2,0.2);
+    fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAz_pt_had);
     
-    fDCAxy_pt_had_onlyDCA_phi1 = new TH2F("fDCAxy_pt_had_onlyDCA_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_phi1 = new TH2F("fDCAxy_pt_had_onlyDCA_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi1);
     
-    fDCAxy_pt_had_phi1_ChB = new TH2F("fDCAxy_pt_had_phi1_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_phi1_ChB = new TH2F("fDCAxy_pt_had_phi1_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_phi1_ChB);
     
-    fDCAxy_pt_had_phi1_B = new TH2F("fDCAxy_pt_had_phi1_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_phi1_B = new TH2F("fDCAxy_pt_had_phi1_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_phi1_B);
     
-    fDCAxy_pt_had_onlyDCA_phi2 = new TH2F("fDCAxy_pt_had_onlyDCA_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_phi2 = new TH2F("fDCAxy_pt_had_onlyDCA_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi2);
     
-    fDCAxy_pt_had_phi2_ChB = new TH2F("fDCAxy_pt_had_phi2_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_phi2_ChB = new TH2F("fDCAxy_pt_had_phi2_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_phi2_ChB);
     
-    fDCAxy_pt_had_phi2_B = new TH2F("fDCAxy_pt_had_phi2_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_phi2_B = new TH2F("fDCAxy_pt_had_phi2_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_phi2_B);
     
-    fDCAxy_pt_had_onlyDCA_phi3 = new TH2F("fDCAxy_pt_had_onlyDCA_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_phi3 = new TH2F("fDCAxy_pt_had_onlyDCA_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi3);
     
-    fDCAxy_pt_had_phi3_ChB = new TH2F("fDCAxy_pt_had_phi3_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_phi3_ChB = new TH2F("fDCAxy_pt_had_phi3_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_phi3_ChB);
     
-    fDCAxy_pt_had_phi3_B = new TH2F("fDCAxy_pt_had_phi3_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_phi3_B = new TH2F("fDCAxy_pt_had_phi3_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_phi3_B);
     
-    fDCAxy_pt_had_onlyDCA_phi4 = new TH2F("fDCAxy_pt_had_onlyDCA_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_onlyDCA_phi4 = new TH2F("fDCAxy_pt_had_onlyDCA_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi4);
     
-    fDCAxy_pt_had_phi4_ChB = new TH2F("fDCAxy_pt_had_phi4_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_phi4_ChB = new TH2F("fDCAxy_pt_had_phi4_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_phi4_ChB);
     
-    fDCAxy_pt_had_phi4_B = new TH2F("fDCAxy_pt_had_phi4_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_phi4_B = new TH2F("fDCAxy_pt_had_phi4_B",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_phi4_B);
     
        
-    fDCAxy_pt_had_ResCorr_phi1 = new TH2F("fDCAxy_pt_had_ResCorr_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_ResCorr_phi1 = new TH2F("fDCAxy_pt_had_ResCorr_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_ResCorr_phi1);
     
-    fDCAxy_pt_had_ResCorr_phi2 = new TH2F("fDCAxy_pt_had_ResCorr_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_ResCorr_phi2 = new TH2F("fDCAxy_pt_had_ResCorr_phi2",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_ResCorr_phi2);
     
-    fDCAxy_pt_had_ResCorr_phi3 = new TH2F("fDCAxy_pt_had_ResCorr_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_ResCorr_phi3 = new TH2F("fDCAxy_pt_had_ResCorr_phi3",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_ResCorr_phi3);
     
-    fDCAxy_pt_had_ResCorr_phi4 = new TH2F("fDCAxy_pt_had_ResCorr_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_had_ResCorr_phi4 = new TH2F("fDCAxy_pt_had_ResCorr_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_ResCorr_phi4);
     
     
-    fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,800,-0.2,0.2);
+    fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAz_pt_had_WoPID);
     
-    fDCAxy_pt_ele = new TH2F("fDCAxy_pt_ele",";p_{t} (GeV/c);DCAxy ",300,0,30,800,-0.2,0.2);
+    fDCAxy_pt_ele = new TH2F("fDCAxy_pt_ele",";p_{t} (GeV/c);DCAxy ",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_ele);
     
-    fDCAz_pt_ele = new TH2F("fDCAz_pt_ele",";p_{t} (GeV/c);DCAz ",300,0,30,800,-0.2,0.2);
+    fDCAz_pt_ele = new TH2F("fDCAz_pt_ele",";p_{t} (GeV/c);DCAz ",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAz_pt_ele); 
     
     fPtMCeta = new TH1F("fPtMCeta",";p_{t} (GeV/c)",2000,0,100);
@@ -913,6 +902,9 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
     fTPCnsigma_p_after_tof_p = new TH2F("fTPCnsigma_p_after_tof_p","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof_p);
+    
+    fTPCnsigma_proton_p_after_tof = new TH2F("fTPCnsigma_proton_p_after_tof","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
+    fOutputList->Add(fTPCnsigma_proton_p_after_tof);
     
     fTPCnsigma_p_after_tof_pion = new TH2F("fTPCnsigma_p_after_tof_pion","p (GeV/c);TPC Electron N#sigma after TOF cut",300,0,15,200,-15,10);
     fOutputList->Add(fTPCnsigma_p_after_tof_pion);
@@ -959,9 +951,12 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     Double_t binLimpdg2[nBinspdg2+1];
     for(Int_t i=0; i<=nBinspdg2; i++) binLimpdg2[i]=(Double_t)minpdg2 + (maxpdg2-minpdg2)/nBinspdg2*(Double_t)i ;
     
-    Int_t nBinsdcaxy = 3200; //0.000125 cm
-    Double_t mindcaxy = -0.2;
-    Double_t maxdcaxy = 0.2;
+  //  Int_t nBinsdcaxy = 3200; //0.000125 cm
+    Int_t nBinsdcaxy = 8000; //0.000125 cm
+   // Double_t mindcaxy = -0.2;
+   // Double_t maxdcaxy = 0.2;
+    Double_t mindcaxy = -0.5;
+    Double_t maxdcaxy = 0.5;
     Double_t binLimdcaxy[nBinsdcaxy+1];
     for(Int_t i=0; i<=nBinsdcaxy; i++) binLimdcaxy[i]=(Double_t)mindcaxy + (maxdcaxy-mindcaxy)/nBinsdcaxy*(Double_t)i ;
     
@@ -1019,14 +1014,15 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     ///-----------------------------------------------------------------
     
     ///THnSparse to store DCA in Data
-    const Int_t nDima3=5;
-    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
+    const Int_t nDima3=6;
+    Int_t nBina3[nDima3] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2,nBinspdg2};
     fD0Data = new THnSparseF("fD0Data","fD0Data",nDima3,nBina3);
     fD0Data->SetBinEdges(0,ptbinning); ///pt spectra -> same binning as other histograms
     fD0Data->SetBinEdges(1,binLimdcaxy); ///dca distribution
     fD0Data->SetBinEdges(2,binLimITSchi2); ///ITS chi2 
     fD0Data->SetBinEdges(3,binLimITSsha); ///fraction ITS shared clusters 
     fD0Data->SetBinEdges(4,binLimpdg2); /// electrons and pions
+    fD0Data->SetBinEdges(5,binLimpdg2); /// electrons and pions
     fD0Data->Sumw2();
     fOutputList->Add(fD0Data);
     
@@ -1066,6 +1062,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
     Double_t fITSnSigma = -999;
     Double_t fTPCnSigma_pion = -999;
     Double_t fTPCnSigma_proton = -999;
+    Double_t fTOFnSigma_proton = -999;
     Double_t fTPCnSigma_kaon = -999;
     Double_t fTPCsignal = -999;
     Double_t fPt = -999;
@@ -1320,8 +1317,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         fEta = track->Eta();
         fPhi = track->Phi();
         fP = TMath::Sqrt((track->Pt())*(track->Pt()) + (track->Pz())*(track->Pz()));
-        
-        if(fP <=2.0 ){
+      /*  
+        if(fP <= 2.0 ){
         ftofPIDmincut = -2;
         ftofPIDmaxcut = 2;
         }
@@ -1329,7 +1326,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         ftofPIDmincut = -3;
         ftofPIDmaxcut = 3;
         }
-        
+        */
         fITSnClus =  track->GetNumberOfITSClusters();
         fTPCnClus =  track->GetNumberOfTPCClusters();
         
@@ -1339,6 +1336,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         fITSnSigma = fPidResponse->NumberOfSigmasITS(track, AliPID::kElectron);
         fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
         fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+        fTOFnSigma_proton = fPidResponse->NumberOfSigmasTOF(track, AliPID::kProton);
         fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
         
         fTPC_p1->Fill(fP,fTPCsignal);
@@ -1470,9 +1468,13 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         
         //cout<<"After   "<<DCAxy<<"         "<<DCAz<<endl;
   
+  	if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+  	fTPCnsigma_proton_p_after_tof->Fill(fP,fTPCnSigma_proton);
+  	}
         ///Checking nsigmaTPC after PID cuts in tof and its
         if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
             fTPCnsigma_p_after_tof->Fill(fP,fTPCnSigma);
+            
             fTPCnsigma_pt_after_tof->Fill(fPt,fTPCnSigma);
             
 			///Cheking the hadron nsigmaTPC after TOF cut
@@ -1597,6 +1599,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			
 			 qadcaData[4] = -1.;
 			
+			 qadcaData[5] = 10.;
 			 ///Charged pions
 			 if(fTPCnSigma >= -5 && fTPCnSigma <= -3){
 				  qadcaData[4] = 0.5;
@@ -1605,6 +1608,24 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			 if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
 				if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
 					qadcaData[4] = 1.5;					
+				}
+			 }
+			 
+			  ///Proton candidates
+			 if(fTPCnSigma_proton >= -3 && fTPCnSigma_proton <= 8){
+				if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+				hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+					//qadcaData[4] = 3.5;
+										
+				}
+			 }
+			 
+			   ///Proton candidates
+			 if(fTPCnSigma_proton >= -3 && fTPCnSigma_proton <= 3){
+				if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
+				hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
+					qadcaData[5] = 3.5;
+										
 				}
 			 }
         
@@ -1721,7 +1742,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
    
          if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
         if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
-            hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
+         //   hDCAPtProtons->Fill(fPt,DCAxy*track->Charge()*signB);
          //   cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
             }
 
@@ -1729,7 +1750,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
         
         if(fTPCnSigma >= -5 && fTPCnSigma <= 5){
         if(TMath::Abs(fMCparticle->GetPdgCode()) == 2212){ 
-            hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
+         //   hDCAPtProtons3->Fill(fPt,DCAxy*track->Charge()*signB);
          //   cout<<"Hello:  "<<TMath::Abs(fMCparticle->GetPdgCode())<<endl;
             }
 
@@ -2295,81 +2316,7 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::FindMother(Int_t mcIndex)
         }
             //    cout<<fMCparticle->GetMother()<<"   "<<mpdg<<"    "<<gmpdg<<"    "<<ggmpdg<<"    "<<gggmpdg<<endl;
     }
-    else
-    {
-        fMCtrack = fMCstack->Particle(mcIndex);
-        
-        pdg = TMath::Abs(fMCtrack->GetPdgCode());
-        
-        if(pdg!=11)
-        {
-            fIsHFE1 = kFALSE;
-            fIsHFE2 = kFALSE;
-            fIsNonHFE = kFALSE;
-            fIsFromD = kFALSE;
-            fIsFromBarionB = kFALSE;
-			fIsFromMesonB = kFALSE;
-			fIsFromBarionBD =kFALSE;
-			fIsFromMesonBD = kFALSE;
-            fIsFromPi0 = kFALSE;
-            fIsFromEta = kFALSE;
-            fIsFromGamma = kFALSE;
-            return kFALSE;
-        }
-        
-        if(fMCtrack->GetFirstMother()<0)
-        {
-            fIsHFE1 = kFALSE;
-            fIsHFE2 = kFALSE;
-            fIsNonHFE = kFALSE;
-            fIsFromD = kFALSE;
-            fIsFromBarionB = kFALSE;
-			fIsFromMesonB = kFALSE;
-			fIsFromBarionBD =kFALSE;
-			fIsFromMesonBD = kFALSE;
-            fIsFromPi0 = kFALSE;
-            fIsFromEta = kFALSE;
-            fIsFromGamma = kFALSE;
-            return kFALSE;
-        }
-        
-        fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
-        mpdg = TMath::Abs(fMCtrackMother->GetPdgCode());
-        
-        if(fMCtrackMother->GetFirstMother()<0)
-        {
-            gmpdg = 0;
-            ggmpdg = 0;
-            gggmpdg = 0;
-        }
-        else
-        {
-            fMCtrackGMother = fMCstack->Particle(fMCtrackMother->GetFirstMother());
-            gmpdg = TMath::Abs(fMCtrackGMother->GetPdgCode());
-            
-            if(fMCtrackGMother->GetFirstMother()<0)
-            {
-                ggmpdg = 0;
-                gggmpdg = 0;
-            }
-            else
-            {
-                fMCtrackGGMother = fMCstack->Particle(fMCtrackGMother->GetFirstMother());
-                ggmpdg = TMath::Abs(fMCtrackGGMother->GetPdgCode());
-                
-                if(fMCtrackGGMother->GetFirstMother()<0)
-                {
-                    gggmpdg = 0;
-                }
-                else
-                {
-                    fMCtrackGGGMother = fMCstack->Particle(fMCtrackGGMother->GetFirstMother());
-                    gggmpdg = TMath::Abs(fMCtrackGGGMother->GetPdgCode());
-                }
-            }
-        }
-    }
-    
+     
     ///Tag Electron Source
     if(mpdg==111 || mpdg==221 || mpdg==22)
     {

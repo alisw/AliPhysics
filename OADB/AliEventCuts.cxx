@@ -50,6 +50,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fMaxDeltaSpdTrackNsigmaSPD{1.e14},
   fMaxDeltaSpdTrackNsigmaTrack{1.e14},
   fMaxResolutionSPDvertex{1.e14f},
+  fMaxDispersionSPDvertex{1.e14f},
   fCheckAODvertex{true},
   fRejectDAQincomplete{false},
   fRequiredSolenoidPolarity{0},
@@ -87,7 +88,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fkLabels{"raw","selected"},
   fManualMode{false},
   fSavePlots{saveplots},
-  fCurrentRun{-1},
+  fCurrentRun{-0xBADCAFE},
   fFlag{BIT(kNoCuts)},
   fCentEstimators{"V0M","CL0"},
   fCentPercentiles{-1.f},
@@ -171,13 +172,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// Vertex existance
   const AliVVertex* vtTrc = ev->GetPrimaryVertex();
+  bool isTrackV = true;
+  if(vtTrc->IsFromVertexer3D() || vtTrc->IsFromVertexerZ()) isTrackV=false;
   const AliVVertex* vtSPD = ev->GetPrimaryVertexSPD();
   /// On current AODs primary vertex could be from TPC or invalid SPD vertex
   /// The following check should be applied only on AOD.
   bool goodAODvtx = (dynamic_cast<AliAODEvent*>(ev) ? GoodPrimaryAODVertex(ev) : true) || !fCheckAODvertex;
 
   if (vtSPD->GetNContributors() > 0) fFlag |= BIT(kVertexSPD);
-  if (vtTrc->GetNContributors() > 1 && goodAODvtx) fFlag |= BIT(kVertexTracks);
+  if (vtTrc->GetNContributors() > 1 && isTrackV && goodAODvtx) fFlag |= BIT(kVertexTracks);
   if (((fFlag & BIT(kVertexTracks)) ||  !fRequireTrackVertex) && (fFlag & BIT(kVertexSPD))) fFlag |= BIT(kVertex);
   const AliVVertex* &vtx = bool(fFlag & BIT(kVertexTracks)) ? vtTrc : vtSPD;
   fPrimaryVertex = const_cast<AliVVertex*>(vtx);
@@ -195,11 +198,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
   double errTrc = bool(fFlag & kVertexTracks) ? TMath::Sqrt(covTrc[5]) : 1.;
   double nsigTot = TMath::Abs(dz) / errTot, nsigTrc = TMath::Abs(dz) / errTrc;
+  /// vertex dispersion for run1, only for ESD, AOD code to be added here
+  const AliESDVertex* vtSPDESD = dynamic_cast<const AliESDVertex*>(vtSPD);
+  double vtSPDdispersion = vtSPDESD ? vtSPDESD->GetDispersion() : 0;
   if (
       (TMath::Abs(dz) <= fMaxDeltaSpdTrackAbsolute && nsigTot <= fMaxDeltaSpdTrackNsigmaSPD && nsigTrc <= fMaxDeltaSpdTrackNsigmaTrack) && // discrepancy track-SPD vertex
-      (!vtSPD->IsFromVertexerZ() || TMath::Sqrt(covSPD[5]) <= fMaxResolutionSPDvertex)
+      (!vtSPD->IsFromVertexerZ() || TMath::Sqrt(covSPD[5]) <= fMaxResolutionSPDvertex) &&
+      (!vtSPD->IsFromVertexerZ() || vtSPDdispersion <= fMaxDispersionSPDvertex) /// vertex dispersion cut for run1, only for ESD
      ) // quality cut on vertexer SPD z
-    fFlag |= BIT(kVertexQuality);
+    fFlag |= BIT(kVertexQuality);  
 
   /// Pile-up rejection
   bool usePileUpMV = (fUseCombinedMVSPDcut && vtx != vtSPD) || fPileUpCutMV;
@@ -420,7 +427,14 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     AliFatal("I don't find the AOD event nor the ESD one, aborting.");
   else {
     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    fMC = (eventHandler) ? true : false;
+    TClonesArray* aodMC = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    fMC = (eventHandler || aodMC);
+  }
+
+  if (fCurrentRun == -1 && fMC) {
+    ::Info("AliEventCuts::AutomaticSetup","MCGEN train / Kinematics only production detected, disabling all the cuts.");
+    fGreenLight = true;
+    return;
   }
 
   if (fCurrentRun == 280234 || fCurrentRun == 280235) {
@@ -467,6 +481,13 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
       (fCurrentRun >= 252235 && fCurrentRun <= 264347) || // 2016 13 TeV sample
       (fCurrentRun >= 270531 && fCurrentRun <= 294960)) { // 2017 13 and 5 TeV + 2018 13 TeV samples
     SetupRun2pp();
+    return;
+  }
+  
+  /// Run 1 pp
+  if ( (fCurrentRun >= 140164 && fCurrentRun <= 146860) ||  // LHC11a 
+       (fCurrentRun >= 121692 && fCurrentRun <= 126437)) {  // LHC10d
+    SetupRun1pp();
     return;
   }
 
@@ -578,6 +599,43 @@ void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
   fContainer = *tmp_cont;
 }
 
+void AliEventCuts::SetupRun1pp() {
+  ::Info("AliEventCuts::SetupRun1pp","EXPERIMENTAL: Setup event cuts for the Run1 pp periods. Currently only for ESD");
+  SetName("StandardRun1ppEventCuts");
+
+  fMinVtz = -10.f;
+  fMaxVtz = 10.f;
+  fMaxDeltaSpdTrackAbsolute = 0.5f;
+  fMaxDeltaSpdTrackNsigmaSPD = 1.e14f;
+  fMaxDeltaSpdTrackNsigmaTrack = 1.e14;
+  fMaxResolutionSPDvertex = 0.25f;
+  fMaxDispersionSPDvertex = 0.04f;
+
+  fRejectDAQincomplete = true;
+  
+  fTrackletBGcut = true;
+
+  fRequiredSolenoidPolarity = 0;
+  /*
+  //remove pileup cuts, to be confirmed
+  if (!fOverrideAutoPileUpCuts) {
+    fUseCombinedMVSPDcut = true;
+    fSPDpileupMinZdist = 0.8;
+    fSPDpileupNsigmaZdist = 3.;
+    fSPDpileupNsigmaDiamXY = 2.;
+    fSPDpileupNsigmaDiamZ = 5.;
+    fTrackletBGcut = true;
+    fUseMultiplicityDependentPileUpCuts = true;
+    fUtils.SetMaxPlpChi2MV(5);
+    fUtils.SetMinWDistMV(15);
+    fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  }
+  */
+
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7 |  AliVEvent::kCINT5 |  AliVEvent::kMB;
+
+}
+
 void AliEventCuts::SetupRun2pp() {
   ::Info("AliEventCuts::SetupRun2pp","Setup event cuts for the Run2 pp periods.");
   SetName("StandardRun2ppEventCuts");
@@ -652,15 +710,15 @@ void AliEventCuts::SetupPbPb2018() {
   fMinCentrality = 0.f;
   fMaxCentrality = 90.f;
 
-  fUseEstimatorsCorrelationCut = false;
-  fEstimatorsCorrelationCoef[0] = 0.0157497;
-  fEstimatorsCorrelationCoef[1] = 0.973488;
-  fEstimatorsSigmaPars[0] = 0.673612;
-  fEstimatorsSigmaPars[1] = 0.0290718;
-  fEstimatorsSigmaPars[2] = -0.000546728;
-  fEstimatorsSigmaPars[3] = 5.82749e-06;
-  fDeltaEstimatorNsigma[0] = 5.;
-  fDeltaEstimatorNsigma[1] = 5.5;
+  fUseEstimatorsCorrelationCut = true;
+  fEstimatorsCorrelationCoef[0] = -0.669108;
+  fEstimatorsCorrelationCoef[1] = 1.04489;
+  fEstimatorsSigmaPars[0] = 0.933321;
+  fEstimatorsSigmaPars[1] = 0.0416976;
+  fEstimatorsSigmaPars[2] = -0.000936344;
+  fEstimatorsSigmaPars[3] = 8.92179e-06;
+  fDeltaEstimatorNsigma[0] = 5.5;
+  fDeltaEstimatorNsigma[1] = 5.;
 
   array<double,4> tof_fb32_corr = {-1.0178, 0.333132, 9.10282e-05, -1.61861e-08};
   std::copy(tof_fb32_corr.begin(),tof_fb32_corr.end(),fTOFvsFB32correlationPars);
@@ -875,6 +933,7 @@ bool AliEventCuts::GoodPrimaryAODVertex(AliVEvent* ev) {
   if (!aodEv) {
     ::Fatal("AliEventCuts::GoodPrimaryAODVertex","Passed argument is not an AOD event.");
   }
+  if (!aodEv->GetPrimaryVertex()) return kFALSE;
   if (aodEv->GetPrimaryVertex()->GetType()!=AliAODVertex::kPrimary) return kFALSE;
   const AliAODVertex *vtPrim = aodEv->GetPrimaryVertex();
   const AliAODVertex *vtTPC  = aodEv->GetPrimaryVertexTPC();

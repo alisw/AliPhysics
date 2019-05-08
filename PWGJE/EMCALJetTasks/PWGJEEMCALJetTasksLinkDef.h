@@ -82,7 +82,7 @@
 #pragma link C++ namespace EmcalHJetMassAnalysis+;
 #pragma link C++ class EmcalHJetMassAnalysis::AliAnalysisTaskEmcalHJetMass+;
 #pragma link C++ class AliAnalysisTaskEmcalJetCDF+;
-#pragma link C++ namespace NS_AliAnalysisTaskEmcalJetCDF+;
+#pragma link C++ namespace PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
 #pragma link C++ class AliAnalysisTaskEmcalJetCorrection+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadEPpid+;
@@ -108,8 +108,6 @@
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
 #pragma link C++ class AliAnalysisTaskIDFragmentationFunction+;
-#pragma link C++ class AliAnalysisTaskJetExtractor+;
-#pragma link C++ class AliEmcalJetTree+;
 #pragma link C++ class AliAnalysisTaskJetJTJT+;
 #pragma link C++ class AliAnalysisTaskJetShapeBase+;
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
@@ -125,6 +123,8 @@
 #pragma link C++ class AliAnalysisTaskPSHFE+;
 #pragma link C++ class AliAnalysisTaskPrepareInputForEmbedding+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
+#pragma link C++ class AliEventTree+;
+#pragma link C++ class AliAnalysisTaskEventExtractor+;
 
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;
@@ -233,6 +233,8 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliEmcalJetTaggerTaskFast+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalResponseOutliers+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalOutliersGen+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
 #pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 
@@ -270,6 +272,9 @@
 #pragma link C++ class AliAnalysisTaskJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
 #pragma link C++ class AliAnalysisTaskSoftDropResponse+;
+#pragma link C++ class AliEmcalJetTree+;
+#pragma link C++ class AliAnalysisTaskJetExtractor+;
+#pragma link C++ class std::vector<AliAnalysisTaskJetExtractor::SimpleSecondaryVertex>+;
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;

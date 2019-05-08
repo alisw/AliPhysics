@@ -31,8 +31,9 @@ enum eventMixConfig { kDisabled = -1,
 
 AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
 (
- Bool_t      useHIST = kTRUE,
- Bool_t      Sp = kFALSE,
+ Bool_t      useESD = kFALSE,
+ Bool_t      useHIST = kFALSE,
+ Bool_t      Sp = kTRUE,
  Bool_t      isMC = kFALSE,
  Bool_t      isPP = kTRUE,
  TString     outNameSuffix = "tpc2stof3sveto",
@@ -116,8 +117,15 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    //task->UseESDTriggerMask(triggerMask); //ESD
    //task->SelectCollisionCandidates(triggerMask); //AOD
-   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->SelectCollisionCandidates(triggerMask); //AOD
 
+   if(useESD)
+     
+     {
+       if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->UseESDTriggerMask(triggerMask); //ESD
+     }
+   else {
+     if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->SelectCollisionCandidates(triggerMask); //AOD
+   }
    
     if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -220,8 +228,9 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
 
     //-------------------------------Arvind Spherocity QA-------------------------------------------
 
-  if (Sp) AliRsnMiniAnalysisTask::SetComputeSpherocity();
-  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 200,0.,1.5);
+  //  if (Sp) AliRsnMiniAnalysisTask::SetComputeSpherocity();
+  
+  TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 500,0.,1.0);
   task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
    
    //

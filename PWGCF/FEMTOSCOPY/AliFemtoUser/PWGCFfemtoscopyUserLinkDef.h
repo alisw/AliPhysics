@@ -57,6 +57,7 @@
 #pragma link C++ class AliFemtoCorrFctnTPCNcls;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiCorrections+;
+#pragma link C++ class AliFemtoCorrFctnDEtaDPhiStar;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhiTHn;
 #pragma link C++ class AliFemtoCorrFctnDYDPhi;
 #pragma link C++ class AliFemtoCorrFctnKStar+;
@@ -73,6 +74,7 @@
 //#pragma link C++ class AliFemtoPhiPairCut;
 #pragma link C++ class AliFemtoQinvCorrFctnEMCIC;
 #pragma link C++ class AliFemtoCorrFctn3DSphericalEMCIC;
+#pragma link C++ class AliFemtoCorrFctnPtKstar;
 #pragma link C++ class AliFemtoBPLCMS3DCorrFctnEMCIC;
 #pragma link C++ class AliFemtoPairCutPt;
 #pragma link C++ class AliFemtoAvgSepCorrFctn;
@@ -87,6 +89,8 @@
 #pragma link C++ class AliFemtoPairOriginMonitor+;
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
 #pragma link C++ class AliFemtoCorrFctnGammaMonitorAlpha+;
+#pragma link C++ class AliFemtoCorrFctnQLCMS;
+#pragma link C++ class AliFemtoCorrFctnQLCMS::Parameters;
 #pragma link C++ class AliFemtoCorrFctn3DPRF+;
 #pragma link C++ class AliFemtoCorrFctn3DPRF_qosl_q+;
 #pragma link C++ class AliFemtoPairCutRadialDistanceAsymmetric+;
@@ -103,6 +107,10 @@
 #pragma link C++ class AliFemtoAnalysisPionPion+;
 #pragma link C++ class AliFemtoAnalysisPionPion::AnalysisParams+;
 #pragma link C++ class AliFemtoAnalysisPionPion::CutParams+;
+#pragma link C++ class AliFemtoEventCutPionPionAK;
+#pragma link C++ class AliFemtoTrackCutPionPionAK;
+#pragma link C++ class AliFemtoPairCutPionPionAKAvgSep;
+#pragma link C++ class AliFemtoPairCutPionPionAKDetaDphi;
 
 #pragma link C++ class AliFemtoPionLambdaCutMonitor::Event+;
 #pragma link C++ class AliFemtoPionLambdaCutMonitor::Pion+;
@@ -150,6 +158,7 @@
 #pragma link C++ class AliFemtoAnalysisLambdaKaon::PairCutParams+;
 
 #pragma link C++ class AliFemtoCutMonitorPairKT;
+#pragma link C++ class AliFemtoCutMonitorPairMomRes;
 #pragma link C++ class AliFemtoPairCutMInv;
 
 #pragma link C++ class AliFemtoV0PurityBgdEstimator+;
@@ -163,6 +172,8 @@
 #pragma link C++ class AliFemtoKKTrackCutTest;
 // Sphericity for KK analysis in pp13TeV
 #pragma link C++ class AliFemtoSphericityEventCutKK;
+//3may2019
+#pragma link C++ class AliFemtoSphericityEventCutKK1;
 // Sphericity monitor
 #pragma link C++ class AliFemtoCutMonitorEventSphericity;
 

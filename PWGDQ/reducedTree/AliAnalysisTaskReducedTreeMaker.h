@@ -71,6 +71,8 @@ public:
   // Cuts for selecting tracks included in the tree
   void SetTrackFilter(AliAnalysisCuts * const filter);
   void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE);
+  // Cuts for calorimeter clusters included in the tree
+  void AddCaloClusterFilter(AliAnalysisCuts * const filter);
     
   // Cuts for selecting V0s
   void SetK0sPionCuts(AliAnalysisCuts * const filter) {fK0sPionCuts=filter;}
@@ -131,6 +133,7 @@ public:
 
   Bool_t  IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision);
   Bool_t  IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
+  Bool_t  IsClusterSelected(AliVCluster* cluster, std::vector<Bool_t>& filterDecision);
   void    SetTrackFilterQualityFlags(AliReducedBaseTrack* track, std::vector<Bool_t> filterDecision);
   void    FillTrackStatisticsHistogram(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
 
@@ -183,7 +186,8 @@ public:
   AliAnalysisCuts *fEventFilter;      // event filter
   TList            fTrackFilter;      // filter for the hadrons to be correlated with the dielectrons
   AliAnalysisCuts *fFlowTrackFilter;  // filter for the barrel tracks to be used for the Q-vector
-  
+  TList            fClusterFilter;    // filter for the calorimeter clusters
+
   AliESDv0Cuts *fK0sCuts;            // v0 standard filter for K0s->pi+pi-
   AliESDv0Cuts *fLambdaCuts;         // v0 standard filter for Lambda0->p + pi
   AliESDv0KineCuts *fGammaConvCuts;  // v0 standard filter for gamma conversions
@@ -235,6 +239,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 13); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 14); //Analysis Task for creating a reduced event information tree
 };
 #endif

@@ -27,7 +27,6 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
 {
   std::cout << "AddTaskForwardSecondaries" << std::endl;
 
-  AliForwardTaskValidation* validation_task = AliForwardTaskValidation::ConnectTask("", false);
 
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -45,11 +44,12 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
    TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());
-  task->fSettings.fDataType = task->fSettings.kRECON;
+  //task->fSettings.fDataType = task->fSettings.kRECON;
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectInput(task,1,validation_task->GetOutputSlot(2)->GetContainer());
 
+    AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
+    task->ConnectInput(1,valid);
   mgr->ConnectOutput(task, 1, coutput_recon);
 
   return task;

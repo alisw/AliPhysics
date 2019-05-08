@@ -56,6 +56,18 @@ set(SRCS
   ChargedHadrons/dNdPt/AlidNdPtEventCuts.cxx
   ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
   ChargedHadrons/dNdPt/AlidNdPtTask.cxx
+  ChargedHadrons/dNdPt/AlidNdPtTools.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskMKBase.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskBaseWeights.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskMKTest.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskTPCMatchEff.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskDCArStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskPtResStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskEffContStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskUEStudy.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskSpectra.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskSpectraV0M.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskFilterEventTPCdEdx.cxx
   ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
   ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
@@ -63,6 +75,7 @@ set(SRCS
   ChargedHadrons/dNdPt/AlimPtMatrix.cxx
   ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
+  ChargedHadrons/AliMCSpectraWeights/AliMCSpectraWeightsAnalysisTask.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
@@ -137,19 +150,27 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Extra files to include in the PARfile
-set(PAR_EXTRAFILES
+set(PAR_EXTRAFILES_CXX
   PiKaPr/TestAOD/HistogramNamesBoth.cxx
-  PiKaPr/TestAOD/HistogramNamesBoth.h
   PiKaPr/TestAOD/HistogramNames.cxx
+)
+
+set(PAR_EXTRAFILES_H
+  PiKaPr/TestAOD/HistogramNamesBoth.h
   PiKaPr/TestAOD/HistogramNames.h
   PiKaPr/TestAOD/HistogramsBoth.h
   PiKaPr/TestAOD/Histograms.h
 )
 
+set(PAR_EXTRAFILES
+   ${PAR_EXTRAFILES_H}
+   ${PAR_EXTRAFILES_CXX}
+)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs} ${PAR_EXTRAFILES_H}")
 
 set(ROOT_DEPENDENCIES)
 set(ALIROOT_DEPENDENCIES ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN PWGLFnuclex)
@@ -207,6 +228,7 @@ install(DIRECTORY ChargedHadrons/dNdPt/macros DESTINATION  PWGLF/SPECTRA/Charged
 install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
 install(DIRECTORY ChargedHadrons/dNdPtVsMultpp/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp)
+install(FILES ChargedHadrons/AliMCSpectraWeights/AddTask_phuhn_MCSpectraWeights.C DESTINATION PWGLF/SPECTRA/ChargedHadrons/AliMCSpectraWeights)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY IdentifiedHighPt/train/macros1 DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)

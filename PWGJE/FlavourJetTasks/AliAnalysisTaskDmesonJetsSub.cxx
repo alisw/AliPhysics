@@ -2219,6 +2219,9 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractRecoDecayAttributes(
   }
 }
 
+
+
+
 /// Extract attributes of the D0 meson candidate.
 ///
 /// \param Dcand Pointer to a AliAODRecoDecayHF2Prong representing the D0 meson candidate
@@ -2231,11 +2234,17 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   AliDebug(10,"Checking if D0 meson is selected");
   Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoDecayHF2Prong*>(Dcand), AliRDHFCuts::kAll, fAodEvent);
   if (isSelected == 0) return kFALSE;
-
+  TString hname;
+  TString hname2;
   Int_t MCtruthPdgCode = 0;
-
+  Int_t TheTrueCode = 0;
   Double_t invMassD = 0;
+  hname = TString::Format("%s/EfficiencyMatches", fName.Data());
+  TH1* EfficiencyMatches = static_cast<TH1*>(fHistManager->FindObject(hname));
 
+  hname2 = TString::Format("%s/EfficiencyGenerator", fName.Data());
+  TH1* EfficiencyGenerator = static_cast<TH1*>(fHistManager->FindObject(hname2));
+  
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
   if (fMCMode != kNoMC) {
@@ -2256,7 +2265,15 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
       }
     }
   }
-
+  
+  if(fMCMode==kSignalOnly){
+   
+     for(auto aodMcPart : fMCContainer->all()){
+     TheTrueCode = aodMcPart->PdgCode();
+     if(TMath::Abs(TheTrueCode)==fCandidatePDG) EfficiencyGenerator->Fill(aodMcPart->Pt());
+      }
+  }
+  
   if (isSelected == 1) { // selected as a D0
     if (i != 0) return kFALSE; // only one mass hypothesis thanks to PID
 
@@ -2271,6 +2288,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
+    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) EfficiencyMatches->Fill(Dcand->Pt());
+    
+
+
   }
   else if (isSelected == 2) { // selected as a D0bar
     if (i != 1) return kFALSE; // only one mass hypothesis thanks to PID
@@ -2286,6 +2307,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
+     if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) EfficiencyMatches->Fill(Dcand->Pt());
   }
   else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
     AliDebug(10,"Selected as either D0 or D0bar");
@@ -2403,8 +2425,8 @@ AliAnalysisTaskDmesonJetsSub::EMesonDecayChannel_t AliAnalysisTaskDmesonJetsSub:
 
   if (part->GetNDaughters() == 2) {
 
-    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(0)));
-    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughter(1)));
+    AliAODMCParticle* d1 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(0)));
+    AliAODMCParticle* d2 = static_cast<AliAODMCParticle*>(mcArray->At(part->GetDaughterLabel(1)));
 
     if (!d1 || !d2) {
       return decay;
@@ -3204,7 +3226,7 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
   }
 
       Int_t dimx   = 10;
-      Int_t nbinsx[10]   = {50,100,10,20,2,2,100,150,100,9};
+      Int_t nbinsx[10]   = {50,100,10,20,2,2,200,150,100,9};
       Double_t minx[10] =  {0,-10,0,0,0,0,0,1.6,0,0};
       Double_t maxx[10]  = {5,10,100,20,2,2,100,2.3,100,0.9};
       TString titlex[10]={"log(1/deltaR)","log(zteta)","jet pt","n","type","flagSubjet","ptD","invmass","frac","abs(eta)"};
@@ -3297,6 +3319,14 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     hname = TString::Format("%s/fHistRejectedDMesonPhi", param.GetName());
     htitle = hname + ";#it{#phi}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
+
+     hname = TString::Format("%s/EfficiencyMatches",param.GetName());
+      htitle = hname + ";D meson matches";
+      fHistManager.CreateTH1(hname,htitle,100,0,50);
+
+      hname = TString::Format("%s/EfficiencyGenerator",param.GetName());
+      htitle = hname + ";D meson part level";
+      fHistManager.CreateTH1(hname,htitle,100,0,50);
 
     if (param.fMCMode != kMCTruth) {
       if (param.fCandidateType == kD0toKpi || param.fCandidateType == kD0toKpiLikeSign) {
@@ -3433,7 +3463,8 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
       for (Int_t j = 0; j < dimx; j++) {
       h->GetAxis(j)->SetTitle(titlex[j]);}
 
-   
+     
+      
       hname = TString::Format("%s/%s/AngleDifference",param.GetName(),jetDef.GetName());
       htitle = hname + ";angle iterative declustering;angle to axis";
       fHistManager.CreateTH2(hname,htitle,100,0.,2*3.1416,100,0,2*3.1416);
@@ -3732,7 +3763,7 @@ void AliAnalysisTaskDmesonJetsSub::FillPartonLevelHistograms()
 
     Bool_t lastInPartonShower = kTRUE;
     Bool_t hadronDaughter = kFALSE;
-    for (Int_t daughterIndex = part.second->GetFirstDaughter(); daughterIndex <= part.second->GetLastDaughter(); daughterIndex++){
+    for (Int_t daughterIndex = part.second->GetDaughterFirst(); daughterIndex <= part.second->GetDaughterLast(); daughterIndex++){
       if (daughterIndex < 0) {
         AliDebugStream(5) << "Could not find daughter index!" << std::endl;
         continue;

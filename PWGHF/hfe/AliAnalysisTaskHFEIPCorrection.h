@@ -18,6 +18,7 @@ class AliAODTrack;
 class AliHFEcollection;
 class TArrayD;
 class AliAODVertex;
+class TRandom3;
 
 
 
@@ -54,7 +55,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   AliAODVertex * CorrectVertex(AliAODEvent *aodEvent, double vtxz); // Vertex without using excluded regions
   void GetTrackImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, AliAODVertex * pvtx, Double_t &dcaxy); // Calculate IP from other vertex
 
-  void GetCorrectedImpactParameter(AliAODTrack *track, Double_t primVertexZ, Double_t &dcaxy); // correct for effects in phi, z, and pt
+  void GetCorrectedImpactParameter(AliAODEvent *aodEvent, AliAODTrack *track, Double_t primVertexZ, Double_t &dcaxy); // correct for effects in phi, z, and pt
   
   AliAnalysisTaskHFEIPCorrection(const AliAnalysisTaskHFEIPCorrection&); // not implemented
   AliAnalysisTaskHFEIPCorrection& operator=(const AliAnalysisTaskHFEIPCorrection&); // not implemented
@@ -81,30 +82,39 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH2D * fpTIP3050OOP;
   TH3D * fPionV0pTRNoCuts;
   TH3D * fPionV0pTRWithCuts;
+  TH3D * fPionV0pTRNoCutsIP;
+  TH3D * fPionV0pTRWithCutsIP;
+  TH3D * fPionV0pTRNoCutsOOP;
+  TH3D * fPionV0pTRWithCutsOOP;
   TH2D * fPionV0pTTPC;
   TH2D * fPionV0pTTPCWithCuts;
 
   TH1D * EventSelectionSteps;
   TH3D * fDCARegionRun;
   TH3D * fDCAPhiZHadrons;
-  TH3D * fDCAPhiZHadronsC; // Recalculated vertex
-  TH3D * fDCAPhiZHadronsC2; // correction with phi,z,pt
-  TH3D * fDCAPhiZHadrons2nd;
-  TH3D * fpTPhiZHadrons;
+  TH3D * fDCAPhiZHadronsEarlyRuns;
+  TH3D * fDCAPhiZHadronsLateRuns;
+  TH3D * fDCAPhiZHadronsC;
   TH3D * fDCAPhipTHadrons;
+  TH3D * fDCAPhipTHadronsEarlyRuns;
+  TH3D * fDCAPhipTHadronsLateRuns;
   TH3D * fDCAPhipTHadronsC;
-  TH3D * fDCAPhipTHadronsC2;
+  TH3D * fDCAPhiZKaons;
+  TH3D * fDCAPhiZKaonsC;
+  TH3D * fDCAPhipTKaons;
+  TH3D * fDCAPhipTKaonsC;
+  TH3D * fpTPhiZHadrons;
   TH3D * fDCAWErrHadrons;
+  TH2D * fDCAHadrons;
   TH3D * fDCAHadronsFineBins;
   TH2D * fDCAKaons; // Should have less contamination, but have higher mass
   TH3D * fDCAWErrKaons;
   TH3D * fDCAKaonsFineBins;
-  TH2D * fDCAvsCorrected;
   
   //AliHFEcuts * hfetrackCuts;           // Track cuts
   AliHFEextraCuts * fExtraCuts;
   AliAODv0KineCuts * fAODV0Cuts;
-  
+  TRandom3 * fRd;
   
   ClassDef(AliAnalysisTaskHFEIPCorrection, 1); // example of analysis
 };

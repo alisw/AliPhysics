@@ -56,6 +56,9 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistNV0Daughters{nullptr},
   fHistNV0DaughtersBackg{nullptr},
   fHistNV0DaughtersEmbed{nullptr},
+  fHistCheckK0SelBackg{nullptr},
+  fHistCheckK0SelEmbed{nullptr},
+  fHistCheckK0SelMixed{nullptr},
   fHistNITSClu{nullptr},
   fHistCluInITSLay{nullptr},
   fHistNtracksTPCselVsV0befEvSel{nullptr},
@@ -211,6 +214,9 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistNV0Daughters;
     delete fHistNV0DaughtersBackg;
     delete fHistNV0DaughtersEmbed;
+    delete fHistCheckK0SelBackg;
+    delete fHistCheckK0SelEmbed;
+    delete fHistCheckK0SelMixed;
     delete fHistNITSClu;
     delete fHistCluInITSLay;
     delete fHistNtracksTPCselVsV0befEvSel;
@@ -407,18 +413,37 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(6,"Pileup cut"); 
   fOutput->Add(fHistNEvents);
 
-  fHistNTracks = new TH1F("hNTracks", "Number of tracks in ESD events ; N_{tracks}",5001,-0.5,5000.5);
-  fHistNTracksBackg = new TH1F("hNTracksBackg", "Number of tracks in BKG events ; N_{tracks}",5001,-0.5,5000.5);
-  fHistNTracksEmbed = new TH1F("hNTracksEmbed", "Number of tracks in Signal events ; N_{tracks}",5001,-0.5,5000.5);
+  fHistNTracks = new TH1F("hNTracks", "Number of tracks in ESD events ; N_{tracks}",2000,-0.5,19999.5);
+  fHistNTracksBackg = new TH1F("hNTracksBackg", "Number of tracks in BKG events ; N_{tracks}",2000,-0.5,19999.5);
+  fHistNTracksEmbed = new TH1F("hNTracksEmbed", "Number of tracks in Signal events ; N_{tracks}",2000,-0.5,19999.5);
   fOutput->Add(fHistNTracks);
   fOutput->Add(fHistNTracksBackg);
   fOutput->Add(fHistNTracksEmbed);
-  fHistNV0Daughters = new TH1F("hNV0Daughters", "Number of V0-tracks in ESD events ; N_{V0-dau}",5001,-0.5,5000.5);
-  fHistNV0DaughtersBackg = new TH1F("hNV0DaughtersBackg", "Number of V0-tracks in BKG events ; N_{V0-dau}",5001,-0.5,5000.5);
-  fHistNV0DaughtersEmbed = new TH1F("hNV0DaughtersEmbed", "Number of V0-tracks in Signal events ; N_{V0-dau}",5001,-0.5,5000.5);
+  fHistNV0Daughters = new TH1F("hNV0Daughters", "Number of V0-tracks in ESD events ; N_{V0-dau}",500,-0.5,4999.5);
+  fHistNV0DaughtersBackg = new TH1F("hNV0DaughtersBackg", "Number of V0-tracks in BKG events ; N_{V0-dau}",500,-0.5,4999.5);
+  fHistNV0DaughtersEmbed = new TH1F("hNV0DaughtersEmbed", "Number of V0-tracks in Signal events ; N_{V0-dau}",500,-0.5,4999.5);
   fOutput->Add(fHistNV0Daughters);
   fOutput->Add(fHistNV0DaughtersBackg);
   fOutput->Add(fHistNV0DaughtersEmbed);
+  fHistCheckK0SelBackg = new TH1F("hCheckK0SelBackg","",4,-0.5,3.5);
+  fHistCheckK0SelEmbed = new TH1F("hCheckK0SelEmbed","",4,-0.5,3.5);
+  fHistCheckK0SelMixed = new TH1F("hCheckK0SelMixed","",4,-0.5,3.5);
+  fHistCheckK0SelBackg->GetXaxis()->SetBinLabel(1,"All V0");
+  fHistCheckK0SelBackg->GetXaxis()->SetBinLabel(2,"Daughters exist");
+  fHistCheckK0SelBackg->GetXaxis()->SetBinLabel(3,"Same mother");
+  fHistCheckK0SelBackg->GetXaxis()->SetBinLabel(4,"K0s");
+  fHistCheckK0SelEmbed->GetXaxis()->SetBinLabel(1,"All V0");
+  fHistCheckK0SelEmbed->GetXaxis()->SetBinLabel(2,"Daughters exist");
+  fHistCheckK0SelEmbed->GetXaxis()->SetBinLabel(3,"Same mother");
+  fHistCheckK0SelEmbed->GetXaxis()->SetBinLabel(4,"K0s");
+  fHistCheckK0SelMixed->GetXaxis()->SetBinLabel(1,"All V0");
+  fHistCheckK0SelMixed->GetXaxis()->SetBinLabel(2,"Daughters exist");
+  fHistCheckK0SelMixed->GetXaxis()->SetBinLabel(3,"Same mother");
+  fHistCheckK0SelMixed->GetXaxis()->SetBinLabel(4,"K0s");
+  fOutput->Add(fHistCheckK0SelBackg);
+  fOutput->Add(fHistCheckK0SelEmbed);
+  fOutput->Add(fHistCheckK0SelMixed);
+
   fHistNITSClu = new TH1F("hNITSClu"," ; N_{ITS clusters}",7,-0.5,6.5);
   fOutput->Add(fHistNITSClu);
   fHistCluInITSLay = new TH1F("hCluInITSLay"," ; Layer",7,-1.5,5.5);
@@ -1179,16 +1204,30 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       Bool_t isBGn = mcEvent->IsFromSubsidiaryEvent(labelNeg);
       if(isBGn) nBGv0dau++;
       else nEmbeddedv0dau++;
-      
-      TParticle* partPos=mcEvent->Particle(labelPos);
-      TParticle* partNeg=mcEvent->Particle(labelNeg);
-      if(partPos && partNeg){
-        Int_t labelMotherPos=partPos->GetFirstMother() ;
-        Int_t labelMotherNeg=partNeg->GetFirstMother();
+      if(isBGp && isBGn) fHistCheckK0SelBackg->Fill(0);
+      else if(!isBGp && !isBGn) fHistCheckK0SelEmbed->Fill(0);
+      else fHistCheckK0SelMixed->Fill(0);
+      AliMCParticle* mctrackPos = (AliMCParticle*)mcEvent->GetTrack(labelPos);
+      AliMCParticle* mctrackNeg = (AliMCParticle*)mcEvent->GetTrack(labelNeg);
+      if(mctrackPos && mctrackNeg){
+	if(isBGp && isBGn) fHistCheckK0SelBackg->Fill(1);
+	else if(!isBGp && !isBGn) fHistCheckK0SelEmbed->Fill(1);
+	else fHistCheckK0SelMixed->Fill(1);
+	Int_t labelMotherPos = mctrackPos->GetMother();
+	Int_t labelMotherNeg = mctrackNeg->GetMother();
 	if(labelMotherPos==labelMotherNeg && labelMotherPos>-1){
-	  TParticle* partV0=mcEvent->Particle(labelMotherPos);
+	  if(isBGp && isBGn) fHistCheckK0SelBackg->Fill(2);
+	  else if(!isBGp && !isBGn) fHistCheckK0SelEmbed->Fill(2);
+	  else fHistCheckK0SelMixed->Fill(2);
+	  AliMCParticle* mctrackV0 = (AliMCParticle*)mcEvent->GetTrack(labelMotherPos);
+	  TParticle* partV0 = mctrackV0->Particle();
 	  Int_t pdgV0=partV0->GetPdgCode();
-	  if(TMath::Abs(pdgV0)==310) keepK0s=kTRUE;
+	  if(TMath::Abs(pdgV0)==310){
+	    if(isBGp && isBGn) fHistCheckK0SelBackg->Fill(3);
+	    else if(!isBGp && !isBGn) fHistCheckK0SelEmbed->Fill(3);
+	    else fHistCheckK0SelMixed->Fill(3);
+	    keepK0s=kTRUE;
+	  }
 	  if(pdgV0==3122) keepLambda=kTRUE;
 	  if(pdgV0==-3122) keepAntiLambda=kTRUE;
 	}

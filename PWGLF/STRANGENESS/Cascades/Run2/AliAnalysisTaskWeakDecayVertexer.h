@@ -31,8 +31,10 @@ class TH1F;
 class AliESDpid;
 class AliESDEvent;
 class AliPhysicsSelection;
+class AliESDtrackCuts;
 
 #include "AliEventCuts.h"
+#include <AliPID.h>
 //For mapping functionality
 #include <map>
 
@@ -217,6 +219,9 @@ public:
     void SetSkipLargeXYDCA( Bool_t lOpt = kTRUE) {
         fkSkipLargeXYDCA=lOpt;
     }
+    void SetUseMonteCarloAssociation( Bool_t lOpt = kTRUE) {
+        fkMonteCarlo=lOpt;
+    }
 //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding(){
         fkRunV0Vertexer = kTRUE;
@@ -249,8 +254,19 @@ public:
 //---------------------------------------------------------------------------------------
     //Re-vertex V0s
     Long_t Tracks2V0vertices(AliESDEvent *event);
+
+    //======================================================================
+    //Re-vertex V0s based solely on perfect MC V0s
+    //Warning: this cannot be called in real data without troubles,
+    //         but may be particularly useful for performance studies
+    //         as even very loose cuts will not incur in prohibitive
+    //         performance costs
+    Long_t Tracks2V0verticesMC(AliESDEvent *event);
+    //======================================================================
+    
     //Re-vertex Cascades
     Long_t V0sTracks2CascadeVertices(AliESDEvent *event);
+    Long_t V0sTracks2CascadeVerticesMC(AliESDEvent *event);
     //Re-vertex Cascades without checking bachelor charge - V0 Mass hypo correspondence
     Long_t V0sTracks2CascadeVerticesUncheckedCharges(AliESDEvent *event);
     //Helper functions
@@ -283,6 +299,9 @@ public:
     }
     //---------------------------------------------------------------------------------------
     
+    void SetTrackTriggerCuts(AliESDtrackCuts* cuts, AliPID::EParticleType species, float nsigma) {
+        fTrackTriggerCuts = cuts;
+    }
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -294,7 +313,10 @@ private:
 
     //Implementation of event selection utility
     AliEventCuts fEventCuts; /// Event cuts class
-    
+    AliESDtrackCuts* fTrackTriggerCuts; //-> Track trigger cuts (at least one particle passing this cut is used in the V0 finding)
+    AliPID::EParticleType fTriggerParticleType;
+    float                 fTriggerNsigma;
+
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     //Min/Max Centrality
@@ -329,6 +351,9 @@ private:
     Long_t fMaxIterationsWhenMinimizing;
     Bool_t fkPreselectX;
     Bool_t fkSkipLargeXYDCA;
+    
+    //Master MC switch
+    Bool_t fkMonteCarlo; //do MC association in vertexing
     
     //Bool_t to conrtol the use of on-the-fly AliExternalTrackParams
     Bool_t fkUseOptimalTrackParams; //if true, use better track estimates from OTF V0s

@@ -21,26 +21,24 @@
 // G. Luparello, grazia.luparello@cern.ch
 /////////////////////////////////////////////////////////////
 
-#include "vector"
 #include <TTree.h>
 #include "AliAODTrack.h"
 #include "AliPIDResponse.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODMCParticle.h"
-
-using std::vector;
+#include "AliAODPidHF.h"
 
 class AliHFTreeHandler : public TObject
 {
   public:
   
     enum candtype {
-      kSelected = BIT(0),
-      kSignal   = BIT(1),
-      kBkg      = BIT(2),
-      kPrompt   = BIT(3),
-      kFD       = BIT(4),
-      kRefl     = BIT(5),
+      kSelected        = BIT(0),
+      kSignal          = BIT(1),
+      kBkg             = BIT(2),
+      kPrompt          = BIT(3),
+      kFD              = BIT(4),
+      kRefl            = BIT(5),
       kSelectedTopo    = BIT(6),
       kSelectedPID     = BIT(7),
       kSelectedTracks  = BIT(8) //up to BIT(10) included for general flags, following BITS particle-specific
@@ -76,12 +74,21 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
-    bool SetMCGenVariables(AliAODMCParticle* mcpart);
+    bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
 
-    virtual void FillTree() = 0; //to be called for each event, not each candidate!
+    void FillTree() { //to be called for each candidate!
+      if(fFillOnlySignal && !(fCandType&kSignal)) { //if fill only signal and not signal candidate, do not store 
+        fCandType=0;
+      }
+      else {      
+        fTreeVar->Fill(); 
+        fCandType=0;
+        fRunNumberPrevCand = fRunNumber;
+      }
+    } 
     
     //common methods
     void SetOptPID(int PIDopt) {fPidOpt=PIDopt;}
@@ -90,17 +97,17 @@ class AliHFTreeHandler : public TObject
 
     void SetCandidateType(bool issignal, bool isbkg, bool isprompt, bool isFD, bool isreflected);
     void SetIsSelectedStd(bool isselected, bool isselectedTopo, bool isselectedPID, bool isselectedTracks) {
-      if(isselected) fCandTypeMap |= kSelected;
-      else fCandTypeMap &= ~kSelected;
-      if(isselectedTopo) fCandTypeMap |= kSelectedTopo;
-      else fCandTypeMap &= ~kSelectedTopo;
-      if(isselectedPID) fCandTypeMap |= kSelectedPID;
-      else fCandTypeMap &= ~kSelectedPID;
-      if(isselectedTracks) fCandTypeMap |= kSelectedTracks;
-      else fCandTypeMap &= ~kSelectedTracks;
+      if(isselected) fCandType |= kSelected;
+      else fCandType &= ~kSelected;
+      if(isselectedTopo) fCandType |= kSelectedTopo;
+      else fCandType &= ~kSelectedTopo;
+      if(isselectedPID) fCandType |= kSelectedPID;
+      else fCandType &= ~kSelectedPID;
+      if(isselectedTracks) fCandType |= kSelectedTracks;
+      else fCandType &= ~kSelectedTracks;
     }
 
-    void SetDauInAcceptance(bool dauinacc = true) {fDauInAccFlag=dauinacc;}
+    void SetDauInAcceptance(bool dauinacc = true) {fDauInAcceptance=dauinacc;}
   
     static bool IsSelectedStd(int candtype) {
       if(candtype&1) return true;
@@ -139,6 +146,11 @@ class AliHFTreeHandler : public TObject
         return false;
     }
 
+    void EnableNsigmaTPCDataDrivenCorrection(int syst) {
+      fApplyNsigmaTPCDataCorr=true;
+      fSystNsigmaTPCDataCorr=syst;
+    }
+
   protected:  
     //constant variables
     static const unsigned int knMaxProngs   = 3;
@@ -153,10 +165,6 @@ class AliHFTreeHandler : public TObject
     void AddPidBranches(bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
     bool SetSingleTrackVars(AliAODTrack* prongtracks[]);
     bool SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pidrespo, bool usePionHypo, bool useKaonHypo, bool useProtonHypo, bool useTPC, bool useTOF);
-    void ResetDmesonCommonVarVectors();
-    void ResetSingleTrackVarVectors();
-    void ResetPidVarVectors();
-    void ResetMCGenVectors();
   
     //utils methods
     double CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF);
@@ -164,50 +172,64 @@ class AliHFTreeHandler : public TObject
     float ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF* cand, float bfield);
     float GetTOFmomentum(AliAODTrack* track, AliPIDResponse* pidrespo);
   
+    void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta);
+
     TTree* fTreeVar; /// tree with variables
     unsigned int fNProngs; /// number of prongs
     unsigned int fNCandidates; /// number of candidates in one fill (event)
-    int fCandTypeMap; ///flag for candidate type (bit map above)
-    vector<int> fCandType; ///vector of flag for candidate type (bit map above)
-    vector<float> fInvMass; ///vector of candidate invariant mass
-    vector<float> fPt; ///vector of candidate pt
-    vector<float> fY; ///vector of candidate rapidity
-    vector<float> fEta; ///vector of candidate pseudorapidity
-    vector<float> fPhi; ///vector of candidate azimuthal angle
-    vector<float> fDecayLength; ///vector of candidate decay length
-    vector<float> fDecayLengthXY; ///vector of candidate decay length in the transverse plane
-    vector<float> fNormDecayLengthXY; ///vector of candidate normalised decay length in the transverse plane
-    vector<float> fCosP; ///vector of candidate cosine of pointing angle
-    vector<float> fCosPXY; ///vector of candidate cosine of pointing angle in the transcverse plane
-    vector<float> fImpParXY; ///vector of candidate impact parameter in the transverse plane
-    vector<float> fDCA; ///vector of DCA of candidates prongs
-    vector<float> fPProng[knMaxProngs]; ///vectors of prong momentum
-    vector<float> fTPCPProng[knMaxProngs]; ///vectors of prong TPC momentum
-    vector<float> fTOFPProng[knMaxProngs]; ///vectors of prong TOF momentum
-    vector<float> fPtProng[knMaxProngs]; ///vectors of prong pt
-    vector<float> fEtaProng[knMaxProngs]; ///vectors of prong pseudorapidity
-    vector<float> fPhiProng[knMaxProngs]; ///vectors of prong azimuthal angle
-    vector<int> fNTPCclsProng[knMaxProngs]; ///vectors of prong track number of clusters in TPC
-    vector<int> fNTPCclsPidProng[knMaxProngs]; ///vectors of prong track number of clusters in TPC used for PID
-    vector<float> fNTPCCrossedRowProng[knMaxProngs]; ///vectors of prong track crossed row in TPC
-    vector<float> fChi2perNDFProng[knMaxProngs]; ///vectors of prong track chi2/ndf
-    vector<int> fNITSclsProng[knMaxProngs]; ///vectors of prong track number of clusters in ITS
-    vector<int> fITSclsMapProng[knMaxProngs];///vectors of prong track ITS cluster map
-    vector<float> fTrackIntegratedLengthProng[knMaxProngs]; /// vectors of prong track integrated lengths
-    vector<float> fStartTimeResProng[knMaxProngs]; /// vectors of prong track start time resolutions (for TOF)
-    vector<float> fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///vectors of PID nsigma variables
-    vector<int> fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///vectors of PID nsigma variables (integers)
-    vector<float> fPIDrawVector[knMaxProngs][knMaxDet4Pid]; ///vectors of raw PID variables
-    int fPidOpt; /// option for PID variables
-    int fSingleTrackOpt; /// option for single-track variables
+    int fCandType; ///flag for candidate type (bit map above)
+    float fInvMass; ///candidate invariant mass
+    float fPt; ///candidate pt
+    float fY; ///candidate rapidity
+    float fEta; ///candidate pseudorapidity
+    float fPhi; ///candidate azimuthal angle
+    float fDecayLength; ///candidate decay length
+    float fDecayLengthXY; ///candidate decay length in the transverse plane
+    float fNormDecayLengthXY; ///candidate normalised decay length in the transverse plane
+    float fCosP; ///candidate cosine of pointing angle
+    float fCosPXY; ///candidate cosine of pointing angle in the transcverse plane
+    float fImpParXY; ///candidate impact parameter in the transverse plane
+    float fDCA; ///DCA of candidates prongs
+    float fPProng[knMaxProngs]; ///prong momentum
+    float fTPCPProng[knMaxProngs]; ///prong TPC momentum
+    float fTOFPProng[knMaxProngs]; ///prong TOF momentum
+    float fPtProng[knMaxProngs]; ///prong pt
+    float fEtaProng[knMaxProngs]; ///prong pseudorapidity
+    float fPhiProng[knMaxProngs]; ///prong azimuthal angle
+    int fNTPCclsProng[knMaxProngs]; ///prong track number of clusters in TPC
+    int fNTPCclsPidProng[knMaxProngs]; ///prong track number of clusters in TPC used for PID
+    float fNTPCCrossedRowProng[knMaxProngs]; ///prong track crossed row in TPC
+    float fChi2perNDFProng[knMaxProngs]; ///prong track chi2/ndf
+    int fNITSclsProng[knMaxProngs]; ///prong track number of clusters in ITS
+    int fITSclsMapProng[knMaxProngs];///prong track ITS cluster map
+    float fTrackIntegratedLengthProng[knMaxProngs]; /// prong track integrated lengths
+    float fStartTimeResProng[knMaxProngs]; /// prong track start time resolutions (for TOF)
+    float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///PID nsigma variables
+    int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///PID nsigma variables (integers)
+    float fPIDrawVector[knMaxProngs][knMaxDet4Pid]; ///raw PID variables
+    int fPidOpt; ///option for PID variables
+    int fSingleTrackOpt; ///option for single-track variables
     bool fFillOnlySignal; ///flag to enable only signal filling
     bool fIsMCGenTree; ///flag to know if is a tree for MC generated particles
-    bool fDauInAccFlag; ///flag to know if the daughter are in acceptance in case of MC gen
-    vector<bool> fDauInAcceptance; ///vector of flags to know if the daughter are in acceptance in case of MC gen
-  
+    bool fDauInAcceptance; ///flag to know if the daughter are in acceptance in case of MC gen
+    unsigned int fEvID; ///event ID corresponding to the one set in fTreeEvChar
+    int fRunNumber; ///run number
+    int fRunNumberPrevCand; ///run number of previous candidate
+    bool fApplyNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
+    int fSystNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
+    vector<vector<float> > fMeanNsigmaTPCPionData; /// array of NsigmaTPC pion mean in data 
+    vector<vector<float> > fMeanNsigmaTPCKaonData; /// array of NsigmaTPC kaon mean in data 
+    vector<vector<float> > fMeanNsigmaTPCProtonData; /// array of NsigmaTPC proton mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCPionData; /// array of NsigmaTPC pion mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCKaonData; /// array of NsigmaTPC kaon mean in data 
+    vector<vector<float> > fSigmaNsigmaTPCProtonData; /// array of NsigmaTPC proton mean in data 
+    float fPlimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxPBins+1]; /// array of p limits for data-driven NsigmaTPC correction
+    int fNPbinsNsigmaTPCDataCorr;/// number of p bins for data-driven NsigmaTPC correction
+    float fEtalimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxEtaBins+1]; /// vector of eta limits for data-driven NsigmaTPC correction
+    int fNEtabinsNsigmaTPCDataCorr; /// number of eta bins for data-driven NsigmaTPC correction
+
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,3); ///
+  ClassDef(AliHFTreeHandler,7); ///
   /// \endcond
 };
-
 #endif

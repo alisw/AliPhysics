@@ -33,6 +33,7 @@
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2pPb+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMCRun2pPb+;
+#pragma link C++ class AliAnalysisTaskStrangeCascadesDiscrete+;
 #pragma link C++ class AliAnalysisTaskPPVsMultCrossCheckMC+;
 #pragma link C++ class AliAnalysisTaskpANormalizationCheckMC+;
 #pragma link C++ class AliAnalysisTaskLambdaOverK0sJets+;
@@ -62,10 +63,7 @@
 #endif
 
 #ifdef __CLING__
-#pragma link C++ class AliAnalysisTaskFindableHyperTriton+;
 #pragma link C++ class Event+;
-#pragma link C++ class AliSelectorFindableHyperTriton3Body+;
-#pragma link C++ class std::vector<FindableHyperTriton>+;
 #pragma link C++ class std::vector<AliESDtrack>+;
 //#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
 //#pragma link C++ class std::vector<FindableHyperTriton<3>>+;

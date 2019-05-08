@@ -97,6 +97,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
  void SetUsePIDfromPDG(Bool_t usePID=kFALSE, AliPID::EParticleType partOfInterest = AliPID::kPion) {
    fUsePIDFromPDG = usePID;
    fpartOfInterest = partOfInterest;
+   fMassParticleOfInterest = AliPID::ParticleMass(partOfInterest);
   }
   
   void SetUsePIDnSigmaComb(Bool_t UsePIDnSigmaComb){
@@ -110,7 +111,19 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   void SetMinNumberOfTPCClusters(Double_t min) {
     fMinNumberOfTPCClusters = min;}
   void SetMaxChi2PerTPCCluster(Double_t max) {
-    fMaxChi2PerTPCCluster = max;}
+    fMaxChi2PerTPCCluster = max;}  
+
+
+  void SetExtra2DDCACutsAOD(Double_t DCAxy, Double_t DCAz){
+    fDCAxyCut  = DCAxy;
+    fDCAzCut = DCAz;
+  }
+
+  void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC){
+    fTPCchi2Cut      = maxTPCchi2;
+    fNClustersTPCCut = minNClustersTPC;
+  }
+ 
   void SetMaxDCAxy(Double_t max) {
     fMaxDCAxy = max;}
   void SetMaxDCAz(Double_t max) {
@@ -119,7 +132,10 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fMinPt = minPt;}
   void SetMaxPt(Double_t maxPt) {
     fMaxPt = maxPt;}
- 
+    
+  void SetUseY(){
+    fUseY = kTRUE;
+  }  
   void SetEtaRange(Double_t minEta, Double_t maxEta, Int_t binEta, Double_t minRangeEta, Double_t maxRangeEta, Int_t bindEta){
     fMinEta = minEta;
     fMaxEta = maxEta;
@@ -127,7 +143,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fEtaRangeMax = maxRangeEta;
     fEtaRangeMin = minRangeEta;
     fdEtaBin = bindEta;
-  }
+  } 
   void SetPtRange(Double_t minRangePt, Double_t maxRangePt,Int_t binPt){
     fPtRangeMin = minRangePt;
     fPtRangeMax = maxRangePt;
@@ -145,6 +161,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH1F        *fHistCentrality; //!centrality
   TH1F        *fHistNMult; //! nmult  
   TH1F        *fHistVz;//!
+  TH2F        *fHistDCA;//DCA z vs DCA xy
   TH2F        *fHistNSigmaTPCvsPtbeforePID;//TPC nsigma vs pT before PID cuts (QA histogram)
   TH2F        *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
 
@@ -219,10 +236,13 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Bool_t  fUsePIDnSigmaComb;//
   Double_t fBayesPIDThr;//
     
+  Bool_t  fUseY;//
+    
   Bool_t fUsePIDstrategy; // flag to switch on PID
   Bool_t fUsePIDFromPDG; //flag to switch on MC PID (used for PID tracking eff) 
   AliPID::EParticleType fpartOfInterest; //
   Int_t fPDGCodeWanted;//
+  Float_t fMassParticleOfInterest;//
     
   Double_t fVxMax;// vxmax
   Double_t fVyMax;// vymax
@@ -240,6 +260,11 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Double_t fPtRangeMin;  // acceptance cuts
   Double_t fPtRangeMax;  // acceptance cuts
   
+  Double_t fDCAxyCut;//2D DCA cut
+  Double_t fDCAzCut;//2D DCA cut
+  Double_t fTPCchi2Cut;//Chi2 Per Cluster TPC cut
+  Int_t fNClustersTPCCut;//Minimum number of TPC clusters cut
+
   Int_t fEtaBin;  // acceptance cuts
   Int_t fdEtaBin;  // acceptance cuts
   Int_t fPtBin; // acceptance cuts
@@ -250,7 +275,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
   
-  ClassDef(AliAnalysisTaskEffContBF, 4); // example of analysis
+  ClassDef(AliAnalysisTaskEffContBF, 6); // example of analysis
 };
 
 #endif

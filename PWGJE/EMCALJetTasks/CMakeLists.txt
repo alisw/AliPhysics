@@ -141,6 +141,8 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
+    Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
+    Tracks/AliAnalysisTaskEmcalOutliersGen.cxx
     Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
     Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
@@ -198,8 +200,8 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalTmpSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
     UserTasks/AliAnalysisTaskEmcalTriggerTreeWriter.cxx
+    UserTasks/AliAnalysisTaskEventExtractor.cxx
     UserTasks/AliAnalysisTaskHJetEmbed.cxx
-    UserTasks/AliAnalysisTaskJetExtractor.cxx
     UserTasks/AliAnalysisTaskJetJTJT.cxx
     UserTasks/AliAnalysisTaskJetMassResponseDet.cxx
     UserTasks/AliAnalysisTaskJetMatching.cxx
@@ -256,6 +258,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
+        UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx
@@ -300,7 +303,7 @@ else()
     set(ROOT_DEPENDENCIES)
 endif()
 
-set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase)
+set(ALIROOT_DEPENDENCIES ANALYSIS CORRFW PHOSbase PWGEMCALbase PWGEMCALtrigger PWGJETFW PWGCaloTrackCorrBase PWGDevNanoAOD)
 if(FASTJET_FOUND)
     set(ALIROOT_DEPENDENCIES JETAN ${ALIROOT_DEPENDENCIES})
 endif(FASTJET_FOUND)

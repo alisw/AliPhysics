@@ -875,7 +875,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   Double_t zVtxPosition = vtx1->GetZ();
   fzVtx = zVtxPosition;
   if(!fMergePools) fPoolNum = fCutsTracks->GetPoolBin(MultipOrCent, zVtxPosition);
-  
+
   //vtx1->Print();
   TString primTitle = vtx1->GetTitle();
   if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0) {
@@ -938,7 +938,8 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
 
   //Fill Event Multiplicity (needed only in Reco)
-  fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
+  if(fSys==0) fMultEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.)); //pp (or pPb)
+  else fMultEv = fCutsD0->GetCentrality(aod); //PbPb
 
   //Fill control plots for event centrality and zVtx
   if(fCutsD0->GetUseCentrality()) ((TH1F*)fOutputStudy->FindObject("hCentralEvts"))->Fill(fCutsD0->GetCentrality(aod));
@@ -1046,8 +1047,8 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
           //Removal of cases in which D0 decay is not in Kpi!
 	  if(mcPart->GetNDaughters()!=2) continue;
-	  AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)));
-	  AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(1)));
+	  AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(0)));
+	  AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)));
 	  if(!mcDau1 || !mcDau2) continue;
 	  Int_t pdg1 = TMath::Abs(mcDau1->GetPdgCode());
 	  Int_t pdg2 = TMath::Abs(mcDau2->GetPdgCode());
@@ -1211,6 +1212,7 @@ void AliAnalysisTaskSED0Correlations::FillMassHists(AliAODRecoDecayHF2Prong *par
       fillthis="histMass_WeigD0Eff_";
       fillthis+=ptbin;
       Double_t effD0 = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
+       
       if(!fUseDeff || !effD0) effD0=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0,1./effD0);
       if(fFillTrees>0) {
@@ -3076,8 +3078,8 @@ Bool_t AliAnalysisTaskSED0Correlations::IsSoftPion_MCKine(AliAODMCParticle* d, A
     return isSoftPi;
   }
   if(TMath::Abs(mcMoth->GetPdgCode())==413 && mcMoth->GetNDaughters()==2) { //mother is D* with 2 daughs
-    Int_t labdau1 = mcMoth->GetDaughter(0);
-    Int_t labdau2 = mcMoth->GetDaughter(1);
+    Int_t labdau1 = mcMoth->GetDaughterLabel(0);
+    Int_t labdau2 = mcMoth->GetDaughterLabel(1);
     AliAODMCParticle* dau1 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labdau1));
     AliAODMCParticle* dau2 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labdau2));
     if(!dau1 || !dau2) return isSoftPi; //safety check

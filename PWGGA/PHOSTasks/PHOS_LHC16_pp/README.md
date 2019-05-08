@@ -8,7 +8,6 @@ This analysis task shoul alwaysd be used with [phos tender](https://github.com/a
 ```c++
 // In your run.C macro
 
-gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C");
 AliPHOSTenderTask * tenderPHOS = AddAODPHOSTender("PHOSTenderTask", "PHOStender", tenderOption, 1, isMC);
 AliPHOSTenderSupply * PHOSSupply = tenderPHOS->GetPHOSTenderSupply();
 PHOSSupply->ForceUsingBadMap("/path/to/badmap/BadMap_LHC16.root");

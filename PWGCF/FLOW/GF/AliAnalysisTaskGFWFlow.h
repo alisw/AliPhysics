@@ -43,7 +43,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   Bool_t AcceptEvent();
   Bool_t AcceptAODVertex(AliAODEvent*);
-  void SetPtBins(Int_t nBins, Double_t *bins) { fPtAxis->Set(nBins,bins); };
+  void SetPtBins(Int_t nBins, Double_t *bins, Double_t RFpTMin=-1, Double_t RFpTMax=-1); //Also set the RF pT acceptance
   void SetCurrSystFlag(Int_t newval) { fCurrSystFlag = newval; };
   void SetWeightDir(const char *newval) { fWeightDir.Clear(); fWeightDir.Append(newval); };
   Bool_t SetInputWeightList(TList *inList);
@@ -63,6 +63,10 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   AliMCEvent *fMCEvent; //! Not stored
   Bool_t fIsMC;
   TAxis *fPtAxis; // No need to store this
+  Double_t fPOIpTMin; //pT min for POI
+  Double_t fPOIpTMax; //pT max for POI
+  Double_t fRFpTMin; //pT min for RF
+  Double_t fRFpTMax; //pT max for RF
   TString fWeightPath; //! No need to store this
   TString fWeightDir; //Directory where to find weights
   //Double_t fPtBins; //! Not stored
@@ -72,12 +76,11 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   Int_t fCurrSystFlag;
   Bool_t fAddQA; // Add AliEventSelection QA plots
   TList *fQAList;
-  Int_t AcceptedEventCount; 
+  Int_t AcceptedEventCount;
   Int_t GetVtxBit(AliAODEvent *mev);
   Int_t GetParticleBit(AliVParticle *mpa);
   Int_t GetTrackBit(AliAODTrack *mtr, Double_t *lDCA);
   Int_t CombineBits(Int_t VtxBit, Int_t TrkBit);
-  Bool_t AcceptAODTrack(AliAODTrack *lTr, TClonesArray *tca=0);
   Bool_t AcceptParticle(AliVParticle *mPa);
   Bool_t InitRun();
   Bool_t LoadWeights(Int_t runno);
@@ -86,4 +89,3 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
 };
 
 #endif
-

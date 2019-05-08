@@ -258,7 +258,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	pdg = dMC->GetPdgCode();
 	invmass = (pdg==421 ? d2->InvMassD0() : d2->InvMassD0bar());
 	// get a daughter for true pos of decay vertex
-	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
+	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughterLabel(0));
 	dg0MC->XvYvZv(posTrue);
 	fHistMass->Fill(invmass);
 	// Post the data already here
@@ -289,7 +289,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	pdg = dMC->GetPdgCode();
 	invmass = d3->InvMassDplus();
 	// get a daughter for true pos of decay vertex
-	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
+	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughterLabel(0));
 	dg0MC->XvYvZv(posTrue);
 	Float_t tmp[16]={(Float_t)pdg,(Float_t)nprongs,
 			 (Float_t)posRec[0],(Float_t)posTrue[0],(Float_t)errx,
@@ -318,7 +318,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	//invmass = (pdg==421 ? d->InvMassD0() : d->InvMassD0bar());
 	invmass = 10.; 	  // dummy
 	// get a daughter for true pos of decay vertex
-	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughter(0));
+	AliAODMCParticle *dg0MC = (AliAODMCParticle*)mcArray->At(dMC->GetDaughterLabel(0));
 	dg0MC->XvYvZv(posTrue);
 	Float_t tmp[16]={(Float_t)pdg,(Float_t)nprongs,
 			 (Float_t)posRec[0],(Float_t)posTrue[0],(Float_t)errx,

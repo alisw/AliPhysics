@@ -547,8 +547,8 @@ void AliAnalysisHFCorrOnFlySim::RemoveNDaughterParticleArray(TObject* obj){
     AliVParticle* TrgPart = (AliVParticle*)obj;
     if(!TrgPart)return;
     
-    Int_t DauPosF = TrgPart->GetFirstDaughter();
-    Int_t DauPosL = TrgPart->GetLastDaughter();
+    Int_t DauPosF = TrgPart->GetDaughterFirst();
+    Int_t DauPosL = TrgPart->GetDaughterLast();
     
     if(DauPosL<0)DauPosL=DauPosF;
     if(DauPosF > 0){
@@ -604,7 +604,7 @@ void AliAnalysisHFCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj){
         
         if(pdgOfMother==413){ // Dstar --> D0: check soft pion
             if(PDG_TrigPart==1){
-                for(Int_t isp = MotherOfTrg->GetFirstDaughter(); isp <= MotherOfTrg->GetLastDaughter(); isp++){
+                for(Int_t isp = MotherOfTrg->GetDaughterFirst(); isp <= MotherOfTrg->GetDaughterLast(); isp++){
                     AliVParticle *sfp=(AliVParticle*)fMcEvent->GetTrack(isp);
                     Int_t pdgsp=TMath::Abs(sfp->PdgCode());
                     if(pdgsp==211)softpi=isp;

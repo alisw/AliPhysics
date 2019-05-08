@@ -214,6 +214,7 @@ private:
   TH1F*                       fhEntries;         //!<!
   TH1F*	                      fhZNApercentQa;    //!<! QA histo for ZNA percentile
   TH1F*                       fhEvtRej;          //!<! Rejection criteria.
+  TH1F*                       fhEvtRejBitmap;          //!<! Rejection criteria bitmap.	
   TH1F*                       fhHFjetQa;         //!<! Various QA check on Jet.
   TH1F*                       fhRhoQa;           //!<! 
   TH1F*                       fhMCRhoQa;         //!<! 
@@ -276,7 +277,7 @@ private:
   Double_t                    fPtCut;            //<! min cut on track pT   //AID  
   Double_t                    fEtaCut;           //<! cut on track eta   //AID  
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 9);  // analysis task for MC study //AID//
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 10);  // analysis task for MC study //AID//
 };
 
 //-------------------------------------------------------------------------------------

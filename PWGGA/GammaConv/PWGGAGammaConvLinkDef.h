@@ -4,27 +4,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-// Base classes
-#pragma link C++ class AliConversionPhotonBase+;
-#pragma link C++ class AliAODConversionParticle+;
-#pragma link C++ class AliAODConversionMother+;
-#pragma link C++ class AliAODConversionPhoton+;
-#pragma link C++ class AliKFConversionPhoton+;
-#pragma link C++ class AliKFConversionMother+;
-#pragma link C++ class AliCaloPhotonCuts+;
-#pragma link C++ class AliConvEventCuts+;
-#pragma link C++ class AliConversionPhotonCuts+;
-#pragma link C++ class AliConversionCuts+;
-#pragma link C++ class AliConversionSelection+;
-#pragma link C++ class AliV0ReaderV1+;
-#pragma link C++ class AliConversionAODBGHandlerRP+;
-#pragma link C++ class AliConversionTrackCuts+;
-#pragma link C++ class AliConversionMesonCuts+;
-#pragma link C++ class AliDalitzElectronCuts+;
-#pragma link C++ class AliDalitzElectronSelector+;
-#pragma link C++ class AliCaloTrackMatcher+;
-#pragma link C++ class AliPhotonIsolation+;
-
 // User tasks
 #pragma link C++ class AliAnalysisTaskPi0v2+;
 #pragma link C++ class AliGammaConversionAODBGHandler+;
@@ -38,6 +17,7 @@
 #pragma link C++ class AliAnalysisTaskResolution+;
 #pragma link C++ class AliAnalysisTaskGammaCaloDalitzV1+;
 #pragma link C++ class AliAnalysisTaskGammaPureMC+;
+#pragma link C++ class AliAnalysisTaskOmegaMCStudies+;
 #pragma link C++ class AliAnalysisTaskGammaCocktailMC+;
 #pragma link C++ class AliAnalysisTaskHadronicCocktailMC+;
 
@@ -51,10 +31,13 @@
 #pragma link C++ class AliAnalysisTaskK0toPi0Pi0+;
 #pragma link C++ class AliAnalysisTaskGammaConvDtrue+;
 #pragma link C++ class AliAnalysisTaskGammaTriggerQA+;
+#pragma link C++ class AliAnalysisTaskConvCaloCalibration+;
+#pragma link C++ class AliAnalysisTaskTrackQA+;
+#pragma link C++ class AliIdentifiedPrimarySelector+;
+#pragma link C++ class AliIdentifiedPrimaryCuts+;
 
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
-
 #pragma link C++ class AliPrimaryPionSelector+;
 #pragma link C++ class AliPrimaryPionCuts+;
 #pragma link C++ class AliAnalysisTaskEtaToPiPlPiMiGamma+;

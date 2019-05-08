@@ -189,6 +189,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         fBinsAllocated+=nXbins+2;
 	h->Sumw2();
         h->SetUniqueID(1);
+        if(titleStr.Contains("--s--")) ((TProfile*)h)->BuildOptions(0.,0.,"s");
         if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
       }
       else {
@@ -224,6 +225,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax,nZbins,zmin,zmax);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
 	  h->Sumw2();
+          if(titleStr.Contains("--s--")) ((TProfile3D*)h)->BuildOptions(0.,0.,"s");
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
@@ -232,6 +234,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
 	  h->Sumw2();
           h->SetUniqueID(1);
+          if(titleStr.Contains("--s--")) ((TProfile2D*)h)->BuildOptions(0.,0.,"s");
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
         }
       }
@@ -329,6 +332,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         fBinsAllocated+=nXbins+2;
 	h->Sumw2();
         h->SetUniqueID(1);
+        if(titleStr.Contains("--s--")) ((TProfile*)h)->BuildOptions(0.,0.,"s");
         if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
       }
       else {
@@ -365,6 +369,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins,nZbins,zbins);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
 	  h->Sumw2();
+          if(titleStr.Contains("--s--")) ((TProfile3D*)h)->BuildOptions(0.,0.,"s");
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
@@ -373,6 +378,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
 	  h->Sumw2();
           h->SetUniqueID(1);
+          if(titleStr.Contains("--s--")) ((TProfile2D*)h)->BuildOptions(0.,0.,"s");
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
         }
       }

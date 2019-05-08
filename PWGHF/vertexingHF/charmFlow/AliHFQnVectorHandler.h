@@ -20,6 +20,8 @@
 // S. Trogolo, stefano.trogolo@cern.ch
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include <TMath.h>
+#include <TFile.h>
 #include <TBits.h>
 #include <TH1D.h>
 #include <TString.h>
@@ -67,10 +69,18 @@ class AliHFQnVectorHandler : public TObject
     bool ComputeCalibratedQnVectorTPC(bool forceCalc = false);
     bool ComputeCalibratedQnVectorV0(bool forceCalc = false);
 
+    int GetHarmonic() const {return fHarmonic;}
+    int GetCalibrationType() const {return fCalibType;}
+    int GetNormalisationMethod() const {return fNormMethod;}
+    TString GetCalibrationsOADBFileName() const {return fOADBFileName;}
+
     void GetQnVecTPC(double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2]);
     void GetQnVecV0(double QnVecFullV0[2], double QnVecV0A[2], double QnVecV0C[2]);
     void GetUnNormQnVecTPC(double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2]);
     void GetUnNormQnVecV0(double QnVecFullV0[2], double QnVecV0A[2], double QnVecV0C[2]);
+
+    void GetqnTPC(double &qnFullTPC, double &qnPosTPC, double &qnNegTPC);
+    void GetqnV0(double &qnFullV0, double &qnV0A, double &qnV0C);
 
     void GetMultQnVecTPC(double &MultFullTPC, double &MultPosTPC, double &MultNegTPC);
     void GetMultQnVecV0(double &MultFullV0, double &MultV0A, double &MultV0C);
@@ -78,7 +88,11 @@ class AliHFQnVectorHandler : public TObject
     void GetEventPlaneAngleTPC(double &EvPlaneFullTPC, double &EvPlanePosTPC, double &EvPlaneNegTPC);
     void GetEventPlaneAngleV0(double &EvPlaneFullV0, double &EvPlaneV0A, double &EvPlaneV0C);
 
-    void RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], bool getUnNormalised=false);
+    void RemoveTracksFromQnTPC(vector<AliAODTrack*> trToRem, double QnVecFullTPC[2], double QnVecPosTPC[2], double QnVecNegTPC[2], double &multFullTPC, double &multPosTPC, double &multNegTPC, bool getUnNormalised=false); 
+
+    void EnablePhiDistrHistos();
+    TH2F* GetPhiDistrHistosTPCPosEta() const {return fPhiVsCentrTPC[0];}
+    TH2F* GetPhiDistrHistosTPCNegEta() const {return fPhiVsCentrTPC[1];}
 
   private:  
 
@@ -90,6 +104,7 @@ class AliHFQnVectorHandler : public TObject
     double ComputeEventPlaneAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}  
     
     short GetVertexZbin() const;
+    short GetCentBin() const;
     bool OpenInfoCalbration();
 
     bool IsTrackSelected(AliAODTrack* track);
@@ -158,14 +173,17 @@ class AliHFQnVectorHandler : public TObject
     TH1D* fQx2sV0C[14];                                        /// sigma Qxn V0C
     TH1D* fQy2sV0C[14];                                        /// sigma Qyn V0C
 
-    TH1D* fWeightsTPC;                                         /// Weights for TPC --> to be defined
+    TH1D* fWeightsTPCPosEta[9];                                /// Weights for TPC tracks with eta > 0
+    TH1D* fWeightsTPCNegEta[9];                                /// Weights for TPC tracks with eta < 0
+    bool fEnablePhiDistrHistos;                                /// Enable phi distribution histos
+    TH2F* fPhiVsCentrTPC[2];                                   /// Phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
 
     //data members needed for Qn-framework calibrations
     AliAnalysisTaskFlowVectorCorrections *fQnVectorTask;       /// Qn-framework task
     AliQnCorrectionsManager *fQnVectorMgr;                     /// Qn-framework manager
 
   /// \cond CLASSIMP
-  ClassDef(AliHFQnVectorHandler,1); /// 
+  ClassDef(AliHFQnVectorHandler,3); /// 
   /// \endcond
 };
 
