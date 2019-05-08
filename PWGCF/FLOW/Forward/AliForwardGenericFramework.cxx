@@ -25,7 +25,7 @@ AliForwardGenericFramework::AliForwardGenericFramework()
   Double_t xmax[4] = { 1,   5.5, 4.5,  6}; // kind (real or imaginary), n, p, eta SKAL VAERE -6 - 6
 
   fQvector = new THnD("Qvector", "Qvector", dimensions, rbins, xmin, xmax);
-  //fQvector->SetDirectory(0);
+
   Int_t dbins[4] = {2, 6, 4, fSettings.fNDiffEtaBins} ; // kind (real or imaginary), n, p, eta
   xmin[3] = -4.0;
 
@@ -42,7 +42,7 @@ AliForwardGenericFramework::AliForwardGenericFramework()
 
 
 //_____________________________________________________________________
-void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, TList* outputList, double cent, double zvertex, TString detType, Bool_t doRefFlow, Bool_t doDiffFlow)
+void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, TList* outputList, double cent, double zvertex, Bool_t useFMD, Bool_t doRefFlow, Bool_t doDiffFlow)
 {
 
   std::cout << "phibins = " << dNdetadphi->GetNbinsY() << std::endl;
@@ -62,13 +62,13 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, TList* o
 
       if (!fSettings.use_primaries_fwd && !fSettings.esd){
         if (!fSettings.mc){
-          if (dNdetadphi->GetBinContent(etaBin, 0) == 0 && detType == "forward") break;
+          if (dNdetadphi->GetBinContent(etaBin, 0) == 0 && useFMD) break;
         }
       }
 
       if (fSettings.doNUA){
         // holes in the FMD
-        if ((fSettings.nua_mode & fSettings.kFill) && detType == "forward"){
+        if ((fSettings.nua_mode & fSettings.kFill) && useFMD){
           if (etaBin >= 125 && etaBin <=137){
             if (phiBin == 17 || phiBin == 18) weight = 1.;
           }
@@ -77,34 +77,34 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, TList* o
           }
         }
 
-        if ((fSettings.nua_mode & fSettings.kInterpolate) && detType == "forward") weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
+        if ((fSettings.nua_mode & fSettings.kInterpolate) && useFMD) weight = AliForwardNUATask::InterpolateWeight(dNdetadphi,phiBin,etaBin,weight);
 
 
-        if (detType == "central" && !fSettings.use_primaries_cen) {
-          Double_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
-          Double_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
-          Double_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
+        if (!useFMD && !fSettings.use_primaries_cen) {
+          Int_t nuaeta = fSettings.nuacentral->GetXaxis()->FindBin(eta);
+          Int_t nuaphi = fSettings.nuacentral->GetYaxis()->FindBin(phi);
+          Int_t nuavtz = fSettings.nuacentral->GetZaxis()->FindBin(zvertex);
           weight = weight*fSettings.nuacentral->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
 
-        if (detType == "forward" && !fSettings.use_primaries_fwd) {
-          Double_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
-          Double_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
-          Double_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
+        if (useFMD && !fSettings.use_primaries_fwd) {
+          Int_t nuaeta = fSettings.nuaforward->GetXaxis()->FindBin(eta);
+          Int_t nuaphi = fSettings.nuaforward->GetYaxis()->FindBin(phi);
+          Int_t nuavtz = fSettings.nuaforward->GetZaxis()->FindBin(zvertex);
           weight = weight*fSettings.nuaforward->GetBinContent(nuaeta,nuaphi,nuavtz);
         }
       }
 
     if (weight == 0) continue; 
-    for (Int_t n = 0; n <= 5; n++) {
+    for (Int_t n = 0; n <= 4; n++) {
 
-      if (detType == "forward" && fSettings.sec_corr){
+      if (useFMD && fSettings.sec_corr){
 
         if ((fSettings.ref_mode & fSettings.kFMDref)){ //doRefFlow && 
           if (!fSettings.use_primaries_fwd && n>=2 && n<=4) {
-            Double_t seceta = fSettings.seccorr_fwd->GetXaxis()->FindBin(eta);
-            Double_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
-            Double_t secn = fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
+            Int_t seceta = fSettings.seccorr_fwd->GetXaxis()->FindBin(eta);
+            Int_t secvtz = fSettings.seccorr_fwd->GetYaxis()->FindBin(zvertex);
+            Int_t secn = n-1;//fSettings.seccorr_fwd->GetZaxis()->FindBin(n-2);
             weight = weight*fSettings.seccorr_fwd->GetBinContent(seceta,secvtz,secn);
           }
         }
@@ -170,7 +170,7 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   // For each n we loop over the hists
   Double_t noSamples = static_cast<Double_t>(r);
 
-  for (Int_t n = 2; n <= 5; n++) {
+  for (Int_t n = 2; n <= 4; n++) {
     Int_t prevRefEtaBin = kTRUE;
 
     cumuRef = static_cast<THnD*>(refList->At(n-2));//FindObject(Form("cumuRef_v%d_pt%d", n,ptn)));

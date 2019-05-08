@@ -730,11 +730,12 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
     if (track->TestFilterBit(tracktype) && track->GetTPCNcls() > fSettings.fnoClusters){
+      if (track->Pt() < this->minpt || track->Pt() > this->maxpt) continue;
 
       if( fSettings.fCutChargedDCAzMax > 0. || fSettings.fCutChargedDCAxyMax > 0.){
-        Double_t dTrackXYZ[3] = {0.,0.,0.};
+        Double_t dTrackXYZ[3]  = {0.,0.,0.};
         Double_t dVertexXYZ[3] = {0.,0.,0.};
-        Double_t dDCAXYZ[3] = {0.,0.,0.};
+        Double_t dDCAXYZ[3]    = {0.,0.,0.};
         const AliAODVertex* vertex = fAODevent->GetPrimaryVertex();
 
         track->GetXYZ(dTrackXYZ);
@@ -743,13 +744,9 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
         for(Short_t i(0); i < 3; i++) { dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i]; }
 
         if(fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax) continue;
-
         if(fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax) continue;
       }
-
-      if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
-        cen->Fill(track->Eta(),track->Phi(), 1);
-      }
+      cen->Fill(track->Eta(),track->Phi(), 1);
     }
   }
 }
@@ -768,6 +765,7 @@ AliTrackReference* AliForwardFlowUtil::IsHitFMD(AliMCParticle* p) {
   }
   return 0x0;
 }
+
 
 AliTrackReference* AliForwardFlowUtil::IsHitTPC(AliMCParticle* p) {
   for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {
