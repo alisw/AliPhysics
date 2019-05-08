@@ -11,42 +11,19 @@
 #include <iostream>
 #include <TROOT.h>
 #include <TSystem.h>
-#include <TInterpreter.h>
 #include <TList.h>
 #include <THn.h>
-#include <THnSparse.h>
 
-#include "AliLog.h"
-#include "AliForwardFlowRun2Task.h"
-#include "AliForwardQCumulantRun2.h"
-#include "AliForwardGenericFramework.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 
-#include "AliAODForwardMult.h"
-#include "AliAODCentralMult.h"
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
 
+#include "AliForwardFlowRun2Task.h"
+#include "AliForwardQCumulantRun2.h"
+#include "AliForwardGenericFramework.h"
 #include "AliForwardFlowUtil.h"
-
-#include "AliVVZERO.h"
-#include "AliAODVertex.h"
-#include "AliCentrality.h"
-
-#include "AliESDEvent.h"
-#include "AliVTrack.h"
-#include "AliESDtrack.h"
-#include "AliAODTrack.h"
-#include "AliAODTracklets.h"
-
-#include "AliAnalysisFilter.h"
-#include "AliMultSelection.h"
-#include "AliMultiplicity.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliAODMCParticle.h"
-#include "AliStack.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
 
 using namespace std;
 ClassImp(AliForwardFlowRun2Task)
@@ -67,8 +44,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   forwardDist(),
   fSettings(),
   fUtil(),
-  fCalculator(),
-  useEvent(true)
+  fCalculator()
   {
   //
   //  Default constructor
@@ -87,8 +63,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   forwardDist(),
   fSettings(),
   fUtil(),
-  fCalculator(),
-  useEvent(true)
+  fCalculator()
   {
   //
   //  Constructor
@@ -148,7 +123,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     fOutputList->Add(fEventList);
 
     // do analysis from v_2 to a maximum of v_5
-    Int_t fMaxMoment = 5;
+    Int_t fMaxMoment = 4;
     Int_t dimensions = 5;
 
     Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)+1} ;
@@ -266,26 +241,17 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   fCent->Fill(cent);
   fVertex->Fill(zvertex);
-  //AliForwardGenericFramework calculator = AliForwardGenericFramework();
   
-
-  // if (fSettings.a5){
-  //   fCalculator.CumulantsAccumulate(refDist, fOutputList, cent, zvertex,"forward",true,false);
-
-  //   TH2D refDist_tmp = TH2D("r","",400,-1.5,1.5,400,0,2*TMath::Pi());
-  //   refDist_tmp.SetDirectory(0);
-  //   refDist     = &refDist_tmp;
-
-  //   refDist     ->SetDirectory(0);
-  //   fUtil.FillDataCentral(refDist);
-  //   fCalculator.CumulantsAccumulate(refDist, fOutputList, cent, zvertex,"central",true,false);
-  // }
-  // else{
-  if (fSettings.ref_mode & fSettings.kFMDref) fCalculator.CumulantsAccumulate(refDist, fOutputList, cent, zvertex,"forward",true,false);
-  else fCalculator.CumulantsAccumulate(refDist, fOutputList, cent, zvertex,"central",true,false);
-  //}
-  fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,"forward",false,true);
-  fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,"central",false,true);  
+  if (fSettings.a5){
+    fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,kTRUE,true,false);
+    fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,kFALSE,true,false);
+  }
+  else{
+    if (fSettings.ref_mode & fSettings.kFMDref) fCalculator.CumulantsAccumulate(refDist, fOutputList, cent, zvertex,kTRUE,true,false);
+    else fCalculator.CumulantsAccumulate(refDist, fOutputList, cent, zvertex,kFALSE,true,false);
+  }
+  fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,kTRUE,false,true);
+  fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,kFALSE,false,true);  
 
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
   fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
