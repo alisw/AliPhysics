@@ -70,7 +70,6 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
       
     // Fill forwardDist
     FillFromForwardClusters(forwardDist);
-      
     // Fill centralDist
     if (fSettings.useSPD) this->FillFromTracklets(centralDist);
     else if (fSettings.useITS) this->FillFromCentralClusters(centralDist);
