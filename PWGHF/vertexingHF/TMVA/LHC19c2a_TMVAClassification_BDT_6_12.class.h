@@ -106,8 +106,8 @@ centrality                    centrality                    centrality          
 
 ============================================================================ */
 
-#ifndef ReadBDT_Default_LHC19c2a_6_12_H
-#define ReadBDT_Default_LHC19c2a_6_12_H
+#ifndef ReadBDT_LHC19c2a_6_12_H
+#define ReadBDT_LHC19c2a_6_12_H
 
 #include <vector>
 #include <cmath>
@@ -116,19 +116,17 @@ centrality                    centrality                    centrality          
 #include "IClassifierReader.h"
 #include "BDTNode.h"
 
-// Default constructor added by ALICE analyzers
-class ReadBDT_Default_LHC19c2a_6_12 : public IClassifierReader
+class ReadBDT_LHC19c2a_6_12 : public IClassifierReader
 {
-
-public:
-  // constructor
-  ReadBDT_Default_LHC19c2a_6_12()
+ public:
+  // Deafult constructor added by ALICE user
+  ReadBDT_LHC19c2a_6_12()
       : IClassifierReader(),
-        fClassName("ReadBDT_Default_LHC19c2a_6_12"),
-        fNvars(9),
+        fClassName("ReadBDT_LHC19c2a_6_12"),
+        fNvars(14),
         fIsNormalised(false)
   {
-    for (int i = 9; i--;)
+    for (int i = 14; i--;)
     {
       fVmin[i] = fVmax[i] = 0;
       fType[i] = 0;
@@ -137,114 +135,127 @@ public:
     fBoostWeights.clear();
   }
 
-  ReadBDT_Default_LHC19c2a_6_12(std::vector<std::string> &theInputVars)
-      : IClassifierReader(),
-        fClassName("ReadBDT_Default_LHC19c2a_6_12"),
-        fNvars(9),
-        fIsNormalised(false)
-  {
-    // the training input variables
-    const char *inputVars[] = {"massK0S", "tImpParBach", "tImpParV0", "bachelorPt", "combinedProtonProb", "DecayLengthK0S*0.497/v0P", "cosPAK0S", "CosThetaStar", "signd0"};
-
-    // sanity checks
-    if (theInputVars.size() <= 0)
-    {
-      std::cout << "Problem in class \"" << fClassName << "\": empty input vector" << std::endl;
-      fStatusIsClean = false;
-    }
-
-    if (theInputVars.size() != fNvars)
-    {
-      std::cout << "Problem in class \"" << fClassName << "\": mismatch in number of input values: "
-                << theInputVars.size() << " != " << fNvars << std::endl;
-      fStatusIsClean = false;
-    }
-
-    // validate input variables
-    for (size_t ivar = 0; ivar < theInputVars.size(); ivar++)
-    {
-      if (theInputVars[ivar] != inputVars[ivar])
+  // constructor
+ ReadBDT_LHC19c2a_6_12( std::vector<std::string>& theInputVars )
+   : IClassifierReader(),
+    fClassName( "ReadBDT_LHC19c2a_6_12" ),
+    fNvars( 14 ),
+    fIsNormalised(false)
       {
-        std::cout << "Problem in class \"" << fClassName << "\": mismatch in input variable names" << std::endl
-                  << " for variable [" << ivar << "]: " << theInputVars[ivar].c_str() << " != " << inputVars[ivar] << std::endl;
-        fStatusIsClean = false;
+	// the training input variables
+	const char* inputVars[] = { "massK0S", "tImpParBach", "tImpParV0", "bachelorPt", "DecayLengthK0S*0.497/v0P", "cosPAK0S", "CosThetaStar", "signd0", "bachelorP", "nSigmaTOFpr", "nSigmaTPCpr", "nSigmaTPCpi", "nSigmaTPCka", "bachTPCmom" };
+
+      // sanity checks
+	if (theInputVars.size() <= 0) {
+	  std::cout << "Problem in class \"" << fClassName << "\": empty input vector" << std::endl;
+	  fStatusIsClean = false;
+	}
+
+	if (theInputVars.size() != fNvars) {
+	  std::cout << "Problem in class \"" << fClassName << "\": mismatch in number of input values: "
+                   << theInputVars.size() << " != " << fNvars << std::endl;
+	  fStatusIsClean = false;
+	}
+
+	// validate input variables
+	for (size_t ivar = 0; ivar < theInputVars.size(); ivar++) {
+	  if (theInputVars[ivar] != inputVars[ivar]) {
+            std::cout << "Problem in class \"" << fClassName << "\": mismatch in input variable names" << std::endl
+                      << " for variable [" << ivar << "]: " << theInputVars[ivar].c_str() << " != " << inputVars[ivar] << std::endl;
+            fStatusIsClean = false;
+	  }
+	}
+	
+	
+	// initialize min and max vectors (for normalisation)
+	fVmin[0] = 0;
+	fVmax[0] = 0;
+	fVmin[1] = 0;
+	fVmax[1] = 0;
+	fVmin[2] = 0;
+	fVmax[2] = 0;
+	fVmin[3] = 0;
+	fVmax[3] = 0;
+	fVmin[4] = 0;
+	fVmax[4] = 0;
+	fVmin[5] = 0;
+	fVmax[5] = 0;
+	fVmin[6] = 0;
+	fVmax[6] = 0;
+	fVmin[7] = 0;
+	fVmax[7] = 0;
+	fVmin[8] = 0;
+	fVmax[8] = 0;
+	fVmin[9] = 0;
+	fVmax[9] = 0;
+	fVmin[10] = 0;
+	fVmax[10] = 0;
+	fVmin[11] = 0;
+	fVmax[11] = 0;
+	fVmin[12] = 0;
+	fVmax[12] = 0;
+	fVmin[13] = 0;
+	fVmax[13] = 0;
+	
+	// initialize input variable types
+	fType[0] = 'F';
+	fType[1] = 'F';
+	fType[2] = 'F';
+	fType[3] = 'F';
+	fType[4] = 'F';
+	fType[5] = 'F';
+	fType[6] = 'F';
+	fType[7] = 'F';
+	fType[8] = 'F';
+	fType[9] = 'F';
+	fType[10] = 'F';
+	fType[11] = 'F';
+	fType[12] = 'F';
+	fType[13] = 'F';
+	
+	// initialize constants
+	Initialize();
+	
       }
-    }
 
-    // initialize min and max vectors (for normalisation)
-    fVmin[0] = 0;
-    fVmax[0] = 0;
-    fVmin[1] = 0;
-    fVmax[1] = 0;
-    fVmin[2] = 0;
-    fVmax[2] = 0;
-    fVmin[3] = 0;
-    fVmax[3] = 0;
-    fVmin[4] = 0;
-    fVmax[4] = 0;
-    fVmin[5] = 0;
-    fVmax[5] = 0;
-    fVmin[6] = 0;
-    fVmax[6] = 0;
-    fVmin[7] = 0;
-    fVmax[7] = 0;
-    fVmin[8] = 0;
-    fVmax[8] = 0;
-
-    // initialize input variable types
-    fType[0] = 'F';
-    fType[1] = 'F';
-    fType[2] = 'F';
-    fType[3] = 'F';
-    fType[4] = 'F';
-    fType[5] = 'F';
-    fType[6] = 'F';
-    fType[7] = 'F';
-    fType[8] = 'F';
-
-    // initialize constants
-    Initialize();
-  }
-
-  // destructor
-  virtual ~ReadBDT_Default_LHC19c2a_6_12()
-  {
-    Clear(); // method-specific
-  }
+   // destructor
+   virtual ~ReadBDT_LHC19c2a_6_12() {
+      Clear(); // method-specific
+   }  
 
   // the classifier response
   // "inputValues" is a vector of input values in the same order as the
   // variables given to the constructor
   double GetMvaValue(const std::vector<double> &inputValues) const;
 
-private:
-  // method-specific destructor
-  void Clear();
+ private:
 
+   // method-specific destructor
+  void Clear();
+  
   // common member variables
   std::string fClassName; // changed to "std::string" from "const char*" by ALICE analyzers
 
-  const size_t fNvars;
-  size_t GetNvar() const { return fNvars; }
-  char GetType(int ivar) const { return fType[ivar]; }
+   const size_t fNvars;
+   size_t GetNvar()           const { return fNvars; }
+   char   GetType( int ivar ) const { return fType[ivar]; }
 
-  // normalisation of input variables
-  const bool fIsNormalised;
-  bool IsNormalised() const { return fIsNormalised; }
-  double fVmin[9];
-  double fVmax[9];
-  double NormVariable(double x, double xmin, double xmax) const
-  {
-    // normalise to output range: [-1, 1]
-    return 2 * (x - xmin) / (xmax - xmin) - 1.0;
-  }
+   // normalisation of input variables
+   const bool fIsNormalised;
+   bool IsNormalised() const { return fIsNormalised; }
+   double fVmin[14];
+   double fVmax[14];
+   double NormVariable( double x, double xmin, double xmax ) const {
+      // normalise to output range: [-1, 1]
+      return 2*(x - xmin)/(xmax - xmin) - 1.0;
+   }
 
-  // type of input variable: 'F' or 'I'
-  char fType[9];
+   // type of input variable: 'F' or 'I'
+   char   fType[14];
 
-  // initialize internal variables
-  void Initialize();
-  double GetMvaValue__(const std::vector<double> &inputValues) const;
+   // initialize internal variables
+   void Initialize();
+   double GetMvaValue__( const std::vector<double>& inputValues ) const;
 
   // private members (method specific)
   std::vector<BDTNode *> fForest; // i.e. root nodes of decision trees
