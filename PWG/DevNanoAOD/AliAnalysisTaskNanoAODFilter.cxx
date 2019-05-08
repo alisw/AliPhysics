@@ -194,15 +194,21 @@ void AliAnalysisTaskNanoAODFilter::FinishTaskOutput() {
 
   // We save here the user info
 
-  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  TObject* obj = inputHandler->GetUserInfo()->FindObject("alirootVersion");
-
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   AliAODExtension *extNanoAOD = handler->GetFilteredAOD("AliAOD.NanoAOD.root");
+
+  // copy production version info
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  TObject* prodInfo = inputHandler->GetUserInfo()->FindObject("alirootVersion");
+  if (prodInfo)
+    extNanoAOD->GetTree()->GetUserInfo()->Add(prodInfo->Clone());
+
+  Printf("****************************************************************");
   extNanoAOD->GetTree()->GetUserInfo()->Add(AliNanoAODTrackMapping::GetInstance(fReplicator->GetVarListTrack()));
+  AliNanoAODTrackMapping::GetInstance()->Print();
+  Printf("****************************************************************");
+  
   extNanoAOD->GetTree()->GetUserInfo()->Add(fNormalisation);
-  if (obj)
-    extNanoAOD->GetTree()->GetUserInfo()->Add(obj->Clone());
 }
 
 void AliAnalysisTaskNanoAODFilter::AddPIDField(AliNanoAODTrack::ENanoPIDResponse response, AliPID::EParticleType particle)
