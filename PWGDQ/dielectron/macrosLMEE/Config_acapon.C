@@ -373,6 +373,14 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
+  // Two cut settings to check PID efficiency using V0 electrons 
+  // (does not work MC, checked 2019.05.08)
+  else if(cutDefinition == "kV0_TTreeCutPID"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kTTreeCuts));
+  }
+  else if(cutDefinition == "kV0_MVAePID"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kCutSet1));
+  }
   else{
     cout << " =============================== " << endl;
     cout << " ==== INVALID CONFIGURATION ==== " << endl;

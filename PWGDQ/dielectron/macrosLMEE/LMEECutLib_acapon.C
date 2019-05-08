@@ -1181,7 +1181,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
       trackCuts->Print();
       return trackCuts;
-    case kV0_trackCuts:
+    case kV0_trackCuts: // Does not work for MC (checked 2019.05.08)
       // V0 specific track cuts
       gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
       // Cut on the angle between the total momentum vector of the daughter
