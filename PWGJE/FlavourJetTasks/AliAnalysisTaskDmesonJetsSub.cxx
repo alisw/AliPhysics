@@ -2269,8 +2269,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   if(fMCMode==kSignalOnly){
    
      for(auto aodMcPart : fMCContainer->all()){
-     TheTrueCode = aodMcPart->PdgCode();
-     if(TMath::Abs(TheTrueCode)==fCandidatePDG) EfficiencyGenerator->Fill(aodMcPart->Pt());
+     TheTrueCode = aodMcPartAll->PdgCode();
+     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPart->Eta())<0.9)EfficiencyGenerator->Fill(aodMcPartAll->Pt());
       }
   }
   
@@ -2288,7 +2288,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
-    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) EfficiencyMatches->Fill(Dcand->Pt());
+    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly)if(TMath::Abs(aodMcPart->Eta())<0.9) EfficiencyMatches->Fill(aodMcPart->Pt());
     
 
 
@@ -2307,7 +2307,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
-     if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) EfficiencyMatches->Fill(Dcand->Pt());
+    if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) if(TMath::Abs(aodMcPart->Eta())<0.9)EfficiencyMatches->Fill(aodMcPart->Pt());
   }
   else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
     AliDebug(10,"Selected as either D0 or D0bar");
