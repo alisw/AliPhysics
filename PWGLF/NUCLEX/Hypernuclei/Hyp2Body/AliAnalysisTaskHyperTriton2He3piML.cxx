@@ -77,6 +77,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fPropagetToPV{true},
       fListHist{nullptr},
       fTreeV0{nullptr},
+      fInputHandler{nullptr},
       fPIDResponse{nullptr},
       fMC{mc},
       fUseOnTheFly{false},
@@ -138,9 +139,9 @@ AliAnalysisTaskHyperTriton2He3piML::~AliAnalysisTaskHyperTriton2He3piML()
 void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
 {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
-  fPIDResponse = inputHandler->GetPIDResponse();
-  inputHandler->SetNeedField();
+  fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
+  fPIDResponse = fInputHandler->GetPIDResponse();
+  fInputHandler->SetNeedField();
 
   if (fSaveFileNames) {
     fFileNameTree = new TTree("fFileNameTree", "Filename tree");
@@ -232,9 +233,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
   unsigned char tgr = 0x0;
 
-  if (inputHandler->IsEventSelected() & AliVEvent::kINT7) tgr = 1;
-  if (inputHandler->IsEventSelected() & AliVEvent::kCentral) tgr = 2;
-  if (inputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr = 4;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr = 1;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr = 2;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr = 4;
 
   fRCollision.fTrigger = tgr;
 

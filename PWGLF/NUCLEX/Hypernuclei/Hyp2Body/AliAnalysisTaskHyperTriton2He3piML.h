@@ -145,7 +145,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   TList* fListHist;  //! List of Cascade histograms
   TTree* fTreeV0;    //! Output Tree, V0s
 
-  AliInputEventHandler *inputHandler;
+  AliInputEventHandler *fInputHandler; //!
   AliPIDResponse *fPIDResponse; //! PID response object
 
   bool fMC;
@@ -175,14 +175,14 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   float fMaxDeltaTheta;
   float fMinTrackletCosP;
 
-  TTree*     fFileNameTree;
-  TObjString fCurrentFileName;
+  TTree*     fFileNameTree;                     //!
+  TObjString fCurrentFileName;                  //!
 
-  std::vector<SHyperTritonHe3pi> fSHyperTriton;
-  std::vector<SGenericV0> fSGenericV0;
-  std::vector<RHyperTritonHe3pi> fRHyperTriton;
-  std::vector<RTracklet> fRTracklets;
-  RCollision fRCollision;
+  std::vector<SHyperTritonHe3pi> fSHyperTriton; //!
+  std::vector<SGenericV0> fSGenericV0;          //!
+  std::vector<RHyperTritonHe3pi> fRHyperTriton; //!
+  std::vector<RTracklet> fRTracklets;           //!
+  RCollision fRCollision;                       //!
 
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML&);  // not implemented
