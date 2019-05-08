@@ -1130,8 +1130,14 @@ AliParticleContainer* AliAnalysisTaskEmcalLight::AddParticleContainer(EMCAL_STRI
 
   AliParticleContainer* cont = 0;
 
-  if (branchName == "tracks" || branchName == "Tracks") cont = new AliTrackContainer(branchName.data());
-  else if (branchName == "mcparticles") cont = new AliMCParticleContainer(branchName.data());
+#if ROOT_VERSION_CODE > ROOT_VERSION(6,10,0) 
+#define EMCAL_STRINGVIEW_NONCONST std::string_view
+#else 
+#define EMCAL_STRINGVIEW_NONCONST std::string
+#endif
+
+  if (branchName == EMCAL_STRINGVIEW_NONCONST("tracks") || branchName == EMCAL_STRINGVIEW_NONCONST("Tracks")) cont = new AliTrackContainer(branchName.data());
+  else if (branchName == EMCAL_STRINGVIEW_NONCONST("mcparticles")) cont = new AliMCParticleContainer(branchName.data());
   else cont = new AliParticleContainer(branchName.data());
 
   if (contName.size() > 0) cont->SetName(contName.data());
