@@ -328,7 +328,7 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
 	      if(it->second == index) return it->first.Data();
       }      
     }
-    AliFatal("Invalid Index");
+    AliFatal(Form("Invalid index %d", index));
     return 0;
 }
 
@@ -345,7 +345,7 @@ const char * AliNanoAODTrackMapping::GetVarNameInt(Int_t index) const {
     else if(index == fFilterMap        )  return "FilterMap"        ;
     else if(index == fStatus           )  return "Status"           ;
     else if(fStatus != -1 && index == fStatus+1)  return "Status"   ;
-    AliFatal("Invalid Index");
+    AliFatal(Form("Invalid index %d", index));
     return 0;
 }
 
