@@ -8,6 +8,7 @@
 #pragma link C++ class AliXiStar+;
 #pragma link C++ class AliXiStarpp13TeV+;
 #pragma link C++ class AliXiStarPbPb+;
+#pragma link C++ class AliXiStarPbPb_RUN2+;
 #pragma link C++ class AliXiStarEventCollection+;
 #pragma link C++ class AliXiStarpp13TeVEventCollection+;
 #pragma link C++ class AliXiStarPbPbEventCollection+;
