@@ -903,18 +903,27 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009287000008250404000", "0152103500000000"); // to be used for MBW
     cuts.AddCutPCM("00010113", "0d200009297000008250404000", "0152103500000000"); // to be used for MBW
 
+  } else if (trainConfig == 422){   // AM changed from 441 to 422 
+    cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
+    cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
+    cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
+  } else if (trainConfig == 423){   // AM split the RBin "a" in two
+    cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-13
+    cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5
+
+
   } else if (trainConfig == 440){ // as 400 to be used MBW
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
     cuts.AddCutPCM("00010113", "0c200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
     cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-  } else if (trainConfig == 441){
-    cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
-    cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
-    cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
-  } else if (trainConfig == 442){ // as 440 to be used MBW
+  } else if (trainConfig == 442){ // as 422 (before 441) to be used MBW
     cuts.AddCutPCM("00010113", "0da00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-33.5
     cuts.AddCutPCM("00010113", "0db00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72.
     cuts.AddCutPCM("00010113", "0dc00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
+  } else if (trainConfig == 443){ // as 423 to be used MBW
+    cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-13
+    cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5.
+
 
   //----------------------------- configuration for Jet analysis ----------------------------------------------------
   } else if ( trainConfig == 500){ // Jet analysis pp 5 TeV 2017
