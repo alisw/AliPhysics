@@ -114,9 +114,14 @@ public:
   TH2D*   refDist;//!
   TH2D*   forwardDist;//!
 
+  TH2D* fdNdeta;//!
+  TH1D* fCent;//!
+  TH1D* fVertex;//!
+
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
   AliForwardFlowUtil fUtil;
+  AliForwardGenericFramework fCalculator;
 
   Bool_t useEvent;
 
