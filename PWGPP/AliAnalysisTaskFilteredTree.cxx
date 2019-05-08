@@ -961,6 +961,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
   ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
   TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+  ULong64_t triggerMask = esdEvent->GetTriggerMask();
   Float_t bz = esdEvent->GetMagneticField();
   Int_t runNumber = esdEvent->GetRunNumber();
   Int_t evtTimeStamp = esdEvent->GetTimeStamp();
@@ -972,6 +973,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
     "runNumber="<<runNumber<<                             // runNumber
     "evtTimeStamp="<<evtTimeStamp<<           // time stamp of event (in seconds)
     "evtNumberInFile="<<evtNumberInFile<<     // event number
+    "triggerMask="<<triggerMask<<             // trigger mask
     "triggerClass="<<&triggerClass<<          // trigger class as a string
     "Bz="<<bz<<                               // solenoid magnetic field in the z direction (in kGaus)
     "mult="<<mult<<                           // multiplicity of tracks pointing to the primary vertex
