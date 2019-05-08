@@ -2268,9 +2268,9 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   
   if(fMCMode==kSignalOnly){
    
-     for(auto aodMcPart : fMCContainer->all()){
+     for(auto aodMcPartAll : fMCContainer->all()){
      TheTrueCode = aodMcPartAll->PdgCode();
-     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPart->Eta())<0.9)EfficiencyGenerator->Fill(aodMcPartAll->Pt());
+     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<0.9)EfficiencyGenerator->Fill(aodMcPartAll->Pt());
       }
   }
   
