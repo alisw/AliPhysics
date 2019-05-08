@@ -69,8 +69,8 @@ struct RCollision {
 struct RTracklet {
   float fTheta;
   float fPhi;
-  Double32_t fDeltaTheta;    //[8,-0.12,0.12]
-  Double32_t fDeltaPhi;      //[8,-0.12,0.12]
+  Double32_t fDeltaTheta;    //[-0.12,0.12,8]
+  Double32_t fDeltaPhi;      //[-0.12,0.12,8]
 };
 
 struct SHyperTritonHe3pi {
