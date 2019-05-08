@@ -531,7 +531,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
 
   Int_t nVar; 
   if (fUseMCInfo)  nVar = 52; //"full" tree if MC
-  else nVar = 33; //"reduced" tree if data
+  else nVar = 34; //"reduced" tree if data
   
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
@@ -624,6 +624,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[30] = "signd0";        
     fCandidateVariableNames[31] = "centrality"; 
     fCandidateVariableNames[32] = "NtrkAll";
+    fCandidateVariableNames[33] = "origin";
  }
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
@@ -1939,6 +1940,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[30] = signd0;       
       fCandidateVariables[31] = fCentrality;
       fCandidateVariables[32] = fNTracklets_All;
+      fCandidateVariables[33] = -1;
     }
     
     // fill multiplicity histograms for events with a candidate   
