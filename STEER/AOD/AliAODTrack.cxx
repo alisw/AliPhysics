@@ -225,6 +225,18 @@ AliAODTrack::~AliAODTrack()
   if (fPID) {delete[] fPID; fPID = 0;}
 }
 
+//______________________________________________________________________________
+void AliAODTrack::Clear(Option_t *)
+{
+  delete fCovMatrix;
+  delete fDetPid;
+  delete fDetectorPID;
+  delete[] fPID;
+  fCovMatrix = 0;
+  fDetPid = 0;
+  fDetectorPID = 0;
+  fPID = 0;
+}
 
 //______________________________________________________________________________
 AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
