@@ -2442,7 +2442,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC17l4b ||                                                                                           // MC pp 5TeV LHC17pq
       fPeriodEnum == kLHC18b8  ||                                                                                           // MC Jet Jet pp 5TeV LHC17pq
       fPeriodEnum == kLHC18l6b1 || fPeriodEnum == kLHC18l6c1 ||                                                             // MC Jet Jet pp 13 TeV with decay photon in EMCal acc.
-      fPeriodEnum == kLHC18q || fPeriodEnum == kLHC18r || fPeriodEnum == kLHC18qr ||                                        // PbPb 5TeV 2018
+      fPeriodEnum == kLHC18qr ||                                                                                            // PbPb 5TeV 2018
       fPeriodEnum == kLHC18l8a || fPeriodEnum == kLHC18l8b || fPeriodEnum == kLHC18l8c                                      // MC gen. purp. LHC18qr
       ){
       return kTRUE;
