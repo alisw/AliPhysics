@@ -10,10 +10,10 @@ Method         : BDT::BDT
 TMVA Release   : 4.2.1         [262657]
 ROOT Release   : 6.16/00       [397312]
 Creator        : andreaalici
-Date           : Wed May  8 19:04:30 2019
+Date           : Wed May  8 17:16:37 2019
 Host           : Darwin dhcp29.bo.infn.it 17.7.0 Darwin Kernel Version 17.7.0: Thu Jun 21 22:53:14 PDT 2018; root:xnu-4570.71.2~1/RELEASE_X86_64 x86_64
 Dir            : /Users/andreaalici/analisi/lambdaC/2019
-Training events: 153945
+Training events: 1446974
 Analysis type  : [Classification]
 
 
@@ -71,42 +71,42 @@ NNodesMax: "0" [deprecated: Use MaxDepth instead to limit the tree size]
 #VAR -*-*-*-*-*-*-*-*-*-*-*-* variables *-*-*-*-*-*-*-*-*-*-*-*-
 
 NVar 14
-massK0S                       massK0S                       massK0S                       massK0S                                                         'F'    [0.487614095211,0.507613956928]
-tImpParBach                   tImpParBach                   tImpParBach                   tImpParBach                                                     'F'    [-0.361858218908,0.289483457804]
-tImpParV0                     tImpParV0                     tImpParV0                     tImpParV0                                                       'F'    [-1.49583172798,1.46723902225]
-bachelorPt                    bachelorPt                    bachelorPt                    bachelorPt                                                      'F'    [1.7934678793,23.4661407471]
-DecayLengthK0S*0.497/v0P      CtK0S                         CtK0S                         CtK0S                                                           'F'    [0.107274219394,76.6792068481]
-cosPAK0S                      cosPAK0S                      cosPAK0S                      cosPAK0S                                                        'F'    [0.990010738373,1]
-CosThetaStar                  CosThetaStar                  CosThetaStar                  CosThetaStar                                                    'F'    [-0.999991059303,0.99998408556]
-signd0                        signd0                        signd0                        signd0                                                          'F'    [4.45777530445e-08,0.361858218908]
-bachelorP                     bachelorP                     bachelorP                     bachelorP                                                       'F'    [1.82744634151,30.1945343018]
-nSigmaTOFpr                   nSigmaTOFpr                   nSigmaTOFpr                   nSigmaTOFpr                                                     'F'    [-999,2.99992322922]
-nSigmaTPCpr                   nSigmaTPCpr                   nSigmaTPCpr                   nSigmaTPCpr                                                     'F'    [-2.99988222122,2.99947857857]
-nSigmaTPCpi                   nSigmaTPCpi                   nSigmaTPCpi                   nSigmaTPCpi                                                     'F'    [-6.6107840538,1.95018541813]
-nSigmaTPCka                   nSigmaTPCka                   nSigmaTPCka                   nSigmaTPCka                                                     'F'    [-4.33588027954,3.77226829529]
-bachTPCmom                    bachTPCmom                    bachTPCmom                    bachTPCmom                                                      'F'    [1.63541424274,7942.98486328]
+massK0S                       massK0S                       massK0S                       massK0S                                                         'F'    [0.487614035606,0.507613956928]
+tImpParBach                   tImpParBach                   tImpParBach                   tImpParBach                                                     'F'    [-0.49985575676,0.499829649925]
+tImpParV0                     tImpParV0                     tImpParV0                     tImpParV0                                                       'F'    [-1.49994492531,1.49980211258]
+bachelorPt                    bachelorPt                    bachelorPt                    bachelorPt                                                      'F'    [0.500002264977,3.84626102448]
+DecayLengthK0S*0.497/v0P      CtK0S                         CtK0S                         CtK0S                                                           'F'    [0.118705719709,101.634147644]
+cosPAK0S                      cosPAK0S                      cosPAK0S                      cosPAK0S                                                        'F'    [0.990000069141,1]
+CosThetaStar                  CosThetaStar                  CosThetaStar                  CosThetaStar                                                    'F'    [-0.999979436398,0.891407489777]
+signd0                        signd0                        signd0                        signd0                                                          'F'    [-0,0.49985575676]
+bachelorP                     bachelorP                     bachelorP                     bachelorP                                                       'F'    [0.500211656094,4.91826200485]
+nSigmaTOFpr                   nSigmaTOFpr                   nSigmaTOFpr                   nSigmaTOFpr                                                     'F'    [-999,60.9443092346]
+nSigmaTPCpr                   nSigmaTPCpr                   nSigmaTPCpr                   nSigmaTPCpr                                                     'F'    [-2.99999475479,2.99996805191]
+nSigmaTPCpi                   nSigmaTPCpi                   nSigmaTPCpi                   nSigmaTPCpi                                                     'F'    [-6.08664178848,166.026931763]
+nSigmaTPCka                   nSigmaTPCka                   nSigmaTPCka                   nSigmaTPCka                                                     'F'    [-3.61694979668,36.8782577515]
+bachTPCmom                    bachTPCmom                    bachTPCmom                    bachTPCmom                                                      'F'    [0.236028149724,207.323196411]
 NSpec 15
-massLc2K0Sp                   massLc2K0Sp                   massLc2K0Sp                   mass Lc-->K0S+p               units                             'F'    [2.08648633957,2.48643541336]
-LcPt                          LcPt                          LcPt                          Lc Pt                         units                             'F'    [12.0000133514,24.9999542236]
-massLc2Lambdapi               massLc2Lambdapi               massLc2Lambdapi               mass Lc -->L(1520)+pi         units                             'F'    [1.26157152653,4.75761508942]
-massLambda                    massLambda                    massLambda                    mass V0 = Lambda              units                             'F'    [1.12068963051,2.47972369194]
-massLambdaBar                 massLambdaBar                 massLambdaBar                 mass V0 = LambdaBar           units                             'F'    [1.12069964409,2.47079253197]
-cosPAK0S                      cosPAK0S                      cosPAK0S                      cosPointingAngle K0S          units                             'F'    [0.990010738373,1]
-V0positivePt                  V0positivePt                  V0positivePt                  V0 positive Pt                units                             'F'    [0.124045431614,17.0491962433]
-V0negativePt                  V0negativePt                  V0negativePt                  V0 negative Pt                units                             'F'    [0.12499897182,16.3316993713]
-dcaV0pos                      dcaV0pos                      dcaV0pos                      dca V0 positive               units                             'F'    [0.100005187094,38.6057472229]
-dcaV0neg                      dcaV0neg                      dcaV0neg                      dca V0 negative               units                             'F'    [0.100002862513,52.999671936]
-v0Pt                          v0Pt                          v0Pt                          K0S Pt                        units                             'F'    [0.503315508366,20.5150985718]
-dcaV0                         dcaV0                         dcaV0                         dca V0                        units                             'F'    [1.86575391581e-06,0.399976402521]
-V0positiveEta                 V0positiveEta                 V0positiveEta                 V0pos Eta                     units                             'F'    [-0.799993932247,0.799957692623]
-bachelorEta                   bachelorEta                   bachelorEta                   eta bachelor                  units                             'F'    [-0.799995183945,0.79996663332]
+massLc2K0Sp                   massLc2K0Sp                   massLc2K0Sp                   mass Lc-->K0S+p               units                             'F'    [2.08646011353,2.48645997047]
+LcPt                          LcPt                          LcPt                          Lc Pt                         units                             'F'    [2.00000023842,3.99999427795]
+massLc2Lambdapi               massLc2Lambdapi               massLc2Lambdapi               mass Lc -->L(1520)+pi         units                             'F'    [1.25741636753,3.27899932861]
+massLambda                    massLambda                    massLambda                    mass V0 = Lambda              units                             'F'    [1.12068629265,2.15668201447]
+massLambdaBar                 massLambdaBar                 massLambdaBar                 mass V0 = LambdaBar           units                             'F'    [1.12068605423,2.13717389107]
+cosPAK0S                      cosPAK0S                      cosPAK0S                      cosPointingAngle K0S          units                             'F'    [0.990000069141,1]
+V0positivePt                  V0positivePt                  V0positivePt                  V0 positive Pt                units                             'F'    [0.103968344629,2.95630335808]
+V0negativePt                  V0negativePt                  V0negativePt                  V0 negative Pt                units                             'F'    [0.110654979944,3.01907420158]
+dcaV0pos                      dcaV0pos                      dcaV0pos                      dca V0 positive               units                             'F'    [0.100001625717,76.2055587769]
+dcaV0neg                      dcaV0neg                      dcaV0neg                      dca V0 negative               units                             'F'    [0.100000284612,80.7343063354]
+v0Pt                          v0Pt                          v0Pt                          K0S Pt                        units                             'F'    [0.500012636185,3.55604839325]
+dcaV0                         dcaV0                         dcaV0                         dca V0                        units                             'F'    [3.53040157108e-08,0.399999141693]
+V0positiveEta                 V0positiveEta                 V0positiveEta                 V0pos Eta                     units                             'F'    [-0.79999935627,0.799998283386]
+bachelorEta                   bachelorEta                   bachelorEta                   eta bachelor                  units                             'F'    [-0.79999935627,0.799998283386]
 centrality                    centrality                    centrality                    centrality                    units                             'F'    [0.15000000596,9.94999980927]
 
 
 ============================================================================ */
 
-#ifndef ReadBDT_LHC19c2a_12_25_H
-#define ReadBDT_LHC19c2a_12_25_H
+#ifndef ReadBDT_LHC19c2a_2_4_H
+#define ReadBDT_LHC19c2a_2_4_H
 
 #include <vector>
 #include <cmath>
@@ -115,13 +115,13 @@ centrality                    centrality                    centrality          
 #include "IClassifierReader.h"
 #include "BDTNode.h"
 
-class ReadBDT_LHC19c2a_12_25 : public IClassifierReader
+class ReadBDT_LHC19c2a_2_4 : public IClassifierReader
 {
  public:
   // Deafult constructor added by ALICE user
-  ReadBDT_LHC19c2a_12_25()
+  ReadBDT_LHC19c2a_2_4()
       : IClassifierReader(),
-        fClassName("ReadBDT_LHC19c2a_12_25"),
+        fClassName("ReadBDT_LHC19c2a_2_4"),
         fNvars(14),
         fIsNormalised(false)
   {
@@ -135,9 +135,9 @@ class ReadBDT_LHC19c2a_12_25 : public IClassifierReader
   }
 
   // constructor
- ReadBDT_LHC19c2a_12_25( std::vector<std::string>& theInputVars )
+ ReadBDT_LHC19c2a_2_4( std::vector<std::string>& theInputVars )
    : IClassifierReader(),
-    fClassName( "ReadBDT_LHC19c2a_12_25" ),
+    fClassName( "ReadBDT_LHC19c2a_2_4" ),
     fNvars( 14 ),
     fIsNormalised(false)
       {
@@ -218,7 +218,7 @@ class ReadBDT_LHC19c2a_12_25 : public IClassifierReader
       }
 
    // destructor
-   virtual ~ReadBDT_LHC19c2a_12_25() {
+   virtual ~ReadBDT_LHC19c2a_2_4() {
       Clear(); // method-specific
    }  
 
