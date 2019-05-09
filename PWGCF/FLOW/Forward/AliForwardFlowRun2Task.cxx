@@ -180,7 +180,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist ->SetDirectory(0);
 
   PostData(1, fOutputList);
-  //TH1::AddDirectory(saveAutoAdd);
 }
 
 
