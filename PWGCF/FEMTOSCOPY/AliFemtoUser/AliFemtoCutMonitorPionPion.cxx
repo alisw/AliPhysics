@@ -485,8 +485,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   const double energy = ::sqrt(p * p + PionMass * PionMass),
              rapidity = 0.5 * ::log((energy + pz) / (energy - pz));
 
-  const Int_t ITS_ncls = track->ITSncls(),
-              TPC_ncls = track->TPCncls();
+  const Int_t TPC_ncls = track->TPCncls();
 
   if (fMC_mass) {
     const auto &mc = static_cast<const AliFemtoModelHiddenInfo&>(*track->GetHiddenInfo());
