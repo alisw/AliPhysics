@@ -109,7 +109,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fEtaForPhiCutMax(10.),
   fMinPhiCut(0.),
   fMaxPhiCut(100.),
-  fDoShrinkTPCAcceptance(kFALSE),
+  fDoShrinkTPCAcceptance(0),
   fPtCut(0.02),
   fSinglePtCut(0),
   fSinglePtCut2(0),
@@ -1407,7 +1407,7 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   }
   cutIndex++;
 
-  if (fDoShrinkTPCAcceptance){
+  if (fDoShrinkTPCAcceptance == 1){
     if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
       if (fMinPhiCut < fMaxPhiCut){
         if( photon->GetPhotonPhi() > fMinPhiCut && photon->GetPhotonPhi() < fMaxPhiCut ) {
@@ -1423,6 +1423,40 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
         }
       }
     }
+  } else if (fDoShrinkTPCAcceptance == 2){  // accept only photons in 'good region'
+      Double_t photonPhi = photon->GetPhotonPhi();
+      if( photon->GetPhotonEta()>0 && photon->GetPhotonEta()<fEtaCut ){        // A side
+          //cout << "A side, eta=" << photon->GetPhotonEta() <<  endl;
+          if(!(photonPhi>fGoodRegionA[0] && photonPhi<fGoodRegionA[1])){
+              //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+              if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+              return kFALSE;
+          } //else  cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+      } else if(photon->GetPhotonEta()<0 && photon->GetPhotonEta()>-fEtaCut){  // C side
+          //cout << "C side, eta=" << photon->GetPhotonEta() <<  endl;
+          if (!(photonPhi>fGoodRegionC[0] && photonPhi<fGoodRegionC[1])){
+              //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+              if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+              return kFALSE;
+          } //else  cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+      }
+  } else if (fDoShrinkTPCAcceptance == 3){   // accept only photons in 'bad region'
+      Double_t photonPhi = photon->GetPhotonPhi();
+      if( photon->GetPhotonEta()>0 && photon->GetPhotonEta()<fEtaCut ){        // A side
+          //cout << "A side, eta=" << photon->GetPhotonEta() <<  endl;
+          if(!(photonPhi>fBadRegionA[0] && photonPhi<fBadRegionA[1])){
+              //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+              if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+              return kFALSE;
+          } // else cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+      } else if(photon->GetPhotonEta()<0 && photon->GetPhotonEta()>-fEtaCut){  // C side
+          //cout << "C side, eta=" << photon->GetPhotonEta() <<  endl;
+          if (!(photonPhi>fBadRegionC[0] && photonPhi<fBadRegionC[1])){
+              //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+              if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+              return kFALSE;
+          } // else cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+      }
   }
   cutIndex++;
 
@@ -2277,7 +2311,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   // Print out current Cut Selection with value
   printf("\nConversion cutnumber \n");
   for(Int_t ic = 0; ic < kNCuts; ic++) {
-    printf("%d",fCuts[ic]);
+      printf("%d",fCuts[ic]);  // careful with output: cannot hande characters in cut string
   }
   printf("\n\n");
   printf("Electron cuts & Secondary Track Cuts - only track from secondaries enter analysis: \n");
@@ -2285,7 +2319,10 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (!fUseCorrectedTPCClsInfo) printf("\t # TPC clusters > %3.2f \n", fMinClsTPC);
   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
     else printf("\t eta_{e} < %3.2f\n", fEtaCut );
-  printf("\t reject: %3.2f < phi < %3.2f with %3.2f < eta < %3.2f  \n", fMinPhiCut, fMaxPhiCut, fEtaForPhiCutMin, fEtaForPhiCutMax);
+  if(fDoShrinkTPCAcceptance == 1) printf("\t reject: %3.2f < phi < %3.2f with %3.2f < eta < %3.2f  \n", fMinPhiCut, fMaxPhiCut, fEtaForPhiCutMin, fEtaForPhiCutMax);
+  else if (fDoShrinkTPCAcceptance == 2 ) printf("\t Only use photons in phi regions without distortions\n");
+  else if (fDoShrinkTPCAcceptance == 3 ) printf("\t Only use photons in phi regions with strong distortions\n");
+  else printf("\t No phi cut\n");
   if(fDoAsymPtCut)
     printf("\t Asymmetric cut: p_{T,e1} > %3.2f and p_{T,e2} > %3.2f\n", fSinglePtCut, fSinglePtCut2 );
   else
@@ -2581,15 +2618,21 @@ Bool_t AliConversionPhotonCuts::SetEtaForPhiCut(Int_t etaPhiCut) {
     fEtaForPhiCutMax = fEtaCut;
     break;
   case 1:  //eta < 0 only
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fEtaForPhiCutMin = -fEtaCut;
     fEtaForPhiCutMax = 0.;
     break;
   case 2://eta > 0 only
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fEtaForPhiCutMin = 0.;
     fEtaForPhiCutMax = fEtaCut;
     break;
+  case 3:  // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 2; // Only use photons in phi regions without distortions
+      break;
+  case 4:  // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
+      break;
   default:
     AliError(Form("EtaForPhiCut not defined %d",etaPhiCut));
     return kFALSE;
@@ -2604,41 +2647,47 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 
   switch(minPhiCut) {
   case 0:
-    fDoShrinkTPCAcceptance = kFALSE;
+    fDoShrinkTPCAcceptance = 0;
     fMinPhiCut = 0;
     break;
   case 1:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 1.7; //OROC C08 large cut
     break;
   case 2:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 4.4; //EMCal
     break;
   case 3:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 1.0; //PHOS
     break;
   case 4:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 3.4; //EMCal tight
     break;
   case 5:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 2.0; //OROC C08 medium cut
     break;
   case 6:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 2.2; //OROC C08 small cut
     break;
   case 7:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 2.4; //OROC C08 tightest cut
     break;
   case 8:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 4.54; //PHOS phi
     break;
+  case 9:  // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 2; // Only use photons in phi regions without distortions
+      break;
+  case 10: // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
+      break;
   default:
     AliError(Form("MinPhiCut not defined %d",minPhiCut));
     return kFALSE;
@@ -2653,41 +2702,47 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
 
   switch(maxPhiCut) {
   case 0:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kFALSE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 0;
     fMaxPhiCut = 2*TMath::Pi()+0.00001;
     break;
   case 1:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 4.3; //OROC C08 large cut
     break;
   case 2:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 5.8; //EMCal
     break;
   case 3:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 3.0; //PHOS
     break;
   case 4:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 1.; //EMCal
     break;
   case 5:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 4.0; //OROC C08 medium cut
     break;
   case 6:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 3.8; //OROC C08 small cut
     break;
   case 7:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 3.6; //OROC C08 tighest cut
     break;
   case 8:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 5.59; //PHOS phi
     break;
+  case 9:   // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 2; // Only use photons in phi regions without distortions
+      break;
+  case 10: // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
+      break;
   default:
     AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
     return kFALSE;

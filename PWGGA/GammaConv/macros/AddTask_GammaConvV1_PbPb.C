@@ -2574,6 +2574,30 @@ void AddTask_GammaConvV1_PbPb(
   } else if (trainConfig == 587){
     cuts.AddCutPCM("16810a23", "00200009247600008250403000", "0152501500000000"); // 60-80%
 
+    // phi cut vaiations. Standard: no cut (000)
+    // accept only photons in good phi regions (399)
+  } else if (trainConfig == 588){//---___________________
+    cuts.AddCutPCM("10110a13", "00239909247600008250404000", "0152501500000000"); // 0-10%
+    cuts.AddCutPCM("12410a13", "00239909247600008250404000", "0152501500000000"); // 20-40%
+  } else if (trainConfig == 589){
+    cuts.AddCutPCM("16810a13", "00239909247600008250404000", "0152501500000000"); // 60-80%
+  } else if (trainConfig == 590){ // with added particles
+    cuts.AddCutPCM("10110a23", "00239909247600008250404000", "0152501500000000"); // 0-10%
+    cuts.AddCutPCM("12410a23", "00239909247600008250404000", "0152501500000000"); // 20-40%
+  } else if (trainConfig == 591){
+    cuts.AddCutPCM("16810a23", "00239909247600008250404000", "0152501500000000"); // 60-80%
+    // accept only photons in phi regions with strong distortions (4aa)
+  } else if (trainConfig == 592){//---___________________
+    cuts.AddCutPCM("10110a13", "0024aa09247600008250404000", "0152501500000000"); // 0-10%
+    cuts.AddCutPCM("12410a13", "0024aa09247600008250404000", "0152501500000000"); // 20-40%
+  } else if (trainConfig == 593){
+    cuts.AddCutPCM("16810a13", "0024aa09247600008250404000", "0152501500000000"); // 60-80%
+  } else if (trainConfig == 594){ // with added particles
+    cuts.AddCutPCM("10110a23", "0024aa09247600008250404000", "0152501500000000"); // 0-10%
+    cuts.AddCutPCM("12410a23", "0024aa09247600008250404000", "0152501500000000"); // 20-40%
+  } else if (trainConfig == 595){
+    cuts.AddCutPCM("16810a23", "0024aa09247600008250404000", "0152501500000000"); // 60-80%
+
 
   // **********************************************************************************************************
   // ***************************** PCM configurations PbPb run 2 2018 *******************************

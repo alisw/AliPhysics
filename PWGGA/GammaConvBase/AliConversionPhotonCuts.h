@@ -278,7 +278,11 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fEtaForPhiCutMax;                     ///< eta cut for phi sector selection
     Float_t           fMinPhiCut;                           ///< phi sector cut
     Float_t           fMaxPhiCut;                           ///< phi sector cut
-    Bool_t            fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
+    Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
+    Double_t          fGoodRegionC[2] = {5.0, 6.2};         ///< regions WITHOUT strong space charge distortions on C side
+    Double_t          fGoodRegionA[2] = {3.5, 6.2};         ///<
+    Double_t          fBadRegionC[2]  = {0.0, 1.5};         ///< regions WITH strong space charge distortions on C side
+    Double_t          fBadRegionA[2]  = {0.0, 2.5};         ///<
     Double_t          fPtCut;                               ///< pt cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
