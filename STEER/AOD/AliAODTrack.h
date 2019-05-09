@@ -113,6 +113,8 @@ class AliAODTrack : public AliVTrack {
   AliAODTrack(const AliAODTrack& trk); 
   AliAODTrack& operator=(const AliAODTrack& trk);
 
+  virtual void Clear(Option_t* = "");
+  
   // kinematics
   virtual Double_t OneOverPt() const { return (fMomentum[0] != 0.) ? 1./fMomentum[0] : -999.; }
   virtual Double_t Phi()       const { return fMomentum[1]; }
