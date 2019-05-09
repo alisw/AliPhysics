@@ -3805,7 +3805,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 //                                     0.1                         // 2018
                                   };
 
-  Int_t runRangesEMCalL1[21]     = {  179796,                     // LHC12c-i (EGA)
+  Int_t runRangesEMCalL1[22]     = {  179796,                     // LHC12c-i (EGA)
                                       195180,                     // LHC13b-f
                                       197469, 197692,             // LHC13g
                                       235195,                     // LHC15a-h
@@ -3821,10 +3821,10 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                       267161,                     // LHC16t (267161-267166)
                                       270531,                     // LHC17c-o (270531-281961)
                                       282008,                     // LHC17pq (282008-282441)
-                                      282504                      // 2018
+                                      282504, 295232              // LHC17r + 2018
                                     };
 
-  Double_t thresholdEMCalL1[20] = { 9.5/*8.398*/,               // LHC12c-i (EGA)
+  Double_t thresholdEMCalL1[21] = { 9.5/*8.398*/,               // LHC12c-i (EGA)
                                     11.5, /*6.*/                // LHC13b-f
                                     5.5,                        // LHC13g
                                     2000.0,                     // LS1
@@ -3840,10 +3840,10 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     7.8,                        // LHC16s (266405-267131)
                                     7.8,                        // LHC16t (267161-267166)
                                     8.5,                        // LHC17c-o (270531-281961)
-                                    8.8                         // LHC17pq (282008-282441)
-//                                     8.8                         // 2018
+                                    8.8,                        // LHC17pq (282008-282441)
+                                    8.5                         // LHC17r + 2018
                                   };
-  Double_t spreadEMCalL1[20]    = { 1.0/*0.*/,
+  Double_t spreadEMCalL1[21]    = { 1.0/*0.*/,
                                     0.5,
                                     /*0.4*/ 0.6,
                                     0.0,                        // LS1
@@ -3852,15 +3852,15 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     1.0,                        // LHC15i-m
                                     1.0,                        // LHC15n
                                     0.0, 1.0,                   // LHC15o
-                                    1.0,                        // LHC16i-k  (255515-258574)
+                                    0.7,                        // LHC16i-k  (255515-258574)
                                     0.8,                        // LHC16l (258883-260187)
-                                    1.0,                        // LHC16m-p (260216-)
+                                    0.7,                        // LHC16m-p (260216-)
                                     1.0, 1.2,                   // LHC16q (265015-265525)
                                     0.9,                        // LHC16s (266405-267131)
                                     0.9,                        // LHC16t (267161-267166)
-                                    1.0,                        // LHC17c-o (270531-281961)
-                                    1.0                         // LHC17pq (282008-282441)
-//                                     1.0                         // 2018
+                                    0.7,                        // LHC17c-o (270531-281961)
+                                    1.0,                        // LHC17pq (282008-282441)
+                                    0.7                         // LHC17r + 2018
                                   };
 
   Int_t runRangesEMCalL1G2[21]  = { 195180,                     // LHC13b-f
@@ -3878,28 +3878,28 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     267161,                     // LHC16t (267161-267166)
                                     270531,                     // LHC17c-o (270531-281961)
                                     282008,                     // LHC17pq (282008-282441)
-                                    282504                      // 2018
+                                    282504, 295232              // LHC17r + 2018
                                   };
 
-  Double_t thresholdEMCalL1G2[19] = { 7.2,                        // LHC13b-f
+  Double_t thresholdEMCalL1G2[20] = { 7.2,                        // LHC13b-f
                                       /*3.9*/3.75,                // LHC13g
                                       2000.0,                     // LS1
                                       1.8,                        // LHC15a-h
                                       5.0,                        // LHC15i-m
                                       5.0,                        // LHC15n
                                       2000.0, 2000.0,             // LHC15o
-                                      3.8,                        // LHC16i-k  (255515-258574)
+                                      3.75,                       // LHC16i-k  (255515-258574)
                                       3.8,                        // LHC16l (258883-260187)
-                                      3.8,                        // LHC16m-p (260216-)
+                                      3.75,                       // LHC16m-p (260216-)
                                       3.9, 6.3,                   // LHC16q (265015-265525)
                                       6.3, 5.3,                   // LHC16r (265589-266318)
                                       5.3,                        // LHC16s (266405-267131)
                                       5.3,                        // LHC16t (267161-267166)
-                                      3.8,                        // LHC17c-o (270531-281961)
-                                      3.9                         // LHC17pq (282008-282441)
-//                                       3.9                         // 2018
+                                      3.75,                       // LHC17c-o (270531-281961)
+                                      3.9,                        // LHC17pq (282008-282441)
+                                      3.75                        // LHC17r + 2018
                                     };
-  Double_t spreadEMCalL1G2[19]    = { 0.3,                        // LHC13bf
+  Double_t spreadEMCalL1G2[20]    = { 0.3,                        // LHC13bf
                                       /*0.2*/0.25,                // LHC13g
                                       0.,                         // LS1
                                       0.1,                        // LHC15a-h
@@ -3914,8 +3914,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                       0.3,                        // LHC16s (266405-267131)
                                       0.3,                        // LHC16t (267161-267166)
                                       0.3,                        // LHC17c-o (270531-281961)
-                                      0.3                         // LHC17pq (282008-282441)
-//                                       0.3                         // 2018
+                                      0.3,                        // LHC17pq (282008-282441)
+                                      0.3                         // LHC17r + 2018
                                     };
 
   Int_t runnumber = event->GetRunNumber();
