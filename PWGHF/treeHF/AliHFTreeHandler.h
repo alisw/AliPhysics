@@ -74,7 +74,7 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+    virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
     bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
@@ -180,6 +180,7 @@ class AliHFTreeHandler : public TObject
     int fCandType; ///flag for candidate type (bit map above)
     float fInvMass; ///candidate invariant mass
     float fPt; ///candidate pt
+    float fPtGen; ///generated candidate pt
     float fY; ///candidate rapidity
     float fEta; ///candidate pseudorapidity
     float fPhi; ///candidate azimuthal angle
@@ -229,7 +230,7 @@ class AliHFTreeHandler : public TObject
     int fNEtabinsNsigmaTPCDataCorr; /// number of eta bins for data-driven NsigmaTPC correction
 
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,7); ///
+  ClassDef(AliHFTreeHandler,8); ///
   /// \endcond
 };
 #endif

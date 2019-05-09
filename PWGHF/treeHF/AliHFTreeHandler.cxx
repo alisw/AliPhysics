@@ -39,6 +39,7 @@ AliHFTreeHandler::AliHFTreeHandler():
   fCandType(0),
   fInvMass(-9999.),
   fPt(-9999.),
+  fPtGen(-9999.),
   fY(-9999.),
   fEta(-9999.),
   fPhi(-9999.),
@@ -113,6 +114,7 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fCandType(0),
   fInvMass(-9999.),
   fPt(-9999.),
+  fPtGen(-9999.),
   fY(-9999.),
   fEta(-9999.),
   fPhi(-9999.),
@@ -250,6 +252,7 @@ void AliHFTreeHandler::AddCommonDmesonVarBranches() {
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("inv_mass",&fInvMass);
   fTreeVar->Branch("pt_cand",&fPt);
+  fTreeVar->Branch("pt_gen_cand",&fPtGen);
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
