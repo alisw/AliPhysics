@@ -50,8 +50,7 @@ AliRsnMiniAnalysisTask* AddTaskSigmaStar_pp13TeV(
   Int_t system,
   Int_t EventCuts=0,
   Int_t TrackCuts1=0,
-  Int_t TrackCuts2=0
-){
+  Int_t TrackCuts2=0){
   // ----- INITIALIZATION -----
 
   // retrieve analysis manager
@@ -217,8 +216,7 @@ Bool_t Config_Lambdapi(
   Int_t       system,
   Int_t       EventCuts,
   Int_t       TrackCutsLambda,
-  Int_t       TrackCutsPi
-){
+  Int_t       TrackCutsPi){
     bool isPP=false;
   if(!system) isPP=true;
   int trigger=EventCuts%10;
