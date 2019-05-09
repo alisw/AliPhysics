@@ -15,6 +15,7 @@
 #include <regex>
 #include <cmath>
 #include <cctype>
+#include <climits>
 #include <sstream>
 #include <iostream>
 #include <exception>
@@ -1102,22 +1103,36 @@ namespace std {
              ^ (std::hash<Range_t::second_type>{}(pair.second) << 1);
     }
 
-    ULong_t operator()(ArrayValue_t const& array) const {
-      using Item_t = ArrayValue_t::value_type;
+    ULong_t operator()(ArrayValue_t const& array) const
+      {
+        using Item_t = ArrayValue_t::value_type;
 
-      return std::accumulate(
-        array.cbegin(), array.cend(), AliFemtoConfigObject::EMPTY_ARRAY_HASH,
-        [] (ULong_t hash, const Item_t &obj) {
-          return obj.Hash() ^ (hash << 1); });
-    }
+        return std::accumulate(
+          array.cbegin(), array.cend(), AliFemtoConfigObject::EMPTY_ARRAY_HASH,
+          [=] (ULong_t hash, const Item_t &obj)
+            {
+              const Int_t
+                lshift = 7,
+                rshift = (-lshift) & (CHAR_BIT * sizeof(ULong_t) - 1);
+
+              return obj.Hash() ^ ((hash << lshift) | (hash >> rshift));
+            });
+      }
 
     ULong_t operator()(RangeListValue_t const& list) const {
       using Item_t = RangeListValue_t::value_type;
 
       return std::accumulate(
         list.cbegin(), list.cend(), AliFemtoConfigObject::EMPTY_RANGELIST_HASH,
-        [] (ULong_t hash, const Item_t &pair) {
-          return std::hash<AliFemtoConfigObject>{}(pair) ^ (hash << 1); });
+        [] (ULong_t hash, const Item_t &pair)
+          {
+            const Int_t
+              lshift = 9,
+              rshift = (-lshift) & (CHAR_BIT * sizeof(ULong_t) - 1);
+
+            return std::hash<AliFemtoConfigObject>{}(pair)
+                   ^ ((hash << lshift) | (hash >> rshift));
+          });
     }
 
     ULong_t operator()(MapValue_t const& map) const {
@@ -1126,7 +1141,11 @@ namespace std {
       return std::accumulate(
         map.cbegin(), map.cend(), AliFemtoConfigObject::EMPTY_MAP_HASH,
         [] (ULong_t hash, const Item_t &pair) {
-          return hash
+          const Int_t
+            lshift = 9,
+            rshift = (-lshift) & (CHAR_BIT * sizeof(ULong_t) - 1);
+
+          return ((hash << lshift) | (hash >> rshift))
                  ^ (std::hash<AliFemtoConfigObject::Key_t>{}(pair.first) << 1)
                  ^ (pair.second.Hash() << 2); });
     }
