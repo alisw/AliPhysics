@@ -2241,7 +2241,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   Double_t invMassD = 0;
   hname = TString::Format("%s/EfficiencyMatches", fName.Data());
   TH1* EfficiencyMatches = static_cast<TH1*>(fHistManager->FindObject(hname));
-
+  AliAODMCParticle* aodMcPart; 
   hname2 = TString::Format("%s/EfficiencyGenerator", fName.Data());
   TH1* EfficiencyGenerator = static_cast<TH1*>(fHistManager->FindObject(hname2));
   
@@ -2253,7 +2253,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
 
     // Retrieve the generated particle (if exists) and its PDG code
     if (mcLab >= 0) {
-      AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
+      aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
 
       if (aodMcPart) {
         // Check origin and return false if it matches the rejected origin mask
