@@ -268,7 +268,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2_sp
     PairCutsMix->SetCutScheme(cutY->GetName());
     //
     // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-    gROOT->LoadMacro("ConfigKStarPlusMinusRun2_sp.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusRun2_sp.C");
     //gROOT->LoadMacro("ConfigKStarPlusMinusRun2_sp.C");
     if (isMC) {
         Printf("========================== MC analysis - PID cuts not used");
