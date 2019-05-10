@@ -516,6 +516,7 @@ void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
             fHists->FillphiCut(i,phi.at(0));
             fHists->FillpCut(i,p);
             fHists->FillpTPCCut(i,pTPC);
+            fHists->FillpDiff_p_pTPC(i,p,p-pTPC);
             fHists->FillTPCclsCut(i,Track->GetNClsTPC());
             if (fDCAProp) {
                 fHists->FillDCAxyCut(i,p,Track->GetDCAXYProp());
