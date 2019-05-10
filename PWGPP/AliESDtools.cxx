@@ -871,6 +871,7 @@ Int_t AliESDtools::DumpEventVariables() {
   Int_t eventMult = fEvent->GetNumberOfESDTracks();
   for (Int_t iTrack=0;iTrack<eventMult;++iTrack){
     AliESDtrack *track = fEvent->GetTrack(iTrack);
+    if (track== nullptr) continue;
     if (track->IsOn(AliESDtrack::kTPCin)) TPCMult++;
   }
 
