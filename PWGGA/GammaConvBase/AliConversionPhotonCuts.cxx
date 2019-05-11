@@ -232,7 +232,15 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoEleMapMean(NULL),
   fHistoEleMapWidth(NULL),
   fHistoPosMapMean(NULL),
-  fHistoPosMapWidth(NULL)
+  fHistoPosMapWidth(NULL),
+  fGoodRegionCMin(0),
+  fGoodRegionAMin(0),
+  fBadRegionCMin(0),
+  fBadRegionAMin(0),
+  fGoodRegionCMax(0),
+  fGoodRegionAMax(0),
+  fBadRegionCMax(0),
+  fBadRegionAMax(0)
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -391,7 +399,15 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoEleMapMean(ref.fHistoEleMapMean),
   fHistoEleMapWidth(ref.fHistoEleMapWidth),
   fHistoPosMapMean(ref.fHistoPosMapMean),
-  fHistoPosMapWidth(ref.fHistoPosMapWidth)
+  fHistoPosMapWidth(ref.fHistoPosMapWidth),
+  fGoodRegionCMin(ref.fGoodRegionCMin),
+  fGoodRegionAMin(ref.fGoodRegionAMin),
+  fBadRegionCMin(ref.fBadRegionCMin),
+  fBadRegionAMin(ref.fBadRegionAMin),
+  fGoodRegionCMax(ref.fGoodRegionCMax),
+  fGoodRegionAMax(ref.fGoodRegionAMax),
+  fBadRegionCMax(ref.fBadRegionCMax),
+  fBadRegionAMax(ref.fBadRegionAMax)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -1425,16 +1441,17 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
     }
   } else if (fDoShrinkTPCAcceptance == 2){  // accept only photons in 'good region'
       Double_t photonPhi = photon->GetPhotonPhi();
+      GetPhiRegions();
       if( photon->GetPhotonEta()>0 && photon->GetPhotonEta()<fEtaCut ){        // A side
           //cout << "A side, eta=" << photon->GetPhotonEta() <<  endl;
-          if(!(photonPhi>fGoodRegionA[0] && photonPhi<fGoodRegionA[1])){
+          if(!(photonPhi>fGoodRegionAMin && photonPhi<fGoodRegionAMax)){
               //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
               if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
               return kFALSE;
           } //else  cout  << "photonPhi=" << photonPhi << " accepted" << endl;
       } else if(photon->GetPhotonEta()<0 && photon->GetPhotonEta()>-fEtaCut){  // C side
           //cout << "C side, eta=" << photon->GetPhotonEta() <<  endl;
-          if (!(photonPhi>fGoodRegionC[0] && photonPhi<fGoodRegionC[1])){
+          if (!(photonPhi>fGoodRegionCMin && photonPhi<fGoodRegionCMax)){
               //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
               if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
               return kFALSE;
@@ -1442,16 +1459,17 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
       }
   } else if (fDoShrinkTPCAcceptance == 3){   // accept only photons in 'bad region'
       Double_t photonPhi = photon->GetPhotonPhi();
+      GetPhiRegions();
       if( photon->GetPhotonEta()>0 && photon->GetPhotonEta()<fEtaCut ){        // A side
           //cout << "A side, eta=" << photon->GetPhotonEta() <<  endl;
-          if(!(photonPhi>fBadRegionA[0] && photonPhi<fBadRegionA[1])){
+          if(!(photonPhi>fBadRegionAMin && photonPhi<fBadRegionAMax)){
               //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
               if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
               return kFALSE;
           } // else cout  << "photonPhi=" << photonPhi << " accepted" << endl;
       } else if(photon->GetPhotonEta()<0 && photon->GetPhotonEta()>-fEtaCut){  // C side
           //cout << "C side, eta=" << photon->GetPhotonEta() <<  endl;
-          if (!(photonPhi>fBadRegionC[0] && photonPhi<fBadRegionC[1])){
+          if (!(photonPhi>fBadRegionCMin && photonPhi<fBadRegionCMax)){
               //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
               if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
               return kFALSE;
@@ -1473,7 +1491,6 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   return kTRUE;
 }
 
-
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex) {
   // Track Cuts which require AOD/ESD specific implementation
@@ -1493,7 +1510,6 @@ Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliAODTrack * negTrack, AliAOD
   return kTRUE;
 
 }
-
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex) {
@@ -1594,6 +1610,7 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   return kTRUE;
 
 }
+
 ///________________________________________________________________________
 Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, AliVEvent * event){
 
@@ -3968,6 +3985,13 @@ Bool_t AliConversionPhotonCuts::SetInPlaneOutOfPlane(Int_t inOutPlane){
   return kTRUE;
 }
 
+//________________________________________________________________________
+void AliConversionPhotonCuts::GetPhiRegions(){
+    fGoodRegionCMin = 5.0; fGoodRegionCMax = 6.2;
+    fGoodRegionAMin = 3.5; fGoodRegionAMax = 6.2;
+    fBadRegionCMin  = 0.0; fBadRegionCMax  = 1.5;
+    fBadRegionAMin  = 0.0; fBadRegionAMax  = 2.5;
+}
 
 ///________________________________________________________________________
 Int_t AliConversionPhotonCuts::GetFirstTPCRow(Double_t radius){
