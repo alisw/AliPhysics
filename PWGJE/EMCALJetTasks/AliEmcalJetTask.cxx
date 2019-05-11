@@ -71,6 +71,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
+  fQoverPtShift(0.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fTrackEfficiencyFunction(nullptr),
@@ -111,6 +112,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
+  fQoverPtShift(0.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fTrackEfficiencyFunction(nullptr),
@@ -267,9 +269,23 @@ Int_t AliEmcalJetTask::FindJets()
         }
       }
 
-      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f, eta = %f, phi = %f, E = %f, m = %f, px = %f, py = %f, pz = %f)", it.current_index(), it->second->GetLabel(), it->first.Pt(), it->first.Eta(), it->first.Phi(), it->first.E(), it->first.M(), it->first.Px(), it->first.Py(), it->first.Pz()));
+      TLorentzVector pvec(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E());
+      if(fApplyQoverPtShift){
+        if(TMath::Abs(fQoverPtShift) > DBL_EPSILON) {
+          double chargedval = it->second->Charge() > 0 ? 1. : -1.;
+          double shiftedPt = TMath::Max(1/(chargedval * fQoverPtShift + 1/TMath::Abs(it->second->Pt())), 0.);
+          // Calculate new momentum vector
+          TVector3 shiftedmom;
+          shiftedmom.SetPtEtaPhi(shiftedPt, pvec.Eta(), pvec.Phi());
+          double oldE = pvec.E(), oldp = pvec.P(), newp = shiftedmom.Mag();
+          double shiftedE = TMath::Sqrt(oldE * oldE - oldp * oldp + newp * newp);
+          pvec.SetPtEtaPhiE(shiftedPt, pvec.Eta(), pvec.Phi(), shiftedE);
+        }
+      }
+
+      AliDebug(2,Form("Track %d accepted (label = %d, pt = %f, eta = %f, phi = %f, E = %f, m = %f, px = %f, py = %f, pz = %f)", it.current_index(), it->second->GetLabel(), pvec.Pt(), pvec.Eta(), pvec.Phi(), pvec.E(), it->first.M(), pvec.Px(), pvec.Py(), pvec.Pz()));
       Int_t uid = it.current_index() + fgkConstIndexShift * iColl;
-      fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
+      fFastJetWrapper.AddInputVector(pvec.Px(), pvec.Py(), pvec.Pz(), pvec.E(), uid);
     }
     iColl++;
   }

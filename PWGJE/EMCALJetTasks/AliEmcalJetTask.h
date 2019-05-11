@@ -78,6 +78,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetMinJetPt(Double_t j)                    { if (IsLocked()) return; fMinJetPt         = j     ; }
   void                   SetRecombScheme(ERecoScheme_t scheme)      { if (IsLocked()) return; fRecombScheme     = scheme; }
   void                   SetTrackEfficiency(Double_t t)             { if (IsLocked()) return; fTrackEfficiency  = t     ; }
+  void                   SetQoverPtShift(Double_t shift)            { if (IsLocked()) return; fQoverPtShift     = shift; fApplyQoverPtShift = true; }
   void                   SetTrackEfficiencyOnlyForEmbedding(Bool_t b) { if (IsLocked()) return; fTrackEfficiencyOnlyForEmbedding = b     ; }
   void                   SetEnableAliBasicParticleCompatibility(Bool_t b) { if (IsLocked()) return; fEnableAliBasicParticleCompatibility = b; }
   void                   SetLegacyMode(Bool_t mode)                 { if (IsLocked()) return; fLegacyMode       = mode  ; }
@@ -184,13 +185,15 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               fJetEtaMax;              ///< maximum eta to keep jet in output
   Double_t               fGhostArea;              ///< ghost area
   Double_t               fTrackEfficiency;        ///< artificial tracking inefficiency (0...1)
+  Double_t               fQoverPtShift;           ///< artificial q/pt shift
   TObjArray             *fUtilities;              ///< jet utilities (gen subtractor, constituent subtractor etc.)
   Bool_t                 fTrackEfficiencyOnlyForEmbedding; ///< Apply aritificial tracking inefficiency only for embedded tracks
   TF1                   *fTrackEfficiencyFunction;///< Function that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
   Bool_t                 fApplyArtificialTrackingEfficiency; ///< Flag to apply artificial tracking efficiency
+  Bool_t                 fApplyQoverPtShift;      ///< Apply Q/pt shift
   TRandom3               fRandom;                 //!<! Random number generator for artificial tracking efficiency
   Bool_t                 fLocked;                 ///< true if lock is set
-  Bool_t	          fFillConstituents;		 ///< If true jet consituents will be filled to the AliEmcalJet
+  Bool_t	               fFillConstituents;		 ///< If true jet consituents will be filled to the AliEmcalJet
 
   TString                fJetsName;               //!<!name of jet collection
   Bool_t                 fIsInit;                 //!<!=true if already initialized
