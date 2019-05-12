@@ -239,9 +239,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SetKappaTPCCut(Int_t kappaCut);
     void SetIsHeavyIon(Int_t isHeavyIon){fIsHeavyIon=isHeavyIon;}
     Int_t GetFirstTPCRow(Double_t radius);
-
+    void GetPhiRegions();
     Bool_t SetITSElectronPIDCut(Int_t ITSelectronPID);
     Bool_t SetTRDElectronPIDCut(Int_t TRDelectronPID);
+
 
     // Request Flags
     Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
@@ -278,7 +279,15 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fEtaForPhiCutMax;                     ///< eta cut for phi sector selection
     Float_t           fMinPhiCut;                           ///< phi sector cut
     Float_t           fMaxPhiCut;                           ///< phi sector cut
-    Bool_t            fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
+    Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
+    Double_t          fGoodRegionCMin;                      ///< regions WITHOUT strong space charge distortions on C side
+    Double_t          fGoodRegionCMax;                      ///<
+    Double_t          fGoodRegionAMin;                      ///<
+    Double_t          fGoodRegionAMax;                      ///<
+    Double_t          fBadRegionCMin;                       ///< regions WITH strong space charge distortions on C side
+    Double_t          fBadRegionCMax;                       ///<
+    Double_t          fBadRegionAMin;                       ///<
+    Double_t          fBadRegionAMax;                       ///<
     Double_t          fPtCut;                               ///< pt cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
