@@ -92,6 +92,7 @@ set(SRCS
       LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
       LMEE/AliDielectronReducedTrack.cxx
       LMEE/AliAnalysisTaskTGReducedTree.cxx
+      LMEE/AliAnalysisTaskReducedTreeDS.cxx
       LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
       LMEE/AliCocktailSmearing.cxx
       LMEE/AliAnalysisTaskCharm.cxx
