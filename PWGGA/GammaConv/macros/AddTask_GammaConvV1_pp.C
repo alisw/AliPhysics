@@ -1326,6 +1326,18 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d20000922730000a180404000", "0152103500000000"); // PsiPair<0.20 + chi2<50 + qT<0.125pT (2D) alpha<0.95
     cuts.AddCutPCM("00010113", "0d20000922730000acca404000", "0152103500000000"); // PsiPair<0.15 + chi2<40 + qT<0.125pT (2D) alpha<1
     cuts.AddCutPCM("00010113", "0d20000922730000a18a404000", "0152103500000000"); // PsiPair<0.20 + chi2<50 + qT<0.125pT (2D) alpha<1
+  } else if (trainConfig == 2407){ // chi2, PsiPair cont.
+    cuts.AddCutPCM("00010113", "0d200009227300008fd0404000", "0152103500000000"); // PsiPair<0.15exp(-0.065chi2)
+    cuts.AddCutPCM("00010113", "0d200009227300008ge0404000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2)
+    cuts.AddCutPCM("00010113", "0d200009227300008hf0404000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2)
+  } else if (trainConfig == 2408){ // combined configs cont.
+    cuts.AddCutPCM("00010113", "0d20000922730000afd0404000", "0152103500000000"); // PsiPair<0.15exp(-0.065chi2) + qT<0.125pT (2D) alpha<0.95
+    cuts.AddCutPCM("00010113", "0d20000922730000age0404000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2) + qT<0.125pT (2D) alpha<0.95
+    cuts.AddCutPCM("00010113", "0d20000922730000ahf0404000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2) + qT<0.125pT (2D) alpha<0.95
+  } else if (trainConfig == 2409){ // combined configs cont.
+    cuts.AddCutPCM("00010113", "0d20000922730000gfda404000", "0152103500000000"); // PsiPair<0.15exp(-0.065chi2) + qT<0.140pT (2D) alpha<1
+    cuts.AddCutPCM("00010113", "0d20000922730000ggea404000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2) + qT<0.140pT (2D) alpha<1
+    cuts.AddCutPCM("00010113", "0d20000922730000ghfa404000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2) + qT<0.140pT (2D) alpha<1
   // EGA
   } else if (trainConfig == 2410){
     // std: |eta|<0.8, 5<R<180cm, TPCcls>0.6, -3<nsigE<5, nsigPi<1 (0.4-3.5GeV), nsigPi<-10 (3.5GeV+)
@@ -1360,6 +1372,18 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00081113", "0d20000922730000a180404000", "0152103500000000"); // PsiPair<0.20 + chi2<50 + qT<0.125pT (2D) alpha<0.95
     cuts.AddCutPCM("00081113", "0d20000922730000acca404000", "0152103500000000"); // PsiPair<0.15 + chi2<40 + qT<0.125pT (2D) alpha<1
     cuts.AddCutPCM("00081113", "0d20000922730000a18a404000", "0152103500000000"); // PsiPair<0.20 + chi2<50 + qT<0.125pT (2D) alpha<1
+  } else if (trainConfig == 2417){ // chi2, PsiPair cont.
+    cuts.AddCutPCM("00081113", "0d200009227300008fd0404000", "0152103500000000"); // PsiPair<0.15exp(-0.065chi2)
+    cuts.AddCutPCM("00081113", "0d200009227300008ge0404000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2)
+    cuts.AddCutPCM("00081113", "0d200009227300008hf0404000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2)
+  } else if (trainConfig == 2418){ // combined configs cont.
+    cuts.AddCutPCM("00081113", "0d20000922730000afd0404000", "0152103500000000"); // PsiPair<0.15exp(-0.065chi2) + qT<0.125pT (2D) alpha<0.95
+    cuts.AddCutPCM("00081113", "0d20000922730000age0404000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2) + qT<0.125pT (2D) alpha<0.95
+    cuts.AddCutPCM("00081113", "0d20000922730000ahf0404000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2) + qT<0.125pT (2D) alpha<0.95
+  } else if (trainConfig == 2419){ // combined configs cont.
+    cuts.AddCutPCM("00081113", "0d20000922730000gfda404000", "0152103500000000"); // PsiPair<0.15exp(-0.065chi2) + qT<0.140pT (2D) alpha<1
+    cuts.AddCutPCM("00081113", "0d20000922730000ggea404000", "0152103500000000"); // PsiPair<0.18exp(-0.055chi2) + qT<0.140pT (2D) alpha<1
+    cuts.AddCutPCM("00081113", "0d20000922730000ghfa404000", "0152103500000000"); // PsiPair<0.20exp(-0.050chi2) + qT<0.140pT (2D) alpha<1
   // EMC7
   } else if (trainConfig == 2426){ // combined configs
     cuts.AddCutPCM("00052113", "0d20000922730000acc0404000", "0152103500000000"); // PsiPair<0.15 + chi2<40 + qT<0.125pT (2D) alpha<0.95
