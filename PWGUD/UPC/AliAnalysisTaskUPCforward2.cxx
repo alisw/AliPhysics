@@ -1024,12 +1024,12 @@ void AliAnalysisTaskUPCforward2::UserExec(Option_t *)
   fCounterH->Fill(12);
 
 
-  // fV0ADecision = dataVZERO->GetV0ADecision();
-  // fCounterH->Fill(13);
-  // fV0CDecision = dataVZERO->GetV0CDecision();
-  // fCounterH->Fill(14);
-  //
-  //
+  fV0ADecision = dataVZERO->GetV0ADecision();
+  fCounterH->Fill(13);
+  fV0CDecision = dataVZERO->GetV0CDecision();
+  fCounterH->Fill(14);
+
+
   // //_____________________________________
   // // RUN SELECTION
   // /* - This part is the run selection. We call the std::find() method of the
@@ -1056,91 +1056,90 @@ void AliAnalysisTaskUPCforward2::UserExec(Option_t *)
   //
   // // END RUN SELECTION
   // //_____________________________________
-  //
-  //
-  //
-  // /* - We have to get the number of fired V0C cells. So firstly, we get the
-  //    - boolean information about the hit cells for all V0. This is done through
-  //    - the GetBBFlag(i) method, where 0<i<32 stands for the V0C cells and
-  //    - 32<i<64 for the V0A cells. Then I thought the easiest way to check
-  //    - whether the number of fired V0C cells is above 2 is just to add up the
-  //    - boolean numbers for 0<i<32. Let's see.
-  //    -
-  //    - Weird fact: this doesn't seem to work... I have changed it so that if
-  //    - the single cell has recorded a signal (kTRUE) then it adds up to the
-  //    - total number of cells. Hope for the best.
-  //    -
-  //    - I am an idiot!!!!!! I have to reset the variable everytime!!!!
-  //  */
-  // fV0TotalNCells = 0;
-  // for(Int_t iV0Hits = 0; iV0Hits < 64; iV0Hits++) {
-  //       fV0Hits[iV0Hits] = dataVZERO->GetBBFlag(iV0Hits);
-  //       if(fV0Hits[iV0Hits] == kTRUE) {
-  //             // if(iV0Hits < 32) fV0TotalNCells += fV0Hits[iV0Hits];
-  //             if(iV0Hits < 32) fV0TotalNCells += 1;
-  //       }
-  //       // std::cout << "fV0Hits[iV0Hits = " << iV0Hits << ", fRunNum=" << fRunNum << "] = " << fV0Hits[iV0Hits] << endl;
-  //       // std::cout << "fV0TotalNCells (fRunNum = " << fRunNum << ") = " << fV0TotalNCells << endl;
-  // }
-  // fCounterH->Fill(18);
-  //
-  // /* - AD: we try to find the AD object data in the nano-AOD. If we cannot,
-  //    - we return, because there would be no way to actually select the events
-  //    - otherwise! We are here, so we could even check if there is a discrepancy
-  //    - between good events with and without AD's information. Or at least, this
-  //    - is my impression of it (filling fCounterH). AD information:
-  //    - fADADecision: small detector in ALICE, ADA and ADC at large distances;
-  //    - fADCDecision: again, maybe check whether it is cells or boolean, same as V0.
-  // */
-  // // AD
-  // AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
-  // fCounterH->Fill(19);
-  // if(dataAD) {
-  //       fCounterH->Fill(iSelectionCounter);
-  //       iSelectionCounter++;
-  //       fCounterH->Fill(20);
-  //
-  //       fADADecision = dataAD->GetADADecision();
-  //       fADCDecision = dataAD->GetADCDecision();
-  //       fCounterH->Fill(21);
-  // }
-  // fCounterH->Fill(22);
-  //
-  // // END EVENT DATA EXTRACTION
-  // //_______________________________
-  // // EVENT SELECTION
-  // /* - This is Eugeny Krishen's event selection from the talk in 14/1/2019 for
-  //    - the PWG-UD (UPC oriented) meeting. The event selection requires:
-  //    - CMUP11-B triggers;
-  //    - Maximum 2 V0C cells fired;
-  //    - Empty V0A decision;
-  //    - Empty ADA decision;
-  //    - Empty ADC decision;
-  //    - 0 tracklets in SPD;
-  //    - Exactly 2 unlike-sign muons;
-  //  */
-  // /* - CMUP11-B triggers: I have to check with my supervisor, but this requirement
-  //    - may have already been satisfied with the requirements for the trigger info
-  //  */
-  // /* - Maximum 2 V0C cells fired:
-  //    -
-  //  */
-  // /* - Empty V0A decision
-  //    - Empty ADA decision
-  //    - Empty ADC decision
-  //  */
-  // if(fV0ADecision != 0) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
-  // if(fADADecision != 0) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
-  // if(fADCDecision != 0) {
-  //      PostData(1, fOutputList);
-  //      return;
-  // }
+
+
+
+  /* - We have to get the number of fired V0C cells. So firstly, we get the
+     - boolean information about the hit cells for all V0. This is done through
+     - the GetBBFlag(i) method, where 0<i<32 stands for the V0C cells and
+     - 32<i<64 for the V0A cells. Then I thought the easiest way to check
+     - whether the number of fired V0C cells is above 2 is just to add up the
+     - boolean numbers for 0<i<32. Let's see.
+     -
+     - Weird fact: this doesn't seem to work... I have changed it so that if
+     - the single cell has recorded a signal (kTRUE) then it adds up to the
+     - total number of cells. Hope for the best.
+     -
+   */
+  fV0TotalNCells = 0;
+  for(Int_t iV0Hits = 0; iV0Hits < 64; iV0Hits++) {
+        fV0Hits[iV0Hits] = dataVZERO->GetBBFlag(iV0Hits);
+        if(fV0Hits[iV0Hits] == kTRUE) {
+              // if(iV0Hits < 32) fV0TotalNCells += fV0Hits[iV0Hits];
+              if(iV0Hits < 32) fV0TotalNCells += 1;
+        }
+        // std::cout << "fV0Hits[iV0Hits = " << iV0Hits << ", fRunNum=" << fRunNum << "] = " << fV0Hits[iV0Hits] << endl;
+        // std::cout << "fV0TotalNCells (fRunNum = " << fRunNum << ") = " << fV0TotalNCells << endl;
+  }
+  fCounterH->Fill(18);
+
+  /* - AD: we try to find the AD object data in the nano-AOD. If we cannot,
+     - we return, because there would be no way to actually select the events
+     - otherwise! We are here, so we could even check if there is a discrepancy
+     - between good events with and without AD's information. Or at least, this
+     - is my impression of it (filling fCounterH). AD information:
+     - fADADecision: small detector in ALICE, ADA and ADC at large distances;
+     - fADCDecision: again, maybe check whether it is cells or boolean, same as V0.
+  */
+  // AD
+  AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
+  fCounterH->Fill(19);
+  if(dataAD) {
+        fCounterH->Fill(iSelectionCounter);
+        iSelectionCounter++;
+        fCounterH->Fill(20);
+
+        fADADecision = dataAD->GetADADecision();
+        fADCDecision = dataAD->GetADCDecision();
+        fCounterH->Fill(21);
+  }
+  fCounterH->Fill(22);
+
+  // END EVENT DATA EXTRACTION
+  //_______________________________
+  // EVENT SELECTION
+  /* - This is Eugeny Krishen's event selection from the talk in 14/1/2019 for
+     - the PWG-UD (UPC oriented) meeting. The event selection requires:
+     - CMUP11-B triggers;
+     - Maximum 2 V0C cells fired;
+     - Empty V0A decision;
+     - Empty ADA decision;
+     - Empty ADC decision;
+     - 0 tracklets in SPD;
+     - Exactly 2 unlike-sign muons;
+   */
+  /* - CMUP11-B triggers: I have to check with my supervisor, but this requirement
+     - may have already been satisfied with the requirements for the trigger info
+   */
+  /* - Maximum 2 V0C cells fired:
+     -
+   */
+  /* - Empty V0A decision
+     - Empty ADA decision
+     - Empty ADC decision
+   */
+  if(fV0ADecision != 0) {
+       PostData(1, fOutputList);
+       return;
+  }
+  if(fADADecision != 0) {
+       PostData(1, fOutputList);
+       return;
+  }
+  if(fADCDecision != 0) {
+       PostData(1, fOutputList);
+       return;
+  }
   /* - 0 tracklets in SPD
      - Is it like this?? Not too sure what fTracklets was!
    */
