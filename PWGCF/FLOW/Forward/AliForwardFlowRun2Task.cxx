@@ -24,6 +24,7 @@
 #include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowUtil.h"
+#include "AliAODForwardMult.h"
 
 using namespace std;
 ClassImp(AliForwardFlowRun2Task)
@@ -126,10 +127,10 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     Int_t fMaxMoment = 4;
     Int_t dimensions = 5;
 
-    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)+1} ;
-    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)+1} ;
+    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)+1} ;
+    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)+1} ;
     Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
-    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
+    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4Four)+1};
 
     //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
     //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
@@ -192,16 +193,16 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
-
+  //forwardDist = 0;
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
 
   // Get the event validation object
-   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-   if (!ev_val->IsValidEvent()){
-      PostData(1, this->fOutputList);
-     return;
-   }
+  AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+  if (!ev_val->IsValidEvent()){
+    PostData(1, this->fOutputList);
+    return;
+  }
 
   if (!fSettings.esd){
     AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -218,8 +219,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     return;
   }
 
-  fUtil.FillData(refDist,centralDist,forwardDist);
 
+  fUtil.FillData(refDist,centralDist,forwardDist);
+  
   // dNdeta
   for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
     Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
@@ -242,7 +244,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fVertex->Fill(zvertex);
   
   if (fSettings.a5){
-    fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,kTRUE,true,false);
+    fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,kTRUE, true,false);
     fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,kFALSE,true,false);
   }
   else{
@@ -256,9 +258,11 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
 
   fCalculator.reset();
+
   centralDist->Reset();
-  forwardDist->Reset();
-  refDist->Reset();
+  
+  if (!fSettings.mc && (!fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
+  if (fSettings.mc) forwardDist->Reset();
 
   PostData(1, fOutputList);
 
