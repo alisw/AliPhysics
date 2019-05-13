@@ -45,6 +45,7 @@ public:
    // called at end of analysis
    virtual void Terminate(Option_t* option);
 
+   void SetRun1Analysis(Bool_t answer){ run1analysis = answer; }
 
    enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
@@ -319,6 +320,8 @@ private:
   TH1* fPostPIDWdthCorrITS;      // post pid correction object for widths in ITS
   TH1* fPostPIDCntrdCorrTOF;     // post pid correction object for centroids in TOF
   TH1* fPostPIDWdthCorrTOF;      // post pid correction object for widths in TOF
+
+  Bool_t run1analysis;
 
 
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
