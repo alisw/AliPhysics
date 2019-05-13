@@ -44,6 +44,7 @@
 #include "AliMCEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliGenEventHeader.h"
+#include "AliAODEvent.h"
 #include "AliESDZDC.h"
 #include "AliAODZDC.h"
 
