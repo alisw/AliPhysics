@@ -423,6 +423,9 @@ class AliRDHFCuts : public AliAnalysisCuts
     fSystemForNsigmaTPCDataCorr = system;
   }
 
+  Bool_t GetEnableNsigmaDataDrivenCorrection() const {return fEnableNsigmaTPCDataCorr;};
+  Int_t GetSystemForNsigmaTPCDataCorr() const {return fSystemForNsigmaTPCDataCorr;};
+
  protected:
 
   void SetNPtBins(Int_t nptBins){fnPtBins=nptBins;}

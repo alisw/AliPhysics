@@ -1508,6 +1508,8 @@ void AliRDHFCuts::PrintAll() const {
   }
   printf("fUsePreselect=%d \n",fUsePreselect);
   if(fPidHF) fPidHF->PrintAll();
+  Printf("EnableNSigmaTPCDataCorr = %d, %d", fEnableNsigmaTPCDataCorr, fSystemForNsigmaTPCDataCorr);
+
   return;
 }
 
