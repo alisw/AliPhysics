@@ -14,6 +14,7 @@
 #include "TRandom.h"
 #include "TString.h"
 #include "TCollection.h"
+#include "TAxis.h"
 
 class AliGFWFlowContainer:public TNamed {
  public:
@@ -23,6 +24,9 @@ class AliGFWFlowContainer:public TNamed {
   enum StatisticsType {kSingleSample, kJackKnife, kBootstrap};
   void Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t *multiBins, Int_t nRandomized=0);
   void Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t MultiMin, Double_t MultiMax, Int_t nRandomized=0);
+  Bool_t CreateBinsFromAxis(TAxis *inax);
+  void SetXAxis(TAxis *inax);
+  void SetXAxis();
   void RebinMulti(Int_t rN) { if(fProf) fProf->RebinX(rN); };
   Int_t GetNMultiBins() { return fProf->GetNbinsX(); };
   Double_t GetMultiAtBin(Int_t bin) { return fProf->GetXaxis()->GetBinCenter(bin); };
@@ -130,9 +134,12 @@ class AliGFWFlowContainer:public TNamed {
   TString fIDName;
   Int_t fPtRebin; //! do not store
   Double_t *fPtRebinEdges; //! do not store
+  TAxis *fXAxis;
+  Int_t fNbinsPt; //! Do not store; stored in the fXAxis
+  Double_t *fbinsPt; //! Do not store; stored in fXAxis
   Bool_t fPropagateErrors; //! do not store
   TProfile *GetRefFlowProfile(const char *order, Double_t m1=-1, Double_t m2=-1);
-  ClassDef(AliGFWFlowContainer, 1);
+  ClassDef(AliGFWFlowContainer, 2);
 };
 
 
