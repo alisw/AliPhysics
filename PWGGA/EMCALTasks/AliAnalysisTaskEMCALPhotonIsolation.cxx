@@ -2730,8 +2730,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     fPtVsConeVsUE->Fill(c.Pt(), ptIso, phiBandclus);
 
   Double_t stdConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Standard (full) cone area
-  Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
+  Double_t isoConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Cluster (eta, phi)-dependent cone area
   Double_t phiBandArea = 0.; // Cluster phi-dependent eta-band area
+
+  if ( !fTPC4Iso )
+    phiBandArea = ((5./9.)*TMath::Pi()-0.06)*2.*fIsoConeRadius-isoConeArea;
+  else
+    phiBandArea = 2.*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
 
   if(fWho == 2 && fAreasPerEvent){
     ComputeConeAreaInEMCal   (c.Eta(), c.Phi()    , isoConeArea);
@@ -2941,8 +2946,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     fPtVsConeVsEtaBand->Fill(c.Pt(), ptIso, etaBandclus);
 
   Double_t stdConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Standard (full) cone area
-  Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
+  Double_t isoConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Cluster (eta, phi)-dependent cone area
   Double_t etaBandArea = 0.; // Cluster phi-dependent eta-band area
+
+  if ( !fTPC4Iso )
+    etaBandArea = ((fGeom->GetArm1EtaMax()-0.03)-(fGeom->GetArm1EtaMin()+0.03))*2.*fIsoConeRadius-isoConeArea;
+  else
+    etaBandArea = 1.74*2.*fIsoConeRadius-isoConeArea;
 
   if(fWho == 2 && fAreasPerEvent){
     ComputeConeAreaInEMCal   (c.Eta(), c.Phi()    , isoConeArea);
@@ -3131,8 +3141,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
     fPtVsConeVsUE->Fill(c.Pt(), ptIso, cones);
 
   Double_t stdConeArea   = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Standard (full) cone area
-  Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
-  Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
+  Double_t isoConeArea   = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Cluster (eta, phi)-dependent cone area
+  Double_t perpConesArea = 2.*isoConeArea; // Cluster (eta, phi)-dependent perpendicular cones area
 
   if(fWho == 2 && fAreasPerEvent){
     ComputeConeAreaInEMCal(c.Eta(), c.Phi(), isoConeArea);
@@ -3248,8 +3258,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
   phiBandtrack = sumpTPhiBandTrack;
 
   Double_t stdConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Standard (full) cone area
-  Double_t isoConeArea = 0.;
+  Double_t isoConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.);
   Double_t phiBandArea = 0.;
+
+  if ( !fTPC4Iso )
+    phiBandArea = ((5./9.)*TMath::Pi()-0.06)*2.*fIsoConeRadius-isoConeArea;
+  else
+    phiBandArea = 2.*TMath::Pi()*2.*fIsoConeRadius-isoConeArea;
 
   if(fWho == 2 && fAreasPerEvent){
     ComputeConeAreaInTPC   (c.Eta(), isoConeArea);
@@ -3362,8 +3377,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
   etaBandtrack = sumpTEtaBandTrack;
 
   Double_t stdConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Standard (full) cone area
-  Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
+  Double_t isoConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Cluster (eta, phi)-dependent cone area
   Double_t etaBandArea = 0.; // Cluster phi-dependent eta-band area
+
+  if ( !fTPC4Iso )
+    etaBandArea = ((fGeom->GetArm1EtaMax()-0.03)-(fGeom->GetArm1EtaMin()+0.03))*2.*fIsoConeRadius-isoConeArea;
+  else
+    etaBandArea = 1.74*2.*fIsoConeRadius-isoConeArea;
 
   if(fWho == 2 && fAreasPerEvent){
     ComputeConeAreaInTPC   (c.Eta()    , isoConeArea);
@@ -3468,8 +3488,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
   cones = sumpTPerpConeTrack;
 
   Double_t stdConeArea   = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Standard (full) cone area
-  Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
-  Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
+  Double_t isoConeArea   = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Cluster (eta, phi)-dependent cone area
+  Double_t perpConesArea = 2.*isoConeArea; // Cluster (eta, phi)-dependent perpendicular cones area
 
   if(fWho == 2 && fAreasPerEvent){
     ComputeConeAreaInTPC(c.Eta(), isoConeArea);
@@ -4959,6 +4979,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
   }
 
   Double_t stdConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Standard (full) cone area
+  Double_t isoConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.);
 
   Double_t eT = 0., sumEiso = 0., sumUE = 0., phi = 0., eta = 0., radius = 0., phip = 0., etap = 0.;
   Double_t etaMax_fidu = 0./*, etaMinDCal_InnerEdge = 0.*/, phiMinEMCal_fidu = 0., phiMaxEMCal_fidu = 0./*, phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
@@ -5214,6 +5235,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
     }
 
     CalculateUEDensityMC(eta, phi, sumUE);
+    
+    if(fWho == 2 && fAreasPerEvent){
+      if(!fTPC4Iso)
+	ComputeConeAreaInEMCal(eta, phi, isoConeArea);
+      else
+	ComputeConeAreaInTPC(eta, isoConeArea);
+    }
 
     outputValuesMC[0] = eT;
     outputValuesMC[1] = sumEiso;
@@ -5225,7 +5253,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
 
     if(fWho==1)
       fOutMCTruth->Fill(outputValuesMC);
-    if(fWho==2){
+
+    if(fWho == 2){
+      if(fAreasPerEvent){
+	if(!fTPC4Iso)
+	  ComputeConeAreaInEMCal(eta, phi, isoConeArea);
+	else
+	  ComputeConeAreaInTPC(eta, isoConeArea);
+      }
+
       if(fAnalysispPb){
 	fPtvsUE_MC->Fill(eT, sumUE);
 	fPtvsSumUE_MC->Fill(eT, ((sumEiso-sumUE)*(stdConeArea / isoConeArea))); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
@@ -5246,6 +5282,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
   if(!fStack && !fAODMCParticles){ cout << "No stack saved\n"; return; }
 
   Double_t stdConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.); // Standard (full) cone area
+  Double_t isoConeArea = TMath::Pi()*TMath::Power(fIsoConeRadius, 2.);
 
   Double_t candidateEnergy = 0., candidateEnergyMax = 0., E_T = 0., sumEiso = 0., sumUE = 0., candidatePhi = 0., candidateEta = 0., radius = 0., particlePhi = 0., particleEta = 0.;
   Double_t etaMax_fidu = 0., phiMinEMCal_fidu = 0., phiMaxEMCal_fidu = 0., etaMax = 0., phiMin = 0., phiMax = 0./*, etaMinDCal_InnerEdge = 0., phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
@@ -5427,6 +5464,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       CalculateUEDensityMC(candidateEta, candidatePhi, sumUE);
 
       if(fWho == 2){
+	if(fAreasPerEvent){
+	  if(!fTPC4Iso)
+	    ComputeConeAreaInEMCal(eta, phi, isoConeArea);
+	  else
+	    ComputeConeAreaInTPC(eta, isoConeArea);
+	}
+
 	if(fAnalysispPb){
 	  fPtvsUE_MC->Fill(E_T, sumUE);
 	  fPtvsSumUE_MC->Fill(E_T, ((sumEiso-sumUE)*(stdConeArea / isoConeArea))); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
@@ -5580,6 +5624,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       CalculateUEDensityMC(candidateEta, candidatePhi, sumUE);
 
       if(fWho == 2){
+	if(fAreasPerEvent){
+	  if(!fTPC4Iso)
+	    ComputeConeAreaInEMCal(eta, phi, isoConeArea);
+	  else
+	    ComputeConeAreaInTPC(eta, isoConeArea);
+	}
+
 	if(fAnalysispPb){
 	  fPtvsUE_MC->Fill(E_T, sumUE);
 	  fPtvsSumUE_MC->Fill(E_T, ((sumEiso-sumUE)*(stdConeArea / isoConeArea))); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
