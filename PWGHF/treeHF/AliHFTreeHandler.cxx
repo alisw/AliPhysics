@@ -553,6 +553,7 @@ double AliHFTreeHandler::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF
 {
   if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
   else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
+  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return nsigmaTOF;
   else return -9999.;
 }
 
