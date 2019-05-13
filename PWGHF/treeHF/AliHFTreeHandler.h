@@ -53,7 +53,8 @@ class AliHFTreeHandler : public TObject
       kNsigmaCombPIDint,
       kNsigmaCombPIDfloatandint, //--> to test
       kRawPID,
-      kRawAndNsigmaPID
+      kRawAndNsigmaPID,
+      kNsigmaDetAndCombPID
     };
 
     enum piddet {
