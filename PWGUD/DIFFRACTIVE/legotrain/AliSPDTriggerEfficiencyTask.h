@@ -4,7 +4,7 @@
 #ifndef AliSPDTriggerEfficiencyTask_h
 #define AliSPDTriggerEfficiencyTask_h 1
 
-// Task to create a tree for SPD and TOF trigger efficiency studies
+// Task to create a tree for SPD trigger efficiency studies
 // evgeny.kryshen@cern.ch
 
 #include "AliAnalysisTaskSE.h"
@@ -25,7 +25,6 @@ class AliSPDTriggerEfficiencyTask : public AliAnalysisTaskSE {
   virtual ~AliSPDTriggerEfficiencyTask(){};
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void NotifyRun();
  protected:
   AliSPDTriggerEfficiencyTask(const  AliSPDTriggerEfficiencyTask &task);
   AliSPDTriggerEfficiencyTask& operator=(const  AliSPDTriggerEfficiencyTask &task);

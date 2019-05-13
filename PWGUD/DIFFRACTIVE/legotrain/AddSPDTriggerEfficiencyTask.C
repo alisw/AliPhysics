@@ -1,4 +1,4 @@
-AliSPDTriggerEfficiencyTask *AddDGTriggerEfficiencyTask(
+AliSPDTriggerEfficiencyTask *AddSPDTriggerEfficiencyTask(
     const char* outputFileName = 0,
     const char* folderName = "SPDTriggerEfficiency")
 {

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  * 
  **************************************************************************/
 
-// Task to create upc tree
+// Task to create a tree for SPD trigger efficiency studies
 // evgeny.kryshen@cern.ch
 
 #include "AliSPDTriggerEfficiencyTask.h"
@@ -151,7 +151,6 @@ void AliSPDTriggerEfficiencyTask::UserExec(Option_t *){
 
   // avoid high multiplicity events
   if (fNofTracklets>100) { PostData(1,fListOfHistos); return; }
-
   
   for (Int_t i=0;i<6;i++) fNofITSClusters[i] = fInputEvent->GetNumberOfITSClusters(i);
 
