@@ -79,7 +79,11 @@ class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
   TArrayI fTOFhits;
   TArrayF fTOFhitTimes;
   TArrayI fTrackIndices;
-  Int_t fNofTOFtrgPads;
+  Float_t fZNAtower0;
+  Float_t fZNCtower0;
+  Float_t fZNATDC[4];
+  Float_t fZNCTDC[4];
+
   
   ClassDef(AliAnalysisTaskDgTree,2)
 };

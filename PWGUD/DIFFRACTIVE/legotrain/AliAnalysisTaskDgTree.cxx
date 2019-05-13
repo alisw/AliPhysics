@@ -44,6 +44,8 @@
 #include "AliMCEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliGenEventHeader.h"
+#include "AliESDZDC.h"
+#include "AliAODZDC.h"
 
 ClassImp(AliAnalysisTaskDgTree)
 
@@ -97,7 +99,10 @@ AliAnalysisTaskDgTree::AliAnalysisTaskDgTree(const char* name) :
   fTOFhits(),
   fTOFhitTimes(),
   fTrackIndices(),
-  fNofTOFtrgPads()
+  fZNAtower0(-1000),
+  fZNCtower0(-1000),
+  fZNATDC(),
+  fZNCTDC()
 {
   //PID Combined
   fPIDCombined->SetDefaultTPCPriors();  //Need more update
@@ -126,8 +131,8 @@ void AliAnalysisTaskDgTree::UserCreateOutputObjects(){
 
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
-  fTriggersVsRun = new TH2D("fTriggersVsRun","",8,0,8,30000,270000,300000);
-  fEventStatistics = new TH1D("fEventStatistics","",8,0,8);
+  fTriggersVsRun = new TH2D("fTriggersVsRun","",10,0,10,30000,270000,300000);
+  fEventStatistics = new TH1D("fEventStatistics","",10,0,10);
   fListOfHistos->Add(fTriggersVsRun);
   fListOfHistos->Add(fEventStatistics);
   fTracks      = new TClonesArray("AliUpcParticle",10);
@@ -176,7 +181,10 @@ void AliAnalysisTaskDgTree::UserCreateOutputObjects(){
   fTree->Branch("fTriggerMask",&fTriggerMask,"fTriggerMask[72]/i");
   fTree->Branch("fTOFhits",&fTOFhits);
   fTree->Branch("fTrackIndices",&fTrackIndices);
-  fTree->Branch("fNofTOFtrgPads",&fNofTOFtrgPads);
+  fTree->Branch("fZNAtower0",&fZNAtower0);
+  fTree->Branch("fZNCtower0",&fZNCtower0);
+  fTree->Branch("fZNATDC",&fZNATDC,"fZNATDC[4]/F");
+  fTree->Branch("fZNCTDC",&fZNCTDC,"fZNCTDC[4]/F");
   
   PostData(1,fListOfHistos);
   PostData(2,fTree);
@@ -195,6 +203,10 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
     if (fClassesFired.String().Contains("CCUP25-B")) { accept = 1; fEventStatistics->AddBinContent(3); fTriggersVsRun->Fill(2.5,fRunNumber); }
     if (fClassesFired.String().Contains("CCUP26-B")) { accept = 1; fEventStatistics->AddBinContent(4); fTriggersVsRun->Fill(3.5,fRunNumber); }
     if (fClassesFired.String().Contains("CINT11-B")) { accept = 1; fEventStatistics->AddBinContent(5); fTriggersVsRun->Fill(4.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP29-B")) { accept = 1; fEventStatistics->AddBinContent(6); fTriggersVsRun->Fill(5.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP29-U")) { accept = 1; fEventStatistics->AddBinContent(7); fTriggersVsRun->Fill(6.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP30-B")) { accept = 1; fEventStatistics->AddBinContent(8); fTriggersVsRun->Fill(7.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP31-B")) { accept = 1; fEventStatistics->AddBinContent(9); fTriggersVsRun->Fill(8.5,fRunNumber); }
   } else {
     accept = 1;
   }
@@ -246,6 +258,7 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
         Bool_t om2 = ints[r] & BIT(30);
         Bool_t omu = ints[r] & BIT(32);
         Bool_t stg = ints[r] & BIT(25);
+        
         if (vba) fVBA.SetBitNumber(bc);
         if (vbc) fVBC.SetBitNumber(bc);
         if (uba) fUBA.SetBitNumber(bc);
@@ -293,7 +306,6 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
   for (UInt_t k=0;k<72;k++){
     fTriggerMask[k] = fInputEvent->GetTOFHeader()->GetTriggerMask()->GetTriggerMask(k);
   }
-  fNofTOFtrgPads = fInputEvent->GetTOFHeader()->GetNumberOfTOFtrgPads();
   
   AliVVZERO* vzero = fInputEvent->GetVZEROData();
   fV0ADecision = vzero->GetV0ADecision();
@@ -324,6 +336,23 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
     Float_t dphi  = mult->GetDeltaPhi(i);
     new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliUpcParticle(dphi,eta,phi,0,0,0);
   }
+  
+  // ZDC data
+  AliVZDC* zdc = fInputEvent->GetZDCData();
+  fZNAtower0  = zdc->GetZNATowerEnergy()[0];
+  fZNCtower0  = zdc->GetZNCTowerEnergy()[0];
+  if (isESD) {
+    const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(fInputEvent);
+    AliESDZDC* esdZDC = esd->GetESDZDC();
+    for (Int_t i=0;i<4;i++) fZNATDC[i] = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i);
+    for (Int_t i=0;i<4;i++) fZNCTDC[i] = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i);
+  } else if (fInputEvent->GetDataLayoutType()==AliVEvent::kAOD){
+    const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(fInputEvent);
+    AliAODZDC* aodZDC = aod->GetZDCData();
+    for (Int_t i=0;i<4;i++) fZNATDC[i] = aodZDC->GetZNATDCm(i);
+    for (Int_t i=0;i<4;i++) fZNCTDC[i] = aodZDC->GetZNCTDCm(i);
+  }
+  
   
   for (Long_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
     AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(ipart);
