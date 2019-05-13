@@ -221,7 +221,13 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
   fL0inputs     = fInputEvent->GetHeader()->GetL0TriggerInputs();
   fIR1          = fInputEvent->GetHeader()->GetIRInt1InteractionMap();
   fIR2          = fInputEvent->GetHeader()->GetIRInt2InteractionMap();
-
+  
+  if (fClassesFired.String().Contains("CINT11-B")){
+    Bool_t is0VBAfired = fL0inputs & 1<< 0;
+    Bool_t is0VBCfired = fL0inputs & 1<< 1;
+    if (is0VBAfired || is0VBCfired) { PostData(1,fListOfHistos);  return; }
+  }
+  
   Bool_t isESD = fInputEvent->GetDataLayoutType()==AliVEvent::kESD;
   
   if (isESD) {
