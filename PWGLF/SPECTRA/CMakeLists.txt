@@ -144,6 +144,7 @@ set(SRCS
   Spherocity/AliTransverseEventShape.cxx
   Spherocity/AliSpherocityEstimator.cxx
   Spherocity/AliSpherocityUtils.cxx
+  Spherocity/macros/AliAnalysisSphericityTask.cxx
 )
 
 # Headers from sources
