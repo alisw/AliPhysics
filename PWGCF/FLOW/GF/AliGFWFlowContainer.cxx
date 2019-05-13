@@ -8,6 +8,9 @@ AliGFWFlowContainer::AliGFWFlowContainer():
   fIDName("MidV"),
   fPtRebin(1),
   fPtRebinEdges(0),
+  fXAxis(0),
+  fNbinsPt(0),
+  fbinsPt(0),
   fPropagateErrors(kFALSE)
 {
 };
@@ -19,6 +22,9 @@ AliGFWFlowContainer::AliGFWFlowContainer(const char *name):
   fIDName("MidV"),
   fPtRebin(1),
   fPtRebinEdges(0),
+  fXAxis(0),
+  fNbinsPt(0),
+  fbinsPt(0),
   fPropagateErrors(kFALSE)
 {
 };
@@ -66,9 +72,34 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
     for(Int_t i=0;i<nRandom;i++)
       fProfRand->Add((TProfile2D*)fProf->Clone(Form("%s_Rand_%i",fProf->GetName(),i)));
   };
-
 };
-
+Bool_t AliGFWFlowContainer::CreateBinsFromAxis(TAxis *inax) {
+  if(!inax) return kFALSE;
+  fNbinsPt=inax->GetNbins();
+  fbinsPt=new Double_t[fNbinsPt+1];
+  inax->GetLowEdge(fbinsPt);
+  fbinsPt[fNbinsPt] = inax->GetBinUpEdge(fNbinsPt);
+  return kTRUE;
+}
+void AliGFWFlowContainer::SetXAxis(TAxis *inax) {
+  fXAxis = (TAxis*)inax->Clone("pTAxis");
+  Bool_t success = CreateBinsFromAxis(fXAxis);
+  if(!success) printf("Something went wrong setting the x axis!\n");
+}
+void AliGFWFlowContainer::SetXAxis() {
+    if(!CreateBinsFromAxis(fXAxis)) { //Legacy; if fXAxis not defined, then setup default one
+      const Int_t NbinsPtForV2=24;
+      Double_t binsPtForV2[NbinsPtForV2+1] = {
+        0.2, 0.4, 0.6, 0.8, 1.0,
+        1.2, 1.4, 1.6, 1.8, 2.0,
+        2.2, 2.4, 2.6, 3.0, 3.4,
+        3.8, 4.2, 4.6, 5.2, 5.8,
+        6.6, 8.0, 12.0, 16.0, 20.0};
+      TAxis *tempax = new TAxis(NbinsPtForV2,binsPtForV2);
+      SetXAxis(tempax);
+      delete tempax;
+    }
+}
 Int_t AliGFWFlowContainer::FillProfile(const char *hname, Double_t multi, Double_t corr, Double_t w, Double_t rn) {
   if(!fProf) return -1;
   Int_t yin = fProf->GetYaxis()->FindBin(hname);
@@ -262,14 +293,7 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsMulti(const char *order, Int_t l_pti) 
 TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmulti, Double_t lmaxmulti) {
   Int_t minm = 1;
   Int_t maxm = fProf->GetXaxis()->GetNbins();
-  Int_t fNbinsPt=24;
-  Double_t fbinsPt[] = {//0.2,3.,6.};
-    0.2, 0.4, 0.6, 0.8, 1.0,
-    1.2, 1.4, 1.6, 1.8, 2.0,
-    2.2, 2.4, 2.6, 3.0, 3.4,
-    3.8, 4.2, 4.6, 5.2, 5.8,
-    6.6, 8.0, 12.0, 16.0, 20.};
-
+  if(!fbinsPt) SetXAxis();
   if(lminmulti>0) {
     minm=fProf->GetXaxis()->FindBin(lminmulti);
     maxm=minm;

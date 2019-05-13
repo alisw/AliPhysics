@@ -270,6 +270,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     Double_t multibins[] = {0,10,20,30,40,50,60,70,80};
     fFC = new AliGFWFlowContainer();
     fFC->SetName(Form("FC%s",fSelections[fCurrSystFlag]->GetSystPF()));
+    fFC->SetXAxis(fPtAxis);
     fFC->Initialize(OAforPt,8,multibins,fCurrSystFlag?1:10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
     fGFW = new AliGFW();
     //Full regions
