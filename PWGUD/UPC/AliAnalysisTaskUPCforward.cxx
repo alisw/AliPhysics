@@ -162,6 +162,18 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionZNCzeroZNAanyH(0),
+      fDimuonPtDistributionZNCanyZNAzeroH(0),
+      fDimuonPtDistributionZNCanyZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAanyH(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
       fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
       fCheckHelicityRestFrameJPsiH(0),
@@ -275,6 +287,18 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionZNCzeroZNAanyH(0),
+      fDimuonPtDistributionZNCanyZNAzeroH(0),
+      fDimuonPtDistributionZNCanyZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAanyH(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
       fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
       fCheckHelicityRestFrameJPsiH(0),
@@ -632,6 +656,43 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 
   fInvariantMassDistributionIncoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyH", "fInvariantMassDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyH);
+
+  fDimuonPtDistributionZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroH", "fDimuonPtDistributionZNCzeroZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionZNCzeroZNAanyH", "fDimuonPtDistributionZNCzeroZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyH);
+
+  fDimuonPtDistributionZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionZNCanyZNAzeroH", "fDimuonPtDistributionZNCanyZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroH);
+
+  fDimuonPtDistributionZNCanyZNAanyH = new TH1F("fDimuonPtDistributionZNCanyZNAanyH", "fDimuonPtDistributionZNCanyZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyH);
+
+  fDimuonPtDistributionCoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAzeroH", "fDimuonPtDistributionCoherentZNCzeroZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionCoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAanyH", "fDimuonPtDistributionCoherentZNCzeroZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAanyH);
+
+  fDimuonPtDistributionCoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAzeroH", "fDimuonPtDistributionCoherentZNCanyZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCanyZNAzeroH);
+
+  fDimuonPtDistributionCoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAanyH", "fDimuonPtDistributionCoherentZNCanyZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCanyZNAanyH);
+
+  fDimuonPtDistributionIncoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", "fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionIncoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAanyH", "fDimuonPtDistributionIncoherentZNCzeroZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCzeroZNAanyH);
+
+  fDimuonPtDistributionIncoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAzeroH", "fDimuonPtDistributionIncoherentZNCanyZNAzeroH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCanyZNAzeroH);
+
+  fDimuonPtDistributionIncoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAanyH", "fDimuonPtDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCanyZNAanyH);
+
 
 
   /* - Here starts the list of histograms needed for the analysis of the J/Psi's
@@ -1562,32 +1623,44 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                       if( fZNCEnergy < 1250 ) {
                                   if( fZNAEnergy > -5000 ) {
                                               if( fZNAEnergy < 1000 ) {
+                                                          fDimuonPtDistributionZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           }
                                               } else {
+                                                          fDimuonPtDistributionZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
                                                           }
                                               }
                                   }
                       } else {
                                   if( fZNAEnergy > -5000 ) {
                                               if( fZNAEnergy < 1000 ) {
+                                                          fDimuonPtDistributionZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           }
                                               } else {
+                                                          fDimuonPtDistributionZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
                                                           }
                                               }
                                   }
