@@ -287,10 +287,10 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
 
   TH1F                       * fTrackMult;                      ///<  Track Multiplicity ---QA
+  TH1F                       * fTrackMultInCone;                ///<  Track Multiplicity in isolation cone
   TH2F                       * fPtvsSum_MC;                     //!<!
+  TH2F                       * fPtvsUE_MC;                      //!<!
   TH2F                       * fPtvsSumUE_MC;                   //!<!
-  TH1F                       * fSumEiso_MC;                     //!<!
-  TH1F                       * fSumUE_MC;                       //!<!
   TH1F                       * fGenPromptPhotonSel;             //!<!
   TH2F                       * fEtaPhiClus;                     ///<  EMCal Cluster Distribution EtaPhi ---QA
   TH2F                       * fEtaPhiClusAftSel;               ///<  EMCal Cluster Distribution EtaPhi after cluster selection
