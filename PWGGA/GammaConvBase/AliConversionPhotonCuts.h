@@ -300,6 +300,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fLineCutZRSlopeMin;                   ///< linecut
     Double_t          fLineCutZValueMin;                    ///< linecut
     Double_t          fChi2CutConversion;                   ///< chi2cut
+    Double_t          fChi2CutConversionExpFunc;            ///< chi2cutexpfunction
     Double_t          fPIDProbabilityCutNegativeParticle;   ///<
     Double_t          fPIDProbabilityCutPositiveParticle;   ///<
     Bool_t            fDodEdxSigmaCut;                      ///< flag to use the dEdxCut based on sigmas
@@ -341,7 +342,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
-    Bool_t            fDo2DPsiPairChi2;                     ///<
+    Int_t             fDo2DPsiPairChi2;                     ///<
     Bool_t            fIncludeRejectedPsiPair;              ///<
     Float_t           fCosPAngleCut;                        ///<
     Bool_t            fDoToCloseV0sCut;                     ///<
@@ -415,7 +416,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,22)
+    ClassDef(AliConversionPhotonCuts,23)
     /// \endcond
 };
 
