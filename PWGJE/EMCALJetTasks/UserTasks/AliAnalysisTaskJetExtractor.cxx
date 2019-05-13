@@ -1096,7 +1096,6 @@ void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Dou
 
   // #################################################################################
   // ##### OBSERVABLES FROM MATCHED JETS: Jet pt, jet mass
-  Double_t jetRadius = GetJetContainer(0)->GetJetRadius();
   matchedJetDistance = 8.; // 8 is higher than maximum possible matching distance
   if(jet_array_name != "")
   {
