@@ -29,8 +29,8 @@ class AliTPCParam;
 class AliRecoParam;
 class AliHLTTPCReverseTransformInfoV1;
 
-namespace ali_tpc_common{
-  namespace tpc_fast_transformation{
+namespace AliGPU{
+  namespace gpu{
     class TPCFastTransform;
     class TPCFastTransformManager;
   }
@@ -53,7 +53,7 @@ class AliHLTTPCClusterTransformation{
   enum  TransformationKind  {
     TransformOldFastTransform = 0,    ///< old fast transfrom with splines
     TransformOriginal         = 1,    ///< original
-    TransformFastIRS          = 2     ///< new fast transform with irregular splines from AliTPCCommon
+    TransformFastIRS          = 2     ///< new fast transform with irregular splines from GPU
    };
 
   /** standard constructor */
@@ -123,8 +123,8 @@ class AliHLTTPCClusterTransformation{
 
   AliTPCTransform * fOrigTransform;  // offline transformation
   AliHLTTPCFastTransform fFastTransform; // fast transformation object
-  ali_tpc_common::tpc_fast_transformation::TPCFastTransform *fFastTransformIRS; // new fast transform with irregular splines
-  ali_tpc_common::tpc_fast_transformation::TPCFastTransformManager *fFastTransformManager; // manager
+  AliGPU::gpu::TPCFastTransform *fFastTransformIRS; // new fast transform with irregular splines
+  AliGPU::gpu::TPCFastTransformManager *fFastTransformManager; // manager
   
   bool fIsMC; //Do we process MC?
 

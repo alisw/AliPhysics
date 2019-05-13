@@ -25,8 +25,8 @@
 #include "EVE/EveBase/AliEveMagField.h"
 #include "EVE/EveBase/AliEveEventManager.h"
 
-#include "AliHLTTPCCATrackParam.h"
-#include "AliHLTTPCCATrackConvertor.h"
+#include "GPUTPCTrackParam.h"
+#include "GPUTPCTrackConvertor.h"
 
 #endif
 
@@ -110,13 +110,13 @@ AliEveTrack* hlt_esd_make_track(AliESDtrack *at, TEveTrackList* cont)
   if( at->GetTPCPoints(2)>80 ){
   
     //
-    // use AliHLTTPCCATrackParam propagator 
+    // use GPUTPCTrackParam propagator 
     // since AliExternalTrackParam:PropagateTo()
     // has an offset at big distances
     //
     
-    AliHLTTPCCATrackParam t;
-    AliHLTTPCCATrackConvertor::SetExtParam( t, trackParam );
+    GPUTPCTrackParam t;
+    GPUTPCTrackConvertor::SetExtParam( t, trackParam );
     
     Double_t x0 = trackParam.GetX();
     Double_t dx = at->GetTPCPoints(2) - x0;
@@ -127,7 +127,7 @@ AliEveTrack* hlt_esd_make_track(AliESDtrack *at, TEveTrackList* cont)
     
     for( double dxx=dx/2; TMath::Abs(dxx)>=1.; dxx*=.9 ){
       if( !t.TransportToX(x0+dxx, bz, .99 ) ) continue;
-      AliHLTTPCCATrackConvertor::GetExtParam( t, trackParam, trackParam.GetAlpha() ); 
+      GPUTPCTrackConvertor::GetExtParam( t, trackParam, trackParam.GetAlpha() ); 
       trackParam.GetXYZ(vbuf);
       trackParam.GetPxPyPz(pbuf);
       TEvePathMark midPoint(TEvePathMark::kReference);
@@ -144,7 +144,7 @@ AliEveTrack* hlt_esd_make_track(AliESDtrack *at, TEveTrackList* cont)
     
     for( ; TMath::Abs(dx)>=1.; dx*=.9 ){
       if( !t.TransportToX(x0+dx, bz, .99 ) ) continue;
-      AliHLTTPCCATrackConvertor::GetExtParam( t, trackParam, trackParam.GetAlpha() ); 
+      GPUTPCTrackConvertor::GetExtParam( t, trackParam, trackParam.GetAlpha() ); 
       trackParam.GetXYZ(vbuf);
       trackParam.GetPxPyPz(pbuf);
       TEvePathMark endPoint(TEvePathMark::kReference);

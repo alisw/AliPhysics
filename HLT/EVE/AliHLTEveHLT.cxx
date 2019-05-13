@@ -518,7 +518,7 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
   if( at->GetOuterParam() && at->GetTPCPoints(2)>80 ){
 
     //
-    // use AliHLTTPCCATrackParam propagator 
+    // use GPUTPCTrackParam propagator 
     // since AliExternalTrackParam:PropagateTo()
     // has an offset at big distances
     //

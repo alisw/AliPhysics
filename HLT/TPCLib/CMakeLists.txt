@@ -23,23 +23,21 @@ endif()
 
 set(LIBDEPS)
 if(ALIROOT_ONLINE_MODE)
-    message(WARNING "Online build for non-HLT: Disabling TPC GPU Tracking")
+    message(WARNING "Online build for non-HLT: Disabling GPU")
 else()
-    if(DEFINED ALITPCCOMMON_DIR)
-        set(ALITPCCOMMON_BUILD_TYPE "ALIROOT")
-        add_subdirectory(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking TPCCAGPUTracking)
-        add_subdirectory(${ALITPCCOMMON_DIR}/sources/TPCFastTransformation TPCFastTransformation)
-        include_directories(${ALITPCCOMMON_DIR}/sources/Common
-                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
-                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger
-                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/GlobalTracker
-                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/DataCompression
-                            ${ALITPCCOMMON_DIR}/sources/TPCFastTransformation)
-        add_definitions(-DHAVE_ALITPCCOMMON)
-    else()
-        message(FATAL_ERROR "cmake variable ALITPCCOMMON_DIR is not defined")
-    endif()
-    set(LIBDEPS ${LIBDEPS} AliTPCCAGPUTracking)
+    set(ALIGPU_BUILD_TYPE "ALIROOT")
+    add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/GPUTracking GPUTracking)
+    add_subdirectory(${AliRoot_SOURCE_DIR}/GPU/TPCFastTransformation TPCFastTransformation)
+    include_directories(${AliRoot_SOURCE_DIR}/GPU/Common
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/SliceTracker
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Merger
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Global
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/Base
+                        ${AliRoot_SOURCE_DIR}/GPU/GPUTracking/DataCompression
+                        ${AliRoot_SOURCE_DIR}/GPU/TPCFastTransformation)
+    add_definitions(-DHAVE_ALIGPU)
+    add_definitions(-DGPUCA_ALIROOT_LIB)
+    set(LIBDEPS ${LIBDEPS} GPUTracking)
     set(LIBDEPS ${LIBDEPS} AliTPCFastTransformation)
 endif()
 

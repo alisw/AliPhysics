@@ -61,15 +61,14 @@
 #include "AliSysInfo.h"
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
-#include "AliHLTTPCCADefinitions.h"
-#include "AliHLTTPCCASliceOutput.h"
-#include "AliHLTTRDDefinitions.h"
+#include "GPUTPCDefinitions.h"
+#include "GPUTPCSliceOutput.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTTPCHWCFData.h"
 #include "AliHLTTPCdEdxData.h"
 #include "AliHLTTRDDefinitions.h"
-#include "AliHLTTRDTrackletWord.h"
-#include "AliHLTTRDTrackData.h"
+#include "GPUTRDTrackletWord.h"
+#include "GPUTRDTrackData.h"
 #include "AliGRPManager.h"
 #include "AliGRPObject.h"
 #include "TMath.h"
@@ -79,6 +78,8 @@
 #include <string>
 #include "AliHLTITSClusterDataFormat.h"
 #include "AliHLTCDHWrapper.h"
+
+using namespace GPUCA_NAMESPACE::gpu;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalPromptRecoQAComponent)
@@ -304,7 +305,7 @@ void AliHLTGlobalPromptRecoQAComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackletDataType); //TRD Tracklets
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackDataType|kAliHLTDataOriginTRD); //TRD Tracks
 
-  list.push_back(AliHLTTPCCADefinitions::fgkTrackletsDataType); //HLT-TPC Tracklets (before TPC global merger)
+  list.push_back(GPUTPCDefinitions::fgkTrackletsDataType); //HLT-TPC Tracklets (before TPC global merger)
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginTPC); //HLT-TPC merged tracks
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginITS); //TPC-ITS tracks
   list.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginITSOut); //ITS-Out merged tracks
@@ -644,7 +645,7 @@ static void ReBinLogX(TAxis* axis)
   }
   axis->Set(bins, new_bins);
   delete [] new_bins;
-} 
+}
 
 //__________________________________________________________________________________________________
 void AliHLTGlobalPromptRecoQAComponent::CreateFixedHistograms()
@@ -1079,7 +1080,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     memset(clusterRAWblocks, 0, sizeof(clusterRAWblocks));
   }
 
-  AliHLTFloat32_t *dEdxTPCOffline = NULL; 
+  AliHLTFloat32_t *dEdxTPCOffline = NULL;
   Int_t ndEdxTPCOffline = 0;
   AliHLTTPCdEdxData* dEdxInfo = NULL;
 
@@ -1356,9 +1357,9 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     }
 
     //numbers of tracks
-    if (iter->fDataType == AliHLTTPCCADefinitions::fgkTrackletsDataType) //HLT-TPC CA-trackets (before TPC global merger)
+    if (iter->fDataType == GPUTPCDefinitions::fgkTrackletsDataType) //HLT-TPC CA-trackets (before TPC global merger)
     {
-      AliHLTTPCCASliceOutput* out = reinterpret_cast<AliHLTTPCCASliceOutput*>(iter->fPtr);
+      GPUTPCSliceOutput* out = reinterpret_cast<GPUTPCSliceOutput*>(iter->fPtr);
       nTPCtracklets += out->NTracks();
     }
 
@@ -1385,8 +1386,8 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     //TRD Tracklets
     if (iter->fDataType == AliHLTTRDDefinitions::fgkTRDTrackletDataType)
     {
-      AliHLTTRDTrackletWord* tracklets = reinterpret_cast<AliHLTTRDTrackletWord*>( iter->fPtr );
-      int nTRDTrackletsTotal = iter->fSize / sizeof(AliHLTTRDTrackletWord);
+      GPUTRDTrackletWord* tracklets = reinterpret_cast<GPUTRDTrackletWord*>( iter->fPtr );
+      int nTRDTrackletsTotal = iter->fSize / sizeof(GPUTRDTrackletWord);
       nTRDTracklets += nTRDTrackletsTotal;
       if (fHistTRDHCId)
       {
@@ -1400,7 +1401,7 @@ int AliHLTGlobalPromptRecoQAComponent::DoEvent( const AliHLTComponentEventData& 
     //TRD Tracks
     if (iter->fDataType == (AliHLTTRDDefinitions::fgkTRDTrackDataType|kAliHLTDataOriginTRD))
     {
-      AliHLTTRDTrackData* outTracks = (AliHLTTRDTrackData*) (iter->fPtr);
+      GPUTRDTrackData* outTracks = (GPUTRDTrackData*) (iter->fPtr);
       nTRDTracks += outTracks->fCount;
     }
 

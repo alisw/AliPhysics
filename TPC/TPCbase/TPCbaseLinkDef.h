@@ -114,7 +114,7 @@
 #pragma link C++ class AliTPCSpaceCharge3D+;           // Distortions due to space charge in the TPC - full 3D calculation
 #pragma link C++ class AliTPCSpaceCharge2D2D+;         // Distortions due to space charge in the TPC - 2Dx2D calculation
 
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 #pragma link C++ class AliTPCSpaceCharge3DDriftLine+;
 #endif
 

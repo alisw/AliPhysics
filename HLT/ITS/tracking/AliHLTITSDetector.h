@@ -16,8 +16,8 @@ class AliITSDetTypeRec;
 /**
  * @class AliHLTITSDetector
  *
- * The AliHLTTPCCAHit class is the internal representation
- * of the TPC clusters for the AliHLTTPCCATracker algorithm.
+ * The GPUTPCHit class is the internal representation
+ * of the TPC clusters for the GPUTPCTracker algorithm.
  *
  */
 class AliHLTITSDetector 

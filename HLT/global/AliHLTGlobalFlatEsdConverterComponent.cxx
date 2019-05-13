@@ -611,7 +611,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  HLTWarning("Wrong number of dEdx TPC info");
 	}
 	else{
-	  AliHLTTPCdEdxInfo* info = &dEdxInfo->fdEdxInfo[tpcIter];	 
+	  AliHLTTPCdEdxInfo* info = &dEdxInfo->fdEdxInfo[tpcIter];
 	  
 	  float signalTot[4];
 	  float signalMax[4];
@@ -623,7 +623,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  signalTot[2] = info->fdEdxTotOROC2;
 	  signalTot[3] = info->fdEdxTotOROC;
 
-	  signalMax[0] = info->fdEdxMaxIROC; 
+	  signalMax[0] = info->fdEdxMaxIROC;
 	  signalMax[1] = info->fdEdxMaxOROC1;
 	  signalMax[2] = info->fdEdxMaxOROC2;
 	  signalMax[3] = info->fdEdxMaxOROC;
@@ -639,12 +639,12 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	  // We store incorrect qMax in the region and qTot in the qMax region
 	  // to reproduce incorrect implementation in offline AliTPCdEdxInfo...
 	  
-	  flatdEdxInfo.SetSignalTot( signalMax ); // !!! Achtung !!! 
+	  flatdEdxInfo.SetSignalTot( signalMax ); // !!! Achtung !!!
 	  flatdEdxInfo.SetSignalMax( signalTot ); // !!! Achtung !!!
 	  flatdEdxInfo.SetNumberOfClusters( ncl );
 	  flatdEdxInfo.SetNumberOfCrossedRows( nrows );
 
-	  flatdEdxInfo.SetTPCsignal(fBeamTypePbPb ? info->fdEdxMaxTPC : info ->fdEdxTotTPC, 0, info->nHitsIROC + info->nHitsOROC1 + info->nHitsOROC2);	   	  
+	  flatdEdxInfo.SetTPCsignal(fBeamTypePbPb ? info->fdEdxMaxTPC : info ->fdEdxTotTPC, 0, info->nHitsIROC + info->nHitsOROC1 + info->nHitsOROC2);
 	  dEdxFlag = 1;
 	}
       }

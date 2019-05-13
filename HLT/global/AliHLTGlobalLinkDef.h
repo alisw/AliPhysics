@@ -47,7 +47,7 @@
 #pragma link C++ class AliHLTAnalysisManagerComponent+;
 #pragma link C++ class AliHLTLumiRegComponent+;
 #pragma link C++ class AliAnalysisTaskExampleV+;
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 #pragma link C++ class AliHLTGlobalPromptRecoQAComponent+;
 #endif
 #ifdef ZMQ

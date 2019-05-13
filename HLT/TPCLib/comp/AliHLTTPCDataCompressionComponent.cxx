@@ -41,7 +41,7 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 #include "AliHLTTPCClusterStatComponent.h"
 #include "AliHLTTPCReverseTransformInfoV1.h"
 #endif
@@ -1205,7 +1205,7 @@ int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
     return iResult;
   }
 
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
   /*if ((iResult=CalculateDriftTimeTransformation(transform, 0, 0, fDriftTimeFactorA, fDriftTimeOffsetA))<0) return iResult;
   if (fVerbosity>0) HLTInfo("drift time transformation A side: m=%f n=%f", fDriftTimeFactorA, fDriftTimeOffsetA);
   if ((iResult=CalculateDriftTimeTransformation(transform, 18, 0, fDriftTimeFactorC, fDriftTimeOffsetC))<0) return iResult;
@@ -1215,7 +1215,7 @@ int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
   return 0;
 }
 
-#ifdef HAVE_ALITPCCOMMON
+#ifdef HAVE_ALIGPU
 /*template <class T> static inline int GenericCalculateDriftTimeTransformation(T& transform,
 									int slice, int padrow,
 									float& m, float& n,
