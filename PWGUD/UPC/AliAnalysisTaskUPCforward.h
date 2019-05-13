@@ -636,6 +636,105 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionIncoherentZNCanyZNAanyH;       //!
 
                                 /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes.
+                                 * ZNC=0n, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes.
+                                 * ZNC=0n, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionZNCzeroZNAanyH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes.
+                                 * ZNC=Xn, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionZNCanyZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * ZNC=Xn, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionZNCanyZNAanyH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * COHERENT, ZNC=0n, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionCoherentZNCzeroZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * COHERENT, ZNC=0n, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionCoherentZNCzeroZNAanyH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * COHERENT, ZNC=Xn, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionCoherentZNCanyZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * COHERENT, ZNC=Xn, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionCoherentZNCanyZNAanyH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * INCOHERENT, ZNC=0n, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionIncoherentZNCzeroZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * INCOHERENT, ZNC=0n, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionIncoherentZNCzeroZNAanyH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * INCOHERENT, ZNC=Xn, ZNA=0n.
+                                 */
+        TH1F*                   fDimuonPtDistributionIncoherentZNCanyZNAzeroH;         //!
+
+                                /**
+                                 * This histogram records the pt-ditribution
+                                 * of the dimuon pairs. This is divided in
+                                 * neutron emission classes and pt.
+                                 * INCOHERENT, ZNC=Xn, ZNA=Xn.
+                                 */
+        TH1F*                   fDimuonPtDistributionIncoherentZNCanyZNAanyH;         //!
+
+
+        //_______________________________
+
+                                /**
                                  * This histogram shows the angular distribution
                                  * of the positive muon in the rest frame of the
                                  * J/Psi. This histogram is needed to evaluate
@@ -953,7 +1052,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 15);
+        ClassDef(AliAnalysisTaskUPCforward, 18);
 };
 
 #endif
