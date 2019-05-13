@@ -89,11 +89,12 @@ AliHFTreeHandler::AliHFTreeHandler():
     fITSclsMapProng[iProng] = -9999;
     fTrackIntegratedLengthProng[iProng] = -9999.;
     fStartTimeResProng[iProng] = -9999.;
-    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
-      fPIDrawVector[iProng][iDet] = -9999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++)
+      fPIDrawVector[iProng][iDet] = -999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid+1; iDet++) {
       for(unsigned int iHypo=0; iHypo<knMaxHypo4Pid; iHypo++) {
-        fPIDNsigmaVector[iProng][iDet][iHypo] = -9999.;
-        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999999;      
+        fPIDNsigmaVector[iProng][iDet][iHypo] = -999.;
+        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999;      
       }
     }
   }
@@ -164,11 +165,12 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
     fITSclsMapProng[iProng] = -9999;
     fTrackIntegratedLengthProng[iProng] = -9999.;
     fStartTimeResProng[iProng] = -9999.;
-    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
-      fPIDrawVector[iProng][iDet] = -9999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++)
+      fPIDrawVector[iProng][iDet] = -999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid+1; iDet++) {
       for(unsigned int iHypo=0; iHypo<knMaxHypo4Pid; iHypo++) {
-        fPIDNsigmaVector[iProng][iDet][iHypo] = -9999.;
-        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999999;      
+        fPIDNsigmaVector[iProng][iDet][iHypo] = -999.;
+        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999;      
       }
     }
   }
@@ -554,7 +556,7 @@ double AliHFTreeHandler::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF
   if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
   else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
   else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return nsigmaTOF;
-  else return -9999.;
+  else return -999.;
 }
 
 //________________________________________________________________
