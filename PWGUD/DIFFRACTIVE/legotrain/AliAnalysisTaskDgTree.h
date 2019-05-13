@@ -85,7 +85,7 @@ class AliAnalysisTaskDgTree : public AliAnalysisTaskSE {
   Float_t fZNCTDC[4];
 
   
-  ClassDef(AliAnalysisTaskDgTree,2)
+  ClassDef(AliAnalysisTaskDgTree,3)
 };
 
 #endif
