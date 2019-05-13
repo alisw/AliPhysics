@@ -58,7 +58,8 @@ class AliHFTreeHandler : public TObject
 
     enum piddet {
       kTPC,
-      kTOF
+      kTOF,
+      kCombTPCTOF // must be the last element in the enum
     };
 
     enum optsingletrack {
@@ -205,8 +206,8 @@ class AliHFTreeHandler : public TObject
     int fITSclsMapProng[knMaxProngs];///prong track ITS cluster map
     float fTrackIntegratedLengthProng[knMaxProngs]; /// prong track integrated lengths
     float fStartTimeResProng[knMaxProngs]; /// prong track start time resolutions (for TOF)
-    float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///PID nsigma variables
-    int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///PID nsigma variables (integers)
+    float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables
+    int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables (integers)
     float fPIDrawVector[knMaxProngs][knMaxDet4Pid]; ///raw PID variables
     int fPidOpt; ///option for PID variables
     int fSingleTrackOpt; ///option for single-track variables
