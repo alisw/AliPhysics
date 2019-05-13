@@ -5466,9 +5466,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       if(fWho == 2){
 	if(fAreasPerEvent){
 	  if(!fTPC4Iso)
-	    ComputeConeAreaInEMCal(eta, phi, isoConeArea);
+	    ComputeConeAreaInEMCal(candidateEta, candidatePhi, isoConeArea);
 	  else
-	    ComputeConeAreaInTPC(eta, isoConeArea);
+	    ComputeConeAreaInTPC(candidateEta, isoConeArea);
 	}
 
 	if(fAnalysispPb){
@@ -5626,9 +5626,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       if(fWho == 2){
 	if(fAreasPerEvent){
 	  if(!fTPC4Iso)
-	    ComputeConeAreaInEMCal(eta, phi, isoConeArea);
+	    ComputeConeAreaInEMCal(candidateEta, candidatePhi, isoConeArea);
 	  else
-	    ComputeConeAreaInTPC(eta, isoConeArea);
+	    ComputeConeAreaInTPC(candidateEta, isoConeArea);
 	}
 
 	if(fAnalysispPb){
