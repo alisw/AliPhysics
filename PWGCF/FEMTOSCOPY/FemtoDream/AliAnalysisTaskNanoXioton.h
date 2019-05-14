@@ -12,6 +12,8 @@
 #include "AliFemtoDreamEvent.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamTrack.h"
+#include "AliFemtoDreamCascade.h"
+#include "AliFemtoDreamCascadeCuts.h"
 
 class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
  public:
@@ -34,6 +36,12 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
   void SetAntiProtonCuts(AliFemtoDreamTrackCuts* trkCuts) {
     fAntiProton = trkCuts;
   }
+  void SetXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
+    fXi = cascCuts;
+  }
+  void SetAntiXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
+    fAntiXi = cascCuts;
+  }
  private:
   bool fisLightWeight;//
   AliFemtoDreamEvent* fEvent;//!
@@ -44,6 +52,11 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
   TList* fProtonList;//!
   AliFemtoDreamTrackCuts* fAntiProton;//
   TList* fAntiProtonList;//!
+  AliFemtoDreamCascade* fCascade;//!
+  AliFemtoDreamCascadeCuts* fXi;//!
+  TList* fXiList;
+  AliFemtoDreamCascadeCuts* fAntiXi;//!
+  TList* fAntiXiList;
 
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
