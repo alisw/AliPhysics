@@ -8,9 +8,10 @@
 
 AliAnalysisTask* AddTaskPPvsUE()
 {
-
+  // set authomatically to true if MC
   Bool_t AnalysisMC= (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-  
+  // set to true if you wish to build corrections (memory consuming)
+  Bool_t AnalysisCorr = kTRUE; 
 
   // Get the pointer to the existing analysis manager via the static access method. 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -34,12 +35,14 @@ AliAnalysisTask* AddTaskPPvsUE()
 
    Bool_t is13TeV = kTRUE;
    task->SetAnalysisMC(AnalysisMC);
+   task->SetAnalysisCorr(AnalysisCorr);
    task->SetAnalysisType(kInputDataType);
    task->SetDebugLevel(0);
    task->SetEtaCut(0.8);
    task->SetVtxCut(10.0);
    task->SetPileUpRej(kTRUE);	
-   task->SetAveMultiInTrans(6.026); // VZ: to be checked
+   task->SetAveMultiInTrans(4.939);
+   task->SetAveGenMultiInTrans(7.392); // this is PYTHIA 8
 
    mgr->AddTask(task);
 
