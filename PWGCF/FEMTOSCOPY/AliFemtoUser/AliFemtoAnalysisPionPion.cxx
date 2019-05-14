@@ -754,6 +754,7 @@ AliFemtoConfigObject AliFemtoAnalysisPionPion::GetConfiguration() const
   return AliFemtoConfigObject::BuildMap()
                   ("_class", "AliFemtoAnalysisPionPion")
                   ("is_mc", fMCAnalysis)
+                  ("track_filtermask", fFilterMask)
                   ("events_to_mix", NumEventsToMix())
                   ("collection_size_min", fMinSizePartCollection)
                   ("mix_vertex_z_bins", fVertexZBins)
