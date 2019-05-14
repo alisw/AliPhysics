@@ -14,11 +14,16 @@
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamCascade.h"
 #include "AliFemtoDreamCascadeCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliFemtoDreamPairCleaner.h"
+#include "AliFemtoDreamPartCollection.h"
 
 class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskNanoXioton();
   AliAnalysisTaskNanoXioton(const char* name);
+  AliAnalysisTaskNanoXioton(const AliAnalysisTaskNanoXioton& analysis) = default;
+  AliAnalysisTaskNanoXioton& operator=(const AliAnalysisTaskNanoXioton& analysis) = default;
   virtual ~AliAnalysisTaskNanoXioton();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -42,6 +47,9 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
   void SetAntiXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
     fAntiXi = cascCuts;
   }
+  void SetCorrelationConfig(AliFemtoDreamCollConfig* config) {
+    fConfig=config;
+  }
  private:
   bool fisLightWeight;//
   AliFemtoDreamEvent* fEvent;//!
@@ -57,7 +65,11 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
   TList* fXiList;
   AliFemtoDreamCascadeCuts* fAntiXi;//!
   TList* fAntiXiList;
-
+  AliFemtoDreamCollConfig *fConfig; //
+  AliFemtoDreamPairCleaner *fPairCleaner;   //!
+  AliFemtoDreamPartCollection *fPartColl;   //!
+  TList *fResults;//!
+  TList *fResultsQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
 
