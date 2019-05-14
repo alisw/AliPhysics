@@ -43,10 +43,13 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
       false, true, false);
+  XiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
       false, true, false);
+  XiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
       false, true, false);
+  XiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
@@ -63,12 +66,15 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   AliFemtoDreamTrackCuts *AntiXiNegCuts =
       AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
   AntiXiNegCuts->SetCutCharge(-1);
+  AntiXiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
       false, true, false);
   AntiXiPosCuts->SetCutCharge(1);
+  AntiXiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *AntiXiBachCuts =
       AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
   AntiXiBachCuts->SetCutCharge(1);
+  AntiXiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
 
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
