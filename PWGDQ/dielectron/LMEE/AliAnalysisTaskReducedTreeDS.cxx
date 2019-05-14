@@ -72,8 +72,6 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fMinPtCut(0.2),
   fMaxEtaCut(0.8),
   fMaxTPCNsigmaEleCut(5.),
-  fTriggerName("kINT7"),
-  fOutputContainer(0x0),
   fTree(0x0),
   fPIDResponse(0x0),
   fEvent(0x0),
@@ -102,6 +100,12 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fIsPileupFromSPD(kFALSE),
   fIsPileupFromSPDInMultBins(kFALSE),
   fIsPileupMV(kFALSE),
+  fIskINT7(kFALSE),
+  fIskCentral(kFALSE),
+  fIskSemiCentral(kFALSE),
+  fIskHighMult(kFALSE),
+  fIskHighMultV0(kFALSE),
+  fIskHighMultSPD(kFALSE),
   fTrackMomentum(0),
   fTrackCharge(0),
   fTrackDCAxy(0),
@@ -199,8 +203,6 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fMinPtCut(0.2),
   fMaxEtaCut(0.8),
   fMaxTPCNsigmaEleCut(5.),
-  fTriggerName("kINT7"),
-  fOutputContainer(0x0),
   fTree(0x0),
   fPIDResponse(0x0),
   fEvent(0x0),
@@ -229,6 +231,12 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fIsPileupFromSPD(kFALSE),
   fIsPileupFromSPDInMultBins(kFALSE),
   fIsPileupMV(kFALSE),
+  fIskINT7(kFALSE),
+  fIskCentral(kFALSE),
+  fIskSemiCentral(kFALSE),
+  fIskHighMult(kFALSE),
+  fIskHighMultV0(kFALSE),
+  fIskHighMultSPD(kFALSE),
   fTrackMomentum(0),
   fTrackCharge(0),
   fTrackDCAxy(0),
@@ -320,8 +328,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
 
   DefineInput(0,TChain::Class());
-  DefineOutput(1, THashList::Class());  // THashList of event statistics information
-  DefineOutput(2, TTree::Class());  // reduced information tree
+  DefineOutput(1, TTree::Class());  // reduced information tree
 
 }
 //_______________________________________________________________________________________________
@@ -335,10 +342,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  fOutputContainer = new THashList();
-  fOutputContainer->SetOwner(kTRUE);
-
-  fTree = new TTree(Form("EventTree_%s",fTriggerName.Data()),Form("Reduced event tree in %s",fTriggerName.Data()));
+  fTree = new TTree("EventTree","Reduced event tree for dielectron");
   fTree->SetDirectory(0);//force memory-resident tree
 
   fTree->Branch("fRunNumber",&fRunNumber,"fRunNumber/I");
@@ -355,6 +359,14 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fIsPileupFromSPD",&fIsPileupFromSPD,"fIsPileupFromSPD/O");
   fTree->Branch("fIsPileupFromSPDInMultBins",&fIsPileupFromSPDInMultBins,"fIsPileupFromSPDInMultBins/O");
   fTree->Branch("fIsPileupMV",&fIsPileupMV,"fIsPileupMV/O");
+
+  fTree->Branch("fIskINT7",&fIskINT7,"fIskINT7/O");
+  fTree->Branch("fIskCentral",&fIskCentral,"fIskCentral/O");
+  fTree->Branch("fIskSemiCentral",&fIskSemiCentral,"fIskSemiCentral/O");
+
+  fTree->Branch("fIskHighMult",&fIskHighMult,"fIskHighMult/O");
+  fTree->Branch("fIskHighMultV0",&fIskHighMultV0,"fIskHighMultV0/O");
+  fTree->Branch("fIskHighMultSPD",&fIskHighMultSPD,"fIskHighMultSPD/O");
 
   fTree->Branch("fVertex",fVertex,"fVertex[3]/F");
   fTree->Branch("fNContributor",&fNContributor,"fNContributor/I");
@@ -468,8 +480,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fMCFirstMotherIndex",&fMCFirstMotherIndex);
   fTree->Branch("fMCFirstMotherPdgCode",&fMCFirstMotherPdgCode);
 
-  PostData(1,fOutputContainer);
-  PostData(2,fTree);
+  PostData(1,fTree);
 
 }
 //_______________________________________________________________________________________________
@@ -491,6 +502,21 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     AliError("event type is neither ESD nor AOD. return.");
     return;
   }
+
+  fIskINT7        = kFALSE;
+  fIskCentral     = kFALSE;
+  fIskSemiCentral = kFALSE;
+  fIskHighMult    = kFALSE;
+  fIskHighMultV0  = kFALSE;
+  fIskHighMultSPD = kFALSE;
+
+  UInt_t SelectMask = fInputHandler->IsEventSelected();
+  fIskINT7        = SelectMask & AliVEvent::kINT7;
+  fIskCentral     = SelectMask & AliVEvent::kCentral;
+  fIskSemiCentral = SelectMask & AliVEvent::kSemiCentral;
+  fIskHighMult    = SelectMask & AliVEvent::kHighMult;
+  fIskHighMultV0  = SelectMask & AliVEvent::kHighMultV0;
+  fIskHighMultSPD = SelectMask & AliVEvent::kHighMultSPD;
 
   //AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();//for ESD
   //cout << "eventHandler = " << eventHandler << endl;
@@ -716,7 +742,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     //TOF info
     Bool_t isTIME   = status & AliVTrack::kTIME;
     Bool_t isTOFout = status & AliVTrack::kTOFout;
-    Bool_t isTOFOK = isTIME & isTOFout;
+    Bool_t isTOFOK  = isTIME & isTOFout;
     track->GetIntegratedTimes(expt); 
     Double_t length = TMath::C() * expt[0] * 1e-12;// m
     Double_t time   = track->GetTOFsignal();       //ps

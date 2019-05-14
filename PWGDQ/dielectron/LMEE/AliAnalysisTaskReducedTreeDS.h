@@ -12,7 +12,6 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     void SetMinPtCut(Float_t min){fMinPtCut = min;}
     void SetMaxEtaCut(Float_t max){fMaxEtaCut = max;}
     void SetMaxTPCNsigmaEleCut(Float_t max){fMaxTPCNsigmaEleCut = max;}
-    void SetTriggerName(TString name){fTriggerName = name;}
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -34,8 +33,6 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Float_t fMinPtCut;
     Float_t fMaxEtaCut;
     Float_t fMaxTPCNsigmaEleCut;
-    TString fTriggerName;//trigger name for output tree name
-    THashList *fOutputContainer;
     TTree *fTree;
     AliPIDResponse *fPIDResponse;     //! PID response object
     AliVEvent *fEvent; 
@@ -65,6 +62,13 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Bool_t fIsPileupFromSPDInMultBins;
     Bool_t fIsPileupMV;//SPD multi vertexer
 
+    Bool_t fIskINT7;
+    Bool_t fIskCentral;
+    Bool_t fIskSemiCentral;
+
+    Bool_t fIskHighMult;
+    Bool_t fIskHighMultV0;
+    Bool_t fIskHighMultSPD;
 
     vector <TVector3> fTrackMomentum;//use TVector3
     vector<Int_t>fTrackCharge;
@@ -168,7 +172,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 1);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 2);
 
 };
 
