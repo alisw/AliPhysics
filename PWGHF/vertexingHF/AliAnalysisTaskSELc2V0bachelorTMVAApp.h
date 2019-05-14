@@ -152,6 +152,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   void SetUsePIDresponseForNsigma(Bool_t flag) {fUsePIDresponseForNsigma = flag;}
   Bool_t GetUsePIDresponseForNsigma() const {return fUsePIDresponseForNsigma;}
+
+  void SetNVars(Int_t n) {fNVars = n;}
+  Int_t GetNVars() const {return fNVars;}
   
  private:
   
@@ -338,9 +341,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   Bool_t fUsePIDresponseForNsigma;  /// flag to decide if to take the nSigma from the PIDresponse or from AliAODPidHF
 
+  Int_t fNVars;  /// Number of training variables
   
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 6); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 7); /// class for Lc->p K0
   /// \endcond    
 };
 

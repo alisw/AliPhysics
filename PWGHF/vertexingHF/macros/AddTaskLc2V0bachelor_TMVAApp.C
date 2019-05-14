@@ -1,6 +1,6 @@
 class AliAnalysisTaskSELc2V0bachelorTMVAApp;
 
-AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString library = "_6_12", TString finname="Lc2V0bachelorCuts.root",
+AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars, TString library = "_6_12", TString finname="Lc2V0bachelorCuts.root",
 								    Float_t ptMin=0, Float_t ptMax=24,
 								    Bool_t theMCon=kTRUE,
 								    Bool_t fillTree=kFALSE,
@@ -56,12 +56,16 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(TString libr
     return NULL;
   }
   
-  TString namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,bachelorP,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,bachTPCmom";
+  TString namesTMVAvars;
+  if (nvars == 14) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,bachelorP,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,bachTPCmom";
+  else if (nvars == 11) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+  else if (nvars == 10) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
 
   //CREATE THE TASK
   printf("CREATE TASK\n");
   AliAnalysisTaskSELc2V0bachelorTMVAApp *task = new AliAnalysisTaskSELc2V0bachelorTMVAApp("AliAnalysisTaskSELc2V0bachelorTMVAApp", RDHFCutsLctoV0anal, onTheFly);
   //  task->SetMVReader(fBDTReader);
+  task->SetNVars(nvars);
   task->SetNamesTMVAVariables(namesTMVAvars);
   task->SetTMVAlibName("libvertexingHFTMVA.so");
   task->SetTMVAlibPtBin(library);
