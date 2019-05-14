@@ -478,9 +478,10 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
       this->fHasITSHit = true;
     }
   }
-  if (fVTrack->IsOn(AliVTrack::kTPCrefit)) {
-    fTPCRefit = true;
-  }
+//  if (fVTrack->IsOn(AliVTrack::kTPCrefit)) {
+//    //doesn't seem to work for nanos.
+//    fTPCRefit = true;
+//  }
   if (fVTrack->GetTOFBunchCrossing() == 0) {
     this->fTOFTiming = true;
   } else {
