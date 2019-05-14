@@ -209,8 +209,8 @@ void AliFemtoDreamEvent::SetEvent(AliVEvent *evt) {
   this->fisPileUp = false;
   this->fPassAliEvtSelection = true;
 
-  this->fNSPDClusterLy0 = evt->GetNumberOfITSClusters(0);
-  this->fNSPDClusterLy1 = evt->GetNumberOfITSClusters(1);
+  this->fNSPDClusterLy0 = 0;
+  this->fNSPDClusterLy1 = nanoHeader->GetVarIndex("MultSelection.SPDClusters.Value");
   static const Int_t kRefMult =
       nanoHeader->GetVarIndex("MultSelection.RefMult08.Value");
   if (kRefMult != -1) {
