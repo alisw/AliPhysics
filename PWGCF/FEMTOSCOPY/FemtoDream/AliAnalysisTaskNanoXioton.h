@@ -61,9 +61,9 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
   AliFemtoDreamTrackCuts* fAntiProton;//
   TList* fAntiProtonList;//!
   AliFemtoDreamCascade* fCascade;//!
-  AliFemtoDreamCascadeCuts* fXi;//!
+  AliFemtoDreamCascadeCuts* fXi;//
   TList* fXiList;
-  AliFemtoDreamCascadeCuts* fAntiXi;//!
+  AliFemtoDreamCascadeCuts* fAntiXi;//
   TList* fAntiXiList;
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
