@@ -254,7 +254,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00000113","11111110d7032230000","32c010708","0103603700000000","0153503000000000");
     cuts.AddCutHeavyMesonCalo("00000113","11111110e7032230000","32c010708","0103603700000000","0153503000000000");
     cuts.AddCutHeavyMesonCalo("00000113","11111110f7032230000","32c010708","0103603700000000","0153503000000000");
-
+  } else if( trainConfig == 130)   { // no background calculation
+    cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","32b110008","0103603700000000","0453503000000000"); // with TPC refit + ITS requirement
     // ---------------------------------
     // systematic studies 7 TeV (PHOS)
     // ---------------------------------
@@ -363,6 +364,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // 0-0.85
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // 0-0.75
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // 0-0.7
+  } else if(trainConfig == 170)  { // Standard PHOS
+    cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32b110708","0103603n00000000","0453503000000000"); // no bck calculation
     // PHOS pp 5 TeV
   } else if(trainConfig == 190)  { // Standard PHOS  with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonCalo("00010113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // INT7
