@@ -68,6 +68,8 @@
 #include "AliESDEvent.h"
 #include "AliPIDResponse.h"
 #include "TTreeStream.h"
+#include "AliCentrality.h"
+#include "AliMultSelection.h"
 #include "AliESDtools.h"
 
 
@@ -751,7 +753,7 @@ Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose) {
   fgInstance->fEvent->ConnectTracks();
   return 2;
 }
-/// Find (biggest) pile-up TPC vertex  - high eficiency for the PbPb - for pp should be still opimized
+/// Find (biggest) pile-up TPC vertex  - high efficiency for the PbPb - for pp should be still optimized
 /// Cache pileup vertex information into  fTPCVertexInfo
 /// \param entry
 /// \param verbose
@@ -802,7 +804,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
 }
 
 
-/// DumpEvent varaibles ito the tree
+/// DumpEvent variables ito the tree
 /// \return
 Int_t AliESDtools::DumpEventVariables() {
   if (fStreamer== nullptr) {
@@ -850,16 +852,22 @@ Int_t AliESDtools::DumpEventVariables() {
   ULong64_t bunchCrossID = (ULong64_t)fEvent->GetBunchCrossNumber();
   ULong64_t periodID     = (ULong64_t)fEvent->GetPeriodNumber();
   ULong64_t gid = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
-  Short_t   fEventMult = fEvent->GetNumberOfTracks();
+  Short_t   eventMult = fEvent->GetNumberOfTracks();
   ULong64_t triggerMask = fEvent->GetTriggerMask();
-  /// centrality
-  //if (MultSelection) {
-  //    if (fUseCouts)  std::cout << " Info::marsland: Centralitity is taken from MultSelection " << std::endl;
-  //    fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-  //  } else if (esdCentrality) {
-  //    if (fUseCouts)  std::cout << " Info::marsland: Centralitity is taken from esdCentrality " << std::endl;
-  //    fCentrality = esdCentrality->GetCentralityPercentile("V0M");
-  //  }
+  const Int_t  kNEstimators=27;
+  TVectorF centrality(kNEstimators);
+  //const char* centEstStr[] = {"V0M","CL0","CL1"};
+  const char* centEstStr[] = {"V0M","CL0","CL1","TRK","TKL","V0MvsFMD","TKLvsV0M","ZEMvsZDC","kV0A","V0C","ZNA","ZNC","ZPA","ZPC","CND","FMD","NPA","V0A0","V0A123","V0A23","V0C01","V0S","V0MEq","V0AEq","V0CEq","SPDClusters","SPDTracklets"};
+
+  AliMultSelection* MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
+  AliCentrality    *esdCentrality = fEvent->GetCentrality();
+
+  if (MultSelection) {
+    for (Int_t i=0;i<kNEstimators;i++) centrality[i]=MultSelection->GetMultiplicityPercentile(centEstStr[i]);
+  } else if (esdCentrality) {
+    for (Int_t i=0;i<kNEstimators;i++) centrality[i]=esdCentrality->GetCentralityPercentile(centEstStr[i]);
+  }
+
   const AliESDVertex *vertex = fEvent->GetPrimaryVertexTracks();
   const AliESDVertex *vertexSPD= fEvent->GetPrimaryVertexTracks();
   const AliESDVertex *vertexTPC= fEvent->GetPrimaryVertexTracks();
@@ -869,7 +877,7 @@ Int_t AliESDtools::DumpEventVariables() {
   fVz   =vertex->GetZ();
   Int_t primMult    = vertex->GetNContributors();
   Int_t TPCMult = 0;
-  Int_t eventMult = fEvent->GetNumberOfESDTracks();
+  Int_t eventMultESD = fEvent->GetNumberOfESDTracks();
   Int_t nTracksStored   = fEvent->GetNumberOfTracks();
   for (Int_t iTrack=0;iTrack<nTracksStored;++iTrack){
     AliESDtrack *track = fEvent->GetTrack(iTrack);
@@ -888,12 +896,14 @@ Int_t AliESDtools::DumpEventVariables() {
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
                      "tpcMult="              << TPCMult               <<  //  TPC multiplicity
-                     "eventMult="            << fEventMult             <<  //  event multiplicity
+                     "eventMult="            << eventMult             <<  //  event multiplicity
+                     "eventMultESD="         << eventMultESD           <<  //  event multiplicity ESD
                      "nTracksStored="        << nTracksStored          <<  // number of sored tracks
                      "primMult="             << primMult         <<  //  #prim tracks
                      "tpcClusterMult="       << tpcClusterMultiplicity <<  // tpc cluster multiplicity
                      "tpcTrackBeforeClean=" << tpcTrackBeforeClean <<   // tpc track before cleaning
                      "itsTracklets="         << itsNumberOfTracklets   <<  // number of ITS tracklets
+                     "centrality.="          <<&centrality<<                // vector of centrality estimators
                      //
                      "tZeroMult.="           << &tZeroMult             <<  // T0 multiplicity
                      "vZeroMult.="           << &vZeroMult             <<  // V0 multiplicity
