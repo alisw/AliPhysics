@@ -215,9 +215,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     // ---------------------------------
 
   } else if( trainConfig == 120)  {
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","30c010708","0103603700000000","0153503000000000"); // with TPC refit (new standard)
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","322010708","0103603700000000","0153503000000000"); // with ITS requirement
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32c010708","0103603700000000","0153503000000000"); // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32b110708","0103603700000000","0153503000000000"); // with TPC refit (new standard)
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111040032230000","32b110708","0103603700000000","0153503000000000"); // no track matching
   } else if( trainConfig == 121)  {  // pT Cut
     cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32c000708","0103603700000000","0153503000000000"); // pt>0.075
     cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32c020708","0103603700000000","0153503000000000"); // pt>0.125
@@ -255,7 +254,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     // ---------------------------------
 
   } else if( trainConfig == 150 ) { // PHOS 7 TeV
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411043012300000","32b110708","0103603n00000000","0153503000000000"); // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411040012300000","32b110708","0103603n00000000","0153503000000000"); // without track matching
 
     // *************Variations in AliConvEventCuts**************************
   } else if (trainConfig == 151) { // remove pileup
