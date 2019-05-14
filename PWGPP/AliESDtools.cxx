@@ -843,6 +843,7 @@ Int_t AliESDtools::DumpEventVariables() {
   for (Int_t i=0;i<64;i++) { vZeroMult[i] = fEvent->GetVZEROData()-> GetMultiplicity(i); }
   for (Int_t i=0;i<6;i++)  { itsClustersPerLayer[i] = multObj->GetNumberOfITSClusters(i); }
   Int_t runNumber=fEvent->GetRunNumber();
+  Double_t timeStampS=fEvent->GetTimeStamp();
   Double_t timeStamp= fEvent->GetTimeStampCTPBCCorr();
   Double_t bField=fEvent->GetMagneticField();
   ULong64_t orbitID      = (ULong64_t)fEvent->GetOrbitNumber();
@@ -869,7 +870,8 @@ Int_t AliESDtools::DumpEventVariables() {
   Int_t primMult    = vertex->GetNContributors();
   Int_t TPCMult = 0;
   Int_t eventMult = fEvent->GetNumberOfESDTracks();
-  for (Int_t iTrack=0;iTrack<eventMult;++iTrack){
+  Int_t nTracksStored   = fEvent->GetNumberOfTracks();
+  for (Int_t iTrack=0;iTrack<nTracksStored;++iTrack){
     AliESDtrack *track = fEvent->GetTrack(iTrack);
     if (track== nullptr) continue;
     if (track->IsOn(AliESDtrack::kTPCin)) TPCMult++;
@@ -878,14 +880,16 @@ Int_t AliESDtools::DumpEventVariables() {
   (*fStreamer)<<"events"<<
                      "run="                  << runNumber                 <<  // run Number
                      "bField="               << bField                   <<  // b field
-                     "gid="                  << gid              <<  // global event ID
-                     "timestamp="            << timeStamp             <<  // timestamp
+                     "gid="                  << gid                   <<  // global event ID
+                     "timeStampS="           << timeStampS            <<  // time stamp in seconds -event building
+                     "timestamp="            << timeStamp             <<  // more precise timestamp based on LHC clock
                      "triggerMask="          << triggerMask           <<  //trigger mask
                      "vz="                   << fVz                    <<  // vertex Z
                      "tpcvz="                << TPCvZ                 <<
                      "spdvz="                << SPDvZ                 <<
                      "tpcMult="              << TPCMult               <<  //  TPC multiplicity
                      "eventMult="            << fEventMult             <<  //  event multiplicity
+                     "nTracksStored="        << nTracksStored          <<  // number of sored tracks
                      "primMult="             << primMult         <<  //  #prim tracks
                      "tpcClusterMult="       << tpcClusterMultiplicity <<  // tpc cluster multiplicity
                      "tpcTrackBeforeClean=" << tpcTrackBeforeClean <<   // tpc track before cleaning
