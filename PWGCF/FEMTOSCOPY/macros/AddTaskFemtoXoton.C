@@ -8,7 +8,7 @@
 #include "AliFemtoDreamCollConfig.h"
 
 AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
-                                             const char *cutVariation = "0") {
+                                     const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -37,10 +37,54 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
 
+  //Cascade Cuts
+  AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
+      false, false);
+  CascadeCuts->SetXiCharge(-1);
+  AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
+      false, true, false);
+  AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
+      false, true, false);
+  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
+      false, true, false);
+
+  CascadeCuts->Setv0Negcuts(XiNegCuts);
+  CascadeCuts->Setv0PosCuts(XiPosCuts);
+  CascadeCuts->SetBachCuts(XiBachCuts);
+  CascadeCuts->SetPDGCodeCasc(3312);
+  CascadeCuts->SetPDGCodev0(3122);
+  CascadeCuts->SetPDGCodePosDaug(2212);
+  CascadeCuts->SetPDGCodeNegDaug(-211);
+  CascadeCuts->SetPDGCodeBach(-211);
+
+  AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
+      false, false);
+  AntiCascadeCuts->SetXiCharge(1);
+  AliFemtoDreamTrackCuts *AntiXiNegCuts =
+      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
+  AntiXiNegCuts->SetCutCharge(-1);
+  AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
+      false, true, false);
+  AntiXiPosCuts->SetCutCharge(1);
+  AliFemtoDreamTrackCuts *AntiXiBachCuts =
+      AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
+  AntiXiBachCuts->SetCutCharge(1);
+
+  AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
+  AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
+  AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
+  AntiCascadeCuts->SetPDGCodeCasc(-3312);
+  AntiCascadeCuts->SetPDGCodev0(-3122);
+  AntiCascadeCuts->SetPDGCodePosDaug(211);
+  AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
+  AntiCascadeCuts->SetPDGCodeBach(-211);
+
   if (suffix != "0" && suffix != "999") {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
+    CascadeCuts->SetMinimalBooking(true);
+    AntiCascadeCuts->SetMinimalBooking(true);
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
@@ -162,6 +206,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
+  task->SetXiCuts(CascadeCuts);
+  task->SetAntiXiCuts(AntiCascadeCuts);
 
   mgr->AddTask(task);
 
@@ -178,19 +224,39 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   mgr->ConnectOutput(task, 1, coutputEvtCuts);
 
   TString TrackCutsName = Form("%sTrackCuts%s", addon.Data(), suffix.Data());
-  AliAnalysisDataContainer *couputTrkCuts =
-      mgr->CreateContainer(TrackCutsName.Data(), TList::Class(),
-                           AliAnalysisManager::kOutputContainer,
-                           Form("%s:%s", file.Data(), TrackCutsName.Data()));
+  AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
+      TrackCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), TrackCutsName.Data()));
   mgr->ConnectOutput(task, 2, couputTrkCuts);
 
-  TString AntiTrackCutsName =
-      Form("%sAntiTrackCuts%s", addon.Data(), suffix.Data());
+  TString AntiTrackCutsName = Form("%sAntiTrackCuts%s", addon.Data(),
+                                   suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
       AntiTrackCutsName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
   mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
+
+  AliAnalysisDataContainer *coutputCascadeCuts;
+  TString CascadeCutsName = Form("%sCascadeCuts", addon.Data());
+  coutputCascadeCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      CascadeCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), CascadeCutsName.Data()));
+  mgr->ConnectOutput(task, 4, coutputCascadeCuts);
+
+  AliAnalysisDataContainer *coutputAntiCascadeCuts;
+  TString AntiCascadeCutsName = Form("%sAntiCascadeCuts", addon.Data());
+  coutputAntiCascadeCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      AntiCascadeCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiCascadeCutsName.Data()));
+  mgr->ConnectOutput(task, 5, coutputAntiCascadeCuts);
 
   return task;
 }
