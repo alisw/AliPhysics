@@ -61,7 +61,7 @@ fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
-bLogPSMod(true),fPSMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),fEMCalMultvZvtx(0),
+bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
 fHistEvsPt(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),fHistBinCheckEvtPl(0), fHistBinCheckEvtPl2(0),
@@ -91,7 +91,7 @@ fEventCutList(0),
 
 fHistClusPairInvarMasspT(0),fHistPi0(0),fMAngle(0),fPtAngle(0),fMassPionRej(0),fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fHistEOverPvE(0),fHistPOverEvE(0),fHistPSDistU(0),fHistPSDistV(0),
 fRand(0),fClusEnergy(0),fDoRotBkg(0),fDoClusMixing(0),fDoPosSwapMixing(0),fNRotBkgSamples(1),fPi0Cands(0),
-bLogPSMod(true),fPSMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
+bLogPSMod(true),fPSMassPtMap(0),fESMassPtMap(0),fUScaleMatrix(0),fVScaleMatrix(0),
 fEMCalMultvZvtx(0),
 fHistClusMCDE(0),fHistClusMCDPhiDEta(0),fHistPi0MCDPt(0),fHistEtaMCDPt(0),fHistPi0MCDPhiDEta(0),fHistEtaMCDPhiDEta(0),
 fUseParamMassSigma(0),fPi0NSigma(2.),fPi0AsymCut(1.0),
@@ -872,13 +872,17 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
       // Initializing the PS Modification histograms
       fPSMassPtMap = new THnSparseF("fPSMassPtMap","fPSMassPtMap",dimThnMod,nBinsThnMod,minThnMod,maxThnMod);
+      fESMassPtMap = new THnSparseF("fESMassPtMap","fESMassPtMap",dimThnMod,nBinsThnMod,minThnMod,maxThnMod);
       for(Int_t i=0;i<dimThnMod;i++)
       {
         fPSMassPtMap->GetAxis(i)->SetTitle(titleThnMod[i]);
+        fESMassPtMap->GetAxis(i)->SetTitle(titleThnMod[i]);
 
         fPSMassPtMap->SetBinEdges(i, binEdgesThnMod[i]);
+        fESMassPtMap->SetBinEdges(i, binEdgesThnMod[i]);
       }
       fOutput->Add(fPSMassPtMap);
+      fOutput->Add(fESMassPtMap);
 
       fUScaleMatrix = new THnSparseF("UScaleMatrix","UScaleMatrix",dimThnModMatrix,nBinsThnModMatrix,minThnModMatrix,maxThnModMatrix);
       fVScaleMatrix = new THnSparseF("VScaleMatrix","VScaleMatrix",dimThnModMatrix,nBinsThnModMatrix,minThnModMatrix,maxThnModMatrix);
@@ -1392,10 +1396,10 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 	{
 		if (MixMode == 0) {
 			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin);
-			cout<<"....  Pool Manager Created for Mixed Tracks ...."<<endl;
+			AliInfo("....  Pool Manager Created for Mixed Tracks ....");
 		} else { //MixMode == 1
 			fPoolMgr = new AliEventPoolManager(fPoolSize, fTrackDepth, nCentBins, centBins, nZvtxBins, zvtxbin, nUsedEvtPlaneBins, fEventPlaneArray, kUsedPi0TriggerPtBins, fArray_G_Bins);
-			cout<<"....  Pool Manager Created for Mixed Triggers ...."<<endl;
+			AliInfo("....  Pool Manager Created for Mixed Triggers ....");
 		}
 		fPoolMgr->SetTargetValues(fTrackDepth, fTargetFraction, 5);  //pool is ready at 0.1*fTrackDepth = 5000 or events =5
 		//save this pool by default
@@ -1408,7 +1412,7 @@ void AliAnalysisTaskGammaHadron::InitEventMixer(Int_t MixMode)
 		if (fSEvMEv != 2 ) {
 			fPoolMgr->ClearPools();
 		}
-		cout<<"....  Pool Manager Provided From File ...."<<endl;
+		AliInfo("....  Pool Manager Provided From File ....");
 	}
 
 	//..Check binning of pool manager (basic dimensional check for the time being) to see whether external pool fits the here desired one??
@@ -1489,7 +1493,7 @@ void AliAnalysisTaskGammaHadron::InitClusMixer()
 	}
 
 	//Using same trackdepth, etc., as mixed event mode.
-	cout<<"....  Pool Manager Created for cluster mixing ...."<<endl;
+	AliInfo("....  Pool Manager Created for cluster mixing ....");
 	//fPoolMgr = new AliEventPoolManager(fPoolSize,fTrackDepth,nCentBins,centBins,nZvtxBins,zvtxbin);
 	fPoolMgr = new AliEventPoolManager(fPoolSize,fClusterDepth,nEMCalMultBins,emcalMultBins,nClusZvtxBins,zClusvtxbin);
 	fPoolMgr->SetTargetValues(fClusterDepth,0.05,5); //pool is ready at 0.05*fClusterDepth = 500 or events =5
@@ -1663,7 +1667,7 @@ Bool_t AliAnalysisTaskGammaHadron::Run()
 	if (!fCaloClusters)
 	{
 		fCaloClusters = (TClonesArray*)GetClusterContainer(0);
-		cout<<"load calo clusters"<<endl;
+		//cout<<"load calo clusters"<<endl;
 	}
 	//..Get the emcal cells
 	if (!fCaloCells)
@@ -1677,7 +1681,7 @@ Bool_t AliAnalysisTaskGammaHadron::Run()
 			fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
 			if (!fCaloCells) AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data()));
 		}
-		cout<<"load calo cells"<<endl;
+		//cout<<"load calo cells"<<endl;
 	}
 
 	if (!fGeom)
@@ -1756,7 +1760,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 
 				if(!bgTracks)
 				{
-					cout<<"could not retrieve TObjArray from EventPool!"<<endl;
+					AliError("could not retrieve TObjArray from EventPool!");
 				}
 				//..Loop over clusters and fill histograms
 				if(fGammaOrPi0==0) CorrelateClusterAndTrack(0,bgTracks,0,1.0/nMix);//correlate with mixed event
@@ -2259,6 +2263,18 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                 } else {
                   FillPi0CandsHist(CaloClusterVec,CaloClusterVecSwap,CaloClusterVecPi0Swap,fMaxClusM02,Weight,2,iMCIndexClus1,iMCIndexClus2);
                 }
+
+                // Energy Swap Map
+                CaloClusterVecSwap = CaloClusterVec2;
+                CaloClusterVecSwap.SetE(CaloClusterVec3.E());
+                CaloClusterVecPi0Swap = CaloClusterVec + CaloClusterVecSwap;
+
+                ModArray[2] = CaloClusterVecPi0Swap.M();// Final Mass
+                ModArray[3] = CaloClusterVecPi0Swap.Pt();// Final Pt
+                fESMassPtMap->Fill(ModArray,Weight);
+
+
+
                 // ======================================================================
                 // Now, do it again using the energy of cluster 1 (swapping pos 3 with pos 1)
                 CaloClusterVecSwap = CaloClusterVec;
@@ -2296,9 +2312,17 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                   FillPi0CandsHist(CaloClusterVecSwap,CaloClusterVec2,CaloClusterVecPi0Swap,fMaxClusM02,Weight,2,iMCIndexClus2,iMCIndexClus1);
                 }
 
+                // Energy Swap Map
+                CaloClusterVecSwap = CaloClusterVec;
+                CaloClusterVecSwap.SetE(CaloClusterVec3.E());
+
+                CaloClusterVecPi0Swap = CaloClusterVecSwap + CaloClusterVec2;
+
+                ModArray[2] = CaloClusterVecPi0Swap.M();// Final Mass
+                ModArray[3] = CaloClusterVecPi0Swap.Pt();// Final Pt
+                fESMassPtMap->Fill(ModArray,Weight);
               }
             }
-
           }
 				}
 				fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt());
