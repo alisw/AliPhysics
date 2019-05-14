@@ -506,7 +506,8 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
     return;
   }
 
-  this->fdEdxTPC = nanoTrack->GetTPCsignal();
+//  this->fdEdxTPC = nanoTrack->GetTPCsignal();
+  this->fdEdxTPC =0;
   AliPID::EParticleType particleID[5] = {AliPID::kElectron, AliPID::kMuon,
                                          AliPID::kPion, AliPID::kKaon,
                                          AliPID::kProton};
