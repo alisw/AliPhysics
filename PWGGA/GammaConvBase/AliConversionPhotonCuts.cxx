@@ -117,6 +117,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fMaxZ(1000),
   fMinClsTPC(0.),
   fMinClsTPCToF(0.),
+  fMaxTPCChi2NDF(0.),
   fLineCutZRSlope(0.),
   fLineCutZValue(0),
   fLineCutZRSlopeMin(0.),
@@ -206,6 +207,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoTPCdEdxafter(NULL),
   fHistoTPCdEdxSigbefore(NULL),
   fHistoTPCdEdxSigafter(NULL),
+  fHistoTPCChi2NDFBefore(NULL),
+  fHistoTPCChi2NDFAfter(NULL),
+  fHistoTPCChi2NDF2D(NULL),
   fHistoKappaafter(NULL),
   fHistoTOFbefore(NULL),
   fHistoTOFSigbefore(NULL),
@@ -285,6 +289,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fMaxZ(ref.fMaxZ),
   fMinClsTPC(ref.fMinClsTPC),
   fMinClsTPCToF(ref.fMinClsTPCToF),
+  fMaxTPCChi2NDF(ref.fMaxTPCChi2NDF),
   fLineCutZRSlope(ref.fLineCutZRSlope),
   fLineCutZValue(ref.fLineCutZValue),
   fLineCutZRSlopeMin(ref.fLineCutZRSlopeMin),
@@ -374,6 +379,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoTPCdEdxafter(NULL),
   fHistoTPCdEdxSigbefore(NULL),
   fHistoTPCdEdxSigafter(NULL),
+  fHistoTPCChi2NDFBefore(NULL),
+  fHistoTPCChi2NDFAfter(NULL),
+  fHistoTPCChi2NDF2D(NULL),
   fHistoKappaafter(NULL),
   fHistoTOFbefore(NULL),
   fHistoTOFSigbefore(NULL),
@@ -506,7 +514,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistograms->Add(fHistoCutIndex);
 
   // Track Cuts
-  fHistoTrackCuts=new TH1F(Form("TrackCuts %s",GetCutNumber().Data()),"TrackCuts",9,-0.5,8.5);
+  fHistoTrackCuts=new TH1F(Form("TrackCuts %s",GetCutNumber().Data()),"TrackCuts",10,-0.5,9.5);
   fHistoTrackCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistoTrackCuts->GetXaxis()->SetBinLabel(2,"likesign");
   fHistoTrackCuts->GetXaxis()->SetBinLabel(3,"ntpccl");
@@ -514,7 +522,8 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistoTrackCuts->GetXaxis()->SetBinLabel(5,"singlept");
   fHistoTrackCuts->GetXaxis()->SetBinLabel(6,"TPCrefit");
   fHistoTrackCuts->GetXaxis()->SetBinLabel(7,"kink");
-  fHistoTrackCuts->GetXaxis()->SetBinLabel(8,"out");
+  fHistoTrackCuts->GetXaxis()->SetBinLabel(8,"TPCChi2");
+  fHistoTrackCuts->GetXaxis()->SetBinLabel(9,"out");
   fHistograms->Add(fHistoTrackCuts);
 
   // Photon Cuts
@@ -656,6 +665,13 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
 
     fHistoPsiPairDeltaPhiafter=new TH2F(Form("Gamma_PsiPairDeltaPhi_after %s",GetCutNumber().Data()),"Psi Pair vs Delta Phi Gamma after" ,200,-2,2,200,-2,2);
     fHistograms->Add(fHistoPsiPairDeltaPhiafter);
+
+    fHistoTPCChi2NDFBefore = new TH1F(Form("TPCChi2NDF_before %s",GetCutNumber().Data()),"TPCChi2NDF before cut",120,-2,10);
+    fHistograms->Add(fHistoTPCChi2NDFBefore);
+    fHistoTPCChi2NDFAfter = new TH1F(Form("TPCChi2NDF_after %s",GetCutNumber().Data()),"TPCChi2NDF after cut",120,-2,10);
+    fHistograms->Add(fHistoTPCChi2NDFAfter);
+    fHistoTPCChi2NDF2D = new TH2F(Form("TPCChi2NDF2D_before %s",GetCutNumber().Data()),"TPCChi2NDF neg vs pos track before cut",120,-2,10,120,-2,10);
+    fHistograms->Add(fHistoTPCChi2NDF2D);
 
     TAxis *AxisAfter = fHistoTPCdEdxSigafter->GetXaxis();
     Int_t bins = AxisAfter->GetNbins();
@@ -1509,6 +1525,27 @@ Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliAODTrack * negTrack, AliAOD
     if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
     return kFALSE;
   }
+  cutIndex++;
+
+  // TPC Chi2 cut
+  Double_t tpcNClsNeg = negTrack->GetTPCNcls();     // number of TPC clusters
+  Double_t tpcNClsPos = posTrack->GetTPCNcls();
+  Double_t tpcChi2NDFNeg = negTrack->Chi2perNDF();  // TPC-Chi2 / (nCls -5)  if nCls > 5 otherwise -1
+  Double_t tpcChi2NDFPos = posTrack->Chi2perNDF();
+  Double_t tpcChi2NDFNegCorr = (tpcNClsNeg>5)?tpcChi2NDFNeg*(tpcNClsNeg-5)/tpcNClsNeg:-1.;    // TPC-Chi2 / nCls  if nCls > 5 otherwise -1
+  Double_t tpcChi2NDFPosCorr = (tpcNClsPos>5)?tpcChi2NDFPos*(tpcNClsPos-5)/tpcNClsPos:-1.;    // condition?IfYesThenDoThis:IfNoThenDoThis
+
+  if(fHistoTPCChi2NDFBefore) fHistoTPCChi2NDFBefore->Fill(tpcChi2NDFNegCorr);
+  if(fHistoTPCChi2NDF2D)     fHistoTPCChi2NDF2D->Fill(tpcChi2NDFNegCorr, tpcChi2NDFPosCorr);
+  if(fMaxTPCChi2NDF>0){ // apply cut
+      if(tpcChi2NDFNegCorr > fMaxTPCChi2NDF || tpcChi2NDFPosCorr > fMaxTPCChi2NDF || tpcChi2NDFNegCorr < 0.2 || tpcChi2NDFPosCorr < 0.2){
+          if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+          return kFALSE;
+      }
+  }
+  if(fHistoTPCChi2NDFAfter) fHistoTPCChi2NDFAfter->Fill(tpcChi2NDFNegCorr);
+  // cutindex is incremented in TracksAreSelected after SpecificTrackCuts was called
+
   return kTRUE;
 
 }
@@ -1527,6 +1564,27 @@ Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliESDtrack * negTrack, AliESD
     if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
     return kFALSE;
   }
+  cutIndex++;
+
+  // TPC Chi2 cut
+  Double_t tpcChi2Neg = (Double_t) negTrack->GetTPCchi2();   // TPC-Chi2
+  Double_t tpcChi2Pos = (Double_t) posTrack->GetTPCchi2();
+  Double_t tpcNClsNeg = negTrack->GetTPCNcls();              // number of TPC clusters
+  Double_t tpcNClsPos = posTrack->GetTPCNcls();
+  Double_t tpcChi2NDFNegCorr = (tpcNClsNeg>5)?tpcChi2Neg/tpcNClsNeg:-1.;    // TPC-Chi2 / nCls  if nCls > 5 otherwise -1
+  Double_t tpcChi2NDFPosCorr = (tpcNClsPos>5)?tpcChi2Pos/tpcNClsPos:-1.;    // condition?IfYesThenDoThis:IfNoThenDoThis
+
+  if(fHistoTPCChi2NDFBefore) fHistoTPCChi2NDFBefore->Fill(tpcChi2NDFNegCorr);
+  if(fHistoTPCChi2NDF2D) fHistoTPCChi2NDF2D->Fill(tpcChi2NDFNegCorr, tpcChi2NDFPosCorr);
+  if(fMaxTPCChi2NDF>0){ // do cut
+      if(tpcChi2NDFNegCorr > fMaxTPCChi2NDF || tpcChi2NDFPosCorr > fMaxTPCChi2NDF || tpcChi2NDFNegCorr < 0.2 || tpcChi2NDFPosCorr < 0.2){
+          if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+          return kFALSE;
+      }
+  }
+  if(fHistoTPCChi2NDFAfter) fHistoTPCChi2NDFAfter->Fill(tpcChi2NDFNegCorr);
+  // cutindex is incremented in TracksAreSelected after SpecificTrackCuts was called
+
   return kTRUE;
 }
 
@@ -1607,7 +1665,7 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   }
   cutIndex++;
 
-  if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+  if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);  // out
 
   return kTRUE;
 
@@ -2384,6 +2442,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (fDoPhotonAsymmetryCut) printf("\t for p_{T,track} > %3.2f,  A_{gamma} < %3.2f \n", fMinPPhotonAsymmetryCut, fMinPhotonAsymmetry  );
   if (fDoPhotonPDependentAsymCut && fDoPhotonAsymmetryCut) printf("\t p-dependent asymmetry cut \n");
   if (fUseCorrectedTPCClsInfo) printf("\t #cluster TPC/ #findable clusters TPC (corrected for radius) > %3.2f\n", fMinClsTPCToF );
+  if(fMaxTPCChi2NDF>0) printf("\t TPC Chi2 < %3.2f \n", fMaxTPCChi2NDF);
   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );
   printf("\t cos(Theta_{point}) > %3.2f \n", fCosPAngleCut );
   printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
@@ -2933,14 +2992,29 @@ Bool_t AliConversionPhotonCuts::SetTPCClusterCut(Int_t clsTPCCut){   // Set Cut
     fMinClsTPCToF= 0.35;
     fUseCorrectedTPCClsInfo=0;
     break;
-  case 8:
-    fMinClsTPCToF= 0.35;
+  case 8:  // 35% of findable clusters
+      fMinClsTPCToF= 0.35;
     fUseCorrectedTPCClsInfo=1;
     break;
-  case 9:
+  case 9:  // 60% of findable clusters
     fMinClsTPCToF= 0.6;
     fUseCorrectedTPCClsInfo=1;
     break;
+  case 10:  // 60% of findable clusters and TPC track Chi2<4
+      fMinClsTPCToF= 0.6;
+      fUseCorrectedTPCClsInfo=1;
+      fMaxTPCChi2NDF=4.0;
+      break;
+  case 11:  // 60% of findable clusters and TPC track Chi2<3
+      fMinClsTPCToF= 0.6;
+      fUseCorrectedTPCClsInfo=1;
+      fMaxTPCChi2NDF=3.0;
+      break;
+  case 12:  // 60% of findable clusters and TPC track Chi2<2.5
+      fMinClsTPCToF= 0.6;
+      fUseCorrectedTPCClsInfo=1;
+      fMaxTPCChi2NDF=2.5;
+      break;
   default:
     AliError(Form("Warning: clsTPCCut not defined %d",clsTPCCut));
     return kFALSE;

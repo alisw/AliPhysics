@@ -295,6 +295,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fMaxZ;                                ///< z cut
     Double_t          fMinClsTPC;                           ///< minimum clusters in the TPC
     Double_t          fMinClsTPCToF;                        ///< minimum clusters to findable clusters
+    Double_t          fMaxTPCChi2NDF;                       ///< maximum TPC track Chi2 per NDF
     Double_t          fLineCutZRSlope;                      ///< linecut
     Double_t          fLineCutZValue;                       ///< linecut
     Double_t          fLineCutZRSlopeMin;                   ///< linecut
@@ -385,6 +386,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoTPCdEdxafter;                   ///< TPC dEdx after cuts
     TH2F*             fHistoTPCdEdxSigbefore;               ///< TPC Sigma dEdx before cuts
     TH2F*             fHistoTPCdEdxSigafter;                ///< TPC Sigm dEdx after cuts
+    TH1F*             fHistoTPCChi2NDFBefore;               ///< TPC track Chi2 before cuts
+    TH1F*             fHistoTPCChi2NDFAfter;                ///< TPC track Chi2 after cuts
+    TH2F*             fHistoTPCChi2NDF2D;                   ///< TPC neg vs pos track Chi2 before cuts
     TH2F*             fHistoKappaafter;                     ///< Kappa vs photon pt after cuts
     TH2F*             fHistoTOFbefore;                      ///< TOF before cuts
     TH2F*             fHistoTOFSigbefore;                   ///< TOF Sigma before cuts
@@ -416,7 +420,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,23)
+    ClassDef(AliConversionPhotonCuts,24)
     /// \endcond
 };
 
