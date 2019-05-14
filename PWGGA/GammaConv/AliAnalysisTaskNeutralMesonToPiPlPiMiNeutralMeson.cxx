@@ -988,7 +988,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoBackInvMassPtGroup3[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
     fHistoBackInvMassPtGroup4[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup4[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-    if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing())){
+    if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing())&&(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation())){
        fESDList[iCut]->Add(fHistoBackInvMassPtGroup1[iCut]);
        fESDList[iCut]->Add(fHistoBackInvMassPtGroup2[iCut]);
        fESDList[iCut]->Add(fHistoBackInvMassPtGroup3[iCut]);
@@ -1023,7 +1023,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoBackInvMassPtGroup3SubNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
     fHistoBackInvMassPtGroup4SubNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - (M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup4SubNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-    if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing())){
+    if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing())&&(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation())){
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup4SubNDM[iCut]);
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup1SubNDM[iCut]);
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup2SubNDM[iCut]);
@@ -1053,7 +1053,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoBackInvMassPtGroup3FixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
     fHistoBackInvMassPtGroup4FixedPzNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup4FixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-    if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing())){
+    if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing()) && (((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation())){
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup1FixedPzNDM[iCut]);
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup2FixedPzNDM[iCut]);
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup3FixedPzNDM[iCut]);
@@ -1931,7 +1931,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
     if(fInputEvent->IsA()==AliAODEvent::Class()) ProcessPionCandidatesAOD();
 
     CalculateMesonCandidates();
-    CalculateBackground();
+    
+    if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
+      CalculateBackground();
+    }
     UpdateEventByEventData();
 
     fVectorDoubleCountTruePi0s.clear();
