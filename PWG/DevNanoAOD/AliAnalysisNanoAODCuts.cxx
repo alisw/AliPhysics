@@ -324,17 +324,17 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
     return false;
   }
   if (fDCADaugPrimVtxMin > 0.
-      && cascade->DcaBachToPrimVertex() > fDCADaugPrimVtxMin) {
+      && cascade->DcaBachToPrimVertex() < fDCADaugPrimVtxMin) {
     return false;
   }
 
   if (fDCADaugPrimVtxMin > 0.
-      && cascade->DcaNegToPrimVertex() > fDCADaugPrimVtxMin) {
+      && cascade->DcaNegToPrimVertex() < fDCADaugPrimVtxMin) {
     return false;
   }
 
   if (fDCADaugPrimVtxMin > 0.
-      && cascade->DcaPosToPrimVertex() > fDCADaugPrimVtxMin) {
+      && cascade->DcaPosToPrimVertex() < fDCADaugPrimVtxMin) {
     return false;
   }
   if (fCPACascMin > 0. || fCPAv0Min > 0.) {
@@ -372,7 +372,7 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
       && cascade->DecayVertexV0Y() > fTransverseRadiusv0) {
     return false;
   }
-  if (fDCAv0PrimVtxMin > 0. && cascade->DcaV0ToPrimVertex()) {
+  if (fDCAv0PrimVtxMin > 0. && cascade->DcaV0ToPrimVertex() < fDCAv0PrimVtxMin) {
     return false;
   }
   AliAODTrack *pTrack = static_cast<AliAODTrack*>(cascade->GetDaughter(0));
@@ -386,7 +386,7 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
     if (TMath::Abs(nTrack->Eta()) > fDaughEtaMax) {
       return false;
     }
-    if (TMath::Abs(nTrack->Eta()) > fDaughEtaMax) {
+    if (TMath::Abs(bachTrack->Eta()) > fDaughEtaMax) {
       return false;
     }
   }
@@ -423,14 +423,14 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
                                                         nTrack,
                                                         AliPID::kProton);
     Float_t nSigBachPion = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
-                                                        nTrack,
+                                                       bachTrack,
                                                         AliPID::kPion);
 
     Float_t nSigBachKaon = pidResponse->NumberOfSigmas(AliPIDResponse::kTPC,
-                                                        nTrack,
+                                                       bachTrack,
                                                         AliPID::kKaon);
 
-    // if the Bachelor is not a pion, the candidate can go
+    // if the Bachelor is not a pion or a kaon, the candidate can go
     if (!((nSigBachPion < fCascDaugnSigTPCMax)||
         (nSigBachKaon < fCascDaugnSigTPCMax))) {
       return false;
