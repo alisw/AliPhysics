@@ -1,16 +1,11 @@
-//
-//  AliMCSpectraWeightsAnalysisTask.hpp
-//  particle-composition-correction
-//
-//  Created by Patrick Huhn on 18/02/2019.
-//
-//
+/*!
+   \file AliMCSpectraWeightsAnalysisTask.cxx
+   \brief A minimal analysis task for AliMCSpectraWeights
+   \author Patrick Huhn
+   \date 25/10/2019
+*/
 #ifndef ALIMCSPECTRAWEIGHTSANALYSISTASK_H
 #define ALIMCSPECTRAWEIGHTSANALYSISTASK_H
-// #ifdef __CLING__
-//   R__ADD_INCLUDE_PATH($ALICE_ROOT)// Tell  ROOT where to find AliRoot headers
-//   R__ADD_INCLUDE_PATH($ALICE_PHYSICS)// Tell ROOT where to find AliPhysics headers
-// #endif
 #include "AliAnalysisTaskSE.h"
 #include "THn.h"
 class TArrayD;
@@ -101,6 +96,9 @@ class AliMCSpectraWeightsAnalysisTask : public AliAnalysisTaskSE {
     AliMCSpectraWeights *fMCSpectraWeights;//->
     THnF                 *fHistMCPartCorr;//!
     THnF                 *fHistMCGenPrimTrack;//!
+    THnF                 *fHistMCFractions;//!
+    THnF                 *fHistDataFractions;//!
+    THnF                 *fHistMCWeights;//!
 
     //binning
     TArrayD     	*fBinsMultCent;		///< Array of bins in multiplicity or centrality
