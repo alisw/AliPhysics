@@ -230,18 +230,18 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   }
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
-//  const int multiplicity = fEvent->GetMultiplicity();
-//  fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-//  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
-//    AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-//    fTrack->SetTrack(track, fInputEvent, multiplicity);
-//    if (fProton->isSelected(fTrack)) {
-//      Protons.push_back(*fTrack);
-//    }
-//    if (fAntiProton->isSelected(fTrack)) {
-//      AntiProtons.push_back(*fTrack);
-//    }
-//  }
+  const int multiplicity = fEvent->GetMultiplicity();
+  fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
+    AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
+    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    if (fProton->isSelected(fTrack)) {
+      Protons.push_back(*fTrack);
+    }
+    if (fAntiProton->isSelected(fTrack)) {
+      AntiProtons.push_back(*fTrack);
+    }
+  }
   std::vector<AliFemtoDreamBasePart> Xis;
   std::vector<AliFemtoDreamBasePart> AntiXis;
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
