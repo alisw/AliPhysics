@@ -16,5 +16,10 @@
 #pragma link C++ class ReadBDT_LHC19c2a_6_8+;
 #pragma link C++ class ReadBDT_LHC19c2a_8_12+;
 #pragma link C++ class ReadBDT_LHC19c2a_12_25+;
+#pragma link C++ class ReadBDT_LHC19c2b_2_4_noPCts+;
+#pragma link C++ class ReadBDT_LHC19c2b_4_6_noPCts+;
+#pragma link C++ class ReadBDT_LHC19c2b_6_8_noPCts+;
+#pragma link C++ class ReadBDT_LHC19c2b_8_12_noPCts+;
+#pragma link C++ class ReadBDT_LHC19c2b_12_25_noPCts+;
 
 #endif
