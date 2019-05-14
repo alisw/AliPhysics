@@ -204,13 +204,6 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   }
   std::vector<AliFemtoDreamBasePart> Xis;
   std::vector<AliFemtoDreamBasePart> AntiXis;
-  if (fInputEvent->GetNumberOfCascades() != 0) {
-    std::cout << " +=================================================== \n";
-    std::cout << " +=================================================== \n";
-    std::cout << "fInput->GetCascades(): " << fInputEvent->GetNumberOfCascades() << std::endl;
-    std::cout << " +=================================================== \n";
-    std::cout << " +=================================================== \n";
-  }
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
   for (int iCasc = 0;
       iCasc
