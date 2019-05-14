@@ -20,7 +20,7 @@ class AliMuonTrackCuts; 											// Include class for standard muon tack cuts
  * \class MatrixTH1F
  * \brief Alias for a 2D vector of TH1F, roughly speaking an arary of TH1F.
  */
-typedef std::vector< std::vector< TH1F* > >  MatrixTH1F;
+// typedef std::vector< std::vector< TH1F* > >  MatrixTH1F;
 
 /**
  * \file AliAnalysisTaskUPCforward.h
@@ -95,7 +95,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * run numbers. For now this function will be
                                  * inside the constructor of the class.
                                  */
-        void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
+        // void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
 
                                 /**
                                  * This function computes the cos(theta) in the
@@ -1032,7 +1032,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         /**
          * This is the vector containing the GOOD RunNumbers.
          */
-        std::vector<Int_t> fVectorGoodRunNumbers;       //!
+        // std::vector<Int_t> fVectorGoodRunNumbers;       //!
 
 
 
@@ -1052,7 +1052,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 18);
+        ClassDef(AliAnalysisTaskUPCforward, 20);
 };
 
 #endif
