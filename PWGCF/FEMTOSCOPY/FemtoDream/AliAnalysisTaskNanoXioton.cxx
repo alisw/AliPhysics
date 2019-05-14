@@ -11,14 +11,19 @@ ClassImp(AliAnalysisTaskNanoXioton)
 AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton()
     : AliAnalysisTaskSE(),
       fisLightWeight(false),
-      fEvtList(nullptr),
       fEvent(nullptr),
       fEventCuts(nullptr),
+      fEvtList(nullptr),
       fTrack(nullptr),
       fProton(nullptr),
       fProtonList(nullptr),
       fAntiProton(nullptr),
       fAntiProtonList(nullptr),
+      fCascade(nullptr),
+      fXi(nullptr),
+      fXiList(nullptr),
+      fAntiXi(nullptr),
+      fAntiXiList(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
 }
@@ -26,19 +31,26 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton()
 AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name)
     : AliAnalysisTaskSE(name),
       fisLightWeight(false),
-      fEvtList(nullptr),
       fEvent(nullptr),
       fEventCuts(nullptr),
+      fEvtList(nullptr),
       fTrack(nullptr),
       fProton(nullptr),
       fProtonList(nullptr),
       fAntiProton(nullptr),
       fAntiProtonList(nullptr),
+      fCascade(nullptr),
+      fXi(nullptr),
+      fXiList(nullptr),
+      fAntiXi(nullptr),
+      fAntiXiList(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
+  DefineOutput(4, TList::Class());  //Output for the Xi Cuts
+  DefineOutput(5, TList::Class());  //Output for the AntiXi Cuts
 }
 
 AliAnalysisTaskNanoXioton::~AliAnalysisTaskNanoXioton() {
@@ -56,6 +68,15 @@ AliAnalysisTaskNanoXioton::~AliAnalysisTaskNanoXioton() {
   }
   if (fAntiProton) {
     delete fAntiProton;
+  }
+  if (fCascade) {
+    delete fCascade;
+  }
+  if (fXi) {
+    delete fXi;
+  }
+  if (fAntiXi) {
+    delete fAntiXi;
   }
 }
 
@@ -77,10 +98,32 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
   } else {
     fAntiProton->Init();
   }
+  if (!fXi) {
+    AliError("No Xi cuts \n");
+  } else {
+    fXi->Init();
+  }
+  if (!fAntiXi) {
+    AliError("No AntiXi cuts \n");
+  } else {
+    fAntiXi->Init();
+  }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
                                   GetCollisionCandidates(), false);
   fTrack = new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(false);
+
+  fCascade = new AliFemtoDreamCascade();
+  fCascade->SetUseMCInfo(false);
+  //PDG Codes should be set assuming Xi- to also work for Xi+
+  fCascade->SetPDGCode(3312);
+  fCascade->SetPDGDaugPos(2212);
+  fCascade->GetPosDaug()->SetUseMCInfo(false);
+  fCascade->SetPDGDaugNeg(211);
+  fCascade->GetNegDaug()->SetUseMCInfo(false);
+  fCascade->SetPDGDaugBach(211);
+  fCascade->GetBach()->SetUseMCInfo(false);
+  fCascade->Setv0PDGCode(3122);
 
   if (!fEventCuts->GetMinimalBooking()) {
     fEvtList = fEventCuts->GetHistList();
@@ -103,9 +146,25 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
     fAntiProtonList->SetName("AntiTrackCuts");
     fAntiProtonList->SetOwner();
   }
+  if (!fXi->GetMinimalBooking()) {
+    fXiList = fXi->GetQAHists();
+  } else {
+    fXiList = new TList();
+    fXiList->SetName("XiCuts");
+    fXiList->SetOwner();
+  }
+  if (!fAntiXi->GetMinimalBooking()) {
+    fAntiXiList = fAntiXi->GetQAHists();
+  } else {
+    fAntiXiList = new TList();
+    fAntiXiList->SetName("AntiXiCuts");
+    fAntiXiList->SetOwner();
+  }
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
+  PostData(4, fXiList);
+  PostData(5, fAntiXiList);
 }
 
 void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
@@ -129,23 +188,42 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
     }
     StoreGlobalTrackReference(track);
   }
-  std::vector<AliFemtoDreamBasePart> Particles;
-  std::vector<AliFemtoDreamBasePart> AntiParticles;
+  std::vector<AliFemtoDreamBasePart> Protons;
+  std::vector<AliFemtoDreamBasePart> AntiProtons;
   const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
     fTrack->SetTrack(track, fInputEvent, multiplicity);
     if (fProton->isSelected(fTrack)) {
-      Particles.push_back(*fTrack);
+      Protons.push_back(*fTrack);
     }
     if (fAntiProton->isSelected(fTrack)) {
-      AntiParticles.push_back(*fTrack);
+      AntiProtons.push_back(*fTrack);
     }
   }
+  std::vector<AliFemtoDreamBasePart> Xis;
+  std::vector<AliFemtoDreamBasePart> AntiXis;
+  AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
+  for (int iCasc = 0;
+      iCasc
+          < static_cast<TClonesArray *>(aodEvt->GetCascades())->GetEntriesFast();
+      ++iCasc) {
+    AliAODcascade* casc = aodEvt->GetCascade(iCasc);
+    fCascade->SetCascade(aodEvt, casc);
+    if (fXi->isSelected(fCascade)) {
+      Xis.push_back(*fCascade);
+    }
+    if (fAntiXi->isSelected(fCascade)) {
+      AntiXis.push_back(*fCascade);
+    }
+  }
+
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
+  PostData(4, fXiList);
+  PostData(5, fAntiXiList);
 }
 
 //____________________________________________________________________________________________________
