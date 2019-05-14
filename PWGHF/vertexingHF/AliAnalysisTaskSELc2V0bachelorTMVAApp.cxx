@@ -218,7 +218,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
   fAODProtection(1),
-  fUsePIDresponseForNsigma(kFALSE)
+  fUsePIDresponseForNsigma(kFALSE),
+  fNVars(14)
 {
   /// Default ctor
   //
@@ -360,7 +361,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
   fAODProtection(1),
-  fUsePIDresponseForNsigma(kFALSE)
+  fUsePIDresponseForNsigma(kFALSE),
+  fNVars(14)
 
 {
   //
@@ -1967,26 +1969,52 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     
     if(!fFillTree){
       
-      std::vector<Double_t> inputVars(14);
-      inputVars[0] = invmassK0s;
-      inputVars[1] = part->Getd0Prong(0);
-      inputVars[2] = part->Getd0Prong(1);
-      inputVars[3] = bachelor->Pt();
-      inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
-      inputVars[5] = part->CosV0PointingAngle();
-      inputVars[6] = cts;
-      inputVars[7] = signd0;
-      inputVars[8] = bachelor->P();
-      inputVars[9] = nSigmaTOFpr;
-      inputVars[10] = nSigmaTPCpr;
-      inputVars[11] = nSigmaTPCpi;
-      inputVars[12] = nSigmaTPCka;
-      inputVars[13] = bachelor->GetTPCmomentum();
-      
+      std::vector<Double_t> inputVars(fNVars);
+      if (fNVars == 14) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = bachelor->Pt();
+	inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[5] = part->CosV0PointingAngle();
+	inputVars[6] = cts;
+	inputVars[7] = signd0;
+	inputVars[8] = bachelor->P();
+	inputVars[9] = nSigmaTOFpr;
+	inputVars[10] = nSigmaTPCpr;
+	inputVars[11] = nSigmaTPCpi;
+	inputVars[12] = nSigmaTPCka;
+	inputVars[13] = bachelor->GetTPCmomentum();
+      }
+      else if (fNVars == 11) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = signd0;
+	inputVars[7] = nSigmaTOFpr;
+	inputVars[8] = nSigmaTPCpr;
+	inputVars[9] = nSigmaTPCpi;
+	inputVars[10] = nSigmaTPCka;
+      }
+      else if (fNVars == 10) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = signd0;
+	inputVars[6] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTPCpr;
+	inputVars[8] = nSigmaTPCpi;
+	inputVars[9] = nSigmaTPCka;
+      }
       
       Double_t BDTResponse = -1;
       BDTResponse = fBDTReader->GetMvaValue(inputVars);
-      //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc); 
+      //      Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc); 
       fBDTHisto->Fill(BDTResponse, invmassLc); 
       if (fDebugHistograms) {    
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
