@@ -506,6 +506,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
     return;
   }
 
+  this->fdEdxTPC = nanoTrack->GetTPCsignal();
   AliPID::EParticleType particleID[5] = {AliPID::kElectron, AliPID::kMuon,
                                          AliPID::kPion, AliPID::kKaon,
                                          AliPID::kProton};
@@ -538,9 +539,8 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   }
 
   // TODO
-  //  this->fdEdxTPC = fVTrack->GetTPCsignal();
   //  this->fbetaTOF = GetBeta(fVTrack);
-  // For the moment we don't need ITS PID
+  //   For the moment we don't need ITS PID
   //  this->fstatusITS = statusITS;
   //          this->fnSigmaITS)[i] =
   //    AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaITS,
