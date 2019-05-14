@@ -22,8 +22,8 @@ class AliAnalysisTaskNanoXioton : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskNanoXioton();
   AliAnalysisTaskNanoXioton(const char* name);
-  AliAnalysisTaskNanoXioton(const AliAnalysisTaskNanoXioton& analysis) = default;
-  AliAnalysisTaskNanoXioton& operator=(const AliAnalysisTaskNanoXioton& analysis) = default;
+  //AliAnalysisTaskNanoXioton(const AliAnalysisTaskNanoXioton& analysis) = default;
+  //AliAnalysisTaskNanoXioton& operator=(const AliAnalysisTaskNanoXioton& analysis) = default;
   virtual ~AliAnalysisTaskNanoXioton();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
