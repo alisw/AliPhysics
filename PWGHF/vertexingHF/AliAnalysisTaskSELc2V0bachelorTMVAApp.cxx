@@ -1286,7 +1286,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   for (Int_t iLctopK0s = 0; iLctopK0s < nCascades; iLctopK0s++) {
-    
+
     // Lc candidates and K0s from Lc
     AliAODRecoCascadeHF* lcK0spr = dynamic_cast<AliAODRecoCascadeHF*>(arrayLctopKos->At(iLctopK0s));
     if (!lcK0spr) {
@@ -1980,12 +1980,13 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       inputVars[9] = nSigmaTOFpr;
       inputVars[10] = nSigmaTPCpr;
       inputVars[11] = nSigmaTPCpi;
-      inputVars[12] = nSigmaTPCpr;
+      inputVars[12] = nSigmaTPCka;
       inputVars[13] = bachelor->GetTPCmomentum();
       
       
       Double_t BDTResponse = -1;
       BDTResponse = fBDTReader->GetMvaValue(inputVars);
+      //Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc); 
       fBDTHisto->Fill(BDTResponse, invmassLc); 
       if (fDebugHistograms) {    
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);
