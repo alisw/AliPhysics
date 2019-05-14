@@ -34,6 +34,11 @@ set(SRCS
   LHC19c2a_TMVAClassification_BDT_6_8.class.cxx
   LHC19c2a_TMVAClassification_BDT_8_12.class.cxx
   LHC19c2a_TMVAClassification_BDT_12_25.class.cxx
+  LHC19c2b_TMVAClassification_BDT_2_4_noPCts.class.cxx
+  LHC19c2b_TMVAClassification_BDT_4_6_noPCts.class.cxx
+  LHC19c2b_TMVAClassification_BDT_6_8_noPCts.class.cxx
+  LHC19c2b_TMVAClassification_BDT_8_12_noPCts.class.cxx
+  LHC19c2b_TMVAClassification_BDT_12_25_noPCts.class.cxx
   )
 
 set(HDRS
@@ -47,6 +52,11 @@ set(HDRS
   LHC19c2a_TMVAClassification_BDT_6_8.class.h
   LHC19c2a_TMVAClassification_BDT_8_12.class.h
   LHC19c2a_TMVAClassification_BDT_12_25.class.h
+  LHC19c2b_TMVAClassification_BDT_2_4_noPCts.class.h
+  LHC19c2b_TMVAClassification_BDT_4_6_noPCts.class.h
+  LHC19c2b_TMVAClassification_BDT_6_8_noPCts.class.h
+  LHC19c2b_TMVAClassification_BDT_8_12_noPCts.class.h
+  LHC19c2b_TMVAClassification_BDT_12_25_noPCts.class.h
   BDTNode.h
   )
 
