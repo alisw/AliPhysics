@@ -35,6 +35,9 @@ AliMCSpectraWeightsAnalysisTask::AliMCSpectraWeightsAnalysisTask() : AliAnalysis
   // fstMCTrainOutput(""),
   fHistMCPartCorr(0),
   fHistMCGenPrimTrack(0),
+  fHistMCFractions(0),
+  fHistDataFractions(0),
+  fHistMCWeights(0),
   fBinsMultCent(0),
   fBinsPt(0),
   fBinsEta(0),
@@ -59,6 +62,9 @@ AliMCSpectraWeightsAnalysisTask::AliMCSpectraWeightsAnalysisTask(const char *nam
   // fstMCTrainOutput(""),
   fHistMCPartCorr(0),
   fHistMCGenPrimTrack(0),
+  fHistMCFractions(0),
+  fHistDataFractions(0),
+  fHistMCWeights(0),
   fBinsMultCent(0),
   fBinsPt(0),
   fBinsEta(0),
@@ -106,10 +112,16 @@ void AliMCSpectraWeightsAnalysisTask::UserCreateOutputObjects(){
     fHistMCGenPrimTrack -> Sumw2();
 
     fHistMCPartCorr = fMCSpectraWeights->GetHistMCGenPrimTrackParticles();
+    fHistDataFractions = fMCSpectraWeights->GetHistDataFraction();
+    fHistMCFractions = fMCSpectraWeights->GetHistMCFraction();
+    fHistMCWeights = fMCSpectraWeights->GetHistMCWeights();
 
     fOutputList->Add(fHistMCGenPrimTrack);
     fOutputList->Add(fHistMCPartCorr);
-    fOutputList->Add(fMCSpectraWeights);
+    fOutputList->Add(fHistDataFractions);
+    fOutputList->Add(fHistMCFractions);
+    fOutputList->Add(fHistMCWeights);
+    // fOutputList->Add(fMCSpectraWeights);
   }
   else printf("AliMCSpectraWeightsAnalysisTask:: Either running not MC or object of AliMCSpectraWeights is null pointer\n");
 
@@ -146,7 +158,7 @@ void AliMCSpectraWeightsAnalysisTask::UserExec(Option_t *option){
 
   ///------------------- Loop over Generated Tracks (True MC)------------------------------
   if(fMCSpectraWeights->GetTaskStatus()<AliMCSpectraWeights::TaskState::kMCSpectraObtained)
-    fMCSpectraWeights->FillMCSpectra(fMCEvent, multEvent);
+    fMCSpectraWeights->FillMCSpectra(fMCEvent);
   else for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
     if(!fMCStack->IsPhysicalPrimary(iParticle)) continue; //reject non physical primaries;
     TParticle *mcGenParticle = fMCStack->Particle(iParticle);
