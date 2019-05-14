@@ -496,21 +496,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   this->SetMomTPC(globalNanoTrack->GetTPCmomentum());
   this->fdcaXY = nanoTrack->DCA();
   this->fdcaZ = nanoTrack->ZAtDCA();
-  double dcaVals[2] = {-99., -99.};
-  double pos[3] = {0., 0., 0.};
-  double covar[3] = {0., 0., 0.};
-  AliNanoAODTrack copy(*globalNanoTrack);
-  copy.GetPosition(pos);
-  if (pos[0] * pos[0] + pos[1] * pos[1] <= 3. * 3. &&
-      copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(),
-                          10, dcaVals, covar)) {
-    this->fdcaXYProp = dcaVals[0];
-    this->fdcaZProp = dcaVals[1];
-  } else {
-    this->fdcaXYProp = -99;
-    this->fdcaZProp = -99;
-  }
-
+  nanoTrack->GetImpactParameters(fdcaXYProp, fdcaZProp);
   SetPhiAtRadii(event->GetMagneticField());
 
   // PID stuff

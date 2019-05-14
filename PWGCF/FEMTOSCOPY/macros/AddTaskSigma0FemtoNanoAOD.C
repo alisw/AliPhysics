@@ -1,3 +1,5 @@
+#include <vector>
+
 AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
                                              bool MomRes = false,
                                              bool fullBlastQA = false,

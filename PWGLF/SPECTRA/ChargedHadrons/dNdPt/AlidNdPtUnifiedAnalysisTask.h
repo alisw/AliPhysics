@@ -143,7 +143,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     Bool_t IsTrackAcceptedGeometricalCut(AliVTrack *tr, Double_t bMagZ);//TODO implement this
     Bool_t IsChargedPrimary(Int_t stackIndex);
     void InitESDTrackCuts();
-//    void InitAODTrackCuts();
+    //    void InitAODTrackCuts();
 
   private:
     TList         *fOutputList;		//!<! Output list
@@ -154,7 +154,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     AlidNdPtEventCuts   *fEventCuts;
     AliESDtrackCuts     *fESDtrackCuts;
     ///AliAODSelection
-//    AliAODtrackCuts *fAODtrackCuts;
+    //    AliAODtrackCuts *fAODtrackCuts;
     AliAnalysisUtils    *fUtils;
 
     //Particle composition
@@ -187,13 +187,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     /// Track histogram
     THnF        	*fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
     THnF            *fHistCentCorrel; ///< Histogram for correlation of centrality estimators
-    THnF            *fHistCentDiffSPDT; ///< Histograms for centrality discrepancies
-    THnF            *fHistCentDiffCL0;
-    THnF            *fHistCentDiffCL1;
-    THnF            *fHistCentMean;
-    THnF            *fHistCentRatio;
-    THnF            *fHistCentAbsDiff;
-    
+
     TH3D          *fDCAyEtaPt;                         /// DCAy:eta:pt
     TH3D          *fDCAyEtaPtMCPrim;              /// DCAy:eta:pt for primary particles
     TH3D          *fDCAyEtaPtMCSecDecays;         /// DCAy:eta:pt for secondary particles from decays in MC

@@ -30,6 +30,7 @@ Detailed description
 #include <AliAODVertex.h>
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
+#include <AliEventCuts.h>
 #include <AliMultiplicity.h>
 #include <AliCentrality.h>
 #include <AliESDVZERO.h>
@@ -37,6 +38,7 @@ Detailed description
 #include "AliTRDTriggerAnalysis.h"
 #include "AliDielectronVarManager.h"
 #include "AliDielectronEventCuts.h"
+
 
 ClassImp(AliDielectronEventCuts)
 
@@ -66,6 +68,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fTriggerAnalysis(0x0),
   fkVertex(0x0),
   fkVertexAOD(0x0),
+  fRequireAliEventCuts(0),  
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -106,6 +109,7 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fTriggerAnalysis(0x0),
   fkVertex(0x0),
   fkVertexAOD(0x0),
+  fRequireAliEventCuts(0),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -461,6 +465,14 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
       return kFALSE;
     }
   }
+  
+  // cut on AliEventCuts (consistency to Run 1 Pb-Pb LMee analysis)
+  if(fRequireAliEventCuts){
+    AliEventCuts fAODeventCuts;
+    if (!fAODeventCuts.AcceptEvent(ev)){
+      return kFALSE;
+    }
+  }
 
   return kTRUE;
 }
@@ -548,6 +560,8 @@ void AliDielectronEventCuts::Print(const Option_t* /*option*/) const
     printf("Cut %02d: vertex and event selection for 2013 pPb data taking required \n",iCut);   iCut++; }
   if(fRequireV0and) {
     printf("Cut %02d: require V0and type: %c \n", iCut, fRequireV0and);            iCut++; }
+  if(fRequireAliEventCuts) {
+    printf("Cut %02d: use AliEventCuts\n", iCut);                                  iCut++; }
   if(f2015IsIncompleteDAQ){
     printf("Cut %02d: IncompleteDAQ Events are rejected\n",iCut); iCut++; }
 

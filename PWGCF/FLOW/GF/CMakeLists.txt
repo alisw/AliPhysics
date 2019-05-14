@@ -15,17 +15,21 @@
 
 #Module
 set(MODULE PWGCFFLOWGF)
-add_definitions(-D_MODULE_="${MODULE}")
+#add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF)
+include_directories(
+    ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF
+)
 
 # Additional includes - alphabetical order except ROOT
-include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/OADB
-					${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
-  )
+include_directories(
+    ${ROOT_INCLUDE_DIRS}
+    ${AliPhysics_SOURCE_DIR}/OADB
+	${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+    ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/GF
+)
 
 # Sources - alphabetical order
 set(SRCS
@@ -37,8 +41,8 @@ set(SRCS
   AliGFWCumulant.cxx
   AliGFWCuts.cxx
   AliGFWFlowContainer.cxx
-  AliProfileSubset.cxx
   AliGFWWeights.cxx
+  AliProfileSubset.cxx
   AliUniFlowCorrTask.cxx
   )
 
@@ -55,8 +59,11 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice EMCALbase)
+set(LIBDEPS ANALYSISalice OADB EMCALbase)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+# Generate a PARfile target for this library
+add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})

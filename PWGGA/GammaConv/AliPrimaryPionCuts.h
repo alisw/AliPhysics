@@ -87,6 +87,9 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Bool_t PionIsSelectedAOD(AliAODTrack* lTrack);
 	static AliPrimaryPionCuts * GetStandardCuts2010PbPb();
 	static AliPrimaryPionCuts * GetStandardCuts2010pp();
+	void  SetStandardTrackCutsAODFiltering2010();
+	void  SetPtDepDCACuts(Double_t pt);
+	Bool_t IsDCACutAccepted(AliAODTrack* lTrack);
 	Bool_t InitPIDResponse();
 	
 	void SetPIDResponse(AliPIDResponse * pidResponse) {fPIDResponse = pidResponse;}
@@ -130,6 +133,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Bool_t          fDoLightOutput;             ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     AliPIDResponse  *fPIDResponse;
 	AliESDtrackCuts *fEsdTrackCuts;
+	AliESDtrackCuts *fEsdTrackCutsGC;
 
 	Double_t fEtaCut; //eta cutç
 	Double_t fEtaShift;
@@ -139,6 +143,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Double_t fChi2PerClsTPC; // maximum Chi2 per cluster in the TPC
     Bool_t   fRequireTPCRefit; // require a refit in the TPC
 	Double_t fMinClsTPCToF; // minimum clusters to findable clusters
+	Double_t fMinClsITS; // minimum clustersin the ITS
 	Bool_t   fDodEdxSigmaITSCut; // flag to use the dEdxCut ITS based on sigmas
 	Bool_t   fDodEdxSigmaTPCCut; // flag to use the dEdxCut TPC based on sigmas
 	Bool_t   fDoTOFsigmaCut; // flag to use TOF pid cut RRnewTOF
@@ -155,6 +160,10 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Double_t fMassCut;	
 	Bool_t   fDoWeights;
     Double_t fMaxDCAToVertexZ;
+    Double_t fMaxDCAToVertexXY;
+    Bool_t fUsePtDepXYDCA;
+    Bool_t fUseDCAToVertex2D;
+    TString fMaxDCAToVertexXYPtDep;
 	
 
 
@@ -177,6 +186,10 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TH2F *fHistTrackDCAzPtafter;
 	TH2F *fHistTrackNFindClsPtTPCbefore;
 	TH2F *fHistTrackNFindClsPtTPCafter;
+	TH1F *fHistTrackSelectedEta;
+	TH1F *fHistTrackSelectedPhi;
+	TH1F *fHistTrackSelectedPt;
+	TH1F *fHistTrackSelectedPtWithoutITS;
 	
 	TString fStringITSClusterCut;
 	
@@ -186,7 +199,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,7)
+    ClassDef(AliPrimaryPionCuts,8)
 };
 
 #endif

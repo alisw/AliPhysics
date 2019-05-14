@@ -53,12 +53,14 @@ class AliHFTreeHandler : public TObject
       kNsigmaCombPIDint,
       kNsigmaCombPIDfloatandint, //--> to test
       kRawPID,
-      kRawAndNsigmaPID
+      kRawAndNsigmaPID,
+      kNsigmaDetAndCombPID
     };
 
     enum piddet {
       kTPC,
-      kTOF
+      kTOF,
+      kCombTPCTOF // must be the last element in the enum
     };
 
     enum optsingletrack {
@@ -74,7 +76,7 @@ class AliHFTreeHandler : public TObject
 
     //core methods --> implemented in each derived class
     virtual TTree* BuildTree(TString name, TString title) = 0;
-    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
+    virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) = 0;
     //for MC gen --> common implementation
     TTree* BuildTreeMCGen(TString name, TString title);
     bool SetMCGenVariables(int runnumber, unsigned int eventID, AliAODMCParticle* mcpart);
@@ -180,6 +182,7 @@ class AliHFTreeHandler : public TObject
     int fCandType; ///flag for candidate type (bit map above)
     float fInvMass; ///candidate invariant mass
     float fPt; ///candidate pt
+    float fPtGen; ///generated candidate pt
     float fY; ///candidate rapidity
     float fEta; ///candidate pseudorapidity
     float fPhi; ///candidate azimuthal angle
@@ -204,8 +207,8 @@ class AliHFTreeHandler : public TObject
     int fITSclsMapProng[knMaxProngs];///prong track ITS cluster map
     float fTrackIntegratedLengthProng[knMaxProngs]; /// prong track integrated lengths
     float fStartTimeResProng[knMaxProngs]; /// prong track start time resolutions (for TOF)
-    float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///PID nsigma variables
-    int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid][knMaxHypo4Pid]; ///PID nsigma variables (integers)
+    float fPIDNsigmaVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables
+    int fPIDNsigmaIntVector[knMaxProngs][knMaxDet4Pid+1][knMaxHypo4Pid]; ///PID nsigma variables (integers)
     float fPIDrawVector[knMaxProngs][knMaxDet4Pid]; ///raw PID variables
     int fPidOpt; ///option for PID variables
     int fSingleTrackOpt; ///option for single-track variables
@@ -229,7 +232,7 @@ class AliHFTreeHandler : public TObject
     int fNEtabinsNsigmaTPCDataCorr; /// number of eta bins for data-driven NsigmaTPC correction
 
   /// \cond CLASSIMP
-  ClassDef(AliHFTreeHandler,7); ///
+  ClassDef(AliHFTreeHandler,8); ///
   /// \endcond
 };
 #endif

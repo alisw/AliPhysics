@@ -97,6 +97,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
   GetCentrality(centrality, centMin, centMax);
   std::cout << "CentMin = " << centMin << "  CentMax = " << centMax << std::endl;
   task->SetCentrality(centMin, centMax);
+  if(centrality == 8){
+    task->SetRun1Analysis(kTRUE);
+  }
 
   // #########################################################
   // #########################################################

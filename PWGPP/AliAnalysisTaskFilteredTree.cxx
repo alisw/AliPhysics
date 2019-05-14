@@ -488,7 +488,8 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       Int_t ntracksSPD = vertexSPD->GetNContributors();
       Int_t ntracksTPC = vertexTPC->GetNContributors();        
       Int_t runNumber     = event->GetRunNumber();        
-      Int_t timeStamp    = event->GetTimeStamp();
+      Int_t evtTimeStamp    = event->GetTimeStamp();
+      Double_t timeStamp= event->GetTimeStampCTPBCCorr();
       ULong64_t triggerMask = event->GetTriggerMask();
       Float_t magField    = event->GetMagneticField();
       TObjString triggerClass = event->GetFiredTriggerClasses().Data();
@@ -538,7 +539,8 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
         "gid="<<gid<<                         // global id of track
         "fileName.="<<&fCurrentFileName<<     // file name
         "runNumber="<<runNumber<<             // run number	    
-        "evtTimeStamp="<<timeStamp<<          // time stamp of event
+        "evtTimeStamp="<<evtTimeStamp<<          // time stamp of event building
+        "timeStamp="<<timeStamp<<                // precise time stamp of interaction based on LHCclock
         "evtNumberInFile="<<eventNumber<<     // event number	    
         "trigger="<<triggerMask<<             // trigger mask
         "triggerClass="<<&triggerClass<<      // trigger class
@@ -694,6 +696,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     Float_t bz = esdEvent->GetMagneticField();
     Int_t runNumber = esdEvent->GetRunNumber();
     Int_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Double_t timeStamp= esdEvent->GetTimeStampCTPBCCorr();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
    
     // Global event id calculation using orbitID, bunchCrossingID and periodID 
@@ -748,6 +751,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
         "fileName.="<<&fCurrentFileName<<            
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
+        "timeStamp="<<timeStamp<<              // excat time stamp -based on LHCclock
         "evtNumberInFile="<<evtNumberInFile<<
         "triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<                           //  magnetic field
@@ -961,9 +965,11 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
   ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
   TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+  ULong64_t triggerMask = esdEvent->GetTriggerMask();
   Float_t bz = esdEvent->GetMagneticField();
   Int_t runNumber = esdEvent->GetRunNumber();
   Int_t evtTimeStamp = esdEvent->GetTimeStamp();
+  Double_t timeStamp= esdEvent->GetTimeStampCTPBCCorr();
   Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
   Int_t mult = vtxESD->GetNContributors();
   (*fTreeSRedirector)<<"eventInfoTracks"<<
@@ -971,7 +977,9 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
     "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
     "runNumber="<<runNumber<<                             // runNumber
     "evtTimeStamp="<<evtTimeStamp<<           // time stamp of event (in seconds)
+    "timeStamp="<<timeStamp<<                 // prcize time stamp
     "evtNumberInFile="<<evtNumberInFile<<     // event number
+    "triggerMask="<<triggerMask<<             // trigger mask
     "triggerClass="<<&triggerClass<<          // trigger class as a string
     "Bz="<<bz<<                               // solenoid magnetic field in the z direction (in kGaus)
     "mult="<<mult<<                           // multiplicity of tracks pointing to the primary vertex
@@ -1486,6 +1494,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
             "runNumber="<<runNumber<<                // runNumber
             "evtTimeStamp="<<evtTimeStamp<<          // time stamp of event (in seconds)
+            "timeStamp="<<timeStamp<<                // precize time stamp based on the LHC clock
             "evtNumberInFile="<<evtNumberInFile<<    // event number
             "triggerClass="<<&triggerClass<<         // trigger class as a string
             "Bz="<<bz<<                              // solenoid magnetic field in the z direction (in kGaus)
@@ -1741,6 +1750,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
     Double_t bz = esdEvent->GetMagneticField();
     Double_t runNumber = esdEvent->GetRunNumber();
     Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Double_t timeStamp= esdEvent->GetTimeStampCTPBCCorr();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
     // loop over MC stack
     for (Int_t iMc = 0; iMc < mcStackSize; ++iMc) 
@@ -1833,7 +1843,8 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
           "fileName.="<<&fCurrentFileName<<
           "triggerClass.="<<&triggerClass<<
           "runNumber="<<runNumber<<
-          "evtTimeStamp="<<evtTimeStamp<<
+          "evtTimeStamp="<<evtTimeStamp<<           // time stamp at event build
+          "timeStamp="<<timeStamp<<                 // precise time stamp based on the LHC clock idicating collision time
           "evtNumberInFile="<<evtNumberInFile<<     // 
           "Bz="<<bz<<                               // magnetic field
           "vtxESD.="<<vtxESD<<                      // vertex info
@@ -1970,6 +1981,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   Float_t bz = esdEvent->GetMagneticField();
   Int_t run = esdEvent->GetRunNumber();
   Int_t time = esdEvent->GetTimeStamp();
+  Double_t timeStamp= esdEvent->GetTimeStampCTPBCCorr();
   Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
   Int_t nV0s = esdEvent->GetNumberOfV0s();
   Int_t mult = vtxESD->GetNContributors();
@@ -1978,6 +1990,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
     "fileName.="<<&fCurrentFileName<<                // name of the chunk file (hopefully full)
     "run="<<run<<                             // runNumber
     "time="<<time<<                           // time stamp of event (in seconds)
+    "timeStamp="<<timeStamp<<                 // more precise time stamp based on LHC clock
     "evtNumberInFile="<<evtNumberInFile<<     // event number
     "triggerClass="<<&triggerClass<<          // trigger class as a string
     "Bz="<<bz<<                               // solenoid magnetic field in the z direction (in kGaus)
@@ -2208,6 +2221,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
     Double_t bz = esdEvent->GetMagneticField();
     Double_t runNumber = esdEvent->GetRunNumber();
     Double_t evtTimeStamp = esdEvent->GetTimeStamp();
+    Double_t timeStamp= esdEvent->GetTimeStampCTPBCCorr();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
    
     // Global event id calculation using orbitID, bunchCrossingID and periodID 
@@ -2258,6 +2272,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
         "fileName.="<<&fCurrentFileName<<     // file name
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
+        "timeStamp="<<timeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
         "triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<

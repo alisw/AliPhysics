@@ -16,6 +16,7 @@
 
 class TH1F;
 class TH2F;
+class TH3F;
 class AliNormalizationCounter;
 class AliRDHFCutsD0toKpi;
 
@@ -69,8 +70,13 @@ private:
   TH2F *fHistCL0vsV0MCentrality;         //!<! hist. of centrality (CL0 vs V0)
   TH2F *fHistNTracksTPCoutVsV0Cent;      //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksFB4VsV0Cent;         //!<! Centrality-multiplicity correl
+  TH2F *fHistNTracksFB4EtaPosVsV0Cent;   //!<! Centrality-multiplicity correl
+  TH2F *fHistNTracksFB4EtaNegVsV0Cent;   //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksBC0VsV0Cent;         //!<! Centrality-multiplicity correl
   TH2F *fHistNTrackletsVsV0Cent;         //!<! Centrality-multiplicity correl
+  TH2F *fHistNTrackletsGoldenVsV0Cent;   //!<! Centrality-multiplicity correl
+  TH3F *fHistNTrackletsGoldenVsV0CentVsZvert; //!<! Centrality-multiplicity correl
+  TH1F *fHistPhiTrackelts;               //!<! Control plot
   TH2F *fHistNTracksTPCoutVsNTracklets;  //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksFB4VsNTracklets;     //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksBC0VsNTracksFB4;     //!<! Centrality-multiplicity correl
@@ -86,7 +92,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,5);
+  ClassDef(AliAnalysisTaskCheckEvSel,8);
 };
 
 #endif

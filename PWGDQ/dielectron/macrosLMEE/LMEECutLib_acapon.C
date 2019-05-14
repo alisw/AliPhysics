@@ -60,7 +60,13 @@ class LMEECutLib {
     kCutVar19,
     kCutVar20,
     // Cut set used by Sebastian Scheid (also pPb at 5 TeV analysis)
-    kScheidCuts
+    kScheidCuts,
+    // Five different R factor binning schemes
+    kMixScheme1,
+    kMixScheme2,
+    kMixScheme3,
+    kMixScheme4,
+    kMixScheme5
   };
 
 
@@ -319,6 +325,9 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
 // Eta correction for the centroid and width of electron sigmas in the ITS, can be one/two/three-dimensional
 TH3D LMEECutLib::SetEtaCorrectionITSTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Int_t selection, Bool_t hasMC){
 
+  if(!wSDD){
+    return;
+  }
   ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionITSTTree() >>>>>>>>>>>>>>>>>>>>>> ");
 
   std::cout << "starting LMEECutLib::SetEtaCorrectionITSTTree()\n";
@@ -585,7 +594,7 @@ AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
 }
 
 
-AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
+AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet){
   AliDielectronMixingHandler* mixingHandler = 0x0;
   switch (cutSet) {
     case kAllSpecies:
@@ -597,10 +606,43 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
       mixingHandler->SetDepth(60);
       mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
       break;
-    //[...]
-    case kTTreeCuts:
+    case kMixScheme1:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 5, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
       break;
-    default: cout << "No Mixer defined" << endl;
+    case kMixScheme2:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme3:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -5., 0., 5., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 5, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme4:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., 0., 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 10, 20, 30, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    case kMixScheme5:
+      mixingHandler = new AliDielectronMixingHandler;
+      mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
+      mixingHandler->AddVariable(AliDielectronVarManager::kCentralityNew,"0, 20, 40, 60, 80,100");
+      mixingHandler->SetDepth(60);
+      mixingHandler->SetMixType(AliDielectronMixingHandler::kAll);
+      break;
+    default:
+      std::cout << "No Mixer defined" << std::endl;
   }
   return mixingHandler;
 }
@@ -1181,7 +1223,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
       trackCuts->Print();
       return trackCuts;
-    case kV0_trackCuts:
+    case kV0_trackCuts: // Does not work for MC (checked 2019.05.08)
       // V0 specific track cuts
       gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
       // Cut on the angle between the total momentum vector of the daughter

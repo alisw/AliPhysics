@@ -2827,6 +2827,9 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber(int runNumber)
     if ( runNumber >= 288861 && runNumber <= 288909 ) lProductionName = "LHC18i";
     if ( runNumber >= 288943 && runNumber <= 288943 ) lProductionName = "LHC18j";
     if ( runNumber >= 289165 && runNumber <= 289201 ) lProductionName = "LHC18k";
+    if ( runNumber >= 289240 && runNumber <= 289971 ) lProductionName = "LHC18l";
+    if ( runNumber >= 293357 && runNumber <= 293359 ) lProductionName = "LHC18n";
+    if ( runNumber >= 293368 && runNumber <= 293898 ) lProductionName = "LHC18o";
     
     //Registered Productions : Run 2 Pb-Pb
     if ( runNumber >= 243395 && runNumber <= 243984 ) lProductionName = "LHC15m";
@@ -2932,6 +2935,9 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber(int runNumber)
     if ( runNumber >= 288861 && runNumber <= 288909 ) lSystemType = "pp";
     if ( runNumber >= 288943 && runNumber <= 288943 ) lSystemType = "pp";
     if ( runNumber >= 289165 && runNumber <= 289201 ) lSystemType = "pp";
+    if ( runNumber >= 289240 && runNumber <= 289971 ) lSystemType = "pp";
+    if ( runNumber >= 293357 && runNumber <= 293359 ) lSystemType = "pp";
+    if ( runNumber >= 293368 && runNumber <= 293898 ) lSystemType = "pp";
     
     //Registered Productions : Run 2 Pb-Pb
     if ( runNumber >= 243395 && runNumber <= 243984 ) lSystemType = "Pb-Pb";

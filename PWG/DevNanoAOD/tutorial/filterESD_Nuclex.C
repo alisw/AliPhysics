@@ -74,7 +74,7 @@ void filterESD_Nuclex()
   nanoFilterTask->SetTrkCuts(myFilterCuts);
   nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
 
-  nanoFilterTask->SetVarListTrack("pt,theta,phi,TPCsignalN,chi2perNDF,TRDntrackletsPID,TPCmomentum,TOFsignal,integratedLength,posx,posy,posz");
+  nanoFilterTask->SetVarListTrack("pt,theta,phi,TPCsignalN,TPCncls,TPCnclsF,TPCNCrossedRows,chi2perNDF,TRDntrackletsPID,TPCmomentum,TOFsignal,TPCsignal,integratedLength,DCA,posDCAz");
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kDeuteron);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kTriton);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kHe3);
@@ -84,7 +84,7 @@ void filterESD_Nuclex()
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kHe3);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kAlpha);
 
-  nanoFilterTask->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,RunNumber");
+  nanoFilterTask->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,RunNumber,T0Spread,NumberOfESDTracks");
 
   mgr->SetDebugLevel(1); // enable debug printouts
   if (!mgr->InitAnalysis()) 

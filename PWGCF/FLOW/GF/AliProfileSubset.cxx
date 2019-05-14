@@ -11,6 +11,7 @@ TProfile* AliProfileSubset::GetSubset(Bool_t onX, const char *name, Int_t firstb
   const TArrayD *bins = outAxis.GetXbins();
   Int_t firstOutBin = outAxis.GetFirst();
   Int_t lastOutBin = outAxis.GetLast();
+  //printf("firstOutBin = %i, lastOutBin = %i\n",firstOutBin,lastOutBin);
   TProfile  * p1 = 0;
   if(l_nbins) p1 = new TProfile(pname, GetTitle(),l_nbins, l_binarray);
   else p1 = new TProfile(pname,GetTitle(),outAxis.GetNbins(),bins->fArray);
@@ -29,7 +30,7 @@ TProfile* AliProfileSubset::GetSubset(Bool_t onX, const char *name, Int_t firstb
   TH1D * h1W = (onX) ? h2dW->ProjectionX("h1temp-W",firstbin,lastbin) : h2dW->ProjectionY("h1temp-W",firstbin,lastbin);
   TH1D * h1N = (onX) ? h2dN->ProjectionX("h1temp-N",firstbin,lastbin) : h2dN->ProjectionY("h1temp-N",firstbin,lastbin);
   h1W->SetDirectory(0); h1N->SetDirectory(0);
-//  printf("Asserting, %i vs. %i\n",h1W->fN, p1->fN);
+  //printf("Asserting, %i vs. %i\n",h1W->fN, p1->fN);
   R__ASSERT( h1W->fN == p1->fN );
   R__ASSERT( h1N->fN == p1->fN );
   R__ASSERT( h1W->GetSumw2()->fN != 0); // h1W should always be a weighted histogram since h2dW is

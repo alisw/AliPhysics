@@ -101,7 +101,7 @@ TTree* AliHFTreeHandlerLctopKpi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLctopKpi::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo) 
+bool AliHFTreeHandlerLctopKpi::SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse *pidrespo)
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -109,6 +109,7 @@ bool AliHFTreeHandlerLctopKpi::SetVariables(int runnumber, unsigned int eventID,
   }
   fRunNumber=runnumber;
   fEvID=eventID;
+  fPtGen=ptgen;
   
   //topological variables
   //common

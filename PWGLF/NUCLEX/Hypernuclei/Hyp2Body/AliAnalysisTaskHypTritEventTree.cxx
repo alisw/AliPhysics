@@ -135,8 +135,8 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
     AliError("Could not get PID response.\n");
     return;
   }
-  fHistdEdx = new TH2F("fHistdEdX","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-8.0,8.0,1000,0.0,1200);
-  fHistdEdxV0 = new TH2F("fHistdEdXV0","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-8.0,8.0,1000,0.0,1200);
+  fHistdEdx = new TH2F("fHistdEdX","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-5.0,5.0,1000,0.0,1500);
+  fHistdEdxV0 = new TH2F("fHistdEdXV0","dE/dx;#frac{#it{p}}{z} (GeV/#it{c});TPC Signal (a.u.)",1000,-5.0,5.0,1000,0.0,1500);
   fHistNumEvents = new TH1F("fHistNumEvents","Number of Events",2,0,2);
   fHistNumEvents->GetXaxis()->SetBinLabel(1,"before PhysSel");
   fHistNumEvents->GetXaxis()->SetBinLabel(2,"after PhysSel");
@@ -337,7 +337,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     fHistdEdxV0->Fill(trackN->GetInnerParam()->GetP() * trackN->GetSign(), trackN->GetTPCsignal());
     if(fPIDCheckOnly) continue;
     if (trackN->GetTPCsignal() > 1500 || trackP->GetTPCsignal() > 1500) continue;
-    if (trackN->GetInnerParam()->GetP() > 10 || trackP->GetInnerParam()->GetP() > 10) continue;
+    if (trackN->GetInnerParam()->GetP() > 5 || trackP->GetInnerParam()->GetP() > 5) continue;
     Bool_t pionPositive     = kFALSE;
     Bool_t pionNegative     = kFALSE;
     // Bool_t protonPositive   = kFALSE;
@@ -623,10 +623,13 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection() {
   fReducedEvent->fTrigger = 0;
   TString classes = fESDevent->GetFiredTriggerClasses();
 
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fReducedEvent->fTrigger = 1;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kCentral)) fReducedEvent->fTrigger = 2;
-  if ((fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fReducedEvent->fTrigger =  3;
-  if(classes.Contains("HNU") || classes.Contains("HQU") || classes.Contains("HSE")) fReducedEvent->fTrigger = 4;
+    if (classes.Contains("CINT7"))  fReducedEvent->fTrigger = 1;
+    if ((fInputHandler->IsEventSelected() & AliVEvent::kTRD)) fReducedEvent->fTrigger = 2;
+    if ((fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)) fReducedEvent->fTrigger =  3;
+    if (classes.Contains("HNU")) fReducedEvent->fTrigger = 4;
+    if (classes.Contains("HQU")) fReducedEvent->fTrigger = 5;
+    if (classes.Contains("HJT")) fReducedEvent->fTrigger = 6;
+
   Bool_t isTriggered = kTRUE;
   if (fReducedEvent->fTrigger == 0) isTriggered = kFALSE;
   return isTriggered;

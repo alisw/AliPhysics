@@ -126,16 +126,16 @@ private:
     
     Bool_t              fRecalIP;//
     
-    Double_t            fTPCnSigma;//!
-    Double_t            fTPCnSigmaMin;//!
-    Double_t            fTPCnSigmaMax;//!
-    Double_t            fM02Min;//!
-    Double_t            fM02Max1;//!
-    Double_t            fM02Max2;//!
-    Double_t            fM20Min;//!
-    Double_t            fM20Max;//!
-    Double_t            fEovPMin;//!
-    Double_t            fEovPMax;//!
+    Double_t            fTPCnSigma;//
+    Double_t            fTPCnSigmaMin;//
+    Double_t            fTPCnSigmaMax;//
+    Double_t            fM02Min;//
+    Double_t            fM02Max1;//
+    Double_t            fM02Max2;//
+    Double_t            fM20Min;//
+    Double_t            fM20Max;//
+    Double_t            fEovPMin;//
+    Double_t            fEovPMax;//
     Int_t               fNEle;//!
     Double_t            fTPCnSigmaHadMin;//
     Double_t            fTPCnSigmaHadMax;//

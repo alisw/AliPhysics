@@ -964,7 +964,7 @@ AliFemtoDreamTrackCuts *AliFemtoDreamTrackCuts::PrimKaonCuts(
   trackCuts->SetDCAVtxXY(0.1);
   trackCuts->SetCutSharedCls(true);
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.80);
-  trackCuts->SetPID(AliPID::kKaon, 0.5);
+  trackCuts->SetPID(AliPID::kKaon, 0.4,5);
   // trackCuts->SetRejLowPtPionsTOF(false);
   trackCuts->SetCutSmallestSig(true);
 

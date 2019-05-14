@@ -18,6 +18,19 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
+  if (suffix == "1") {
+  evtCuts->SetSphericityCuts(0,1);
+  }
+  if (suffix == "2") {
+  evtCuts->SetSphericityCuts(0,0.3);
+  }
+  if (suffix == "3") {
+  evtCuts->SetSphericityCuts(0.3,0.7);
+  }
+  if (suffix == "4") {
+  evtCuts->SetSphericityCuts(0.7,1);
+  }
+
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   TrackCuts->SetCutCharge(1);
@@ -26,10 +39,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetCutCharge(-1);
 
-  if (suffix != "0") {
-    TrackCuts->SetMinimalBooking(true);
-    AntiTrackCuts->SetMinimalBooking(true);
-  }
+//  if (suffix != "0") {
+//    TrackCuts->SetMinimalBooking(true);
+//    AntiTrackCuts->SetMinimalBooking(true);
+//  }
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
@@ -37,14 +50,14 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
 
-  if (suffix != "0") {
-    TrackPosKaonCuts->SetMinimalBooking(true);
-    TrackNegKaonCuts->SetMinimalBooking(true);
-  }
+//  if (suffix != "0") {
+//    TrackPosKaonCuts->SetMinimalBooking(true);
+//    TrackNegKaonCuts->SetMinimalBooking(true);
+//  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetAxisInvMassPlots(400, 0.9, 1.2);
-  TrackCutsPhi->SetCutInvMass(0.004);
+  TrackCutsPhi->SetCutInvMass(0.008);
   AliFemtoDreamTrackCuts *dummyCutsPos = new AliFemtoDreamTrackCuts();
   AliFemtoDreamTrackCuts *dummyCutsNeg = new AliFemtoDreamTrackCuts();
   TrackCutsPhi->SetPosDaugterTrackCuts(dummyCutsPos);
@@ -53,9 +66,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
 
-  if (suffix != "0") {
-    TrackCutsPhi->SetMinimalBooking(true);
-  }
+//  if (suffix != "0") {
+//    TrackCutsPhi->SetMinimalBooking(true);
+//  }
+
 
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor

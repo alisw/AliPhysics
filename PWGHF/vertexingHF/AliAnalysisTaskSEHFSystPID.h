@@ -22,6 +22,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
 #include "AliAODPidHF.h"
+#include "AliEventCuts.h"
 
 using namespace std;
 
@@ -67,10 +68,9 @@ public:
   void SetAODMismatchProtection(int opt=1)                                    {fAODProtection=opt;}
   void SetDownSamplingOption(int opt=0)                                       {fDownSamplingOpt=opt;}
 
-  void EnableNsigmaDataDrivenCorrection(int syst) {
-    fEnableNsigmaTPCDataCorr = true;
-    fSystNsigmaTPCDataCorr = syst;
-  }
+  void EnableNsigmaDataDrivenCorrection(int syst)                             {fEnableNsigmaTPCDataCorr=true; fSystNsigmaTPCDataCorr=syst;}
+
+  void EnableSelectionWithAliEventCuts(bool useAliEventCuts=true, int opt=2)  {fUseAliEventCuts=useAliEventCuts; fApplyPbPbOutOfBunchPileupCuts=opt;}
 
 private:
 
@@ -86,6 +86,7 @@ private:
   unsigned short ConvertFloatToUnsignedShort(float num);
   void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta);
   void SetNsigmaTPCDataCorr(int run);
+  int IsEventSelectedWithAliEventCuts();
 
   enum hypos{kPion,kKaon,kProton};
   static const int kNHypo = 3;
@@ -158,8 +159,11 @@ private:
   int fNPbinsNsigmaTPCDataCorr;                                                      /// number of p bins for data-driven NsigmaTPC correction
   float fEtalimitsNsigmaTPCDataCorr[AliAODPidHF::kMaxEtaBins+1];                     /// vector of eta limits for data-driven NsigmaTPC correction
   int fNEtabinsNsigmaTPCDataCorr;                                                    /// number of eta bins for data-driven NsigmaTPC correction
+  bool fUseAliEventCuts;                                                             /// flag to enable usage of AliEventCuts foe event-selection
+  AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
+  int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 6);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 7);
 };
 
 #endif

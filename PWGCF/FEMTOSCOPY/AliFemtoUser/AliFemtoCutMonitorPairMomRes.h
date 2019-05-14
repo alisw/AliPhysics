@@ -39,6 +39,9 @@ public:
 
 private:
   TH2D *fMomRes;
+  TH2D *fMomResTrueMass;
+  TH2D *fMomRes_KPpairOnly;
+  TH2D *fMomResTrueMass_KPpairOnly;
   double fMassPart1;
   double fMassPart2;
   

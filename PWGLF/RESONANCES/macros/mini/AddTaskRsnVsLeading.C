@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi", Bool_t isMC = kFALSE, TString configName = "ConfigPhiLeading.C", TString path = "")
+AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi", Bool_t isMC = kFALSE, UInt_t triggerMask = AliVEvent::kMB, Double_t nSigmaKaon = 3.0, TString configName = "ConfigPhiLeading.C", TString path = "")
 {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -11,8 +11,8 @@ AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi", Bool_t isMC = kFA
     AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName, isMC);
 
     // Trigger setting
-    UInt_t triggerMask = AliVEvent::kINT7; // for pp
-    // triggerMask=AliVEvent::kAny; // else
+    //UInt_t triggerMask = AliVEvent::kINT7; // for pp
+   // triggerMask=AliVEvent::kAny; // else
     task->SelectCollisionCandidates(triggerMask); //AOD
 
     // Mixing setings
@@ -36,7 +36,7 @@ AliAnalysisTask *AddTaskRsnVsLeading(TString taskName = "phi", Bool_t isMC = kFA
     cutsPair->SetCutScheme(cutY->GetName());
 
     // We will add RSN config file
-    TString macroArgs = TString::Format("(AliRsnMiniAnalysisTask *)%p", task);
+    TString macroArgs = TString::Format("(AliRsnMiniAnalysisTask *)%p,%d,%f", task, isMC, nSigmaKaon);
     TMacro cfg(gSystem->ExpandPathName(TString::Format("%s%s", path.Data(), configName.Data()).Data()));
     Long_t rc = reinterpret_cast<Long_t>(cfg.Exec(macroArgs.Data()));
     if (!rc)

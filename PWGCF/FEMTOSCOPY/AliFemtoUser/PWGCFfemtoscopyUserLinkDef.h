@@ -74,6 +74,7 @@
 //#pragma link C++ class AliFemtoPhiPairCut;
 #pragma link C++ class AliFemtoQinvCorrFctnEMCIC;
 #pragma link C++ class AliFemtoCorrFctn3DSphericalEMCIC;
+#pragma link C++ class AliFemtoCorrFctnPtKstar;
 #pragma link C++ class AliFemtoBPLCMS3DCorrFctnEMCIC;
 #pragma link C++ class AliFemtoPairCutPt;
 #pragma link C++ class AliFemtoAvgSepCorrFctn;
@@ -171,6 +172,8 @@
 #pragma link C++ class AliFemtoKKTrackCutTest;
 // Sphericity for KK analysis in pp13TeV
 #pragma link C++ class AliFemtoSphericityEventCutKK;
+//3may2019
+#pragma link C++ class AliFemtoSphericityEventCutKK1;
 // Sphericity monitor
 #pragma link C++ class AliFemtoCutMonitorEventSphericity;
 

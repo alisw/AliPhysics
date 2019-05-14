@@ -121,6 +121,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         
         virtual void          BaseAnaTrack(Int_t flag = 0);      // wraps AnaTracK, to be used for mult counting
         virtual void          BaseAnaParticleMC(Int_t flag = 0); // wraps AnaParticleMC, to be used for mult counting
+        virtual void          BaseAddOutput();  //used to
         
         //         
         virtual Bool_t          InitEvent();   // loads event-related properties
@@ -335,7 +336,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         
     /// \cond CLASSIMP      
-    ClassDef(AliAnalysisTaskMKBase, 5);
+    ClassDef(AliAnalysisTaskMKBase, 6);
     /// \endcond
     
 };

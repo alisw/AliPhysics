@@ -1822,6 +1822,11 @@ void AliReducedVarManager::FillCaloClusterInfo(CLUSTER* cl, Float_t* values) {
   values[kEMCALdispersion] = cl->Dispersion();
   values[kEMCALnCells] = cl->NCells();
   values[kEMCALnMatchedTracks] = cl->NMatchedTracks();
+  TVector3 clusterVector(cl->X(), cl->Y(), cl->Z());
+  Float_t phiCluster = clusterVector.Phi();
+  if (phiCluster<0) phiCluster += 2*TMath::Pi();
+  values[kEMCALclusterPhi] = phiCluster;
+  values[kEMCALclusterEta] = clusterVector.Eta();
 }
 
 //_________________________________________________________________
@@ -3221,7 +3226,9 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kEMCALdispersion]       = "Cluster dispersion";      fgVariableUnits[kEMCALdispersion] = "";
   fgVariableNames[kEMCALnCells]           = "Cluster No. cells";       fgVariableUnits[kEMCALnCells] = "";
   fgVariableNames[kEMCALnMatchedTracks]   = "Cluster No. matched tracks"; fgVariableUnits[kEMCALnMatchedTracks] = "";
-  fgVariableNames[kTrackingFlag] = "Tracking flag";  fgVariableUnits[kTrackingFlag] = "";  
+  fgVariableNames[kEMCALclusterPhi]       = "Cluster #varphi";         fgVariableUnits[kEMCALclusterPhi] = "rad.";
+  fgVariableNames[kEMCALclusterEta]       = "Cluster #eta";            fgVariableUnits[kEMCALclusterEta] = "";
+  fgVariableNames[kTrackingFlag] = "Tracking flag";  fgVariableUnits[kTrackingFlag] = "";
   fgVariableNames[kTrackingStatus] = "Tracking status";  fgVariableUnits[kTrackingStatus] = "";  
   fgVariableNames[kDeltaPhi]              = "#Delta #varphi";             fgVariableUnits[kDeltaPhi]              = "rad.";
   fgVariableNames[kDeltaPhiBoosted]       = "#Delta #varphi";             fgVariableUnits[kDeltaPhiBoosted]       = "rad.";

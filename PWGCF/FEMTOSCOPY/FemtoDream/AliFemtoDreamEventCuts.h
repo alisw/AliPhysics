@@ -62,6 +62,9 @@ class AliFemtoDreamEventCuts {
     fUseAliEvtCuts = apply;
   }
   ;
+  bool GetUseAliEventCuts () const {
+    return fUseAliEvtCuts;
+  }
   void SetMultVsCentPlots(bool doIt) {
     fCentVsMultPlots = doIt;
   }

@@ -44,7 +44,7 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
    TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());
-  task->fSettings.fDataType = task->fSettings.kRECON;
+  //task->fSettings.fDataType = task->fSettings.kRECON;
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 

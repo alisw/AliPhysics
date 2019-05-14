@@ -39,7 +39,7 @@ class AliAODMCParticle;
 /**
  * @class AliEmcalMCTrackSelector
  * @brief Class to select particles in MC events.
- * @autor Salvatore Aiola, Yale Univeristy
+ * @author Salvatore Aiola, Yale Univeristy
  * @ingroup EMCALFWTASKS
  * @since Aug 5, 2012
  */
