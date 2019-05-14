@@ -217,13 +217,10 @@ void AliFemtoDreamEvent::SetEvent(AliVEvent *evt) {
     this->fRefMult08 = nanoHeader->GetVar(kRefMult);
   }
   this->fV0MCentrality = nanoHeader->GetCentr("V0M");
-
-  // TODO
-  //  this->fSPDMult = CalculateITSMultiplicity(evt);
-  //  const AliVVZERO *vZERO = evt->GetVZEROData();
-  //  this->fV0AMult = vZERO->GetMTotV0A();
-  //  this->fV0CMult = vZERO->GetMTotV0C();
-  //  this->fspher = CalculateSphericityEvent(evt);
+  this->fSPDMult = nanoHeader->GetVarIndex("MultSelection.SPDTracklets.Value");
+  this->fV0AMult = nanoHeader->GetVarIndex("MultSelection.V0A.Value");
+  this->fV0CMult = nanoHeader->GetVarIndex("MultSelection.V0C.Value");
+  this->fspher = CalculateSphericityEvent((AliAODEvent*)evt);
 }
 
 void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
