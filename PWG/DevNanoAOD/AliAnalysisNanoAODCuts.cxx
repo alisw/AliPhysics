@@ -324,17 +324,17 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
     return false;
   }
   if (fDCADaugPrimVtxMin > 0.
-      && cascade->DcaBachToPrimVertex() > fDCADaugPrimVtxMin) {
+      && cascade->DcaBachToPrimVertex() < fDCADaugPrimVtxMin) {
     return false;
   }
 
   if (fDCADaugPrimVtxMin > 0.
-      && cascade->DcaNegToPrimVertex() > fDCADaugPrimVtxMin) {
+      && cascade->DcaNegToPrimVertex() < fDCADaugPrimVtxMin) {
     return false;
   }
 
   if (fDCADaugPrimVtxMin > 0.
-      && cascade->DcaPosToPrimVertex() > fDCADaugPrimVtxMin) {
+      && cascade->DcaPosToPrimVertex() < fDCADaugPrimVtxMin) {
     return false;
   }
   if (fCPACascMin > 0. || fCPAv0Min > 0.) {
