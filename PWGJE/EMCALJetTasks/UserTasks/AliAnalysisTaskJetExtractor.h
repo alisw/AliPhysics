@@ -54,8 +54,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetSaveTriggerTracks(Bool_t val) {fSaveTriggerTracks = val; fInitialized = kFALSE;}
   void                        SetSaveCaloClusters(Bool_t val) {fSaveCaloClusters = val; fInitialized = kFALSE;}
 
-  void                        ActivateJetMatching(const char* arrayNameDetLevel, const char* arrayNamePartLevel, const char* rhoName = 0, const char* rhoMassName = 0)
-                                {fMatchedDetLevelJetsArrayName = arrayNameDetLevel; fMatchedPartLevelJetsArrayName = arrayNamePartLevel; fMatchedJetsRhoName = rhoName ? rhoName : ""; fMatchedJetsRhoMassName = rhoMassName ? rhoMassName : "";}
+  void                        ActivateJetMatching(const char* arrayNameDetLevel, const char* arrayNamePartLevel = "", const char* rhoName = "", const char* rhoMassName = "")
+                                {fMatchedDetLevelJetsArrayName = arrayNameDetLevel; fMatchedPartLevelJetsArrayName = arrayNamePartLevel; fMatchedJetsRhoName = rhoName; fMatchedJetsRhoMassName = rhoMassName;}
   void                        SetMCParticleArrayName(const char* name)            { fMCParticleArrayName = name; }
   void                        SetHadronMatchingRadius(Double_t val)               { fHadronMatchingRadius  = val; }
   void                        SetSecondaryVertexMaxChi2(Double_t val   )          { fSecondaryVertexMaxChi2 = val; }
