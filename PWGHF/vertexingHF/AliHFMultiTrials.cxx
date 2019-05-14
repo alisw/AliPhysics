@@ -32,7 +32,7 @@ ClassImp(AliHFMultiTrials);
 
 
 //_________________________________________________________________________
-AliHFMultiTrials::AliHFMultiTrials() : 
+AliHFMultiTrials::AliHFMultiTrials() :
   TNamed(),
   fNumOfRebinSteps(4),
   fRebinSteps(0x0),
@@ -50,7 +50,7 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fSuffix(""),
   fFitOption(0),
   fUseExpoBkg(kTRUE),
-  fUseLinBkg(kTRUE),  
+  fUseLinBkg(kTRUE),
   fUsePol2Bkg(kTRUE),
   fUsePol3Bkg(kTRUE),
   fUsePol4Bkg(kTRUE),
@@ -167,7 +167,7 @@ Bool_t AliHFMultiTrials::CreateHistos(){
       if(fSaveBkgVal) {
         fHistoBkgTrial[theCase] = new TH1F(Form("hBkgTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data()),"  ; Background",totTrials,-0.5,totTrials-0.5);
         fHistoBkgInBinEdgesTrial[theCase] = new TH1F(Form("hBkgInBinEdgesTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data()),"  ; Background in bin edges",totTrials,-0.5,totTrials-0.5);
-      }      
+      }
 
       fHistoChi2Trial[theCase]->SetMarkerStyle(7);
       fHistoSignifTrial[theCase]->SetMarkerStyle(7);
@@ -239,8 +239,19 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
               AliHFMassFitterVAR*  fitter=0x0;
               //if D0 Reflection
               if(fhTemplRefl){
-                fitter=new AliHFMassFitterVAR(hRebinned,hmin,hmax,1,typeb,2);
-                fitter->SetTemplateReflections(fhTemplRefl);
+                if(typeb<=kPol2Bkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,typeb,2);
+                }else if(typeb==kPowBkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,4,2);
+                }else if(typeb==kPowTimesExpoBkg){
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,5,2);
+                }else{
+                  fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,6,2);
+                  if(typeb==kPol3Bkg) fitter->SetBackHighPolDegree(3);
+                  if(typeb==kPol4Bkg) fitter->SetBackHighPolDegree(4);
+                  if(typeb==kPol5Bkg) fitter->SetBackHighPolDegree(5);
+                }
+                fitter->SetTemplateReflections(fhTemplRefl,"doublegaus",hmin,hmax);
                 fitter->SetFixReflOverS(fFixRefloS,kTRUE);
               }
               else {
@@ -459,21 +470,21 @@ void AliHFMultiTrials::SaveToRoot(TString fileName, TString option) const{
   fHistoMeanTrialAll->Write();
   fHistoChi2TrialAll->Write();
   fHistoSignifTrialAll->Write();
-  if(fSaveBkgVal) {  
-    fHistoBkgTrialAll->Write(); 
-    fHistoBkgInBinEdgesTrialAll->Write(); 
+  if(fSaveBkgVal) {
+    fHistoBkgTrialAll->Write();
+    fHistoBkgInBinEdgesTrialAll->Write();
   }
-  fHistoRawYieldDistBinCAll->Write(); 
-  fHistoRawYieldTrialBinCAll->Write(); 
+  fHistoRawYieldDistBinCAll->Write();
+  fHistoRawYieldTrialBinCAll->Write();
   for(Int_t ic=0; ic<nCases; ic++){
     fHistoRawYieldTrial[ic]->Write();
-    fHistoSigmaTrial[ic]->Write();    
-    fHistoMeanTrial[ic]->Write();    
-    fHistoChi2Trial[ic]->Write();    
-    fHistoSignifTrial[ic]->Write();    
-    if(fSaveBkgVal) {  
-      fHistoBkgTrial[ic]->Write(); 
-      fHistoBkgInBinEdgesTrial[ic]->Write(); 
+    fHistoSigmaTrial[ic]->Write();
+    fHistoMeanTrial[ic]->Write();
+    fHistoChi2Trial[ic]->Write();
+    fHistoSignifTrial[ic]->Write();
+    if(fSaveBkgVal) {
+      fHistoBkgTrial[ic]->Write();
+      fHistoBkgInBinEdgesTrial[ic]->Write();
     }
     fHistoRawYieldTrialBinC[ic]->Write();
     fHistoRawYieldDistBinC[ic]->Write();
@@ -522,7 +533,7 @@ TH1F* AliHFMultiTrials::RebinHisto(TH1D* hOrig, Int_t reb, Int_t firstUse) const
   Int_t lastBinOrig=nBinOrig;
   Int_t nBinOrigUsed=nBinOrig;
   Int_t nBinFinal=nBinOrig/reb;
-  if(firstUse>=1){ 
+  if(firstUse>=1){
     firstBinOrig=firstUse;
     nBinFinal=(nBinOrig-firstUse+1)/reb;
     nBinOrigUsed=nBinFinal*reb;
@@ -571,7 +582,7 @@ void AliHFMultiTrials::BinCount(TH1F* h, TF1* fB, Int_t rebin, Double_t minMass,
   ecount=TMath::Sqrt(cntErr);
 }
 //________________________________________________________________________
-Bool_t AliHFMultiTrials::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Double_t  hmax, 
+Bool_t AliHFMultiTrials::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Double_t  hmax,
     Int_t iCase){
   //
 
@@ -604,10 +615,10 @@ Bool_t AliHFMultiTrials::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Doub
   if(iCase==0) fSB->FixParameter(2,fSigmaGausMC);
   else if(iCase==1) fSB->FixParameter(2,fSigmaGausMC*(1.+fSigmaMCVariation));
   else if(iCase==2) fSB->FixParameter(2,fSigmaGausMC*(1.-fSigmaMCVariation));
-  else if(iCase==4){ 
+  else if(iCase==4){
     fSB->FixParameter(1,fMassD);
     fSB->FixParameter(2,fSigmaGausMC);
-  } else if(iCase==5){ 
+  } else if(iCase==5){
     fSB->FixParameter(1,fMassD);
   }
   histoToFit->Fit(fSB,"ME0","",hmin,hmax);
@@ -623,4 +634,3 @@ TH1F* AliHFMultiTrials::SetTemplateRefl(const TH1F *h) {
   fhTemplRefl=(TH1F*)h->Clone("hTemplRefl");
   return fhTemplRefl;
 }
-
