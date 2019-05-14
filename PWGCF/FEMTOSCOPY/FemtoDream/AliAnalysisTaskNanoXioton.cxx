@@ -24,6 +24,11 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton()
       fXiList(nullptr),
       fAntiXi(nullptr),
       fAntiXiList(nullptr),
+      fConfig(nullptr),
+      fPairCleaner(nullptr),
+      fPartColl(nullptr),
+      fResults(nullptr),
+      fResultsQA(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
 }
@@ -44,6 +49,11 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name)
       fXiList(nullptr),
       fAntiXi(nullptr),
       fAntiXiList(nullptr),
+      fConfig(nullptr),
+      fPairCleaner(nullptr),
+      fPartColl(nullptr),
+      fResults(nullptr),
+      fResultsQA(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
@@ -51,6 +61,8 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name)
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
   DefineOutput(4, TList::Class());  //Output for the Xi Cuts
   DefineOutput(5, TList::Class());  //Output for the AntiXi Cuts
+  DefineOutput(6, TList::Class());  //Output for the Results
+  DefineOutput(7, TList::Class());  //Output for the Results QA
 }
 
 AliAnalysisTaskNanoXioton::~AliAnalysisTaskNanoXioton() {
@@ -77,6 +89,12 @@ AliAnalysisTaskNanoXioton::~AliAnalysisTaskNanoXioton() {
   }
   if (fAntiXi) {
     delete fAntiXi;
+  }
+  if (fPairCleaner) {
+    delete fPairCleaner;
+  }
+  if (fPartColl) {
+    delete fPartColl;
   }
 }
 
@@ -107,6 +125,14 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
     AliError("No AntiXi cuts \n");
   } else {
     fAntiXi->Init();
+  }
+  if (!fConfig) {
+    AliError("No Correlation Config \n");
+  } else {
+    fPartColl = new AliFemtoDreamPartCollection(fConfig,
+                                                fConfig->GetMinimalBookingME());
+    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,
+                                                fConfig->GetMinimalBookingME());
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
                                   GetCollisionCandidates(), false);
@@ -160,11 +186,25 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
     fAntiXiList->SetName("AntiXiCuts");
     fAntiXiList->SetOwner();
   }
+  fResultsQA = new TList();
+  fResultsQA->SetOwner();
+  fResultsQA->SetName("ResultsQA");
+  if (!fConfig->GetMinimalBookingME()) {
+    fResults = fPartColl->GetHistList();
+    fResultsQA->Add(fPartColl->GetQAList());
+    fResultsQA->Add(fPairCleaner->GetHistList());
+  } else {
+    fResults = new TList();
+    fResults->SetOwner();
+    fResults->SetName("Results");
+  }
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
   PostData(4, fXiList);
   PostData(5, fAntiXiList);
+  PostData(6, fResults);
+  PostData(7, fResultsQA);
 }
 
 void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
@@ -190,18 +230,18 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   }
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
-  const int multiplicity = fEvent->GetMultiplicity();
-  fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
-    AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
-    if (fProton->isSelected(fTrack)) {
-      Protons.push_back(*fTrack);
-    }
-    if (fAntiProton->isSelected(fTrack)) {
-      AntiProtons.push_back(*fTrack);
-    }
-  }
+//  const int multiplicity = fEvent->GetMultiplicity();
+//  fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+//  for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
+//    AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
+//    fTrack->SetTrack(track, fInputEvent, multiplicity);
+//    if (fProton->isSelected(fTrack)) {
+//      Protons.push_back(*fTrack);
+//    }
+//    if (fAntiProton->isSelected(fTrack)) {
+//      AntiProtons.push_back(*fTrack);
+//    }
+//  }
   std::vector<AliFemtoDreamBasePart> Xis;
   std::vector<AliFemtoDreamBasePart> AntiXis;
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
@@ -210,7 +250,7 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
           < static_cast<TClonesArray *>(aodEvt->GetCascades())->GetEntriesFast();
       ++iCasc) {
     AliAODcascade* casc = aodEvt->GetCascade(iCasc);
-    fCascade->SetCascade(aodEvt, casc);
+    fCascade->SetCascade(fInputEvent, casc);
     if (fXi->isSelected(fCascade)) {
       Xis.push_back(*fCascade);
     }
@@ -218,12 +258,27 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
       AntiXis.push_back(*fCascade);
     }
   }
+  fPairCleaner->ResetArray();
+  fPairCleaner->CleanTrackAndDecay(&Protons, &Xis, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiXis, 1);
 
+  fPairCleaner->CleanDecay(&Xis, 0);
+  fPairCleaner->CleanDecay(&AntiXis, 1);
+
+  fPairCleaner->StoreParticle(Protons);
+  fPairCleaner->StoreParticle(AntiProtons);
+  fPairCleaner->StoreParticle(Xis);
+  fPairCleaner->StoreParticle(AntiXis);
+
+  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
+                      fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
   PostData(4, fXiList);
   PostData(5, fAntiXiList);
+  PostData(6, fResults);
+  PostData(7, fResultsQA);
 }
 
 //____________________________________________________________________________________________________

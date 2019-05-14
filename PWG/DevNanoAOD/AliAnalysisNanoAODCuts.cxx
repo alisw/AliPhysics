@@ -107,7 +107,12 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
     
   if (fDaugMinClsTPC > 0 && (pTrack->GetTPCNcls() < fDaugMinClsTPC || nTrack->GetTPCNcls() < fDaugMinClsTPC))
     return false;
-
+  if (!pTrack->IsOn(AliAODTrack::kTPCrefit)){
+      return false;
+    }
+    if (!nTrack->IsOn(AliAODTrack::kTPCrefit)){
+      return false;
+    }
   if (fLambdaDaugnSigTPCMax > 0) {
     static AliPIDResponse* pidResponse = 0;
     if (!pidResponse) {
@@ -390,7 +395,15 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
       return false;
     }
   }
-
+  if (!pTrack->IsOn(AliAODTrack::kTPCrefit)){
+    return false;
+  }
+  if (!nTrack->IsOn(AliAODTrack::kTPCrefit)){
+    return false;
+  }
+  if (!bachTrack->IsOn(AliAODTrack::kTPCrefit)){
+    return false;
+  }
   if (fCascDaugnSigTPCMax > 0) {
     static AliPIDResponse* pidResponse = 0;
     if (!pidResponse) {

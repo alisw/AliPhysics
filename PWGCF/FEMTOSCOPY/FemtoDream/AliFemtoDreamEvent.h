@@ -196,6 +196,7 @@ class AliFemtoDreamEvent {
   AliFemtoDreamEvent(const AliFemtoDreamEvent&);
   int CalculateITSMultiplicity(AliAODEvent *evt);
   double CalculateSphericityEvent(AliAODEvent *evt);
+  double CalculateSphericityEvent(AliVEvent *evt);
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!
   bool fuseAliEvtCuts;        //!

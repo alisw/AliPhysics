@@ -94,8 +94,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
-  //  PDGParticles.push_back(3212);
-  //  PDGParticles.push_back(3212);
+  PDGParticles.push_back(3212);
+  PDGParticles.push_back(3212);
 
   std::vector<int> NBins;
   std::vector<float> kMin;
@@ -105,8 +105,15 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   //pairs:
   //pp                1
   //p bar p           2
-  //bar p bar p       3
-  const int nPairs = 3;
+  //p Xi              3
+  //p bar Xi          4
+  //bar p bar p       5
+  //bar p Xi          6
+  //bar p bar Xi      7
+  //Xi Xi             8
+  //Xi bar Xi         9
+  //bar Xi bar Xi     10
+  const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -122,6 +129,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   }
   pairQA[0] = 11;
   pairQA[2] = 11;
+  pairQA[3] = 13;
+  pairQA[7] = 1;
 
   closeRejection[0] = true;  // pp
   closeRejection[2] = true;  // barp barp
@@ -208,7 +217,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetXiCuts(CascadeCuts);
   task->SetAntiXiCuts(AntiCascadeCuts);
-
+  task->SetCorrelationConfig(config);
   mgr->AddTask(task);
 
   TString addon = "HM";
@@ -257,6 +266,25 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiCascadeCutsName.Data()));
   mgr->ConnectOutput(task, 5, coutputAntiCascadeCuts);
+
+  AliAnalysisDataContainer *coutputResults;
+  TString ResultsName = Form("%sResults", addon.Data());
+  coutputResults = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsName.Data()));
+  mgr->ConnectOutput(task, 6, coutputResults);
+
+  AliAnalysisDataContainer *coutputResultsQA;
+  TString ResultsQAName = Form("%sResultsQA", addon.Data());
+  coutputResultsQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsQAName.Data()));
+  mgr->ConnectOutput(task, 7, coutputResultsQA);
 
   return task;
 }

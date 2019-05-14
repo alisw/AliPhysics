@@ -506,6 +506,8 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
     return;
   }
 
+//  this->fdEdxTPC = nanoTrack->GetTPCsignal();
+  this->fdEdxTPC =0;
   AliPID::EParticleType particleID[5] = {AliPID::kElectron, AliPID::kMuon,
                                          AliPID::kPion, AliPID::kKaon,
                                          AliPID::kProton};
@@ -538,9 +540,8 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   }
 
   // TODO
-  //  this->fdEdxTPC = fVTrack->GetTPCsignal();
   //  this->fbetaTOF = GetBeta(fVTrack);
-  // For the moment we don't need ITS PID
+  //   For the moment we don't need ITS PID
   //  this->fstatusITS = statusITS;
   //          this->fnSigmaITS)[i] =
   //    AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaITS,
@@ -570,18 +571,19 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   double dcaVals[2] = { -99., -99. };
   double pos[3] = { 0., 0., 0. };
   double covar[3] = { 0., 0., 0. };
-  AliAODTrack copy(*fAODGlobalTrack);
-  fAODGlobalTrack->GetPosition(pos);
-  if (pos[0] * pos[0] + pos[1] * pos[1] <= 3. * 3.
-      && copy.PropagateToDCA(copy.GetAODEvent()->GetPrimaryVertex(),
-                             copy.GetAODEvent()->GetMagneticField(), 10,
-                             dcaVals, covar)) {
-    this->fdcaXYProp = dcaVals[0];
-    this->fdcaZProp = dcaVals[1];
-  } else {
-    this->fdcaXYProp = -99;
-    this->fdcaZProp = -99;
-  }
+  fAODGlobalTrack->GetImpactParameters(fdcaXYProp,fdcaZProp);
+//  AliAODTrack copy(*fAODGlobalTrack);
+//  fAODGlobalTrack->GetPosition(pos);
+//  if (pos[0] * pos[0] + pos[1] * pos[1] <= 3. * 3.
+//      && copy.PropagateToDCA(copy.GetAODEvent()->GetPrimaryVertex(),
+//                             copy.GetAODEvent()->GetMagneticField(), 10,
+//                             dcaVals, covar)) {
+//    this->fdcaXYProp = dcaVals[0];
+//    this->fdcaZProp = dcaVals[1];
+//  } else {
+//    this->fdcaXYProp = -99;
+//    this->fdcaZProp = -99;
+//  }
   //loop over the 6 ITS Layrs and check for a hit!
   for (int i = 0; i < 6; ++i) {
     fITSHit.push_back(fAODGlobalTrack->HasPointOnITSLayer(i));
