@@ -1059,6 +1059,18 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 233){ // dist to bad channel
     cuts.AddCutMergedCalo("00081113","111111106f032200000","111111156f022700001","0163300000000000"); // 1 <= row || coll || 0.5*(coll+row)
     cuts.AddCutMergedCalo("00081113","111111106f032200000","111111166f022700001","0163300000000000"); // 2 <= row || coll || 0.5*(coll+row)
+  } else if (trainConfig == 234){  // timing cuts
+    cuts.AddCutMergedCalo("00081113","111111109f032200000","111111109f022700001","0163300000000000"); // -20 to 25
+    cuts.AddCutMergedCalo("00081113","111111105f032200000","111111105f022700001","0163300000000000"); // -50 to 50
+  } else if (trainConfig == 235){  // timing cuts 2
+    cuts.AddCutMergedCalo("00081113","111111103f032200000","111111103f022700001","0163300000000000"); // -200 to 200
+    cuts.AddCutMergedCalo("00081113","111111102f032200000","111111102f022700001","0163300000000000"); // -500 to 500
+  } else if (trainConfig == 236){  // min E cuts
+    cuts.AddCutMergedCalo("00081113","111111106f032200000","111111106f042700001","0163300000000000"); // E>7GeV
+    cuts.AddCutMergedCalo("00081113","111111106f032200000","111111106f092700001","0163300000000000"); // E>9.5GeV
+  } else if (trainConfig == 237){  // TRD material
+    cuts.AddCutMergedCalo("00081113","111211106f032200000","111211106f022700001","0163300000000000"); // TRD infront
+    cuts.AddCutMergedCalo("00081113","111131106f032200000","111131106f022700001","0163300000000000"); // no TRD infront
 
   } else if (trainConfig == 250){  // EMCAL clusters 7 TeV LHC11 TM on
     cuts.AddCutMergedCalo("00010113","1111100067032200000","1111100067022700001","0163300000000000"); // INT7
