@@ -13,6 +13,7 @@ AliMCSpectraWeightsAnalysisTask* AddTask_phuhn_MCSpectraWeights(const char* coll
 
   AliMCSpectraWeights* fMCSpectraWeights = new AliMCSpectraWeights(stCollisionSystem.Data(), "fMCSpectraWeights", AliMCSpectraWeights::SysFlag::kNominal);
   if(stTrainOutputPath.Length()>5) fMCSpectraWeights->SetMCSpectraFile(stTrainOutputPath.Data());
+  // fMCSpectraWeights->SetDataFractionsFile("/home/alidock/particle-composition-correction/data/published/ppMult/ppDataMultFractions.root");
   fMCSpectraWeights->Init();
 
   if(fMCSpectraWeights) printf("AliMCSpectraWeightsAnalysisTask:: obj created\n");
