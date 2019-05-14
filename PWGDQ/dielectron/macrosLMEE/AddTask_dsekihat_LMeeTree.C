@@ -30,19 +30,18 @@ AliAnalysisTask *AddTask_dsekihat_LMeeTree(
   task->SetMinPtCut(minPt);
   task->SetMaxEtaCut(maxEta);
   task->SetMaxTPCNsigmaEleCut(minNsigma);
-  task->SetTriggerName(triggername);
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   TString outputFile = AliAnalysisManager::GetCommonFileName();
-  TString listname = Form("list_BasicInfo_%s",triggername.Data());
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(listname, THashList::Class(), AliAnalysisManager::kOutputContainer,outputFile);
-  mgr->ConnectOutput(task, 1, coutput1);
+  //TString listname = "list_BasicInfo";
+  //AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(listname, THashList::Class(), AliAnalysisManager::kOutputContainer,outputFile);
+  //mgr->ConnectOutput(task, 1, coutput1);
 
-  const TString treename = Form("EventTree_%s",triggername.Data());
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(treename, TTree::Class(), AliAnalysisManager::kOutputContainer,outputFile);
-  mgr->ConnectOutput(task, 2, coutput2);
+  const TString treename = "EventTree";
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(treename, TTree::Class(), AliAnalysisManager::kOutputContainer,outputFile);
+  mgr->ConnectOutput(task, 1, coutput1);
 
   return task;
 }
