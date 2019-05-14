@@ -105,8 +105,15 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   //pairs:
   //pp                1
   //p bar p           2
-  //bar p bar p       3
-  const int nPairs = 3;
+  //p Xi              3
+  //p bar Xi          4
+  //bar p bar p       5
+  //bar p Xi          6
+  //bar p bar Xi      7
+  //Xi Xi             8
+  //Xi bar Xi         9
+  //bar Xi bar Xi     10
+  const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -122,6 +129,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   }
   pairQA[0] = 11;
   pairQA[2] = 11;
+  pairQA[3] = 13;
+  pairQA[7] = 1;
 
   closeRejection[0] = true;  // pp
   closeRejection[2] = true;  // barp barp
