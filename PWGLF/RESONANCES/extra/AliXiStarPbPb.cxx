@@ -1236,8 +1236,8 @@ void AliXiStarPbPb::Exec(Option_t *)
         else negativeTracks++;
         
         if(fTempStruct[myTracks].fNclusTPC < 60) continue;
-        //if(fTempStruct[myTracks].fDCAZ > 2.) continue;
-        //if(fTempStruct[myTracks].fEta > 0.8) continue;
+        if(fTempStruct[myTracks].fDCAZ > 1.) continue;
+        if(fTempStruct[myTracks].fEta > 0.8) continue;
         myTracks++;
     }
     
@@ -1738,9 +1738,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                         if(fDecayParameters[8]>(0.0234 + 0.045/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;
                     } // 9 sigma
                     if(cv==6){
-                       // if(fDecayParameters[8]>(0.0286 + 0.055/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;
-                        if(fDecayParameters[8]>0.5) continue;
-
+                        if(fDecayParameters[8]>(0.0286 + 0.055/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;
                     } //11 sigma
                     
                     if(fDecayParameters[9] > fCutValues[cv][9]) continue;// DCAV proton-pion
