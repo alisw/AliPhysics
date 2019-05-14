@@ -210,7 +210,7 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
           < static_cast<TClonesArray *>(aodEvt->GetCascades())->GetEntriesFast();
       ++iCasc) {
     AliAODcascade* casc = aodEvt->GetCascade(iCasc);
-    fCascade->SetCascade(aodEvt, casc);
+    fCascade->SetCascade(fInputEvent, casc);
     if (fXi->isSelected(fCascade)) {
       Xis.push_back(*fCascade);
     }
