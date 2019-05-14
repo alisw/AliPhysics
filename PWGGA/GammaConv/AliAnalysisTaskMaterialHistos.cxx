@@ -891,7 +891,7 @@ void AliAnalysisTaskMaterialHistos::ProcessMCPhotons(){
       }
       if(((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kTRUE)){
 	TParticle* daughter1 = (TParticle *)fMCEvent->Particle(particle->GetFirstDaughter());
-	cout<< "Material budget"<< __LINE__<< endl;
+
 	Double_t phiFromConv = TMath::ATan2(daughter1->Vy(),daughter1->Vx());
 	if (phiFromConv<0) phiFromConv+=TMath::TwoPi();
 
@@ -1020,7 +1020,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     hESDConversionWOWeightRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
     if(fIsMC==0) hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius(),fWeightMultMC);
     //In case of MC, this histogram is filled with pT weights for primary photons. Weights not applied for secondaries and also not for contaminations
-    cout<< "Material budget-a::"<< __LINE__<< endl;
+ 
     Double_t phiFromConv = TMath::ATan2(gamma->GetConversionY(),gamma->GetConversionX());
     if (phiFromConv<0) phiFromConv+=TMath::TwoPi();
 
