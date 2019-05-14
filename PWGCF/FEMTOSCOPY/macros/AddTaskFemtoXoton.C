@@ -94,8 +94,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
-  //  PDGParticles.push_back(3212);
-  //  PDGParticles.push_back(3212);
+  PDGParticles.push_back(3212);
+  PDGParticles.push_back(3212);
 
   std::vector<int> NBins;
   std::vector<float> kMin;
@@ -208,7 +208,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetXiCuts(CascadeCuts);
   task->SetAntiXiCuts(AntiCascadeCuts);
-
+  task->SetCorrelationConfig(config);
   mgr->AddTask(task);
 
   TString addon = "HM";
@@ -257,6 +257,25 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), AntiCascadeCutsName.Data()));
   mgr->ConnectOutput(task, 5, coutputAntiCascadeCuts);
+
+  AliAnalysisDataContainer *coutputResults;
+  TString ResultsName = Form("%sResults", addon.Data());
+  coutputResults = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsName.Data()));
+  mgr->ConnectOutput(task, 6, coutputResults);
+
+  AliAnalysisDataContainer *coutputResultsQA;
+  TString ResultsQAName = Form("%sResultsQA", addon.Data());
+  coutputResultsQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsQAName.Data()));
+  mgr->ConnectOutput(task, 7, coutputResultsQA);
 
   return task;
 }
