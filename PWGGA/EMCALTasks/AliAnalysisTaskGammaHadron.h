@@ -237,7 +237,7 @@ public:
   Bool_t          bLogPSMod;            ///<  Whether to store the scaling factors in log form
   // 2D Maps: These store the initial mass,pt and final mass,pt
   THnSparseF      *fPSMassPtMap;                     //!<! Mass,Pt 2D mapping for same E pairs
- // THnSparseF      *fVMap;                     //!<! Mass,Pt 2D mapping for same Pos pairs
+  THnSparseF      *fESMassPtMap;                     //!<! Mass,Pt 2D mapping for same Pos pairs (Energy Swap)
   // Scaling Versions: These store the scaling of the mass and pt
   THnSparseF      *fUScaleMatrix;                   //!<! Mass and Pt modification scaling matrix for same E Pairs
   THnSparseF      *fVScaleMatrix;                   //!<! Mass and Pt modification scaling matrix for same Pos Pairs
