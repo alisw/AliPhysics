@@ -523,7 +523,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCuts,48);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,49);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 
