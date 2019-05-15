@@ -219,7 +219,7 @@ void AliFemtoDreamEvent::SetEvent(AliVEvent *evt) {
   static const Int_t kV0A =
       nanoHeader->GetVarIndex("MultSelection.V0A.Value");
   static const Int_t kV0C =
-      nanoHeader->GetVarIndex("MultSelection.V0A.Value");
+      nanoHeader->GetVarIndex("MultSelection.V0C.Value");
   if (kSPDCluster != -1) {
     //dirty trick to have the combined plot properly
     this->fNSPDClusterLy0 = nanoHeader->GetVar(kSPDCluster);
