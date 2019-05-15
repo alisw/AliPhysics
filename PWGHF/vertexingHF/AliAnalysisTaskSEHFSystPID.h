@@ -37,7 +37,11 @@ public:
     kIsElectronFromGamma = BIT(3),
     kIsKaonFromKinks     = BIT(4),
     kIsKaonFromTOF       = BIT(5),
-    kIsKaonFromTPC       = BIT(6)
+    kIsKaonFromTPC       = BIT(6),
+    kPositiveTrack       = BIT(12),
+    kNegativeTrack       = BIT(13),
+    kHasNoTPC            = BIT(14),
+    kHasNoTOF            = BIT(15)
   };
 
   enum centest {
@@ -118,8 +122,9 @@ private:
   unsigned short fTrackLength;                                                       /// track length for TOF PID
   unsigned short fStartTimeRes;                                                      /// start time resolution for TOF PID
   short fEta;                                                                        /// pseudorapidity of the track
+  unsigned short fPhi;                                                               /// azimuthal angle of the track
   short fPDGcode;                                                                    /// PDG code in case of MC to fill the tree
-  unsigned char fTag;                                                                /// bit map for tag (see enum above)
+  unsigned short fTag;                                                               /// bit map for tag (see enum above)
   float fNsigmaMaxForTag;                                                            /// max nSigma value to tag kaons
   float fQtMinKinks;                                                                 /// min qt for kinks
   float fRMinKinks;                                                                  /// min radius in XY for kinks
@@ -163,7 +168,7 @@ private:
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 7);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 8);
 };
 
 #endif
