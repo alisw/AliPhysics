@@ -182,6 +182,7 @@ void AliAnalysisTaskDgTree::UserCreateOutputObjects(){
   fTree->Branch("fTriggerMask",&fTriggerMask,"fTriggerMask[72]/i");
   fTree->Branch("fTOFhits",&fTOFhits);
   fTree->Branch("fTrackIndices",&fTrackIndices);
+  fTree->Branch("fTOFhitTimes",&fTOFhitTimes);
   fTree->Branch("fZNAtower0",&fZNAtower0);
   fTree->Branch("fZNCtower0",&fZNCtower0);
   fTree->Branch("fZNATDC",&fZNATDC,"fZNATDC[4]/F");
