@@ -2265,8 +2265,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                 }
 
                 // Energy Swap Map
-                CaloClusterVecSwap = CaloClusterVec2;
-                CaloClusterVecSwap.SetE(CaloClusterVec3.E());
+                CaloClusterVecSwap = CaloClusterVec3;
+                CaloClusterVecSwap.SetPhi(CaloClusterVec2.Phi());
+                CaloClusterVecSwap.SetTheta(CaloClusterVec2.Theta());
                 CaloClusterVecPi0Swap = CaloClusterVec + CaloClusterVecSwap;
 
                 ModArray[2] = CaloClusterVecPi0Swap.M();// Final Mass
@@ -2313,8 +2314,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
                 }
 
                 // Energy Swap Map
-                CaloClusterVecSwap = CaloClusterVec;
-                CaloClusterVecSwap.SetE(CaloClusterVec3.E());
+                CaloClusterVecSwap = CaloClusterVec3;
+                CaloClusterVecSwap.SetPhi(CaloClusterVec.Phi());
+                CaloClusterVecSwap.SetTheta(CaloClusterVec.Theta());
 
                 CaloClusterVecPi0Swap = CaloClusterVecSwap + CaloClusterVec2;
 
