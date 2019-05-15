@@ -81,6 +81,7 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
     fHistMCTrigEvent(0),
     //Track-Histograms
     fHistTrack(0),
+    fHistCentCorrelpt(0),
     fHistCentCorrel(0),
     fDCAyEtaPt(0),
     fDCAyEtaPtMCPrim(0),
@@ -183,14 +184,14 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     Double_t minRelPtReso[3] = {fBinsPtReso->GetAt(0),fBinsPt->GetAt(0), fBinsMultCent->GetAt(0)};
     Double_t maxRelPtReso[3] = {fBinsPtReso->GetAt(fBinsPtReso->GetSize()-1), fBinsPt->GetAt(fBinsPt->GetSize()-1), fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1)};
 
-    /// binning of correlation of centrality estimators
-    Int_t iBinCentCorr[5] = {20, 20, 20, 20, fBinsPt->GetSize()-1};
-    Double_t iMinCentCorr[5] = {0, 0, 0, 0, fBinsPt->GetAt(0)};
-    Double_t iMaxCentCorr[5] = {100, 100, 100, 100, fBinsPt->GetAt(fBinsPt->GetSize()-1)};
-
-    Int_t iBinCentCorrDiscr[2] = {20, 20};
-    Double_t iMinCentCorrDiscr[2] = {0, 0};
-    Double_t iMaxCentCorrDiscr[2] = {100, 100};
+    /// binning of correlation of centrality estimators (with pT)
+    Int_t iBinCentCorrpt[5] = {20, 20, 20, 20, fBinsPt->GetSize()-1};
+    Double_t iMinCentCorrpt[5] = {0, 0, 0, 0, fBinsPt->GetAt(0)};
+    Double_t iMaxCentCorrpt[5] = {100, 100, 100, 100, fBinsPt->GetAt(fBinsPt->GetSize()-1)};
+    /// binning of correlation of centrality estimators (without pT)
+    Int_t iBinCentCorr[4] = {20, 20, 20, 20};
+    Double_t iMinCentCorr[4] = {0, 0, 0, 0};
+    Double_t iMaxCentCorr[4] = {100, 100, 100, 100};
 
     fHistTrack = new THnF("fHistTrack", "Histogram for Tracks",4,nBinsTrack,minTrack,maxTrack);
     fHistTrack -> SetBinEdges(0,fBinsPt->GetArray());
@@ -217,15 +218,22 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fEventCount->GetAxis(3)->SetTitle("All");
     fEventCount->Sumw2();   
 
-    fHistCentCorrel = new THnF("fHistCentCorrel", "Centrality Correlation", 5, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
+    fHistCentCorrelpt = new THnF("fHistCentCorrelpt", "Centrality Correlation pt", 5, iBinCentCorrpt, iMinCentCorrpt, iMaxCentCorrpt);
+    fHistCentCorrelpt->GetAxis(0)->SetTitle("Centrality V0M");
+    fHistCentCorrelpt->GetAxis(1)->SetTitle("Centrality SPD Tracklets");
+    fHistCentCorrelpt->GetAxis(2)->SetTitle("Centrality CL0");
+    fHistCentCorrelpt->GetAxis(3)->SetTitle("Centrality CL1");
+    fHistCentCorrelpt->GetAxis(4)->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    fHistCentCorrelpt->SetBinEdges(4,fBinsPt->GetArray());
+    fHistCentCorrelpt->Sumw2();
+
+    fHistCentCorrel = new THnF("fHistCentCorrel", "Centrality Correlation", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
     fHistCentCorrel->GetAxis(0)->SetTitle("Centrality V0M");
     fHistCentCorrel->GetAxis(1)->SetTitle("Centrality SPD Tracklets");
     fHistCentCorrel->GetAxis(2)->SetTitle("Centrality CL0");
     fHistCentCorrel->GetAxis(3)->SetTitle("Centrality CL1");
-    fHistCentCorrel->GetAxis(4)->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    fHistCentCorrel->SetBinEdges(4,fBinsPt->GetArray());
     fHistCentCorrel->Sumw2();
-
+    
     fHistRelPtResoFromCov = new THnF("fHistRelPtResoFromCov", "Relative pT resolution from covariance matrix", 3, nBinsRelPtReso, minRelPtReso, maxRelPtReso);
     fHistRelPtResoFromCov->SetBinEdges(0,fBinsPtReso->GetArray());
     fHistRelPtResoFromCov->SetBinEdges(1,fBinsPt->GetArray());
@@ -327,6 +335,7 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     }
 
     fOutputList->Add(fHistTrack);
+    fOutputList->Add(fHistCentCorrelpt);
     fOutputList->Add(fHistCentCorrel);
     fOutputList->Add(fHistEvent);
     fOutputList->Add(fEventCount);
@@ -398,6 +407,9 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
     Double_t CL1Cent = MultSelection->GetMultiplicityPercentile("CL1");
     Double_t SPDTCent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
     
+    Double_t trackCorrelValues[4] = {V0MCent, SPDTCent, CL0Cent, CL1Cent};
+    fHistCentCorrel->Fill(trackCorrelValues);
+
     Double_t zVertEvent = fEvent->GetPrimaryVertex()->GetZ();
     Double_t eventValues[2] = {zVertEvent, multEvent};
 
@@ -471,8 +483,8 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
         Double_t dpT = track->Pt();
         Double_t trackValues[4] = {dpT, track->Eta(), zVertEvent, multEvent};
         fHistTrack->Fill(trackValues, dWeight);
-        Double_t trackCorrelValues[5] = {V0MCent, SPDTCent, CL0Cent, CL1Cent, dpT};
-        fHistCentCorrel->Fill(trackCorrelValues);
+        Double_t trackCorrelValuespt[5] = {V0MCent, SPDTCent, CL0Cent, CL1Cent, dpT};
+        fHistCentCorrelpt->Fill(trackCorrelValuespt);
 
         /// Histo needed to secondary scaling
         Float_t b[2], bCov[3];
