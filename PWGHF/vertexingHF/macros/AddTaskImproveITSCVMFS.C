@@ -1,6 +1,6 @@
 AliAnalysisTaskSEImproveITSCVMFS *AddTaskImproveITSCVMFS(Bool_t isRunInVertexing=kFALSE, // set to kTRUE to run during AODvertexingHF creation
-					       const char *period="LHC15o",
-                           const char *systematic="central",
+					       const char *period="",
+                           const char *systematic="",
 					       Int_t ndebug=0) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
