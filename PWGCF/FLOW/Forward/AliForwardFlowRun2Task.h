@@ -104,9 +104,9 @@ public:
   TH2D*   refDist;     //!
   TH2D*   forwardDist; //!
 
-  TH2D* fdNdeta; //!
-  TH1D* fCent;   //!
-  TH1D* fVertex; //!
+  //TH2D* fdNdeta; //!
+  //TH1D* fCent;   //!
+  //TH1D* fVertex; //!
 
   // A class combining all the settings for this analysis
   AliForwardSettings fSettings;
