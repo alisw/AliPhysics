@@ -91,7 +91,7 @@ AliRsnMiniAnalysisTask* AddTaskSigmaStar_pp13TeV(
   task->SetNMix(nmix);
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
-  ::Info("AddTaskSigmaStar_pp13TeV", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+  ::Info("AddTaskSigmaStar_pp13TeV", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
 
   // vertex cuts
   float vtxZcut=10;
@@ -123,7 +123,7 @@ AliRsnMiniAnalysisTask* AddTaskSigmaStar_pp13TeV(
   // set the check for pileup
   if(isPP && (!isMC) && cutVertex){
     cutVertex->SetCheckPileUp(rejectPileUp);
-    ::Info("AddTaskSigmaStar_pp13TeV", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+    ::Info("AddTaskSigmaStar_pp13TeV", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
   }
 
   // define and fill cut set for event cuts
