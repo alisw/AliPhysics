@@ -109,16 +109,16 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
   //pairs:
-  //pp                1
-  //p bar p           2
-  //p Xi              3
-  //p bar Xi          4
-  //bar p bar p       5
-  //bar p Xi          6
-  //bar p bar Xi      7
-  //Xi Xi             8
-  //Xi bar Xi         9
-  //bar Xi bar Xi     10
+  //pp                0
+  //p bar p           1
+  //p Xi              2
+  //p bar Xi          3
+  //bar p bar p       4
+  //bar p Xi          5
+  //bar p bar Xi      6
+  //Xi Xi             7
+  //Xi bar Xi         8
+  //bar Xi bar Xi     9
   const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
@@ -134,12 +134,12 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
     }
   }
   pairQA[0] = 11;
-  pairQA[2] = 11;
-  pairQA[3] = 13;
-  pairQA[7] = 1;
+  pairQA[4] = 11;
+  pairQA[2] = 13;
+  pairQA[6] = 13;
 
   closeRejection[0] = true;  // pp
-  closeRejection[2] = true;  // barp barp
+  closeRejection[4] = true;  // barp barp
 
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
