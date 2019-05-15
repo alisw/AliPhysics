@@ -64,7 +64,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    else{
      AliAODcascade *Xiaod = (AliAODcascade *)daughter->Ref2AODcascade();
      if(Xiaod){  // For ESD Cascade
-       int aodCharge Xiaod->ChargeXi();
+       int aodCharge = Xiaod->ChargeXi();
        if (aodCharge > 0)
          fCharge = '+';
        else if (aodCharge < 0)
