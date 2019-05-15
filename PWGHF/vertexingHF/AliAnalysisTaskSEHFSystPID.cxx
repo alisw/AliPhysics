@@ -45,6 +45,7 @@ fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
 fEta(-9999),
+fPhi(9999),
 fPDGcode(-1),
 fTag(0),
 fNsigmaMaxForTag(0.02),
@@ -127,6 +128,7 @@ fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
 fEta(-9999),
+fPhi(9999),
 fPDGcode(-1),
 fTag(0),
 fNsigmaMaxForTag(0.02),
@@ -287,6 +289,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
   fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
   fPIDtree->Branch("eta",&fEta,"eta/S");
+  fPIDtree->Branch("phi",&fPhi,"eta/s");
   if(!fFillTreeWithNsigmaPIDOnly) {
     fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
     fPIDtree->Branch("ToF",&fToF,"ToF/s");
@@ -295,7 +298,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
     fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
     fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
   }
-  fPIDtree->Branch("tag",&fTag,"tag/b");
+  fPIDtree->Branch("tag",&fTag,"tag/s");
   if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/S");
 
   if(fUseAliEventCuts) { //add QA plots if event cuts used
@@ -432,6 +435,17 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
     fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
     fEta = ConvertFloatToShort(track->Eta()*1000);
+    fPhi = ConvertFloatToUnsignedShort(track->Phi()*1000);
+
+    //charge
+    if(track->Charge()>0) {
+      fTag |= kPositiveTrack;
+      fTag &= ~kNegativeTrack;
+    }
+    else if(track->Charge()<0) {
+      fTag |= kNegativeTrack;
+      fTag &= ~kPositiveTrack;
+    }
 
     if(!fFillTreeWithNsigmaPIDOnly) {
       //TPC variables
@@ -455,6 +469,14 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
         }
       }
     }
+    //charge
+    if(track->Charge()>0) {
+      fTag &= ~kNegativeTrack;
+    }
+    else if(track->Charge()<0) {
+      fTag |= kNegativeTrack;
+      fTag &= ~kPositiveTrack;
+    }
 
     bool isTPCok = false;
     bool isTOFok = false;
@@ -462,6 +484,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track) == AliPIDResponse::kDetPidOk) isTOFok = true;
 
     if(isTPCok) {
+      fTag &= ~kHasNoTPC;
       float nSigmaTPCPion = fPIDresp->NumberOfSigmasTPC(track,AliPID::kPion);
       float nSigmaTPCKaon = fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon);
       float nSigmaTPCProton = fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton);
@@ -483,13 +506,20 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
       fPIDNsigma[1] = ConvertFloatToShort(nSigmaTPCKaon*100);
       fPIDNsigma[2] = ConvertFloatToShort(nSigmaTPCProton*100);
     }
-    else for(int iVar=0; iVar<3; iVar++) fPIDNsigma[iVar] = numeric_limits<short>::min();
+    else for(int iVar=0; iVar<3; iVar++) {
+      fTag |= kHasNoTPC;
+      fPIDNsigma[iVar] = numeric_limits<short>::min();
+    }
     if(isTOFok) {
+      fTag &= ~kHasNoTOF;
       fPIDNsigma[3] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kPion)*100);
       fPIDNsigma[4] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon)*100);
       fPIDNsigma[5] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kProton)*100);
     }
-    else for(int iVar=3; iVar<6; iVar++) fPIDNsigma[iVar] = numeric_limits<short>::min();
+    else for(int iVar=3; iVar<6; iVar++) {
+      fTag |= kHasNoTOF;
+      fPIDNsigma[iVar] = numeric_limits<short>::min();
+    }
 
     short trackid = track->GetID();
 
