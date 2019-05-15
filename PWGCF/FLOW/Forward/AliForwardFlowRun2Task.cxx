@@ -127,9 +127,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     Int_t fMaxMoment = 4;
     Int_t dimensions = 5;
 
-    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)+1} ;
-    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)+1} ;
-    Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
+    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)} ;
+    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)} ;
+    Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
     Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4Four)+1};
 
     //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
@@ -261,7 +261,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
 
   centralDist->Reset();
   
-  if (!fSettings.mc && (!fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
+  if (!fSettings.mc && !(fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
   if (fSettings.mc) forwardDist->Reset();
 
   PostData(1, fOutputList);
@@ -278,4 +278,4 @@ void AliForwardFlowRun2Task::Terminate(Option_t */*option*/)
 }
 
 
-//_______________________________________________________________
+//_____________________________________________________________________
