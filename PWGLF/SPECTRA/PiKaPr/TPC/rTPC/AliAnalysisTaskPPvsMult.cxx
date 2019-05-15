@@ -483,11 +483,11 @@ void AliAnalysisTaskPPvsMult::UserCreateOutputObjects()
 
 	fEvents = new TH2F( "fEvents", ";Evt. Sel.;Mult. Per.",12,0,12,13,0,13);
         fEvents->GetXaxis()->SetBinLabel(1, "Processed");
-        fEvents->GetXaxis()->SetBinLabel(2, "Trigger");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(3, "IsPileUpFromSPDinMultBins");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(4, "DAQ");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(5, "BG");//NotinVertexcut");
-        fEvents->GetXaxis()->SetBinLabel(6, "INEL>0");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(2, "PhysSel+Trigger");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(3, "INEL>0");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(4, "BG");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(5, "IsPileUpFromSPDinMultBins");//NotinVertexcut");
+        fEvents->GetXaxis()->SetBinLabel(6, "Incom DAQ");//NotinVertexcut");
         fEvents->GetXaxis()->SetBinLabel(7, "Res&Proximity");//NotinVertexcut");
         fEvents->GetXaxis()->SetBinLabel(8, "|Vtz|<10cm");//NotinVertexcut");
         fEvents->GetYaxis()->SetBinLabel(2,Form("%.2f-%.2f",CentMin[0],CentMax[0]));
@@ -935,29 +935,18 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 
 	fEvents->Fill(0.5,11);
 
-
 	UInt_t fSelectMask= fInputHandler->IsEventSelected();
-   	Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7;
+   	Bool_t isINT7selected = fSelectMask&AliVEvent::kINT7;
 	if(!isINT7selected)
 		return;
-
 	fEvents->Fill(1.5,11);
-	//--------------- Event Selection --------------------
-
-/*
-	if (!fEventCuts.AcceptEvent(fESD)){
-		PostData(1, fListOfObjects);
-		return;
-	}
-*/
-
 
       	Float_t V0MPer  = -1;
       	Float_t MultBin = -1;
 
         AliMultSelection *MultSelection = (AliMultSelection*) fESD -> FindListObject("MultSelection");
         if(MultSelection-> IsEventSelected()){
-                V0MPer = MultSelection->GetMultiplicityPercentile("V0M",false);
+                V0MPer = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
         }
 
 	if((V0MPer>100)||(V0MPer<0))return;
@@ -967,31 +956,32 @@ void AliAnalysisTaskPPvsMult::UserExec(Option_t *)
 										}
 								}
 
-	if( fESD->IsPileupFromSPDInMultBins() )
-		return;
-
-	fEvents->Fill(2.5,MultBin);
-	fEvents->Fill(2.5,11);
-
-	if( fESD->IsIncompleteDAQ()) 
-		return;
-
-	fEvents->Fill(3.5,MultBin);
-	fEvents->Fill(3.5,11);
-
-  	if( utils->IsSPDClusterVsTrackletBG(fESD) ) 
-		return;
-
-	fEvents->Fill(4.5,MultBin);
-	fEvents->Fill(4.5,11);
-
 	Int_t INEL = -1;
 	      INEL = AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0);
 	if( INEL < 1 )
 		return;
 
+	fEvents->Fill(2.5,MultBin);
+	fEvents->Fill(2.5,11);
+
+  	if( utils->IsSPDClusterVsTrackletBG(fESD) ) 
+		return;
+
+	fEvents->Fill(3.5,MultBin);
+	fEvents->Fill(3.5,11);
+
+	if( fESD->IsPileupFromSPDInMultBins() )
+		return;
+
+	fEvents->Fill(4.5,MultBin);
+	fEvents->Fill(4.5,11);
+
+	if( fESD->IsIncompleteDAQ()) 
+		return;
+
 	fEvents->Fill(5.5,MultBin);
 	fEvents->Fill(5.5,11);
+
 
  	if( !selectVertex2015pp(fESD,kTRUE,kFALSE,kTRUE) ){return;}
         fEvents->Fill(6.5,MultBin);
