@@ -52,7 +52,7 @@ void filterAOD_Nuclex()
     mySkimmingCuts->fTrackFilter.TriggerOnSpecies(AliPID::EParticleType(AliPID::kDeuteron+iN), nucleiCuts, 1 << 4,  5., nucleiTPCpt[iN], nucleiTOFsigma[iN], nucleiTOFpt[iN]);
   mySkimmingTask->AddEventCut(mySkimmingCuts);
 
-  AliAnalysisTaskNanoAODFilter* nanoFilterTask = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/AddTaskNanoAODFilter.C(0, kFALSE)");
+  AliAnalysisTaskNanoAODFilter* nanoFilterTask = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/macros/AddTaskNanoAODFilter.C(0, kFALSE)");
   nanoFilterTask->SelectCollisionCandidates(AliVEvent::kAny);  
   nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
   

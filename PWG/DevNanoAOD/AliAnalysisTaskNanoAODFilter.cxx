@@ -150,7 +150,6 @@ void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const
 
 void AliAnalysisTaskNanoAODFilter::Init()
 {
-
   // Initialization
   AddFilteredAOD("AliAOD.NanoAOD.root", "NanoAODTracksEvents");
 }

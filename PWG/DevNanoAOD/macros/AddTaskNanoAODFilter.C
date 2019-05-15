@@ -22,12 +22,8 @@ AliAnalysisTaskSE* AddTaskNanoAODFilter(Int_t iMC, Bool_t savecuts = 0)
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
   
   if(savecuts) {
-    AliAnalysisDataContainer *coutputpt1 = mgr->CreateContainer("evtcuts", AliAnalysisCuts::Class(),  AliAnalysisManager::kOutputContainer,"cuts.root");
-    AliAnalysisDataContainer *coutputpt2 = mgr->CreateContainer("trkcuts", AliAnalysisCuts::Class(),  AliAnalysisManager::kOutputContainer,"cuts.root");
-    AliAnalysisDataContainer *coutputpt3 = mgr->CreateContainer("v0cuts", AliAnalysisCuts::Class(),  AliAnalysisManager::kOutputContainer,"cuts.root");
-    mgr->ConnectOutput(task, 1, coutputpt1);
-    mgr->ConnectOutput(task, 2, coutputpt2);
-    mgr->ConnectOutput(task, 3, coutputpt3);
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("qa", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(), "NanoAODFilter"));
+    mgr->ConnectOutput(task, 1, coutput1);
   }
 
   return task;

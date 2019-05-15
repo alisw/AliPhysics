@@ -38,7 +38,7 @@ public:
 
   Int_t GetMCMode() { return fMCMode; }
   void  SetMCMode (Int_t var) { fMCMode = var;}
-  void AddFilteredAOD(const char* aodfilename, const char* title);
+  void  AddFilteredAOD(const char* aodfilename, const char* title);
 
   void  AddEvtCuts     (AliAnalysisCuts * var           ) { fEvtCuts.push_back(var);}
   void  SetTrkCuts     (AliAnalysisCuts * var           ) { fReplicator->SetTrackCuts(var); fQAOutput->Add(var);}
