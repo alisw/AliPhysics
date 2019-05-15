@@ -187,10 +187,7 @@ void AliAnalysisTaskBaseWeights::FillDefaultHistograms(Int_t step)
     //protection
     if (fMCSpectraWeights && step==0) {
         if(fMCSpectraWeights->GetTaskStatus() < AliMCSpectraWeights::TaskState::kMCSpectraObtained) {
-            // for now I pass the V0M multiplicity percentile
-            // TODO check if this the correct one or what should be passed
-            // TODO maybe ideal is to pass simply the event and let the SpectraWeights decide on which mult to use
-            //fMCSpectraWeights->FillMCSpectra(fMC);
+            fMCSpectraWeights->FillMCSpectra(fMC);
         }
     }
 
