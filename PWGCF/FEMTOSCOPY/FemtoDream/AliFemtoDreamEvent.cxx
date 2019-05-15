@@ -210,17 +210,34 @@ void AliFemtoDreamEvent::SetEvent(AliVEvent *evt) {
   this->fisPileUp = false;
   this->fPassAliEvtSelection = true;
 
-  this->fNSPDClusterLy0 = 0;
-  this->fNSPDClusterLy1 = nanoHeader->GetVarIndex("MultSelection.SPDClusters.Value");
   static const Int_t kRefMult =
       nanoHeader->GetVarIndex("MultSelection.RefMult08.Value");
+  static const Int_t kSPDCluster =
+      nanoHeader->GetVarIndex("MultSelection.SPDClusters.Value");
+  static const Int_t kSPDTracklets =
+      nanoHeader->GetVarIndex("MultSelection.SPDTracklets.Value");
+  static const Int_t kV0A =
+      nanoHeader->GetVarIndex("MultSelection.V0A.Value");
+  static const Int_t kV0C =
+      nanoHeader->GetVarIndex("MultSelection.V0C.Value");
+  if (kSPDCluster != -1) {
+    //dirty trick to have the combined plot properly
+    this->fNSPDClusterLy0 = nanoHeader->GetVar(kSPDCluster);
+    this->fNSPDClusterLy1 = fNSPDClusterLy0;
+  }
   if (kRefMult != -1) {
     this->fRefMult08 = nanoHeader->GetVar(kRefMult);
   }
   this->fV0MCentrality = nanoHeader->GetCentr("V0M");
-  this->fSPDMult = nanoHeader->GetVarIndex("MultSelection.SPDTracklets.Value");
-  this->fV0AMult = nanoHeader->GetVarIndex("MultSelection.V0A.Value");
-  this->fV0CMult = nanoHeader->GetVarIndex("MultSelection.V0C.Value");
+  if (kSPDTracklets!=-1) {
+    this->fSPDMult = nanoHeader->GetVar(kSPDTracklets);
+  }
+  if (kV0A!=-1) {
+    this->fV0AMult = nanoHeader->GetVar(kV0A);
+  }
+  if (kV0C!=-1) {
+    this->fV0CMult = nanoHeader->GetVar(kV0C);
+  }
   this->fspher = CalculateSphericityEvent(evt);
 }
 

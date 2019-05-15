@@ -43,10 +43,13 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
       false, true, false);
+  XiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
       false, true, false);
+  XiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
       false, true, false);
+  XiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
@@ -63,12 +66,15 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   AliFemtoDreamTrackCuts *AntiXiNegCuts =
       AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
   AntiXiNegCuts->SetCutCharge(-1);
+  AntiXiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
       false, true, false);
   AntiXiPosCuts->SetCutCharge(1);
+  AntiXiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
   AliFemtoDreamTrackCuts *AntiXiBachCuts =
       AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
   AntiXiBachCuts->SetCutCharge(1);
+  AntiXiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
 
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
@@ -103,16 +109,16 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
   //pairs:
-  //pp                1
-  //p bar p           2
-  //p Xi              3
-  //p bar Xi          4
-  //bar p bar p       5
-  //bar p Xi          6
-  //bar p bar Xi      7
-  //Xi Xi             8
-  //Xi bar Xi         9
-  //bar Xi bar Xi     10
+  //pp                0
+  //p bar p           1
+  //p Xi              2
+  //p bar Xi          3
+  //bar p bar p       4
+  //bar p Xi          5
+  //bar p bar Xi      6
+  //Xi Xi             7
+  //Xi bar Xi         8
+  //bar Xi bar Xi     9
   const int nPairs = 10;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
@@ -128,12 +134,12 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
     }
   }
   pairQA[0] = 11;
-  pairQA[2] = 11;
-  pairQA[3] = 13;
-  pairQA[7] = 1;
+  pairQA[4] = 11;
+  pairQA[2] = 13;
+  pairQA[6] = 13;
 
   closeRejection[0] = true;  // pp
-  closeRejection[2] = true;  // barp barp
+  closeRejection[4] = true;  // barp barp
 
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -195,15 +201,14 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
 
   config->SetMultBinning(true);
   config->SetdPhidEtaPlotsSmallK(false);
+  config->SetdPhidEtaPlots(false);
+  config->SetPhiEtaBinnign(false);
 
   if (suffix == "0" && fullBlastQA) {
-    config->SetPhiEtaBinnign(true);
     config->SetkTBinning(true);
     config->SetmTBinning(true);
     config->SetPtQA(true);
   }
-  config->SetdPhidEtaPlots(false);
-  config->SetInvMassPairs(false);
 
   if (suffix != "0") {
     config->SetMinimalBookingME(true);

@@ -21,7 +21,6 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
       fStravinsky(false),
-      fInvMassPairs(false),
       fMinimalBookingME(false),
       fMinimalBookingSample(false),
       fNumberRadii(0),
@@ -61,7 +60,6 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fMixedEventStatistics(config.fMixedEventStatistics),
       fGetTheControlSampel(config.fGetTheControlSampel),
       fStravinsky(config.fStravinsky),
-      fInvMassPairs(config.fInvMassPairs),
       fMinimalBookingME(config.fMinimalBookingME),
       fMinimalBookingSample(config.fMinimalBookingSample),
       fNumberRadii(config.fNumberRadii),
@@ -100,7 +98,6 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
       fStravinsky(false),
-      fInvMassPairs(false),
       fMinimalBookingME(false),
       fMinimalBookingSample(false),
       fNumberRadii(0),
@@ -148,7 +145,6 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fdPhidEtaPlotsSmallK = config.fdPhidEtaPlotsSmallK;
     this->fMixedEventStatistics = config.fMixedEventStatistics;
     this->fGetTheControlSampel = config.fGetTheControlSampel;
-    this->fInvMassPairs = config.fInvMassPairs;
     this->fMinimalBookingME = config.fMinimalBookingME;
     this->fMinimalBookingSample = config.fMinimalBookingSample;
     this->fNumberRadii = config.fNumberRadii;
