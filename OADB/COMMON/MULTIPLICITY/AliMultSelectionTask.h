@@ -116,6 +116,7 @@ public:
     void SetStoreAllQA( Bool_t lVar ) { fkStoreQA = lVar; }
     void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
     void SetGeneratorOnly( Bool_t lVar ) { fkGeneratorOnly = lVar; }
+    void SetSkipMCHeaders( Bool_t lVar ) { fkSkipMCHeaders = lVar; }
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
@@ -163,6 +164,7 @@ private:
     Bool_t fkStoreQA;     //if true, store all QA histograms (and not just typical)
     Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
     Bool_t fkGeneratorOnly; //if true, skip loading of reco objects
+    Bool_t fkSkipMCHeaders; //if true, don't try to read headers
     
     //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
