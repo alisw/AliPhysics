@@ -131,7 +131,7 @@ class AliClusterContainer : public AliEmcalContainer {
   Double_t		     fEmcalMinM02;				   ///< min value of M02 for EMCAL clusters
   Double_t 		     fEmcalMaxM02;				   ///< max value of M02 for EMCAL clusters
   Double_t         fEmcalMaxM02CutEnergy;       ///< max EMCal cluster energy for which to apply M02 cut
-  Double32_t       fMaxFracEnergyLeadingCell;   ///< max fraction of energy in the leading cell
+  Double_t         fMaxFracEnergyLeadingCell;   ///< max fraction of energy in the leading cell
 
  private:
   AliClusterContainer(const AliClusterContainer& obj); // copy constructor
