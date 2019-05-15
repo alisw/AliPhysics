@@ -503,7 +503,7 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionIncoherentH = new TH1F("fInvariantMassDistributionIncoherentH", "fInvariantMassDistributionIncoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentH);
 
-  fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 2000, 0, 20);
+  fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
 
   fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 20000, -10000, 40000);
@@ -657,40 +657,40 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionIncoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyH", "fInvariantMassDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyH);
 
-  fDimuonPtDistributionZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroH", "fDimuonPtDistributionZNCzeroZNAzeroH", 2000, 0, 20);
+  fDimuonPtDistributionZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroH", "fDimuonPtDistributionZNCzeroZNAzeroH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroH);
 
-  fDimuonPtDistributionZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionZNCzeroZNAanyH", "fDimuonPtDistributionZNCzeroZNAanyH", 2000, 0, 20);
+  fDimuonPtDistributionZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionZNCzeroZNAanyH", "fDimuonPtDistributionZNCzeroZNAanyH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyH);
 
-  fDimuonPtDistributionZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionZNCanyZNAzeroH", "fDimuonPtDistributionZNCanyZNAzeroH", 2000, 0, 20);
+  fDimuonPtDistributionZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionZNCanyZNAzeroH", "fDimuonPtDistributionZNCanyZNAzeroH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroH);
 
-  fDimuonPtDistributionZNCanyZNAanyH = new TH1F("fDimuonPtDistributionZNCanyZNAanyH", "fDimuonPtDistributionZNCanyZNAanyH", 2000, 0, 20);
+  fDimuonPtDistributionZNCanyZNAanyH = new TH1F("fDimuonPtDistributionZNCanyZNAanyH", "fDimuonPtDistributionZNCanyZNAanyH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyH);
 
-  fDimuonPtDistributionCoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAzeroH", "fDimuonPtDistributionCoherentZNCzeroZNAzeroH", 2000, 0, 20);
+  fDimuonPtDistributionCoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAzeroH", "fDimuonPtDistributionCoherentZNCzeroZNAzeroH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAzeroH);
 
-  fDimuonPtDistributionCoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAanyH", "fDimuonPtDistributionCoherentZNCzeroZNAanyH", 2000, 0, 20);
+  fDimuonPtDistributionCoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAanyH", "fDimuonPtDistributionCoherentZNCzeroZNAanyH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAanyH);
 
-  fDimuonPtDistributionCoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAzeroH", "fDimuonPtDistributionCoherentZNCanyZNAzeroH", 2000, 0, 20);
+  fDimuonPtDistributionCoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAzeroH", "fDimuonPtDistributionCoherentZNCanyZNAzeroH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionCoherentZNCanyZNAzeroH);
 
-  fDimuonPtDistributionCoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAanyH", "fDimuonPtDistributionCoherentZNCanyZNAanyH", 2000, 0, 20);
+  fDimuonPtDistributionCoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAanyH", "fDimuonPtDistributionCoherentZNCanyZNAanyH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionCoherentZNCanyZNAanyH);
 
-  fDimuonPtDistributionIncoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", "fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", 2000, 0, 20);
+  fDimuonPtDistributionIncoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", "fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionIncoherentZNCzeroZNAzeroH);
 
-  fDimuonPtDistributionIncoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAanyH", "fDimuonPtDistributionIncoherentZNCzeroZNAanyH", 2000, 0, 20);
+  fDimuonPtDistributionIncoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAanyH", "fDimuonPtDistributionIncoherentZNCzeroZNAanyH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionIncoherentZNCzeroZNAanyH);
 
-  fDimuonPtDistributionIncoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAzeroH", "fDimuonPtDistributionIncoherentZNCanyZNAzeroH", 2000, 0, 20);
+  fDimuonPtDistributionIncoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAzeroH", "fDimuonPtDistributionIncoherentZNCanyZNAzeroH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionIncoherentZNCanyZNAzeroH);
 
-  fDimuonPtDistributionIncoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAanyH", "fDimuonPtDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
+  fDimuonPtDistributionIncoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAanyH", "fDimuonPtDistributionIncoherentZNCanyZNAanyH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionIncoherentZNCanyZNAanyH);
 
 
@@ -1177,6 +1177,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                          246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
                                          246949, 246980, 246982, 246984, 246989, 246991, 246994
                                        };
+  Int_t listOfRunNumbersZDC[] = { 296244, 296750, 296849, 297219, 297481 };
   Bool_t checkIfGoodRun = kFALSE;
   for( Int_t iRunLHC18q = 0; iRunLHC18q < 129; iRunLHC18q++){
     if( fRunNum == listOfGoodRunNumbersLHC18q[iRunLHC18q] ) checkIfGoodRun = kTRUE;
@@ -1187,6 +1188,9 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   for( Int_t iRunLHC15o = 0; iRunLHC15o < 137; iRunLHC15o++){
     if( fRunNum == listOfGoodRunNumbersLHC15o[iRunLHC15o] ) checkIfGoodRun = kTRUE;
   }
+  // for( Int_t iRunZDC = 0; iRunZDC < 5; iRunZDC++){
+  //   if( fRunNum == listOfRunNumbersZDC[iRunZDC] )           checkIfGoodRun = kTRUE;
+  // }
   // cout << "fRunNum = " << fRunNum << "   and   checkIfGoodRun = " << checkIfGoodRun << endl;
   if(checkIfGoodRun != 1) {
        PostData(1, fOutputList);
