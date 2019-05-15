@@ -169,7 +169,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 2) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 3) // Jet extraction task
   /// \endcond
 };
 
@@ -308,7 +308,7 @@ class AliEmcalJetTree : public TNamed
     Int_t           fBuffer_NumSplittings;
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 8) // Jet tree class
+    ClassDef(AliEmcalJetTree, 9) // Jet tree class
     /// \endcond
 };
 
