@@ -91,7 +91,7 @@ protected:
     Bool_t                              FillHistograms();
     
     void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec);
-    void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec, Int_t &nTrueHFElec);
+    void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec, Int_t &nTrueHFElec, Double_t &ptTrueHFElec);
     void                                GetWeightAndDecay(AliAODMCParticle *particle, Int_t &decay, Double_t &weight);
     Int_t                               GetNumberOfPairs(AliEmcalJet *jet,AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[]);
     Bool_t                              IsFromHFdecay(AliAODMCParticle *particle);
@@ -237,6 +237,7 @@ protected:
     TH2F                                *fPhiTrueElec;
     TH2F                                *fEtaTrueElec;
     TH2F                                *fEtaPhiTrueElec;
+    TH2F                                *fnEovPelecNoTPCcut;
     TH2F                                *fnEovPelecTPCcut;
     TH2F                                *fnEovPelecTPCEMCalcut;
     TH2F                                *fnEovPelecTPCsscut[5];
