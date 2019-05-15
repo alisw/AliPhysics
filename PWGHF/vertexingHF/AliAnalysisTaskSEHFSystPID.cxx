@@ -523,25 +523,60 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
 
     short trackid = track->GetID();
 
+    bool filltree = false;
     it = find(idPionFromK0s.begin(),idPionFromK0s.end(),trackid);
-    if(it!=idPionFromK0s.end()) fTag |= kIsPionFromK0s;
-    else fTag &= ~kIsPionFromK0s;
+    if(it!=idPionFromK0s.end()) {
+      fTag |= kIsPionFromK0s;
+      filltree = true;
+    }
+    else 
+      fTag &= ~kIsPionFromK0s;
+
     it = find(idPionFromL.begin(),idPionFromL.end(),trackid);
-    if(it!=idPionFromL.end()) fTag |= kIsPionFromL;
-    else fTag &= ~kIsPionFromL;
+    if(it!=idPionFromL.end()) {
+      fTag |= kIsPionFromL;
+      filltree = true;
+    }
+    else
+      fTag &= ~kIsPionFromL;
+    
     it = find(idProtonFromL.begin(),idProtonFromL.end(),trackid);
-    if(it!=idProtonFromL.end()) fTag |= kIsProtonFromL;
-    else fTag &= ~kIsProtonFromL;
+    if(it!=idProtonFromL.end()) {
+      filltree = true;
+      fTag |= kIsProtonFromL;
+    }
+    else
+      fTag &= ~kIsProtonFromL;
+
     it = find(idElectronFromGamma.begin(),idElectronFromGamma.end(),trackid);
-    if(it!=idElectronFromGamma.end()) fTag |= kIsElectronFromGamma;
-    else fTag &= ~kIsElectronFromGamma;
+    if(it!=idElectronFromGamma.end()) {
+      filltree = true;
+      fTag |= kIsElectronFromGamma;
+    }
+    else 
+      fTag &= ~kIsElectronFromGamma;
+
     it = find(idKaonFromKinks.begin(),idKaonFromKinks.end(),trackid);
-    if(it!=idKaonFromKinks.end()) fTag |= kIsKaonFromKinks;
-    else fTag &= ~kIsKaonFromKinks;
-    if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok && isTPCok) fTag |= kIsKaonFromTOF;
-    else fTag &= ~kIsKaonFromTOF;
-    if(TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok && isTPCok) fTag |= kIsKaonFromTPC;
-    else fTag &= ~kIsKaonFromTPC;
+    if(it!=idKaonFromKinks.end()) {
+      filltree = true;
+      fTag |= kIsKaonFromKinks;  
+    }
+    else 
+      fTag &= ~kIsKaonFromKinks;
+
+    if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok) {
+      filltree = true;
+      fTag |= kIsKaonFromTOF;
+    }
+    else 
+      fTag &= ~kIsKaonFromTOF;
+    
+    if(TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon))<fNsigmaMaxForTag && isTPCok) {
+      filltree = true;
+      fTag |= kIsKaonFromTPC;
+    }
+    else 
+      fTag &= ~kIsKaonFromTPC;
     
     if(fIsMC) {
       fPDGcode = GetPDGcodeFromMC(track,arrayMC);
@@ -560,7 +595,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
     else fPDGcode = 0;
     
-    if(fTag!=0 && ((fIsMC && fPDGcode>=0) || !fIsMC)) fPIDtree->Fill();
+    if(filltree && ((fIsMC && fPDGcode>=0) || !fIsMC)) fPIDtree->Fill();
 
     fTag = 0;
 
