@@ -271,7 +271,9 @@ Int_t AliEmcalJetTask::FindJets()
 
       TLorentzVector pvec(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E());
       if(fApplyQoverPtShift){
+        AliDebugStream(2) << "Q/pt shift enabled" << std::endl;
         if(TMath::Abs(fQoverPtShift) > DBL_EPSILON) {
+          AliDebugStream(2) << "Applying Q/pt shift " << fQoverPtShift << std::endl;
           double chargedval = it->second->Charge() > 0 ? 1. : -1.;
           double shiftedPt = TMath::Max(1/(chargedval * fQoverPtShift + 1/TMath::Abs(it->second->Pt())), 0.);
           // Calculate new momentum vector
@@ -280,6 +282,7 @@ Int_t AliEmcalJetTask::FindJets()
           double oldE = pvec.E(), oldp = pvec.P(), newp = shiftedmom.Mag();
           double shiftedE = TMath::Sqrt(oldE * oldE - oldp * oldp + newp * newp);
           pvec.SetPtEtaPhiE(shiftedPt, pvec.Eta(), pvec.Phi(), shiftedE);
+          AliDebugStream(2) << "Original pt " << it->second->Pt() << ", shifted pt " << shiftedPt << std::endl;
         }
       }
 
