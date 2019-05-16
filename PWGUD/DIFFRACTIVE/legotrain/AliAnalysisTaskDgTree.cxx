@@ -132,8 +132,8 @@ void AliAnalysisTaskDgTree::UserCreateOutputObjects(){
 
   fListOfHistos = new TList();
   fListOfHistos->SetOwner();
-  fTriggersVsRun = new TH2D("fTriggersVsRun","",10,0,10,30000,270000,300000);
-  fEventStatistics = new TH1D("fEventStatistics","",10,0,10);
+  fTriggersVsRun = new TH2D("fTriggersVsRun","",11,0,11,30000,270000,300000);
+  fEventStatistics = new TH1D("fEventStatistics","",11,0,11);
   fListOfHistos->Add(fTriggersVsRun);
   fListOfHistos->Add(fEventStatistics);
   fTracks      = new TClonesArray("AliUpcParticle",10);
@@ -200,15 +200,17 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
   fRunNumber  = fInputEvent->GetRunNumber();
   Bool_t accept = 0;
   if (!fMCEvent){
-    if (fClassesFired.String().Contains("CTRUE-B"))  { accept = 1; fEventStatistics->AddBinContent(1); fTriggersVsRun->Fill(0.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CCUP13-B")) { accept = 1; fEventStatistics->AddBinContent(2); fTriggersVsRun->Fill(1.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CCUP25-B")) { accept = 1; fEventStatistics->AddBinContent(3); fTriggersVsRun->Fill(2.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CCUP26-B")) { accept = 1; fEventStatistics->AddBinContent(4); fTriggersVsRun->Fill(3.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CINT11-B")) { accept = 1; fEventStatistics->AddBinContent(5); fTriggersVsRun->Fill(4.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CCUP29-B")) { accept = 1; fEventStatistics->AddBinContent(6); fTriggersVsRun->Fill(5.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CCUP29-U")) { accept = 1; fEventStatistics->AddBinContent(7); fTriggersVsRun->Fill(6.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CCUP30-B")) { accept = 1; fEventStatistics->AddBinContent(8); fTriggersVsRun->Fill(7.5,fRunNumber); }
-    if (fClassesFired.String().Contains("CCUP31-B")) { accept = 1; fEventStatistics->AddBinContent(9); fTriggersVsRun->Fill(8.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CTRUE-B")                ) { accept = 1; fEventStatistics->AddBinContent(1);  fTriggersVsRun->Fill( 0.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP13-B")               ) { accept = 1; fEventStatistics->AddBinContent(2);  fTriggersVsRun->Fill( 1.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP25-B")               ) { accept = 1; fEventStatistics->AddBinContent(3);  fTriggersVsRun->Fill( 2.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP26-B")               ) { accept = 1; fEventStatistics->AddBinContent(4);  fTriggersVsRun->Fill( 3.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CINT11-B")               ) { accept = 1; fEventStatistics->AddBinContent(5);  fTriggersVsRun->Fill( 4.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP29-B-NOPF-CENTNOTRD")) { accept = 1; fEventStatistics->AddBinContent(6);  fTriggersVsRun->Fill( 5.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP29-U-NOPF-CENTNOTRD")) { accept = 1; fEventStatistics->AddBinContent(7);  fTriggersVsRun->Fill( 6.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP30-B-NOPF-CENTNOTRD")) { accept = 1; fEventStatistics->AddBinContent(8);  fTriggersVsRun->Fill( 7.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP30-B-SPD2-CENTNOTRD")) { accept = 1; fEventStatistics->AddBinContent(9);  fTriggersVsRun->Fill( 8.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP31-B-NOPF-CENTNOTRD")) { accept = 1; fEventStatistics->AddBinContent(10); fTriggersVsRun->Fill( 9.5,fRunNumber); }
+    if (fClassesFired.String().Contains("CCUP31-B-SPD2-CENTNOTRD")) { accept = 1; fEventStatistics->AddBinContent(11); fTriggersVsRun->Fill(10.5,fRunNumber); }
   } else {
     accept = 1;
   }
