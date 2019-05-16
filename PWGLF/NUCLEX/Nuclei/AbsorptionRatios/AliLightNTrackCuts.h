@@ -59,6 +59,7 @@ public:
   void SetCutTPCCrossedRows(bool cutit){fCutTPCCrossedRows = cutit;};
   void SetPID(AliPID::EParticleType pid, double pTPChresh, double sigValTPC, double sigValTOF)
   {fParticleID = pid; fPIDPTPCThreshold = pTPChresh; fNSigValueTPC = sigValTPC; fNSigValueTOF = sigValTOF; fCutPID = kTRUE;};
+  void SetCutITSPID(bool cutit){fdoITSnSigmaCut = cutit;};
   void SetRapidityRange(double Ymin, double Ymax){fRapMin = Ymin; fRapMax = Ymax; fCutRapidity = kTRUE;};
   void SetRejLowPtPionsTOF(bool use){fRejectPions = use;};
   void SetCutSmallestSig(bool cutit){fCutHighPtSig = cutit;};
@@ -77,6 +78,7 @@ public:
  private:
   bool TrackingCuts(AliLightNTrack *Track);
   bool TPCPIDAODCuts(AliLightNTrack *Track);
+  bool ITSPIDAODCuts(AliLightNTrack *Track);
   bool PIDAODCuts(AliLightNTrack *Track);
   bool SmallestNSig(AliLightNTrack *Track);
   bool DCACuts(AliLightNTrack *Track);
@@ -114,6 +116,7 @@ public:
   bool fDCAProp;                      //  kTRUE means that the DCA gets recalculated by PropagateToDCA, kFALSE just uses the info stored in the AOD
   double fDCAToVertexXY;              //
   bool fCutDCAToVtxXY;                //
+  bool fdoITSnSigmaCut;               //
   double fDCAToVertexZ;               //
   bool fCutDCAToVtxZ;                 //
   double fMinMass;                    //
