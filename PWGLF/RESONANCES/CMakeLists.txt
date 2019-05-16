@@ -25,6 +25,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
@@ -138,3 +139,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Install macros
 install(DIRECTORY macros DESTINATION PWGLF/RESONANCES)
+install(DIRECTORY PostProcessing DESTINATION PWGLF/RESONANCES)
