@@ -14,39 +14,25 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file GPUITSFitterKernels.h
-/// \author David Rohr, Maximiliano Puccio
+/// \file GPUTPCConvertKernel.h
+/// \author David Rohr
 
-#ifndef GPUITSFITTERKERNELS_H
-#define GPUITSFITTERKERNELS_H
+#ifndef GPUTPCCONVERTKERNEL_H
+#define GPUTPCCONVERTKERNEL_H
 
 #include "GPUGeneralKernels.h"
-namespace o2
-{
-namespace its
-{
-struct TrackingFrameInfo;
-}
-} // namespace o2
 
 namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
-class GPUTPCGMPropagator;
-class GPUITSFitter;
-class GPUITSTrack;
-
-class GPUITSFitterKernel : public GPUKernelTemplate
+class GPUTPCConvertKernel : public GPUKernelTemplate
 {
  public:
-  GPUhdi() static GPUDataTypes::RecoStep GetRecoStep() { return GPUDataTypes::RecoStep::ITSTracking; }
-#if defined(GPUCA_BUILD_ITS)
+  GPUhdi() static GPUDataTypes::RecoStep GetRecoStep() { return GPUDataTypes::RecoStep::TPCConversion; }
+#if defined(GPUCA_BUILD_TPCCONVERT) && !defined(GPUCA_ALIROOT_LIB) && defined(HAVE_O2HEADERS)
   template <int iKernel = 0>
   GPUd() static void Thread(int nBlocks, int nThreads, int iBlock, int iThread, GPUsharedref() GPUTPCSharedMemory& smem, processorType& processors);
-
- protected:
-  GPUd() static bool fitTrack(GPUITSFitter& Fitter, GPUTPCGMPropagator& prop, GPUITSTrack& track, int start, int end, int step);
 #endif
 };
 } // namespace gpu

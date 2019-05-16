@@ -53,10 +53,19 @@ using namespace GPUCA_NAMESPACE::gpu;
 #include "GPUTPCGMTrackParam.cxx"
 #include "GPUTPCGMPhysicalTrackModel.cxx"
 #include "GPUTPCGMPropagator.cxx"
+#ifdef HAVE_O2HEADERS
+#include "MatLayerCylSet.cxx"
+#include "MatLayerCyl.cxx"
+#include "Ray.cxx"
+#endif
 #endif
 
 #ifdef GPUCA_BUILD_DEDX
 #include "GPUdEdx.cxx"
+#endif
+
+#ifdef GPUCA_BUILD_TPCCONVERT
+#include "GPUTPCConvertKernel.cxx"
 #endif
 
 #ifdef GPUCA_BUILD_TRD

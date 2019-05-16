@@ -26,7 +26,7 @@
 #else
 namespace o2
 {
-namespace ITS
+namespace its
 {
 class TrackerTraits
 {
@@ -37,7 +37,7 @@ class TrackerTraitsCPU : public TrackerTraits
 class VertexerTraits
 {
 };
-} // namespace ITS
+} // namespace its
 } // namespace o2
 #endif
 

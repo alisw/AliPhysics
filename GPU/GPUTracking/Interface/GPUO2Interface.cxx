@@ -199,7 +199,6 @@ int GPUTPCO2Interface::RunTracking(const o2::TPC::ClusterNativeAccessFullTPC* in
   }
 
   mChain->mIOPtrs.clustersNative = inputClusters;
-  mChain->ConvertNativeToClusterData();
   mChain->RunStandalone();
 
   outputTracks = mChain->mIOPtrs.mergedTracks;

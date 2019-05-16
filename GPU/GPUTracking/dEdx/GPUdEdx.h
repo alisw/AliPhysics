@@ -24,14 +24,13 @@
 #include "GPUTPCGeometry.h"
 #include "GPUCommonMath.h"
 #include "GPUParam.h"
+#include "GPUdEdxInfo.h"
 
 namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
-struct GPUdEdxInfo;
-
-#ifdef GPUCA_ALIROOT_LIB
+#ifndef HAVE_O2HEADERS
 
 class GPUdEdx
 {
@@ -96,7 +95,11 @@ GPUdi() void GPUdEdx::fillCluster(float qtot, float qmax, int padRow, float trac
   }
   const int roc = param.tpcGeometry.GetROC(padRow);
   checkSubThresh(roc);
-  float factor = CAMath::Sqrt((1 - trackSnp * trackSnp) / (1 + trackTgl * trackTgl));
+  float snp2 = trackSnp * trackSnp;
+  if (snp2 > GPUCA_MAX_SIN_PHI_LOW) {
+    snp2 = GPUCA_MAX_SIN_PHI_LOW;
+  }
+  float factor = CAMath::Sqrt((1 - snp2) / (1 + trackTgl * trackTgl));
   factor /= param.tpcGeometry.PadHeight(padRow);
   qtot *= factor;
   qmax *= factor / param.tpcGeometry.PadWidth(padRow);
@@ -119,7 +122,7 @@ GPUdi() void GPUdEdx::fillSubThreshold(int padRow, const GPUParam& param)
   mNSubThresh++;
 }
 
-#endif // GPUCA_ALIROOT_LIB
+#endif // !HAVE_O2HEADERS
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
 

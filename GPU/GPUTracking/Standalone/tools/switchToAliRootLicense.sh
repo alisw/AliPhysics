@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ../../../
-if [ `ls | grep GPUTracking | wc -l` != "1" ]; then
+if [ $(ls | grep GPUTracking | wc -l) != "1" ]; then
     echo Incorrect directory
     exit 1
 fi

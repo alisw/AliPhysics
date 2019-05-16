@@ -14,41 +14,73 @@
 //* provided "as is" without express or implied warranty.                  *\
 //**************************************************************************
 
-/// \file ClusterNativeAccessExt.h
+/// \file GPUTPCConvert.h
 /// \author David Rohr
 
-#ifndef CLUSTERNATIVEACCESSEXT_H
-#define CLUSTERNATIVEACCESSEXT_H
+#ifndef GPUTPCCONVERT_H
+#define GPUTPCCONVERT_H
 
-#include "GPUTPCDef.h"
+#include "GPUDef.h"
+#include "GPUProcessor.h"
 
-#ifdef HAVE_O2HEADERS
-#include "DataFormatsTPC/ClusterNative.h"
-#else
 namespace o2
 {
 namespace TPC
 {
-struct ClusterNative {
-};
-struct ClusterNativeAccessFullTPC {
-  const ClusterNative* clusters[GPUCA_NSLICES][GPUCA_ROW_COUNT];
-  unsigned int nClusters[GPUCA_NSLICES][GPUCA_ROW_COUNT];
-};
-struct Constants {
-  static constexpr int MAXSECTOR = GPUCA_NSLICES;
-  static constexpr int MAXGLOBALPADROW = GPUCA_ROW_COUNT;
-};
+struct ClusterNativeAccessFullTPC;
+struct ClusterNative;
 } // namespace TPC
 } // namespace o2
-#endif
 
 namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
-struct ClusterNativeAccessExt : public o2::TPC::ClusterNativeAccessFullTPC {
-  unsigned int clusterOffset[GPUCA_NSLICES][GPUCA_ROW_COUNT];
+struct GPUTPCClusterData;
+struct ClusterNativeAccessExt;
+class TPCFastTransform;
+
+class GPUTPCConvert : public GPUProcessor
+{
+  friend class GPUTPCConvertKernel;
+  friend class GPUChainTracking;
+
+ public:
+#ifndef GPUCA_GPUCODE
+  void InitializeProcessor();
+  void RegisterMemoryAllocation();
+  void SetMaxData();
+
+  void* SetPointersInput(void* mem);
+  void* SetPointersOutput(void* mem);
+  void* SetPointersMemory(void* mem);
+
+  void set(ClusterNativeAccessExt* clustersNative, const TPCFastTransform* transform)
+  {
+    mClustersNative = clustersNative;
+    mTransform = transform;
+  }
+#endif
+
+  constexpr static unsigned int NSLICES = GPUCA_NSLICES;
+
+  struct Memory {
+    GPUTPCClusterData* clusters[NSLICES];
+  };
+
+ protected:
+  ClusterNativeAccessExt* mClustersNative = nullptr;
+  ClusterNativeAccessExt* mClustersNativeBuffer;
+
+  const TPCFastTransform* mTransform = nullptr;
+  Memory* mMemory = nullptr;
+  o2::TPC::ClusterNative* mInputClusters;
+  GPUTPCClusterData* mClusters = nullptr;
+  unsigned int mNClustersTotal = 0;
+
+  short mMemoryResInput = -1;
+  short mMemoryResOutput = -1;
+  short mMemoryResMemory = -1;
 };
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE

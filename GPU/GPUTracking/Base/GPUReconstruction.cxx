@@ -72,10 +72,10 @@ GPUReconstruction::~GPUReconstruction()
   }
 }
 
-void GPUReconstruction::GetITSTraits(std::unique_ptr<o2::ITS::TrackerTraits>& trackerTraits, std::unique_ptr<o2::ITS::VertexerTraits>& vertexerTraits)
+void GPUReconstruction::GetITSTraits(std::unique_ptr<o2::its::TrackerTraits>& trackerTraits, std::unique_ptr<o2::its::VertexerTraits>& vertexerTraits)
 {
-  trackerTraits.reset(new o2::ITS::TrackerTraitsCPU);
-  vertexerTraits.reset(new o2::ITS::VertexerTraits);
+  trackerTraits.reset(new o2::its::TrackerTraitsCPU);
+  vertexerTraits.reset(new o2::its::VertexerTraits);
 }
 
 int GPUReconstruction::Init()
@@ -227,22 +227,24 @@ size_t GPUReconstruction::AllocateRegisteredMemory(short ires)
   if ((res->mType & GPUMemoryResource::MEMORY_PERMANENT) && res->mPtr != nullptr) {
     ResetRegisteredMemoryPointers(ires);
   } else if (mDeviceProcessingSettings.memoryAllocationStrategy == GPUMemoryResource::ALLOCATION_INDIVIDUAL) {
-    if (res->mPtrDevice) {
-      operator delete(res->mPtrDevice);
-    }
-    res->mSize = (size_t)res->SetPointers((void*)1) - 1;
-    res->mPtrDevice = operator new(res->mSize + GPUProcessor::MIN_ALIGNMENT);
-    res->mPtr = GPUProcessor::alignPointer<GPUProcessor::MIN_ALIGNMENT>(res->mPtrDevice);
-    res->SetPointers(res->mPtr);
-    if (mDeviceProcessingSettings.debugLevel >= 5) {
-      std::cout << "Allocated " << res->mName << ": " << res->mSize << "\n";
+    if (!(res->mType & GPUMemoryResource::MEMORY_EXTERNAL)) {
+      if (res->mPtrDevice) {
+        operator delete(res->mPtrDevice);
+      }
+      res->mSize = (size_t)res->SetPointers((void*)1) - 1;
+      res->mPtrDevice = operator new(res->mSize + GPUProcessor::MIN_ALIGNMENT);
+      res->mPtr = GPUProcessor::alignPointer<GPUProcessor::MIN_ALIGNMENT>(res->mPtrDevice);
+      res->SetPointers(res->mPtr);
+      if (mDeviceProcessingSettings.debugLevel >= 5) {
+        std::cout << "Allocated " << res->mName << ": " << res->mSize << "\n";
+      }
     }
   } else {
     if (res->mPtr != nullptr) {
       printf("Double allocation! (%s)\n", res->mName);
       throw std::bad_alloc();
     }
-    if (!IsGPU() || (res->mType & GPUMemoryResource::MEMORY_HOST) || mDeviceProcessingSettings.keepAllMemory) {
+    if ((!IsGPU() || (res->mType & GPUMemoryResource::MEMORY_HOST) || mDeviceProcessingSettings.keepAllMemory) && !(res->mType & GPUMemoryResource::MEMORY_EXTERNAL)) {
       res->mSize = AllocateRegisteredMemoryHelper(res, res->mPtr, mHostMemoryPool, mHostMemoryBase, mHostMemorySize, &GPUMemoryResource::SetPointers);
     }
     if (IsGPU() && (res->mType & GPUMemoryResource::MEMORY_GPU)) {
@@ -252,7 +254,7 @@ size_t GPUReconstruction::AllocateRegisteredMemory(short ires)
       }
       size_t size = AllocateRegisteredMemoryHelper(res, res->mPtrDevice, mDeviceMemoryPool, mDeviceMemoryBase, mDeviceMemorySize, &GPUMemoryResource::SetDevicePointers);
 
-      if (!(res->mType & GPUMemoryResource::MEMORY_HOST)) {
+      if (!(res->mType & GPUMemoryResource::MEMORY_HOST) || (res->mType & GPUMemoryResource::MEMORY_EXTERNAL)) {
         res->mSize = size;
       } else if (size != res->mSize) {
         printf("Inconsistent device memory allocation (%s)\n", res->mName);
@@ -296,7 +298,9 @@ void GPUReconstruction::ResetRegisteredMemoryPointers(GPUProcessor* proc)
 void GPUReconstruction::ResetRegisteredMemoryPointers(short ires)
 {
   GPUMemoryResource* res = &mMemoryResources[ires];
-  res->SetPointers(res->mPtr);
+  if (!(res->mType & GPUMemoryResource::MEMORY_EXTERNAL)) {
+    res->SetPointers(res->mPtr);
+  }
   if (IsGPU() && (res->mType & GPUMemoryResource::MEMORY_GPU)) {
     res->SetDevicePointers(res->mPtrDevice);
   }
@@ -336,6 +340,9 @@ void GPUReconstruction::ClearAllocatedMemory()
 void GPUReconstruction::PrepareEvent()
 {
   ClearAllocatedMemory();
+  for (unsigned int i = 0; i < mChains.size(); i++) {
+    mChains[i]->PrepareEvent();
+  }
   for (unsigned int i = 0; i < mProcessors.size(); i++) {
     if (mProcessors[i].proc->mAllocateAndInitializeLate) {
       continue;

@@ -39,12 +39,12 @@ __constant__ uint4 gGPUConstantMemBuffer[(sizeof(GPUConstantMem) + sizeof(uint4)
 
 namespace o2
 {
-namespace ITS
+namespace its
 {
 class TrackerTraitsHIP : public TrackerTraits
 {
 };
-} // namespace ITS
+} // namespace its
 } // namespace o2
 
 #include "GPUReconstructionIncludesDevice.h"
@@ -203,6 +203,13 @@ int GPUReconstructionHIPBackend::InitDevice_Runtime()
 
   mNStreams = std::max(mDeviceProcessingSettings.nStreams, 3);
 
+  /*if (GPUFailedMsgI(hipThreadSetLimit(hipLimitStackSize, GPUCA_GPU_STACK_SIZE)))
+     {
+      GPUError("Error setting HIP stack size");
+      GPUFailedMsgI(hipDeviceReset());
+      return(1);
+     }*/
+
   if (mDeviceMemorySize > hipDeviceProp_t.totalGlobalMem || GPUFailedMsgI(hipMalloc(&mDeviceMemoryBase, mDeviceMemorySize))) {
     GPUError("HIP Memory Allocation Error");
     GPUFailedMsgI(hipDeviceReset());
@@ -265,7 +272,8 @@ int GPUReconstructionHIPBackend::InitDevice_Runtime()
   }
 
   ReleaseThreadContext();
-  GPUInfo("HIP Initialisation successfull (Device %d: %s, Thread %d, %lld/%lld bytes used)", mDeviceId, hipDeviceProp_t.name, mThreadId, (long long int)mHostMemorySize, (long long int)mDeviceMemorySize);
+  GPUInfo("HIP Initialisation successfull (Device %d: %s (Frequency %d, Cores %d), %'lld / %'lld bytes host / global memory, Stack frame %'d, Constant memory %'lld)", mDeviceId, hipDeviceProp_t.name, hipDeviceProp_t.clockRate, hipDeviceProp_t.multiProcessorCount, (long long int)mHostMemorySize,
+          (long long int)mDeviceMemorySize, GPUCA_GPU_STACK_SIZE, (long long int)sizeof(GPUConstantMem));
 
   return (0);
 }
@@ -306,7 +314,29 @@ int GPUReconstructionHIPBackend::ExitDevice_Runtime()
   return (0);
 }
 
-void GPUReconstructionHIPBackend::TransferMemoryInternal(GPUMemoryResource* res, int stream, deviceEvent* ev, deviceEvent* evList, int nEvents, bool toGPU, void* src, void* dst)
+void GPUReconstructionHIPBackend::GPUMemCpy(void* dst, const void* src, size_t size, int stream, bool toGPU, deviceEvent* ev, deviceEvent* evList, int nEvents)
+{
+  if (mDeviceProcessingSettings.debugLevel >= 3) {
+    stream = -1;
+  }
+  if (stream == -1) {
+    SynchronizeGPU();
+    GPUFailedMsg(hipMemcpy(dst, src, size, toGPU ? hipMemcpyHostToDevice : hipMemcpyDeviceToHost));
+  } else {
+    if (evList == nullptr) {
+      nEvents = 0;
+    }
+    for (int k = 0; k < nEvents; k++) {
+      GPUFailedMsg(hipStreamWaitEvent(mInternals->HIPStreams[stream], ((hipEvent_t*)evList)[k], 0));
+    }
+    GPUFailedMsg(hipMemcpyAsync(dst, src, size, toGPU ? hipMemcpyHostToDevice : hipMemcpyDeviceToHost, mInternals->HIPStreams[stream]));
+  }
+  if (ev) {
+    GPUFailedMsg(hipEventRecord(*(hipEvent_t*)ev, mInternals->HIPStreams[stream == -1 ? 0 : stream]));
+  }
+}
+
+void GPUReconstructionHIPBackend::TransferMemoryInternal(GPUMemoryResource* res, int stream, deviceEvent* ev, deviceEvent* evList, int nEvents, bool toGPU, const void* src, void* dst)
 {
   if (!(res->Type() & GPUMemoryResource::MEMORY_GPU)) {
     if (mDeviceProcessingSettings.debugLevel >= 4) {
@@ -315,26 +345,9 @@ void GPUReconstructionHIPBackend::TransferMemoryInternal(GPUMemoryResource* res,
     return;
   }
   if (mDeviceProcessingSettings.debugLevel >= 3) {
-    stream = -1;
-  }
-  if (mDeviceProcessingSettings.debugLevel >= 3) {
     printf(toGPU ? "Copying to GPU: %s\n" : "Copying to Host: %s\n", res->Name());
   }
-  if (stream == -1) {
-    SynchronizeGPU();
-    GPUFailedMsg(hipMemcpy(dst, src, res->Size(), toGPU ? hipMemcpyHostToDevice : hipMemcpyDeviceToHost));
-  } else {
-    if (evList == nullptr) {
-      nEvents = 0;
-    }
-    for (int k = 0; k < nEvents; k++) {
-      GPUFailedMsg(hipStreamWaitEvent(mInternals->HIPStreams[stream], ((hipEvent_t*)evList)[k], 0));
-    }
-    GPUFailedMsg(hipMemcpyAsync(dst, src, res->Size(), toGPU ? hipMemcpyHostToDevice : hipMemcpyDeviceToHost, mInternals->HIPStreams[stream]));
-  }
-  if (ev) {
-    GPUFailedMsg(hipEventRecord(*(hipEvent_t*)ev, mInternals->HIPStreams[stream == -1 ? 0 : stream]));
-  }
+  GPUMemCpy(dst, src, res->Size(), stream, toGPU, ev, evList, nEvents);
 }
 
 void GPUReconstructionHIPBackend::WriteToConstantMemory(size_t offset, const void* src, size_t size, int stream, deviceEvent* ev)

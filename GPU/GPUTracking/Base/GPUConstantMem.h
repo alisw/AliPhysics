@@ -24,6 +24,7 @@
 #include "GPUParam.h"
 
 #if (!defined(__OPENCL__) || defined(__OPENCLCPP__)) && (!defined(GPUCA_GPULIBRARY) || !defined(GPUCA_ALIROOT_LIB)) && (!defined(__CINT__) && !defined(__ROOTCINT__))
+#include "GPUTPCConvert.h"
 #include "GPUTPCGMMerger.h"
 #include "GPUITSFitter.h"
 #include "GPUTRDTracker.h"
@@ -42,6 +43,9 @@ class GPUTRDTracker
 {
   void SetMaxData() {}
 };
+class GPUTPCConvert
+{
+};
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE
 #endif
@@ -56,6 +60,7 @@ struct GPUConstantMem {
   param;
   MEM_GLOBAL(GPUTPCTracker)
   tpcTrackers[GPUCA_NSLICES];
+  GPUTPCConvert tpcConverter;
   GPUTPCGMMerger tpcMerger;
   GPUTRDTracker trdTracker;
   GPUITSFitter itsFitter;

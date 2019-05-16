@@ -48,12 +48,12 @@ texture<calink, cudaTextureType1D, cudaReadModeElementType> gAliTexRefu;
 #else
 namespace o2
 {
-namespace ITS
+namespace its
 {
 class TrackerTraitsNV : public TrackerTraits
 {
 };
-} // namespace ITS
+} // namespace its
 } // namespace o2
 #endif
 
@@ -114,10 +114,10 @@ GPUReconstructionCUDABackend::~GPUReconstructionCUDABackend()
 
 GPUReconstruction* GPUReconstruction_Create_CUDA(const GPUSettingsProcessing& cfg) { return new GPUReconstructionCUDA(cfg); }
 
-void GPUReconstructionCUDABackend::GetITSTraits(std::unique_ptr<o2::ITS::TrackerTraits>& trackerTraits, std::unique_ptr<o2::ITS::VertexerTraits>& vertexerTraits)
+void GPUReconstructionCUDABackend::GetITSTraits(std::unique_ptr<o2::its::TrackerTraits>& trackerTraits, std::unique_ptr<o2::its::VertexerTraits>& vertexerTraits)
 {
-  trackerTraits.reset(new o2::ITS::TrackerTraitsNV);
-  vertexerTraits.reset(new o2::ITS::VertexerTraits);
+  trackerTraits.reset(new o2::its::TrackerTraitsNV);
+  vertexerTraits.reset(new o2::its::VertexerTraits);
 }
 
 int GPUReconstructionCUDABackend::InitDevice_Runtime()
@@ -245,6 +245,12 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
     return (1);
   }
 
+  if (GPUFailedMsgI(cudaThreadSetLimit(cudaLimitStackSize, GPUCA_GPU_STACK_SIZE))) {
+    GPUError("Error setting CUDA stack size");
+    GPUFailedMsgI(cudaDeviceReset());
+    return (1);
+  }
+
   if (mDeviceMemorySize > cudaDeviceProp.totalGlobalMem || GPUFailedMsgI(cudaMalloc(&mDeviceMemoryBase, mDeviceMemorySize))) {
     GPUError("CUDA Memory Allocation Error");
     GPUFailedMsgI(cudaDeviceReset());
@@ -307,7 +313,7 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
   }
 
   ReleaseThreadContext();
-  GPUInfo("CUDA Initialisation successfull (Device %d: %s, Thread %d, %lld/%lld bytes used)", mDeviceId, cudaDeviceProp.name, mThreadId, (long long int)mHostMemorySize, (long long int)mDeviceMemorySize);
+  GPUInfo("CUDA Initialisation successfull (Device %d: %s (Frequency %d, Cores %d), %'lld / %'lld bytes host / global memory, Stack frame %'d, Constant memory %'lld)", mDeviceId, cudaDeviceProp.name, cudaDeviceProp.clockRate, cudaDeviceProp.multiProcessorCount, (long long int)mHostMemorySize, (long long int)mDeviceMemorySize, GPUCA_GPU_STACK_SIZE, (long long int)sizeof(GPUConstantMem));
 
   return (0);
 }
@@ -350,7 +356,29 @@ int GPUReconstructionCUDABackend::ExitDevice_Runtime()
   return (0);
 }
 
-void GPUReconstructionCUDABackend::TransferMemoryInternal(GPUMemoryResource* res, int stream, deviceEvent* ev, deviceEvent* evList, int nEvents, bool toGPU, void* src, void* dst)
+void GPUReconstructionCUDABackend::GPUMemCpy(void* dst, const void* src, size_t size, int stream, bool toGPU, deviceEvent* ev, deviceEvent* evList, int nEvents)
+{
+  if (mDeviceProcessingSettings.debugLevel >= 3) {
+    stream = -1;
+  }
+  if (stream == -1) {
+    SynchronizeGPU();
+    GPUFailedMsg(cudaMemcpy(dst, src, size, toGPU ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost));
+  } else {
+    if (evList == nullptr) {
+      nEvents = 0;
+    }
+    for (int k = 0; k < nEvents; k++) {
+      GPUFailedMsg(cudaStreamWaitEvent(mInternals->CudaStreams[stream], ((cudaEvent_t*)evList)[k], 0));
+    }
+    GPUFailedMsg(cudaMemcpyAsync(dst, src, size, toGPU ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost, mInternals->CudaStreams[stream]));
+  }
+  if (ev) {
+    GPUFailedMsg(cudaEventRecord(*(cudaEvent_t*)ev, mInternals->CudaStreams[stream == -1 ? 0 : stream]));
+  }
+}
+
+void GPUReconstructionCUDABackend::TransferMemoryInternal(GPUMemoryResource* res, int stream, deviceEvent* ev, deviceEvent* evList, int nEvents, bool toGPU, const void* src, void* dst)
 {
   if (!(res->Type() & GPUMemoryResource::MEMORY_GPU)) {
     if (mDeviceProcessingSettings.debugLevel >= 4) {
@@ -359,26 +387,9 @@ void GPUReconstructionCUDABackend::TransferMemoryInternal(GPUMemoryResource* res
     return;
   }
   if (mDeviceProcessingSettings.debugLevel >= 3) {
-    stream = -1;
-  }
-  if (mDeviceProcessingSettings.debugLevel >= 3) {
     printf(toGPU ? "Copying to GPU: %s\n" : "Copying to Host: %s\n", res->Name());
   }
-  if (stream == -1) {
-    SynchronizeGPU();
-    GPUFailedMsg(cudaMemcpy(dst, src, res->Size(), toGPU ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost));
-  } else {
-    if (evList == nullptr) {
-      nEvents = 0;
-    }
-    for (int k = 0; k < nEvents; k++) {
-      GPUFailedMsg(cudaStreamWaitEvent(mInternals->CudaStreams[stream], ((cudaEvent_t*)evList)[k], 0));
-    }
-    GPUFailedMsg(cudaMemcpyAsync(dst, src, res->Size(), toGPU ? cudaMemcpyHostToDevice : cudaMemcpyDeviceToHost, mInternals->CudaStreams[stream]));
-  }
-  if (ev) {
-    GPUFailedMsg(cudaEventRecord(*(cudaEvent_t*)ev, mInternals->CudaStreams[stream == -1 ? 0 : stream]));
-  }
+  GPUMemCpy(dst, src, res->Size(), stream, toGPU, ev, evList, nEvents);
 }
 
 void GPUReconstructionCUDABackend::WriteToConstantMemory(size_t offset, const void* src, size_t size, int stream, deviceEvent* ev)
@@ -389,12 +400,14 @@ void GPUReconstructionCUDABackend::WriteToConstantMemory(size_t offset, const vo
   } else {
     GPUFailedMsg(cudaMemcpyToSymbolAsync(gGPUConstantMemBuffer, src, size, offset, cudaMemcpyHostToDevice, mInternals->CudaStreams[stream]));
   }
+
 #else
   if (stream == -1) {
     GPUFailedMsg(cudaMemcpy(((char*)mDeviceConstantMem) + offset, src, size, cudaMemcpyHostToDevice));
   } else {
     GPUFailedMsg(cudaMemcpyAsync(((char*)mDeviceConstantMem) + offset, src, size, cudaMemcpyHostToDevice, mInternals->CudaStreams[stream]));
   }
+
 #endif
   if (ev && stream != -1) {
     GPUFailedMsg(cudaEventRecord(*(cudaEvent_t*)ev, mInternals->CudaStreams[stream]));
