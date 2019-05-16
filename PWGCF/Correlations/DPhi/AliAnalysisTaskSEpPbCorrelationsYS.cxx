@@ -1177,7 +1177,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        ndetatpcfmd=33;
        nfmdbin=17;
      }
-     Double_t binning_pt_fmdtpc[3]={0.2,3.};
+     Double_t binning_pt_fmdtpc[2]={0.2,3.};
      //     Double_t binning_pt_fmdtpc[2]={0.,8.};
      const Double_t binning_cent_fmdfmd[9]={0.,5.,10.,20.,40.,60.,70,80.,100.1};
      //     const Double_t binning_cent_fmdfmd[8]={0.,5.,10.,20.,40.,60.,70.,80.,100.1};
