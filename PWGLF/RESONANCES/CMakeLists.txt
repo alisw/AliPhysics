@@ -99,6 +99,8 @@ set(SRCS
   AliRsnMiniResonanceFinder.cxx
   AliRsnTrainManager.cxx
   AliRsnMiniTaskPhiVn.cxx
+  PostProcessing/Xi1530/AliAnalysisTaskXi1530.cxx
+  PostProcessing/f0980/AliAnalysisTaskInclusivef0f2.cxx
   )
 
 # Headers from sources
