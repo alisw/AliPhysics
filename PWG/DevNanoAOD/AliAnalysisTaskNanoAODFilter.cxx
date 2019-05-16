@@ -82,7 +82,8 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
   fQAOutput = new TList();
   fQAOutput->SetOwner(kTRUE); 
   
-  DefineOutput(1, TList::Class());
+  DefineOutput(1, AliNanoFilterNormalisation::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //________________________________________________________________________
@@ -106,11 +107,12 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
   if (fSaveCutsFlag) {
     for (std::list<AliAnalysisCuts*>::iterator it = fEvtCuts.begin(); it != fEvtCuts.end(); ++it)
       fQAOutput->Add(*it);
-    PostData(1, fQAOutput);
+    PostData(2, fQAOutput);
   }
   
   std::string normName = std::string(fName) + "_scaler";
   fNormalisation = new AliNanoFilterNormalisation(normName.data(), normName.data());
+  PostData(1, fNormalisation);
 }
 
 void AliAnalysisTaskNanoAODFilter::AddFilteredAOD(const char* aodfilename, const char* title)
@@ -207,7 +209,7 @@ void AliAnalysisTaskNanoAODFilter::FinishTaskOutput() {
   AliNanoAODTrackMapping::GetInstance()->Print();
   Printf("****************************************************************");
   
-  extNanoAOD->GetTree()->GetUserInfo()->Add(fNormalisation);
+  extNanoAOD->GetTree()->GetUserInfo()->Add(fNormalisation->Clone());
 }
 
 void AliAnalysisTaskNanoAODFilter::AddPIDField(AliNanoAODTrack::ENanoPIDResponse response, AliPID::EParticleType particle)
