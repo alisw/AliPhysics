@@ -257,7 +257,6 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCMultMeasScaleEffect);
     fHistMCMultTrueScaleEffect = CreateHistogram("fHistMCMultTrueScaleEffect", {"mult_meas", "mult_meas"});
     fOutputList->Add(fHistMCMultTrueScaleEffect);
-
   }
 
   // override event automatic event selection settings
@@ -312,8 +311,7 @@ Double_t AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliMCParticle* particle
 Double_t AliMultDepSpecAnalysisTask::GetParticleWeight(AliMCParticle* particle)
 {
   if(!fMCSpectraWeights) return 1.0;
-  else return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), (Float_t)fCent);
-  //else return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCEvent);
+  else return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCEvent);
 }
 
 /***************************************************************************//**

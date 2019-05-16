@@ -1,6 +1,6 @@
-#if defined (__CLING__)
-#include "AliMCSpectraWeightsAnalysisTask.h"
 #include "AliMCSpectraWeights.h"
+#if defined (__CLING__)
+  #include "AliMCSpectraWeightsAnalysisTask.h"
 #endif
 
 AliMCSpectraWeightsAnalysisTask* AddTask_phuhn_MCSpectraWeights(const char* collisionSystem, const char* previousTrain)

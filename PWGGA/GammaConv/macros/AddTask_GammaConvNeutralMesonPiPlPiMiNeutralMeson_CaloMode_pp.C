@@ -220,8 +220,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
     // charged pion cuts
   } else if( trainConfig == 120)   {
-    cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","32b110008","0103603700000000","0153503000000000"); // with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonCalo("00000113","1111111040032230000","32b110008","0103603700000000","0153503000000000"); // no track matching
+    cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","32c510008","0103603700000000","0153503000000000"); // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00000113","1111111040032230000","32c510008","0103603700000000","0153503000000000"); // no track matching
   } else if (trainConfig == 121) { // pT Cut
     cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","32c000708","0103603700000000","0153503000000000"); // pt>0.075
     cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","32c020708","0103603700000000","0153503000000000"); // pt>0.125
@@ -261,8 +261,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     // ---------------------------------
 
   } else if(trainConfig == 150)  { // Standard PHOS
-    cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32b110708","0103603n00000000","0153503000000000"); //  with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonCalo("00000113","2444411040012300000","32b110708","0103603n00000000","0153503000000000"); //  without track matching
+    cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32c510708","0103603n00000000","0153503000000000"); //  with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00000113","2444411040012300000","32c510708","0103603n00000000","0153503000000000"); //  without track matching
 
     // *************Variations in AliConvEventCuts**************************
   } else if(trainConfig == 151)  { // removePileUp
@@ -364,7 +364,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // 0-0.85
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // 0-0.75
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32c010708","0103603n00000000","0153503000000000"); // 0-0.7
-  } else if(trainConfig == 170)  { // Standard PHOS
+  } else if(trainConfig == 170)  { // no back calculation
     cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32b110708","0103603n00000000","0453503000000000"); // no bck calculation
     // PHOS pp 5 TeV
   } else if(trainConfig == 190)  { // Standard PHOS  with TPC refit + ITS requirement
