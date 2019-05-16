@@ -227,6 +227,7 @@ void CharmHadronVnAnalysis(string cfgFileName) {
 
     //Define histos for vn vs. pT
     TH1F*               hInvMassInt[nPtBins];
+    TH1F*               hInvMassPhiInt[nPtBins];
     TH1F*               hInvMass[2][nPtBins];
     TH1F*               hVnVsMass[nPtBins];
 
@@ -356,7 +357,12 @@ void CharmHadronVnAnalysis(string cfgFileName) {
         //get histos from sparse
         ApplySelection(sMassVsPtVsPhiVsCentrVsqn,1,PtMin[iPt],PtMax[iPt]);
         hInvMassInt[iPt] = reinterpret_cast<TH1F*>(sMassVsPtVsPhiVsCentrVsqn->Projection(0));
+        
+        ApplySelection(sMassVsPtVsPhiVsCentrVsqn,8,qnmin,qnmax);
+        hInvMassPhiInt[iPt] = reinterpret_cast<TH1F*>(sMassVsPtVsPhiVsCentrVsqn->Projection(0));
+
         ResetAxes(sMassVsPtVsPhiVsCentrVsqn,1);
+        ResetAxes(sMassVsPtVsPhiVsCentrVsqn,8);
 
         if(flowmethod==AliAnalysisTaskSECharmHadronvn::kEP || flowmethod==AliAnalysisTaskSECharmHadronvn::kEvShapeEP) {
             GetInOutOfPlaneInvMassHistos(sMassVsPtVsPhiVsCentrVsqn, hInvMass[0][iPt], hInvMass[1][iPt], harmonic, qnmin, qnmax, PtMin[iPt], PtMax[iPt]);
@@ -384,6 +390,8 @@ void CharmHadronVnAnalysis(string cfgFileName) {
         //phi and qn integrated fit
         hInvMassInt[iPt]->Rebin(Rebin[iPt]);
         hInvMassInt[iPt]->GetYaxis()->SetTitle(Form("Counts per %0.f MeV/#it{c}^{2}",hInvMassInt[iPt]->GetBinWidth(1)*1000));
+        hInvMassPhiInt[iPt]->Rebin(Rebin[iPt]);
+        hInvMassPhiInt[iPt]->GetYaxis()->SetTitle(Form("Counts per %0.f MeV/#it{c}^{2}",hInvMassPhiInt[iPt]->GetBinWidth(1)*1000));
         massfitterInt[iPt] = new AliHFInvMassFitter(hInvMassInt[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc);
         massfitterInt[iPt]->SetUseLikelihoodFit();
         massfitterInt[iPt]->SetInitialGaussianMean(massD);
@@ -500,7 +508,7 @@ void CharmHadronVnAnalysis(string cfgFileName) {
             hProbSimFit->SetBinError(iPt+1,1.e-20);
         }
         else {
-            vnvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassInt[iPt],hVnVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
+            vnvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassPhiInt[iPt],hVnVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
             vnvsmassfitter[iPt]->SetHarmonic(harmonic);
             vnvsmassfitter[iPt]->SetInitialGaussianMean(massD,fixMeanVnVsMassFit);
             vnvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit);
@@ -552,8 +560,8 @@ void CharmHadronVnAnalysis(string cfgFileName) {
         gvnSimFit->SetPoint(iPt,averagePt,vnSimFit);
         gvnSimFit->SetPointError(iPt,averagePt-PtMin[iPt],PtMax[iPt]-averagePt,vnSimFitUnc,vnSimFitUnc);
         
-        //Check D-meson phi modulations (only for EP)
-        cosnphiDvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassInt[iPt],hCosnPhiDVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
+        //Check D-meson phi modulations
+        cosnphiDvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassPhiInt[iPt],hCosnPhiDVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
         cosnphiDvsmassfitter[iPt]->SetHarmonic(harmonic);
         cosnphiDvsmassfitter[iPt]->SetInitialGaussianMean(massD,fixMeanVnVsMassFit);
         cosnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit);
@@ -566,25 +574,9 @@ void CharmHadronVnAnalysis(string cfgFileName) {
             cosnphiDvsmassfitter[iPt]->IncludeSecondGausPeak(massDplus,fixMeanSecP,DplusSigma[iPt],fixSigmaSecP,true);
         cosnphiDvsmassfitter[iPt]->SimultaneusFit(false);
 
-        sinnphiDvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassInt[iPt],hSinnPhiDVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
+        sinnphiDvsmassfitter[iPt] = new AliHFVnVsMassFitter(hInvMassPhiInt[iPt],hSinnPhiDVsMass[iPt],MassMin[iPt],MassMax[iPt],BkgFunc,SgnFunc,VnBkgFunc);
         sinnphiDvsmassfitter[iPt]->SetHarmonic(harmonic);
         sinnphiDvsmassfitter[iPt]->SetInitialGaussianMean(massD,fixMeanVnVsMassFit);
-        sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-        sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-        sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-        sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-        sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-        sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-        sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-        sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
-            sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
         sinnphiDvsmassfitter[iPt]->SetInitialGaussianSigma(hSigmaInt->GetBinContent(iPt+1)/1000,fixSigmaVnVsMassFit); 
         if(useRefl) {
             sinnphiDvsmassfitter[iPt]->SetTemplateReflections(hMCRefl[iPt],reflopt,MassMin[iPt],MassMax[iPt]);
