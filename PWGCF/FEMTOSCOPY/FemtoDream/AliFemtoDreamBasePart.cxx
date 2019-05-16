@@ -36,6 +36,7 @@ ClassImp(AliFemtoDreamBasePart) AliFemtoDreamBasePart::AliFemtoDreamBasePart()
       fMCPDGCode(0),
       fPDGMotherWeak(0),
       fMotherID(0),
+      fID(0),
       fMotherPDG(-1),
       fEvtNumber(0),
       fIsMC(false),
@@ -69,6 +70,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fMCPDGCode(part.fMCPDGCode),
       fPDGMotherWeak(part.fPDGMotherWeak),
       fMotherID(part.fMotherID),
+      fID(part.fID),
       fMotherPDG(part.fMotherPDG),
       fEvtNumber(part.fEvtNumber),
       fIsMC(part.fIsMC),
@@ -104,6 +106,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fMCPDGCode = obj.fMCPDGCode;
   fPDGMotherWeak = obj.fPDGMotherWeak;
   fMotherID = obj.fMotherID;
+  fID = obj.fID;
   fMotherPDG = obj.fMotherPDG;
   fEvtNumber = obj.fEvtNumber;
   fIsMC = obj.fIsMC;
@@ -140,6 +143,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCPDGCode(mother.GetPDGCode()),
       fPDGMotherWeak(0),
       fMotherID(),
+      fID(0),
       fMotherPDG(0),
       fEvtNumber(0),
       fIsMC((mother.GetMCLabel() > 0)),
@@ -245,6 +249,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCPDGCode(daughter.GetPDGcode()),
       fPDGMotherWeak(0),
       fMotherID(-1),
+      fID(0),
       fMotherPDG(0),
       fEvtNumber(0),
       fIsMC(-1),
