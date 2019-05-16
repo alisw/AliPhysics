@@ -1489,7 +1489,7 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
  
     if ( (run >= 282008 && run <= 282343) || (run >= 282365 && run <= 282367) ) { //check trigger cluster CENT or FAST
 	if (currentfilename.Contains("cent")) lProductionName = "LHC17pq_cent";
-	if (currentfilename.Contains("fast")) lProductionName = "LCH17pq_fast";
+	if (currentfilename.Contains("fast")) lProductionName = "LHC17pq_fast";
 }
 
     //Registered Productions : Run 2 Pb-Pb
