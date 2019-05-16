@@ -503,6 +503,14 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     return;
   }
 
+  fPIDResponse = fInputHandler->GetPIDResponse();
+  if(!fPIDResponse){
+    AliFatal("fPIDResponse does not exist!");
+    return;
+  }
+
+  ClearVectorElement();
+
   fIskINT7        = kFALSE;
   fIskCentral     = kFALSE;
   fIskSemiCentral = kFALSE;
@@ -529,11 +537,6 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
   if(hasMC) GetMCInfoAOD();
 
-  fPIDResponse = fInputHandler->GetPIDResponse();
-  if(!fPIDResponse){
-    AliFatal("fPIDResponse does not exist!");
-    return;
-  }
 
   fRunNumber = fEvent->GetRunNumber();
   fMagneticField = fEvent->GetMagneticField();
@@ -615,51 +618,6 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     }//end of AOD
   }//end of track loop
 
-  //clear track variables
-  fTrackMomentum.clear();
-  fTrackCharge.clear();
-  fTrackDCAxy.clear();
-  fTrackDCAz.clear();
-
-  fTrackPin.clear();
-  fPointOnITSLayer.clear();
-  fSharedPointOnITSLayer.clear();
-
-  fChi2TPC.clear();
-  fChi2ITS.clear();
-  fNclusterTPC.clear();
-  fNclusterITS.clear();
-  fTPCNCrossedRows.clear();
-  fTPCNFindableCluster.clear();
-  fChi2TPCConstrainedVsGlobal.clear();
-
-  fTPCsignal.clear();
-  fTPCNsigmaEl.clear();
-  fTPCNsigmaPi.clear();
-  fTPCNsigmaKa.clear();
-  fTPCNsigmaPr.clear();
-
-  fITSsignal.clear();
-  fITSNsigmaEl.clear();
-  fITSNsigmaPi.clear();
-  fITSNsigmaKa.clear();
-  fITSNsigmaPr.clear();
-
-  fTOFbeta.clear();
-  fTOFNsigmaEl.clear();
-  fTOFNsigmaPi.clear();
-  fTOFNsigmaKa.clear();
-  fTOFNsigmaPr.clear();
-  fIsTOFAvailable.clear();
-
-  fTrackMCMomentum.clear();
-  fTrackMCProdVtx.clear();
-  fTrackMCIndex.clear();
-  fTrackMCPdgCode.clear();
-  fTrackMCMotherIndex.clear();
-  fTrackMCMotherPdgCode.clear();
-  fTrackMCFirstMotherIndex.clear();
-  fTrackMCFirstMotherPdgCode.clear();
 
   fNTrackTPCout = 0;
   Float_t DCAxy = -999, DCAz = -999;
@@ -698,9 +656,13 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     if((Double_t)(track->GetTPCchi2()) / (Double_t)(track->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
     if((Double_t)(track->GetITSchi2()) / (Double_t)(track->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
 
-    TVector3 vec = TVector3();
-    vec.SetPtEtaPhi((Float_t)track->Pt(),(Float_t)track->Eta(),(Float_t)track->Phi());
+
+    vector<Float_t> vec(3,0);
+    vec[0] = track->Pt();
+    vec[1] = track->Eta();
+    vec[2] = track->Phi();
     fTrackMomentum.push_back(vec);
+    vec.clear();
 
     fTrackCharge.push_back(track->Charge());
     fTrackDCAxy.push_back(DCAxy);
@@ -778,16 +740,20 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
       fTrackMCIndex.push_back(label);
       fTrackMCPdgCode.push_back(pdg);
 
-      TVector3 vec_mc = TVector3();
-      vec_mc.SetPtEtaPhi((Float_t)p->Pt(),(Float_t)p->Eta(),(Float_t)p->Phi());
-      fTrackMCMomentum.push_back(vec_mc);
 
-      Float_t mcvtx[3]  = {0,0,0};
-      mcvtx[0] = (Float_t)p->Xv();
-      mcvtx[1] = (Float_t)p->Yv();
-      mcvtx[2] = (Float_t)p->Zv();
-      TVector3 vec_mcvtx = TVector3(mcvtx);
-      fTrackMCProdVtx.push_back(vec_mcvtx);
+      vector<Float_t>vec_mc(3,0);
+      vec_mc[0] = p->Pt();
+      vec_mc[1] = p->Eta();
+      vec_mc[2] = p->Phi();
+      fTrackMCMomentum.push_back(vec_mc);
+      vec_mc.clear();
+
+      vector<Float_t> mcvtx(3,0);
+      mcvtx[0] = p->Xv();
+      mcvtx[1] = p->Yv();
+      mcvtx[2] = p->Zv();
+      fTrackMCProdVtx.push_back(mcvtx);
+
 
       //check mother
       Int_t mother_index = p->GetMother();
@@ -826,45 +792,6 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
   AliInfo(Form("fNSPDTracklet05 = %d , fNSPDTracklet10 = %d , fNHybridTrack08 = %d , fNTPCCluster = %d , fNTrackTPCout = %d",fNSPDTracklet05,fNSPDTracklet10,fNHybridTrack08,fNTPCCluster,fNTrackTPCout));
 
-  fV0Momentum.clear();
-  fV0legMomentum.clear();
-  fV0legPin.clear();
-  fV0Lxy.clear();
-  fV0alpha.clear();
-  fV0qT.clear();
-  fV0DCA.clear();
-  fV0PsiPair.clear();
-  fV0PhivPair.clear();
-  fV0PointingAngle.clear();
-  fV0Chi2.clear();
-  fV0legChi2TPCConstrainedVsGlobal.clear();
-  fV0Mass.clear();
-  fV0legDCAxy.clear();
-  fV0legDCAz.clear();
-  fV0PointOnITSLayer.clear();
-  fV0SharedPointOnITSLayer.clear();
-  fV0legTPCNsigmaEl.clear();
-  fV0legTPCNsigmaPi.clear();
-  fV0legTPCNsigmaKa.clear();
-  fV0legTPCNsigmaPr.clear();
-  fV0legITSNsigmaEl.clear();
-  fV0legITSNsigmaPi.clear();
-  fV0legITSNsigmaKa.clear();
-  fV0legITSNsigmaPr.clear();
-  fV0legTOFNsigmaEl.clear();
-  fV0legTOFNsigmaPi.clear();
-  fV0legTOFNsigmaKa.clear();
-  fV0legTOFNsigmaPr.clear();
-  fV0legIsTOFAvailable.clear();
-
-  fV0MClegMomentum.clear();
-  fV0MClegProdVtx.clear();
-  fV0MClegIndex.clear();
-  fV0MClegPdgCode.clear();
-  fV0MClegMotherIndex.clear();
-  fV0MClegMotherPdgCode.clear();
-  fV0MClegFirstMotherIndex.clear();
-  fV0MClegFirstMotherPdgCode.clear();
 
   AliKFVertex primaryVertexKF(*vVertex);
   Double_t secVtx[3] = {primaryVertexKF.GetX(), primaryVertexKF.GetY(), primaryVertexKF.GetZ()};
@@ -945,17 +872,23 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     //if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron)) > fMaxTPCNsigmaEleCut) continue;
     //if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron)) > fMaxTPCNsigmaEleCut) continue;
 
-    TVector3 V0vec = TVector3();
-    V0vec.SetPtEtaPhi((Float_t)v0->Pt(), (Float_t)v0->Eta(), (Float_t)v0->Phi());
+    vector<Float_t> V0vec(3,0);
+    V0vec[0] = v0->Pt();
+    V0vec[1] = v0->Eta();
+    V0vec[2] = v0->Phi();
     fV0Momentum.push_back(V0vec);
+    V0vec.clear();
 
-    vector<TVector3> legP_vec_tmp;//0 for legPos, 1 for legNeg
-    TVector3 legPos_vec = TVector3();
-    legPos_vec.SetPtEtaPhi((Float_t)legPos->Pt(), (Float_t)legPos->Eta(), (Float_t)legPos->Phi());
+    vector<vector<Float_t>> legP_vec_tmp;//0 for legPos, 1 for legNeg
+    vector<Float_t>legPos_vec(3,0);
+    legPos_vec[0] = legPos->Pt();
+    legPos_vec[1] = legPos->Eta();
+    legPos_vec[2] = legPos->Phi();
     legP_vec_tmp.push_back(legPos_vec); 
-
-    TVector3 legNeg_vec = TVector3();
-    legNeg_vec.SetPtEtaPhi((Float_t)legNeg->Pt(), (Float_t)legNeg->Eta(), (Float_t)legNeg->Phi());
+    vector<Float_t>legNeg_vec(3,0);
+    legNeg_vec[0] = legNeg->Pt();
+    legNeg_vec[1] = legNeg->Eta();
+    legNeg_vec[2] = legNeg->Phi();
     legP_vec_tmp.push_back(legNeg_vec); 
     fV0legMomentum.push_back(legP_vec_tmp);
     legP_vec_tmp.clear();
@@ -1145,20 +1078,30 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
       fV0MClegPdgCode.push_back(legpdg_tmp);
       legpdg_tmp.clear();
 
-      vector<TVector3> legP_vec_mc_tmp;//0 for legPos, 1 for legNeg
-      TVector3 legPos_vec_mc = TVector3((Float_t)pPos->Xv(),(Float_t)pPos->Yv(),(Float_t)pPos->Zv());
+      vector<vector<Float_t>> legP_vec_mc_tmp;//0 for legPos, 1 for legNeg
+      vector<Float_t>legPos_vec_mc(3,0);
+      legPos_vec_mc[0] = pPos->Xv();
+      legPos_vec_mc[1] = pPos->Yv();
+      legPos_vec_mc[2] = pPos->Zv();
       legP_vec_mc_tmp.push_back(legPos_vec_mc); 
-      TVector3 legNeg_vec_mc = TVector3((Float_t)pNeg->Xv(),(Float_t)pNeg->Yv(),(Float_t)pNeg->Zv());
+      vector<Float_t>legNeg_vec_mc(3,0);
+      legNeg_vec_mc[0] = pNeg->Xv();
+      legNeg_vec_mc[1] = pNeg->Yv();
+      legNeg_vec_mc[2] = pNeg->Zv();
       legP_vec_mc_tmp.push_back(legNeg_vec_mc); 
       fV0MClegMomentum.push_back(legP_vec_mc_tmp);
       legP_vec_mc_tmp.clear();
 
-      vector<TVector3> leg_vec_pv_mc_tmp;//0 for legPos, 1 for legNeg//production vertex
-      TVector3 legPos_vec_pv_mc = TVector3();
-      legPos_vec_pv_mc.SetPtEtaPhi((Float_t)pPos->Pt(), (Float_t)pPos->Eta(), (Float_t)pPos->Phi());
+      vector<vector<Float_t>> leg_vec_pv_mc_tmp;//0 for legPos, 1 for legNeg//production vertex
+      vector<Float_t> legPos_vec_pv_mc(3,0);
+      legPos_vec_pv_mc[0] = pPos->Pt();
+      legPos_vec_pv_mc[1] = pPos->Eta();
+      legPos_vec_pv_mc[2] = pPos->Phi();
       leg_vec_pv_mc_tmp.push_back(legPos_vec_pv_mc); 
-      TVector3 legNeg_vec_pv_mc = TVector3();
-      legNeg_vec_pv_mc.SetPtEtaPhi((Float_t)pNeg->Pt(), (Float_t)pNeg->Eta(), (Float_t)pNeg->Phi());
+      vector<Float_t> legNeg_vec_pv_mc(3,0);
+      legNeg_vec_pv_mc[0] = pNeg->Pt();
+      legNeg_vec_pv_mc[1] = pNeg->Eta();
+      legNeg_vec_pv_mc[2] = pNeg->Phi();
       leg_vec_pv_mc_tmp.push_back(legNeg_vec_pv_mc); 
       fV0MClegProdVtx.push_back(leg_vec_pv_mc_tmp);
       leg_vec_pv_mc_tmp.clear();
@@ -1227,19 +1170,12 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   if(hasMC) ProcessMC(option);
 
   fTree->Fill();
+  ClearVectorMemory();
 
 }
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
 {
-  fMCMomentum.clear();
-  fMCProdVtx.clear();
-  fMCIndex.clear();
-  fMCPdgCode.clear();
-  fMCMotherIndex.clear();
-  fMCMotherPdgCode.clear();
-  fMCFirstMotherIndex.clear();
-  fMCFirstMotherPdgCode.clear();
 
   const Int_t Ntrack = fMCArray->GetEntries();
   AliInfo(Form("Ntrack in MC = %d",Ntrack));
@@ -1272,13 +1208,19 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
     //Double_t Rho = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
     if(R > 1.) continue;//select electrons from primary vertex.
 
-    TVector3 prodvtx = TVector3();
-    prodvtx.SetXYZ((Float_t)p->Xv(), (Float_t)p->Yv(), (Float_t)p->Zv());//cm
+    vector<Float_t> prodvtx(3,0);
+    prodvtx[0] = p->Xv();
+    prodvtx[1] = p->Yv();
+    prodvtx[2] = p->Zv();
     fMCProdVtx.push_back(prodvtx);
+    prodvtx.clear();
 
-    TVector3 vec = TVector3();
-    vec.SetPtEtaPhi((Float_t)pT,(Float_t)eta,(Float_t)phi);
+    vector<Float_t> vec(3,0);
+    vec[0] = pT;
+    vec[1] = eta;
+    vec[2] = phi;
     fMCMomentum.push_back(vec);
+    vec.clear();
 
     fMCIndex.push_back(itrack);
     fMCPdgCode.push_back(pdg);//11 or -11
@@ -1402,5 +1344,211 @@ Double_t AliAnalysisTaskReducedTreeDS::PhivPair(AliAODv0 *v0, Float_t Bz)
   return phiv;//in radian
 }
 //_______________________________________________________________________________________________
+void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
+{
+  AliInfo("elements of vectors are cleared.");
+
+  //clear track variables
+  fTrackMomentum.clear();
+  fTrackCharge.clear();
+  fTrackDCAxy.clear();
+  fTrackDCAz.clear();
+
+  fTrackPin.clear();
+  fPointOnITSLayer.clear();
+  fSharedPointOnITSLayer.clear();
+
+  fChi2TPC.clear();
+  fChi2ITS.clear();
+  fNclusterTPC.clear();
+  fNclusterITS.clear();
+  fTPCNCrossedRows.clear();
+  fTPCNFindableCluster.clear();
+  fChi2TPCConstrainedVsGlobal.clear();
+
+  fTPCsignal.clear();
+  fTPCNsigmaEl.clear();
+  fTPCNsigmaPi.clear();
+  fTPCNsigmaKa.clear();
+  fTPCNsigmaPr.clear();
+
+  fITSsignal.clear();
+  fITSNsigmaEl.clear();
+  fITSNsigmaPi.clear();
+  fITSNsigmaKa.clear();
+  fITSNsigmaPr.clear();
+
+  fTOFbeta.clear();
+  fTOFNsigmaEl.clear();
+  fTOFNsigmaPi.clear();
+  fTOFNsigmaKa.clear();
+  fTOFNsigmaPr.clear();
+  fIsTOFAvailable.clear();
+
+  fTrackMCMomentum.clear();
+  fTrackMCProdVtx.clear();
+  fTrackMCIndex.clear();
+  fTrackMCPdgCode.clear();
+  fTrackMCMotherIndex.clear();
+  fTrackMCMotherPdgCode.clear();
+  fTrackMCFirstMotherIndex.clear();
+  fTrackMCFirstMotherPdgCode.clear();
+
+
+  //clear V0 variables
+  fV0Momentum.clear();
+  fV0legMomentum.clear();
+  fV0legPin.clear();
+  fV0Lxy.clear();
+  fV0alpha.clear();
+  fV0qT.clear();
+  fV0DCA.clear();
+  fV0PsiPair.clear();
+  fV0PhivPair.clear();
+  fV0PointingAngle.clear();
+  fV0Chi2.clear();
+  fV0legChi2TPCConstrainedVsGlobal.clear();
+  fV0Mass.clear();
+  fV0legDCAxy.clear();
+  fV0legDCAz.clear();
+  fV0PointOnITSLayer.clear();
+  fV0SharedPointOnITSLayer.clear();
+  fV0legTPCNsigmaEl.clear();
+  fV0legTPCNsigmaPi.clear();
+  fV0legTPCNsigmaKa.clear();
+  fV0legTPCNsigmaPr.clear();
+  fV0legITSNsigmaEl.clear();
+  fV0legITSNsigmaPi.clear();
+  fV0legITSNsigmaKa.clear();
+  fV0legITSNsigmaPr.clear();
+  fV0legTOFNsigmaEl.clear();
+  fV0legTOFNsigmaPi.clear();
+  fV0legTOFNsigmaKa.clear();
+  fV0legTOFNsigmaPr.clear();
+  fV0legIsTOFAvailable.clear();
+
+  fV0MClegMomentum.clear();
+  fV0MClegProdVtx.clear();
+  fV0MClegIndex.clear();
+  fV0MClegPdgCode.clear();
+  fV0MClegMotherIndex.clear();
+  fV0MClegMotherPdgCode.clear();
+  fV0MClegFirstMotherIndex.clear();
+  fV0MClegFirstMotherPdgCode.clear();
+
+  //clear MC variables
+  fMCMomentum.clear();
+  fMCProdVtx.clear();
+  fMCIndex.clear();
+  fMCPdgCode.clear();
+  fMCMotherIndex.clear();
+  fMCMotherPdgCode.clear();
+  fMCFirstMotherIndex.clear();
+  fMCFirstMotherPdgCode.clear();
+
+}
+//_______________________________________________________________________________________________
+void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
+{
+  AliInfo("memories for vector objects are swapped with null.");
+
+  vector<vector<Float_t>>().swap(fTrackMomentum);
+  vector<Int_t>().swap(fTrackCharge);
+  vector<Float_t>().swap(fTrackDCAxy);
+  vector<Float_t>().swap(fTrackDCAz);
+
+  vector<Float_t>().swap(fTrackPin);
+  vector<vector<Bool_t>>().swap(fPointOnITSLayer);
+  vector<vector<Bool_t>>().swap(fSharedPointOnITSLayer);
+
+  vector<Float_t>().swap(fChi2TPC);
+  vector<Float_t>().swap(fChi2ITS);
+  vector<Int_t>().swap(fNclusterTPC);
+  vector<Int_t>().swap(fNclusterITS);
+  vector<Int_t>().swap(fTPCNCrossedRows);
+  vector<Int_t>().swap(fTPCNFindableCluster);
+  vector<Float_t>().swap(fChi2TPCConstrainedVsGlobal);
+
+  vector<Float_t>().swap(fTPCsignal);
+  vector<Float_t>().swap(fTPCNsigmaEl);
+  vector<Float_t>().swap(fTPCNsigmaPi);
+  vector<Float_t>().swap(fTPCNsigmaKa);
+  vector<Float_t>().swap(fTPCNsigmaPr);
+
+  vector<Float_t>().swap(fITSsignal);
+  vector<Float_t>().swap(fITSNsigmaEl);
+  vector<Float_t>().swap(fITSNsigmaPi);
+  vector<Float_t>().swap(fITSNsigmaKa);
+  vector<Float_t>().swap(fITSNsigmaPr);
+
+  vector<Float_t>().swap(fTOFbeta);
+  vector<Float_t>().swap(fTOFNsigmaEl);
+  vector<Float_t>().swap(fTOFNsigmaPi);
+  vector<Float_t>().swap(fTOFNsigmaKa);
+  vector<Float_t>().swap(fTOFNsigmaPr);
+  vector<Bool_t>().swap(fIsTOFAvailable);
+
+  //MC track info
+  vector<vector<Float_t>>().swap(fTrackMCMomentum);
+  vector<vector<Float_t>>().swap(fTrackMCProdVtx);
+  vector<Int_t>().swap(fTrackMCIndex);
+  vector<Int_t>().swap(fTrackMCPdgCode);
+  vector<Int_t>().swap(fTrackMCMotherIndex);
+  vector<Int_t>().swap(fTrackMCMotherPdgCode);
+  vector<Int_t>().swap(fTrackMCFirstMotherIndex);
+  vector<Int_t>().swap(fTrackMCFirstMotherPdgCode);
+
+  //V0 info
+  vector<vector<Float_t>>().swap(fV0Momentum);
+  vector<vector<vector<Float_t>>>().swap(fV0legMomentum);
+  vector<vector<Float_t>>().swap(fV0legPin);
+  vector<Float_t>().swap(fV0Lxy);
+  vector<Float_t>().swap(fV0alpha);
+  vector<Float_t>().swap(fV0qT);
+  vector<Float_t>().swap(fV0DCA);
+  vector<Float_t>().swap(fV0PsiPair);
+  vector<Float_t>().swap(fV0PhivPair);
+  vector<Float_t>().swap(fV0PointingAngle);
+  vector<Float_t>().swap(fV0Chi2);
+  vector<vector<Float_t>>().swap(fV0legChi2TPCConstrainedVsGlobal);
+  vector<vector<Float_t>>().swap(fV0Mass);
+  vector<vector<Float_t>>().swap(fV0legDCAxy);
+  vector<vector<Float_t>>().swap(fV0legDCAz);
+  vector<vector<vector<Bool_t>>>().swap(fV0PointOnITSLayer);
+  vector<vector<vector<Bool_t>>>().swap(fV0SharedPointOnITSLayer);
+  vector<vector<Float_t>>().swap(fV0legTPCNsigmaEl);
+  vector<vector<Float_t>>().swap(fV0legTPCNsigmaPi);
+  vector<vector<Float_t>>().swap(fV0legTPCNsigmaKa);
+  vector<vector<Float_t>>().swap(fV0legTPCNsigmaPr);
+  vector<vector<Float_t>>().swap(fV0legITSNsigmaEl);
+  vector<vector<Float_t>>().swap(fV0legITSNsigmaPi);
+  vector<vector<Float_t>>().swap(fV0legITSNsigmaKa);
+  vector<vector<Float_t>>().swap(fV0legITSNsigmaPr);
+  vector<vector<Float_t>>().swap(fV0legTOFNsigmaEl);
+  vector<vector<Float_t>>().swap(fV0legTOFNsigmaPi);
+  vector<vector<Float_t>>().swap(fV0legTOFNsigmaKa);
+  vector<vector<Float_t>>().swap(fV0legTOFNsigmaPr);
+  vector<vector<Bool_t>>().swap(fV0legIsTOFAvailable);
+
+  //MC V0 info //be carefull, there is no TRUE V0 object!
+  vector<vector<vector<Float_t>>>().swap(fV0MClegMomentum);
+  vector<vector<vector<Float_t>>>().swap(fV0MClegProdVtx);
+  vector<vector<Int_t>>().swap(fV0MClegIndex);
+  vector<vector<Int_t>>().swap(fV0MClegPdgCode);
+  vector<vector<Int_t>>().swap(fV0MClegMotherIndex);
+  vector<vector<Int_t>>().swap(fV0MClegMotherPdgCode);
+  vector<vector<Int_t>>().swap(fV0MClegFirstMotherIndex);
+  vector<vector<Int_t>>().swap(fV0MClegFirstMotherPdgCode);
+
+  //MC variables for true electrons
+  vector<vector<Float_t>>().swap(fMCMomentum);
+  vector<vector<Float_t>>().swap(fMCProdVtx);
+  vector<Int_t>().swap(fMCIndex);
+  vector<Int_t>().swap(fMCPdgCode);
+  vector<Int_t>().swap(fMCMotherIndex);
+  vector<Int_t>().swap(fMCMotherPdgCode);
+  vector<Int_t>().swap(fMCFirstMotherIndex);
+  vector<Int_t>().swap(fMCFirstMotherPdgCode);
+}
 //_______________________________________________________________________________________________
 
