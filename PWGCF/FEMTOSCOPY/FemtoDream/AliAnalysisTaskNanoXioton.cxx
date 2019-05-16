@@ -208,7 +208,7 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
 }
 
 void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
-  AliVEvent *fInputEvent = InputEvent();
+//  AliVEvent *fInputEvent = InputEvent();
   if (!fInputEvent) {
     AliError("No input event");
     return;
