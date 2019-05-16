@@ -1177,12 +1177,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        ndetatpcfmd=33;
        nfmdbin=17;
      }
-     Double_t binning_pt_fmdtpc[3]={0.2,0.75,3.};
+     Double_t binning_pt_fmdtpc[3]={0.2,3.};
      //     Double_t binning_pt_fmdtpc[2]={0.,8.};
-     //     const Double_t binning_cent_fmdfmd[9]={0.,5.,10.,20.,40.,60.,70,80.,100.1};
-     const Double_t binning_cent_fmdfmd[8]={0.,5.,10.,20.,40.,60.,70.,100.1};
+     const Double_t binning_cent_fmdfmd[9]={0.,5.,10.,20.,40.,60.,70,80.,100.1};
+     //     const Double_t binning_cent_fmdfmd[8]={0.,5.,10.,20.,40.,60.,70.,80.,100.1};
      //     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,1,nfmdbin,8,72,10,4};
-     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,2,nfmdbin,7,72,10,4};
+     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,1,nfmdbin,8,72,10,4};
      fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 7, iTrackBin_tpcfmd);
      fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, 7,iTrackBin_tpcfmd);
      if(fAnaMode=="TPCFMD") {
