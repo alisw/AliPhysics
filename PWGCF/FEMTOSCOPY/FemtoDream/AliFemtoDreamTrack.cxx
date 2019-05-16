@@ -775,6 +775,7 @@ void AliFemtoDreamTrack::SetMCInformation() {
       }
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
+        this->SetMotherID(lastMother);
       }
     }
   } else {
