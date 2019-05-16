@@ -336,6 +336,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fMCPDGCode(),
       fPDGMotherWeak(0),
       fMotherID(-1),
+      fID(0),
       fMotherPDG(0),
       fEvtNumber(0),
       fIsMC(-1),
