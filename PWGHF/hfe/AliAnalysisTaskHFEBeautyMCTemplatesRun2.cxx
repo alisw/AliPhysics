@@ -88,9 +88,10 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     Double_t SourceBins[6]=  {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5};
     Double_t * IPbins = new Double_t[401];
     for(int i=0;i<401;i++) IPbins[i] = -0.2 + 0.4/400.*double(i);
-    Double_t * MotherpTBins = new Double_t[61];
+    Double_t * MotherpTBins = new Double_t[81];
     for(int i=0;i<41;i++) MotherpTBins[i] = 0. + 0.25*double(i);
     for(int i=41;i<61;i++) MotherpTBins[i] = 10. + 1.0*double(i-40); // Larger bins at higher pT
+    for(int i=61;i<81;i++) MotherpTBins[i] = 30. + 4.0*double(i-60); // Larger bins at higher pT
 
     fCentrality = new TH1D(Form("fCentrality"),Form("fCentrality"), 20, 0., 100.);
     //fSourceGenerator = new TH2D(Form("fSourceGenerator"),Form("fSourceGenerator"), 10, -0.5, 9.5, 20, -1.5, 18.5);
@@ -141,17 +142,17 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fDCAKaonsFineBins = new TH3D(Form("fDCAKaonsFineBins"),Form("fDCAKaonsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
     fDCAHadronsCorrected = new TH2D(Form("fDCAHadronsCorrected"),Form("fDCAHadronsCorrected"), 18, ptbinningX, 400, -0.2, 0.2);
 
-    fDCACharmNewDPlus = new TH3D(Form("fDCACharmNewDPlus"),Form("fDCACharmNewDPlus"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
-    fDCACharmNewDZero = new TH3D(Form("fDCACharmNewDZero"),Form("fDCACharmNewDZero"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
-    fDCACharmNewDS = new TH3D(Form("fDCACharmNewDS"),Form("fDCACharmNewDS"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
-    fDCACharmNewLambdaC = new TH3D(Form("fDCACharmNewLambdaC"),Form("fDCACharmNewLambdaC"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
-    fDCACharmNewOtherC = new TH3D(Form("fDCACharmNewOtherC"),Form("fDCACharmNewOtherC"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
+    fDCACharmNewDPlus = new TH3D(Form("fDCACharmNewDPlus"),Form("fDCACharmNewDPlus"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewDZero = new TH3D(Form("fDCACharmNewDZero"),Form("fDCACharmNewDZero"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewDS = new TH3D(Form("fDCACharmNewDS"),Form("fDCACharmNewDS"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewLambdaC = new TH3D(Form("fDCACharmNewLambdaC"),Form("fDCACharmNewLambdaC"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewOtherC = new TH3D(Form("fDCACharmNewOtherC"),Form("fDCACharmNewOtherC"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
 
-    fDCABeautyNewBZero = new TH3D(Form("fDCABeautyNewBZero"),Form("fDCABeautyNewBZero"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
-    fDCABeautyNewBPlus = new TH3D(Form("fDCABeautyNewBPlus"),Form("fDCABeautyNewBPlus"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
-    fDCABeautyNewBS = new TH3D(Form("fDCABeautyNewBS"),Form("fDCABeautyNewBS"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
-    fDCABeautyNewLambdaB = new TH3D(Form("fDCABeautyNewLambdaB"),Form("fDCABeautyNewLambdaB"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
-    fDCABeautyNewOtherB = new TH3D(Form("fDCABeautyNewOtherB"),Form("fDCABeautyNewOtherB"), 18, ptbinningX, 400, IPbins, 60, MotherpTBins);
+    fDCABeautyNewBZero = new TH3D(Form("fDCABeautyNewBZero"),Form("fDCABeautyNewBZero"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewBPlus = new TH3D(Form("fDCABeautyNewBPlus"),Form("fDCABeautyNewBPlus"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewBS = new TH3D(Form("fDCABeautyNewBS"),Form("fDCABeautyNewBS"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewLambdaB = new TH3D(Form("fDCABeautyNewLambdaB"),Form("fDCABeautyNewLambdaB"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewOtherB = new TH3D(Form("fDCABeautyNewOtherB"),Form("fDCABeautyNewOtherB"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
     
 
     fBeautyMotherpT = new TH1D(Form("fBeautyMotherpT"),Form("fBeautyMotherpT"), 40, 0., 20.);
