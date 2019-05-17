@@ -51,6 +51,7 @@ set(SRCS
     AliAnaPi0Flow.cxx
     AliAnaRandomTrigger.cxx
     AliAnaClusterShapeCorrelStudies.cxx
+    AliAnaCaloExotics.cxx
    )
 
 # Headers from sources
