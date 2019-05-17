@@ -677,7 +677,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   }
 
   // Photons
-  std::list<Int_t> trackIDs;
+  std::list<Int_t> trackIDs; // tracks which should be kept as they are referred to
   if (fSaveConversionPhotons) {
     Int_t nConvPhotons = 0;
     static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("ConvGammaAODProduction");
@@ -692,7 +692,8 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
         continue;
       trackIDs.push_back(photonCandidate->GetTrackLabelPositive());
       trackIDs.push_back(photonCandidate->GetTrackLabelNegative());
-      new((*fConversionPhotons)[nConvPhotons++]) AliAODConversionPhoton(*photonCandidate);
+      auto copiedPhoton = new((*fConversionPhotons)[nConvPhotons++]) AliAODConversionPhoton(*photonCandidate);
+      copiedPhoton->SetV0Index(-1); // related V0 is not stored
     }
   }
   
