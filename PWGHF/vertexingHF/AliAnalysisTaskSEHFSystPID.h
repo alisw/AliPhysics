@@ -68,6 +68,7 @@ public:
   void SetNsigmaKaonForTagging(float nsigmamax = 0.02)                        {fNsigmaMaxForTag=nsigmamax;}
   void SetKinksSelections(float qtmin=0.15, float Rmin=120, float Rmax=210)   {fQtMinKinks=qtmin; fRMinKinks=Rmin; fRMaxKinks=Rmax;}
   void SetfFillTreeWithNsigmaPIDOnly(bool fillonlyNsigma=true)                {fFillTreeWithNsigmaPIDOnly=fillonlyNsigma;}
+  void SetfFillTreeWithTrackQualityInfo(bool fillTrack=true)                  {fFillTreeWithTrackQualityInfo=fillTrack;}
   void EnableDownSampling(double fractokeep=0.1, double ptmax=1.5, int opt=0) {fEnabledDownSampling=true; fFracToKeepDownSampling=fractokeep; fPtMaxDownSampling=ptmax; fDownSamplingOpt=opt;}
   void SetAODMismatchProtection(int opt=1)                                    {fAODProtection=opt;}
   void SetDownSamplingOption(int opt=0)                                       {fDownSamplingOpt=opt;}
@@ -121,6 +122,8 @@ private:
   unsigned char fTPCNclsPID;                                                         /// number of PID clusters in TPC to fill the tree
   unsigned short fTrackLength;                                                       /// track length for TOF PID
   unsigned short fStartTimeRes;                                                      /// start time resolution for TOF PID
+  unsigned short fTPCNcrossed;                                                      /// number of TPC crossed rows
+  unsigned short fTPCFindable;                                                      /// number of TPC findable clusters
   short fEta;                                                                        /// pseudorapidity of the track
   unsigned short fPhi;                                                               /// azimuthal angle of the track
   short fPDGcode;                                                                    /// PDG code in case of MC to fill the tree
@@ -144,6 +147,7 @@ private:
   AliAODv0KineCuts *fV0cuts;                                                         /// AOD V0 cuts
 
   bool fFillTreeWithNsigmaPIDOnly;                                                   /// flag to enable filling of the tree with only Nsigma variables for the PID
+  bool fFillTreeWithTrackQualityInfo;                                                /// flag to enable filling of the tree with only Nsigma variables for the PID
   bool fEnabledDownSampling;                                                         /// flag to enable/disable downsampling
   double fFracToKeepDownSampling;                                                    /// fraction to keep when downsampling activated
   double fPtMaxDownSampling;                                                         /// pT max of tracks to downsample
@@ -168,7 +172,7 @@ private:
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 8);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 9);
 };
 
 #endif
