@@ -219,8 +219,6 @@ void AliSigma0PhotonCuts::PhotonCuts(
       continue;
 
     AliAODv0 *v0 = inputEvent->GetV0(PhotonCandidate->GetV0Index());
-    if (!v0)
-      continue;
     fHistCuts->Fill(1.f);
 
     auto pos = GetTrack(dynamic_cast<AliVEvent*>(inputEvent),
@@ -230,6 +228,9 @@ void AliSigma0PhotonCuts::PhotonCuts(
     if (!pos || !neg)
       continue;
     fHistCuts->Fill(2.f);
+
+    auto nanoPos = dynamic_cast<AliNanoAODTrack *>(pos);
+    if(nanoPos) v0 = nullptr; // for NanoAODs we dont have a v0 matching!
 
     if (ProcessPhoton(event, PhotonCandidate, v0, pos, neg)) {
       container.push_back( { PhotonCandidate, pos, neg, inputEvent });
@@ -295,13 +296,13 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event,
   const float phi = PhotonCandidate->GetPhotonPhi();
   const float psiPair = PhotonCandidate->GetPsiPair();
 
-  const float dcaV0Daughters = v0->DcaV0Daughters();
+  const float dcaV0Daughters = (v0) ? v0->DcaV0Daughters() : 0;
 
   const float posPt = pos->Pt();
   const float negPt = neg->Pt();
   const float posEta = pos->Eta();
   const float negEta = neg->Eta();
-  const float dcaDaughterToPVPos = v0->DcaPosToPrimVertex();
+  const float dcaDaughterToPVPos = (v0) ? v0->DcaPosToPrimVertex() : 0;
   const short nClsTPCPos = pos->GetTPCNcls();
   const float nCrossedRowsPos =
       (nanoPos) ? nanoPos->GetTPCNCrossedRows() : pos->GetTPCClusterInfo(2, 1);
@@ -312,7 +313,7 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event,
       (nClsTPCPos > 5) ? (pos->GetTPCchi2() / float(nClsTPCPos - 5)) : -1.;
   if(nanoPos) chi2Pos = nanoPos->Chi2perNDF();
 
-  const float dcaDaughterToPVNeg = v0->DcaNegToPrimVertex();
+  const float dcaDaughterToPVNeg = (v0) ? v0->DcaNegToPrimVertex() : 0;
   const short nClsTPCNeg = neg->GetTPCNcls();
   const float nCrossedRowsNeg =
       (nanoNeg) ? nanoNeg->GetTPCNCrossedRows() : neg->GetTPCClusterInfo(2, 1);
