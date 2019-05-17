@@ -473,8 +473,8 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
 
   // loop over the 6 ITS Layrs and check for a hit!
   for (int i = 0; i < 6; ++i) {
-    fITSHit.push_back(fVTrack->HasPointOnITSLayer(i));
-    if (fVTrack->HasPointOnITSLayer(i)) {
+    fITSHit.push_back(fVGlobalTrack->HasPointOnITSLayer(i));
+    if (fVGlobalTrack->HasPointOnITSLayer(i)) {
       this->fHasITSHit = true;
     }
   }
@@ -482,7 +482,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
 //    //doesn't seem to work for nanos.
 //    fTPCRefit = true;
 //  }
-  if (fVTrack->GetTOFBunchCrossing() == 0) {
+  if (fVGlobalTrack->GetTOFBunchCrossing() == 0) {
     this->fTOFTiming = true;
   } else {
     this->fTOFTiming = false;
@@ -497,7 +497,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   this->SetMomTPC(globalNanoTrack->GetTPCmomentum());
   this->fdcaXY = nanoTrack->DCA();
   this->fdcaZ = nanoTrack->ZAtDCA();
-  nanoTrack->GetImpactParameters(fdcaXYProp, fdcaZProp);
+  globalNanoTrack->GetImpactParameters(fdcaXYProp, fdcaZProp);
   SetPhiAtRadii(event->GetMagneticField());
 
   // PID stuff
