@@ -148,7 +148,8 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo, UInt_t trigger) {
   fCascCuts->Init();
   fAntiCascCuts->Init();
   fGTI = new AliAODTrack*[fTrackBufferSize];
-  fEvent = new AliFemtoDreamEvent(fMVPileUp, fEvtCutQA, trigger, fEvtCuts->GetUseAliEventCuts());
+  fEvent = new AliFemtoDreamEvent(fMVPileUp, fEvtCutQA, trigger,
+                                  fEvtCuts->GetUseAliEventCuts());
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
   bool MinBooking = !((!fConfig->GetMinimalBookingME())
       || (!fConfig->GetMinimalBookingSample()));

@@ -242,6 +242,7 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
       AntiProtons.push_back(*fTrack);
     }
   }
+
   std::vector<AliFemtoDreamBasePart> Xis;
   std::vector<AliFemtoDreamBasePart> AntiXis;
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
@@ -261,6 +262,7 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Protons, &Xis, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiXis, 1);
+
 
   fPairCleaner->CleanDecay(&Xis, 0);
   fPairCleaner->CleanDecay(&AntiXis, 1);
