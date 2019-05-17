@@ -212,7 +212,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   centBins.push_back(90);
   config->SetCentBins(centBins);
   config->SetkTCentralityBinning(kTCentBins);
-  config->SetInvMassPairs(InvMassPairs);
 
 
 if(isMC)

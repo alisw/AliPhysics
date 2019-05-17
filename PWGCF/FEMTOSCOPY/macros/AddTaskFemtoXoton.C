@@ -202,6 +202,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   config->SetMultBinning(true);
   config->SetdPhidEtaPlotsSmallK(false);
   config->SetdPhidEtaPlots(false);
+
   config->SetPhiEtaBinnign(false);
 
   if (suffix == "0" && fullBlastQA) {
