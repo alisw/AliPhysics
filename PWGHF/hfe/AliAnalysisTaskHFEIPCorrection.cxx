@@ -47,7 +47,7 @@ ClassImp(AliAnalysisTaskHFEIPCorrection)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // default Constructor
   // Define input and output slots here
@@ -76,7 +76,7 @@ AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection()
 
 //________________________________________________________________________
 AliAnalysisTaskHFEIPCorrection::AliAnalysisTaskHFEIPCorrection(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fRd(0), EP2040(0), EP2040Corrected(0), EP2040V0A(0), EP2040V0C(0), TPCnSigma(0), EPCent(0), EPCentCorrected(0), EPCentV0A(0), EPCentV0C(0), DeltaPhi(0), fExtraCuts(0), fIPData(0), fpTIP2040IP(0), fpTIP2040OOP(0), fpTIP3050IP(0), fpTIP3050OOP(0), EventSelectionSteps(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0), fPionV0pTRNoCutsIP(0), fPionV0pTRWithCutsIP(0), fPionV0pTRNoCutsOOP(0), fPionV0pTRWithCutsOOP(0), fAODV0Cuts(0), fPionV0pTTPC(0), fPionV0pTTPCWithCuts(0), fPionV0pTTPCIP(0), fPionV0pTTPCOOP(0), fPionV0pTTPCIPWTOF(0), fPionV0pTTPCOOPWTOF(0), fPionV0pTTPCIPnoFirst(0), fPionV0pTTPCOOPnoFirst(0), fPionV0pTTPCIPWTOFnoFirst(0), fPionV0pTTPCOOPWTOFnoFirst(0), fDCARegionRun(0), fDCAPhiZHadrons(0), fDCAPhiZHadronsEarlyRuns(0), fDCAPhiZHadronsLateRuns(0), fDCAPhiZHadronsC(0), fDCAPhipTHadrons(0), fDCAPhipTHadronsEarlyRuns(0), fDCAPhipTHadronsLateRuns(0), fDCAPhipTHadronsC(0), fDCAPhiZKaons(0), fDCAPhiZKaonsC(0), fDCAPhipTKaons(0), fDCAPhipTKaonsC(0), fpTPhiZHadrons(0), fDCAWErrHadrons(0), fDCAHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0)
 {
   // HFE cuts
     /*hfetrackCuts = new AliHFEcuts("V0trackCuts", "Track Cuts for tagged track Analysis");
@@ -150,6 +150,16 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fPionV0pTTPC = new TH2D(Form("fPionV0pTTPC"),Form("fPionV0pTTPC"), 18, ptbinningX, 200, -10., 10.);
     fPionV0pTTPCWithCuts = new TH2D(Form("fPionV0pTTPCWithCuts"),Form("fPionV0pTTPCWithCuts"), 18, ptbinningX, 200, -10., 10.);
 
+    fPionV0pTTPCIP = new TH2D(Form("fPionV0pTTPCIP"),Form("fPionV0pTTPCIP"), 18, ptbinningX, 200, -10., 10.);
+    fPionV0pTTPCOOP = new TH2D(Form("fPionV0pTTPCOOP"),Form("fPionV0pTTPCOOP"), 18, ptbinningX, 200, -10., 10.);
+    fPionV0pTTPCIPWTOF = new TH2D(Form("fPionV0pTTPCIPWTOF"),Form("fPionV0pTTPCIPWTOF"), 18, ptbinningX, 200, -10., 10.);
+    fPionV0pTTPCOOPWTOF = new TH2D(Form("fPionV0pTTPCOOPWTOF"),Form("fPionV0pTTPCOOPWTOF"), 18, ptbinningX, 200, -10., 10.);
+    fPionV0pTTPCIPnoFirst = new TH2D(Form("fPionV0pTTPCIPnoFirst"),Form("fPionV0pTTPCIPnoFirst"), 18, ptbinningX, 200, -10., 10.);
+    fPionV0pTTPCOOPnoFirst = new TH2D(Form("fPionV0pTTPCOOPnoFirst"),Form("fPionV0pTTPCOOPnoFirst"), 18, ptbinningX, 200, -10., 10.);
+    fPionV0pTTPCIPWTOFnoFirst = new TH2D(Form("fPionV0pTTPCIPWTOFnoFirst"),Form("fPionV0pTTPCIPWTOFnoFirst"), 18, ptbinningX, 200, -10., 10.);
+    fPionV0pTTPCOOPWTOFnoFirst = new TH2D(Form("fPionV0pTTPCOOPWTOFnoFirst"),Form("fPionV0pTTPCOOPWTOFnoFirst"), 18, ptbinningX, 200, -10., 10.);
+
+
     EventSelectionSteps = new TH1D(Form("EventSelectionSteps"),Form("EventSelectionSteps"), 10, -0.5, 9.5);
 
     fDCARegionRun = new TH3D(Form("fDCARegionRun"),Form("fDCARegionRun"), 400, -0.05, 0.05, 5, 0.5, 5.5, 183, 0.5, 183.5);
@@ -177,7 +187,7 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fAODV0Cuts = new AliAODv0KineCuts();
     
     fRd = new TRandom3(0);
-    
+
     fOutputContainer = new TObjArray(1);
     fOutputContainer->SetName(GetName());
     fOutputContainer->SetOwner();
@@ -204,6 +214,14 @@ void AliAnalysisTaskHFEIPCorrection::UserCreateOutputObjects()
     fOutputContainer->Add(fPionV0pTRWithCutsOOP);
     fOutputContainer->Add(fPionV0pTTPC);
     fOutputContainer->Add(fPionV0pTTPCWithCuts);
+    fOutputContainer->Add(fPionV0pTTPCIP);
+    fOutputContainer->Add(fPionV0pTTPCOOP);
+    fOutputContainer->Add(fPionV0pTTPCIPWTOF);
+    fOutputContainer->Add(fPionV0pTTPCOOPWTOF);
+    fOutputContainer->Add(fPionV0pTTPCIPnoFirst);
+    fOutputContainer->Add(fPionV0pTTPCOOPnoFirst);
+    fOutputContainer->Add(fPionV0pTTPCIPWTOFnoFirst);
+    fOutputContainer->Add(fPionV0pTTPCOOPWTOFnoFirst);
     fOutputContainer->Add(EventSelectionSteps);
     fOutputContainer->Add(fDCARegionRun);
     fOutputContainer->Add(fDCAPhiZHadrons);
@@ -267,6 +285,35 @@ Bool_t AliAnalysisTaskHFEIPCorrection::PassesTrackCuts(AliAODTrack *track)
     if(!((status & AliVTrack::kITSrefit) && (status & AliVTrack::kTPCrefit))) return kFALSE;
     // ITS tracking
     if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1) && track->GetITSNcls()>=4)) return kFALSE;
+    Int_t nclustersITS(track->GetITSclusters(NULL)),
+          nclustersTPC(track->GetTPCNcls()),
+          nclustersTPCall(track->GetTPCClusterMap().CountBits()),
+          nclustersTPCshared(0);
+    UChar_t nfindableTPC = track->GetTPCNclsF();
+    Double_t FoundOverFindable = (nfindableTPC ? static_cast<Float_t>(nclustersTPC)/static_cast<Float_t>(nfindableTPC) : 0);
+    // TPC Quality
+    if(!(track->GetTPCNcls()>=110 && track->GetTPCsignalN()>=80 && FoundOverFindable>0.6 && track->GetTPCchi2()/Double_t(nclustersTPC)<4.)) return kFALSE;
+    // ITS Quality
+    if(track->GetITSchi2()/double(track->GetITSNcls()) > 10.) return kFALSE; 
+      UChar_t ITSShared = track->GetITSSharedClusterMap();
+      Int_t nSharedITS = 0;
+      for(int i=0;i<6;i++)
+          if((ITSShared >> i) & 1)
+              nSharedITS++;
+    if(nSharedITS > 3) return kFALSE; 
+    // TOF quality
+    //if(track->GetTOFsignal()>=99999) return kFALSE;
+    return kTRUE;
+}
+
+Bool_t AliAnalysisTaskHFEIPCorrection::PassesTrackCutsNoFirst(AliAODTrack *track)
+{
+    if(TMath::Abs(track->Eta())>0.8) return kFALSE;
+    ULong_t status = track->GetStatus();
+    // Basic tracking
+    if(!((status & AliVTrack::kITSrefit) && (status & AliVTrack::kTPCrefit))) return kFALSE;
+    // ITS tracking
+    if(!(!(track->HasPointOnITSLayer(0)) && track->HasPointOnITSLayer(1) && track->GetITSNcls()>=4)) return kFALSE;
     Int_t nclustersITS(track->GetITSclusters(NULL)),
           nclustersTPC(track->GetTPCNcls()),
           nclustersTPCall(track->GetTPCClusterMap().CountBits()),
@@ -772,6 +819,7 @@ if(!MultSelection){
     for(int i= 0;i<aodEvent->GetNumberOfV0s();i++)
     {
       //
+
       v0 = aodEvent->GetV0(i);
       //if(!PassesTrackCuts(track));
       if(fAODV0Cuts->ProcessV0(v0, V0MotherPdg, V0Daughter1Pdg, V0Daughter2Pdg))
@@ -831,6 +879,87 @@ if(!MultSelection){
           if(PassesMinimalTrackCuts(V0Daughter[0]) && V0Daughter[0]->GetTPCNcls()>=110 && V0Daughter[0]->GetTPCsignalN()>=80) fPionV0pTTPCWithCuts->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kPion));
           if(PassesMinimalTrackCuts(V0Daughter[1]) && V0Daughter[1]->GetTPCNcls()>=110 && V0Daughter[1]->GetTPCsignalN()>=80) fPionV0pTTPCWithCuts->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kPion));}
         }
+
+        // TOF eff occupancy dependence
+        if(TMath::Abs(V0MotherPdg)==22 && centrality>=20.0 && centrality<=40.0)
+        {
+          V0Daughter[0] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(0)); // This is how to get the daughter particles in AODs, apparently
+          V0Daughter[1] = dynamic_cast<AliAODTrack *> (v0->GetSecondaryVtx()->GetDaughter(1));
+
+          if(PassesTrackCuts(V0Daughter[0]))
+          {
+            DPhi = V0Daughter[0]->Phi() - V0PlanePhi - TMath::Pi();
+            while(DPhi<0.) DPhi += TMath::Pi();
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
+            {
+              fPionV0pTTPCIP->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kElectron));
+              if(TMath::Abs(pid->NumberOfSigmasTOF(V0Daughter[0], AliPID::kElectron))<3.)
+                fPionV0pTTPCIPWTOF->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kElectron));
+            }
+            else
+            {
+              fPionV0pTTPCOOP->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kElectron));
+              if(TMath::Abs(pid->NumberOfSigmasTOF(V0Daughter[0], AliPID::kElectron))<3.)
+                fPionV0pTTPCOOPWTOF->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kElectron));
+            }
+          }
+
+          if(PassesTrackCuts(V0Daughter[1]))
+          {
+            DPhi = V0Daughter[1]->Phi() - V0PlanePhi - TMath::Pi();
+            while(DPhi<0.) DPhi += TMath::Pi();
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
+            {
+              fPionV0pTTPCIP->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kElectron));
+              if(TMath::Abs(pid->NumberOfSigmasTOF(V0Daughter[1], AliPID::kElectron))<3.)
+                fPionV0pTTPCIPWTOF->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kElectron));
+            }
+            else
+            {
+              fPionV0pTTPCOOP->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kElectron));
+              if(TMath::Abs(pid->NumberOfSigmasTOF(V0Daughter[1], AliPID::kElectron))<3.)
+                fPionV0pTTPCOOPWTOF->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kElectron));
+            }
+          }
+
+          if(PassesTrackCutsNoFirst(V0Daughter[0]))
+          {
+            DPhi = V0Daughter[0]->Phi() - V0PlanePhi - TMath::Pi();
+            while(DPhi<0.) DPhi += TMath::Pi();
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
+            {
+              fPionV0pTTPCIPnoFirst->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kElectron));
+              if(TMath::Abs(pid->NumberOfSigmasTOF(V0Daughter[0], AliPID::kElectron))<3.)
+                fPionV0pTTPCIPWTOFnoFirst->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kElectron));
+            }
+            else
+            {
+              fPionV0pTTPCOOPnoFirst->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kElectron));
+              if(TMath::Abs(pid->NumberOfSigmasTOF(V0Daughter[0], AliPID::kElectron))<3.)
+                fPionV0pTTPCOOPWTOFnoFirst->Fill(V0Daughter[0]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[0], AliPID::kElectron));
+            }
+          }
+
+          if(PassesTrackCutsNoFirst(V0Daughter[1]))
+          {
+            DPhi = V0Daughter[1]->Phi() - V0PlanePhi - TMath::Pi();
+            while(DPhi<0.) DPhi += TMath::Pi();
+            if(DPhi < TMath::Pi()/4. || DPhi > TMath::Pi()*3./4.) // IP
+            {
+              fPionV0pTTPCIPnoFirst->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kElectron));
+              if(TMath::Abs(pid->NumberOfSigmasTOF(V0Daughter[1], AliPID::kElectron))<3.)
+                fPionV0pTTPCIPWTOFnoFirst->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kElectron));
+            }
+            else
+            {
+              fPionV0pTTPCOOPnoFirst->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kElectron));
+              if(TMath::Abs(pid->NumberOfSigmasTOF(V0Daughter[1], AliPID::kElectron))<3.)
+                fPionV0pTTPCOOPWTOFnoFirst->Fill(V0Daughter[1]->Pt(), pid->NumberOfSigmasTPC(V0Daughter[1], AliPID::kElectron));
+            }
+          }
+
+        }
+
       }
     }
   }

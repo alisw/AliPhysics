@@ -44,6 +44,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TObjArray * fOutputContainer; // ! output data container
   
   Bool_t PassesTrackCuts(AliAODTrack *track);
+  Bool_t PassesTrackCutsNoFirst(AliAODTrack *track);
   Bool_t PassesElectronPID(AliAODTrack *track, AliPIDResponse *pid);
   Bool_t PassesPionPID(AliAODTrack *track, AliPIDResponse *pid);
   Bool_t PassesKaonPID(AliAODTrack *track, AliPIDResponse *pid);
@@ -88,6 +89,14 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH3D * fPionV0pTRWithCutsOOP;
   TH2D * fPionV0pTTPC;
   TH2D * fPionV0pTTPCWithCuts;
+  TH2D * fPionV0pTTPCIP;
+  TH2D * fPionV0pTTPCOOP;
+  TH2D * fPionV0pTTPCIPWTOF;
+  TH2D * fPionV0pTTPCOOPWTOF;
+  TH2D * fPionV0pTTPCIPnoFirst;
+  TH2D * fPionV0pTTPCOOPnoFirst;
+  TH2D * fPionV0pTTPCIPWTOFnoFirst;
+  TH2D * fPionV0pTTPCOOPWTOFnoFirst;
 
   TH1D * EventSelectionSteps;
   TH3D * fDCARegionRun;
