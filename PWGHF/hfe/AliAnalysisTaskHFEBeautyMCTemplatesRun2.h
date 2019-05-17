@@ -76,6 +76,11 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   TH2D * fDCAConversion;
   TH2D * fDCADalitz;
   TH2D * fDCACharmNew;
+  TH3D * fDCACharmNewDPlus;
+  TH3D * fDCACharmNewDZero;
+  TH3D * fDCACharmNewDS;
+  TH3D * fDCACharmNewLambdaC;
+  TH3D * fDCACharmNewOtherC;
   TH2D * fDCACharmNew3050;
   TH2D * fDCACharmNew3050IP;
   TH2D * fDCACharmNew3050OOP;
@@ -83,6 +88,11 @@ class AliAnalysisTaskHFEBeautyMCTemplatesRun2 : public AliAnalysisTaskSE {
   TH3D * fDCACharmWeightedNew3050IP;
   TH3D * fDCACharmWeightedNew3050OOP;
   TH2D * fDCABeautyNew;
+  TH3D * fDCABeautyNewBZero;
+  TH3D * fDCABeautyNewBPlus;
+  TH3D * fDCABeautyNewBS;
+  TH3D * fDCABeautyNewLambdaB;
+  TH3D * fDCABeautyNewOtherB;
   TH2D * fDCABeautyNewHalfRAA;
   TH2D * fDCABeautyNewHalfRAAIP;
   TH2D * fDCABeautyNewHalfRAAOOP;
