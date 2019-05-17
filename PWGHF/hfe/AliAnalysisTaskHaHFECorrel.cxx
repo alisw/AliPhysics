@@ -114,6 +114,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fUseKFforPhotonicPartner(kFALSE)
 ,fMaxPtEvent(999)
 ,fMinPtEvent(0)
+,fMaxNTr(999)
+,fMinNTr(0)
 ,fMaxElectronEta(0.8)
 ,fMinElectronEta(-0.8)
 ,fMaxHadronEta(0.9)
@@ -123,7 +125,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fITSnCut(3)
 ,fITSSharedClusterCut(999)
 ,fUseTRD(0)
-,fUseITS(0)
+,fUseITSsa(0)
 ,fSigmaITScut(2.)
 ,fSigmaTOFcut(2.)
 ,fSigmaTPCcut(-1.)
@@ -142,6 +144,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fDCAcut(999)
 ,fTRDQA(kFALSE)
 ,fMCTrueCorrelation(kTRUE)
+,fUseEventWeights(kTRUE)
 ,fCorrHadron(kTRUE)
 ,fCorrLParticle(kTRUE)
 ,fMixedEvent(kTRUE)
@@ -182,6 +185,20 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fOutputListHadron(0)
 ,fOutputListQA(0)
 ,fNoEvents(0)
+,fMCNoEvents(0)
+,fHFENoEvents(0)
+,fDiffractiveType(0)
+,fV0ACTrueInel(0)
+,fV0TrueMinInel(0)
+,fV0ACTriggered(0)
+,fV0MinTriggered(0)
+,fTriggerWeight()
+,fVtxEtaNTr(0)
+,fVtxBeforeNTrAcc(0)
+,fVtxAfterNTrAcc()
+,fVtxRecBeforeNTr(0)
+,fVtxRecAfterNTr(0)
+,fVtxWeight()
 ,fTrkpt(0)
 ,fEtaVtxZ(0)
 ,fSPDVtxRes(0)              
@@ -190,7 +207,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fSPDnTrCorrMax(0)
 ,fSPDnTrGen(0)              
 ,fDiffSPDMCVtx(0)           
-,fnTrAccMaxGen(0)           
+,fnTrAccMaxGen(0)
+,fnTrAccGen(0)           
 ,fnTrAccMinGen(0)           
 ,fnTrAccMeanGen(0)          
 ,fnTrAccMax(0)              
@@ -514,6 +532,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fUseKFforPhotonicPartner(kFALSE)
 ,fMaxPtEvent(999)
 ,fMinPtEvent(0)
+,fMaxNTr(999)
+,fMinNTr(0)
 ,fMaxElectronEta(0.8)
 ,fMinElectronEta(-0.8)
 ,fMaxHadronEta(0.9)
@@ -523,7 +543,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fITSnCut(3)
 ,fITSSharedClusterCut(999)
 ,fUseTRD(0)
-,fUseITS(0)
+,fUseITSsa(0)
 ,fSigmaITScut(2.)
 ,fSigmaTOFcut(2.)
 ,fSigmaTPCcut(-1.)
@@ -531,7 +551,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fPhotElecSigmaTPCcut(3)
 ,fPhotElecTPCnCut(80)
 ,fPhotElecITSrefitCut(kTRUE)
-,fPhotCorrCase(1)
+,fPhotCorrCase(2)
 ,fAssNonEleTPCcut(-4)
 ,fHTPCnCut(100)
 ,fHITSrefitCut(kTRUE)
@@ -542,6 +562,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fDCAcut(999)
 ,fTRDQA(kFALSE)
 ,fMCTrueCorrelation(kTRUE)
+,fUseEventWeights(kTRUE)
 ,fCorrHadron(kTRUE)
 ,fCorrLParticle(kTRUE)
 ,fMixedEvent(kTRUE)
@@ -582,20 +603,35 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fOutputListHadron(0)
 ,fOutputListQA(0)
 ,fNoEvents(0)
+,fMCNoEvents(0)
+,fHFENoEvents(0)
+,fDiffractiveType(0)
+,fV0ACTrueInel(0)
+,fV0TrueMinInel(0)
+,fV0ACTriggered(0)
+,fV0MinTriggered(0)
+,fTriggerWeight()
+,fVtxEtaNTr(0)
+,fVtxBeforeNTrAcc(0)
+,fVtxAfterNTrAcc()
+,fVtxRecBeforeNTr(0)
+,fVtxRecAfterNTr(0)
+,fVtxWeight()
 ,fTrkpt(0)
 ,fEtaVtxZ(0)
 ,fSPDVtxRes(0)              
 ,fDiffSPDPrimVtx(0)         
-,fSPDnTrAcc(0)  
-,fSPDnTrCorrMax(0)            
+,fSPDnTrAcc(0)    
+,fSPDnTrCorrMax(0)
 ,fSPDnTrGen(0)              
 ,fDiffSPDMCVtx(0)           
-,fnTrAccMaxGen(0)           
+,fnTrAccMaxGen(0)
+,fnTrAccGen(0)           
 ,fnTrAccMinGen(0)           
 ,fnTrAccMeanGen(0)          
 ,fnTrAccMax(0)              
 ,fnTrAccMin(0)              
-,fnTrAccMean(0)      
+,fnTrAccMean(0)
 ,fMCThrustTagged(0)
 ,fMCSpherTagged(0)
 ,fRecLPTagged(0)
@@ -657,7 +693,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fMothRecLPNTaggedH(0)
 ,fMothMultCorrNTaggedH(0)
 ,fMothNHadNTaggedH(0)
-,fMothMeanPtNTaggedH(0)     
+,fMothMeanPtNTaggedH(0)
 ,fMultiplicity(0)
 ,fSPDMultiplicity(0)
 ,fRunList(0)
@@ -771,7 +807,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fNoPartnerNoT(0)
 ,fNoPartnerNoTPt2(0)
 ,fTPartnerNoT(0)
-,fTPartnerNoTPt2(0),fElecHadTrigger(0)
+,fTPartnerNoTPt2(0)
+,fElecHadTrigger(0)
 ,fElecHadTriggerLS(0)
 ,fElecHadTriggerULS(0)
 ,fElecHadTriggerLSNoP(0)
@@ -871,7 +908,7 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fTrueMCLPEventCutsZvtxMEv(0)   
 ,fTrueMCLP(0)   
 ,fTrueMCElecLPTriggerEventCuts(0) 
-,fTrueMCElecLPTrigger(0)
+,fTrueMCElecLPTrigger(0) 
 ,fTrueElectronEta(0) 
 ,fRecHFEEtaWRecEff(0) 
 ,fTrueLPinAcceptanceEta(0) 
@@ -969,7 +1006,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
       fMC = eventHandler->MCEvent();
       fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
       if (!fMCheader) AliError("fMCheader could not be initialised");
-    }
+      }
     else {
       AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
       fMC = eventHandler->MCEvent();
@@ -981,10 +1018,66 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   }
 
   Int_t LPinAccBeforeEventCuts=0, LPBeforeEventCuts=0;
-  if (fIsMC && fMCTrueCorrelation) MCTruthCorrelation(kFALSE, 0, 0, 0,  LPinAccBeforeEventCuts, LPBeforeEventCuts) ;
+  TObjArray* MCTrueRedTracks=new TObjArray;
+  MCTrueRedTracks->SetOwner(kTRUE);
+  Int_t EventHasElectroninPtBin[fAssPtElec_Nbins];
+
+  // MC Truth correlations and find HFEs (for EventBias)
+  for (Int_t i=0; i<fAssPtElec_Nbins; i++) EventHasElectroninPtBin[i]=0;
+  if (fIsMC && fMCTrueCorrelation) MCTruthCorrelation(MCTrueRedTracks, kFALSE, 0, 0, 0,  LPinAccBeforeEventCuts, LPBeforeEventCuts) ; 
+   if (fIsMC && fMCTrueCorrelation && MCTrueRedTracks->GetEntriesFast()>0) {
+    for (Int_t i=0; i<MCTrueRedTracks->GetEntriesFast(); i++) {
+      AliBasicParticleHaHFE *RedTrack = (AliBasicParticleHaHFE*) MCTrueRedTracks->At(i);
+      AliAODMCParticle* MCTrack = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(RedTrack->GetLabel()));
+      if (abs(MCTrack->GetPdgCode())!=11) continue;
+      Double_t pt = MCTrack->Pt();
+      Double_t eta = MCTrack->Eta();
+      if (eta<fMinElectronEta || eta>fMaxElectronEta) continue;
+      for (Int_t j=0; j<fAssPtElec_Nbins; j++) {
+	if (pt>fAssPtElec_Xmin[j] && pt<fAssPtElec_Xmax[j])  EventHasElectroninPtBin[j]=1;
+      }
+    }
+    delete MCTrueRedTracks;
+  }
+
+   // get MCNCharged particle and observabls for TagEffCrossCheck
+   Int_t nTrMCAcc=0;
+   Double_t SumMCHadronsPt[4]={0., 0., 0., 0.}; // >all, 0.5-2, 2-5, 5-10;
+   Double_t AverageMCPt[4]={0., 0., 0., 0.};
+   Int_t MCnHadrons[4]={0, 0, 0, 0};
+   TObjArray* MCHadrons;
+   if (fIsMC) {
+     MCHadrons = new TObjArray(1000, 0);
+     for (Int_t i=0; i<fMC->GetNumberOfTracks(); i++) {
+       AliAODMCParticle *mcPart  = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(i));
+       if (mcPart->Charge()==0) continue;
+       if (!mcPart->IsPhysicalPrimary()) continue;
+       if (TMath::Abs(mcPart->Eta())<1.) {
+	 nTrMCAcc++;
+	 MCHadrons->Add(mcPart);
+	 SumMCHadronsPt[0]+=mcPart->Pt();
+	 MCnHadrons[0]++;
+	 Double_t ptHadron = mcPart->Pt();
+	 if (ptHadron>0.5 && ptHadron<=2) {
+	   SumMCHadronsPt[1]+=mcPart->Pt();
+	   MCnHadrons[1]++;
+	 }
+	 if (ptHadron>2 && ptHadron<=5) {
+	   SumMCHadronsPt[2]+=mcPart->Pt();
+	   MCnHadrons[2]++;
+	 }
+	 if (ptHadron>5 && ptHadron<=10) {
+	   SumMCHadronsPt[3]+=mcPart->Pt();
+	   MCnHadrons[3]++;
+	 }
+       }
+     }	  
+   }
+   for (Int_t j=0; j<4; j++)  if (MCnHadrons[j]>0) AverageMCPt[j] = SumMCHadronsPt[j]/(1.*MCnHadrons[j]);
 
 
-  // Get Vertex and cut > 10cm and min NumberOfTracks ( suggested by DPG to remove outliers)
+   
+  // Get Vertex 
   const AliVVertex *pVtx=0;  
   const AliVVertex *spdVtx=0;
   if (fAOD) {
@@ -995,12 +1088,79 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     pVtx =   fESD->GetPrimaryVertex();
     spdVtx = fESD->GetPrimaryVertexSPD();
   }
-    
-  fNoEvents->Fill(0);
+
+  //  GetSPDTracklets
+  AliAODTracklets* SPDtracklets= ((AliAODEvent*)fAOD)->GetTracklets(); 
+  Int_t nTr=SPDtracklets->GetNumberOfTracklets();
+  Int_t nTr15Acc = 0;
+  Int_t nTrAcc=0;
+  for(Int_t iTr=0; iTr<nTr; iTr++){
+    Double_t theta=SPDtracklets->GetTheta(iTr);
+    Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+    if(TMath::Abs(eta)<1.) nTrAcc++;
+    if(TMath::Abs(eta)<1.5) nTr15Acc++;
+  }
  
+  // Corrected SPDTracklets
+  Double_t RefMinSPD, RefMaxSPD, RefMeanSPD;
+  if (fIsMC) { // weventweights
+    RefMinSPD=8.32;
+    RefMaxSPD=11.4;
+    RefMeanSPD=11.07;
+  }
+  else {
+    RefMinSPD=8.28;
+    RefMaxSPD=11.4;
+    RefMeanSPD=11.11;
+  }
+  //fSPDnTrackAvg - only temporary, adjust per run, period  mc 
+  Double_t nTrAccCorrMin=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMinSPD); 
+  Double_t nTrAccCorrMax=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMaxSPD); 
+  Double_t nTrAccCorrMean=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMeanSPD);
+
+
+  // Multiplicity estimates
+   // Old get Multitplicity
+  Double_t fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD;
+  Float_t mult = 1;
+  fMultV0Per = 1.;
+  fMultSPDPer =1.;
+  fMultV0Tot = 1.;
+  fMultSPD = 1;
+  
+  fMultSelection = (AliMultSelection * ) fVevent->FindListObject("MultSelection");
+  if (fMultSelection) {
+    fMultV0Per = fMultSelection->GetMultiplicityPercentile("V0M", kFALSE); // Method, Embed Event selection (kFALSE)
+    fMultSPDPer = fMultSelection->GetMultiplicityPercentile("SPDTracklets", kFALSE); // Method, Embed Event selection (kFALSE)
+  }
+
+  AliVVZERO* AODV0 = fVevent->GetVZEROData();
+  Float_t multV0A=AODV0->GetMTotV0A();
+  Float_t multV0C=AODV0->GetMTotV0C();
+  fMultV0Tot=multV0A+multV0C;
+  Float_t minV0=TMath::Min(multV0A, multV0C);
+  Double_t TriggerWeight = GetTriggerWeight(minV0);
+  Double_t VtxWeight = GetVtxWeight(nTr);
+  
+  if (fIsMC) fDiffractiveType->Fill(0., 1.*fMCheader->GetEventType(), nTrMCAcc);
+  Bool_t IsTrueInelastic=kTRUE;
+  if (fIsMC) {
+    IsTrueInelastic=fEventCuts.IsTrueINELgtZero(fVevent);
+    fHFENoEvents->Fill(nTrMCAcc, 0 );
+    fMCNoEvents->Fill(nTrMCAcc, 0);
+    if (IsTrueInelastic) {
+      fHFENoEvents->Fill(nTrMCAcc, 1);
+      fMCNoEvents->Fill(nTrMCAcc, 1);
+      fDiffractiveType->Fill(1., 1.*fMCheader->GetEventType(), minV0);      
+      fV0ACTrueInel->Fill(multV0A, multV0C);
+      fV0TrueMinInel->Fill(minV0);
+    }
+    if (IsTrueInelastic && EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 2);
+  } 
+  fNoEvents->Fill(0);
 
   fEventCuts.SetManualMode();
-  fEventCuts.fRequireTrackVertex = true; // not in default pp cuts
+  fEventCuts.fRequireTrackVertex = false; // not in default pp cuts
   fEventCuts.fMinVtz = -10.f;
   fEventCuts.fMaxVtz = 10.f;
   fEventCuts.fMaxDeltaSpdTrackAbsolute = 0.5f;
@@ -1019,44 +1179,109 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   fEventCuts.fSPDpileupNsigmaDiamZ = 5.;
   fEventCuts.fTrackletBGcut = true;
 
+  fEventCuts.fSelectInelGt0=false; // this cuts away all inel>0 with not reconstructed tracks
+  
   fEventCuts.fUseVariablesCorrelationCuts = true; // maybe remove this cut, small effect
   fEventCuts.fFB128vsTrklLinearCut[0] = 32.077;
   fEventCuts.fFB128vsTrklLinearCut[1] = 0.932;
 
+  Bool_t EventIsAccepted = fEventCuts.AcceptEvent(fVevent);
+
+  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kTriggeredEvent)) { // AliPhysicsSelction: kINT7 + Pileup
+    if (fIsMC) {
+      fDiffractiveType->Fill(2., 1.*fMCheader->GetEventType(), minV0);
+      if (nTrAcc>0)  fDiffractiveType->Fill(4., 1.*fMCheader->GetEventType(), minV0);
+    }
+    if (fIsMC && IsTrueInelastic) {
+      fDiffractiveType->Fill(3., 1.*fMCheader->GetEventType(), minV0);
+      fDiffractiveType->Fill(5., 1.*fMCheader->GetEventType(), minV0, TriggerWeight);
+      if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 3, TriggerWeight);
+      fMCNoEvents->Fill(nTrMCAcc, 3, TriggerWeight);
+      fV0ACTriggered->Fill(multV0A, multV0C);
+      fV0MinTriggered->Fill(minV0);
+           
+    }
+    if (!fIsMC) {
+      fV0ACTriggered->Fill(multV0A, multV0C);
+      fV0MinTriggered->Fill(minV0);
+    }
+    fNoEvents->Fill(3, TriggerWeight);
+  }
+  
+  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kPassesNonVertexRelatedSelections)) { // +, CorrelationCut, Pileup, DAQ, BField
+    if (fIsMC && IsTrueInelastic) {
+      if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 4, TriggerWeight);
+      fMCNoEvents->Fill(nTrMCAcc, 4, TriggerWeight);
+    }
+    fNoEvents->Fill(4, TriggerWeight);
+    
+    fVtxRecBeforeNTr->Fill(1.*nTr, TriggerWeight);
+    if (fIsMC) {
+      Double_t mcVtx[3];
+      fMCheader->GetVertex(mcVtx);
+      fVtxBeforeNTrAcc->Fill(nTrAcc*1., mcVtx[2], TriggerWeight);
+    }
+    else{
+      fVtxBeforeNTrAcc->Fill(nTrAcc*1., 0., TriggerWeight);
+    }
+
+
+    
+  }
+
+  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex)) { // + VertexExistence, VertexQuality
+    if (fIsMC && IsTrueInelastic) {
+      if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 5, TriggerWeight);
+      fMCNoEvents->Fill(nTrMCAcc, 5, TriggerWeight);
+    }
+    fNoEvents->Fill(5, TriggerWeight);
+    for(Int_t iTr=0; iTr<nTr; iTr++){
+      Double_t theta=SPDtracklets->GetTheta(iTr);
+      Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+      fVtxEtaNTr->Fill(pVtx->GetZ(), eta);
+    }
+  }
+
+  if (fEventCuts.CheckNormalisationMask(AliEventCuts::kPassesAllCuts)) { // + VertexPosition
+    if (fIsMC && IsTrueInelastic) {
+      if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 6, TriggerWeight*VtxWeight);
+      fMCNoEvents->Fill(nTrMCAcc, 6, TriggerWeight*VtxWeight);
+    }
+    fNoEvents->Fill(6, TriggerWeight*VtxWeight);
+
+    fVtxAfterNTrAcc->Fill(nTrAcc*1., pVtx->GetZ(), TriggerWeight);
+    fVtxRecAfterNTr->Fill(1.*nTr, pVtx->GetZ(), TriggerWeight);
+  }
+    
+
   // EventCuts
-  if(!fEventCuts.AcceptEvent(fVevent)) {
+  if(!EventIsAccepted) {
     PostData(1, fOutputList);
     PostData(2, fOutputListMain);
     return;
   }
  
-  fNoEvents->Fill(1);
-
-  // old cuts which should not have any relevance
-  Int_t fNOtrks = fVevent->GetNumberOfTracks();
-  if (fNOtrks<2) {
-    PostData(2, fOutputListMain);
-    return;
-  }
-  fNoEvents->Fill(2);
-
   Double_t pVtxZ = -999.;
   pVtxZ = pVtx->GetZ();
-  if(TMath::Abs(pVtxZ)>10. || TMath::Abs(spdVtx->GetZ())>10. ){
+  if(TMath::Abs(pVtxZ)>10. || TMath::Abs(spdVtx->GetZ())>10. ){ // minor case in which the spd vertex is out of range, while track vertex is in range
     cout << pVtxZ << "\t spd vtx " << spdVtx->GetZ() << endl;
     PostData(2, fOutputListMain);
     return;
   }
-  fNoEvents->Fill(3);
+  fNoEvents->Fill(7, TriggerWeight*VtxWeight);
+  if (fIsMC && IsTrueInelastic) {
+    if (EventHasElectroninPtBin[0]==1) fHFENoEvents->Fill(nTrMCAcc, 7, TriggerWeight*VtxWeight);
+    fMCNoEvents->Fill(nTrMCAcc, 7, TriggerWeight*VtxWeight);
+  }
 
-  UInt_t fSelectMask = fInputHandler->IsEventSelected();
+  UInt_t fSelectMask = fInputHandler->IsEventSelected(); // should have no impact
   Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
   if (!isINT7selected){
     PostData(2, fOutputListMain);
     printf("Event not selected \n");
     return;
   }
-  fNoEvents->Fill(4);
+  fNoEvents->Fill(8, TriggerWeight*VtxWeight);
 
   // Perform Event Bias  // Find MotherKinks
   Int_t *listofmotherkink=0;
@@ -1079,16 +1304,24 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   }
 
 
-
-  if (fMinPtEvent > 0.1 || fMaxPtEvent <100) {
+  if (fMinPtEvent > 0.1 || fMaxPtEvent <100) { // currently no used (default range 1-999
     if (!PassEventBias(pVtx,nMotherKink,listofmotherkink)) {
       delete [] listofmotherkink;
       PostData(2, fOutputListMain);
       return;
     }
   }
-  fNoEvents->Fill(5);
+  fNoEvents->Fill(9, TriggerWeight*VtxWeight);
 
+    //  cout << "nTrAcc " << nTrAcc << "\t" << nTrAccCorrMin << endl;
+  if (nTrAccCorrMax<fMinNTr || nTrAccCorrMax>fMaxNTr) {
+    PostData(1, fOutputList);
+    PostData(2, fOutputListMain);
+    PostData(5 , fOutputListQA);
+    return;
+  }
+  fNoEvents->Fill(10, TriggerWeight*VtxWeight);
+  
 
   // Initialize PID Resonse
   fpidResponse = fInputHandler->GetPIDResponse();
@@ -1097,143 +1330,60 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     fpidResponse = AliHFEtools::GetDefaultPID(kFALSE, fInputEvent->IsA() == AliAODEvent::Class());
   }  
 
-
   // Vertex Control hists
   Double_t covSPD[6];
   spdVtx->GetCovarianceMatrix(covSPD);
   fSPDVtxRes->Fill(spdVtx->GetNContributors(), TMath::Sqrt(covSPD[5]));
   Double_t DiffVertexZ = spdVtx->GetZ()-pVtx->GetZ();
   fDiffSPDPrimVtx->Fill(spdVtx->GetNContributors(), (DiffVertexZ));
-			     
-
-  //  SPDTracklets
-  AliAODTracklets* SPDtracklets= ((AliAODEvent*)fAOD)->GetTracklets(); 
-  Int_t nTr=SPDtracklets->GetNumberOfTracklets();
-  Int_t nTrAcc=0;
-  for(Int_t iTr=0; iTr<nTr; iTr++){
-    Double_t theta=SPDtracklets->GetTheta(iTr);
-    Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
-    if(TMath::Abs(eta)<1.) nTrAcc++;
-  }
-  fSPDnTrAcc->Fill(spdVtx->GetZ(), nTrAcc);
-  Int_t nTrMCAcc=0;
-  Double_t SumMCHadronsPt[4]={0., 0., 0., 0.}; // >all, 0.5-2, 2-5, 5-10;
-  Double_t AverageMCPt[4]={0., 0., 0., 0.};
-  Int_t MCnHadrons[4]={0, 0, 0, 0};
-  TObjArray* MCHadrons;
-  if (fIsMC) {
-    MCHadrons = new TObjArray(1000, 0);
-    Double_t mcVtx[3];
-    fMCheader->GetVertex(mcVtx);
-    for (Int_t i=0; i<fMC->GetNumberOfTracks(); i++) {
-      AliAODMCParticle *mcPart  = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(i));
-      if (mcPart->Charge()==0) continue;
-      if (!mcPart->IsPhysicalPrimary()) continue;
-      if (TMath::Abs(mcPart->Eta())<1.) {
-	nTrMCAcc++;
-	MCHadrons->Add(mcPart);
-	SumMCHadronsPt[0]+=mcPart->Pt();
-	MCnHadrons[0]++;
-	Double_t ptHadron = mcPart->Pt();
-	if (ptHadron>0.5 && ptHadron<=2) {
-	  SumMCHadronsPt[1]+=mcPart->Pt();
-	  MCnHadrons[1]++;
-	}
-	if (ptHadron>2 && ptHadron<=5) {
-	  SumMCHadronsPt[2]+=mcPart->Pt();
-	  MCnHadrons[2]++;
-	}
-	if (ptHadron>5 && ptHadron<=10) {
-	  SumMCHadronsPt[3]+=mcPart->Pt();
-	  MCnHadrons[3]++;
-	}
-      }
-    }	  
-    DiffVertexZ = spdVtx->GetZ()-mcVtx[2];
-    fDiffSPDMCVtx->Fill(spdVtx->GetNContributors(), DiffVertexZ);
-    fSPDnTrGen->Fill(spdVtx->GetZ(), nTrMCAcc);
-  }
-  for (Int_t j=0; j<4; j++)  if (MCnHadrons[j]>0) AverageMCPt[j] = SumMCHadronsPt[j]/(1.*MCnHadrons[j]);
-
-
-
-  // Corrected SPDTracklets
-  Double_t RefMinSPD, RefMaxSPD, RefMeanSPD;
-  if (fIsMC) {
-    RefMinSPD=8.32;
-    RefMaxSPD=11.94;
-    RefMeanSPD=11.07;
-  }
-  else {
-    RefMinSPD=8.28;
-    RefMaxSPD=12.02;
-    RefMeanSPD=11.11;
-
-  }
-  //fSPDnTrackAvg - only temporary, adjust per run, period  mc 
-  Double_t nTrAccCorrMin=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMinSPD); 
-  Double_t nTrAccCorrMax=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMaxSPD); 
-  Double_t nTrAccCorrMean=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMeanSPD);
-
-    //  cout << "nTrAcc " << nTrAcc << "\t" << nTrAccCorrMin << endl;
-
-  fSPDnTrCorrMax->Fill(spdVtx->GetZ(), 1.*nTrAccCorrMax);
+     
+  fSPDnTrAcc->Fill(spdVtx->GetZ(), nTrAcc, TriggerWeight*VtxWeight);
+  fSPDnTrCorrMax->Fill(spdVtx->GetZ(), 1.*nTrAccCorrMax, TriggerWeight*VtxWeight);
 
   Double_t fillSparse[3]={spdVtx->GetZ(), 1.*nTrAcc,1.};
   fillSparse[2]=1.*nTrAccCorrMax;
-  fnTrAccMax->Fill(fillSparse);
-  fillSparse[2]=1.*nTrAccCorrMin;
+  fnTrAccMax->Fill(fillSparse, TriggerWeight*VtxWeight);
+  // fillSparse[2]=1.*nTrAccCorrMin;
   // fnTrAccMin->Fill(fillSparse);
-  fillSparse[2]=1.*nTrAccCorrMean;
+  // fillSparse[2]=1.*nTrAccCorrMean;
   // fnTrAccMean->Fill(fillSparse);
 
-
+ 
   if (fIsMC) {
+    Double_t mcVtx[3];
+    fMCheader->GetVertex(mcVtx);
+    DiffVertexZ = spdVtx->GetZ()-mcVtx[2];
+    fDiffSPDMCVtx->Fill(spdVtx->GetNContributors(), DiffVertexZ);
+    fSPDnTrGen->Fill(spdVtx->GetZ(), nTrMCAcc, TriggerWeight*VtxWeight);
+    
     fillSparse[1]=1.*nTrMCAcc;
     fillSparse[2]=1.*nTrAccCorrMax;
-    fnTrAccMaxGen->Fill(fillSparse);
-    fillSparse[2]=1.*nTrAccCorrMin;
+    fnTrAccMaxGen->Fill(fillSparse, TriggerWeight*VtxWeight);
+    fillSparse[2]=1.*nTrAcc;
+    fnTrAccGen->Fill(fillSparse, TriggerWeight*VtxWeight);
+
+    // fillSparse[2]=1.*nTrAccCorrMin;
     // fnTrAccMinGen->Fill(fillSparse);
-    fillSparse[2]=1.*nTrAccCorrMean;
-    //  fnTrAccMeanGen->Fill(fillSparse);
+    // fillSparse[2]=1.*nTrAccCorrMean;
+    // fnTrAccMeanGen->Fill(fillSparse);
   }
  
-
-  
-  // Old get Multitplicity
-  Double_t fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD;
-  Float_t mult = 1;
-  fMultV0Per = 1.;
-  fMultSPDPer =1.;
-  fMultV0Tot = 1.;
-  fMultSPD = 1;
-  
-  fMultSelection = (AliMultSelection * ) fVevent->FindListObject("MultSelection");
-  if (fMultSelection) {
-    fMultV0Per = fMultSelection->GetMultiplicityPercentile("V0M", kFALSE); // Method, Embed Event selection (kFALSE)
-    fMultSPDPer = fMultSelection->GetMultiplicityPercentile("SPDTracklets", kFALSE); // Method, Embed Event selection (kFALSE)
-  }
-
-  // Multiplicity estimates
-  AliVVZERO* AODV0 = fVevent->GetVZEROData();
-  Float_t multV0A=AODV0->GetMTotV0A();
-  Float_t multV0C=AODV0->GetMTotV0C();
-  fMultV0Tot=multV0A+multV0C;
-  
+  /*
   AliVMultiplicity* AliMult = fVevent->GetMultiplicity();
   if (AliMult) fMultSPD=AliMult->GetNumberOfTracklets();  
-  // if (fIsAOD)  AliAODTracklets *AODtracklets = ((AliAODEvent*)fAOD)->GetTracklets();
+  if (fIsAOD)  AliAODTracklets *AODtracklets = ((AliAODEvent*)fAOD)->GetTracklets();
   mult=fMultSPDPer;
-  //Double_t fillSparse[4]={fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD};
-  //  fMultiplicity->Fill(fillSparse); 
-  // fSPDMultiplicity->Fill(fMultSPDPer, fMultSPD, pVtxZ);
+  Double_t fillSparse[4]={fMultV0Per, fMultSPDPer, fMultV0Tot, fMultSPD};
+  fMultiplicity->Fill(fillSparse); 
+  fSPDMultiplicity->Fill(fMultSPDPer, fMultSPD, pVtxZ);
+  */
     
   // Efficiency Corrections
   if(fIsMC) {
     if (fIsAOD) {
       MCEfficiencyCorrections(pVtx); //  Electron reconstruction, Hadron reconstruction
       // TList *lh=fMCheader->GetCocktailHeaders();
-      //      Int_t nh=lh->GetEntries();  
+      // Int_t nh=lh->GetEntries();  
       /* for(Int_t i=0;i<nh;i++)	{
 	  AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
 	  TString genname=gh->GetName();
@@ -1246,18 +1396,15 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
     }
   }
 
+  // Cross check variables for event bias
   Double_t ThrustVar[2]={-1., -1.};
   Double_t SpherVar=-1.;
-  // if (Thrust(MCHadrons, ThrustVar, 1, 0.5)); // cout << ThrustVar[0] << "\t" << ThrustVar[1];
   if (fIsMC) {
     SpherVar = Sphericity(MCHadrons, 1, 0.5);
     MCHadrons->Clear();
     delete MCHadrons;
   }
-  //  cout << "Sphericity " << SpherVar << endl;
-
-
-
+ 
 
   ///////////////////////
   // Preparational Tasks
@@ -1279,17 +1426,14 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   LPtrack=FindLPAndHFE(RedTracksHFE, pVtx,nMotherKink,listofmotherkink, mult, EvContainsTaggedPhot, EvContainsNonTaggedPhot);
   if (fLParticle) if (LPtrack->Pt()>=1000) return;
 
-
+  // Control hists for TagEff
   if (fIsMC) {
     Double_t MotherPt=0; // MC
     for (Int_t i=0; i<RedTracksHFE->GetEntriesFast(); i++) {
-    
       AliBasicParticleHaHFE *RedTrack = (AliBasicParticleHaHFE*) RedTracksHFE->At(i);
-      //  cout << "TrackLabel " << RedTrack->GetLabel() << endl;
       AliAODMCParticle* MCTrack = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(RedTrack->GetLabel())); 
       if (abs(MCTrack->GetPdgCode())!=11) continue;
       Int_t MCMotherLabel = abs(MCTrack->GetMother());
-      //   cout << "Mother " << MCMotherLabel << endl;
       Int_t MCGMotherLabel=-999, MCGGMotherLabel=-999;
       Int_t MCMotherPDG = -999, MCGMotherPDG = -999, MCGGMotherPDG=-999;
       Bool_t IsFeedDown=kFALSE;
@@ -1299,14 +1443,11 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	MCMotherPDG = abs(MCMother->GetPdgCode());
 	MCGMotherLabel = abs(MCMother->GetMother());
 	MotherPt=MCMother->Pt();
-	//     cout << "GMother " << MCGMotherLabel << endl;
       }
       if (MCGMotherLabel>0) {
-	//     cout << "GMother " << MCGMotherLabel << endl;
 	AliAODMCParticle *MCGMother = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(MCGMotherLabel));  
 	MCGMotherPDG = abs(MCGMother->GetPdgCode());
 	MCGGMotherLabel = abs(MCGMother->GetMother());
-	//   cout << "GGMother " << MCGGMotherLabel << endl;
       }
       if (MCMotherPDG==22) {
 	if (MCGMotherPDG==111) Case =0;
@@ -1325,13 +1466,10 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	Case=6;
 	if (MCGMotherPDG>100) Case++;
       }
-
-
-      
+   
       if (!RedTrack->IsPhotonic()) continue;
       if (RedTrack->TruePartner()) {
 	fPt2Tagged->Fill(RedTrack->Pt(), RedTrack->TruePartnerMCPt(), LPtrack->Pt());
-	
 	//	fMCThrustTagged->Fill(RedTrack->Pt(), ThrustVar[0], Case);
 	fMCSpherTagged->Fill(RedTrack->Pt(), SpherVar, Case);
 	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) fRecLPTagged->Fill(RedTrack->Pt(), LPtrack->Pt(), Case);
@@ -1345,8 +1483,6 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	fMeanPtTaggedB->Fill(RedTrack->Pt(), AverageMCPt[2], Case);
 	//fMeanPtTaggedC->Fill(RedTrack->Pt(), AverageMCPt[3], Case);
 	
-
-
 
 	//	fMothMCThrustTagged->Fill(MotherPt, ThrustVar[0]);
 	fMothMCSpherTagged->Fill(MotherPt, SpherVar);
@@ -1388,8 +1524,6 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 	//	fMeanPtNTaggedC->Fill(RedTrack->Pt(), AverageMCPt[3], Case);
 
 
-
-
 	//	fMothMCThrustNTagged->Fill(MotherPt, ThrustVar[0]);
 	fMothMCSpherNTagged->Fill(MotherPt, SpherVar);
 	if (abs(RedTrack->ID())!=abs(LPtrack->GetID())) 	fMothRecLPNTagged->Fill(MotherPt, LPtrack->Pt());
@@ -1422,13 +1556,16 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   else if (EvContainsTaggedPhot && EvContainsNonTaggedPhot) fCheckTaggedEvent->Fill(0., LPtrack->Pt(), mult);
   */
 
+  // MC Truth correlation after event Cuts
   Int_t LPinAccAfterEventCuts=-999, LPAfterEventCuts=-999;
   AliAODTrack * LPtrackAOD = dynamic_cast<AliAODTrack*>(LPtrack);
   Int_t LPtrackLabel=0;
   if (LPtrackAOD) LPtrackLabel=abs(LPtrackAOD->GetLabel());
   if (fIsMC && fMCTrueCorrelation) {  
-    MCTruthCorrelation(kTRUE, LPtrackLabel, pVtx->GetZ(), mult,  LPinAccAfterEventCuts, LPAfterEventCuts) ;
-  
+    TObjArray* MCTrueRedTracks = new TObjArray;
+    MCTrueRedTracks->SetOwner(kTRUE);
+    MCTruthCorrelation(MCTrueRedTracks, kTRUE, LPtrackLabel, pVtx->GetZ(), mult,  LPinAccAfterEventCuts, LPAfterEventCuts) ;
+    //    delete MCTrueRedTracks;
     if (fIsAOD && fLParticle && RedTracksHFE->GetEntriesFast()>0 && LPinAccAfterEventCuts>=0) {
       AliAODMCParticle* LPinAcc = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(LPinAccAfterEventCuts));  
       AliAODMCParticle* LP = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(LPAfterEventCuts));  
@@ -1539,10 +1676,61 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   fV0pions     = new TObjArray;
   fV0protons   = new TObjArray;
 
-  fNoEvents = new TH1F("fNoEvents","",8,-0.5,7.5);
+  fNoEvents = new TH1F("fNoEvents","",11,-0.5,10.5);
   fOutputListMain->Add(fNoEvents);
+  TString BinLabelsEvents[11]={"AllEvents", "+IsTrueIne", "+IsHFE", "+KINT7", "+PILEUP", "+VERTEX", "+VERTEXPOS", "+SPDzVtx", "+CheckKINT7", "+PTCut", "+MultCut"};
+  
+  if(fIsMC) {
+    fMCNoEvents = new TH2F("fMCNoEvents", "MCAccEvents; NCharged; EventCut", 150, -0.5, 149.5, 11, -0.5, 10.5);
+    fOutputListMain->Add(fMCNoEvents);
     
-  fTrkpt = new TH2F("fTrkpt","track pt,after EleTrack, after ElePID",200,0,20,3,-0.5,2.5);
+    fHFENoEvents = new TH2F("fHFENoEvents", "HFEMCAccEvents; NCharged; EventCut", 150, -0.5, 149.5, 11, -0.5, 10.5);
+    fOutputListMain->Add(fHFENoEvents);
+  }
+  for (Int_t i=1; i<=11; i++) {
+    fNoEvents->GetXaxis()->SetBinLabel(i, BinLabelsEvents[i-1]);
+    if (fIsMC) {
+      fMCNoEvents->GetYaxis()->SetBinLabel(i, BinLabelsEvents[i-1]);
+      fHFENoEvents->GetYaxis()->SetBinLabel(i, BinLabelsEvents[i-1]);
+    }
+  }
+
+  if (fIsMC) {
+    TString BinLabelsDiff[6]={"AllEv", "TrueInel>0", "Triggered", "Triggered+TrueInel>0", "Triggered+RecInel>0", "Trig+TrueInel+Weight"};
+    fDiffractiveType = new TH3F("fDiffType", "fDiffType; EventSelection; MCEventType; minV0", 6, -0.5, 5.5, 7, 99.5, 106.5, 20, 0, 20);
+    fOutputListMain->Add(fDiffractiveType);
+    for (Int_t i=1; i<=6; i++) fDiffractiveType->GetXaxis()->SetBinLabel(i, BinLabelsDiff[i-1]);
+ 
+    fV0ACTrueInel = new TH2F("fV0ACTrueInel", "V0 true inelastic; V0A; V0C", 200, 0, 40, 200, 0, 40);
+    fOutputListMain->Add(fV0ACTrueInel);
+
+    fV0TrueMinInel = new TH1F("fV0TrueMinInel", "V0min for true inelastic; Min(V0A, V0C)", 100, 0, 20);
+    fOutputListMain->Add(fV0TrueMinInel);
+  }
+    
+  fV0ACTriggered = new TH2F("fV0ACTriggered", "V0 kINT7 + trueInel; V0A; V0C", 200, 0, 40, 200, 0, 40);
+  fOutputListMain->Add(fV0ACTriggered);
+
+  fV0MinTriggered = new TH1F("fV0MinTriggered", "V0min kINT7 + trueInel; Min(V0A, V0C)", 100, 0, 20);
+  fOutputListMain->Add(fV0MinTriggered);
+
+  fVtxEtaNTr = new TH2F("fVtxEtaTr", "#of SPDtracklets for zVtx, eta; zTrackVtx; eta", 96, -12, 12, 88, -2.2, 2.2);
+  fOutputListMain->Add(fVtxEtaNTr);
+
+  fVtxBeforeNTrAcc = new TH2F("fVtxBeforeNTrAcc", "VtxBeforeNTrAcc; nTrAcc; zVtx (MC)", 50, -0.5, 49.5, 40, -10, 10);
+  fOutputListMain->Add(fVtxBeforeNTrAcc);
+
+  fVtxAfterNTrAcc = new TH2F("fVtxAfterNTrAcc", "VtxAfterNTrAcc; nTrAcc; zVtx", 50, -0.5, 49.5, 40, -10, 10);
+  fOutputListMain->Add(fVtxAfterNTrAcc);
+
+  fVtxRecBeforeNTr= new TH1F("fVtxRecBeforeNTr", "VtxRecBefore (ntr eta unrestricted); ntr SPD", 50, -0.5, 49.5);
+  fOutputListMain->Add(fVtxRecBeforeNTr);
+  
+  fVtxRecAfterNTr = new TH2F("fVtxRecAfterNTr", "VtxRecAfter (ntr eta unrestricted); ntr SPD;  zVtxSPD", 50, -0.5, 49.5, 40, -10, 10);
+  fOutputListMain->Add(fVtxRecAfterNTr);
+
+  
+  fTrkpt = new TH2F("fTrkpt","track pt (0),after EleTrack (1), after ElePID(2); pt ",200,0,20,3,-0.5,2.5);
   fOutputListMain->Add(fTrkpt);
 
   fEtaVtxZ = new TH2F("fEtaVtxZ", "Eta vs VtxZ after hadron track cuts", 90, -0.9, 0.9, 100, -10, 10);
@@ -1621,16 +1809,16 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 
     
   // Multiplicity Sparse
-  fSPDVtxRes = new TH2F("fSPDVtxRes", "fSPDVtxRes",  300, -0.5, 299.5, 500, 0., 10.);
+  fSPDVtxRes = new TH2F("fSPDVtxRes", "fSPDVtxRes; NContributors; Resolution",  200, -0.5, 199.5, 250, 0., 5.);
   fOutputListQA->Add(fSPDVtxRes);
  
-  fDiffSPDPrimVtx = new TH2F("fDiffSPDPrimVtx", "fDiffSPDPrimVtx", 300, -0.5, 299.5, 500, -5., 5.);
+  fDiffSPDPrimVtx = new TH2F("fDiffSPDPrimVtx", "fDiffSPDPrimVtx;NContributors; zSPDVtx-zTrackVtx", 200, -0.5, 199.5, 300, -3., 3.);
   fOutputListQA->Add(fDiffSPDPrimVtx);
 
-  fSPDnTrAcc = new TH2F("fSPDnTrAcc", "fSPDnTrAcc", 220, -11, 11, 300, -0.5, 299.5);
+  fSPDnTrAcc = new TH2F("fSPDnTrAcc", "fSPDnTrAcc; zSPDVtx; SPDnTr (eta<1)", 220, -11, 11, 300, -0.5, 299.5);
   fOutputListQA->Add(fSPDnTrAcc);
 
-  fSPDnTrCorrMax = new TH2F("fSPDnTrCorrMax", "fSPDnTrCorrMax", 220, -11,11,300, -0.5, 299.5);
+  fSPDnTrCorrMax = new TH2F("fSPDnTrCorrMax", "fSPDnTrCorrMax; zSPDVtx; SPDnTr*PoisCorr(max) (eta<1)", 220, -11,11,300, -0.5, 299.5);
   fOutputListQA->Add(fSPDnTrCorrMax);
 
   Int_t    nBinsSPD[3]={10, 200, 200};
@@ -1638,15 +1826,17 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   Double_t xmaxSPD[3]={10,199.5, 199.5};
 
   if (fIsMC) {
-    fSPDnTrGen = new TH2F("fSPDnTrGen", "fSPDnTrGen", 220, -11, 11, 300, -0.5, 299.5);
+    fSPDnTrGen = new TH2F("fSPDnTrGen", "fSPDnTrGen; zSPDVtx; MC_ChargedParticles (eta<1)", 220, -11, 11, 300, -0.5, 299.5);
     fOutputListQA->Add(fSPDnTrGen);
 
-    fDiffSPDMCVtx = new TH2F("fDiffSPDMCVtx", "fDiffSPDMCVtx", 200, -0.5, 199.5, 500, -5., 5.);
+    fDiffSPDMCVtx = new TH2F("fDiffSPDMCVtx", "fDiffSPDMCVtx; NContributors; zSPDVtx-zMCVtx", 200, -0.5, 199.5, 300, -3., 3.);
     fOutputListQA->Add(fDiffSPDMCVtx);
 
-    fnTrAccMaxGen = new THnSparseF("fnTrAccMaxGen", "fnTrAccMaxGen", 3, nBinsSPD, xminSPD, xmaxSPD);
+    fnTrAccMaxGen = new THnSparseF("fnTrAccMaxGen", "fnTrAccMaxGen; zSPDVtx; MC_ChargedParticles (eta<1);SPDnTR*PoisCorr(max) (eta<1)", 3, nBinsSPD, xminSPD, xmaxSPD);
     fOutputListQA->Add(fnTrAccMaxGen);
 
+    fnTrAccGen = new THnSparseF("fnTrAccGen", "fnTrAccGen; zSPDVtx; MC_ChargedParticles (eta<1); MC_SPDnTr reconstructed (eta<1)", 3, nBinsSPD, xminSPD, xmaxSPD);
+    fOutputListQA->Add(fnTrAccGen);
 
     // fnTrAccMinGen = new THnSparseF("fnTrAccMinGen", "fnTrAccMinGen", 3, nBinsSPD, xminSPD, xmaxSPD);
     //  fOutputListQA->Add(fnTrAccMinGen);
@@ -2830,7 +3020,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
 	fTrueMCElecLPTrigger = new TH3F("fMCTrueEleLPTrigger", "fMCTrueEleLPTrigger: pt, case, assbin",MCTrueBins[1], MCTrueXmin[1], MCTrueXmax[1], 10, 0.5, 10.5,  fAssPtHad_Nbins,-0.5, fAssPtHad_Nbins-0.5);
 	fOutputList->Add(fTrueMCElecLPTrigger);
 
-      } 
+      }
     }
   }
 
@@ -4588,6 +4778,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecTrackCuts(const AliVVertex *pVtx,AliV
 
 
   if (fITSSharedClusterCut>0.9) {
+    //    cout << "ITSShardeClusterCUt" << fITSSharedClusterCut << "\t" << ITSNclsShared << endl;
     if (ITSNclsShared>fITSSharedClusterCut) return kFALSE;
   }
   else {
@@ -4683,7 +4874,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::InclElecPIDCuts(AliVTrack* Vtrack, Bool_t IsP
     }
    }
  
-  if (!fUseITS) PassITSCut = kTRUE;
+  PassITSCut = kTRUE; // currently no ITS cut applied (pp)
   if (!PassITSCut || !PassTOFCut || !PassTPCCut) return kFALSE;
   return kTRUE;
 }
@@ -4706,6 +4897,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecPIDCuts(AliVTrack* Vtrack) {
    // looser PID cuts
    fITSnSigmaAsso = fpidResponse->NumberOfSigmasITS(Vtrack, AliPID::kElectron);
    fTPCnSigmaAsso = fpidResponse->NumberOfSigmasTPC(Vtrack, AliPID::kElectron);
+
    
    if(FBTPCOnly && TMath::Abs(fTPCnSigmaAsso)>fPhotElecSigmaTPCcut) return kFALSE;
    if(FBITSsa && TMath::Abs(fITSnSigmaAsso)>3) return kFALSE;
@@ -4752,9 +4944,9 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecTrackCuts(const AliVVertex *pVtx,AliV
       //fPhotTrackITSCuts->Fill(fillSparse);
     }
 
-    if(!(FBTPCOnly || FBITSsa) ) return kFALSE;
+    if(!(FBTPCOnly || (FBITSsa && fUseITSsa)) ) return kFALSE;
     if(FBITSsa) {
-      if (AODtrack->GetITSNcls()<5) return kFALSE;
+      if (AODtrack->GetITSNcls()<4) return kFALSE;
       if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kITSrefit)) return kFALSE;
     }
     if(FBTPCOnly) {
@@ -4763,6 +4955,8 @@ Bool_t AliAnalysisTaskHaHFECorrel::PhotElecTrackCuts(const AliVVertex *pVtx,AliV
       if (fPhotElecITSrefitCut && !(Vtrack->GetStatus()&AliESDtrack::kTPCrefit)) return kFALSE;
     }
 
+    //    if (FBITSsa) cout << "ITSStandalone" << endl;
+    
     return kTRUE;
   }
   return kFALSE; // if not AOD
@@ -5157,7 +5351,7 @@ void AliAnalysisTaskHaHFECorrel::BinLogX(TAxis *axis)
 
 void AliAnalysisTaskHaHFECorrel::SetPDGAxis(TAxis *axis, std::vector<TString> PDGLabel)
 {
-  for (Int_t i=1; i<axis->GetNbins(); i++) {
+  for (UInt_t i=1; i<axis->GetNbins(); i++) {
     if (i<PDGLabel.size()) {
       axis->SetBinLabel(i,PDGLabel[i].Data());
       // cout << PDGLabel[i] << endl;
@@ -5607,6 +5801,27 @@ Double_t AliAnalysisTaskHaHFECorrel::GetElectronRecEff(Double_t pt, Double_t phi
   }
 }
 
+Double_t AliAnalysisTaskHaHFECorrel::GetTriggerWeight(Double_t minV0) {
+
+  if (!fUseEventWeights) return 1.;
+  if (minV0>10) return 1.;
+  Int_t Bin = fTriggerWeight.FindBin(minV0);
+  if (fTriggerWeight.IsBinUnderflow(Bin) || fTriggerWeight.IsBinOverflow(Bin)) {
+      return -1.;
+  }
+  Double_t TriggerWeight = fTriggerWeight.GetBinContent(Bin);
+  return 1./TriggerWeight;
+}
+
+Double_t AliAnalysisTaskHaHFECorrel::GetVtxWeight(Double_t nTr) {
+  if (!fUseEventWeights) return 1.;
+  Int_t Bin=0;
+  if (nTr>10) Bin = fVtxWeight.FindBin(15);
+  else Bin = fVtxWeight.FindBin(nTr);
+  Double_t VtxWeight = fVtxWeight.GetBinContent(Bin);
+  return 1./VtxWeight;
+}
+
 Double_t AliAnalysisTaskHaHFECorrel::GetNonTagCorr(Double_t ptTrack, Double_t ptAsso) {
   Double_t CorrFactor = -1.;
   // Int_t Bin = fNonTagCorr.FindBin(ptAsso);
@@ -5633,10 +5848,18 @@ Double_t AliAnalysisTaskHaHFECorrel::GetNonTagCorr(Double_t ptTrack, Double_t pt
   if (fPhotCorrCase==2) {
     if (ptAsso<0.15) return 1.;
     else return 0;
-
   }
-
-
+  else if (fPhotCorrCase==3) {
+    if (ptAsso<0.1) return 1.;
+    else return 0;
+  }
+  else if (fPhotCorrCase==4) {
+    if (ptAsso<0.2) return 1.;
+    else return 0;
+  }
+  else return 1.;
+	 
+	 /*
   // Case 0 MCtoMc Case !=0 MctoMcRecCorr
   if (ptAsso<0.2) CorrFactor = 2.95+1.65*ptTrack; 
   else if (ptAsso>0.2 && ptAsso<0.35) {
@@ -5652,6 +5875,7 @@ Double_t AliAnalysisTaskHaHFECorrel::GetNonTagCorr(Double_t ptTrack, Double_t pt
     else CorrFactor = 0.061+0.122*ptTrack;
   }
   return CorrFactor;
+	 */
 }
 
 
@@ -5734,7 +5958,7 @@ Bool_t AliAnalysisTaskHaHFECorrel::ESDkTrkGlobalNoDCA(AliVTrack* Vtrack) {
   else return kFALSE;
 }
 
-void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t RecLPLabel,  Float_t pVtxZ, Float_t mult,  Int_t &LeadingParticleInAcceptance, Int_t &LeadingParticle) {
+void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(TObjArray* MCTrueRedTracks, Bool_t AfterEventCuts, Int_t RecLPLabel,  Float_t pVtxZ, Float_t mult,  Int_t &LeadingParticleInAcceptance, Int_t &LeadingParticle) {
   Int_t PDGCode=-999, Mother=-999, MotherPDG=-999, MotherIsHeavy=-999; // GrandMother=-999, GrandMotherPDG=-999, GrandMotherIsHeavy=-999;
   Bool_t ElectronInAcceptanceCut=kFALSE;
   Bool_t HadronInAcceptanceCut=kFALSE;
@@ -5747,8 +5971,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
     for (Int_t j=0; j<fAssPtHad_Nbins; j++) ElectronIsTrigger[i][j]=kFALSE;
   }
 
-  TObjArray* MCTrueRedTracks = new TObjArray;
-  MCTrueRedTracks->SetOwner(kTRUE);
+ 
  
   if (fIsAOD) {
     // Find HFE Eelcton
@@ -5787,10 +6010,10 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 	  if (MotherIsHeavy>3 && MotherIsHeavy<6) { // start Hadron loop
 	    if (AfterEventCuts && fOneTimeCheck) fTrueElectronEta->Fill(MCElectron->Pt(), MCElectron->Eta());
 
-	    if (AfterEventCuts && ElectronInAcceptanceCut) {
+	    if (ElectronInAcceptanceCut) {
 	      AliBasicParticleHaHFE * ElectronParticle  = 0;
 	      AliExternalTrackParam ExtTrackParam;
-	      ElectronParticle = new AliBasicParticleHaHFE(MotherIsHeavy, MCElectron->Eta(), MCElectron->Phi(), MCElectron->Pt(), MCElectron->Charge(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,ExtTrackParam);  // Original mixed event particle class: id has been filled with c or b flag
+	      ElectronParticle = new AliBasicParticleHaHFE(MotherIsHeavy, MCElectron->Eta(), MCElectron->Phi(), MCElectron->Pt(), MCElectron->Charge(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, MCElectron->Label(),ExtTrackParam);  // Original mixed event particle class: id has been filled with c or b flag
 	      if (ElectronParticle) MCTrueRedTracks->Add(ElectronParticle);
 	    }
 
@@ -6021,7 +6244,7 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
     }     
     HFEPool->UpdatePool(MCTrueRedTracks);
   }
-  else delete MCTrueRedTracks;
+  //else delete MCTrueRedTracks;
   // cout << "e" << endl;
 }
 
