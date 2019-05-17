@@ -147,6 +147,11 @@ fVtxX(0),
 fVtxY(0),
 // multi. estimation
 fRejectPUFromSPD(kTRUE),
+
+fSPDBoth(kTRUE),
+fSPDAny(kFALSE),
+fSPDFirst(kFALSE),
+
 fRefMult(61.26),
 gRandom(new TRandom3(0)),
 fSparseMulti(0),
@@ -279,6 +284,11 @@ fCutAssoEPt(0.1),
 fCutAssoEEta(0.9),
 fCutAssoENsigma(3),
 fAssoITSRefit(kTRUE),
+
+fSPDBoth(kTRUE),
+fSPDAny(kFALSE),
+fSPDFirst(kFALSE),
+
 //Mass Cut for photonic electron pair
 fCutInvmass(0.14),
 
@@ -402,7 +412,7 @@ fRecoEtaULSeWeightTrkPt(0)
 
 {
     // constructor
-   
+    
     fvaluePHElectron = new Double_t[3];
     fvalueMulti = new Double_t[6];
     for(Int_t i=0; i<2; i++) fMultEstimatorAvg[i]=0;
@@ -421,7 +431,7 @@ AliAnalysisTaskHFETPCTOFMultiplicity::~AliAnalysisTaskHFETPCTOFMultiplicity()
         
         delete fSparseLSElectron;
         delete fSparseULSElectron;
-       
+        
         delete []fvaluePHElectron;
         delete fSparseMulti;
         delete []fvalueMulti;
@@ -486,7 +496,7 @@ void AliAnalysisTaskHFETPCTOFMultiplicity::UserCreateOutputObjects()
     
     Double_t param[9] = { 7.21109e+23,-3.35277e+00,3.58273e-01,6.86201e-02,9.60855e-01,4.24254e-02,7.45881e+00,1.10354e+01,2.04162e+00};
     fNewHadFunc->SetParameters(param);
-   // fNewHadFunc->Draw();
+    // fNewHadFunc->Draw();
     
     fPi0Weight = new TF1("fPi0Weight","[0] / TMath::Power(TMath::Exp(-[1]*x - [2]*x*x) + x/[3], [4])");
     
@@ -620,7 +630,7 @@ void AliAnalysisTaskHFETPCTOFMultiplicity::UserCreateOutputObjects()
         
     }
     
-
+    
     fSparseLSElectron->Sumw2();
     fSparseULSElectron->Sumw2();
     fSparseMulti->Sumw2();
@@ -672,7 +682,7 @@ void AliAnalysisTaskHFETPCTOFMultiplicity::UserCreateOutputObjects()
     fOutputList->Add(fNevents);
     fOutputList->Add(fVtxZ);
     //fOutputList->Add(fVtxY);
-   // fOutputList->Add(fVtxX);
+    // fOutputList->Add(fVtxX);
     fOutputList->Add(fTPCdEdx);
     fOutputList->Add(fTPCnsigma);
     fOutputList->Add(fTOFnsigma);
@@ -990,9 +1000,9 @@ void AliAnalysisTaskHFETPCTOFMultiplicity::UserExec(Option_t *)
             {
                 
                 fHadCont_Landau->Fill(TrkPt,correctednAcc1,weight_lan);
-               // fHadCont_Err->Fill(TrkPt,correctednAcc1,weight_err);
+                // fHadCont_Err->Fill(TrkPt,correctednAcc1,weight_err);
                 fPt_incl_e_Landau->Fill(TrkPt,correctednAcc1,weight_lan_inv);
-               // fPt_incl_e_Err->Fill(TrkPt,correctednAcc1,weight_err_inv);
+                // fPt_incl_e_Err->Fill(TrkPt,correctednAcc1,weight_err_inv);
                 
                 
                 // Heavy-flavour electron reconstruction
@@ -1067,16 +1077,16 @@ Bool_t  AliAnalysisTaskHFETPCTOFMultiplicity::IsNonHFE(AliAODMCParticle *MCPart,
     iMCmom = MCPart->GetMother();
     if(iMCmom<0) return kFALSE;
     else{
-    AliAODMCParticle *MCPartMom = (AliAODMCParticle*)fMCArray->At(iMCmom);
-    MomPDG = TMath::Abs(MCPartMom->GetPdgCode());
-    MomPt = MCPartMom->Pt();
-    
-    if((MomPDG == 111) || (MomPDG == 221) || (MomPDG == 22)){
-        if(iMCmom >= fNpureMC)fFromHijing = kFALSE;
-        type = GetPi0EtaType(MCPartMom);
-        return kTRUE;
-    }
-    else return kFALSE;
+        AliAODMCParticle *MCPartMom = (AliAODMCParticle*)fMCArray->At(iMCmom);
+        MomPDG = TMath::Abs(MCPartMom->GetPdgCode());
+        MomPt = MCPartMom->Pt();
+        
+        if((MomPDG == 111) || (MomPDG == 221) || (MomPDG == 22)){
+            if(iMCmom >= fNpureMC)fFromHijing = kFALSE;
+            type = GetPi0EtaType(MCPartMom);
+            return kTRUE;
+        }
+        else return kFALSE;
     }
 }
 
@@ -1142,9 +1152,11 @@ Bool_t AliAnalysisTaskHFETPCTOFMultiplicity::Passtrackcuts(AliAODTrack *atrack)
     
     
     if((!(atrack->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrack->GetStatus()&AliAODTrack::kTPCrefit)))) return kFALSE; //TPC refit
-    // if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE; //ITS //kAny
-    if(!(atrack->HasPointOnITSLayer(0) && atrack->HasPointOnITSLayer(1))) return kFALSE; //ITS //kBoth
     
+    if(fSPDBoth){ if(!(atrack->HasPointOnITSLayer(0) && atrack->HasPointOnITSLayer(1))) return kFALSE;} //Hit on first and second SPD layer
+    else if(fSPDAny){ if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;} //Hit on any layer
+    else if(fSPDFirst){ if(!(atrack->HasPointOnITSLayer(0))) return kFALSE;} //Hit on first and second SPD layer
+
     
     if(atrack->PropagateToDCA(pVtx, fAOD->GetMagneticField(), 20., d0z0, cov))
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
@@ -1189,10 +1201,10 @@ Int_t AliAnalysisTaskHFETPCTOFMultiplicity::GetHFE(AliAODMCParticle *electron, T
     if(motherindex<0) kNoMother;
     
     else {
-    AliAODMCParticle *mother = (AliAODMCParticle*)mcArray->At(motherindex);
-    Int_t motherpdg = mother->GetPdgCode();
-    if ( (motherindex >= fNpureMC) &&(int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty;
-    if ( (motherindex >= fNpureMC) && (int(TMath::Abs(motherpdg)/100.)%10) == 4 || (int(TMath::Abs(motherpdg)/1000.)%10) == 4 ) return kCharm;
+        AliAODMCParticle *mother = (AliAODMCParticle*)mcArray->At(motherindex);
+        Int_t motherpdg = mother->GetPdgCode();
+        if ( (motherindex >= fNpureMC) &&(int(TMath::Abs(motherpdg)/100.)%10) == 5 || (int(TMath::Abs(motherpdg)/1000.)%10) == 5 ) return kBeauty;
+        if ( (motherindex >= fNpureMC) && (int(TMath::Abs(motherpdg)/100.)%10) == 4 || (int(TMath::Abs(motherpdg)/1000.)%10) == 4 ) return kCharm;
     }
 }
 
@@ -1226,7 +1238,12 @@ void AliAnalysisTaskHFETPCTOFMultiplicity::SelectPhotonicElectron(Int_t itrack, 
         if(atrackAsso->GetITSNcls() < fCutITSNCls) continue;
         if((!(atrackAsso->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrackAsso->GetStatus()&AliAODTrack::kTPCrefit)))) continue; //refit required
         //  if(!(atrackAsso->HasPointOnITSLayer(0) || atrackAsso->HasPointOnITSLayer(1))) continue; //ITS //kAny
-        if(!(atrackAsso->HasPointOnITSLayer(0) && atrackAsso->HasPointOnITSLayer(1))) continue; //ITS //kBoth
+        //if(!(atrackAsso->HasPointOnITSLayer(0) && atrackAsso->HasPointOnITSLayer(1))) continue; //ITS //kBoth
+        
+        if(fSPDBoth){ if(!(atrackAsso->HasPointOnITSLayer(0) && atrackAsso->HasPointOnITSLayer(1)))  continue;} //Hit on first and second SPD layer
+        else if(fSPDAny){ if(!(atrackAsso->HasPointOnITSLayer(0) || atrackAsso->HasPointOnITSLayer(1))) continue;} //Hit on any layer
+        else if(fSPDFirst){ if(!(atrackAsso->HasPointOnITSLayer(0))) continue;} //Hit on first and second SPD layer
+
         
         nsigmaAsso = fpidResponse->NumberOfSigmasTPC(atrackAsso, AliPID::kElectron);
         ptAsso = atrackAsso->Pt();
