@@ -44,6 +44,8 @@ fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fTPCNcrossed(0),
+fTPCFindable(0),
 fEta(-9999),
 fPhi(9999),
 fPDGcode(-1),
@@ -64,6 +66,7 @@ fAOD(nullptr),
 fPIDresp(nullptr),
 fV0cuts(nullptr),
 fFillTreeWithNsigmaPIDOnly(false),
+fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
 fPtMaxDownSampling(1.5),
@@ -127,6 +130,8 @@ fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fTPCNcrossed(0),
+fTPCFindable(0),
 fEta(-9999),
 fPhi(9999),
 fPDGcode(-1),
@@ -147,6 +152,7 @@ fAOD(nullptr),
 fPIDresp(nullptr),
 fV0cuts(nullptr),
 fFillTreeWithNsigmaPIDOnly(false),
+fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
 fPtMaxDownSampling(1.5),
@@ -289,7 +295,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
   fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
   fPIDtree->Branch("eta",&fEta,"eta/S");
-  fPIDtree->Branch("phi",&fPhi,"eta/s");
+  fPIDtree->Branch("phi",&fPhi,"phi/s"); 
   if(!fFillTreeWithNsigmaPIDOnly) {
     fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
     fPIDtree->Branch("ToF",&fToF,"ToF/s");
@@ -297,6 +303,10 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
     fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
     fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
     fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
+    if(fFillTreeWithTrackQualityInfo) {
+      fPIDtree->Branch("NcrossedRowsTPC",&fTPCNcrossed,"NcrossedRowsTPC/b");
+      fPIDtree->Branch("NFindableTPC",&fTPCFindable,"NFindableClustersTPC/b");
+    }
   }
   fPIDtree->Branch("tag",&fTag,"tag/s");
   if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/S");
@@ -467,6 +477,10 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
           float time0 = fPIDresp->GetTOFResponse().GetStartTime(track->P());
           fToF = ConvertFloatToUnsignedShort((tof-time0)/10);
         }
+      }
+      if(fFillTreeWithTrackQualityInfo) {
+        fTPCNcrossed = track->GetTPCNCrossedRows();
+        fTPCFindable = track->GetTPCNclsF();
       }
     }
     //charge
