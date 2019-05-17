@@ -4998,15 +4998,15 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                               Double_t dotproduct = fVectorJetPx.at(i)*pi0cand->Px() + fVectorJetPy.at(i)*pi0cand->Py() + fVectorJetPz.at(i)*pi0cand->Pz();
                               Double_t magn = pow(fVectorJetPx.at(i),2) + pow(fVectorJetPy.at(i),2) + pow(fVectorJetPz.at(i),2);
                               Double_t z = dotproduct/magn;
-                              if(fVectorJetPt.at(i) > 10){
+                              if(fVectorJetPt.at(i) > 5){
                                 fHistoUnfoldingAsData[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingAsDataInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }
-                              if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) > 10){
+                              if(fVectorJetPt.at(i) < 5 && fTrueVectorJetPt.at(match) > 5){
                                 fHistoUnfoldingMissed[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingMissedInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }
-                              if(fVectorJetPt.at(i) > 10 && fTrueVectorJetPt.at(match) < 10){
+                              if(fVectorJetPt.at(i) > 5 && fTrueVectorJetPt.at(match) < 5){
                                 fHistoUnfoldingReject[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingRejectInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }
