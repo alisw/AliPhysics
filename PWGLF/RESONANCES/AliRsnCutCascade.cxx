@@ -246,19 +246,24 @@ Bool_t AliRsnCutCascade::CheckESD(AliESDcascade *Xi)
         return kFALSE;
     }
     if ((TMath::Abs(Xi->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex)) > fV0MaxDCAVertex) || (TMath::Abs(Xi->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex)) < fV0MinDCAVertex)) {
-        AliDebugClass(2, "Failed check on V0 DCA to primary vertes");
+        AliDebugClass(2, "Failed check on V0 DCA to primary vertex");
         return kFALSE;
     }
     if (TMath::Abs(Xi->GetDcascade(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex)) > fCascadeMaxDCAVertex) {
-        AliDebugClass(2, "Failed check on Cascade DCA to primary vertes");
+        AliDebugClass(2, "Failed check on Cascade DCA to primary vertex");
         return kFALSE;
     }
-    //if (TMath::Abs(Xi->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) {
-    if ( (TMath::Abs(Xi->GetV0CosineOfPointingAngle()) < fV0MinCosPointAngle) || (TMath::Abs(Xi->GetV0CosineOfPointingAngle()) >= 1 ) ) {
+    
+    Double_t XiPosition[3];
+    Xi->GetXYZcascade(XiPosition[0], XiPosition[1], XiPosition[2]);
+    Double_t V0CPA = TMath::Abs(Xi->GetV0CosineOfPointingAngle(XiPosition[0], XiPosition[1], XiPosition[2]));
+    if ( (V0CPA < fV0MinCosPointAngle) || (V0CPA >= 1 ) ) {
         AliDebugClass(2, "Failed check on V0 cosine of pointing angle");
         return kFALSE;
     }
-    if ( (TMath::Abs(Xi->GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)) < fCascadeMinCosPointAngle) || (TMath::Abs(Xi->GetV0CosineOfPointingAngle()) >= 1 ) ) {
+    
+    Double_t XiCPA = TMath::Abs(Xi->GetCascadeCosineOfPointingAngle(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex));
+    if ( (XiCPA < fCascadeMinCosPointAngle) || (XiCPA >= 1 ) ) {
         AliDebugClass(2, "Failed check on Cascade cosine of pointing angle");
         return kFALSE;
     }
@@ -269,9 +274,7 @@ Bool_t AliRsnCutCascade::CheckESD(AliESDcascade *Xi)
     }
     //
     Double_t v0Position[3]; // from $ALICE_ROOT/ANALYSIS/AliESDV0Cuts.cxx
-    Double_t XiPosition[3];
     Xi->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
-    Xi->GetXYZcascade(XiPosition[0],XiPosition[1],XiPosition[2]);
     
     Double_t V0radius = TMath::Sqrt(TMath::Power(v0Position[0],2) + TMath::Power(v0Position[1],2));
     Double_t Xiradius = TMath::Sqrt(TMath::Power(XiPosition[0],2) + TMath::Power(XiPosition[1],2));
@@ -311,40 +314,38 @@ Bool_t AliRsnCutCascade::CheckESD(AliESDcascade *Xi)
     
     //Set Switch to kTRUE to use Competing Cascade Rejection
     if(fSwitch){
-        
-        if(fHypothesis == kXiMinus)
-        {Xi->ChangeMassHypothesis(v0q, kOmegaMinus);
+        if(fHypothesis == kXiMinus) {
+            Xi->ChangeMassHypothesis(v0q, kOmegaMinus);
             if ((TMath::Abs(Xi->GetEffMassXi() - 1.6725)) < fMassToleranceVeto) {
                 Xi->ChangeMassHypothesis(v0q, kXiMinus);
                 return kFALSE;
             }
             Xi->ChangeMassHypothesis(v0q, kXiMinus);
         }
-        if(fHypothesis == kXiPlusBar)
-        {Xi->ChangeMassHypothesis(v0q, kOmegaMinus);
+        if(fHypothesis == kXiPlusBar) {
+            Xi->ChangeMassHypothesis(v0q, kOmegaPlusBar);
             if ((TMath::Abs(Xi->GetEffMassXi() - 1.6725)) < fMassToleranceVeto) {
                 Xi->ChangeMassHypothesis(v0q, kXiPlusBar);
                 return kFALSE;
             }
             Xi->ChangeMassHypothesis(v0q, kXiPlusBar);
         }
-        if(fHypothesis == kOmegaMinus)
-        {Xi->ChangeMassHypothesis(v0q, kXiPlusBar);
+        if(fHypothesis == kOmegaMinus) {
+            Xi->ChangeMassHypothesis(v0q, kXiMinus);
             if ((TMath::Abs(Xi->GetEffMassXi() - 1.3217)) < fMassToleranceVeto) {
                 Xi->ChangeMassHypothesis(v0q, kOmegaMinus);
                 return kFALSE;
             }
             Xi->ChangeMassHypothesis(v0q, kOmegaMinus);
         }
-        if(fHypothesis == kOmegaPlusBar)
-        {Xi->ChangeMassHypothesis(v0q, kXiPlusBar);
+        if(fHypothesis == kOmegaPlusBar) {
+            Xi->ChangeMassHypothesis(v0q, kXiPlusBar);
             if ((TMath::Abs(Xi->GetEffMassXi() - 1.3217)) < fMassToleranceVeto) {
                 Xi->ChangeMassHypothesis(v0q, kOmegaPlusBar);
                 return kFALSE;
             }
             Xi->ChangeMassHypothesis(v0q, kOmegaPlusBar);
         }
-        
     }
     
     // check PID on proton or antiproton from V0
@@ -356,17 +357,17 @@ Bool_t AliRsnCutCascade::CheckESD(AliESDcascade *Xi)
         return kFALSE;
     }
     
-    Double_t posnsTPC   = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID));
-    Double_t posnsTPC2  = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID2));
+    Double_t posnsTPC  = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID));
+    Double_t posnsTPC2 = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID2));
     
-    Double_t negnsTPC   = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, fPID));
-    Double_t negnsTPC2  = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, fPID2));
+    Double_t negnsTPC  = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, fPID));
+    Double_t negnsTPC2 = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, fPID2));
     
     Double_t bpinsTPC  = TMath::Abs(pid->NumberOfSigmasTPC(bTrack, fPID3));
     
-    Double_t maxTPC = fPIDCutV0Proton;
+    Double_t maxTPC  = fPIDCutV0Proton;
     Double_t maxTPC2 = fPIDCutV0Pion;
-    Double_t maxTPC3 =  fPIDCutBachelor;
+    Double_t maxTPC3 = fPIDCutBachelor;
     
     // applies the cut differently depending on the PID and the momentum
     
@@ -377,21 +378,18 @@ Bool_t AliRsnCutCascade::CheckESD(AliESDcascade *Xi)
         }
     }
     else if(fHypothesis==kXiPlusBar) {
-        
         if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2) && (bpinsTPC <= maxTPC3)) ) {
             AliDebugClass(2, "Failed check on Cascade PID");
             return kFALSE;
         }
     }
     else if(fHypothesis==kOmegaMinus) {
-        
         if (! ((posnsTPC <= maxTPC) && (negnsTPC2 <= maxTPC2) && (bpinsTPC <= maxTPC3)) ) {
             AliDebugClass(2, "Failed check on Cascade PID");
             return kFALSE;
         }
     }
     else if(fHypothesis==kOmegaPlusBar) {
-        
         if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2) && (bpinsTPC <= maxTPC3)) ) {
             AliDebugClass(2, "Failed check on Cascade PID");
             return kFALSE;
@@ -409,7 +407,7 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
     //
     // Check an AOD Cascade.
     // This is done doing directly all checks, since there is not
-    // an equivalend checker for AOD tracks
+    // an equivalent checker for AOD tracks
     //
     
     AliDebugClass(2, "Check AOD");
@@ -461,16 +459,14 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
     
     // topological checks
     if (TMath::Abs(Xi->DcaV0ToPrimVertex()) > fV0MaxDCAVertex || TMath::Abs(Xi->DcaV0ToPrimVertex()) < fV0MinDCAVertex) {
-        AliDebugClass(2, Form("Failed check on V0 DCA to primary vertes dca=%f maxdca=%f mindca=%f",TMath::Abs(Xi->DcaV0ToPrimVertex()),fV0MaxDCAVertex,fV0MinDCAVertex));
+        AliDebugClass(2, Form("Failed check on V0 DCA to primary vertex dca=%f maxdca=%f mindca=%f",TMath::Abs(Xi->DcaV0ToPrimVertex()),fV0MaxDCAVertex,fV0MinDCAVertex));
         return kFALSE;
     }
-    // DCA Xi disabled: meaning less?
-    /*
-     if (TMath::Abs(Xi->GetDecayVertexXi()) > fCascadeMaxDCAVertex) {
-     AliDebugClass(2, Form("Failed check on Cascade DCA to primary vertes dca=%f maxdca=%f",TMath::Abs(Xi->DcaV0ToPrimVertex()),fCascadeMaxDCAVertex));
-     return kFALSE;
-     }
-     */
+    
+    if ( (Xi->DcaXiToPrimVertex() < fCascadeMinDCAVertex) || (Xi->DcaXiToPrimVertex() > fCascadeMaxDCAVertex) ) {
+        AliDebugClass(2, Form("Failed check on Cascade DCA to primary vertex dca=%f maxdca=%f mindca=%f",TMath::Abs(Xi->DcaXiToPrimVertex()),fCascadeMaxDCAVertex,fCascadeMinDCAVertex));
+        return kFALSE;
+    }
     
     // next cut is effective (should it be in AODV0?)
     Double_t lPosXi[3];
@@ -499,9 +495,17 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
         return kFALSE;
     }
     
-    if (TMath::Abs(Xi->RapXi()) > fMaxRapidity) {
-        AliDebugClass(2, "Failed check on Cascade rapidity");
-        return kFALSE;
+    if(fHypothesis==kXiMinus || fHypothesis==kXiPlusBar) {
+        if (TMath::Abs(Xi->RapXi()) > fMaxRapidity) {
+            AliDebugClass(2, "Failed check on Cascade rapidity");
+            return kFALSE;
+        }
+    }
+    else if(fHypothesis==kOmegaMinus || fHypothesis==kOmegaPlusBar) {
+        if (TMath::Abs(Xi->RapOmega()) > fMaxRapidity) {
+            AliDebugClass(2, "Failed check on Cascade rapidity");
+            return kFALSE;
+        }
     }
     
     Double_t V0radius = Xi->RadiusV0();
@@ -542,21 +546,18 @@ Bool_t AliRsnCutCascade::CheckAOD(AliAODcascade *Xi)
         }
     }
     else if(fHypothesis==kXiPlusBar) {
-        
         if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2) && (bpinsTPC <= maxTPC3)) ) {
             AliDebugClass(2, Form("Failed check on Cascade PID: ptrackPID: %f, nTrackPID %f, btrackPID %f",posnsTPC,negnsTPC2,bpinsTPC));
             return kFALSE;
         }
     }
     else if(fHypothesis==kOmegaMinus) {
-        
         if (! ((posnsTPC <= maxTPC) && (negnsTPC2 <= maxTPC2) && (bpinsTPC <= maxTPC3)) ) {
             AliDebugClass(2, Form("Failed check on Cascade PID: ptrackPID: %f, nTrackPID %f, btrackPID %f",posnsTPC,negnsTPC2,bpinsTPC));
             return kFALSE;
         }
     }
     else if(fHypothesis==kOmegaPlusBar) {
-        
         if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2) && (bpinsTPC <= maxTPC3)) ) {
             AliDebugClass(2, Form("Failed check on Cascade PID: ptrackPID: %f, nTrackPID %f, btrackPID %f",posnsTPC,negnsTPC2,bpinsTPC));
             return kFALSE;
