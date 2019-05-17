@@ -1003,8 +1003,8 @@ void AliXiStarPbPb_RUN2::Exec(Option_t *)
     AliMultSelection* MultSelection =0x0;
     MultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
     
-  //  Bool_t IsMultSelcted = MultSelection->IsEventSelected();
-  //  if(!IsMultSelcted) return;
+    Bool_t IsMultSelcted = MultSelection->IsEventSelected();
+    if(!IsMultSelcted) return;
     
     if (MultSelection) {
         centralityV0M = MultSelection->GetMultiplicityPercentile("V0M");

@@ -104,7 +104,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
@@ -262,7 +262,7 @@ fOADB(nullptr)
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
@@ -1166,45 +1166,47 @@ void AliMultSelectionTask::UserExec(Option_t *)
         
         if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
             
-            //Npart and Ncoll information
-            AliGenHijingEventHeader* hHijing=0;
-            AliGenDPMjetEventHeader* dpmHeader=0;
-            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-            
-            //DPMJet/HIJING info if available
-            if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
-                hHijing = (AliGenHijingEventHeader*)mcGenH;
-            else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
-                TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
-                hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
-                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
-                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
-            }
-            else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-                dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
-            }
-            if(hHijing)   {
-                fMC_b -> SetValue( hHijing->ImpactParameter() );
-                fMC_NPart ->SetValueInteger( hHijing->ProjectileParticipants()+hHijing->TargetParticipants() );
-                fMC_NColl ->SetValueInteger( hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw() );
-            }
-            if(dpmHeader) {
-                fMC_b -> SetValue( hHijing->ImpactParameter() );
-                fMC_NPart ->SetValueInteger( dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants());
-                fMC_NColl ->SetValueInteger( dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw());
-            }
-            
-            //check EPOS info, if available
-            if ( IsEPOSLHC() ){
-                AliGenHepMCEventHeader *lHepMCHeader = 0x0;
-                if (mcGenH->InheritsFrom(AliGenHepMCEventHeader::Class()))
-                    lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
+            if(!fkSkipMCHeaders){
+                //Npart and Ncoll information
+                AliGenHijingEventHeader* hHijing=0;
+                AliGenDPMjetEventHeader* dpmHeader=0;
+                AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
                 
-                if (lHepMCHeader ){
-                    fMC_NPart ->SetValueInteger( lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ() );
-                    fMC_NColl ->SetValueInteger( lHepMCHeader->N_Nwounded_collisions() +
-                                                lHepMCHeader->Nwounded_N_collisions() +
-                                                lHepMCHeader->Nwounded_Nwounded_collisions() );
+                //DPMJet/HIJING info if available
+                if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
+                    hHijing = (AliGenHijingEventHeader*)mcGenH;
+                else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+                    TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+                    hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+                    if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
+                    if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
+                }
+                else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+                    dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
+                }
+                if(hHijing)   {
+                    fMC_b -> SetValue( hHijing->ImpactParameter() );
+                    fMC_NPart ->SetValueInteger( hHijing->ProjectileParticipants()+hHijing->TargetParticipants() );
+                    fMC_NColl ->SetValueInteger( hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw() );
+                }
+                if(dpmHeader) {
+                    fMC_b -> SetValue( hHijing->ImpactParameter() );
+                    fMC_NPart ->SetValueInteger( dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants());
+                    fMC_NColl ->SetValueInteger( dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw());
+                }
+                
+                //check EPOS info, if available
+                if ( IsEPOSLHC() ){
+                    AliGenHepMCEventHeader *lHepMCHeader = 0x0;
+                    if (mcGenH->InheritsFrom(AliGenHepMCEventHeader::Class()))
+                        lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
+                    
+                    if (lHepMCHeader ){
+                        fMC_NPart ->SetValueInteger( lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ() );
+                        fMC_NColl ->SetValueInteger( lHepMCHeader->N_Nwounded_collisions() +
+                                                    lHepMCHeader->Nwounded_N_collisions() +
+                                                    lHepMCHeader->Nwounded_Nwounded_collisions() );
+                    }
                 }
             }
             

@@ -543,6 +543,9 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
     (*it)->SetNanoAODHeader(&source, fHeader, fVarListHeader);
 
+  // avoid that vertices are stored several times
+  std::map<AliAODVertex*, AliAODVertex*> clonedVertices;
+
   // keep here only *primary* vertices
   TIter nextV(source.GetVertices());
   AliAODVertex* v;
@@ -556,7 +559,9 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     AliAODVertex* tmp = v->CloneWithoutRefs();
     AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
     copiedVertex->SetNContributors(v->GetNContributors()); 
+    copiedVertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
     delete tmp;
+    clonedVertices[v] = copiedVertex;
   }
   
   if(fSaveVzero==1){
@@ -573,9 +578,10 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
       *fAodZDC = *aodZDC;
       
   }
-
-  // NOTE cascades have to be before V0s as AliAODEvent::FixCascades needs sane V0 information
+  
+  // tracks needed as references to V0s and cascades
   std::map<AliAODVertex*, std::vector<TObject*> > keepTracks;
+  
   if (fSaveCascades) {
     TIter nextC(const_cast<AliAODEvent&>(source).GetCascades());
     AliAODcascade* cascade;
@@ -587,17 +593,26 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
 
       // bachelor track and xi vertex
       AliAODVertex* copiedXi = new((*fVertices)[nvertices++]) AliAODVertex(*(cascade->GetDecayVertexXi()));
+      copiedXi->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
       Int_t nDaughter = copiedXi->GetNDaughters();
       for (int nD = 0; nD<nDaughter; nD++)
         keepTracks[copiedXi].push_back(copiedXi->GetDaughter(nD));
       copiedXi->RemoveDaughters();
+      clonedVertices[cascade->GetDecayVertexXi()] = copiedXi;
       
       // v0 vertex and tracks
-      AliAODVertex* copiedV0Vertex = new((*fVertices)[nvertices++]) AliAODVertex(*(cascade->GetSecondaryVtx()));
-      nDaughter = copiedV0Vertex->GetNDaughters();
-      for (int nD = 0; nD<nDaughter; nD++)
-        keepTracks[copiedV0Vertex].push_back(copiedV0Vertex->GetDaughter(nD));
-      copiedV0Vertex->RemoveDaughters();
+      AliAODVertex* copiedV0Vertex = 0;
+      if (clonedVertices.find(cascade->GetSecondaryVtx()) == clonedVertices.end()) {
+        copiedV0Vertex = new((*fVertices)[nvertices++]) AliAODVertex(*(cascade->GetSecondaryVtx()));
+        copiedV0Vertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
+        nDaughter = copiedV0Vertex->GetNDaughters();
+        for (int nD = 0; nD<nDaughter; nD++)
+          keepTracks[copiedV0Vertex].push_back(copiedV0Vertex->GetDaughter(nD));
+        copiedV0Vertex->RemoveDaughters();
+        clonedVertices[cascade->GetSecondaryVtx()] = copiedV0Vertex;
+      } else {
+        copiedV0Vertex = clonedVertices[cascade->GetSecondaryVtx()];
+      }
       
       // NOTE we don't have AliAODcascade::SetDecayVertexXi so have to use copy constructor here
       //AliAODcascade* nanoCascade = new((*fCascades)[n++]) AliAODcascade(*cascade); 
@@ -608,7 +623,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
       nanoCascade->SetSecondaryVtx(copiedV0Vertex);
     }
   }  
-
+  
   if(fSaveV0s){
     TIter nextV(source.GetV0s());
     AliAODv0* v;
@@ -619,19 +634,37 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
         continue;
 
       AliAODv0* nanoV0 = new((*fV0s)[nV0s++]) AliAODv0(*v);
+      
+      if (clonedVertices.find(v->GetSecondaryVtx()) == clonedVertices.end()) {
+        AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*(v->GetSecondaryVtx()));
+        copiedVertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
+        nanoV0->SetSecondaryVtx(copiedVertex);
 
-      AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*(v->GetSecondaryVtx()));
-      nanoV0->SetSecondaryVtx(copiedVertex);
-
-      // needed tracks
-      Int_t nDaughter = copiedVertex->GetNDaughters();
-      for (int nD = 0; nD<nDaughter; nD++)
-        keepTracks[copiedVertex].push_back(copiedVertex->GetDaughter(nD));
-      copiedVertex->RemoveDaughters();
+        // needed tracks
+        Int_t nDaughter = copiedVertex->GetNDaughters();
+        for (int nD = 0; nD<nDaughter; nD++)
+          keepTracks[copiedVertex].push_back(copiedVertex->GetDaughter(nD));
+        copiedVertex->RemoveDaughters();
+        clonedVertices[v->GetSecondaryVtx()] = copiedVertex;
+      } else {
+        nanoV0->SetSecondaryVtx(clonedVertices[v->GetSecondaryVtx()]);
+      }
+        
     }
     // Printf("n(tracks) = %d n(V0) = %d -> %d", source.GetNumberOfTracks(), source.GetNumberOfV0s(), nV0s);
   }
   
+  // Fix parent association. Not clear if this is needed downstream, though.
+  for (auto it = clonedVertices.begin(); it != clonedVertices.end(); it++) {
+    if (it->first->GetParent() == nullptr)
+      continue;
+    auto parent = clonedVertices.find((AliAODVertex*) (it->first->GetParent()));
+    if (parent != clonedVertices.end())
+      it->second->SetParent(parent->second);
+    else
+      it->second->SetParent(0x0);
+  }
+
   // Tracks
   Int_t entries = -1;
   TClonesArray* particleArray = 0x0;
@@ -644,7 +677,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   }
 
   // Photons
-  std::list<Int_t> trackIDs;
+  std::list<Int_t> trackIDs; // tracks which should be kept as they are referred to
   if (fSaveConversionPhotons) {
     Int_t nConvPhotons = 0;
     static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("ConvGammaAODProduction");
@@ -659,7 +692,8 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
         continue;
       trackIDs.push_back(photonCandidate->GetTrackLabelPositive());
       trackIDs.push_back(photonCandidate->GetTrackLabelNegative());
-      new((*fConversionPhotons)[nConvPhotons++]) AliAODConversionPhoton(*photonCandidate);
+      auto copiedPhoton = new((*fConversionPhotons)[nConvPhotons++]) AliAODConversionPhoton(*photonCandidate);
+      copiedPhoton->SetV0Index(-1); // related V0 is not stored
     }
   }
   

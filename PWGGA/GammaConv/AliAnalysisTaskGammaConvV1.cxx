@@ -1600,6 +1600,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
      if(fDoJetQA){
         if(fDoLightOutput){
           fTrueJetHistograms                           = new TList*[fnCuts];
+          fHistoTruevsRecJetPt                        = new TH2F*[fnCuts];
         }
         fHistoUnfoldingAsData                          = new TH2F*[fnCuts];
         fHistoUnfoldingMissed                          = new TH2F*[fnCuts];
@@ -1963,6 +1964,9 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
           fTrueJetHistograms[iCut]->SetName(Form("%s_%s_%s True Jet histograms", cutstringEvent.Data() ,cutstringPhoton.Data(),cutstringMeson.Data()));
           fTrueJetHistograms[iCut]->SetOwner(kTRUE);
           fCutFolder[iCut]->Add(fTrueJetHistograms[iCut]);
+
+          fHistoTruevsRecJetPt[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt", "True_JetPt_vs_Rec_JetPt", 150, 0, 150, 150, 0, 150);
+          fTrueJetHistograms[iCut]->Add(fHistoTruevsRecJetPt[iCut]);
         }
         fHistoUnfoldingAsData[iCut]      = new TH2F("Unfolding_AsData", "Unfolding_AsData", 800, 0, 0.8, nBinsPt, arrPtBinning);
         fTrueJetHistograms[iCut]->Add(fHistoUnfoldingAsData[iCut]);
@@ -2751,7 +2755,7 @@ void AliAnalysisTaskGammaConvV1::ProcessJets()
               match = j;
             }
           }
-          if(!fDoLightOutput) fHistoTruevsRecJetPt[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match));
+          if(!fDoLightOutput || (fDoLightOutput && fDoJetQA)) fHistoTruevsRecJetPt[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match));
           if(fDoJetQA){
             if(fVectorJetPt.at(i) >= 10) fHistoEventwJets[fiCut]->Fill(0);
             if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) >= 10) fHistoEventwJets[fiCut]->Fill(1);
@@ -3980,15 +3984,15 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
                               Double_t dotproduct = fVectorJetPx.at(i)*pi0cand->Px() + fVectorJetPy.at(i)*pi0cand->Py() + fVectorJetPz.at(i)*pi0cand->Pz();
                               Double_t magn = pow(fVectorJetPx.at(i),2) + pow(fVectorJetPy.at(i),2) + pow(fVectorJetPz.at(i),2);
                               Double_t z = dotproduct/magn;
-                              if(fVectorJetPt.at(i) > 10){
+                              if(fVectorJetPt.at(i) > 5){
                                 fHistoUnfoldingAsData[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingAsDataInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }
-                              if(fVectorJetPt.at(i) < 10 && fTrueVectorJetPt.at(match) > 10){
+                              if(fVectorJetPt.at(i) < 5 && fTrueVectorJetPt.at(match) > 5){
                                 fHistoUnfoldingMissed[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingMissedInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }
-                              if(fVectorJetPt.at(i) > 10 && fTrueVectorJetPt.at(match) < 10){
+                              if(fVectorJetPt.at(i) > 5 && fTrueVectorJetPt.at(match) < 5){
                                 fHistoUnfoldingReject[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
                                 fHistoUnfoldingRejectInvMassZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC);
                               }

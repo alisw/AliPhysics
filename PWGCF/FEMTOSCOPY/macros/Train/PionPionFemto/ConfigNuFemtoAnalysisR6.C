@@ -81,6 +81,7 @@ struct MacroParams : public TNamed {
   bool eventreader_run1 { false };
   bool eventreader_use_alt { true };
   int eventreader_filter_bit { 7 };
+  bool eventreader_multibit { false };
   int eventreader_read_full_mc { false };
   bool eventreader_epvzero { true };
   bool eventreader_vertex_shift { true };
@@ -238,7 +239,10 @@ ConfigFemtoAnalysis(const TString& param_str="")
                                 : new AliFemtoEventReaderAODMultSelection();
 
     auto multest = static_cast<AliFemtoEventReaderAOD::EstEventMult>(macro_config.eventreader_use_multiplicity);
-    rdr->SetFilterBit(macro_config.eventreader_filter_bit);
+    const ULong_t filter_mask = macro_config.eventreader_multibit
+                              ? macro_config.eventreader_filter_bit
+                              : BIT(macro_config.eventreader_filter_bit);
+    rdr->SetFilterMask(filter_mask);
     rdr->SetEPVZERO(macro_config.eventreader_epvzero);
     rdr->SetUseMultiplicity(multest);
     rdr->SetCentralityFlattening(macro_config.eventreader_centrality_flattening);
@@ -314,6 +318,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
       cut_config.event_CentralityMax = cent_high;
 
       AliFemtoAnalysisPionPion *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
+      analysis->SetTrackFilter(filter_mask);
 
       analysis->AddStanardCutMonitors();
 

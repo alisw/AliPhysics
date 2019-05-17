@@ -5,7 +5,6 @@
 #include "THistManager.h"
 #include <memory>
 class AliEmcalJet;
-class AliRDHFJetsCuts;
 class AliAODVertex;
 class AliAODTrack;
 class TList;
@@ -78,6 +77,10 @@ public:
         bAnalysisCut_MinTrackPt=12,
         bAnalysisCut_MinTrackPtMC=13,
         bAnalysisCut_MinTPCClus=14,
+        bAnalysisCut_MinJetPt=15,
+        bAnalysisCut_MaxJetPt=16,
+        bAnalysisCut_MinJetEta=17,
+        bAnalysisCut_MaxJetEta=18,
     };
 
     //UTILITY STRUCT DEFINITIONS
@@ -111,8 +114,6 @@ public:
 
 
     void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
-    virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;}
-    void SetJetCuts(AliRDHFJetsCuts* cuts){fJetCutsHF=cuts;}
     void SetUseMonteCarloWeighingLinus(TH1F *Pi0 ,TH1F *Eta,TH1F *EtaP,TH1F *Rho,TH1F *Phi,TH1F *Omega,TH1F *K0s,TH1F *Lambda,TH1F *ChargedPi,
                                        TH1F *ChargedKaon,TH1F *Proton,TH1F *D0,TH1F *DPlus,TH1F *DStarPlus,
                                        TH1F *DSPlus,TH1F *LambdaC,TH1F *BPlus,TH1F *B0,TH1F *LambdaB,TH1F *BStarPlus);
@@ -208,7 +209,6 @@ public:
 
 
 protected:
-    TH1D *fh1dEventRejectionRDHFCuts; //!
     TH1D *fh1dTracksAccepeted; //!
     TH1D *fh1dCuts; //!
     TH2D *fh2dManifoldParton; //!
@@ -306,7 +306,6 @@ private:
     TCanvas *cCuts; //
     //! \brief fMCArray
     TClonesArray     *fMCArray;//!
-    AliRDHFJetsCuts  *fJetCutsHF;//
     AliMCEvent       *fMCEvent;//!
     AliESDtrackCuts  *fESDTrackCut;//
     AliVertexerTracks *fVertexer;//!
@@ -322,7 +321,7 @@ private:
     std::map<int, int> daughtermother;//!
 
     TGraph fResolutionFunction[200];//[200]<-
-    Double_t fAnalysisCuts[15]; ///Additional (to ESD track cut or AOD filter bits) analysis cuts.
+    Double_t fAnalysisCuts[19]; // /Additional (to ESD track cut or AOD filter bits) analysis cuts.
     AliPIDCombined *fCombined ;//!
     Float_t fXsectionWeightingFactor;//
     Int_t   fProductionNumberPtHard;//
@@ -399,7 +398,7 @@ private:
 
 
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 34)
+    ClassDef(AliAnalysisTaskHFJetIPQA, 35)
 };
 
 #endif

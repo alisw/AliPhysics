@@ -125,42 +125,42 @@ void AliAnalysisTaskOmegaMCStudies::UserCreateOutputObjects(){
   fHistNEvents->Sumw2();
   fOutputContainer->Add(fHistNEvents);
 
-  fHistXSection               		= new TH1D("XSection", "XSection", 1000000, 0, 1e4);
+  fHistXSection               		= new TH1D("XSection", "XSection", 1000, 0, 1e4);
 
   //   SetLogBinningXTH1(fHistXSection);
   fHistXSection->Sumw2();
   fOutputContainer->Add(fHistXSection);
 
-  fHistPtHard                 		= new TH1F("PtHard", "PtHard", fMaxpT*20, 0, fMaxpT);
+  fHistPtHard                 		= new TH1F("PtHard", "PtHard", fMaxpT*50, 0, fMaxpT);
   fHistPtHard->Sumw2();
   fOutputContainer->Add(fHistPtHard);
 
 // Spectra
-  fHistPtYOmega                		= new TH2F("Pt_Y_Omega","Pt_Y_Omega", fMaxpT*20, 0, fMaxpT, fMaxpT, -1.0, 1.0);
+  fHistPtYOmega                		= new TH2F("Pt_Y_Omega","Pt_Y_Omega", fMaxpT*50, 0, fMaxpT, fMaxpT*10, -1.0, 1.0);
   fHistPtYOmega->Sumw2();
   fOutputContainer->Add(fHistPtYOmega);
 
-  fHistPtYOmegaPiPiPi                		= new TH2F("Pt_Y_OmegaPiPiPI","Pt_Y_OmegaPiPiPi", fMaxpT*20, 0, fMaxpT, fMaxpT, -1.0, 1.0);
+  fHistPtYOmegaPiPiPi                		= new TH2F("Pt_Y_OmegaPiPiPI","Pt_Y_OmegaPiPiPi", fMaxpT*50, 0, fMaxpT*10, fMaxpT, -1.0, 1.0);
   fHistPtYOmegaPiPiPi->Sumw2();
   fOutputContainer->Add(fHistPtYOmegaPiPiPi);
 
-  fHistPtYPi0               		= new TH2F("Pt_Y_Pi0","Pt_Y_Pi0", fMaxpT*20, 0, fMaxpT, fMaxpT, -1.0, 1.0);
+  fHistPtYPi0               		= new TH2F("Pt_Y_Pi0","Pt_Y_Pi0", fMaxpT*50, 0, fMaxpT, fMaxpT*10, -1.0, 1.0);
   fHistPtYPi0->Sumw2();
   fOutputContainer->Add(fHistPtYPi0);
 
-  fHistPtYEtaPrime               		= new TH2F("Pt_Y_EtaPrime","Pt_Y_EtaPrime", fMaxpT*20, 0, fMaxpT, fMaxpT, -1.0, 1.0);
+  fHistPtYEtaPrime               		= new TH2F("Pt_Y_EtaPrime","Pt_Y_EtaPrime", fMaxpT*50, 0, fMaxpT, fMaxpT*10, -1.0, 1.0);
   fHistPtYEtaPrime->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrime);
   
-  fHistPtYEtaPrimeEtaPiPi               		= new TH2F("Pt_Y_EtaPrimeEtaPiPi","Pt_Y_EtaPrimeEtaPiPi", fMaxpT*20, 0, fMaxpT, fMaxpT, -1.0, 1.0);
+  fHistPtYEtaPrimeEtaPiPi               		= new TH2F("Pt_Y_EtaPrimeEtaPiPi","Pt_Y_EtaPrimeEtaPiPi", fMaxpT*50, 0, fMaxpT, fMaxpT*10, -1.0, 1.0);
   fHistPtYEtaPrimeEtaPiPi->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrimeEtaPiPi);
 
-  fHistOmegaPtPi0Pt                		= new TH2F("fHistOmegaPtPi0Pt","fHistOmegaPtPi0Pt", fMaxpT*20, 0, fMaxpT,  fMaxpT*20, 0, fMaxpT);
+  fHistOmegaPtPi0Pt                		= new TH2F("fHistOmegaPtPi0Pt","fHistOmegaPtPi0Pt", fMaxpT*50, 0, fMaxpT,  fMaxpT*50, 0, fMaxpT);
   fHistOmegaPtPi0Pt->Sumw2();
   fOutputContainer->Add(fHistOmegaPtPi0Pt);
 
-  fHistEtaPrimePtEtaPt                		= new TH2F("fHistEtaPrimePtEtaPt","fHistEtaPrimePtEtaPt", fMaxpT*20, 0, fMaxpT,  fMaxpT*20, 0, fMaxpT);
+  fHistEtaPrimePtEtaPt                		= new TH2F("fHistEtaPrimePtEtaPt","fHistEtaPrimePtEtaPt", fMaxpT*50, 0, fMaxpT,  fMaxpT*50, 0, fMaxpT);
   fHistEtaPrimePtEtaPt->Sumw2();
   fOutputContainer->Add(fHistEtaPrimePtEtaPt);
   

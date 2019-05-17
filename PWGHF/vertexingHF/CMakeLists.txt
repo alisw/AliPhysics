@@ -117,6 +117,7 @@ set(SRCS
   AliAnalysisTaskSEMonitNorm.cxx
   AliAnalysisTaskSEBkgLikeSignD0.cxx
   AliAnalysisTaskSEImproveITS.cxx
+  AliAnalysisTaskSEImproveITSCVMFS.cxx
   AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
   charmFlow/AliAnalysisTaskSEHFvn.cxx

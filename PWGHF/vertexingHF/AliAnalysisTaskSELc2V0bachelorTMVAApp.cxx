@@ -218,7 +218,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
   fAODProtection(1),
-  fUsePIDresponseForNsigma(kFALSE)
+  fUsePIDresponseForNsigma(kFALSE),
+  fNVars(14)
 {
   /// Default ctor
   //
@@ -360,7 +361,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fHistoNsigmaTOF(0),
   fDebugHistograms(kFALSE),
   fAODProtection(1),
-  fUsePIDresponseForNsigma(kFALSE)
+  fUsePIDresponseForNsigma(kFALSE),
+  fNVars(14)
 
 {
   //
@@ -722,7 +724,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fBDTHistoVstImpParV0 = new TH2D("fBDTHistoVstImpParV0", "d0 K0S vs bdt output; bdt; d_{0, V0}[cm]", 1000, -1, 1, 100, -1, 1);
     fBDTHistoVsBachelorPt = new TH2D("fBDTHistoVsBachelorPt", "bachelor pT vs bdt output; bdt; p_{T, bachelor}[GeV/#it{c}]", 1000, -1, 1, 100, 0, 20);
     fBDTHistoVsCombinedProtonProb = new TH2D("fBDTHistoVsCombinedProtonProb", "combined proton probability vs bdt output; bdt; Bayesian PID_{bachelor}", 1000, -1, 1, 100, 0, 1);
-    fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 100, -2, 2);
+    fBDTHistoVsCtau = new TH2D("fBDTHistoVsCtau", "K0S ctau vs bdt output; bdt; c#tau_{V0}[cm]",  1000, -1, 1, 1000, 0, 100);
     fBDTHistoVsCosPAK0S = new TH2D("fBDTHistoVsCosPAK0S", "V0 cosine pointing angle vs bdt output; bdt; CosPAK^{0}_{S}", 1000, -1, 1, 100, 0.9, 1);
     fBDTHistoVsCosThetaStar = new TH2D("fBDTHistoVsCosThetaStar", "proton emission angle in pK0s pair rest frame vs bdt output; bdt; Cos#Theta*", 1000, -1, 1, 100, -1, 1);
     fBDTHistoVsSignd0 = new TH2D("fBDTHistoVsSignd0", "signed d0 bachelor vs bdt output; bdt; signd_{0, bachelor}[cm]", 1000, -1, 1, 100, -1, 1);
@@ -1286,7 +1288,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::MakeAnalysisForLc2prK0S(AliAODEvent 
 
   AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
   for (Int_t iLctopK0s = 0; iLctopK0s < nCascades; iLctopK0s++) {
-    
+
     // Lc candidates and K0s from Lc
     AliAODRecoCascadeHF* lcK0spr = dynamic_cast<AliAODRecoCascadeHF*>(arrayLctopKos->At(iLctopK0s));
     if (!lcK0spr) {
@@ -1967,25 +1969,52 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     
     if(!fFillTree){
       
-      std::vector<Double_t> inputVars(14);
-      inputVars[0] = invmassK0s;
-      inputVars[1] = part->Getd0Prong(0);
-      inputVars[2] = part->Getd0Prong(1);
-      inputVars[3] = bachelor->Pt();
-      inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
-      inputVars[5] = part->CosV0PointingAngle();
-      inputVars[6] = cts;
-      inputVars[7] = signd0;
-      inputVars[8] = bachelor->P();
-      inputVars[9] = nSigmaTOFpr;
-      inputVars[10] = nSigmaTPCpr;
-      inputVars[11] = nSigmaTPCpi;
-      inputVars[12] = nSigmaTPCpr;
-      inputVars[13] = bachelor->GetTPCmomentum();
-      
+      std::vector<Double_t> inputVars(fNVars);
+      if (fNVars == 14) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = bachelor->Pt();
+	inputVars[4] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[5] = part->CosV0PointingAngle();
+	inputVars[6] = cts;
+	inputVars[7] = signd0;
+	inputVars[8] = bachelor->P();
+	inputVars[9] = nSigmaTOFpr;
+	inputVars[10] = nSigmaTPCpr;
+	inputVars[11] = nSigmaTPCpi;
+	inputVars[12] = nSigmaTPCka;
+	inputVars[13] = bachelor->GetTPCmomentum();
+      }
+      else if (fNVars == 11) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = cts;
+	inputVars[6] = signd0;
+	inputVars[7] = nSigmaTOFpr;
+	inputVars[8] = nSigmaTPCpr;
+	inputVars[9] = nSigmaTPCpi;
+	inputVars[10] = nSigmaTPCka;
+      }
+      else if (fNVars == 10) {
+	inputVars[0] = invmassK0s;
+	inputVars[1] = part->Getd0Prong(0);
+	inputVars[2] = part->Getd0Prong(1);
+	inputVars[3] = (part->DecayLengthV0())*0.497/(v0part->P());
+	inputVars[4] = part->CosV0PointingAngle();
+	inputVars[5] = signd0;
+	inputVars[6] = nSigmaTOFpr;
+	inputVars[7] = nSigmaTPCpr;
+	inputVars[8] = nSigmaTPCpi;
+	inputVars[9] = nSigmaTPCka;
+      }
       
       Double_t BDTResponse = -1;
       BDTResponse = fBDTReader->GetMvaValue(inputVars);
+      //      Printf("BDTResponse = %f, invmassLc = %f", BDTResponse, invmassLc); 
       fBDTHisto->Fill(BDTResponse, invmassLc); 
       if (fDebugHistograms) {    
 	fBDTHistoVsMassK0S->Fill(BDTResponse, invmassK0s);

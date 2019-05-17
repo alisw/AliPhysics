@@ -24,6 +24,7 @@
 #include "AliForwardQCumulantRun2.h"
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowUtil.h"
+#include "AliAODForwardMult.h"
 
 using namespace std;
 ClassImp(AliForwardFlowRun2Task)
@@ -95,22 +96,22 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
                                         // Needs to be created here, otherwise it will draw the same random number.
 
     fAnalysisList    = new TList();
-    fEventList       = new TList();
+    //fEventList       = new TList();
     fAnalysisList   ->SetName("Analysis");
-    fEventList      ->SetName("EventInfo");
+    //fEventList      ->SetName("EventInfo");
 
-    fCent = new TH1D("Centrality","Centrality",fSettings.fCentBins,0,60);
-    fEventList->Add(fCent);
-    fVertex = new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);
-    fEventList->Add(fVertex);
-    fCent->SetDirectory(0);
-    fVertex->SetDirectory(0);
+    //fCent = new TH1D("Centrality","Centrality",fSettings.fCentBins,0,60);
+    //fEventList->Add(fCent);
+    //fVertex = new TH1D("Vertex","Vertex",fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge);
+    //fEventList->Add(fVertex);
+    //fCent->SetDirectory(0);
+    //fVertex->SetDirectory(0);
 
     //fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
 
-    fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
-    fdNdeta->SetDirectory(0);
-    fEventList->Add(fdNdeta);
+    //fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
+    //fdNdeta->SetDirectory(0);
+    //fEventList->Add(fdNdeta);
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
@@ -120,16 +121,16 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
     //static_cast<TList*>(fAnalysisList->At(2))->SetName("AutoCorrection");
 
     fOutputList->Add(fAnalysisList);
-    fOutputList->Add(fEventList);
+    //fOutputList->Add(fEventList);
 
     // do analysis from v_2 to a maximum of v_5
     Int_t fMaxMoment = 4;
     Int_t dimensions = 5;
 
-    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)+1} ;
-    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4ThreeTwoB)+1} ;
-    Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 0};
-    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4ThreeTwoB)+1};
+    Int_t dbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNDiffEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)} ;
+    Int_t rbins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, fSettings.fNRefEtaBins, fSettings.fCentBins, static_cast<Int_t>(fSettings.kW4Four)} ;
+    Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, fSettings.fEtaLowEdge, 0, 1};
+    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, fSettings.fEtaUpEdge, 60, static_cast<Double_t>(fSettings.kW4Four)+1};
 
     //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fQcorrfactor", "fQcorrfactor", dimensions, rbins, xmin, xmax)); //(eta, n)
     //static_cast<TList*>(fAnalysisList->At(2))->Add(new THnF("fpcorrfactor","fpcorrfactor", dimensions, dbins, xmin, xmax)); //(eta, n)
@@ -180,7 +181,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist ->SetDirectory(0);
 
   PostData(1, fOutputList);
-  //TH1::AddDirectory(saveAutoAdd);
 }
 
 
@@ -193,16 +193,16 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //  Parameters:
   //   option: Not used
   //
-
+  //forwardDist = 0;
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
 
   // Get the event validation object
-   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
-   if (!ev_val->IsValidEvent()){
-      PostData(1, this->fOutputList);
-     return;
-   }
+  AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
+  if (!ev_val->IsValidEvent()){
+    PostData(1, this->fOutputList);
+    return;
+  }
 
   if (!fSettings.esd){
     AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -219,31 +219,32 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
     return;
   }
 
-  fUtil.FillData(refDist,centralDist,forwardDist);
 
+  fUtil.FillData(refDist,centralDist,forwardDist);
+  
   // dNdeta
-  for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
-    Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
-    for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
-      fdNdeta->Fill(eta,cent,centralDist->GetBinContent(etaBin,phiBin));
-    }
-  }
-  for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-    Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
-    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-      fdNdeta->Fill(eta,cent,forwardDist->GetBinContent(etaBin,phiBin));
-    }
-  }
+  // for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
+  //   Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
+  //   for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
+  //     fdNdeta->Fill(eta,cent,centralDist->GetBinContent(etaBin,phiBin));
+  //   }
+  // }
+  // for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+  //   Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
+  //   for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+  //     fdNdeta->Fill(eta,cent,forwardDist->GetBinContent(etaBin,phiBin));
+  //   }
+  // }
 
   Double_t zvertex = fUtil.GetZ();
 
   //if (fSettings.makeFakeHoles) fUtil.MakeFakeHoles(*forwardDist);
 
-  fCent->Fill(cent);
-  fVertex->Fill(zvertex);
+  //fCent->Fill(cent);
+  //fVertex->Fill(zvertex);
   
   if (fSettings.a5){
-    fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,kTRUE,true,false);
+    fCalculator.CumulantsAccumulate(forwardDist, fOutputList, cent, zvertex,kTRUE, true,false);
     fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,kFALSE,true,false);
   }
   else{
@@ -257,9 +258,11 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
 
   fCalculator.reset();
+
   centralDist->Reset();
-  forwardDist->Reset();
-  refDist->Reset();
+  
+  if (!fSettings.mc && !(fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
+  if (fSettings.mc) forwardDist->Reset();
 
   PostData(1, fOutputList);
 
@@ -275,4 +278,4 @@ void AliForwardFlowRun2Task::Terminate(Option_t */*option*/)
 }
 
 
-//_______________________________________________________________
+//_____________________________________________________________________

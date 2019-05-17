@@ -177,13 +177,13 @@ class AliForwardSettings : public TObject {
   // };
 
   Int_t kW2A = 1;
-  Int_t kW2B = 2;               // <w2>
-  Int_t kW2TwoA = 3;           // <w2*two>
-  Int_t kW2TwoB = 4;            // <w2*two>
-  Int_t kW4A = 5;               // <w4>
-  Int_t kW4B = 6;               // <w4>
-  Int_t kW4FourA = 7;           // <w4*four>
-  Int_t kW4FourB = 8;           // <w4*four>
+  Int_t kW2TwoA = 2;           // <w2*two>
+  Int_t kW4A = 3;               // <w4>
+  Int_t kW4FourA = 4;   
+  Int_t kW2B = 5;               // <w2>
+  Int_t kW2TwoB = 6;            // <w2*two>
+  Int_t kW4B = 7;               // <w4>
+  Int_t kW4FourB = 8;           // <w4*four>  
   Int_t kW4FourTwoA = 9;
   Int_t kW4FourTwoB = 10;
   Int_t kW4ThreeTwoA = 11;

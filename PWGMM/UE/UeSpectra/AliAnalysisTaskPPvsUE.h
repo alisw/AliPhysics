@@ -71,21 +71,29 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		virtual void  SetTrigger(UInt_t ktriggerInt = AliVEvent::kINT7) {ftrigBit = ktriggerInt;}  
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
+		virtual void  SetAnalysisCorr(Bool_t isCorr) {fAnalysisCorr = isCorr;}
 		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
 		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}
 		virtual void  SetAveMultiInTrans(Double_t value) {fAveMultiInTrans = value;}
-		
+                virtual void  SetAveGenMultiInTrans(Double_t value) {fAveGenMultiInTrans = value;}	
+	
 		TObjArray*    FindLeadingObjects(TObjArray *array );
 		void          QSortTracks(TObjArray &a, Int_t first, Int_t last);
+                //TObjArray*    SortRegions(const TParticle* leading, TObjArray *array);
                 TObjArray*    SortRegions(const AliVParticle* leading, TObjArray *array);
 		TObjArray*    GetMinMaxRegion(TList *transv1, TList *transv2);
 	
 	private:
 			
+		virtual void AnalyseDataRT(AliESDEvent* esd);
+		virtual void CorrectionsDataRT(AliESDEvent* esd, Bool_t isVtxGood);
+		virtual void CorrectionsMCRT(AliMCEvent* mc, AliESDEvent* esd);
 		virtual void AnalyzeESD(AliESDEvent* esd); 
 		virtual void AnalyzeMC(AliMCEvent* mc);
 		virtual void AnalyzeESDforDCA(AliESDEvent* esdEvent);
+		virtual Bool_t selectVertex2015pp(AliESDEvent *esd,Bool_t checkSPDres, Bool_t requireSPDandTrk,Bool_t checkProximity); 
+		virtual Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex);
 		virtual Bool_t isMCEventTrueINEL0(AliMCEvent* fMCEvent);
 		virtual ULong64_t GetEventIdAsLong(AliVHeader* header);
 
@@ -94,6 +102,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		AliESDEvent* fESD;                  //!  ESD object
 		AliAODEvent* fAOD;                  //!  AOD object
 		Bool_t fAnalysisMC;                 //
+		Bool_t fAnalysisCorr;                 //
 		AliAnalysisFilter *fTrackFilterDCA; //!
 		TString       fAnalysisType;        // "ESD" or "AOD"
 		UInt_t       ftrigBit;		    //
@@ -122,6 +131,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		Bool_t fisTracklet;		  //
 		Bool_t fisMCvtxInZcut;		  //
 		Double_t fAveMultiInTrans;      //
+                Double_t fAveGenMultiInTrans;      //
 		//
 		// Output objects
 		//
@@ -152,9 +162,25 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		TH2F *ptvsdcacentralDecs;	//!
 		TH2F *ptvsdcacentralMatl;	//!
 
+
 		TH1F *effcomputationGen;	//!
+                TH1F *effcomputationGen1;        //!
+                TH1F *effcomputationGen2;        //!
+                TH1F *effcomputationGen3;        //!
+                TH1F *effcomputationGen4;        //!
+                TH1F *effcomputationGen5;        //!
 		TH1F *sigLossTrueINEL0;		//!
 		TH1F *sigLossTrigINEL0;		//!
+                TH1F *sigLossTrueINEL01;         //!
+                TH1F *sigLossTrigINEL01;         //!
+                TH1F *sigLossTrueINEL02;         //!
+                TH1F *sigLossTrigINEL02;         //!
+                TH1F *sigLossTrueINEL03;         //!
+                TH1F *sigLossTrigINEL03;         //!
+                TH1F *sigLossTrueINEL04;         //!
+                TH1F *sigLossTrigINEL04;         //!
+                TH1F *sigLossTrueINEL05;         //!
+                TH1F *sigLossTrigINEL05;         //!
 		TH1F *nchtrue;			//!
 
 		//for particle composition
@@ -178,6 +204,13 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		TH1F *effcomputationRecL;	//!
 		TH1F *effcomputationRecRest;	//!
 	
+                TH1F *effcomputationRec;    //!
+                TH1F *effcomputationRec1;    //!
+                TH1F *effcomputationRec2;    //!
+                TH1F *effcomputationRec3;    //!
+                TH1F *effcomputationRec4;    //!
+                TH1F *effcomputationRec5;    //!
+
 		TH1F *fPS_MC;			//!
 		TH1F *fVtxPS_MC;		//!
 		TH1F *fPS;			//!
@@ -185,12 +218,14 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 
                 TH1F *Zvtx;			//!
 			
-		TH1F *fhRT;                  //!		
+		TH1F *fhRTData;                  //!		
+                TH1F *fhRTReco;                  //! 
+                TH1F *fhRTTrue;                  //! 
 
 		TH1F *secondaries[18];		//!
 		TH1F *primariesTrackFilter[18];	//!
-		TH1F *effcomputationRec[18];	//!
 		TH1F *pti[18];			//!
+		TH1F *pti0[18];                  //!
 		TH1F *pti1[18];                  //!
 		TH1F *pti2[18];                  //!
 		TH1F *pti3[18];                  //!

@@ -35,8 +35,8 @@ struct RHyperTritonHe3pi {
   Double32_t fTPCmomHe3;            //[0.0,10.24,8]
   Double32_t fTPCmomPi;             //[0.0,10.24,8]
   Double32_t fChi2V0;               //[0.0,10.24,8] V0 fit chi2
-  Double32_t fDcaHe32PrimaryVertex; //[0.0,1.0,8] DCA of the negative prong to the PV
-  Double32_t fDcaPi2PrimaryVertex;  //[0.0,1.0,8]  DCA of the positive prong to the PV
+  Double32_t fDcaHe32PrimaryVertex; //[0.0,4.0,8] DCA of the negative prong to the PV
+  Double32_t fDcaPi2PrimaryVertex;  //[0.0,40.0,8]  DCA of the positive prong to the PV
   Double32_t fDcaV0daughters;       //[0.0,2.56,8] DCA between the two prongs
   Double32_t fLeastXedOverFindable; //[0.36,1.0,8] Min xed roads/findable clusters
   Double32_t fMaxChi2PerCluster;    //[0,6.4,8] Max chi2 per cluster in TPC

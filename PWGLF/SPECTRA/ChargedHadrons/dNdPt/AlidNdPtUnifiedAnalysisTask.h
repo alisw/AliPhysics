@@ -184,8 +184,9 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     THnF        	*fHistMCTrigEvent;		///<  Histogram for triggered MC events (Zv,mult/cent)
     /// Track histogram
     THnF        	*fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
-    THnF            *fHistCentCorrel; ///< Histogram for correlation of centrality estimators
-    
+    THnF            *fHistCentCorrelpt; ///< Histogram for correlation of centrality estimators (with pt)
+    THnF            *fHistCentCorrel;
+
     TH3D          *fDCAyEtaPt;                         /// DCAy:eta:pt
     TH3D          *fDCAyEtaPtMCPrim;              /// DCAy:eta:pt for primary particles
     TH3D          *fDCAyEtaPtMCSecDecays;         /// DCAy:eta:pt for secondary particles from decays in MC

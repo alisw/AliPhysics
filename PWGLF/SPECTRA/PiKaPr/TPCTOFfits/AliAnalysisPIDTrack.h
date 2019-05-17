@@ -161,6 +161,9 @@ public TObject
   static void SetRejectITSFakes(Bool_t value) {fgRejectITSFakes = value;}; // setter
   static void SetMatchTrackDeltaX(Float_t value) {fgMatchTrackDeltaX = value;}; // setter
   static void SetMatchTrackDeltaZ(Float_t value) {fgMatchTrackDeltaZ = value;}; // setter
+  static AliTPCPIDResponse *fgTPCResponse;
+  static AliTOFPIDResponse *fgTOFResponse;
+
 
  private:
 
@@ -172,7 +175,7 @@ public TObject
   Double_t fSign; // sign
   ULong64_t fStatus; // status
   Int_t fLabel; // label
-  Float_t fImpactParameter[2]; // impact parameters 
+  Float_t fImpactParameter[2]; // impact parameters
   //Float_t fImpactParameterCov[3]; // impact parameters covariance
   /*** TPC PID info ***/
   Float_t fTPCmomentum; // TPC inner wall momentum
@@ -203,8 +206,8 @@ public TObject
   Short_t fMCTOFMatchLevel; // MC TOF match level
   Float_t fMCTOFTime; // MC TOF time
   Float_t fMCTOFLength; // MC TOF length
-  Bool_t fMCSecondaryWeak; 
-  Bool_t fMCSecondaryMaterial; 
+  Bool_t fMCSecondaryWeak;
+  Bool_t fMCSecondaryMaterial;
   /*** HMPID PID info ***/
   //Float_t fHMPIDmomentum;
   //Float_t fHMPIDsignal;
@@ -246,8 +249,6 @@ public TObject
   //static AliTOFGeometry fgTOFGeometry;
   //  static AliTOFcalibHisto fgTOFcalibHisto;
   //  static Bool_t fgTOFcalibHistoFlag;
-  static AliTPCPIDResponse *fgTPCResponse;
-  static AliTOFPIDResponse *fgTOFResponse;
   static TH2F *hTOFtuned_th[AliPID::kSPECIES];
 
   Float_t fTimeZeroSigma; //!

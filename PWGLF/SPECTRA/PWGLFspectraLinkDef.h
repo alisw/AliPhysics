@@ -41,6 +41,7 @@
 #pragma link C++ class AlimPtAnalysis+;
 #pragma link C++ class AlimPtMatrix+;
 #pragma link C++ class AlimPtMatrixZDC+;
+#pragma link C++ class AliMCSpectraWeightsAnalysisTask+;
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxTest+;
 #pragma link C++ class AliAnalysisTaskPPvsMult+;
@@ -130,6 +131,7 @@
 // spherocity analysis
 #pragma link C++ class AliTransverseEventShape+;
 #pragma link C++ class AliSpherocityUtils+;
+#pragma link C++ class AliAnalysisSphericityTask+;
 // lightweight class for spherocity estimation, used in 13TeV pp
 #pragma link C++ class AliSpherocityEstimator+;
 #endif

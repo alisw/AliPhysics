@@ -239,9 +239,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SetKappaTPCCut(Int_t kappaCut);
     void SetIsHeavyIon(Int_t isHeavyIon){fIsHeavyIon=isHeavyIon;}
     Int_t GetFirstTPCRow(Double_t radius);
-
+    void GetPhiRegions();
     Bool_t SetITSElectronPIDCut(Int_t ITSelectronPID);
     Bool_t SetTRDElectronPIDCut(Int_t TRDelectronPID);
+
 
     // Request Flags
     Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
@@ -278,7 +279,15 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fEtaForPhiCutMax;                     ///< eta cut for phi sector selection
     Float_t           fMinPhiCut;                           ///< phi sector cut
     Float_t           fMaxPhiCut;                           ///< phi sector cut
-    Bool_t            fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
+    Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
+    Double_t          fGoodRegionCMin;                      ///< regions WITHOUT strong space charge distortions on C side
+    Double_t          fGoodRegionCMax;                      ///<
+    Double_t          fGoodRegionAMin;                      ///<
+    Double_t          fGoodRegionAMax;                      ///<
+    Double_t          fBadRegionCMin;                       ///< regions WITH strong space charge distortions on C side
+    Double_t          fBadRegionCMax;                       ///<
+    Double_t          fBadRegionAMin;                       ///<
+    Double_t          fBadRegionAMax;                       ///<
     Double_t          fPtCut;                               ///< pt cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
@@ -286,11 +295,13 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fMaxZ;                                ///< z cut
     Double_t          fMinClsTPC;                           ///< minimum clusters in the TPC
     Double_t          fMinClsTPCToF;                        ///< minimum clusters to findable clusters
+    Double_t          fMaxTPCChi2NDF;                       ///< maximum TPC track Chi2 per NDF
     Double_t          fLineCutZRSlope;                      ///< linecut
     Double_t          fLineCutZValue;                       ///< linecut
     Double_t          fLineCutZRSlopeMin;                   ///< linecut
     Double_t          fLineCutZValueMin;                    ///< linecut
     Double_t          fChi2CutConversion;                   ///< chi2cut
+    Double_t          fChi2CutConversionExpFunc;            ///< chi2cutexpfunction
     Double_t          fPIDProbabilityCutNegativeParticle;   ///<
     Double_t          fPIDProbabilityCutPositiveParticle;   ///<
     Bool_t            fDodEdxSigmaCut;                      ///< flag to use the dEdxCut based on sigmas
@@ -332,7 +343,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
-    Bool_t            fDo2DPsiPairChi2;                     ///<
+    Int_t             fDo2DPsiPairChi2;                     ///<
     Bool_t            fIncludeRejectedPsiPair;              ///<
     Float_t           fCosPAngleCut;                        ///<
     Bool_t            fDoToCloseV0sCut;                     ///<
@@ -375,6 +386,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoTPCdEdxafter;                   ///< TPC dEdx after cuts
     TH2F*             fHistoTPCdEdxSigbefore;               ///< TPC Sigma dEdx before cuts
     TH2F*             fHistoTPCdEdxSigafter;                ///< TPC Sigm dEdx after cuts
+    TH1F*             fHistoTPCChi2NDFBefore;               ///< TPC track Chi2 before cuts
+    TH1F*             fHistoTPCChi2NDFAfter;                ///< TPC track Chi2 after cuts
+    TH2F*             fHistoTPCChi2NDF2D;                   ///< TPC neg vs pos track Chi2 before cuts
     TH2F*             fHistoKappaafter;                     ///< Kappa vs photon pt after cuts
     TH2F*             fHistoTOFbefore;                      ///< TOF before cuts
     TH2F*             fHistoTOFSigbefore;                   ///< TOF Sigma before cuts
@@ -406,7 +420,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,22)
+    ClassDef(AliConversionPhotonCuts,24)
     /// \endcond
 };
 

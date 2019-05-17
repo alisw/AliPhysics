@@ -95,7 +95,7 @@ TTree* AliHFTreeHandlerDplustoKpipi::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerDplustoKpipi::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo) 
+bool AliHFTreeHandlerDplustoKpipi::SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int /*masshypo*/, AliPIDResponse *pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -104,6 +104,7 @@ bool AliHFTreeHandlerDplustoKpipi::SetVariables(int runnumber, unsigned int even
 
   fRunNumber=runnumber;
   fEvID=eventID;
+  fPtGen=ptgen;
   
   fCandType &= ~kRefl; //protection --> D+ ->Kpipi cannot be reflected
 

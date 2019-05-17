@@ -44,178 +44,169 @@ Bool_t Config_Lambdapi( // From Anders's master macro.
   Int_t       EventCuts=0,
   Int_t       TrackCutsLambda=0,
   Int_t       TrackCutsPi=0);
-AliRsnMiniAnalysisTask *AddTaskSigmaStar_pp13TeV(
-    Bool_t      isMC,
-    Int_t       system=0,
-    Int_t       EventCuts=0,
-    Int_t       TrackCuts1=0,
-    Int_t       TrackCuts2=0,
-    TString     outNameSuffix = "Sigma1385"){
-    // retrieve analysis manager
-    AliAnalysisManager* mgr=AliAnalysisManager::GetAnalysisManager();
-    if(!mgr){
-        ::Error("AddTaskRare_pp13", "No analysis manager to connect to.");
-        return NULL;
+AliRsnMiniAnalysisTask* AddTaskSigmaStar_pp13TeV(
+  TString lname,
+  Bool_t isMC,
+  Int_t system,
+  Int_t EventCuts=0,
+  Int_t TrackCuts1=0,
+  Int_t TrackCuts2=0){
+  // ----- INITIALIZATION -----
+
+  // retrieve analysis manager
+  AliAnalysisManager* mgr=AliAnalysisManager::GetAnalysisManager();
+  if(!mgr){
+    ::Error("AddTaskSigmaStar_pp13TeV", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // create the task and configure
+  AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(lname,isMC);
+
+  // trigger
+  int trigger=EventCuts%10;
+  if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
+  else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
+
+  // multiplicity
+  bool isPP=false;
+  if(!system) isPP=true;
+  int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
+
+  if(isPP){
+    if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
+    else if(MultBins==2) task->UseMultiplicity("AliMultSelection_RefMult08");
+    else task->UseMultiplicity("QUALITY");
+  }else if(system==1) task->UseMultiplicity("AliMultSelection_V0A");
+  else if(system==2) task->UseMultiplicity("AliMultSelection_V0M");
+  else task->UseCentrality("V0M");
+
+  // set event mixing options
+  int nmix=5;
+  if((EventCuts%10000)/1000==1) nmix=0;
+  float maxDiffVzMix=1;
+  float maxDiffMultMix=5;
+  task->UseContinuousMix();
+  task->SetNMix(nmix);
+  task->SetMaxDiffVz(maxDiffVzMix);
+  task->SetMaxDiffMult(maxDiffMultMix);
+  ::Info("AddTaskSigmaStar_pp13TeV", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
+
+  // vertex cuts
+  float vtxZcut=10;
+  Bool_t rejectPileUp=kTRUE;
+  AliRsnCutPrimaryVertex* cutVertex=0;
+  if(!MultBins || fabs(vtxZcut-10.)>1.e-10){
+    cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+    if(!MultBins){
+      cutVertex->SetCheckZResolutionSPD();
+      cutVertex->SetCheckDispersionSPD();
+      cutVertex->SetCheckZDifferenceSPDTrack();
     }
+    if(0) cutVertex->SetCheckGeneratedVertexZ();
+  }
 
-    // create the task and configure 
-    TString collSystName;
-    if(system==kPP) collSystName="pp";
-    else if(system==kPPb) collSystName="pPb";
-    else collSystName="PbPb";
-
-    TString taskName = Form("SigmaStar%s%s", collSystName.Data(), (isMC ? "MC" : "Data"));
-    // create the task and configure
-    AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-    //-------------------------------------------
-    // event cuts
-    UInt_t      triggerMask = AliVEvent::kINT7;
-
-    // trigger
-    int trigger=EventCuts%10; // only take first number 11->1, 26->6
-    if(!trigger) task->UseESDTriggerMask(AliVEvent::kINT7);
-    else if(trigger==1) task->UseESDTriggerMask(AliVEvent::kHighMultV0);
-
-    // multiplicity
-    bool isPP=false;
-    if(!system) isPP=true;
-    int MultBins=(EventCuts/10)%10;
-    if(system==1 || system==2) MultBins=1;
-
-    if(isPP){
-        if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
-        else if(MultBins==2) task->UseMultiplicity("AliMultSelection_RefMult08");
-        else task->UseMultiplicity("QUALITY");
-    }else if(system==1) task->UseMultiplicity("AliMultSelection_V0A");
-    else if(system==2) task->UseMultiplicity("AliMultSelection_V0M");
-    else task->UseCentrality("V0M");
-
-    // set event mixing options
-    int nmix=5;
-    if((EventCuts%10000)/1000==1) nmix=0;
-    if(EventCuts>1000) nmix = (EventCuts%100000)/1000;
-
-    float maxDiffVzMix=1;
-    float maxDiffMultMix=5;
-    task->UseContinuousMix();
-    task->SetNMix(nmix);
-    task->SetMaxDiffVz(maxDiffVzMix);
-    task->SetMaxDiffMult(maxDiffMultMix);
-    ::Info("AddTaskSigmaStar_pp13TeV", "%s", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
-
-    // vertex cuts
-    float vtxZcut=10;
-    Bool_t rejectPileUp=kTRUE;
-    AliRsnCutPrimaryVertex* cutVertex=0;
-    if(!MultBins || fabs(vtxZcut-10.)>1.e-10){
-        cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
-        if(!MultBins){
-        cutVertex->SetCheckZResolutionSPD();
-        cutVertex->SetCheckDispersionSPD();
-        cutVertex->SetCheckZDifferenceSPDTrack();
-        }
-        //cutVertex->SetCheckGeneratedVertexZ();
-    }
-
-    // other event selection cuts
-    AliRsnCutEventUtils* cutEventUtils=0;
+  // other event selection cuts
+  AliRsnCutEventUtils* cutEventUtils=0;
+  if(1){
     cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
     if(!MultBins){
-        cutEventUtils->SetCheckIncompleteDAQ();
-        cutEventUtils->SetCheckSPDClusterVsTrackletBG();
-    }
-    else{
-        cutEventUtils->SetRemovePileUppA2013(kFALSE);
-        cutEventUtils->SetCheckAcceptedMultSelection();
-    }
-
-    // set the check for pileup
-    if(isPP && (!isMC) && cutVertex){
-        cutVertex->SetCheckPileUp(rejectPileUp);
-        ::Info("AddTaskSigmaStar_pp13TeV", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
-    }
-        
-    // define and fill cut set for event cuts
-    AliRsnCutSet* eventCuts=0;
-    if(cutEventUtils || cutVertex){
-        eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
-        if(cutEventUtils && cutVertex){
-            eventCuts->AddCut(cutEventUtils);
-            eventCuts->AddCut(cutVertex);
-            eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
-        }
-        else if(cutEventUtils && !cutVertex){
-            eventCuts->AddCut(cutEventUtils);
-            eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
-        }
-        else if(!cutEventUtils && cutVertex){
-            eventCuts->AddCut(cutVertex);
-            eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
-        }
-        task->SetEventCuts(eventCuts);
-    }
-
-    
-    // ----- EVENT-ONLY COMPUTATIONS -----
-        
-    Double_t multbins[1000];
-    int j,nmult=0;
-    if(!MultBins){
-        for(j=0;j<=401;j++){multbins[nmult]=j-0.5; nmult++;}
-    }else if(!trigger){
-        for(j=0;j<=100;j++){multbins[nmult]=j; nmult++;}
+      cutEventUtils->SetCheckIncompleteDAQ();
+      cutEventUtils->SetCheckSPDClusterVsTrackletBG();
     }else{
-        for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-        for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
-        for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+      cutEventUtils->SetRemovePileUppA2013(kFALSE);
+      cutEventUtils->SetCheckAcceptedMultSelection();
     }
-    nmult--;
+  }
+
+  // set the check for pileup
+  if(isPP && (!isMC) && cutVertex){
+    cutVertex->SetCheckPileUp(rejectPileUp);
+    ::Info("AddTaskSigmaStar_pp13TeV", "%s", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
+  }
+
+  // define and fill cut set for event cuts
+  AliRsnCutSet* eventCuts=0;
+  if(cutEventUtils || cutVertex){
+    eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
+
+    if(cutEventUtils && cutVertex){
+      eventCuts->AddCut(cutEventUtils);
+      eventCuts->AddCut(cutVertex);
+      eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
+    }else if(cutEventUtils && !cutVertex){
+      eventCuts->AddCut(cutEventUtils);
+      eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
+    }else if(!cutEventUtils && cutVertex){
+      eventCuts->AddCut(cutVertex);
+      eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
+    }
+
+    task->SetEventCuts(eventCuts);
+  }
+
+  // ----- EVENT-ONLY COMPUTATIONS -----
     
-    //vertex
-    Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
-    AliRsnMiniOutput* outVtx=task->CreateOutput("eventVtx","SPARSE","EVENT");
-    outVtx->AddAxis(vtxID,240,-12.0,12.0);
+  Double_t multbins[1000];
+  int j,nmult=0;
+  if(!MultBins){
+    for(j=0;j<=401;j++){multbins[nmult]=j-0.5; nmult++;}
+  }else if(!trigger){
+    for(j=0;j<=100;j++){multbins[nmult]=j; nmult++;}
+  }else{
+    for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  }
+  nmult--;
 
-    //multiplicity or centrality
-    Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
-    AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","SPARSE","EVENT");
-    outMult->AddAxis(multID,nmult+1,multbins);
+  //vertex
+  Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
+  AliRsnMiniOutput* outVtx=task->CreateOutput("eventVtx","HIST","EVENT");
+  outVtx->AddAxis(vtxID,240,-12.0,12.0);
+
+  //multiplicity or centrality
+  Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
+  AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
+  outMult->AddAxis(multID,nmult+1,multbins);
+
+  TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
+  task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
     
-    TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
-    task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
-        
-    double ybins[1000];
-    for(j=0;j<=240;j++) ybins[j]=-12+0.1*j;
+  double ybins[1000];
+  for(j=0;j<=240;j++) ybins[j]=-12+0.1*j;
 
-    TH2F* hvz=new TH2F("hVzVsCent","",nmult,multbins, 240,ybins);
-    task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
+  TH2F* hvz=new TH2F("hVzVsCent","",nmult,multbins, 240,ybins);
+  task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
-    for(j=0;j<=401;j++) ybins[j]=j-0.5;
+  for(j=0;j<=401;j++) ybins[j]=j-0.5;
 
-    TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
-    hmc->GetYaxis()->SetTitle("QUALITY");
-    task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
+  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
+  hmc->GetYaxis()->SetTitle("QUALITY");
+  task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
-    Config_Lambdapi(task,outNameSuffix,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
+  // ----- CONFIGURE -----
 
-    // -- CONTAINERS --------------------------------------------------------------------------------
-    //
-    TString outputFileName = AliAnalysisManager::GetCommonFileName();
-    //  outputFileName += ":Rsn";
-    Printf("AddTaskSigmaStar - Set OutputFileName : \n %s\n", outputFileName.Data() );
-    
-    
-    AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()), 
-                                TList::Class(), 
-                                AliAnalysisManager::kOutputContainer, 
-                                outputFileName);
+  cerr<<"configuring"<<endl;
+  Config_Lambdapi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
+  cerr<<"done configuring"<<endl;
+  
+  // ----- CONTAINERS -----
 
-    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(task, 1, output);
-    
-    return task;
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  Printf("AddTaskSigmaStar_pp13TeV - Set OutputFileName : \n %s\n", outputFileName.Data() );
+   
+  AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",lname.Data()),
+							  TList::Class(),
+							  AliAnalysisManager::kOutputContainer,
+							  outputFileName);
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, output);
+   
+  return task;
 }
 
 Bool_t Config_Lambdapi(
@@ -226,7 +217,7 @@ Bool_t Config_Lambdapi(
   Int_t       EventCuts,
   Int_t       TrackCutsLambda,
   Int_t       TrackCutsPi){
-  bool isPP=false;
+    bool isPP=false;
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
@@ -257,7 +248,7 @@ Bool_t Config_Lambdapi(
                                                                   trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kPion,-1.,nsigmaPiTOF);
   else if(CutTypePi==3) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFtightPidKStarPPB2011,nsigmaPiTPC),
                                                                   trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFtightPidKStarPPB2011,AliPID::kPion,nsigmaPiTPC,-1.);
-  if(!cutSetPi){cerr<<"Error in AddTaskRare_pp13::Config_Lambdapi(): missing cutSetPi"<<endl; return kFALSE;}
+  if(!cutSetPi){cerr<<"Error in AddTaskSigmaStar_pp13TeV::Config_Lambdapi(): missing cutSetPi"<<endl; return kFALSE;}
   
   Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutPi=task->AddTrackCuts(cutSetPi);
@@ -347,6 +338,9 @@ Bool_t Config_Lambdapi(
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
     AddMonitorOutput(isMC,cutSetPi->GetMonitorOutput());
+    AddMonitorOutput_Eta("pi",cutSetPi->GetMonitorOutput());
+    AddMonitorOutput_DCAxy("pi",cutSetPi->GetMonitorOutput());
+    AddMonitorOutput_DCAz("pi",cutSetPi->GetMonitorOutput());
     AddMonitorOutput_Eta("pi",cutSetPi->GetMonitorOutput());
     AddMonitorOutput_DCAxy("pi",cutSetPi->GetMonitorOutput());
     AddMonitorOutput_DCAz("pi",cutSetPi->GetMonitorOutput());

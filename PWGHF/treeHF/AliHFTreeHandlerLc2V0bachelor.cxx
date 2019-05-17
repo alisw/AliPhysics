@@ -120,7 +120,7 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
+bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
 {
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
@@ -128,7 +128,8 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eve
   }
   fRunNumber=runnumber;
   fEvID=eventID;
-    
+  fPtGen=ptgen;
+  
   //topological variables
   //common
   fPt=cand->Pt();

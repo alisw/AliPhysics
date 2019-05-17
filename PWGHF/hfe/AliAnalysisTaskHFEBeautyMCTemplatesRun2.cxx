@@ -45,14 +45,14 @@ ClassImp(AliAnalysisTaskHFEBeautyMCTemplatesRun2)
 
 //________________________________________________________________________
 AliAnalysisTaskHFEBeautyMCTemplatesRun2::AliAnalysisTaskHFEBeautyMCTemplatesRun2()
-  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCABeautyNew(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
+  : AliAnalysisTaskSE(), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCACharmNewDPlus(0), fDCACharmNewDZero(0), fDCACharmNewDS(0), fDCACharmNewLambdaC(0), fDCACharmNewOtherC(0), fDCABeautyNew(0), fDCABeautyNewBZero(0), fDCABeautyNewBPlus(0), fDCABeautyNewBS(0), fDCABeautyNewLambdaB(0), fDCABeautyNewOtherB(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
 {
-  
+
 }
 
 //________________________________________________________________________
 AliAnalysisTaskHFEBeautyMCTemplatesRun2::AliAnalysisTaskHFEBeautyMCTemplatesRun2(const char *name)
-  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCABeautyNew(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fOutputContainer(0), fSignalCuts(0), fExtraCuts(0), fAODArrayMCInfo(0), fCentrality(0), fDCACharm(0), fDCABeauty(0), fDCAConversion(0), fDCADalitz(0), fDCACharmNew(0), fDCACharmNewDPlus(0), fDCACharmNewDZero(0), fDCACharmNewDS(0), fDCACharmNewLambdaC(0), fDCACharmNewOtherC(0), fDCABeautyNew(0), fDCABeautyNewBZero(0), fDCABeautyNewBPlus(0), fDCABeautyNewBS(0), fDCABeautyNewLambdaB(0), fDCABeautyNewOtherB(0), fDCAConversionNew(0), fDCAConversionNewCent(0), fDCADalitzNew(0), fDCADalitzCharm(0), fDCADalitzBeauty(0), fDCAConversionCharm(0), fDCAConversionBeauty(0), fAODV0Cuts(0), fBeautyMotherpT(0), fCharmMotherpT(0), fGroundStateBeautyMotherpT(0), fGroundStateCharmMotherpT(0), fRd(0), fDCACharm3050(0), fDCACharm3050IP(0), fDCACharm3050OOP(0), fDCACharmNew3050(0), fDCACharmNew3050IP(0), fDCACharmNew3050OOP(0), fDCACharmWeightedNew3050(0), fDCACharmWeightedNew3050IP(0), fDCACharmWeightedNew3050OOP(0), fDCABeautyHalfRAA(0), fDCABeautyHalfRAAIP(0), fDCABeautyHalfRAAOOP(0), fDCABeautyRAA(0), fDCABeautyRAAIP(0), fDCABeautyRAAOOP(0), fDCABeautyNewHalfRAA(0), fDCABeautyNewHalfRAAIP(0), fDCABeautyNewHalfRAAOOP(0), fDCABeautyWeightedNewHalfRAA(0), fDCABeautyWeightedNewHalfRAAIP(0), fDCABeautyWeightedNewHalfRAAOOP(0), fDCABeautyNewRAA(0), fDCABeautyNewRAAIP(0), fDCABeautyNewRAAOOP(0), fDCAHadrons(0), fDCAWErrHadrons(0), fDCAHadronsFineBins(0), fDCAKaons(0), fDCAWErrKaons(0), fDCAKaonsFineBins(0), fDCAHadronsCorrected(0), fPionV0pTRNoCuts(0), fPionV0pTRWithCuts(0)
 {
   // Constructor
   // Define input and output slots here
@@ -88,7 +88,11 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     Double_t SourceBins[6]=  {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5};
     Double_t * IPbins = new Double_t[401];
     for(int i=0;i<401;i++) IPbins[i] = -0.2 + 0.4/400.*double(i);
-    
+    Double_t * MotherpTBins = new Double_t[81];
+    for(int i=0;i<41;i++) MotherpTBins[i] = 0. + 0.25*double(i);
+    for(int i=41;i<61;i++) MotherpTBins[i] = 10. + 1.0*double(i-40); // Larger bins at higher pT
+    for(int i=61;i<81;i++) MotherpTBins[i] = 30. + 4.0*double(i-60); // Larger bins at higher pT
+
     fCentrality = new TH1D(Form("fCentrality"),Form("fCentrality"), 20, 0., 100.);
     //fSourceGenerator = new TH2D(Form("fSourceGenerator"),Form("fSourceGenerator"), 10, -0.5, 9.5, 20, -1.5, 18.5);
     fDCACharm = new TH2D(Form("fDCACharm"),Form("fDCACharm"), 18, ptbinningX, 400, -0.2, 0.2);
@@ -137,6 +141,18 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fDCAWErrKaons = new TH3D(Form("fDCAWErrKaons"),Form("fDCAWErrKaons"), 80, 0., 10., 400, -0.2, 0.2, 100, 0.0, 0.01);
     fDCAKaonsFineBins = new TH3D(Form("fDCAKaonsFineBins"),Form("fDCAKaonsFineBins"), 80, 0., 10., 400, -0.2, 0.2, 10, 0., 100.);
     fDCAHadronsCorrected = new TH2D(Form("fDCAHadronsCorrected"),Form("fDCAHadronsCorrected"), 18, ptbinningX, 400, -0.2, 0.2);
+
+    fDCACharmNewDPlus = new TH3D(Form("fDCACharmNewDPlus"),Form("fDCACharmNewDPlus"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewDZero = new TH3D(Form("fDCACharmNewDZero"),Form("fDCACharmNewDZero"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewDS = new TH3D(Form("fDCACharmNewDS"),Form("fDCACharmNewDS"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewLambdaC = new TH3D(Form("fDCACharmNewLambdaC"),Form("fDCACharmNewLambdaC"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCACharmNewOtherC = new TH3D(Form("fDCACharmNewOtherC"),Form("fDCACharmNewOtherC"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+
+    fDCABeautyNewBZero = new TH3D(Form("fDCABeautyNewBZero"),Form("fDCABeautyNewBZero"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewBPlus = new TH3D(Form("fDCABeautyNewBPlus"),Form("fDCABeautyNewBPlus"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewBS = new TH3D(Form("fDCABeautyNewBS"),Form("fDCABeautyNewBS"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewLambdaB = new TH3D(Form("fDCABeautyNewLambdaB"),Form("fDCABeautyNewLambdaB"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
+    fDCABeautyNewOtherB = new TH3D(Form("fDCABeautyNewOtherB"),Form("fDCABeautyNewOtherB"), 18, ptbinningX, 400, IPbins, 80, MotherpTBins);
     
 
     fBeautyMotherpT = new TH1D(Form("fBeautyMotherpT"),Form("fBeautyMotherpT"), 40, 0., 20.);
@@ -148,6 +164,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fPionV0pTRWithCuts = new TH3D(Form("fPionV0pTRWithCuts"),Form("fPionV0pTRWithCuts"), 40, 0., 10., 80, 0., 20., 50, 0., 100.);
 
     fRd = new TRandom3(0);
+
     
     fOutputContainer = new TObjArray(1);
     fOutputContainer->SetName(GetName());
@@ -167,6 +184,11 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fOutputContainer->Add(fDCAConversion);
     fOutputContainer->Add(fDCADalitz);
     fOutputContainer->Add(fDCACharmNew);
+    fOutputContainer->Add(fDCACharmNewDPlus);
+    fOutputContainer->Add(fDCACharmNewDZero);
+    fOutputContainer->Add(fDCACharmNewDS);
+    fOutputContainer->Add(fDCACharmNewLambdaC);
+    fOutputContainer->Add(fDCACharmNewOtherC);
     fOutputContainer->Add(fDCACharmNew3050);
     fOutputContainer->Add(fDCACharmNew3050IP);
     fOutputContainer->Add(fDCACharmNew3050OOP);
@@ -174,6 +196,11 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::UserCreateOutputObjects()
     fOutputContainer->Add(fDCACharmWeightedNew3050IP);
     fOutputContainer->Add(fDCACharmWeightedNew3050OOP);
     fOutputContainer->Add(fDCABeautyNew);
+    fOutputContainer->Add(fDCABeautyNewBZero);
+    fOutputContainer->Add(fDCABeautyNewBPlus);
+    fOutputContainer->Add(fDCABeautyNewBS);
+    fOutputContainer->Add(fDCABeautyNewLambdaB);
+    fOutputContainer->Add(fDCABeautyNewOtherB);
     fOutputContainer->Add(fDCABeautyNewHalfRAA);
     fOutputContainer->Add(fDCABeautyNewHalfRAAIP);
     fOutputContainer->Add(fDCABeautyNewHalfRAAOOP);
@@ -517,6 +544,7 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
   Double_t rndm = 0.;
   Int_t Source, SourceNew;
   Double_t CorrGaussWidth=0.;
+  Int_t sourceTemp = 0;
   
   if(analyzeEvent)
   {
@@ -587,9 +615,16 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
           if(rndm < CorrCharm3050) fDCACharmNew3050->Fill(pt, IP);
           if(rndm < CorrCharm3050*IPCorrection) fDCACharmNew3050IP->Fill(pt, IP);
           if(rndm < CorrCharm3050*OOPCorrection) fDCACharmNew3050OOP->Fill(pt, IP);
-          fDCACharmWeightedNew3050->Fill(pt, IP, CharmSource(mcple, fMCEvent), TMath::Min(1., CorrCharm3050));
-          fDCACharmWeightedNew3050IP->Fill(pt, IP, CharmSource(mcple, fMCEvent), TMath::Min(1., CorrCharm3050*IPCorrection));
-          fDCACharmWeightedNew3050OOP->Fill(pt, IP, CharmSource(mcple, fMCEvent), TMath::Min(1., CorrCharm3050*OOPCorrection));
+          sourceTemp = CharmSource(mcple, fMCEvent);
+          fDCACharmWeightedNew3050->Fill(pt, IP, sourceTemp, TMath::Min(1., CorrCharm3050));
+          fDCACharmWeightedNew3050IP->Fill(pt, IP, sourceTemp, TMath::Min(1., CorrCharm3050*IPCorrection));
+          fDCACharmWeightedNew3050OOP->Fill(pt, IP, sourceTemp, TMath::Min(1., CorrCharm3050*OOPCorrection));
+          
+          if(sourceTemp == 0) fDCACharmNewDPlus->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 1) fDCACharmNewDZero->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 2) fDCACharmNewDS->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 3) fDCACharmNewLambdaC->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 4) fDCACharmNewOtherC->Fill(pt, IP, MotherPt);
         }
         if(SourceNew == 1)
         {
@@ -601,15 +636,22 @@ void AliAnalysisTaskHFEBeautyMCTemplatesRun2::Process(AliAODEvent *const aodEven
           if(rndm < CorrBeautyHalfRAA) fDCABeautyNewHalfRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyNewHalfRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyNewHalfRAAOOP->Fill(pt, IP);
-          fDCABeautyWeightedNewHalfRAA->Fill(pt, IP, BeautySource(mcple, fMCEvent), CorrBeautyHalfRAA);
-          fDCABeautyWeightedNewHalfRAAIP->Fill(pt, IP, BeautySource(mcple, fMCEvent), BeautyIPCorrection);
-          fDCABeautyWeightedNewHalfRAAOOP->Fill(pt, IP, BeautySource(mcple, fMCEvent), BeautyOOPCorrection);
+          sourceTemp = BeautySource(mcple, fMCEvent);
+          fDCABeautyWeightedNewHalfRAA->Fill(pt, IP, sourceTemp, CorrBeautyHalfRAA);
+          fDCABeautyWeightedNewHalfRAAIP->Fill(pt, IP, sourceTemp, BeautyIPCorrection);
+          fDCABeautyWeightedNewHalfRAAOOP->Fill(pt, IP, sourceTemp, BeautyOOPCorrection);
           CorrBeautyRAA = BasicBeautyCorrection*(0.590839*(TMath::Gaus(MotherPt,2.54621,3.14525)+ 0.664211));
           BeautyIPCorrection = CorrBeautyRAA * ((0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*0.95;
           BeautyOOPCorrection = CorrBeautyRAA * (-(0.014*MotherPt*MotherPt*TMath::Exp(-2*MotherPt/6.))*0.76*4/3.14159+1)*1.05;
           if(rndm < CorrBeautyRAA) fDCABeautyNewRAA->Fill(pt, IP);
           if(rndm < BeautyIPCorrection) fDCABeautyNewRAAIP->Fill(pt, IP);
           if(rndm < BeautyOOPCorrection) fDCABeautyNewRAAOOP->Fill(pt, IP);
+
+          if(sourceTemp == 0) fDCABeautyNewBZero->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 1) fDCABeautyNewBPlus->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 2) fDCABeautyNewBS->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 3) fDCABeautyNewLambdaB->Fill(pt, IP, MotherPt);
+          if(sourceTemp == 4) fDCABeautyNewOtherB->Fill(pt, IP, MotherPt);
         }
         if(SourceNew == 2 && !IsAddedSignal(mcple))
         {

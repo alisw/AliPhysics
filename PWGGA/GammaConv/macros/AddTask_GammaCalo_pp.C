@@ -1395,11 +1395,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); // INT7
     cuts.AddCutCalo("00010113","2446611044012300000","0163103100000010"); // INT7 //case 11=> FunctionNL_kSDM
     cuts.AddCutCalo("00010113","2446621044012300000","0163103100000010"); // INT7 //case 21=> unctionNL_DPOW
-  } else if (trainConfig ==808){//PHOS Triggers with case 11 NonLin (FunctionNL_kSDM)
-    cuts.AddCutCalo("00010113","2446611044012300000","0163103100000010"); //no Trigger
-    cuts.AddCutCalo("00061113","2446611044012300000","0163103100000010"); //PHI1
-    cuts.AddCutCalo("00062113","2446611044012300000","0163103100000010"); //PHI7
-    cuts.AddCutCalo("00063113","2446611044012300000","0163103100000010"); //PHI8
+  } else if (trainConfig ==808){//PHOS Triggers
+    cuts.AddCutCalo("00010113","2446600044012300000","0163103100000010"); //no Trigger
+    cuts.AddCutCalo("00061113","2446600044012300000","0163103100000010"); //PHI1
+    cuts.AddCutCalo("00062113","2446600044012300000","0163103100000010"); //PHI7
+    cuts.AddCutCalo("00063113","2446600044012300000","0163103100000010"); //PHI8
 
 
   // *********************************************************************************************************
@@ -1450,6 +1450,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446651044012300000","2163103100000010"); //
  } else if (trainConfig == 915){ //PHOS+JetQA
     cuts.AddCutCalo("00010113","2446651044012300000","3163103100000010"); // PHOS QA
+ } else if (trainConfig == 916){ //PHOS+JETS
+    cuts.AddCutCalo("00010113","2446600044012300000","2163103100000010"); // PHOS No NL
 
   } else if (trainConfig == 2000){ // EMCAL+DCAL clusters standard cuts
     cuts.AddCutCalo("00010113","4117900077032230000","01631031000000d0"); // INT7 - NO NL

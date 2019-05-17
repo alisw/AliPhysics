@@ -717,7 +717,7 @@ void AliForwardFlowUtil::FillFromCentralClusters(TH2D*& cen) const {
   cen = &aodcmult->GetHistogram();
 }
 
-void AliForwardFlowUtil::FillFromForwardClusters(TH2D*& fwd) const {
+void AliForwardFlowUtil::FillFromForwardClusters(TH2D*& fwd) {
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAODevent->FindListObject("Forward"));
   fwd = &aodfmult->GetHistogram();
 }

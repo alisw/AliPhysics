@@ -17,110 +17,6 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
-  //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton;
-  cutnumberPhoton = "00200008400000002280920000";
-  TString cutnumberEvent = "00000000";
-  TString periodNameV0Reader = "";
-  Bool_t enableV0findingEffi = kFALSE;
-  Bool_t fillHistos = kTRUE;
-  Bool_t runLightOutput = kFALSE;
-  if (suffix != "0" && suffix != "999") {
-    runLightOutput = kTRUE;
-    fillHistos = kFALSE;
-  }
-  if (suffix == "21") {
-    // eta < 0.8
-    cutnumberPhoton = "0d200008400000002280920000";
-  } else if (suffix == "22") {
-    // single pT > 0, gammapT > 0
-    cutnumberPhoton = "00200078400000002280920000";
-  } else if (suffix == "23") {
-    // single pT > 0.050, gammapT > 0.150
-    cutnumberPhoton = "002000a8400000002280920000";
-  } else if (suffix == "24") {
-    // TPC cluster, findable > 0.6
-    cutnumberPhoton = "00200009400000002280920000";
-  } else if (suffix == "25") {
-    // TPC PID -10,10
-    cutnumberPhoton = "00200008000000002280920000";
-  } else if (suffix == "26") {
-    // TPC PID -3,3
-    cutnumberPhoton = "00200008a00000002280920000";
-  } else if (suffix == "27") {
-    // 1-D Qt cut, qt < 0.1
-    cutnumberPhoton = "00200008400000001280920000";
-  } else if (suffix == "28") {
-    // 2-D Qt cut, qt < 0.05
-    cutnumberPhoton = "00200008400000003280920000";
-  } else if (suffix == "29") {
-    // psiPair < 0.2, 1-D
-    cutnumberPhoton = "00200008400000002240920000";
-  } else if (suffix == "30") {
-    // psiPair < 0.1, 2-D
-    cutnumberPhoton = "00200008400000002250920000";
-  } else if (suffix == "31") {
-    // cosPA < 0.98
-    cutnumberPhoton = "00200008400000002280820000";
-  } else if (suffix == "32") {
-    // cosPA < 0.995
-    cutnumberPhoton = "00200008400000002280a20000";
-  }
-
-  //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName = TString::Format(
-      "V0ReaderV1_%s_%s", cutnumberEvent.Data(), cutnumberPhoton.Data());
-  AliConvEventCuts *fEventCuts = NULL;
-
-  AliV0ReaderV1 *fV0ReaderV1 = NULL;
-  if (!(AliV0ReaderV1 *)mgr->GetTask(V0ReaderName.Data())) {
-    fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
-    if (periodNameV0Reader.CompareTo("") != 0)
-      fV0ReaderV1->SetPeriodName(periodNameV0Reader);
-    fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
-    fV0ReaderV1->SetCreateAODs(kFALSE);  // AOD Output
-    fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-    fV0ReaderV1->SetProduceV0FindingEfficiency(enableV0findingEffi);
-
-    if (!mgr) {
-      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-      return NULL;
-    }
-
-    if (cutnumberEvent != "") {
-      fEventCuts =
-          new AliConvEventCuts(cutnumberEvent.Data(), cutnumberEvent.Data());
-      fEventCuts->SetPreSelectionCutFlag(kTRUE);
-      fEventCuts->SetV0ReaderName(V0ReaderName);
-      fEventCuts->SetLightOutput(runLightOutput);
-      if (periodNameV0Reader.CompareTo("") != 0)
-        fEventCuts->SetPeriodEnum(periodNameV0Reader);
-      fV0ReaderV1->SetEventCuts(fEventCuts);
-      fEventCuts->SetFillCutHistograms("", kFALSE);
-    }
-
-    // Set AnalysisCut Number
-    AliConversionPhotonCuts *fCuts = NULL;
-    if (cutnumberPhoton != "") {
-      fCuts = new AliConversionPhotonCuts(cutnumberPhoton.Data(),
-                                          cutnumberPhoton.Data());
-      fCuts->SetPreSelectionCutFlag(kTRUE);
-      fCuts->SetIsHeavyIon(false);
-      fCuts->SetV0ReaderName(V0ReaderName);
-      fCuts->SetLightOutput(runLightOutput);
-      fCuts->SetFillCutHistograms("", fillHistos);
-      if (fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())) {
-        fV0ReaderV1->SetConversionCuts(fCuts);
-      }
-    }
-    fV0ReaderV1->Init();
-    AliLog::SetGlobalLogLevel(AliLog::kFatal);
-
-    // connect input V0Reader
-//    mgr->AddTask(fV0ReaderV1);
-//    mgr->ConnectInput(fV0ReaderV1, 0, cinput);
-  }
-
   //========= Init subtasks and start analyis ============================
   // Event Cuts
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
@@ -239,6 +135,8 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     v0Cuts->SetCutInvMass(0.008);
     antiv0Cuts->SetCutInvMass(0.008);
   }
+
+  AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -444,11 +342,11 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
       new AliAnalysisTaskNanoAODSigma0Femto("AliAnalysisTaskNanoAODSigma0Femto", isMC);
 
   task->SetEventCuts(evtCuts);
-  task->SetV0Reader(fV0ReaderV1);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
   task->SetV0Cuts(v0Cuts);
   task->SetAntiV0Cuts(antiv0Cuts);
+  task->SetPhotonCuts(photon);
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
   task->SetCollectionConfig(config);

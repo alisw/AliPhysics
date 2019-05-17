@@ -82,5 +82,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20190417: Update of EMCALBadChannels.root with additional bad channels for LHC18p
 - 20190423: Update of EMCALBadChannels.root with additional bad channels for LHC18d,j,k,l
 - 20190429: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with calibs for LHC18q,r
+- 20190513: Update of EMCALBadChannels.root with remaining run range for LHC18r bad channels
 
 */

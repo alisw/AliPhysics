@@ -90,7 +90,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * run numbers. For now this function will be
                                  * inside the constructor of the class.
                                  */
-        void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
+        // void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
 
                                 /**
                                  * This function substitutes the roel of the
@@ -445,7 +445,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * a lego plot. See for an example:
                                  *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
                                  */
-        std::vector<Double_t>   fVectorCosThetaGenerated;           //!
+        // std::vector<Double_t>   fVectorCosThetaGenerated;           //!
 
                                 /**
                                  * This is the vector containing the
@@ -462,7 +462,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * It is important to remember there is at MOST
                                  * a single J/Psi for UPC event!!!
                                  */
-        std::vector<Double_t>   fVectorCosThetaReconstructed;           //!
+        // std::vector<Double_t>   fVectorCosThetaReconstructed;           //!
 
                                 /**
                                  * This is the GENERATED
@@ -887,7 +887,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         /**
          * This is the vector containing the GOOD RunNumbers.
          */
-        std::vector<Int_t> fVectorGoodRunNumbers;
+        // std::vector<Int_t> fVectorGoodRunNumbers;
 
         /**
          * Not implemented yet...
@@ -904,7 +904,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 11);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 13);
 };
 
 #endif

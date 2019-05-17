@@ -84,6 +84,7 @@ void GetCentrality(const Int_t centrality, Double_t& CentMin, Double_t& CentMax)
   else if(centrality == 5){CentMin = 60; CentMax = 80;}
   else if(centrality == 6){CentMin = 80; CentMax = 100;}
   else if(centrality == 7){CentMin = 0;  CentMax = 5;}
+  else if(centrality == 8){CentMin = -1; CentMax = -1;}
   else                      {std::cout << "WARNING::Centrality range not found....." std::endl;}
   return;
 }

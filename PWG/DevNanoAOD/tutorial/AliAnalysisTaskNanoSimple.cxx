@@ -119,7 +119,9 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   AliAODEvent* aod = dynamic_cast<AliAODEvent*> (fInputEvent);
   if (aod->GetV0s()) {
     for (int i = 0; i < aod->GetNumberOfV0s(); i++) {
-      Printf("V0 %d: dca = %f   daughter pT = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex(), ((AliVTrack*) aod->GetV0(i)->GetDaughter(0))->Pt());
+      Printf("V0 %d: dca = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex());
+      for (int j=0; j<aod->GetV0(i)->GetNDaughters(); j++)
+        Printf("  Daughter %d pT = %f", j, ((AliVTrack*) aod->GetV0(i)->GetDaughter(j))->Pt());
     }
   }
 
@@ -127,7 +129,7 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   if (aod->GetCascades()) {
     for (int i = 0; i < aod->GetNumberOfCascades(); i++) {
       AliAODcascade* cascade = aod->GetCascade(i);
-      Printf("Cascade %d: xi mass = %f", i, cascade->MassXi());
+      Printf("Cascade %d: xi mass = %f xiX = %f", i, cascade->MassXi(), cascade->DecayVertexXiX());
       for (int j=0; j<cascade->GetNDaughters(); j++)
         Printf("  Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDaughter(j))->Pt());
       for (int j=0; j<cascade->GetDecayVertexXi()->GetNDaughters(); j++)

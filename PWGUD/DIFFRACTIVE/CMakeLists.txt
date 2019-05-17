@@ -49,6 +49,7 @@ set(SRCS
     legotrain/AliSPDGeometryUtils.cxx
     legotrain/AliAnalysisTaskDgTree.cxx
     legotrain/AliTOFTriggerEfficiencyTask.cxx
+    legotrain/AliSPDTriggerEfficiencyTask.cxx
     QA/AliAnalysisTaskCPQA.cxx
     QA/AliAnalysisTaskCEPQA.cxx
     xsAndTwoProng/AliAnalysisTaskCDMeson.cxx

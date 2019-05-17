@@ -635,6 +635,14 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
       fHistInvMass->Fill(invMass);
       fHistInvMassPtRaw->Fill(pT, invMass);
 
+      if (TMath::Abs(rap) < fRapidityMax) {
+        fHistInvMassPt->Fill(pT, invMass);
+
+        if (multBin >= 0 && fIsSpectrumAnalysis) {
+          fHistPtMult[multBin]->Fill(pT, invMass);
+        }
+      }
+
       if (fIsMC) {
         if (label > 0) {
           fHistMCV0Pt->Fill(sigma.GetPt());
@@ -669,12 +677,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
                                TMath::Abs(partPhoton->PdgCode()));
         }
       }
-
-      if (TMath::Abs(rap) > fRapidityMax) continue;
-      fHistInvMassPt->Fill(pT, invMass);
-
-      if (multBin >= 0 && fIsSpectrumAnalysis)
-        fHistPtMult[multBin]->Fill(pT, invMass);
     }
   }
   fHistNSigma->Fill(nSigma);

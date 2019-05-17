@@ -147,6 +147,9 @@ public:
 
   static TString make_random_string(const TString &prefix="");
 
+  /// track filter
+  void SetTrackFilter(ULong_t m)
+    { fFilterMask = m; }
 
 protected:
 
@@ -168,6 +171,9 @@ protected:
 
   /// This is a Monte Carlo analysis
   Bool_t fMCAnalysis;
+
+  /// FilterBit
+  ULong64_t fFilterMask;
 };
 
 /// \class AliFemtoAnalysisPionPion::AnalysisParams

@@ -109,7 +109,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fEtaForPhiCutMax(10.),
   fMinPhiCut(0.),
   fMaxPhiCut(100.),
-  fDoShrinkTPCAcceptance(kFALSE),
+  fDoShrinkTPCAcceptance(0),
   fPtCut(0.02),
   fSinglePtCut(0),
   fSinglePtCut2(0),
@@ -117,11 +117,13 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fMaxZ(1000),
   fMinClsTPC(0.),
   fMinClsTPCToF(0.),
+  fMaxTPCChi2NDF(0.),
   fLineCutZRSlope(0.),
   fLineCutZValue(0),
   fLineCutZRSlopeMin(0.),
   fLineCutZValueMin(0),
   fChi2CutConversion(1000),
+  fChi2CutConversionExpFunc(-1),
   fPIDProbabilityCutNegativeParticle(0),
   fPIDProbabilityCutPositiveParticle(0),
   fDodEdxSigmaCut(kTRUE),
@@ -163,7 +165,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fUseTOFpid(kFALSE),
   fOpeningAngle(0.005),
   fPsiPairCut(10000),
-  fDo2DPsiPairChi2(kFALSE),
+  fDo2DPsiPairChi2(0),
   fIncludeRejectedPsiPair(kFALSE),
   fCosPAngleCut(10000),
   fDoToCloseV0sCut(kFALSE),
@@ -205,6 +207,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoTPCdEdxafter(NULL),
   fHistoTPCdEdxSigbefore(NULL),
   fHistoTPCdEdxSigafter(NULL),
+  fHistoTPCChi2NDFBefore(NULL),
+  fHistoTPCChi2NDFAfter(NULL),
+  fHistoTPCChi2NDF2D(NULL),
   fHistoKappaafter(NULL),
   fHistoTOFbefore(NULL),
   fHistoTOFSigbefore(NULL),
@@ -232,7 +237,15 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoEleMapMean(NULL),
   fHistoEleMapWidth(NULL),
   fHistoPosMapMean(NULL),
-  fHistoPosMapWidth(NULL)
+  fHistoPosMapWidth(NULL),
+  fGoodRegionCMin(0),
+  fGoodRegionAMin(0),
+  fBadRegionCMin(0),
+  fBadRegionAMin(0),
+  fGoodRegionCMax(0),
+  fGoodRegionAMax(0),
+  fBadRegionCMax(0),
+  fBadRegionAMax(0)
 {
   InitPIDResponse();
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -276,11 +289,13 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fMaxZ(ref.fMaxZ),
   fMinClsTPC(ref.fMinClsTPC),
   fMinClsTPCToF(ref.fMinClsTPCToF),
+  fMaxTPCChi2NDF(ref.fMaxTPCChi2NDF),
   fLineCutZRSlope(ref.fLineCutZRSlope),
   fLineCutZValue(ref.fLineCutZValue),
   fLineCutZRSlopeMin(ref.fLineCutZRSlopeMin),
   fLineCutZValueMin(ref.fLineCutZValueMin),
   fChi2CutConversion(ref.fChi2CutConversion),
+  fChi2CutConversionExpFunc(ref.fChi2CutConversionExpFunc),
   fPIDProbabilityCutNegativeParticle(ref.fPIDProbabilityCutNegativeParticle),
   fPIDProbabilityCutPositiveParticle(ref.fPIDProbabilityCutPositiveParticle),
   fDodEdxSigmaCut(ref. fDodEdxSigmaCut),
@@ -364,6 +379,9 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoTPCdEdxafter(NULL),
   fHistoTPCdEdxSigbefore(NULL),
   fHistoTPCdEdxSigafter(NULL),
+  fHistoTPCChi2NDFBefore(NULL),
+  fHistoTPCChi2NDFAfter(NULL),
+  fHistoTPCChi2NDF2D(NULL),
   fHistoKappaafter(NULL),
   fHistoTOFbefore(NULL),
   fHistoTOFSigbefore(NULL),
@@ -391,7 +409,15 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoEleMapMean(ref.fHistoEleMapMean),
   fHistoEleMapWidth(ref.fHistoEleMapWidth),
   fHistoPosMapMean(ref.fHistoPosMapMean),
-  fHistoPosMapWidth(ref.fHistoPosMapWidth)
+  fHistoPosMapWidth(ref.fHistoPosMapWidth),
+  fGoodRegionCMin(ref.fGoodRegionCMin),
+  fGoodRegionAMin(ref.fGoodRegionAMin),
+  fBadRegionCMin(ref.fBadRegionCMin),
+  fBadRegionAMin(ref.fBadRegionAMin),
+  fGoodRegionCMax(ref.fGoodRegionCMax),
+  fGoodRegionAMax(ref.fGoodRegionAMax),
+  fBadRegionCMax(ref.fBadRegionCMax),
+  fBadRegionAMax(ref.fBadRegionAMax)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -488,7 +514,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistograms->Add(fHistoCutIndex);
 
   // Track Cuts
-  fHistoTrackCuts=new TH1F(Form("TrackCuts %s",GetCutNumber().Data()),"TrackCuts",9,-0.5,8.5);
+  fHistoTrackCuts=new TH1F(Form("TrackCuts %s",GetCutNumber().Data()),"TrackCuts",10,-0.5,9.5);
   fHistoTrackCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistoTrackCuts->GetXaxis()->SetBinLabel(2,"likesign");
   fHistoTrackCuts->GetXaxis()->SetBinLabel(3,"ntpccl");
@@ -496,7 +522,8 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   fHistoTrackCuts->GetXaxis()->SetBinLabel(5,"singlept");
   fHistoTrackCuts->GetXaxis()->SetBinLabel(6,"TPCrefit");
   fHistoTrackCuts->GetXaxis()->SetBinLabel(7,"kink");
-  fHistoTrackCuts->GetXaxis()->SetBinLabel(8,"out");
+  fHistoTrackCuts->GetXaxis()->SetBinLabel(8,"TPCChi2");
+  fHistoTrackCuts->GetXaxis()->SetBinLabel(9,"out");
   fHistograms->Add(fHistoTrackCuts);
 
   // Photon Cuts
@@ -638,6 +665,13 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
 
     fHistoPsiPairDeltaPhiafter=new TH2F(Form("Gamma_PsiPairDeltaPhi_after %s",GetCutNumber().Data()),"Psi Pair vs Delta Phi Gamma after" ,200,-2,2,200,-2,2);
     fHistograms->Add(fHistoPsiPairDeltaPhiafter);
+
+    fHistoTPCChi2NDFBefore = new TH1F(Form("TPCChi2NDF_before %s",GetCutNumber().Data()),"TPCChi2NDF before cut",120,-2,10);
+    fHistograms->Add(fHistoTPCChi2NDFBefore);
+    fHistoTPCChi2NDFAfter = new TH1F(Form("TPCChi2NDF_after %s",GetCutNumber().Data()),"TPCChi2NDF after cut",120,-2,10);
+    fHistograms->Add(fHistoTPCChi2NDFAfter);
+    fHistoTPCChi2NDF2D = new TH2F(Form("TPCChi2NDF2D_before %s",GetCutNumber().Data()),"TPCChi2NDF neg vs pos track before cut",120,-2,10,120,-2,10);
+    fHistograms->Add(fHistoTPCChi2NDF2D);
 
     TAxis *AxisAfter = fHistoTPCdEdxSigafter->GetXaxis();
     Int_t bins = AxisAfter->GetNbins();
@@ -1407,7 +1441,7 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   }
   cutIndex++;
 
-  if (fDoShrinkTPCAcceptance){
+  if (fDoShrinkTPCAcceptance == 1){
     if(photon->GetPhotonEta() > fEtaForPhiCutMin && photon->GetPhotonEta() < fEtaForPhiCutMax ){
       if (fMinPhiCut < fMaxPhiCut){
         if( photon->GetPhotonPhi() > fMinPhiCut && photon->GetPhotonPhi() < fMaxPhiCut ) {
@@ -1423,6 +1457,42 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
         }
       }
     }
+  } else if (fDoShrinkTPCAcceptance == 2){  // accept only photons in 'good region'
+      Double_t photonPhi = photon->GetPhotonPhi();
+      GetPhiRegions();
+      if( photon->GetPhotonEta()>0 && photon->GetPhotonEta()<fEtaCut ){        // A side
+          //cout << "A side, eta=" << photon->GetPhotonEta() <<  endl;
+          if(!(photonPhi>fGoodRegionAMin && photonPhi<fGoodRegionAMax)){
+              //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+              if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+              return kFALSE;
+          } //else  cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+      } else if(photon->GetPhotonEta()<0 && photon->GetPhotonEta()>-fEtaCut){  // C side
+          //cout << "C side, eta=" << photon->GetPhotonEta() <<  endl;
+          if (!(photonPhi>fGoodRegionCMin && photonPhi<fGoodRegionCMax)){
+              //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+              if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+              return kFALSE;
+          } //else  cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+      }
+  } else if (fDoShrinkTPCAcceptance == 3){   // accept only photons in 'bad region'
+      Double_t photonPhi = photon->GetPhotonPhi();
+      GetPhiRegions();
+      if( photon->GetPhotonEta()>0 && photon->GetPhotonEta()<fEtaCut ){        // A side
+          //cout << "A side, eta=" << photon->GetPhotonEta() <<  endl;
+          if(!(photonPhi>fBadRegionAMin && photonPhi<fBadRegionAMax)){
+              //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+              if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+              return kFALSE;
+          } // else cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+      } else if(photon->GetPhotonEta()<0 && photon->GetPhotonEta()>-fEtaCut){  // C side
+          //cout << "C side, eta=" << photon->GetPhotonEta() <<  endl;
+          if (!(photonPhi>fBadRegionCMin && photonPhi<fBadRegionCMax)){
+              //cout  << "photonPhi=" << photonPhi << " excluded" << endl;
+              if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
+              return kFALSE;
+          } // else cout  << "photonPhi=" << photonPhi << " accepted" << endl;
+      }
   }
   cutIndex++;
 
@@ -1438,7 +1508,6 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
 
   return kTRUE;
 }
-
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex) {
@@ -1456,10 +1525,30 @@ Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliAODTrack * negTrack, AliAOD
     if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
     return kFALSE;
   }
+  cutIndex++;
+
+  // TPC Chi2 cut
+  Double_t tpcNClsNeg = negTrack->GetTPCNcls();     // number of TPC clusters
+  Double_t tpcNClsPos = posTrack->GetTPCNcls();
+  Double_t tpcChi2NDFNeg = negTrack->Chi2perNDF();  // TPC-Chi2 / (nCls -5)  if nCls > 5 otherwise -1
+  Double_t tpcChi2NDFPos = posTrack->Chi2perNDF();
+  Double_t tpcChi2NDFNegCorr = (tpcNClsNeg>5)?tpcChi2NDFNeg*(tpcNClsNeg-5)/tpcNClsNeg:-1.;    // TPC-Chi2 / nCls  if nCls > 5 otherwise -1
+  Double_t tpcChi2NDFPosCorr = (tpcNClsPos>5)?tpcChi2NDFPos*(tpcNClsPos-5)/tpcNClsPos:-1.;    // condition?IfYesThenDoThis:IfNoThenDoThis
+
+  if(fHistoTPCChi2NDFBefore) fHistoTPCChi2NDFBefore->Fill(tpcChi2NDFNegCorr);
+  if(fHistoTPCChi2NDF2D)     fHistoTPCChi2NDF2D->Fill(tpcChi2NDFNegCorr, tpcChi2NDFPosCorr);
+  if(fMaxTPCChi2NDF>0){ // apply cut
+      if(tpcChi2NDFNegCorr > fMaxTPCChi2NDF || tpcChi2NDFPosCorr > fMaxTPCChi2NDF || tpcChi2NDFNegCorr < 0.2 || tpcChi2NDFPosCorr < 0.2){
+          if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+          return kFALSE;
+      }
+  }
+  if(fHistoTPCChi2NDFAfter) fHistoTPCChi2NDFAfter->Fill(tpcChi2NDFNegCorr);
+  // cutindex is incremented in TracksAreSelected after SpecificTrackCuts was called
+
   return kTRUE;
 
 }
-
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex) {
@@ -1475,6 +1564,27 @@ Bool_t AliConversionPhotonCuts::SpecificTrackCuts(AliESDtrack * negTrack, AliESD
     if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
     return kFALSE;
   }
+  cutIndex++;
+
+  // TPC Chi2 cut
+  Double_t tpcChi2Neg = (Double_t) negTrack->GetTPCchi2();   // TPC-Chi2
+  Double_t tpcChi2Pos = (Double_t) posTrack->GetTPCchi2();
+  Double_t tpcNClsNeg = negTrack->GetTPCNcls();              // number of TPC clusters
+  Double_t tpcNClsPos = posTrack->GetTPCNcls();
+  Double_t tpcChi2NDFNegCorr = (tpcNClsNeg>5)?tpcChi2Neg/tpcNClsNeg:-1.;    // TPC-Chi2 / nCls  if nCls > 5 otherwise -1
+  Double_t tpcChi2NDFPosCorr = (tpcNClsPos>5)?tpcChi2Pos/tpcNClsPos:-1.;    // condition?IfYesThenDoThis:IfNoThenDoThis
+
+  if(fHistoTPCChi2NDFBefore) fHistoTPCChi2NDFBefore->Fill(tpcChi2NDFNegCorr);
+  if(fHistoTPCChi2NDF2D) fHistoTPCChi2NDF2D->Fill(tpcChi2NDFNegCorr, tpcChi2NDFPosCorr);
+  if(fMaxTPCChi2NDF>0){ // do cut
+      if(tpcChi2NDFNegCorr > fMaxTPCChi2NDF || tpcChi2NDFPosCorr > fMaxTPCChi2NDF || tpcChi2NDFNegCorr < 0.2 || tpcChi2NDFPosCorr < 0.2){
+          if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+          return kFALSE;
+      }
+  }
+  if(fHistoTPCChi2NDFAfter) fHistoTPCChi2NDFAfter->Fill(tpcChi2NDFNegCorr);
+  // cutindex is incremented in TracksAreSelected after SpecificTrackCuts was called
+
   return kTRUE;
 }
 
@@ -1555,11 +1665,12 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   }
   cutIndex++;
 
-  if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+  if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);  // out
 
   return kTRUE;
 
 }
+
 ///________________________________________________________________________
 Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, AliVEvent * event){
 
@@ -2277,7 +2388,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   // Print out current Cut Selection with value
   printf("\nConversion cutnumber \n");
   for(Int_t ic = 0; ic < kNCuts; ic++) {
-    printf("%d",fCuts[ic]);
+      printf("%d",fCuts[ic]);  // careful with output: cannot hande characters in cut string
   }
   printf("\n\n");
   printf("Electron cuts & Secondary Track Cuts - only track from secondaries enter analysis: \n");
@@ -2285,7 +2396,10 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (!fUseCorrectedTPCClsInfo) printf("\t # TPC clusters > %3.2f \n", fMinClsTPC);
   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
     else printf("\t eta_{e} < %3.2f\n", fEtaCut );
-  printf("\t reject: %3.2f < phi < %3.2f with %3.2f < eta < %3.2f  \n", fMinPhiCut, fMaxPhiCut, fEtaForPhiCutMin, fEtaForPhiCutMax);
+  if(fDoShrinkTPCAcceptance == 1) printf("\t reject: %3.2f < phi < %3.2f with %3.2f < eta < %3.2f  \n", fMinPhiCut, fMaxPhiCut, fEtaForPhiCutMin, fEtaForPhiCutMax);
+  else if (fDoShrinkTPCAcceptance == 2 ) printf("\t Only use photons in phi regions without distortions\n");
+  else if (fDoShrinkTPCAcceptance == 3 ) printf("\t Only use photons in phi regions with strong distortions\n");
+  else printf("\t No phi cut\n");
   if(fDoAsymPtCut)
     printf("\t Asymmetric cut: p_{T,e1} > %3.2f and p_{T,e2} > %3.2f\n", fSinglePtCut, fSinglePtCut2 );
   else
@@ -2313,8 +2427,10 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   } else {
     printf("\t 1 dimensional q_{T} cut applied with maximum of %3.2f \n", fQtMax );
   }
-  if (fDo2DPsiPairChi2){
+  if (fDo2DPsiPairChi2==1){
     printf("\t 2 dimensional triangle chi^{2} and psi_{pair} cut applied with maximum of chi^{2} = %3.2f and |psi_{pair}| = %3.2f \n", fChi2CutConversion, fPsiPairCut );
+  } else if (fDo2DPsiPairChi2==2){
+    printf("\t exponential psi_{pair} cut depending on chi^{2} applied with |psi_{pair}| < %3.2f*exp(%3.2f*chi^{2}) \n", fPsiPairCut, fChi2CutConversionExpFunc );
   } else {
     printf("\t chi^{2} max cut chi^{2} < %3.2f \n", fChi2CutConversion );
     printf("\t psi_{pair} max cut |psi_{pair}| < %3.2f \n", fPsiPairCut );
@@ -2326,6 +2442,7 @@ void AliConversionPhotonCuts::PrintCutsWithValues() {
   if (fDoPhotonAsymmetryCut) printf("\t for p_{T,track} > %3.2f,  A_{gamma} < %3.2f \n", fMinPPhotonAsymmetryCut, fMinPhotonAsymmetry  );
   if (fDoPhotonPDependentAsymCut && fDoPhotonAsymmetryCut) printf("\t p-dependent asymmetry cut \n");
   if (fUseCorrectedTPCClsInfo) printf("\t #cluster TPC/ #findable clusters TPC (corrected for radius) > %3.2f\n", fMinClsTPCToF );
+  if(fMaxTPCChi2NDF>0) printf("\t TPC Chi2 < %3.2f \n", fMaxTPCChi2NDF);
   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );
   printf("\t cos(Theta_{point}) > %3.2f \n", fCosPAngleCut );
   printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
@@ -2581,15 +2698,21 @@ Bool_t AliConversionPhotonCuts::SetEtaForPhiCut(Int_t etaPhiCut) {
     fEtaForPhiCutMax = fEtaCut;
     break;
   case 1:  //eta < 0 only
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fEtaForPhiCutMin = -fEtaCut;
     fEtaForPhiCutMax = 0.;
     break;
   case 2://eta > 0 only
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fEtaForPhiCutMin = 0.;
     fEtaForPhiCutMax = fEtaCut;
     break;
+  case 3:  // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 2; // Only use photons in phi regions without distortions
+      break;
+  case 4:  // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
+      break;
   default:
     AliError(Form("EtaForPhiCut not defined %d",etaPhiCut));
     return kFALSE;
@@ -2604,41 +2727,47 @@ Bool_t AliConversionPhotonCuts::SetMinPhiSectorCut(Int_t minPhiCut) {
 
   switch(minPhiCut) {
   case 0:
-    fDoShrinkTPCAcceptance = kFALSE;
+    fDoShrinkTPCAcceptance = 0;
     fMinPhiCut = 0;
     break;
   case 1:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 1.7; //OROC C08 large cut
     break;
   case 2:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 4.4; //EMCal
     break;
   case 3:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 1.0; //PHOS
     break;
   case 4:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 3.4; //EMCal tight
     break;
   case 5:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 2.0; //OROC C08 medium cut
     break;
   case 6:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 2.2; //OROC C08 small cut
     break;
   case 7:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 2.4; //OROC C08 tightest cut
     break;
   case 8:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMinPhiCut = 4.54; //PHOS phi
     break;
+  case 9:  // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 2; // Only use photons in phi regions without distortions
+      break;
+  case 10: // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
+      break;
   default:
     AliError(Form("MinPhiCut not defined %d",minPhiCut));
     return kFALSE;
@@ -2653,41 +2782,47 @@ Bool_t AliConversionPhotonCuts::SetMaxPhiSectorCut(Int_t maxPhiCut) {
 
   switch(maxPhiCut) {
   case 0:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kFALSE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 0;
     fMaxPhiCut = 2*TMath::Pi()+0.00001;
     break;
   case 1:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 4.3; //OROC C08 large cut
     break;
   case 2:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 5.8; //EMCal
     break;
   case 3:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 3.0; //PHOS
     break;
   case 4:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 1.; //EMCal
     break;
   case 5:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 4.0; //OROC C08 medium cut
     break;
   case 6:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 3.8; //OROC C08 small cut
     break;
   case 7:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 3.6; //OROC C08 tighest cut
     break;
   case 8:
-    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = kTRUE;
+    if (!fDoShrinkTPCAcceptance) fDoShrinkTPCAcceptance = 1;
     fMaxPhiCut = 5.59; //PHOS phi
     break;
+  case 9:   // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 2; // Only use photons in phi regions without distortions
+      break;
+  case 10: // distortions cut on A and C side
+      fDoShrinkTPCAcceptance = 3; // Only use photons in phi regions with strong distortions
+      break;
   default:
     AliError(Form("MaxPhiCut not defined %d",maxPhiCut));
     return kFALSE;
@@ -2857,14 +2992,29 @@ Bool_t AliConversionPhotonCuts::SetTPCClusterCut(Int_t clsTPCCut){   // Set Cut
     fMinClsTPCToF= 0.35;
     fUseCorrectedTPCClsInfo=0;
     break;
-  case 8:
-    fMinClsTPCToF= 0.35;
+  case 8:  // 35% of findable clusters
+      fMinClsTPCToF= 0.35;
     fUseCorrectedTPCClsInfo=1;
     break;
-  case 9:
+  case 9:  // 60% of findable clusters
     fMinClsTPCToF= 0.6;
     fUseCorrectedTPCClsInfo=1;
     break;
+  case 10:  // 60% of findable clusters and TPC track Chi2<4
+      fMinClsTPCToF= 0.6;
+      fUseCorrectedTPCClsInfo=1;
+      fMaxTPCChi2NDF=4.0;
+      break;
+  case 11:  // 60% of findable clusters and TPC track Chi2<3
+      fMinClsTPCToF= 0.6;
+      fUseCorrectedTPCClsInfo=1;
+      fMaxTPCChi2NDF=3.0;
+      break;
+  case 12:  // 60% of findable clusters and TPC track Chi2<2.5
+      fMinClsTPCToF= 0.6;
+      fUseCorrectedTPCClsInfo=1;
+      fMaxTPCChi2NDF=2.5;
+      break;
   default:
     AliError(Form("Warning: clsTPCCut not defined %d",clsTPCCut));
     return kFALSE;
@@ -3374,33 +3524,43 @@ Bool_t AliConversionPhotonCuts::SetQtMaxCut(Int_t QtMaxCut){   // Set Cut
     fQtMax=0.03;
     fDo2DQt=kTRUE;
     break;
-  case 10:
+  case 10: //a
     fQtMax=0.125;
     fDoQtGammaSelection=2;
     fDo2DQt=kTRUE;
     break;
-  case 11:
+  case 11:  //b
     fQtMax=0.125;
     fDoQtGammaSelection=2;
     fDo2DQt=kFALSE;
     break;
-  case 12:
+  case 12:  //c
     fQtMax=0.11;
     fDoQtGammaSelection=2;
     fDo2DQt=kTRUE;
     break;
-  case 13:
+  case 13:  //d
     fQtMax=0.11;
     fDoQtGammaSelection=2;
     fDo2DQt=kFALSE;
     break;
-  case 14:
+  case 14:  //e
     fQtMax=0.13;
     fDoQtGammaSelection=2;
     fDo2DQt=kTRUE;
     break;
-  case 15:
+  case 15:  //f
     fQtMax=0.13;
+    fDoQtGammaSelection=2;
+    fDo2DQt=kFALSE;
+    break;
+  case 16:  //g
+    fQtMax=0.14;
+    fDoQtGammaSelection=2;
+    fDo2DQt=kTRUE;
+    break;
+  case 17:  //h
+    fQtMax=0.14;
     fDoQtGammaSelection=2;
     fDo2DQt=kFALSE;
     break;
@@ -3449,20 +3609,32 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
   case 9:
     fChi2CutConversion = 15.;
     break;
-  case 10:
+  case 10: //a
     fChi2CutConversion = 25.;
     break;
-  case 11:
+  case 11: //b
     fChi2CutConversion = 35.;
     break;
-  case 12:
+  case 12: //c
     fChi2CutConversion = 40.;
     break;
-  case 13:
+  case 13: //d
     fChi2CutConversion = 45.;
     break;
-  case 14:
+  case 14: //e
     fChi2CutConversion = 55.;
+    break;
+  case 15: //f for exp cut (fDo2DPsiPairChi2 = 2)
+    fChi2CutConversion = 50.;
+    fChi2CutConversionExpFunc = -0.065;
+    break;
+  case 16: //g for exp cut (fDo2DPsiPairChi2 = 2)
+    fChi2CutConversion = 50.;
+    fChi2CutConversionExpFunc = -0.055;
+    break;
+  case 17: //h for exp cut (fDo2DPsiPairChi2 = 2)
+    fChi2CutConversion = 50.;
+    fChi2CutConversionExpFunc = -0.050;
     break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));
@@ -3491,11 +3663,11 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     break;
   case 5:
     fPsiPairCut = 0.1; //
-    fDo2DPsiPairChi2 = kTRUE;
+    fDo2DPsiPairChi2 = 1;
     break;
   case 6:
     fPsiPairCut = 0.05; //
-    fDo2DPsiPairChi2 = kTRUE;
+    fDo2DPsiPairChi2 = 1;
     break;
   case 7:
     if (fIsHeavyIon==1){
@@ -3503,39 +3675,42 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     } else {
       fPsiPairCut = 0.035; //
     }
-    fDo2DPsiPairChi2 = kTRUE;
+    fDo2DPsiPairChi2 = 1;
     break;
   case 8:
     fPsiPairCut = 0.2; //
-    fDo2DPsiPairChi2 = kTRUE; //
+    fDo2DPsiPairChi2 = 1; //
     break;
   case 9:
     //   if (fIsHeavyIon==1){ //AM 2016-05-13
       fPsiPairCut = 0.1; //
-      fDo2DPsiPairChi2 = kTRUE;
+      fDo2DPsiPairChi2 = 1;
       fIncludeRejectedPsiPair = kTRUE;
       break;
-
-  case 10:
+  case 10: //a
     fPsiPairCut = 0.25; //
-    fDo2DPsiPairChi2 = kTRUE; //
+    fDo2DPsiPairChi2 = 1; //
     break;
-
-  case 11:
+  case 11: //b
     fPsiPairCut = 0.3; //
-    fDo2DPsiPairChi2 = kTRUE; //
+    fDo2DPsiPairChi2 = 1; //
     break;
-
-    case 12:
+  case 12: //c
     fPsiPairCut = 0.15; //
-    fDo2DPsiPairChi2 = kTRUE; //
+    fDo2DPsiPairChi2 = 1; //
     break;
-
-
-    // } else {
-    //   fPsiPairCut = 0.5; //
-    //   break;
-    // }
+  case 13: //d
+    fPsiPairCut = 0.15; //
+    fDo2DPsiPairChi2 = 2; //
+    break;
+  case 14: //e
+    fPsiPairCut = 0.18; //
+    fDo2DPsiPairChi2 = 2; //
+    break;
+  case 15: //f
+    fPsiPairCut = 0.20; //
+    fDo2DPsiPairChi2 = 2; //
+    break;
   default:
     AliError(Form("PsiPairCut not defined %d",psiCut));
     return kFALSE;
@@ -3913,6 +4088,13 @@ Bool_t AliConversionPhotonCuts::SetInPlaneOutOfPlane(Int_t inOutPlane){
   return kTRUE;
 }
 
+//________________________________________________________________________
+void AliConversionPhotonCuts::GetPhiRegions(){
+    fGoodRegionCMin = 5.0; fGoodRegionCMax = 6.2;
+    fGoodRegionAMin = 3.5; fGoodRegionAMax = 6.2;
+    fBadRegionCMin  = 0.0; fBadRegionCMax  = 1.5;
+    fBadRegionAMin  = 0.0; fBadRegionAMax  = 2.5;
+}
 
 ///________________________________________________________________________
 Int_t AliConversionPhotonCuts::GetFirstTPCRow(Double_t radius){
@@ -3989,8 +4171,7 @@ Double_t AliConversionPhotonCuts::GetCosineOfPointingAngle( const AliConversionP
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::PsiPairCut(const AliConversionPhotonBase * photon) const {
-
-  if (fDo2DPsiPairChi2){
+  if (fDo2DPsiPairChi2==1){
     if(fIncludeRejectedPsiPair){
       if (TMath::Abs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut || (photon->GetPsiPair()) == 4){
         return kTRUE;
@@ -4000,6 +4181,21 @@ Bool_t AliConversionPhotonCuts::PsiPairCut(const AliConversionPhotonBase * photo
 
     } else {
       if (TMath::Abs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){
+        return kTRUE;
+      } else {
+        return kFALSE;
+      }
+    }
+  } else if (fDo2DPsiPairChi2==2){
+    if(fIncludeRejectedPsiPair){
+      if (TMath::Abs(photon->GetPsiPair()) < fPsiPairCut*TMath::Exp(fChi2CutConversionExpFunc*photon->GetChi2perNDF()) || (photon->GetPsiPair()) == 4){
+        return kTRUE;
+      } else {
+        return kFALSE;
+      }
+
+    } else {
+      if (TMath::Abs(photon->GetPsiPair()) < fPsiPairCut*TMath::Exp(fChi2CutConversionExpFunc*photon->GetChi2perNDF()) ){
         return kTRUE;
       } else {
         return kFALSE;

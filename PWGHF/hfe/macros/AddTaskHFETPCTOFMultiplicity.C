@@ -1,27 +1,30 @@
 class AliAnalysisDataContainer;
 AliAnalysisTask* AddTaskHFETPCTOFMultiplicity(TString suffixName = "",
-                                            Bool_t readMC    =    kFALSE,
-                                            Bool_t SwitchPi0EtaWeightCalc = kTRUE,
-                                            Bool_t PhysSelINT7 =  kTRUE,
-                                            TString estimatorFilename="",
-                                            Double_t refMult=61.2,
-                                            Int_t NcontV =2,
-                                            Int_t MaxTPCclus = 100.,
-                                            Int_t TPCNclus =80.,
-                                            Int_t ITSNclus =3.,
-                                            Double_t DCAxyCut =2.4,
-                                            Double_t DCAzCut =3.2,
-                                            Double_t Etarange = 0.7,
-                                            Double_t CutNsigmaTOF = 3.,
-                                            Double_t TPCNSigMin = -1.,
-                                            Double_t TPCNSigMax = 3.,
-                                            Int_t AssoTPCCluster = 80.,
-                                            Int_t AssoITSCluster =3.,
-                                            Double_t AssoEPt =0.1,
-                                            Double_t AssoEEtarange =0.9,
-                                            Double_t AssoENsigma =3.,
-                                            Bool_t AssoITSRefit =kTRUE,
-                                            Double_t InvmassCut = 0.14)
+                                              Bool_t readMC    =    kFALSE,
+                                              Bool_t SwitchPi0EtaWeightCalc = kTRUE,
+                                              Bool_t PhysSelINT7 =  kTRUE,
+                                              TString estimatorFilename="",
+                                              Double_t refMult=61.2,
+                                              Int_t NcontV =2,
+                                              Int_t MaxTPCclus = 100.,
+                                              Int_t TPCNclus =80.,
+                                              Int_t ITSNclus =3.,
+                                              Bool_t SPDBoth= kTRUE ,
+                                              Bool_t SPDAny= kFALSE ,
+                                              Bool_t SPDFirst= kFALSE ,
+                                              Double_t DCAxyCut =2.4,
+                                              Double_t DCAzCut =3.2,
+                                              Double_t Etarange = 0.7,
+                                              Double_t CutNsigmaTOF = 3.,
+                                              Double_t TPCNSigMin = -1.,
+                                              Double_t TPCNSigMax = 3.,
+                                              Int_t AssoTPCCluster = 80.,
+                                              Int_t AssoITSCluster =3.,
+                                              Double_t AssoEPt =0.1,
+                                              Double_t AssoEEtarange =0.9,
+                                              Double_t AssoENsigma =3.,
+                                              Bool_t AssoITSRefit =kTRUE,
+                                              Double_t InvmassCut = 0.14)
 
 { // Get the pointer to the existing analysis manager via the static access method.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -65,7 +68,7 @@ AliAnalysisTask* AddTaskHFETPCTOFMultiplicity(TString suffixName = "",
         HFEtaskINT7->SetAssopTMin(AssoEPt);
         HFEtaskINT7->SetAssoEtarange(AssoEEtarange);
         HFEtaskINT7->SetAssoTPCnsig(AssoENsigma);
-        
+        HFEtaskINT7->SetHitsOnSPDLayers(SPDBoth,SPDAny,SPDFirst);
         TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
         if(!fileEstimator)  {
             printf("File with multiplicity estimator not found\n");
@@ -107,3 +110,4 @@ AliAnalysisTask* AddTaskHFETPCTOFMultiplicity(TString suffixName = "",
     return NULL;
     
 }
+

@@ -123,6 +123,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistEopIso;
   TH2F                        *fHistEopHFjet;
   TH2F                        *fHistNsigHFjet;
+  TH2F                        *fHistEtaHFjet;
   TH1F                        *fHistJetOrg;
   TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
@@ -214,6 +215,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistBGfracHFEev;
   TH1F                        *fHistBGrandHFEev;
   TH2D                        *fHistJetEnergyReso;
+  TH2D                        *fHistNmatchJet;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TF1                         *fpythia_b;
@@ -243,7 +245,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
   Double_t IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE);
   Double_t CalJetWidth(AliEmcalJet* jetC, TH2F *htmp0, TH2F *htmp1, TH2F *htmp2, TH2F *htmp3);
-  AliEventCuts  fEventCut; 
  
  private:
 
@@ -260,6 +261,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
-  ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
+  //ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 8) // jet sample analysis task
 };
 #endif

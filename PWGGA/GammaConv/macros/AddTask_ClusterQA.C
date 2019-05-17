@@ -1,9 +1,8 @@
 void AddTask_ClusterQA(
   TString   photonCutNumberV0Reader       = "00200009327000008250400000",
   TString   TaskEventCutnumber            = "00010113",
-  TString   TaskClusterCutnumberEMC       = "1111100010022700000",
-  TString   TaskClusterCutnumberDMC       = "3885500010022700000",
-  TString   TaskMesonCutnumber            = "0163300000000000",
+  TString   TaskClusterCutnumber          = "1111100010022700000",
+  // TString   TaskMesonCutnumber            = "0163300000000000",
   Int_t     minNLM                        = 1,
   Int_t     maxNLM                        = 1,
   Bool_t    isMC                          = kFALSE,
@@ -15,7 +14,7 @@ void AddTask_ClusterQA(
   Bool_t    enableV0findingEffi           = kFALSE,
   TString   periodNameV0Reader            = "",
   TString   corrTaskSetting = "",
-  Int_t     enableExtMatchAndQA           = 5,
+  Int_t     enableExtMatchAndQA           = 0,
   Bool_t    doSaveSurroundingTracks       = 1,
   Bool_t    doSaveSurroundingCells        = 1,
   Float_t   minClusterEnergy              = 2.0,
@@ -108,55 +107,55 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   analysisEventCuts->InitializeCutsFromCutString(TaskEventCutnumber.Data());
   analysisEventCuts->SetFillCutHistograms("",kFALSE);
 
-  TString caloCutPosEMC = TaskClusterCutnumberEMC;
-  caloCutPosEMC.Resize(1);
-  TString TrackMatcherNameEMC = Form("CaloTrackMatcher_%s",caloCutPosEMC.Data());
-  if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameEMC.Data()) ){
-    AliCaloTrackMatcher* fTrackMatcherEMC = new AliCaloTrackMatcher(TrackMatcherNameEMC.Data(),caloCutPosEMC.Atoi());
-    fTrackMatcherEMC->SetV0ReaderName(V0ReaderName);
-    //fTrackMatcherEMC->SetCorrectionTaskSetting(corrTaskSetting);
-    mgr->AddTask(fTrackMatcherEMC);
-    mgr->ConnectInput(fTrackMatcherEMC,0,cinput);
-  }
-  TString caloCutPosDMC = TaskClusterCutnumberDMC;
-  caloCutPosDMC.Resize(1);
-  TString TrackMatcherNameDMC = Form("CaloTrackMatcher_%s",caloCutPosDMC.Data());
-  if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameDMC.Data()) ){
-    AliCaloTrackMatcher* fTrackMatcherDMC = new AliCaloTrackMatcher(TrackMatcherNameDMC.Data(),caloCutPosDMC.Atoi());
-    fTrackMatcherDMC->SetV0ReaderName(V0ReaderName);
-    //fTrackMatcherDMC->SetCorrectionTaskSetting(corrTaskSetting);
-    mgr->AddTask(fTrackMatcherDMC);
-    mgr->ConnectInput(fTrackMatcherDMC,0,cinput);
-  }
+  // TString caloCutPosEMC = TaskClusterCutnumberEMC;
+  // caloCutPosEMC.Resize(1);
+  // TString TrackMatcherNameEMC = Form("CaloTrackMatcher_%s",caloCutPosEMC.Data());
+  // if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameEMC.Data()) ){
+  //   AliCaloTrackMatcher* fTrackMatcherEMC = new AliCaloTrackMatcher(TrackMatcherNameEMC.Data(),caloCutPosEMC.Atoi());
+  //   fTrackMatcherEMC->SetV0ReaderName(V0ReaderName);
+  //   //fTrackMatcherEMC->SetCorrectionTaskSetting(corrTaskSetting);
+  //   mgr->AddTask(fTrackMatcherEMC);
+  //   mgr->ConnectInput(fTrackMatcherEMC,0,cinput);
+  // }
+  // TString caloCutPosDMC = TaskClusterCutnumberDMC;
+  // caloCutPosDMC.Resize(1);
+  // TString TrackMatcherNameDMC = Form("CaloTrackMatcher_%s",caloCutPosDMC.Data());
+  // if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherNameDMC.Data()) ){
+  //   AliCaloTrackMatcher* fTrackMatcherDMC = new AliCaloTrackMatcher(TrackMatcherNameDMC.Data(),caloCutPosDMC.Atoi());
+  //   fTrackMatcherDMC->SetV0ReaderName(V0ReaderName);
+  //   //fTrackMatcherDMC->SetCorrectionTaskSetting(corrTaskSetting);
+  //   mgr->AddTask(fTrackMatcherDMC);
+  //   mgr->ConnectInput(fTrackMatcherDMC,0,cinput);
+  // }
   
   AliCaloPhotonCuts *analysisClusterCutsEMC = new AliCaloPhotonCuts();
   analysisClusterCutsEMC->SetV0ReaderName(V0ReaderName);
   //analysisClusterCutsEMC->SetCorrectionTaskSetting(corrTaskSetting);
-  analysisClusterCutsEMC->SetCaloTrackMatcherName(TrackMatcherNameEMC);
+  // analysisClusterCutsEMC->SetCaloTrackMatcherName(TrackMatcherNameEMC);
   analysisClusterCutsEMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
-  analysisClusterCutsEMC->InitializeCutsFromCutString(TaskClusterCutnumberEMC.Data());
+  analysisClusterCutsEMC->InitializeCutsFromCutString(TaskClusterCutnumber.Data());
   analysisClusterCutsEMC->SetFillCutHistograms("");
   
-  AliCaloPhotonCuts *analysisClusterCutsDMC = new AliCaloPhotonCuts();
-  analysisClusterCutsDMC->SetV0ReaderName(V0ReaderName);
-  //analysisClusterCutsDMC->SetCorrectionTaskSetting(corrTaskSetting);
-  analysisClusterCutsDMC->SetCaloTrackMatcherName(TrackMatcherNameEMC);
-  analysisClusterCutsDMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
-  analysisClusterCutsDMC->InitializeCutsFromCutString(TaskClusterCutnumberDMC.Data());
-  analysisClusterCutsDMC->SetFillCutHistograms("");
+  // AliCaloPhotonCuts *analysisClusterCutsDMC = new AliCaloPhotonCuts();
+  // analysisClusterCutsDMC->SetV0ReaderName(V0ReaderName);
+  // //analysisClusterCutsDMC->SetCorrectionTaskSetting(corrTaskSetting);
+  // // analysisClusterCutsDMC->SetCaloTrackMatcherName(TrackMatcherNameEMC);
+  // analysisClusterCutsDMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
+  // analysisClusterCutsDMC->InitializeCutsFromCutString(TaskClusterCutnumberDMC.Data());
+  // analysisClusterCutsDMC->SetFillCutHistograms("");
 
-  AliConversionMesonCuts *analysisMesonCuts    = new AliConversionMesonCuts();
-  analysisMesonCuts->SetEnableOpeningAngleCut(kFALSE);
-  analysisMesonCuts->SetIsMergedClusterCut(1);
-  analysisMesonCuts->InitializeCutsFromCutString(TaskMesonCutnumber.Data());
-  analysisMesonCuts->SetFillCutHistograms("");
+  // AliConversionMesonCuts *analysisMesonCuts    = new AliConversionMesonCuts();
+  // analysisMesonCuts->SetEnableOpeningAngleCut(kFALSE);
+  // analysisMesonCuts->SetIsMergedClusterCut(1);
+  // analysisMesonCuts->InitializeCutsFromCutString(TaskMesonCutnumber.Data());
+  // analysisMesonCuts->SetFillCutHistograms("");
 
 
-  AliAnalysisTaskClusterQA *fQA = new AliAnalysisTaskClusterQA(Form("%s_%s_%s_QA",TaskEventCutnumber.Data(),TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data()));
+  AliAnalysisTaskClusterQA *fQA = new AliAnalysisTaskClusterQA(Form("%s_%s_QA",TaskEventCutnumber.Data(),TaskClusterCutnumber.Data()));
   fQA->SetEventCuts(analysisEventCuts,IsHeavyIon);
   fQA->SetClusterCutsEMC(analysisClusterCutsEMC,IsHeavyIon);
-  fQA->SetClusterCutsDMC(analysisClusterCutsDMC,IsHeavyIon);
-  fQA->SetMesonCuts(analysisMesonCuts,IsHeavyIon);
+  // fQA->SetClusterCutsDMC(analysisClusterCutsDMC,IsHeavyIon);
+  // fQA->SetMesonCuts(analysisMesonCuts,IsHeavyIon);
   fQA->SetMinMaxNLMCut(minNLM,maxNLM);
   fQA->FillType(kTree,kHistograms);
   fQA->SetIsMC(isMC);
@@ -175,8 +174,8 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
 
 
   mgr->ConnectInput  (fQA, 0,  cinput );
-  mgr->ConnectOutput (fQA, 1, mgr->CreateContainer(Form("GammaCaloQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data())) );
-  mgr->ConnectOutput (fQA, 2, mgr->CreateContainer(Form("ClusterTree_%s_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumberEMC.Data(),TaskClusterCutnumberEMC.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
+  mgr->ConnectOutput (fQA, 1, mgr->CreateContainer(Form("GammaCaloQA_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumber.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskClusterCutnumber.Data())) );
+  mgr->ConnectOutput (fQA, 2, mgr->CreateContainer(Form("ClusterTree_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumber.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
 
   return;
 }
