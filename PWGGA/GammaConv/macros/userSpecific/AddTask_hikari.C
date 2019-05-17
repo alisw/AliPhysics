@@ -367,7 +367,10 @@ AliAnalysisTaskGammaConvV1* AddTask_hikari(
     } else if (trainConfig == 442){// further study material 
       cuts.AddCutPCM("80010113", "0dh00009a27300008250404000", "0162103500000000"); // R 95.0-180 cm Gas Volume
       cuts.AddCutPCM("80010113", "0di00009a27300008250404000", "0162103500000000"); // R 5-13.0   cm SPD
-
+    } else if (trainConfig == 443){// 
+      cuts.AddCutPCM("80010113", "0d200009a27300008250424000", "0162103500000000"); // default 0100 + Cat1
+    } else if (trainConfig == 444){// 
+      cuts.AddCutPCM("80010113", "0d200009a27300008250454000", "0162103500000000"); // default 0100 + Cat23
     } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return NULL; 
