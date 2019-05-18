@@ -1471,9 +1471,13 @@ AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simula
   }
   
   ana->SwitchOnFill1CellHisto(); 
-//  
-//  ana->SetEMinForExo(7);
-//  ana->SetCellAmpMin(0.6);
+  
+  //if ( simulation ) 
+  //  ana->SetConstantTimeShift(615);
+  
+  ana->SetEMinForExo(6);
+
+  ana->SetCellAmpMin(0.3);
     
   ana->AddToHistogramsName("Exo_"); // Begining of histograms name
   
