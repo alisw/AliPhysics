@@ -219,7 +219,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp():
   fDebugHistograms(kFALSE),
   fAODProtection(1),
   fUsePIDresponseForNsigma(kFALSE),
-  fNVars(14)
+  fNVars(14),
+  fTimestampCut(0)
 {
   /// Default ctor
   //
@@ -362,7 +363,8 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp::AliAnalysisTaskSELc2V0bachelorTMVAApp(con
   fDebugHistograms(kFALSE),
   fAODProtection(1),
   fUsePIDresponseForNsigma(kFALSE),
-  fNVars(14)
+  fNVars(14),
+  fTimestampCut(0)
 
 {
   //
@@ -636,8 +638,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   
   fHistoCentrality = new TH1F("fHistoCentrality", "fHistoCentrality", 100, 0., 100.);
 
-  fHistoEvents = new TH1F("fHistoEvents", "fHistoEvents", 4, -0.5, 3.5);
-  TString labelEv[4] = {"RejectedDeltaMismatch", "AcceptedDeltaMismatch", "NotSelected", "Selected"};
+  fHistoEvents = new TH1F("fHistoEvents", "fHistoEvents", 5, -0.5, 4.5);
+  TString labelEv[5] = {"RejectedDeltaMismatch", "AcceptedDeltaMismatch", "NotSelected", "TimeStampCut", "Selected"};
   for (Int_t ibin = 1; ibin <= fHistoEvents->GetNbinsX(); ibin++){
     fHistoEvents->GetXaxis()->SetBinLabel(ibin, labelEv[ibin-1].Data());
   }
@@ -1109,7 +1111,20 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserExec(Option_t *)
     fHistoEvents->Fill(2);
     return; // don't take into account not selected events
   }
-  fHistoEvents->Fill(3);
+
+  // check on the timestamp
+  AliVHeader* h = aodEvent->GetHeader();
+  UInt_t timestamp = h->GetTimeStamp();
+  //Printf("timestamp = %d, cut = %u", timestamp, fTimestampCut);
+  if (fTimestampCut != 0) {
+    //Printf("timestamp = %d, cut = %u", timestamp, fTimestampCut);
+    if (timestamp > fTimestampCut) {
+      fHistoEvents->Fill(3);
+      return;
+    }
+  }
+
+  fHistoEvents->Fill(4);
 
   fHistoTracklets_1->Fill(fNTracklets_1);
   fHistoTracklets_All->Fill(fNTracklets_All);
