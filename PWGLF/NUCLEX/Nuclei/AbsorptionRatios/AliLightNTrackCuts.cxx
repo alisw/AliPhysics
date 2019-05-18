@@ -291,7 +291,6 @@ bool AliLightNTrackCuts::TrackingCuts(AliLightNTrack *Track) {
 bool AliLightNTrackCuts::ITSPIDAODCuts(AliLightNTrack *Track) {
     //ITS PID cut for (anti-)deuterons in the momentum region 0 < p < 1.4 GeV/c
     bool pass=true;
-
     bool ITSisthere=false;
     
     if (Track->GetstatusITS()==AliPIDResponse::kDetPidOk) {
@@ -339,7 +338,7 @@ bool AliLightNTrackCuts::TPCPIDAODCuts(AliLightNTrack *Track) {
     }
     return pass;
 }
-		
+
 
 bool AliLightNTrackCuts::PIDAODCuts(AliLightNTrack *Track) {
     bool pass=true;
