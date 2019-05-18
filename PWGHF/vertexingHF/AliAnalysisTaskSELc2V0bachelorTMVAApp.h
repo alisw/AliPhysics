@@ -155,7 +155,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   void SetNVars(Int_t n) {fNVars = n;}
   Int_t GetNVars() const {return fNVars;}
-  
+
+  void SetTimestampCut(UInt_t value) {fTimestampCut = value;}
+  UInt_t GetTimestampCut() const {return fTimestampCut;}
+
  private:
   
   EBachelor CheckBachelor(AliAODRecoCascadeHF *part, AliAODTrack* bachelor, TClonesArray *mcArray);
@@ -342,9 +345,11 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   Bool_t fUsePIDresponseForNsigma;  /// flag to decide if to take the nSigma from the PIDresponse or from AliAODPidHF
 
   Int_t fNVars;  /// Number of training variables
-  
+
+  UInt_t fTimestampCut; // cut on timestamp
+ 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 7); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 8); /// class for Lc->p K0
   /// \endcond    
 };
 
