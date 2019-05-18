@@ -470,6 +470,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
       if(fUseQOverPtShift) {
         double chargeval = track->Charge() > 0 ? 1. : -1.;
         pt = 1./(fQOverPtShift*chargeval  + 1./pt);
+        AliDebugStream(1) <<  "Applying q/pt shift " << fQOverPtShift << ", before shift: " << track->Pt() << ", after shift: " << pt << std::endl;
       }
 
       FillDetectorLevelTHnSparse(fCent, track->Eta(), track->Phi(), pt, sigma, mcGen, type, track->Charge());
