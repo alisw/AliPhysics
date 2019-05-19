@@ -179,8 +179,12 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCASecondary{{nullptr}}
    ,fDCASecondaryWeak{{nullptr}}
    ,fTOFsignal{nullptr}
+   ,fTOFT0FillSignal{nullptr}
+   ,fTOFNoT0FillSignal{nullptr}
    ,fTPCcounts{nullptr}
    ,fTOFnSigma{nullptr}
+   ,fTOFT0FillNsigma{nullptr}
+   ,fTOFNoT0FillNsigma{nullptr}
    ,fTPCsignalTpl{nullptr}
    ,fTPCbackgroundTpl{nullptr}
    ,fDCAxy{{nullptr}}
@@ -297,13 +301,27 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     float sigmaBins[nSigmaBins + 1];
     for (int i = 0; i <= nSigmaBins; ++i)
       sigmaBins[i] = -6.f + i * 0.05;
+    const int nTOFSigmaBins = 240;
+    float tofSigmaBins[nTOFSigmaBins + 1];
+    for (int i = 0; i <= nTOFSigmaBins; ++i)
+      tofSigmaBins[i] = -12.f + i * 0.1;
 
     for (int iC = 0; iC < 2; ++iC) {
       fTOFsignal[iC] = new TH3F(Form("f%cTOFsignal",letter[iC]),
           ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{m}^{2}-m_{PDG}^{2} (GeV/#it{c}^{2})^{2}",
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
+      fTOFT0FillSignal[iC] = new TH3F(Form("f%cTOFT0FillSignal",letter[iC]),
+          ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{m}^{2}-m_{PDG}^{2} (GeV/#it{c}^{2})^{2}",
+          nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
+      fTOFNoT0FillSignal[iC] = new TH3F(Form("f%cTOFNoT0FillSignal",letter[iC]),
+          ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{m}^{2}-m_{PDG}^{2} (GeV/#it{c}^{2})^{2}",
+          nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
       fTOFnSigma[iC] = new TH3F(Form("f%cTOFnSigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
-          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
+      fTOFT0FillNsigma[iC] = new TH3F(Form("f%cTOFT0FillNsigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
+      fTOFNoT0FillNsigma[iC] = new TH3F(Form("f%cTOFNoT0FillNsigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,nTOFSigmaBins,tofSigmaBins);
       fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
       fTPCsignalTpl[iC] = new TH3F(Form("f%cTPCsignalTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
@@ -312,7 +330,11 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
       fHist2Phi[iC] = new TH2F(Form("fHist2Phi%c", letter[iC]), Form("%c; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", letter[iC]), 100, 0, TMath::TwoPi(), 100, 0, 7);
       fList->Add(fTOFsignal[iC]);
+      fList->Add(fTOFT0FillSignal[iC]);
+      fList->Add(fTOFNoT0FillSignal[iC]);
       fList->Add(fTOFnSigma[iC]);
+      fList->Add(fTOFT0FillNsigma[iC]);
+      fList->Add(fTOFNoT0FillNsigma[iC]);
       fList->Add(fTPCcounts[iC]);
       fList->Add(fTPCsignalTpl[iC]);
       fList->Add(fTPCbackgroundTpl[iC]);
