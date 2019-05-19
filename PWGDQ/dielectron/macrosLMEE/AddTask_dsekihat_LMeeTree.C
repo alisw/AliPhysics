@@ -22,9 +22,6 @@ AliAnalysisTask *AddTask_dsekihat_LMeeTree(
   else if(trigger == (UInt_t)AliVEvent::kSemiCentral) triggername = "kSemiCentral";
   else if(trigger == (UInt_t)(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral)) triggername = "kCombinedCentralityTriggers";
 
-  Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
-  printf("hasMC = %d\n",hasMC);
-
   AliAnalysisTaskReducedTreeDS *task = new AliAnalysisTaskReducedTreeDS(Form("ReducedTreeDS_%s",triggername.Data()));
   task->SelectCollisionCandidates(trigger); 
   task->SetMinPtCut(minPt);
