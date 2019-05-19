@@ -1483,7 +1483,11 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
     if ( run >= 288861 && run <= 288909 ) lProductionName = "LHC18i";
     if ( run >= 288943 && run <= 288943 ) lProductionName = "LHC18j";
     if ( run >= 289165 && run <= 289201 ) lProductionName = "LHC18k";   
-
+    if ( run >= 289240 && run <= 289971 ) lProductionName = "LHC18l";
+    if ( run >= 290222 && run <= 292839 ) lProductionName = "LHC18m";
+    if ( run >= 293357 && run <= 293359 ) lProductionName = "LHC18n";
+    if ( run >= 293368 && run <= 293898 ) lProductionName = "LHC18o";
+    if ( run >= 294009 && run <= 294925 ) lProductionName = "LHC18p";
 
     //2017: LHC17pq
  
@@ -1504,7 +1508,7 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
 }
 
   if (lProductionName.EqualTo("")) {
-   AliWarning("This run number has no corresponding improver file!");
+   AliError("This run number has no corresponding improver file!");
    return;
   }  
   if (fImproverSuffix.EqualTo("")) fImproverSuffix = "central"; // default path is "central"
