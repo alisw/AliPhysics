@@ -759,7 +759,7 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   outputContainer->Add(fhCellExoAmpLowGain);    
   
   fhCellExoAmpTime = new TH3F 
-  ("hCellExoAmp","Cell #it{F}_{+} vs #it{E}_{cell} vs time",
+  ("hCellExoAmpTime","Cell #it{F}_{+} vs #it{E}_{cell} vs time",
    nptbins,ptmin,ptmax/2, ntimebins,timemin,timemax, nexobinsS,exominS,exomaxS); 
   fhCellExoAmpTime->SetXTitle("#it{E}_{cell} (GeV) ");
   fhCellExoAmpTime->SetYTitle("#it{t}_{cell} (ns)");
