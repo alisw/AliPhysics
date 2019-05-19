@@ -2992,11 +2992,9 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
 {
   if(fUseDistanceToBadChannel != 1 && fUseDistanceToBadChannel != 2) return kFALSE;
 
-  //not yet fully implemented for PHOS:
-  if( fClusterType == 2 ) return kFALSE;
-
   if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !fEMCALInitialized ) InitializeEMCAL(event);
   if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
+  if( fClusterType == 2 ) fGeomPHOS = AliPHOSGeometry::GetInstance();
 
   Int_t largestCellID = FindLargestCellInCluster(cluster,event);
   if(largestCellID==-1) AliFatal("CheckDistanceToBadChannel: FindLargestCellInCluster found cluster with NCells<1?");
@@ -3060,8 +3058,15 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
     if(nMaxCols > fgkDCALCols) nMaxCols = fgkDCALCols; // AliEMCALGeoParams::fgkDCALCols; <- doesnt exist yet
 
   }else if( fClusterType == 2 ){
-//    nMaxRows = 64;
-//    nMaxCols = 56;
+    nMinRows = largestCellirow - distanceForLoop;
+    nMaxRows = largestCellirow + distanceForLoop;
+    if (nMinRows < 0) nMinRows = 0;
+    if (nMaxRows > fGeomPHOS->GetNPhi()) nMaxRows = fGeomPHOS->GetNPhi();
+
+    nMinCols = largestCellicol - distanceForLoop;
+    nMaxCols = largestCellicol + distanceForLoop;
+    if(nMinCols < 0) nMinCols = 0;
+    if(nMaxCols > fGeomPHOS->GetNZ()) nMaxCols = fGeomPHOS->GetNZ();
   }
 
 //  cout << "Cluster: " << fClusterType << ",checkNextSM: " << checkNextSM << endl;
