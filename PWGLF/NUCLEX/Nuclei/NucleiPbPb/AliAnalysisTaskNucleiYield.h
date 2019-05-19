@@ -255,7 +255,11 @@ private:
 
   // Data histograms
   TH3F                 *fTOFnSigma[2];           //!<! *(Data only)* TOF nSigma counts for (anti-)matter
+  TH3F                 *fTOFT0FillNsigma[2];     //!<! *(Data only)* TOF nSigma counts for (anti-)matter
+  TH3F                 *fTOFNoT0FillNsigma[2];   //!<! *(Data only)* TOF nSigma counts for (anti-)matter
   TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
+  TH3F                 *fTOFT0FillSignal[2];     //!<! *(Data only)* TOF signal for (anti-)matter
+  TH3F                 *fTOFNoT0FillSignal[2];   //!<! *(Data only)* TOF signal for (anti-)matter
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fTPCsignalTpl[2];        //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fTPCbackgroundTpl[2];    //!<! *(Data only)* TPC counts for (anti-)matter
@@ -323,7 +327,8 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 
   const int iTof = beta > EPS ? 1 : 0;
   float pT = track->Pt() * fCharge;
-  float p_TPC = track->GetTPCmomentum(); 
+  float p_TPC = track->GetTPCmomentum();
+  float p = track->P(); 
   int pid_mask = PassesPIDSelection(track);
   bool pid_check = (pid_mask & 7) == 7;
   if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
@@ -391,6 +396,15 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     /// \f$ m = \frac{p}{\beta\gamma} \f$
     fTOFsignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
     fTOFnSigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
+
+    if (fPID->GetTOFResponse().GetStartTimeMask(p) == 0) {
+      fTOFT0FillSignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+      fTOFT0FillNsigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
+    }
+    else { 
+      fTOFNoT0FillSignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+      fTOFNoT0FillNsigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
+    }
 
   }
 }
