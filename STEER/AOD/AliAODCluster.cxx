@@ -319,6 +319,8 @@ void  AliAODCluster::SetClusterMCEdepFractionFromEdepArray(Float_t *array)
   Float_t totalE = 0;
   for (Int_t i = 0; i < fNLabel; i++) totalE+=array[i];
 
+  if ( totalE < 1.e-3 ) return ; // avoid 0 division in old MC prods.
+  
   // Set the fraction of energy per MC contributor in %
   for (Int_t i = 0; i < fNLabel; i++) 
     fClusterMCEdepFraction[i] = TMath::Nint(array[i]/totalE*100.);
