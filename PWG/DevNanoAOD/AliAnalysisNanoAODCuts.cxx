@@ -38,7 +38,7 @@ Bool_t AliAnalysisNanoAODTrackCuts::IsSelected(TObject* obj)
 
 AliAnalysisNanoAODV0Cuts::AliAnalysisNanoAODV0Cuts()
     : AliAnalysisCuts(),
-      fSelectOnFly(false),
+      fRejectOnFly(false),
       fOnFlyStatus(false),
       fv0pTMin(-1),
       fv0EtaMax(-1),
@@ -50,7 +50,8 @@ AliAnalysisNanoAODV0Cuts::AliAnalysisNanoAODV0Cuts()
       fDaughEtaMax(-1),
       fDaugMinClsTPC(-1),
       fLambdaDaugnSigTPCMax(-1),
-      fCheckDaughterPileup(kFALSE)
+      fCheckDaughterPileup(kFALSE),
+      fCheckDaughterTPCRefit(kFALSE)
 {
 }
 
@@ -68,7 +69,7 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
   if (v0->GetNDaughters() != 2)
     return false;
 
-  if (fSelectOnFly && v0->GetOnFlyStatus() == fOnFlyStatus)
+  if (fRejectOnFly && v0->GetOnFlyStatus() == fOnFlyStatus)
     return false;
 
   if (fv0pTMin > 0 && v0->Pt() < fv0pTMin)
@@ -104,15 +105,15 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
   AliAODTrack *nTrack = static_cast<AliAODTrack *>(v0->GetDaughter(1));
   if (fDaughEtaMax > 0 && (TMath::Abs(pTrack->Eta()) > fDaughEtaMax || TMath::Abs(nTrack->Eta()) > fDaughEtaMax))
     return false;
-    
+
   if (fDaugMinClsTPC > 0 && (pTrack->GetTPCNcls() < fDaugMinClsTPC || nTrack->GetTPCNcls() < fDaugMinClsTPC))
     return false;
-  if (!pTrack->IsOn(AliAODTrack::kTPCrefit)){
-      return false;
-    }
-    if (!nTrack->IsOn(AliAODTrack::kTPCrefit)){
-      return false;
-    }
+  if (fCheckDaughterTPCRefit && !pTrack->IsOn(AliAODTrack::kTPCrefit)){
+    return false;
+  }
+  if (fCheckDaughterTPCRefit && !nTrack->IsOn(AliAODTrack::kTPCrefit)){
+    return false;
+  }
   if (fLambdaDaugnSigTPCMax > 0) {
     static AliPIDResponse* pidResponse = 0;
     if (!pidResponse) {
@@ -308,16 +309,17 @@ Bool_t AliAnalysisNanoAODV0ParametricCuts::IsSelected(TObject* obj)
 
 AliAnalysisNanoAODCascadeCuts::AliAnalysisNanoAODCascadeCuts()
     : AliAnalysisCuts(),
-      fCascpTMin(0.),
-      fDCADaugPrimVtxMin(0.),
-      fCPACascMin(0.),
-      fTransverseRadiusCasc(0.),
-      fCPAv0Min(0.),
-      fTransverseRadiusv0(0.),
-      fDCAv0PrimVtxMin(0.),
-      fDaughEtaMax(0.),
-      fCascDaugnSigTPCMax(0.),
-      fCheckDaughterPileup(false) {
+      fCascpTMin(-99.),
+      fDCADaugPrimVtxMin(-99.),
+      fCPACascMin(-99.),
+      fTransverseRadiusCasc(-99.),
+      fCPAv0Min(-99.),
+      fTransverseRadiusv0(-99.),
+      fDCAv0PrimVtxMin(-99.),
+      fDaughEtaMax(-99.),
+      fCascDaugnSigTPCMax(-99.),
+      fCheckDaughterPileup(false),
+      fCheckDaughterTPCRefit(false) {
 }
 
 Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
@@ -395,16 +397,16 @@ Bool_t AliAnalysisNanoAODCascadeCuts::IsSelected(TObject* obj) {
       return false;
     }
   }
-  if (!pTrack->IsOn(AliAODTrack::kTPCrefit)){
+  if (fCheckDaughterTPCRefit && !pTrack->IsOn(AliAODTrack::kTPCrefit)){
     return false;
   }
-  if (!nTrack->IsOn(AliAODTrack::kTPCrefit)){
+  if (fCheckDaughterTPCRefit && !nTrack->IsOn(AliAODTrack::kTPCrefit)){
     return false;
   }
-  if (!bachTrack->IsOn(AliAODTrack::kTPCrefit)){
+  if (fCheckDaughterTPCRefit && !bachTrack->IsOn(AliAODTrack::kTPCrefit)){
     return false;
   }
-  if (fCascDaugnSigTPCMax > 0) {
+  if (fCascDaugnSigTPCMax > 0.) {
     static AliPIDResponse* pidResponse = 0;
     if (!pidResponse) {
       AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
