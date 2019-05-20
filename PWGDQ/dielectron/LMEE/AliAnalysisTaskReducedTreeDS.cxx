@@ -74,6 +74,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fMaxTPCNsigmaEleCut(5.),
   fTree(0x0),
   fPIDResponse(0x0),
+  fFlowQnVectorMgr(0x0),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -92,6 +93,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fNContributor(-1),
   fNTPCCluster(-1),
   fNTrackTPCout(-1),
+  fNTrackTPC(-1),
   fNHybridTrack08(-1),
   fNSPDTracklet05(-1),
   fNSPDTracklet10(-1),
@@ -106,6 +108,17 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fIskHighMult(kFALSE),
   fIskHighMultV0(kFALSE),
   fIskHighMultSPD(kFALSE),
+  fIsQnTPCAvailable(kFALSE),
+  fQ2vectorTPC(),
+  fQ2vectorTPCNegEta(),
+  fQ2vectorTPCPosEta(),
+  fIsQnV0Available(kFALSE),
+  fQ2vectorV0(),
+  fQ2vectorV0A(),
+  fQ2vectorV0C(),
+  fIsQnZDCAvailable(kFALSE),
+  fQ2vectorZDCA(),
+  fQ2vectorZDCC(),
   fTrackMomentum(0),
   fTrackCharge(0),
   fTrackDCAxy(0),
@@ -195,6 +208,17 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
 
   for(Int_t i=0;i<3;i++) fVertex[i] = 0;
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
+
+  for(Int_t i=0;i<2;i++){//Qx, Qy
+    fQ2vectorTPC[i] = -999;
+    fQ2vectorTPCNegEta[i] = -999;
+    fQ2vectorTPCPosEta[i] = -999;
+    fQ2vectorV0[i] = -999;
+    fQ2vectorV0A[i] = -999;
+    fQ2vectorV0C[i] = -999;
+    fQ2vectorZDCA[i] = -999;
+    fQ2vectorZDCC[i] = -999;
+  }
 
 }
 //_______________________________________________________________________________________________
@@ -205,6 +229,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fMaxTPCNsigmaEleCut(5.),
   fTree(0x0),
   fPIDResponse(0x0),
+  fFlowQnVectorMgr(0x0),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
@@ -223,6 +248,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fNContributor(-1),
   fNTPCCluster(-1),
   fNTrackTPCout(-1),
+  fNTrackTPC(-1),
   fNHybridTrack08(-1),
   fNSPDTracklet05(-1),
   fNSPDTracklet10(-1),
@@ -237,6 +263,17 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fIskHighMult(kFALSE),
   fIskHighMultV0(kFALSE),
   fIskHighMultSPD(kFALSE),
+  fIsQnTPCAvailable(kFALSE),
+  fQ2vectorTPC(),
+  fQ2vectorTPCNegEta(),
+  fQ2vectorTPCPosEta(),
+  fIsQnV0Available(kFALSE),
+  fQ2vectorV0(),
+  fQ2vectorV0A(),
+  fQ2vectorV0C(),
+  fIsQnZDCAvailable(kFALSE),
+  fQ2vectorZDCA(),
+  fQ2vectorZDCC(),
   fTrackMomentum(0),
   fTrackCharge(0),
   fTrackDCAxy(0),
@@ -326,6 +363,20 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
 
   for(Int_t i=0;i<3;i++) fVertex[i] = 0;
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
+
+
+  for(Int_t i=0;i<2;i++){
+    fQ2vectorTPC[i] = -999;
+    fQ2vectorTPCNegEta[i] = -999;
+    fQ2vectorTPCPosEta[i] = -999;
+    fQ2vectorV0[i] = -999;
+    fQ2vectorV0A[i] = -999;
+    fQ2vectorV0C[i] = -999;
+    fQ2vectorZDCA[i] = -999;
+    fQ2vectorZDCC[i] = -999;
+  }
+
+
 
   DefineInput(0,TChain::Class());
   DefineOutput(1, TTree::Class());  // reduced information tree
@@ -356,6 +407,17 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fCentralityCL0",&fCentralityCL0,"fCentralityCL0/F");
   fTree->Branch("fCentralityCL1",&fCentralityCL1,"fCentralityCL1/F");
 
+  fTree->Branch("fVertex",fVertex,"fVertex[3]/F");
+  fTree->Branch("fNContributor",&fNContributor,"fNContributor/I");
+  fTree->Branch("fNTPCCluster",&fNTPCCluster,"fNTPCCluster/I");
+  fTree->Branch("fNTrackTPCout",&fNTrackTPCout,"fNTrackTPCout/I");
+  fTree->Branch("fNTrackTPC",&fNTrackTPC,"fNTrackTPC/I");
+  fTree->Branch("fNHybridTrack08",&fNHybridTrack08,"fNHybridTrack08/I");
+  fTree->Branch("fNSPDTracklet05",&fNSPDTracklet05,"fNSPDTracklet05/I");
+  fTree->Branch("fNSPDTracklet10",&fNSPDTracklet10,"fNSPDTracklet10/I");
+  fTree->Branch("fV0AMultiplicity",&fV0AMultiplicity,"fV0AMultiplicity/F");
+  fTree->Branch("fV0CMultiplicity",&fV0CMultiplicity,"fV0CMultiplicity/F");
+
   fTree->Branch("fIsPileupFromSPD",&fIsPileupFromSPD,"fIsPileupFromSPD/O");
   fTree->Branch("fIsPileupFromSPDInMultBins",&fIsPileupFromSPDInMultBins,"fIsPileupFromSPDInMultBins/O");
   fTree->Branch("fIsPileupMV",&fIsPileupMV,"fIsPileupMV/O");
@@ -363,20 +425,21 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fIskINT7",&fIskINT7,"fIskINT7/O");
   fTree->Branch("fIskCentral",&fIskCentral,"fIskCentral/O");
   fTree->Branch("fIskSemiCentral",&fIskSemiCentral,"fIskSemiCentral/O");
-
   fTree->Branch("fIskHighMult",&fIskHighMult,"fIskHighMult/O");
   fTree->Branch("fIskHighMultV0",&fIskHighMultV0,"fIskHighMultV0/O");
   fTree->Branch("fIskHighMultSPD",&fIskHighMultSPD,"fIskHighMultSPD/O");
 
-  fTree->Branch("fVertex",fVertex,"fVertex[3]/F");
-  fTree->Branch("fNContributor",&fNContributor,"fNContributor/I");
-  fTree->Branch("fNTPCCluster",&fNTPCCluster,"fNTPCCluster/I");
-  fTree->Branch("fNTrackTPCout",&fNTrackTPCout,"fNTrackTPCout/I");
-  fTree->Branch("fNHybridTrack08",&fNHybridTrack08,"fNHybridTrack08/I");
-  fTree->Branch("fNSPDTracklet05",&fNSPDTracklet05,"fNSPDTracklet05/I");
-  fTree->Branch("fNSPDTracklet10",&fNSPDTracklet10,"fNSPDTracklet10/I");
-  fTree->Branch("fV0AMultiplicity",&fV0AMultiplicity,"fV0AMultiplicity/F");
-  fTree->Branch("fV0CMultiplicity",&fV0CMultiplicity,"fV0CMultiplicity/F");
+  fTree->Branch("fIsQnTPCAvailable",&fIsQnTPCAvailable,"fIsQnTPCAvailable/O");
+  fTree->Branch("fQ2vectorTPC",fQ2vectorTPC,"fQ2vectorTPC[2]/F");
+  fTree->Branch("fQ2vectorTPCNegEta",fQ2vectorTPCNegEta,"fQ2vectorTPCNegEta[2]/F");
+  fTree->Branch("fQ2vectorTPCPosEta",fQ2vectorTPCPosEta,"fQ2vectorTPCPosEta[2]/F");
+  fTree->Branch("fIsQnV0Available",&fIsQnV0Available,"fIsQnV0Available/O");
+  fTree->Branch("fQ2vectorV0",fQ2vectorV0,"fQ2vectorV0[2]/F");
+  fTree->Branch("fQ2vectorV0A",fQ2vectorV0A,"fQ2vectorV0A[2]/F");
+  fTree->Branch("fQ2vectorV0C",fQ2vectorV0C,"fQ2vectorV0C[2]/F");
+  fTree->Branch("fIsQnZDCAvailable",&fIsQnZDCAvailable,"fIsQnZDCAvailable/O");
+  fTree->Branch("fQ2vectorZDCA",fQ2vectorZDCA,"fQ2vectorZDCA[2]/F");
+  fTree->Branch("fQ2vectorZDCC",fQ2vectorZDCC,"fQ2vectorZDCC[2]/F");
 
   fTree->Branch("fTrackMomentum",&fTrackMomentum);
   fTree->Branch("fTrackCharge",&fTrackCharge);
@@ -480,6 +543,20 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fMCFirstMotherIndex",&fMCFirstMotherIndex);
   fTree->Branch("fMCFirstMotherPdgCode",&fMCFirstMotherPdgCode);
 
+  fPIDResponse = dynamic_cast<AliPIDResponse*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetPIDResponse());
+  if(!fPIDResponse){
+    AliFatal("fPIDResponse does not exist!");
+    return;
+  }
+
+  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*>(AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
+  if(flowQnVectorTask != NULL){
+    fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+  }
+  else {
+    AliInfo("Flow Qn vector corrections framework is not found. Q vectors will be filled with useless values!");
+  }
+
   PostData(1,fTree);
 
 }
@@ -503,11 +580,11 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     return;
   }
 
-  fPIDResponse = fInputHandler->GetPIDResponse();
-  if(!fPIDResponse){
-    AliFatal("fPIDResponse does not exist!");
-    return;
-  }
+  //fPIDResponse = fInputHandler->GetPIDResponse();
+  //if(!fPIDResponse){
+  //  AliFatal("fPIDResponse does not exist!");
+  //  return;
+  //}
 
   ClearVectorElement();
 
@@ -537,7 +614,6 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
   if(hasMC) GetMCInfoAOD();
 
-
   fRunNumber = fEvent->GetRunNumber();
   fMagneticField = fEvent->GetMagneticField();
 
@@ -556,6 +632,8 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     fCentralityCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
     fCentralityCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
   }
+
+  ExtractQnVectors();
 
   if(fESDEvent){
     fIsPileupFromSPD           = fESDEvent->IsPileupFromSPD();
@@ -599,25 +677,30 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   fVertex[1] = vVertex->GetY();
   fVertex[2] = vVertex->GetZ();
   fNContributor = vVertex->GetNContributors();
-  if(fESDEvent)      fNTPCCluster = fESDEvent->GetNumberOfTPCClusters();
-  else if(fAODEvent) fNTPCCluster = fAODEvent->GetNumberOfTPCClusters();
+  if(fESDEvent){
+    fNTPCCluster = fESDEvent->GetNumberOfTPCClusters();
+    fNTrackTPC   = fESDEvent->GetNumberOfTPCTracks();
+  }
+  else if(fAODEvent){
+    fNTPCCluster = fAODEvent->GetNumberOfTPCClusters();
+    fNTrackTPC   = fAODEvent->GetNumberOfTPCTracks();
+  }
 
   const Int_t Ntrack = fEvent->GetNumberOfTracks();
   fNHybridTrack08 = 0;
-  for(Int_t itrack=0;itrack<Ntrack;itrack++){
-    AliVTrack* track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(itrack));
-    if(track->Pt() < 0.15) continue;
-    if(TMath::Abs(track->Eta()) > 0.8) continue;
+  if(fESDEvent){
+    AliInfo("So far, ESD is not supported. return.");
+  }//end of ESD
+  else if(fAODEvent){
+    for(Int_t itrack=0;itrack<Ntrack;itrack++){
+      AliVTrack* track = dynamic_cast<AliVTrack*>(fEvent->GetTrack(itrack));
+      if(track->Pt() < 0.15) continue;
+      if(TMath::Abs(track->Eta()) > 0.8) continue;
 
-    if(fESDEvent){
-      AliInfo("So far, ESD is not supported. return.");
-    }//end of ESD
-    else if(fAODEvent){
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
       if(aodtrack->IsHybridGlobalConstrainedGlobal()) fNHybridTrack08++;//hybrid track (global + complementary)
-    }//end of AOD
-  }//end of track loop
-
+    }//end of track loop
+  }//end of AOD
 
   fNTrackTPCout = 0;
   Float_t DCAxy = -999, DCAz = -999;
@@ -655,7 +738,6 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     if(track->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
     if((Double_t)(track->GetTPCchi2()) / (Double_t)(track->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
     if((Double_t)(track->GetITSchi2()) / (Double_t)(track->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
-
 
     vector<Float_t> vec(3,0);
     vec[0] = track->Pt();
@@ -753,7 +835,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
       mcvtx[1] = p->Yv();
       mcvtx[2] = p->Zv();
       fTrackMCProdVtx.push_back(mcvtx);
-
+      mcvtx.clear();
 
       //check mother
       Int_t mother_index = p->GetMother();
@@ -790,7 +872,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
   }//end of track loop
 
-  AliInfo(Form("fNSPDTracklet05 = %d , fNSPDTracklet10 = %d , fNHybridTrack08 = %d , fNTPCCluster = %d , fNTrackTPCout = %d",fNSPDTracklet05,fNSPDTracklet10,fNHybridTrack08,fNTPCCluster,fNTrackTPCout));
+  AliInfo(Form("fNSPDTracklet05 = %d , fNSPDTracklet10 = %d , fNHybridTrack08 = %d , fNTPCCluster = %d , fNTrackTPCout = %d , fNTrackTPC = %d",fNSPDTracklet05,fNSPDTracklet10,fNHybridTrack08,fNTPCCluster,fNTrackTPCout,fNTrackTPC));
 
 
   AliKFVertex primaryVertexKF(*vVertex);
@@ -811,12 +893,12 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     if(v0->RadiusV0() < 3.) continue;//in cm
     if(v0->RadiusV0() > 60.) continue;//in cm
 
+    if(v0->ChargeProng(0) * v0->ChargeProng(1) > 0) continue;//reject same sign pair
     AliAODTrack *legPos = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(0));
     AliAODTrack *legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));
-    if(legPos->Charge() * legNeg->Charge() > 0) continue;//reject same sign pair
-
-    if(legPos->Charge() < 0 && legNeg->Charge() > 0){//swap charge sign
-      AliInfo("Charge sign is swapped.");
+    //if(legPos->Charge() < 0 && legNeg->Charge() > 0){//swap charge sign
+    if(v0->ChargeProng(0) < 0 && v0->ChargeProng(0) > 0){//swap charge sign //index0 is expect to be positive leg, index1 to be negative.//protection
+      AliInfo("charge is swapped.");
       legPos = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(1));
       legNeg = dynamic_cast<AliAODTrack*>(v0->GetSecondaryVtx()->GetDaughter(0));
     }
@@ -847,7 +929,6 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     if(!(legPos->GetStatus() & AliVTrack::kTPCrefit)) continue;
     if(!(legNeg->GetStatus() & AliVTrack::kTPCrefit)) continue;
 
-
     Float_t ratio_pos = legPos->GetTPCNclsF() > 0 ? (Float_t)legPos->GetTPCCrossedRows() / (Float_t)legPos->GetTPCNclsF() : -1;
     Float_t ratio_neg = legNeg->GetTPCNclsF() > 0 ? (Float_t)legNeg->GetTPCCrossedRows() / (Float_t)legNeg->GetTPCNclsF() : -1;
 
@@ -865,7 +946,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     DielePair = 0x0;
     if(KFchi2ndf > 30) continue;
 
-    if(v0->CosPointingAngle(secVtx) < 0.9) continue;//loose cut
+    if(v0->CosPointingAngle(secVtx) < 0.99) continue;
 
     if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron)) > 5.) continue;
     if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron)) > 5.) continue;
@@ -1080,28 +1161,28 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
       vector<vector<Float_t>> legP_vec_mc_tmp;//0 for legPos, 1 for legNeg
       vector<Float_t>legPos_vec_mc(3,0);
-      legPos_vec_mc[0] = pPos->Xv();
-      legPos_vec_mc[1] = pPos->Yv();
-      legPos_vec_mc[2] = pPos->Zv();
+      legPos_vec_mc[0] = pPos->Pt();
+      legPos_vec_mc[1] = pPos->Eta();
+      legPos_vec_mc[2] = pPos->Phi();
       legP_vec_mc_tmp.push_back(legPos_vec_mc); 
       vector<Float_t>legNeg_vec_mc(3,0);
-      legNeg_vec_mc[0] = pNeg->Xv();
-      legNeg_vec_mc[1] = pNeg->Yv();
-      legNeg_vec_mc[2] = pNeg->Zv();
+      legNeg_vec_mc[0] = pNeg->Pt();
+      legNeg_vec_mc[1] = pNeg->Eta();
+      legNeg_vec_mc[2] = pNeg->Phi();
       legP_vec_mc_tmp.push_back(legNeg_vec_mc); 
       fV0MClegMomentum.push_back(legP_vec_mc_tmp);
       legP_vec_mc_tmp.clear();
 
       vector<vector<Float_t>> leg_vec_pv_mc_tmp;//0 for legPos, 1 for legNeg//production vertex
       vector<Float_t> legPos_vec_pv_mc(3,0);
-      legPos_vec_pv_mc[0] = pPos->Pt();
-      legPos_vec_pv_mc[1] = pPos->Eta();
-      legPos_vec_pv_mc[2] = pPos->Phi();
+      legPos_vec_pv_mc[0] = pPos->Xv();
+      legPos_vec_pv_mc[1] = pPos->Yv();
+      legPos_vec_pv_mc[2] = pPos->Zv();
       leg_vec_pv_mc_tmp.push_back(legPos_vec_pv_mc); 
       vector<Float_t> legNeg_vec_pv_mc(3,0);
-      legNeg_vec_pv_mc[0] = pNeg->Pt();
-      legNeg_vec_pv_mc[1] = pNeg->Eta();
-      legNeg_vec_pv_mc[2] = pNeg->Phi();
+      legNeg_vec_pv_mc[0] = pNeg->Xv();
+      legNeg_vec_pv_mc[1] = pNeg->Yv();
+      legNeg_vec_pv_mc[2] = pNeg->Zv();
       leg_vec_pv_mc_tmp.push_back(legNeg_vec_pv_mc); 
       fV0MClegProdVtx.push_back(leg_vec_pv_mc_tmp);
       leg_vec_pv_mc_tmp.clear();
@@ -1326,14 +1407,24 @@ Double_t AliAnalysisTaskReducedTreeDS::PhivPair(AliAODv0 *v0, Float_t Bz)
   /// This expected ambiguity is not seen due to sorting of track arrays in this framework.
   /// To reach the same result as for ULS (~pi), the legs are flipped for LS.
 
-  TVector3 p1 = TVector3(v0->MomPosX(),v0->MomPosY(),v0->MomPosZ());
-  TVector3 p2 = TVector3(v0->MomNegX(),v0->MomNegY(),v0->MomNegZ());
-
+  TVector3 p1 = TVector3();
+  TVector3 p2 = TVector3();
+  //check charge//simple protection
+  //index0 is expected to be a positive leg.
+  if(v0->ChargeProng(0) > 0){//expected
+    p1.SetXYZ(v0->MomPosX(),v0->MomPosY(),v0->MomPosZ());
+    p2.SetXYZ(v0->MomNegX(),v0->MomNegY(),v0->MomNegZ());
+  }
+  else{//inverted
+    AliInfo("charge is swapped.");
+    p2.SetXYZ(v0->MomPosX(),v0->MomPosY(),v0->MomPosZ());
+    p1.SetXYZ(v0->MomNegX(),v0->MomNegY(),v0->MomNegZ());
+  }
   TVector3 z = TVector3();
   if(Bz > 0) z.SetXYZ(0,0,+1.);
   else       z.SetXYZ(0,0,-1.);
 
-  TVector3 p12 = p1+p1;
+  TVector3 p12 = p1+p2;
   TVector3 wexp = p12.Cross(z);//expected
   TVector3 u_tmp  = p1.Cross(p2);
   TVector3 u = TVector3(u_tmp.X()/u_tmp.Mag(), u_tmp.Y()/u_tmp.Mag(), u_tmp.Z()/u_tmp.Mag());//unit vector
@@ -1346,7 +1437,7 @@ Double_t AliAnalysisTaskReducedTreeDS::PhivPair(AliAODv0 *v0, Float_t Bz)
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
 {
-  AliInfo("elements of vectors are cleared.");
+  AliInfo("Number of elements of vectors is cleared.");
 
   //clear track variables
   fTrackMomentum.clear();
@@ -1445,12 +1536,13 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
   fMCMotherPdgCode.clear();
   fMCFirstMotherIndex.clear();
   fMCFirstMotherPdgCode.clear();
+  AliInfo("Number of elements of vectors is cleared. DONE!");
 
 }
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
 {
-  AliInfo("memories for vector objects are swapped with null.");
+  AliInfo("Memories for vector objects are swapped with null.");
 
   vector<vector<Float_t>>().swap(fTrackMomentum);
   vector<Int_t>().swap(fTrackCharge);
@@ -1549,6 +1641,136 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   vector<Int_t>().swap(fMCMotherPdgCode);
   vector<Int_t>().swap(fMCFirstMotherIndex);
   vector<Int_t>().swap(fMCFirstMotherPdgCode);
+  AliInfo("Memories for vector objects are swapped with null. DONE!");
+}
+//_______________________________________________________________________________________________
+void AliAnalysisTaskReducedTreeDS::ExtractQnVectors()
+{
+  AliInfo("extract Qn vectors from Qn correction framework.");
+  const TString TPCEPname[3] = {"TPC","TPCNegEta","TPCPosEta"};
+  const TString V0EPname[3]  = {"VZERO","VZEROA","VZEROC"};
+  const TString ZDCEPname[2]  = {"ZDCA","ZDCC"};
+  const TString Qnorm = "QoverM";
+  const Int_t harmonics = 2;
+
+  fIsQnTPCAvailable = kFALSE;
+  fIsQnV0Available = kFALSE;
+  fIsQnZDCAvailable = kFALSE;
+
+  for(Int_t i=0;i<2;i++){//Qx, Qy
+    fQ2vectorTPC[i] = -999;
+    fQ2vectorTPCNegEta[i] = -999;
+    fQ2vectorTPCPosEta[i] = -999;
+    fQ2vectorV0[i] = -999;
+    fQ2vectorV0A[i] = -999;
+    fQ2vectorV0C[i] = -999;
+    fQ2vectorZDCA[i] = -999;
+    fQ2vectorZDCC[i] = -999;
+  }
+
+  if(fFlowQnVectorMgr == NULL){
+    AliInfo("fFlowQnVectorMgr does not exist. return.");
+    return;
+  }
+
+  //TPC
+  TList* qnlist = fFlowQnVectorMgr->GetQnVectorList();
+  //qnlist->Print();//only for debeg
+  const AliQnCorrectionsQnVector *QnVectorTPCDet[3];
+  for(Int_t i=0;i<3;i++){
+    QnVectorTPCDet[i] = GetQnVectorFromList(qnlist,Form("%s%s",TPCEPname[i].Data(),Qnorm.Data()),"latest","plain");
+  }//end of det loop
+
+  if(!QnVectorTPCDet[0] ||!QnVectorTPCDet[1] || !QnVectorTPCDet[2]){
+    AliInfo("Event is rejected because event plane is not found or bad event plane quality in TPC.");
+    fIsQnTPCAvailable = kFALSE;
+    fQ2vectorTPC[0]       = -999;//FullTPC
+    fQ2vectorTPC[1]       = -999;//FullTPC
+    fQ2vectorTPCNegEta[0] = -999;//TPCNegEta
+    fQ2vectorTPCNegEta[1] = -999;//TPCNegEta
+    fQ2vectorTPCPosEta[0] = -999;//TPCPosEta
+    fQ2vectorTPCPosEta[1] = -999;//TPCPosEta
+  }
+  else{
+    fIsQnTPCAvailable = kTRUE;
+    fQ2vectorTPC[0]       = QnVectorTPCDet[0]->Qx(harmonics);//FullTPC
+    fQ2vectorTPC[1]       = QnVectorTPCDet[0]->Qy(harmonics);//FullTPC
+    fQ2vectorTPCNegEta[0] = QnVectorTPCDet[1]->Qx(harmonics);//TPCNegEta
+    fQ2vectorTPCNegEta[1] = QnVectorTPCDet[1]->Qy(harmonics);//TPCNegEta
+    fQ2vectorTPCPosEta[0] = QnVectorTPCDet[2]->Qx(harmonics);//TPCPosEta
+    fQ2vectorTPCPosEta[1] = QnVectorTPCDet[2]->Qy(harmonics);//TPCPosEta
+    for(Int_t i=0;i<3;i++) AliInfo(Form("harmonics %d | TPC sub detector name %s%s : Qx = %e, Qy = %e",harmonics,TPCEPname[i].Data(),Qnorm.Data(),QnVectorTPCDet[i]->Qx(harmonics),QnVectorTPCDet[i]->Qy(harmonics)));
+  }
+
+  //V0
+  const AliQnCorrectionsQnVector *QnVectorV0Det[3];
+  for(Int_t i=0;i<3;i++){
+    QnVectorV0Det[i]  = GetQnVectorFromList(qnlist,Form("%s%s",V0EPname[i].Data(),Qnorm.Data()),"latest","raw");
+  }//end of det loop
+
+  if(!QnVectorV0Det[0] || !QnVectorV0Det[1] || !QnVectorV0Det[2]){
+    AliInfo("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
+    fIsQnV0Available = kFALSE;
+    fQ2vectorV0[0]  = -999;//FullV0
+    fQ2vectorV0[1]  = -999;//FullV0
+    fQ2vectorV0A[0] = -999;//V0A
+    fQ2vectorV0A[1] = -999;//V0A
+    fQ2vectorV0C[0] = -999;//V0C
+    fQ2vectorV0C[1] = -999;//V0C
+  }
+  else{
+    fIsQnV0Available = kTRUE;
+    fQ2vectorV0[0]  = QnVectorV0Det[0]->Qx(harmonics);//FullV0
+    fQ2vectorV0[1]  = QnVectorV0Det[0]->Qy(harmonics);//FullV0
+    fQ2vectorV0A[0] = QnVectorV0Det[1]->Qx(harmonics);//V0A
+    fQ2vectorV0A[1] = QnVectorV0Det[1]->Qy(harmonics);//V0A
+    fQ2vectorV0C[0] = QnVectorV0Det[2]->Qx(harmonics);//V0C
+    fQ2vectorV0C[1] = QnVectorV0Det[2]->Qy(harmonics);//V0C
+    for(Int_t i=0;i<3;i++) AliInfo(Form("harmonics %d | V0  sub detector name %s%s : Qx = %e, Qy = %e",harmonics,V0EPname[i].Data(),Qnorm.Data(),QnVectorV0Det[i]->Qx(harmonics),QnVectorV0Det[i]->Qy(harmonics)));
+  }
+
+  //ZDC
+  const AliQnCorrectionsQnVector *QnVectorZDCDet[2];
+  for(Int_t i=0;i<2;i++){
+    QnVectorZDCDet[i]  = GetQnVectorFromList(qnlist,Form("%s%s",ZDCEPname[i].Data(),""),"latest","raw");
+  }//end of det loop
+
+  if(!QnVectorZDCDet[0] || !QnVectorZDCDet[1]){
+    AliInfo("Event is rejected because event plane is not found or bad event plane quality in VZERO.");
+    fIsQnZDCAvailable = kFALSE;
+    fQ2vectorZDCA[0] = -999;//ZDCA
+    fQ2vectorZDCA[1] = -999;//ZDCA
+    fQ2vectorZDCC[0] = -999;//ZDCC
+    fQ2vectorZDCC[1] = -999;//ZDCC
+  }
+  else{
+    fIsQnZDCAvailable = kTRUE;
+    fQ2vectorZDCA[0] = QnVectorZDCDet[0]->Qx(harmonics);//ZDCA
+    fQ2vectorZDCA[1] = QnVectorZDCDet[0]->Qy(harmonics);//ZDCA
+    fQ2vectorZDCC[0] = QnVectorZDCDet[1]->Qx(harmonics);//ZDCC
+    fQ2vectorZDCC[1] = QnVectorZDCDet[1]->Qy(harmonics);//ZDCC
+    for(Int_t i=0;i<2;i++) AliInfo(Form("harmonics %d | ZDC  sub detector name %s%s : Qx = %e, Qy = %e",harmonics,ZDCEPname[i].Data(),Qnorm.Data(),QnVectorZDCDet[i]->Qx(harmonics),QnVectorZDCDet[i]->Qy(harmonics)));
+  }
+
+}
+//_______________________________________________________________________________________________
+const AliQnCorrectionsQnVector *AliAnalysisTaskReducedTreeDS::GetQnVectorFromList(const TList *list, const char* subdetector, const char *expcorr, const char *altcorr)
+{
+  AliQnCorrectionsQnVector *theQnVector = NULL;
+  TList *pQvecList = dynamic_cast<TList*> (list->FindObject(subdetector));
+  if(pQvecList != NULL){//sub detector is found
+    if(TString(expcorr).EqualTo("latest")) theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+    else                                   theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expcorr);
+
+    if(theQnVector == NULL || !(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)){ //the Qn vector for the expected correction is not found
+      AliInfo(Form("expected correction (%s) is not found. use %s as an alternative step in %s.",expcorr,altcorr,subdetector));
+      if(TString(altcorr).EqualTo("latest")) theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+      else                                   theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altcorr);
+    }
+    //check the Qn vector quality
+    if(!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)) theQnVector = NULL; //bad quality, discarded
+  }
+  return theQnVector;
 }
 //_______________________________________________________________________________________________
 

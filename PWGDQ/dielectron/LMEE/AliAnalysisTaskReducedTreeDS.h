@@ -1,6 +1,7 @@
 #ifndef AliAnalysisTaskReducedTreeDS_cxx
 #define AliAnalysisTaskReducedTreeDS_cxx
 
+#include "vector"
 #include "AliAnalysisTaskSE.h"
 using namespace std;
 
@@ -20,6 +21,8 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     virtual void ProcessMC(Option_t *option);
     Double_t PsiPair(AliAODv0 *v0, Float_t Bz);
     Double_t PhivPair(AliAODv0 *v0, Float_t Bz);
+    void ExtractQnVectors();
+    const AliQnCorrectionsQnVector *GetQnVectorFromList(const TList *list, const char* subdetector, const char *expcorr, const char *altcorr);
 
     void GetMCInfoAOD(){
       fMCArray = dynamic_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -38,6 +41,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Float_t fMaxTPCNsigmaEleCut;
     TTree *fTree;
     AliPIDResponse *fPIDResponse;     //! PID response object
+    AliQnCorrectionsManager *fFlowQnVectorMgr;
     AliVEvent *fEvent; 
     AliESDEvent *fESDEvent;
     AliAODEvent *fAODEvent;
@@ -56,6 +60,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Int_t fNContributor;
     Int_t fNTPCCluster;
     Int_t fNTrackTPCout;
+    Int_t fNTrackTPC;//number of TPC track with kITSout
     Int_t fNHybridTrack08;
     Int_t fNSPDTracklet05;//|eta| < 0.5
     Int_t fNSPDTracklet10;//|eta| < 1.0
@@ -72,6 +77,18 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Bool_t fIskHighMult;
     Bool_t fIskHighMultV0;
     Bool_t fIskHighMultSPD;
+
+    Bool_t fIsQnTPCAvailable;
+    Float_t fQ2vectorTPC[2];//Q vector for event plane of 2nd harmonics
+    Float_t fQ2vectorTPCNegEta[2];//Q vector for event plane of 2nd harmonics
+    Float_t fQ2vectorTPCPosEta[2];//Q vector for event plane of 2nd harmonics
+    Bool_t fIsQnV0Available;
+    Float_t fQ2vectorV0[2];//Q vector for event plane of 2nd harmonics
+    Float_t fQ2vectorV0A[2];//Q vector for event plane of 2nd harmonics
+    Float_t fQ2vectorV0C[2];//Q vector for event plane of 2nd harmonics
+    Bool_t fIsQnZDCAvailable;
+    Float_t fQ2vectorZDCA[2];//Q vector for event plane of 2nd harmonics
+    Float_t fQ2vectorZDCC[2];//Q vector for event plane of 2nd harmonics
 
     vector<vector<Float_t>> fTrackMomentum;//use pT,eta,phi//Nx3
     vector<Int_t>fTrackCharge;
@@ -175,7 +192,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 3);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 4);
 
 };
 
