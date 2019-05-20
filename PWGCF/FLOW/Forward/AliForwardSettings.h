@@ -77,6 +77,7 @@ class AliForwardSettings : public TObject {
   Bool_t stdQC;
   Bool_t sec_corr;
   Bool_t a5;
+  TString fileName;
   // return true if good event
 
   // flags used for method of cumulant

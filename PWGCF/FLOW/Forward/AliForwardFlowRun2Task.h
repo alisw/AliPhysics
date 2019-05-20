@@ -20,6 +20,7 @@
 #include "AliForwardGenericFramework.h"
 #include "AliForwardFlowUtil.h"
 #include "AliForwardTaskValidation.h"
+#include "AliForwardFlowResultStorage.h"
 
 class TH2D;
 class THn;
@@ -103,6 +104,9 @@ public:
   TH2D*   centralDist; //!
   TH2D*   refDist;     //!
   TH2D*   forwardDist; //!
+
+  AliForwardFlowResultStorage* fStorage; //!
+  TFile* fFile; //!
 
   //TH2D* fdNdeta; //!
   //TH1D* fCent;   //!

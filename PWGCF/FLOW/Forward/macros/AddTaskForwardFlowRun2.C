@@ -185,14 +185,32 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   std::cout << "Container name: " << combName << std::endl;
   std::cout << "______________________________________________________________________________" << std::endl;
 
-  mgr->AddTask(task);
+
   AliAnalysisDataContainer *coutput_recon =
   mgr->CreateContainer(suffix,
-   TList::Class(),
+   AliForwardFlowResultStorage::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());
   mgr->ConnectOutput(task, 1, coutput_recon);
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
+
+
+  task->fFile = new TFile(mgr->GetCommonFileName());
+  task->fSettings.fileName = suffix;
+  mgr->AddTask(task);
+  // AliAnalysisDataContainer *coutput_recon =
+  // mgr->CreateContainer(suffix,
+  //  TList::Class(),
+  //  AliAnalysisManager::kOutputContainer,
+  //  mgr->GetCommonFileName());
+  // mgr->ConnectOutput(task, 1, coutput_recon);
+  // mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
+
+
+
+
+
+
 
   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
   mgr->ConnectInput(task,1,valid);

@@ -155,13 +155,13 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D*& dNdetadphi, TList* o
 
 
 
-void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, double zvertex,UInt_t r, Int_t ptn){
-  TList* analysisList = static_cast<TList*>(outputList->FindObject("Analysis"));
-  TList* refList = static_cast<TList*>(analysisList->At(0));//FindObject("Reference"));
+void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, double zvertex,UInt_t r, Int_t ptn, TFile* file){
+  //TList* analysisList = static_cast<TList*>(outputList->FindObject("Analysis"));
+  //TList* refList = static_cast<TList*>(analysisList->At(0));//FindObject("Reference"));
   //TList* autoList = static_cast<TList*>(analysisList->FindObject("AutoCorrection"));
   //THnD*  fQcorrfactor = static_cast<THnD*>(autoList->FindObject("fQcorrfactor"));
   //THnD*  fpcorrfactor = static_cast<THnD*>(autoList->FindObject("fpcorrfactor"));
-  TList* difList = static_cast<TList*>(analysisList->At(1));//FindObject("Differential"));
+  //TList* difList = static_cast<TList*>(analysisList->At(1));//FindObject("Differential"));
 
   THnD* cumuRef = 0;
   THnD* cumuDiff = 0;
@@ -172,8 +172,14 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   for (Int_t n = 2; n <= 4; n++) {
     Int_t prevRefEtaBin = kTRUE;
 
-    cumuRef = static_cast<THnD*>(refList->At(n-2));//FindObject(Form("cumuRef_v%d_pt%d", n,ptn)));
-    cumuDiff = static_cast<THnD*>(difList->At(n-2));////FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)));
+    TString n_str;
+    n_str.Form("%d",n);
+
+    TString ptn_str;
+    ptn_str.Form("%d",ptn);
+
+    cumuRef = static_cast<THnD*>(file->Get(fSettings.fileName + "/Analysis/Reference/cumuRef_v" + n_str + "_pt" + ptn_str));//refList->At(n-2));//FindObject(Form("cumuRef_v%d_pt%d", n,ptn)));
+    cumuDiff = static_cast<THnD*>(file->Get(fSettings.fileName + "/Analysis/Differential/cumuDiff_v" + n_str + "_pt" + ptn_str));//(difList->At(n-2));////FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)));
 
     for (Int_t etaBin = 1; etaBin <= fpvector->GetAxis(3)->GetNbins(); etaBin++) {
       Double_t eta = fpvector->GetAxis(3)->GetBinCenter(etaBin);

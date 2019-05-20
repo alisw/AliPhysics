@@ -43,6 +43,8 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   centralDist(),
   refDist(),
   forwardDist(),
+  fStorage(nullptr),
+  fFile(nullptr), 
   fSettings(),
   fUtil(),
   fCalculator()
@@ -62,6 +64,8 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   centralDist(),
   refDist(),
   forwardDist(),
+  fStorage(nullptr),
+  fFile(nullptr),
   fSettings(),
   fUtil(),
   fCalculator()
@@ -78,7 +82,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   // DefineInput(2, TList::Class());
   // DefineInput(3, TList::Class());
   // DefineInput(4, TList::Class());
-  DefineOutput(1, TList::Class());
+  DefineOutput(1, AliForwardFlowResultStorage::Class());
 }
 
 //_____________________________________________________________________
@@ -180,7 +184,11 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist = new TH2D("ft","",200,-4,6,20,0,TMath::TwoPi());
   forwardDist ->SetDirectory(0);
 
-  PostData(1, fOutputList);
+  fStorage = new AliForwardFlowResultStorage("name", fOutputList);
+
+  PostData(1, fStorage);
+
+  //PostData(1, fOutputList);
 }
 
 
@@ -194,6 +202,8 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //   option: Not used
   //
   //forwardDist = 0;
+
+
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
 
@@ -255,7 +265,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,kFALSE,false,true);  
 
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-  fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
+  fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0, fFile);   
 
   fCalculator.reset();
 

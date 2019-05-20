@@ -49,7 +49,7 @@ public:
    */
   void CumulantsAccumulate(TH2D*& dNdetadphi, TList* outputList, double cent,double vertexpos,Bool_t useFMD,Bool_t doRefFlow, Bool_t doDiffFlow);
 
-  void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r, Int_t ptn);
+  void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r, Int_t ptn, TFile* file);
 
   /**
    * Constants
