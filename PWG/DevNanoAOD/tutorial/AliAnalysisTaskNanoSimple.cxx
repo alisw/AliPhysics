@@ -133,7 +133,8 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
       for (int j=0; j<cascade->GetNDaughters(); j++)
         Printf("  Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDaughter(j))->Pt());
       for (int j=0; j<cascade->GetDecayVertexXi()->GetNDaughters(); j++)
-        Printf("  Xi Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDecayVertexXi()->GetDaughter(j))->Pt());
+        if (dynamic_cast<AliVTrack*> (cascade->GetDecayVertexXi()->GetDaughter(j)))
+          Printf("  Xi Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDecayVertexXi()->GetDaughter(j))->Pt());
     }
   }
   
