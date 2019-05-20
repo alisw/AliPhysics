@@ -83,7 +83,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   AntiCascadeCuts->SetPDGCodev0(-3122);
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
-  AntiCascadeCuts->SetPDGCodeBach(-211);
+  AntiCascadeCuts->SetPDGCodeBach(211);
 
   if (suffix != "0" && suffix != "999") {
     evtCuts->SetMinimalBooking(true);
@@ -100,8 +100,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
-  PDGParticles.push_back(3212);
-  PDGParticles.push_back(3212);
+  PDGParticles.push_back(3312);
+  PDGParticles.push_back(3312);
 
   std::vector<int> NBins;
   std::vector<float> kMin;
@@ -124,9 +124,9 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
     pairQA.push_back(0);
     closeRejection.push_back(false);
     if (suffix == "0") {
-      NBins.push_back(750);
+      NBins.push_back(1500);
       kMin.push_back(0.);
-      kMax.push_back(3.);
+      kMax.push_back(6.);
     } else {
       NBins.push_back(250);
       kMin.push_back(0.);
