@@ -131,7 +131,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   if (!mgr)
     Fatal("","No analysis manager to connect to.");
 
-  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(suffix);
+  AliForwardFlowRun2Task* task = new AliForwardFlowRun2Task(suffix + "_task");
 
   if (doetagap){
     // if etagap otherwise comment out, and it will be standard
@@ -185,6 +185,8 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   std::cout << "Container name: " << combName << std::endl;
   std::cout << "______________________________________________________________________________" << std::endl;
 
+  task->fSettings.fileName = suffix;
+  mgr->AddTask(task);
 
   AliAnalysisDataContainer *coutput_recon =
   mgr->CreateContainer(suffix,
@@ -195,9 +197,9 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
 
 
-  task->fFile = new TFile(mgr->GetCommonFileName());
-  task->fSettings.fileName = suffix;
-  mgr->AddTask(task);
+
+  //task->fFile = mgr->OpenFile((AliAnalysisDataContainer*)mgr->GetContainers()->FindObject(suffix),"UPDATE");//new TFile(static_cast<TFile>(mgr->GetContainers()->FindObject(suffix)));
+
   // AliAnalysisDataContainer *coutput_recon =
   // mgr->CreateContainer(suffix,
   //  TList::Class(),
@@ -205,11 +207,6 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   //  mgr->GetCommonFileName());
   // mgr->ConnectOutput(task, 1, coutput_recon);
   // mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
-
-
-
-
-
 
 
   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");

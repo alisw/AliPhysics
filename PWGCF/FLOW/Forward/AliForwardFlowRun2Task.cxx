@@ -83,6 +83,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   // DefineInput(3, TList::Class());
   // DefineInput(4, TList::Class());
   DefineOutput(1, AliForwardFlowResultStorage::Class());
+  //DefineOutput(1, TList::Class());
 }
 
 //_____________________________________________________________________
@@ -184,7 +185,7 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist = new TH2D("ft","",200,-4,6,20,0,TMath::TwoPi());
   forwardDist ->SetDirectory(0);
 
-  fStorage = new AliForwardFlowResultStorage("name", fOutputList);
+  fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
 
   PostData(1, fStorage);
 
@@ -210,7 +211,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   // Get the event validation object
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
   if (!ev_val->IsValidEvent()){
-    PostData(1, this->fOutputList);
+  //  PostData(1, this->fOutputList);
+    PostData(1, fStorage);
+
     return;
   }
 
@@ -265,7 +268,7 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fCalculator.CumulantsAccumulate(centralDist, fOutputList, cent, zvertex,kFALSE,false,true);  
 
   UInt_t randomInt = fRandom.Integer(fSettings.fnoSamples);
-  fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0, fFile);   
+  fCalculator.saveEvent(fOutputList, cent, zvertex,  randomInt, 0);   
 
   fCalculator.reset();
 
@@ -274,7 +277,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   if (!fSettings.mc && !(fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
   if (fSettings.mc) forwardDist->Reset();
 
-  PostData(1, fOutputList);
+  //PostData(1, fOutputList);    
+  PostData(1, fStorage);
+
 
   return;
 }
