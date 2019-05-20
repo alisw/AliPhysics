@@ -46,9 +46,9 @@ class AliGFWWeights: public TNamed
   const char *GetBinName(Double_t ptv, Double_t v0mv,const char *pf="") {
     Int_t ptind = 0;//GetPtBin(ptv);
     Int_t v0mind = 0;//GetV0MBin(v0mv);
-    return Form("Bin%s%i_%i",pf,ptind,v0mind);
+    return Form("Bin%s_weights%i_%i",pf,ptind,v0mind);
   };
-  
+
   ClassDef(AliGFWWeights,1);
 };
 

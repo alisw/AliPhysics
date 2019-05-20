@@ -47,3 +47,14 @@ TProfile* AliProfileSubset::GetSubset(Bool_t onX, const char *name, Int_t firstb
   p1->SetEntries( p1->GetEffectiveEntries() );
   return p1;
 };
+void AliProfileSubset::OverrideBinContent(Double_t x, Double_t y, Double_t x2, Double_t y2, Double_t val) {
+  if (!fBinSumw2.fN) Sumw2();
+  TH2D * h2dW = ProjectionXY("h2temp-W","W");
+  TH2D * h2dN = ProjectionXY("h2temp-N","B");
+  Int_t binIndex = FindBin(x,y);
+  Int_t binIndex2 = FindBin(x2,y2);
+  fArray[binIndex] = h2dW->GetBinContent(binIndex2);
+  GetSumw2()->fArray[binIndex] = h2dW->GetSumw2()->fArray[binIndex2];
+  SetBinEntries(binIndex,h2dN->GetBinContent(binIndex2));
+  if(fBinSumw2.fN) GetBinSumw2()->fArray[binIndex] = h2dN->GetSumw2()->fArray[binIndex2];
+}

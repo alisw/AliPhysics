@@ -241,7 +241,7 @@ void AliGFWWeights::AddArray(TObjArray *targ, TObjArray *sour) {
       targh = (TH3D*)sourh->Clone(sourh->GetName());
       targh->SetDirectory(0);
       targ->Add(targh);
-    } else 
+    } else
       targh->Add(sourh);
   };
 };
