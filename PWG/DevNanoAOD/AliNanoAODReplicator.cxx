@@ -107,7 +107,9 @@ AliAODBranchReplicator(),
   fSaveCascades(kFALSE),
   fSaveConversionPhotons(kFALSE),
   fInputArrayName(""),
-  fOutputArrayName("tracks")
+  fOutputArrayName("tracks"),
+  fKeepDaughters(),
+  fClonedVertices()
   {
   // Default ctor. we need it to avoid instantiating a wrong mapping when reading from file
   }
@@ -142,7 +144,9 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) 
   fSaveCascades(kFALSE),
   fSaveConversionPhotons(kFALSE),
   fInputArrayName(""),
-  fOutputArrayName("tracks")
+  fOutputArrayName("tracks"),
+  fKeepDaughters(),
+  fClonedVertices()
 {
   // default ctor
 }
@@ -507,6 +511,22 @@ TList* AliNanoAODReplicator::GetList() const
   return fList;
 }
 
+AliAODVertex* AliNanoAODReplicator::CloneAndStoreVertex(AliAODVertex* toClone)
+{
+  // Clone vertex if not yet cloned. Update list of to store daughter objects.
+  
+  if (fClonedVertices.find(toClone) != fClonedVertices.end())
+    return fClonedVertices[toClone];
+  
+  AliAODVertex* copiedVertex = new((*fVertices)[fVertices->GetEntriesFast()]) AliAODVertex(*toClone);
+  copiedVertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
+  for (int nD = 0; nD<copiedVertex->GetNDaughters(); nD++)
+    fKeepDaughters[copiedVertex].push_back(copiedVertex->GetDaughter(nD));
+  copiedVertex->RemoveDaughters();
+  fClonedVertices[toClone] = copiedVertex;
+  return copiedVertex;
+}
+
 //_____________________________________________________________________________
 void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
 {
@@ -536,15 +556,15 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     }
     fMCParticles->Clear("C");
   }
+  
+  fKeepDaughters.clear();
+  fClonedVertices.clear();
 
   fHeader->SetMapFiredTriggerClasses(fVarListHeader_fTC);
 
   // Set custom variables in the header if the callback is set
   for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
     (*it)->SetNanoAODHeader(&source, fHeader, fVarListHeader);
-
-  // avoid that vertices are stored several times
-  std::map<AliAODVertex*, AliAODVertex*> clonedVertices;
 
   // keep here only *primary* vertices
   TIter nextV(source.GetVertices());
@@ -561,7 +581,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     copiedVertex->SetNContributors(v->GetNContributors()); 
     copiedVertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
     delete tmp;
-    clonedVertices[v] = copiedVertex;
+    fClonedVertices[v] = copiedVertex;
   }
   
   if(fSaveVzero==1){
@@ -576,11 +596,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
       AliAODZDC *aodZDC(0x0);
       aodZDC = static_cast<AliAODZDC*>(source.GetZDCData());
       *fAodZDC = *aodZDC;
-      
   }
-  
-  // tracks needed as references to V0s and cascades
-  std::map<AliAODVertex*, std::vector<TObject*> > keepTracks;
   
   if (fSaveCascades) {
     TIter nextC(const_cast<AliAODEvent&>(source).GetCascades());
@@ -590,29 +606,18 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     {
       if (fCascadeCuts && !fCascadeCuts->IsSelected(cascade))
         continue;
-
+  
       // bachelor track and xi vertex
-      AliAODVertex* copiedXi = new((*fVertices)[nvertices++]) AliAODVertex(*(cascade->GetDecayVertexXi()));
-      copiedXi->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
-      Int_t nDaughter = copiedXi->GetNDaughters();
-      for (int nD = 0; nD<nDaughter; nD++)
-        keepTracks[copiedXi].push_back(copiedXi->GetDaughter(nD));
-      copiedXi->RemoveDaughters();
-      clonedVertices[cascade->GetDecayVertexXi()] = copiedXi;
+      AliAODVertex* copiedXi = CloneAndStoreVertex(cascade->GetDecayVertexXi());
+      // store additional daughter AODVertex if needed
+      for (int nD = 0; nD<cascade->GetDecayVertexXi()->GetNDaughters(); nD++) {
+        auto vertex = dynamic_cast<AliAODVertex*> (cascade->GetDecayVertexXi()->GetDaughter(nD));
+        if (vertex != nullptr)
+          CloneAndStoreVertex(vertex);
+      }
       
       // v0 vertex and tracks
-      AliAODVertex* copiedV0Vertex = 0;
-      if (clonedVertices.find(cascade->GetSecondaryVtx()) == clonedVertices.end()) {
-        copiedV0Vertex = new((*fVertices)[nvertices++]) AliAODVertex(*(cascade->GetSecondaryVtx()));
-        copiedV0Vertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
-        nDaughter = copiedV0Vertex->GetNDaughters();
-        for (int nD = 0; nD<nDaughter; nD++)
-          keepTracks[copiedV0Vertex].push_back(copiedV0Vertex->GetDaughter(nD));
-        copiedV0Vertex->RemoveDaughters();
-        clonedVertices[cascade->GetSecondaryVtx()] = copiedV0Vertex;
-      } else {
-        copiedV0Vertex = clonedVertices[cascade->GetSecondaryVtx()];
-      }
+      AliAODVertex* copiedV0Vertex = CloneAndStoreVertex(cascade->GetSecondaryVtx());
       
       // NOTE we don't have AliAODcascade::SetDecayVertexXi so have to use copy constructor here
       //AliAODcascade* nanoCascade = new((*fCascades)[n++]) AliAODcascade(*cascade); 
@@ -634,32 +639,17 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
         continue;
 
       AliAODv0* nanoV0 = new((*fV0s)[nV0s++]) AliAODv0(*v);
-      
-      if (clonedVertices.find(v->GetSecondaryVtx()) == clonedVertices.end()) {
-        AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*(v->GetSecondaryVtx()));
-        copiedVertex->SetUniqueID(0); // avoid reusing old unique ID which confuses TRef
-        nanoV0->SetSecondaryVtx(copiedVertex);
-
-        // needed tracks
-        Int_t nDaughter = copiedVertex->GetNDaughters();
-        for (int nD = 0; nD<nDaughter; nD++)
-          keepTracks[copiedVertex].push_back(copiedVertex->GetDaughter(nD));
-        copiedVertex->RemoveDaughters();
-        clonedVertices[v->GetSecondaryVtx()] = copiedVertex;
-      } else {
-        nanoV0->SetSecondaryVtx(clonedVertices[v->GetSecondaryVtx()]);
-      }
-        
+      AliAODVertex* copiedVertex = CloneAndStoreVertex(v->GetSecondaryVtx());
+      nanoV0->SetSecondaryVtx(copiedVertex);
     }
-    // Printf("n(tracks) = %d n(V0) = %d -> %d", source.GetNumberOfTracks(), source.GetNumberOfV0s(), nV0s);
   }
   
   // Fix parent association. Not clear if this is needed downstream, though.
-  for (auto it = clonedVertices.begin(); it != clonedVertices.end(); it++) {
+  for (auto it = fClonedVertices.begin(); it != fClonedVertices.end(); it++) {
     if (it->first->GetParent() == nullptr)
       continue;
-    auto parent = clonedVertices.find((AliAODVertex*) (it->first->GetParent()));
-    if (parent != clonedVertices.end())
+    auto parent = fClonedVertices.find((AliAODVertex*) (it->first->GetParent()));
+    if (parent != fClonedVertices.end())
       it->second->SetParent(parent->second);
     else
       it->second->SetParent(0x0);
@@ -697,6 +687,8 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     }
   }
   
+  std::map<TObject*, AliNanoAODTrack*> trackAssociation;
+  
   // Tracks
   Int_t ntracks(0);
   for(Int_t j=0; j<entries; j++) {
@@ -711,7 +703,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
       selected = kTRUE;
     
     // store tracks needed for V0s
-    for (std::map<AliAODVertex*, std::vector<TObject*> >::iterator it = keepTracks.begin(); it != keepTracks.end(); it++) {
+    for (std::map<AliAODVertex*, std::vector<TObject*> >::iterator it = fKeepDaughters.begin(); it != fKeepDaughters.end(); it++) {
       if (std::find(it->second.begin(), it->second.end(), aodtrack) != it->second.end())
         selected = kTRUE;
     }
@@ -725,15 +717,30 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
 
     AliNanoAODTrack* nanoTrack = new((*fTracks)[ntracks++]) AliNanoAODTrack (aodtrack, fVarList);
 
-    // replace referencs to stored tracks
-    for (std::map<AliAODVertex*, std::vector<TObject*> >::iterator it = keepTracks.begin(); it != keepTracks.end(); it++) {
-      auto daughterListIt = std::find(it->second.begin(), it->second.end(), aodtrack);
-      if (daughterListIt != it->second.end())
-        it->first->AddDaughter(nanoTrack);
-    }
-
     for (std::list<AliNanoAODCustomSetter*>::iterator it = fCustomSetters.begin(); it != fCustomSetters.end(); ++it)
       (*it)->SetNanoAODTrack(aodtrack, nanoTrack);
+    
+    trackAssociation[aodtrack] = nanoTrack;
+  }
+  
+  // Replace references to stored tracks. 
+  // NOTE this has to respect the order in which they were stored (e.g. for a V0 the first daugther needs to be the positive one).
+  for (std::map<AliAODVertex*, std::vector<TObject*> >::iterator it = fKeepDaughters.begin(); it != fKeepDaughters.end(); it++) {
+    for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+      //Printf("Vertex %p Track %p", it->first, *it2);
+      auto track = dynamic_cast<AliAODTrack*> (*it2);
+      auto vertex = dynamic_cast<AliAODVertex*> (*it2);
+      if (track != nullptr && trackAssociation.find(*it2) != trackAssociation.end())
+        it->first->AddDaughter(trackAssociation[*it2]);
+      else if (vertex != nullptr && fClonedVertices.find(vertex) != fClonedVertices.end())
+        it->first->AddDaughter(fClonedVertices[vertex]);
+      else {
+        Printf("Dumping useful information before abort.");
+        it->first->Dump();
+        (*it2)->Dump();
+        AliFatal("You requested to store an AliAODVertex for which the daughter object is not available. Aborting.");
+      }
+    }
   }
   
   AliDebug(1,Form("tracks=%d vertices=%d", fTracks->GetEntries(),fVertices->GetEntries())); 
