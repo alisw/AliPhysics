@@ -5,6 +5,7 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Doub
     /* invariant mass   */ Int_t imID = task->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
     /* transv. momentum */ Int_t ptID = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
     /* angel to leading */ Int_t alID = task->CreateValue(AliRsnMiniValue::kAngleLeading, kFALSE);
+    /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
     Printf("%f", nSigmaKaon);
     // Cuts
 
@@ -60,6 +61,7 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Doub
         out->AddAxis(imID, 215, 0.985, 1.2);
         out->AddAxis(ptID, 200, 0., 20.);                                 //default use mother pt
         out->AddAxis(alID, 100, -0.25 * TMath::Pi(), 1.75 * TMath::Pi()); //-pi/4, 7/4pi
+        out->AddAxis(ptlID, 40, 0., 20.); 
     }
     return kTRUE;
 }
