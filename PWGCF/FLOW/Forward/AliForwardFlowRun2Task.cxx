@@ -109,9 +109,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     //fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
 
-    fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
-    fdNdeta->SetDirectory(0);
-    fOutputList->Add(fdNdeta);
+    // fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
+    // fdNdeta->SetDirectory(0);
+    // fOutputList->Add(fdNdeta);
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
@@ -229,18 +229,18 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fUtil.FillData(refDist,centralDist,forwardDist);
   
   // dNdeta
-  for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
-    Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
-    for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
-      fdNdeta->Fill(eta,cent,centralDist->GetBinContent(etaBin,phiBin));
-    }
-  }
-  for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-    Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
-    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-      fdNdeta->Fill(eta,cent,forwardDist->GetBinContent(etaBin,phiBin));
-    }
-  }
+  // for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
+  //   Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
+  //   for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
+  //     fdNdeta->Fill(eta,cent,centralDist->GetBinContent(etaBin,phiBin));
+  //   }
+  // }
+  // for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+  //   Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
+  //   for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+  //     fdNdeta->Fill(eta,cent,forwardDist->GetBinContent(etaBin,phiBin));
+  //   }
+  // }
 
   Double_t zvertex = fUtil.GetZ();
 

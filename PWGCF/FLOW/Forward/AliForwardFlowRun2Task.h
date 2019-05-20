@@ -107,7 +107,7 @@ public:
 
   AliForwardFlowResultStorage* fStorage; //!
 
-  TH2D* fdNdeta; //!
+  //TH2D* fdNdeta; //!
   //TH1D* fCent;   //!
   //TH1D* fVertex; //!
 
