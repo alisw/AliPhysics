@@ -43,6 +43,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   centralDist(),
   refDist(),
   forwardDist(),
+  fStorage(nullptr),
   fSettings(),
   fUtil(),
   fCalculator()
@@ -62,6 +63,7 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   centralDist(),
   refDist(),
   forwardDist(),
+  fStorage(nullptr),
   fSettings(),
   fUtil(),
   fCalculator()
@@ -75,10 +77,8 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 
   // Rely on validation task for event and track selection
   DefineInput(1, AliForwardTaskValidation::Class());
-  // DefineInput(2, TList::Class());
-  // DefineInput(3, TList::Class());
-  // DefineInput(4, TList::Class());
-  DefineOutput(1, TList::Class());
+
+  DefineOutput(1, AliForwardFlowResultStorage::Class());
 }
 
 //_____________________________________________________________________
@@ -109,9 +109,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     //fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
 
-    //fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
-    //fdNdeta->SetDirectory(0);
-    //fEventList->Add(fdNdeta);
+    // fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
+    // fdNdeta->SetDirectory(0);
+    // fOutputList->Add(fdNdeta);
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
@@ -180,7 +180,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   forwardDist = new TH2D("ft","",200,-4,6,20,0,TMath::TwoPi());
   forwardDist ->SetDirectory(0);
 
-  PostData(1, fOutputList);
+  fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
+
+  PostData(1, fStorage);
 }
 
 
@@ -194,13 +196,17 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   //   option: Not used
   //
   //forwardDist = 0;
+
+
   fCalculator.fSettings = fSettings;
   fUtil.fSettings = fSettings;
 
   // Get the event validation object
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
   if (!ev_val->IsValidEvent()){
-    PostData(1, this->fOutputList);
+  //  PostData(1, this->fOutputList);
+    PostData(1, fStorage);
+
     return;
   }
 
@@ -264,7 +270,9 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   if (!fSettings.mc && !(fSettings.ref_mode & fSettings.kFMDref)) refDist->Reset();
   if (fSettings.mc) forwardDist->Reset();
 
-  PostData(1, fOutputList);
+  //PostData(1, fOutputList);    
+  PostData(1, fStorage);
+
 
   return;
 }

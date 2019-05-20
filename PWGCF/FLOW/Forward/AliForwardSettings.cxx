@@ -45,6 +45,7 @@ AliForwardSettings::AliForwardSettings() :
   doPt(kFALSE),
   stdQC(kFALSE),
   sec_corr(kFALSE),
-  a5(kFALSE)
+  a5(kFALSE),
+  fileName("")
 {
 }
