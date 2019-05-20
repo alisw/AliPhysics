@@ -1354,7 +1354,7 @@ void AddTask_GammaCalo_pPb(
   // ===============================================================================================
   // INT7 triggers
   } else if (trainConfig == 500) {  // PHOS  INT7
-    cuts.AddCutCalo("80010113","2446642051012200000","0163103100000010"); // standard
+    cuts.AddCutCalo("80010113","2446642151012200000","0163103100000010"); // standard
   } else if (trainConfig == 501) {  // PHOS  INT7
     cuts.AddCutCalo("80010113","2446600041012200000","0163103100000010"); // no non lin
     cuts.AddCutCalo("80010113","2446600011012200000","0163103100000010"); // no non lin 1000 \mus
@@ -1414,6 +1414,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","2446641151083200000","0163103100000010"); // dist to bad channel: 1, Ncells: 3, min energy 400 MeV
     cuts.AddCutCalo("80010113","2446641151012200000","0163103100000010"); // dist to bad channel: 1, Ncells: 2, min energy 300 MeV
     cuts.AddCutCalo("80010113","2446641151082200000","0163103100000010"); // dist to bad channel: 1, Ncells: 2, min energy 400 MeV
+  } else if (trainConfig == 513){ // cut variation: dist to bad channel
+    cuts.AddCutCalo("80010113","2446642051013200000","0163103100000010"); // dist to bad channel: 0
+    cuts.AddCutCalo("80010113","2446642151083200000","0163103100000010"); // dist to bad channel: 1
+    cuts.AddCutCalo("80010113","2446642251012200000","0163103100000010"); // dist to bad channel: 2
+    cuts.AddCutCalo("80010113","2446642351082200000","0163103100000010"); // dist to bad channel: 3
   } else if (trainConfig == 520) {  // JJ MC
     cuts.AddCutCalo("80010123","2446642051012200000","0163103100000010"); // standard
 
