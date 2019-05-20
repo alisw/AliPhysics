@@ -59,7 +59,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
-  fIsMC(kFALSE),
+  fIsMC(0),
   fCorrectForNonlinearity(kFALSE),
   fSaveEventProperties(0),
   fSaveCells(0),
@@ -72,7 +72,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA() : AliAnalysisTaskSE(),
   fSaveAdditionalHistos(0),
   fExtractionPercentages(),
   fExtractionPercentagePtBins(),
-  fBuffer_EventID(0),
+  fBuffer_EventWeight(1),
   fBuffer_ClusterE(0),
   fBuffer_ClusterPhi(0),
   fBuffer_ClusterEta(0),
@@ -147,7 +147,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   ffillTree(-100),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
-  fIsMC(kFALSE),
+  fIsMC(0),
   fCorrectForNonlinearity(kFALSE),
   fSaveEventProperties(0),
   fSaveCells(0),
@@ -160,7 +160,7 @@ AliAnalysisTaskClusterQA::AliAnalysisTaskClusterQA(const char *name) : AliAnalys
   fSaveAdditionalHistos(0),
   fExtractionPercentages(),
   fExtractionPercentagePtBins(),
-  fBuffer_EventID(0),
+  fBuffer_EventWeight(1),
   fBuffer_ClusterE(0),
   fBuffer_ClusterPhi(0),
   fBuffer_ClusterEta(0),
@@ -270,9 +270,10 @@ void AliAnalysisTaskClusterQA::UserCreateOutputObjects()
   fClusterTree->Branch("Cluster_LeadingCell_Phi",           &fBuffer_LeadingCell_Phi,                 "Cluster_LeadingCell_Phi/F");
   fClusterTree->Branch("Cluster_M02",                       &fBuffer_ClusterM02,                      "Cluster_M02/F");
   fClusterTree->Branch("Cluster_M20",                       &fBuffer_ClusterM20,                      "Cluster_M20/F");
+
+  fClusterTree->Branch("Event_Weight",                      &fBuffer_EventWeight,                     "Event_Weight/F");
   if(fSaveEventProperties)
   {
-    fClusterTree->Branch("Event_ID",                        &fBuffer_EventID,                         "Event_ID/l");
     fClusterTree->Branch("Event_Vertex_X",                  &fBuffer_Event_Vertex_X,                  "Event_Vertex_X/F");
     fClusterTree->Branch("Event_Vertex_Y",                  &fBuffer_Event_Vertex_Y,                  "Event_Vertex_Y/F");
     fClusterTree->Branch("Event_Vertex_Z",                  &fBuffer_Event_Vertex_Z,                  "Event_Vertex_Z/F");
@@ -338,7 +339,7 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
     return;
   }
   fInputEvent                         = InputEvent();
-  if(fIsMC) fMCEvent                  = MCEvent();
+  if(fIsMC>0) fMCEvent                  = MCEvent();
 
   Int_t eventNotAccepted              = fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
   if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
@@ -361,6 +362,21 @@ void AliAnalysisTaskClusterQA::UserExec(Option_t *){
   if(nclus == 0)  return;
 
   ((AliCaloPhotonCuts*)fClusterCutsEMC)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
+
+  // if(fIsMC==2){
+  //   Float_t xsection = -1.; Float_t ntrials = -1.;
+  //   ((AliConvEventCuts*)fEventCuts)->GetXSectionAndNTrials(fMCEvent,xsection,ntrials,fInputEvent);
+  //   if((xsection==-1.) || (ntrials==-1.)) AliFatal(Form("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials, periodName from V0Reader: '%s'",fV0Reader->GetPeriodName().Data()));
+  //   // fProfileJetJetXSection[iCut]->Fill(0.,xsection);
+  //   // fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
+  // }
+
+  fWeightJetJetMC = 1;
+  Bool_t isMCJet = ((AliConvEventCuts*)fEventCuts)->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, fInputEvent );
+  if (!isMCJet){
+    return;
+  }
+  fBuffer_EventWeight = fWeightJetJetMC;
   // ((AliCaloPhotonCuts*)fClusterCutsDMC)->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
@@ -430,17 +446,10 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
     fBuffer_Event_Vertex_Y                  = fInputEvent->GetPrimaryVertex()->GetY();
     fBuffer_Event_Vertex_Z                  = fInputEvent->GetPrimaryVertex()->GetZ();
 
-    // Unique event ID of the current cluster
-    // AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(event);
-    fBuffer_EventID              = 0;
-    // if(esdEvent->GetHeader()){
-    //   fBuffer_EventID = GetUniqueEventID(esdEvent->GetHeader());
-    //   printf("event id: %lld\n",fBuffer_EventID);
-    // }
-
     // V0-based multiplicity of the event
     fBuffer_Event_Multiplicity              = fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C();
   }
+  fBuffer_EventWeight = fWeightJetJetMC;
 
   // Properties of the current cluster
   fBuffer_ClusterE                        = cluster->E();
@@ -1291,7 +1300,7 @@ Float_t AliAnalysisTaskClusterQA::GetCentrality(AliVEvent *event)
   return -1;
 }
 void AliAnalysisTaskClusterQA::ResetBuffer(){
-  fBuffer_EventID                         = 0;
+  fBuffer_EventWeight                     = 1;
   fBuffer_ClusterE                        = 0;
   fBuffer_ClusterPhi                      = 0;
   fBuffer_ClusterEta                      = 0;

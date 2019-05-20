@@ -56,7 +56,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
                                                                                             ffillTree = fillTree                ;
                                                                                             ffillHistograms = fillHistorams     ;
                                                                                           }
-    void SetIsMC                            ( Bool_t isMC )                               { fIsMC                 = isMC        ; }
+    void SetIsMC                            ( Int_t isMC )                                { fIsMC                 = isMC        ; }
     void SetDoAdditionalHistos              ( Bool_t val )                                { fSaveAdditionalHistos = val        ; }
     void SetSaveEventProperties             ( Bool_t val  )                               { fSaveEventProperties  = val         ; }
     void SetSaveClusterCells                ( Bool_t val  )                               { fSaveCells            = val         ; }
@@ -122,7 +122,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Double_t                    ffillTree;                  //
     Bool_t                      ffillHistograms;            //
     TList*                      fOutputList;                //
-    Bool_t                      fIsMC;                      //
+    Int_t                       fIsMC;                      //
     Bool_t                      fCorrectForNonlinearity;                      //
     
     // Save flags
@@ -141,7 +141,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     std::vector<Float_t> fExtractionPercentagePtBins;     ///< pT-bins associated with fExtractionPercentages
     
     // Buffers that will be added to the tree
-    ULong64_t       fBuffer_EventID;                     //!<! array buffer
+    Float_t         fBuffer_EventWeight;                     //!<! array buffer
     Float_t         fBuffer_ClusterE;                     //!<! array buffer
     Float_t         fBuffer_ClusterPhi;                   //!<! array buffer
     Float_t         fBuffer_ClusterEta;                   //!<! array buffer
@@ -186,7 +186,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_Cluster_MC_EFracLeadingPi0;              //!<! array buffer
 
     
-    ClassDef(AliAnalysisTaskClusterQA, 9);
+    ClassDef(AliAnalysisTaskClusterQA, 10);
 };
 
 const Int_t kMaxActiveCells = 18000;
