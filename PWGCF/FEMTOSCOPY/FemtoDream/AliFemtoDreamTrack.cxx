@@ -594,6 +594,8 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   }
   if (fAODTrack->IsOn(AliAODTrack::kTPCrefit)) {
     fTPCRefit = true;
+  } else {
+    fTPCRefit = false;
   }
   if (fAODGlobalTrack->GetTOFBunchCrossing() == 0) {
     this->fTOFTiming = true;
