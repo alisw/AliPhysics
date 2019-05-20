@@ -5,7 +5,7 @@ void AddTask_ClusterQA(
   // TString   TaskMesonCutnumber            = "0163300000000000",
   Int_t     minNLM                        = 1,
   Int_t     maxNLM                        = 1,
-  Bool_t    isMC                          = kFALSE,
+  Int_t     isMC                          = 0,
   Int_t     IsHeavyIon                    = 0,
   Bool_t    kHistograms                   = kTRUE,
   Double_t  kTree                         = 1.0,  // 0. / 0 / kFALSE for no, 1. / 1 / kTRUE for yes,  x > 1.0 will use only 1/x of the event statistics for the tree
