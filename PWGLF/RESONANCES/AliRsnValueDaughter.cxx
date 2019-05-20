@@ -1099,7 +1099,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        AliESDtrack* bTrack = lESDEvent->GetTrack(lIdxBach);
        if(!bTrack) return kFALSE;
        AliPIDResponse* pid = fEvent->GetPIDResponse();
-       fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(bTrack, AliPID::kPion));
+       fComputedValue = pid->NumberOfSigmasTPC(bTrack, AliPID::kPion);
        return kTRUE;
      } else if(caaod){
        AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
@@ -1107,7 +1107,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        AliAODTrack* bTrack = (AliAODTrack *) (caAOD->GetDecayVertexXi()->GetDaughter(0));
        if(!bTrack) return kFALSE;
        AliPIDResponse* pid = fEvent->GetPIDResponse();
-       fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(bTrack, AliPID::kPion));
+       fComputedValue = pid->NumberOfSigmasTPC(bTrack, AliPID::kPion);
        return kTRUE;
      } else {
        fComputedValue = -999;
@@ -1122,7 +1122,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        AliESDtrack * bTrack = lESDEvent->GetTrack(lIdxBach);
        if(!bTrack) return kFALSE;
        AliPIDResponse* pid = fEvent->GetPIDResponse();
-       fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(bTrack, AliPID::kKaon));
+       fComputedValue = pid->NumberOfSigmasTPC(bTrack, AliPID::kKaon);
        return kTRUE;
      } else if(caaod){
        AliAODcascade* caAOD = dynamic_cast<AliAODcascade *>(caaod);
@@ -1130,7 +1130,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        AliAODTrack* bTrack = (AliAODTrack *) (caAOD->GetDecayVertexXi()->GetDaughter(0));
        if(!bTrack) return kFALSE;
        AliPIDResponse* pid = fEvent->GetPIDResponse();
-       fComputedValue = TMath::Abs(pid->NumberOfSigmasTPC(bTrack, AliPID::kKaon));
+       fComputedValue = pid->NumberOfSigmasTPC(bTrack, AliPID::kKaon);
        return kTRUE;
      } else {
        fComputedValue = -999;
