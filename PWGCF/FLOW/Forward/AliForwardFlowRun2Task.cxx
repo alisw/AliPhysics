@@ -44,7 +44,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task() : AliAnalysisTaskSE(),
   refDist(),
   forwardDist(),
   fStorage(nullptr),
-  fFile(nullptr), 
   fSettings(),
   fUtil(),
   fCalculator()
@@ -65,7 +64,6 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
   refDist(),
   forwardDist(),
   fStorage(nullptr),
-  fFile(nullptr),
   fSettings(),
   fUtil(),
   fCalculator()
@@ -79,11 +77,8 @@ AliForwardFlowRun2Task::AliForwardFlowRun2Task(const char* name) : AliAnalysisTa
 
   // Rely on validation task for event and track selection
   DefineInput(1, AliForwardTaskValidation::Class());
-  // DefineInput(2, TList::Class());
-  // DefineInput(3, TList::Class());
-  // DefineInput(4, TList::Class());
+
   DefineOutput(1, AliForwardFlowResultStorage::Class());
-  //DefineOutput(1, TList::Class());
 }
 
 //_____________________________________________________________________
@@ -114,9 +109,9 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
 
     //fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
 
-    //fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
-    //fdNdeta->SetDirectory(0);
-    //fEventList->Add(fdNdeta);
+    fdNdeta = new TH2D("dNdeta","dNdeta",200 /*fSettings.fNDiffEtaBins*/,fSettings.fEtaLowEdge,fSettings.fEtaUpEdge,fSettings.fCentBins,0,60);
+    fdNdeta->SetDirectory(0);
+    fOutputList->Add(fdNdeta);
 
     fAnalysisList->Add(new TList());
     fAnalysisList->Add(new TList());
@@ -188,8 +183,6 @@ void AliForwardFlowRun2Task::UserCreateOutputObjects()
   fStorage = new AliForwardFlowResultStorage(fSettings.fileName, fOutputList);
 
   PostData(1, fStorage);
-
-  //PostData(1, fOutputList);
 }
 
 
@@ -236,18 +229,18 @@ void AliForwardFlowRun2Task::UserExec(Option_t *)
   fUtil.FillData(refDist,centralDist,forwardDist);
   
   // dNdeta
-  // for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
-  //   Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
-  //   for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
-  //     fdNdeta->Fill(eta,cent,centralDist->GetBinContent(etaBin,phiBin));
-  //   }
-  // }
-  // for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
-  //   Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
-  //   for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
-  //     fdNdeta->Fill(eta,cent,forwardDist->GetBinContent(etaBin,phiBin));
-  //   }
-  // }
+  for (Int_t etaBin = 1; etaBin <= centralDist->GetNbinsX(); etaBin++) {
+    Double_t eta = centralDist->GetXaxis()->GetBinCenter(etaBin);
+    for (Int_t phiBin = 1; phiBin <= centralDist->GetNbinsX(); phiBin++) {
+      fdNdeta->Fill(eta,cent,centralDist->GetBinContent(etaBin,phiBin));
+    }
+  }
+  for (Int_t etaBin = 1; etaBin <= forwardDist->GetNbinsX(); etaBin++) {
+    Double_t eta = forwardDist->GetXaxis()->GetBinCenter(etaBin);
+    for (Int_t phiBin = 1; phiBin <= forwardDist->GetNbinsX(); phiBin++) {
+      fdNdeta->Fill(eta,cent,forwardDist->GetBinContent(etaBin,phiBin));
+    }
+  }
 
   Double_t zvertex = fUtil.GetZ();
 

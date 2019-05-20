@@ -106,9 +106,8 @@ public:
   TH2D*   forwardDist; //!
 
   AliForwardFlowResultStorage* fStorage; //!
-  TFile* fFile; //!
 
-  //TH2D* fdNdeta; //!
+  TH2D* fdNdeta; //!
   //TH1D* fCent;   //!
   //TH1D* fVertex; //!
 

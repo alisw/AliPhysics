@@ -172,16 +172,8 @@ void AliForwardGenericFramework::saveEvent(TList* outputList, double cent, doubl
   for (Int_t n = 2; n <= 4; n++) {
     Int_t prevRefEtaBin = kTRUE;
 
-    TString n_str;
-    n_str.Form("%d",n);
-
-    TString ptn_str;
-    ptn_str.Form("%d",ptn);
-
-    //cumuRef = static_cast<THnD*>(file->Get(fSettings.fileName + "/Analysis/Reference/cumuRef_v" + n_str + "_pt" + ptn_str));//
-    cumuRef = static_cast<THnD*>(refList->At(n-2));//FindObject(Form("cumuRef_v%d_pt%d", n,ptn)));
-    //cumuDiff = static_cast<THnD*>(file->Get(fSettings.fileName + "/Analysis/Differential/cumuDiff_v" + n_str + "_pt" + ptn_str));//(
-    cumuDiff = static_cast<THnD*>(difList->At(n-2));////FindObject(Form("cumuDiff_v%d_pt%d", n,ptn)));
+    cumuRef = static_cast<THnD*>(refList->At(n-2));
+    cumuDiff = static_cast<THnD*>(difList->At(n-2));
 
     for (Int_t etaBin = 1; etaBin <= fpvector->GetAxis(3)->GetNbins(); etaBin++) {
       Double_t eta = fpvector->GetAxis(3)->GetBinCenter(etaBin);

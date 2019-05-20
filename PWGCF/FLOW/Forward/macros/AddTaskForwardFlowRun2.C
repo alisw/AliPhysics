@@ -197,18 +197,6 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2( bool doNUA,
   mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
 
 
-
-  //task->fFile = mgr->OpenFile((AliAnalysisDataContainer*)mgr->GetContainers()->FindObject(suffix),"UPDATE");//new TFile(static_cast<TFile>(mgr->GetContainers()->FindObject(suffix)));
-
-  // AliAnalysisDataContainer *coutput_recon =
-  // mgr->CreateContainer(suffix,
-  //  TList::Class(),
-  //  AliAnalysisManager::kOutputContainer,
-  //  mgr->GetCommonFileName());
-  // mgr->ConnectOutput(task, 1, coutput_recon);
-  // mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
-
-
   AliAnalysisDataContainer* valid = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject("event_selection_xchange");
   mgr->ConnectInput(task,1,valid);
 
