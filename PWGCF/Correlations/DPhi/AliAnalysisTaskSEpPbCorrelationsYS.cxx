@@ -1778,16 +1778,30 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
    fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
    fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
-   if(fFMDcut && fAnaMode!="TPCTPC"){
-     if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
-       selectedTracksLeading->Clear();
-       delete selectedTracksLeading;
-       selectedTracksAssociated->Clear();
-       delete selectedTracksAssociated;
-       PostData(1, fOutputList);
-       PostData(2, fOutputList1);
-       PostData(3, fOutputList2);
-       return;} //events cuts
+   if(fAnaMode!="TPCTPC"){
+     if(fFMDcut){
+       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
+	 selectedTracksLeading->Clear();
+	 delete selectedTracksLeading;
+	 selectedTracksAssociated->Clear();
+	 delete selectedTracksAssociated;
+	 PostData(1, fOutputList);
+	 PostData(2, fOutputList1);
+	 PostData(3, fOutputList2);
+	 return;
+       }
+     }else{
+       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 100){
+	 selectedTracksLeading->Clear();
+	 delete selectedTracksLeading;
+	 selectedTracksAssociated->Clear();
+	 delete selectedTracksAssociated;
+	 PostData(1, fOutputList);
+	 PostData(2, fOutputList1);
+	 PostData(3, fOutputList2);
+	 return;
+       } //events cuts
+     }
    }
    
    fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
@@ -1893,7 +1907,6 @@ TObjArray* AliAnalysisTaskSEpPbCorrelationsYS::GetFMDhitsYS(Bool_t Aside){
           if (mostProbableN > 0) {
             Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
             //ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, pt, mostProbableN));
-
             if(Aside){
               if(eta<0) continue;
              } else{
