@@ -78,6 +78,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fHistoIntermediateNumberOfTracks(NULL),
   fHistoFinalNumberOfTracks(NULL),
   fHistoFilterCorrelations(NULL),
+  fHistoFinalFilterCorrelations(NULL),
   fCentralityFromVZero(kFALSE),
   fCentralityFromSPD(kFALSE),
   fCentralityMin(0.),
@@ -201,6 +202,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fHistoIntermediateNumberOfTracks(NULL),
   fHistoFinalNumberOfTracks(NULL),
   fHistoFilterCorrelations(NULL),
+  fHistoFinalFilterCorrelations(NULL),
   fCentralityFromVZero(kFALSE),
   fCentralityFromSPD(kFALSE),
   fCentralityMin(0.),
@@ -474,7 +476,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookMultiplicityList()
   fHistoFinalNumberOfTracks->GetYaxis()->SetTitle("Number of events");
   fMultiplicityList->Add(fHistoFinalNumberOfTracks);
 
-// 2D correlation histogram between two filters.
+// 2D correlation histograms between two filters.
   if (fDoTDCorrelationHisto) // Manually enabled only to decide the cuts, as it is memory-greedy.
   {
     fHistoFilterCorrelations = new TH2I("fHistoFilterCorrelations", "2D multiplicity correlations between filters", fNumberOfBinsHFC, 0., fMaxBinHFC, fNumberOfBinsHFC, 0., fMaxBinHFC);
@@ -485,6 +487,15 @@ void AliAnalysisTaskTwoMultiCorrelations::BookMultiplicityList()
     fHistoFilterCorrelations->SetMarkerColor(kBlue);
     fHistoFilterCorrelations->SetMarkerStyle(kFullCircle);
     fMultiplicityList->Add(fHistoFilterCorrelations);
+
+    fHistoFinalFilterCorrelations = new TH2I("fHistoFinalFilterCorrelations", "2D multiplicity correlations between filters after the track selection", fNumberOfBinsHFC, 0., fMaxBinHFC, fNumberOfBinsHFC, 0., fMaxBinHFC);
+    fHistoFinalFilterCorrelations->SetStats(kTRUE);
+    fHistoFinalFilterCorrelations->GetXaxis()->SetTitle(Form("Multiplicity_{Filter %d}", fGlobalFilter));
+    fHistoFinalFilterCorrelations->GetYaxis()->SetTitle(Form("Multiplicity_{Filter %d}", fMainFilter));
+    fHistoFinalFilterCorrelations->SetMarkerSize(0.5);
+    fHistoFinalFilterCorrelations->SetMarkerColor(kBlue);
+    fHistoFinalFilterCorrelations->SetMarkerStyle(kFullCircle);
+    fMultiplicityList->Add(fHistoFinalFilterCorrelations);
   }
 }
 
@@ -967,24 +978,44 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
   long long intermediateNumberOfTracks = aAODevent->GetNumberOfTracks();  // Number of tracks before the track selection.
   fHistoIntermediateNumberOfTracks->Fill(intermediateNumberOfTracks);
 
+// Do the 2D correlation histogram?
+  if (fDoTDCorrelationHisto)
+  {
+    Int_t multiplicityGlobalFilter = 0; // Number of tracks in the global filter.
+    Int_t multiplicityMainFilter = 0; // Number of tracks in the main filter bit.
+    for (Int_t inTrack = 0; inTrack < intermediateNumberOfTracks; inTrack++)
+    {
+      AliAODTrack *aliTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(inTrack));  // Pointer to an AOD track.
+      if (!aliTrack) {continue;}  // Protection against NULL pointer.
+
+      //if ((aliTrack->TestFilterBit(fMainFilter)) && (!aliTrack->TestFilterBit(fGlobalFilter))) {multiplicityMainFilter++;}
+      if (aliTrack->TestFilterBit(fGlobalFilter)) {multiplicityGlobalFilter++;}
+      if (aliTrack->TestFilterBit(fMainFilter)) {multiplicityMainFilter++;}
+    }
+
+  // Fill the histogram.
+    fHistoFilterCorrelations->Fill(multiplicityGlobalFilter, multiplicityMainFilter);
+
+  // Reset the variables.
+    multiplicityMainFilter = 0;
+    multiplicityGlobalFilter = 0;
+  }
+
 // Prepare the variables for the track selection.
   long long finalNumberOfTracks = 0;  // Final number of tracks for the main filter.
-  long long globalNumberOfTracks = 0; // Number of tracks for the global (second) filter.
+  long long globalNumberOfTracks = 0; // Final number of tracks for the global filter.
   Int_t *IsTrackSelected = new Int_t[intermediateNumberOfTracks](); // Flag to indicate if a track has passed the track selection (1) or not (0).
   Double_t pT = 0.; // Transverse momentum of the track.
   Double_t eta = 0.;  // Pseudorapidity of the track.
   Double_t phi = 0.;  // Azimuthal angle of the track.
   Int_t numberOfTPCClusters = 0;  // Number of TPC clusters gone through by the track.
   Int_t numberOfITSClusters = 0;  // Number of ITS clusters gone through by the track.
-  Double_t chiSquareInTPC = 0.; // Chi square of the track momentum in the TPC.
+  Double_t chiSquareInTPC = 0.; // Chi square in the TPC.
   Double_t DCAx = 0.; // x-coordinate of the DCA.
   Double_t DCAy = 0.; // y-coordinate of the DCA.
   Double_t DCAz = 0.;  // z-coordinate of the DCA.
   Double_t DCAxy = 0.;  // xy-coordinate of the DCA.
   Int_t charge = 0; // Electric charge.
-
-// Do the 2D correlation histogram?
-  if (fDoTDCorrelationHisto) {DoFilterCorrelationHistogram(aAODevent);}
 
 // Apply the track selection to each track and mark them according to if they passed or not.
   for (long long iTrack = 0; iTrack < intermediateNumberOfTracks; iTrack++)
@@ -1027,6 +1058,12 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
       if (currentTrack->TestFilterBit(fGlobalFilter)) {globalNumberOfTracks++;}
     }
     else {IsTrackSelected[iTrack] = 0;} // The track failed the selection.
+  }
+
+// Do the final 2D correlation histograms for filters?
+  if (fDoTDCorrelationHisto)
+  {
+    fHistoFinalFilterCorrelations->Fill(globalNumberOfTracks, finalNumberOfTracks);
   }
 
 // Remove the events with too few or too many tracks.
@@ -1139,31 +1176,6 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
   delete [] phiArray;
   delete [] particleWeightArray;
   indexInNewArrays = 0;
-}
-
-//======================================================================================//
-void AliAnalysisTaskTwoMultiCorrelations::DoFilterCorrelationHistogram(AliAODEvent *aAODevent)
-{
-/* Do the 2D correlation histogram between the two filters. */
-  Int_t numberOfTracks = aAODevent->GetNumberOfTracks(); // Number of tracks in the event.
-  Int_t multiplicityMainFilter = 0;  // Number of tracks for the main filter bit.
-  Int_t multiplicityGlobalFilter = 0; // Number of tracks for the global filter bit.
-
-  for (Int_t iTrack = 0; iTrack < numberOfTracks; iTrack++)
-  {
-    AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(iTrack));  // Pointer to an AOD track.
-    if (!aTrack) {continue;}  // Protection against NULL pointer.
-
-    if ((aTrack->TestFilterBit(fMainFilter)) && (!aTrack->TestFilterBit(fGlobalFilter))) {multiplicityMainFilter++;}
-    if (aTrack->TestFilterBit(fGlobalFilter)) {multiplicityGlobalFilter++;}
-  }
-
-  fHistoFilterCorrelations->Fill(multiplicityGlobalFilter, multiplicityMainFilter);
-
-// Reset everything.
-  numberOfTracks = 0;
-  multiplicityMainFilter = 0;
-  multiplicityGlobalFilter = 0;
 }
 
 //======================================================================================//

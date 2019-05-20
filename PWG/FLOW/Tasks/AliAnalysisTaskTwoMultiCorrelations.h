@@ -210,7 +210,6 @@ public:
 // Methods called in 'UserExec'.
   virtual void AnalyseMCevent(AliMCEvent *aMCevent);
   virtual void AnalyseAODevent(AliAODEvent *aAODevent);
-  virtual void DoFilterCorrelationHistogram(AliAODEvent *aAODevent);
   Bool_t ApplyTrackSelection(AliAODTrack *aAODtrack);
   virtual void CalculateQvectors(long long numberOfParticles, Double_t angles[], Double_t pWeights[]);
   TComplex Q(Int_t n, Int_t p);
@@ -253,7 +252,8 @@ private:
   TH1I *fHistoInitialNumberOfTracks;  //! Distribution of the initial number of tracks.
   TH1I *fHistoIntermediateNumberOfTracks; //! Distribution of the number of tracks before the track selection.
   TH1I *fHistoFinalNumberOfTracks;  //! Distribution of the final number of tracks.
-  TH2I *fHistoFilterCorrelations; //! 2D correlation histogram with multiplicity for two filter bits.
+  TH2I *fHistoFilterCorrelations; //! 2D correlation histogram with multiplicity for two filter bits before the track selection.
+  TH2I *fHistoFinalFilterCorrelations; //! 2D correlation histogram with multiplicity for two filter bits after the track selection.
 
   Bool_t fCentralityFromVZero;  // Use the V0 detector to estimate the centrality of the events?
   Bool_t fCentralityFromSPD;  // Use the SPD detector to estimate the centrality of the events? 
@@ -363,8 +363,8 @@ private:
 
 //--------------------------------------------------------------------------------------//
 // Version number to handle properly objects written before and after the changes.
-// Version 10, date: 2019-05-06.
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 10);
+// Version 11, date: 2019-05-20.
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 11);
 
 };  // End: class AliAnalysisTaskTwoMultiCorrelations.
 
