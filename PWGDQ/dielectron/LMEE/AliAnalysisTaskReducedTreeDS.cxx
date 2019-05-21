@@ -734,7 +734,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron)) > fMaxTPCNsigmaEleCut) continue;//pre-select electrons to reduce data size.
 
     if(Chi2Global > 100) continue;
-    if(track->GetNcls(0) < 4)  continue;//minimum number of ITS cluster 4
+    if(track->GetNcls(0) < 3)  continue;//minimum number of ITS cluster 3
     if(track->GetNcls(1) < 70) continue;//minimum number of TPC cluster 70
     if((Double_t)(track->GetTPCchi2()) / (Double_t)(track->GetNcls(1)) > 4.) continue;//maximum chi2 per cluster TPC
     if((Double_t)(track->GetITSchi2()) / (Double_t)(track->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
