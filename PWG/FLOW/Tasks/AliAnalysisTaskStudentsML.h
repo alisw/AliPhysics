@@ -52,6 +52,8 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // ...
   //add all except Cosmetics
   virtual void Cosmetics();
+  Bool_t GlobalQualityAssurance(AliAODEvent *aAODevent);
+  Bool_t TrackSelection(AliAODTrack *aTrack); 
   virtual void CalculateQvectors();
   virtual void Correlation();
   // 3.) Methods called in Terminate():
@@ -64,15 +66,25 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   void SetFinalResultsList(TList* const frl) {this->fFinalResultsList = frl;};
   TList* GetFinalResultsList() const {return this->fFinalResultsList;}
 
-  void SetBoolMultCut(Bool_t top){this->bBruteMultCut = top;} 
-  Bool_t GetBoolMultCut() const {return this->bBruteMultCut;}
+  void SetBoolMultCut(Bool_t top, Int_t otp){this->bMultCut = top; this->fSecondFilter=otp;} 
+  
+  void SetFilters(Int_t top){this->fMainFilter = top;} 
 
-  void SetMultCut(Int_t top){this->fMultCut = top;} 
-  Int_t GetMultCut() const {return this->fMultCut;}
+  void SetVertexX(Bool_t Cut, Double_t Min, Double_t Max)
+  {this->bCutOnVertexX=Cut;  this->fMinVertexX=Min; this->fMaxVertexX=Max;}
 
-  void SetFilter(Int_t top){this->fFilter = top;} 
-  Int_t GetFilter() const {return this->fFilter;}
+  void SetVertexY(Bool_t Cut, Double_t Min, Double_t Max)
+  {this->bCutOnVertexY=Cut;  this->fMinVertexY=Min; this->fMaxVertexY=Max;}
 
+  void SetVertexZ(Bool_t Cut, Double_t Min, Double_t Max)
+  {this->bCutOnVertexZ=Cut;  this->fMinVertexZ=Min; this->fMaxVertexZ=Max;}
+
+   void SetEtaCut(Bool_t Cut, Double_t Min, Double_t Max)
+  {this->bCutOnEta=Cut;  this->fMinEtaCut=Min; this->fMaxEtaCut=Max;}
+
+  void SetPtCut(Bool_t Cut, Double_t Min, Double_t Max)
+  {this->bCutOnPt=Cut;  this->fMinPtCut=Min; this->fMaxPtCut=Max;}
+ 
   void SetCorrNumber(Int_t top){this->fNumber = top;} 
   Int_t GetCorrNumber() const {return this->fNumber;}
 
@@ -117,21 +129,51 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Int_t fNbins;                  // number of bins
   Float_t fMinBin;               // min bin
   Float_t fMaxBin;               // min bin 
-  TH1F *fPhiHist;                // atrack->Phi()
-  TH1F *fEtaHist;                // atrack->Eta()
-  TH1F *fMultPreCut;         // Multiplicity before brute cut
-  TH1F *fMultPostCut;         // Multiplicity after brute cut
-  TH1F *fMultiHisto;             // multiplicity histogram atrack->nTracks
+  TH1F *fPhiHistBeforeTrackSeletion;                // atrack->Phi() - Distribution before Track Selection
+  TH1F *fEtaHistBeforeTrackSeletion;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fTotalMultBeforeTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
+  TH1F *fMultiHistoBeforeTrackSeletion;             // multiplicity distribution before Track Selection
+  TH1F *fPhiHistAfterTrackSeletion;                // atrack->Phi() - Distribution before Track Selection
+  TH1F *fEtaHistAfterTrackSeletion;                // atrack->Eta() - Distribution before Track Selection
+  TH1F *fTotalMultAfterTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
+  TH1F *fMultiHistoAfterTrackSeletion;             // multiplicity distribution before Track Selection
+  TH1F *fMultiHistoBeforeMultCut;             // multiplicity distribution before high multiplicity outlier removel
 
-  //2.) Variables for the correlation:
+
+  //2.) SelectionCuts
+  Bool_t bMultCut;
+  Int_t fMainFilter;           //for main filter selection (default: Hypbrid)
+  Int_t fSecondFilter;           //for filter selection (default: global)
+  
+    //Global
+  Float_t fMinCentrality;        // min centrality (default 0.)
+  Float_t fMaxCentrality;        // max centrality (default 100.)
+  Bool_t bCutOnVertexX;               // Bool to apply Vertex Cut in X (default kFALSE)
+  Bool_t bCutOnVertexY;               // Bool to apply Vertex Cut in Y (default kFALSE)
+  Bool_t bCutOnVertexZ;               // Bool to apply Vertex Cut in Z (default kFALSE)
+  Double_t fMinVertexX;               // min vertex cut X (default -44)
+  Double_t fMaxVertexX;               // max vertex cut X (default -44)
+  Double_t fMinVertexY;               // min vertex cut Y (default -44)
+  Double_t fMaxVertexY;               // max vertex cut Y (default -44)
+  Double_t fMinVertexZ;               // min vertex cut Z (default -10 cm)
+  Double_t fMaxVertexZ;               // max vertex cut Z (default +10 cm)
+
+    //Physics-Selection
+  Bool_t bCutOnEta;               // Bool to apply eta cuts (default kTRUE)
+  Bool_t bCutOnPt;               // Bool to apply pt cuts (default kTRUE)
+  Double_t fMinEtaCut;               // min eta cut (default -0.8)
+  Double_t fMaxEtaCut;               // max eta cut (default 0.8)
+  Double_t fMinPtCut;               // min pt cut (default 0.2)
+  Double_t fMaxPtCut;               // max pt cut (default 5.0)
+ 
+
+  //3.) Variables for the correlation:
   Int_t fMaxCorrelator;          // maximum of correlation 
   TProfile *fRecursion[2][8];    //!  
   TProfile *fRecursionSecond[2][8];    //!
   Bool_t bUseWeights; 
 
-  Bool_t bBruteMultCut;
-  Int_t fMultCut;
-  Int_t fFilter;           //for filter selection
+  
   Int_t fNumber;           //number of correlation
   Int_t fMinNumberPart;           //minimal number of particles to do correlation
 
@@ -142,16 +184,14 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   const Int_t kSum; 
   const Int_t kMaxHarmonic; 
   const Int_t kMaxPower; 
-  Int_t fParticles;
-  Float_t fMinCentrality;        // min centrality
-  Float_t fMaxCentrality;        // max centrality
+  Int_t fParticles;        // number of particles after all selections
   TArrayD *fAngles;              //! Azimuthal angles 
   TArrayD *fWeights;            //! Particle weights
   TArrayI *fBin;                   //! Bins for particle weight
   
-  TComplex Qvector[17][9];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+  TComplex fQvector[17][9];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
-  // 3.) Final results:
+  // 4.) Final results:
    
   TProfile *fCentrality;         // final centrality result
   TProfile *fCentralitySecond;         // final centrality result for second harmonics 
@@ -161,7 +201,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,9);
+  ClassDef(AliAnalysisTaskStudentsML,10);
 
 };
 
