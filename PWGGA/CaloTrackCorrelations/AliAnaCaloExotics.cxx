@@ -63,7 +63,8 @@ fhNCellsPerClusterExo(0),              fhNCellsPerClusterExoTrackMatch(0),
 fhEtaPhiExo(0),                        fhEtaPhi1Cell(0),
 fhTimeEnergyExo(0),                    fhTimeEnergy1Cell(0),                
 fhTimeDiffClusCellExo(0),              fhTimeDiffAmpClusCellExo(0),              
-fhM02EnergyExo(0),                     fhM20EnergyExoM02MinCut(0),                                                 
+fhM02EnergyExo(0),                     fhM02EnergyExoZoomIn(0),                     
+fhM20EnergyExoM02MinCut(0),                                                 
 
 // Track matching vs exoticity
 fhTrackMatchedDEtaNegExo(0),           fhTrackMatchedDPhiNegExo(0),            fhTrackMatchedDEtaDPhiNegExo(0),
@@ -293,6 +294,8 @@ void AliAnaCaloExotics::ClusterHistograms(const TObjArray *caloClusters,
     if ( nCaloCellsPerCluster > 1 )
     {
       fhM02EnergyExo->Fill(en, clus->GetM02(), exoticity, GetEventWeight());
+      
+      fhM02EnergyExoZoomIn->Fill(en, clus->GetM02(), exoticity, GetEventWeight());
       
       if ( clus->GetM02() > 0.1 )
         fhM20EnergyExoM02MinCut->Fill(en, clus->GetM20(), exoticity, GetEventWeight());
@@ -611,6 +614,14 @@ TList * AliAnaCaloExotics::GetCreateOutputObjects()
   fhM02EnergyExo->SetYTitle("#sigma^{2}_{long}");
   fhM02EnergyExo->SetZTitle("#it{F}_{+}");
   outputContainer->Add(fhM02EnergyExo); 
+
+  fhM02EnergyExoZoomIn  = new TH3F 
+  ("hLM02EnergyExoZoomIn","shower shape, #sigma^{2}_{long} vs #it{E}_{cluster} vs #it{F}_{+}",
+   nptbins,ptmin,ptmax,100,0,0.5,200,0.8,1.); 
+  fhM02EnergyExoZoomIn->SetXTitle("#it{E}_{cluster} (GeV)");
+  fhM02EnergyExoZoomIn->SetYTitle("#sigma^{2}_{long}");
+  fhM02EnergyExoZoomIn->SetZTitle("#it{F}_{+}");
+  outputContainer->Add(fhM02EnergyExoZoomIn); 
   
   fhM20EnergyExoM02MinCut  = new TH3F 
   ("hLM20EnergyExoM02MinCut","shower shape, #sigma^{2}_{short} vs #it{E}_{cluster} vs #it{F}_{+}, #sigma^{2}_{long} > 0.1",
