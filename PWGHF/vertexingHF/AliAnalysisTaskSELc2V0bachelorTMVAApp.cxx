@@ -573,7 +573,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[29] = "V0positiveP";
     fCandidateVariableNames[30] = "V0negativeP";
     fCandidateVariableNames[31] = "v0Eta";
-    fCandidateVariableNames[32] = "DecayLengthLc";
+    fCandidateVariableNames[32] = "LcPtMC";
     fCandidateVariableNames[33] = "DecayLengthK0S";
     fCandidateVariableNames[34] = "bachCode";
     fCandidateVariableNames[35] = "k0SCode";
@@ -1897,7 +1897,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[29] = v0pos->P();
       fCandidateVariables[30] = v0neg->P();
       fCandidateVariables[31] = v0part->Eta();
-      fCandidateVariables[32] = part->DecayLength();
+      fCandidateVariables[32] = ptLcMC;
       fCandidateVariables[33] = part->DecayLengthV0();
       fCandidateVariables[34] = bachCode;
       fCandidateVariables[35] = k0SCode;
