@@ -59,8 +59,8 @@ AliAnalysisTaskNanoLoton::AliAnalysisTaskNanoLoton(const char* name)
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
-  DefineOutput(4, TList::Class());  //Output for the Xi Cuts
-  DefineOutput(5, TList::Class());  //Output for the AntiXi Cuts
+  DefineOutput(4, TList::Class());  //Output for the Lambda Cuts
+  DefineOutput(5, TList::Class());  //Output for the AntiLambda Cuts
   DefineOutput(6, TList::Class());  //Output for the Results
   DefineOutput(7, TList::Class());  //Output for the Results QA
 }

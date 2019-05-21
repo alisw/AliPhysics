@@ -5,8 +5,8 @@
  *      Author: schmollweger
  */
 
-#ifndef PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOXIOTON_H_
-#define PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOXIOTON_H_
+#ifndef PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOLOTON_H_
+#define PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOLOTON_H_
 #include "AliAnalysisTaskSE.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamEvent.h"
@@ -70,7 +70,6 @@ class AliAnalysisTaskNanoLoton : public AliAnalysisTaskSE {
   TList *fResultsQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-
   ClassDef(AliAnalysisTaskNanoLoton,1)
 };
 
