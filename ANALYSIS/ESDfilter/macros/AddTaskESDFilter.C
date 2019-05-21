@@ -139,24 +139,23 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
     TObjArray *allContainers = mgr->GetContainers();
     Int_t containersSize = allContainers->GetSize();
     TString containerName;
-    AliAnalysisDataContainer* cinputPCMv0sA;
-    AliAnalysisDataContainer* cinputPCMv0sB;
+    AliAnalysisDataContainer* cinputPCMv0sA = 0;
+    AliAnalysisDataContainer* cinputPCMv0sB = 0;
     for (Int_t i=0;i<containersSize;i++){
       if (allContainers->At(i)){
 	containerName = allContainers->At(i)->GetName();
 	if (containerName.CompareTo("PCM offlineV0Finder container")==0){
 	  cinputPCMv0sA = (AliAnalysisDataContainer *)allContainers->At(i);
 	}
-	else{
-	  cout << "No container for offline v0s" << endl;}
 	if (containerName.CompareTo("PCM onflyV0Finder container")==0){
 	  cinputPCMv0sB = (AliAnalysisDataContainer *)allContainers->At(i);
 	}
-	else{
-	  cout << "No container for onfly v0s found" << endl;
-	}
       }
     }
+    if (!cinputPCMv0sA)
+      cout << "No container for offline v0s" << endl;
+    if (!cinputPCMv0sB)
+      cout << "No container for onfly v0s found" << endl;
     mgr->ConnectInput(esdfilter, 1, cinputPCMv0sA);
     mgr->ConnectInput(esdfilter, 2, cinputPCMv0sB);
     mgr->ConnectOutput(esdfilter ,1, mgr->CreateContainer("v0ConsistencyChecks", TList::Class(), AliAnalysisManager::kOutputContainer, "PCMv0Checks.root")) ;
