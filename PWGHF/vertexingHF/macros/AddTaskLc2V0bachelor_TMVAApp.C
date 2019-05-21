@@ -60,6 +60,7 @@ AliAnalysisTaskSELc2V0bachelorTMVAApp* AddTaskLc2V0bachelor_TMVAApp(Int_t nvars,
   if (nvars == 14) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,bachelorPt,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,bachelorP,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka,bachTPCmom";
   else if (nvars == 11) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
   else if (nvars == 10) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,signd0,nSigmaTOFpr,nSigmaTPCpr,nSigmaTPCpi,nSigmaTPCka";
+  else if (nvars == 7) namesTMVAvars = "massK0S,tImpParBach,tImpParV0,DecayLengthK0S*0.497/v0P,cosPAK0S,CosThetaStar,signd0";
 
   //CREATE THE TASK
   printf("CREATE TASK\n");
