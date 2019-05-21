@@ -13,11 +13,11 @@ class TList;
 class AliESDEvent;
 class AliMCEvent;
 class AliESDtrack;
-class AliESDtrackCuts;
+//class AliESDtrackCuts;
 class AliESDpid;
 
-
 #include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
 #include "THn.h"
 #include <THnSparse.h>
 #include <Rtypes.h>
@@ -71,6 +71,8 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetUseCentrality(AliAnalysisTrackingUncertaintiesAOT::ECentrality flag);
   void           SetDCAzOn(Bool_t flag = kTRUE) {fDCAz = flag;}
   void           SetTPConly(Bool_t tpconly = kTRUE) {fTPConlyFIT = tpconly;}
+  // make the pT binning finer by a factor of 2
+  void           SetFinerpTbin(Bool_t flag) {fmakefinerpTbin=flag;}
 
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
@@ -125,10 +127,14 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliESDtrackCuts * fESDtrackCuts;  //! cut set which is under study
   AliESDVertex    * fVertex;        //! pointer to ESD vertex
     
+  // make the pT binning finer by a factor of 2
+  Bool_t fmakefinerpTbin;
+
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 9);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 10);
 };
 
 #endif
+
