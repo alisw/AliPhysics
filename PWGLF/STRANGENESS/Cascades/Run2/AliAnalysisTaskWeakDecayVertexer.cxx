@@ -484,15 +484,10 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     Info("UserExec","Number of pre-reco'ed V0 vertices: %i",nv0s);
     
     if( fkRunV0Vertexer ){
-        if ( !fkUseOptimalTrackParams ){
-            //reset all V0s, please
-            lESDevent->ResetV0s();
-        }else{
-            //reset only offline V0s, please
-            //important: reset cascades or RemoveV0s will NOT DO IT
-            lESDevent->ResetCascades();
-            SelectiveResetV0s(lESDevent, 0);
-        }
+        //reset only offline V0s, please
+        //important: reset cascades or RemoveV0s will NOT DO IT
+        lESDevent->ResetCascades();
+        SelectiveResetV0s(lESDevent, 0);
         if( !fkMonteCarlo ){
             Tracks2V0vertices(lESDevent);
         }else{
