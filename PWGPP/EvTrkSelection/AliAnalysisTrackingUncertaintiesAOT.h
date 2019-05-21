@@ -13,10 +13,9 @@ class TList;
 class AliESDEvent;
 class AliMCEvent;
 class AliESDtrack;
-//class AliESDtrackCuts;
+class AliESDtrackCuts;
 class AliESDpid;
 
-#include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
 #include "THn.h"
 #include <THnSparse.h>
