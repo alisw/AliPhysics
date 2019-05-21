@@ -7,7 +7,7 @@
 #include "AliFemtoDreamCascadeCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
+AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
                                      const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -81,8 +81,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
   PDGParticles.push_back(2212);
-  PDGParticles.push_back(3312);
-  PDGParticles.push_back(3312);
+  PDGParticles.push_back(3122);
+  PDGParticles.push_back(3122);
 
   std::vector<int> NBins;
   std::vector<float> kMin;
