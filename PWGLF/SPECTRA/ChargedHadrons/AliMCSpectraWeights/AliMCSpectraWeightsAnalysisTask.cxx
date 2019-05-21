@@ -152,7 +152,7 @@ void AliMCSpectraWeightsAnalysisTask::UserExec(Option_t *option){
   Double_t zVertEvent = fEvent->GetPrimaryVertex()->GetZ();
   if(TMath::Abs(zVertEvent) > 10.) return;
 
-  Double_t multEvent = AliMCSpectraWeightsAnalysisTask::GetEventMultCent(fEvent);
+  // Double_t multEvent = AliMCSpectraWeightsAnalysisTask::GetEventMultCent(fEvent);
 
   if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: Event got accepted; now analysing\n");
 
@@ -176,9 +176,9 @@ void AliMCSpectraWeightsAnalysisTask::UserExec(Option_t *option){
     // pt range of published spectra
     if(pt < 0.15) continue;
     if(pt > 50) continue;
-    Double_t dWeight = fMCSpectraWeights->GetMCSpectraWeight(mcGenParticle ,multEvent);
+    Double_t dWeight = fMCSpectraWeights->GetMCSpectraWeight(mcGenParticle ,fMCEvent);
     if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: got weight factor %lf for pid: %d\n", dWeight, mcGenParticle->GetPdgCode());
-    Double_t mcGenPrimTrackValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), zVertEvent, multEvent};
+    Double_t mcGenPrimTrackValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), zVertEvent, fMCSpectraWeights->GetMultOrCent()};
     fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue, dWeight);
   }
   PostData(1, fOutputList);

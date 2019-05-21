@@ -57,6 +57,7 @@ class AliMCSpectraWeights : public TNamed {
     THnF* GetHistMCFraction() const {return fHistMCFractions;}
     THnF* GetHistMCWeights() const {return fHistMCWeights;}
     AliMCSpectraWeights::SysFlag GetSysFlag() const {return fFlag;}
+    Double_t GetMultOrCent() const {return fMultOrCent;}
 
     //usefull functions
     Int_t IdentifyMCParticle(TParticle* mcParticle);
