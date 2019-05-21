@@ -1,7 +1,3 @@
-// $Id: AliAnalysisTaskCLQA_local.cxx 6758 2016-06-15 14:19:35Z loizides $
-//
-// Constantin's Task
-//
 // Author: C.Loizides
 
 #include "AliCLTask.h"
@@ -20,22 +16,25 @@
 #include <TNtupleD.h>
 #include <TProfile.h>
 #include <TTree.h>
-#include <AliAODMCParticle.h>
 #include <AliAODEvent.h>
+#include <AliAODMCParticle.h>
 #include <AliAODTrack.h>
-#include <AliPIDResponse.h>
 #include <AliAnalysisManager.h>
-#include <AliInputEventHandler.h>
 #include <AliCaloPID.h>
 #include <AliCalorimeterUtils.h>
 #include <AliEventCuts.h>
+#include <AliInputEventHandler.h>
+#include <AliPIDResponse.h>
+#include <AliPhysicsSelection.h>
+#include <AliPhysicsSelectionTask.h>
+#include <AliTriggerAnalysis.h>
 
 ClassImp(AliCLTask)
 
 //________________________________________________________________________
 AliCLTask::AliCLTask(const char *name, Bool_t dolist) : 
   AliAnalysisTaskSE(name), fDoList(dolist), fMcMode(0), fDoClust(0), fDoSkip(0), fDoFilter(0), fPtCut(3), fECut(5), fM2Cut(2), fCounter(0), fCounterC(0), 
-  fPidRes(0), fPidCalo(0), fCaloUtils(0), fMyTree(0), fMyInfo(0), fMyTracks(0), fMyParts(0), fEventCuts(0), fOutput(0)
+  fPidRes(0), fPidCalo(0), fCaloUtils(0), fMyTree(0), fMyInfo(0), fMyTracks(0), fMyClus(0), fMyParts(0), fEventCuts(0), fOutput(0), fTana(0)
 {
   // Standard constructor.
 
@@ -85,8 +84,25 @@ void AliCLTask::UserExec(Option_t *option)
     fPidRes = inputHandler->GetPIDResponse();
   }
 
+  if (!fTana) {
+    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+    AliPhysicsSelectionTask *task = dynamic_cast<AliPhysicsSelectionTask*>(man->GetTopTasks()->At(0));
+    if (task) {
+      fTana=task->GetPhysicsSelection()->GetTriggerAnalysis();
+    } else {
+      fTana = new AliTriggerAnalysis();
+    }
+  }
+
   AliAODHeader *h = static_cast<AliAODHeader*>(InputEvent()->GetHeader());
   fMyInfo->fTrig     = h->GetOfflineTrigger();
+  if (fTana) {
+    fMyInfo->fSPDClsVsTrkBG   = fTana->IsSPDClusterVsTrackletBG(aodev);
+    fMyInfo->fV0MOnVsOfPileup = fTana->IsV0MOnVsOfPileup(aodev);
+    fMyInfo->fSPDOnVsOfPileup = fTana->IsSPDOnVsOfPileup(aodev);
+    fMyInfo->fV0PFPileup      = fTana->IsV0PFPileup(aodev);
+    fMyInfo->fSPDVtxPileup    = fTana->IsSPDVtxPileup(aodev);
+  }
   fMyInfo->fEvAcc    = fEventCuts->AcceptEvent(aodev); 
   fMyInfo->fSpdPu1   = aodev->IsPileupFromSPD(3,0.8);
   fMyInfo->fSpdPu2   = aodev->IsPileupFromSPD(5,0.8);;
@@ -255,10 +271,11 @@ void AliCLTask::UserExec(Option_t *option)
     } 
   }
 
-  if ((fMcMode) && (fMyParts->GetEntries()==0)) {
-    return; // only accept event if at least one MC particle
+  if (fMcMode) {
+    if (mcarr && (fMyParts->GetEntries()==0)) {
+      return; // only accept event if at least one MC particle
+    }
   }
-
   if (fDoSkip) {
     if ((fMyTracks->GetEntries()==0) && (fMyClus->GetEntries()==0)) {
       ++fCounterC;
@@ -322,7 +339,10 @@ Double_t AliCLTask::GetM2tof(AliAODTrack *track) const
   if (!fPidRes) 
     return 0;
   const Double_t start_time = fPidRes->GetTOFResponse().GetStartTime(track->P());                 // in ps
-  const Double_t stop_time  = track->GetTOFsignal();                                              // in ps
+  Double_t stop_time  = track->GetTOFsignal();                                                    // in ps
+  if (fMyParts&&fPidRes->IsTunedOnData()) {
+    stop_time = fPidRes->GetTOFsignalTunedOnData(track);
+  }
   const Double_t tof        = (stop_time - start_time);                                           // in ps
   const Double_t length     = fPidRes->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion);   // in ps
   if ((length<=1)||(tof<=1)) 

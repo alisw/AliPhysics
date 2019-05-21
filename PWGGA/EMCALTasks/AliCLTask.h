@@ -9,22 +9,29 @@
 
 class CLInfo {
  public:
- CLInfo() : fTrig(0), fEvAcc(0), fSpdPu1(0), fSpdPu2(0), fSpdPu(0), fRun(0), fVz(0), fVcon(0), 
-            fNtracks(0), fMult(0), fSkippedV(0), fSkippedC(0) {;}
+ CLInfo() : fTrig(0), fEvAcc(0), fSpdPu1(0), fSpdPu2(0), fSpdPu(0), 
+            fSPDClsVsTrkBG(0), fV0MOnVsOfPileup(0), fSPDOnVsOfPileup(0), fV0PFPileup(0), fSPDVtxPileup(0),
+            fRun(0), fVz(0), fVcon(0), fNtracks(0), fMult(0), fSkippedV(0), fSkippedC(0) {;}
   virtual ~CLInfo() {;}
-  UInt_t        fTrig;         // trigger bits
-  Bool_t        fEvAcc;        // if true, event accepted by standard EventCuts
-  Bool_t        fSpdPu1;       // if true, spd pileup with low settings
-  Bool_t        fSpdPu2;       // if true, spd pileup with high settings
-  Bool_t        fSpdPu;        // if true, spd pileup with mult settings
-  Int_t         fRun;          // run number
-  Double32_t    fVz;           // [-32,32,16] vertex z
-  Short_t       fVcon;         // number of contributors to vertex
-  Short_t       fNtracks;      // number of aod tracks
-  Short_t       fMult;         // mult in -0.5<eta<0.5
-  Int_t         fSkippedV;     // how many events were skipped before the current one due to vertex
-  Int_t         fSkippedC;     // how many events were skipped before the current one due to cuts
-  ClassDef(CLInfo,1) // ClInfo (header) class
+  UInt_t        fTrig;            // trigger bits
+  Bool_t        fEvAcc;           // if true, event accepted by standard EventCuts
+  Bool_t        fSpdPu1;          // if true, spd pileup with low settings
+  Bool_t        fSpdPu2;          // if true, spd pileup with high settings
+  Bool_t        fSpdPu;           // if true, spd pileup with mult settings
+  Bool_t        fSPDClsVsTrkBG;   // returns IsSPDClusterVsTrackletBG(event)
+  Bool_t        fV0MOnVsOfPileup; // returns IsV0MOnVsOfPileup(event)
+  Bool_t        fSPDOnVsOfPileup; // returns IsSPDOnVsOfPileup(event)
+  Bool_t        fV0PFPileup;      // returns IsV0PFPileup(event)
+  Bool_t        fSPDVtxPileup;    // returns IsSPDVtxPileup(event)
+  Int_t         fRun;             // run number
+  Double32_t    fVz;              // [-32,32,16] vertex z
+  Short_t       fVcon;            // number of contributors to vertex
+  Short_t       fNtracks;         // number of aod tracks
+  Short_t       fMult;            // mult in -0.5<eta<0.5
+  Int_t         fSkippedV;        // how many events were skipped before the current one due to vertex
+  Int_t         fSkippedC;        // how many events were skipped before the current one due to cuts
+  Bool_t        IsPU() const { return fSPDClsVsTrkBG||fV0MOnVsOfPileup||fSPDOnVsOfPileup||fV0PFPileup||fSPDVtxPileup; }
+  ClassDef(CLInfo,2) // ClInfo (header) class
 };
 
 class CLPart : public TObject {
@@ -102,6 +109,7 @@ class AliPIDResponse;
 class AliCaloPID;
 class AliCalorimeterUtils;
 class AliEventCuts;
+class AliTriggerAnalysis;
 
 #include <AliAnalysisTaskSE.h>
 
@@ -141,6 +149,7 @@ class AliCLTask : public AliAnalysisTaskSE {
   TClonesArray               *fMyParts;   //! mc particles
   AliEventCuts               *fEventCuts; //! event cuts
   TList                      *fOutput;    //! output list
+  AliTriggerAnalysis         *fTana;      //! trigger analysis
  private:
   AliCLTask(const AliCLTask&);            // not implemented
   AliCLTask &operator=(const AliCLTask&); // not implemented
