@@ -402,13 +402,6 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
     AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
     if(!MultSelection) return;
     
-    Double_t V0MCent = MultSelection->GetMultiplicityPercentile("V0M");
-    Double_t CL0Cent = MultSelection->GetMultiplicityPercentile("CL0");
-    Double_t CL1Cent = MultSelection->GetMultiplicityPercentile("CL1");
-    Double_t SPDTCent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-    
-    Double_t trackCorrelValues[4] = {V0MCent, SPDTCent, CL0Cent, CL1Cent};
-    fHistCentCorrel->Fill(trackCorrelValues);
 
     Double_t zVertEvent = fEvent->GetPrimaryVertex()->GetZ();
     Double_t eventValues[2] = {zVertEvent, multEvent};
@@ -452,6 +445,14 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
     if(fIsMC && isEventINEL0) fHistMCRecINEL0Event->Fill(eventValues);
     fHistEvent->Fill(eventValues);
+    
+    Double_t V0MCent = MultSelection->GetMultiplicityPercentile("V0M");
+    Double_t CL0Cent = MultSelection->GetMultiplicityPercentile("CL0");
+    Double_t CL1Cent = MultSelection->GetMultiplicityPercentile("CL1");
+    Double_t SPDTCent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+    
+    Double_t eventCorrelValues[4] = {V0MCent, SPDTCent, CL0Cent, CL1Cent};
+    fHistCentCorrel->Fill(eventCorrelValues);
 
     ///--------------- Loop over measured Tracks ---------------------------------
 
