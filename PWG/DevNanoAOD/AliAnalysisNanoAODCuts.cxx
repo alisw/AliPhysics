@@ -38,7 +38,7 @@ Bool_t AliAnalysisNanoAODTrackCuts::IsSelected(TObject* obj)
 
 AliAnalysisNanoAODV0Cuts::AliAnalysisNanoAODV0Cuts()
     : AliAnalysisCuts(),
-      fRejectOnFly(false),
+      fSelectOnFly(false),
       fOnFlyStatus(false),
       fv0pTMin(-1),
       fv0EtaMax(-1),
@@ -69,7 +69,7 @@ Bool_t AliAnalysisNanoAODV0Cuts::IsSelected(TObject* obj)
   if (v0->GetNDaughters() != 2)
     return false;
 
-  if (fRejectOnFly && v0->GetOnFlyStatus() == fOnFlyStatus)
+  if (fSelectOnFly && v0->GetOnFlyStatus() == fOnFlyStatus)
     return false;
 
   if (fv0pTMin > 0 && v0->Pt() < fv0pTMin)
