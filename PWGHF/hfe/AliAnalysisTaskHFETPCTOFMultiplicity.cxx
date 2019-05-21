@@ -494,7 +494,8 @@ void AliAnalysisTaskHFETPCTOFMultiplicity::UserCreateOutputObjects()
     
     fNewHadFunc=new TF1("fNewHadFunc","gaus(0)+gaus(3)+gaus(6)",0.4,5);
     
-    Double_t param[9] = { 7.21109e+23,-3.35277e+00,3.58273e-01,6.86201e-02,9.60855e-01,4.24254e-02,7.45881e+00,1.10354e+01,2.04162e+00};
+    //Double_t param[9] = { 7.21109e+23,-3.35277e+00,3.58273e-01,6.86201e-02,9.60855e-01,4.24254e-02,7.45881e+00,1.10354e+01,2.04162e+00};
+    Double_t param[9] ={1.07583e-01,4.74117e-01,5.78342e-02,5.17024e-02,9.94191e-01,7.16580e-02,8.48815e+00,1.06248e+01,1.92413e+00};
     fNewHadFunc->SetParameters(param);
     // fNewHadFunc->Draw();
     
