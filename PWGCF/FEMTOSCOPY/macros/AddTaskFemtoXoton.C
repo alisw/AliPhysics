@@ -218,6 +218,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   if (suffix != "0" && suffix != "999") {
     task->SetRunTaskLightWeight(true);
   }
+  task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
