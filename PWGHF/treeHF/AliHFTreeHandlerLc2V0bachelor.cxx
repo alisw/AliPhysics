@@ -114,7 +114,7 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
   AddSingleTrackBranches();
 
   //set PID variables
-  if(fPidOpt != kNoPID) AddPidBranches(true, false, true, true, true);
+  if(fPidOpt != kNoPID) AddPidBranches(true, true, true, true, true);
 
   return fTreeVar;
 }
@@ -210,7 +210,7 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eve
   //pid variables
   if(fPidOpt == kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks, pidrespo, true, false, true, true, true);
+  bool setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
   if(!setpid) return false;
 
   return true;
