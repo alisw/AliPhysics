@@ -1,7 +1,7 @@
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskNanoXioton.h"
+#include "AliAnalysisTaskNanoLoton.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCascadeCuts.h"
@@ -37,65 +37,46 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   AntiTrackCuts->SetFilterBit(128);
   AntiTrackCuts->SetCutCharge(-1);
 
-  //Cascade Cuts
-  AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
-      false, false);
-  CascadeCuts->SetXiCharge(-1);
-  AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
+  //Lambda Cuts
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false, true,
+                                                                false);
+  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(
       false, true, false);
-  XiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
-  AliFemtoDreamTrackCuts *XiPosCuts = AliFemtoDreamTrackCuts::Xiv0ProtonCuts(
-      false, true, false);
-  XiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
-  AliFemtoDreamTrackCuts *XiBachCuts = AliFemtoDreamTrackCuts::XiBachPionCuts(
-      false, true, false);
-  XiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
 
-  CascadeCuts->Setv0Negcuts(XiNegCuts);
-  CascadeCuts->Setv0PosCuts(XiPosCuts);
-  CascadeCuts->SetBachCuts(XiBachCuts);
-  CascadeCuts->SetPDGCodeCasc(3312);
-  CascadeCuts->SetPDGCodev0(3122);
-  CascadeCuts->SetPDGCodePosDaug(2212);
-  CascadeCuts->SetPDGCodeNegDaug(-211);
-  CascadeCuts->SetPDGCodeBach(-211);
-
-  AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
-      false, false);
-  AntiCascadeCuts->SetXiCharge(1);
-  AliFemtoDreamTrackCuts *AntiXiNegCuts =
-      AliFemtoDreamTrackCuts::Xiv0ProtonCuts(false, true, false);
-  AntiXiNegCuts->SetCutCharge(-1);
-  AntiXiNegCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
-  AliFemtoDreamTrackCuts *AntiXiPosCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
+  AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
       false, true, false);
-  AntiXiPosCuts->SetCutCharge(1);
-  AntiXiPosCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
-  AliFemtoDreamTrackCuts *AntiXiBachCuts =
-      AliFemtoDreamTrackCuts::XiBachPionCuts(false, true, false);
-  AntiXiBachCuts->SetCutCharge(1);
-  AntiXiBachCuts->SetCheckTPCRefit(false);//for nanos this is already done while prefiltering
 
-  AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
-  AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
-  AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
-  AntiCascadeCuts->SetPDGCodeCasc(-3312);
-  AntiCascadeCuts->SetPDGCodev0(-3122);
-  AntiCascadeCuts->SetPDGCodePosDaug(211);
-  AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
-  AntiCascadeCuts->SetPDGCodeBach(211);
+  v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
+  v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
+  v0Cuts->SetPDGCodePosDaug(2212);  //Proton
+  v0Cuts->SetPDGCodeNegDaug(211);  //Pion
+  v0Cuts->SetPDGCodev0(3122);  //Lambda
+
+  AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(false, true,
+                                                                    false);
+  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(
+      false, true, false);
+  PosAntiv0Daug->SetCutCharge(1);
+  AliFemtoDreamTrackCuts *NegAntiv0Daug =
+      AliFemtoDreamTrackCuts::DecayProtonCuts(false, true, false);
+  NegAntiv0Daug->SetCutCharge(-1);
+
+  Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
+  Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
+  Antiv0Cuts->SetPDGCodePosDaug(211);  //Pion
+  Antiv0Cuts->SetPDGCodeNegDaug(2212);  //Proton
+  Antiv0Cuts->SetPDGCodev0(-3122);  //Lambda
 
   if (suffix != "0" && suffix != "999") {
     evtCuts->SetMinimalBooking(true);
     TrackCuts->SetMinimalBooking(true);
     AntiTrackCuts->SetMinimalBooking(true);
-    CascadeCuts->SetMinimalBooking(true);
-    AntiCascadeCuts->SetMinimalBooking(true);
+    v0Cuts->SetMinimalBooking(true);
+    Antiv0Cuts->SetMinimalBooking(true);
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
                                                                 "Femto");
-
   // Femto Collection
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212);
@@ -214,7 +195,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   if (suffix != "0") {
     config->SetMinimalBookingME(true);
   }
-  AliAnalysisTaskNanoXioton* task = new AliAnalysisTaskNanoXioton("femtoXoton");
+  AliAnalysisTaskNanoLoton* task = new AliAnalysisTaskNanoLoton("femtoLoton");
   if (suffix != "0" && suffix != "999") {
     task->SetRunTaskLightWeight(true);
   }
@@ -222,8 +203,8 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
-  task->SetXiCuts(CascadeCuts);
-  task->SetAntiXiCuts(AntiCascadeCuts);
+  task->Setv0Cuts(v0Cuts);
+  task->SetAntiv0Cuts(Antiv0Cuts);
   task->SetCorrelationConfig(config);
   mgr->AddTask(task);
 
@@ -255,7 +236,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
 
   AliAnalysisDataContainer *coutputCascadeCuts;
-  TString CascadeCutsName = Form("%sCascadeCuts", addon.Data());
+  TString CascadeCutsName = Form("%sv0Cuts", addon.Data());
   coutputCascadeCuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       CascadeCutsName.Data(),
@@ -265,7 +246,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   mgr->ConnectOutput(task, 4, coutputCascadeCuts);
 
   AliAnalysisDataContainer *coutputAntiCascadeCuts;
-  TString AntiCascadeCutsName = Form("%sAntiCascadeCuts", addon.Data());
+  TString AntiCascadeCutsName = Form("%sAntiv0Cuts", addon.Data());
   coutputAntiCascadeCuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       AntiCascadeCutsName.Data(),
