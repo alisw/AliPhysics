@@ -16,7 +16,7 @@ class AliESDtrack;
 class AliESDtrackCuts;
 class AliESDpid;
 
-#include "AliESDtrackCuts.h"
+#include "AliAnalysisTaskSE.h"
 #include "THn.h"
 #include <THnSparse.h>
 #include <Rtypes.h>
