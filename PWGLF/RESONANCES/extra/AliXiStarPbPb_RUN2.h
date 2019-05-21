@@ -113,10 +113,11 @@ private:
         TH3F *fXiPlusPiPlus; //!
         TH3F *fXiPlusPiMinus; //!
         
-        TH3F *fXiMinusPiPlusbkg; //!
+      /*  TH3F *fXiMinusPiPlusbkg; //!
         TH3F *fXiMinusPiMinusbkg; //!
         TH3F *fXiPlusPiPlusbkg; //!
         TH3F *fXiPlusPiMinusbkg; //!
+       */
         //
         TH3F *fMCrecXi; //!
         TH3F *fMCrecXibar; //!
