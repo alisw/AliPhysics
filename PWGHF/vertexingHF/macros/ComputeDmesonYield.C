@@ -38,6 +38,7 @@ Int_t optErrFD=1;  // 0=from histos, not combined;
 Float_t centHypoFdOverPr=2.;
 Float_t lowHypoFdOverPr=1.;
 Float_t highHypoFdOverPr=3.;
+Bool_t fChangeCentralHypo=kFALSE;
 Double_t normToCsec=1.; // put here the trigger cross section in ub; if ==1 per-event yield are computed
 TString collSyst="Pb-Pb";
 
@@ -287,7 +288,24 @@ void ComputeDmesonYield(){
   Float_t fPromptCent[nPtBins],fPromptHigHyp[nPtBins],fPromptLowHyp[nPtBins];
   Float_t invyPbPbLoSingleSyst[nPtBins],invyPbPbHiSingleSyst[nPtBins];
 
+  Float_t stdCentHypoFdOverPr=centHypoFdOverPr;
+  Float_t stdLowHypoFdOverPr=lowHypoFdOverPr;
+  Float_t stdHighHypoFdOverPr=highHypoFdOverPr;
+ 
   for(Int_t ib=0; ib<nPtBins; ib++){
+
+    if(fChangeCentralHypo && (pt<3 || pt>=24) && (mesonSpecie==kDzero || mesonSpecie==kDplus || mesonSpecie==kDstar)){
+      centHypoFdOverPr=1.5;
+      lowHypoFdOverPr=1.;
+      highHypoFdOverPr=2.;
+      printf("********* changed min and max hypothesis for pt<3(>24) (%f): %f, minHypo=%f, maxHypo=%f \n",pt,centHypoFdOverPr,lowHypoFdOverPr,highHypoFdOverPr);
+    }
+    else {
+      centHypoFdOverPr=stdCentHypoFdOverPr;
+      lowHypoFdOverPr=stdLowHypoFdOverPr;
+      highHypoFdOverPr=stdHighHypoFdOverPr;
+    }
+
     minval[ib]=9999.;
     invypp[ib]=-999.;
     invyPbPb[ib]=-999.;
