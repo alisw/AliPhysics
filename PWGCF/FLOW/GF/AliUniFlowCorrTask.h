@@ -5,7 +5,7 @@
 #ifndef UNIFLOWCORRTASK_H
 #define UNIFLOWCORRTASK_H
 
-class AliUniFlowCorrTask
+class AliUniFlowCorrTask : public TObject
 {
     public:
         AliUniFlowCorrTask(); // default ctor
@@ -14,7 +14,7 @@ class AliUniFlowCorrTask
             Bool_t doPOIs,
             std::vector<Int_t> harms,
             std::vector<Double_t> gaps = std::vector<Double_t>());
-        ~AliUniFlowCorrTask() { fiHarm.clear(); fdGaps.clear(); }
+        virtual ~AliUniFlowCorrTask() { fiHarm.clear(); fdGaps.clear(); }
 
         Bool_t      HasGap() const { return (Bool_t) fiNumGaps; }; // check if Gap
         void        Print() const; // print AliUniFlowCorrTask properties
@@ -30,7 +30,7 @@ class AliUniFlowCorrTask
     protected:
     private:
 
-    ClassDefNV(AliUniFlowCorrTask, 1);
+    ClassDef(AliUniFlowCorrTask, 1);
 };
 
 

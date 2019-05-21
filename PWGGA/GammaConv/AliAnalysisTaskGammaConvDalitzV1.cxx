@@ -1936,8 +1936,9 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){ //NOTE 
     Bool_t isMotherPrimary  = kFALSE;
 //NOTE 4 de Marzo no se como cambiar Vgamma
     if ( fDoMesonQA > 0 ) {
+//NOTE Only here on PsiPair are Constrained param
       Double_t psiPair = GetPsiPair(positronVgamma.get(),electronVgamma.get());
-      Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronVgamma->GetPhiG()-positronVgamma->GetPhiG());
+      Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronVgamma->GetConstrainedParamPhiG()-positronVgamma->GetConstrainedParamPhiG());
       hESDEposEnegPsiPairDPhi[fiCut]->Fill(deltaPhi,psiPair);
       hESDEposEnegPsiPairEta[fiCut]->Fill(psiPair,Vgamma->Eta());
       hESDEposEnegDPhiEta[fiCut]->Fill(deltaPhi,Vgamma->Eta());
@@ -2145,8 +2146,9 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
       for(UInt_t j = 0; j <  lGoodPositronIndexPrev.size(); j++){
         //AliESDtrack *positronCandidate = fESDEvent->GetTrack(lGoodPositronIndexPrev[j]);
           std::unique_ptr<AliDalitzAODESD> positronCandidate = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodPositronIndexPrev[j]));
+//NOTE Again only here Constrained Param
         Double_t psiPair = GetPsiPair(positronCandidate.get(),electronCandidate.get());
-        Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->GetPhiG()-positronCandidate->GetPhiG());
+        Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->GetConstrainedParamPhiG()-positronCandidate->GetConstrainedParamPhiG());
 
         if( ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi) ){
           lElectronPsiIndex[i] = kFALSE;
@@ -2173,9 +2175,11 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
     std::unique_ptr<AliDalitzAODESD> electronCandidate = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodElectronIndex[i]));
     //AliESDtrack *electronCandidate = fESDEvent->GetTrack(lGoodElectronIndex[i]);
     AliKFParticle electronCandidateKF( *electronCandidate->GetDalitzVTrack(),::kElectron );
-    //NOTE Change GetParamG, GetDalitzVTrack
+    //NOTE Change GetParamG, GetDalitzVTrack, Only here we Use Constrained Param
     TLorentzVector electronCandidateTLV;
-    electronCandidateTLV.SetXYZM(electronCandidate->GetPxG(),electronCandidate->GetPyG(),electronCandidate->GetPzG(),TDatabasePDG::Instance()->GetParticle(  ::kElectron   )->Mass());
+    Double_t DummyMomentumElectron[3];
+    electronCandidate->GetConstrainedPxPyPzG(DummyMomentumElectron);
+    electronCandidateTLV.SetXYZM(DummyMomentumElectron[0],DummyMomentumElectron[1],DummyMomentumElectron[2],TDatabasePDG::Instance()->GetParticle(  ::kElectron   )->Mass());
 
     for(UInt_t j = 0; j < lGoodPositronIndex.size(); j++){
 
@@ -2183,8 +2187,9 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
       AliKFParticle positronCandidateKF( *positronCandidate->GetDalitzVTrack(),::kPositron );
       //NOTE Change GetParamG, GetDalitzVTrack
       TLorentzVector positronCandidateTLV;
-
-      positronCandidateTLV.SetXYZM(positronCandidate->GetPxG(),positronCandidate->GetPyG(),positronCandidate->GetPzG(),TDatabasePDG::Instance()->GetParticle(  ::kPositron   )->Mass());
+      Double_t DummyMomentumPositron[3];
+      positronCandidate->GetConstrainedPxPyPzG(DummyMomentumPositron);
+      positronCandidateTLV.SetXYZM(DummyMomentumPositron[0],DummyMomentumPositron[1],DummyMomentumPositron[2],TDatabasePDG::Instance()->GetParticle(  ::kPositron   )->Mass());
       TLorentzVector *virtualPhotonTLV = 0;
       AliKFConversionPhoton* virtualPhoton = NULL;
       AliAODConversionPhoton *vphoton;
@@ -2373,20 +2378,15 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
               }
 //NOTE 28 Febrero
               if ( fDoMesonQA > 0 ) {
+//NOTE Only here constrained Parameters on the momentum
                     std::unique_ptr<AliDalitzAODESD> positronVgamma = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(Vgamma->GetTrackLabelPositive()));
                 //AliESDtrack* positronVgamma = fESDEvent->GetTrack( Vgamma->GetTrackLabelPositive() );
                 Double_t momPositron[3];
-                //positronVgamma->GetConstrainedPxPyPz((momPositron));//GetConstrained
-                momPositron[0]=positronVgamma->GetPxG();
-                  momPositron[1]=positronVgamma->GetPyG();
-                    momPositron[2]=positronVgamma->GetPzG();
+                positronVgamma->GetConstrainedPxPyPzG((momPositron));//GetConstrained
                 //AliESDtrack* electronVgamma = fESDEvent->GetTrack( Vgamma->GetTrackLabelNegative() );
                      std::unique_ptr<AliDalitzAODESD> electronVgamma = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(Vgamma->GetTrackLabelNegative()));
                 Double_t momElectron[3];
-                momElectron[0]=positronVgamma->GetPxG();
-                  momElectron[1]=positronVgamma->GetPyG();
-                    momElectron[2]=positronVgamma->GetPzG();
-                //electronVgamma->GetConstrainedPxPyPz(momElectron);
+                electronVgamma->GetConstrainedPxPyPzG(momElectron);
 
                 TVector3 vGamma(gamma->GetPx(),gamma->GetPy(),gamma->GetPz());;
                 TVector3 vPositron(momPositron[0],momPositron[1],momPositron[2]);
@@ -2706,18 +2706,12 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTrueMesonCandidates(AliAODConversi
               std::unique_ptr<AliDalitzAODESD> positronVgamma = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(TrueVirtualGammaCandidate->GetTrackLabelPositive()));
              // AliESDtrack* positronVgamma = fESDEvent->GetTrack( TrueVirtualGammaCandidate->GetTrackLabelPositive() );
               Double_t momPositron[3];
-                momPositron[0]=positronVgamma->GetPxG();
-                  momPositron[1]=positronVgamma->GetPyG();
-                    momPositron[2]=positronVgamma->GetPzG();
-              //positronVgamma->GetConstrainedPxPyPz(momPositron);
+              positronVgamma->GetConstrainedPxPyPzG(momPositron);
 
               //AliESDtrack* electronVgamma = fESDEvent->GetTrack( TrueVirtualGammaCandidate->GetTrackLabelNegative() );
               std::unique_ptr<AliDalitzAODESD> electronVgamma = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(TrueVirtualGammaCandidate->GetTrackLabelNegative()));
               Double_t momElectron[3];
-                momElectron[0]=electronVgamma->GetPxG();
-                  momElectron[1]=electronVgamma->GetPyG();
-                    momElectron[2]=electronVgamma->GetPzG();
-           //   electronVgamma->GetConstrainedPxPyPz(momElectron);
+              electronVgamma->GetConstrainedPxPyPzG(momElectron);
 
               TVector3 vGamma(TrueGammaCandidate->GetPx(),TrueGammaCandidate->GetPy(),TrueGammaCandidate->GetPz());;
               TVector3 vPositron(momPositron[0],momPositron[1],momPositron[2]);
@@ -3320,14 +3314,14 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
   Double_t momPos[3]={0.0,0.0,0.0};
   Double_t momNeg[3]={0.0,0.0,0.0};
   Double_t fPos[3]={0.0,0.0,0.0};
-
+//NOTE Working on differents ways to obtain the momentum close to the vertex, here I see that theta was calculate with differents momentum, one PropagateToDCA and the other not.
         TVector3 posDaughterB;
         TVector3 negDaughterB;
         TVector3 posDaughterA;
         TVector3 negDaughterA;
   if (fAODESDEvent->GetIsESD()){
-    if( trackPos->GetPxPyPzG(momPos) == 0 ) trackPos->GetPxPyPzG( momPos );
-    if( trackNeg->GetPxPyPzG(momNeg) == 0 ) trackNeg->GetPxPyPzG( momNeg );
+    if( trackPos->GetConstrainedPxPyPzG(momPos) == 0 ) trackPos->GetConstrainedPxPyPzG( momPos );
+    if( trackNeg->GetConstrainedPxPyPzG(momNeg) == 0 ) trackNeg->GetConstrainedPxPyPzG( momNeg );
         posDaughterA.SetXYZ( momPos[0], momPos[1], momPos[2] );
         negDaughterA.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
         posDaughterB.SetXYZ( momPos[0], momPos[1], momPos[2] );
@@ -3360,16 +3354,23 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
 
     Positive.GetPxPyPzAt(radiussum,b,momPos);
     Negative.GetPxPyPzAt(radiussum,b,momNeg);
+//cout<<momPos[0]<<"propagado"<<trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px()<<endl;
+    //Positive.PxPyPz(momPos);NOTE PxPyPz Propagate close to DCA
+    //Negative.PxPyPz(momNeg);NOTE PxPyPz Propagate close to DCA
+   momPos[0]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px();
+   momPos[1]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Py();
+   momPos[2]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Pz();
+   momNeg[0]= trackNeg->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px();
+   momNeg[1]= trackNeg->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Py();
+   momNeg[2]= trackNeg->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Pz();
 
-    //Positive.PxPyPz(momPos);
-    //Negative.PxPyPz(momNeg);
-
-    posDaughterA.SetXYZ( momPos[0], momPos[1], momPos[2] );
-    negDaughterA.SetXYZ( momNeg[0], momNeg[1], momNeg[2] );
+    posDaughterA.SetXYZ( momPos[0],momPos[1],momPos[2]);
+    negDaughterA.SetXYZ( momNeg[0],momNeg[1],momNeg[2]);
 
   }
-
-  Double_t deltaTheta = negDaughterB.Theta() - posDaughterB.Theta();
+  //NOTE Here Differents momentum to calculate the angle theta, must check the physics behind
+  //Double_t deltaTheta = negDaughterB.Theta() - posDaughterB.Theta();
+  Double_t deltaTheta = negDaughterA.Theta() - posDaughterA.Theta();
   Double_t openingAngle =  posDaughterA.Angle( negDaughterA );  //TMath::ACos( posDaughter.Dot(negDaughter)/(negDaughter.Mag()*posDaughter.Mag()) );
 
   if( openingAngle < 1e-20 ) return 0.;

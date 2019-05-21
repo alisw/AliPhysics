@@ -16,6 +16,7 @@
 #include "AliGenEventHeader.h"
 #include "AlidNdPtTools.h"
 #include "AliESDtrackCuts.h"
+#include "AliMultEstimator.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
@@ -58,6 +59,8 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fIsMC(kFALSE)
     , fRunNumber(0)
     , fRunNumberString("")
+    , fTimeStamp(0)
+    , fEventNumberInFile(0)    
     , fFiredTriggerClasses("")
     , fEventSpecie(0)
     , fOldCentPercentileV0M(-1)
@@ -110,7 +113,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fMCyv(0)
     , fMCzv(0)
     , fMultMB(-1)
+    , fMultV0A(-1)
+    , fMultV0C(-1)
     , fMultV0M(-1)
+    , fMultV0MmultSelection(-1)
     , fMCb(-1)
     , fMCnPrimPtCut(-1)
     , fMCnPrim10(-1)
@@ -133,6 +139,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fIsEventAccepted(kFALSE)
     , fESDTrack(0)
     , fPt(0)
+    , fP(0)
     , fEta(0)
     , fPhi(0)
     , fDCA{0,0}
@@ -143,6 +150,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fSigma1Pt(0)
     , fSigned1Pt(0)
     , f1Pt(0)
+    , fChargeSign(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -182,6 +190,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fCentEstimator("")
     , fTriggerMaskRequired(0)
     , fTriggerMaskRejected(0)
+    , fInternalLoop(kTRUE)
     , fOutputList(0)
     , fLogHist(0)
     , fLogErr(0)
@@ -222,6 +231,8 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fIsMC(kFALSE)
     , fRunNumber(0)
     , fRunNumberString("")
+    , fTimeStamp(0)
+    , fEventNumberInFile(0)
     , fFiredTriggerClasses("")
     , fEventSpecie(0)
     , fOldCentPercentileV0M(-1)
@@ -274,7 +285,10 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fMCyv(0)
     , fMCzv(0)
     , fMultMB(-1)
+    , fMultV0A(-1)
+    , fMultV0C(-1)
     , fMultV0M(-1)
+    , fMultV0MmultSelection(-1)
     , fMCb(-1)
     , fMCnPrimPtCut(-1)
     , fMCnPrim10(-1)
@@ -297,6 +311,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fIsEventAccepted(kFALSE)
     , fESDTrack(0)
     , fPt(0)
+    , fP(0)
     , fEta(0)
     , fPhi(0)
     , fDCA{0,0}
@@ -307,6 +322,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fSigma1Pt(0)
     , fSigned1Pt(0)
     , f1Pt(0)
+    , fChargeSign(0)
     , fMCParticle(0)
     , fMCLabel(0)
     , fMCPt(0)
@@ -346,6 +362,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fCentEstimator("")
     , fTriggerMaskRequired(0)
     , fTriggerMaskRejected(0)
+    , fInternalLoop(kTRUE)
     , fOutputList(0)
     , fLogHist(0)
     , fLogErr(0)
@@ -371,13 +388,8 @@ AliAnalysisTaskMKBase::~AliAnalysisTaskMKBase()
 }
 
 //_____________________________________________________________________________
-
-void AliAnalysisTaskMKBase::UserCreateOutputObjects()
+void AliAnalysisTaskMKBase::BaseAddOutput()
 {
-    // create output list
-    fOutputList = new TList(); 
-    fOutputList->SetOwner(kTRUE); 
-    
     // create defualt event histograms    
     
     fLogHist = CreateLogHist("fLogHist");
@@ -406,8 +418,21 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
     
     fTrigHistSelected = CreateLogHist("fTrigHistSelected");
     fOutputList->Add(fTrigHistSelected);
+    
+}
 
+//_____________________________________________________________________________
 
+void AliAnalysisTaskMKBase::UserCreateOutputObjects()
+{
+    // create output list
+    fOutputList = new TList(); 
+    fOutputList->SetOwner(kTRUE); 
+    
+    //add default histograms
+    BaseAddOutput();
+    
+    //add user histograms
     AddOutput();
     // postdata 
     PostData(1, fOutputList);
@@ -540,12 +565,12 @@ Bool_t AliAnalysisTaskMKBase::ReadEvent()
     // for now analyse only ESDs 
     if (!fESD) { Err("noESD"); return kFALSE; }
     if (fESD)  { LogEvent("ESD"); }
-
-    // set all the event related properties
-    InitEvent();
     
     // read the mc event and set all mc related properties
-    ReadMCEvent();
+    ReadMCEvent();    
+
+    // set all the event related properties
+    InitEvent();    
           
     return kTRUE;
 }
@@ -620,6 +645,9 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
     fRunNumber = fESD->GetRunNumber();
     fRunNumberString = "";
     fRunNumberString += fRunNumber;
+    
+    fTimeStamp = fESD->GetTimeStamp();
+    fEventNumberInFile = fESD->GetEventNumberInFile();
         
     // this is needed for some esd track cuts, to be on the save side we call it here
     if (!TGeoGlobalMagField::Instance()->GetField()) { fESD->InitMagneticField(); }
@@ -629,10 +657,20 @@ Bool_t AliAnalysisTaskMKBase::InitEvent()
     // only if track cuts are set
     fNTracksAcc = 0;
     if (fESDtrackCutsM) {
+        fInternalLoop = kTRUE;
+        LoopOverAllTracks();
+        fInternalLoop = kFALSE;
+    } else {
+        fNTracksAcc = fNTracksESD;
+        Log("noAliESDTrackCutsM");
+    }
+    
+    fNTracksAcc = 0;
+    if (fESDtrackCutsM) {
         for (Int_t i = 0; i < fNTracksESD; i++) {
             AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
             if (!track) continue;
-            if (fESDtrackCutsM->AcceptTrack(track) ) { fNTracksAcc++; }              
+            if (fESDtrackCutsM->AcceptTrack(track) ) { fNTracksAcc++; }
         }
     } else {
         fNTracksAcc = fNTracksESD;
@@ -708,8 +746,47 @@ void AliAnalysisTaskMKBase::FillTrigHist(TH1D* h)
 
 //_____________________________________________________________________________
 
+void AliAnalysisTaskMKBase::BaseAnaParticleMC(Int_t flag)
+{   
+    // for non-interal loop call AnaParticleMC
+    if (!fInternalLoop) { AnaParticleMC(flag); return;}
+    
+    // internal loop to get multiplicities
+    if (fMCIsCharged && fMCisPrim) {
+        fMCnPrim++;
+        if (TMath::Abs(fMCEta)<1.) { fMCnPrim10++; }
+        if (TMath::Abs(fMCEta)<0.8) { fMCnPrim08++; } 
+        if (TMath::Abs(fMCEta)<0.5) { fMCnPrim05++; }
+        if ( ( 2.8 < fMCEta) && (fMCEta <  5.1) ) { fMCnPrimV0M++; } //V0A
+        if ( (-3.7 < fMCEta) && (fMCEta < -1.7) ) { fMCnPrimV0M++; } //V0C 
+        if ( (TMath::Abs(fMCEta) < 0.8) && (fMCPt > 0.15) ) { fMCnPrimPtCut++; }
+    }
+}
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskMKBase::BaseAnaTrack(Int_t flag)
+{       
+    if (!fInternalLoop) { 
+        // for non-interal loop call AnaTrack
+        AnaTrack(flag); 
+        if (fIsMC) {
+            AnaTrackMC(flag); 
+        } else {
+            AnaTrackDATA(flag); 
+        }
+    } else {
+        // internal loop to get multiplicities
+        if (fAcceptTrackM) { fNTracksAcc++; }
+    }
+}        
+
+//_____________________________________________________________________________
+
 Bool_t AliAnalysisTaskMKBase::InitMCEvent() 
 {
+    InitMCEventType();
+    
     if (!fIsMC) return kFALSE;
     TArrayF vtxMC(3);
     // mc vertex    
@@ -728,22 +805,10 @@ Bool_t AliAnalysisTaskMKBase::InitMCEvent()
     fMCnPrimV0M = 0;
     fMCnPrim = 0;
     
-    for (Int_t i = 0; i < fMCnTracks; i++) {
-        fMCParticle  = dynamic_cast<AliMCParticle*>(fMC->GetTrack(i));
-        if (!fMCParticle) { Err("noMCParticle"); continue; }   
-        fMCLabel = i;
-        InitMCParticle();
-        if (fMCIsCharged && fMCisPrim) {
-            fMCnPrim++;
-            if (TMath::Abs(fMCEta)<1.) { fMCnPrim10++; }
-            if (TMath::Abs(fMCEta)<0.8) { fMCnPrim08++; } 
-            if (TMath::Abs(fMCEta)<0.5) { fMCnPrim05++; }
-            if ( ( 2.8 < fMCEta) && (fMCEta <  5.1) ) { fMCnPrimV0M++; } //V0A
-            if ( (-3.7 < fMCEta) && (fMCEta < -1.7) ) { fMCnPrimV0M++; } //V0C 
-            if ( (TMath::Abs(fMCEta) < 0.8) && (fMCPt > 0.15) ) { fMCnPrimPtCut++; }
-        }
-    }    
-    InitMCEventType();
+    fInternalLoop = kTRUE;
+    LoopOverAllParticles();
+    fInternalLoop = kFALSE;
+  
     return kTRUE;
 }
 
@@ -791,8 +856,44 @@ Bool_t AliAnalysisTaskMKBase::InitEventVZERO()
     fVZERO = fESD->GetVZEROData();
     if (!fVZERO) { 
         Log("noVZEROData");
+        fMultV0A = -1;
+        fMultV0C = -1;
+        fMultV0M = -1;
         return kFALSE;
-    }
+    }    
+    fMultV0A = fVZERO->GetMTotV0A();    
+    fMultV0C = fVZERO->GetMTotV0C();
+    fMultV0M = fMultV0A+fMultV0C;
+    
+    fMultV0MmultSelection = -1;
+    if (fMultSelection) {
+        AliMultEstimator* estv0m = fMultSelection->GetEstimator("V0M");
+        fMultV0MmultSelection = estv0m->GetValue();
+        TString defv0m = estv0m->GetDefinition();
+        
+//         cout<<endl;
+//         cout<<"V0M DEFINTION"<<endl;
+//         cout<<defv0m<<endl;
+//         cout<<endl;
+//         cout<<"fAmplitude_V0A "<<fMultV0A<<endl;
+//         cout<<"fAmplitude_V0C "<<fMultV0C<<endl;
+//         cout<<"fEvSel_VtxZ    "<<fZv<<endl;
+//         cout<<endl;
+//         cout<<"fMultV0MmultSelection "<<fMultV0MmultSelection<<endl;
+        
+        defv0m.ReplaceAll("(fAmplitude_V0A)","[0]");
+        defv0m.ReplaceAll("(fAmplitude_V0C)","[1]");
+        defv0m.ReplaceAll("(fEvSel_VtxZ)","[2]");
+        TFormula formv0m("form",defv0m);
+        formv0m.SetParameters(fMultV0A,fMultV0C,fZv);
+//         cout<<"my own calulation     "<<formv0m.Eval(0)<<endl;
+//         cout<<endl;
+//         cout<<endl;
+        if (TMath::Abs(formv0m.Eval(0)-fMultV0MmultSelection)>0.01) {
+            Err("multSelection.V0Mmismatch");
+        }
+    }            
+    
     return kTRUE;
 }
 
@@ -801,9 +902,11 @@ Bool_t AliAnalysisTaskMKBase::InitEventVZERO()
 Bool_t AliAnalysisTaskMKBase::InitTrack()
 {    
     if (!fESDTrack) { return kFALSE; }
-    fPt = fESDTrack->Pt();
+    fPt  = fESDTrack->Pt();
     fEta = fESDTrack->Eta();
     fPhi = fESDTrack->Phi();
+    fP   = fESDTrack->GetP();
+    fChargeSign = fESDTrack->Charge();
     fESDTrack->GetImpactParameters(fDCA,fDCACov);
     fDCAr = fDCA[0];
     fDCAz = fDCA[1];
@@ -818,6 +921,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
     InitTrackCuts();
     InitTrackIP();
     InitTrackTPC();
+    InitTrackPID();
     
     if (fIsMC) { InitMCTrack(); }
     
@@ -830,6 +934,14 @@ Bool_t AliAnalysisTaskMKBase::InitTrackCuts()
 {        
     fAcceptTrackM = (fESDtrackCutsM)?  fESDtrackCutsM->AcceptTrack(fESDTrack) : kFALSE;
     for (int i=0; i<10; i++) { fAcceptTrack[i] = (fESDtrackCuts[i])? fESDtrackCuts[i]->AcceptTrack(fESDTrack) : kFALSE;}   
+    return kTRUE;
+}
+
+//_____________________________________________________________________________
+
+Bool_t AliAnalysisTaskMKBase::InitTrackPID()
+{        
+    // TODO to be implemented for track pid information
     return kTRUE;
 }
 
@@ -949,28 +1061,9 @@ Bool_t AliAnalysisTaskMKBase::InitEventVertex()
         LogEvent("PrimVtxTPC==0");
     }
     
-    fUsedVtxTRK = kFALSE;
-    fUsedVtxSPD = kFALSE;
-    fUsedVtxTPC = kFALSE;
-    
-    if (fVtxStatusTRK) {        
-        fVtx = fVtxTRK;           
-        fUsedVtxTRK = kTRUE;
-        LogEvent("usedVertexTRK");
-    } else if (fVtxStatusSPD) {
-        fVtx = fVtxSPD;            
-        fUsedVtxSPD = kTRUE;
-        LogEvent("usedVertexSPD");
-    } else if (fVtxStatusTPC) {        
-        fVtx = fVtxTPC;        
-        fUsedVtxTPC = kTRUE;
-        LogEvent("usedVertexTPC");
-    } else {
-        fVtx = 0; 
-        Log("noPrimVtx");
-    }
-    
-    // fill vertex information if there is a vertex    
+    // get best available vertex accorind to aliesdevent
+    fVtx = fESD->GetPrimaryVertex();
+    fVtxStatus = kFALSE;
     if (fVtx) { 
         fVtxNContrib = fVtx->GetNContributors();
         fXv = fVtx->GetX();
@@ -981,11 +1074,20 @@ Bool_t AliAnalysisTaskMKBase::InitEventVertex()
         fZvRes = fVtx->GetZRes();        
         fVtxStatus = fVtx->GetStatus();
         fVtxDispersion = fVtx->GetDispersion();
+        if (!fVtxStatus) { LogEvent("noGoodVertex"); }
     } else {
-        fVtxStatus = kFALSE;
-        fVtxNContrib = 0;        
+        LogEvent("PrimVtx==0");
     }
     
+    
+    fUsedVtxTRK = (fVtx == fVtxTRK);
+    fUsedVtxSPD = (fVtx == fVtxSPD);
+    fUsedVtxTPC = (fVtx == fVtxTPC);
+   
+    if (fUsedVtxTRK) { LogEvent("usedVertexTRK"); }
+    if (fUsedVtxSPD) { LogEvent("usedVertexSPD"); }
+    if (fUsedVtxTPC) { LogEvent("usedVertexTPC"); }
+            
     fMultMB = fVtxNContrib;
     fHasVertex = fVtxStatus; //fHasVertex is only an alias
     return kTRUE;
@@ -1147,12 +1249,7 @@ void AliAnalysisTaskMKBase::LoopOverAllTracks(Int_t flag)
         fESDTrack = dynamic_cast<AliESDtrack*>(fESD->GetTrack(i));
         if (!fESDTrack) { Err("noESDtrack"); continue; }
         InitTrack();
-        AnaTrack(flag);
-        if (fIsMC) {
-            AnaTrackMC(flag); 
-        } else {
-            AnaTrackDATA(flag); 
-        }
+        BaseAnaTrack(flag);
     }
 }
 
@@ -1168,7 +1265,7 @@ void AliAnalysisTaskMKBase::LoopOverAllParticles(Int_t flag)
         if (!fMCParticle) { Err("noMCParticle"); continue; }         
         fMCLabel = i;
         InitMCParticle();
-        AnaParticleMC(flag);
+        BaseAnaParticleMC(flag);
     }
 }
 
@@ -1229,7 +1326,7 @@ AliAnalysisTaskMKBase* AliAnalysisTaskMKBase::AddTaskMKBase(const char* name, co
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("default"));
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     
     // attach the task to the manager and configure in and ouput
     //===========================================================================

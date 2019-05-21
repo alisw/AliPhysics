@@ -1328,17 +1328,21 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
 {
   TFile *file =new TFile(inputFile.Data());
   if(file==0x0) {
-    //AliWarning("Input file does not exist!");
+    printf("Input file does not exist!\n");
     return;
   }
 
   TList *list=(TList*)file->Get("chistolist");
   if(list==0x0) 
   {
-    //AliWarning("List chistolist does not exist in file!");
-    return;
+    printf("List chistolist does not exist in file, trying chistosingle!\n");
+    list=(TList*)file->Get("chistosingle");
+    if(list==0x0) 
+      {
+	printf("List chistosingle does not exist either in file, returning!\n");
+	return;
+      }
   }
-
   Int_t numPARs = 0;
   Int_t counter = 0;
   if(isPAR){

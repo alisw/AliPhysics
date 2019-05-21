@@ -2148,6 +2148,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     trackInfo->fTOFnSig[2]   = values[AliDielectronVarManager::kTOFnSigmaKao];
     trackInfo->fTOFnSig[3]   = values[AliDielectronVarManager::kTOFnSigmaPro];
     
+    trackInfo->fEMCALnSigEle = values[AliDielectronVarManager::kEMCALnSigmaEle];
+
     Double_t trdProbab[AliPID::kSPECIES]={0.0};
     if(isESD) {
        trackInfo->fMassForTracking = esdTrack->GetMassForTracking();
@@ -2222,6 +2224,8 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       if(esdTrack->IsPHOS()) trackInfo->fCaloClusterId = esdTrack->GetPHOScluster();
       // NOTE: extrapolation depends on radius and PHOS radius differs slightly from EMCal radius
       if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fMomentumOnCalo = esdTrack->GetTrackPOnEMCal();
+      if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fPhiOnCalo = esdTrack->GetTrackPhiOnEMCal();
+      if (esdTrack->IsExtrapolatedToEMCAL()) trackInfo->fEtaOnCalo = esdTrack->GetTrackEtaOnEMCal();
 
       Double_t xyz[3], pxpypz[3];
       Double_t covMat[21];

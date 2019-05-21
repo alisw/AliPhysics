@@ -662,6 +662,25 @@ public:
     StringValue_t pop_str(const Key_t &key, const char* _default)
       { StringValue_t res(_default); pop_and_load(key, res); return res; }
 
+    /// Pop generic number (int or float) out of object
+    FloatValue_t pop_num(const Key_t &key, FloatValue_t _default=NAN)
+      {
+        double res(_default);
+        if (const AliFemtoConfigObject *found = find(key)) {
+          if (found->is_float()) {
+            res = found->as_float();
+          }
+          else if (found->is_int()) {
+            res = found->as_int();
+          }
+          else {
+            return _default;
+          }
+          pop(key);
+        }
+        return res;
+      }
+
   #undef IMPL_POP_ITEM
 
 
@@ -893,6 +912,15 @@ public:
     iterator_over_map(AliFemtoConfigObject &obj): fParent(&obj) {}
     map_iterator begin() { return fParent->map_begin(); }
     map_iterator end() { return fParent->map_end(); }
+
+    /// Python-interop method
+    ///
+    /// Use as iterator
+    ///
+    /// Does not check if type is map! MAY CRASH!
+    ///
+    MapValue_t __iter__() const
+      { return fParent->is_map() ? fParent->fValueMap : MapValue_t(); }
   };
 
   /// Simplified loop-over-map syntax function

@@ -24,6 +24,8 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTPCEta(0.0),
   fMomentumInner(0.0),
   fMomentumOnCalo(0.0),
+  fPhiOnCalo(-999.),
+  fEtaOnCalo(-999.),
   fDCA(),
   fTrackLength(0.0),
   fMassForTracking(0.0),
@@ -64,6 +66,7 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDGTUpt(0.),
   fTRDGTUsagitta(2.0),
   fTRDGTUPID(0.),
+  fEMCALnSigEle(-999),
   fCaloClusterId(-999),
   fTrackParam(),
   fCovMatrix(),
@@ -101,6 +104,8 @@ AliReducedTrackInfo::AliReducedTrackInfo(const AliReducedTrackInfo &c) :
   fTPCEta(c.fTPCEta),
   fMomentumInner(c.fMomentumInner),
   fMomentumOnCalo(c.fMomentumOnCalo),
+  fPhiOnCalo(c.fPhiOnCalo),
+  fEtaOnCalo(c.fEtaOnCalo),
   fTrackLength(c.fTrackLength),
   fMassForTracking(c.fMassForTracking),
   fChi2TPCConstrainedVsGlobal(c.fChi2TPCConstrainedVsGlobal),
@@ -131,6 +136,7 @@ AliReducedTrackInfo::AliReducedTrackInfo(const AliReducedTrackInfo &c) :
   fTRDGTUpt(c.fTRDGTUpt),
   fTRDGTUsagitta(c.fTRDGTUsagitta),
   fTRDGTUPID(c.fTRDGTUPID),
+  fEMCALnSigEle(c.fEMCALnSigEle),
   fCaloClusterId(c.fCaloClusterId),
   fMCGeneratorIndex(c.fMCGeneratorIndex)
 {

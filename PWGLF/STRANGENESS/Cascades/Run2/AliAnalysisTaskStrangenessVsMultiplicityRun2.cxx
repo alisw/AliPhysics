@@ -520,7 +520,7 @@ fkExtraCleanup    ( kTRUE ),
 fTrigType(AliVEvent::kMB),
 
 //---> Min pT to save candidate
-fMinPtToSave( 0.55 ),
+fMinPtToSave( 0.0 ),
 fMaxPtToSave( 100.00 ),
 
 //---> Sandbox switch

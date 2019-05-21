@@ -54,28 +54,56 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fNbins(1000),
  fMinBin(0.),
  fMaxBin(10.),
- fPhiHist(NULL),
- fEtaHist(NULL),
- fMultiHisto(NULL),
+ fPhiHistBeforeTrackSeletion(NULL),
+ fEtaHistBeforeTrackSeletion(NULL),
+ fTotalMultBeforeTrackSeletion(NULL),
+ fMultiHistoBeforeTrackSeletion(NULL),
+ fPhiHistAfterTrackSeletion(NULL),
+ fEtaHistAfterTrackSeletion(NULL),
+ fTotalMultAfterTrackSeletion(NULL),
+ fMultiHistoAfterTrackSeletion(NULL),
+ fMultiHistoBeforeMultCut(NULL),
+ //SelectionCuts
+ bMultCut(kFALSE),
+ fMainFilter(0),
+ fSecondFilter(0),
+ fMinCentrality(0.),
+ fMaxCentrality(100.),
+     //Global
+ bCutOnVertexX(kFALSE), 
+ bCutOnVertexY(kFALSE),
+ bCutOnVertexZ(kFALSE), 
+ fMinVertexX(-44.),
+ fMaxVertexX(-44.),
+ fMinVertexY(-44.),
+ fMaxVertexY(-44.),
+ fMinVertexZ(-10.),
+ fMaxVertexZ(10.),
+   //Physics
+ bCutOnEta(kTRUE),
+ bCutOnPt(kTRUE),
+ fMinEtaCut(-0.8),
+ fMaxEtaCut(0.8),
+ fMinPtCut(0.2),
+ fMaxPtCut(5.0),
+ //Variables for the correlation
  fMaxCorrelator(8),
  bUseWeights(kFALSE),
- kNumber(6),  //number of correlation
- kh1(2), kh2(2), kh3(-1), kh4(-1), kh5(-1), kh6(-1), kh7(0), kh8(0),  //harmonics
- ka1(2), ka2(-2), ka3(1), ka4(-1), ka5(1), ka6(-1), ka7(0), ka8(0),  //second set of harmonics
- kSum((kh1<0?-1*kh1:kh1)+(kh2<0?-1*kh2:kh2)+(kh3<0?-1*kh3:kh3)+(kh4<0?-1*kh4:kh4)
-                + (kh5<0?-1*kh5:kh5)+(kh6<0?-1*kh6:kh6)+(kh7<0?-1*kh7:kh7)+(kh8<0?-1*kh8:kh8)), // We will not go beyond 8-p correlations
+ fNumber(6),  //number of correlation
+ fMinNumberPart(8),
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0),  //harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0),  //second set of harmonics
+ kSum((fh1<0?-1*fh1:fh1)+(fh2<0?-1*fh2:fh2)+(fh3<0?-1*fh3:fh3)+(fh4<0?-1*fh4:fh4)
+                + (fh5<0?-1*fh5:fh5)+(fh6<0?-1*fh6:fh6)+(fh7<0?-1*fh7:fh7)+(fh8<0?-1*fh8:fh8)), // We will not go beyond 8-p correlations
  kMaxHarmonic(kSum+1),
  kMaxPower(fMaxCorrelator+1), 
  fParticles(0),
- fCentral(0),
- fMinCentrality(0.),
- fMaxCentrality(100.),
  fAngles(NULL),
  fWeights(NULL),
  fBin(NULL),
- func1(NULL),
  fCentrality(NULL),
  fCentralitySecond(NULL),
+ fEvCentrality(NULL),
  fCounterHistogram(NULL),
  // Final results:
  fFinalResultsList(NULL)
@@ -123,29 +151,57 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fNbins(1000),
  fMinBin(0.),
  fMaxBin(10.),
- fPhiHist(NULL),
- fEtaHist(NULL),
- fMultiHisto(NULL),
+ fPhiHistBeforeTrackSeletion(NULL),
+ fEtaHistBeforeTrackSeletion(NULL),
+ fTotalMultBeforeTrackSeletion(NULL),
+ fMultiHistoBeforeTrackSeletion(NULL),
+ fPhiHistAfterTrackSeletion(NULL),
+ fEtaHistAfterTrackSeletion(NULL),
+ fTotalMultAfterTrackSeletion(NULL),
+ fMultiHistoAfterTrackSeletion(NULL),
+ fMultiHistoBeforeMultCut(NULL),
+ //SelectionCuts
+ bMultCut(kFALSE),
+ fMainFilter(0),
+ fSecondFilter(0),
+ fMinCentrality(0.),
+ fMaxCentrality(100.),
+     //Global
+ bCutOnVertexX(kFALSE), 
+ bCutOnVertexY(kFALSE),
+ bCutOnVertexZ(kFALSE), 
+ fMinVertexX(-44.),
+ fMaxVertexX(-44.),
+ fMinVertexY(-44.),
+ fMaxVertexY(-44.),
+ fMinVertexZ(-10.),
+ fMaxVertexZ(10.),
+   //Physics
+ bCutOnEta(kTRUE),
+ bCutOnPt(kTRUE),
+ fMinEtaCut(-0.8),
+ fMaxEtaCut(0.8),
+ fMinPtCut(0.2),
+ fMaxPtCut(5.0),
+ //Variables for the correlation
  fMaxCorrelator(8),
  bUseWeights(kFALSE),
- kNumber(6),  //number of correlation
- kh1(2), kh2(2), kh3(-1), kh4(-1), kh5(-1), kh6(-1), kh7(0), kh8(0),  //harmonics
- ka1(2), ka2(-2), ka3(1), ka4(-1), ka5(1), ka6(-1), ka7(0), ka8(0),  //second set of harmonics
- kSum((kh1<0?-1*kh1:kh1)+(kh2<0?-1*kh2:kh2)+(kh3<0?-1*kh3:kh3)+(kh4<0?-1*kh4:kh4)
-                + (kh5<0?-1*kh5:kh5)+(kh6<0?-1*kh6:kh6)+(kh7<0?-1*kh7:kh7)+(kh8<0?-1*kh8:kh8)), // We will not go beyond 8-p correlations
+ fNumber(6),  //number of correlation
+ fMinNumberPart(8),
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0),  //harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0),  //second set of harmonics
+ kSum((fh1<0?-1*fh1:fh1)+(fh2<0?-1*fh2:fh2)+(fh3<0?-1*fh3:fh3)+(fh4<0?-1*fh4:fh4)
+                + (fh5<0?-1*fh5:fh5)+(fh6<0?-1*fh6:fh6)+(fh7<0?-1*fh7:fh7)+(fh8<0?-1*fh8:fh8)), // We will not go beyond 8-p correlations
  kMaxHarmonic(kSum+1),
  kMaxPower(fMaxCorrelator+1),
  fParticles(0), 
- fCentral(0.),
- fMinCentrality(0.),
- fMaxCentrality(100.), 
  fAngles(NULL),
  fWeights(NULL),
  fBin(NULL),
- func1(NULL),
  // Final results:
  fCentrality(NULL),
  fCentralitySecond(NULL),
+ fEvCentrality(NULL),
  fCounterHistogram(NULL),
  fFinalResultsList(NULL)
 {
@@ -202,162 +258,96 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  // Main loop (called for each event).
 
  // a.0) Get pointer to AOD event;
- // a.1) Centrality; 
- // b) Start analysis over AODs;
+ // a.1) Global QA (Multiplicity and Vertex cut) 
+ // b.0) Start analysis over AODs;
+ // b.1) Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut) 
+ // b.2) Multi-Particle Correlation;
  // c) Reset event-by-event objects;
  // d) PostData.
  
  fCounterHistogram->Fill(0.5); // counter hist 1st bin
 
- // a) Get pointer to AOD event:
+ // a.0) Get pointer to AOD event:
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
- if(!aAOD){return;}
- 
- fCounterHistogram->Fill(1.5); // counter hist 2nd bin
+ // a.1) Global QA (Centrality check, Vertex cut and high multiplicity outlier)
+ if(!GlobalQualityAssurance(aAOD)){return;}
 
- //a.1) Centrality;
- 
- AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
- if(!ams){return;}
- 
- fCounterHistogram->Fill(2.5); // counter hist 3rd bin
+ //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
- //func1->SetParameter(2,gRandom->Uniform(0.,TMath::TwoPi())); //*** for testing. for each event psi_2 is different
-
-
- // b) Start analysis over AODs:
+ //b.0) Start analysis over AODs:
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
- 
- //fParticles=gRandom->Uniform(50.0,500.0); /*** for testing.
+ fAngles = new TArrayD(nTracks); //new Array
+ fParticles=0; //number of particles after selections
 
- Int_t nCounter=0;
- 
- 
- //first loop: =======================
+ if(nTracks>0){fMultiHistoBeforeTrackSeletion->Fill(nTracks);} //multiplicity distribution before track selection
+ for(Int_t u=0;u<nTracks;u++){fTotalMultBeforeTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class before track sel.
 
+ //b.1) Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
-  AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to a track
-  if(!aTrack){continue;} // protection against NULL pointers
-  if(!aTrack->TestFilterBit(128)){continue;} // filter bit 128 denotes TPC-only tracks, use only them for the analysis
-
-  // example variables for each track:
-  Double_t px = aTrack->Px(); // x-component of momenta
-  Double_t py = aTrack->Py(); // y-component of momenta
-  Double_t pz = aTrack->Pz(); // z-component of momenta
-  Double_t e = aTrack->E();  // energy
-  Double_t phi = aTrack->Phi(); // azimuthal angle
-  Double_t eta = aTrack->Eta(); // pseudorapidity
-  Double_t charge = aTrack->Charge(); // charge
-  Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
-
-
-  // apply some cuts: e.g. take for the analysis only particles in -0.8 < eta < 0.8, and 0.2 < pT < 5.0
-  // ... implementation of particle cuts ...
-  if( (-0.8 < eta) && (eta < 0.8) && (0.2 < pt) && (pt < 5.0) ) 
-  {
-   // Fill some control histograms with the particles which passed cuts:
-   fPtHist->Fill(pt);
-   fPhiHist->Fill(phi); 
-   fEtaHist->Fill(eta);
-   
-   fParticles += 1; //one more particle passed the cuts
-  
-   
-   // Do some analysis only with the particles which passed the cuts
-   // ... your analysis code ... 
-
- 	
-
-  } // if( (-0.8 < eta) && (eta < 0.8) && (0.2 < pt) && (pt < 5.0) )  
- } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
-   
- fAngles = new TArrayD(fParticles);
-
- //second loop: ======================= 
-
- for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
- {
-  AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to a track
-  if(!aTrack){continue;} // protection against NULL pointers
-  if(!aTrack->TestFilterBit(128)){continue;} // filter bit 128 denotes TPC-only tracks, use only them for the analysis
-
-  // example variables for each track:
-  Double_t px = aTrack->Px(); // x-component of momenta
-  Double_t py = aTrack->Py(); // y-component of momenta
-  Double_t pz = aTrack->Pz(); // z-component of momenta
-  Double_t e = aTrack->E();  // energy
-  Double_t phi = aTrack->Phi(); // azimuthal angle
-  Double_t eta = aTrack->Eta(); // pseudorapidity
-  Double_t charge = aTrack->Charge(); // charge
-  Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
-
-
-  // apply some cuts: e.g. take for the analysis only particles in -0.8 < eta < 0.8, and 0.2 < pT < 5.0
-  // ... implementation of particle cuts ...
-  if( (-0.8 < eta) && (eta < 0.8) && (0.2 < pt) && (pt < 5.0) ) 
-  {
-  
-   fAngles->AddAt(phi,nCounter);
-   nCounter += 1;
-
-  } // if( (-0.8 < eta) && (eta < 0.8) && (0.2 < pt) && (pt < 5.0) )  
- } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
- 
- 
- //b.1) analysis
- if(fParticles>0){fMultiHisto->Fill(fParticles);}
- 
- 
- if(fParticles>=8) //do the correlation only if there are more than 8 particles in the event
- { 
-
-   if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
-   {
-    if(0. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 5. ){fCentral=0.5;}
-    if(5. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 10. ){fCentral=1.5;}
-    if(10. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 20. ){fCentral=2.5;}
-    if(20. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 30. ){fCentral=3.5;}
-    if(30. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 40. ){fCentral=4.5;}
-    if(40. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 50. ){fCentral=5.5;}
-    if(50. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 60. ){fCentral=6.5;}
-    if(60. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 70. ){fCentral=7.5;}
-    if(70. <= (ams->GetMultiplicityPercentile("V0M")) && (ams->GetMultiplicityPercentile("V0M")) < 80. ){fCentral=8.5;}
-   }
-   else
-   {
-    return; // this event do not belong to the centrality class specified for this particular analysis
-   }
-
-
-    Correlation();  //do the correlation
-    fCentrality->Fill(fCentral,fRecursion[0][kNumber-2]->GetBinContent(1),fRecursion[0][kNumber-2]->GetBinContent(2)); //safe output 
-    fCentralitySecond->Fill(fCentral,fRecursionSecond[0][kNumber-2]->GetBinContent(1),fRecursionSecond[0][kNumber-2]->GetBinContent(2)); 
+    AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack)); // getting a pointer to a track
+    if(!aTrack){continue;} // protection against NULL pointers
+    if(!aTrack->TestFilterBit(fMainFilter)){continue;} //Check if in Filter
     
-    fRecursion[0][kNumber-2]->Reset(); //Reset
-    fRecursion[1][kNumber-2]->Reset(); //Reset
+     Double_t phi = aTrack->Phi(); // azimuthal angle
+     Double_t eta = aTrack->Eta(); // pseudorapidity
+     Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
 
-    fRecursionSecond[0][kNumber-2]->Reset(); //Reset
-    fRecursionSecond[1][kNumber-2]->Reset(); //Reset
+      // Fill some control histograms with the particles before track selection:
+     fPhiHistBeforeTrackSeletion->Fill(phi); 
+     fEtaHistBeforeTrackSeletion->Fill(eta);
+
+      if(!TrackSelection(aTrack)){continue;} //Track did not pass physics selection 
+	
+      // Fill some control histograms with the particles after track selection:
+     fPtHist->Fill(pt);
+     fPhiHistAfterTrackSeletion->Fill(phi); 
+     fEtaHistAfterTrackSeletion->Fill(eta);
+
+     //Fill angle array  
+     fAngles->AddAt(phi,fParticles);
+     fParticles += 1;
+
+
+ } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  
  
 
 
- } //if(fParticles>=8)
+ if(fParticles>0){fMultiHistoAfterTrackSeletion->Fill(fParticles);} //multiplicity distribution after track selection
+ for(Int_t u=0;u<fParticles;u++){fTotalMultAfterTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class after track sel.
+ 
+ //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+ //b.2) Multi-Particle Correlation;
+
+ if(fParticles>=fMinNumberPart) //do the correlation only if there are more than 8 particles in the event
+ { 
+    Correlation();  //do the correlation
+
+    if(fNumber>=6)
+    {
+    fEvCentrality->Fill(0.5,(fRecursion[0][fNumber-2]->GetBinContent(1))/(fRecursionSecond[0][fNumber-2]->GetBinContent(1)),1.);
+    fCentralitySecond->Fill(0.5,fRecursionSecond[0][fNumber-2]->GetBinContent(1),fRecursionSecond[0][fNumber-2]->GetBinContent(2));	
+    fRecursionSecond[0][fNumber-2]->Reset(); //Reset
+    fRecursionSecond[1][fNumber-2]->Reset(); //Reset
+ 
+    } //if(fNumber>=6)
+
+
+    fCentrality->Fill(0.5,fRecursion[0][fNumber-2]->GetBinContent(1),fRecursion[0][fNumber-2]->GetBinContent(2)); //safe output first set of harmonics
+    fRecursion[0][fNumber-2]->Reset(); //Reset
+    fRecursion[1][fNumber-2]->Reset(); //Reset
+
+  } //if(fParticles>=fMinNumberPart)
 
  
-
- 
-
  // c) Reset event-by-event objects:
  fParticles=0;
- fCentral=0.;
- nCounter=0;
  delete fAngles;
  fAngles=NULL;
 
 
- 
  // d) PostData:
  PostData(1,fHistList);
 
@@ -404,13 +394,11 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
      for(Int_t j=0;j<9;j++)
      {
    
-      Qvector[js][j] = NULL; //! 
+      fQvector[js][j] = TComplex(0.,0.); //! 
    
      } 
    } 
    
-   
-
 } // void AliAnalysisTaskStudentsML::InitializeArrays()
 
 //=======================================================================================================================
@@ -437,6 +425,7 @@ void AliAnalysisTaskStudentsML::BookAndNestAllLists()
  fFinalResultsList->SetOwner(kTRUE);
  fHistList->Add(fFinalResultsList);
 
+
 } // void AliAnalysisTaskStudentsML::BookAndNestAllLists()
 
 //=======================================================================================================================
@@ -445,14 +434,16 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
 {
  // Book all control histograms.
 
- // a) Book histogram to hold pt distribution;
- // b) Book histogram to hold phi distribution;
- // c) Book histogram to hold eta distribution;
- // d) Book histogram to hold multiplicty distribution;
- // e) Book histogram to debug
-
- 
- 
+ // a) Book histogram to hold pt spectra
+ // b) Book histogram to hold phi distribution before track selection
+ // c) Book histogram to hold eta distribution before track selection
+ // d) Book Mult. Histo before before track selection
+ // e) Book histogam to hold multiplicty distribution before track selection
+ // f) Book histogram to hold phi distribution after track selection
+ // g) Book histogram to hold eta distribution after track selection:
+ // h) Book Mult. Histo before after track selection
+ // i) Book histogam to hold multiplicty distribution after track selection:
+ // j) Book histogram to debug
 
  // a) Book histogram to hold pt spectra:
  fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbins,fMinBin,fMaxBin);
@@ -461,25 +452,59 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  fPtHist->GetXaxis()->SetTitle("p_{t}");
  fControlHistogramsList->Add(fPtHist);
 
- // b) Book histogram to hold phi distribution:
- fPhiHist = new TH1F("fPhiHist","Phi Distribution",1000,0.,6.3);
- fPhiHist->GetXaxis()->SetTitle("Phi");
- fPhiHist->SetLineColor(4);
- fControlHistogramsList->Add(fPhiHist);
+ // b) Book histogram to hold phi distribution before track selection:
+ fPhiHistBeforeTrackSeletion = new TH1F("fPhiHistBeforeTrackSeletion","Phi Distribution",1000,0.,6.3);
+ fPhiHistBeforeTrackSeletion->GetXaxis()->SetTitle("Phi");
+ fPhiHistBeforeTrackSeletion->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHistBeforeTrackSeletion);
 
- // c) Book histogram to hold eta distribution:
- fEtaHist = new TH1F("fEtaHist","Eta Distribution",1000,-1.,1.);
- fEtaHist->GetXaxis()->SetTitle("Eta");
- fEtaHist->SetLineColor(4);
- fControlHistogramsList->Add(fEtaHist);
+ // c) Book histogram to hold eta distribution before track selection:
+ fEtaHistBeforeTrackSeletion = new TH1F("fEtaHistBeforeTrackSeletion","Eta Distribution",1000,-1.,1.);
+ fEtaHistBeforeTrackSeletion->GetXaxis()->SetTitle("Eta");
+ fEtaHistBeforeTrackSeletion->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHistBeforeTrackSeletion);
 
- // d) Book histogam to hold multiplicty distribution:
- fMultiHisto = new TH1F("fMultiHisto","Multiplicity",500,0.,500.); //histogram for multiplicity
- fMultiHisto->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultiHisto);
+ // d) Book Mult. Histo before before track selection
+ fTotalMultBeforeTrackSeletion = new TH1F("fTotalMultBeforeTrackSeletion","Mult. Counts per Class before brute cut",1,0.,1.);
+ fTotalMultBeforeTrackSeletion->GetYaxis()->SetTitle("Counts");
+ fTotalMultBeforeTrackSeletion->SetLineColor(4);
+ fControlHistogramsList->Add(fTotalMultBeforeTrackSeletion);
+ 
+ // e) Book histogam to hold multiplicty distribution before track selection:
+ fMultiHistoBeforeTrackSeletion = new TH1F("fMultiHistoBeforeTrackSeletion","Multiplicity",5000,0.,5000.); 
+ fMultiHistoBeforeTrackSeletion->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultiHistoBeforeTrackSeletion);
 
- // e) Book histogram to debug
- fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.); //histogram for multiplicity
+ // f) Book histogram to hold phi distribution after track selection:
+ fPhiHistAfterTrackSeletion = new TH1F("fPhiHistAfterTrackSeletion","Phi Distribution",1000,0.,6.3);
+ fPhiHistAfterTrackSeletion->GetXaxis()->SetTitle("Phi");
+ fPhiHistAfterTrackSeletion->SetLineColor(4);
+ fControlHistogramsList->Add(fPhiHistAfterTrackSeletion);
+
+ // g) Book histogram to hold eta distribution after track selection:
+  fEtaHistAfterTrackSeletion = new TH1F("fEtaHistAfterTrackSeletion","Eta Distribution",1000,-1.,1.);
+ fEtaHistAfterTrackSeletion->GetXaxis()->SetTitle("Eta");
+ fEtaHistAfterTrackSeletion->SetLineColor(4);
+ fControlHistogramsList->Add(fEtaHistAfterTrackSeletion);
+
+ // h) Book Mult. Histo before after track selection
+  fTotalMultAfterTrackSeletion = new TH1F("fTotalMultAfterTrackSeletion","Mult. Counts per Class before brute cut",1,0.,1.);
+ fTotalMultAfterTrackSeletion->GetYaxis()->SetTitle("Counts");
+ fTotalMultAfterTrackSeletion->SetLineColor(4);
+ fControlHistogramsList->Add(fTotalMultAfterTrackSeletion);
+ 
+ // i) Book histogam to hold multiplicty distribution after track selection:
+ fMultiHistoAfterTrackSeletion = new TH1F("fMultiHistoAfterTrackSeletion","Multiplicity",5000,0.,5000.);
+ fMultiHistoAfterTrackSeletion->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultiHistoAfterTrackSeletion);
+
+ // j) Book histogam to hold multiplicty distribution before high multiplicity outlier cut:
+ fMultiHistoBeforeMultCut = new TH1F("fMultiHistoBeforeMultCut","Multiplicity",5000,0.,5000.); 
+ fMultiHistoBeforeMultCut->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultiHistoBeforeMultCut);
+
+ // j) Book histogram to debug
+ fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.); 
  fControlHistogramsList->Add(fCounterHistogram);
 
 } //void AliAnalysisTaskStudentsML::BookControlHistograms()
@@ -490,24 +515,25 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
   
- fCentrality = new TProfile("fCentrality","Result Analysis Centrality Dependence",9,0.,9.); //histogram for multiplicity
+ fCentrality = new TProfile("fCentrality","Result Analysis Centrality Dependence",1,0.,1.); //centrality dependet output
  fCentrality->GetXaxis()->SetTitle("Centrality");
  fCentrality->GetYaxis()->SetTitle("flow");
  fFinalResultsList->Add(fCentrality);
  fCentrality->Sumw2();
 
- fCentralitySecond = new TProfile("fCentralitySecond","Result Analysis Centrality Dependence",9,0.,9.); //histogram for multiplicity
+ fCentralitySecond = new TProfile("fCentralitySecond","Result Analysis Centrality Dependence",1,0.,1.); //histogram for multiplicity
  fCentralitySecond->GetXaxis()->SetTitle("Centrality");
  fCentralitySecond->GetYaxis()->SetTitle("flow");
  fFinalResultsList->Add(fCentralitySecond);
  fCentralitySecond->Sumw2(); 
 
+ fEvCentrality = new TProfile("fEvCentrality","Result Analysis Centrality Dependence",1,0.,1.); //centrality dependet output
+ fEvCentrality->GetXaxis()->SetTitle("Centrality");
+ fFinalResultsList->Add(fEvCentrality);
+ fEvCentrality->Sumw2(); 
+
  Cosmetics();
  
- //*** for testing 
- /*func1=new TF1("func1","(1/(TMath::TwoPi()))*(1 + 2*[1]*TMath::Cos(2*(x-[2])))",0.,TMath::TwoPi()); //defining function func1 with parameter [1] for v_2 and [2] as pis_2
- func1->SetParameter(1,0.05); //setting v_2 (aka [1]) fix to 0.05*/
-
 } // void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 
 //=======================================================================================================================
@@ -531,11 +557,108 @@ void AliAnalysisTaskStudentsML::Cosmetics()
    // 2.) [c] gives gives the kind of correlation. [n] is the (n+2)-particle correlation
    //3.) first bin holds value of correlation (single event). Second bin holds the weight! 
    
-   
   } // end of for(Int_t c=0;c<fMaxCorrelator;c++) 
  } // end of for(Int_t cs=0;cs<2;cs++) 
 
 } // void Cosmetics()
+
+//=======================================================================================================================
+
+ Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent){
+
+  //a) Protection against NULL-Pointers
+  //b) Check Centrality
+  //c) Cuts on AliAODVertex:
+  //d) remove high multiplicity outliers
+
+
+  //a) Protection against NULL-Pointers
+  if(!aAODevent){return kFALSE;}
+  fCounterHistogram->Fill(1.5); // counter hist 2nd bin
+
+  //b) Check Centrality
+  AliMultSelection *ams = (AliMultSelection*)aAODevent->FindListObject("MultSelection");
+  if(!ams){return kFALSE;}
+  fCounterHistogram->Fill(2.5); // counter hist 3rd bin
+ 
+  if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality){ }
+  else{ return kFALSE; } // this event do not belong to the centrality class specified for this particular analysis 
+
+
+  // c) Cuts on AliAODVertex:
+  AliAODVertex *avtx = (AliAODVertex*)aAODevent->GetPrimaryVertex();
+  if(bCutOnVertexX)
+  {
+   if(avtx->GetX() < fMinVertexX) return kFALSE;
+   if(avtx->GetX() > fMaxVertexX) return kFALSE;
+  }
+  if(bCutOnVertexY)
+  {
+   if(avtx->GetY() < fMinVertexY) return kFALSE;
+   if(avtx->GetY() > fMaxVertexY) return kFALSE;
+  }
+  if(bCutOnVertexZ)
+  {
+   if(avtx->GetZ() < fMinVertexZ) return kFALSE;
+   if(avtx->GetZ() > fMaxVertexZ) return kFALSE;
+  }
+
+  //d) remove high multiplicity outliers
+
+  if(bMultCut)
+  {
+  	Int_t nTracks = aAODevent->GetNumberOfTracks(); // number of all tracks in current event 
+  	Int_t nCounterMainFilter=0; //Counter for MainFilter
+  	Int_t nCounterSecondFilter=0; //Counter for SecondFilter
+
+	fMultiHistoBeforeMultCut->Fill(nTracks); //multiplicity distribution before high multiplicity outlier removal
+  	for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
+ 	 {
+  	  AliAODTrack *aTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(iTrack)); // getting a pointer to a track
+   	  if(!aTrack){continue;} // protection against NULL pointers
+   	  if(aTrack->TestFilterBit(fMainFilter)){nCounterMainFilter++; } //one more track with main filter
+   	  if(aTrack->TestFilterBit(fSecondFilter)){ nCounterSecondFilter++; } //one more track with second filter
+  	}//for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
+	
+
+	nCounterMainFilter=0;
+  	nCounterSecondFilter=0;
+
+  }//end if(bMultCut)
+
+ return kTRUE;
+}//end  Bool_t AliAnalysisTaskStudentsML::GlobalQualityAssurance(AliAODEvent *aAODevent)
+
+//=======================================================================================================================
+
+ Bool_t AliAnalysisTaskStudentsML::TrackSelection(AliAODTrack *aTrack)
+ {
+
+        // example variables for each track:
+ 	/*Double_t px = aTrack->Px(); // x-component of momenta
+ 	Double_t py = aTrack->Py(); // y-component of momenta
+ 	Double_t pz = aTrack->Pz(); // z-component of momenta
+ 	Double_t e = aTrack->E();  // energy
+        Double_t charge = aTrack->Charge(); // charge
+ 	Double_t phi = aTrack->Phi(); // azimuthal angle*/
+ 	Double_t eta = aTrack->Eta(); // pseudorapidity
+ 	Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
+
+	if(bCutOnEta) 
+	{
+	  if(eta<fMinEtaCut) return kFALSE;
+	  if(eta>fMaxEtaCut) return kFALSE;
+	}
+
+	if(bCutOnPt) 
+	{
+	  if(pt<fMinPtCut) return kFALSE;
+	  if(pt>fMaxPtCut) return kFALSE;
+	}
+
+    return kTRUE;
+
+ }// end AliAnalysisTaskStudentsML::PhysicsSelection(AliAODTrack *aTrack)
 
 //=======================================================================================================================
 
@@ -551,7 +674,7 @@ void AliAnalysisTaskStudentsML::CalculateQvectors()
  {
   for(Int_t p=0;p<kMaxPower;p++)
   {
-   Qvector[h][p] = TComplex(0.,0.);
+   fQvector[h][p] = TComplex(0.,0.);
   } //  for(Int_t p=0;p<kMaxPower;p++)
  } // for(Int_t h=0;h<kMaxHarmonic;h++)
 
@@ -568,7 +691,7 @@ void AliAnalysisTaskStudentsML::CalculateQvectors()
    for(Int_t p=0;p<kMaxPower;p++)
    {
     if(bUseWeights){wPhiToPowerP = pow(wPhi,p);}
-    Qvector[h][p] += TComplex(wPhiToPowerP*TMath::Cos(h*dPhi2),wPhiToPowerP*TMath::Sin(h*dPhi2));
+    fQvector[h][p] += TComplex(wPhiToPowerP*TMath::Cos(h*dPhi2),wPhiToPowerP*TMath::Sin(h*dPhi2));
    } //  for(Int_t p=0;p<kMaxPower;p++)
   } // for(Int_t h=0;h<kMaxHarmonic;h++)
  } //  for(Int_t i=0;i<fParticles;i++) // loop over particles
@@ -582,12 +705,10 @@ TComplex AliAnalysisTaskStudentsML::Q(Int_t n, Int_t p)
 {
  // Using the fact that Q{-n,p} = Q{n,p}^*. 
  
- if(n>=0){return Qvector[n][p];} 
- return TComplex::Conjugate(Qvector[-n][p]);
+ if(n>=0){return fQvector[n][p];} 
+ return TComplex::Conjugate(fQvector[-n][p]);
  
 } // TComplex AliAnalysisTaskStudentsML::Q(Int_t n, Int_t p)
-
-
 
 
 //========================================================================================================================
@@ -638,16 +759,15 @@ TComplex AliAnalysisTaskStudentsML::Recursion(Int_t n, Int_t* harmonic, Int_t mu
 void AliAnalysisTaskStudentsML::Correlation()
 {
 	
-    
     // Calculate Q-vectors for available angles and weights;
-    CalculateQvectors();
+    this->CalculateQvectors();
 	
     // Calculate n-particle correlations from Q-vectors (using recursion):	
 
          
-        if(kNumber==2)
+        if(fNumber==2)
         {
-         Int_t harmonicsTwoNum[2] = {kh1,kh2};     
+         Int_t harmonicsTwoNum[2] = {fh1,fh2};     
          Int_t harmonicsTwoDen[2] = {0,0};       
          TComplex twoRecursion = Recursion(2,harmonicsTwoNum)/Recursion(2,harmonicsTwoDen).Re();
          Double_t wTwoRecursion = Recursion(2,harmonicsTwoDen).Re();
@@ -655,11 +775,12 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[0][0]->Fill(1.5,wTwoRecursion,1.); //weight 
          fRecursion[1][0]->Fill(0.5,twoRecursion.Im(),wTwoRecursion); // <<sin(h1*phi1+h2*phi2)>>
          fRecursion[1][0]->Fill(1.5,wTwoRecursion,1.); //weight
+
          }//  2-p correlation
         
-        if(kNumber==3)
+        if(fNumber==3)
         {
-         Int_t harmonicsThreeNum[3] = {kh1,kh2,kh3};       
+         Int_t harmonicsThreeNum[3] = {fh1,fh2,fh3};       
          Int_t harmonicsThreeDen[3] = {0,0,0};       
          TComplex threeRecursion = Recursion(3,harmonicsThreeNum)/Recursion(3,harmonicsThreeDen).Re();
          Double_t wThreeRecursion = Recursion(3,harmonicsThreeDen).Re();
@@ -667,23 +788,25 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[0][1]->Fill(1.5,wThreeRecursion,1.); //weight
          fRecursion[1][1]->Fill(0.5,threeRecursion.Im(),wThreeRecursion); // <<sin(h1*phi1+h2*phi2+h3*phi3)>>
          fRecursion[1][1]->Fill(1.5,wThreeRecursion,1.); //weight
+
          } //  3-p correlation
         
-        if(kNumber==4)
+        if(fNumber==4)
         {
-         Int_t harmonicsFourNum[4] = {kh1,kh2,kh3,kh4};       
+         Int_t harmonicsFourNum[4] = {fh1,fh2,fh3,fh4};       
          Int_t harmonicsFourDen[4] = {0,0,0,0};       
          TComplex fourRecursion = Recursion(4,harmonicsFourNum)/Recursion(4,harmonicsFourDen).Re();
          Double_t wFourRecursion = Recursion(4,harmonicsFourDen).Re();
          fRecursion[0][2]->Fill(0.5,fourRecursion.Re(),wFourRecursion); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>>
-         fRecursion[0][2]->Fill(1.5,wFourRecursion,1.); //weigh
+         fRecursion[0][2]->Fill(1.5,wFourRecursion,1.); //weight
          fRecursion[1][2]->Fill(0.5,fourRecursion.Im(),wFourRecursion); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>>
-         fRecursion[1][2]->Fill(1.5,wFourRecursion,1.); //weigh
+         fRecursion[1][2]->Fill(1.5,wFourRecursion,1.); //weight
+
          }//  4-p correlation
         
-        if(kNumber==5)
+        if(fNumber==5)
         {
-         Int_t harmonicsFiveNum[5] = {kh1,kh2,kh3,kh4,kh5};       
+         Int_t harmonicsFiveNum[5] = {fh1,fh2,fh3,fh4,fh5};       
          Int_t harmonicsFiveDen[5] = {0,0,0,0,0};       
          TComplex fiveRecursion = Recursion(5,harmonicsFiveNum)/Recursion(5,harmonicsFiveDen).Re();
          Double_t wFiveRecursion = Recursion(5,harmonicsFiveDen).Re();
@@ -693,9 +816,9 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[1][3]->Fill(1.5,wFiveRecursion,1.);
         }//  5-p correlation
 
-        if(kNumber==6)
+        if(fNumber==6)
         {
-         Int_t harmonicsSixNum[6] = {kh1,kh2,kh3,kh4,kh5,kh6};       
+         Int_t harmonicsSixNum[6] = {fh1,fh2,fh3,fh4,fh5,fh6};       
          Int_t harmonicsSixDen[6] = {0,0,0,0,0,0};       
          TComplex sixRecursion = Recursion(6,harmonicsSixNum)/Recursion(6,harmonicsSixDen).Re();
          Double_t wSixRecursion = Recursion(6,harmonicsSixDen).Re();
@@ -705,7 +828,7 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[1][4]->Fill(1.5,wSixRecursion,1.);
 
 
-         Int_t harmonicsSixNumSecond[6] = {ka1,ka2,ka3,ka4,ka5,ka6};       
+         Int_t harmonicsSixNumSecond[6] = {fa1,fa2,fa3,fa4,fa5,fa6};       
          Int_t harmonicsSixDenSecond[6] = {0,0,0,0,0,0};       
          TComplex sixRecursionSecond = Recursion(6,harmonicsSixNumSecond)/Recursion(6,harmonicsSixDenSecond).Re();
          Double_t wSixRecursionSecond = Recursion(6,harmonicsSixDenSecond).Re();
@@ -716,14 +839,12 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursionSecond[1][4]->Fill(0.5,sixRecursionSecond.Im(),wSixRecursionSecond); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
          fRecursionSecond[1][4]->Fill(1.5,wSixRecursionSecond,1.);
 
-
-
          }//  6-p correlation
         
         
-        if(kNumber==7)
+        if(fNumber==7)
         {
-         Int_t harmonicsSevenNum[7] = {kh1,kh2,kh3,kh4,kh5,kh6,kh7};       
+         Int_t harmonicsSevenNum[7] = {fh1,fh2,fh3,fh4,fh5,fh6,fh7};       
          Int_t harmonicsSevenDen[7] = {0,0,0,0,0,0,0};       
          TComplex sevenRecursion = Recursion(7,harmonicsSevenNum)/Recursion(7,harmonicsSevenDen).Re();
          Double_t wSevenRecursion = Recursion(7,harmonicsSevenDen).Re();
@@ -731,12 +852,22 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[0][5]->Fill(1.5,wSevenRecursion,1.);
          fRecursion[1][5]->Fill(0.5,sevenRecursion.Im(),wSevenRecursion); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>>
          fRecursion[1][5]->Fill(1.5,wSevenRecursion,1.);
+
+         Int_t harmonicsSevenNumSecond[7] = {fa1,fa2,fa3,fa4,fa5,fa6,fa7};       
+         Int_t harmonicsSevenDenSecond[7] = {0,0,0,0,0,0,0};       
+         TComplex sevenRecursionSecond = Recursion(7,harmonicsSevenNumSecond)/Recursion(7,harmonicsSevenDenSecond).Re();
+         Double_t wSevenRecursionSecond = Recursion(7,harmonicsSevenDenSecond).Re();
+         fRecursionSecond[0][5]->Fill(0.5,sevenRecursionSecond.Re(),wSevenRecursionSecond); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>>
+         fRecursionSecond[0][5]->Fill(1.5,wSevenRecursionSecond,1.);
+         fRecursionSecond[1][5]->Fill(0.5,sevenRecursionSecond.Im(),wSevenRecursionSecond); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>>
+         fRecursionSecond[1][5]->Fill(1.5,wSevenRecursionSecond,1.);   
+
         }//  7-p correlation
         
         
-        if(kNumber==8)
+        if(fNumber==8)
         {
-         Int_t harmonicsEightNum[8] = {kh1,kh2,kh3,kh4,kh5,kh6,kh7,kh8};       
+         Int_t harmonicsEightNum[8] = {fh1,fh2,fh3,fh4,fh5,fh6,fh7,fh8};       
          Int_t harmonicsEightDen[8] = {0,0,0,0,0,0,0,0};       
          TComplex eightRecursion = Recursion(8,harmonicsEightNum)/Recursion(8,harmonicsEightDen).Re();
          Double_t wEightRecursion = Recursion(8,harmonicsEightDen).Re();
@@ -744,18 +875,29 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[0][6]->Fill(1.5,wEightRecursion,1.);
          fRecursion[1][6]->Fill(0.5,eightRecursion.Im(),wEightRecursion); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
          fRecursion[1][6]->Fill(1.5,wEightRecursion,1.);
+        
+
+
+	 Int_t harmonicsEightNumSecond[8] = {fa1,fa2,fa3,fa4,fa5,fa6,fa7,fa8};       
+         Int_t harmonicsEightDenSecond[8] = {0,0,0,0,0,0,0,0};       
+         TComplex eightRecursionSecond = Recursion(8,harmonicsEightNumSecond)/Recursion(8,harmonicsEightDenSecond).Re();
+         Double_t wEightRecursionSecond = Recursion(8,harmonicsEightDenSecond).Re();
+         fRecursionSecond[0][6]->Fill(0.5,eightRecursionSecond.Re(),wEightRecursionSecond); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursionSecond[0][6]->Fill(1.5,wEightRecursionSecond,1.);
+         fRecursionSecond[1][6]->Fill(0.5,eightRecursionSecond.Im(),wEightRecursionSecond); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursionSecond[1][6]->Fill(1.5,wEightRecursionSecond,1.);
+
         }//  8-p correlation
 
-        if(kNumber!=2 && kNumber!=3 && kNumber!=4 && kNumber!=5 && kNumber!=6 && kNumber!=7 && kNumber!=8)
+        if(fNumber!=2 && fNumber!=3 && fNumber!=4 && fNumber!=5 && fNumber!=6 && fNumber!=7 && fNumber!=8)
         {
          return;
         }
-
-    
       
  }//void Correlation() 
 
-
 //========================================================================================================================
+
+
 
 

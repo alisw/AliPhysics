@@ -33,6 +33,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  DCAzTPC()                     const {return fTPCDCA[1];}
   Float_t  Pin()                         const {return fMomentumInner;}
   Float_t  PonCalo()                     const {return fMomentumOnCalo;}
+  Float_t  PhiOnCalo()                   const {return fPhiOnCalo;}
+  Float_t  EtaOnCalo()                   const {return fEtaOnCalo;}
   Float_t  DCAxy()                       const {return fDCA[0];}
   Float_t  DCAz()                        const {return fDCA[1];}
   Float_t  TrackLength()                 const {return fTrackLength;}
@@ -89,8 +91,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t   TRDGTUsagitta()        const {return fTRDGTUsagitta;}
   UChar_t   TRDGTUPID()            const {return fTRDGTUPID;}
 
-
-  Int_t    CaloClusterId() const {return fCaloClusterId;}
+  Float_t   EMCALnSigEle()  const {return fEMCALnSigEle;}
+  Int_t     CaloClusterId() const {return fCaloClusterId;}
   
   Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
   Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
@@ -118,6 +120,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fTPCEta;              // inner param eta 
   Float_t fMomentumInner;       // inner param momentum (only the magnitude)
   Float_t fMomentumOnCalo;      // momentum on calorimeter surface (only the magnitude)
+  Float_t fPhiOnCalo;           // phi on calorimeter (EMCal radius) surface
+  Float_t fEtaOnCalo;           // eta on calorimeter (EMCal radius) surface
   Float_t fDCA[2];              // DCA xy,z
   Float_t fTPCDCA[2];           // TPConly DCA xy,z
   Float_t fTrackLength;         // track length
@@ -171,7 +175,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t  fTRDGTUPID;          // TRD online track pid
 
   // EMCAL/PHOS
-  Int_t  fCaloClusterId;          // ID for the calorimeter cluster (if any)
+  Float_t fEMCALnSigEle;        // EMCal n-sigma deviation from expected electron signal
+  Int_t   fCaloClusterId;       // ID for the calorimeter cluster (if any)
   
   // Track parameters stored at the primary vertex
   Float_t fTrackParam[6];     // parameters: x, y, z, px, py, pz
@@ -188,7 +193,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 8);
+  ClassDef(AliReducedTrackInfo, 10);
 };
 
 //_______________________________________________________________________________

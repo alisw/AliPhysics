@@ -148,7 +148,8 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo, UInt_t trigger) {
   fCascCuts->Init();
   fAntiCascCuts->Init();
   fGTI = new AliAODTrack*[fTrackBufferSize];
-  fEvent = new AliFemtoDreamEvent(fMVPileUp, fEvtCutQA, trigger);
+  fEvent = new AliFemtoDreamEvent(fMVPileUp, fEvtCutQA, trigger,
+                                  fEvtCuts->GetUseAliEventCuts());
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
   bool MinBooking = !((!fConfig->GetMinimalBookingME())
       || (!fConfig->GetMinimalBookingSample()));
@@ -378,16 +379,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   fPairCleaner->StoreParticle(AntiDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
-  if (fConfig->GetInvMassPairs()) {
-    fPairCleaner->FillInvMassPair((fPairCleaner->GetCleanParticles().at(0)),
-                                  2212,
-                                  (fPairCleaner->GetCleanParticles().at(4)),
-                                  3312, 0);
-    fPairCleaner->FillInvMassPair((fPairCleaner->GetCleanParticles().at(1)),
-                                  2212,
-                                  (fPairCleaner->GetCleanParticles().at(5)),
-                                  3312, 1);
-  }
   if (fConfig->GetUseEventMixing()) {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());

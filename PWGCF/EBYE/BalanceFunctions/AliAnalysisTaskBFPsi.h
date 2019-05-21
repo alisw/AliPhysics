@@ -213,6 +213,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
   void CheckFirstEventInChunk() {fCheckFirstEventInChunk = kTRUE;}
   void CheckPileUp() {fCheckPileUp = kTRUE;}
+  void UseSPDPileUpCuts(){fUsePileUpSPD = kTRUE;}
   void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
   void SetRebinnedCorrHistos() {fRebinCorrHistos = kTRUE;}
@@ -502,6 +503,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fCheckFirstEventInChunk;//Usage of the "First Event in Chunk" check (not needed for new productions)
   Bool_t fCheckPileUp;//Usage of the "Pile-Up" event check
+  Bool_t fUsePileUpSPD;//Usage of the pile-up rejection with SPD instead of MultiVertexer one
   Bool_t fCheckPrimaryFlagAOD;// Usage of check on AliAODtrack::kPrimary (default = OFF)
   Bool_t fUseMCforKinematics;//Usage of MC information for filling the kinematics information of particles (only in MCAODrec mode)
   Bool_t fRebinCorrHistos;//Rebinning of corrected plots
@@ -595,7 +597,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 16); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 17); // example of analysis
 };
 
 

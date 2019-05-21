@@ -42,62 +42,52 @@ protected:
     
     
     
-    TH3F*  f3fHistCentVsInvMassLambda1point6;
     TH3F*  f3fHistCentVsInvMassLambda1point0;
-    TH3F*  f3fHistCentVsInvMassLambda0point6;
-    TH3F*  f3fHistCentVsInvMassLambda0point2;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point6Sigtwo;
-    TH3F*  f3fHistCentVsInvMassLambda1point0Sigtwo;
-    TH3F*  f3fHistCentVsInvMassLambda0point6Sigtwo;
-    TH3F*  f3fHistCentVsInvMassLambda0point2Sigtwo;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point6Masscut;
     TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
-    TH3F*  f3fHistCentVsInvMassLambda0point6Masscut;
-    TH3F*  f3fHistCentVsInvMassLambda0point2Masscut;
     
-    TH3F*  f3fHistCentVsInvMassLambda1point6SigtwoMasscut;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Sigtwo;
     TH3F*  f3fHistCentVsInvMassLambda1point0SigtwoMasscut;
-    TH3F*  f3fHistCentVsInvMassLambda0point6SigtwoMasscut;
-    TH3F*  f3fHistCentVsInvMassLambda0point2SigtwoMasscut;
     
-    //    TH3F*  f3fHistPtmassctLambdaPosOpoint2;
-    //    TH3F*  f3fHistPtmassctLambdaPosOpoint4;
-    //    TH3F*  f3fHistPtmassctLambdaPosOpoint6;
-    //    TH3F*  f3fHistPtmassctLambdaPosOpoint8;
+    TH3F*  f3fHistCentVsInvMassLambda1point0Sigfour;
+    TH3F*  f3fHistCentVsInvMassLambda1point0SigfourMasscut;
     
-    ///ANTI-LAMBDA
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point6;
+    TH3F*  f3fHistCentVsInvMassLambda1point0postight;
+    TH3F*  f3fHistCentVsInvMassLambda1point0postightMasscut;
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point0posloose;
+    TH3F*  f3fHistCentVsInvMassLambda1point0poslooseMasscut;
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point0negtight;
+    TH3F*  f3fHistCentVsInvMassLambda1point0negtightMasscut;
+    
+    TH3F*  f3fHistCentVsInvMassLambda1point0negloose;
+    TH3F*  f3fHistCentVsInvMassLambda1point0neglooseMasscut;
+    
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point6;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point2;
-    
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point6Sigtwo;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Sigtwo;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point6Sigtwo;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point2Sigtwo;
-    
-    //    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint2;
-    //    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint4;
-    //    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint6;
-    //    TH3F*  f3fHistPtmassctAntiLambdaPosOpoint8;
-    
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point6Masscut;
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point6Masscut;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point2Masscut;
     
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point6SigtwoMasscut;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Sigtwo;
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0SigtwoMasscut;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point6SigtwoMasscut;
-    TH3F*  f3fHistCentVsInvMassAntiLambda0point2SigtwoMasscut;
     
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Sigfour;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0SigfourMasscut;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0postight;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0postightMasscut;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0posloose;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0poslooseMasscut;
+    
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0negtight;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0negtightMasscut;
+    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0negloose;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0neglooseMasscut;
     
     
     
     Float_t fCentrality;
-    
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
     
@@ -106,37 +96,21 @@ protected:
     Int_t  fNptBins;
     
     
-    THnSparse *fPtBinNplusNminusChEtaFour;
-    THnSparse *fPtBinNplusNminusChEtaThree;
-    THnSparse *fPtBinNplusNminusChEtaTwo;
-    THnSparse *fPtBinNplusNminusChEtaOne;
-    
-    //    THnSparse *fPtBinNplusNminusChPosEtaFour;
-    //    THnSparse *fPtBinNplusNminusChPosEtaThree;
-    //    THnSparse *fPtBinNplusNminusChPosEtaTwo;
-    //    THnSparse *fPtBinNplusNminusChPosEtaOne;
-    
-    THnSparse *fPtBinNplusNminusChEtaFourSigTwo;
-    THnSparse *fPtBinNplusNminusChEtaThreeSigTwo;
-    THnSparse *fPtBinNplusNminusChEtaTwoSigTwo;
-    THnSparse *fPtBinNplusNminusChEtaOneSigTwo;
-    
-    
-    
-    //bkg
-    THnSparse *fPtBinNplusNminusChBproxyLF1point6;
-    THnSparse *fPtBinNplusNminusChBproxyLF1point0;
-    THnSparse *fPtBinNplusNminusChBproxyLF0point6;
-    THnSparse *fPtBinNplusNminusChBproxyLF0point2;
-    
-    //bkg sig 2
-    
-    THnSparse *fPtBinNplusNminusChBproxyLF1point6SigTwo;
-    THnSparse *fPtBinNplusNminusChBproxyLF1point0SigTwo;
-    THnSparse *fPtBinNplusNminusChBproxyLF0point6SigTwo;
-    THnSparse *fPtBinNplusNminusChBproxyLF0point2SigTwo;
-    
-    
+
+    THnSparse *fPtBinNplusNminusChnegtightBKG;
+    THnSparse *fPtBinNplusNminusChnegtight;
+    THnSparse *fPtBinNplusNminusChneglooseBKG;
+    THnSparse *fPtBinNplusNminusChnegloose;
+    THnSparse *fPtBinNplusNminusChposlooseBKG;
+    THnSparse *fPtBinNplusNminusChposloose;
+    THnSparse *fPtBinNplusNminusChpostightBKG;
+    THnSparse *fPtBinNplusNminusChpostight;
+    THnSparse *fPtBinNplusNminusChSigfourBKG;
+    THnSparse *fPtBinNplusNminusChSigfour;
+    THnSparse *fPtBinNplusNminusChSigtwoBKG;
+    THnSparse *fPtBinNplusNminusChSigtwo;
+    THnSparse *fPtBinNplusNminusChBKG;
+    THnSparse *fPtBinNplusNminusCh;
     
     
     
@@ -147,5 +121,3 @@ protected:
 
 
 #endif
-
-

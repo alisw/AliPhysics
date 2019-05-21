@@ -90,7 +90,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * run numbers. For now this function will be
                                  * inside the constructor of the class.
                                  */
-        void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
+        // void                    FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers);
 
                                 /**
                                  * This function substitutes the roel of the
@@ -445,7 +445,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * a lego plot. See for an example:
                                  *https://www.researchgate.net/figure/The-migration-matrix-for-leading-p-jet-T-Element-i-j-is-the-probability-for-a-particle_fig1_222896619
                                  */
-        std::vector<Double_t>   fVectorCosThetaGenerated;           //!
+        // std::vector<Double_t>   fVectorCosThetaGenerated;           //!
 
                                 /**
                                  * This is the vector containing the
@@ -462,7 +462,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  * It is important to remember there is at MOST
                                  * a single J/Psi for UPC event!!!
                                  */
-        std::vector<Double_t>   fVectorCosThetaReconstructed;           //!
+        // std::vector<Double_t>   fVectorCosThetaReconstructed;           //!
 
                                 /**
                                  * This is the GENERATED
@@ -760,7 +760,67 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH2F*                   fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH;  //!
 
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 5 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: This histogram shows this thing in 2D.
+                                 * IT is shown the same distribution in terms of
+                                 * CosTheta and Phi bins. Let's see the results!
+                                 *
+                                 * NEW: this specific histogram follows the
+                                 * binning of the inclusive people...
+                                 * Hopefully this would yield better results!
+                                 *
+                                 * RECONSTRUCTED level.
+                                 */
+        TH2F*                   fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH;  //!
 
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 5 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: This histogram shows this thing in 2D.
+                                 * IT is shown the same distribution in terms of
+                                 * CosTheta and Phi bins. Let's see the results!
+                                 *
+                                 * NEW: this specific histogram follows the
+                                 * binning of the inclusive people...
+                                 * Hopefully this would yield better results!
+                                 *
+                                 * GENERATED level.
+                                 */
+        TH2F*                   fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH;  //!
 
 
         //_______________________________
@@ -827,7 +887,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         /**
          * This is the vector containing the GOOD RunNumbers.
          */
-        std::vector<Int_t> fVectorGoodRunNumbers;
+        // std::vector<Int_t> fVectorGoodRunNumbers;
 
         /**
          * Not implemented yet...
@@ -844,7 +904,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 9);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 13);
 };
 
 #endif

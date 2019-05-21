@@ -9,6 +9,7 @@ ClassImp(AliAnalysisTaskFemtoDreamPhi)
     AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi()
     : AliAnalysisTaskSE(),
       fIsMC(false),
+      fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
       fTrack(),
@@ -29,6 +30,7 @@ AliAnalysisTaskFemtoDreamPhi::AliAnalysisTaskFemtoDreamPhi(const char *name,
                                                            bool isMC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
+      fTrigger(AliVEvent::kINT7),
       fOutput(),
       fEvent(),
       fTrack(),
@@ -54,7 +56,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
   fOutput->SetName("Output");
   fOutput->SetOwner();
 
-  fEvent = new AliFemtoDreamEvent(false, true, AliVEvent::kINT7);
+  fEvent = new AliFemtoDreamEvent(false, true, fTrigger);
   fOutput->Add(fEvent->GetEvtCutList());
 
   fTrack = new AliFemtoDreamTrack();
@@ -135,7 +137,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserCreateOutputObjects() {
   }
 
   fPairCleaner =
-      new AliFemtoDreamPairCleaner(3, 0, fConfig->GetMinimalBookingME());
+      new AliFemtoDreamPairCleaner(3, 1, fConfig->GetMinimalBookingME());
   fOutput->Add(fPairCleaner->GetHistList());
 
   fPartColl =
@@ -203,6 +205,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
     for (const auto &negK : AntiParticles) {
       fPhiParticle->Setv0(posK, negK);
       if (fPhiCuts->isSelected(fPhiParticle)) {
+        fPhiParticle->SetCPA(gRandom->Uniform()); //cpacode needed for CleanDecay v0;
         V0Particles.push_back(*fPhiParticle);
       }
     }
@@ -211,7 +214,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   fPairCleaner->CleanTrackAndDecay(&Protons, &AntiProtons, 0);
   fPairCleaner->CleanTrackAndDecay(&Protons, &V0Particles, 1);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &V0Particles, 2);
-
+  fPairCleaner->CleanDecay(&V0Particles, 0);
   fPairCleaner->ResetArray();
 
   fPairCleaner->StoreParticle(Protons);

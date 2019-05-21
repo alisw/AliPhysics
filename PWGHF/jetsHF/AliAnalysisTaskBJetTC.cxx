@@ -60,6 +60,8 @@ fDoDeltaPtWithSignal(kFALSE),
 fDiamond(0x0),
 fVertexer(0x0),
 fDoJetProbabilityAnalysis(kFALSE),
+fDoJetMass(kFALSE),
+fDoSVEnergyFraction(kFALSE),
 fDoPtRelAnalysis(0),
 fDoSelectionPtRel(0),
 //Bjet Cuts
@@ -312,6 +314,49 @@ fh2dJetSignedImpParXYSignificancec_Class4(0x0),
 fh2dJetSignedImpParXYSignificancelf_Class4(0x0),
 fh2dJetSignedImpParXYZ_Class4(0x0),
 fh2dJetSignedImpParXYZSignificance_Class4(0x0),
+//Jet Mass
+fhistJetMass(0x0),
+fhistJetMass_Unidentified(0x0),
+fhistJetMass_udsg(0x0),
+fhistJetMass_c(0x0),
+fhistJetMass_b(0x0),
+fhistJetMassFirst(0x0),
+fhistJetMassSecond(0x0),
+fhistJetMassThird(0x0),
+fhistJetMass_UnidentifiedFirst(0x0),
+fhistJetMass_udsgFirst(0x0),
+fhistJetMass_cFirst(0x0),
+fhistJetMass_bFirst(0x0),
+fhistJetMass_UnidentifiedSecond(0x0),
+fhistJetMass_udsgSecond(0x0),
+fhistJetMass_cSecond(0x0),
+fhistJetMass_bSecond(0x0),
+fhistJetMass_UnidentifiedThird(0x0),
+fhistJetMass_udsgThird(0x0),
+fhistJetMass_cThird(0x0),
+fhistJetMass_bThird(0x0),
+//Secondary vertex energy fraction
+fhistSVEnergyFraction(0x0),
+fhistSVEnergyFraction_Unidentified(0x0),
+fhistSVEnergyFraction_udsg(0x0),
+fhistSVEnergyFraction_c(0x0),
+fhistSVEnergyFraction_b(0x0),
+fhistSVEnergyFractionFirst(0x0),
+fhistSVEnergyFraction_UnidentifiedFirst(0x0),
+fhistSVEnergyFraction_udsgFirst(0x0),
+fhistSVEnergyFraction_cFirst(0x0),
+fhistSVEnergyFraction_bFirst(0x0),
+fhistSVEnergyFractionSecond(0x0),
+fhistSVEnergyFraction_UnidentifiedSecond(0x0),
+fhistSVEnergyFraction_udsgSecond(0x0),
+fhistSVEnergyFraction_cSecond(0x0),
+fhistSVEnergyFraction_bSecond(0x0),
+fhistSVEnergyFractionThird(0x0),
+fhistSVEnergyFraction_UnidentifiedThird(0x0),
+fhistSVEnergyFraction_udsgThird(0x0),
+fhistSVEnergyFraction_cThird(0x0),
+fhistSVEnergyFraction_bThird(0x0),
+//Jet Probability
 fhistJetProbability(0x0),
 fhistJetProbability_Unidentified(0x0),
 fhistJetProbability_udsg(0x0),
@@ -484,6 +529,8 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fhnV0InJetLambda(0x0),
 		fhnV0InJetALambda(0x0),
 		fDoJetProbabilityAnalysis(kFALSE),
+		fDoJetMass(kFALSE),
+		fDoSVEnergyFraction(kFALSE),
 		fDoPtRelAnalysis(0),
 		fDoSelectionPtRel(0),
 		fh1dEventRejectionRDHFCuts(0x0),
@@ -673,7 +720,49 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fh2dJetSignedImpParXYSignificanceudsgForth(0x0),
 		fh2dJetSignedImpParXYSignificancebForth(0x0),
 		fh2dJetSignedImpParXYSignificancecForth(0x0),
-		//Jet Probabilty
+		//Jet Mass
+		fhistJetMass(0x0),
+		fhistJetMass_Unidentified(0x0),
+		fhistJetMass_udsg(0x0),
+		fhistJetMass_c(0x0),
+		fhistJetMass_b(0x0),
+		fhistJetMassFirst(0x0),
+		fhistJetMassSecond(0x0),
+		fhistJetMassThird(0x0),
+		fhistJetMass_UnidentifiedFirst(0x0),
+		fhistJetMass_udsgFirst(0x0),
+		fhistJetMass_cFirst(0x0),
+		fhistJetMass_bFirst(0x0),
+		fhistJetMass_UnidentifiedSecond(0x0),
+		fhistJetMass_udsgSecond(0x0),
+		fhistJetMass_cSecond(0x0),
+		fhistJetMass_bSecond(0x0),
+		fhistJetMass_UnidentifiedThird(0x0),
+		fhistJetMass_udsgThird(0x0),
+		fhistJetMass_cThird(0x0),
+		fhistJetMass_bThird(0x0),
+		//Secondary vertex energy fraction
+		fhistSVEnergyFraction(0x0),
+		fhistSVEnergyFraction_Unidentified(0x0),
+		fhistSVEnergyFraction_udsg(0x0),
+		fhistSVEnergyFraction_c(0x0),
+		fhistSVEnergyFraction_b(0x0),
+		fhistSVEnergyFractionFirst(0x0),
+		fhistSVEnergyFraction_UnidentifiedFirst(0x0),
+		fhistSVEnergyFraction_udsgFirst(0x0),
+		fhistSVEnergyFraction_cFirst(0x0),
+		fhistSVEnergyFraction_bFirst(0x0),
+		fhistSVEnergyFractionSecond(0x0),
+		fhistSVEnergyFraction_UnidentifiedSecond(0x0),
+		fhistSVEnergyFraction_udsgSecond(0x0),
+		fhistSVEnergyFraction_cSecond(0x0),
+		fhistSVEnergyFraction_bSecond(0x0),
+		fhistSVEnergyFractionThird(0x0),
+		fhistSVEnergyFraction_UnidentifiedThird(0x0),
+		fhistSVEnergyFraction_udsgThird(0x0),
+		fhistSVEnergyFraction_cThird(0x0),
+		fhistSVEnergyFraction_bThird(0x0),
+		//Jet Probability
 		fh2dJetSignedImpParXY_Class1(0x0),
 		fh2dJetSignedImpParXYSignificance_Class1(0x0),
 		fh2dJetSignedImpParXYSignificanceb_Class1(0x0),
@@ -1299,8 +1388,37 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 			}
 			
 
+			Double_t Mass = jetrec->M();
+
+			if(fDoJetMass){
+
+			      	fhistJetMass->Fill(fJetPt,Mass ,fPythiaEventWeight);
+			    		
+			  	if(fIsPythia){
+			      	    switch(fJetFlavor)
+					{
+					case 0:
+						fhistJetMass_Unidentified->Fill(fJetPt,jetrec->M(),fPythiaEventWeight);
+						break;
+					case 1:
+						fhistJetMass_udsg->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					case 2:
+						fhistJetMass_c->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					case 3:
+						fhistJetMass_b->Fill(fJetPt,Mass,fPythiaEventWeight);
+						break;
+					default:
+						break;
+					}
+			    	}
+			}
+
+
 			fValJetProb = -1.;
 			fLogJetProb = -1.;
+
 
 			if(fDoJetProbabilityAnalysis && fResolutionFunction[0]){
 
@@ -1337,6 +1455,80 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
         		}
 
+
+			Double_t SVEnergy=0.;
+			Double_t TracksEnergy=0.;
+			Double_t EnergyFraction=-1;
+
+			if(fDoSVEnergyFraction){
+
+			  Double_t vtxPos[3]   = {fPrimaryVertex->GetX(), fPrimaryVertex->GetY(), fPrimaryVertex->GetZ()};
+			  Double_t covMatrix[6] = {0};
+			  fPrimaryVertex->GetCovarianceMatrix(covMatrix);
+			  AliESDVertex* esdVtx = new AliESDVertex(vtxPos, covMatrix, fPrimaryVertex->GetChi2(), fPrimaryVertex->GetNContributors());
+
+			  // 3 Prong Vertex
+			  TClonesArray* secVertexArr3Prong = 0;
+			  vector<pair <Double_t, Int_t>> arrDispersion3Prong;
+			  arrDispersion3Prong.reserve(5);
+
+			  secVertexArr3Prong = new TClonesArray("AliAODVertex");
+			  Int_t nDauRejCount3Prong = 0;
+			  Int_t nVtx3Prong = fVtxTagger3Prong->FindVertices(jetrec,
+						                 static_cast<AliParticleContainer*>(fParticleCollArray.At(0))->GetArray(),
+						                 fAODIn,
+						                 esdVtx,
+						                 fAODIn->GetMagneticField(),
+						                 secVertexArr3Prong,
+						                 0,
+						                 arrDispersion3Prong,
+						                 nDauRejCount3Prong);
+
+			  if(nVtx3Prong > 0)
+			  {
+
+				  Int_t MaxSVindex=-1;
+				  Double_t MaxSVLxy=0.;
+
+				  for(Int_t iv=0; iv<secVertexArr3Prong->GetEntriesFast(); iv++)
+				  {
+				    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArr3Prong->UncheckedAt(iv));
+
+				    // Calculate vtx distance
+				    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+				    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+
+				    // signed length
+				    Double_t decLenXY  = fPrimaryVertex->DistanceXYToVertex(secVtx);
+				    Double_t jetP[3]; jetrec->PxPyPz(jetP);
+				    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+				    if (signLxy < 0.) decLenXY *= -1.;
+
+				    if(decLenXY > MaxSVLxy){
+					MaxSVLxy = decLenXY;
+					MaxSVindex = iv;
+				     }
+   
+				  }
+
+				  if(MaxSVindex>=0){
+				    	AliAODVertex* secVtx = (AliAODVertex*)(secVertexArr3Prong->UncheckedAt(MaxSVindex));
+
+					for(int iDaugh=0; iDaugh<secVtx->GetNDaughters(); iDaugh++){
+						AliAODTrack* Daught = (AliAODTrack*)secVtx->GetDaughter(iDaugh);
+						SVEnergy+=Daught->E();
+					}
+				  }
+
+				    secVertexArr3Prong->Clear();
+			  	    delete secVertexArr3Prong;
+			  }else{
+			    secVertexArr3Prong->Clear();
+			    delete secVertexArr3Prong;
+			  }
+
+			}
+
 			for(Int_t itrack = 0; itrack < ntracks; ++itrack)
 			{
 				double dcatrackjet =999;
@@ -1346,6 +1538,8 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				else trackAOD = (AliAODTrack*)((fJetContainerData->GetParticleContainer())->GetParticle(jetrec->TrackAt(itrack)));
 				
 				if(!trackAOD) 	continue;
+
+				TracksEnergy+=trackAOD->E();
 
 				if (fDoJetProbabilityAnalysis && !fResolutionFunction[0]) FillResolutionFunctionHists(trackAOD,jetrec,fJetFlavor);
 
@@ -1491,6 +1685,33 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 					sImpParXYZSig.push_back(cursImParXYZSig);
 			}// end of track loop
 
+		EnergyFraction=SVEnergy/TracksEnergy;
+
+		if(fDoSVEnergyFraction && EnergyFraction>0){
+
+		      	fhistSVEnergyFraction->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
+		    		
+		  	if(fIsPythia){
+		      	    switch(fJetFlavor)
+				{
+				case 0:
+					fhistSVEnergyFraction_Unidentified->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+					break;
+				case 1:
+					fhistSVEnergyFraction_udsg->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+					break;
+				case 2:
+					fhistSVEnergyFraction_c->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+					break;
+				case 3:
+					fhistSVEnergyFraction_b->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+					break;
+				default:
+					break;
+				}
+		    	}
+		}
+
 		if(fDoTrackCountingAnalysis){
 
 			std::sort(sImpParXY.begin(),sImpParXY.end(), std::greater<double>());
@@ -1551,6 +1772,50 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 						}
 					   }
 				}
+
+				if(fDoJetMass && sImpParXY.at(0) >= fThresholdIP){
+					   fhistJetMassFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bFirst->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+					   }
+				}
+
+				if(fDoSVEnergyFraction && sImpParXY.at(0) >= fThresholdIP && EnergyFraction>0){
+
+				      	fhistSVEnergyFractionFirst->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
+				    		
+				  	if(fIsPythia){
+				      	    switch(fJetFlavor)
+						{
+						case 0:
+							fhistSVEnergyFraction_UnidentifiedFirst->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 1:
+							fhistSVEnergyFraction_udsgFirst->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 2:
+							fhistSVEnergyFraction_cFirst->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 3:
+							fhistSVEnergyFraction_bFirst->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						default:
+							break;
+						}
+				    	}
+				}
+
 
 
 				if(fIsPythia){
@@ -1639,6 +1904,49 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 				}
 
 
+				if(fDoJetMass && sImpParXY.at(1) >= fThresholdIP){
+					   fhistJetMassSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bSecond->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+					   }
+				}
+
+				if(fDoSVEnergyFraction && sImpParXY.at(1) >= fThresholdIP && EnergyFraction>0){
+
+				      	fhistSVEnergyFractionSecond->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
+				    		
+				  	if(fIsPythia){
+				      	    switch(fJetFlavor)
+						{
+						case 0:
+							fhistSVEnergyFraction_UnidentifiedSecond->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 1:
+							fhistSVEnergyFraction_udsgSecond->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 2:
+							fhistSVEnergyFraction_cSecond->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 3:
+							fhistSVEnergyFraction_bSecond->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						default:
+							break;
+						}
+				    	}
+				}
+
 				if(fIsPythia){
 					
 					if(fJetFlavor ==0){
@@ -1722,6 +2030,49 @@ Bool_t AliAnalysisTaskBJetTC::Run()
 							   fhistJetProbability_bLogThird->Fill(fJetPt, fLogJetProb,fPythiaEventWeight);
 						}
 					   }
+				}
+
+				if(fDoJetMass && sImpParXY.at(2) >= fThresholdIP){
+					   fhistJetMassThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+					   if(fIsPythia){
+						if(fJetFlavor ==0){
+							   fhistJetMass_UnidentifiedThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==1){
+							   fhistJetMass_udsgThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==2){
+							   fhistJetMass_cThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+						else if(fJetFlavor ==3){
+							   fhistJetMass_bThird->Fill(fJetPt,Mass ,fPythiaEventWeight);
+						}
+					   }
+				}
+
+				if(fDoSVEnergyFraction && sImpParXY.at(2) >= fThresholdIP && EnergyFraction>0){
+
+				      	fhistSVEnergyFractionThird->Fill(fJetPt,EnergyFraction ,fPythiaEventWeight);
+				    		
+				  	if(fIsPythia){
+				      	    switch(fJetFlavor)
+						{
+						case 0:
+							fhistSVEnergyFraction_UnidentifiedThird->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 1:
+							fhistSVEnergyFraction_udsgThird->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 2:
+							fhistSVEnergyFraction_cThird->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						case 3:
+							fhistSVEnergyFraction_bThird->Fill(fJetPt,EnergyFraction,fPythiaEventWeight);
+							break;
+						default:
+							break;
+						}
+				    	}
 				}
 
 				if(fIsPythia){
@@ -2546,17 +2897,17 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
     "+IP_{xy}"/*14*/
   };
 
-  if(fDoSVAnalysis){
+  if(fDoSVAnalysis || fDoSVEnergyFraction){
 	  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
 	  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-	  esdTrackCuts->SetMinNClustersTPC(90);
+	  esdTrackCuts->SetMinNClustersTPC(80);
 	  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
 	  esdTrackCuts->SetRequireTPCRefit(kTRUE);
 	  esdTrackCuts->SetRequireITSRefit(kTRUE);
 	  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 	  esdTrackCuts->SetMinDCAToVertexXY(0.);
 	  esdTrackCuts->SetEtaRange(-0.9, 0.9);
-	  esdTrackCuts->SetPtRange(1., 1.e10);
+	  esdTrackCuts->SetPtRange(0.5, 1.e10);
 
 
 	  AliRDHFJetsCutsVertex* jetCuts3Prong = new AliRDHFJetsCutsVertex("jetCuts3Prong");
@@ -2812,6 +3163,81 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 
 	fh1dJetRecEtaPhiAccepted = new TH2D("fh1dJetRecEtaPhiAccepted","detector level jet;#eta;phi",200,-1.0,1.0,200,0.,TMath::TwoPi());
 
+	//Jet Mass
+	if (fDoJetMass){
+		fhistJetMass = new TH2D("fhistJetMass","fJetMass;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+		if(fDoTrackCountingAnalysis){
+			fhistJetMassFirst = new TH2D("fhistJetMassFirst","fJetMass N=1;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMassSecond = new TH2D("fhistJetMassSecond","fJetMass N=2;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMassThird = new TH2D("fhistJetMassThird","fJetMass N=3;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+		}
+
+		if(fIsPythia){
+			fhistJetMass_Unidentified = new TH2D("fhistJetMass_Unidentified","fhistJetMass_Unidentified;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_udsg = new TH2D("fhistJetMass_udsg","fhistJetMass_udsg;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_c = new TH2D("fhistJetMass_c","fhistJetMass_c;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+			fhistJetMass_b = new TH2D("fhistJetMass_b","fhistJetMass_b;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+			if(fDoTrackCountingAnalysis){
+
+				fhistJetMass_UnidentifiedFirst = new TH2D("fhistJetMass_UnidentifiedFirst","fhistJetMass_UnidentifiedFirst;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgFirst = new TH2D("fhistJetMass_udsgFirst","fhistJetMass_udsgFirst;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cFirst = new TH2D("fhistJetMass_cFirst","fhistJetMass_cFirst;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bFirst = new TH2D("fhistJetMass_bFirst","fhistJetMass_bFirst;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+				fhistJetMass_UnidentifiedSecond = new TH2D("fhistJetMass_UnidentifiedSecond","fhistJetMass_UnidentifiedSecond;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgSecond = new TH2D("fhistJetMass_udsgSecond","fhistJetMass_udsgSecond;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cSecond = new TH2D("fhistJetMass_cSecond","fhistJetMass_cSecond;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bSecond = new TH2D("fhistJetMass_bSecond","fhistJetMass_bSecond;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+				fhistJetMass_UnidentifiedThird = new TH2D("fhistJetMass_UnidentifiedThird","fhistJetMass_UnidentifiedThird;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_udsgThird = new TH2D("fhistJetMass_udsgThird","fhistJetMass_udsgThird;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_cThird = new TH2D("fhistJetMass_cThird","fhistJetMass_cThird;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+				fhistJetMass_bThird = new TH2D("fhistJetMass_bThird","fhistJetMass_bThird;p_{T,jet};Mass (GeV/c^{2})",250,0,250,1000,0,25);
+
+			}
+		}
+
+	}
+
+	//Secondary vertex energy fraction
+	if(fDoSVEnergyFraction){
+		fhistSVEnergyFraction = new TH2D("fhistSVEnergyFraction","SV Energy Fraction;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+
+		if(fDoTrackCountingAnalysis){
+			fhistSVEnergyFractionFirst = new TH2D("fhistSVEnergyFractionFirst","SV Energy Fraction N=1;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFractionSecond = new TH2D("fhistSVEnergyFractionSecond","SV Energy Fraction N=2;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFractionThird = new TH2D("fhistSVEnergyFractionThird","SV Energy Fraction N=3;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+		}
+
+		if(fIsPythia){
+			fhistSVEnergyFraction_Unidentified = new TH2D("fhistSVEnergyFraction_Unidentified","SV Energy Fraction Undef;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFraction_udsg = new TH2D("fhistSVEnergyFraction_udsg","SV Energy Fraction lf-jet;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFraction_c    = new TH2D("fhistSVEnergyFraction_c","SV Energy Fraction c-jet;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+			fhistSVEnergyFraction_b   = new TH2D("fhistSVEnergyFraction_b","SV Energy Fraction b-jet;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+
+			if(fDoTrackCountingAnalysis){
+
+				fhistSVEnergyFraction_UnidentifiedFirst = new TH2D("fhistSVEnergyFraction_UnidentifiedFirst","SV Energy Fraction Undef N=1;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_udsgFirst = new TH2D("fhistSVEnergyFraction_udsgFirst","SV Energy Fraction lf-jet N=1;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_cFirst    = new TH2D("fhistSVEnergyFraction_cFirst","SV Energy Fraction c-jet N=1;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_bFirst   = new TH2D("fhistSVEnergyFraction_bFirst","SV Energy Fraction b-jet N=1;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+
+				fhistSVEnergyFraction_UnidentifiedSecond = new TH2D("fhistSVEnergyFraction_UnidentifiedSecond","SV Energy Fraction Undef N=2;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_udsgSecond = new TH2D("fhistSVEnergyFraction_udsgSecond","SV Energy Fraction lf-jet N=2;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_cSecond    = new TH2D("fhistSVEnergyFraction_cSecond","SV Energy Fraction c-jet N=2;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_bSecond   = new TH2D("fhistSVEnergyFraction_bSecond","SV Energy Fraction b-jet N=2;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+
+				fhistSVEnergyFraction_UnidentifiedThird = new TH2D("fhistSVEnergyFraction_UnidentifiedThird","SV Energy Fraction Undef N=3;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_udsgThird = new TH2D("fhistSVEnergyFraction_udsgThird","SV Energy Fraction lf-jet N=3;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_cThird    = new TH2D("fhistSVEnergyFraction_cThird","SV Energy Fraction c-jet N=3;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+				fhistSVEnergyFraction_bThird   = new TH2D("fhistSVEnergyFraction_bThird","SV Energy Fraction b-jet N=3;p_{T,jet}; f_{E}",250,0,250,500,0,1);
+
+			}
+
+		}
+
+	}
 
 	if(fDoJetProbabilityAnalysis){
 		if(!fResolutionFunction[0]){
@@ -2858,6 +3284,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		}else{	
 			fhistJetProbability = new TH2D("fhistJetProbability","JetProbability;p_{T,jet};JP",250,0,250,1000,0,1);
 			fhistJetProbabilityLog = new TH2D("fhistJetProbabilityLog","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
+
 			if(fDoTrackCountingAnalysis){
 				fhistJetProbabilityLogFirst = new TH2D("fhistJetProbabilityLogFirst","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
 				fhistJetProbabilityLogSecond = new TH2D("fhistJetProbabilityLogSecond","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,375,0,30);
@@ -3334,6 +3761,69 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		fOutput->Add(f2histRhoVsDeltaPtWithSignalThird);
 	}
 
+	//Jet Mass
+	if(fDoJetMass){
+		fOutput->Add(fhistJetMass);
+		if(fDoTrackCountingAnalysis){
+			fOutput->Add(fhistJetMassFirst);
+			fOutput->Add(fhistJetMassSecond);
+			fOutput->Add(fhistJetMassThird);
+		}
+		if(fIsPythia){
+			fOutput->Add(fhistJetMass_Unidentified);
+			fOutput->Add(fhistJetMass_udsg);
+			fOutput->Add(fhistJetMass_c);
+			fOutput->Add(fhistJetMass_b);
+
+			if(fDoTrackCountingAnalysis){
+				fOutput->Add(fhistJetMass_UnidentifiedFirst);
+				fOutput->Add(fhistJetMass_udsgFirst);
+				fOutput->Add(fhistJetMass_cFirst);
+				fOutput->Add(fhistJetMass_bFirst);
+				fOutput->Add(fhistJetMass_UnidentifiedSecond);
+				fOutput->Add(fhistJetMass_udsgSecond);
+				fOutput->Add(fhistJetMass_cSecond);
+				fOutput->Add(fhistJetMass_bSecond);
+				fOutput->Add(fhistJetMass_UnidentifiedThird);
+				fOutput->Add(fhistJetMass_udsgThird);
+				fOutput->Add(fhistJetMass_cThird);
+				fOutput->Add(fhistJetMass_bThird);
+			}
+		}
+	}
+	
+	//Energy Fraction carried by the SV
+	if(fDoSVEnergyFraction){
+		fOutput->Add(fhistSVEnergyFraction);
+		if(fDoTrackCountingAnalysis){
+			fOutput->Add(fhistSVEnergyFractionFirst);
+			fOutput->Add(fhistSVEnergyFractionSecond);
+			fOutput->Add(fhistSVEnergyFractionThird);
+		}
+		if(fIsPythia){
+			fOutput->Add(fhistSVEnergyFraction_Unidentified);
+			fOutput->Add(fhistSVEnergyFraction_udsg);
+			fOutput->Add(fhistSVEnergyFraction_c);
+			fOutput->Add(fhistSVEnergyFraction_b);
+
+			if(fDoTrackCountingAnalysis){
+				fOutput->Add(fhistSVEnergyFraction_UnidentifiedFirst);
+				fOutput->Add(fhistSVEnergyFraction_udsgFirst);
+				fOutput->Add(fhistSVEnergyFraction_cFirst);
+				fOutput->Add(fhistSVEnergyFraction_bFirst);
+				fOutput->Add(fhistSVEnergyFraction_UnidentifiedSecond);
+				fOutput->Add(fhistSVEnergyFraction_udsgSecond);
+				fOutput->Add(fhistSVEnergyFraction_cSecond);
+				fOutput->Add(fhistSVEnergyFraction_bSecond);
+				fOutput->Add(fhistSVEnergyFraction_UnidentifiedThird);
+				fOutput->Add(fhistSVEnergyFraction_udsgThird);
+				fOutput->Add(fhistSVEnergyFraction_cThird);
+				fOutput->Add(fhistSVEnergyFraction_bThird);
+			}
+		}
+	}
+
+
 	//JetProbability
 	if(fDoJetProbabilityAnalysis){
 		if(!fResolutionFunction[0]){
@@ -3374,6 +3864,7 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 		}else{
 			fOutput->Add(fhistJetProbability);
 			fOutput->Add(fhistJetProbabilityLog);
+
 			if(fDoTrackCountingAnalysis){
 				fOutput->Add(fhistJetProbabilityLogFirst);
 				fOutput->Add(fhistJetProbabilityLogSecond);

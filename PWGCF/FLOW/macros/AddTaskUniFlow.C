@@ -37,7 +37,7 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
   task->SetProcessPID(kTRUE);
   task->SetProcessPhi(kTRUE);
   task->SetProcessV0s(kTRUE);
-  task->SetFlowRFPsPt(0.2,5.0);
+  task->SetFlowRFPsPt(0.2,3.0);
   task->SetFlowPOIsPt(0.0,10.0);
   task->SetFlowEta(0.8);
 
@@ -224,6 +224,13 @@ AliAnalysisTaskUniFlow* AddTaskUniFlow(AliAnalysisTaskUniFlow::ColSystem colSys,
       // connect existing container
       mgr->ConnectInput(task,1,weights);
     }
+  }
+
+  // Monte Carlo
+  if(bIsMC) {
+    AliAnalysisDataContainer* cOutMC = mgr->CreateContainer(TString("MC_")+taskName, TList::Class(), AliAnalysisManager::kOutputContainer, fileName);
+    mgr->ConnectOutput(task,15,cOutMC);
+
   }
 
   return task;

@@ -117,6 +117,7 @@ public:
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
   void SetDCABins (Int_t nbins, Float_t* bins);
+  void SetPtBins (Int_t nbins, Float_t min, Float_t max);
   void SetPtBins (Int_t nbins, Float_t *bins);
   void SetCustomTPCpid (Float_t *par, Float_t sigma);
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
@@ -162,7 +163,7 @@ private:
   int   PassesPIDSelection(AliAODTrack *t);
   int   PassesPIDSelection(AliNanoAODTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
-  float  GetTOFsigmas(AliVTrack* t, bool nano);
+  float  GetTOFsigmas(AliVTrack* t);
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
@@ -253,7 +254,12 @@ private:
   TH3F                 *fDCASecondaryWeak[2][2]; //!<! *(MC only)* \f$DCA_{xy}\f$ distribution of secondaries from Weak Decay
 
   // Data histograms
+  TH3F                 *fTOFnSigma[2];           //!<! *(Data only)* TOF nSigma counts for (anti-)matter
+  TH3F                 *fTOFT0FillNsigma[2];     //!<! *(Data only)* TOF nSigma counts for (anti-)matter
+  TH3F                 *fTOFNoT0FillNsigma[2];   //!<! *(Data only)* TOF nSigma counts for (anti-)matter
   TH3F                 *fTOFsignal[2];           //!<! *(Data only)* TOF signal for (anti-)matter
+  TH3F                 *fTOFT0FillSignal[2];     //!<! *(Data only)* TOF signal for (anti-)matter
+  TH3F                 *fTOFNoT0FillSignal[2];   //!<! *(Data only)* TOF signal for (anti-)matter
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fTPCsignalTpl[2];        //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fTPCbackgroundTpl[2];    //!<! *(Data only)* TPC counts for (anti-)matter
@@ -321,7 +327,8 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 
   const int iTof = beta > EPS ? 1 : 0;
   float pT = track->Pt() * fCharge;
-  float p_TPC = track->GetTPCmomentum(); 
+  float p_TPC = track->GetTPCmomentum();
+  float p = track->P(); 
   int pid_mask = PassesPIDSelection(track);
   bool pid_check = (pid_mask & 7) == 7;
   if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
@@ -344,7 +351,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = part->Charge() > 0 ? 1 : 0;
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
-        if (MCEvent()->IsPhysicalPrimary(mcId)) {
+        if (part->IsPhysicalPrimary()) {
           if (TMath::Abs(dca[0]) <= fRequireMaxDCAxy &&
               (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
               (!iR || pid_check) && (iR || pid_mask & 8))
@@ -354,7 +361,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
             fPtCorrection[iC]->Fill(pT,part->Pt()-pT);
             fPcorrectionTPC[iC]->Fill(p_TPC,part->P()-p_TPC);
             } // Fill it only once.
-        } else if (MCEvent()->IsSecondaryFromMaterial(mcId) && !isFromHyperNucleus)
+        } else if (part->IsSecondaryFromMaterial() && !isFromHyperNucleus)
           fDCASecondary[iR][iC]->Fill(fCentrality,pT,dca[0]);
         else
           fDCASecondaryWeak[iR][iC]->Fill(fCentrality,pT,dca[0]);
@@ -364,7 +371,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     const int iC = (track->Charge() > 0) ? 1 : 0;
 
     float tpc_n_sigma = GetTPCsigmas(track);
-    float tof_n_sigma = iTof ? GetTOFsigmas(track,nano) : -999.f;
+    float tof_n_sigma = iTof ? GetTOFsigmas(track) : -999.f;
 
     for (int iR = iTof; iR >= 0; iR--) {
       /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
@@ -388,6 +395,16 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     if (!pid_check) return;
     /// \f$ m = \frac{p}{\beta\gamma} \f$
     fTOFsignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+    fTOFnSigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
+
+    if (fPID->GetTOFResponse().GetStartTimeMask(p) == 0) {
+      fTOFT0FillSignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+      fTOFT0FillNsigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
+    }
+    else { 
+      fTOFNoT0FillSignal[iC]->Fill(fCentrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
+      fTOFNoT0FillNsigma[iC]->Fill(fCentrality, pT, tof_n_sigma);
+    }
 
   }
 }

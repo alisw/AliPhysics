@@ -74,8 +74,10 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fFillGenericV0s{true},
       fFillTracklet{true},
       fSaveFileNames{false},
+      fPropagetToPV{true},
       fListHist{nullptr},
       fTreeV0{nullptr},
+      fInputHandler{nullptr},
       fPIDResponse{nullptr},
       fMC{mc},
       fUseOnTheFly{false},
@@ -137,9 +139,9 @@ AliAnalysisTaskHyperTriton2He3piML::~AliAnalysisTaskHyperTriton2He3piML()
 void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
 {
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
-  fPIDResponse = inputHandler->GetPIDResponse();
-  inputHandler->SetNeedField();
+  fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
+  fPIDResponse = fInputHandler->GetPIDResponse();
+  fInputHandler->SetNeedField();
 
   if (fSaveFileNames) {
     fFileNameTree = new TTree("fFileNameTree", "Filename tree");
@@ -228,6 +230,14 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   fRCollision.fX = primaryVertex[0];
   fRCollision.fY = primaryVertex[1];
   fRCollision.fZ = primaryVertex[2];
+
+  unsigned char tgr = 0x0;
+
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr = 1;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr = 2;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr = 4;
+
+  fRCollision.fTrigger = tgr;
 
   std::unordered_map<int, int> mcMap;
   if (fMC)
@@ -404,6 +414,10 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
     // Track quality cuts
 
     float he3B[2], piB[2], bCov[3];
+    if (fPropagetToPV) {
+      piTrack->PropagateToDCA(fEventCuts.GetPrimaryVertex(),esdEvent->GetMagneticField(), 25.);
+      he3Track->PropagateToDCA(fEventCuts.GetPrimaryVertex(),esdEvent->GetMagneticField(), 25.);
+    }
     piTrack->GetImpactParameters(piB, bCov);
     he3Track->GetImpactParameters(he3B, bCov);
     const float he3DCA = std::hypot(he3B[0], he3B[1]);

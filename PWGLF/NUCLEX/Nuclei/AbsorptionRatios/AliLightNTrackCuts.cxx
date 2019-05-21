@@ -27,11 +27,12 @@ AliLightNTrackCuts::AliLightNTrackCuts()
 ,fetamin(0.)
 ,fetamax(0.)
 ,fcutEta(false)
-,fcutCharge(false)
 ,fCutRapidity(false)
+,fcutCharge(false)
 ,fCharge(0)
 ,fnTPCCls(0)
 ,fcutnTPCCls(false)
+,fdoITSnSigmaCut(false)
 ,fDCAProp(false)
 ,fDCAToVertexXY(0)
 ,fCutDCAToVtxXY(false)
@@ -100,6 +101,14 @@ bool AliLightNTrackCuts::isSelected(AliLightNTrack *Track) {
     
     if (pass) {
         if (!DCACuts(Track)) {
+            pass=false;
+            ForMassFitPass=false;
+            PIDEffPass=false;
+        }
+    }
+    
+    if (pass && fdoITSnSigmaCut) {
+        if (!ITSPIDAODCuts(Track)) {
             pass=false;
             ForMassFitPass=false;
             PIDEffPass=false;
@@ -278,6 +287,31 @@ bool AliLightNTrackCuts::TrackingCuts(AliLightNTrack *Track) {
     return pass;
 }
 
+
+bool AliLightNTrackCuts::ITSPIDAODCuts(AliLightNTrack *Track) {
+    //ITS PID cut for (anti-)deuterons in the momentum region 0 < p < 1.4 GeV/c
+    bool pass=true;
+
+    bool ITSisthere=false;
+    
+    if (Track->GetstatusITS()==AliPIDResponse::kDetPidOk) {
+        ITSisthere=true;
+    }
+    
+    double p = 0;
+    TVector3 MomVector= Track->GetMomentum();
+    if (MomVector*MomVector > 0){
+        p =TMath::Sqrt(MomVector*MomVector);
+    }
+    
+    if (p<1.4) {
+        double nSigITS=(Track->GetnSigmaITS((int)(fParticleID)));
+        if (!(nSigITS < -2)) {
+            pass=false;
+        }
+    }
+    return pass;
+}
 
 bool AliLightNTrackCuts::TPCPIDAODCuts(AliLightNTrack *Track) {
     bool pass=true;
@@ -502,7 +536,7 @@ void AliLightNTrackCuts::Init() {
 void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
     std::vector<double> eta=Track->GetEta();
     std::vector<double> phi=Track->GetPhi();
-    double pT = Track->GetPt();
+    // double pT = Track->GetPt();
     double pTPC = Track->GetMomTPC();
     double p = 0;
     TVector3 MomVector= Track->GetMomentum();
@@ -516,6 +550,7 @@ void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
             fHists->FillphiCut(i,phi.at(0));
             fHists->FillpCut(i,p);
             fHists->FillpTPCCut(i,pTPC);
+            fHists->FillpDiff_p_pTPC(i,p,p-pTPC);
             fHists->FillTPCclsCut(i,Track->GetNClsTPC());
             if (fDCAProp) {
                 fHists->FillDCAxyCut(i,p,Track->GetDCAXYProp());
@@ -648,7 +683,7 @@ void AliLightNTrackCuts::BookMC(AliLightNTrack *Track) {
         }
     }
     if (Track->UseParticle()) {
-        double pT = Track->GetPt();
+        // double pT = Track->GetPt();
         int PDGcode[6] = {11,13,211,321,2212,1000010020};
         //Fill Identified
         fMCHists->FillMCIdent(p);
@@ -687,7 +722,7 @@ void AliLightNTrackCuts::FillMCContributions(
     if (MomVector*MomVector > 0){
         p =TMath::Sqrt(MomVector*MomVector);
     }
-    double pT=Track->GetPt();
+    // double pT=Track->GetPt();
     AliLightNBasePart::PartOrigin org=Track->GetParticleOrigin();
     Int_t iFill = -1;
     switch(org) {
@@ -890,6 +925,7 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimDeuteronCuts(bool isMC,bool DCAPlots
     trackCuts->SetCutSharedCls(true);
     trackCuts->SetCutTPCCrossedRows(true);
     trackCuts->SetPID(AliPID::kDeuteron, 1.4,3.,1e30);
+    trackCuts->SetCutITSPID(true);
     trackCuts->SetRapidityRange(-1, 0);
     trackCuts->SetRejLowPtPionsTOF(false);
     trackCuts->SetCutSmallestSig(false);

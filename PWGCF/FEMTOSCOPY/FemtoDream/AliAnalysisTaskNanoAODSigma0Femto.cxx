@@ -14,8 +14,6 @@ ClassImp(AliAnalysisTaskNanoAODSigma0Femto)
     : AliAnalysisTaskSE("AliAnalysisTaskNanoAODSigma0Femto"),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
-      fV0Reader(nullptr),
-      //      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
       fRandom(nullptr),
@@ -27,6 +25,7 @@ ClassImp(AliAnalysisTaskNanoAODSigma0Femto)
       fLambda(nullptr),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
+      fPhotonCuts(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -61,8 +60,6 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
     : AliAnalysisTaskSE(name),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
-      fV0Reader(nullptr),
-      //      fPhotonQA(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
       fRandom(nullptr),
@@ -74,6 +71,7 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
       fLambda(nullptr),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
+      fPhotonCuts(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
@@ -218,10 +216,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   fGammaArray = dynamic_cast<TClonesArray *>(
       fInputEvent->FindListObject("conversionphotons"));
   std::vector<AliFemtoDreamBasePart> Gammas;
-  CastToVector(Gammas, aod);
-  //  if (!fIsLightweight) {
-  //    fPhotonQA->PhotonQA(fInputEvent, fMCEvent, fGammaArray);
-  //  }
+  fPhotonCuts->PhotonCuts(aod, fMCEvent, fGammaArray, Gammas);
 
   // Sigma0 selection
   fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, Decays);
@@ -229,13 +224,17 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   // Sigma0 selection
   fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, AntiDecays);
 
-  auto sigma0particles = fSigmaCuts->GetSigma();
-  auto sigma0sidebandUp = fSigmaCuts->GetSidebandUp();
-  auto sigma0sidebandLow = fSigmaCuts->GetSidebandDown();
+  std::vector<AliFemtoDreamBasePart> sigma0particles, sigma0sidebandUp,
+      sigma0sidebandLow, antiSigma0particles, antiSigma0sidebandUp,
+      antiSigma0sidebandLow;
 
-  auto antiSigma0particles = fAntiSigmaCuts->GetSigma();
-  auto antiSigma0sidebandUp = fAntiSigmaCuts->GetSidebandUp();
-  auto antiSigma0sidebandLow = fAntiSigmaCuts->GetSidebandDown();
+  CastToVector(sigma0particles, fSigmaCuts->GetSigma());
+  CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
+  CastToVector(sigma0sidebandLow, fSigmaCuts->GetSidebandDown());
+
+  CastToVector(antiSigma0particles, fAntiSigmaCuts->GetSigma());
+  CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp());
+  CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown());
 
   fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
@@ -279,27 +278,12 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskNanoAODSigma0Femto::CastToVector(
-    std::vector<AliFemtoDreamBasePart> &container,
-    const AliVEvent *inputEvent) {
-  if (!fGammaArray) return;
-  for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
-    auto *PhotonCandidate =
-        dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
-    if (!PhotonCandidate) continue;
-    auto pos = GetTrack(inputEvent, PhotonCandidate->GetTrackLabelPositive());
-    auto neg = GetTrack(inputEvent, PhotonCandidate->GetTrackLabelNegative());
-    if (!pos || !neg) continue;
-    container.push_back({PhotonCandidate, pos, neg, inputEvent});
-  }
-}
-
-//____________________________________________________________________________________________________
-AliVTrack *AliAnalysisTaskNanoAODSigma0Femto::GetTrack(const AliVEvent *event,
-                                                       int label) const {
-  if (fV0Reader->AreAODsRelabeled()) {
-    return dynamic_cast<AliVTrack *>(event->GetTrack(label));
-  } else {
-    return fGTI[label];
+    std::vector<AliFemtoDreamBasePart> &particlesOut,
+    std::vector<AliFemtoDreamBasePart> &particlesIn) {
+  particlesOut.clear();
+  // Randomly pick one of the particles in the container
+  if (particlesIn.size() > 0) {
+    particlesOut.push_back(particlesIn[fRandom->Rndm() * particlesIn.size()]);
   }
 }
 
@@ -369,18 +353,6 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   fQA = new TList();
   fQA->SetName("QA");
   fQA->SetOwner(kTRUE);
-
-  if (!fV0Reader) {
-    AliError("No V0 reader");
-    //    return;
-  }
-
-  if (!fIsLightweight && fV0Reader) {
-    if (fV0Reader->GetConversionCuts() &&
-        fV0Reader->GetConversionCuts()->GetCutHistograms()) {
-      fQA->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
-    }
-  }
 
   std::cout << "Setting up the event cuts \n";
   std::cout << fEvtCuts << "\n";
@@ -466,20 +438,14 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
   if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
 
-  //  if (!fIsLightweight) {
-  //    fPhotonQA = new AliSigma0V0Cuts();
-  //    fPhotonQA->SetIsMC(fIsMC);
-  //    fPhotonQA->SetLightweight(false);
-  //    fPhotonQA->SetPID(22);
-  //    fPhotonQA->SetPosPID(AliPID::kElectron, 11);
-  //    fPhotonQA->SetNegPID(AliPID::kElectron, -11);
-  //    fPhotonQA->InitCutHistograms(TString("Photon"));
-  //    fPhotonHistList = fPhotonQA->GetCutHistograms();
-  //  } else {
-  //    fPhotonHistList = new TList();
-  //    fPhotonHistList->SetName("V0_Photon");
-  //    fPhotonHistList->SetOwner(true);
-  //  }
+  if (fPhotonCuts) {
+    fPhotonCuts->InitCutHistograms(TString("Photon"));
+    fPhotonHistList = fPhotonCuts->GetCutHistograms();
+  } else {
+    fPhotonHistList = new TList();
+    fPhotonHistList->SetName("V0_Photon");
+    fPhotonHistList->SetOwner(true);
+  }
 
   if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
     fSigmaHistList = fSigmaCuts->GetCutHistograms();

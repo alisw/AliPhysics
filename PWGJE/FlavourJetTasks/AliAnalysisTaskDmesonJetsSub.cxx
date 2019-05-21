@@ -2241,7 +2241,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   Double_t invMassD = 0;
   hname = TString::Format("%s/EfficiencyMatches", fName.Data());
   TH1* EfficiencyMatches = static_cast<TH1*>(fHistManager->FindObject(hname));
-
+  AliAODMCParticle* aodMcPart; 
   hname2 = TString::Format("%s/EfficiencyGenerator", fName.Data());
   TH1* EfficiencyGenerator = static_cast<TH1*>(fHistManager->FindObject(hname2));
   
@@ -2253,7 +2253,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
 
     // Retrieve the generated particle (if exists) and its PDG code
     if (mcLab >= 0) {
-      AliAODMCParticle* aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
+      aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
 
       if (aodMcPart) {
         // Check origin and return false if it matches the rejected origin mask
@@ -2268,9 +2268,9 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   
   if(fMCMode==kSignalOnly){
    
-     for(auto aodMcPart : fMCContainer->all()){
-     TheTrueCode = aodMcPart->PdgCode();
-     if(TMath::Abs(TheTrueCode)==fCandidatePDG) EfficiencyGenerator->Fill(aodMcPart->Pt());
+     for(auto aodMcPartAll : fMCContainer->all()){
+     TheTrueCode = aodMcPartAll->PdgCode();
+     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<0.9)EfficiencyGenerator->Fill(aodMcPartAll->Pt());
       }
   }
   
@@ -2288,7 +2288,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
-    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) EfficiencyMatches->Fill(Dcand->Pt());
+    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly)if(TMath::Abs(aodMcPart->Eta())<0.9) EfficiencyMatches->Fill(aodMcPart->Pt());
     
 
 
@@ -2307,7 +2307,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
-     if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) EfficiencyMatches->Fill(Dcand->Pt());
+    if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) if(TMath::Abs(aodMcPart->Eta())<0.9)EfficiencyMatches->Fill(aodMcPart->Pt());
   }
   else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
     AliDebug(10,"Selected as either D0 or D0bar");

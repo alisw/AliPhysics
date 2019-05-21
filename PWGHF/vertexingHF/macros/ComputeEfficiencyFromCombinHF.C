@@ -17,13 +17,16 @@
 
 enum EPtWei{kFONLL5overLHC13d3,kFONLL7overLHC10f7a,kFONLL7overLHC10f6a,kFLAToverLHC10f7a,kNoWei};
 
-const Int_t nPtBins=8;
-Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
-Int_t ptcol[nPtBins]={1,kRed+1,kGreen+2,4,kOrange+2,kMagenta,kMagenta+2,kBlue+1};
+TString configFileName="configfile4lowptanalysis.txt";
+TString fileNameMC="";
+TString suffix="";
+TString fileNameToy="";
 
-TString fileNameMC="../MCtrains/AnalysisResults_16qt_FAST_wSDD_trains1159-1158.root";
-TString suffix="_MC_Pt400_SPDany_3SigPID_FidY_PilMV5_EM1";
-TString fileNameToy="../Acceptance_Toy_D0Kpi_yfidPtDep_etaDau09_ptDau100_FONLL5ptshape.root";
+const Int_t maxPtBins=30;
+Int_t nPtBins=8;
+Double_t binLims[maxPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
+Int_t ptcol[maxPtBins]={1,kRed+1,kRed,kGreen+2,kCyan,4,kOrange+2,kMagenta,kMagenta+2,kBlue+1,kGray,kGray+2,kGreen,kYellow+7};
+
 Int_t ptWeight=kFONLL5overLHC13d3;
 Bool_t useMultWeight=kTRUE;
 Double_t maxMult=200;
@@ -37,9 +40,21 @@ Int_t wcol[3]={kRed+1,kGreen+1,4};
 Int_t wmark[3]={22,23,26};
 
 void ComputeAndWriteEff(TList* l, TString dCase);
+Bool_t ReadConfig(TString configName);
 
 void ComputeEfficiencyFromCombinHF(){
 
+
+  if(configFileName.Length()>0){
+    if(gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",configFileName.Data()))==0){
+      printf("Read configuration from file %s\n",configFileName.Data());
+      Bool_t readOK=ReadConfig(configFileName);
+      if(!readOK){
+	printf("Error in reading configuration file\n");
+	return;
+      }
+    }
+  }
 
   // multiplicity weights
   TString fileWeightName="trackletsWeightsMultInt_LHC13d3_08092014.root";
@@ -237,7 +252,13 @@ void ComputeEfficiencyFromCombinHF(){
   hEffFd->SetMarkerColor(kGray+1);
   hEffFd->SetMarkerStyle(24);
 
-  TCanvas* cpf=new TCanvas("cpf");
+  TCanvas* cpf=new TCanvas("cpf","Prompt vs Feeddown",1200,600);
+  cpf->Divide(2,1);
+  cpf->cd(1);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hAccToy->GetYaxis()->SetTitle("Efficiency, acceptance");
+  hAccToy->GetYaxis()->SetTitleOffset(1.3);
   hAccToy->Draw();
   hAccToy->SetMinimum(0);
   hEffPr->DrawCopy("same");
@@ -246,7 +267,8 @@ void ComputeEfficiencyFromCombinHF(){
   hEffD->Reset("imen");
   TH1D* hEffB=(TH1D*)hEffFd->Clone("hEffB");
   hEffB->Reset("imen");
-
+  TH1D* hRatioEff=(TH1D*)hEffFd->Clone("hRatioEff");
+  hRatioEff->Reset("imen");
 
   for(Int_t iBin=1; iBin<=hEffPr->GetNbinsX(); iBin++){
     Double_t lowPt=hEffPr->GetXaxis()->GetBinLowEdge(iBin);
@@ -282,16 +304,25 @@ void ComputeEfficiencyFromCombinHF(){
     Double_t acceffDerr=TMath::Sqrt(acc*acc*effDerr*effDerr+effD*effD*accerr*accerr);
     Double_t acceffBerr=TMath::Sqrt(acc*acc*effBerr*effBerr+effB*effB*accerr*accerr);
 
+    Double_t r=-999.;
+    Double_t er=0.;
+    if(effD>0 && effB>0){
+      r=effB/effD;
+      er=r*TMath::Sqrt(effDerr/effD*effDerr/effD+effBerr/effB*effBerr/effB);
+    }
     printf("Bin %d   acc=%f+-%f\n",iBin,acc,accerr);
     printf("         effD=%f+-%f   acc*effD=%f+-%f\n",effD,effDerr,acceffD,acceffDerr);
     printf("         effB=%f+-%f   acc*effB=%f+-%f\n",effB,effBerr,acceffB,acceffBerr);
+    printf("         r=%f+-%f\n",r,er);
     hEffD->SetBinContent(iBin,acceffD);
     hEffD->SetBinError(iBin,acceffDerr);
     hEffB->SetBinContent(iBin,acceffB);
     hEffB->SetBinError(iBin,acceffBerr);
+    hRatioEff->SetBinContent(iBin,r);
+    hRatioEff->SetBinError(iBin,er);
+    
   }
 
-  cpf->cd();
   hEffD->SetMarkerStyle(21);
   hEffD->SetMarkerColor(2);
   hEffD->SetLineColor(2);
@@ -302,12 +333,25 @@ void ComputeEfficiencyFromCombinHF(){
   hEffB->DrawCopy("same");
 
   TLegend* legpf=new TLegend(0.6,0.16,0.89,0.36);
-  legpf->AddEntry("hEffPromptVsPtNoWeight","Effic. prompt","P");
-  legpf->AddEntry(hEffFd->GetName(),"Effic. feeddown","P");
+  legpf->AddEntry(Form("%s_copy",hEffPr->GetName()),"Effic. prompt","P");
+  legpf->AddEntry(Form("%s_copy",hEffFd->GetName()),"Effic. feeddown","P");
   legpf->AddEntry(hAccToy,"Acceptance","P");
-  legpf->AddEntry("hEffD","Acc x eff prompt","P");
-  legpf->AddEntry("hEffB","Acc x eff feeddown","P");
+  legpf->AddEntry(Form("%s_copy",hEffD->GetName()),"Acc x eff prompt","P");
+  legpf->AddEntry(Form("%s_copy",hEffB->GetName()),"Acc x eff feeddown","P");
   legpf->Draw();
+  cpf->cd(2);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  hRatioEff->SetStats(0);
+  hRatioEff->SetMarkerColor(kBlue+1);
+  hRatioEff->SetLineColor(kBlue+1);
+  hRatioEff->SetMarkerStyle(20);
+  hRatioEff->SetMinimum(0.92);
+  hRatioEff->SetMaximum(1.07);
+  hRatioEff->GetYaxis()->SetTitle("Ratio efficiency feeddown/prompt");
+  hRatioEff->GetYaxis()->SetTitleOffset(1.3);
+  hRatioEff->DrawCopy();
+
 
   outup->cd();  
   hEffD->Write();
@@ -1007,4 +1051,47 @@ void ComputeAndWriteEff(TList* l, TString dCase){
   hEvSelEffVsPt->Write();
   out->Close();
 
+}
+
+Bool_t ReadConfig(TString configName){
+  FILE* confFil=fopen(configName.Data(),"r");
+  char line[50];
+  char name[200];
+  int n;
+  float x;
+  bool readok;
+  while(!feof(confFil)){
+    readok=fscanf(confFil,"%s:",line);
+    if(strstr(line,"MCFile")){
+      readok=fscanf(confFil,"%s",name);
+      fileNameMC=name;
+    }
+    else if(strstr(line,"SuffixMC")){
+      readok=fscanf(confFil,"%s",name);
+      suffix=name;
+    }
+    else if(strstr(line,"AcceptanceFile")){
+      readok=fscanf(confFil,"%s",name);
+      fileNameToy=name;
+    }
+    else if(strstr(line,"NumOfPtBins")){
+      readok=fscanf(confFil,"%d",&n);
+      nPtBins=n;
+    }
+    else if(strstr(line,"BinLimits")){
+      readok=fscanf(confFil," [ ");
+      for(int j=0; j<nPtBins; j++){
+	readok=fscanf(confFil,"%f,",&x);
+	binLims[j]=x;
+	if(j>0 && binLims[j]<=binLims[j-1]){
+	  printf("ERROR in array of pt bin limits\n");
+	  return kFALSE;
+	}
+      }
+      readok=fscanf(confFil,"%f",&x);
+      binLims[nPtBins]=x;
+      readok=fscanf(confFil," ] ");
+    }
+  }
+  return kTRUE;
 }

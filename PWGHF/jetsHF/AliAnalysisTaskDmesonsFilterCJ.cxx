@@ -64,6 +64,9 @@ AliAnalysisTaskDmesonsFilterCJ::AliAnalysisTaskDmesonsFilterCJ() :
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fMultPythiaHeader(kFALSE),
+  fPythiaEvent(0),
+  fUseHijing(kFALSE),
   fUseRejTracks(kFALSE),
   fTrackIneff(0),
   fUseReco(kTRUE),
@@ -141,6 +144,9 @@ AliAnalysisTaskDmesonsFilterCJ::AliAnalysisTaskDmesonsFilterCJ(const char *name,
   fUseMCInfo(kFALSE),
   fBuildRMEff(kFALSE),
   fUsePythia(kFALSE),
+  fMultPythiaHeader(kFALSE),
+  fPythiaEvent(0),
+  fUseHijing(kFALSE),
   fUseRejTracks(kFALSE),
   fTrackIneff(0),
   fUseReco(kTRUE),
@@ -1419,10 +1425,21 @@ void AliAnalysisTaskDmesonsFilterCJ::AddEventTracks(TClonesArray* coll, AliParti
   Int_t n = coll->GetEntriesFast();
  
   while ((track = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))) {
-    if(fUseMCInfo && fUsePythia){
-          AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(track);
-          bool isInj = IsTrackInjected(aodtrack, fMCHeader, fMCarray);
-          if(!isInj) continue;
+    if(fUseMCInfo){
+
+        AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(track);
+        TString nameGen;
+        GetTrackPrimaryGenerator(aodtrack,fMCHeader,fMCarray,nameGen);
+
+        if(fUsePythia) {
+            if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) continue;
+            if(fMultPythiaHeader){
+                if( !(nameGen.Contains("PYTHIA") && nameGen.Contains(Form("%d",fPythiaEvent)) ) ) continue;
+            }
+         }
+         else if(fUseHijing) {
+            if(!nameGen.Contains("ijing")) continue;
+         }
     }
    
     if (allDaughters.Remove(track) == 0) {
@@ -1498,11 +1515,19 @@ void AliAnalysisTaskDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliPar
     Int_t n = coll->GetEntriesFast();
     while ((mcpart = static_cast<AliAODMCParticle*>(mctracks->GetNextAcceptParticle()))) {
         if(TMath::Abs(mcpart->Charge())==0) continue;
-        if(fUsePythia){
-          bool isInj = IsMCTrackInjected(mcpart, fMCHeader, fMCarray);
-          if(!isInj) continue;
-        }
-      
+
+        TString nameGen;
+        GetTrackPrimaryGenerator(mcpart,fMCHeader,fMCarray,nameGen);
+
+        if(fUsePythia) {
+            if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) continue;
+            if(fMultPythiaHeader){
+                if( !(nameGen.Contains("PYTHIA") && nameGen.Contains(Form("%d",fPythiaEvent)) ) ) continue;
+            }
+         }
+         else if(fUseHijing) {
+            if(!nameGen.Contains("ijing")) continue;
+         }
         
         if (allMCDaughters.Remove(mcpart) == 0) {
             new ((*coll)[n]) AliAODMCParticle(*mcpart);
@@ -1559,18 +1584,6 @@ Int_t AliAnalysisTaskDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, TClones
   return CheckOrigin(part, mcArray);
 }
 
-//_________________________________________________________________________________________________
-Int_t AliAnalysisTaskDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, AliStack* stack)
-{
-  // Checks whether the mother of the D meson candidate comes from a charm or a bottom quark.
-
-  if (!stack) return -1;
-
-  Int_t labDau0 = static_cast<AliVTrack*>(cand->GetDaughter(0))->GetLabel();
-  if (labDau0 < 0) return -1;
-
-  return CheckOrigin(labDau0, stack);
-}
 
 //_________________________________________________________________________________________________
 Int_t AliAnalysisTaskDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray)
@@ -1599,55 +1612,6 @@ Int_t AliAnalysisTaskDmesonsFilterCJ::CheckOrigin(AliAODMCParticle* part, TClone
 
       if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
       mother = mcGranma->GetMother();
-    }
-    else {
-      ::Error("AliAnalysisTaskDmesonsFilterCJ::CheckOrigin", "Could not retrieve mother particle %d!", mother);
-      break;
-    }
-  }
-
-  if (isQuarkFound) {
-    if (isFromB) {
-      return kFromBottom;
-    }
-    else {
-      return kFromCharm;
-    }
-  }
-  else {
-    return kQuarkNotFound;
-  }
-}
-
-//_________________________________________________________________________________________________
-Int_t AliAnalysisTaskDmesonsFilterCJ::CheckOrigin(Int_t ipart, AliStack* stack)
-{
-  // Checks whether the mother of the particle comes from a charm or a bottom quark.
-
-  if (!stack) return -1;
-
-  TParticle* part = stack->Particle(ipart);
-  if (!part) return -1;
-
-  Int_t pdgGranma = 0;
-  Int_t mother = part->GetFirstMother();
-  Int_t istep = 0;
-  Int_t abspdgGranma = 0;
-  Bool_t isFromB = kFALSE;
-  Bool_t isQuarkFound = kFALSE;
-
-  while (mother >= 0) {
-    istep++;
-    TParticle* mcGranma = stack->Particle(mother);
-    if (mcGranma != 0) {
-      pdgGranma = mcGranma->GetPdgCode();
-      abspdgGranma = TMath::Abs(pdgGranma);
-      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
-        isFromB = kTRUE;
-      }
-
-      if (abspdgGranma == 4 || abspdgGranma == 5) isQuarkFound = kTRUE;
-      mother = mcGranma->GetFirstMother();
     }
     else {
       ::Error("AliAnalysisTaskDmesonsFilterCJ::CheckOrigin", "Could not retrieve mother particle %d!", mother);
@@ -1721,66 +1685,6 @@ Int_t AliAnalysisTaskDmesonsFilterCJ::CheckDecayChannel(AliAODMCParticle* part, 
   return decay;
 }
 
-//_________________________________________________________________________________________________
-Int_t AliAnalysisTaskDmesonsFilterCJ::CheckDecayChannel(Int_t ipart, AliStack* stack)
-{
-  // Determine the decay channel
-
-  if (!stack) return -1;
-
-  TParticle* part = stack->Particle(ipart);
-
-  if (!part) return -1;
-
-  Int_t decay = kDecayOther;
-
-  if (part->GetNDaughters() == 2) {
-
-    Int_t id1 = part->GetDaughter(0);
-    Int_t id2 = part->GetDaughter(1);
-
-    TParticle* d1 = stack->Particle(id1);
-    TParticle* d2 = stack->Particle(id2);
-
-    if (!d1 || !d2) {
-      return decay;
-    }
-
-    Int_t absPdg1 = TMath::Abs(d1->GetPdgCode());
-    Int_t absPdg2 = TMath::Abs(d2->GetPdgCode());
-
-
-    if (part->GetPdgCode() == 421) { // D0 -> K pi
-
-      if ((absPdg1 == 211 && absPdg2 == 321) || // pi K
-          (absPdg1 == 321 && absPdg2 == 211)) { // K pi
-        decay = kDecayD0toKpi;
-      }
-    }
-
-    if (part->GetPdgCode() == 413) { // D* -> D0 pi
-
-      if (absPdg1 == 421 && absPdg2 == 211) {  // D0 pi
-        Int_t D0decay = CheckDecayChannel(id1, stack);
-        if (D0decay == kDecayD0toKpi) {
-          decay = kDecayDStartoKpipi;
-        }
-      }
-
-      if (absPdg1 == 211 && absPdg2 == 421) {  // pi D0
-        Int_t D0decay = CheckDecayChannel(id2, stack);
-        if (D0decay == kDecayD0toKpi) {
-          decay = kDecayDStartoKpipi;
-        }
-      }
-    }
-  }
-  
-  return decay;
-  
-}
-
-
 //_____________________________________________________________________
 void AliAnalysisTaskDmesonsFilterCJ::GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen){
 
@@ -1813,6 +1717,41 @@ void AliAnalysisTaskDmesonsFilterCJ::GetTrackPrimaryGenerator(AliAODTrack *track
   
   return;
 }
+
+//_____________________________________________________________________
+void AliAnalysisTaskDmesonsFilterCJ::GetTrackPrimaryGenerator(AliAODMCParticle *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen){
+
+  /// method to check if a track comes from a given generator
+
+  Int_t lab=TMath::Abs(track->GetLabel());
+  nameGen=AliVertexingHFUtils::GetGenerator(lab,header);
+
+  //  Int_t countControl=0;
+
+  while(nameGen.IsWhitespace()){
+    AliAODMCParticle *mcpart= (AliAODMCParticle*)arrayMC->At(lab);
+    if(!mcpart){
+      printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: No valid AliAODMCParticle at label %i\n",lab);
+      break;
+    }
+    Int_t mother = mcpart->GetMother();
+    if(mother<0){
+      printf("AliAnalysisTaskMultCheck::IsTrackInjected - BREAK: Reached primary particle without valid mother\n");
+      break;
+    }
+    lab=mother;
+    nameGen=AliVertexingHFUtils::GetGenerator(mother,header);
+    // countControl++;
+    // if(countControl>=10){ // 10 = arbitrary number; protection from infinite loops
+    //   printf("AliVertexingHFUtils::IsTrackInjected - BREAK: Protection from infinite loop active\n");
+    //   break;
+    // }
+  }
+
+  return;
+}
+
+
 //----------------------------------------------------------------------
 Bool_t AliAnalysisTaskDmesonsFilterCJ::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC){
   /// method to check if a track comes from the signal event or from the underlying Hijing event

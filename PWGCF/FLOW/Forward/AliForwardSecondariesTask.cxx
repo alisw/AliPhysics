@@ -162,17 +162,17 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 
     fDeltaList = new TList();
     fDeltaList->SetName("Delta");
-    Int_t phibins = 20;
+    Int_t phibins = 4001;
     Int_t etabins = 50;
     fSettings.fnoSamples = 1;
-    fSettings.fCentBins = 5;
-    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, fSettings.fCentBins, etabins} ;
+    fSettings.fCentBins = 1;
+    Int_t bins_phi_eta[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 5, etabins} ;
     Double_t xmin_phi_eta[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
     Double_t xmax_phi_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
 
-    Int_t bins_phi_eta_spd[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
-    Double_t xmin_phi_eta_spd[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
-    Double_t xmax_phi_eta_spd[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
+    // Int_t bins_phi_eta_spd[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, phibins, 1, etabins} ;
+    // Double_t xmin_phi_eta_spd[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -4};
+    // Double_t xmax_phi_eta_spd[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; //
 
     Int_t dimensions = 5;
 
@@ -189,7 +189,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     Double_t xmax_eta[5] = {10,fSettings.fZVtxAcceptanceUpEdge, 6, 100, 6}; //
 
     fDeltaList->Add(new THnD("delta_phi_eta", "delta_phi_eta",dimensions,bins_phi_eta, xmin_phi_eta, xmax_phi_eta)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
-    fDeltaList->Add(new THnD("delta_phi_eta_spd", "delta_phi_eta_spd",dimensions,bins_phi_eta_spd, xmin_phi_eta_spd, xmax_phi_eta_spd)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    // fDeltaList->Add(new THnD("delta_phi_eta_spd", "delta_phi_eta_spd",dimensions,bins_phi_eta_spd, xmin_phi_eta_spd, xmax_phi_eta_spd)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_eta_phi", "delta_eta_phi",dimensions,bins_eta_phi, xmin_eta_phi, xmax_eta_phi));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
     fDeltaList->Add(new THnD("delta_phi", "delta_phi",dimensions,bins_phi, xmin_phi, xmax_phi)); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
     fDeltaList->Add(new THnD("delta_eta", "delta_eta",dimensions,bins_eta, xmin_eta, xmax_eta));// (samples, vertex,eta_mother - eta_tr ,centrality,phi_mother,phi_tr,phi_p)
@@ -200,11 +200,11 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(3)->SetName("centrality");
     static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta"))->GetAxis(4)->SetName("eta");
 
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(0)->SetName("samples");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(1)->SetName("vertex");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(2)->SetName("phi_mother - phi_tr");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(3)->SetName("centrality");
-    static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(4)->SetName("eta");
+    // static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(0)->SetName("samples");
+    // static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(1)->SetName("vertex");
+    // static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(2)->SetName("phi_mother - phi_tr");
+    // static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(3)->SetName("centrality");
+    // static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd"))->GetAxis(4)->SetName("eta");
 
     static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(0)->SetName("samples");
     static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi"))->GetAxis(1)->SetName("vertex");
@@ -267,13 +267,13 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
   //   option: Not used
   //
 
-  std::cout << "getting validation";
+  //std::cout << "getting validation";
   AliForwardTaskValidation* ev_val = dynamic_cast<AliForwardTaskValidation*>(this->GetInputData(1));
    if (!ev_val->IsValidEvent()){
      PostData(1, this->fOutputList);
      return;
    }
-   std::cout << "... done" << std::endl;
+   //std::cout << "... done" << std::endl;
 
 
   AliMCEvent* fAOD = this->MCEvent();
@@ -293,13 +293,14 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     return;
   }
 
-  AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
 
   //Int_t nPrim     = stack->GetNprimary();
 
   Double_t randomInt = static_cast<Double_t>(fRandom.Integer(fSettings.fnoSamples));
   //Float_t event_vtx_z = fAOD->GetPrimaryVertex()->GetZ();
-  Double_t v0cent = MultSelection->GetMultiplicityPercentile("V0M");
+  //Double_t v0cent = MultSelection->GetMultiplicityPercentile("V0M");
+  Double_t v0cent = 0.0;
   bool useEvent = kTRUE;
 
   if (useEvent){
@@ -309,22 +310,76 @@ void AliForwardSecondariesTask::UserExec(Option_t *)
     Int_t nTracks   = fAOD->GetNumberOfTracks();// stack->GetNtrack();
 
     Int_t nPrim     = fAOD->GetNumberOfPrimaries();//fAOD->GetNumberOfPrimaries();
-    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-      AliMCParticle* particle =
-        static_cast<AliMCParticle*>(fAOD->GetTrack(iTr));
+    
 
-      // Check if this charged and a primary
-      if (particle->Charge() == 0) continue;
+    static_cast<TH1D*>(fEventList->FindObject("Centrality"))->Fill(v0cent);
+    static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
+    THnD* delta_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    THnD* delta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    THnD* delta_phi_eta = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    THnD* delta_eta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+    THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
 
-      Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < nPrim;
+  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+    AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
 
-      AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fAOD);
-      if (!mother) mother = particle;
-      // IF the track corresponds to a primary, pass that as both
-      // arguments.
-      ProcessTrack(particle, mother,listOfMothers, randomInt,event_vtx_z,v0cent);
+    // Ignore things that do not make a signal in the FMD
+    AliTrackReference* tr = fUtil.IsHitFMD(p);
+    if (tr && p->Charge() != 0){
 
-    } // Loop over tracks
+      AliMCParticle* mother = GetMother(p);
+      //if (!mother) continue;
+      if (!mother) mother = p;
+
+      Double_t eta_mother = mother->Eta();
+      Double_t phi_mother = Wrap02pi(mother->Phi());
+
+      Double_t *etaPhi = new Double_t[2];
+      this->GetTrackRefEtaPhi(tr, etaPhi);
+
+      Double_t phi_tr = Wrap02pi(etaPhi[1]);
+      Double_t eta_tr = etaPhi[0];
+
+      // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr)
+      Double_t phi[5] = {randomInt,event_vtx_z, Wrap02pi(phi_mother - phi_tr), v0cent, eta_tr};
+      Double_t eta[5] = {randomInt,event_vtx_z, (eta_mother - eta_tr), v0cent, phi_tr};
+
+      //if (!(fabs(eta_tr - eta_mother) < 0.1)) continue;
+      delta_phi_eta->Fill(phi,1);
+      delta_eta_phi->Fill(eta,1);
+
+      phi[4] = phi_tr;
+      eta[4] = eta_tr;
+
+      delta_phi->Fill(phi,1);
+      delta_eta->Fill(eta,1);
+
+      Double_t x_prim[4] =  {randomInt,event_vtx_z,v0cent,eta_tr};
+      Bool_t isNewPrimary = AddMotherIfFirstTimeSeen(mother,listOfMothers);
+      if (!isNewPrimary){
+        listOfMothers.push_back(mother->GetLabel());
+        fnoPrim->Fill(x_prim,1);
+      }
+    }
+  }
+
+
+    // for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+    //   AliMCParticle* particle =
+    //     static_cast<AliMCParticle*>(fAOD->GetTrack(iTr));
+
+    //   // Check if this charged and a primary
+    //   if (particle->Charge() == 0) continue;
+
+    //   Bool_t isPrimary = stack->IsPhysicalPrimary(iTr) && iTr < nPrim;
+
+    //   AliMCParticle* mother = isPrimary ? particle : GetMother(iTr,fAOD);
+    //   if (!mother) mother = particle;
+    //   // IF the track corresponds to a primary, pass that as both
+    //   // arguments.
+    //   ProcessTrack(particle, mother,listOfMothers, randomInt,event_vtx_z,v0cent);
+
+    // } // Loop over tracks
 
     PostData(1, fOutputList);
   } // End of useEvent
@@ -336,7 +391,7 @@ Bool_t
 AliForwardSecondariesTask::ProcessTrack(AliMCParticle* particle,
 				    AliMCParticle* mother, std::vector< Int_t > listOfMothers, Double_t randomInt, Float_t event_vtx_z, Double_t v0cent)
 {
-  THnD* delta_phi_eta_spd = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
+  //THnD* delta_phi_eta_spd = static_cast<THnD*>(fDeltaList->FindObject("delta_phi_eta_spd")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
 
   // Check the returned particle
   //
@@ -359,26 +414,26 @@ AliForwardSecondariesTask::ProcessTrack(AliMCParticle* particle,
     if (!ref) continue;
 
     // Check that we hit an Base element
-    if (AliTrackReference::kITS == ref->DetectorId()) {
+  //   if (AliTrackReference::kITS == ref->DetectorId()) {
 
-      // We are interested if it produced a signal, not only a hit in the support structure.
-      // This is an envelop around the active area
-      if (ref->R() > 3.5 && ref->R() < 4.5 && TMath::Abs(ref->Z()) < 14.1) {
-        if (!fStored){
-          fStored = ref;
-        Double_t phi_mother_spd = (mother->Phi());//Wrap02pi
+  //     // We are interested if it produced a signal, not only a hit in the support structure.
+  //     // This is an envelop around the active area
+  //     if (ref->R() > 3.5 && ref->R() < 4.5 && TMath::Abs(ref->Z()) < 14.1) {
+  //       if (!fStored){
+  //         fStored = ref;
+  //       Double_t phi_mother_spd = (mother->Phi());//Wrap02pi
 
-        Double_t *etaPhi_spd = new Double_t[2];
-        this->GetTrackRefEtaPhi(ref, etaPhi_spd);
+  //       Double_t *etaPhi_spd = new Double_t[2];
+  //       this->GetTrackRefEtaPhi(ref, etaPhi_spd);
 
-        Double_t phi_tr_spd = etaPhi_spd[1]; //Wrap02pi
-        Double_t eta_tr_spd = etaPhi_spd[0];
-        Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother_spd - phi_tr_spd), v0cent, eta_tr_spd};//Wrap02pi
+  //       Double_t phi_tr_spd = etaPhi_spd[1]; //Wrap02pi
+  //       Double_t eta_tr_spd = etaPhi_spd[0];
+  //       Double_t phi[5] = {randomInt,event_vtx_z, WrapPi(phi_mother_spd - phi_tr_spd), v0cent, eta_tr_spd};//Wrap02pi
 
-        delta_phi_eta_spd->Fill(phi,1);
-      }
-    }
-  }
+  //       delta_phi_eta_spd->Fill(phi,1);
+  //     }
+  //   }
+  // }
 
 
 
@@ -411,38 +466,33 @@ AliForwardSecondariesTask::StoreParticle(AliMCParticle*       particle,
   THnD* delta_eta_phi = static_cast<THnD*>(fDeltaList->FindObject("delta_eta_phi")); // (samples, vertex,phi_mother - phi_tr ,centrality,eta_mother,eta_tr,eta_p)
   THnD* fnoPrim = static_cast<THnD*>(fDeltaList->FindObject("fnoPrim"));//->Fill(event_vtx_z,event_vtx_z,event_vtx_z);
 
-
-
-    UInt_t packed = ref->UserId();
-    UShort_t detector, sector, strip;
-    Char_t   ring;
-    AliFMDStripIndex::Unpack(packed,detector,ring,sector,strip);
-    TString inner = "I";
-    //const Char_t* outer = "O";
-    if (detector == 1){
-      v0cent = 10;
-    }
-
-    if (detector == 2){
-      if (TString(ring) == inner) v0cent = 30;
-      else v0cent = 50;
-    }
-
-    if (detector == 3){
-      if (ring == inner) v0cent = 70;
-      else v0cent = 90;
-    }
-
-std::cout << "Detector: " << detector << ", Sector:" << sector << ", Strip: " << strip << ", Ring: " << ring << std::endl;
+  UInt_t packed = ref->UserId();
+  UShort_t detector, sector, strip;
+  Char_t   ring;
+  AliFMDStripIndex::Unpack(packed,detector,ring,sector,strip);
+  TString inner = "I";
+  //const Char_t* outer = "O";
+  if (detector == 1){
+    v0cent = 10;
+  }
+  if (detector == 2){
+    if (TString(ring) == inner) v0cent = 30;
+    else v0cent = 50;
+  }
+  if (detector == 3){
+    if (ring == inner) v0cent = 70;
+    else v0cent = 90;
+  }
+  //std::cout << "Detector: " << detector << ", Sector:" << sector << ", Strip: " << strip << ", Ring: " << ring << std::endl;
 
   Double_t eta_mother = mother->Eta();
   Double_t phi_mother = (mother->Phi());//Wrap02pi
 
   Double_t *etaPhi = new Double_t[2];
-  this->GetTrackRefEtaPhi(ref, etaPhi);
+  this->GetTrackRefEtaPhi(particle, etaPhi);//ref, etaPhi
 
 
-  Double_t phi_tr = etaPhi[1]; //Wrap02pi
+  Double_t phi_tr = (etaPhi[1]); //Wrap02pi
   //phi_tr = phihist->GetBinCenter(phihist->FindBin(phi_tr));
 
   //if (phi_tr < 0) phi_tr += 2*TMath::Pi();

@@ -48,6 +48,7 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
   fTPCcrossedOverFindable(-1.),
   fAODFilterBit(kSwitchOff),
   fWaiveITSNcls(-1),
+  fRequireTRDUpdate(kFALSE),
   fRequireCaloClusterMatch(kFALSE),
   fClusterMatchCaloType(AliDielectronClusterCuts::kAny)
 {
@@ -74,6 +75,7 @@ AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* tit
   fTPCcrossedOverFindable(-1.),
   fAODFilterBit(kSwitchOff),
   fWaiveITSNcls(-1),
+  fRequireTRDUpdate(kFALSE),
   fRequireCaloClusterMatch(kFALSE),
   fClusterMatchCaloType(AliDielectronClusterCuts::kAny)
 {
@@ -165,8 +167,10 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
     }
   }
 
+  // TRD update
+  if (fRequireTRDUpdate) accept*=(vtrack->GetStatus()&AliVTrack::kTRDupdate)>0;
+
   // calo cluster-track match
-  // NOTE: logic correct?
   if (fRequireCaloClusterMatch) {
     Int_t fCaloIndex = vtrack->GetEMCALcluster();
     if (fCaloIndex!=AliVTrack::kEMCALNoMatch) {

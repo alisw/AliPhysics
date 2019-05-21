@@ -63,7 +63,7 @@ using std::endl;
 ClassImp(AliAnalysisTaskBFPsi)
 
 //________________________________________________________________________
-AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name) 
+AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
 : AliAnalysisTaskSE(name),
   fDebugLevel(kFALSE),
   fArrayMC(0),
@@ -204,6 +204,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fUseOfflineTrigger(kFALSE),
   fCheckFirstEventInChunk(kFALSE),
   fCheckPileUp(kFALSE),
+  fUsePileUpSPD(kFALSE),
   fCheckPrimaryFlagAOD(kFALSE),
   fUseMCforKinematics(kFALSE),
   fRebinCorrHistos(kFALSE),
@@ -1066,7 +1067,7 @@ Double_t AliAnalysisTaskBFPsi::GetNUECorrection(Int_t gCentralityIndex, Short_t 
 
 
 //________________________________________________________________________
-void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename, 
+void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
 					      Int_t nCentralityBins, 
 					      Double_t *centralityArrayForCorrections) {
 
@@ -1283,6 +1284,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   AliAnalysisUtils ut;
   if(fCheckPileUp){
     fUtils->SetUseMVPlpSelection(kTRUE);
+    if (fUsePileUpSPD) fUtils->SetUseMVPlpSelection(kFALSE);
     // fUtils->SetUseOutOfBunchPileUp(kTRUE);
     if(fUtils->IsPileUpEvent(event))
       return -1.;
@@ -1760,9 +1762,16 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
       if(gMCEvent){
 	AliCollisionGeometry* headerH;
+	TString genName;
 	TList *ltgen = (TList*)gMCEvent->GetCocktailList();
 	if (ltgen) {
-	  headerH = dynamic_cast<AliCollisionGeometry*>(ltgen->FindObject("Hijing_0"));
+	  for(auto&& listObject: *ltgen){
+	    genName = Form("%s",listObject->GetName());
+	    if (genName.Contains("Hijing")) {
+		headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+		break;
+	      }
+	  }
 	}
 	else 
 	  headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
@@ -1977,10 +1986,17 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
 
     AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
     if(gMCEvent){
+      TString genName;
       AliCollisionGeometry* headerH;
       TList *ltgen = (TList*)gMCEvent->GetCocktailList();
       if (ltgen) {
-	headerH = dynamic_cast<AliCollisionGeometry*>(ltgen->FindObject("Hijing_0"));
+	for(auto&& listObject: *ltgen){
+	    genName = Form("%s",listObject->GetName());
+	    if (genName.Contains("Hijing")) {
+		headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+		break;
+	      }
+	  }
       }
       else 
 	headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());  
@@ -2007,7 +2023,7 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta, 
+Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
 								Double_t vPhi, 
 								Double_t vPt, 
 								Short_t vCharge, 
@@ -2201,6 +2217,17 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  // fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF); //firts check only TPC
 	  //detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
 
+	  if(vPt < fPIDMomCut){
+
+              if (fUsePIDnSigma){
+                if (TMath::Abs(nSigmaTPC)<3.) isPartIDselected = kTRUE;
+                else continue;
+              }
+              else {
+                if (probTPC[fParticleOfInterest] > fMinAcceptedPIDProbability) isPartIDselected = kTRUE;
+                else continue;
+              }
+            }
 	  
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
 	  detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPCTOF);
@@ -2245,18 +2272,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	      fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());
 	    }
 	    
-	    if(vPt < fPIDMomCut){
-
-              if (fUsePIDnSigma){
-                if (TMath::Abs(nSigmaTPC)<3.) isPartIDselected = kTRUE;
-                else continue;
-              }
-              else {
-                if (probTPC[fParticleOfInterest] > fMinAcceptedPIDProbability) isPartIDselected = kTRUE;
-                else continue;
-              }
-            } 
-
+	    
 	    if (vPt >= fPIDMomCut){
 	      if (fParticleOfInterest == (AliPID::kPion)){
 		if (fUsePIDnSigma){
@@ -2407,7 +2423,44 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
           // fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF); //firts check only TPC
           //detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
           
+          if(vPt < fPIDMomCut){
+              
+              if (fParticleOfInterest == (AliPID::kPion)){
+                  
+                  if (fUsePIDnSigma){
+                      
+                      if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCKaons)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
+                      else continue;
+                      
+                  }
+                  
+              } //end of pions
+              
+              if (fParticleOfInterest == (AliPID::kKaon)){
+                  
+                  if (fUsePIDnSigma){
+                      
+                      if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
+                      else continue;
+                      
+                  }
+                  
+              } //end of kaons
+              
+              if (fParticleOfInterest == (AliPID::kProton)){
+                  
+                  if (fUsePIDnSigma){
+                      
+                      if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCKaons)<3.)) isPartIDselected = kTRUE;
+                      else continue;
+                      
+                  }
+                  
+              } //end of protons
+              
+          }
           
+    
           fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
           detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPCTOF);
           
@@ -2460,42 +2513,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
                   fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());
               }
               
-              if(vPt < fPIDMomCut){
-                  
-                  if (fParticleOfInterest == (AliPID::kPion)){
-                  
-                      if (fUsePIDnSigma){
-                      
-                          if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCKaons)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
-                          else continue;
-                  
-                      }
-                  
-                  } //end of pions
-                  
-                  if (fParticleOfInterest == (AliPID::kKaon)){
-                      
-                      if (fUsePIDnSigma){
-                          
-                          if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
-                          else continue;
-                          
-                      }
-                      
-                  } //end of kaons
-                  
-                  if (fParticleOfInterest == (AliPID::kProton)){
-                      
-                      if (fUsePIDnSigma){
-                          
-                          if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCKaons)<3.)) isPartIDselected = kTRUE;
-                          else continue;
-                          
-                      }
-                      
-                  } //end of protons
-             
-              }
               
               if (vPt >= fPIDMomCut){
                   
@@ -2897,6 +2914,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	// Remove neutral tracks
 	if( vCharge == 0 ) continue;
+
+	if(fUseMCPdgCode) {
+	  Int_t gPdgCode = aodTrack->PdgCode();
+	  if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+	    continue;
+	}
 	
 	//Exclude resonances
 	if(fExcludeResonancesInMC) {
@@ -3184,7 +3207,44 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
                 // fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF); //firts check only TPC
                 //detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
                 
+                if(vPt < fPIDMomCut){
+                    
+                    if (fParticleOfInterest == (AliPID::kPion)){
+                        
+                        if (fUsePIDnSigma){
+                            
+                            if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCKaons)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
+                            else continue;
+                            
+                        }
+                        
+                    } //end of pions
+                    
+                    if (fParticleOfInterest == (AliPID::kKaon)){
+                        
+                        if (fUsePIDnSigma){
+                            
+                            if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
+                            else continue;
+                            
+                        }
+                        
+                    } //end of kaons
+                    
+                    if (fParticleOfInterest == (AliPID::kProton)){
+                        
+                        if (fUsePIDnSigma){
+                            
+                            if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCKaons)<3.)) isPartIDselected = kTRUE;
+                            else continue;
+                            
+                        }
+                        
+                    } //end of protons
+                    
+                }
                 
+            
                 fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
                 detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPCTOF);
                 
@@ -3237,42 +3297,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
                         fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());
                     }
                     
-                    if(vPt < fPIDMomCut){
-                        
-                        if (fParticleOfInterest == (AliPID::kPion)){
-                            
-                            if (fUsePIDnSigma){
-                                
-                                if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCKaons)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
-                                else continue;
-                                
-                            }
-                            
-                        } //end of pions
-                        
-                        if (fParticleOfInterest == (AliPID::kKaon)){
-                            
-                            if (fUsePIDnSigma){
-                                
-                                if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) isPartIDselected = kTRUE;
-                                else continue;
-                                
-                            }
-                            
-                        } //end of kaons
-                        
-                        if (fParticleOfInterest == (AliPID::kProton)){
-                            
-                            if (fUsePIDnSigma){
-                                                                
-                                if ((TMath::Abs(nSigmaTPC)<2.) && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCKaons)<3.)) isPartIDselected = kTRUE;
-                                else continue;
-                                
-                            }
-                            
-                        } //end of protons
-                        
-                    }
                     
                     if (vPt >= fPIDMomCut){
                         
@@ -4273,7 +4297,7 @@ void AliAnalysisTaskBFPsi::SetParticleOfInterest(AliPID::EParticleType poi) {
 
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskBFPsi::GetChannelEqualizationFactor(Int_t run, 
+Double_t AliAnalysisTaskBFPsi::GetChannelEqualizationFactor(Int_t run,
 							    Int_t channel) {
   //
   if(!fHistVZEROAGainEqualizationMap) return 1.0;
@@ -4288,7 +4312,7 @@ Double_t AliAnalysisTaskBFPsi::GetChannelEqualizationFactor(Int_t run,
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskBFPsi::GetEqualizationFactor(Int_t run, 
+Double_t AliAnalysisTaskBFPsi::GetEqualizationFactor(Int_t run,
 						     const char* side) {
   //
   if(!fHistVZEROAGainEqualizationMap) return 1.0;

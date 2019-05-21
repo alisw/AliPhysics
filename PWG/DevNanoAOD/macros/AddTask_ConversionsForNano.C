@@ -1,6 +1,6 @@
 AliAnalysisTask *AddTask_ConversionsForNano(
     Int_t dataset = 0, Bool_t isMC = kFALSE, TString periodNameV0Reader = "",
-    TString cutnumberPhoton = "00200078400000001240820000") {
+    TString cutnumberPhoton = "00200078000000001240820000") {
   gSystem->Load("libPWGGAGammaConv");
 
   // get the current analysis manager
@@ -25,6 +25,7 @@ AliAnalysisTask *AddTask_ConversionsForNano(
 
   if (periodNameV0Reader.CompareTo("") != 0)
     fV0ReaderV1->SetPeriodName(periodNameV0Reader);
+  fV0ReaderV1->SetAddv0sInESDFilter(kTRUE);
   fV0ReaderV1->SetCreateAODs(kTRUE);
   fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
   fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);

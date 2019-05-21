@@ -16,8 +16,6 @@ AliGFWCuts::~AliGFWCuts() {
 };
 Int_t AliGFWCuts::AcceptTrack(AliAODTrack* l_Tr, Double_t* l_DCA, Int_t BitShift) {
   if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
-  if(l_Tr->Pt()<0.3) return 0;
-  if(l_Tr->Pt()>20) return 0;
   if(!l_Tr->TestFilterBit(fFilterBit)) return 0;
   if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
     if(l_Tr->GetTPCNclsF()<fTPCNcls) return 0;

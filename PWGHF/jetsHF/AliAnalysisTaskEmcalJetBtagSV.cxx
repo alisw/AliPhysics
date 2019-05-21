@@ -99,6 +99,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fhEntries(NULL),
   fhZNApercentQa(NULL),
   fhEvtRej(NULL),
+  fhEvtRejBitmap(NULL),
   fhHFjetQa(NULL),
   fhRhoQa(NULL),
   fhMCRhoQa(NULL),
@@ -192,6 +193,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fhEntries(NULL),
   fhZNApercentQa(NULL),
   fhEvtRej(NULL),
+  fhEvtRejBitmap(NULL),
   fhHFjetQa(NULL),
   fhRhoQa(NULL),
   fhMCRhoQa(NULL),  
@@ -406,8 +408,14 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
   fhEntries->GetXaxis()->SetBinLabel(11, "nEvPtHardOutlier");
   fOutputList->Add(fhEntries);
 
-  fhEvtRej  = new TH1F("fhEvtRej", "Event rejection criteria", 10, -.5, 10.5);
+  fhEvtRej  = new TH1F("fhEvtRej", "Event rejection criteria", 11, -.5, 10.5);
   fOutputList->AddLast(fhEvtRej);
+  
+  fhEvtRejBitmap  = new TH1F("fhEvtRejBitmap", "Event rejection criteria bitmap", 2049, -.5, 2048.5);
+  fOutputList->AddLast(fhEvtRejBitmap);	
+	
+	
+	
 
   fhZNApercentQa = new TH1F("fhZNApercentQa", "ZNA multiplicity percentile;percent;dN/d(percent)", 100, 0., 100.);
   fOutputList->Add(fhZNApercentQa);
@@ -554,6 +562,8 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t* /*option*/)
   if (!fCutsHFjets->IsEventSelected((AliAODEvent*)fEvent)) {
     AliDebug(5, MSGDEBUG("Event did not pass event selection from AliRDHFJetsCuts!"));
     fhEvtRej->Fill(fCutsHFjets->GetWhyRejection(), 1);
+	fhEvtRejBitmap->Fill(fCutsHFjets->GetEventRejectionBitMap(),1);
+	  
     return;
   }
 

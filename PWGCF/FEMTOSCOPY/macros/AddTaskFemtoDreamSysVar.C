@@ -341,7 +341,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   config->SetSpinningDepth(10);
   config->SetkTBinning(kTBinning);
   config->SetkTCentralityBinning(kTCentBinning);
-  config->SetmTBinning(mTBinning);
+  config->SetmTBinning(true);
+  config->SetExtendedQAPairs(config->GetStandardPairs());
   config->SetUseEventMixing(eventMixing);
   config->SetUsePhiSpinning(phiSpin);
 
@@ -459,9 +460,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     TrackCuts->SetEtaRange(-0.77, 0.77);
     AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
-
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
 
@@ -503,9 +501,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     v0Cuts->SetCutDCADaugTov0Vtx(1.2);
     Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
 
-    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
     CascadeCuts->SetCutXiDaughterDCA(1.3);
     AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
 
@@ -529,13 +524,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
     AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
-
-    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
 
     CascadeCuts->SetPtRangeXi(1.2, 999.5);
     AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
@@ -578,14 +566,14 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
 
   } else if (suffix == "5") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
 
     TrackCuts->SetEtaRange(-0.77, 0.77);
     AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
 
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
@@ -622,12 +610,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
     AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
 
-    XiNegCuts->SetEtaRange(-0.77, 0.7);
-    XiPosCuts->SetEtaRange(-0.77, 0.7);
-    XiBachCuts->SetEtaRange(-0.77, 0.7);
-    AntiXiNegCuts->SetEtaRange(-0.77, 0.7);
-    AntiXiPosCuts->SetEtaRange(-0.77, 0.7);
-    AntiXiBachCuts->SetEtaRange(-0.77, 0.7);
+    XiNegCuts->SetEtaRange(-0.77, 0.77);
+    XiPosCuts->SetEtaRange(-0.77, 0.77);
+    XiBachCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiNegCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
+    AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
 
     XiNegCuts->SetPID(AliPID::kPion, 999, 4.5);
     XiPosCuts->SetPID(AliPID::kProton, 999, 4.5);
@@ -663,9 +651,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
     AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
-
-    CascadeCuts->SetCutXiCPA(0.99);
-    AntiCascadeCuts->SetCutXiCPA(0.99);
 
     CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
     AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
@@ -715,9 +700,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     v0Cuts->SetCutDCADaugToPrimVtx(0.06);
     Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
 
-    CascadeCuts->SetCutXiDaughterDCA(1.3);
-    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
-
     CascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
     AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.08);
 
@@ -728,12 +710,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
     AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
 
-    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
 
     CascadeCuts->SetPtRangeXi(1.2, 999.5);
     AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
@@ -761,9 +743,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
     AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
-
-    CascadeCuts->SetCutXiCPA(0.99);
-    AntiCascadeCuts->SetCutXiCPA(0.99);
 
     CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
     AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
@@ -804,9 +783,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     v0Cuts->SetCutDCADaugTov0Vtx(1.2);
     Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
 
-    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-
     CascadeCuts->SetCutXiDaughterDCA(1.3);
     AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
 
@@ -839,8 +815,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
 
   } else if (suffix == "10") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
 
     TrackCuts->SetEtaRange(-0.85, 0.85);
     AntiTrackCuts->SetEtaRange(-0.85, 0.85);
@@ -873,19 +849,19 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
     AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
 
-    XiNegCuts->SetEtaRange(-0.83, 0.87);
-    XiPosCuts->SetEtaRange(-0.83, 0.87);
-    XiBachCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+    XiNegCuts->SetEtaRange(-0.87, 0.87);
+    XiPosCuts->SetEtaRange(-0.87, 0.87);
+    XiBachCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.87, 0.87);
 
-    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
 
     CascadeCuts->SetPtRangeXi(1.2, 999.5);
     AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
@@ -908,9 +884,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     v0Cuts->SetCutDCADaugTov0Vtx(1.2);
     Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
 
     CascadeCuts->SetCutXiDaughterDCA(1.9);
     AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -949,10 +922,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiNegCuts->SetPID(AliPID::kProton, 999, 4.5);
     AntiXiPosCuts->SetPID(AliPID::kPion, 999, 4.5);
     AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
-
-    CascadeCuts->SetPtRangeXi(1.2, 999.5);
-    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
-
   } else if (suffix == "12") {
     TrackCuts->SetPtRange(0.4, 4.05);
     AntiTrackCuts->SetPtRange(0.4, 4.05);
@@ -962,9 +931,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
 
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
@@ -1037,9 +1003,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
     AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
 
-    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
-    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
-
     CascadeCuts->SetCutv0CPA(0.96);
     AntiCascadeCuts->SetCutv0CPA(0.96);
 
@@ -1059,12 +1022,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
     AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
 
-    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
 
     CascadeCuts->SetPtRangeXi(1.2, 999.5);
     AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
@@ -1106,8 +1069,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
 
   } else if (suffix == "15") {
-    TrackCuts->SetPtRange(0.4, 4.05);
-    AntiTrackCuts->SetPtRange(0.4, 4.05);
+    TrackCuts->SetPtRange(0.6, 4.05);
+    AntiTrackCuts->SetPtRange(0.6, 4.05);
 
     TrackCuts->SetEtaRange(-0.85, 0.85);
     AntiTrackCuts->SetEtaRange(-0.85, 0.85);
@@ -1167,8 +1130,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
 
   } else if (suffix == "16") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
 
     TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
@@ -1195,12 +1158,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutXiDaughterDCA(1.9);
     AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
 
-    CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
-    AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
-
-    CascadeCuts->SetCutXiCPA(0.99);
-    AntiCascadeCuts->SetCutXiCPA(0.99);
-
     CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
     AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
 
@@ -1217,19 +1174,14 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     TrackCuts->SetEtaRange(-0.85, 0.85);
     AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
 
     v0Cuts->SetCutCPA(0.995);
     Antiv0Cuts->SetCutCPA(0.995);
-
-    Posv0Daug->SetNClsTPC(80);
-    Negv0Daug->SetNClsTPC(80);
-    PosAntiv0Daug->SetNClsTPC(80);
-    NegAntiv0Daug->SetNClsTPC(80);
 
     Posv0Daug->SetEtaRange(-0.77, 0.77);
     Negv0Daug->SetEtaRange(-0.77, 0.77);
@@ -1381,8 +1333,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
     AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.06);
 
-    CascadeCuts->SetCutXiCPA(0.99);
-    AntiCascadeCuts->SetCutXiCPA(0.99);
+    CascadeCuts->SetCutXiCPA(0.985);
+    AntiCascadeCuts->SetCutXiCPA(0.985);
 
     CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
     AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
@@ -1393,12 +1345,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
     AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
 
-    XiNegCuts->SetEtaRange(-0.83, 0.87);
-    XiPosCuts->SetEtaRange(-0.83, 0.87);
-    XiBachCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+    XiNegCuts->SetEtaRange(-0.87, 0.87);
+    XiPosCuts->SetEtaRange(-0.87, 0.87);
+    XiBachCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiNegCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiPosCuts->SetEtaRange(-0.87, 0.87);
+    AntiXiBachCuts->SetEtaRange(-0.87, 0.87);
 
     CascadeCuts->SetPtRangeXi(1.2, 999.5);
     AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
@@ -1556,9 +1508,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
 
   } else if (suffix == "24") {
-    TrackCuts->SetPtRange(0.4, 4.05);
-    AntiTrackCuts->SetPtRange(0.4, 4.05);
-
     TrackCuts->SetEtaRange(-0.77, 0.77);
     AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -1611,11 +1560,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiBachCuts->SetPID(AliPID::kPion, 999, 4.5);
 
   } else if (suffix == "25") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
 
-    TrackCuts->SetEtaRange(-0.77, 0.77);
-    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+    TrackCuts->SetEtaRange(-0.83, 0.83);
+    AntiTrackCuts->SetEtaRange(-0.83, 0.83);
 
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
@@ -1669,9 +1618,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     TrackCuts->SetPtRange(0.6, 4.05);
     AntiTrackCuts->SetPtRange(0.6, 4.05);
 
-    TrackCuts->SetEtaRange(-0.77, 0.77);
-    AntiTrackCuts->SetEtaRange(-0.77, 0.77);
-
     TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
@@ -1714,12 +1660,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
     AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
 
-    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
 
   } else if (suffix == "27") {
     TrackCuts->SetEtaRange(-0.77, 0.77);
@@ -1736,11 +1682,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
     NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
 
-    Posv0Daug->SetNClsTPC(80);
-    Negv0Daug->SetNClsTPC(80);
-    PosAntiv0Daug->SetNClsTPC(80);
-    NegAntiv0Daug->SetNClsTPC(80);
-
     Posv0Daug->SetEtaRange(-0.77, 0.77);
     Negv0Daug->SetEtaRange(-0.77, 0.77);
     PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
@@ -1748,9 +1689,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     v0Cuts->SetCutDCADaugTov0Vtx(1.2);
     Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
 
     CascadeCuts->SetCutXiDaughterDCA(1.9);
     AntiCascadeCuts->SetCutXiDaughterDCA(1.9);
@@ -1800,9 +1738,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
     AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
 
-    CascadeCuts->SetCutXiCPA(0.99);
-    AntiCascadeCuts->SetCutXiCPA(0.99);
-
     CascadeCuts->SetCutv0CPA(0.99);
     AntiCascadeCuts->SetCutv0CPA(0.99);
 
@@ -1822,8 +1757,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     TrackCuts->SetEtaRange(-0.77, 0.77);
     AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
 
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);
@@ -1928,26 +1863,26 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
     AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
 
-    XiNegCuts->SetEtaRange(-0.83, 0.87);
-    XiPosCuts->SetEtaRange(-0.83, 0.87);
-    XiBachCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiNegCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiPosCuts->SetEtaRange(-0.83, 0.87);
-    AntiXiBachCuts->SetEtaRange(-0.83, 0.87);
+    XiNegCuts->SetEtaRange(-0.83, 0.83);
+    XiPosCuts->SetEtaRange(-0.83, 0.83);
+    XiBachCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiNegCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiPosCuts->SetEtaRange(-0.83, 0.83);
+    AntiXiBachCuts->SetEtaRange(-0.83, 0.83);
 
-    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
 
     CascadeCuts->SetPtRangeXi(1.2, 999.5);
     AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
 
   } else if (suffix == "31") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
 
     TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
@@ -2066,9 +2001,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
     AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
 
-    CascadeCuts->SetCutv0MaxDaughterDCA(1.3);
-    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.3);
-
     CascadeCuts->SetCutv0CPA(0.96);
     AntiCascadeCuts->SetCutv0CPA(0.96);
 
@@ -2082,12 +2014,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiPosCuts->SetEtaRange(-0.77, 0.77);
     AntiXiBachCuts->SetEtaRange(-0.77, 0.77);
 
-    XiNegCuts->SetPID(AliPID::kPion, 999, 3);
-    XiPosCuts->SetPID(AliPID::kProton, 999, 3);
-    XiBachCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3);
-    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3);
-    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
+    XiNegCuts->SetPID(AliPID::kPion, 999, 3.5);
+    XiPosCuts->SetPID(AliPID::kProton, 999, 3.5);
+    XiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiNegCuts->SetPID(AliPID::kProton, 999, 3.5);
+    AntiXiPosCuts->SetPID(AliPID::kPion, 999, 3.5);
+    AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3.5);
   } else if (suffix == "34") {
     TrackCuts->SetEtaRange(-0.77, 0.77);
     AntiTrackCuts->SetEtaRange(-0.77, 0.77);
@@ -2206,17 +2138,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     v0Cuts->SetCutDCADaugTov0Vtx(1.2);
     Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
 
-    CascadeCuts->SetCutXiDaughterDCA(1.3);
-    AntiCascadeCuts->SetCutXiDaughterDCA(1.3);
-
     CascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
     AntiCascadeCuts->SetCutXiMinDistBachToPrimVtx(0.04);
 
     CascadeCuts->SetCutXiTransverseRadius(1.0, 200);
     AntiCascadeCuts->SetCutXiTransverseRadius(1.0, 200);
-
-    CascadeCuts->SetCutv0MaxDaughterDCA(1.4);
-    AntiCascadeCuts->SetCutv0MaxDaughterDCA(1.4);
 
     CascadeCuts->SetCutv0CPA(0.96);
     AntiCascadeCuts->SetCutv0CPA(0.96);
@@ -2291,9 +2217,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     AntiXiBachCuts->SetPID(AliPID::kPion, 999, 3);
 
   } else if (suffix == "38") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
-
     TrackCuts->SetEtaRange(-0.77, 0.77);
     AntiTrackCuts->SetEtaRange(-0.77, 0.77);
 
@@ -2328,9 +2251,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutv0CPA(0.96);
     AntiCascadeCuts->SetCutv0CPA(0.96);
 
-    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
-    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
-
     CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
     AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
 
@@ -2347,9 +2267,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
   } else if (suffix == "39") {
     TrackCuts->SetPtRange(0.4, 4.05);
     AntiTrackCuts->SetPtRange(0.4, 4.05);
-
-    TrackCuts->SetEtaRange(-0.85, 0.85);
-    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
     TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
@@ -2407,9 +2324,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     TrackCuts->SetPtRange(0.6, 4.05);
     AntiTrackCuts->SetPtRange(0.6, 4.05);
 
-    TrackCuts->SetEtaRange(-0.85, 0.85);
-    AntiTrackCuts->SetEtaRange(-0.85, 0.85);
-
     TrackCuts->SetNClsTPC(70);
     AntiTrackCuts->SetNClsTPC(70);
 
@@ -2453,8 +2367,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetPtRangeXi(0.8, 999.5);
     AntiCascadeCuts->SetPtRangeXi(0.8, 999.5);
   } else if (suffix == "41") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
+    TrackCuts->SetPtRange(0.4, 4.05);
+    AntiTrackCuts->SetPtRange(0.4, 4.05);
 
     TrackCuts->SetEtaRange(-0.77, 0.77);
     AntiTrackCuts->SetEtaRange(-0.77, 0.77);
@@ -2467,11 +2381,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     v0Cuts->SetCutCPA(0.995);
     Antiv0Cuts->SetCutCPA(0.995);
-
-    Posv0Daug->SetNClsTPC(80);
-    Negv0Daug->SetNClsTPC(80);
-    PosAntiv0Daug->SetNClsTPC(80);
-    NegAntiv0Daug->SetNClsTPC(80);
 
     Posv0Daug->SetEtaRange(-0.77, 0.77);
     Negv0Daug->SetEtaRange(-0.77, 0.77);
@@ -2516,9 +2425,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
 
     TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
-
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
 
     v0Cuts->SetCutCPA(0.995);
     Antiv0Cuts->SetCutCPA(0.995);
@@ -2593,29 +2499,17 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(bool isMC = false,
     CascadeCuts->SetCutv0CPA(0.96);
     AntiCascadeCuts->SetCutv0CPA(0.96);
 
-    CascadeCuts->SetCutv0TransverseRadius(1.7, 200);
-    AntiCascadeCuts->SetCutv0TransverseRadius(1.7, 200);
-
     CascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
     AntiCascadeCuts->SetCutv0MinDistToPrimVtx(0.06);
 
     CascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
     AntiCascadeCuts->SetCutv0MinDaugDistToPrimVtx(0.06);
-
-    CascadeCuts->SetPtRangeXi(1.2, 999.5);
-    AntiCascadeCuts->SetPtRangeXi(1.2, 999.5);
   } else if (suffix == "44") {
-    TrackCuts->SetPtRange(0.4, 4.05);
-    AntiTrackCuts->SetPtRange(0.4, 4.05);
-
     TrackCuts->SetEtaRange(-0.85, 0.85);
     AntiTrackCuts->SetEtaRange(-0.85, 0.85);
 
     TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
     AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
-
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
 
     config->SetDeltaEtaMax(0.012);
     config->SetDeltaPhiMax(0.012);

@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/04/15
+//  Last Modified Date: 2019/05/15
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1489,6 +1489,15 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 ((AliESDEvent*)fEvt)
                     ->GetTrack(TMath::Abs(Xicandidate->GetBindex()));
 
+            xiVtx[0] = Xicandidate->Xv();
+            xiVtx[1] = Xicandidate->Yv();
+            xiVtx[2] = Xicandidate->Zv();
+            xiP[0] = Xicandidate->Px();
+            xiP[1] = Xicandidate->Py();
+            xiP[2] = Xicandidate->Pz();
+            fXiTrack->Set(xiVtx, xiP, fCovMatrix,
+                          Short_t(Xicandidate->Charge()));
+
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
                 track1 = trackpool.at(jt);
                 if (track1->GetID() == pTrackXi->GetID() ||
@@ -1505,6 +1514,73 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut)
                     continue;  // rapidity cut
+
+                // Other default cuts
+                Double_t fTPCNSigPion =
+                    fPIDResponse->NumberOfSigmasTPC(track1, AliPID::kPion);
+                if ((abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
+                    continue;
+                // Xi PID
+                if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
+                    fTPCNSigProton =
+                        fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kProton);
+                    fTPCNSigLambdaPion =
+                        fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kPion);
+                } else {  // Xi+ has -proton, +pion
+                    fTPCNSigProton =
+                        fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+                    fTPCNSigLambdaPion =
+                        fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+                }
+                fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(
+                    bTrackXi, AliPID::kPion);  // bachelor is always pion
+                if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut)
+                    continue;
+                if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
+                    continue;
+                if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+                    continue;
+
+                // Xi1530Pion DCA zVetex Check
+                Double_t pionZ = abs(track1->GetZ() - fZ);
+                if (pionZ > fXi1530PionZVertexCut)
+                    continue;
+                
+                // DCA between daughters Check
+                Double_t fDCADist_Lambda =
+                    fabs(Xicandidate->GetDcaV0Daughters());
+                Double_t fDCADist_Xi = fabs(Xicandidate->GetDcaXiDaughters());
+                if (fDCADist_Lambda > fDCADist_LambdaDaughtersCut)
+                    continue;
+                if (fDCADist_Xi > fDCADist_XiDaughtersCut)
+                    continue;
+
+                // DCA Lambda to PV Check
+                Double_t fDCADist_Lambda_PV =
+                    fabs(Xicandidate->GetD(PVx, PVy, PVz));
+                if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
+                    continue;
+
+                // CPA Check
+                Double_t fLambdaCPA =
+                    Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
+                Double_t fXiCPA =
+                    Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+
+                if (fLambdaCPA < fV0CosineOfPointingAngleCut)
+                    continue;
+                if (fXiCPA < fCascadeCosineOfPointingAngleCut)
+                    continue;
+                // Xi Mass Window Check
+                Double_t fMass_Xi = Xicandidate->M();
+                if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)
+                    continue;
+
+                // PropagateToDCA cut
+                track1->GetXYZ(PiX);
+                AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
+                if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3)))
+                    continue;
 
                 FillTHnSparse("hInvMass",
                               {(double)kDefaultOption, (double)kMixing,

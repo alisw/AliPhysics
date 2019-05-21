@@ -6,13 +6,13 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Beauty analysis in p-p collisions   				  //
-//      															  //
-//																	  //
-//		v1.0														  //
+//      Task for Beauty analysis in p-p collisions  TPC-TOF           //
+//                						      //
+//								      //
+//	           						      //
 //                                                                    //
-//	    Authors 							                          //
-//		Sudhir Pandurang Rode (sudhir.pandurang.rode@cern.ch)				      //
+//	    Authors 						      //
+//  Sudhir Pandurang Rode (sudhir.pandurang.rode@cern.ch              //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -127,6 +127,10 @@ public:
     void SetPi0WeightEnh(TGraphErrors* hWeightPi0Enh) {hMCWeightPi0Enh = hWeightPi0Enh;};
     void SetEtaWeightEnh(TGraphErrors* hWeightEtaEnh) {hMCWeightEtaEnh = hWeightEtaEnh;};
     
+    void SetTaggEffi(Bool_t fSwitch) {fCalculateTaggingEff = fSwitch;};
+    void SetElecRecoEffi(Bool_t fSwitch) {fCalculateBeautyElectronTrackEff = fSwitch;};
+    void SetBDMesonpTWeightCalc(Bool_t fSwitch) {fCalculateBDMesonpTWeights = fSwitch;};
+
     void InvMassCheckData(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     void InvMassCheckMC(int itrack, AliVTrack *track, Double_t *d0z0, Int_t MagSign);
     void InvMassCheckMCDenom(AliVTrack *track);
@@ -194,6 +198,9 @@ private:
     //Flags for specifcs analysis
     Bool_t				fIsMC;
     Bool_t				fIsPP;
+    Bool_t				fCalculateBDMesonpTWeights;
+    Bool_t				fCalculateTaggingEff;
+    Bool_t				fCalculateBeautyElectronTrackEff;
     
     //Weight to normalize the amount of pi and eta
     //Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
@@ -294,6 +301,14 @@ private:
     TH1F                *hPtLambdaC;//!
     TH1F				*fPtHad_f;//!
     TH1F				*fPHad_f;//!
+    TH2F                *fDCAxy_pt_BeforeAllCuts; //!
+    TH2F                *fDCAxy_pt_AfterTrkFiltBit;//!
+    TH2F                *fDCAxy_pt_AfterMoreCuts;//!
+    TH2F                *fDCAxy_pt_AfterSPDLayer;//!
+    TH2F		*fDCAxy_pt_AfterTrackDCACuts;//!
+    TH2F                *fDCAxy_pt_AfterAllTrackCuts;//! 
+    TH2F                *fDCAxy_pt_AfterPIDCuts;//!
+    TH2F                *fDCAxy_pt_AfterStepRecPrimCut;//!
     TH2F                *fDCAz_pt_had;//!
     TH2F                *fDCAxy_pt_had;//!
     TH2F                *fDCAz_pt_had_WoPID;//!

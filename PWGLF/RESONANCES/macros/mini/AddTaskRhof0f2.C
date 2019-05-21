@@ -4,14 +4,14 @@
 
 ****************************************************************************/
 
-
 AliRsnMiniAnalysisTask* AddTaskRhof0f2(
   TString lname,
   Bool_t isMC,
   Int_t system,
-  AliRsnDaughter::ESpecies d1,
-  AliRsnDaughter::ESpecies d2,
   Int_t EventCuts=0,
+  Int_t isAOD=0,
+  Int_t Strcut=2011,
+  Int_t customQualityCutsID=0,
   Int_t TrackCuts1=0,
   Int_t TrackCuts2=0
 ){
@@ -155,10 +155,7 @@ AliRsnMiniAnalysisTask* AddTaskRhof0f2(
   // ----- CONFIGURE -----
 
   cerr<<"configuring"<<endl;
-  if(d1==AliRsnDaughter::kPion && d2==AliRsnDaughter::kPion){
-    Config_pipi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-      
-  }
+  Config_pipi(task,lname,isMC,system,EventCuts,isAOD,Strcut,customQualityCutsID,TrackCuts1,TrackCuts2);
   cerr<<"done configuring"<<endl;
   
   // ----- CONTAINERS -----
@@ -185,6 +182,9 @@ Bool_t Config_pipi(
   Bool_t      isMC=kFALSE,
   Int_t       system=1,
   Int_t       EventCuts=0,
+  Int_t       isAOD=0,
+  Int_t       Strcut =2011,
+  Int_t       customQualityCutsID=0,
   Int_t       TrackCutsPi=0,
   Int_t       TrackCuts2=0
 ){
@@ -198,37 +198,45 @@ Bool_t Config_pipi(
   sprintf(suffix,"_%s",lname.Data());
   Bool_t enableMonitor=kTRUE;
   
+
+
+
+
   // retrieve mass from PDG database
   Int_t pdg=TrackCuts2;
   TDatabasePDG* db=TDatabasePDG::Instance();
   TParticlePDG* part=db->GetParticle(pdg);
   Double_t mass=part->Mass();
-  
+
+
   // set daughter cuts
   if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
   Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
   Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
   Int_t CutTypePi=(TrackCutsPi/10000)%100;//0=TPC+TOFveto (default), 1=TPC only, 2=TOF only
 
-  AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
-  trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
-
-  AliRsnCutSetDaughterParticle* cutSetQ=new AliRsnCutSetDaughterParticle("cutQ",trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kPion,-1.);
-
   AliRsnCutSetDaughterParticle* cutSetPi=0;
-  if(!CutTypePi) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
-  else if(CutTypePi==1) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTPCpidNsigma,AliPID::kPion,nsigmaPiTPC,-1.);
-  else if(CutTypePi==2) cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,nsigmaPiTOF),trkQualityCut,AliRsnCutSetDaughterParticle::kFastTOFpidNsigma,AliPID::kPion,-1.,nsigmaPiTOF);
-  if(!cutSetPi){cerr<<"Error in AddTaskRho::Config_pipi(): missing cutSetPi"<<endl; return kFALSE;}
+  AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
+  if(!trkQualityCut) return kFALSE;
+  
+  if(SetCustomQualityCut(trkQualityCut,isAOD,customQualityCutsID,Strcut)){
+    cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",CutTypePi,nsigmaPiTPC),trkQualityCut,AliRsnCutSetDaughterParticle::kTPCTOFpidphipp2015,AliPID::kPion,nsigmaPiTPC,nsigmaPiTOF);
+   
+  }
+  else{
+    printf("Daughter Track cuts has been selected =================\n");
+    return kFALSE;
+  }
 
-  Int_t iCutQ=task->AddTrackCuts(cutSetQ);
+  
+  // Int_t iCutQ=task->AddTrackCuts(cutSetQ);
   Int_t iCutPi=task->AddTrackCuts(cutSetPi);
 
   // monitoring
   if(enableMonitor){
     Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
-    AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
+    //AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
     AddMonitorOutput(isMC,cutSetPi->GetMonitorOutput());
   }
 
@@ -239,6 +247,8 @@ Bool_t Config_pipi(
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
+
+  
     
   // multiplicity binning
   Double_t multbins[200];
@@ -298,7 +308,7 @@ Bool_t Config_pipi(
     out->SetCharge(0,charge1[i]);
     out->SetCharge(1,charge2[i]);
     out->SetMotherPDG(PDGCode[i]);
-    out->SetMotherMass(mass[i]);
+    out->SetMotherMass(Mass[i]);
     ////out->SetPairCuts(cutsPair);
 
     // axis X: invmass or resolution
@@ -404,3 +414,72 @@ Bool_t Config_pipi(
 }
 
 
+
+//-------------------------------------------------------  
+
+Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t isAOD=0, Int_t customQualityCutsID = 0, Int_t trCut = 2011)
+{
+  //Sets configuration for track quality object different from std quality cuts.
+  //Returns kTRUE if track quality cut object is successfully defined,
+  //returns kFALSE if an invalid set of cuts (customQualityCutsID) is chosen or if the
+  //object to be configured does not exist.
+
+    if ((!trkQualityCut)){
+        Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
+        return kFALSE;
+    }
+    
+    if(trCut == 2011){
+        trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+        Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
+    }else if(trCut == 2015){
+        trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
+        trkQualityCut->GetESDtrackCuts()->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+        Printf(Form("::::: SetCustomQualityCut:: using standard 2015 track quality cuts"));
+    }
+    
+    if(!isAOD){//ESD
+        if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.015+0.05/pt^1.1");}//10Sig // D = 7*(0.0015+0.0050/pt^1.1)
+        else if(customQualityCutsID==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.02/pt^1.1");}//4Sig
+        else if(customQualityCutsID==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(3.);}// D = 2.
+        else if(customQualityCutsID==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
+        else if(customQualityCutsID==7){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
+        else if(customQualityCutsID==8){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(5.);}// D = 4
+        else if(customQualityCutsID==9){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3);}
+        else if(customQualityCutsID==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}// D = 70
+        else if(customQualityCutsID==11){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
+        else if(customQualityCutsID==12){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
+        else if(customQualityCutsID==13){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}// D = 8
+        else if(customQualityCutsID==14){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
+        else if(customQualityCutsID==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(49.);}// D = 36
+        else if(customQualityCutsID==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
+        else if(customQualityCutsID==17){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}// D = 36
+        else if(customQualityCutsID==18){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
+        else if(customQualityCutsID==19){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
+        else if(customQualityCutsID){
+            Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
+            return kFALSE;
+        }
+    }else{//AOD
+        if(customQualityCutsID) trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
+        if(customQualityCutsID==4){trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");}
+        else if(customQualityCutsID==6){trkQualityCut->SetDCAZmax(0.2);}
+        else if(customQualityCutsID==8){trkQualityCut->SetTrackMaxChi2(2.3);}
+        else if(customQualityCutsID==10){trkQualityCut->SetMinNCrossedRowsTPC(100,kTRUE);}
+        else if(customQualityCutsID==12){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9,kTRUE);}
+        else if(customQualityCutsID==56){trkQualityCut->SetDCAZmax(1.);}
+        else if(customQualityCutsID==58){trkQualityCut->SetTrackMaxChi2(3.5);}
+        else if(customQualityCutsID==60){trkQualityCut->SetMinNCrossedRowsTPC(80,kTRUE);}
+        else if(customQualityCutsID){
+            Printf("::::: SetCustomQualityCut:: use default quality cuts specified in task configuration.");
+            return kFALSE;
+        }
+    }
+    
+    trkQualityCut->SetPtRange(0.15, 10000.0);
+    trkQualityCut->SetEtaRange(-0.8, 0.8);
+    
+    Printf(Form("::::: SetCustomQualityCut:: using custom track quality cuts #%i",customQualityCutsID));
+    trkQualityCut->Print();
+    return kTRUE;
+}

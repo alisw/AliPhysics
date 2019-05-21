@@ -39,6 +39,7 @@ AliHFTreeHandler::AliHFTreeHandler():
   fCandType(0),
   fInvMass(-9999.),
   fPt(-9999.),
+  fPtGen(-9999.),
   fY(-9999.),
   fEta(-9999.),
   fPhi(-9999.),
@@ -88,11 +89,12 @@ AliHFTreeHandler::AliHFTreeHandler():
     fITSclsMapProng[iProng] = -9999;
     fTrackIntegratedLengthProng[iProng] = -9999.;
     fStartTimeResProng[iProng] = -9999.;
-    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
-      fPIDrawVector[iProng][iDet] = -9999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++)
+      fPIDrawVector[iProng][iDet] = -999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid+1; iDet++) {
       for(unsigned int iHypo=0; iHypo<knMaxHypo4Pid; iHypo++) {
-        fPIDNsigmaVector[iProng][iDet][iHypo] = -9999.;
-        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999999;      
+        fPIDNsigmaVector[iProng][iDet][iHypo] = -999.;
+        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999;      
       }
     }
   }
@@ -113,6 +115,7 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
   fCandType(0),
   fInvMass(-9999.),
   fPt(-9999.),
+  fPtGen(-9999.),
   fY(-9999.),
   fEta(-9999.),
   fPhi(-9999.),
@@ -162,11 +165,12 @@ AliHFTreeHandler::AliHFTreeHandler(int PIDopt):
     fITSclsMapProng[iProng] = -9999;
     fTrackIntegratedLengthProng[iProng] = -9999.;
     fStartTimeResProng[iProng] = -9999.;
-    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
-      fPIDrawVector[iProng][iDet] = -9999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++)
+      fPIDrawVector[iProng][iDet] = -999.;
+    for(unsigned int iDet=0; iDet<knMaxDet4Pid+1; iDet++) {
       for(unsigned int iHypo=0; iHypo<knMaxHypo4Pid; iHypo++) {
-        fPIDNsigmaVector[iProng][iDet][iHypo] = -9999.;
-        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999999;      
+        fPIDNsigmaVector[iProng][iDet][iHypo] = -999.;
+        fPIDNsigmaIntVector[iProng][iDet][iHypo] = -999;      
       }
     }
   }
@@ -250,6 +254,7 @@ void AliHFTreeHandler::AddCommonDmesonVarBranches() {
   fTreeVar->Branch("cand_type",&fCandType);
   fTreeVar->Branch("inv_mass",&fInvMass);
   fTreeVar->Branch("pt_cand",&fPt);
+  fTreeVar->Branch("pt_gen_cand",&fPtGen);
   fTreeVar->Branch("y_cand",&fY);
   fTreeVar->Branch("eta_cand",&fEta);
   fTreeVar->Branch("phi_cand",&fPhi);
@@ -294,7 +299,7 @@ void AliHFTreeHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool u
 {
 
   if(fPidOpt==kNoPID) return;
-  if(fPidOpt>kRawAndNsigmaPID) {
+  if(fPidOpt>kNsigmaDetAndCombPID) {
     AliWarning("Wrong PID setting!");
     return;
   }
@@ -306,21 +311,25 @@ void AliHFTreeHandler::AddPidBranches(bool usePionHypo, bool useKaonHypo, bool u
   TString rawPidName[knMaxDet4Pid] = {"dEdxTPC","ToF"};
 
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaPIDfloatandint) || fPidOpt==kRawAndNsigmaPID) {
+    if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaPIDfloatandint) || fPidOpt>=kRawAndNsigmaPID) {
       for(unsigned int iDet=0; iDet<knMaxDet4Pid; iDet++) {
         if(!useDet[iDet]) continue;
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
-          if(fPidOpt==kNsigmaPID || fPidOpt==kNsigmaPIDfloatandint || fPidOpt==kRawAndNsigmaPID) fTreeVar->Branch(Form("nsig%s_%s_%d",detName[iDet].Data(),partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaVector[iProng][iDet][iPartHypo]);
-          if(fPidOpt==kNsigmaPIDint || fPidOpt==kNsigmaPIDfloatandint) fTreeVar->Branch(Form("nsig%s_%s_%d",detName[iDet].Data(),partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaIntVector[iProng][iDet][iPartHypo]);
+          if(fPidOpt==kNsigmaPID || fPidOpt==kNsigmaPIDfloatandint || fPidOpt>=kRawAndNsigmaPID) 
+            fTreeVar->Branch(Form("nsig%s_%s_%d",detName[iDet].Data(),partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaVector[iProng][iDet][iPartHypo]);
+          if(fPidOpt==kNsigmaPIDint || fPidOpt==kNsigmaPIDfloatandint) 
+            fTreeVar->Branch(Form("int_nsig%s_%s_%d",detName[iDet].Data(),partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaIntVector[iProng][iDet][iPartHypo]);
         }
       }
     }
-    if(fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) {
+    if((fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kNsigmaDetAndCombPID) {
       for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
         if(!useHypo[iPartHypo]) continue;
-        if(fPidOpt==kNsigmaCombPID || fPidOpt==kNsigmaCombPIDfloatandint) fTreeVar->Branch(Form("nsigComb_%s_%d",partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaVector[iProng][0][iPartHypo]);
-        if(fPidOpt==kNsigmaCombPIDint || fPidOpt==kNsigmaCombPIDfloatandint) fTreeVar->Branch(Form("int_nsigComb_%s_%d",partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaIntVector[iProng][0][iPartHypo]);
+        if(fPidOpt==kNsigmaCombPID || fPidOpt==kNsigmaCombPIDfloatandint || fPidOpt==kNsigmaDetAndCombPID)
+          fTreeVar->Branch(Form("nsigComb_%s_%d",partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]);
+        if(fPidOpt==kNsigmaCombPIDint || fPidOpt==kNsigmaCombPIDfloatandint) 
+          fTreeVar->Branch(Form("int_nsigComb_%s_%d",partHypoName[iPartHypo].Data(),iProng),&fPIDNsigmaIntVector[iProng][kCombTPCTOF][iPartHypo]);
       }
     }
     if(fPidOpt==kRawPID || fPidOpt==kRawAndNsigmaPID) {
@@ -399,7 +408,7 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
   
   //compute PID variables for different options
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-    if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kRawAndNsigmaPID) {
+    if((fPidOpt>=kNsigmaPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt>=kRawAndNsigmaPID) {
       for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
         if(useHypo[iPartHypo]) {
           if(useTPC) {
@@ -412,7 +421,7 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
             sig[iProng][kTPC][iPartHypo] = nSigmaTPC;
           }
           if(useTOF) sig[iProng][kTOF][iPartHypo] = pidrespo->NumberOfSigmasTOF(prongtracks[iProng],parthypo[iPartHypo]);
-          if(fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) {
+          if(((fPidOpt>=kNsigmaCombPID && fPidOpt<=kNsigmaCombPIDfloatandint) || fPidOpt==kNsigmaDetAndCombPID) && useTPC && useTOF) {
             sigComb[iProng][iPartHypo] = CombineNsigmaDiffDet(sig[iProng][kTPC][iPartHypo],sig[iProng][kTOF][iPartHypo]);
           }
         }
@@ -479,7 +488,7 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
       for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
-          fPIDNsigmaVector[iProng][0][iPartHypo]=sigComb[iProng][iPartHypo];
+          fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]=sigComb[iProng][iPartHypo];
         }
       }
     break;
@@ -487,7 +496,7 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
       for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
-          fPIDNsigmaIntVector[iProng][0][iPartHypo]=RoundFloatToInt(sigComb[iProng][iPartHypo]*100);
+          fPIDNsigmaIntVector[iProng][kCombTPCTOF][iPartHypo]=RoundFloatToInt(sigComb[iProng][iPartHypo]*100);
         }
       }
     break;
@@ -495,8 +504,8 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
       for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
-          fPIDNsigmaVector[iProng][0][iPartHypo]=sigComb[iProng][iPartHypo]*100;
-          fPIDNsigmaIntVector[iProng][0][iPartHypo]=RoundFloatToInt(sigComb[iProng][iPartHypo]*100);
+          fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]=sigComb[iProng][iPartHypo]*100;
+          fPIDNsigmaIntVector[iProng][kCombTPCTOF][iPartHypo]=RoundFloatToInt(sigComb[iProng][iPartHypo]*100);
         }
       }
     break;
@@ -532,6 +541,21 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
         }
       }
     break;
+    case 9: //kNsigmaDetAndCombPID
+      for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
+        for(int iDet=kTPC; iDet<=kTOF; iDet++) {
+          if(!useDet[iDet]) continue;
+          for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
+            if(!useHypo[iPartHypo]) continue;
+            fPIDNsigmaVector[iProng][iDet][iPartHypo]=sig[iProng][iDet][iPartHypo];
+          }
+        }
+        for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
+          if(!useHypo[iPartHypo]) continue;
+          fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]=sigComb[iProng][iPartHypo];
+        }
+      }
+    break;
     default:
       AliWarning("Wrong PID setting!");
       return false;
@@ -546,8 +570,8 @@ double AliHFTreeHandler::CombineNsigmaDiffDet(double nsigmaTPC, double nsigmaTOF
 {
   if(nsigmaTPC > -998. && nsigmaTOF > -998.) return TMath::Sqrt((nsigmaTPC*nsigmaTPC+nsigmaTOF*nsigmaTOF)/2);
   else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
-  else if(nsigmaTPC > -998. && nsigmaTOF < -998.) return nsigmaTPC;
-  else return -9999.;
+  else if(nsigmaTPC < -998. && nsigmaTOF > -998.) return nsigmaTOF;
+  else return -999.;
 }
 
 //________________________________________________________________
@@ -590,7 +614,9 @@ float AliHFTreeHandler::GetTOFmomentum(AliAODTrack* track, AliPIDResponse* pidre
 void AliHFTreeHandler::GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta) {
     
   if(fRunNumber!=fRunNumberPrevCand)
-    AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fRunNumber, fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
+    AliAODPidHF::SetNsigmaTPCDataDrivenCorrection(fRunNumber, fSystNsigmaTPCDataCorr, fNPbinsNsigmaTPCDataCorr, fPlimitsNsigmaTPCDataCorr, 
+                                                  fNEtabinsNsigmaTPCDataCorr, fEtalimitsNsigmaTPCDataCorr, fMeanNsigmaTPCPionData, fMeanNsigmaTPCKaonData, 
+                                                  fMeanNsigmaTPCProtonData, fSigmaNsigmaTPCPionData, fSigmaNsigmaTPCKaonData, fSigmaNsigmaTPCProtonData);
 
   int bin = TMath::BinarySearch(fNPbinsNsigmaTPCDataCorr,fPlimitsNsigmaTPCDataCorr,pTPC);
   if(bin<0) bin=0; //underflow --> equal to min value

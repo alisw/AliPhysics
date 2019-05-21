@@ -277,24 +277,24 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
         fHists->FillTrackCounter(5);
     }
   }
-  if (pass && fCheckPileUpTOF) {
-    if (!Track->GetTOFTimingReuqirement()) {
+  if (pass && fCheckPileUpSPDTOF) {
+    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasSPDHit())) {
       pass = false;
     } else {
       if (!fMinimalBooking)
         fHists->FillTrackCounter(6);
     }
   }
-  if (pass && fCheckPileUp) {
-    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasITSHit())) {
+  if (pass && fCheckPileUpTOF) {
+    if (!Track->GetTOFTimingReuqirement()) {
       pass = false;
     } else {
       if (!fMinimalBooking)
         fHists->FillTrackCounter(7);
     }
   }
-  if (pass && fCheckPileUpSPDTOF) {
-    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasSPDHit())) {
+  if (pass && fCheckPileUp) {
+    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasITSHit())) {
       pass = false;
     } else {
       if (!fMinimalBooking)
@@ -964,7 +964,7 @@ AliFemtoDreamTrackCuts *AliFemtoDreamTrackCuts::PrimKaonCuts(
   trackCuts->SetDCAVtxXY(0.1);
   trackCuts->SetCutSharedCls(true);
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.80);
-  trackCuts->SetPID(AliPID::kKaon, 0.5);
+  trackCuts->SetPID(AliPID::kKaon, 0.4, 5);
   // trackCuts->SetRejLowPtPionsTOF(false);
   trackCuts->SetCutSmallestSig(true);
 

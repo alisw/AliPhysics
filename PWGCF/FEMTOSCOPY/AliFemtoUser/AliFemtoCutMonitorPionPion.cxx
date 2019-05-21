@@ -311,6 +311,12 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
     128, -2000.0, 2000.0
   );
 
+  const int sig_nbins_per_unit = 13;
+  const double sig_target_range = 5,
+               sig_binsize = 1.0 / sig_nbins_per_unit,
+               sig_nbins = std::ceil(sig_target_range * 2 * sig_nbins_per_unit),
+               sig_max = sig_binsize * sig_nbins / 2;
+
   fNsigTof = new TH2F(
     hist_name("NsigTof"),
     hist_title("TOF NSigma vs p",
@@ -318,7 +324,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                "TOF #sigma;"
                "N_{tracks}"),
     128, 0, 6.0,
-    128, -5.0, 5.0);
+    sig_nbins, -sig_max, sig_max);
 
   fNsigTpc = new TH2F(
     hist_name("NsigTpc"),
@@ -327,14 +333,14 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
                "TPC #sigma;"
                "N_{tracks}"),
     128, 0, 6.0,
-    128, -5.0, 5.0);
+    sig_nbins, -sig_max, sig_max);
 
   fImpact = new TH2F(
     hist_name("impact"),
     hist_title("Track impact parameter components",
                 "z (cm); "
                 "r (cm); "
-                "N_{#pi}  "),
+                "N_{#pi} "),
     256, -0.25, 0.25,
     128, 0, 0.25
   );
@@ -479,8 +485,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   const double energy = ::sqrt(p * p + PionMass * PionMass),
              rapidity = 0.5 * ::log((energy + pz) / (energy - pz));
 
-  const Int_t ITS_ncls = track->ITSncls(),
-              TPC_ncls = track->TPCncls();
+  const Int_t TPC_ncls = track->TPCncls();
 
   if (fMC_mass) {
     const auto &mc = static_cast<const AliFemtoModelHiddenInfo&>(*track->GetHiddenInfo());

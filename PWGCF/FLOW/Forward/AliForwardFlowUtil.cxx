@@ -55,7 +55,7 @@ maxpt(5),
 dodNdeta(kTRUE),
 fTrackDensity(),
 fState(),
-fMaxConsequtiveStrips(3),
+fMaxConsequtiveStrips(2),
 fLowCutvalue(0),
 fTrackGammaToPi0(false),
 fStored(0)
@@ -70,7 +70,6 @@ void AliForwardFlowUtil::FillData(TH2D*& refDist, TH2D*& centralDist, TH2D*& for
       
     // Fill forwardDist
     FillFromForwardClusters(forwardDist);
-      
     // Fill centralDist
     if (fSettings.useSPD) this->FillFromTracklets(centralDist);
     else if (fSettings.useITS) this->FillFromCentralClusters(centralDist);
@@ -516,10 +515,9 @@ void AliForwardFlowUtil::FillFromPrimariesAODTPC(TH2D*& cen) const
     if (p->Charge() == 0) continue;
 
     Double_t eta = p->Eta();
-    if (TMath::Abs(eta) < 1.1) {
+    if (TMath::Abs(eta) < 1.7) {
       if (p->Pt()>=this->minpt && p->Pt()<=this->maxpt){
         cen->Fill(eta,p->Phi(),1);
-        // if (dodNdeta) dNdeta->Fill(eta,1);
       }
     }
   }
@@ -538,7 +536,6 @@ void AliForwardFlowUtil::FillFromPrimariesAODSPD(TH2D*& cen) const
     Double_t eta = p->Eta();
     if (TMath::Abs(eta) < 1.7 && p->Pt() >= 0.05) {
         cen->Fill(eta,p->Phi(),1);
-        // if (dodNdeta) dNdeta->Fill(eta,1);
     }
   }
 }
@@ -683,7 +680,7 @@ void AliForwardFlowUtil::FillFromPrimariesAODFMD(TH2D*& fwd) const
     if (p->Charge() == 0) continue;
 
     if (p->Eta() < 5 /*fwd->GetXaxis()-GetXmax()*/ && p->Eta() > -3.5 /*fwd->GetXaxis()-GetXmin()*/) {
-      if (TMath::Abs(p->Eta()) >= 1.7){
+      if (TMath::Abs(p->Eta()) >= 1.1){
         fwd->Fill(p->Eta(),p->Phi(),1);
         // if (dodNdeta) dNdeta->Fill(p->Eta(),1);
       }
@@ -700,9 +697,9 @@ void AliForwardFlowUtil::FillFromTracklets(TH2D*& cen) const {
     // Using a dphi cut in units of mrad; This cut is motivated in
     // https://aliceinfo.cern.ch/Notes/sites/aliceinfo.cern.ch.Notes/files/notes/analysis/lmilano/2017-Aug-11-analysis_note-note.pdf
     auto dphi  = mult->GetDeltaPhi(i);
-    if (TMath::Abs(dphi) * 1000 > 5) {
-      continue;
-    }
+     if (TMath::Abs(dphi) * 1000 > 5) {
+       continue;
+     }
     auto eta   = -TMath::Log(TMath::Tan(mult->GetTheta(i)/2));
     // Drop everything outside of -1.7 < eta 1.7 to avoid overlas with the FMD
     if (eta < -1.7 || eta > 1.7) {
@@ -720,7 +717,7 @@ void AliForwardFlowUtil::FillFromCentralClusters(TH2D*& cen) const {
   cen = &aodcmult->GetHistogram();
 }
 
-void AliForwardFlowUtil::FillFromForwardClusters(TH2D*& fwd) const {
+void AliForwardFlowUtil::FillFromForwardClusters(TH2D*& fwd) {
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAODevent->FindListObject("Forward"));
   fwd = &aodfmult->GetHistogram();
 }
@@ -733,11 +730,12 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
     AliAODTrack* track = static_cast<AliAODTrack *>(fAODevent->GetTrack(i));
 
     if (track->TestFilterBit(tracktype) && track->GetTPCNcls() > fSettings.fnoClusters){
+      if (track->Pt() < this->minpt || track->Pt() > this->maxpt) continue;
 
       if( fSettings.fCutChargedDCAzMax > 0. || fSettings.fCutChargedDCAxyMax > 0.){
-        Double_t dTrackXYZ[3] = {0.,0.,0.};
+        Double_t dTrackXYZ[3]  = {0.,0.,0.};
         Double_t dVertexXYZ[3] = {0.,0.,0.};
-        Double_t dDCAXYZ[3] = {0.,0.,0.};
+        Double_t dDCAXYZ[3]    = {0.,0.,0.};
         const AliAODVertex* vertex = fAODevent->GetPrimaryVertex();
 
         track->GetXYZ(dTrackXYZ);
@@ -746,13 +744,9 @@ void AliForwardFlowUtil::FillFromTracks(TH2D*& cen, UInt_t tracktype) const {
         for(Short_t i(0); i < 3; i++) { dDCAXYZ[i] = dTrackXYZ[i] - dVertexXYZ[i]; }
 
         if(fSettings.fCutChargedDCAzMax > 0. && TMath::Abs(dDCAXYZ[2]) > fSettings.fCutChargedDCAzMax) continue;
-
         if(fSettings.fCutChargedDCAxyMax > 0. && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0] + dDCAXYZ[1]*dDCAXYZ[1]) > fSettings.fCutChargedDCAxyMax) continue;
       }
-
-      if (track->Pt() >= this->minpt && track->Pt() <= this->maxpt){
-        cen->Fill(track->Eta(),track->Phi(), 1);
-      }
+      cen->Fill(track->Eta(),track->Phi(), 1);
     }
   }
 }
@@ -771,6 +765,7 @@ AliTrackReference* AliForwardFlowUtil::IsHitFMD(AliMCParticle* p) {
   }
   return 0x0;
 }
+
 
 AliTrackReference* AliForwardFlowUtil::IsHitTPC(AliMCParticle* p) {
   for (Int_t iTrRef = 0; iTrRef < p->GetNumberOfTrackReferences(); iTrRef++) {

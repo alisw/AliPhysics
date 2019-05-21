@@ -32,7 +32,7 @@ class AliHFTreeHandlerLc2V0bachelor : public AliHFTreeHandler
     virtual ~AliHFTreeHandlerLc2V0bachelor();
 
     virtual TTree* BuildTree(TString name = "tree", TString title = "tree");
-    virtual bool SetVariables(int runnumber, unsigned int eventID, AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = nullptr);
+    virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo = 0, AliPIDResponse* pidrespo = nullptr);
 
     void SetCalcSecoVtx(int opt) {fCalcSecoVtx=opt;}
 

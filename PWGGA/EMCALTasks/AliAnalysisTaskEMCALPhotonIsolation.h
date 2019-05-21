@@ -287,10 +287,10 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
 
   TH1F                       * fTrackMult;                      ///<  Track Multiplicity ---QA
+  TH1F                       * fTrackMultInCone;                ///<  Track Multiplicity in isolation cone
   TH2F                       * fPtvsSum_MC;                     //!<!
+  TH2F                       * fPtvsUE_MC;                      //!<!
   TH2F                       * fPtvsSumUE_MC;                   //!<!
-  TH1F                       * fSumEiso_MC;                     //!<!
-  TH1F                       * fSumUE_MC;                       //!<!
   TH1F                       * fGenPromptPhotonSel;             //!<!
   TH2F                       * fEtaPhiClus;                     ///<  EMCal Cluster Distribution EtaPhi ---QA
   TH2F                       * fEtaPhiClusAftSel;               ///<  EMCal Cluster Distribution EtaPhi after cluster selection
@@ -357,7 +357,9 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fTestIndexE;                     //!<! Index vs cluster energy test
   TH2F                       * fTestLocalIndexE;                //!<! Local index vs cluster energy test
   TH3F                       * fTestEnergyCone;                 //!<! Energy cone clusters vs tracks test
-  TH3F                       * fPtVsConeVsUE;                   //!<! Total energy cone vs cluster pT
+  TH3F                       * fPtVsNtrConeVsChgCone_Norm;      //!<! Neutral and charged contributions to isolation energy (area-normalised)
+  TH3F                       * fPtVsConeVsUE;                   //!<! UE energy vs. isolation energy vs. cluster pT
+  TH3F                       * fPtVsConeVsUE_Norm;              //!<! UE energy vs. isolation energy vs. cluster pT (area-normalised)
   TH2F                       * fEtaBandVsConeArea;              //!<! Eta-band vs. cone area distribution (depending on the cluster position)
   TH3F                       * fPtVsConeVsEtaBand;              //!<! Energy cone clusters vs tracks test (not normalised)
   /* TH3F                       * fPtVsNormConeVsNormPhiBand;      //!<! */

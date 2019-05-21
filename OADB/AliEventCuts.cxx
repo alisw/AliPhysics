@@ -710,15 +710,15 @@ void AliEventCuts::SetupPbPb2018() {
   fMinCentrality = 0.f;
   fMaxCentrality = 90.f;
 
-  fUseEstimatorsCorrelationCut = false;
-  fEstimatorsCorrelationCoef[0] = 0.0157497;
-  fEstimatorsCorrelationCoef[1] = 0.973488;
-  fEstimatorsSigmaPars[0] = 0.673612;
-  fEstimatorsSigmaPars[1] = 0.0290718;
-  fEstimatorsSigmaPars[2] = -0.000546728;
-  fEstimatorsSigmaPars[3] = 5.82749e-06;
-  fDeltaEstimatorNsigma[0] = 5.;
-  fDeltaEstimatorNsigma[1] = 5.5;
+  fUseEstimatorsCorrelationCut = true;
+  fEstimatorsCorrelationCoef[0] = -0.669108;
+  fEstimatorsCorrelationCoef[1] = 1.04489;
+  fEstimatorsSigmaPars[0] = 0.933321;
+  fEstimatorsSigmaPars[1] = 0.0416976;
+  fEstimatorsSigmaPars[2] = -0.000936344;
+  fEstimatorsSigmaPars[3] = 8.92179e-06;
+  fDeltaEstimatorNsigma[0] = 5.5;
+  fDeltaEstimatorNsigma[1] = 5.;
 
   array<double,4> tof_fb32_corr = {-1.0178, 0.333132, 9.10282e-05, -1.61861e-08};
   std::copy(tof_fb32_corr.begin(),tof_fb32_corr.end(),fTOFvsFB32correlationPars);

@@ -40,6 +40,7 @@ class AliAnalysisTaskFemtoDreamPhi : public AliAnalysisTaskSE {
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
     fConfig = config;
   }
+  void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
 
  private:
   AliAnalysisTaskFemtoDreamPhi(const AliAnalysisTaskFemtoDreamPhi &);
@@ -47,6 +48,7 @@ class AliAnalysisTaskFemtoDreamPhi : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   bool fIsMC;                            //
+  UInt_t fTrigger;                       //
   TList *fOutput;                        //!
   AliFemtoDreamEvent *fEvent;            //!
   AliFemtoDreamTrack *fTrack;            //!
@@ -62,7 +64,7 @@ class AliAnalysisTaskFemtoDreamPhi : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;  //!
   AliAODTrack **fGTI;                      //!
   int fTrackBufferSize;                    //
-  ClassDef(AliAnalysisTaskFemtoDreamPhi, 2)
+  ClassDef(AliAnalysisTaskFemtoDreamPhi, 3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskFemtoDreamPhi_H_ */

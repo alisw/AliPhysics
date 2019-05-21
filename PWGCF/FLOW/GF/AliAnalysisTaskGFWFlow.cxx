@@ -48,6 +48,10 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fMCEvent(0),
   fIsMC(kFALSE),
   fPtAxis(0),
+  fPOIpTMin(0.2),
+  fPOIpTMax(20),
+  fRFpTMin(0.2),
+  fRFpTMax(3.0),
   fWeightPath(""),
   fWeightDir(""),
   fTotFlags(15), //Total number of flags: 1 (nominal) + fTotTrackFlags + N_Event flags
@@ -70,6 +74,10 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fOutputTree(0),
   fIsMC(IsMC),
   fPtAxis(new TAxis()),
+  fPOIpTMin(0.2),
+  fPOIpTMax(20),
+  fRFpTMin(0.2),
+  fRFpTMax(3.0),
   fWeightPath(""),
   fWeightDir(""),
   fTotFlags(15),
@@ -262,21 +270,22 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     Double_t multibins[] = {0,10,20,30,40,50,60,70,80};
     fFC = new AliGFWFlowContainer();
     fFC->SetName(Form("FC%s",fSelections[fCurrSystFlag]->GetSystPF()));
+    fFC->SetXAxis(fPtAxis);
     fFC->Initialize(OAforPt,8,multibins,fCurrSystFlag?1:10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
     fGFW = new AliGFW();
     //Full regions
     fGFW->AddRegion("poiMid",10,10,-0.8,0.8,1+fPtAxis->GetNbins(),1);
-    fGFW->AddRegion("refMid",10,10,-0.8,0.8,1,1);
+    fGFW->AddRegion("refMid",10,10,-0.8,0.8,1,2);
     //2 subevets:
     fGFW->AddRegion("poiSENeg",10,10,-0.8,0.,1+fPtAxis->GetNbins(),1);
-    fGFW->AddRegion("refSENeg",10,10,-0.8,0.,1,1);
+    fGFW->AddRegion("refSENeg",10,10,-0.8,0.,1,2);
     fGFW->AddRegion("poiSEPos",10,10,0.,0.8,1+fPtAxis->GetNbins(),1);
-    fGFW->AddRegion("refSEPos",10,10,0.,0.8,1,1);
+    fGFW->AddRegion("refSEPos",10,10,0.,0.8,1,2);
     //With gap
     fGFW->AddRegion("poiGapNeg",10,10,-0.8,-0.5,1+fPtAxis->GetNbins(),1);
-    fGFW->AddRegion("refGapNeg",10,10,-0.8,-0.5,1,1);
+    fGFW->AddRegion("refGapNeg",10,10,-0.8,-0.5,1,2);
     fGFW->AddRegion("poiGapPos",10,10,0.5,0.8,1+fPtAxis->GetNbins(),1);
-    fGFW->AddRegion("refGapPos",10,10,0.5,0.8,1,1);
+    fGFW->AddRegion("refGapPos",10,10,0.5,0.8,1,2);
 
 
   };
@@ -385,13 +394,19 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       Double_t lDCA[] = {TMath::Abs(DCA[2]),dcaxy};
       if(!fSelections[fCurrSystFlag]->AcceptTrack(lTrack,lDCA) &&
       	 !fSelections[9]->AcceptTrack(lTrack,lDCA)) continue;
+
+      Double_t l_pT=lTrack->Pt();
+      Bool_t WithinPtPOI = (fPOIpTMin<l_pT) && (l_pT<fPOIpTMax); //within POI pT range
+      Bool_t WithinPtRF  = (fRFpTMin <l_pT) && (l_pT<fRFpTMax);  //within RF pT range
+      if(!WithinPtPOI && !WithinPtRF) continue; //if the track is not within any pT range, then continue
       if(!fWeights) printf("Weights do not exist!\n");
-      Double_t nua = fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
+      Double_t nua = fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,l_pT,cent,0);
       //Double_t nuaITS = fExtraWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
-      Double_t nue = fPtAxis->GetNbins()>1?1:fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,cent,lTrack->Pt(),1);
+      Double_t nue = fPtAxis->GetNbins()>1?1:fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,cent,l_pT,1);
       if(fSelections[fCurrSystFlag]->AcceptTrack(lTrack, lDCA)) {
-      	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nua*nue,1);
-      };
+      	if(WithinPtPOI) fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(l_pT)-1,lTrack->Phi(),nua*nue,1); //Fill POI (mask = 1)
+        if(WithinPtRF)  fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(l_pT)-1,lTrack->Phi(),nua*nue,2); //Fit RF (mask = 2)
+      }
       /*if(fSelections[9]->AcceptTrack(lTrack, lDCA)) //No ITS for now
 	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nuaITS*nue,2);*/
     };
@@ -515,6 +530,16 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
 };
 void AliAnalysisTaskGFWFlow::Terminate(Option_t*) {
 };
+void AliAnalysisTaskGFWFlow::SetPtBins(Int_t nBins, Double_t *bins, Double_t RFpTMin, Double_t RFpTMax) {
+  fPtAxis->Set(nBins, bins);
+  //Set pT range given by the defined pT axis
+  fPOIpTMin=bins[0];
+  fPOIpTMax=bins[nBins];
+  //if RF pT range is not defined, use the same as for POI
+  fRFpTMin=(RFpTMin<0)?fPOIpTMin:RFpTMin;
+  fRFpTMax=(RFpTMax<0)?fPOIpTMax:RFpTMax;
+}
+
 Bool_t AliAnalysisTaskGFWFlow::AcceptEvent() {
   if(!fEventCuts.AcceptEvent(fInputEvent)) return 0;
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();

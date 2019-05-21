@@ -37,6 +37,7 @@
 #include "AliAnaParticleHadronCorrelation.h"
 #include "AliAnaChargedParticles.h"
 #include "AliAnaCalorimeterQA.h"
+#include "AliAnaCaloExotics.h"
 #include "AliAnaClusterShapeCorrelStudies.h"
 #include "AliAnaGeneratorKine.h"
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
@@ -1445,6 +1446,47 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
 }
 
 ///
+/// Configure the task doing exotic cluster/cell checks
+///
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
+AliAnaCaloExotics* ConfigureExoticAnalysis(TString col,           Bool_t  simulation,
+                                           TString calorimeter,   Int_t   year,
+                                           Bool_t  printSettings, Int_t   debug, 
+                                           TString histoString  )
+{
+  AliAnaCaloExotics *ana = new AliAnaCaloExotics();
+  
+  ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
+  
+  ana->SwitchOnFill1CellHisto(); 
+  
+  if ( simulation ) 
+    ana->SetConstantTimeShift(615);
+  
+  ana->SetEMinForExo(6);
+
+  ana->SetCellAmpMin(0.3);
+    
+  ana->AddToHistogramsName("Exo_"); // Begining of histograms name
+  
+  SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
+  
+  return ana;
+}
+
+///
 /// Configure the task filling generated particle kinematics histograms
 ///
 /// \param thresType : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
@@ -1719,6 +1761,12 @@ void ConfigureCaloTrackCorrAnalysis
   if ( analysisString.Contains("QA") ) 
   { 
     anaList->AddAt(ConfigureQAAnalysis(col,simulation,calorimeter,year,printSettings,debug,histoString) , n++);
+  }
+  
+  // Exotics
+  if ( analysisString.Contains("Exo") ) 
+  { 
+    anaList->AddAt(ConfigureExoticAnalysis(col,simulation,calorimeter,year,printSettings,debug,histoString) , n++);
   }
   
   printf("ConfigureCaloTrackCorrAnalysis() << End configuration for %s with total analysis %d>>\n",

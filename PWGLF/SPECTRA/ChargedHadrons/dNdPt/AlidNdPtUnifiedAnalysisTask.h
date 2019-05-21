@@ -66,8 +66,6 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     void SetUseMultiplicity(Bool_t useMult){fUseMultiplicity = useMult;}
     void SetUseCentrality(){fUseMultiplicity = kFALSE;}
     void SetCentralityEstimator(WhichCentralityEstimator iCentEst);
-    void FillCentCorrel();
-    void FillCentDiff();
 
     // Binning
     /// Set bins in Pt using a TArrayD
@@ -186,14 +184,9 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     THnF        	*fHistMCTrigEvent;		///<  Histogram for triggered MC events (Zv,mult/cent)
     /// Track histogram
     THnF        	*fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
-    THnF            *fHistCentCorrel; ///< Histogram for correlation of centrality estimators
-    THnF            *fHistCentDiffSPDT; ///< Histograms for centrality discrepancies
-    THnF            *fHistCentDiffCL0;
-    THnF            *fHistCentDiffCL1;
-    THnF            *fHistCentMean;
-    THnF            *fHistCentRatio;
-    THnF            *fHistCentAbsDiff;
-    
+    THnF            *fHistCentCorrelpt; ///< Histogram for correlation of centrality estimators (with pt)
+    THnF            *fHistCentCorrel;
+
     TH3D          *fDCAyEtaPt;                         /// DCAy:eta:pt
     TH3D          *fDCAyEtaPtMCPrim;              /// DCAy:eta:pt for primary particles
     TH3D          *fDCAyEtaPtMCSecDecays;         /// DCAy:eta:pt for secondary particles from decays in MC

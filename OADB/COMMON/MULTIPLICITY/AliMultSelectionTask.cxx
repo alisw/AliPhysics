@@ -104,7 +104,7 @@ ClassImp(AliMultSelectionTask)
 AliMultSelectionTask::AliMultSelectionTask()
 : AliAnalysisTaskSE(), fListHist(0), fTreeEvent(0),
 fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
@@ -262,7 +262,7 @@ fOADB(nullptr)
 AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptions, Bool_t lCalib, Int_t lNDebugEstimators)
 : AliAnalysisTaskSE(name), fListHist(0), fTreeEvent(0),
 fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fkStoreQA(kFALSE),
-fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkDebug(kTRUE),
+fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
@@ -1166,45 +1166,47 @@ void AliMultSelectionTask::UserExec(Option_t *)
         
         if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
             
-            //Npart and Ncoll information
-            AliGenHijingEventHeader* hHijing=0;
-            AliGenDPMjetEventHeader* dpmHeader=0;
-            AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
-            
-            //DPMJet/HIJING info if available
-            if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
-                hHijing = (AliGenHijingEventHeader*)mcGenH;
-            else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
-                TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
-                hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
-                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
-                if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
-            }
-            else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-                dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
-            }
-            if(hHijing)   {
-                fMC_b -> SetValue( hHijing->ImpactParameter() );
-                fMC_NPart ->SetValueInteger( hHijing->ProjectileParticipants()+hHijing->TargetParticipants() );
-                fMC_NColl ->SetValueInteger( hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw() );
-            }
-            if(dpmHeader) {
-                fMC_b -> SetValue( hHijing->ImpactParameter() );
-                fMC_NPart ->SetValueInteger( dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants());
-                fMC_NColl ->SetValueInteger( dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw());
-            }
-            
-            //check EPOS info, if available
-            if ( IsEPOSLHC() ){
-                AliGenHepMCEventHeader *lHepMCHeader = 0x0;
-                if (mcGenH->InheritsFrom(AliGenHepMCEventHeader::Class()))
-                    lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
+            if(!fkSkipMCHeaders){
+                //Npart and Ncoll information
+                AliGenHijingEventHeader* hHijing=0;
+                AliGenDPMjetEventHeader* dpmHeader=0;
+                AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
                 
-                if (lHepMCHeader ){
-                    fMC_NPart ->SetValueInteger( lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ() );
-                    fMC_NColl ->SetValueInteger( lHepMCHeader->N_Nwounded_collisions() +
-                                                lHepMCHeader->Nwounded_N_collisions() +
-                                                lHepMCHeader->Nwounded_Nwounded_collisions() );
+                //DPMJet/HIJING info if available
+                if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class()))
+                    hHijing = (AliGenHijingEventHeader*)mcGenH;
+                else if (mcGenH->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+                    TList* headers = ((AliGenCocktailEventHeader*)mcGenH)->GetHeaders();
+                    hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing"));
+                    if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing pPb_0"));
+                    if (!hHijing) hHijing = dynamic_cast<AliGenHijingEventHeader*>(headers->FindObject("Hijing_0"));
+                }
+                else if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
+                    dpmHeader = (AliGenDPMjetEventHeader*)mcGenH;
+                }
+                if(hHijing)   {
+                    fMC_b -> SetValue( hHijing->ImpactParameter() );
+                    fMC_NPart ->SetValueInteger( hHijing->ProjectileParticipants()+hHijing->TargetParticipants() );
+                    fMC_NColl ->SetValueInteger( hHijing->NN()+hHijing->NNw()+hHijing->NwN()+hHijing->NwNw() );
+                }
+                if(dpmHeader) {
+                    fMC_b -> SetValue( hHijing->ImpactParameter() );
+                    fMC_NPart ->SetValueInteger( dpmHeader->ProjectileParticipants()+dpmHeader->TargetParticipants());
+                    fMC_NColl ->SetValueInteger( dpmHeader->NN()+dpmHeader->NNw()+dpmHeader->NwN()+dpmHeader->NwNw());
+                }
+                
+                //check EPOS info, if available
+                if ( IsEPOSLHC() ){
+                    AliGenHepMCEventHeader *lHepMCHeader = 0x0;
+                    if (mcGenH->InheritsFrom(AliGenHepMCEventHeader::Class()))
+                        lHepMCHeader = (AliGenHepMCEventHeader*)mcGenH;
+                    
+                    if (lHepMCHeader ){
+                        fMC_NPart ->SetValueInteger( lHepMCHeader->Npart_proj()+lHepMCHeader->Npart_targ() );
+                        fMC_NColl ->SetValueInteger( lHepMCHeader->N_Nwounded_collisions() +
+                                                    lHepMCHeader->Nwounded_N_collisions() +
+                                                    lHepMCHeader->Nwounded_Nwounded_collisions() );
+                    }
                 }
             }
             
@@ -2827,6 +2829,11 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber(int runNumber)
     if ( runNumber >= 288861 && runNumber <= 288909 ) lProductionName = "LHC18i";
     if ( runNumber >= 288943 && runNumber <= 288943 ) lProductionName = "LHC18j";
     if ( runNumber >= 289165 && runNumber <= 289201 ) lProductionName = "LHC18k";
+    if ( runNumber >= 289240 && runNumber <= 289971 ) lProductionName = "LHC18l";
+    if ( runNumber >= 290222 && runNumber <= 292839 ) lProductionName = "LHC18m";
+    if ( runNumber >= 293357 && runNumber <= 293359 ) lProductionName = "LHC18n";
+    if ( runNumber >= 293368 && runNumber <= 293898 ) lProductionName = "LHC18o";
+    if ( runNumber >= 294009 && runNumber <= 294925 ) lProductionName = "LHC18p";
     
     //Registered Productions : Run 2 Pb-Pb
     if ( runNumber >= 243395 && runNumber <= 243984 ) lProductionName = "LHC15m";
@@ -2932,6 +2939,11 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber(int runNumber)
     if ( runNumber >= 288861 && runNumber <= 288909 ) lSystemType = "pp";
     if ( runNumber >= 288943 && runNumber <= 288943 ) lSystemType = "pp";
     if ( runNumber >= 289165 && runNumber <= 289201 ) lSystemType = "pp";
+    if ( runNumber >= 289240 && runNumber <= 289971 ) lSystemType = "pp";
+    if ( runNumber >= 290222 && runNumber <= 292839 ) lSystemType = "pp";
+    if ( runNumber >= 293357 && runNumber <= 293359 ) lSystemType = "pp";
+    if ( runNumber >= 293368 && runNumber <= 293898 ) lSystemType = "pp";
+    if ( runNumber >= 294009 && runNumber <= 294925 ) lSystemType = "pp";
     
     //Registered Productions : Run 2 Pb-Pb
     if ( runNumber >= 243395 && runNumber <= 243984 ) lSystemType = "Pb-Pb";

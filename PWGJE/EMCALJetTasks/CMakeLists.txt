@@ -146,6 +146,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
     Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
+    Tracks/AliAnalysisTaskEmcalHighEClusterTree.cxx
     Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx

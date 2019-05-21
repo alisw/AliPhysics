@@ -44,7 +44,10 @@ fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fTPCNcrossed(0),
+fTPCFindable(0),
 fEta(-9999),
+fPhi(9999),
 fPDGcode(-1),
 fTag(0),
 fNsigmaMaxForTag(0.02),
@@ -63,6 +66,7 @@ fAOD(nullptr),
 fPIDresp(nullptr),
 fV0cuts(nullptr),
 fFillTreeWithNsigmaPIDOnly(false),
+fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
 fPtMaxDownSampling(1.5),
@@ -80,7 +84,10 @@ fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
 fNPbinsNsigmaTPCDataCorr(0),
 fEtalimitsNsigmaTPCDataCorr{},
-fNEtabinsNsigmaTPCDataCorr(0)
+fNEtabinsNsigmaTPCDataCorr(0),
+fUseAliEventCuts(false),
+fAliEventCuts(),
+fApplyPbPbOutOfBunchPileupCuts()
 {
   //
   // default constructur
@@ -99,6 +106,8 @@ fNEtabinsNsigmaTPCDataCorr(0)
   for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
     fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
+  
+  fAliEventCuts.SetManualMode();
 }
 
 //________________________________________________________________________
@@ -121,7 +130,10 @@ fTPCNcls(0),
 fTPCNclsPID(0),
 fTrackLength(0),
 fStartTimeRes(0),
+fTPCNcrossed(0),
+fTPCFindable(0),
 fEta(-9999),
+fPhi(9999),
 fPDGcode(-1),
 fTag(0),
 fNsigmaMaxForTag(0.02),
@@ -140,6 +152,7 @@ fAOD(nullptr),
 fPIDresp(nullptr),
 fV0cuts(nullptr),
 fFillTreeWithNsigmaPIDOnly(false),
+fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
 fPtMaxDownSampling(1.5),
@@ -157,7 +170,10 @@ fSigmaNsigmaTPCProtonData{},
 fPlimitsNsigmaTPCDataCorr{},
 fNPbinsNsigmaTPCDataCorr(0),
 fEtalimitsNsigmaTPCDataCorr{},
-fNEtabinsNsigmaTPCDataCorr(0)
+fNEtabinsNsigmaTPCDataCorr(0),
+fUseAliEventCuts(false),
+fAliEventCuts(),
+fApplyPbPbOutOfBunchPileupCuts()
 {
   //
   // standard constructur
@@ -176,6 +192,8 @@ fNEtabinsNsigmaTPCDataCorr(0)
   for(int iEta=0; iEta<=AliAODPidHF::kMaxEtaBins; iEta++) {
     fEtalimitsNsigmaTPCDataCorr[iEta] = 0.;
   }
+
+  fAliEventCuts.SetManualMode();
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -220,7 +238,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",8,-1.5,6.5);
+  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",12,-1.5,10.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
@@ -232,6 +250,9 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Error on zVertex>0.5");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"|zVertex|>10");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"Good Z vertex");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"Cent corr cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"V0mult vs. nTPC cls");  
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"Selected events");  
   fOutputList->Add(fHistNEvents);
 
   TString armenteronames[5] = {"All","K0s","Lambda","AntiLambda","Gamma"};
@@ -274,6 +295,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
   fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
   fPIDtree->Branch("eta",&fEta,"eta/S");
+  fPIDtree->Branch("phi",&fPhi,"phi/s"); 
   if(!fFillTreeWithNsigmaPIDOnly) {
     fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
     fPIDtree->Branch("ToF",&fToF,"ToF/s");
@@ -281,9 +303,17 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
     fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
     fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
     fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
+    if(fFillTreeWithTrackQualityInfo) {
+      fPIDtree->Branch("NcrossedRowsTPC",&fTPCNcrossed,"NcrossedRowsTPC/b");
+      fPIDtree->Branch("NFindableTPC",&fTPCFindable,"NFindableClustersTPC/b");
+    }
   }
-  fPIDtree->Branch("tag",&fTag,"tag/b");
+  fPIDtree->Branch("tag",&fTag,"tag/s");
   if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/S");
+
+  if(fUseAliEventCuts) { //add QA plots if event cuts used
+    fAliEventCuts.AddQAplotsToList(fOutputList,true);
+  }
 
   // post data
   PostData(1, fOutputList);
@@ -319,6 +349,9 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
   }
 
+  if(fUseAliEventCuts)
+    fAliEventCuts.AcceptEvent(fAOD); //for QA plots
+
   if(TMath::Abs(fAOD->GetMagneticField())<0.001) return;
 
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -346,6 +379,17 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     PostData(1, fOutputList);
     return;
   }
+
+  if(fUseAliEventCuts) {
+    int sel = IsEventSelectedWithAliEventCuts();
+    if(sel>0) {
+      fHistNEvents->Fill(sel);   
+      PostData(1, fOutputList);
+      return;
+    }
+  }
+
+  fHistNEvents->Fill(10);   
 
   // load MC particles
   TClonesArray *arrayMC=0;
@@ -401,6 +445,17 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
     fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
     fEta = ConvertFloatToShort(track->Eta()*1000);
+    fPhi = ConvertFloatToUnsignedShort(track->Phi()*1000);
+
+    //charge
+    if(track->Charge()>0) {
+      fTag |= kPositiveTrack;
+      fTag &= ~kNegativeTrack;
+    }
+    else if(track->Charge()<0) {
+      fTag |= kNegativeTrack;
+      fTag &= ~kPositiveTrack;
+    }
 
     if(!fFillTreeWithNsigmaPIDOnly) {
       //TPC variables
@@ -423,6 +478,18 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
           fToF = ConvertFloatToUnsignedShort((tof-time0)/10);
         }
       }
+      if(fFillTreeWithTrackQualityInfo) {
+        fTPCNcrossed = track->GetTPCNCrossedRows();
+        fTPCFindable = track->GetTPCNclsF();
+      }
+    }
+    //charge
+    if(track->Charge()>0) {
+      fTag &= ~kNegativeTrack;
+    }
+    else if(track->Charge()<0) {
+      fTag |= kNegativeTrack;
+      fTag &= ~kPositiveTrack;
     }
 
     bool isTPCok = false;
@@ -431,6 +498,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track) == AliPIDResponse::kDetPidOk) isTOFok = true;
 
     if(isTPCok) {
+      fTag &= ~kHasNoTPC;
       float nSigmaTPCPion = fPIDresp->NumberOfSigmasTPC(track,AliPID::kPion);
       float nSigmaTPCKaon = fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon);
       float nSigmaTPCProton = fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton);
@@ -452,35 +520,77 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
       fPIDNsigma[1] = ConvertFloatToShort(nSigmaTPCKaon*100);
       fPIDNsigma[2] = ConvertFloatToShort(nSigmaTPCProton*100);
     }
-    else for(int iVar=0; iVar<3; iVar++) fPIDNsigma[iVar] = numeric_limits<short>::min();
+    else for(int iVar=0; iVar<3; iVar++) {
+      fTag |= kHasNoTPC;
+      fPIDNsigma[iVar] = numeric_limits<short>::min();
+    }
     if(isTOFok) {
+      fTag &= ~kHasNoTOF;
       fPIDNsigma[3] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kPion)*100);
       fPIDNsigma[4] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon)*100);
       fPIDNsigma[5] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kProton)*100);
     }
-    else for(int iVar=3; iVar<6; iVar++) fPIDNsigma[iVar] = numeric_limits<short>::min();
+    else for(int iVar=3; iVar<6; iVar++) {
+      fTag |= kHasNoTOF;
+      fPIDNsigma[iVar] = numeric_limits<short>::min();
+    }
 
     short trackid = track->GetID();
 
+    bool filltree = false;
     it = find(idPionFromK0s.begin(),idPionFromK0s.end(),trackid);
-    if(it!=idPionFromK0s.end()) fTag |= kIsPionFromK0s;
-    else fTag &= ~kIsPionFromK0s;
+    if(it!=idPionFromK0s.end()) {
+      fTag |= kIsPionFromK0s;
+      filltree = true;
+    }
+    else 
+      fTag &= ~kIsPionFromK0s;
+
     it = find(idPionFromL.begin(),idPionFromL.end(),trackid);
-    if(it!=idPionFromL.end()) fTag |= kIsPionFromL;
-    else fTag &= ~kIsPionFromL;
+    if(it!=idPionFromL.end()) {
+      fTag |= kIsPionFromL;
+      filltree = true;
+    }
+    else
+      fTag &= ~kIsPionFromL;
+    
     it = find(idProtonFromL.begin(),idProtonFromL.end(),trackid);
-    if(it!=idProtonFromL.end()) fTag |= kIsProtonFromL;
-    else fTag &= ~kIsProtonFromL;
+    if(it!=idProtonFromL.end()) {
+      filltree = true;
+      fTag |= kIsProtonFromL;
+    }
+    else
+      fTag &= ~kIsProtonFromL;
+
     it = find(idElectronFromGamma.begin(),idElectronFromGamma.end(),trackid);
-    if(it!=idElectronFromGamma.end()) fTag |= kIsElectronFromGamma;
-    else fTag &= ~kIsElectronFromGamma;
+    if(it!=idElectronFromGamma.end()) {
+      filltree = true;
+      fTag |= kIsElectronFromGamma;
+    }
+    else 
+      fTag &= ~kIsElectronFromGamma;
+
     it = find(idKaonFromKinks.begin(),idKaonFromKinks.end(),trackid);
-    if(it!=idKaonFromKinks.end()) fTag |= kIsKaonFromKinks;
-    else fTag &= ~kIsKaonFromKinks;
-    if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok && isTPCok) fTag |= kIsKaonFromTOF;
-    else fTag &= ~kIsKaonFromTOF;
-    if(TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok && isTPCok) fTag |= kIsKaonFromTPC;
-    else fTag &= ~kIsKaonFromTPC;
+    if(it!=idKaonFromKinks.end()) {
+      filltree = true;
+      fTag |= kIsKaonFromKinks;  
+    }
+    else 
+      fTag &= ~kIsKaonFromKinks;
+
+    if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok) {
+      filltree = true;
+      fTag |= kIsKaonFromTOF;
+    }
+    else 
+      fTag &= ~kIsKaonFromTOF;
+    
+    if(TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon))<fNsigmaMaxForTag && isTPCok) {
+      filltree = true;
+      fTag |= kIsKaonFromTPC;
+    }
+    else 
+      fTag &= ~kIsKaonFromTPC;
     
     if(fIsMC) {
       fPDGcode = GetPDGcodeFromMC(track,arrayMC);
@@ -499,7 +609,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
     else fPDGcode = 0;
     
-    if(fTag!=0 && ((fIsMC && fPDGcode>=0) || !fIsMC)) fPIDtree->Fill();
+    if(filltree && ((fIsMC && fPDGcode>=0) || !fIsMC)) fPIDtree->Fill();
 
     fTag = 0;
 
@@ -807,4 +917,33 @@ void AliAnalysisTaskSEHFSystPID::GetNsigmaTPCMeanSigmaData(float &mean, float &s
       break;
     }
   }
+}
+
+//________________________________________________________________
+int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
+
+  int run = fAOD->GetRunNumber();
+  if(fAOD->GetRunNumber()!=fRunNumberPrevEvent) {
+    if(run >= 244917 && run <= 246994)
+      fAliEventCuts.SetupRun2PbPb();
+    else if(run >= 295369 && run <= 297624)
+      fAliEventCuts.SetupPbPb2018();
+  }
+  
+  // cut on correlations for out of bunch pileup in PbPb run2  
+  if(fApplyPbPbOutOfBunchPileupCuts==1){
+    if(!fAliEventCuts.PassedCut(AliEventCuts::kCorrelations))
+      return 8;
+  }
+  else if(fApplyPbPbOutOfBunchPileupCuts==2 && run >= 295369 && run <= 297624){
+    // Ionut cut on V0multiplicity vs. n TPC clusters (Pb-Pb 2018)
+    AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)fAOD)->GetVZEROData();
+    float mTotV0=v0data->GetMTotV0A()+v0data->GetMTotV0C();
+    int nTPCcls=((AliAODEvent*)fAOD)->GetNumberOfTPCClusters();
+    float mV0TPCclsCut=-2000.+(0.013*nTPCcls)+(1.25e-9*nTPCcls*nTPCcls);
+    if(mTotV0<mV0TPCclsCut){
+      return 9;
+    }
+  }
+  return 0;
 }

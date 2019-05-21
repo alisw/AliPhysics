@@ -90,10 +90,6 @@ class AliFemtoDreamCollConfig : public TNamed {
     fSpinningDepth = SpinningDepth;
   }
   ;
-  void SetInvMassPairs(bool doIt) {
-    fInvMassPairs = doIt;
-  }
-  ;
   void SetMinimalBookingME(bool doIt) {
     fMinimalBookingME = doIt;
   }
@@ -159,10 +155,6 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetdPhidEtamTPlots() {
     return (fdPhidEtaPlots&&fmTdEtadPhi);
   }
-  bool GetInvMassPairs() {
-    return fInvMassPairs;
-  }
-  ;
   bool GetMinimalBookingME() {
     return fMinimalBookingME;
   }
@@ -242,7 +234,6 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
   bool fStravinsky;             //
-  bool fInvMassPairs;           //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
   int fNumberRadii;             //

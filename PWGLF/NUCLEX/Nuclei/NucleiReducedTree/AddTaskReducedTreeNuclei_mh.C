@@ -7,8 +7,11 @@ AliAnalysisTask *AddTaskReducedTreeNuclei_mh()  {
    }
    
    AliAnalysisTaskReducedTreeNuclei *task = new AliAnalysisTaskReducedTreeNuclei("TaskNuclei");
-   task->SelectCollisionCandidates(AliVEvent::kINT7 + AliVEvent::kHighMult);
-//    task->SelectCollisionCandidates(AliVEvent::kHighMult);
+//    task->SelectCollisionCandidates(AliVEvent::kINT7/* + AliVEvent::kHighMultV0*/);
+   task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMultV0);
+   
+//       task->SelectCollisionCandidates(AliVEvent::kAny);
+   
    
    bool doTri   =false;
    bool doHypTri=false;
@@ -34,8 +37,8 @@ AliAnalysisTask *AddTaskReducedTreeNuclei_mh()  {
    if (doHypTri) mgr->ConnectOutput(task, 5, cHypertritonTree);
    
    
-//    AliAnalysisDataContainer *cTreeEventSelection = mgr->CreateContainer("TreeEventSelection", TTree::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
-//    mgr->ConnectOutput(task, 6, cTreeEventSelection);
+   AliAnalysisDataContainer *cTreeEventSelection = mgr->CreateContainer("TreeEventSelection", TTree::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
+   mgr->ConnectOutput(task, 6, cTreeEventSelection);
 
    
    return task;

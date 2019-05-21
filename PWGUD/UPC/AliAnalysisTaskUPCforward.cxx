@@ -16,8 +16,8 @@
 // c++ headers
 #include <iostream>
 #include <fstream>
-#include <vector>
-#include <algorithm>
+// #include <vector>
+// #include <algorithm>
 
 
 // root headers
@@ -153,7 +153,7 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fV0TotalNCells(0),
-      fVectorGoodRunNumbers(0),
+      // fVectorGoodRunNumbers(0),
       fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
       fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
       fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
@@ -162,6 +162,18 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionZNCzeroZNAanyH(0),
+      fDimuonPtDistributionZNCanyZNAzeroH(0),
+      fDimuonPtDistributionZNCanyZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAanyH(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
       fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
       fCheckHelicityRestFrameJPsiH(0),
@@ -179,7 +191,9 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0)
+      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -264,7 +278,7 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fV0TotalNCells(0),
-      fVectorGoodRunNumbers(0),
+      // fVectorGoodRunNumbers(0),
       fInvariantMassDistributionCoherentZNCzeroZNAzeroH(0),
       fInvariantMassDistributionCoherentZNCzeroZNAanyH(0),
       fInvariantMassDistributionCoherentZNCanyZNAzeroH(0),
@@ -273,6 +287,18 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fInvariantMassDistributionIncoherentZNCzeroZNAanyH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAzeroH(0),
       fInvariantMassDistributionIncoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionZNCzeroZNAanyH(0),
+      fDimuonPtDistributionZNCanyZNAzeroH(0),
+      fDimuonPtDistributionZNCanyZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionCoherentZNCanyZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCzeroZNAanyH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAzeroH(0),
+      fDimuonPtDistributionIncoherentZNCanyZNAanyH(0),
       fAngularDistribOfPositiveMuonRestFrameJPsiH(0),
       fAngularDistribOfNegativeMuonRestFrameJPsiH(0),
       fCheckHelicityRestFrameJPsiH(0),
@@ -290,9 +316,11 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fPhiHelicityFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fPhiCollinsSoperFrameJPsiTenRapidityBinsH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0)
+      fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
+      fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0)
 {
-    FillGoodRunVector(fVectorGoodRunNumbers);
+    // FillGoodRunVector(fVectorGoodRunNumbers);
 
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -311,96 +339,96 @@ AliAnalysisTaskUPCforward::~AliAnalysisTaskUPCforward()
     if(fMuonTrackCuts) {delete fMuonTrackCuts;}   // from memory by calling this function
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers)
-{
-  fVectorGoodRunNumbers.clear();
-  Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
-                                         295615, 295665, 295666, 295667, 295668, 295671,
-                                         295673, 295675, 295676, 295677, 295714, 295716,
-                                         295717, 295718, 295719, 295723, 295725, 295753,
-                                         295754, 295755, 295758, 295759, 295762, 295763,
-                                         295786, 295788, 295791, 295816, 295818, 295819,
-                                         295822, 295825, 295826, 295829, 295831, 295854,
-                                         295855, 295856, 295859, 295860, 295861, 295863,
-                                         295881, 295908, 295909, 295910, 295913, 295936,
-                                         295937, 295941, 295942, 295943, 295945, 295947,
-                                         296061, 296062, 296063, 296065, 296066, 296068,
-                                         296123, 296128, 296132, 296133, 296134, 296135,
-                                         296142, 296143, 296191, 296192, 296194, 296195,
-                                         296196, 296197, 296198, 296241, 296242, 296243,
-                                         296244, 296246, 296247, 296269, 296270, 296273,
-                                         296279, 296280, 296303, 296304, 296307, 296309,
-                                         296312, 296376, 296377, 296378, 296379, 296380,
-                                         296381, 296383, 296414, 296419, 296420, 296423,
-                                         296424, 296433, 296472, 296509, 296510, 296511,
-                                         296514, 296516, 296547, 296548, 296549, 296550,
-                                         296551, 296552, 296553, 296615, 296616, 296618,
-                                         296619, 296622, 296623 };
-  Int_t listOfGoodRunNumbersLHC18r[] = { 296690, 296691, 296694, 296749, 296750, 296781,
-                                         296784, 296785, 296786, 296787, 296791, 296793,
-                                         296794, 296799, 296836, 296838, 296839, 296848,
-                                         296849, 296850, 296851, 296852, 296890, 296894,
-                                         296899, 296900, 296903, 296930, 296931, 296932,
-                                         296934, 296935, 296938, 296941, 296966, 296967,
-                                         296968, 296969, 296971, 296975, 296976, 296977,
-                                         296979, 297029, 297031, 297035, 297085, 297117,
-                                         297118, 297119, 297123, 297124, 297128, 297129,
-                                         297132, 297133, 297193, 297194, 297196, 297218,
-                                         297219, 297221, 297222, 297278, 297310, 297312,
-                                         297315, 297317, 297363, 297366, 297367, 297372,
-                                         297379, 297380, 297405, 297408, 297413, 297414,
-                                         297415, 297441, 297442, 297446, 297450, 297451,
-                                         297452, 297479, 297481, 297483, 297512, 297537,
-                                         297540, 297541, 297542, 297544, 297558, 297588,
-                                         297590, 297595/*, 297623, 297624*/ };
-  /* - This good run number list has been taken from the analysis
-     - note of Kay's talk for DIS 2017, see:
-     - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
-     -
-   */
-  Int_t listOfGoodRunNumbersLHC15o[] = { 244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
-                                         245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
-                                         245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
-                                         245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
-                                         245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
-                                         245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
-                                         246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
-                                         246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
-                                         246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
-                                         246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
-                                         246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
-                                         246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
-                                         246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
-                                         246949, 246980, 246982, 246984, 246989, 246991, 246994
-                                       };
-  Int_t sizeOfLHC18q = 0;
-  Int_t sizeOfLHC18r = 0;
-  Int_t sizeOfLHC15o = 0;
-  for ( Int_t GoodRunNumberLHC18q : listOfGoodRunNumbersLHC18q ) {
-        fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18q);
-        sizeOfLHC18q++;
-  }
-  for ( Int_t GoodRunNumberLHC18r : listOfGoodRunNumbersLHC18r ) {
-        fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18r);
-        sizeOfLHC18r++;
-  }
-  for ( Int_t GoodRunNumberLHC15o : listOfGoodRunNumbersLHC15o ) {
-        fVectorGoodRunNumbers.push_back(GoodRunNumberLHC15o);
-        sizeOfLHC15o++;
-  }
-  cout << std::endl << "LHC18q GOOD RUNS:  " << std::endl;
-  for ( Int_t i = 0; i < sizeOfLHC18q; i++ ) {
-        cout << fVectorGoodRunNumbers.at(i) << ",   number: " << i << std::endl;
-  }
-  cout << std::endl << "LHC18r GOOD RUNS:  " << std::endl;
-  for ( Int_t i = sizeOfLHC18q; i < sizeOfLHC18q + sizeOfLHC18r; i++ ) {
-        cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q) << std::endl;
-  }
-  cout << std::endl << "LHC15o GOOD RUNS:  " << std::endl;
-  for ( Int_t i = sizeOfLHC18q + sizeOfLHC18r; i < sizeOfLHC18q + sizeOfLHC18r + sizeOfLHC15o; i++ ) {
-        cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q-sizeOfLHC18r) << std::endl;
-  }
-}
+// void AliAnalysisTaskUPCforward::FillGoodRunVector(std::vector<Int_t> &fVectorGoodRunNumbers)
+// {
+//   fVectorGoodRunNumbers.clear();
+//   Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
+//                                          295615, 295665, 295666, 295667, 295668, 295671,
+//                                          295673, 295675, 295676, 295677, 295714, 295716,
+//                                          295717, 295718, 295719, 295723, 295725, 295753,
+//                                          295754, 295755, 295758, 295759, 295762, 295763,
+//                                          295786, 295788, 295791, 295816, 295818, 295819,
+//                                          295822, 295825, 295826, 295829, 295831, 295854,
+//                                          295855, 295856, 295859, 295860, 295861, 295863,
+//                                          295881, 295908, 295909, 295910, 295913, 295936,
+//                                          295937, 295941, 295942, 295943, 295945, 295947,
+//                                          296061, 296062, 296063, 296065, 296066, 296068,
+//                                          296123, 296128, 296132, 296133, 296134, 296135,
+//                                          296142, 296143, 296191, 296192, 296194, 296195,
+//                                          296196, 296197, 296198, 296241, 296242, 296243,
+//                                          296244, 296246, 296247, 296269, 296270, 296273,
+//                                          296279, 296280, 296303, 296304, 296307, 296309,
+//                                          296312, 296376, 296377, 296378, 296379, 296380,
+//                                          296381, 296383, 296414, 296419, 296420, 296423,
+//                                          296424, 296433, 296472, 296509, 296510, 296511,
+//                                          296514, 296516, 296547, 296548, 296549, 296550,
+//                                          296551, 296552, 296553, 296615, 296616, 296618,
+//                                          296619, 296622, 296623 };
+//   Int_t listOfGoodRunNumbersLHC18r[] = { 296690, 296691, 296694, 296749, 296750, 296781,
+//                                          296784, 296785, 296786, 296787, 296791, 296793,
+//                                          296794, 296799, 296836, 296838, 296839, 296848,
+//                                          296849, 296850, 296851, 296852, 296890, 296894,
+//                                          296899, 296900, 296903, 296930, 296931, 296932,
+//                                          296934, 296935, 296938, 296941, 296966, 296967,
+//                                          296968, 296969, 296971, 296975, 296976, 296977,
+//                                          296979, 297029, 297031, 297035, 297085, 297117,
+//                                          297118, 297119, 297123, 297124, 297128, 297129,
+//                                          297132, 297133, 297193, 297194, 297196, 297218,
+//                                          297219, 297221, 297222, 297278, 297310, 297312,
+//                                          297315, 297317, 297363, 297366, 297367, 297372,
+//                                          297379, 297380, 297405, 297408, 297413, 297414,
+//                                          297415, 297441, 297442, 297446, 297450, 297451,
+//                                          297452, 297479, 297481, 297483, 297512, 297537,
+//                                          297540, 297541, 297542, 297544, 297558, 297588,
+//                                          297590, 297595/*, 297623, 297624*/ };
+//   /* - This good run number list has been taken from the analysis
+//      - note of Kay's talk for DIS 2017, see:
+//      - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
+//      -
+//    */
+//   Int_t listOfGoodRunNumbersLHC15o[] = { 244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+//                                          245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+//                                          245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+//                                          245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+//                                          245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+//                                          245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+//                                          246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+//                                          246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+//                                          246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+//                                          246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+//                                          246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+//                                          246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+//                                          246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+//                                          246949, 246980, 246982, 246984, 246989, 246991, 246994
+//                                        };
+//   Int_t sizeOfLHC18q = 0;
+//   Int_t sizeOfLHC18r = 0;
+//   Int_t sizeOfLHC15o = 0;
+//   for ( Int_t GoodRunNumberLHC18q : listOfGoodRunNumbersLHC18q ) {
+//         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18q);
+//         sizeOfLHC18q++;
+//   }
+//   for ( Int_t GoodRunNumberLHC18r : listOfGoodRunNumbersLHC18r ) {
+//         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC18r);
+//         sizeOfLHC18r++;
+//   }
+//   for ( Int_t GoodRunNumberLHC15o : listOfGoodRunNumbersLHC15o ) {
+//         fVectorGoodRunNumbers.push_back(GoodRunNumberLHC15o);
+//         sizeOfLHC15o++;
+//   }
+//   cout << std::endl << "LHC18q GOOD RUNS:  " << std::endl;
+//   for ( Int_t i = 0; i < sizeOfLHC18q; i++ ) {
+//         cout << fVectorGoodRunNumbers.at(i) << ",   number: " << i << std::endl;
+//   }
+//   cout << std::endl << "LHC18r GOOD RUNS:  " << std::endl;
+//   for ( Int_t i = sizeOfLHC18q; i < sizeOfLHC18q + sizeOfLHC18r; i++ ) {
+//         cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q) << std::endl;
+//   }
+//   cout << std::endl << "LHC15o GOOD RUNS:  " << std::endl;
+//   for ( Int_t i = sizeOfLHC18q + sizeOfLHC18r; i < sizeOfLHC18q + sizeOfLHC18r + sizeOfLHC15o; i++ ) {
+//         cout << fVectorGoodRunNumbers.at(i) << ",   number: " << (i-sizeOfLHC18q-sizeOfLHC18r) << std::endl;
+//   }
+// }
 //_____________________________________________________________________________
 void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
 {
@@ -475,7 +503,7 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionIncoherentH = new TH1F("fInvariantMassDistributionIncoherentH", "fInvariantMassDistributionIncoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentH);
 
-  fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 2000, 0, 20);
+  fDimuonPtDistributionH = new TH1F("fDimuonPtDistributionH", "fDimuonPtDistributionH", 4000, 0, 20);
   fOutputList->Add(fDimuonPtDistributionH);
 
   fZNCEnergyAgainstEntriesH = new TH1F("fZNCEnergyAgainstEntriesH", "fZNCEnergyAgainstEntriesH", 20000, -10000, 40000);
@@ -629,6 +657,43 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionIncoherentZNCanyZNAanyH = new TH1F("fInvariantMassDistributionIncoherentZNCanyZNAanyH", "fInvariantMassDistributionIncoherentZNCanyZNAanyH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionIncoherentZNCanyZNAanyH);
 
+  fDimuonPtDistributionZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionZNCzeroZNAzeroH", "fDimuonPtDistributionZNCzeroZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionZNCzeroZNAanyH", "fDimuonPtDistributionZNCzeroZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCzeroZNAanyH);
+
+  fDimuonPtDistributionZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionZNCanyZNAzeroH", "fDimuonPtDistributionZNCanyZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAzeroH);
+
+  fDimuonPtDistributionZNCanyZNAanyH = new TH1F("fDimuonPtDistributionZNCanyZNAanyH", "fDimuonPtDistributionZNCanyZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionZNCanyZNAanyH);
+
+  fDimuonPtDistributionCoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAzeroH", "fDimuonPtDistributionCoherentZNCzeroZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionCoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCzeroZNAanyH", "fDimuonPtDistributionCoherentZNCzeroZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCzeroZNAanyH);
+
+  fDimuonPtDistributionCoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAzeroH", "fDimuonPtDistributionCoherentZNCanyZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCanyZNAzeroH);
+
+  fDimuonPtDistributionCoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionCoherentZNCanyZNAanyH", "fDimuonPtDistributionCoherentZNCanyZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionCoherentZNCanyZNAanyH);
+
+  fDimuonPtDistributionIncoherentZNCzeroZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", "fDimuonPtDistributionIncoherentZNCzeroZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCzeroZNAzeroH);
+
+  fDimuonPtDistributionIncoherentZNCzeroZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCzeroZNAanyH", "fDimuonPtDistributionIncoherentZNCzeroZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCzeroZNAanyH);
+
+  fDimuonPtDistributionIncoherentZNCanyZNAzeroH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAzeroH", "fDimuonPtDistributionIncoherentZNCanyZNAzeroH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCanyZNAzeroH);
+
+  fDimuonPtDistributionIncoherentZNCanyZNAanyH = new TH1F("fDimuonPtDistributionIncoherentZNCanyZNAanyH", "fDimuonPtDistributionIncoherentZNCanyZNAanyH", 4000, 0, 20);
+  fOutputList->Add(fDimuonPtDistributionIncoherentZNCanyZNAanyH);
+
+
 
   /* - Here starts the list of histograms needed for the analysis of the J/Psi's
      - polarization.
@@ -741,15 +806,76 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
                 Form("fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH_%d", iCosThetaBins),
                 Form("fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH_%d", iCosThetaBins),
                 2000, 0, 20
-              );
+                );
     fOutputList->Add(fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH[iCosThetaBins]);
   }
 
   fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH =
         new TH2F( "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
                   "fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH",
-                  80, -1, 1, 80, -4, 4);
+                  80, -1, 1, 80, -4, 4
+                  );
   fOutputList->Add(fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH);
+
+  /* - Variable binning for CosTheta and Phi.
+     - Adopting same binning as inclusive people's.
+     -
+   */
+  const Int_t XBINS = 19;
+  const Int_t YBINS = 20;
+  Double_t CosThetaBinning[ XBINS + 1 ] = { -1. , -0.8, -0.7 , -0.6 , -0.5, -0.4,
+                                            -0.3, -0.2, -0.12, -0.04,  0.04, 0.12,
+                                             0.2,  0.3,  0.4,   0.5,   0.6,  0.7,
+                                             0.8,  1
+                                             };
+  Double_t PhiBinning[ YBINS + 1 ] = { -3.142, -2.639, -2.136, -1.885, -1.696,
+                                       -1.571, -1.445, -1.257, -1.005, -0.502,
+                                        0.,     0.502,  1.005,  1.257,  1.445,
+                                        1.571,  1.696,  1.885,  2.136,  2.639,
+                                        3.142
+                                      };
+  fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH =
+        new TH2F( "fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  "fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH",
+                  XBINS, CosThetaBinning,
+                  YBINS, PhiBinning
+                  );
+  fOutputList->Add(fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH);
+
+  /* - Invariant mass distributions for signal extraction for POLARISATION.
+     - The usage will be:    histo[CosTheta][Phi];
+     -
+   */
+  fInvariantMassDistributionForSignalExtractionHelicityFrameH = new TH1F**[10];
+  for( Int_t iCosTheta = 0; iCosTheta < 10; iCosTheta++ ){
+    fInvariantMassDistributionForSignalExtractionHelicityFrameH[iCosTheta] = new TH1F*[10];
+    for( Int_t iPhi = 0; iPhi < 10; iPhi++ ){
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH[iCosTheta][iPhi] =
+          new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
+                    Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
+                    2000, 0, 20
+                    );
+      fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameH[iCosTheta][iPhi]);
+    }
+  }
+  // for( Int_t iCosTheta = 0; iCosTheta < 10; iCosTheta++ ){
+  //   std::vector<TH1F> auxiliaryVector;
+  //   for( Int_t iPhi = 0; iPhi < 10; iPhi++ ){
+  //     // auxiliaryVector.push_back( new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
+  //     //                                      Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
+  //     //                                      2000, 0, 20
+  //     //                                      )
+  //     //                            );
+  //     TH1F* helphisto =         new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
+  //                                         Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
+  //                                         2000, 0, 20
+  //                                       );
+  //     auxiliaryVector.push_back( *helphisto );
+  //
+  //   }
+  //   fInvariantMassDistributionForSignalExtractionHelicityFrameH.push_back(auxiliaryVector);
+  //   for( Int_t iPhi = 0; iPhi < 10; iPhi++ ) fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameH[iCosTheta][iPhi]);
+  // }
 
 
   //_______________________________
@@ -956,9 +1082,13 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   }
   fCounterH->Fill(iSelectionCounter);
   iSelectionCounter++;
+  fCounterH->Fill(12);
+
 
   fV0ADecision = dataVZERO->GetV0ADecision();
+  fCounterH->Fill(13);
   fV0CDecision = dataVZERO->GetV0CDecision();
+  fCounterH->Fill(14);
 
 
   //_____________________________________
@@ -970,17 +1100,107 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - them I move on to the next event.
      -
    */
-   auto findRunNumber = std::find(  std::begin(fVectorGoodRunNumbers),
-                                    std::end(fVectorGoodRunNumbers),
-                                    fRunNum
-                                    );
-   if (findRunNumber != std::end(fVectorGoodRunNumbers)) {
-        // std::cout << "fVectorGoodRunNumbers DOES     contain: " << fRunNum << std::endl;
-   } else {
-        // std::cout << "fVectorGoodRunNumbers does not contain: " << fRunNum << std::endl;
-        PostData(1, fOutputList);
-        return;
-   }
+  // auto findRunNumber = std::find(  std::begin(fVectorGoodRunNumbers),
+  //                                  std::end(fVectorGoodRunNumbers),
+  //                                  fRunNum
+  //                                  );
+  // if (findRunNumber != std::end(fVectorGoodRunNumbers)) {
+  //     // std::cout << "fVectorGoodRunNumbers DOES     contain: " << fRunNum << std::endl;
+  //     fCounterH->Fill(15);
+  // } else {
+  //     // std::cout << "fVectorGoodRunNumbers does not contain: " << fRunNum << std::endl;
+  //     fCounterH->Fill(16);
+  //     PostData(1, fOutputList);
+  //     return;
+  // }
+  // fCounterH->Fill(17);
+
+
+
+  fCounterH->Fill(15);
+  Int_t listOfGoodRunNumbersLHC18q[] = { 295585, 295586, 295587, 295588, 295589, 295612,
+                                         295615, 295665, 295666, 295667, 295668, 295671,
+                                         295673, 295675, 295676, 295677, 295714, 295716,
+                                         295717, 295718, 295719, 295723, 295725, 295753,
+                                         295754, 295755, 295758, 295759, 295762, 295763,
+                                         295786, 295788, 295791, 295816, 295818, 295819,
+                                         295822, 295825, 295826, 295829, 295831, 295854,
+                                         295855, 295856, 295859, 295860, 295861, 295863,
+                                         295881, 295908, 295909, 295910, 295913, 295936,
+                                         295937, 295941, 295942, 295943, 295945, 295947,
+                                         296061, 296062, 296063, 296065, 296066, 296068,
+                                         296123, 296128, 296132, 296133, 296134, 296135,
+                                         296142, 296143, 296191, 296192, 296194, 296195,
+                                         296196, 296197, 296198, 296241, 296242, 296243,
+                                         296244, 296246, 296247, 296269, 296270, 296273,
+                                         296279, 296280, 296303, 296304, 296307, 296309,
+                                         296312, 296376, 296377, 296378, 296379, 296380,
+                                         296381, 296383, 296414, 296419, 296420, 296423,
+                                         296424, 296433, 296472, 296509, 296510, 296511,
+                                         296514, 296516, 296547, 296548, 296549, 296550,
+                                         296551, 296552, 296553, 296615, 296616, 296618,
+                                         296619, 296622, 296623 };
+  Int_t listOfGoodRunNumbersLHC18r[] = { 296690, 296691, 296694, 296749, 296750, 296781,
+                                         296784, 296785, 296786, 296787, 296791, 296793,
+                                         296794, 296799, 296836, 296838, 296839, 296848,
+                                         296849, 296850, 296851, 296852, 296890, 296894,
+                                         296899, 296900, 296903, 296930, 296931, 296932,
+                                         296934, 296935, 296938, 296941, 296966, 296967,
+                                         296968, 296969, 296971, 296975, 296976, 296977,
+                                         296979, 297029, 297031, 297035, 297085, 297117,
+                                         297118, 297119, 297123, 297124, 297128, 297129,
+                                         297132, 297133, 297193, 297194, 297196, 297218,
+                                         297219, 297221, 297222, 297278, 297310, 297312,
+                                         297315, 297317, 297363, 297366, 297367, 297372,
+                                         297379, 297380, 297405, 297408, 297413, 297414,
+                                         297415, 297441, 297442, 297446, 297450, 297451,
+                                         297452, 297479, 297481, 297483, 297512, 297537,
+                                         297540, 297541, 297542, 297544, 297558, 297588,
+                                         297590, 297595/*, 297623, 297624*/ };
+  /* - This good run number list has been taken from the analysis
+     - note of Kay's talk for DIS 2017, see:
+     - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
+     -
+   */
+  Int_t listOfGoodRunNumbersLHC15o[] = { 244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+                                         245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
+                                         245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
+                                         245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
+                                         245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793,
+                                         245829, 245831, 245833, 245949, 245952, 245954, 245963, 245996, 246001, 246003,
+                                         246012, 246036, 246037, 246042, 246048, 246049, 246053, 246087, 246089, 246113,
+                                         246115, 246148, 246151, 246152, 246153, 246178, 246181, 246182, 246217, 246220,
+                                         246222, 246225, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428,
+                                         246431, 246433, 246434, 246487, 246488, 246493, 246495, 246675, 246676, 246750,
+                                         246751, 246755, 246757, 246758, 246759, 246760, 246763, 246765, 246804, 246805,
+                                         246806, 246807, 246808, 246809, 246844, 246845, 246846, 246847, 246851, 246855,
+                                         246859, 246864, 246865, 246867, 246871, 246930, 246937, 246942, 246945, 246948,
+                                         246949, 246980, 246982, 246984, 246989, 246991, 246994
+                                       };
+  Int_t listOfRunNumbersZDC[] = { 296244, 296750, 296849, 297219, 297481 };
+  Bool_t checkIfGoodRun = kFALSE;
+  for( Int_t iRunLHC18q = 0; iRunLHC18q < 129; iRunLHC18q++){
+    if( fRunNum == listOfGoodRunNumbersLHC18q[iRunLHC18q] ) checkIfGoodRun = kTRUE;
+  }
+  for( Int_t iRunLHC18r = 0; iRunLHC18r <  98; iRunLHC18r++){
+    if( fRunNum == listOfGoodRunNumbersLHC18r[iRunLHC18r] ) checkIfGoodRun = kTRUE;
+  }
+  for( Int_t iRunLHC15o = 0; iRunLHC15o < 137; iRunLHC15o++){
+    if( fRunNum == listOfGoodRunNumbersLHC15o[iRunLHC15o] ) checkIfGoodRun = kTRUE;
+  }
+  // for( Int_t iRunZDC = 0; iRunZDC < 5; iRunZDC++){
+  //   if( fRunNum == listOfRunNumbersZDC[iRunZDC] )           checkIfGoodRun = kTRUE;
+  // }
+  // cout << "fRunNum = " << fRunNum << "   and   checkIfGoodRun = " << checkIfGoodRun << endl;
+  if(checkIfGoodRun != 1) {
+       PostData(1, fOutputList);
+       // cout << "OPS!" << endl;
+       return;
+  }
+  fCounterH->Fill(17);
+
+
+
   // END RUN SELECTION
   //_____________________________________
 
@@ -1009,6 +1229,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         // std::cout << "fV0Hits[iV0Hits = " << iV0Hits << ", fRunNum=" << fRunNum << "] = " << fV0Hits[iV0Hits] << endl;
         // std::cout << "fV0TotalNCells (fRunNum = " << fRunNum << ") = " << fV0TotalNCells << endl;
   }
+  fCounterH->Fill(18);
 
   /* - AD: we try to find the AD object data in the nano-AOD. If we cannot,
      - we return, because there would be no way to actually select the events
@@ -1020,13 +1241,18 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   */
   // AD
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
+  fCounterH->Fill(19);
   if(dataAD) {
         fCounterH->Fill(iSelectionCounter);
         iSelectionCounter++;
+        fCounterH->Fill(20);
 
         fADADecision = dataAD->GetADADecision();
         fADCDecision = dataAD->GetADCDecision();
+        fCounterH->Fill(21);
   }
+  fCounterH->Fill(22);
+
   // END EVENT DATA EXTRACTION
   //_______________________________
   // EVENT SELECTION
@@ -1483,32 +1709,44 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                       if( fZNCEnergy < 1250 ) {
                                   if( fZNAEnergy > -5000 ) {
                                               if( fZNAEnergy < 1000 ) {
+                                                          fDimuonPtDistributionZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCzeroZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCzeroZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           }
                                               } else {
+                                                          fDimuonPtDistributionZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCzeroZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCzeroZNAanyH->Fill(ptOfTheDimuonPair);
                                                           }
                                               }
                                   }
                       } else {
                                   if( fZNAEnergy > -5000 ) {
                                               if( fZNAEnergy < 1000 ) {
+                                                          fDimuonPtDistributionZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCanyZNAzeroH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCanyZNAzeroH->Fill(ptOfTheDimuonPair);
                                                           }
                                               } else {
+                                                          fDimuonPtDistributionZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
                                                           if( ptOfTheDimuonPair < 0.25) {
                                                                     fInvariantMassDistributionCoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionCoherentZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
                                                           } else {
                                                                     fInvariantMassDistributionIncoherentZNCanyZNAanyH->Fill(possibleJPsi.Mag());
+                                                                    fDimuonPtDistributionIncoherentZNCanyZNAanyH->Fill(ptOfTheDimuonPair);
                                                           }
                                               }
                                   }
@@ -1561,6 +1799,29 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      -
    */
   Double_t possibleJPsiCopyMag =possibleJPsiCopy.Mag();
+
+
+  /* - NEW:
+     -
+   */
+  Bool_t controlFlag = 0;
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 10; iCosThetaBins++) {
+          if( controlFlag == 1) break;
+          if( (CosThetaHelicityFrameValue + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/10. ){
+            for(Int_t iPhiBins = 0; iPhiBins < 10; iPhiBins++) {
+              if( controlFlag == 1) break;
+              if( (PhiHelicityFrameValue + 3.14) < 6.28*((Double_t)iPhiBins + 1.)/10. ){
+                  fInvariantMassDistributionForSignalExtractionHelicityFrameH[iCosThetaBins][iPhiBins]->Fill(possibleJPsiCopyMag);
+                  controlFlag = 1;
+              }
+            }
+          }
+        }
+  }
+
   if ( (possibleJPsiCopy.Mag() > 2.8) && (possibleJPsiCopy.Mag() < 3.3) && (possibleJPsiCopy.Pt() < 0.25) ) {
     fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
     fAngularDistribOfNegativeMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[1]);
@@ -1700,6 +1961,16 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
                                                                                              possibleJPsiCopy
                                                                                              )
                                                                         );
+    fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                      muonsCopy2[1],
+                                                                                      possibleJPsiCopy
+                                                                                      ),
+                                                               CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                    muonsCopy2[1],
+                                                                                    possibleJPsiCopy
+                                                                                    )
+                                                               );
+
   }
 
   // post the data

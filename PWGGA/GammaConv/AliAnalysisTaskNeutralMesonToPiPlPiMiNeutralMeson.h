@@ -87,6 +87,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 
     void FixPzToMatchPDGInvMassNDM(AliAODConversionMother* particle);
+    void FixPzVecToMatchPDGInvMass(TLorentzVector* track);
 
     // routines for neutral pion candidates from pure conversion
     void ProcessNeutralDecayMesonCandidatesPureConversions();
@@ -185,6 +186,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fZVertexHNMEvent;                                   ///< z position of primary vertex of an event where a true Eta was found
     Float_t                           fPtHNM;                                             ///< pT of a true Eta
     Float_t                           fPDGMassNDM;                                        ///< PDG mass of either pi0 or eta
+    Float_t                           fPDGMassChargedPion;                                        ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
     // reconstructed particles
@@ -225,6 +227,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoAnglePiPlNDM;                                 //!<! angle between Pi+ and Pi0
     TH2F**                            fHistoAngleSum;                                     //!<! angle between omega and Pi0 + angle between Pi+ and Pi- + angle between Pi0 and Pi-
     TH2F**                            fHistoTrueAngleSum;
+    TH2F**                            fHistoTrueHNMesonPtvsNDMPt;
 
     TH2F**                            fHistoMotherInvMassSubNDM;                          //!<! invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
     TH2F**                            fHistoBackInvMassPtGroup1SubNDM;                    //!<! background group 1, invMass-invMass(pi0), pT_{pi+pi-pi0} (pi+ and pi- from same event)
@@ -308,7 +311,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
 
     // reconstructed particles MC validated
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;                 //!<! histos with reconstructed validated eta or omega, inv mass, pT
-    TH2F**                          fHistoTrueMotherHNMPiPlPiMiNDMInvMassPt;              //!<! histos with reconstructed validated eta, inv mass, pT
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM;           //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM;       //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
     TH2F**                          fHistoTrueMotherGammaGammaInvMassPt;                  //!<! histos with reconstructed validated pi0, inv mass, pT
     TH2F**                          fHistoTrueMotherGammaGammaFromHNMInvMassPt;           //!<! histos with reconstructed validated pi0, inv mass, pT
     TH1F**                          fHistoTrueConvGammaPt;                                //!<! histos with reconstructed validated conv gamma, pT
@@ -383,7 +387,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 4);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 5);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

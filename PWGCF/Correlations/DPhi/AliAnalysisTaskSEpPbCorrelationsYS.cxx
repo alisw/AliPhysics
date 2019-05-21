@@ -98,7 +98,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fOutputList2(0),
       fPIDResponse(0),
       ffilterbit(5),
-      fPtMin(0.3),
+      fPtMin(0.2),
       fEtaMax(0.8),
       fEtaMaxExtra(0.),
       fEtaMinExtra(-0.8),
@@ -284,7 +284,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fOutputList2(0),
       fPIDResponse(0),
       ffilterbit(5),
-      fPtMin(0.3),
+      fPtMin(0.2),
       fEtaMax(0.8),
       fEtaMaxExtra(0.),
       fEtaMinExtra(-0.8),
@@ -930,9 +930,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
  void AliAnalysisTaskSEpPbCorrelationsYS::DefineCorrOutput() {
 
-   Double_t binning_pt_assoc[12] = {0.3, 0.5, 0.75, 1.0, 1.25, 1.5,
+   Double_t binning_pt_assoc[12] = {0.2, 0.5, 0.75, 1.0, 1.25, 1.5,
                                     2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
-   Double_t binning_pt_lead[12] = {0.3, 0.5, 0.75, 1.0, 1.25, 1.5,
+   Double_t binning_pt_lead[12] = {0.2, 0.5, 0.75, 1.0, 1.25, 1.5,
                                    2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
    Double_t binning_cent[12] = {0., 5.,  10., 20.,
                                 30., 40., 50., 60., 70., 80., 90., 100.1};
@@ -1177,10 +1177,12 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        ndetatpcfmd=33;
        nfmdbin=17;
      }
-     Double_t binning_pt_fmdtpc[4]={0.3,0.8,4.,8.};
-       
+     Double_t binning_pt_fmdtpc[2]={0.2,3.};
+     //     Double_t binning_pt_fmdtpc[2]={0.,8.};
      const Double_t binning_cent_fmdfmd[9]={0.,5.,10.,20.,40.,60.,70,80.,100.1};
-     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,3,nfmdbin,8,72,10,2};
+     //     const Double_t binning_cent_fmdfmd[8]={0.,5.,10.,20.,40.,60.,70.,80.,100.1};
+     //     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,1,nfmdbin,8,72,10,4};
+     const Int_t iTrackBin_tpcfmd[7]={ndetatpcfmd,1,nfmdbin,8,72,10,4};
      fHistReconstTrack = new AliTHn("fHistReconstTrack", "fHistReconstTrack", nCFSteps, 7, iTrackBin_tpcfmd);
      fHistReconstTrackMix= new AliTHn("fHistReconstTrackMix", "fHistReconstTrackMix", nCFSteps, 7,iTrackBin_tpcfmd);
      if(fAnaMode=="TPCFMD") {
@@ -1776,16 +1778,30 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
    fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
    fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
-   if(fFMDcut && fAnaMode!="TPCTPC"){
-     if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
-       selectedTracksLeading->Clear();
-       delete selectedTracksLeading;
-       selectedTracksAssociated->Clear();
-       delete selectedTracksAssociated;
-       PostData(1, fOutputList);
-       PostData(2, fOutputList1);
-       PostData(3, fOutputList2);
-       return;} //events cuts
+   if(fAnaMode!="TPCTPC"){
+     if(fFMDcut){
+       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
+	 selectedTracksLeading->Clear();
+	 delete selectedTracksLeading;
+	 selectedTracksAssociated->Clear();
+	 delete selectedTracksAssociated;
+	 PostData(1, fOutputList);
+	 PostData(2, fOutputList1);
+	 PostData(3, fOutputList2);
+	 return;
+       }
+     }else{
+       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 100){
+	 selectedTracksLeading->Clear();
+	 delete selectedTracksLeading;
+	 selectedTracksAssociated->Clear();
+	 delete selectedTracksAssociated;
+	 PostData(1, fOutputList);
+	 PostData(2, fOutputList1);
+	 PostData(3, fOutputList2);
+	 return;
+       } //events cuts
+     }
    }
    
    fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
@@ -1891,7 +1907,6 @@ TObjArray* AliAnalysisTaskSEpPbCorrelationsYS::GetFMDhitsYS(Bool_t Aside){
           if (mostProbableN > 0) {
             Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
             //ret_vector.push_back(AliAnalysisTaskValidation::Track(eta, phi, pt, mostProbableN));
-
             if(Aside){
               if(eta<0) continue;
              } else{
@@ -3225,8 +3240,8 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsYS::IsAcceptedTrack(const AliAODTrack *ao
   if (findable <= 0)return kFALSE;
   if (nCrossedRowsTPC/findable < 0.8) return kFALSE;
   */
-  if (aodTrack->Pt() < fPtMin)
-    return kFALSE;
+  if (aodTrack->Pt() < fPtMin)    return kFALSE;
+  if (aodTrack->Pt() > 3.) return kFALSE;
   if (TMath::Abs(aodTrack->Eta()) > fEtaMax)
     return kFALSE;
   return kTRUE;

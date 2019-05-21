@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
 //______________________________________________________________________________
-// Analysis task for providing various flow informations 
+// Analysis task for providing various dijet informations 
 // author: O. Saarimaki, D.J. Kim(dong.jo.kim@cern.ch)
 // ALICE Group University of Jyvaskyla 
 // Finland 
@@ -23,15 +23,15 @@
 #include <AliAnalysisTaskSE.h>
 #include <AliJCatalystTask.h>
 #include "AliJCDijetHistos.h"
+#include "AliJCDijetAna.h"
 
 
-// Fastjet includes
-#include <FJ_includes.h>
 
 using namespace std;
 //==============================================================
 class TClonesArray;
 class AliJCDijetHistos;
+class AliJCDijetAna;
 
 class AliJCDijetTask : public AliAnalysisTaskSE {
 
@@ -55,23 +55,6 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   Bool_t  IsMC()const{ return fIsMC; }
   void    SetIsMC(Bool_t b) { fIsMC=b; }
   void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi;}
-  //double  GetLeadingJetCut() {return fleadingJetCut;}
-  //double  GetSubleadingJetCut() {return fsubleadingJetCut;}
-  //double  GetConstituentCut() {return fconstituentCut;}
-  void CalculateJetsDijets(TClonesArray *inList,
-                           int    lDebug,
-                           int    lCBin,
-                           double lParticleEtaCut,
-                           double lParticlePtCut,
-                           double lJetCone,
-                           double lktJetCone,
-                           int    lktScheme,
-                           bool   lusePionMassInkt,
-                           bool   luseDeltaPhiBGSubtr,
-                           double lConstituentCut,
-                           double lLeadingJetCut,
-                           double lSubleadingJetCut,
-                           double lDeltaPhiCut);
 
   // Methods specific for this class
   void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
@@ -94,6 +77,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   double fconstituentCut;
   double fdeltaPhiCut;
   AliJCDijetHistos *fhistos;
+  //AliJCDijetAna *fdijetAna;
   int fCBin;
   TDirectory     *fOutput; // Output directory
 

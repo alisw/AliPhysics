@@ -13,15 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//      Task for Beauty analysis in p-p collisions   				  //
-//      															  //
-//																	  //
-//		v1.0														  //
+//      Task for Beauty analysis in p-p collisions  TPC-TOF           //
+//                						      //
+//								      //
+//	           						      //
 //                                                                    //
-//	    Authors 							                          //
-//		Sudhir Pandurang Rode (sudhir.pandurang.rode@cern.ch)				      //
+//	    Authors 						      //
+//  Sudhir Pandurang Rode (sudhir.pandurang.rode@cern.ch              //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -340,7 +341,14 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew(const c
 ,fCFM(0)
   ,fPID(new AliHFEpid("hfePid"))
 ,fPIDqa(0)
-
+,fDCAxy_pt_BeforeAllCuts(0)
+,fDCAxy_pt_AfterTrkFiltBit(0)
+,fDCAxy_pt_AfterMoreCuts(0)
+,fDCAxy_pt_AfterSPDLayer(0)
+,fDCAxy_pt_AfterTrackDCACuts(0)
+,fDCAxy_pt_AfterAllTrackCuts(0) 
+,fDCAxy_pt_AfterPIDCuts(0)
+,fDCAxy_pt_AfterStepRecPrimCut(0)
   //For MC
   ,fRejectKinkMother(kTRUE)
   ,fMCarray(0)
@@ -393,6 +401,9 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew(const c
   ,hMCWeightEtaMB(0)
   ,hMCWeightPi0Enh(0)
 ,hMCWeightEtaEnh(0)
+,fCalculateBDMesonpTWeights(0)
+,fCalculateTaggingEff(0)
+,fCalculateBeautyElectronTrackEff(0)
 {
   //Named constructor
   // Define input and output slots here
@@ -648,7 +659,14 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew()
 ,fCFM(0)
   ,fPID(new AliHFEpid("hfePid"))
 ,fPIDqa(0)
-
+,fDCAxy_pt_BeforeAllCuts(0)
+,fDCAxy_pt_AfterTrkFiltBit(0)
+,fDCAxy_pt_AfterMoreCuts(0)
+,fDCAxy_pt_AfterSPDLayer(0)
+,fDCAxy_pt_AfterTrackDCACuts(0)
+,fDCAxy_pt_AfterAllTrackCuts(0) 
+,fDCAxy_pt_AfterPIDCuts(0)
+,fDCAxy_pt_AfterStepRecPrimCut(0)
   //For MC
   ,fRejectKinkMother(kTRUE)
   ,fMCarray(0)
@@ -701,6 +719,9 @@ AliAnalysisHFEppTPCTOFBeauty5TeVNew::AliAnalysisHFEppTPCTOFBeauty5TeVNew()
   ,hMCWeightEtaMB(0)
   ,hMCWeightPi0Enh(0)
 ,hMCWeightEtaEnh(0)
+,fCalculateBDMesonpTWeights(0)
+,fCalculateTaggingEff(0)
+,fCalculateBeautyElectronTrackEff(0)
 {
 
   // Constructor
@@ -819,6 +840,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fLSdcaBelow = new TH2F("fLSdcaBelow","LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 32,ptbinning, 8000,-0.5,0.5);
   fOutputList->Add(fLSdcaBelow);
 
+  if(fIsMC){
+
   fMCInvmassLS = new TH1F("fMCInvmassLS", "MC Inv mass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 100,0,1.0);
   fOutputList->Add(fMCInvmassLS);
 
@@ -830,6 +853,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
 
   fMCLSdcaBelow = new TH2F("fMCLSdcaBelow","MC LS Elec DCA m<0.1GeV/c^{2}; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 32,ptbinning, 8000,-0.5,0.5);
   fOutputList->Add(fMCLSdcaBelow);
+
+  }
 
   fTPC_p1 = new TH2F("fTPC_p1","p (GeV/c);TPC dE/dx (a. u.)",300,0,15,400,-20,200);
   fOutputList->Add(fTPC_p1);
@@ -927,6 +952,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fTPCnsigma_TOFnsigma3 = new TH2F("fTPCnsigma_TOFnsigma3","TOF Electron N#sigma;TPC Electron N#sigma",200,-10,30,200,-15,10);
   fOutputList->Add(fTPCnsigma_TOFnsigma3);
 
+  if(fIsMC){
+
   hCharmMotherPt = new TH1F("hCharmMotherPt","; p_{T} [GeV/c]; Count",14,ptbinningHF);
   fOutputList->Add(hCharmMotherPt);
 
@@ -965,6 +992,12 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   hBeautyMotherPt = new TH2F("hBeautyMotherPt","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
   hBeautyMotherPt->Sumw2();
   fOutputList->Add(hBeautyMotherPt);
+  
+  hBeautyMotherPt2Daft = new TH2F("hBeautyMotherPt2Daft","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
+  hBeautyMotherPt2Daft->Sumw2();
+  fOutputList->Add(hBeautyMotherPt2Daft);
+
+  }
 
   hDCAPtProtons = new TH2F("hDCAPtProtons","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
   fOutputList->Add(hDCAPtProtons);
@@ -987,7 +1020,10 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
     hPtHadrons = new TH1F("hPtHadrons","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(hPtHadrons);
 
-
+    if(fIsMC && fCalculateBDMesonpTWeights){
+    
+    	
+    
         fBHadpT = new TH1F("fBHadpT","B hadron pT;p_{T} (GeV/c);counts",250,0,50);
         fBHadpT->Sumw2();
         fOutputList->Add(fBHadpT);
@@ -1028,12 +1064,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
         fLambdaCpT->Sumw2();
         fOutputList->Add(fLambdaCpT);
 
-
-
-
-  hBeautyMotherPt2Daft = new TH2F("hBeautyMotherPt2Daft","; p_{T} [GeV/c]; Count",1000,0,50,1000,0,50);
-  hBeautyMotherPt2Daft->Sumw2();
-  fOutputList->Add(hBeautyMotherPt2Daft);
+  }
 
   fPtElec = new TH1F("fPtElec","; p_{T} [GeV/c]; Count",32,ptbinning);
   fOutputList->Add(fPtElec);
@@ -1060,6 +1091,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
 
   fDCAxy_pt_had_WoPID = new TH2F("fDCAxy_pt_had_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,8000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_WoPID);
+
+  if(fIsMC){
 
   fDCAxy_pt_charmbef = new TH2F("fDCAxy_pt_charmbef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
   //fDCAxy_pt_charmbef->Sumw2();
@@ -1182,7 +1215,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fDCAxy_pt_BaryonBD_beautybef = new TH2F("fDCAxy_pt_BaryonBD_beautybef",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
   //fDCAxy_pt_BaryonBD_beautybef->Sumw2();
   fOutputList->Add(fDCAxy_pt_BaryonBD_beautybef);
-
+  }
   fDCAxy_pt_had_onlyDCA_WoPID = new TH2F("fDCAxy_pt_had_onlyDCA_WoPID",";p_{t} (GeV/c);DCAxy hadrons_WoPID",300,0,30,2000,-0.5,0.5);
   fOutputList->Add(fDCAxy_pt_had_onlyDCA_WoPID);
 
@@ -1285,6 +1318,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fTPCnsigma_pt_after_tof_its = new TH2F("fTPCnsigma_pt_after_tof_its","pt (GeV/c);TPC Electron N#sigma after TOF and ITS cuts",300,0,15,200,-15,10);
   fOutputList->Add(fTPCnsigma_pt_after_tof_its);
 
+  if(fIsMC && fCalculateTaggingEff){
+
   fMCMBPtElePi0FoundAft = new TH1F("fMCMBPtElePi0FoundAft","; p_{T} [GeV/c]; Count",32,ptbinning);
   fMCMBPtElePi0FoundAft->Sumw2();
   fOutputList->Add(fMCMBPtElePi0FoundAft);
@@ -1339,14 +1374,19 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
   fMCPtEleGammaGenerated = new TH1F("fMCPtEleGammaGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
   //fMCPtEleGammaGenerated->Sumw2();
   fOutputList->Add(fMCPtEleGammaGenerated);
-
-  fPtBeautyGenerated = new TH1F("fPtBeautyGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
-  //fPtBeautyGenerated->Sumw2();
-  fOutputList->Add(fPtBeautyGenerated);
-
+  }
+  
+  
   fPtGeneratedBmesons = new TH1F("fPtGeneratedBmesons","; p_{T} [GeV/c]; Count",1000,0,200);
   //fPtGeneratedBmesons->Sumw2();
   fOutputList->Add(fPtGeneratedBmesons);
+
+  
+  if(fIsMC && fCalculateBeautyElectronTrackEff){
+  
+  fPtBeautyGenerated = new TH1F("fPtBeautyGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
+  //fPtBeautyGenerated->Sumw2();
+  fOutputList->Add(fPtBeautyGenerated);
 
   fPtBeautyReconstructedAll = new TH1F("fPtBeautyReconstructedAll","; p_{T} [GeV/c]; Count",32,ptbinning);
   //fPtBeautyReconstructedAll->Sumw2();
@@ -1370,7 +1410,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
 
     fRealInclsElecPt = new TH1F("fRealInclsElecPt","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fRealInclsElecPt);
-    
+  }  
  /*   fPtElePi0GeneratedAft_NewNoWeight = new TH1F("fPtElePi0GeneratedAft_NewNoWeight","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtElePi0GeneratedAft_NewNoWeight);
     
@@ -1437,6 +1477,40 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserCreateOutputObjects()
    // fMCEnhPtEleEtaFoundAft_New->Sumw2();
     fOutputList->Add(fMCEnhPtEleEtaFoundAft_New);
     */
+    
+    if(!fIsMC){
+    /*fDCAxy_pt_BeforeAllCuts = new TH2F("fDCAxy_pt_BeforeAllCuts",";p_{t} (GeV/c);DCAxy hadrons",100,0,10,2000,-0.5,0.5);
+    fDCAxy_pt_BeforeAllCuts->Sumw2();
+    fOutputList->Add(fDCAxy_pt_BeforeAllCuts);
+    
+    fDCAxy_pt_AfterTrkFiltBit = new TH2F("fDCAxy_pt_AfterTrkFiltBit",";p_{t} (GeV/c);DCAxy hadrons",100,0,10,2000,-0.5,0.5);
+    fDCAxy_pt_AfterTrkFiltBit->Sumw2();
+    fOutputList->Add(fDCAxy_pt_AfterTrkFiltBit);
+    
+    fDCAxy_pt_AfterMoreCuts = new TH2F("fDCAxy_pt_AfterMoreCuts",";p_{t} (GeV/c);DCAxy hadrons",100,0,10,2000,-0.5,0.5);
+    fDCAxy_pt_AfterMoreCuts->Sumw2();
+    fOutputList->Add(fDCAxy_pt_AfterMoreCuts);
+    
+    fDCAxy_pt_AfterSPDLayer = new TH2F("fDCAxy_pt_AfterSPDLayer",";p_{t} (GeV/c);DCAxy hadrons",100,0,10,2000,-0.5,0.5);
+    fDCAxy_pt_AfterSPDLayer->Sumw2();
+    fOutputList->Add(fDCAxy_pt_AfterSPDLayer);
+    
+    fDCAxy_pt_AfterTrackDCACuts = new TH2F("fDCAxy_pt_AfterTrackDCACuts",";p_{t} (GeV/c);DCAxy hadrons",100,0,10,2000,-0.5,0.5);
+    fDCAxy_pt_AfterTrackDCACuts->Sumw2();
+    fOutputList->Add(fDCAxy_pt_AfterTrackDCACuts);
+   
+    fDCAxy_pt_AfterAllTrackCuts = new TH2F("fDCAxy_pt_AfterAllTrackCuts",";p_{t} (GeV/c);DCAxy hadrons",100,0,10,2000,-0.5,0.5);
+    fDCAxy_pt_AfterAllTrackCuts->Sumw2();
+    fOutputList->Add(fDCAxy_pt_AfterAllTrackCuts);
+    
+    fDCAxy_pt_AfterStepRecPrimCut = new TH2F("fDCAxy_pt_AfterStepRecPrimCut",";p_{t} (GeV/c);DCAxy hadrons",100,0,10,2000,-0.5,0.5);
+    fDCAxy_pt_AfterStepRecPrimCut->Sumw2();
+    fOutputList->Add(fDCAxy_pt_AfterStepRecPrimCut);*/
+    
+    fDCAxy_pt_AfterPIDCuts = new TH2F("fDCAxy_pt_AfterPIDCuts",";p_{t} (GeV/c);DCAxy hadrons",100,0,10,2000,-0.5,0.5);
+    fDCAxy_pt_AfterPIDCuts->Sumw2();
+    fOutputList->Add(fDCAxy_pt_AfterPIDCuts);    
+    }
     
   ///THnSparse to store DCA of different particle species in MC-------------
   Int_t nBinspdg2 = 30;
@@ -1665,7 +1739,9 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 
   ///Getting primary vertex    
   AliAODVertex* vtTrc = fAOD->GetPrimaryVertex();
-
+  
+ // Double_t NcontV = vtTrc->GetNContributors();  // April 30
+ // if(NcontV<2)return;     // Newly applied April 30
   ///Events with no vertex by tracks-------------------------------
   if(!vtTrc){
     fNevent_no_vertex->Fill(0);
@@ -1778,7 +1854,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
 
     Bool_t test = GetNMCPartProduced(); ///Getting number of particles produced by the MC generator
 
-    GetMCTemplateWeight(fMCarray); // For B meson weight
+    if(fCalculateBDMesonpTWeights) GetMCTemplateWeight(fMCarray); // For B meson weight
 
 
     for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
@@ -1795,6 +1871,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
       if((TrackPDG>500 && TrackPDG<600)) fPtGeneratedBmesons->Fill(fMCparticle->Pt()); 
 
       ///Beauty reconstruction efficiency block-----------
+      if(fCalculateBeautyElectronTrackEff){
       if(TrackPDG == 11){	
         Bool_t MotherFound = FindMother(iMC);
         if(fIsFromMesonB || fIsFromBarionB || fIsFromBarionBD || fIsFromMesonBD){
@@ -1802,6 +1879,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
           //cout<<iMC<<endl;
         }
 
+      }
       }
       ///----------------------------------------------------  
     }
@@ -1866,10 +1944,11 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     fITSnClus_1->Fill(fITSnClus);
     fTPCnClus_1->Fill(fTPCnClus);
 
-    ///Pseudo-rapidity cut
+     ///Pseudo-rapidity cut
     if((track->Eta() < fEtaMin) || (track->Eta() > fEtaMax)) continue;
 
     ///Beauty reconstruction efficiency block-----------
+    if(fCalculateBeautyElectronTrackEff){
     if(fIsMC && fIsAOD){
       Bool_t IsHFEMC = IsHFelectronsMC(track);
       if(IsHFEMC){
@@ -1879,18 +1958,39 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
         }
       }
     }
-    ///----------------------------------------------------
+    }
+   
+   
+     ////////////////////
+    //Calculating DCA///
+    ////////////////////
 
+    if(!fExtraCuts){
+      fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
+    }
 
+    fExtraCuts->SetRecEventInfo(fAOD);
+
+    Double_t d0z0[2]={-999,-999}, cov[3]={999,999,999};
+
+    //AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
+    //if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 3., d0z0, cov))) continue; 
+
+    fExtraCuts->GetHFEImpactParameters(track, d0z0, cov); // recalculation of vertex is done here, earlier was not done in the task and was the reason for "shoulder" shape in the DCA templates. Also, this is not giving effect for PbPb but only pp. ====> Sudhir 19 January, 2019 ///Solved
+    Double_t DCAxy = d0z0[0];
+    Double_t DCAz = d0z0[1];
+    //cout<<DCAxy<<"    "<<DCAz<<endl;
+    //if(!fIsMC) fDCAxy_pt_BeforeAllCuts->Fill(fPt,DCAxy*track->Charge()*signB);
+   
     //=======================================================================
     // Track Selection Cuts are applied here
     //=======================================================================        
     ///Test Filter Bit
     if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
 
-    ///RecKine: ITS TPC cuts 
-    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
+   // if(!fIsMC) fDCAxy_pt_AfterTrkFiltBit->Fill(fPt,DCAxy*track->Charge()*signB);
 
+    
     ///RecKink 
     if(fRejectKinkMother)
     {
@@ -1906,19 +2006,55 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
       if(!kinkmotherpass) continue;
     }
 
+    ///RecKine: ITS TPC cuts 
+    if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue; //commented out for a while on April 30
+    
+  /* if(atrack->GetTPCNcls() < 100) continue;
+   if(atrack->GetITSNcls() < 3) continue;
+   //if(atrack->GetTPCFoundFraction() < 0.6) continue;
+   Double_t foundcls = 999, findablecls = 999;
+   foundcls = atrack->GetTPCNcls();
+   findablecls = atrack->GetTPCNclsF();
+   //cout<<foundcls<<"   "<<findablecls<<endl;
+   if(findablecls <= 0)continue;
+   if((foundcls/findablecls) < 0.6)continue; // Found over findable
+   //cout<<"After   "<<foundcls<<"   "<<findablecls<<endl;
+   //fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable); 
+   if(atrack->GetTPCsignalN() < 80) continue;
+   if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+       */
+    
+   // if(!fIsMC) fDCAxy_pt_AfterMoreCuts->Fill(fPt,DCAxy*track->Charge()*signB);
+    
+
     ///RecPrim
-    if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;				///ProcessCutStep(Int_t cutStep, AliVParticle *track)
+    if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;				///ProcessCutStep(Int_t cutStep, AliVParticle *track)  // commented out on APril 29, 2019 by Sudhir for checks
 
     ///HFEcuts: ITS layers cuts 
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-
+    
+    //if(!fIsMC) fDCAxy_pt_AfterSPDLayer->Fill(fPt,DCAxy*track->Charge()*signB);
+    
+    if(TMath::Abs(DCAxy) > 1.0 || TMath::Abs(DCAz) > 2.0) continue; /// Applied just today Monday April 21, 2019
+    
+  //  if(!fIsMC) fDCAxy_pt_AfterTrackDCACuts->Fill(fPt,DCAxy*track->Charge()*signB);
+    
+    //if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;				///ProcessCutStep(Int_t cutStep, AliVParticle *track) 
+    
+    //fDCAxy_pt_AfterStepRecPrimCut->Fill(fPt,DCAxy*track->Charge()*signB);
+    
     ///HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+    
+    //if(!fIsMC) fDCAxy_pt_AfterAllTrackCuts->Fill(fPt,DCAxy*track->Charge()*signB);
+    
+    //if((!(track->GetStatus()&AliESDtrack::kITSrefit)|| (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
 
     ///////////////////////////
     //AFTER TRACK SELECTION////
     ///////////////////////////
     ///Beauty reconstruction efficiency block-----------
+    if(fCalculateBeautyElectronTrackEff){
     if(fIsMC && fIsAOD){
       Bool_t IsHFEMC = IsHFelectronsMC(track);
       if(IsHFEMC){
@@ -1927,6 +2063,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
           //cout<<"reconstructed by track cut"<<endl;
         }
       }
+    }
     }
     ///----------------------------------------------------
 
@@ -1957,25 +2094,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     fTPCnClus_2->Fill(fTPCnClus);
 
 
-    ////////////////////
-    //Calculating DCA///
-    ////////////////////
-
-    if(!fExtraCuts){
-      fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
-    }
-
-    fExtraCuts->SetRecEventInfo(fAOD);
-
-    Double_t d0z0[2], cov[3];
-
-    //AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
-    // if(!(track->PropagateToDCA(prim_vtx, fAOD->GetMagneticField(), 3., d0z0, cov))) continue; 
-    //cout<<d0z0[0]<<"    "<<d0z0[1]<<endl;
-    fExtraCuts->GetHFEImpactParameters(track, d0z0, cov); // recalculation of vertex is done here, earlier was not done in the task and was the reason for "shoulder" shape in the DCA templates. Also, this is not giving effect for PbPb but only pp. ====> Sudhir 19 January, 2019 ///Solved
-    Double_t DCAxy = d0z0[0];
-    Double_t DCAz = d0z0[1];
-
+   
     //cout<<"After   "<<DCAxy<<"         "<<DCAz<<endl;
 
     if(fTOFnSigma_proton >= -3 && fTOFnSigma_proton <= 3){
@@ -2102,7 +2221,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     ///////////////////////////////////////////////////
     //THnSparse to store the DCA information of Data///
     ///////////////////////////////////////////////////
-    //if(!fIsMC){
+    if(!fIsMC){
     qadcaData[0] = fPt;
 
     qadcaData[1] = DCAxy*track->Charge()*signB;
@@ -2117,7 +2236,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     ///Electron candidates
     if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
       if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
-        qadcaData[4] = 1.5;					
+        qadcaData[4] = 1.5;
+        if(!fIsMC) fDCAxy_pt_AfterPIDCuts->Fill(fPt,DCAxy*track->Charge()*signB);					
       }
     }
 
@@ -2161,7 +2281,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     qadcaData[3] = fsharedclsITS; 
     //cout<<fPt<<endl;
     if(qadcaData[4]>0.) fD0Data->Fill(qadcaData);
-    //}
+    }
 
 
 
@@ -2169,7 +2289,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     ///////////////////////////////////////////////////
     //THnSparse to store the DCA information of Hadron Contamination///
     ///////////////////////////////////////////////////
-    //if(!fIsMC){
+    if(!fIsMC){
     qadcaHC[0] = fPt;
 
     qadcaHC[1] = DCAxy*track->Charge()*signB;
@@ -2217,7 +2337,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     //Double_t WeightHC = fHC->Eval(fP);
     //cout<<WeightHC<<endl;
     if(qadcaHC[4]>0.) fD0HC->Fill(qadcaHC, WeightHC);
-    //}
+    }
 
 
 
@@ -2230,7 +2350,8 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     }
 
 
-    ///Checking PID cuts separately (for the efficiency)	
+    ///Checking PID cuts separately (for the efficiency)
+    if(fCalculateBeautyElectronTrackEff){
     if(fTPCnSigma >= ftpcPIDmincut && fTPCnSigma <= ftpcPIDmaxcut){
 
       ///For the beauty reconstruction efficiency-----------
@@ -2256,7 +2377,9 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
         }
       }
       ///----------------------------------------------------
-    }          
+    }   
+    
+    }       
     //     if(fTOFnSigma >= ftofPIDmincut && fTOFnSigma <= ftofPIDmaxcut){
     if(fIsMC && fIsAOD){
 
@@ -2305,17 +2428,17 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     //AFTER PID SELECTION////
     /////////////////////////
 
-    if(fIsMC){
+    
+
+    if(fIsMC && fCalculateTaggingEff){
       InvMassCheckMC(iTracks, track, d0z0, signB);
-      InvMassCheckMCDenom(track);
-        
-        
-      
+      InvMassCheckMCDenom(track);  
     //  InvMassCheckMCDenomNew(track);
     //  InvMassCheckMCNew(iTracks, track, d0z0, signB);
     }
 
     ///Beauty reconstruction efficiency block-----------
+    if(fCalculateBeautyElectronTrackEff){
     if(fIsMC && fIsAOD){
       Bool_t IsHFEMC = IsHFelectronsMC(track);
       if(IsHFEMC){
@@ -2323,6 +2446,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
           fPtBeautyReconstructedTracksPID->Fill(fPt);
         }
       }
+    }
     }
     ///----------------------------------------------------
 
@@ -2829,7 +2953,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fVevent = dynamic_cast<AliVEvent*>(InputEvent());
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
-    Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
+    
     Double_t DCAxyCut = 1.0, DCAzCut = 2;
     Int_t fPDGe1 = 11, fPDGe2 = 11;
 
@@ -2879,7 +3003,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
       }
 
       fExtraCuts->SetRecEventInfo(fAOD);
-
+      Double_t d0z0Asso[2]={-999,-999}, covAsso[3]={999,999,999};
       fExtraCuts->GetHFEImpactParameters(trackAsso, d0z0Asso, covAsso);
       //fExtraCuts->SetRequireITSpixel(AliHFEextraCuts::kAny); 
       //fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    
@@ -2930,7 +3054,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     fVevent = dynamic_cast<AliVEvent*>(InputEvent());
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
-    Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
+    //Double_t d0z0Asso[2]={-999,-999}, covAsso[3];
     Double_t DCAxyCut = 1, DCAzCut = 2;
     Int_t fPDGe1 = 11, fPDGe2 = 11;
 
@@ -2980,7 +3104,7 @@ void AliAnalysisHFEppTPCTOFBeauty5TeVNew::UserExec(Option_t *)
       }
 
       fExtraCuts->SetRecEventInfo(fAOD);
-
+      Double_t d0z0Asso[2]={-999,-999}, covAsso[3]={999,999,999};
       fExtraCuts->GetHFEImpactParameters(trackAsso, d0z0Asso, covAsso);
      // fExtraCuts->SetRequireITSpixel(AliHFEextraCuts::kAny); 
       //fExtraCuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverFindable);    

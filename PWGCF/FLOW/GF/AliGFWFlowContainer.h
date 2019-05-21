@@ -14,14 +14,19 @@
 #include "TRandom.h"
 #include "TString.h"
 #include "TCollection.h"
+#include "TAxis.h"
 
 class AliGFWFlowContainer:public TNamed {
  public:
   AliGFWFlowContainer();
   AliGFWFlowContainer(const char *name);
   ~AliGFWFlowContainer();
+  enum StatisticsType {kSingleSample, kJackKnife, kBootstrap};
   void Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t *multiBins, Int_t nRandomized=0);
   void Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t MultiMin, Double_t MultiMax, Int_t nRandomized=0);
+  Bool_t CreateBinsFromAxis(TAxis *inax);
+  void SetXAxis(TAxis *inax);
+  void SetXAxis();
   void RebinMulti(Int_t rN) { if(fProf) fProf->RebinX(rN); };
   Int_t GetNMultiBins() { return fProf->GetNbinsX(); };
   Double_t GetMultiAtBin(Int_t bin) { return fProf->GetXaxis()->GetBinCenter(bin); };
@@ -30,10 +35,13 @@ class AliGFWFlowContainer:public TNamed {
   void ReadAndMerge(const char *infile);
   void PickAndMerge(TFile *tfi);
   Bool_t OverrideMainWithSub(Int_t subind, Bool_t ExcludeChosen);
+  Bool_t RandomizeProfile(Int_t nSubsets=0);
+  Bool_t CreateStatisticsProfile(StatisticsType StatType, Int_t arg);
   TObjArray *GetSubProfiles() { return fProfRand; };
   Long64_t Merge(TCollection *collist);
   void SetIDName(TString newname); //! do not store
   void SetPtRebin(Int_t newval) { fPtRebin=newval; };
+  void SetPtRebin(Int_t nbins, Double_t *binedges) { fPtRebin=nbins; fPtRebinEdges=binedges; };
   void SetPropagateErrors(Bool_t newval) { fPropagateErrors = newval; };
   TProfile *GetCorrXXVsMulti(const char *order, Int_t l_pti=0);//pti = 0 for pt-integrated
   TProfile *GetCorrXXVsPt(const char *order, Double_t lminmulti=-1, Double_t lmaxmulti=-1); //0 for multi. integrated
@@ -125,9 +133,13 @@ class AliGFWFlowContainer:public TNamed {
   Int_t fNRandom;
   TString fIDName;
   Int_t fPtRebin; //! do not store
+  Double_t *fPtRebinEdges; //! do not store
+  TAxis *fXAxis;
+  Int_t fNbinsPt; //! Do not store; stored in the fXAxis
+  Double_t *fbinsPt; //! Do not store; stored in fXAxis
   Bool_t fPropagateErrors; //! do not store
   TProfile *GetRefFlowProfile(const char *order, Double_t m1=-1, Double_t m2=-1);
-  ClassDef(AliGFWFlowContainer, 1);
+  ClassDef(AliGFWFlowContainer, 2);
 };
 
 

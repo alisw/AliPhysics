@@ -59,7 +59,7 @@ void filterESD_Nuclex()
   AliAnalysisTaskSE* aodFilterTask = reinterpret_cast<AliAnalysisTaskSE*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C(kFALSE, kFALSE, kFALSE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, 1500, 3, kTRUE, kFALSE, kFALSE, kFALSE)"));
   aodFilterTask->SelectCollisionCandidates(AliVEvent::kAny);
 
-  AliAnalysisTaskNanoAODFilter* nanoFilterTask = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/AddTaskNanoAODFilter.C(0, kFALSE)");
+  AliAnalysisTaskNanoAODFilter* nanoFilterTask = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/macros/AddTaskNanoAODFilter.C(0, kFALSE)");
   nanoFilterTask->SelectCollisionCandidates(AliVEvent::kAny);  
   nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
   
@@ -74,7 +74,7 @@ void filterESD_Nuclex()
   nanoFilterTask->SetTrkCuts(myFilterCuts);
   nanoFilterTask->AddSetter(new AliNanoAODSimpleSetter);
 
-  nanoFilterTask->SetVarListTrack("pt,theta,phi,TPCsignalN,chi2perNDF,TRDntrackletsPID,TPCmomentum,TOFsignal,integratedLength,posx,posy,posz");
+  nanoFilterTask->SetVarListTrack("pt,theta,phi,TPCsignalN,TPCncls,TPCnclsF,TPCNCrossedRows,chi2perNDF,TRDntrackletsPID,TPCmomentum,TOFsignal,TPCsignal,integratedLength,DCA,posDCAz");
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kDeuteron);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kTriton);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kHe3);
@@ -84,7 +84,7 @@ void filterESD_Nuclex()
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kHe3);
   nanoFilterTask->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kAlpha);
 
-  nanoFilterTask->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,RunNumber");
+  nanoFilterTask->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,RunNumber,T0Spread,NumberOfESDTracks");
 
   mgr->SetDebugLevel(1); // enable debug printouts
   if (!mgr->InitAnalysis()) 

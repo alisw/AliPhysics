@@ -48,8 +48,9 @@ class AliAnalysisTaskDJetCorrelationsQA : public AliAnalysisTaskEmcalJet
 
 public:
 
-   enum ECandidateType{ kD0toKpi, kDstartoKpipi };
-   enum ECorrelationMethod{ kConstituent, kAngular, kResponseMatrix };
+   enum ECandidateType{ kD0toKpi=0, kDstartoKpipi=1 };
+   enum ECorrelationMethod{ kConstituent=0, kAngular=1, kResponseMatrix=2 };
+   enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 }; /// multiplicity estimators
 
    AliAnalysisTaskDJetCorrelationsQA();
    AliAnalysisTaskDJetCorrelationsQA(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype);
@@ -85,6 +86,12 @@ public:
 
    void SetUseSBArray(Bool_t b) {fUseSBArray=b;}
    Bool_t GetUseSBArray() const {return fUseSBArray;}
+
+   void SetIsPPData(Bool_t b){fIsPPData=b;}
+   void SetIsPbPbData(Bool_t b){fIsPbPbData=b;}
+
+   void SetMultiplicityEstimator(Int_t c){fMultiplicityEstimator=c;}
+   Int_t GetMultiplicityEstimator() const {return fMultiplicityEstimator;}
 
    // Array of D0 width for the Dstar
    Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
@@ -123,8 +130,11 @@ private:
 
 
    Bool_t fUseMCInfo;               // Use MC info
+   Bool_t fIsPPData;                // is pp data (don't check centrality)
+   Bool_t fIsPbPbData;                // is Pb-Pb data (for mult binning)
+   Int_t  fMultiplicityEstimator;   // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
    Bool_t fUseReco;                 // use reconstructed tracks when running on MC
-   Bool_t fUsePythia;		    // Use Pythia info only for MC
+   Bool_t fUsePythia;               // Use Pythia info only for MC
    Bool_t fBuildRM;                 // flag to switch on/off the Response Matrix (Needs MC)
    Bool_t fBuildRMEff;              // flag to switch on/off the Response Matrix with efficiencies (Needs MC)
 
@@ -145,13 +155,14 @@ private:
    Bool_t fAnalyseDBkg;             // flag to switch off/on the SB analysis (default is off)
 
 
-   Int_t fNAxesBigSparse;           // number of axis
+   Int_t  fNAxesBigSparse;           // number of axis
    Bool_t fUseCandArray;            //! Use D meson candidates array
    Bool_t fUseSBArray;              //! Use D meson SB array
 
    // Histograms
    TH1I* fhstat;                    //!
    TH1F* fhCentDjet;                //!
+   TH1F* fhMultiplicity;            //!
    //generic jet and jet track distributions
    TH1F* fhPtJetTrks;		    //!
    TH1F* fhPhiJetTrks;              //!
@@ -197,7 +208,7 @@ private:
    TH2F* fhJetTrksPtJet_Djet_Reco;        //!
 
 
-   ClassDef(AliAnalysisTaskDJetCorrelationsQA,2); // class for charm-jet CorrelationsExch
+   ClassDef(AliAnalysisTaskDJetCorrelationsQA,3); // class for charm-jet CorrelationsExch
 };
 
 #endif

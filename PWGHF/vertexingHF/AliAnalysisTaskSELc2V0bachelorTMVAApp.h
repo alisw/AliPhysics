@@ -152,7 +152,13 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   void SetUsePIDresponseForNsigma(Bool_t flag) {fUsePIDresponseForNsigma = flag;}
   Bool_t GetUsePIDresponseForNsigma() const {return fUsePIDresponseForNsigma;}
-  
+
+  void SetNVars(Int_t n) {fNVars = n;}
+  Int_t GetNVars() const {return fNVars;}
+
+  void SetTimestampCut(UInt_t value) {fTimestampCut = value;}
+  UInt_t GetTimestampCut() const {return fTimestampCut;}
+
  private:
   
   EBachelor CheckBachelor(AliAODRecoCascadeHF *part, AliAODTrack* bachelor, TClonesArray *mcArray);
@@ -322,6 +328,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   TH2D *fBDTHistoVsCosPAK0S;           //!<! BDT classifier vs V0 cosine of pointing angle
   TH2D *fBDTHistoVsSignd0;             //!<! BDT classifier vs V0 proton signed d0
   TH2D *fBDTHistoVsCosThetaStar;       //!<! BDT classifier vs proton emission angle in pK0s pair rest frame
+  TH2D* fBDTHistoVsnSigmaTPCpr;       //!<! BDT classifier vs nSigmaTPCpr
+  TH2D* fBDTHistoVsnSigmaTOFpr;       //!<! BDT classifier vs nSigmaTOFpr
+  TH2D* fBDTHistoVsnSigmaTPCpi;       //!<! BDT classifier vs nSigmaTPCpi
+  TH2D* fBDTHistoVsnSigmaTPCka;       //!<! BDT classifier vs nSigmaTPCka
+  TH2D* fBDTHistoVsBachelorP;       //!<! BDT classifier vs bachelor p
+  TH2D* fBDTHistoVsBachelorTPCP;       //!<! BDT classifier vs bachelor p at TPC wall
   TH2D *fHistoNsigmaTPC;               //!<! 
   TH2D *fHistoNsigmaTOF;               //!<! 
 
@@ -332,9 +344,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   Bool_t fUsePIDresponseForNsigma;  /// flag to decide if to take the nSigma from the PIDresponse or from AliAODPidHF
 
-  
+  Int_t fNVars;  /// Number of training variables
+
+  UInt_t fTimestampCut; // cut on timestamp
+ 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 5); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 8); /// class for Lc->p K0
   /// \endcond    
 };
 

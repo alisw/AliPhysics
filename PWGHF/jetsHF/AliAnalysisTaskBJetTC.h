@@ -53,6 +53,8 @@ public:
 		kNoContributors,kDeltaVertexZ,kNoVertexTracks,kVertexZResolution,kMVPileup,kSPDClusterCut,kZVtxSPDOutFid,kCentralityFlattening,kSelPtHardBin};
 	Bool_t IsSelected(Int_t &WhyRejected,ULong_t &RejectionBits);
         void DoJetProbabilityAnalysis(Bool_t val=true){fDoJetProbabilityAnalysis=val;}
+        void DoJetMassAnalysis(Bool_t val=true){fDoJetMass=val;}
+        void DoSVEnergyFractionAnalysis(Bool_t val=true){fDoSVEnergyFraction=val;}
         void DoPtRelAnalysis(Bool_t val=true){fDoPtRelAnalysis=val;}
         void DoPtRelEventSelection(Bool_t val=true){fDoSelectionPtRel=val;}
 
@@ -328,6 +330,60 @@ private:
         TH2D * fh2dJetSignedImpParXYSignificancelf_Class4;//!
 
 
+	//Jet Mass Histograms
+	TH2D * fhistJetMass;//!
+        TH2D * fhistJetMass_Unidentified;//!
+        TH2D * fhistJetMass_udsg;//!
+        TH2D * fhistJetMass_c;//!
+        TH2D * fhistJetMass_b;//!
+
+        TH2D * fhistJetMassFirst;//!
+        TH2D * fhistJetMassSecond;//!
+        TH2D * fhistJetMassThird;//!
+
+        TH2D * fhistJetMass_UnidentifiedFirst;//!
+        TH2D * fhistJetMass_udsgFirst;//!
+        TH2D * fhistJetMass_cFirst;//!
+        TH2D * fhistJetMass_bFirst;//!
+
+        TH2D * fhistJetMass_UnidentifiedSecond;//!
+        TH2D * fhistJetMass_udsgSecond;//!
+        TH2D * fhistJetMass_cSecond;//!
+        TH2D * fhistJetMass_bSecond;//!
+
+        TH2D * fhistJetMass_UnidentifiedThird;//!
+        TH2D * fhistJetMass_udsgThird;//!
+        TH2D * fhistJetMass_cThird;//!
+        TH2D * fhistJetMass_bThird;//!
+
+
+	//Secondary Vertex energy fraction
+        TH2D * fhistSVEnergyFraction;//!
+        TH2D * fhistSVEnergyFraction_Unidentified;//!
+        TH2D * fhistSVEnergyFraction_udsg;//!
+        TH2D * fhistSVEnergyFraction_c;//!
+        TH2D * fhistSVEnergyFraction_b;//!
+
+        TH2D * fhistSVEnergyFractionFirst;//!
+        TH2D * fhistSVEnergyFraction_UnidentifiedFirst;//!
+        TH2D * fhistSVEnergyFraction_udsgFirst;//!
+        TH2D * fhistSVEnergyFraction_cFirst;//!
+        TH2D * fhistSVEnergyFraction_bFirst;//!
+
+        TH2D * fhistSVEnergyFractionSecond;//!
+        TH2D * fhistSVEnergyFraction_UnidentifiedSecond;//!
+        TH2D * fhistSVEnergyFraction_udsgSecond;//!
+        TH2D * fhistSVEnergyFraction_cSecond;//!
+        TH2D * fhistSVEnergyFraction_bSecond;//!
+
+        TH2D * fhistSVEnergyFractionThird;//!
+        TH2D * fhistSVEnergyFraction_UnidentifiedThird;//!
+        TH2D * fhistSVEnergyFraction_udsgThird;//!
+        TH2D * fhistSVEnergyFraction_cThird;//!
+        TH2D * fhistSVEnergyFraction_bThird;//!
+
+
+	//Jet Probability Histograms
 	TH2D * fhistJetProbability;//!
         TH2D * fhistJetProbability_Unidentified;//!
         TH2D * fhistJetProbability_udsg;//!
@@ -493,6 +549,8 @@ private:
     	TClonesArray  *fCaloClusters;//! Tender cluster
 	AliAnalysisUtils *fUtils;//!
   	Bool_t fDoJetProbabilityAnalysis;//
+	Bool_t fDoJetMass;//
+	Bool_t fDoSVEnergyFraction;//
 	Bool_t fDoPtRelAnalysis;//
 	Bool_t fDoSelectionPtRel;//
 	Bool_t fUsePicoTracks;//!
@@ -658,7 +716,7 @@ private:
   static const Double_t fgkMassProton;  //
   static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
 
-	ClassDef(AliAnalysisTaskBJetTC, 57)
+	ClassDef(AliAnalysisTaskBJetTC, 59)
 };
 #endif
  //

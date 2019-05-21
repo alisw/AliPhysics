@@ -2440,7 +2440,10 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC17pq ||                                                                                            // pp 5TeV LHC17pq
       fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 ||                                                                // MC pp 5TeV LHC17pq
       fPeriodEnum == kLHC17l4b ||                                                                                           // MC pp 5TeV LHC17pq
-      fPeriodEnum == kLHC18b8                                                                                               // MC Jet Jet pp 5TeV LHC17pq
+      fPeriodEnum == kLHC18b8  ||                                                                                           // MC Jet Jet pp 5TeV LHC17pq
+      fPeriodEnum == kLHC18l6b1 || fPeriodEnum == kLHC18l6c1 ||                                                             // MC Jet Jet pp 13 TeV with decay photon in EMCal acc.
+      fPeriodEnum == kLHC18qr ||                                                                                            // PbPb 5TeV 2018
+      fPeriodEnum == kLHC18l8a || fPeriodEnum == kLHC18l8b || fPeriodEnum == kLHC18l8c                                      // MC gen. purp. LHC18qr
       ){
       return kTRUE;
   } else {
@@ -3014,6 +3017,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
   fMaxPtJetMC                          = 0;
 
   if (  fPeriodEnum != kLHC18b8 &&                                                                  // LHC17pq pp 5TeV JetJet MC's
+        fPeriodEnum != kLHC18l6b1 && fPeriodEnum != kLHC18l6c1  &&                                  // LHC18 JetJet MC decay EMCal triggered
         fPeriodEnum != kLHC17i3a1 &&                                                                // LHC16ijklop GammaJet MC EMCal triggered
         fPeriodEnum != kLHC17i3c1 &&                                                                // LHC16ijklop JetJet MC EMCal triggered
         fPeriodEnum != kLHC17g8a &&                                                                 // LHC16qt pPb 5TeV JetJet MC's
@@ -3254,6 +3258,18 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
            Int_t bin = 0;
            while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
            if (bin < 8) weight = weightsBins[bin];
+        } else if ( fPeriodEnum == kLHC18l6c1 ){ // preliminary weights obtained from local running
+           Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
+           Double_t weightsBins[8]      = { 0.000802655, 0.00171876 ,0.00185997, 0.00184664 , 0.00140638  , 0.00102373  , 0.000599643 , 0.000496501 };
+           Int_t bin = 0;
+           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+           if (bin < 8) weight = weightsBins[bin];
+        } else if ( fPeriodEnum == kLHC18l6b1 ){ // preliminary weights obtained from local running
+           Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 21, 10000};
+           Double_t weightsBins[6]      = { 0.0479994 , 0.039711  ,0.039082 , 0.0287247 , 0.0182263  , 0.0248411};
+           Int_t bin = 0;
+           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+           if (bin < 6) weight = weightsBins[bin];
         } else {
           weight = 1;
         }
@@ -3508,6 +3524,18 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 20) weight = weightsBins[bin];
+      } else if ( fPeriodEnum == kLHC18l6c1 ){ // preliminary weights obtained from local running
+         Double_t ptHardBinRanges[9]  = {  8, 10, 14, 19, 26, 35, 48, 66, 10000};
+         Double_t weightsBins[8]      = { 0.000802655, 0.00171876 ,0.00185997, 0.00184664 , 0.00140638  , 0.00102373  , 0.000599643 , 0.000496501 };
+         Int_t bin = 0;
+         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+         if (bin < 8) weight = weightsBins[bin];
+      } else if ( fPeriodEnum == kLHC18l6b1 ){ // preliminary weights obtained from local running
+         Double_t ptHardBinRanges[7]  = {  5, 7, 9, 12, 16, 21, 10000};
+         Double_t weightsBins[6]      = { 0.0479994 , 0.039711  ,0.039082 , 0.0287247 , 0.0182263  , 0.0248411};
+         Int_t bin = 0;
+         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+         if (bin < 6) weight = weightsBins[bin];
     } else {
       weight = 1;
     }
@@ -3542,10 +3570,12 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's
-        fPeriodEnum != kLHC12P2JJ  &&                                                                 // LHC12 JetJet MC
-        fPeriodEnum != kLHC18b11a  &&                                                                 // LHC18 GammaJet MC anchored to LHC15o
-        fPeriodEnum != kLHC18b11b  &&                                                                 // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC12P2JJ  &&                                                               // LHC12 JetJet MC
+        fPeriodEnum != kLHC18b11a  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC18b11b  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
         fPeriodEnum != kLHC18b11c  &&                                                               // LHC18 GammaJet MC anchored to LHC15o
+        fPeriodEnum != kLHC18l6b1  &&                                                               // LHC18 GammaJet MC anchored to LHC17 (with decay photon in EMC acc.)
+        fPeriodEnum != kLHC18l6c1  &&                                                               // LHC18 GammaJet MC anchored to LHC17 (with decay photon in EMC acc.)
         fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
      ){
     NTrials = -1;
@@ -3628,7 +3658,8 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent, AliVEvent* event){
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
 
-  if (  fPeriodEnum != kLHC18b8 &&                                                                 // LHC17pq pp 5TeV JetJet MC's
+  if (  fPeriodEnum != kLHC18b8 &&                                                                  // LHC17pq pp 5TeV JetJet MC's
+        fPeriodEnum != kLHC18l6b1 && fPeriodEnum != kLHC18l6c1 &&                                   // LHC17 JetJet MC with decay photons in EMCal acc.
         fPeriodEnum != kLHC17g8a &&                                                                 // LHC16qt pPb 5TeV JetJet MC's
         fPeriodEnum != kLHC16rP1JJ &&  fPeriodEnum != kLHC16sP1JJ &&                                // LHC16sr pPb 8TeV JetJet MC's
         fPeriodEnum != kLHC16P1JJ && fPeriodEnum != kLHC16P1JJLowB &&                               // LHC16X Jet Jet MC's
@@ -3776,7 +3807,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 //                                     0.1                         // 2018
                                   };
 
-  Int_t runRangesEMCalL1[21]     = {  179796,                     // LHC12c-i (EGA)
+  Int_t runRangesEMCalL1[22]     = {  179796,                     // LHC12c-i (EGA)
                                       195180,                     // LHC13b-f
                                       197469, 197692,             // LHC13g
                                       235195,                     // LHC15a-h
@@ -3792,10 +3823,10 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                       267161,                     // LHC16t (267161-267166)
                                       270531,                     // LHC17c-o (270531-281961)
                                       282008,                     // LHC17pq (282008-282441)
-                                      282504                      // 2018
+                                      282504, 295232              // LHC17r + 2018
                                     };
 
-  Double_t thresholdEMCalL1[20] = { 9.5/*8.398*/,               // LHC12c-i (EGA)
+  Double_t thresholdEMCalL1[21] = { 9.5/*8.398*/,               // LHC12c-i (EGA)
                                     11.5, /*6.*/                // LHC13b-f
                                     5.5,                        // LHC13g
                                     2000.0,                     // LS1
@@ -3811,10 +3842,10 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     7.8,                        // LHC16s (266405-267131)
                                     7.8,                        // LHC16t (267161-267166)
                                     8.5,                        // LHC17c-o (270531-281961)
-                                    8.8                         // LHC17pq (282008-282441)
-//                                     8.8                         // 2018
+                                    8.8,                        // LHC17pq (282008-282441)
+                                    8.5                         // LHC17r + 2018
                                   };
-  Double_t spreadEMCalL1[20]    = { 1.0/*0.*/,
+  Double_t spreadEMCalL1[21]    = { 1.0/*0.*/,
                                     0.5,
                                     /*0.4*/ 0.6,
                                     0.0,                        // LS1
@@ -3823,15 +3854,15 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     1.0,                        // LHC15i-m
                                     1.0,                        // LHC15n
                                     0.0, 1.0,                   // LHC15o
-                                    1.0,                        // LHC16i-k  (255515-258574)
+                                    0.7,                        // LHC16i-k  (255515-258574)
                                     0.8,                        // LHC16l (258883-260187)
-                                    1.0,                        // LHC16m-p (260216-)
+                                    0.7,                        // LHC16m-p (260216-)
                                     1.0, 1.2,                   // LHC16q (265015-265525)
                                     0.9,                        // LHC16s (266405-267131)
                                     0.9,                        // LHC16t (267161-267166)
-                                    1.0,                        // LHC17c-o (270531-281961)
-                                    1.0                         // LHC17pq (282008-282441)
-//                                     1.0                         // 2018
+                                    0.7,                        // LHC17c-o (270531-281961)
+                                    1.0,                        // LHC17pq (282008-282441)
+                                    0.7                         // LHC17r + 2018
                                   };
 
   Int_t runRangesEMCalL1G2[21]  = { 195180,                     // LHC13b-f
@@ -3849,28 +3880,28 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     267161,                     // LHC16t (267161-267166)
                                     270531,                     // LHC17c-o (270531-281961)
                                     282008,                     // LHC17pq (282008-282441)
-                                    282504                      // 2018
+                                    282504, 295232              // LHC17r + 2018
                                   };
 
-  Double_t thresholdEMCalL1G2[19] = { 7.2,                        // LHC13b-f
+  Double_t thresholdEMCalL1G2[20] = { 7.2,                        // LHC13b-f
                                       /*3.9*/3.75,                // LHC13g
                                       2000.0,                     // LS1
                                       1.8,                        // LHC15a-h
                                       5.0,                        // LHC15i-m
                                       5.0,                        // LHC15n
                                       2000.0, 2000.0,             // LHC15o
-                                      3.6,                        // LHC16i-k  (255515-258574)
+                                      3.75,                       // LHC16i-k  (255515-258574)
                                       3.8,                        // LHC16l (258883-260187)
-                                      3.6,                        // LHC16m-p (260216-)
+                                      3.75,                       // LHC16m-p (260216-)
                                       3.9, 6.3,                   // LHC16q (265015-265525)
                                       6.3, 5.3,                   // LHC16r (265589-266318)
                                       5.3,                        // LHC16s (266405-267131)
                                       5.3,                        // LHC16t (267161-267166)
-                                      3.6,                        // LHC17c-o (270531-281961)
-                                      3.9                         // LHC17pq (282008-282441)
-//                                       3.9                         // 2018
+                                      3.75,                       // LHC17c-o (270531-281961)
+                                      3.9,                        // LHC17pq (282008-282441)
+                                      3.75                        // LHC17r + 2018
                                     };
-  Double_t spreadEMCalL1G2[19]    = { 0.3,                        // LHC13bf
+  Double_t spreadEMCalL1G2[20]    = { 0.3,                        // LHC13bf
                                       /*0.2*/0.25,                // LHC13g
                                       0.,                         // LS1
                                       0.1,                        // LHC15a-h
@@ -3885,8 +3916,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                       0.3,                        // LHC16s (266405-267131)
                                       0.3,                        // LHC16t (267161-267166)
                                       0.3,                        // LHC17c-o (270531-281961)
-                                      0.3                         // LHC17pq (282008-282441)
-//                                       0.3                         // 2018
+                                      0.3,                        // LHC17pq (282008-282441)
+                                      0.3                         // LHC17r + 2018
                                     };
 
   Int_t runnumber = event->GetRunNumber();
@@ -6637,6 +6668,13 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC17P1JJ") == 0 ||
               periodName.CompareTo("LHC18f5") == 0 ){
     fPeriodEnum = kLHC17P1JJ;
+    fEnergyEnum = k13TeV;
+  // special JJ MC with decay photon in EMCal acc
+  } else if ( periodName.CompareTo("LHC18l6b1") == 0){
+    fPeriodEnum = kLHC18l6b1;
+    fEnergyEnum = k13TeV;
+  } else if ( periodName.CompareTo("LHC18l6c1") == 0){
+    fPeriodEnum = kLHC18l6c1;
     fEnergyEnum = k13TeV;
 
   // pp 13 TeV LHC17 special MC - strangeness enhanced

@@ -149,12 +149,12 @@ AliAnalysisTaskTPCMatchEff* AliAnalysisTaskTPCMatchEff::AddTaskTPCMatchEff(const
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
-    //task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("default"));
-    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("TPCgeo"));    
-    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+ITShit"));
-    task->SetESDtrackCuts(2,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+ITSrefit"));
-    task->SetESDtrackCuts(3,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+SPDhit"));
-    task->SetESDtrackCuts(4,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+ITSrefit+SPDhit"));
+    //task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("TPCgeoEta08"));    
+    task->SetESDtrackCuts(1,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+ITShitEta08"));
+    task->SetESDtrackCuts(2,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+ITSrefitEta08"));
+    task->SetESDtrackCuts(3,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+SPDhitEta08"));
+    task->SetESDtrackCuts(4,AlidNdPtTools::CreateESDtrackCuts("TPCgeo+ITSrefit+SPDhitEta08"));
     
     
     // attach the task to the manager and configure in and ouput

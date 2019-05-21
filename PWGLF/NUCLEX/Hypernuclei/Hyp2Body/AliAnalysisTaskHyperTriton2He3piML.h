@@ -35,8 +35,8 @@ struct RHyperTritonHe3pi {
   Double32_t fTPCmomHe3;            //[0.0,10.24,8]
   Double32_t fTPCmomPi;             //[0.0,10.24,8]
   Double32_t fChi2V0;               //[0.0,10.24,8] V0 fit chi2
-  Double32_t fDcaHe32PrimaryVertex; //[0.0,1.0,8] DCA of the negative prong to the PV
-  Double32_t fDcaPi2PrimaryVertex;  //[0.0,1.0,8]  DCA of the positive prong to the PV
+  Double32_t fDcaHe32PrimaryVertex; //[0.0,4.0,8] DCA of the negative prong to the PV
+  Double32_t fDcaPi2PrimaryVertex;  //[0.0,40.0,8]  DCA of the positive prong to the PV
   Double32_t fDcaV0daughters;       //[0.0,2.56,8] DCA between the two prongs
   Double32_t fLeastXedOverFindable; //[0.36,1.0,8] Min xed roads/findable clusters
   Double32_t fMaxChi2PerCluster;    //[0,6.4,8] Max chi2 per cluster in TPC
@@ -63,13 +63,14 @@ struct RCollision {
   float fY;
   float fZ;
   float fCent;
+  unsigned char fTrigger;
 };
 
 struct RTracklet {
   float fTheta;
   float fPhi;
-  Double32_t fDeltaTheta;    //[8,-0.12,0.12]
-  Double32_t fDeltaPhi;      //[8,-0.12,0.12]
+  Double32_t fDeltaTheta;    //[-0.12,0.12,8]
+  Double32_t fDeltaPhi;      //[-0.12,0.12,8]
 };
 
 struct SHyperTritonHe3pi {
@@ -138,12 +139,14 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   bool fFillGenericV0s;
   bool fFillTracklet;
   bool fSaveFileNames;
+  bool fPropagetToPV;
 
  private:
   TList* fListHist;  //! List of Cascade histograms
   TTree* fTreeV0;    //! Output Tree, V0s
 
-  AliPIDResponse* fPIDResponse;  //! PID response object
+  AliInputEventHandler *fInputHandler; //!
+  AliPIDResponse *fPIDResponse; //! PID response object
 
   bool fMC;
   bool fUseOnTheFly;
@@ -172,14 +175,14 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   float fMaxDeltaTheta;
   float fMinTrackletCosP;
 
-  TTree*     fFileNameTree;
-  TObjString fCurrentFileName;
+  TTree*     fFileNameTree;                     //!
+  TObjString fCurrentFileName;                  //!
 
-  std::vector<SHyperTritonHe3pi> fSHyperTriton;
-  std::vector<SGenericV0> fSGenericV0;
-  std::vector<RHyperTritonHe3pi> fRHyperTriton;
-  std::vector<RTracklet> fRTracklets;
-  RCollision fRCollision;
+  std::vector<SHyperTritonHe3pi> fSHyperTriton; //!
+  std::vector<SGenericV0> fSGenericV0;          //!
+  std::vector<RHyperTritonHe3pi> fRHyperTriton; //!
+  std::vector<RTracklet> fRTracklets;           //!
+  RCollision fRCollision;                       //!
 
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML&);  // not implemented

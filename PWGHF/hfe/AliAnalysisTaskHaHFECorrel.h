@@ -80,7 +80,7 @@ public:
 
     void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Double_t *NonElecIsTriggerWeight, Int_t NumElectronsInEvent); 
 
-    void MCTruthCorrelation(Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP);
+    void MCTruthCorrelation(TObjArray* MCRedTracks, Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP);
 
     //********************MC
     void  MCEfficiencyCorrections(const AliVVertex * RecVertex);
@@ -129,6 +129,9 @@ public:
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
     void SetPtMaxEvent(Double_t PtMax) {fMaxPtEvent=PtMax;};
 
+    void SetMinNTr(Double_t MinNTr) {fMinNTr=MinNTr;};
+    void SetMaxNTr(Double_t MaxNTr) {fMaxNTr=MaxNTr;};
+
 
     void SetEtaMax(Double_t EtaMax) {
       fMaxElectronEta = TMath::Abs(EtaMax);
@@ -152,7 +155,7 @@ public:
 
    
     void SetUseTRD(Bool_t UseTRD) {fUseTRD = UseTRD;}
-    void SetUseITS(Bool_t UseITS) {fUseITS = UseITS;}
+    void SetUseITSsa(Bool_t UseITSsa) {fUseITSsa = UseITSsa;}
     void SetSigmaITScut(Double_t SigmaITScut) {fSigmaITScut = SigmaITScut;};
     void SetSigmaTOFcut(Double_t SigmaTOFcut) {fSigmaTOFcut = SigmaTOFcut;};
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
@@ -176,6 +179,9 @@ public:
     void SetMCTruthCorrelation(Bool_t MCTruthCorr) {
       fMCTrueCorrelation = MCTruthCorr;
     };
+    void SetUseEventWeights(Bool_t UseEventWeights) {
+      fUseEventWeights = UseEventWeights;
+    }
 
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
@@ -186,7 +192,8 @@ public:
     void SetEleRecEff(TH2F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
     void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
     void SetNonTagCorr(TH1F & NonTagCorr) {fNonTagCorr = NonTagCorr; fNonTagCorr.SetName("fNonTagCorr");}
-    
+    void SetTriggerWeight(TH1F & TriggerWeight){fTriggerWeight = TriggerWeight; fTriggerWeight.SetName("fTriggerWeight");}
+    void SetVtxWeight(TH1F & VtxWeight) {fVtxWeight = VtxWeight; fVtxWeight.SetName("fVtxWeight");};
 
     Bool_t   ESDkTrkGlobalNoDCA(AliVTrack* Vtrack);
 
@@ -202,6 +209,8 @@ public:
     Double_t              Eta2y(Double_t pt, Double_t m, Double_t eta) const;
     Double_t              GetHadronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
     Double_t              GetElectronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
+    Double_t              GetTriggerWeight(Double_t minV0);
+    Double_t              GetVtxWeight(Double_t nTr);
     Double_t              GetNonTagCorr(Double_t ptTrack, Double_t ptAsso);
 
     Double_t              Sphericity(const TObjArray* tracks, Double_t MaxEta, Double_t MinPt);
@@ -213,8 +222,11 @@ public:
     Bool_t                fUseKFforPhotonicPartner; //default ist DCA
 
     Float_t               fMaxPtEvent;              //
-    Float_t               fMinPtEvent;
+    Float_t               fMinPtEvent;              //
+    Int_t                 fMaxNTr;                  //
+    Int_t                 fMinNTr;                  //
 
+    
     Double_t              fMaxElectronEta;          //
     Double_t              fMinElectronEta;          //
     Double_t              fMaxHadronEta;            //
@@ -224,10 +236,10 @@ public:
     Int_t                 fTPCnCut;                 // TPC number of clusters for tagged electron
     Int_t                 fTPCndEdxCut;             //
     Int_t                 fITSnCut;                 // ITs number of clusters for tagged electrons 
-    Float_t               fITSSharedClusterCut;      //
+    Float_t               fITSSharedClusterCut;     //
 
     Bool_t                fUseTRD;                  //
-    Bool_t                fUseITS;                  //
+    Bool_t                fUseITSsa;                // Use ITSsa tracks
     Double_t              fSigmaITScut;             // ITS nSigma cut
     Double_t              fSigmaTOFcut;             // TOF nSigma cut
     Double_t              fSigmaTPCcut;             // lower TPC nSigma cut 
@@ -255,6 +267,7 @@ public:
     // ******* Switch for analysis modes
     Bool_t                fTRDQA;                   // TRDQA
     Bool_t                fMCTrueCorrelation;       //
+    Bool_t                fUseEventWeights;         //
     Bool_t                fCorrHadron;              // Choose Hadron-HFE Correl
     Bool_t                fCorrLParticle;           // Choose LP-HFE Correl
     Bool_t                fMixedEvent;              // Fill Mixed Event for the cases chosen above
@@ -303,6 +316,20 @@ public:
     TList                 *fOutputListHadron;       //!
     TList                 *fOutputListQA;           //!
     TH1F                  *fNoEvents;               //! no of events for different cuts
+    TH2F                  *fMCNoEvents;             //! no of events for different cuts
+    TH2F                  *fHFENoEvents;            //! no of events for different cuts
+    TH3F                  *fDiffractiveType;        //!
+    TH2F                  *fV0ACTrueInel;           //!
+    TH1F                  *fV0TrueMinInel;          //!
+    TH2F                  *fV0ACTriggered;          //!
+    TH1F                  *fV0MinTriggered;         //!
+    TH1F                  fTriggerWeight;
+    TH2F                  *fVtxEtaNTr;              //!
+    TH2F                  *fVtxBeforeNTrAcc;        //!
+    TH2F                  *fVtxAfterNTrAcc;         //!
+    TH1F                  *fVtxRecBeforeNTr;        //!
+    TH2F                  *fVtxRecAfterNTr;         //!
+    TH1F                  fVtxWeight;
     TH2F                  *fTrkpt;                  //! track pt for different cuts
     TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
 
@@ -313,6 +340,7 @@ public:
     TH2F                  *fSPDnTrGen;              //!
     TH2F                  *fDiffSPDMCVtx;           //!
     THnSparseF            *fnTrAccMaxGen;           //!
+    THnSparseF            *fnTrAccGen;           //!
     THnSparseF            *fnTrAccMinGen;           //!
     THnSparseF            *fnTrAccMeanGen;          //!
     THnSparseF            *fnTrAccMax;              //!

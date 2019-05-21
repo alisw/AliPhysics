@@ -85,6 +85,7 @@ public:
   Int_t GetTOFchi2()          const { return fTOFchi2;          }
   Int_t GetTOFsignalDz()      const { return fTOFsignalDz;      }
   Int_t GetTOFsignalDx()      const { return fTOFsignalDx;      }
+  Int_t GetStatus()           const { return fStatus;           }
   
 
 
@@ -140,6 +141,7 @@ private:
   Int_t fTOFchi2;  ///< Mapping variables
   Int_t fTOFsignalDz;  ///< Mapping variables 
   Int_t fTOFsignalDx;  ///< Mapping variables
+  Int_t fStatus; ///< Mapping variables
 
   static AliNanoAODTrackMapping * fInstance; ///< instance, needed for the singleton implementation
   static TString fMappingString; ///< the string which this class was initialized with

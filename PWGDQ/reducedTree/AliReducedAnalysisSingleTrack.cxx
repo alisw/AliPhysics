@@ -48,6 +48,7 @@ ClassImp(AliReducedAnalysisSingleTrack);
 AliReducedAnalysisSingleTrack::AliReducedAnalysisSingleTrack() :
   AliReducedAnalysisTaskSE(),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
+  fClusterTrackMatcher(0x0),
   fOptionRunOverMC(kTRUE),
   fOptionRunOverCaloCluster(kFALSE),
   fEventCuts(),
@@ -55,7 +56,10 @@ AliReducedAnalysisSingleTrack::AliReducedAnalysisSingleTrack() :
   fClusterCuts(),
   fMCSignalCuts(),
   fTracks(),
-  fClusters()
+  fClusters(),
+  fClusterTrackMatcherHistograms(0x0),
+  fClusterTrackMatcherMultipleMatchesBefore(0x0),
+  fClusterTrackMatcherMultipleMatchesAfter(0x0)
 {
   //
   // default constructor
@@ -66,6 +70,7 @@ AliReducedAnalysisSingleTrack::AliReducedAnalysisSingleTrack() :
 AliReducedAnalysisSingleTrack::AliReducedAnalysisSingleTrack(const Char_t* name, const Char_t* title) :
   AliReducedAnalysisTaskSE(name,title),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
+  fClusterTrackMatcher(0x0),
   fOptionRunOverMC(kTRUE),
   fOptionRunOverCaloCluster(kFALSE),
   fEventCuts(),
@@ -73,7 +78,10 @@ AliReducedAnalysisSingleTrack::AliReducedAnalysisSingleTrack(const Char_t* name,
   fClusterCuts(),
   fMCSignalCuts(),
   fTracks(),
-  fClusters()
+  fClusters(),
+  fClusterTrackMatcherHistograms(0x0),
+  fClusterTrackMatcherMultipleMatchesBefore(0x0),
+  fClusterTrackMatcherMultipleMatchesAfter(0x0)
 {
   //
   // named constructor
@@ -99,6 +107,10 @@ AliReducedAnalysisSingleTrack::~AliReducedAnalysisSingleTrack()
   fTracks.Clear("C");
   fClusters.Clear("C");
   if (fHistosManager) delete fHistosManager;
+  if (fClusterTrackMatcher) delete fClusterTrackMatcher;
+  if (fClusterTrackMatcherHistograms) delete fClusterTrackMatcherHistograms;
+  if (fClusterTrackMatcherMultipleMatchesBefore) delete fClusterTrackMatcherMultipleMatchesBefore;
+  if (fClusterTrackMatcherMultipleMatchesAfter) delete fClusterTrackMatcherMultipleMatchesAfter;
 }
 
 //___________________________________________________________________________
@@ -216,6 +228,8 @@ void AliReducedAnalysisSingleTrack::RunTrackSelection() {
     for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i] = -9999.;
     
     AliReducedVarManager::FillTrackInfo(track, fValues);
+    if (fClusterCuts.GetEntries())  AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters, fClusterTrackMatcher);
+    else                            AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, NULL, fClusterTrackMatcher);
     fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
     
     if (track->IsA() == AliReducedTrackInfo::Class()) {
@@ -250,6 +264,11 @@ void AliReducedAnalysisSingleTrack::FillTrackHistograms(TString trackClass/*="Tr
   //
   // fill track histograms
   //
+  if (fClusterTrackMatcher) {
+    fClusterTrackMatcher->ClearMatchedClusterIDsBefore();
+    fClusterTrackMatcher->ClearMatchedClusterIDsAfter();
+  }
+
   for (Int_t i=0;i<36; ++i) fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+i] = 0.;
   AliReducedBaseTrack* track = 0;
   TIter nextTrack(&fTracks);
@@ -261,7 +280,14 @@ void AliReducedAnalysisSingleTrack::FillTrackHistograms(TString trackClass/*="Tr
     for (Int_t i=AliReducedVarManager::kNEventVars; i<AliReducedVarManager::kNTrackVars; ++i) fValues[i] = -9999.;
     
     AliReducedVarManager::FillTrackInfo(track, fValues);
+    if (fClusterCuts.GetEntries())  AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, &fClusters, fClusterTrackMatcher);
+    else                            AliReducedVarManager::FillClusterMatchedTrackInfo(track, fValues, NULL, fClusterTrackMatcher);
     FillTrackHistograms(track, trackClass);
+  }
+
+  if (fClusterTrackMatcher) {
+    fClusterTrackMatcher->FillMultipleMatchesHistogram(fClusterTrackMatcherMultipleMatchesBefore, fClusterTrackMatcher->GetMatchedClusterIDsBefore());
+    fClusterTrackMatcher->FillMultipleMatchesHistogram(fClusterTrackMatcherMultipleMatchesAfter, fClusterTrackMatcher->GetMatchedClusterIDsAfter());
   }
 }
 
@@ -392,6 +418,17 @@ void AliReducedAnalysisSingleTrack::Init() {
   AliReducedVarManager::SetDefaultVarNames();
   fHistosManager->SetUseDefaultVariableNames(kTRUE);
   fHistosManager->SetDefaultVarNames(AliReducedVarManager::fgVariableNames, AliReducedVarManager::fgVariableUnits);
+
+  if (fClusterTrackMatcher) {
+    fClusterTrackMatcherMultipleMatchesBefore = new TH1I("multipleCounts_beforeMatching", "mulitple counts of matched cluster IDs beofore matching", 50, 0.5, 50.5);
+    fClusterTrackMatcherMultipleMatchesAfter = new TH1I("multipleCounts_afterMatching", "mulitple counts of matched cluster IDs after matching", 50, 0.5, 50.5);
+    fClusterTrackMatcherHistograms = new TList();
+    fClusterTrackMatcherHistograms->SetOwner();
+    fClusterTrackMatcherHistograms->SetName("ClusterTrackMatcherHistograms");
+    fClusterTrackMatcherHistograms->Add(fClusterTrackMatcherMultipleMatchesBefore);
+    fClusterTrackMatcherHistograms->Add(fClusterTrackMatcherMultipleMatchesAfter);
+    fHistosManager->AddToOutputList(fClusterTrackMatcherHistograms);
+  }
 }
 
 //___________________________________________________________________________

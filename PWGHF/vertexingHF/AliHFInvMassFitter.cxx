@@ -31,7 +31,7 @@ ClassImp(AliHFInvMassFitter);
 
 /////////////////////////////////////////////////////////////
 ///
-/// Implemenatation od AliHFInvMassFitter class for
+/// Implemenatation of AliHFInvMassFitter class for
 /// the fit of invariant mass distribution of charm hadron candidates
 /// reconstructed from their hadronic decays
 ///
@@ -52,6 +52,8 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fMinMass(0),
   fMaxMass(5),
   fTypeOfFit4Bkg(kExpo),
+  fParSig(0.1),
+  fSigmaVar(0.012),
   fPolDegreeBkg(4),
   fCurPolDegreeBkg(-1),
   fMassParticle(1.864),
@@ -63,6 +65,7 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
   fFixedSigma(kFALSE),
+  fBoundSigma(kFALSE),
   fFixedSigma2Gaus(kFALSE),
   fFixedRawYield(-1.),
   fFrac2Gaus(0.2),
@@ -108,6 +111,8 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fMinMass(minvalue),
   fMaxMass(maxvalue),
   fTypeOfFit4Bkg(fittypeb),
+  fParSig(0.1),
+  fSigmaVar(0.012),
   fPolDegreeBkg(4),
   fCurPolDegreeBkg(-1),
   fMassParticle(1.864),
@@ -119,6 +124,7 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
   fFixedSigma(kFALSE),
+  fBoundSigma(kFALSE),
   fFixedSigma2Gaus(kFALSE),
   fFixedRawYield(-1.),
   fFrac2Gaus(0.2),
@@ -536,6 +542,7 @@ TF1* AliHFInvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsi
     if(fFixedMean) funcsig->FixParameter(1,fMass);
     funcsig->SetParameter(2,fSigmaSgn);
     if(fFixedSigma) funcsig->FixParameter(2,fSigmaSgn);
+    if(fBoundSigma) funcsig->SetParLimits(2,fSigmaVar*(1-fParSig), fSigmaVar*(1+fParSig));
     funcsig->SetParNames("SgnInt","Mean","Sigma");
   }
   if(fTypeOfFit4Sgn==k2Gaus){

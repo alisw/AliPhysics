@@ -203,7 +203,7 @@ void AliAnalysisTaskUEStudy::AnaTrack(Int_t flag)
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskUEStudy::AnaMCParticle(Int_t flag)
+void AliAnalysisTaskUEStudy::AnaParticleMC(Int_t flag)
 {
     if (!fMCisPrim) return;    
     if (!fMCIsCharged) return;    
@@ -267,8 +267,8 @@ AliAnalysisTaskUEStudy* AliAnalysisTaskUEStudy::AddTaskUEStudy(const char* name,
     // configure the task
     //===========================================================================
     task->SelectCollisionCandidates(AliVEvent::kAnyINT);    
-    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("default"));
-    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("default"));
+    task->SetESDtrackCutsM(AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
+    task->SetESDtrackCuts(0,AlidNdPtTools::CreateESDtrackCuts("defaultEta08"));
     
     // attach the task to the manager and configure in and ouput
     //===========================================================================
