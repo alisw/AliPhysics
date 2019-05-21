@@ -125,7 +125,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   AliAODv0KineCuts * fAODV0Cuts;
   TRandom3 * fRd;
   
-  ClassDef(AliAnalysisTaskHFEIPCorrection, 1); // example of analysis
+  ClassDef(AliAnalysisTaskHFEIPCorrection, 2); // example of analysis
 };
 
 #endif
