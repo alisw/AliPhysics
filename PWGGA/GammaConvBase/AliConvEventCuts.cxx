@@ -2436,7 +2436,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC16rP1JJ || fPeriodEnum == kLHC16sP1JJ || fPeriodEnum == kLHC18f3bc ||
       fPeriodEnum == kLHC17f3 || fPeriodEnum == kLHC17f4 ||                                                                 // MC pPb 8TeV LHC16sr
       fPeriodEnum == kLHC17n ||                                                                                             // Xe-Xe LHC17n
-      fPeriodEnum == kLHC17j7 ||                                                                                            // MC Xe-Xe LHC17n
+      fPeriodEnum == kLHC17XeXeHi ||                                                                                        // MC Xe-Xe LHC17n
       fPeriodEnum == kLHC17pq ||                                                                                            // pp 5TeV LHC17pq
       fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 ||                                                                // MC pp 5TeV LHC17pq
       fPeriodEnum == kLHC17l4b ||                                                                                           // MC pp 5TeV LHC17pq
@@ -2713,32 +2713,32 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
           return kTRUE;
         else return kFALSE;
       // setting specific arry for LHC17n for MC track mult
-      } else if(fPeriodEnum == kLHC17j7 ){
+      } else if(fPeriodEnum == kLHC17XeXeHi ){
         if(nprimaryTracks > PrimaryTracksLHC17n10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC17n10[fCentralityMin][column])
             return kTRUE;
         else return kFALSE;
       // settings for LHC15o MCs
-      } else if(fPeriodEnum == kLHC18e1 || fPeriodEnum == kLHC18e1a || fPeriodEnum == kLHC18e1b || fPeriodEnum == kLHC18e1c || fPeriodEnum == kLHC16h4 || fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c){
-	centralityC= Int_t(centrality/10);
-	if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
-	  if(fCentralityMin==0 && nprimaryTracks >= PrimaryTracksLHC15o10[0][column]) return kFALSE;
-	  else return kTRUE;
-	} else return kFALSE;
+      } else if( fPeriodEnum == kLHC18e1 || fPeriodEnum == kLHC18e1a || fPeriodEnum == kLHC18e1b || fPeriodEnum == kLHC18e1c || fPeriodEnum == kLHC16h4 || fPeriodEnum == kLHC16i1a ||
+                 fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a ||
+                 fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c){
+        centralityC= Int_t(centrality/10);
+        if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
+            if(fCentralityMin==0 && nprimaryTracks >= PrimaryTracksLHC15o10[0][column]) return kFALSE;
+            else return kTRUE;
+        } else return kFALSE;
       // setting specific arry for LHC10h for MC track mult
       } else {
         if(nprimaryTracks > PrimaryTracks10[fCentralityMax][column] && nprimaryTracks <= PrimaryTracks10[fCentralityMin][column])
           return kTRUE;
         else return kFALSE;
       }
-    }
-    else{
+    } else {
       centralityC= Int_t(centrality/10);
       if(centralityC >= fCentralityMin && centralityC < fCentralityMax)
         return kTRUE;
       else return kFALSE;
     }
-  }
-  else if (fModCentralityClass ==4){
+  } else if (fModCentralityClass ==4){
     if(mcEvent){
       // setting specific arry for LHC11h for MC track mult
       if(fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c){
@@ -2746,13 +2746,15 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
           return kTRUE;
         else return kFALSE;
       // settings for LHC15o MCs
-      } else if(fPeriodEnum == kLHC18e1 || fPeriodEnum == kLHC18e1a || fPeriodEnum == kLHC18e1b || fPeriodEnum == kLHC18e1c || fPeriodEnum == kLHC16h4 || fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c){
-	centralityC = Int_t(centrality);
-	if(centralityC >= fCentralityMin*5 && centralityC < fCentralityMax*5){
-	  if(fCentralityMin==0 && nprimaryTracks >= PrimaryTracksLHC15o5[0][column]) return kFALSE;
-	  else return kTRUE;
-	} else return kFALSE;
-      // setting specific arry for LHC10h for MC track mult
+      } else if(fPeriodEnum == kLHC18e1 || fPeriodEnum == kLHC18e1a || fPeriodEnum == kLHC18e1b || fPeriodEnum == kLHC18e1c || fPeriodEnum == kLHC16h4 ||
+                fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b ||
+                fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c){
+        centralityC = Int_t(centrality);
+        if(centralityC >= fCentralityMin*5 && centralityC < fCentralityMax*5){
+            if(fCentralityMin==0 && nprimaryTracks >= PrimaryTracksLHC15o5[0][column]) return kFALSE;
+            else return kTRUE;
+        } else return kFALSE;
+        // setting specific arry for LHC10h for MC track mult
       } else {
         if(nprimaryTracks > PrimaryTracksLHC10h5[fCentralityMax][column] && nprimaryTracks <= PrimaryTracksLHC10h5[fCentralityMin][column])
           return kTRUE;
@@ -6690,7 +6692,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
   // MC for Xe-Xe
   } else if (periodName.CompareTo("LHC17j7") == 0){         // HIJING
-    fPeriodEnum = kLHC17j7;
+    fPeriodEnum = kLHC17XeXeHi;
     fEnergyEnum = kXeXe5440GeV;
   } else if (periodName.CompareTo("LHC18d2") == 0 || periodName.CompareTo("LHC18d2_1") == 0 || periodName.CompareTo("LHC18d2_2") == 0 || periodName.CompareTo("LHC18d2_3") == 0){    // HIJING
     fPeriodEnum = kLHC17XeXeHi;

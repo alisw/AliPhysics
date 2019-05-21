@@ -278,7 +278,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17n,              //!< Xe-Xe 5.44 TeV
         kLHC17pq,             //!< pp 5 TeV
         // MC Xe-Xe
-        kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
         kLHC17XeXeHi,         //!< MC for Xe-Xe 5.44 TeV HIJING
         // 5 TeV MC 2016
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
@@ -425,10 +424,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fNameHistoReweightingMultData = nameHistoMultData         ;
                                                                                       fNameHistoReweightingMultMC = nameHistoMultMC             ;
                                                                                     }
-      void    SetUseGammaPtReweightingWithHistogramFromFile( Bool_t gammareweight=kTRUE,
-							     TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCGammaSpectraInput.root",
-							     TString histoNameGamma = "",
-							     TString histoDataNameGamma = "")
+      void    SetUseGammaPtReweightingWithHistogramFromFile(  Bool_t gammareweight=kTRUE,
+                                                              TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCGammaSpectraInput.root",
+                                                              TString histoNameGamma = "",
+                                                              TString histoDataNameGamma = "")
                                                                                     {
                                                                                       AliInfo(Form("enabled pT reweighting for: Gamma : %i ", gammareweight));
                                                                                       fDoReweightHistoMCGamma = gammareweight                   ;
@@ -540,7 +539,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
-      void    LoadGammaPtReweightingHistosMCFromFile (); 
+      void    LoadGammaPtReweightingHistosMCFromFile ();
 
       // Event Cuts
       Bool_t    IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEvent);
@@ -667,7 +666,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TF1*                        fFitDataEta;                            ///< fit to eta spectrum in Data
       TF1*                        fFitDataK0s;                            ///< fit to K0s spectrum in Data
       TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
-      TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma 
+      TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma
       Int_t                       fAddedSignalPDGCode;
       Bool_t                      fPreSelCut;                             // Flag for preselection cut used in V0Reader
       Bool_t                      fTriggerSelectedManually;               // Flag for manual trigger selection
@@ -707,7 +706,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,66)
+      ClassDef(AliConvEventCuts,67)
       /// \endcond
 };
 
