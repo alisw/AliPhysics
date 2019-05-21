@@ -29,7 +29,8 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   void Setv0(const AliFemtoDreamBasePart &posDaughter,
              const AliFemtoDreamBasePart &negDaughter,
              const bool ignoreFirstPos = false,
-             const bool ignoreFirstNeg = false, const bool setDaughter = true);
+             const bool ignoreFirstNeg = false, const bool setDaughter = true,
+             const AliAODEvent *evt = nullptr);
   bool GetOnlinev0() const {
     return fOnlinev0;
   }

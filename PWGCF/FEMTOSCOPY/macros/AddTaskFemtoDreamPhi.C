@@ -56,10 +56,13 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 //  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
+  TrackCutsPhi->SetIsMonteCarlo(isMC);
   TrackCutsPhi->SetAxisInvMassPlots(400, 0.9, 1.2);
   TrackCutsPhi->SetCutInvMass(0.008);
   AliFemtoDreamTrackCuts *dummyCutsPos = new AliFemtoDreamTrackCuts();
+  dummyCutsPos->SetIsMonteCarlo(isMC);
   AliFemtoDreamTrackCuts *dummyCutsNeg = new AliFemtoDreamTrackCuts();
+  dummyCutsNeg->SetIsMonteCarlo(isMC);
   TrackCutsPhi->SetPosDaugterTrackCuts(dummyCutsPos);
   TrackCutsPhi->SetNegDaugterTrackCuts(dummyCutsNeg);
   TrackCutsPhi->SetPDGCodePosDaug(321);
