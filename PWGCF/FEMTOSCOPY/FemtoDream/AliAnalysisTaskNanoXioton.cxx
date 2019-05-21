@@ -136,6 +136,8 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
                                   GetCollisionCandidates(), false);
+  fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
+
   fTrack = new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(false);
 
