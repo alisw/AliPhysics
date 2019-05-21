@@ -744,6 +744,7 @@ void AliFemtoDreamTrack::SetMCInformation() {
   if (fAODGlobalTrack->GetLabel() > 0) {
     AliAODMCParticle * mcPart = (AliAODMCParticle*) mcarray->At(
         fAODGlobalTrack->GetLabel());
+    this->SetID(fAODGlobalTrack->GetLabel());
     if (!(mcPart)) {
       this->fIsSet = false;
     } else {
@@ -779,6 +780,7 @@ void AliFemtoDreamTrack::SetMCInformation() {
       }
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
+        this->SetMotherID(lastMother);
       }
     }
   } else {

@@ -118,7 +118,7 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
 void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
                             const AliFemtoDreamBasePart &negDaughter,
                             const bool ignoreFirstPos,
-                            const bool ignoreFirstNeg, const bool setDaughter) {
+                            const bool ignoreFirstNeg, const bool setDaughter, const AliAODEvent *evt) {
   Reset();
   SetEventMultiplicity(posDaughter.GetEventMultiplicity());
   fIsReset = false;
@@ -208,6 +208,48 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   auto PhiAtRadiineg = negDaughter.GetPhiAtRaidius();
   for (const auto &itPhiAtRadius : PhiAtRadiineg) {
     this->SetPhiAtRadius(itPhiAtRadius);
+  }
+
+  if(fIsMC) {
+    const int posID = posDaughter.GetMotherID();
+    const int negID = negDaughter.GetMotherID();
+    if(!evt) return;
+    TClonesArray *mcarray = dynamic_cast<TClonesArray*>(evt->FindListObject(
+        AliAODMCParticle::StdBranchName()));
+    if (!mcarray) {
+      AliFatal("No MC Array found");
+    }
+    if (posID != negID) {
+      this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
+    } else {
+      AliAODMCParticle* mcPart = (AliAODMCParticle*) mcarray->At(posID);
+      if (!mcPart) {
+        //this should be fIsSet!
+        this->SetUse(false);
+      } else {
+        this->SetMCPDGCode(mcPart->GetPdgCode());
+        double mcMom[3] = { 0., 0., 0. };
+        mcPart->PxPyPz(mcMom);
+        this->SetMCMomentum(mcMom[0], mcMom[1], mcMom[2]);
+        this->SetMCPt(mcPart->Pt());
+        this->SetMCPhi(mcPart->Phi());
+        this->SetMCTheta(mcPart->Theta());
+//      std::cout<<"thetaMC "<<this->GetMCTheta()[0]<<endl;
+        if (mcPart->IsPhysicalPrimary()
+            && !(mcPart->IsSecondaryFromWeakDecay())) {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+        } else if (mcPart->IsSecondaryFromWeakDecay()
+            && !(mcPart->IsSecondaryFromMaterial())) {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+          this->SetPDGMotherWeak(
+              ((AliAODMCParticle*) mcarray->At(mcPart->GetMother()))->PdgCode());
+        } else if (mcPart->IsSecondaryFromMaterial()) {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+        } else {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+        }
+      }
+    }
   }
 }
 

@@ -213,6 +213,12 @@ class AliFemtoDreamBasePart {
     return fMotherID;
   }
   ;
+  void SetID(int ID) {
+    fID = ID;
+  }
+  int GetID() const {
+    return fID;
+  }
   void SetMotherPDG(int pdg) {
     fMotherPDG = pdg;
   }
@@ -287,6 +293,7 @@ class AliFemtoDreamBasePart {
   int fMCPDGCode;
   int fPDGMotherWeak;
   int fMotherID;
+  int fID;
   int fMotherPDG;
   int fEvtNumber;
   bool fIsMC;
@@ -297,7 +304,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
   //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-  ClassDef(AliFemtoDreamBasePart, 5);
+  ClassDef(AliFemtoDreamBasePart, 6);
 };
 
 #endif /* ALIFEMTODREAMBASEPART_H_ */
