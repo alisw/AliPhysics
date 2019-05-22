@@ -247,7 +247,6 @@ TH1D* BSTHnSparseHelper::GetTH1(TString name,
     Int2D newbin;
     for (auto b : bin) {
         newbin.push_back({b, b});
-        // cout << "bin: " << b << ", " << b << endl;
     }
     return GetTH1(name, xDim, newbin, opt);
 }
@@ -265,8 +264,6 @@ TH1D* BSTHnSparseHelper::GetTH1(TString name,
         Int1D nb = {0, 0};
         int maxnbin = fCBinsB[i].size() - 2;
         auto ax = GetAxis(i);
-        // cout << "name: " << name << ", b: " << b[0] << ", " << b[1] << ",
-        // maxnbin: " << maxnbin << endl;
         if (b[0] < -1 || b[1] < -1 || b[0] > maxnbin || b[1] > maxnbin ||
             b[0] > b[1])
             ErrorExit(Form("Wrong bin : %i : %s : %d %d", i, ax->GetName(),
@@ -306,7 +303,6 @@ TH1D* BSTHnSparseHelper::GetTH1(TString name,
 //__________________________________________________________
 void BSTHnSparseHelper::SetBin(int iaxis, Double1D bins) {
     auto ax = GetAxis(iaxis);
-    //cout << "Axis: " << iaxis << endl;
     if (bins.size() == 0)
         LoadBinFromHist(iaxis);
     else {
@@ -314,10 +310,7 @@ void BSTHnSparseHelper::SetBin(int iaxis, Double1D bins) {
         fCBinsB[iaxis] = {0};
         for (UInt_t ib = 0; ib < bins.size(); ib++) {
             int bin = ax->FindBin(bins[ib]);
-            // TODO if( ib>0 && bin <= fCBinsB[i][ib-1] ) ErrorExit("Wrong
-            // bin");
             fCBinsB[iaxis].push_back(ax->FindBin(bins[ib]));
-            //cout << "bins: " << bins[ib] << ", bin: " << bin << endl;
         }
     }
 }
@@ -355,16 +348,10 @@ BSTHnSparseHelper BSTHnSparseHelper::Load(TString name,
 void BSTHnSparseHelper::LoadBinFromHist(int iaxis) {
     auto ax = GetAxis(iaxis);
     fCBinsB[iaxis] = {0};
-    //std::cout << "axis: " << iaxis << ", nbins: " << ax->GetNbins()+1 <<
-    //std::endl;
     for (int ib = 1; ib <= ax->GetNbins() + 1; ib++) {
         fCBins[iaxis].push_back(ax->GetBinLowEdge(ib));
         fCBinsB[iaxis].push_back(ib);
-        //std::cout << "fCBinsB[" << iaxis << "].at(" << ib << "): " <<
-        //fCBinsB[iaxis].at(ib) << std::endl;
     }
-    //std::cout << "fCBinsB[" << iaxis << "].size(): " << fCBinsB[iaxis].size()
-    //<< std::endl;
 }
 //__________________________________________________________
 void BSTHnSparseHelper::LoadBinFromHist() {
@@ -374,11 +361,6 @@ void BSTHnSparseHelper::LoadBinFromHist() {
         LoadBinFromHist(i);
 }
 //__________________________________________________________
-//__________________________________________________________
-//__________________________________________________________
-//__________________________________________________________
-//__________________________________________________________
-//__________________________________________________________
 // Initial values
 
 // constants
@@ -387,30 +369,51 @@ const float inf = 1e20;
 const float zero = 1e-20;
 
 // Input files
-char const* datafile = "LHC15fi_16deghijklop_17cefgijklmor_SYS_light_fixed";
-char const* rsnmcfile = "Xi1530LHC18c6b_RsnMC_Final"; //LHC16
-char const* rsnmcfile2 = "Xi1530LHC18c6b4_RsnMC_Final"; //LHC16 pass2
-char const* rsnmcfile3 = "Xi1530LHC18c6c_RsnMC_Final"; // LHC15
-char const* rsnmcfile4 = "Xi1530LHC18c6a_RsnMC_Final_part1"; // LHC17
-char const* rsnmcfile5 = "Xi1530LHC18c6a_RsnMC_Final_part2"; // LHC17
-//char const* rsnmcfile = "LHC18c6bc_RsnMC_SYS_rebin";
-//char const* genmcfile = "Xi1530LHC16k_pass2_GenMC_trig_SYS"; // last
-char const* genmcfile = "Xi1530LHC16_GenMC_final";
+//char const* datafile = "LHC15fi_16deghijklop_17cefgijklmor_SYS_light_fixed";
+//char const* datafile = "LHC15fi_16deghijklop_17cefgijklmor_18bdefghikmnop_20190513";
+//char const* datafile = "LHC18bghimn_old"; //LHC18bm part.
+//char const* datafile = "LHC15_old"; //LHC15
+//char const* datafile = "LHC15fi_1281"; //LHC15 0406
+//char const* datafile = "LHC15fi_1282"; //LHC15 0406
+//char const* datafile = "LHC15fi_1200"; //LHC15 all (different condition)
+//char const* datafile = "LHC15fi_novertexer"; //LHC15 no vertexer
+//char const* datafile = "LHC16deghijklop_novertexer"; //LHC16 no vertexer
+//char const* datafile = "LHC17_novertexer"; //LHC16 no vertexer
+//char const* datafile = "LHC18bghiknop_novertexer"; //LHC18 no vertexer
+char const* datafile = "LHC15fi_LHC16deghijklop_LHC17cefgijklmor_LHC18bghiknop_novertexer"; //LHC18 no vertexer
+//char const* datafile = "LHC16q"; //LHC16q pPb
+//char const* datafile = "LHC16_old"; //LHC16 all
+//char const* datafile = "LHC17_old"; //LHC17 all
+//char const* datafile = "LHC15fi_modi"; //LHC15 0515 modified(off)
+//char const* datafile = "LHC15fi_test"; //0513 with option off
+//char const* datafile = "LHC15fi_newtagnooption"; //new with option on
+//char const* rsnmcfile = "LHC18c6b4_1133"; //LHC16 with LHC15 fitted option.
+//char const* rsnmcfile = "LHC18c6b4_test2"; //LHC16
+//char const* rsnmcfile = "LHC18c6b4_novertexer"; 
+//char const* rsnmcfile = "LHC18c6b_part2"; 
+char const* rsnmcfile = "LHC18c6b_part2"; 
+//char const* rsnmcfile = "LHC15g3c3_novertexer"; 
+//char const* rsnmcfile = "LHC17f2a_cent_fix";  // pPb
+
+//char const* rsnmcfile = "LHC18c6b4_1139"; 
+//char const* genmcfile = "LHC16_GenMC_FINAL";
+char const* genmcfile = "LHC15g3c3_novertexer";
+//char const* genmcfile = "LHC17f2a_cent_fix";  // pPb
+
 TString inputDirectory = "Xi1530MB";
 
 // FIT SETUP -----------------
 double peakRange[2] = {1.512, 1.552};
-//double peakRange[2] = {1.512, 1.56};
 
 char name[500] = "Voigt fit";
 TString formula = "pol2(0)";
 TString formula_MC = "pol0(0)";
 double par[3] = {1.532, 0.003, 0.0091};
-double par_2nd[3] = {1.532, 0.0025, 0.005};
+double par_2nd[3] = {1.532, 0.0025, 0.0091};
 double fix[3] = {0, 0, 1};
 double fix_2nd[3] = {1, 0, 1};
-double fix_3rd[3] = {1, 1, 0};
-double fix_4th[3] = {0, 1, 1};
+double fix_3rd[3] = {1, 1, 1};
+double fix_MC[3] = {0, 0, 1};
 int vp = 0;
 TF1* fb_after;
 Double_t bkgintegral = 0;
@@ -432,41 +435,23 @@ Double1D pt_points_e = {};
 
 // Norm region
 Int_t normleft = 0;
-//Double1D NormalizeRange_L = {1.49, 1.51}; // Norminal
 Double1D NormalizeRange_L = {1.48, 1.50}; // Norminal
 Int_t normright = 1;
-//Double1D NormalizeRange_R = {1.56, 1.58}; // Norminal
-Double1D NormalizeRange_R = {1.56, 1.59}; // Norminal
+Double1D NormalizeRange_R = {1.6, 1.8}; // Norminal
 
 // Axis Range
-//Double1D DrawRange = {1.472, 1.592};
-Double1D DrawRange = {1.448, 1.62};
-//Double1D FitRange = {1.472, 1.592};
-Double1D FitRange = {1.484, 1.592};
+Double1D DrawRange = {1.448, 1.8};
+Double1D FitRange = {1.484, 1.76};
 Double1D IntegralRange = {1.516, 1.548};
-//Double1D IntegralRange = {1.4, 1.6};
-Double1D IntegralRangeMC = {0, 99};
-// Double1D IntegralRange = {0, 99};
+Double1D IntegralRangeMC = {1.4, 1.7};
 
 // Rebin
 Int_t rebin = 4;
 
-// Colors
-Int_t colors[] = {633, 810, 800, 830, 840, 840, 870, 864, 890, 617, 619};
-Int1D fColors = {kBlack, kRed, kBlue, kGreen + 3, kMagenta + 2,
-                 kBlack, kRed, kBlue, kGreen + 3, kMagenta + 2,
-                 kBlack, kRed, kBlue, kGreen + 3, kMagenta + 2,
-                 kBlack, kRed, kBlue, kGreen + 3, kMagenta + 2};
-Int1D fMarkers = {24, 25, 26, 27, 28, 30, 20, 21, 22, 33, 34, 24, 25, 26, 27,
-                  28, 30, 20, 21, 22, 33, 34, 24, 25, 26, 27, 28, 30, 20, 21,
-                  22, 33, 34, 24, 25, 26, 27, 28, 30, 20, 21, 22, 33, 34};
-
 // Default Canvas
-Double_t w = 1920;
-Double_t h = 1080;
+Double_t w = 960;
+Double_t h = 720;
 
-void SaveCanvas(TCanvas* c, char const* name, TString path, char const* type);
-void SavePad(TPad* p, char const* name, TString path, char const* type);
 TH1D* GetNorBkg(TH1D* hSig, TH1D* hBkg, int isnormleft, int isnormright);
 TF1* VoigtFit(TH1D* hSig,
               TString bkgformula,
@@ -478,9 +463,8 @@ TH1D* MakeHistfromArray(char const* name,
                         Double1D eArray,
                         Double1D ptbin,
                         const char* foption = "");
-TCanvas* MakeRatioCanvas(char const* name, TH1D* hTop, TH1D* hBottom);
 double myLevyPt(Double_t* x, Double_t* par);
-Double_t linearSqrtBkg(Double_t* x, Double_t* par);
+vector<double> GetNormalisationFactor(double multi_start, double multi_end);
 // File handling
 TFile* LoadXi1530Results(TString name, TString runnum);
 TObject* LoadXi1530ResultList(TFile* fh, TString clistname);
@@ -507,7 +491,9 @@ void DrawXi1530(const int sys = 1,
     Double1D centbin = {multi_start, multi_end};
     Double1D fullcentbin = {0, 100};
     Double1D fullcentbin_Effi = {0, 100};
-    bool isInelastic = false;
+    bool isVertexCutEnd = false;
+    bool fpPb = false;
+    bool fAA = false;
     // Reaction to the option
     TString Options = inputOptions;
 
@@ -535,6 +521,7 @@ void DrawXi1530(const int sys = 1,
     if (multi_end < 1) {  // Automatic HM mode
         inputDirectory = "Xi1530HM";
         fHM = true;
+        fAA = true;
         fullcentbin = {0, 0.1};
     }
     // Fit variation check
@@ -611,21 +598,46 @@ void DrawXi1530(const int sys = 1,
     if (Options.Contains("BkgFit")){
         fbkgfit = true;
         //fix_2nd[1] = 1;
-        //formula = "[0] + [1]*x + [2]*TMath::Sqrt( x - 3.0638 )"; //3.0636 = 2 * 1.5318
-        formula = "pol2(0)";
+        formula = "[0] + [1]*x + [2]*TMath::Sqrt( abs(x - 1.46) )"; // 1.321+0.139
+        //formula = "pol2(0)";
         //FitRange={1.496,1.572};
+        //FitRange[1] = 1.496;
+        FitRange[1] = 1.6;
     }
+    if (Options.Contains("BkgFitLm")){
+        FitRange[0] = FitRange[0]-0.001*rebin*OptionNumber;
+    }
+    if (Options.Contains("BkgFitLp")){
+        FitRange[0] = FitRange[0]+0.001*rebin*OptionNumber;
+    }
+    if (Options.Contains("BkgFitRm")){
+        FitRange[1] = FitRange[1]-0.001*rebin*OptionNumber;
+    }
+    if (Options.Contains("BkgFitRp")){
+        FitRange[1] = FitRange[1]+0.001*rebin*OptionNumber;
+    }
+    if (Options.Contains("BkgFitBothm")){
+        FitRange[0] = FitRange[0]-0.001*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]+0.001*rebin*OptionNumber;
+    }
+    if (Options.Contains("BkgFitBothp")){
+        FitRange[0] = FitRange[0]+0.001*rebin*OptionNumber;
+        FitRange[1] = FitRange[1]-0.001*rebin*OptionNumber;
+    }
+
     if (Options.Contains("MCcheck")){
         fullcentbin = centbin;
         fullcentbin_Effi = centbin;
     }
-    if (Options.Contains("inel")){
-        isInelastic = true;
+    if (Options.Contains("vertexcut")){
+        isVertexCutEnd = true;
     }
+    if (Options.Contains("pPb"))
+        fpPb = true;
 
     // Preparation
     for (int i = 0; i < (int)ptbin.size() - 1; i++)
-        pt_points_e.push_back(ptbin.at(i + 1) - ptbin.at(i));
+        pt_points_e.push_back(ptbin.at(i + 1) - ptbin[i]);
 
     // Latex
     // for memo, small
@@ -666,73 +678,41 @@ void DrawXi1530(const int sys = 1,
     Double1D fitgamma_MC = {};
     Double1D fitgamma_MC_err = {};
 
-    //Temporal Check!!
-    Double1D integralfullfunction = {};
-    Double1D integralsigfunction = {};
-    Double1D integralbkgfunction = {};
     //
 
     double triggereffi = inf;
     double triggereffi_e = zero;
+
+    double vertexeffi = inf;
+    double vertexeffi_e = zero;
 
     // Load DATA
     auto clist = LoadXi1530ResultList(datafile, inputDirectory);
     auto hInvMass = BSTHnSparseHelper::Load("hInvMass", clist);
     auto clist_MC = LoadXi1530ResultList(
         rsnmcfile, "Xi1530MB");  // From Resonance Injected MC
-    auto clist_MC2 = LoadXi1530ResultList(
-        rsnmcfile2, "Xi1530MB");  // From Resonance Injected MC
-    auto clist_MC3 = LoadXi1530ResultList(
-        rsnmcfile3, "Xi1530MB");  // From Resonance Injected MC
-    auto clist_MC4 = LoadXi1530ResultList(
-        rsnmcfile4, "Xi1530MB");  // From Resonance Injected MC
-    auto clist_MC5 = LoadXi1530ResultList(
-        rsnmcfile5, "Xi1530MB");  // From Resonance Injected MC
     auto hInvMass_MC = BSTHnSparseHelper::Load("hInvMass", clist_MC);
-    auto hInvMass_MC2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
-    auto hInvMass_MC3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
-    auto hInvMass_MC4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
-    auto hInvMass_MC5 = BSTHnSparseHelper::Load("hInvMass", clist_MC5);
     auto hInvMass_MC_MB = BSTHnSparseHelper::Load("hInvMass", clist_MC);
-    auto hInvMass_MC_MB2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
-    auto hInvMass_MC_MB3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
-    auto hInvMass_MC_MB4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
-    auto hInvMass_MC_MB5 = BSTHnSparseHelper::Load("hInvMass", clist_MC5);
     auto clist_MC_General = LoadXi1530ResultList(
-         genmcfile, inputDirectory);  // From General Purpose MC
+         genmcfile, "Xi1530MB");  // From General Purpose MC
          //genmcfile, "Xi1530test");  // From General Purpose MC
     auto hInvMass_MC_General =
         BSTHnSparseHelper::Load("hInvMass", clist_MC_General);
     auto hInvMass_MC_General_MB =
         BSTHnSparseHelper::Load("hInvMass", clist_MC_General);
 
+
     // pT binning
     hInvMass.SetBin("Pt", ptbin);
     hInvMass_MC.SetBin("Pt", ptbin);
-    hInvMass_MC2.SetBin("Pt", ptbin);
-    hInvMass_MC3.SetBin("Pt", ptbin);
-    hInvMass_MC4.SetBin("Pt", ptbin);
-    hInvMass_MC5.SetBin("Pt", ptbin);
     hInvMass_MC_General.SetBin("Pt", ptbin);
     hInvMass_MC_MB.SetBin("Pt", ptbin);
-    hInvMass_MC_MB2.SetBin("Pt", ptbin);
-    hInvMass_MC_MB3.SetBin("Pt", ptbin);
-    hInvMass_MC_MB4.SetBin("Pt", ptbin);
-    hInvMass_MC_MB5.SetBin("Pt", ptbin);
     hInvMass_MC_General_MB.SetBin("Pt", ptbin);
 
     // Multiplicity percentile binning
     hInvMass.SetBin("Cent", centbin);
-    hInvMass_MC.SetBin("Cent", centbin);          // for Trigger Efficiency
-    hInvMass_MC2.SetBin("Cent", centbin);          // for Trigger Efficiency
-    hInvMass_MC3.SetBin("Cent", centbin);          // for Trigger Efficiency
-    hInvMass_MC4.SetBin("Cent", centbin);          // for Trigger Efficiency
-    hInvMass_MC5.SetBin("Cent", centbin);          // for Trigger Efficiency
+    hInvMass_MC.SetBin("Cent", centbin);          
     hInvMass_MC_MB.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB2.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB3.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB4.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
-    hInvMass_MC_MB5.SetBin("Cent", fullcentbin_Effi);   // for MC reconstruction Efficiency, we use full bin
     hInvMass_MC_General.SetBin("Cent", centbin);  // for Trigger Efficiency
     hInvMass_MC_General_MB.SetBin("Cent", fullcentbin_Effi);  // for MC reconstruction Efficiency, we use full bin
 
@@ -786,35 +766,28 @@ void DrawXi1530(const int sys = 1,
     TH1D* hNumberofEvent_Genenral = (TH1D*)clist_MC_General->FindObject(
         "hEventNumbers");  // N of Event through event cuts
     double nEventin_elastic = hNumberofEvent_Genenral->GetBinContent(1); // I think.. it is wrong.
-    auto hInvMass_MC_General_Trig_TrueINELg0 =
-        BSTHnSparseHelper::Load("htriggered_CINT7", clist_MC_General);
-    auto hInvMass_MC_General_Trig_INT7 =
+    auto hInvMass_MC_General_Trig =
         BSTHnSparseHelper::Load("htriggered_CINT7", clist_MC_General);
     auto htrue_cent =
-        hInvMass_MC_General_Trig_TrueINELg0.GetTH1("true", 1, {1, -1, -1});
+        hInvMass_MC_General_Trig.GetTH1("true", 1, {1, -1, -1}); // MC True INEL>0
     auto hReco_cent =
-        hInvMass_MC_General_Trig_INT7.GetTH1("Reco", 1, {5, -1, -1});
-    double sumtrue = 0;
-    double sumreco = 0;
-    for (int k = 1; k < (int)htrue_cent->GetNbinsX()+1; k++) {
-        double check = htrue_cent->GetBinCenter(k);
-        if (((double)centbin[0] < check) && (check < (double)centbin[1])) {
-            sumtrue += htrue_cent->GetBinContent(k);
-            sumreco += hReco_cent->GetBinContent(k);
-        }
-    }
+        hInvMass_MC_General_Trig.GetTH1("Reco", 1, {2, -1, -1}); // True INEL>0 && Triggered
+    auto hVtx_cent =
+        hInvMass_MC_General_Trig.GetTH1("Vtx", 1, {3, -1, -1}); // True INEL>0 && triggered && good vtx  
+    double sumtrue = htrue_cent->Integral(htrue_cent->GetXaxis()->FindBin(multi_start+0.0001),
+            htrue_cent->GetXaxis()->FindBin(multi_end-0.0001));
+    double sumreco = hReco_cent->Integral(hReco_cent->GetXaxis()->FindBin(multi_start+0.0001),
+            hReco_cent->GetXaxis()->FindBin(multi_end-0.0001));
+    double sumvtx = hVtx_cent->Integral(hVtx_cent->GetXaxis()->FindBin(multi_start+0.0001),
+            hVtx_cent->GetXaxis()->FindBin(multi_end-0.0001));
+
     triggereffi = sumreco / sumtrue;
-    //triggereffi = sumreco / nEventin_elastic; // for test!
-    triggereffi_e = sqrt(pow(sqrt(sumreco)/sumtrue,2)+pow(sqrt(sumtrue)*sumreco/pow(sumtrue,2),2));
+    triggereffi_e = sqrt(triggereffi*(1-triggereffi)/sumtrue);
+    //triggereffi_e = sqrt(pow(sqrt(sumreco)/sumtrue,2)+pow(sqrt(sumtrue)*sumreco/pow(sumtrue,2),2));
     Double1D tempbin = {multi_start, multi_end};
-    if(fHM){
+    if(fAA){
         triggereffi = 1;
         triggereffi_e = zero;
-    }
-    if(isInelastic) {
-        // from Normalisation factor study: https://alice-notes.web.cern.ch/node/665
-        triggereffi = 0.7448;
-        triggereffi_e = 0.0190;
     }
     TH1D* htriggereffi =
         new TH1D("TrigEffi", "Trigger Efficiency", 1, &tempbin[0]);
@@ -822,13 +795,32 @@ void DrawXi1530(const int sys = 1,
     htriggereffi->SetBinError(1, triggereffi_e);
     htriggereffi->Write("hTriggerEffi");
 
+    // Vertexer Loss Correction
+    // -----------------------------------------------------------------------------------------
+    vertexeffi = sumvtx/sumreco;
+    vertexeffi_e = sqrt(vertexeffi*(1-vertexeffi)/sumreco);
+    //vertexeffi_e = sqrt(pow(sqrt(sumvtx)/sumreco,2)+pow(sqrt(sumreco)*sumvtx/pow(sumreco,2),2));
+    
+    TH1D* hvertexeffi =
+        new TH1D("hvertexeffi", "Vertex Efficiency", 1, &tempbin[0]);
+    hvertexeffi->SetBinContent(1, vertexeffi);
+    hvertexeffi->SetBinError(1, vertexeffi_e);
+    hvertexeffi->Write("hVertexEffi");
+    cout << "number of event after pileupcut: " << sumreco << endl;
+    cout << "number of event after vertex selection: " << sumvtx << endl;
+    cout << "trigeffi : " << triggereffi << ", vertexeffi: " << vertexeffi << endl;
+
+    if(isVertexCutEnd){
+        output->Close();
+        gSystem->Exit(1);
+    } 
     // Signal with Bkg
     // -----------------------------------------------------------------------------------------
     for (auto j : hInvMass.BinRange("Pt")) {
         int n = j - 1;
         // SigBkg
         // ---------------------------------------------------------------------------------------------
-        if(n < 1){
+        if(n < 2){
             normleft = 1;
             normright = 0;
 
@@ -848,9 +840,9 @@ void DrawXi1530(const int sys = 1,
         hBkg_norm->Rebin(rebin);
         
         // Axis
-        hSig->GetXaxis()->SetTitle("Mass(#pi#Xi) (GeV/c^{2})");
+        hSig->GetXaxis()->SetTitle("#it{M}_{inv.}(#pi#Xi) (GeV/#it{c}^{2})");
         hSig->GetYaxis()->SetTitle(
-            Form("# of candidates / %.1f MeV", 1000 * hSig->GetBinWidth(1)));
+            Form("Counts / (%.1f MeV/#it{c}^{2})", 1000 * hSig->GetBinWidth(1)));
         hSig->GetYaxis()->SetLabelSize(0.05);
         hSig->GetYaxis()->SetTitleSize(0.05);
         hSig->GetXaxis()->SetLabelSize(0.05);
@@ -864,18 +856,18 @@ void DrawXi1530(const int sys = 1,
         TH1D* temp = (TH1D*)hBkg_norm->Clone();
         for (int k = 0; k < temp->GetNbinsX(); k++) {
             auto check = temp->GetBinCenter(k);
-            if (check <= NormalizeRange_L.at(0))
+            if (check <= NormalizeRange_L[0])
                 temp->SetBinContent(k, 0);
-            if (!normleft && (NormalizeRange_L.at(0) <= check &&
-                              check <= NormalizeRange_L.at(1)))
+            if (!normleft && (NormalizeRange_L[0] <= check &&
+                              check <= NormalizeRange_L[1]))
                 temp->SetBinContent(k, 0);
-            if (NormalizeRange_L.at(1) <= check &&
-                check <= NormalizeRange_R.at(0))
+            if (NormalizeRange_L[1] <= check &&
+                check <= NormalizeRange_R[0])
                 temp->SetBinContent(k, 0);
-            if (!normright && (NormalizeRange_R.at(0) <= check &&
-                               check <= NormalizeRange_R.at(1)))
+            if (!normright && (NormalizeRange_R[0] <= check &&
+                               check <= NormalizeRange_R[1]))
                 temp->SetBinContent(k, 0);
-            if (NormalizeRange_R.at(1) <= check)
+            if (NormalizeRange_R[1] <= check)
                 temp->SetBinContent(k, 0);
         }
         temp->SetFillColorAlpha(kRed, 0.05);
@@ -885,6 +877,78 @@ void DrawXi1530(const int sys = 1,
         hBkg_norm->Write(Form("hBkgOnly_%i", n));
         temp->Write(Form("hBkgNorm_%i", n));
 
+        // MC data
+        // --------------------------------------------------------------------------------------------
+        // After Trigger selection Gen MC
+        auto hTrueInput_Gen = // INELg0|vz<10
+            hInvMass_MC_General.GetTH1("trueinput", 4, {1, 8, 1, j, -1});
+        // After All event cut Gen MC
+        auto hInput_Gen = // after all event cut
+            hInvMass_MC_General.GetTH1("input", 4, {1, 5, 1, j, -1});
+        // True After All event cut
+        auto hInput = hInvMass_MC_MB.GetTH1("input", 4, {1, 6, 1, j, -1});
+        // My reconstruction in All event cut
+        auto hReco = hInvMass_MC_MB.GetTH1("recon", 4, {sys, 4, 1, j, -1});
+
+        Double_t Input_number_Gen = 0.;
+        Double_t True_Input_number_Gen = 0.;
+
+        Double_t Input_number = 0.;
+        Double_t Reco_number = 0.;
+        for (int k = 0; k < (int)hInput->GetNbinsX(); k++) {
+            auto check = hInput->GetBinCenter(k);
+            if ((check >= IntegralRangeMC[0]) &&
+                (check <= IntegralRangeMC[1])) {
+                True_Input_number_Gen += hTrueInput_Gen->GetBinContent(k);
+                Input_number_Gen += hInput_Gen->GetBinContent(k);
+
+                Input_number += hInput->GetBinContent(k);
+                Reco_number += hReco->GetBinContent(k);
+            }
+        }
+        /*
+        // old way
+        Double_t Eff_e = sqrt(
+            pow(sqrt(Reco_number) / Input_number, 2) +
+            pow(sqrt(Input_number) * Reco_number / pow(Input_number, 2), 2));
+        */
+        Double_t RecEff = Reco_number/Input_number;
+        Double_t Eff_e = sqrt(RecEff*(1-RecEff)/Input_number);
+        cout << "old rec_err: " << sqrt(
+            pow(sqrt(Reco_number) / Input_number, 2) +
+            pow(sqrt(Input_number) * Reco_number / pow(Input_number, 2), 2))
+            << ", new rec_err: " << Eff_e << endl;
+        Double_t ecutratio = True_Input_number_Gen / Input_number_Gen;
+        Double_t ecuteffi = Input_number_Gen / True_Input_number_Gen; // same, but efficiency form for the error.
+        Double_t ecuteffi_e = sqrt(ecuteffi*(1-ecuteffi)/True_Input_number_Gen); // proper error propagation
+        Double_t ecutratio_e = ecutratio * (ecuteffi_e/ecuteffi); // use the percentage of error here.
+
+        cout << "True input: " << True_Input_number_Gen << ", after event cuts: " << Input_number_Gen << endl;
+        cout << "old error: " << sqrt(pow(sqrt(True_Input_number_Gen)/Input_number_Gen,2)+pow(sqrt(Input_number_Gen)*True_Input_number_Gen/pow(Input_number_Gen,2),2))
+             << ", new error: " << ecutratio_e << endl;
+        //Double_t ecutratio_e = sqrt(pow(sqrt(True_Input_number_Gen)/Input_number_Gen,2)+pow(sqrt(Input_number_Gen)*True_Input_number_Gen/pow(Input_number_Gen,2),2));
+        
+        EventCutRatio.push_back(ecutratio);
+        EventCutRatio_e.push_back(ecutratio_e);
+        Efficiency.push_back(RecEff);
+        Efficiency_e.push_back(Eff_e);
+
+        // MC Fit
+        hReco->Rebin(rebin);
+        hReco->GetXaxis()->SetRangeUser(DrawRange[0], DrawRange[1]);
+        hReco->Write(Form("hMCRecon_%i", n));
+
+        TF1* MCfitresult = VoigtFit(hReco, formula_MC, peakRange, par, fix_MC);
+
+        fitmean_MC.push_back(MCfitresult->GetParameter(vp + 1));
+        fitmean_MC_err.push_back(MCfitresult->GetParError(vp + 1));
+        fitsigma_MC.push_back(MCfitresult->GetParameter(vp + 2));
+        fitsigma_MC_err.push_back(MCfitresult->GetParError(vp + 2));
+        fitgamma_MC.push_back(MCfitresult->GetParameter(vp + 3));
+        fitgamma_MC_err.push_back(MCfitresult->GetParError(vp + 3));
+
+        MCfitresult->Write(Form("fMCFit_%i", n));
+
         // Fit
         // ------------------------------------------------------------------------------------------------
         TH1D* Sigfit = (TH1D*)hSig->Clone();
@@ -892,42 +956,144 @@ void DrawXi1530(const int sys = 1,
         if(!fbkgfit){
             Sigfit->Add(Bkgfit, -1);
         }
-        
+
         TGaxis::SetMaxDigits(3);
         Sigfit->Write(Form("hSignalBkgSubtraction_%i", n));
-        TF1* fitresult;
-        if (n == 0)
-            fitresult = VoigtFit(Sigfit, formula, peakRange, par_2nd, fix_4th);
-        else if (n == 1)
-            fitresult = VoigtFit(Sigfit, formula, peakRange, par, fix_2nd);
-        else
-            fitresult = VoigtFit(Sigfit, formula, peakRange, par, fix);
-        fitresult->Write(Form("fDataFitResult_%i", n));
+
+        vector<double> par_fit = {0,0,0};
+        vector<double> fix_fit = {0,0,0};
+        int fitpars;
+        if (n == 0){
+            for(fitpars = 0; fitpars<fix_fit.size();fitpars++){
+                par_fit[fitpars] = par_2nd[fitpars];
+                fix_fit[fitpars] = fix_3rd[fitpars];
+            }
+        }
+        else if (n == 1){
+            for(fitpars = 0; fitpars<fix_fit.size();fitpars++){
+                par_fit[fitpars] = par[fitpars];
+                fix_fit[fitpars] = fix_2nd[fitpars];
+            }
+        }
+        else{
+            for(fitpars = 0; fitpars<fix_fit.size();fitpars++){
+                par_fit[fitpars] = par[fitpars];
+                fix_fit[fitpars] = fix[fitpars];
+            }
+        }
+        par_fit[1] = fitsigma_MC[n];
+        
+        int k;
+        TH1D* a = (TH1D*)Sigfit->Clone(Form("%s_nopeak", name));
+        for (k = Sigfit->GetXaxis()->FindBin(1.000001 * peakRange[0]);
+             k <= Sigfit->GetXaxis()->FindBin(0.999999 * peakRange[1]); k++) {
+            a->SetBinContent(k, 0.);
+            a->SetBinError(k, 0.);
+        }
+        ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2"); // better minimizer!
+        TF1* fb = new TF1(Form("%s_back", name), formula.Data(), FitRange[0], FitRange[1]);
+        a->Fit(fb, "RQN"); // L
+        cout << "First fit: " << fb->GetParameter(0) << ", " << fb->GetParameter(1) << ", " << fb->GetParameter(2) << endl;
+
+        fb->SetLineColor(3);
+        fb->SetLineStyle(2);
+        //fb->Draw("same");
+
+        vp = fb->GetNpar();
+
+        TF1* fp = new TF1("Voigt+bkg",
+                      Form("%s+[%i]*TMath::Voigt(x-[%i],[%i],[%i])", formula.Data(),
+                           vp, vp + 1, vp + 2, vp + 3),
+                      FitRange[0], FitRange[1]);
+        for (k = 0; k < vp; k++) {
+            fp->SetParameter(k, fb->GetParameter(k));
+            fp->FixParameter(k, fb->GetParameter(k));
+        }
+        fp->SetParameter(vp, Sigfit->GetBinContent(Sigfit->GetXaxis()->FindBin(
+                                 0.5 * (peakRange[0] - peakRange[1]))) -
+                                 fb->Eval(0.5 * (peakRange[0] - peakRange[1])));
+        for (k = 0; k < vp; k++) {
+            fp->SetParameter(vp + k + 1, par_fit[k]);
+            fp->FixParameter(vp + k + 1, par_fit[k]);
+        }
+
+        fp->SetLineColor(2);
+        fp->SetLineStyle(1);
+
+        Sigfit->Fit(fp, "RQN");
+
+        if (!fix_fit[2]) {  // release width
+            fp->ReleaseParameter(vp + 3);
+            fp->SetParError(vp + 3, 0.1 * fp->GetParameter(vp + 3));
+            Sigfit->Fit(fp, "RQN");
+        }
+
+        if (!fix_fit[1]) {  // release resolution
+            fp->ReleaseParameter(vp + 2);
+            fp->SetParLimits(vp+2,0.,0.01);
+            fp->SetParError(vp + 2, 0.1 * fp->GetParameter(vp + 2));
+            Sigfit->Fit(fp, "RQN");
+        }
+
+        if (!fix_fit[0]) {  // release mass
+            fp->ReleaseParameter(vp + 1);
+            fp->SetParError(vp + 1, 0.1 * fp->GetParameter(vp + 1));
+            Sigfit->Fit(fp, "RQN");
+        }
+
+        // release background constant parameter
+        fp->ReleaseParameter(0);
+        fp->SetParError(0, fb->GetParError(0));
+        Sigfit->Fit(fp, "RQN");
+
+        // release other background parameters
+        for (k = 0; k < vp; k++) {
+            fp->ReleaseParameter(k);
+            fp->SetParError(k, fb->GetParError(k));
+        }
+        Sigfit->Fit(fp, "RQN");
+
+        TVirtualFitter::SetMaxIterations(1000000);
+        // final fit
+        TFitResultPtr fitresult_ptr  = Sigfit->Fit(fp, "RIS");
+        fb_after = new TF1(Form("%s_back", name), formula.Data(), 0, 99);
+        
+        for (k = 0; k < vp; k++) {
+            fb_after->SetParameter(k, fp->GetParameter(k));
+        }
+        fb_after->Draw();
+        fb_after->SetRange(FitRange[0], FitRange[1]);
+        fb_after->SetLineColor(3);
+        fb_after->SetLineStyle(2);
+        fp->Draw("same");
+
+        bkgintegral =
+            1000 * fb_after->Integral(IntegralRange[0], IntegralRange[1],1e-6) / rebin;
+
+        fp->Write(Form("fDataFitResult_%i", n));
         TF1* fonly = new TF1("Voigt", "[0]*TMath::Voigt(x-[1],[2],[3])",
-                             DrawRange[0], DrawRange[1]);
-        fonly->SetParameter(0, fitresult->GetParameter(vp));
-        fonly->SetParError(0, fitresult->GetParError(vp));
-        fonly->SetParameter(1, fitresult->GetParameter(vp + 1));
-        fonly->SetParError(1, fitresult->GetParError(vp + 1));
-        fonly->SetParameter(2, fitresult->GetParameter(vp + 2));
-        fonly->SetParError(2, fitresult->GetParError(vp + 2));
-        fonly->SetParameter(3, fitresult->GetParameter(vp + 3));
-        fonly->SetParError(3, fitresult->GetParError(vp + 3));
+                            DrawRange[0], DrawRange[1]);
+        fonly->SetParameter(0, fp->GetParameter(vp));
+        fonly->SetParError(0, fp->GetParError(vp));
+        fonly->SetParameter(1, fp->GetParameter(vp + 1));
+        fonly->SetParError(1, fp->GetParError(vp + 1));
+        fonly->SetParameter(2, fp->GetParameter(vp + 2));
+        fonly->SetParError(2, fp->GetParError(vp + 2));
+        fonly->SetParameter(3, fp->GetParameter(vp + 3));
+        fonly->SetParError(3, fp->GetParError(vp + 3));
         fonly->Write(Form("fDataFitOnlyResult_%i", n));
         fb_after->Write(Form("fDataFitBkgResult_%i", n));
+        
+        Double_t integral_result_fullfit = fp->Integral(IntegralRange[0], IntegralRange[1], 1.e-6);
+        Double_t integral_e_fullfit = fp->IntegralError(IntegralRange[0], IntegralRange[1],fp->GetParameters(),fitresult_ptr->GetCovarianceMatrix().GetMatrixArray(), 1.e-6);
+        Double_t integral_e_ratio = abs(integral_e_fullfit/integral_result_fullfit);
 
-        fitmean.push_back(fitresult->GetParameter(vp + 1));
-        fitmean_err.push_back(fitresult->GetParError(vp + 1));
-        fitsigma.push_back(fitresult->GetParameter(vp + 2));
-        fitsigma_err.push_back(fitresult->GetParError(vp + 2));
-        fitgamma.push_back(fitresult->GetParameter(vp + 3));
-        fitgamma_err.push_back(fitresult->GetParError(vp + 3));
-        integralfullfunction.push_back(1000 * fitresult->Integral(IntegralRange[0], IntegralRange[1]) /
-                rebin);
-        integralsigfunction.push_back(1000 * fonly->Integral(IntegralRange[0], IntegralRange[1]) /
-                rebin);
-        integralbkgfunction.push_back(1000 * fb_after->Integral(IntegralRange[0], IntegralRange[1]) /
-                rebin);
+        fitmean.push_back(fp->GetParameter(vp + 1));
+        fitmean_err.push_back(fp->GetParError(vp + 1));
+        fitsigma.push_back(fp->GetParameter(vp + 2));
+        fitsigma_err.push_back(fp->GetParError(vp + 2));
+        fitgamma.push_back(fp->GetParameter(vp + 3));
+        fitgamma_err.push_back(fp->GetParError(vp + 3));
         
         double frawyield = 0.;
         double frawyield_e = 0.;
@@ -954,88 +1120,19 @@ void DrawXi1530(const int sys = 1,
                 rebin;
             frawyield = frawyield + lefttail + righttail;
             frawyield_e = frawyield_e 
-                + pow(lefttail*fonly->IntegralError(
-                    IntegralRangeMC[0], IntegralRange[0]),2)
-                + pow(righttail*fonly->IntegralError(
-                    IntegralRange[1], IntegralRangeMC[1]),2);
+                + pow((lefttail + righttail)*(fonly->GetParError(0)/fonly->GetParameter(0)),2);
             RawYield_err.push_back(sqrt(frawyield_e));
         } else {  // Integral from fit function
             frawyield = 1000 *
-                        fonly->Integral(IntegralRangeMC[0], IntegralRangeMC[1]) /
+                        fonly->Integral(IntegralRangeMC[0], IntegralRangeMC[1],1e-6) /
                         rebin;
-            /*
-            frawyield_e =
-                1000 * fonly->Integral(IntegralRangeMC[0], IntegralRangeMC[1]) *
-                fonly->IntegralError(IntegralRangeMC[0], IntegralRangeMC[1]) /
-                fonly->Integral(IntegralRangeMC[0], IntegralRangeMC[1]);
-            */
-            frawyield_e = frawyield*(fonly->GetParError(0)/fonly->GetParameter(0));
+            frawyield_e = frawyield*integral_e_ratio;
+            //frawyield_e = frawyield*(fonly->GetParError(0)/fonly->GetParameter(0)); // old method 
+            cout << "yield: " << frawyield << ", old error: " << frawyield*(fonly->GetParError(0)/fonly->GetParameter(0))
+                 << ", new error: " << frawyield_e << endl;
             RawYield_err.push_back(frawyield_e);
         }
         RawYield.push_back(frawyield);
-
-        // MC data
-        // --------------------------------------------------------------------------------------------
-        // After Trigger selection Gen MC
-        auto hTrueInput_Gen =
-            hInvMass_MC_General_MB.GetTH1("trueinput", 4, {1, 7, 1, j, -1});
-        // After All event cut Gen MC
-        auto hInput_Gen =
-            hInvMass_MC_General_MB.GetTH1("input", 4, {1, 5, 1, j, -1});
-        // True After All event cut
-        auto hInput = hInvMass_MC_MB.GetTH1("input", 4, {1, 6, 1, j, -1});
-        hInput->Add(hInvMass_MC_MB2.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hInput->Add(hInvMass_MC_MB3.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hInput->Add(hInvMass_MC_MB4.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        hInput->Add(hInvMass_MC_MB5.GetTH1("input", 4, {1, 6, 1, j, -1}));
-        // My reconstruction in All event cut
-        auto hReco = hInvMass_MC_MB.GetTH1("recon", 4, {sys, 4, 1, j, -1});
-        hReco->Add(hInvMass_MC_MB2.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB3.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB4.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-        hReco->Add(hInvMass_MC_MB5.GetTH1("recon", 4, {sys, 4, 1, j, -1}));
-
-        Double_t Input_number_Gen = 0.;
-        Double_t True_Input_number_Gen = 0.;
-
-        Double_t Input_number = 0.;
-        Double_t Reco_number = 0.;
-        for (int k = 0; k < (int)hInput->GetNbinsX(); k++) {
-            auto check = hInput->GetBinCenter(k);
-            if ((check >= IntegralRangeMC[0]) &&
-                (check <= IntegralRangeMC[1])) {
-                True_Input_number_Gen += hTrueInput_Gen->GetBinContent(k);
-                Input_number_Gen += hInput_Gen->GetBinContent(k);
-
-                Input_number += hInput->GetBinContent(k);
-                Reco_number += hReco->GetBinContent(k);
-            }
-        }
-        Double_t Eff_e = sqrt(
-            pow(sqrt(Reco_number) / Input_number, 2) +
-            pow(sqrt(Input_number) * Reco_number / pow(Input_number, 2), 2));
-        Double_t ecutratio = True_Input_number_Gen / Input_number_Gen;
-        Double_t ecutratio_e = sqrt(pow(sqrt(True_Input_number_Gen)/Input_number_Gen,2)+pow(sqrt(Input_number_Gen)*True_Input_number_Gen/pow(Input_number_Gen,2),2));
-        EventCutRatio.push_back(ecutratio);
-        EventCutRatio_e.push_back(ecutratio_e);
-        Efficiency.push_back(Reco_number / Input_number);
-        Efficiency_e.push_back(Eff_e);
-
-        // MC Fit
-        hReco->Rebin(rebin);
-        hReco->GetXaxis()->SetRangeUser(DrawRange[0], DrawRange[1]);
-        hReco->Write(Form("hMCRecon_%i", n));
-
-        TF1* MCfitresult = VoigtFit(hReco, formula_MC, peakRange, par, fix);
-
-        fitmean_MC.push_back(MCfitresult->GetParameter(vp + 1));
-        fitmean_MC_err.push_back(MCfitresult->GetParError(vp + 1));
-        fitsigma_MC.push_back(MCfitresult->GetParameter(vp + 2));
-        fitsigma_MC_err.push_back(MCfitresult->GetParError(vp + 2));
-        fitgamma_MC.push_back(MCfitresult->GetParameter(vp + 3));
-        fitgamma_MC_err.push_back(MCfitresult->GetParError(vp + 3));
-
-        MCfitresult->Write(Form("fMCFit_%i", n));
     }
     //-----------------------------------------------------------------------------------------------------
     // MC Efficiency
@@ -1045,7 +1142,7 @@ void DrawXi1530(const int sys = 1,
     hEfficiency->SetBinError(1, 1e-10);
     hEfficiency->SetMinimum(4e-4);
     hEfficiency->SetMaximum(4e-1);
-    hEfficiency->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    hEfficiency->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hEfficiency->GetYaxis()->SetTitle("Acceptance x Efficiency x BR");
     hEfficiency->Write("hMCReconEffi");
 
@@ -1053,30 +1150,16 @@ void DrawXi1530(const int sys = 1,
     // Signal loss
     auto hsigloss =
         MakeHistfromArray("Signal loss", EventCutRatio, EventCutRatio_e, ptbin);
-    hsigloss->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    hsigloss->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hsigloss->GetYaxis()->SetTitle("Signal Loss");
     hsigloss->SetMinimum(0);
     hsigloss->Write("hMCSigLoss");
-
-    // Temporal check
-    auto hFullIntegral = MakeHistfromArray("hFullIntegral", integralfullfunction, ptzero, ptbin);
-    auto hSigIntegral = MakeHistfromArray("hSigIntegral", integralsigfunction, ptzero, ptbin);
-    auto hBkgIntegral = MakeHistfromArray("hBkgIntegral", integralbkgfunction, ptzero, ptbin);
-    hFullIntegral->Write("hFullIntegral");
-    hSigIntegral->Write("hSigIntegral");
-    hBkgIntegral->Write("hBkgIntegral");
-    
-    for (auto j : hInvMass.BinRange("Pt")) {
-        int n = j - 1;
-        cout << "Full/Sig/Bkg: " << integralfullfunction[n] << "/" << integralsigfunction[n] << "/" << integralbkgfunction[n] << endl;
-    }
-    
 
     // Spectra
     // --------------------------------------------------------------------------------------------
     auto hRawYields =
         MakeHistfromArray("Raw Yields", RawYield, RawYield_err, ptbin);
-    hRawYields->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    hRawYields->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hRawYields->GetYaxis()->SetTitle("Raw yield");
     hRawYields->Write("hDataRawYield");
 
@@ -1084,54 +1167,90 @@ void DrawXi1530(const int sys = 1,
     hXispectrum->SetMarkerStyle(20);
     hXispectrum->SetMarkerSize(1.0);
     hXispectrum->SetTitle("#Xi(1530) spectrum pp #sqrt{s}= 13 TeV");
-    hXispectrum->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    hXispectrum->GetXaxis()->SetTitle("p_{T} (GeV/#it{c})");
     hXispectrum->GetYaxis()->SetTitle(
-        "1/N_{event}d^{2}N/(dydp_{T}) (GeV/c)^{-1}");
+        "1/N_{event}d^{2}N/(d#it{y}d#it{p}_{T}) (GeV/#it{c})^{-1}");
 
     Double_t value = 0.;
     Double_t base = 0.;
     Double_t err = 0.;
-    Double_t f_vtx = 0.931264; 
-    //Double_t f_vtx = hNumberofEvent->GetBinContent(6)/hNumberofEvent->GetBinContent(5); 
-    //hXispectrum->SetBinContent(1, zero);
-    //hXispectrum->SetBinError(1, zero);
+    // pp 13TeV f_norm, which was used in LHC15 period data sets.
+    // Not uisng in my analysis. the value itself is comparable.
+    //triggereffi = GetNormalisationFactor(multi_start, multi_end)[0];
+    //triggereffi_e = GetNormalisationFactor(multi_start, multi_end)[1];
+    if(fpPb){
+        triggereffi = 1;
+        triggereffi_e = 0;
+    }
     hXispectrum->SetMinimum(1.0e-9);
     hXispectrum->SetMaximum(3.0e-2);
-    double nOfEventMultibin = hNumberofEvent->GetBinContent(9) * eventfraction;
-    for (int ii = 1; ii < (int)ptbin.size() - 2; ii++) {
-        cout << "RawYield.at(ii): " << RawYield.at(ii)
-             << ", Efficiency.at(ii): " << Efficiency.at(ii)
-             << ", EventCutRatio.at(ii): " << EventCutRatio.at(ii)
-             << ", centbin.at(0): " << centbin.at(0)
-             << ", centbin.at(1): " << centbin.at(1)
+    //double nOfEventMultibin = hNumberofEvent->GetBinContent(9) * eventfraction;
+    double nOfEventMultibin = zero;
+    double eventMultiratio = zero;
+    if(!fHM) 
+        eventMultiratio = (multi_end - multi_start) / 100;
+    else
+        eventMultiratio = (multi_end - multi_start) / 0.1;
+    nOfEventMultibin = hNumberofEvent->GetBinContent(9) * eventMultiratio;
+    for (int ipTbin = 1; ipTbin < (int)ptbin.size() - 2; ipTbin++) {
+        // for debuging
+        cout << "RawYield[" << ipTbin << "]: " << RawYield[ipTbin]
+             << ", RawYield_err[" << ipTbin << "]: " << RawYield_err[ipTbin]
+             << ", Efficiency[" << ipTbin << "]: " << Efficiency[ipTbin]
+             << ", EventCutRatio[" << ipTbin << "]: " << EventCutRatio[ipTbin]
+             << ", centbin: " << centbin[0]
+             << " - " << centbin[1]
              << ", # of Events: " << hNumberofEvent->GetBinContent(9)
              << ", # of Events in mutlbin: " << nOfEventMultibin
-             << ", pt_points_e.at(ii): " << pt_points_e.at(ii) 
-             << ", Vertex lost correction: " << f_vtx
+             << "(" << eventMultiratio*100
+             << "%) , pt_points_e[" << ipTbin << "]: " << pt_points_e[ipTbin] 
+             << ", Vertex lost correction: " << vertexeffi
              << ", Trigger Efficiency: " << triggereffi << endl;
-        base = Efficiency.at(ii) * (pt_points_e.at(ii)) *
-               nOfEventMultibin / (triggereffi * EventCutRatio.at(ii) * f_vtx);
-        err = pow(RawYield_err.at(ii) / base, 2);
+        
+        // Normalised & Corrected Value -----------------------------
+        value = RawYield[ipTbin];
+        base = Efficiency[ipTbin] * pt_points_e[ipTbin] * 1 * // Rapidity(0.5 + 0.5)
+               nOfEventMultibin;
+        value /= base;
+        if(!fAA) value *= triggereffi * vertexeffi;
+        value *= EventCutRatio[ipTbin]; // <- Corrected and normalised Xi(1530) + c.c.
+
+        // STATISTICAL ERROR ----------------------------------------
+        if(fAA) err = pow(RawYield_err[ipTbin] * EventCutRatio[ipTbin] / base, 2);
+        else
+            err = pow( 
+                (RawYield_err[ipTbin]* triggereffi * vertexeffi * EventCutRatio[ipTbin]) / base
+                , 2);
+        // MC Efficiency error
         err += pow(
-            (RawYield.at(ii) / base) * (Efficiency_e.at(ii) / Efficiency.at(ii)),
+            value * (Efficiency_e[ipTbin] / Efficiency[ipTbin]), 
             2);
+        // Signal loss error
+        err += pow(value * (EventCutRatio_e[ipTbin] / EventCutRatio[ipTbin]), 2);
+
+        if(!fAA){ // for HM(AA), trigger efficiency is 1, vertex loss is 1.
+            // Trigger efficiency error
+            err += pow(value * (triggereffi_e/triggereffi), 2);
+            // Vertex loss correction error
+            err += pow(value * (vertexeffi_e/vertexeffi),2); 
+        }
+        // Number of event error -> DON'T NEED TO USE!
+        // since this error(statistical error) must be included in RawYield_err
+        /*
         err += pow(
-            (RawYield.at(ii) / base) * (EventCutRatio_e.at(ii) / EventCutRatio.at(ii)),
+            value * (sqrt(nOfEventMultibin) / nOfEventMultibin), // Number of event
             2);
-        err += pow(
-            (RawYield.at(ii) / base) * (triggereffi_e/triggereffi),
-            2);
-        err += pow(
-            (RawYield.at(ii) / base) * (sqrt(nOfEventMultibin) / nOfEventMultibin),
-            2);
+        */
         err = sqrt(err);
-        value = RawYield.at(ii) / base;
+        // ----------------------------------------------------------
+
         value /= 2.;  // Xi(1530)0 + c.c.
+        err /= 2.;
 
         cout << "Corrected yield: " << value << endl;
-        cout << "Error: " << err/2 << endl;
-        hXispectrum->SetBinContent(ii + 1, value);
-        hXispectrum->SetBinError(ii + 1, err / 2);
+        cout << "Error: " << err << endl;
+        hXispectrum->SetBinContent(ipTbin + 1, value);
+        hXispectrum->SetBinError(ipTbin + 1, err);
     }
     //hXispectrum->SetBinContent(ptbin.size(), zero);
     //hXispectrum->SetBinError(ptbin.size(), zero);
@@ -1192,45 +1311,25 @@ void DrawXi1530(const int sys = 1,
     output->Close();
 }
 
-void SaveCanvas(TCanvas* c,
-                char const* name = "temp",
-                TString path = "figs/",
-                char const* type = "pdf") {
-    // Save canvas with path. if path is not there, make a folder.
-    if (gSystem->Exec(Form("ls %s", path.Data())) == 256)
-        gSystem->Exec(Form("mkdir -p %s", path.Data()));
-    c->SaveAs(Form("%s%s.%s", path.Data(), name, type));
-}
-void SavePad(TPad* p,
-             char const* name = "temp",
-             TString path = "figs/",
-             char const* type = "pdf") {
-    // Save Pad with path.
-    TCanvas* ctemp = new TCanvas();
-    TPad* clone = (TPad*)p->DrawClone();
-    clone->SetPad(0, 0, 1, 1);
-    SaveCanvas(ctemp, name, path, type);
-}
-
 TH1D* GetNorBkg(TH1D* hSig, TH1D* hBkg, int isnormleft, int isnormright) {
     Double_t normalization_data = 0.;
     Double_t normalization_mixed = 0.;
 
     if (isnormleft == 1) {
         normalization_data +=
-            hSig->Integral(hSig->GetXaxis()->FindBin(NormalizeRange_L.at(0)),
-                           hSig->GetXaxis()->FindBin(NormalizeRange_L.at(1)));
+            hSig->Integral(hSig->GetXaxis()->FindBin(NormalizeRange_L[0]),
+                           hSig->GetXaxis()->FindBin(NormalizeRange_L[1]));
         normalization_mixed +=
-            hBkg->Integral(hBkg->GetXaxis()->FindBin(NormalizeRange_L.at(0)),
-                           hBkg->GetXaxis()->FindBin(NormalizeRange_L.at(1)));
+            hBkg->Integral(hBkg->GetXaxis()->FindBin(NormalizeRange_L[0]),
+                           hBkg->GetXaxis()->FindBin(NormalizeRange_L[1]));
     }
     if (isnormright == 1) {
         normalization_data +=
-            hSig->Integral(hSig->GetXaxis()->FindBin(NormalizeRange_R.at(0)),
-                           hSig->GetXaxis()->FindBin(NormalizeRange_R.at(1)));
+            hSig->Integral(hSig->GetXaxis()->FindBin(NormalizeRange_R[0]),
+                           hSig->GetXaxis()->FindBin(NormalizeRange_R[1]));
         normalization_mixed +=
-            hBkg->Integral(hBkg->GetXaxis()->FindBin(NormalizeRange_R.at(0)),
-                           hBkg->GetXaxis()->FindBin(NormalizeRange_R.at(1)));
+            hBkg->Integral(hBkg->GetXaxis()->FindBin(NormalizeRange_R[0]),
+                           hBkg->GetXaxis()->FindBin(NormalizeRange_R[1]));
     }
     hBkg->Scale(normalization_data / normalization_mixed);
     hBkg->SetLineColor(kRed);
@@ -1251,6 +1350,8 @@ TF1* VoigtFit(TH1D* hSig,
         a->SetBinError(j, 0.);
     }
     ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2"); // better minimizer!
+    //ROOT::Math::IntegratorOneDimOptions::SetDefaultRelTolerance(1.E-6); // fit should converge!
+
     TF1* fb = new TF1(Form("%s_back", name), bkgformula.Data(), FitRange[0], FitRange[1]);
     a->Fit(fb, "RQN"); // L
 
@@ -1320,6 +1421,7 @@ TF1* VoigtFit(TH1D* hSig,
         fb_after->SetParameter(j, fp->GetParameter(j));
     }
     fb_after->Draw();
+    fb_after->SetRange(FitRange[0], FitRange[1]);
     fb_after->SetLineColor(3);
     fb_after->SetLineStyle(2);
     fp->Draw("same");
@@ -1336,7 +1438,7 @@ TF1* VoigtFit(TH1D* hSig,
     // fonly->Draw("same");
 
     bkgintegral =
-        1000 * fb_after->Integral(IntegralRange[0], IntegralRange[1]) / rebin;
+        1000 * fb_after->Integral(IntegralRange[0], IntegralRange[1],1e-6) / rebin;
 
     return fp;
 }
@@ -1351,9 +1453,9 @@ TH1D* MakeHistfromArray(char const* name,
 
     TH1D* htemp = new TH1D(Form("%s", name), "", ptbin.size() - 1, ptbin_array);
     for (int i = 0; i < (int)dArray.size(); i++) {
-        htemp->SetBinContent(i + 1, dArray.at(i));
+        htemp->SetBinContent(i + 1, dArray[i]);
         if (!option.Contains("NOERROR"))
-            htemp->SetBinError(i + 1, eArray.at(i));
+            htemp->SetBinError(i + 1, eArray[i]);
     }
     return htemp;
 }
@@ -1374,15 +1476,70 @@ double myLevyPt(Double_t* x, Double_t* par) {
     return l2pi * ldNdy * x[0] * lBigCoef *
            TMath::Power(lInPower, (-1) * lPower);
 }
+vector<double> GetNormalisationFactor(double multi_start, double multi_end){
+    // Return event normalisation factor with give Multiplicity bin.
+    // return {value, err}
+    
+    vector<double> returnarray;
 
-Double_t linearSqrtBkg(Double_t* x, Double_t* par) {
-    double lMass = 1.5318;  // Xi mass
+    //--F_norm--
+    // Ref: Centrality-like Dependence of the pseudorapidity distribution 
+    //      of charged tracks in pp collisions at sqrt(s) = 13 TeV
+    //      https://alice-notes.web.cern.ch/node/510
+    // This value has been used for K*, Phi analysis.
 
-    return par[0] + x[0]*par[1] + par[2]*TMath::Sqrt(x[0] - 2 * lMass );
+    vector<double> factor_multibin = 
+    {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
+    vector<double> factor = 
+    {0, 0.9825, 0.999, 0.9982, 0.9978, 0.9969, 0.9937, 0.9870,  0.9761, 0.9491, 0.8729};
+    vector<double> factor_e = {0,  0.0169,  0.0012,  0.0010,  0.0012,  0.0015, 0.0014, 0.0022, 0.0047, 0.0080, 0.0201};
+    
+    // input must be in the multiplicity range
+    if(std::find(factor_multibin.begin(), factor_multibin.end(), multi_start) == end(factor_multibin))
+        return {99,99};
+    if(std::find(factor_multibin.begin(), factor_multibin.end(), multi_end) == end(factor_multibin))
+        return {99,99};
+
+    // special cases
+    if((multi_start == 0) && (multi_end == 100)){
+        returnarray = {0.9468, 0.0081};
+    }
+        else{
+        // Common case
+        // Value
+        vector<double>::iterator itr_left = find(factor_multibin.begin(),
+                                factor_multibin.end(),
+                                multi_start);
+        vector<double>::iterator itr_right = find(factor_multibin.begin(),
+                                factor_multibin.end(),
+                                multi_end);
+        int left = distance(factor_multibin.begin(), itr_left);
+        int right = distance(factor_multibin.begin(), itr_right);
+
+        int gap = right - left;
+
+        double result = 0.;
+        for(int i = 1; i < gap+1; i++)
+            result += factor[i+left]*(factor_multibin[i+left] - factor_multibin[i+left-1]);
+            
+        result /= (multi_end - multi_start);
+        returnarray.push_back(result);
+
+        // Error
+        double error = 0.;
+        for(int i = 1; i < gap+1; i++)
+            error += pow( factor_e[i+left], 2); 
+            
+        error = sqrt(error);
+        returnarray.push_back(error);
+    }
+
+    return returnarray;
 }
 TFile* LoadXi1530Results(TString name, TString runnum) {
     if (!runnum.IsNull())
         runnum = "_" + runnum;
+    //auto fname = "/alice/home/blim/postprocessing/AnalysisResults_" + name + runnum + ".root";
     auto fname = "AnalysisResults_" + name + runnum + ".root";
     return LoadRoot(fname);
 }
