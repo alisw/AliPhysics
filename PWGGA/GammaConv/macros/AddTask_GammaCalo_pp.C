@@ -1400,6 +1400,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00061113","2446600044012300000","0163103100000010"); //PHI1
     cuts.AddCutCalo("00062113","2446600044012300000","0163103100000010"); //PHI7
     cuts.AddCutCalo("00063113","2446600044012300000","0163103100000010"); //PHI8
+  } else if (trainConfig == 809){ // PHOS clusters with larger acceptance NCells 2
+    cuts.AddCutCalo("00010113","2446600004012200000","0163103100000010"); // INT7
+    cuts.AddCutCalo("00062113","2446600004012200000","0163103100000010"); // PHI7
 
 
   // *********************************************************************************************************
@@ -1532,6 +1535,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411791205f032230000","01631031000000d0"); // std TM, -50ns, 30ns timing cut
     cuts.AddCutCalo("00010113","411792105f032230000","01631031000000d0"); // std TM, -50ns, 30ns timing cut
     cuts.AddCutCalo("00010113","411792205f032230000","01631031000000d0"); // std TM, -50ns, 30ns timing cut
+  } else if (trainConfig == 2019){ // EMCAL+DCAL clusters standard cuts
+    cuts.AddCutCalo("00010113","4117900007032230000","01631031000000d0"); // no NL, std TM, open timing
 
 // EDC 13 TeV 2016 & 2017 settings with MC fine tuning correction
   } else if (trainConfig == 2020){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, tight timing

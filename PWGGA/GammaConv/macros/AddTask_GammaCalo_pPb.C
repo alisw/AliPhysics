@@ -1083,7 +1083,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","4117900057032230000","01631031000000d0"); // EDC
   } else if (trainConfig == 261){
     cuts.AddCutCalo("80010113","4117900057032230000","01631031000000d0"); // EDC
-
+  } else if (trainConfig == 262){
+    cuts.AddCutCalo("80010113","4117900007032230000","01631031000000d0"); // EDC
+    cuts.AddCutCalo("80052113","4117900007032230000","01631031000000d0"); // EDC
+    cuts.AddCutCalo("80085113","4117900007032230000","01631031000000d0"); // EDC
+    cuts.AddCutCalo("80081113","4117900007032230000","01631031000000d0"); // EDC
   // ===============================================================================================
   // Run 1 data PHOS clusters pPb 5TeV
   // ===============================================================================================
@@ -1421,6 +1425,9 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","2446642351082200000","0163103100000010"); // dist to bad channel: 3
   } else if (trainConfig == 520) {  // JJ MC
     cuts.AddCutCalo("80010123","2446642051012200000","0163103100000010"); // standard
+  } else if (trainConfig == 521) {
+    cuts.AddCutCalo("80010113","2446600004012200000","0163103100000010"); // no non lin 1000 \mus
+    cuts.AddCutCalo("80062113","2446600004012200000","0163103100000010"); // no non lin 1000 \mus
 
   // Variations for systematics
   } else if (trainConfig == 530) { // NL variations (standard: 42 PHOS ML)
