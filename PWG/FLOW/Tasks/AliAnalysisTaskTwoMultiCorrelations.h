@@ -122,10 +122,11 @@ public:
     this->fGlobalFilter = globalFilter;
   }
 
-  void SetCorrelationSelection(Int_t minNumberOfTracks, Bool_t removeHMoutliers, Double_t minA, Double_t minB, Double_t maxA, Double_t maxB)
+  void SetCorrelationSelection(Int_t minNumberOfTracks, Bool_t removeHMoutliersBefore, Bool_t removeHMoutliersAfter, Double_t minA, Double_t minB, Double_t maxA, Double_t maxB)
   {
     this->fMultiplicityMin = minNumberOfTracks;
-    this->fCutOnTDCorrelations = removeHMoutliers;
+    this->fCutOnTDCorrelationsBeforeTrackSelection = removeHMoutliersBefore;
+    this->fCutOnTDCorrelationsAfterTrackSelection = removeHMoutliersAfter;
     this->fMultiplicityMinA = minA;
     this->fMultiplicityMinB = minB;
     this->fMultiplicityMaxA = maxA;
@@ -306,7 +307,8 @@ private:
   TH1I *fHistoIntermediateNumberOfITS;  //! Distribution of the number of clusters in the ITS before the track selection.
   TH1I *fHistoFinalNumberOfITS; //! Distribution of the number of clusters in the ITS after the track selection.
 
-  Bool_t fCutOnTDCorrelations;  // Apply the cuts on the number of tracks to remove high multiplicity outliers?
+  Bool_t fCutOnTDCorrelationsBeforeTrackSelection;  // Apply the cuts on the number of tracks to remove high multiplicity outliers before the track selection?
+  Bool_t fCutOnTDCorrelationsAfterTrackSelection;  // Apply the cuts on the number of tracks to remove high multiplicity outliers after the track selection?
   Bool_t fCutOnPt;  // Apply the cuts on the transverse momentum?
   Bool_t fCutOnEta; // Apply the cuts on the pseudorapidity?
   Bool_t fCutOnNumberOfTPC; // Apply the cut on the number of TPC clusters?
@@ -363,8 +365,8 @@ private:
 
 //--------------------------------------------------------------------------------------//
 // Version number to handle properly objects written before and after the changes.
-// Version 11, date: 2019-05-20.
-  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 11);
+// Version 11, date: 2019-05-21.
+  ClassDef(AliAnalysisTaskTwoMultiCorrelations, 12);
 
 };  // End: class AliAnalysisTaskTwoMultiCorrelations.
 

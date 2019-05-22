@@ -124,7 +124,8 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations() :
   fHistoFinalCharge(NULL),
   fHistoIntermediateNumberOfITS(NULL),
   fHistoFinalNumberOfITS(NULL),
-  fCutOnTDCorrelations(kFALSE),
+  fCutOnTDCorrelationsBeforeTrackSelection(kFALSE),
+  fCutOnTDCorrelationsAfterTrackSelection(kFALSE),
   fCutOnPt(kFALSE),
   fCutOnEta(kFALSE),
   fCutOnNumberOfTPC(kFALSE),
@@ -227,7 +228,7 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fPVYMin(-44),
   fPVYMax(44.),
   fPVZMin(-10.),
-  fPVZMax(10),
+  fPVZMax(10.),
 // Parameters related to the track selection criteria.
   fTrackSelectionList(NULL),
   fHistoIntermediatePt(NULL),
@@ -248,7 +249,8 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
   fHistoFinalCharge(NULL),
   fHistoIntermediateNumberOfITS(NULL),
   fHistoFinalNumberOfITS(NULL),
-  fCutOnTDCorrelations(kFALSE),
+  fCutOnTDCorrelationsBeforeTrackSelection(kFALSE),
+  fCutOnTDCorrelationsAfterTrackSelection(kFALSE),
   fCutOnPt(kFALSE),
   fCutOnEta(kFALSE),
   fCutOnNumberOfTPC(kFALSE),
@@ -319,7 +321,6 @@ AliAnalysisTaskTwoMultiCorrelations::~AliAnalysisTaskTwoMultiCorrelations()
 {
 /* Destructor of the class. */
   if (fMainList) {delete fMainList;}
-
 }
 
 //======================================================================================//
@@ -479,7 +480,7 @@ void AliAnalysisTaskTwoMultiCorrelations::BookMultiplicityList()
 // 2D correlation histograms between two filters.
   if (fDoTDCorrelationHisto) // Manually enabled only to decide the cuts, as it is memory-greedy.
   {
-    fHistoFilterCorrelations = new TH2I("fHistoFilterCorrelations", "2D multiplicity correlations between filters", fNumberOfBinsHFC, 0., fMaxBinHFC, fNumberOfBinsHFC, 0., fMaxBinHFC);
+    fHistoFilterCorrelations = new TH2I("fHistoFilterCorrelations", "2D multiplicity correlations between filters before the track selection", fNumberOfBinsHFC, 0., fMaxBinHFC, fNumberOfBinsHFC, 0., fMaxBinHFC);
     fHistoFilterCorrelations->SetStats(kTRUE);
     fHistoFilterCorrelations->GetXaxis()->SetTitle(Form("Multiplicity_{Filter %d}", fGlobalFilter));
     fHistoFilterCorrelations->GetYaxis()->SetTitle(Form("Multiplicity_{Filter %d}", fMainFilter));
@@ -580,13 +581,13 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
   fHistoIntermediatePhi = new TH1D("fHistoIntermediatePhi", "Distribution of #phi before the track selection", 1000, 0., 6.3);
   fHistoIntermediatePhi->SetStats(kTRUE);
   fHistoIntermediatePhi->GetXaxis()->SetTitle("#phi");
-  fHistoIntermediatePhi->GetXaxis()->SetTitle("Number of tracks");
+  fHistoIntermediatePhi->GetYaxis()->SetTitle("Number of tracks");
   fTrackSelectionList->Add(fHistoIntermediatePhi);
 
   fHistoFinalPhi = new TH1D("fHistoFinalPhi", "Distribution of #phi after the track selection", 1000, 0., 6.3);
   fHistoFinalPhi->SetStats(kTRUE);
   fHistoFinalPhi->GetXaxis()->SetTitle("#phi");
-  fHistoFinalPhi->GetXaxis()->SetTitle("Number of tracks");
+  fHistoFinalPhi->GetYaxis()->SetTitle("Number of tracks");
   fTrackSelectionList->Add(fHistoFinalPhi);
 
 // Distributions of the number of TPC clusters before the track selection.
@@ -618,13 +619,13 @@ void AliAnalysisTaskTwoMultiCorrelations::BookTrackSelectionList()
 // Distributions of the xy-coordinate of the DCA.
   fHistoIntermediateDCAxy = new TH1D("fHistoIntermediateDCAxy", "Distribution of DCA_{xy} before the track selection", 1000, 0., 10.);
   fHistoIntermediateDCAxy->SetStats(kTRUE);
-  fHistoIntermediateDCAxy->GetXaxis()->SetTitle("#chi^{2}/NDF in TPC");
+  fHistoIntermediateDCAxy->GetXaxis()->SetTitle("DCA_{xy}");
   fHistoIntermediateDCAxy->GetYaxis()->SetTitle("Number of tracks");
   fTrackSelectionList->Add(fHistoIntermediateDCAxy);
 
   fHistoFinalDCAxy = new TH1D("fHistoFinalDCAxy", "Distribution of DCA_{xy} after the track selection", 1000, 0., 10.);
   fHistoFinalDCAxy->SetStats(kTRUE);
-  fHistoFinalDCAxy->GetXaxis()->SetTitle("#chi^{2}/NDF in TPC");
+  fHistoFinalDCAxy->GetXaxis()->SetTitle("DCA_{xy}");
   fHistoFinalDCAxy->GetYaxis()->SetTitle("Number of tracks");
   fTrackSelectionList->Add(fHistoFinalDCAxy);
 
@@ -972,38 +973,41 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
   if (fCutOnPVY) {if ((aVertex->GetY() < fPVYMin) || (aVertex->GetY() > fPVYMax)) {return;}}
   if (fCutOnPVZ) {if ((aVertex->GetZ() < fPVZMin) || (aVertex->GetZ() > fPVZMax)) {return;}}
 
-/// TBA: Add more event cuts?
+/// TBA: more event selection criteria?
 
-// Get the number of tracks after the event selection.
+// Get the number of tracks after the event selection for the main and the global filters.
   long long intermediateNumberOfTracks = aAODevent->GetNumberOfTracks();  // Number of tracks before the track selection.
   fHistoIntermediateNumberOfTracks->Fill(intermediateNumberOfTracks);
 
-// Do the 2D correlation histogram?
-  if (fDoTDCorrelationHisto)
+  long long multiplicityGlobalFilter = 0; // Number of tracks in the global filter.
+  long long multiplicityMainFilter = 0; // Number of tracks in the main filter bit.
+  for (Int_t inTrack = 0; inTrack < intermediateNumberOfTracks; inTrack++)
   {
-    Int_t multiplicityGlobalFilter = 0; // Number of tracks in the global filter.
-    Int_t multiplicityMainFilter = 0; // Number of tracks in the main filter bit.
-    for (Int_t inTrack = 0; inTrack < intermediateNumberOfTracks; inTrack++)
-    {
-      AliAODTrack *aliTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(inTrack));  // Pointer to an AOD track.
-      if (!aliTrack) {continue;}  // Protection against NULL pointer.
+    AliAODTrack *aliTrack = dynamic_cast<AliAODTrack*>(aAODevent->GetTrack(inTrack));  // Pointer to an AOD track.
+    if (!aliTrack) {continue;}  // Protection against NULL pointer.
 
-      //if ((aliTrack->TestFilterBit(fMainFilter)) && (!aliTrack->TestFilterBit(fGlobalFilter))) {multiplicityMainFilter++;}
-      if (aliTrack->TestFilterBit(fGlobalFilter)) {multiplicityGlobalFilter++;}
-      if (aliTrack->TestFilterBit(fMainFilter)) {multiplicityMainFilter++;}
-    }
+    //if ((aliTrack->TestFilterBit(fMainFilter)) && (!aliTrack->TestFilterBit(fGlobalFilter))) {multiplicityMainFilter++;}
+    if (aliTrack->TestFilterBit(fGlobalFilter)) {multiplicityGlobalFilter++;}
+    if (aliTrack->TestFilterBit(fMainFilter)) {multiplicityMainFilter++;}
+  }
 
-  // Fill the histogram.
-    fHistoFilterCorrelations->Fill(multiplicityGlobalFilter, multiplicityMainFilter);
+// Do the 2D correlation histogram before the track selection?
+  if (fDoTDCorrelationHisto) {fHistoFilterCorrelations->Fill(multiplicityGlobalFilter, multiplicityMainFilter);}
 
-  // Reset the variables.
-    multiplicityMainFilter = 0;
-    multiplicityGlobalFilter = 0;
+// Apply the cuts to remove the high multiplicity outliers before the track selection?
+  if ((Int_t)fCutOnTDCorrelationsBeforeTrackSelection + (Int_t)fCutOnTDCorrelationsAfterTrackSelection == 2)
+  {
+    Fatal(sMethodName.Data(), "ERROR: the cuts for the high multiplicity outliers must be applied before OR after the track selection.");
+  }
+  if (fCutOnTDCorrelationsBeforeTrackSelection)
+  {
+    if ((Double_t)multiplicityMainFilter < (fMultiplicityMinA*(Double_t)multiplicityGlobalFilter + fMultiplicityMinB)) {return;} // The number of tracks in the main filter is under the accepted band.
+    if ((Double_t)multiplicityMainFilter > (fMultiplicityMaxA*(Double_t)multiplicityGlobalFilter + fMultiplicityMaxB)) {return;} // The number of tracks in the main filter is above the accepted band.
   }
 
 // Prepare the variables for the track selection.
   long long finalNumberOfTracks = 0;  // Final number of tracks for the main filter.
-  long long globalNumberOfTracks = 0; // Final number of tracks for the global filter.
+  long long globalFinalNumberOfTracks = 0; // Final number of tracks for the global filter.
   Int_t *IsTrackSelected = new Int_t[intermediateNumberOfTracks](); // Flag to indicate if a track has passed the track selection (1) or not (0).
   Double_t pT = 0.; // Transverse momentum of the track.
   Double_t eta = 0.;  // Pseudorapidity of the track.
@@ -1055,24 +1059,23 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
     {
       IsTrackSelected[iTrack] = 1;
       if (currentTrack->TestFilterBit(fMainFilter)) {finalNumberOfTracks++;}
-      if (currentTrack->TestFilterBit(fGlobalFilter)) {globalNumberOfTracks++;}
+      if (currentTrack->TestFilterBit(fGlobalFilter)) {globalFinalNumberOfTracks++;}
     }
     else {IsTrackSelected[iTrack] = 0;} // The track failed the selection.
   }
 
-// Do the final 2D correlation histograms for filters?
-  if (fDoTDCorrelationHisto)
+// Do the final 2D correlation histograms after the track selection?
+  if (fDoTDCorrelationHisto) {fHistoFinalFilterCorrelations->Fill(globalFinalNumberOfTracks, finalNumberOfTracks);}
+
+// Apply the cuts to remove the high multiplicity outliers?
+  if (fCutOnTDCorrelationsAfterTrackSelection) // Apply the multiplicity cut from the 2D correlation plot.
   {
-    fHistoFinalFilterCorrelations->Fill(globalNumberOfTracks, finalNumberOfTracks);
+    if (finalNumberOfTracks <= (fMultiplicityMinA*globalFinalNumberOfTracks + fMultiplicityMinB)) {return;}  // The number of tracks in the main filter is under the accepted band.
+    if (finalNumberOfTracks >= (fMultiplicityMaxA*globalFinalNumberOfTracks + fMultiplicityMaxB)) {return;}  // The number of tracks in the main filter is above the accepted band.
   }
 
-// Remove the events with too few or too many tracks.
-  if (finalNumberOfTracks <= fMultiplicityMin) {return;}  // The event does not have enough tracks.
-  if (fCutOnTDCorrelations) // Apply the multiplicity cut from the 2D correlation plot.
-  {
-    if (finalNumberOfTracks <= (fMultiplicityMinA*globalNumberOfTracks + fMultiplicityMinB)) {return;}  // The number of tracks is under the accepted band.
-    if (finalNumberOfTracks >= (fMultiplicityMaxA*globalNumberOfTracks + fMultiplicityMaxB)) {return;}  // The number of tracks is above the accepted band.
-  }
+// Remove the events with not enough tracks to have a meaningfull event weight.
+  if (finalNumberOfTracks <= fMultiplicityMin) {return;}
 
 /// Application of the brute-force method to remove HM outliers.
   Int_t cutValueMaxNumberOfTracks = 0;  // Value of the cut on the maximum number of tracks.
@@ -1159,6 +1162,8 @@ void AliAnalysisTaskTwoMultiCorrelations::AnalyseAODevent(AliAODEvent *aAODevent
 
 // Reset everything to zero for the next event.
   intermediateNumberOfTracks = 0;
+  multiplicityMainFilter = 0;
+  multiplicityGlobalFilter = 0;
   cutValueMaxNumberOfTracks = 0;
   finalNumberOfTracks = 0;
   delete [] IsTrackSelected;
