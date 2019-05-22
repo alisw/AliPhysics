@@ -498,6 +498,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterIsoSumClusterEt;                              //! sum of Et of clusters within R<0.2
     Float_t               fClusterIsoSumTrackEt;                                //! sum of Et of tracks within R<0.2
 
+    // tree for timing cut effi studies
+    TTree**               tClusterTimingEff;                                    //! array of trees with tree for timing effi studies
+    Float_t               fClusterTimeTag;                                      //! cluster time of tagged photon
+    Float_t               fClusterTimeProbe;                                    //! cluster time of probe photon
+    Float_t               fClusterETag;                                         //! cluster E of tagged photon
+    Float_t               fClusterEProbe;                                       //! cluster E of probe photon
+
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
 //    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
@@ -539,7 +546,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 68);
+    ClassDef(AliAnalysisTaskGammaCalo, 69);
 };
 
 #endif
