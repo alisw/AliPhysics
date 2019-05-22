@@ -1545,7 +1545,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     (Xicandidate->Charge() == +1 && track1->Charge() == +1))
                     continue;  // check only unlike-sign
 
-                if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut)
+                if ((vecsum.Rapidity() > fXi1530RapidityCut_high) 
+                || (vecsum.Rapidity() < fXi1530RapidityCut_low))
                     continue;  // rapidity cut
 
                 // Other default cuts
@@ -1724,7 +1725,8 @@ void AliAnalysisTaskXi1530::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
             fHistos->FillTH1("hMC_generated_Y", mcInputTrack->Y());
 
         // Y cut
-        if (fabs(mcInputTrack->Y()) > fXi1530RapidityCut)
+        if ((mcInputTrack->Y() > fXi1530RapidityCut_high) 
+         || (mcInputTrack->Y() < fXi1530RapidityCut_low))
             continue;
 
         if (check == 1)
