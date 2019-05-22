@@ -193,8 +193,11 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         if (fSysOption == 2)
             fXiMassWindowCut_tight = nXiMassWindowCut;
     }
-    void SetXi1530RapidityCut(Double_t nXi1530RapidityCut) {
-        fXi1530RapidityCut = nXi1530RapidityCut;
+    void SetXi1530RapidityCut_high(Double_t nXi1530RapidityCut) {
+        fXi1530RapidityCut_high = nXi1530RapidityCut;
+    }
+    void SetXi1530RapidityCut_low(Double_t nXi1530RapidityCut) {
+        fXi1530RapidityCut_low = nXi1530RapidityCut;
     }
     void SetXiSysTrackCut(Bool_t cutoption) { fsetXiSysTrackCut = cutoption; }
     void SetSystematics(Bool_t fSystematics) { fsetsystematics = fSystematics; }
@@ -302,9 +305,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t fXi1530PionZVertexCut = 2.0;
     Double_t fXi1530PionZVertexCut_tight = 1.5;
 
-    Double_t fDCADist_LambdaDaughtersCut_loose = 2.0;
-    Double_t fDCADist_LambdaDaughtersCut = 1.6;
-    Double_t fDCADist_LambdaDaughtersCut_tight = 1.2;
+    Double_t fDCADist_LambdaDaughtersCut_loose = 1.5;
+    Double_t fDCADist_LambdaDaughtersCut = 1.4;
+    Double_t fDCADist_LambdaDaughtersCut_tight = 1.3;
 
     Double_t fDCADist_XiDaughtersCut_loose = 2.0;
     Double_t fDCADist_XiDaughtersCut = 1.6;
@@ -326,7 +329,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t fXiMassWindowCut = 0.007;
     Double_t fXiMassWindowCut_tight = 0.006;
 
-    Double_t fXi1530RapidityCut = 0.5;
+    Double_t fXi1530RapidityCut_low = -0.5;
+    Double_t fXi1530RapidityCut_high = 0.5;
 
     Bool_t fsetXiSysTrackCut = kFALSE;
     Bool_t fsetsystematics = kFALSE;
@@ -349,7 +353,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 14);
+    ClassDef(AliAnalysisTaskXi1530, 15);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -365,7 +369,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 11: Not using AliStack informed by DPG and BTG coordination
     // 12: Add Exotic option and change default systematic vaule
     // 13: Change Lambda PV Cut default values(reversed)
-    // 14: Modify Fill MC input function for the Signal Loss 
+    // 14: Modify Fill MC input function for the Signal Loss
+    // 15: Separate Rapidity cut option for pA analysis.
 };
 
 #endif
