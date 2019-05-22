@@ -331,9 +331,19 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
 	  periodNameAnchor.CompareTo("LHC17q")==0  ){
 	TString cutNumber = cuts.GetEventCut(i);
 	TString centCut = cutNumber(0,3);  // first three digits of event cut
-	dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
-	mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
-	cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	if(doMultiplicityWeighting == 1){
+	  dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
+	  mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
+	  cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	}else if(doMultiplicityWeighting == 2){
+	  dataInputMultHisto = Form("V0M_%s_%s", periodNameAnchor.Data(), centCut.Data());
+	  mcInputMultHisto   = Form("V0M_%s_%s", periodName.Data(), centCut.Data());
+	  cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	}else{
+	  dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
+	  mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
+	  cout<< "Histogram names data/MC:: "<< dataInputMultHisto.Data()<< " " << mcInputMultHisto.Data()<< endl;
+	}
        }
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
     }

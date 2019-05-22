@@ -1107,6 +1107,15 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 714) { // RBins studies, ITS with large weights spplited 
     cuts.AddCutPCM("00010113", "0dh00009267300008250404000", "0152103500000000"); // eta < 0.8   5-13 cm
     cuts.AddCutPCM("00010113", "0di00009267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5 cm
+  } else if (trainConfig == 715) { // scan of meson alpha cut
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "0152100500000000"); // alpha <0.7
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "0152108500000000"); // alpha <0.6
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210g500000000"); // alpha <0.5
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210f500000000"); // alpha <0.4
+  } else if (trainConfig == 716) { 
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210e500000000"); // alpha <0.3
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210a500000000"); // alpha <0.2
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210d500000000"); // alpha <0.1
 
     // config like 70X but to be used with weights +50
   } else if (trainConfig == 752) { // as iConfig 702 to be used with MBW
@@ -1160,6 +1169,16 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 764) { // RBins studies, ITS with large weights spplited 
     cuts.AddCutPCM("00010113", "0dh00009267300008250404000", "0152103500000000"); // eta < 0.8   5-13 cm
     cuts.AddCutPCM("00010113", "0di00009267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5
+  
+  } else if (trainConfig == 765) { // scan of meson alpha cut
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "0152100500000000"); // alpha <0.7
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "0152108500000000"); // alpha <0.6
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210g500000000"); // alpha <0.5
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210f500000000"); // alpha <0.4
+  } else if (trainConfig == 766) { 
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210e500000000"); // alpha <0.3
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210a500000000"); // alpha <0.2
+    cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210d500000000"); // alpha <0.1
 
 
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
