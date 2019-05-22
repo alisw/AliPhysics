@@ -545,6 +545,31 @@ const Float_t normDecLXYmax = 20;
     }
   }
 
+  if (useWeight){
+    TH1F *fHistoPtWeight_010_1 = (TH1F*)fileCuts->Get("fHistoPtWeight_010_1");
+    TH1F *fHistoPtWeight_010_2 = (TH1F*)fileCuts->Get("fHistoPtWeight_010_2");
+    TH1F *fHistoPtWeight_3050_1 = (TH1F*)fileCuts->Get("fHistoPtWeight_3050_1");
+    TH1F *fHistoPtWeight_3050_2 = (TH1F*)fileCuts->Get("fHistoPtWeight_3050_2");
+    if(!fHistoPtWeight_010_1) {
+      Printf("FATAL: Histogram for pt weights not found");
+      return 0x0;
+    }
+    if(!fHistoPtWeight_010_2) {
+      Printf("FATAL: Histogram for pt weights not found");
+      return 0x0;
+    }
+    if(!fHistoPtWeight_3050_1) {
+      Printf("FATAL: Histogram for pt weights not found");
+      return 0x0;
+    }
+    if(!fHistoPtWeight_3050_2) {
+      Printf("FATAL: Histogram for pt weights not found");
+      return 0x0;
+    }  
+  }
+
+ 
+
   Printf("***************** TASK SETTINGS *****************");       
   Printf("UseCascadeTask = %d", (Int_t)task->GetUseCascadeTaskForLctoV0bachelor());
   Printf("decay channel = %d", (Int_t)task->GetDecayChannel());
