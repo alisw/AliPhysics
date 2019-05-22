@@ -109,6 +109,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     Double_t              fMaxCent;       ///< Maximum centrality
 
     // Binning
+    TArrayD*             fBinsEventCuts;       ///< Array of bins for event cuts
     TArrayD*             fBinsMult;       ///< Array of bins in multiplicity
     TArrayD*             fBinsCent;       ///< Array of bins in centrality
     TArrayD*             fBinsPt;			    ///< Array of bins in pt
@@ -117,9 +118,13 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     TArrayD*             fBinsPtReso;     ///< Array of bins for relative pt resoulution
 
     // Output Histograms
+    THnSparseF* fHistEventSelection;      //!<! Histogram of event selection
     THnSparseF* fHistEvents;              //!<! Histogram of measured event distribution
     THnSparseF* fHistTracks;              //!<! Histogram of measured tracks
     THnSparseF* fHistRelPtReso;           //!<! Histogram of relatvie pT resolution from covariance matrix
+
+    THnSparseF* fHistMCEventEfficiency;   //!<! Histogram of selelcted events vs Nch
+    THnSparseF* fHistMCEventEfficiencyScaled; //!<! Histogram of selelcted events vs Nch
 
     THnSparseF* fHistMCRelPtReso;         //!<! Histogram of relative pt resolution from mc
     THnSparseF* fHistMCMultCorrelMatrix;  //!<! Histogram of multilicity correlation

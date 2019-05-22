@@ -31,6 +31,7 @@ ClassImp(AliMultDepSpecAnalysisTask);
    fMinCent(0.0),
    fMaxCent(100.0),
    //Arrays for Binning
+   fBinsEventCuts(nullptr),
    fBinsMult(nullptr),
    fBinsCent(nullptr),
    fBinsPt(nullptr),
@@ -38,9 +39,12 @@ ClassImp(AliMultDepSpecAnalysisTask);
    fBinsZv(nullptr),
    fBinsPtReso(nullptr),
    //Event-Histograms
+   fHistEventSelection(nullptr),
    fHistEvents(nullptr),
    fHistTracks(nullptr),
    fHistRelPtReso(nullptr),
+   fHistMCEventEfficiency(nullptr),
+   fHistMCEventEfficiencyScaled(nullptr),
    fHistMCRelPtReso(nullptr),
    fHistMCMultCorrelMatrix(nullptr),
    fHistMCPtCorrelMatrix(nullptr),
@@ -117,6 +121,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMinCent(0.0),
   fMaxCent(100.0),
   //Arrays for Binning
+  fBinsEventCuts(nullptr),
   fBinsMult(nullptr),
   fBinsCent(nullptr),
   fBinsPt(nullptr),
@@ -124,9 +129,12 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fBinsZv(nullptr),
   fBinsPtReso(nullptr),
   //Event-Histograms
+  fHistEventSelection(nullptr),
   fHistEvents(nullptr),
   fHistTracks(nullptr),
   fHistRelPtReso(nullptr),
+  fHistMCEventEfficiency(nullptr),
+  fHistMCEventEfficiencyScaled(nullptr),
   fHistMCRelPtReso(nullptr),
   fHistMCMultCorrelMatrix(nullptr),
   fHistMCPtCorrelMatrix(nullptr),
@@ -173,6 +181,9 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fUseRandomSeed(kFALSE)
 {
   // Set default binning
+  Double_t binsEventCutsDefault[7] = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5};
+  fBinsEventCuts = new TArrayD(7, binsEventCutsDefault);
+
   Double_t binsMultDefault[2] = {0., 10000.};
   Double_t binsCentDefault[2] = {0., 100.};
   Double_t binsPtDefault[53] = {0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,20.0,30.0,40.0,50.0,60.0};
@@ -203,10 +214,13 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
   fOutputList = new TList();
   fOutputList->SetOwner();
 
-  TList* eventSelection = new TList();
-  eventSelection->SetName("eventSelection");
-  fEventCuts.AddQAplotsToList(eventSelection);
-  fOutputList->Add(eventSelection);
+  //TList* eventSelection = new TList();
+  //eventSelection->SetName("eventSelection");
+  //fEventCuts.AddQAplotsToList(eventSelection);
+  //fOutputList->Add(eventSelection);
+
+  fHistEventSelection = CreateHistogram("fHistEventSelection", {"eventcuts"});
+  fOutputList->Add(fHistEventSelection);
 
   fHistEvents = CreateHistogram("fHistEvents", {"mult_meas", "cent"});
   fOutputList->Add(fHistEvents);
@@ -218,6 +232,12 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
 
   if(fIsMC)
   {
+    fHistMCEventEfficiency = CreateHistogram("fHistMCEventEfficiency", {"eventcuts", "mult_true"});
+    fOutputList->Add(fHistMCEventEfficiency);
+
+    fHistMCEventEfficiencyScaled = CreateHistogram("fHistMCEventEfficiencyScaled", {"eventcuts", "mult_true"});
+    fOutputList->Add(fHistMCEventEfficiencyScaled);
+
     fHistMCRelPtReso = CreateHistogram("fHistMCRelPtReso", {"deltapt", "pt_meas", "cent"});
     fOutputList->Add(fHistMCRelPtReso);
     fHistMCMultCorrelMatrix = CreateHistogram("fHistMCMultCorrelMatrix", {"mult_meas", "mult_true"});
@@ -282,7 +302,6 @@ AliMultDepSpecAnalysisTask::~AliMultDepSpecAnalysisTask(){
  ******************************************************************************/
 void AliMultDepSpecAnalysisTask::UserExec(Option_t *){
   if(!InitEvent()) return;
-  //std::cout << "Runnumber: " << fRunNumber << ", Event: "<< fEventNumberInFile << ", Time: " << fTimeStamp << ", nTracks: " << fMultMeas << std::endl;
   FillEventHistos();
   LoopMeas();
   if(fIsMC) LoopTrue();
@@ -326,20 +345,47 @@ Bool_t AliMultDepSpecAnalysisTask::InitEvent()
       fMCEvent = MCEvent();
       if (!fMCEvent) {AliError("fMCEvent not available\n"); return kFALSE;}
     }
-    if(!fEventCuts.AcceptEvent(fEvent)) return kFALSE;
 
     fCent = ((fBinsCent->GetSize()-1) > 1) ? GetCentrality(fEvent) : 50;
 
+    // event info for random seeds
     fRunNumber = fEvent->GetRunNumber();
     AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(fEvent);
     fEventNumberInFile = esdEvent->GetEventNumberInFile();
     fTimeStamp = esdEvent->GetTimeStamp();
     //esdEvent->GetHeader()->GetEventIdAsLong();
 
+    Bool_t acceptEvent = fEventCuts.AcceptEvent(fEvent);
+
     LoopMeas(kTRUE); // set measured multiplicity fMeasMult, fMeasMultScaled
     if(fIsMC) LoopTrue(kTRUE); // set true multiplicity fTrueMult, fTrueMultScaled
 
-    return kTRUE;
+    // fill histograms for event selection and Nch dependent efficiency
+    std::array <AliEventCuts::NormMask, 5> norm_masks {
+      AliEventCuts::kAnyEvent,
+      AliEventCuts::kTriggeredEvent,
+      AliEventCuts::kPassesNonVertexRelatedSelections,
+      AliEventCuts::kHasReconstructedVertex,
+      AliEventCuts::kPassesAllCuts // => acceptEvent = kTRUE
+    };
+    for (int iC = 0; iC < 5; ++iC) {
+      if (fEventCuts.CheckNormalisationMask(norm_masks[iC])) {
+        FillHisto(fHistEventSelection, {Double_t(iC)});
+        if(fIsMC){
+          FillHisto(fHistMCEventEfficiency, {Double_t(iC), fMultTrue});
+          FillHisto(fHistMCEventEfficiencyScaled, {Double_t(iC), fMultTrueScaled});
+        }
+      }
+    }
+    // now count only the events which also contribute to the measurement
+    if(acceptEvent){
+      if (fMultMeas > 0) FillHisto(fHistEventSelection, {5.0});
+      if(fIsMC){
+        if (fMultMeas > 0) FillHisto(fHistMCEventEfficiency, {5.0, fMultTrue});
+        if (fMultMeasScaled > 0) FillHisto(fHistMCEventEfficiencyScaled, {5.0, fMultTrueScaled});
+      }
+    }
+    return acceptEvent;
 }
 
 /***************************************************************************//**
@@ -749,6 +795,7 @@ TArrayD* AliMultDepSpecAnalysisTask::GetBinEdges(const string& axisName){
   else if(axisName.find("mult") != string::npos)    return fBinsMult;
   else if(axisName.find("cent") != string::npos)    return fBinsCent;
   else if(axisName.find("zv") != string::npos)      return fBinsZv;
+  else if(axisName.find("eventcuts") != string::npos)      return fBinsEventCuts;
   else return nullptr;
 }
 
@@ -767,6 +814,7 @@ string AliMultDepSpecAnalysisTask::GetAxisTitle(const string& axisName){
   else if(axisName == "mult_meas")  return "#it{N}^{ meas}_{ch}";
   else if(axisName == "mult_true")  return "#it{N}^{ true}_{ch}";
   else if(axisName == "sigmapt")    return "#sigma(#it{p}^{ meas}_{T}) / #it{p}^{ meas}_{T}";
+  else if(axisName == "eventcuts")    return "[No cuts; Trigger selection; Event selection; Vertex reconstruction and quality; Vertex position; Track selection]";
   else                              return "dummyTitle";
 }
 
