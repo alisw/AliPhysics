@@ -288,22 +288,20 @@ void ComputeDmesonYield(){
   Float_t fPromptCent[nPtBins],fPromptHigHyp[nPtBins],fPromptLowHyp[nPtBins];
   Float_t invyPbPbLoSingleSyst[nPtBins],invyPbPbHiSingleSyst[nPtBins];
 
-  Float_t stdCentHypoFdOverPr=centHypoFdOverPr;
-  Float_t stdLowHypoFdOverPr=lowHypoFdOverPr;
-  Float_t stdHighHypoFdOverPr=highHypoFdOverPr;
+  Float_t centHypoFdOverPrArray[nPtBins], lowHypoFdOverPrArray[nPtBins], highHypoFdOverPrArray[nPtBins];
  
   for(Int_t ib=0; ib<nPtBins; ib++){
 
-    if(fChangeCentralHypo && (pt<3 || pt>=24) && (mesonSpecie==kDzero || mesonSpecie==kDplus || mesonSpecie==kDstar)){
-      centHypoFdOverPr=1.5;
-      lowHypoFdOverPr=1.;
-      highHypoFdOverPr=2.;
-      printf("********* changed min and max hypothesis for pt<3(>24) (%f): %f, minHypo=%f, maxHypo=%f \n",pt,centHypoFdOverPr,lowHypoFdOverPr,highHypoFdOverPr);
+    if(fChangeCentralHypo && (binlim[ib]<3 || binlim[ib]>=24) && (mesonSpecie==kDzero || mesonSpecie==kDplus || mesonSpecie==kDstar)){
+      centHypoFdOverPrArray[ib]=1.5;
+      lowHypoFdOverPrArray[ib]=1.;
+      highHypoFdOverPrArray[ib]=2.;
+      printf("********* hypothesis for pt<3(>24) (%f): %f, minHypo=%f, maxHypo=%f \n",(binlim[ib]+binlim[ib+1])/2,centHypoFdOverPrArray[ib],lowHypoFdOverPrArray[ib],highHypoFdOverPrArray[ib]);
     }
     else {
-      centHypoFdOverPr=stdCentHypoFdOverPr;
-      lowHypoFdOverPr=stdLowHypoFdOverPr;
-      highHypoFdOverPr=stdHighHypoFdOverPr;
+      centHypoFdOverPrArray[ib]=centHypoFdOverPr;
+      lowHypoFdOverPrArray[ib]=lowHypoFdOverPr;
+      highHypoFdOverPrArray[ib]=highHypoFdOverPr;
     }
 
     minval[ib]=9999.;
@@ -344,7 +342,7 @@ void ComputeDmesonYield(){
     Int_t theBin=TMath::BinarySearch(nPtBins,binlim,(Double_t)pt);
     if(theBin<0 || theBin>=nPtBins) continue;
     Float_t rFdPr=RABBeauty/RABCharm;
-    Float_t dist=TMath::Abs(rFdPr-centHypoFdOverPr);
+    Float_t dist=TMath::Abs(rFdPr-centHypoFdOverPrArray[theBin]);
     if(dist<minval[theBin]){
       raac[theBin]=RABCharm;
       minval[theBin]=dist;
@@ -355,7 +353,7 @@ void ComputeDmesonYield(){
       if(collSyst=="p-Pb" && TMath::Abs(normToCsec-1.)>0.001) invypp[theBin]=208.*sigmaPP*1e6;
       fPromptCent[theBin]=fprompt;
     }
-    Float_t distLowHyp=TMath::Abs(rFdPr-lowHypoFdOverPr);
+    Float_t distLowHyp=TMath::Abs(rFdPr-lowHypoFdOverPrArray[theBin]);
     if(distLowHyp<minvalLowHyp[theBin]){
       // LowHyp -> lower Raa(feeddown) -> less Fd to be subtracted -> higher fprompt  -> higher prompt yield -> higher Raa(prompt)
       raacLowHyp[theBin]=RABCharm;
@@ -364,7 +362,7 @@ void ComputeDmesonYield(){
       minvalLowHyp[theBin]=distLowHyp;
       fPromptLowHyp[theBin]=fprompt;
     }
-    Float_t distHigHyp=TMath::Abs(rFdPr-highHypoFdOverPr);
+    Float_t distHigHyp=TMath::Abs(rFdPr-highHypoFdOverPrArray[theBin]);
     if(distHigHyp<minvalHigHyp[theBin]){
       // HigHyp -> higher Raa(feeddown) -> more Fd to be subtracted -> lower fprompt  -> lower prompt yield -> lower Raa(prompt)
       raacHigHyp[theBin]=RABCharm;
@@ -441,7 +439,7 @@ void ComputeDmesonYield(){
     Int_t theBin=TMath::BinarySearch(nPtBins,binlim,(Double_t)pt);
     if(theBin<0 || theBin>=nPtBins) continue;
     Float_t rFdPr=RABBeauty/RABCharm;
-    Float_t dist=TMath::Abs(rFdPr-centHypoFdOverPr);
+    Float_t dist=TMath::Abs(rFdPr-centHypoFdOverPrArray[theBin]);
     if(dist<minvalS[theBin]){
       minvalS[theBin]=dist;
       invyPbPbS[theBin]=invyieldAB*normToCsec;
@@ -449,14 +447,14 @@ void ComputeDmesonYield(){
       invyPbPbHiS[theBin]=invyieldABFDHigh*normToCsec;
       fPromptCentS[theBin]=fprompt;
     }
-    Float_t distLowHyp=TMath::Abs(rFdPr-lowHypoFdOverPr);
+    Float_t distLowHyp=TMath::Abs(rFdPr-lowHypoFdOverPrArray[theBin]);
     if(distLowHyp<minvalLowHypS[theBin]){
       // LowHyp -> lower Raa(feeddown) -> less Fd to be subtracted -> higher fprompt  -> higher prompt yield -> higher Raa(prompt)
       invyPbPbHiSingleSystS[theBin]=invyieldABFDHigh*normToCsec;
       minvalLowHypS[theBin]=distLowHyp;
       fPromptLowHypS[theBin]=fprompt;
     }
-    Float_t distHigHyp=TMath::Abs(rFdPr-highHypoFdOverPr);
+    Float_t distHigHyp=TMath::Abs(rFdPr-highHypoFdOverPrArray[theBin]);
     if(distHigHyp<minvalHigHypS[theBin]){
       // HigHyp -> higher Raa(feeddown) -> more Fd to be subtracted -> lower fprompt  -> lower prompt yield -> lower Raa(prompt)
       invyPbPbLoSingleSystS[theBin]=invyieldABFDLow*normToCsec;
@@ -707,7 +705,7 @@ void ComputeDmesonYield(){
       gcrbc[ib]->SetLineStyle(lstyle[ib]);
       if(first){
 	gcrbc[ib]->Draw("AL");
-	gcrbc[ib]->GetXaxis()->SetLimits(lowHypoFdOverPr,highHypoFdOverPr);
+	gcrbc[ib]->GetXaxis()->SetLimits(lowHypoFdOverPrArray[ib],highHypoFdOverPrArray[ib]);
 	gcrbc[ib]->GetXaxis()->SetTitle("Hypothesis on (#it{R}_{AA} feed-down)/(#it{R}_{AA} prompt)");
 	gcrbc[ib]->GetYaxis()->SetTitleOffset(1.2);
 	gcrbc[ib]->GetXaxis()->SetTitleOffset(1.2);
