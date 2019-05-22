@@ -214,6 +214,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void CheckFirstEventInChunk() {fCheckFirstEventInChunk = kTRUE;}
   void CheckPileUp() {fCheckPileUp = kTRUE;}
   void UseSPDPileUpCuts(){fUsePileUpSPD = kTRUE;}
+
+  void SetPileUpSPDParams(Int_t minVtxPileUpContrSPD, Float_t minPileUpZdistSPD){
+    fModifySPDDefaultParams = kTRUE;
+    fMinVtxPileUpContrSPD = minVtxPileUpContrSPD;
+    fMinPileUpZdistSPD = minPileUpZdistSPD;
+  }  
   void CheckPrimaryFlagAOD() {fCheckPrimaryFlagAOD = kTRUE;}
   void UseMCforKinematics() {fUseMCforKinematics = kTRUE;}
   void SetRebinnedCorrHistos() {fRebinCorrHistos = kTRUE;}
@@ -518,7 +524,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fUseOOBPileUpCutsLHC18nTPCclus; //multVZERO < (-fOOBLHC18Slope + fOOBLHC18Par1*nTPCclus + fOOBLHC18Par2*nTPCclus*nTPCclus 
   Float_t fOOBLHC18Slope;
   Float_t fOOBLHC18Par1;
-  Float_t fOOBLHC18Par2; 
+  Float_t fOOBLHC18Par2;
+
+  Bool_t  fModifySPDDefaultParams;
+  Int_t   fMinVtxPileUpContrSPD;
+  Float_t fMinPileUpZdistSPD;
 
   Bool_t fDetailedTracksQA; //fill Eta, Phi vs Vx histos to be used to check ME pools. 
 
@@ -597,7 +607,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 17); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 18); // example of analysis
 };
 
 

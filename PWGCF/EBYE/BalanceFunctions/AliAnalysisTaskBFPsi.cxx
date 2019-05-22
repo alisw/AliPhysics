@@ -218,6 +218,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fOOBLHC18Slope(2000.0),
   fOOBLHC18Par1(0.013),
   fOOBLHC18Par2(1.25e-9),
+  fModifySPDDefaultParams(kFALSE),
+  fMinVtxPileUpContrSPD(5),
+  fMinPileUpZdistSPD(0.8),
   fDetailedTracksQA(kFALSE),
   fVxMax(0.8),
   fVyMax(0.8),
@@ -1284,7 +1287,13 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
   AliAnalysisUtils ut;
   if(fCheckPileUp){
     fUtils->SetUseMVPlpSelection(kTRUE);
-    if (fUsePileUpSPD) fUtils->SetUseMVPlpSelection(kFALSE);
+    if (fUsePileUpSPD) {
+      fUtils->SetUseMVPlpSelection(kFALSE);
+      if (fModifySPDDefaultParams) {
+	fUtils->SetMinPlpContribSPD(fMinVtxPileUpContrSPD);
+	fUtils->SetMinPlpZdistSPD(fMinPileUpZdistSPD);
+      }	    
+    }
     // fUtils->SetUseOutOfBunchPileUp(kTRUE);
     if(fUtils->IsPileUpEvent(event))
       return -1.;
