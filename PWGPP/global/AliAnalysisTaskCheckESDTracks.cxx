@@ -76,8 +76,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistEtaPhiPtNegChargeTPCsel{nullptr},
   fHistEtaPhiPtNegChargeTPCselITSref{nullptr},
   fHistEtaPhiPtNegChargeTPCselSPDany{nullptr},
-  fHistEtaPhiPositionPosChargeTPCsel{nullptr},
-  fHistEtaPhiPositionNegChargeTPCsel{nullptr},
+  fHistEtaPhiPositionPtPosChargeTPCsel{nullptr},
+  fHistEtaPhiPositionPtNegChargeTPCsel{nullptr},
   fHistEtaPhiPtTPCselTOFbc{nullptr},
   fHistEtaPhiPtTPCselITSrefTOFbc{nullptr},
   fHistEtaPhiPtTPCselSPDanyTOFbc{nullptr},
@@ -250,8 +250,8 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistEtaPhiPtNegChargeTPCsel;
     delete fHistEtaPhiPtNegChargeTPCselITSref;
     delete fHistEtaPhiPtNegChargeTPCselSPDany;
-    delete fHistEtaPhiPositionPosChargeTPCsel;
-    delete fHistEtaPhiPositionNegChargeTPCsel;
+    delete fHistEtaPhiPositionPtPosChargeTPCsel;
+    delete fHistEtaPhiPositionPtNegChargeTPCsel;
     delete fHistEtaPhiPtTPCselTOFbc;
     delete fHistEtaPhiPtTPCselITSrefTOFbc;
     delete fHistEtaPhiPtTPCselSPDanyTOFbc;
@@ -528,10 +528,10 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistEtaPhiPtNegChargeTPCselITSref);
   fOutput->Add(fHistEtaPhiPtNegChargeTPCselSPDany);
 
-  fHistEtaPhiPositionPosChargeTPCsel = new TH2F("hEtaPhiPositionPosChargeTPCsel"," Positive charged tracks ; #eta ; #varphi position at TPC inner radius",fNEtaBins,-1.,1.,720,0.,2*TMath::Pi());
-  fHistEtaPhiPositionNegChargeTPCsel = new TH2F("hEtaPhiPositionNegChargeTPCsel"," Negative charged tracks ; #eta ; #varphi position at TPC inner radius",fNEtaBins,-1.,1.,720,0.,2*TMath::Pi());
-  fOutput->Add(fHistEtaPhiPositionPosChargeTPCsel);
-  fOutput->Add(fHistEtaPhiPositionNegChargeTPCsel);
+  fHistEtaPhiPositionPtPosChargeTPCsel = new TH3F("hEtaPhiPositionPtPosChargeTPCsel"," Positive charged tracks ; #eta ; #varphi position at TPC inner radius ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,720,0.,2*TMath::Pi(),20,0.,10.);
+  fHistEtaPhiPositionPtNegChargeTPCsel = new TH3F("hEtaPhiPositionPtNegChargeTPCsel"," Negative charged tracks ; #eta ; #varphi position at TPC inner radius ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,720,0.,2*TMath::Pi(),20,0.,10.);
+  fOutput->Add(fHistEtaPhiPositionPtPosChargeTPCsel);
+  fOutput->Add(fHistEtaPhiPositionPtNegChargeTPCsel);
   
   fHistEtaPhiPtTPCselTOFbc = new TH3F("hEtaPhiPtTPCselTOFbc"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistEtaPhiPtTPCselITSrefTOFbc = new TH3F("hEtaPhiPtTPCselITSrefTOFbc"," ; #eta ; #varphi ; p_{T} (GeV/c)",fNEtaBins,-1.,1.,fNPhiBins,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
@@ -1005,10 +1005,10 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     fHistEtaPhiPtTPCsel->Fill(etatrack,phitrack,pttrack);
     if(chtrack>0){
       fHistEtaPhiPtPosChargeTPCsel->Fill(etatrack,phitrack,pttrack);
-      if(fillPhiPosHistos) fHistEtaPhiPositionPosChargeTPCsel->Fill(etatrack,phiPositionTPC);
+      if(fillPhiPosHistos) fHistEtaPhiPositionPtPosChargeTPCsel->Fill(etatrack,phiPositionTPC,pttrack);
     }else if(chtrack<0){
       fHistEtaPhiPtNegChargeTPCsel->Fill(etatrack,phitrack,pttrack);
-      if(fillPhiPosHistos) fHistEtaPhiPositionNegChargeTPCsel->Fill(etatrack,phiPositionTPC);
+      if(fillPhiPosHistos) fHistEtaPhiPositionPtNegChargeTPCsel->Fill(etatrack,phiPositionTPC,pttrack);
     }
     fHistEtaPhiPtInnerTPCsel->Fill(etatrackTPC,phitrackTPC,pttrackTPC);
     fHistNtrackeltsPtTPCsel->Fill(ntracklets,pttrack);

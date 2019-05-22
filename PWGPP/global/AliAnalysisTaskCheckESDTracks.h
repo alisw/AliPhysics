@@ -126,8 +126,8 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistEtaPhiPtNegChargeTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtNegChargeTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtNegChargeTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)  
-  TH2F* fHistEtaPhiPositionPosChargeTPCsel;   //!<!  histo of eta,phi (position) at TPC inner
-  TH2F* fHistEtaPhiPositionNegChargeTPCsel;   //!<!  histo of eta,phi (position) at TPC inner
+  TH3F* fHistEtaPhiPositionPtPosChargeTPCsel;   //!<!  histo of eta,phi (position) at TPC inner
+  TH3F* fHistEtaPhiPositionPtNegChargeTPCsel;   //!<!  histo of eta,phi (position) at TPC inner
 
   TH3F* fHistEtaPhiPtTPCselTOFbc;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtTPCselITSrefTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit)
@@ -237,7 +237,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,16);
+  ClassDef(AliAnalysisTaskCheckESDTracks,17);
 };
 
 
