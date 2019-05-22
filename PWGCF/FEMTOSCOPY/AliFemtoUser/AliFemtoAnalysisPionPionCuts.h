@@ -15,6 +15,8 @@
 #include "AliFemtoCutAttrTrack.h"
 #include "AliFemtoCutAttrPairTrack.h"
 
+#include "AliFemtoModelHiddenInfo.h"
+
 #include <TList.h>
 
 
@@ -140,6 +142,36 @@ public:
 };
 
 
+/// Cut on MonteCarlo PDG code to select *only* pions
+///
+class AliFemtoTrackCutPionPionIdealAK : public AliFemtoTrackCutPionPionAK {
+public:
+
+  AliFemtoTrackCutPionPionIdealAK()
+    : AliFemtoTrackCutPionPionAK()
+    {}
+
+  AliFemtoTrackCutPionPionIdealAK(AliFemtoConfigObject &cfg)
+    : AliFemtoTrackCutPionPionAK(cfg)
+    {}
+
+  virtual ~AliFemtoTrackCutPionPionIdealAK() {}
+
+  virtual bool Pass(const AliFemtoTrack *track)
+    {
+      const AliFemtoModelHiddenInfo *info = static_cast<AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
+      const Int_t pid = info->GetPDGPid();
+      if (std::abs(pid) != 211) {
+        return false;
+      }
+      return AliFemtoTrackCutPionPionAK::Pass(track);
+    }
+
+  static const char* ClassName()
+    { return "AliFemtoTrackCutPionPionIdealAK"; }
+};
+
+
 /// \class AliFemtoPairCutPionPionAKAvgSep
 /// \brief Andrew Kubera's average separation pair cut
 ///
@@ -209,6 +241,9 @@ template <>
 AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoTrackCutPionPionAK &cut);
 
 template <>
+AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoTrackCutPionPionIdealAK &cut);
+
+template <>
 AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoPairCutPionPionAKAvgSep &cut);
 
 template <>
@@ -219,6 +254,9 @@ AliFemtoEventCutPionPionAK* AliFemtoConfigObject::Into<AliFemtoEventCutPionPionA
 
 template <>
 AliFemtoTrackCutPionPionAK* AliFemtoConfigObject::Into<AliFemtoTrackCutPionPionAK>(bool);
+
+template <>
+AliFemtoTrackCutPionPionIdealAK* AliFemtoConfigObject::Into<AliFemtoTrackCutPionPionIdealAK>(bool);
 
 template <>
 AliFemtoPairCutPionPionAKAvgSep* AliFemtoConfigObject::Into<AliFemtoPairCutPionPionAKAvgSep>(bool);
