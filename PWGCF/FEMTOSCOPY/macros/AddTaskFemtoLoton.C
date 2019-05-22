@@ -208,7 +208,7 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
   task->SetCorrelationConfig(config);
   mgr->AddTask(task);
 
-  TString addon = "HM";
+  TString addon = "PL";
 
   TString file = AliAnalysisManager::GetCommonFileName();
 

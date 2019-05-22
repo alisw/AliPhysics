@@ -227,7 +227,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   task->SetCorrelationConfig(config);
   mgr->AddTask(task);
 
-  TString addon = "HM";
+  TString addon = "PXi";
 
   TString file = AliAnalysisManager::GetCommonFileName();
 
