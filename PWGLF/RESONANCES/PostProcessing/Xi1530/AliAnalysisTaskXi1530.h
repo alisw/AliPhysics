@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskXi1530_H
-#define AliAnalysisTaskXi1530_H
+#ifndef ALIANALYSISTASKXi1530_H
+#define ALIANALYSISTASKXi1530_H
 //
 // Class AliAnalysisTaskXi1530
 //
