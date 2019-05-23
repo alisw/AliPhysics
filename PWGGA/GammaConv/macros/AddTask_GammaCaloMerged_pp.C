@@ -1071,6 +1071,12 @@ void AddTask_GammaCaloMerged_pp(
   } else if (trainConfig == 237){  // TRD material
     cuts.AddCutMergedCalo("00081113","111211106f032200000","111211106f022700001","0163300000000000"); // TRD infront
     cuts.AddCutMergedCalo("00081113","111131106f032200000","111131106f022700001","0163300000000000"); // no TRD infront
+  } else if (trainConfig == 238){ // variation track matching to cluster & mass variations new defaults
+    cuts.AddCutMergedCalo("00081113","111111106d032200000","111111106d022700001","0163300000000000"); // fEOverPMax = 3.0
+    cuts.AddCutMergedCalo("00081113","111111106e032200000","111111106e022700001","0163300000000000"); // fEOverPMax = 2.0
+  } else if (trainConfig == 239){ // variation track matching to cluster & mass variations new defaults
+    cuts.AddCutMergedCalo("00081113","111111106g032200000","111111106g022700001","0163300000000000"); // fEOverPMax = 1.5
+    cuts.AddCutMergedCalo("00081113","111111106h032200000","111111106h022700001","0163300000000000"); // fEOverPMax = 1.25
 
   } else if (trainConfig == 250){  // EMCAL clusters 7 TeV LHC11 TM on
     cuts.AddCutMergedCalo("00010113","1111100067032200000","1111100067022700001","0163300000000000"); // INT7
