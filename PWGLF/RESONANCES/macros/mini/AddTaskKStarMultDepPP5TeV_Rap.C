@@ -133,8 +133,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarMultDepPP5TeV_Rap
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
-   //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP5TeV_Rap.C");
-      gROOT->LoadMacro("ConfigKStarPP5TeV_Rap.C");
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP5TeV_Rap.C");
+   //   gROOT->LoadMacro("ConfigKStarPP5TeV_Rap.C");
    if (!ConfigKStarPP5TeV_Rap(task, isMC, isPP, "", cutsPair, Strcut, customQualityCutsID,cutKaCandidate,nsigmaPi,nsigmaK, nsigmaTOF, enableMonitor)) return 0x0;
 
    //
