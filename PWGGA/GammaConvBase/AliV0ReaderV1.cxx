@@ -570,7 +570,7 @@ Bool_t AliV0ReaderV1::Notify(){
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c  ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16rP1JJ  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16sP1JJ  ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJ || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJLowB ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18b8 ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18b8 || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18b10 ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18l6b1 || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18l6c1 
      ){
         TObjArray *arr = fCurrentFileName.Tokenize("/");
