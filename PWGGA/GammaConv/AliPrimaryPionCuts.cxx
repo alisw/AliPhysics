@@ -117,7 +117,8 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fHistTrackSelectedPhi(NULL),
 	fHistTrackSelectedPt(NULL),
 	fHistTrackSelectedPtWithoutITS(NULL),
-	fStringITSClusterCut("")
+	fStringITSClusterCut(""),
+	fPeriodName("")
 {
 	InitPIDResponse();
 	for(Int_t jj=0;jj<kNCuts;jj++){ fCuts[jj]=0; }
@@ -127,9 +128,15 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	Bool_t selectPrimaries=kFALSE;
 	if (fEsdTrackCuts==NULL) fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 	
-	// preset most cuts to match those of AOD filtering
-	// add function here if you run different year
-	SetStandardTrackCutsAODFiltering2010();	
+	// preset most ESD cuts to match those of AOD filtering
+  if(fPeriodName.Contains("LHC10")){
+		AliInfo("Presetting ESD cuts for LHC10 AOD filtering");
+	  SetHybridTrackCutsAODFiltering(1000);
+	} else{
+		SetHybridTrackCutsAODFiltering(1500);
+		AliInfo("Presetting ESD cuts for run2 filtering");
+	}
+	
 }
 
 //________________________________________________________________________
@@ -1311,35 +1318,44 @@ AliPrimaryPionCuts* AliPrimaryPionCuts::GetStandardCuts2010pp(){
 }
 
 ///________________________________________________________________________
-void AliPrimaryPionCuts::SetStandardTrackCutsAODFiltering2010(){
+void AliPrimaryPionCuts::SetHybridTrackCutsAODFiltering(Int_t runflag= 1000){
    // As preselection apply all cuts that are applied in AOD filtering
 	 // so that ESD results are comparable to
 	 // SetHybridFilterMaskGlobalConstrainedGlobal
 
-   TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
-   fEsdTrackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
-   fEsdTrackCuts->SetMinNClustersTPC(70);
-   fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
-   fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
-   fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-   // ITS
-   fEsdTrackCuts->SetRequireITSRefit(kTRUE);
-   //accept secondaries
-   fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
-   fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
-   fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
-   //reject fakes
-   fEsdTrackCuts->SetMaxChi2PerClusterITS(36);
-   fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+	if(runflag==1500){
+		fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+		fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
+  	fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
+  	fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
+  	fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+  	fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+	} else if(runflag==1000){
+		TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
+   	fEsdTrackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
+   	fEsdTrackCuts->SetMinNClustersTPC(70);
+   	fEsdTrackCuts->SetMaxChi2PerClusterTPC(4);
+   	fEsdTrackCuts->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+   	fEsdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+   	fEsdTrackCuts->SetRequireTPCRefit(kTRUE);
+   	fEsdTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+   	// ITS
+   	fEsdTrackCuts->SetRequireITSRefit(kTRUE);
+   	//accept secondaries
+   	fEsdTrackCuts->SetMaxDCAToVertexXY(2.4);
+   	fEsdTrackCuts->SetMaxDCAToVertexZ(3.2);
+   	fEsdTrackCuts->SetDCAToVertex2D(kTRUE);
+   	//reject fakes
+   	fEsdTrackCuts->SetMaxChi2PerClusterITS(36);
+   	fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);	
 
-   fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+   	fEsdTrackCuts->SetRequireSigmaToVertex(kFALSE);
    
-   fEsdTrackCuts->SetEtaRange(-0.9,0.9);
-   fEsdTrackCuts->SetPtRange(0.15, 1E+15);
+   	fEsdTrackCuts->SetEtaRange(-0.9,0.9);
+   	fEsdTrackCuts->SetPtRange(0.15, 1E+15);
 
-	 fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+	 	fEsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+	}
 }
 
 //--------------------------------------------------------------------------

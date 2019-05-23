@@ -87,7 +87,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Bool_t PionIsSelectedAOD(AliAODTrack* lTrack);
 	static AliPrimaryPionCuts * GetStandardCuts2010PbPb();
 	static AliPrimaryPionCuts * GetStandardCuts2010pp();
-	void  SetStandardTrackCutsAODFiltering2010();
+	void  SetHybridTrackCutsAODFiltering(Int_t runflag);
 	void  SetPtDepDCACuts(Double_t pt);
 	Bool_t IsDCACutAccepted(AliAODTrack* lTrack);
 	Bool_t InitPIDResponse();
@@ -119,6 +119,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	void SetEtaShift(Double_t etaShift){fEtaShift = etaShift;}
 	Bool_t SetTOFPionPIDCut(Int_t TOFelectronPID);
 	Bool_t SetMassCut(Int_t massCut);
+	void SetPeriodName(TString periodName){fPeriodName = periodName;}
 	Double_t GetMassCut(){return fMassCut;}
 	
 	// Request Flags
@@ -192,6 +193,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TH1F *fHistTrackSelectedPtWithoutITS;
 	
 	TString fStringITSClusterCut;
+	TString fPeriodName;
 	
 	private:
 
@@ -199,7 +201,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,8)
+    ClassDef(AliPrimaryPionCuts,9)
 };
 
 #endif

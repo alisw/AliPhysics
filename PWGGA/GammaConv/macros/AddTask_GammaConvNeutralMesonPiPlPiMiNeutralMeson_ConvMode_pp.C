@@ -197,6 +197,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("00083113","00200009227000008250400000","32c010708","0103603500000000","0153503000000000"); // EG1
     cuts.AddCutHeavyMesonPCM("00085113","00200009227000008250400000","32c010708","0103603500000000","0153503000000000"); // EG2
     cuts.AddCutHeavyMesonPCM("00062113","00200009227000008250400000","32c010708","0103603500000000","0153503000000000"); // PHI7
+ } else if ( trainConfig == 113) { // pp13 TeV AOD and ESD comparison
+    cuts.AddCutHeavyMesonPCM("00010113","00200009227000008250400000","32c510708","0103603500000000","0153503000000000"); // V0AND
     // LHC11 7 TeV triggered test
   } else if ( trainConfig == 115) { // with TPC refit + ITS requirement
     cuts.AddCutHeavyMesonPCM("00010113","00200009227000008250400000","32c010708","0103603500000000","0153503000000000"); // V0AND
@@ -210,6 +212,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     // charged pion cuts
   } else if ( trainConfig == 120) {
     cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32c510708","0103603500000000","0153503000000000"); // with TPC refit
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","52c510708","0103603500000000","0153503000000000"); // eta 0.8 cut
   } else if ( trainConfig == 121) { // pTCut
     cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32c000708","0103603500000000","0153503000000000"); // pt>0.075
     cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32c020708","0103603500000000","0153503000000000"); // pt>0.125
@@ -347,6 +350,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
 
     TString cutName( Form("%s_%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(), (cuts.GetPhotonCut(i)).Data(),(cuts.GetPionCut(i)).Data(),(cuts.GetNDMCut(i)).Data(), (cuts.GetMesonCut(i)).Data() ) );
     analysisPionCuts[i] = new AliPrimaryPionCuts();
+    analysisPionCuts[i]->SetPeriodName(periodNameV0Reader);
     if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
     if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
       cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;

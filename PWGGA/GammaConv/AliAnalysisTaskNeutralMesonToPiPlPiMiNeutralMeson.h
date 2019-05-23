@@ -195,6 +195,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoClusterGammaPt;                               //!<! array of histos of Cluster photon, pt
     TH1F**                            fHistoClusterGammaEta;                              //!<! array of histos of Cluster photon, eta
     TH1F**                            fHistoNegPionPt;                                    //!<! array of histos of negative pion, pt
+    TH1F**                            fHistoOmegaCalcMass;                                    //!<! array of histos of negative pion, pt
+    TH1F**                            fHistoOmegaNormMass;                                    //!<! array of histos of negative pion, pt
+    TH1F**                            fHistoOmegaNormMassWithoutSet;                                    //!<! array of histos of negative pion, pt
     TH1F**                            fHistoPosPionPt;                                    //!<! array of histos of positive pion, pt
     TH1F**                            fHistoNegPionPhi;                                   //!<! array of histos of negative pion, phi
     TH1F**                            fHistoPosPionPhi;                                   //!<! array of histos of positive pion, phi
