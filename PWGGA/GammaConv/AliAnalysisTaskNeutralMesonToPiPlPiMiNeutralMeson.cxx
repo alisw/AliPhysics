@@ -3329,21 +3329,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
     
-    //AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
-    AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
+    AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
+    //AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliVTrack *posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
-      //AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
-      AliKFParticle posPionCandidateKF( *posPionCandidate, 211 );
-
+      AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
+      //AliKFParticle posPionCandidateKF( *posPionCandidate, 211 );
       AliKFConversionPhoton virtualPhoton(negPionCandidateKF,posPionCandidateKF);
       
       // removed to achieve AOD compabilit
       //AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());   
 			// primaryVertexImproved+=*virtualPhoton;
       //virtualPhoton.SetProductionVertex(primaryVertexImproved);
-      virtualPhoton.SetTrackLabels( lGoodPosPionIndexPrev[j], lGoodNegPionIndexPrev[i]);
 
+      virtualPhoton.SetTrackLabels( lGoodPosPionIndexPrev[j], lGoodNegPionIndexPrev[i]);
       Int_t labeln=0;
       Int_t labelp=0;
       Int_t motherlabelp = 0;
@@ -3364,7 +3363,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
         virtualPhoton.SetMCLabelNegative(labeln);
 
       }
-    
+
       AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(&virtualPhoton); //To apply mass 2 pion mass cut
       if(!fDoLightOutput){
         if (fMCEvent &&(fDoMesonQA>0)){
@@ -3566,7 +3565,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                 fHistoTrueNegPionFromNeutralMesonPt[fiCut]->Fill(negPionCandidate->Pt(), fWeightJetJetMC);
               break;
             case 3: // D0 MESON
-              if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labelNegPion)& negPionIsPrimary)
+              if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labelNegPion)&& negPionIsPrimary)
                 fHistoTrueNegPionFromNeutralMesonPt[fiCut]->Fill(negPionCandidate->Pt(), fWeightJetJetMC);
               break;
             default:
@@ -3639,12 +3638,25 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
 
-    AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
+    Double_t xyzNeg[3] = {0}, pxpypzNeg[3] = {0}, cvNeg[21] = {0};
+    negPionCandidate->GetPxPyPz(pxpypzNeg);
+    negPionCandidate->GetXYZ(xyzNeg);
+    negPionCandidate->GetCovarianceXYZPxPyPz(cvNeg);
 
+    AliExternalTrackParam*  trackParamNeg = new AliExternalTrackParam(xyzNeg,pxpypzNeg,cvNeg,negPionCandidate->Charge());
+    AliKFParticle negPionCandidateKF( *trackParamNeg, 211 );
+    delete trackParamNeg;
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliVTrack *posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
-      AliKFParticle posPionCandidateKF( *posPionCandidate, 211 ); 
+      Double_t xyzPos[3] = {0}, pxpypzPos[3] = {0}, cvPos[21] = {0};
+      posPionCandidate->GetPxPyPz(pxpypzPos);
+      posPionCandidate->GetXYZ(xyzPos);
+      posPionCandidate->GetCovarianceXYZPxPyPz(cvPos);
 
+      AliExternalTrackParam*    trackParamPos = new AliExternalTrackParam(xyzPos,pxpypzPos,cvPos,posPionCandidate->Charge());
+      
+      AliKFParticle posPionCandidateKF( *trackParamPos, 211 ); 
+      delete trackParamPos;
       AliKFConversionPhoton* virtualPhoton = NULL;
       virtualPhoton = new AliKFConversionPhoton(negPionCandidateKF,posPionCandidateKF);
      
@@ -3675,7 +3687,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
       }
 
       AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To apply mass 2 pion mass cut
-
       if(!fDoLightOutput){
         if (fMCEvent &&(fDoMesonQA>0)){
           if (fPositiveMCParticle && fNegativeMCParticle ) {
@@ -4225,11 +4236,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
             if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
               fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC Gamma
               if(particle->GetMother() >-1){
-                AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
-                fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
-                fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
-                fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
                 if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeNDM){
+                  AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
+                  fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
+                  fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
+                  fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
                   if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() > -1){
                     if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetPdgCode() == fPDGCodeAnalyzedMeson ){
                       if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetNDaughters() ==3 ) {
@@ -4247,13 +4258,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
             if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(particle,AODMCTrackArray)){
               fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All MC Gamma
               if(particle->GetMother() >-1){
-                AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
-                if(fDoMesonQA > 0){
-                  fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
-                  fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
-                  fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
-                }
                 if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() == fPDGCodeNDM){
+                  AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
+                  if(fDoMesonQA > 0){
+                    fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
+                    fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
+                    fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
+                  }
                   if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() > -1){
                     if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetPdgCode() == fPDGCodeAnalyzedMeson ){
                       if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetNDaughters() ==3 ) {
@@ -4823,14 +4834,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
   // Process True Mesons
 
   Bool_t isSameMotherPiPlPiMiNDM   = kFALSE;   // pi+ pi- and pi0 have the same mother
-  Bool_t isSameMotherPiPlPiMi         = kFALSE;   // pi+ and pi- have the same mother
+  Bool_t isSameMotherPiPlPiMi      = kFALSE;   // pi+ and pi- have the same mother
   Bool_t isSameMotherPiPlNDM       = kFALSE;   // pi+ and pi0 have the same mother
   Bool_t isSameMotherPiMiNDM       = kFALSE;   // pi- and pi0 have the same mother
-  Bool_t isNoSameMother               = kFALSE;   // none of the pions have the same mother
-  Bool_t isNoPiPiPi                   = kFALSE;   // the decay is not a 3 pion decay
+  Bool_t isNoSameMother            = kFALSE;   // none of the pions have the same mother
+  Bool_t isNoPiPiPi                = kFALSE;   // the decay is not a 3 pion decay
 
-
-  Int_t virtualParticleMCLabel = TrueVirtualParticleCandidate->GetMCParticleLabel(fMCEvent);
+  Int_t virtualParticleMCLabel = -1;
+  virtualParticleMCLabel = TrueVirtualParticleCandidate->GetMCParticleLabel(fMCEvent);
   Int_t virtualParticleMotherLabel = -1;
   Int_t trueMesonFlag  = TrueNeutralDecayMesonCandidate->GetTrueMesonValue();
   Int_t NDMMCLabel     = TrueNeutralDecayMesonCandidate->GetMCLabel();
@@ -4844,7 +4855,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       return;
   }
   Int_t NDMMotherLabel =  fMCEvent->Particle(NDMMCLabel)->GetMother(0);
-
   TParticle * negativeMC = (TParticle*)TrueVirtualParticleCandidate->GetNegativeMCDaughter(fMCEvent);
   TParticle * positiveMC = (TParticle*)TrueVirtualParticleCandidate->GetPositiveMCDaughter(fMCEvent);
 
@@ -4859,18 +4869,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       virtualParticleMotherLabel  = virtualParticleMCLabel;
       if(virtualParticleMotherLabel==NDMMotherLabel){
         // all pions from same mother
-        if(fMCEvent->Particle(NDMMotherLabel)->GetStatusCode()!=21) isSameMotherPiPlPiMiNDM  = kTRUE;
+        isSameMotherPiPlPiMiNDM  = kTRUE;
       } else{
         // only pi+ pi- from same mother
-        if(fMCEvent->Particle(virtualParticleMotherLabel)->GetStatusCode()!=21) isSameMotherPiPlPiMi = kTRUE;
+        isSameMotherPiPlPiMi = kTRUE;
       }
     } else{
       if(NDMMotherLabel==negMotherLabelMC && negMotherLabelMC != -1){
         // pi0 and pi- same mother
-        if(fMCEvent->Particle(negMotherLabelMC)->GetStatusCode()!=21) isSameMotherPiMiNDM      = kTRUE;
+        isSameMotherPiMiNDM      = kTRUE;
       } else if(NDMMotherLabel==posMotherLabelMC && posMotherLabelMC != -1){
         // pi0 and pi+ same mother
-        if(fMCEvent->Particle(posMotherLabelMC)->GetStatusCode()!=21)  isSameMotherPiPlNDM      = kTRUE;
+        isSameMotherPiPlNDM      = kTRUE;
       } else{
         // all pions different mother
         isNoSameMother              = kTRUE;
@@ -5050,7 +5060,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       return;
   }
   Int_t NDMMotherLabel = (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMCLabel)))->GetMother();
-
   AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueVirtualParticleCandidate->GetMCLabelNegative())); // pi-
   AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueVirtualParticleCandidate->GetMCLabelPositive())); // pi+
   AliAODMCParticle *NDMMC      = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMCLabel)); // pi0
@@ -5071,18 +5080,18 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
       virtualParticleMotherLabel  = virtualParticleMCLabel;
       if(virtualParticleMotherLabel==NDMMotherLabel){
         // all pions from same mother
-        if((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NDMMotherLabel)))->GetStatus()!=21) isSameMotherPiPlPiMiNDM  = kTRUE; // TODO check if GetStatus is correcz
+        isSameMotherPiPlPiMiNDM  = kTRUE;
       } else{
         // only pi+ pi- from same mother
-        if((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(virtualParticleMotherLabel)))->GetStatus()!=21) isSameMotherPiPlPiMi = kTRUE;
+        isSameMotherPiPlPiMi = kTRUE;
       }
     } else{
       if(NDMMotherLabel==negMotherLabelMC && negMotherLabelMC != -1){
         // pi0 and pi- same mother
-        if((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(negMotherLabelMC)))->GetStatus()!=21) isSameMotherPiMiNDM      = kTRUE;
+        isSameMotherPiMiNDM      = kTRUE;
       } else if(NDMMotherLabel==posMotherLabelMC && posMotherLabelMC != -1){
         // pi0 and pi+ same mother
-        if((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(posMotherLabelMC)))->GetStatus()!=21)  isSameMotherPiPlNDM      = kTRUE;
+        isSameMotherPiPlNDM      = kTRUE;
       } else{
         // all pions different mother
         isNoSameMother              = kTRUE;
