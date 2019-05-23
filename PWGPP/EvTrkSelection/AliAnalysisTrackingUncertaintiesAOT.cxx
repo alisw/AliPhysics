@@ -89,10 +89,10 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fVertex(0x0)
   ,fmakefinerpTbin(kFALSE)
   ,fUseCutGeoNcrNcl(kFALSE),
-  fDeadZoneWidth(3.),
+  fDeadZoneWidth(2.),
   fCutGeoNcrNclLength(130.),
   fCutGeoNcrNclGeom1Pt(1.5),
-  fCutGeoNcrNclFractionNcr(0.85),
+  fCutGeoNcrNclFractionNcr(0.9),
   fCutGeoNcrNclFractionNcl(0.7)
 {
 
@@ -134,10 +134,10 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fVertex(0x0)
   ,fmakefinerpTbin(kFALSE)
   ,fUseCutGeoNcrNcl(kFALSE),
-  fDeadZoneWidth(3.),
+  fDeadZoneWidth(2.),
   fCutGeoNcrNclLength(130.),
   fCutGeoNcrNclGeom1Pt(1.5),
-  fCutGeoNcrNclFractionNcr(0.85),
+  fCutGeoNcrNclFractionNcr(0.9),
   fCutGeoNcrNclFractionNcl(0.7)
 {
   //
@@ -178,7 +178,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
   fESDtrackCuts->SetEtaRange(-fMaxEta, fMaxEta);
   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
-
+  if(fUseCutGeoNcrNcl)  fESDtrackCuts->SetCutGeoNcrNcl( fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
 
   //
   // Create histograms
@@ -569,20 +569,6 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
     //
     //  fill TPC->ITS matching efficiency histogram
     //
-
-    // geometrical cut (note uses track at vertex instead of at TPC inner wall)
-    if(fUseCutGeoNcrNcl && fESD){
-      Float_t nCrossedRowsTPC = track->GetTPCCrossedRows();
-      Float_t lengthInActiveZoneTPC=track->GetLengthInActiveZone(0,fDeadZoneWidth,220.,fESD->GetMagneticField());
-      Double_t cutGeoNcrNclLength=fCutGeoNcrNclLength-TMath::Power(TMath::Abs(track->GetSigned1Pt()),fCutGeoNcrNclGeom1Pt);
-      Bool_t isOK=kTRUE;
-      if (lengthInActiveZoneTPC<cutGeoNcrNclLength) isOK=kFALSE;
-      if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength) isOK=kFALSE;
-      if (track->GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength) isOK=kFALSE;
-      // track skipped wheter it does not satisfy the geom. cuts
-      if(!isOK) return; 
-    }
-
     Bool_t isMatched = kFALSE;
     //  -> if MC is available: fill it only for true primaries,
     //  -> Postprocessing: plot histogram with 1 divided by histogram with 0 as a function of pT/eta/phi
