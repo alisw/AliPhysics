@@ -389,8 +389,10 @@ Bool_t AliMultDepSpecAnalysisTask::InitEvent()
     if(fEventCuts.CheckNormalisationMask(AliEventCuts::kTriggeredEvent) && fEventCuts.PassedCut(AliEventCuts::kVertexPosition))
     {
       FillHisto(fHistEventSelection, {6.0});
-      FillHisto(fHistMCEventEfficiency, {6.0, fMultTrue});
-      FillHisto(fHistMCEventEfficiencyScaled, {6.0, fMultTrueScaled});
+      if(fIsMC){
+        FillHisto(fHistMCEventEfficiency, {6.0, fMultTrue});
+        FillHisto(fHistMCEventEfficiencyScaled, {6.0, fMultTrueScaled});
+      }
     }
 
     return acceptEvent;
