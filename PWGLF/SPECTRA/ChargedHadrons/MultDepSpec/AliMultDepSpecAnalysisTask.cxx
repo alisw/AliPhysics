@@ -181,8 +181,8 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fUseRandomSeed(kFALSE)
 {
   // Set default binning
-  Double_t binsEventCutsDefault[7] = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5};
-  fBinsEventCuts = new TArrayD(7, binsEventCutsDefault);
+  Double_t binsEventCutsDefault[8] = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.6};
+  fBinsEventCuts = new TArrayD(8, binsEventCutsDefault);
 
   Double_t binsMultDefault[2] = {0., 10000.};
   Double_t binsCentDefault[2] = {0., 100.};
@@ -385,6 +385,14 @@ Bool_t AliMultDepSpecAnalysisTask::InitEvent()
         if (fMultMeasScaled > 0) FillHisto(fHistMCEventEfficiencyScaled, {5.0, fMultTrueScaled});
       }
     }
+    // additional info: triggered and vertex in acceptacne
+    if(fEventCuts.CheckNormalisationMask(AliEventCuts::kTriggeredEvent) && fEventCuts.PassedCut(AliEventCuts::kVertexPosition))
+    {
+      FillHisto(fHistEventSelection, {6.0});
+      FillHisto(fHistMCEventEfficiency, {6.0, fMultTrue});
+      FillHisto(fHistMCEventEfficiencyScaled, {6.0, fMultTrueScaled});
+    }
+
     return acceptEvent;
 }
 
@@ -814,7 +822,7 @@ string AliMultDepSpecAnalysisTask::GetAxisTitle(const string& axisName){
   else if(axisName == "mult_meas")  return "#it{N}^{ meas}_{ch}";
   else if(axisName == "mult_true")  return "#it{N}^{ true}_{ch}";
   else if(axisName == "sigmapt")    return "#sigma(#it{p}^{ meas}_{T}) / #it{p}^{ meas}_{T}";
-  else if(axisName == "eventcuts")    return "[No cuts; Trigger selection; Event selection; Vertex reconstruction and quality; Vertex position; Track selection]";
+  else if(axisName == "eventcuts")    return "[No cuts; Trigger selection; Event selection; Vertex reconstruction and quality; Vertex position; Track selection; triggered and vertex position]";
   else                              return "dummyTitle";
 }
 
