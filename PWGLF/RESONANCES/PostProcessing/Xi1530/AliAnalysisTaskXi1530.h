@@ -199,6 +199,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void SetXi1530RapidityCut_low(Double_t nXi1530RapidityCut) {
         fXi1530RapidityCut_low = nXi1530RapidityCut;
     }
+    void SetXi1530MultiplicityEstimator(TString fEstimator) {
+        MultiplicityEstimator = fEstimator;
+    }
     void SetXiSysTrackCut(Bool_t cutoption) { fsetXiSysTrackCut = cutoption; }
     void SetSystematics(Bool_t fSystematics) { fsetsystematics = fSystematics; }
 
@@ -344,6 +347,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsPrimaryMC = kTRUE;
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
+    TString MultiplicityEstimator = "V0M";
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
     AliMCEvent* fMCEvent = nullptr;    //!
@@ -353,7 +357,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 15);
+    ClassDef(AliAnalysisTaskXi1530, 16);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -371,6 +375,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 13: Change Lambda PV Cut default values(reversed)
     // 14: Modify Fill MC input function for the Signal Loss
     // 15: Separate Rapidity cut option for pA analysis.
+    // 16: Add option for using different Multiplicity Estimators(Default: V0M).
 };
 
 #endif
