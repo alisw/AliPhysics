@@ -13,10 +13,11 @@ class TList;
 class AliESDEvent;
 class AliMCEvent;
 class AliESDtrack;
-class AliESDtrackCuts;
+//class AliESDtrackCuts;
 class AliESDpid;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
 #include "THn.h"
 #include <THnSparse.h>
 #include <Rtypes.h>
@@ -70,11 +71,20 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetUseCentrality(AliAnalysisTrackingUncertaintiesAOT::ECentrality flag);
   void           SetDCAzOn(Bool_t flag = kTRUE) {fDCAz = flag;}
   void           SetTPConly(Bool_t tpconly = kTRUE) {fTPConlyFIT = tpconly;}
+
   // make the pT binning finer by a factor of 2
   void           SetFinerpTbin(Bool_t flag) {fmakefinerpTbin=flag;}
+  
+  // geometrical cut for tracks in the TPC (copied from AliRDHFCuts, 2019-May-23rd)
+  void SetUseCutGeoNcrNcl(Bool_t opt){fUseCutGeoNcrNcl=opt;}
+  void ConfigureCutGeoNcrNcl(Double_t dz, Double_t len, Double_t onept, Double_t fncr, Double_t fncl){
+    fDeadZoneWidth=dz;  fCutGeoNcrNclLength=len; fCutGeoNcrNclGeom1Pt=onept;
+    fCutGeoNcrNclFractionNcr=fncr; fCutGeoNcrNclFractionNcl=fncl;
+  }
 
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
+
  private:
     
   void   BinLogAxis(const THnSparseF *h, Int_t axisNumber);
@@ -129,10 +139,18 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   // make the pT binning finer by a factor of 2
   Bool_t fmakefinerpTbin;
 
+  // parameters for geometrical cut for tracks in the TPC (copied from AliRDHFCuts, 2019-May-23rd)
+  Bool_t fUseCutGeoNcrNcl; /// flag for enabling/disabling geometrical cut on TPC track
+  Double_t fDeadZoneWidth;       /// 1st parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclLength;  /// 2nd parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclGeom1Pt; /// 3rd parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
+  Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
+
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 10);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 11);
 };
 
 #endif
