@@ -88,6 +88,12 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fESDtrackCuts(0x0),
   fVertex(0x0)
   ,fmakefinerpTbin(kFALSE)
+  ,fUseCutGeoNcrNcl(kFALSE),
+  fDeadZoneWidth(2.),
+  fCutGeoNcrNclLength(130.),
+  fCutGeoNcrNclGeom1Pt(1.5),
+  fCutGeoNcrNclFractionNcr(0.9),
+  fCutGeoNcrNclFractionNcl(0.7)
 {
 
 }
@@ -127,6 +133,12 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
   fESDtrackCuts(0x0),
   fVertex(0x0)
   ,fmakefinerpTbin(kFALSE)
+  ,fUseCutGeoNcrNcl(kFALSE),
+  fDeadZoneWidth(2.),
+  fCutGeoNcrNclLength(130.),
+  fCutGeoNcrNclGeom1Pt(1.5),
+  fCutGeoNcrNclFractionNcr(0.9),
+  fCutGeoNcrNclFractionNcl(0.7)
 {
   //
   // standard constructur
@@ -166,7 +178,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE,0);
   fESDtrackCuts->SetEtaRange(-fMaxEta, fMaxEta);
   fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(fCrossRowsOverFndCltTPC);
-
+  if(fUseCutGeoNcrNcl)  fESDtrackCuts->SetCutGeoNcrNcl( fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
 
   //
   // Create histograms
@@ -478,6 +490,9 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliMCEvent *mcEvent) {
 
     AliESDtrack *track =fESD->GetTrack(i);
     if (!track) continue;
+
+
+
     track->SetESDEvent(fESD);
     if(!track->RelateToVertex(fVertex,fESD->GetMagneticField(),100)) continue;
     //fill TPCcls histo

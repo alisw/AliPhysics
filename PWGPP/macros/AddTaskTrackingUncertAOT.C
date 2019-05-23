@@ -22,6 +22,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           Bool_t DCAzOn= kFALSE,
                                           Bool_t fTPConlyFIT=kFALSE
                                           ,Bool_t finerpTbin = kFALSE   // make the pT binning finer by a factor of 2
+                                          ,Bool_t applyTPCGeomCut = kFALSE  // geometrical cut for tracks in the TPC 
                                           ) {
 
     
@@ -72,6 +73,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
   task->SetUseGeneratedPt(useGenPt);
   task->SetDCAzOn(DCAzOn);
   task->SetFinerpTbin(finerpTbin);  // make the pT binning finer by a factor of 2
+  task->SetUseCutGeoNcrNcl(applyTPCGeomCut);  // geometrical cut for tracks in the TPC 
     
   mgr->AddTask(task);
   ULong64_t SPeciee = task->GetSpecie();
