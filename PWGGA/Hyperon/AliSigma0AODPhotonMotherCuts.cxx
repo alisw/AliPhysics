@@ -195,6 +195,10 @@ void AliSigma0AODPhotonMotherCuts::SelectPhotonMother(
   fInputEvent = inputEvent;
   fMCEvent = mcEvent;
 
+  fSigma.clear();
+  fSidebandUp.clear();
+  fSidebandDown.clear();
+
   if(photonCandidates.size() == 0 || lambdaCandidates.size() == 0) {
     return;
   }
@@ -492,9 +496,6 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
     const std::vector<AliFemtoDreamBasePart> &lambdaCandidates) {
   static float massK0 = TDatabasePDG::Instance()->GetParticle(311)->Mass();
 
-  fSigma.clear();
-  fSidebandUp.clear();
-  fSidebandDown.clear();
   int nSigma = 0;
   const float lambdaMass = fDataBasePDG.GetParticle(fPDGDaughter1)->Mass();
   // SAME EVENT

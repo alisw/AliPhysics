@@ -242,6 +242,10 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
   fInputEvent = inputEvent;
   fMCEvent = mcEvent;
 
+  fSigma.clear();
+  fSidebandUp.clear();
+  fSidebandDown.clear();
+
   if (fIsMC) {
     ProcessMC();
     fV0Reader =
@@ -545,10 +549,6 @@ void AliSigma0PhotonMotherCuts::SingleV0QA(
 void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
     const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
-  fSigma.clear();
-  fSidebandUp.clear();
-  fSidebandDown.clear();
-
   static float massK0 = TDatabasePDG::Instance()->GetParticle(311)->Mass();
 
   // Mulitplicity estimator: V0M
