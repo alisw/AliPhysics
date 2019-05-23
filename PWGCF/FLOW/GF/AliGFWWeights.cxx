@@ -90,6 +90,15 @@ Double_t AliGFWWeights::GetWeight(Double_t phi, Double_t eta, Double_t vz, Doubl
   if(weight!=0) return 1./weight;
   return 1;
 };
+Double_t AliGFWWeights::GetNUA(Double_t phi, Double_t eta, Double_t vz) {
+  if(!fAccInt) CreateNUA();
+  Int_t xind = fAccInt->GetXaxis()->FindBin(phi);
+  Int_t etaind = fAccInt->GetYaxis()->FindBin(eta);
+  Int_t vzind = fAccInt->GetZaxis()->FindBin(vz);
+  Double_t weight = fAccInt->GetBinContent(xind, etaind, vzind);
+  if(weight!=0) return 1./weight;
+  return 1;
+}
 Double_t AliGFWWeights::FindMax(TH3D *inh, Int_t &ix, Int_t &iy, Int_t &iz) {
   Double_t maxv=inh->GetBinContent(1,1,1);
   for(Int_t i=1;i<=inh->GetNbinsX();i++)
@@ -136,20 +145,20 @@ void AliGFWWeights::CreateNUA(Bool_t IntegrateOverCentAndPt) {
   if(IntegrateOverCentAndPt) {
     if(fAccInt) delete fAccInt;
     fAccInt = (TH3D*)fW_data->At(0)->Clone("IntegratedAcceptance");
-    fAccInt->RebinY(2);
-    fAccInt->RebinZ(5);
+    //fAccInt->RebinY(2); this is rebinned already during the postprocessing
+    //fAccInt->RebinZ(5);
     fAccInt->Sumw2();
     for(Int_t etai=1;etai<=fAccInt->GetNbinsY();etai++) {
       fAccInt->GetYaxis()->SetRange(etai,etai);
       if(fAccInt->Integral()<1) continue;
       for(Int_t vzi=1;vzi<=fAccInt->GetNbinsZ();vzi++) {
-	fAccInt->GetZaxis()->SetRange(vzi,vzi);
-	if(fAccInt->Integral()<1) continue;
-	h1 = (TH1D*)fAccInt->Project3D("x");
-	Double_t maxv = h1->GetMaximum();
-	for(Int_t phii=1;phii<=h1->GetNbinsX();phii++)
-	  fAccInt->SetBinContent(phii,etai,vzi,fAccInt->GetBinContent(phii,etai,vzi)/maxv);
-	delete h1;
+    	fAccInt->GetZaxis()->SetRange(vzi,vzi);
+    	if(fAccInt->Integral()<1) continue;
+    	h1 = (TH1D*)fAccInt->Project3D("x");
+    	Double_t maxv = h1->GetMaximum();
+    	for(Int_t phii=1;phii<=h1->GetNbinsX();phii++)
+    	  fAccInt->SetBinContent(phii,etai,vzi,fAccInt->GetBinContent(phii,etai,vzi)/maxv);
+    	delete h1;
       };
       fAccInt->GetZaxis()->SetRange(1,fAccInt->GetNbinsZ());
     };
