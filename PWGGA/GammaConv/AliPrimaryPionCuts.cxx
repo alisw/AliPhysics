@@ -129,7 +129,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	if (fEsdTrackCuts==NULL) fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
 	
 	// preset most ESD cuts to match those of AOD filtering
-  if(fPeriodName.Contains("LHC10")){
+  if(fPeriodName.Contains("LHC10") || fPeriodName.Contains("LHC14j4")){
 		AliInfo("Presetting ESD cuts for LHC10 AOD filtering");
 	  SetHybridTrackCutsAODFiltering(1000);
 	} else{
@@ -460,7 +460,6 @@ Bool_t AliPrimaryPionCuts::PionIsSelectedAOD(AliAODTrack* lTrack){
 Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
   // Track Selection for Photon Reconstruction
   Double_t clsToF = GetNFindableClustersTPC(lTrack);
-
   if( ! fEsdTrackCuts->AcceptTrack(lTrack) && ! fEsdTrackCutsGC->AcceptTrack(lTrack)){
     return kFALSE;
   }
