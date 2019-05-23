@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/05/22
+//  Last Modified Date: 2019/05/23
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1695,7 +1695,7 @@ Double_t AliAnalysisTaskXi1530::GetMultiplicty(AliVEvent* fEvt) {
     AliMultSelection* MultSelection =
         (AliMultSelection*)fEvt->FindListObject("MultSelection");
     if (MultSelection) {
-        fCenttemp = MultSelection->GetMultiplicityPercentile("V0M");
+        fCenttemp = MultSelection->GetMultiplicityPercentile(MultiplicityEstimator.Data());
     } else {
         // If this happens, re-check if AliMultSelectionTask ran before your
         // task!
