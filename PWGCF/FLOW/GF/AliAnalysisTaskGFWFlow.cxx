@@ -400,9 +400,12 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       Bool_t WithinPtRF  = (fRFpTMin <l_pT) && (l_pT<fRFpTMax);  //within RF pT range
       if(!WithinPtPOI && !WithinPtRF) continue; //if the track is not within any pT range, then continue
       if(!fWeights) printf("Weights do not exist!\n");
-      Double_t nua = fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,l_pT,cent,0);
+      Double_t nua = fWeights->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
+      Double_t nue = 1; //Since doing pT-diff., we can set this to one for speed up.
+      //To speed up, call getter for NUA directly
+      //Double_t nua = fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,l_pT,cent,0);
       //Double_t nuaITS = fExtraWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),cent,0);
-      Double_t nue = fPtAxis->GetNbins()>1?1:fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,cent,l_pT,1);
+      //Double_t nue = fPtAxis->GetNbins()>1?1:fWeights->GetWeight(lTrack->Phi(),lTrack->Eta(),vz,cent,l_pT,1);
       if(fSelections[fCurrSystFlag]->AcceptTrack(lTrack, lDCA)) {
       	if(WithinPtPOI) fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(l_pT)-1,lTrack->Phi(),nua*nue,1); //Fill POI (mask = 1)
         if(WithinPtRF)  fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(l_pT)-1,lTrack->Phi(),nua*nue,2); //Fit RF (mask = 2)
