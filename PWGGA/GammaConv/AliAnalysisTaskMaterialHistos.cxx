@@ -443,9 +443,11 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 1500, 0, 1500);
     fESDList[iCut]->Add(fHistoNV0Tracks[iCut]);
 
-    fHistoNV0TracksWeighted[iCut]            = new TH1F("V0 Multiplicity Weighted", "V0 Multiplicity Weighted", 1500, 0, 1500);
-    fESDList[iCut]->Add(fHistoNV0TracksWeighted[iCut]);
-
+    if(fDoMultWeights && fIsMC>0) {
+      fHistoNV0TracksWeighted[iCut]            = new TH1F("V0 Multiplicity Weighted", "V0 Multiplicity Weighted", 1500, 0, 1500);
+      fHistoNV0TracksWeighted[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoNV0TracksWeighted[iCut]);
+    }
 
     hESDConversionRPhi[iCut]        = new TH2F("ESD_Conversion_RPhi","ESD_Conversion_RPhi",nBinsPhi,0.,2*TMath::Pi(),nBinsR,0.,200.);
     fESDList[iCut]->Add(hESDConversionRPhi[iCut]);
@@ -809,12 +811,21 @@ void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
 
     if(fDoMultWeights && fIsMC > 0) {
       fWeightMultMC = 1.;
-      fWeightMultMC = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fNESDtracksEta08);
+
+      if ( fDoMultWeights==1) {
+	fWeightMultMC = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fNESDtracksEta08);
+      }else if ( fDoMultWeights==2) {
+	fWeightMultMC = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
+      }else {
+	fWeightMultMC = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
+      }
+
       hNGoodESDTracksWeightedEta08[iCut]->Fill(fNESDtracksEta08, fWeightMultMC);
+      fHistoNV0TracksWeighted[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(),fWeightMultMC);
     }
 
     fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
-    fHistoNV0TracksWeighted[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(),fWeightMultMC);
+
 
     // Calculation of Multiplicity weight moved before ProcessMCPhotons
     // fWeightMultMC shuld also be inserted to input pT distributions . 
