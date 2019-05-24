@@ -9,8 +9,13 @@ void AddTask_PhotonQA(
   TString   V0ReaderCutNumberAODBranch    = "0000000060084001001500000",
   Bool_t    runBasicQAWithStandardOutput  = kTRUE,
   Bool_t    doEtaShiftV0Reader            = kFALSE,
-  Bool_t    enableV0findingEffi           = kFALSE              // enables V0finding efficiency histograms
+  Bool_t    enableV0findingEffi           = kFALSE,              // enables V0finding efficiency histograms
+  TString   fileNameExternalInputs        = "",
+  Bool_t    enableElecDeDxPostCalibration = kFALSE
   ){
+ 
+  AliCutHandlerPCM cuts;
+  TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -46,6 +51,20 @@ void AddTask_PhotonQA(
 
   AliConversionPhotonCuts *analysisCuts = new AliConversionPhotonCuts();
   analysisCuts->SetV0ReaderName(V0ReaderName);
+  if (enableElecDeDxPostCalibration>0){
+    if (isMC == 0){
+      if( analysisCuts->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
+        analysisCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      } else {
+        enableElecDeDxPostCalibration=kFALSE;
+        analysisCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
+    } else{
+      cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+      enableElecDeDxPostCalibration=kFALSE;
+      analysisCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+    }
+  }
   analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
   analysisCuts->SetFillCutHistograms("",kFALSE);
 
@@ -54,6 +73,7 @@ void AddTask_PhotonQA(
   fQA->SetConversionCuts(analysisCuts,IsHeavyIon);
   fQA->FillType(kTree,kHistograms);
   fQA->SetIsMC(isMC);
+  fQA->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
   fQA->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fQA);
 
