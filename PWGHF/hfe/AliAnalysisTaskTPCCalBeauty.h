@@ -47,6 +47,8 @@ public:
     void            SetMC(Bool_t setMCfill) {fFlagFillMCHistos = setMCfill;};
     void            SetSSCut(Double_t maxM20Cut) {fMaxM20Cut = maxM20Cut;};
     void            UseLongAxis(Bool_t applyM02) {fApplyM02Cut = applyM02;}
+    void            SetShingoCheck(Bool_t applyShingo) {fShingoCheck = applyShingo;}
+    
     void            SetEoP(Double_t eopCut) {fMinEoPCut = eopCut;};
     void            SetNSig(Double_t nSigCut) {fMinNSigCut = nSigCut;};
     
@@ -89,6 +91,7 @@ private:
     //Bool_t              fFlagApplySSCut; //switch to turn on SS cut
     Double_t            fMaxM20Cut;      // set eID M20 cut
     Bool_t              fApplyM02Cut;    // apply M02 instead of M20 cut
+    Bool_t              fShingoCheck;    // apply Shingo's settings
     Double_t            fMinEoPCut;      // set eID E/p cut
     Double_t            fMinNSigCut;     // set eID nSig cut
     
