@@ -81,6 +81,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fMCArray(0x0),
   fRunNumber(-1),
   fMagneticField(0),
+  fBCNumber(-1),
   fMultSelection(0x0),
   fCentralityV0M(-1),
   fCentralityV0A(-1),
@@ -236,6 +237,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fMCArray(0x0),
   fRunNumber(-1),
   fMagneticField(0),
+  fBCNumber(-1),
   fMultSelection(0x0),
   fCentralityV0M(-1),
   fCentralityV0A(-1),
@@ -398,6 +400,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
 
   fTree->Branch("fRunNumber",&fRunNumber,"fRunNumber/I");
   fTree->Branch("fMagneticField",&fMagneticField,"fMagneticField/F");
+  fTree->Branch("fBCNumber",&fBCNumber,"fBCNumber/s");//UShort_t
 
   fTree->Branch("fCentralityV0M",&fCentralityV0M,"fCentralityV0M/F");
   fTree->Branch("fCentralityV0A",&fCentralityV0A,"fCentralityV0A/F");
@@ -616,6 +619,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
   fRunNumber = fEvent->GetRunNumber();
   fMagneticField = fEvent->GetMagneticField();
+  fBCNumber = fEvent->GetBunchCrossNumber();
 
   //Get Centrality
   fMultSelection = (AliMultSelection*)fEvent->FindListObject("MultSelection");

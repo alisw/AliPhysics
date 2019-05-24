@@ -48,6 +48,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     TClonesArray *fMCArray;
     Int_t fRunNumber;
     Float_t fMagneticField; //Bz in kG
+    UShort_t fBCNumber;//bunch crossing number
     AliMultSelection *fMultSelection; 
     Float_t fCentralityV0M;
     Float_t fCentralityV0A;
@@ -192,7 +193,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 4);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 5);
 
 };
 
