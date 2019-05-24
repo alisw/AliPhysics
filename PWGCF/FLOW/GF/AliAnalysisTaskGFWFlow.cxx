@@ -627,9 +627,9 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
     //TString tss(hn);
     //tss.Prepend(Form("(%i) ",i-1));
-    dnx = fGFW->Calculate(corconf,i,kTRUE).Re();
+    dnx = fGFW->Calculate(corconf,i-1,kTRUE).Re();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i,kFALSE).Re();
+    val = fGFW->Calculate(corconf,i-1,kFALSE).Re();
     fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val/dnx,dnx,rndmn);
   };
   return kTRUE;
