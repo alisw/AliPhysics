@@ -254,6 +254,14 @@ void AliGFWWeights::AddArray(TObjArray *targ, TObjArray *sour) {
       targh->Add(sourh);
   };
 };
+void AliGFWWeights::OverwriteNUA() {
+  if(!fAccInt) CreateNUA();
+  TString ts(fW_data->At(0)->GetName());
+  TH3D *trash = (TH3D*)fW_data->RemoveAt(0);
+  delete trash;
+  fW_data->Add((TH3D*)fAccInt->Clone(ts.Data()));
+  delete fAccInt;
+}
 Long64_t AliGFWWeights::Merge(TCollection *collist) {
   Long64_t nmerged=0;
   if(!fW_data) {
