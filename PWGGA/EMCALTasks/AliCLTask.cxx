@@ -86,13 +86,19 @@ void AliCLTask::UserExec(Option_t *option)
 
   if (!fTana) {
     AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-    AliPhysicsSelectionTask *task = dynamic_cast<AliPhysicsSelectionTask*>(man->GetTopTasks()->At(0));
-    if (task) {
-      fTana=task->GetPhysicsSelection()->GetTriggerAnalysis();
-    } else {
-      fTana = new AliTriggerAnalysis();
+    TObjArray *l = man->GetTopTasks();
+    const Int_t n = l->GetEntries();
+    for (Int_t i=0;i<n;++i) {
+      AliPhysicsSelectionTask *task = dynamic_cast<AliPhysicsSelectionTask*>(l->At(i));
+      if (task) {
+	fTana=task->GetPhysicsSelection()->GetTriggerAnalysis();
+	break;
+      }
     }
+  } else {
+    fTana = new AliTriggerAnalysis("myown");
   }
+
 
   AliAODHeader *h = static_cast<AliAODHeader*>(InputEvent()->GetHeader());
   fMyInfo->fTrig     = h->GetOfflineTrigger();
