@@ -280,7 +280,8 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fEventProp->GetAxis(5)->SetTitle("nGener eta<1");
   fEventProp->GetAxis(6)->SetTitle("nGener golden SPD eta<1.4");
   fEventProp->GetAxis(7)->SetTitle("nGener golden SPD eta<1");
-
+  fOutput->Add(fEventProp);
+  
   TString normName="NormalizationCounter";
   AliAnalysisDataContainer *cont = GetOutputSlot(2)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
