@@ -1449,6 +1449,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
             
+            if (fShingoCheck) {
+                Float_t tof1 = clus->GetTOF()*1e+9; // ns
+                if(!fMCarray && fUseTender && fFlagFillMCHistos)
+                {
+                    if(tof1<-30 || tof1>30)continue; // timing cut on data
+                }
+            }
+            
             //fClsEAll->Fill(clus->E()); //E of all clusters
         }
     }
@@ -1611,7 +1619,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             fClsE->Fill(clustMatch->E());
             
             if (fShingoCheck) {
-                Float_t tof = clus->GetTOF()*1e+9; // ns
+                Float_t tof = clustMatch->GetTOF()*1e+9; // ns
                 if(!fMCarray && fUseTender && fFlagFillMCHistos)
                 {
                     if(tof<-30 || tof>30)continue; // timing cut on data
