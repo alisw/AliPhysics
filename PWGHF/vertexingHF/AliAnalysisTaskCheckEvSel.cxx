@@ -26,12 +26,14 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THnSparse.h>
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
+#include "AliMCEvent.h"
 #include "AliAODTrack.h"
 #include "AliVertexingHFUtils.h"
 #include "AliNormalizationCounter.h"
@@ -76,6 +78,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistZVertexSPDBeforeSPDCut(0x0),
   fHistZVertexSPDAfterCuts(0x0),
   fHistZVertexSPDBadTrackVert(0x0),
+  fEventProp(0x0),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
   fUseAliEventCuts(kFALSE),
@@ -123,6 +126,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistZVertexSPDBeforeSPDCut(0x0),
   fHistZVertexSPDAfterCuts(0x0),
   fHistZVertexSPDBadTrackVert(0x0),
+  fEventProp(0x0),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
   fUseAliEventCuts(kFALSE),
@@ -134,8 +138,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
   if(fEnableVertexNtuple){
-    // Output slot #3 writes into a TNtuple container
-    DefineOutput(3,TNtuple::Class());  //My private output
+    DefineOutput(3,TNtuple::Class());  
   }
 }
 
@@ -173,6 +176,7 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistZVertexSPDBeforeSPDCut;
     delete fHistZVertexSPDAfterCuts;  
     delete fHistZVertexSPDBadTrackVert;
+    delete fEventProp;
   }
   delete fOutput;
   delete fCounter;
@@ -261,7 +265,22 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fOutput->Add(fHistZVertexSPDAfterCuts);
   fHistZVertexSPDBadTrackVert =new TH2F("hZVertexSPDBadTrackVert"," ; z_{SPDvertex} ; z_{TRKvertex}",400,-20.,20.,400,-20.,20.);
   fOutput->Add(fHistZVertexSPDBadTrackVert);
+
+  const Int_t nVarForSp=8;
+  Int_t nBinsForSp[nVarForSp]={105,30,200,200,200,200,200,200};
+  Double_t minForSparse[nVarForSp]={0.,-15.,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5};
+  Double_t maxForSparse[nVarForSp]={105.,15.,maxMult-0.5,maxMult-0.5,maxMult-0.5,maxMult-0.5,maxMult-0.5,maxMult-0.5};
   
+  fEventProp = new THnSparseF("hEventProps","",nVarForSp,nBinsForSp,minForSparse,maxForSparse);
+  fEventProp->GetAxis(0)->SetTitle("Centrality");
+  fEventProp->GetAxis(1)->SetTitle("zSPDvertex (cm)");
+  fEventProp->GetAxis(2)->SetTitle("nTracklets eta<1");
+  fEventProp->GetAxis(3)->SetTitle("nTracklets golden SPD eta<1.4");
+  fEventProp->GetAxis(4)->SetTitle("nTracklets golden SPD eta<1");
+  fEventProp->GetAxis(5)->SetTitle("nGener eta<1");
+  fEventProp->GetAxis(6)->SetTitle("nGener golden SPD eta<1.4");
+  fEventProp->GetAxis(7)->SetTitle("nGener golden SPD eta<1");
+
   TString normName="NormalizationCounter";
   AliAnalysisDataContainer *cont = GetOutputSlot(2)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
@@ -269,12 +288,16 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fCounter->Init();
 
   PostData(1,fOutput);
+
+
   
   if(fEnableVertexNtuple) {
     OpenFile(3); // 3 is the slot number of the ntuple
     
     fNtupleZvtxDistVsWhyRej = new TNtuple("fNtupleZvtxDistVsWhyRej","fNtupleZvtxDistVsWhyRej","zSPDvertex:zTRKvertex:NcontributorszSPD:NcontributorszTRK:whyrejection:vtxtype");
   }
+
+
 }
 
 //________________________________________________________________________
@@ -336,7 +359,30 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
-  
+
+  Int_t nGener=0;
+  Int_t nGenerEta14=0;
+  Int_t nGenerEta1=0;
+  Int_t nGenerGoldenSPD=0;
+  Int_t nGenerGoldenSPDEta14=0;
+  Int_t nGenerGoldenSPDEta1=0;
+  if(fReadMC && fMCEvent){
+    for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
+      AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
+      if(!part->IsPhysicalPrimary()) continue;
+      if(part->Charge()==0) continue;
+      nGener+=1;
+      Double_t eta=part->Eta();
+      Double_t phi=part->Phi();
+      if(TMath::Abs(eta)<1.4) nGenerEta14+=1.;
+      if(TMath::Abs(eta)<1) nGenerEta1+=1.;
+      if(phi>3.9){
+	nGenerGoldenSPD+=1.;
+	if(TMath::Abs(eta)<1.4) nGenerGoldenSPDEta14+=1.;
+	if(TMath::Abs(eta)<1) nGenerGoldenSPDEta1+=1.;
+      }
+    }
+  }
 
   // Post the data already here
 
@@ -350,14 +396,24 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   const AliVVertex *vertexSPD = aod->GetPrimaryVertexSPD();
   Double_t ntrkl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
   Double_t nTrackletsGolden=0;
+  Double_t nTrackletsGoldenEta1=0;
+  Double_t nTrackletsGoldenEta14=0;
+  Double_t nTrackletsEta1=0;
+  Double_t nTrackletsEta14=0;
   AliAODTracklets* tracklets=aod->GetTracklets();
   Int_t nTr=tracklets->GetNumberOfTracklets();
   for(Int_t iTr=0; iTr<nTr; iTr++){
-    // Double_t theta=tracklets->GetTheta(iTr);
-    // Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+    Double_t theta=tracklets->GetTheta(iTr);
+    Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
     Double_t phi=tracklets->GetPhi(iTr);
     fHistPhiTrackelts->Fill(phi);
-    if(phi>3.9) nTrackletsGolden+=1.;
+    if(TMath::Abs(eta)<1.4) nTrackletsEta14+=1.;
+    if(TMath::Abs(eta)<1) nTrackletsEta1+=1.;
+    if(phi>3.9){
+      nTrackletsGolden+=1.;
+      if(TMath::Abs(eta)<1.4) nTrackletsGoldenEta14+=1.;
+      if(TMath::Abs(eta)<1) nTrackletsGoldenEta1+=1.;
+    }
   }
 
   Double_t ncl1 = aod->GetNumberOfITSClusters(1);
@@ -383,7 +439,6 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fNtupleZvtxDistVsWhyRej->Fill(vec4ntuple);
     PostData(3,fNtupleZvtxDistVsWhyRej);
   }
-  
   if(fAnalysisCuts->IsEventRejectedDueToTrigger()) fHistNEventsVsWhyRej->Fill(3,wrej);
   if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEventsVsWhyRej->Fill(4,wrej);
   if(fAnalysisCuts->IsEventRejectedDueToCentrality()) fHistNEventsVsWhyRej->Fill(5,wrej);
@@ -529,6 +584,18 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNTracksFB4VsNTracklets->Fill(ntracksFB4,ntrkl);
     fHistNTracksBC0VsNTracksFB4->Fill(ntracksBC0,ntracksFB4);
   }
+  
+  Double_t vec4Sp[8];
+  vec4Sp[0]=centr;
+  vec4Sp[1]=zvSPD;
+  vec4Sp[2]=nTrackletsEta1;
+  vec4Sp[3]=nTrackletsGoldenEta14;
+  vec4Sp[4]=nTrackletsGoldenEta1;
+  vec4Sp[5]=nGenerEta1;
+  vec4Sp[6]=nGenerGoldenSPDEta14;
+  vec4Sp[7]=nGenerGoldenSPDEta1;
+  fEventProp->Fill(vec4Sp);
+
 
   PostData(1,fOutput);
   PostData(2,fCounter);
