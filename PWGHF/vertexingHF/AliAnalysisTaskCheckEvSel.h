@@ -84,6 +84,7 @@ private:
   TH2F* fHistZVertexSPDBeforeSPDCut;     //!<! z-vertex distr.
   TH2F* fHistZVertexSPDAfterCuts;        //!<! z-vertex distr.
   TH2F* fHistZVertexSPDBadTrackVert;     //!<! z-vertex distr.
+  THnSparseF* fEventProp;                //!<! event properties
   TNtuple* fNtupleZvtxDistVsWhyRej;      //!<! ntuple of ZvtxTRK vs. ZvtxSPD vs. Ncontributors vs. whyrej flag
   Bool_t fEnableVertexNtuple;            /// flag to enable ntuple for primary vertex studies
   Bool_t fUseAliEventCuts;               /// flag to use AliEventCuts for selection
@@ -92,7 +93,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,8);
+  ClassDef(AliAnalysisTaskCheckEvSel,10);
 };
 
 #endif
