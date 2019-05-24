@@ -39,7 +39,6 @@ ClassImp(AliAnalysisTaskGFWFlow);
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   AliAnalysisTaskSE(),
   debugpar(0),
-  corrconfigs(0),
   fProduceWeights(kTRUE),
   fSelections(0),
   fWeightList(0),
@@ -67,7 +66,6 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t AddQA):
   AliAnalysisTaskSE(name),
   debugpar(0),
-  corrconfigs(0),
   fProduceWeights(ProduceWeights),
   fSelections(0),
   fWeightList(0),
@@ -146,9 +144,9 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     OAforPt->Add(new TNamed("MidV42","MidV42"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("MidV42_pt_%i",i+1),"MidV42_pTDiff"));
-    OAforPt->Add(new TNamed("MidV44","MidV44"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidV44_pt_%i",i+1),"MidV44_pTDiff"));
+    // OAforPt->Add(new TNamed("MidV44","MidV44"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("MidV44_pt_%i",i+1),"MidV44_pTDiff"));
 
     //2SENeg:
     OAforPt->Add(new TNamed("Mid2SENV22","Mid2SENV22"));
@@ -169,15 +167,15 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     OAforPt->Add(new TNamed("Mid2SENV34","Mid2SENV34"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("Mid2SENV34_pt_%i",i+1),"Mid2SENV34_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SENV36","Mid2SENV36"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SENV36_pt_%i",i+1),"Mid2SENV36_pTDiff"));
+    // OAforPt->Add(new TNamed("Mid2SENV36","Mid2SENV36"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("Mid2SENV36_pt_%i",i+1),"Mid2SENV36_pTDiff"));
     OAforPt->Add(new TNamed("Mid2SENV42","Mid2SENV42"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("Mid2SENV42_pt_%i",i+1),"Mid2SENV42_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SENV44","Mid2SENV44"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SENV44_pt_%i",i+1),"Mid2SENV44_pTDiff"));
+    // OAforPt->Add(new TNamed("Mid2SENV44","Mid2SENV44"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("Mid2SENV44_pt_%i",i+1),"Mid2SENV44_pTDiff"));
 
     //2SEPos:
     OAforPt->Add(new TNamed("Mid2SEPV22","Mid2SEPV22"));
@@ -198,15 +196,15 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     OAforPt->Add(new TNamed("Mid2SEPV34","Mid2SEPV34"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("Mid2SEPV34_pt_%i",i+1),"Mid2SEPV34_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEPV36","Mid2SEPV36"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEPV36_pt_%i",i+1),"Mid2SEPV36_pTDiff"));
+    // OAforPt->Add(new TNamed("Mid2SEPV36","Mid2SEPV36"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("Mid2SEPV36_pt_%i",i+1),"Mid2SEPV36_pTDiff"));
     OAforPt->Add(new TNamed("Mid2SEPV42","Mid2SEPV42"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("Mid2SEPV42_pt_%i",i+1),"Mid2SEPV42_pTDiff"));
-    OAforPt->Add(new TNamed("Mid2SEPV44","Mid2SEPV44"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("Mid2SEPV44_pt_%i",i+1),"Mid2SEPV44_pTDiff"));
+    // OAforPt->Add(new TNamed("Mid2SEPV44","Mid2SEPV44"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("Mid2SEPV44_pt_%i",i+1),"Mid2SEPV44_pTDiff"));
 
     //|eta|>0.5
     OAforPt->Add(new TNamed("MidGapNV22","MidGapNV22"));
@@ -224,18 +222,18 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     OAforPt->Add(new TNamed("MidGapNV32","MidGapNV32"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("MidGapNV32_pt_%i",i+1),"MidGapNV32_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapNV34","MidGapNV34"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapNV34_pt_%i",i+1),"MidGapNV34_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapNV36","MidGapNV36"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapNV36_pt_%i",i+1),"MidGapNV36_pTDiff"));
+    // OAforPt->Add(new TNamed("MidGapNV34","MidGapNV34"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("MidGapNV34_pt_%i",i+1),"MidGapNV34_pTDiff"));
+    // OAforPt->Add(new TNamed("MidGapNV36","MidGapNV36"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("MidGapNV36_pt_%i",i+1),"MidGapNV36_pTDiff"));
     OAforPt->Add(new TNamed("MidGapNV42","MidGapNV42"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("MidGapNV42_pt_%i",i+1),"MidGapNV42_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapNV44","MidGapNV44"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapNV44_pt_%i",i+1),"MidGapNV44_pTDiff"));
+    // OAforPt->Add(new TNamed("MidGapNV44","MidGapNV44"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("MidGapNV44_pt_%i",i+1),"MidGapNV44_pTDiff"));
 
     //|eta|>0.5
     OAforPt->Add(new TNamed("MidGapPV22","MidGapPV22"));
@@ -253,18 +251,18 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     OAforPt->Add(new TNamed("MidGapPV32","MidGapPV32"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("MidGapPV32_pt_%i",i+1),"MidGapPV32_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapPV34","MidGapPV34"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapPV34_pt_%i",i+1),"MidGapPV34_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapPV36","MidGapPV36"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapPV36_pt_%i",i+1),"MidGapPV36_pTDiff"));
+    // OAforPt->Add(new TNamed("MidGapPV34","MidGapPV34"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("MidGapPV34_pt_%i",i+1),"MidGapPV34_pTDiff"));
+    // OAforPt->Add(new TNamed("MidGapPV36","MidGapPV36"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("MidGapPV36_pt_%i",i+1),"MidGapPV36_pTDiff"));
     OAforPt->Add(new TNamed("MidGapPV42","MidGapPV42"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
       OAforPt->Add(new TNamed(Form("MidGapPV42_pt_%i",i+1),"MidGapPV42_pTDiff"));
-    OAforPt->Add(new TNamed("MidGapPV44","MidGapPV44"));
-    for(Int_t i=0;i<fPtAxis->GetNbins();i++)
-      OAforPt->Add(new TNamed(Form("MidGapPV44_pt_%i",i+1),"MidGapPV44_pTDiff"));
+    // OAforPt->Add(new TNamed("MidGapPV44","MidGapPV44"));
+    // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
+    //   OAforPt->Add(new TNamed(Form("MidGapPV44_pt_%i",i+1),"MidGapPV44_pTDiff"));
 
 
 
@@ -307,11 +305,11 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fWeightList = (TList*) GetInputData(1);
     if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
   };
-//  printf("\n******************\nStarting the watch\n*****************\n");
+  printf("\n******************\nStarting the watch\n*****************\n");
   CreateCorrConfigs();
-  // mywatchFill.Reset();
-  // mywatchStore.Reset();
-  // mywatch.Start(kTRUE);
+  mywatchFill.Reset();
+  mywatchStore.Reset();
+  mywatch.Start(kTRUE);
 };
 void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -395,7 +393,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     fGFW->Clear();
     AliAODTrack *lTrack;
     if(!fSelections[fCurrSystFlag]->AcceptVertex(fAOD,1)) return;
-    //mywatchFill.Start(kFALSE);
+    mywatchFill.Start(kFALSE);
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
       //if(!AcceptAODTrack(lTrack,tca)) continue;
@@ -426,27 +424,26 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       /*if(fSelections[9]->AcceptTrack(lTrack, lDCA)) //No ITS for now
 	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nuaITS*nue,2);*/
     };
-    //mywatchFill.Stop();
+    mywatchFill.Stop();
     TRandom rndm(0);
     Double_t rndmn=rndm.Rndm();
     //Calculate & fill profiles:
     //V_2{n}, full acceptance
-    //mywatchStore.Start(kFALSE);
+    mywatchStore.Start(kFALSE);
     Bool_t filled;
-    for(Int_t l_ind=0; l_ind<70; l_ind++) {
+    for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
       //printf("Index %i\n",l_ind);
-      filled = FillFCs(corrconfigs[l_ind],cent,rndmn);
+      filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn);
     };
-
-    //mywatchStore.Stop();
+    mywatchStore.Stop();
     PostData(1,fFC);
     if(fAddQA) PostData(2,fQAList);
   };
 };
 void AliAnalysisTaskGFWFlow::Terminate(Option_t*) {
-  // printf("\n********* Time: %f\n**********",mywatch.RealTime());
-  // printf("Filling time: %f\n",mywatchFill.RealTime());
-  // printf("Storing time: %f\n",mywatchStore.RealTime());
+  printf("\n********* Time: %f\n**********",mywatch.RealTime());
+  printf("Filling time: %f\n",mywatchFill.RealTime());
+  printf("Storing time: %f\n",mywatchStore.RealTime());
 };
 void AliAnalysisTaskGFWFlow::SetPtBins(Int_t nBins, Double_t *bins, Double_t RFpTMin, Double_t RFpTMax) {
   fPtAxis->Set(nBins, bins);
@@ -630,103 +627,103 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
     //TString tss(hn);
     //tss.Prepend(Form("(%i) ",i-1));
-    dnx = fGFW->Calculate(corconf,i,kTRUE).Re();
+    dnx = fGFW->Calculate(corconf,i-1,kTRUE).Re();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i,kFALSE).Re();
+    val = fGFW->Calculate(corconf,i-1,kFALSE).Re();
     fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val/dnx,dnx,rndmn);
   };
   return kTRUE;
 };
 void AliAnalysisTaskGFWFlow::CreateCorrConfigs() {
-  corrconfigs = new AliGFW::CorrConfig[90];
-  corrconfigs[0] = GetConf("MidV22","refMid {2 -2}", kFALSE);
-  corrconfigs[1] = GetConf("MidV22","poiMid refMid {2 -2}", kTRUE);
-  corrconfigs[2] = GetConf("MidV24","refMid {2 2 -2 -2}", kFALSE);
-  corrconfigs[3] = GetConf("MidV24","poiMid refMid {2 2 -2 -2}", kTRUE);
-  corrconfigs[4] = GetConf("MidV26","refMid {2 2 2 -2 -2 -2}", kFALSE);
-  corrconfigs[5] = GetConf("MidV26","poiMid refMid {2 2 2 -2 -2 -2}", kTRUE);
-  corrconfigs[6] = GetConf("MidV28","refMid {2 2 2 2 -2 -2 -2 -2}", kFALSE);
-  corrconfigs[7] = GetConf("MidV28","poiMid refMid {2 2 2 2 -2 -2 -2 -2}", kTRUE);
-  corrconfigs[8] = GetConf("MidV32","refMid {3 -3}", kFALSE);
-  corrconfigs[9] = GetConf("MidV32","poiMid refMid {3 -3}", kTRUE);
-  corrconfigs[10] = GetConf("MidV34","refMid {3 3 -3 -3}", kFALSE);
-  corrconfigs[11] = GetConf("MidV34","poiMid refMid {3 3 -3 -3}", kTRUE);
-  corrconfigs[12] = GetConf("MidV36","refMid {3 3 3 -3 -3 -3}", kFALSE);
-  corrconfigs[13] = GetConf("MidV36","poiMid refMid {3 3 3 -3 -3 -3}", kTRUE);
-  corrconfigs[14] = GetConf("MidV42","refMid {4 -4}", kFALSE);
-  corrconfigs[15] = GetConf("MidV42","poiMid refMid {4 -4}", kTRUE);
-  corrconfigs[16] = GetConf("MidV44","refMid {4 4 -4 -4}", kFALSE);
-  corrconfigs[17] = GetConf("MidV44","poiMid refMid {4 4 -4 -4}", kTRUE);
-  corrconfigs[18] = GetConf("Mid2SENV22","refSENeg {2} refSEPos {-2}", kFALSE);
-  corrconfigs[19] = GetConf("Mid2SENV24","refSENeg {2 2} refSEPos {-2 -2}", kFALSE);
-  corrconfigs[20] = GetConf("Mid2SENV26","refSENeg {2 2 2} refSEPos {-2 -2 -2}", kFALSE);
-  corrconfigs[21] = GetConf("Mid2SENV28","refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", kFALSE);
-  corrconfigs[22] = GetConf("Mid2SENV22","poiSENeg refSENeg {2} refSEPos {-2}", kTRUE);
-  corrconfigs[23] = GetConf("Mid2SENV24","poiSENeg refSENeg {2 2} refSEPos {-2 -2}", kTRUE);
-  corrconfigs[24] = GetConf("Mid2SENV26","poiSENeg refSENeg {2 2 2} refSEPos {-2 -2 -2}", kTRUE);
-  corrconfigs[25] = GetConf("Mid2SENV28","poiSENeg refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", kTRUE);
-  corrconfigs[26] = GetConf("Mid2SEPV22","refSEPos {2} refSENeg {-2}", kFALSE);
-  corrconfigs[27] = GetConf("Mid2SEPV24","refSEPos {2 2} refSENeg {-2 -2}", kFALSE);
-  corrconfigs[28] = GetConf("Mid2SEPV26","refSEPos {2 2 2} refSENeg {-2 -2 -2}", kFALSE);
-  corrconfigs[29] = GetConf("Mid2SEPV28","refSEPos {2 2 2 2} refSENeg {-2 -2 -2 -2}", kFALSE);
-  corrconfigs[30] = GetConf("Mid2SEPV22","poiSEPos refSEPos {2} refSENeg {-2}", kTRUE);
-  corrconfigs[31] = GetConf("Mid2SEPV24","poiSEPos refSEPos {2 2} refSENeg {-2 -2}", kTRUE);
-  corrconfigs[32] = GetConf("Mid2SEPV26","poiSEPos refSEPos {2 2 2} refSENeg {-2 -2 -2}", kTRUE);
-  corrconfigs[33] = GetConf("Mid2SEPV28","poiSEPos refSEPos {2 2 2 2} refSENeg {-2 -2 -2 -2}", kTRUE);
-  corrconfigs[34] = GetConf("Mid2SENV32","refSENeg {3} refSEPos {-3}", kFALSE);
-  corrconfigs[35] = GetConf("Mid2SENV34","refSENeg {3 3} refSEPos {-3 -3}", kFALSE);
-  corrconfigs[36] = GetConf("Mid2SENV36","refSENeg {3 3 3} refSEPos {-3 -3 -3}", kFALSE);
-  corrconfigs[37] = GetConf("Mid2SENV32","poiSENeg refSENeg {3} refSEPos {-3}", kTRUE);
-  corrconfigs[38] = GetConf("Mid2SENV34","poiSENeg refSENeg {3 3} refSEPos {-3 -3}", kTRUE);
-  corrconfigs[39] = GetConf("Mid2SENV36","poiSENeg refSENeg {3 3 3} refSEPos {-3 -3 -3}", kTRUE);
-  corrconfigs[40] = GetConf("Mid2SEPV32","refSEPos {3} refSENeg {-3}", kFALSE);
-  corrconfigs[41] = GetConf("Mid2SEPV34","refSEPos {3 3} refSENeg {-3 -3}", kFALSE);
-  corrconfigs[42] = GetConf("Mid2SEPV36","refSEPos {3 3 3} refSENeg {-3 -3 -3}", kFALSE);
-  corrconfigs[43] = GetConf("Mid2SEPV32","poiSEPos refSEPos {3} refSENeg {-3}", kTRUE);
-  corrconfigs[44] = GetConf("Mid2SEPV34","poiSEPos refSEPos {3 3} refSENeg {-3 -3}", kTRUE);
-  corrconfigs[45] = GetConf("Mid2SEPV36","poiSEPos refSEPos {3 3 3} refSENeg {-3 -3 -3}", kTRUE);
-  corrconfigs[46] = GetConf("Mid2SENV42","refSENeg {4} refSEPos {-4}", kFALSE);
-  corrconfigs[47] = GetConf("Mid2SENV44","refSENeg {4 4} refSEPos {-4 -4}", kFALSE);
-  corrconfigs[48] = GetConf("Mid2SENV42","poiSENeg refSENeg {4} refSEPos {-4}", kTRUE);
-  corrconfigs[49] = GetConf("Mid2SENV44","poiSENeg refSENeg {4 4} refSEPos {-4 -4}", kTRUE);
-  corrconfigs[50] = GetConf("Mid2SEPV42","refSEPos {4} refSENeg {-4}", kFALSE);
-  corrconfigs[51] = GetConf("Mid2SEPV44","refSEPos {4 4} refSENeg {-4 -4}", kFALSE);
-  corrconfigs[52] = GetConf("Mid2SEPV42","poiSEPos refSEPos {4} refSENeg {-4}", kTRUE);
-  corrconfigs[53] = GetConf("Mid2SEPV44","poiSEPos refSEPos {4 4} refSENeg {-4 -4}", kTRUE);
-  corrconfigs[54] = GetConf("MidGapNV22","refGapNeg {2} refGapPos {-2}", kFALSE);
-  corrconfigs[55] = GetConf("MidGapNV24","refGapNeg {2 2} refGapPos {-2 -2}", kFALSE);
-  corrconfigs[56] = GetConf("MidGapNV26","refGapNeg {2 2 2} refGapPos {-2 -2 -2}", kFALSE);
-  corrconfigs[57] = GetConf("MidGapNV28","refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", kFALSE);
-  corrconfigs[58] = GetConf("MidGapNV22","poiGapNeg refGapNeg {2} refGapPos {-2}", kTRUE);
-  corrconfigs[59] = GetConf("MidGapNV24","poiGapNeg refGapNeg {2 2} refGapPos {-2 -2}", kTRUE);
-  corrconfigs[60] = GetConf("MidGapNV26","poiGapNeg refGapNeg {2 2 2} refGapPos {-2 -2 -2}", kTRUE);
-  corrconfigs[61] = GetConf("MidGapNV28","poiGapNeg refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", kTRUE);
-  corrconfigs[62] = GetConf("MidGapPV22","refGapPos {2} refGapNeg {-2}", kFALSE);
-  corrconfigs[63] = GetConf("MidGapPV24","refGapPos {2 2} refGapNeg {-2 -2}", kFALSE);
-  corrconfigs[64] = GetConf("MidGapPV26","refGapPos {2 2 2} refGapNeg {-2 -2 -2}", kFALSE);
-  corrconfigs[65] = GetConf("MidGapPV28","refGapPos {2 2 2 2} refGapNeg {-2 -2 -2 -2}", kFALSE);
-  corrconfigs[66] = GetConf("MidGapPV22","poiGapPos refGapPos {2} refGapNeg {-2}", kTRUE);
-  corrconfigs[67] = GetConf("MidGapPV24","poiGapPos refGapPos {2 2} refGapNeg {-2 -2}", kTRUE);
-  corrconfigs[68] = GetConf("MidGapPV26","poiGapPos refGapPos {2 2 2} refGapNeg {-2 -2 -2}", kTRUE);
-  corrconfigs[69] = GetConf("MidGapPV28","poiGapPos refGapPos {2 2 2 2} refGapNeg {-2 -2 -2 -2}", kTRUE);
-  corrconfigs[70] = GetConf("MidGapNV32","refGapNeg {3} refGapPos {-3}", kFALSE);
-  corrconfigs[71] = GetConf("MidGapNV34","refGapNeg {3 3} refGapPos {-3 -3}", kFALSE);
-  corrconfigs[72] = GetConf("MidGapNV36","refGapNeg {3 3 3} refGapPos {-3 -3 -3}", kFALSE);
-  corrconfigs[73] = GetConf("MidGapNV32","poiGapNeg refGapNeg {3} refGapPos {-3}", kTRUE);
-  corrconfigs[74] = GetConf("MidGapNV34","poiGapNeg refGapNeg {3 3} refGapPos {-3 -3}", kTRUE);
-  corrconfigs[75] = GetConf("MidGapNV36","poiGapNeg refGapNeg {3 3 3} refGapPos {-3 -3 -3}", kTRUE);
-  corrconfigs[76] = GetConf("MidGapPV32","refGapPos {3} refGapNeg {-3}", kFALSE);
-  corrconfigs[77] = GetConf("MidGapPV34","refGapPos {3 3} refGapNeg {-3 -3}", kFALSE);
-  corrconfigs[78] = GetConf("MidGapPV36","refGapPos {3 3 3} refGapNeg {-3 -3 -3}", kFALSE);
-  corrconfigs[79] = GetConf("MidGapPV32","poiGapPos refGapPos {3} refGapNeg {-3}", kTRUE);
-  corrconfigs[80] = GetConf("MidGapPV34","poiGapPos refGapPos {3 3} refGapNeg {-3 -3}", kTRUE);
-  corrconfigs[81] = GetConf("MidGapPV36","poiGapPos refGapPos {3 3 3} refGapNeg {-3 -3 -3}", kTRUE);
-  corrconfigs[82] = GetConf("MidGapNV42","refGapNeg {4} refGapPos {-4}", kFALSE);
-  corrconfigs[83] = GetConf("MidGapNV44","refGapNeg {4 4} refGapPos {-4 -4}", kFALSE);
-  corrconfigs[84] = GetConf("MidGapNV42","poiGapNeg refGapNeg {4} refGapPos {-4}", kTRUE);
-  corrconfigs[85] = GetConf("MidGapNV44","poiGapNeg refGapNeg {4 4} refGapPos {-4 -4}", kTRUE);
-  corrconfigs[86] = GetConf("MidGapPV42","refGapPos {4} refGapNeg {-4}", kFALSE);
-  corrconfigs[87] = GetConf("MidGapPV44","refGapPos {4 4} refGapNeg {-4 -4}", kFALSE);
-  corrconfigs[88] = GetConf("MidGapPV42","poiGapPos refGapPos {4} refGapNeg {-4}", kTRUE);
-  corrconfigs[89] = GetConf("MidGapPV44","poiGapPos refGapPos {4 4} refGapNeg {-4 -4}", kTRUE);
+//  corrconfigs = new AliGFW::CorrConfig[90];
+  corrconfigs.push_back(GetConf("MidV22","refMid {2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidV22","poiMid refMid {2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV24","refMid {2 2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidV24","poiMid refMid {2 2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV26","refMid {2 2 2 -2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidV26","poiMid refMid {2 2 2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV28","refMid {2 2 2 2 -2 -2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidV28","poiMid refMid {2 2 2 2 -2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV32","refMid {3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("MidV32","poiMid refMid {3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV34","refMid {3 3 -3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("MidV34","poiMid refMid {3 3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV36","refMid {3 3 3 -3 -3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("MidV36","poiMid refMid {3 3 3 -3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV42","refMid {4 -4}", kFALSE));
+  corrconfigs.push_back(GetConf("MidV42","poiMid refMid {4 -4}", kTRUE));
+  //corrconfigs.push_back(GetConf("MidV44","refMid {4 4 -4 -4}", kFALSE));
+  //corrconfigs.push_back(GetConf("MidV44","poiMid refMid {4 4 -4 -4}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SENV22","refSENeg {2} refSEPos {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SENV24","refSENeg {2 2} refSEPos {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SENV26","refSENeg {2 2 2} refSEPos {-2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SENV28","refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SENV22","poiSENeg refSENeg {2} refSEPos {-2}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SENV24","poiSENeg refSENeg {2 2} refSEPos {-2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SENV26","poiSENeg refSENeg {2 2 2} refSEPos {-2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SENV28","poiSENeg refSENeg {2 2 2 2} refSEPos {-2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SEPV22","refSEPos {2} refSENeg {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SEPV24","refSEPos {2 2} refSENeg {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SEPV26","refSEPos {2 2 2} refSENeg {-2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SEPV28","refSEPos {2 2 2 2} refSENeg {-2 -2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SEPV22","poiSEPos refSEPos {2} refSENeg {-2}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SEPV24","poiSEPos refSEPos {2 2} refSENeg {-2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SEPV26","poiSEPos refSEPos {2 2 2} refSENeg {-2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SEPV28","poiSEPos refSEPos {2 2 2 2} refSENeg {-2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SENV32","refSENeg {3} refSEPos {-3}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SENV34","refSENeg {3 3} refSEPos {-3 -3}", kFALSE));
+  //corrconfigs.push_back(GetConf("Mid2SENV36","refSENeg {3 3 3} refSEPos {-3 -3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SENV32","poiSENeg refSENeg {3} refSEPos {-3}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SENV34","poiSENeg refSENeg {3 3} refSEPos {-3 -3}", kTRUE));
+  //corrconfigs.push_back(GetConf("Mid2SENV36","poiSENeg refSENeg {3 3 3} refSEPos {-3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SEPV32","refSEPos {3} refSENeg {-3}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SEPV34","refSEPos {3 3} refSENeg {-3 -3}", kFALSE));
+  //corrconfigs.push_back(GetConf("Mid2SEPV36","refSEPos {3 3 3} refSENeg {-3 -3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SEPV32","poiSEPos refSEPos {3} refSENeg {-3}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SEPV34","poiSEPos refSEPos {3 3} refSENeg {-3 -3}", kTRUE));
+  //corrconfigs.push_back(GetConf("Mid2SEPV36","poiSEPos refSEPos {3 3 3} refSENeg {-3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SENV42","refSENeg {4} refSEPos {-4}", kFALSE));
+  //corrconfigs.push_back(GetConf("Mid2SENV44","refSENeg {4 4} refSEPos {-4 -4}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SENV42","poiSENeg refSENeg {4} refSEPos {-4}", kTRUE));
+  //corrconfigs.push_back(GetConf("Mid2SENV44","poiSENeg refSENeg {4 4} refSEPos {-4 -4}", kTRUE));
+  corrconfigs.push_back(GetConf("Mid2SEPV42","refSEPos {4} refSENeg {-4}", kFALSE));
+  //corrconfigs.push_back(GetConf("Mid2SEPV44","refSEPos {4 4} refSENeg {-4 -4}", kFALSE));
+  corrconfigs.push_back(GetConf("Mid2SEPV42","poiSEPos refSEPos {4} refSENeg {-4}", kTRUE));
+  //corrconfigs.push_back(GetConf("Mid2SEPV44","poiSEPos refSEPos {4 4} refSENeg {-4 -4}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapNV22","refGapNeg {2} refGapPos {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapNV24","refGapNeg {2 2} refGapPos {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapNV26","refGapNeg {2 2 2} refGapPos {-2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapNV28","refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapNV22","poiGapNeg refGapNeg {2} refGapPos {-2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapNV24","poiGapNeg refGapNeg {2 2} refGapPos {-2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapNV26","poiGapNeg refGapNeg {2 2 2} refGapPos {-2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapNV28","poiGapNeg refGapNeg {2 2 2 2} refGapPos {-2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapPV22","refGapPos {2} refGapNeg {-2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapPV24","refGapPos {2 2} refGapNeg {-2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapPV26","refGapPos {2 2 2} refGapNeg {-2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapPV28","refGapPos {2 2 2 2} refGapNeg {-2 -2 -2 -2}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapPV22","poiGapPos refGapPos {2} refGapNeg {-2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapPV24","poiGapPos refGapPos {2 2} refGapNeg {-2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapPV26","poiGapPos refGapPos {2 2 2} refGapNeg {-2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapPV28","poiGapPos refGapPos {2 2 2 2} refGapNeg {-2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapNV32","refGapNeg {3} refGapPos {-3}", kFALSE));
+  //corrconfigs.push_back(GetConf("MidGapNV34","refGapNeg {3 3} refGapPos {-3 -3}", kFALSE));
+  //corrconfigs.push_back(GetConf("MidGapNV36","refGapNeg {3 3 3} refGapPos {-3 -3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapNV32","poiGapNeg refGapNeg {3} refGapPos {-3}", kTRUE));
+  //corrconfigs.push_back(GetConf("MidGapNV34","poiGapNeg refGapNeg {3 3} refGapPos {-3 -3}", kTRUE));
+  //corrconfigs.push_back(GetConf("MidGapNV36","poiGapNeg refGapNeg {3 3 3} refGapPos {-3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapPV32","refGapPos {3} refGapNeg {-3}", kFALSE));
+  //corrconfigs.push_back(GetConf("MidGapPV34","refGapPos {3 3} refGapNeg {-3 -3}", kFALSE));
+  //corrconfigs.push_back(GetConf("MidGapPV36","refGapPos {3 3 3} refGapNeg {-3 -3 -3}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapPV32","poiGapPos refGapPos {3} refGapNeg {-3}", kTRUE));
+  //corrconfigs.push_back(GetConf("MidGapPV34","poiGapPos refGapPos {3 3} refGapNeg {-3 -3}", kTRUE));
+  //corrconfigs.push_back(GetConf("MidGapPV36","poiGapPos refGapPos {3 3 3} refGapNeg {-3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapNV42","refGapNeg {4} refGapPos {-4}", kFALSE));
+  //corrconfigs.push_back(GetConf("MidGapNV44","refGapNeg {4 4} refGapPos {-4 -4}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapNV42","poiGapNeg refGapNeg {4} refGapPos {-4}", kTRUE));
+  //corrconfigs.push_back(GetConf("MidGapNV44","poiGapNeg refGapNeg {4 4} refGapPos {-4 -4}", kTRUE));
+  corrconfigs.push_back(GetConf("MidGapPV42","refGapPos {4} refGapNeg {-4}", kFALSE));
+  //corrconfigs.push_back(GetConf("MidGapPV44","refGapPos {4 4} refGapNeg {-4 -4}", kFALSE));
+  corrconfigs.push_back(GetConf("MidGapPV42","poiGapPos refGapPos {4} refGapNeg {-4}", kTRUE));
+  //corrconfigs.push_back(GetConf("MidGapPV44","poiGapPos refGapPos {4 4} refGapNeg {-4 -4}", kTRUE));
 }
