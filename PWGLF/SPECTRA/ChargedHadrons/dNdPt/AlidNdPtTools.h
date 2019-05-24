@@ -58,8 +58,11 @@ class AlidNdPtTools : public TObject
         static TGraph*          fGsscale;       // graph with scaling factors (nominal)
         static TGraph*          fGsscale1;      // graph with scaling factors (syst up)
         static TGraph*          fGsscale2;      // graph with scaling factors (syst down)
+        static TGraph*          fGsscaleB;       // graph with scaling factors (nominal)
+        static TGraph*          fGsscaleB1;      // graph with scaling factors (syst up)
+        static TGraph*          fGsscaleB2;      // graph with scaling factors (syst down)        
     /// \cond CLASSIMP    
-    ClassDef(AlidNdPtTools, 3);
+    ClassDef(AlidNdPtTools, 4);
     /// \endcond 
 };
 
