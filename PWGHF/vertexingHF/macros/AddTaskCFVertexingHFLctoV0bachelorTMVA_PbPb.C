@@ -13,7 +13,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelorTMVA_PbPb(Bool_t isCent 
 								  Char_t isSign = 2, 
 								  Bool_t useWeight = kFALSE, 
 								  Bool_t useFlatPtWeight = kFALSE, 
-								  Bool_t useZWeight = kFALSE)
+								  Bool_t useZWeight = kFALSE,
+								  const char* weightHistoName = "")
 {
 const Double_t ymin  = -1.2 ;
 const Double_t ymax  =  1.2 ;
@@ -565,7 +566,9 @@ const Float_t normDecLXYmax = 20;
     if(!fHistoPtWeight_3050_2) {
       Printf("FATAL: Histogram for pt weights not found");
       return 0x0;
-    }  
+    }
+    TH1F* weightHisto = (TH1F*)fileCuts->Get(weightHistoName);
+    task->SetWeightHistogram(weightHisto);
   }
 
  
