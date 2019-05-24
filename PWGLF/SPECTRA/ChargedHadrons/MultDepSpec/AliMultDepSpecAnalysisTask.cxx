@@ -329,7 +329,7 @@ Double_t AliMultDepSpecAnalysisTask::GetSecScalingFactor(AliMCParticle* particle
  ******************************************************************************/
 Double_t AliMultDepSpecAnalysisTask::GetParticleWeight(AliMCParticle* particle)
 {
-  if(!fMCSpectraWeights) return 1.0;
+  if(!fMCSpectraWeights) {return 1.0;}
   else return fMCSpectraWeights->GetMCSpectraWeight(particle->Particle(), fMCEvent);
 }
 
@@ -788,7 +788,7 @@ THnSparseF* AliMultDepSpecAnalysisTask::CreateHistogram(const string& name, cons
     TArrayD* binEdges = GetBinEdges(axes[i]);
     histogram->SetBinEdges(i, binEdges->GetArray());
     histogram->GetAxis(i)->SetTitle(GetAxisTitle(axes[i]).c_str());
-    histogram->GetAxis(i)->SetName(axes[i].c_str());
+    histogram->GetAxis(i)->SetName((std::to_string(i) + "-" + axes[i]).c_str());
   }
   histogram->Sumw2();
   return histogram;
