@@ -67,46 +67,46 @@ public:
     virtual void   Terminate(Option_t *);
     
     //******************** ANALYSIS
-    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult, Bool_t &EvContTP, Bool_t &EvContNTP);
-    void FindPhotonicPartner(Int_t iTracks, AliVTrack* track,  const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Int_t &LSPartner, Int_t &ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID,  Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t &trueULSPartner, Bool_t &isPhotonic, Float_t &MCPartnerPt, Float_t &RecPartnerPt);
-    void CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t Tagged, Float_t& MCPartnerPt, Float_t RecPartnerPt);
+    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult, Bool_t &EvContTP, Bool_t &EvContNTP, Double_t EventWeight);
+    void FindPhotonicPartner(Int_t iTracks, AliVTrack* track,  const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Int_t &LSPartner, Int_t &ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID,  Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t &trueULSPartner, Bool_t &isPhotonic, Float_t &MCPartnerPt, Float_t &RecPartnerPt, Double_t EventWeight);
+    void CheckPhotonicPartner(AliVTrack* Vtrack, Bool_t Tagged, Float_t& MCPartnerPt, Float_t RecPartnerPt, Double_t EventWeight);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
-    void CorrelateLP(AliVTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], TObjArray* RedTracksHFE);
-    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx, Float_t maxPt, Bool_t EvContTP, Bool_t EvContNTP);
+    void CorrelateLP(AliVTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], TObjArray* RedTracksHFE, Double_t EventWeight);
+    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx, Float_t maxPt, Bool_t EvContTP, Bool_t EvContNTP, Double_t EventWeight);
     
-    void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Float_t mult, Float_t maxPt);
-    void CorrelateHadronMixedEvent(Float_t mult, const AliVVertex* zVtx, Float_t maxPt, Int_t nMother, Int_t listMother[], Bool_t EvContTP, Bool_t EvContNTP);
+    void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Float_t mult, Float_t maxPt, Double_t EventWeight);
+    void CorrelateHadronMixedEvent(Float_t mult, const AliVVertex* zVtx, Float_t maxPt, Int_t nMother, Int_t listMother[], Bool_t EvContTP, Bool_t EvContNTP, Double_t EventWeight);
 
-    void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Double_t *NonElecIsTriggerWeight, Int_t NumElectronsInEvent); 
+    void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Double_t *NonElecIsTriggerWeight, Int_t NumElectronsInEvent, Double_t EventWeight); 
 
-    void MCTruthCorrelation(TObjArray* MCRedTracks, Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP);
+    void MCTruthCorrelation(TObjArray* MCRedTracks, Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP, Double_t EventWeight);
 
     //********************MC
-    void  MCEfficiencyCorrections(const AliVVertex * RecVertex);
+    void  MCEfficiencyCorrections(const AliVVertex * RecVertex, Double_t EventWeight);
     Int_t HFEisCharmOrBeauty(Int_t ElectronIndex);
 
     //*********************ANALYSIS Helper
-    Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Htrack, Int_t nMother, Int_t listMother[]);
-    Bool_t ChargedHadronPIDCuts(AliVTrack *Htrack);
+    Bool_t ChargedHadronTrackCuts(const AliVVertex *pVtx,AliVTrack *Htrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
+    Bool_t ChargedHadronPIDCuts(AliVTrack *Htrack, Double_t EventWeight);;
 
-    Bool_t AssoHadronPIDCuts(AliVTrack *Htrack);
+    Bool_t AssoHadronPIDCuts(AliVTrack *Htrack, Double_t EventWeight);
 
-    Bool_t InclElecTrackCuts(const AliVVertex *pVtx,AliVTrack *ietrack, Int_t nMother, Int_t listMother[]);
-    Bool_t InclElecPIDCuts(AliVTrack *track, Bool_t IsPrimary);
+    Bool_t InclElecTrackCuts(const AliVVertex *pVtx,AliVTrack *ietrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
+    Bool_t InclElecPIDCuts(AliVTrack *track, Bool_t IsPrimary, Double_t EventWeight);
 
-    Bool_t PhotElecPIDCuts(AliVTrack *track);
-    Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliVTrack *aetrack, Int_t nMother, Int_t listMother[]);
-    void   PhotULSLSElectronAcceptance(const AliVVertex *pVtx, Float_t mult,  Int_t nMother, Int_t listMother[]);
+    Bool_t PhotElecPIDCuts(AliVTrack *track, Double_t EventWeight);
+    Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliVTrack *aetrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
+    void   PhotULSLSElectronAcceptance(const AliVVertex *pVtx, Float_t mult,  Int_t nMother, Int_t listMother[], Double_t EventWeight);
     
-    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner); 
+    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner, Double_t EventWeight); 
     Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliVTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t trueULSPartner, Float_t MCPartnerPt, Float_t RecPartnerPt, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
     void SetPDGAxis(TAxis *axis, std::vector<TString> PDGLabel);
     void CheckHadronIsTrigger(Double_t ptE, Bool_t *HadronIsTrigger);
     void CheckElectronIsTrigger(Double_t ptH, Bool_t *ElectronIsTrigger) ;
-    Bool_t PassEventBias( const AliVVertex *pVtx, Int_t nMother, Int_t *listMother);    
+    Bool_t PassEventBias( const AliVVertex *pVtx, Int_t nMother, Int_t *listMother, Double_t EventWeight);    
 
 
     //**************  SETTINGS
@@ -192,7 +192,7 @@ public:
     void SetEleRecEff(TH2F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
     void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
     void SetNonTagCorr(TH1F & NonTagCorr) {fNonTagCorr = NonTagCorr; fNonTagCorr.SetName("fNonTagCorr");}
-    void SetTriggerWeight(TH1F & TriggerWeight){fTriggerWeight = TriggerWeight; fTriggerWeight.SetName("fTriggerWeight");}
+    void SetTriggerWeight(TH2F & TriggerWeight){fTriggerWeight = TriggerWeight; fTriggerWeight.SetName("fTriggerWeight");}
     void SetVtxWeight(TH1F & VtxWeight) {fVtxWeight = VtxWeight; fVtxWeight.SetName("fVtxWeight");};
 
     Bool_t   ESDkTrkGlobalNoDCA(AliVTrack* Vtrack);
@@ -209,8 +209,8 @@ public:
     Double_t              Eta2y(Double_t pt, Double_t m, Double_t eta) const;
     Double_t              GetHadronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
     Double_t              GetElectronRecEff(Double_t pt, Double_t phi, Double_t eta, Double_t zVtx);
-    Double_t              GetTriggerWeight(Double_t minV0);
-    Double_t              GetVtxWeight(Double_t nTr);
+    Double_t              GetTriggerWeight(Double_t minV0, Double_t nTrAcc);
+    Double_t              GetVtxWeight(Double_t nTrAcc);
     Double_t              GetNonTagCorr(Double_t ptTrack, Double_t ptAsso);
 
     Double_t              Sphericity(const TObjArray* tracks, Double_t MaxEta, Double_t MinPt);
@@ -321,9 +321,11 @@ public:
     TH3F                  *fDiffractiveType;        //!
     TH2F                  *fV0ACTrueInel;           //!
     TH1F                  *fV0TrueMinInel;          //!
+    TH2F                  *fV0TrueMinInelNTr;          //!
     TH2F                  *fV0ACTriggered;          //!
     TH1F                  *fV0MinTriggered;         //!
-    TH1F                  fTriggerWeight;
+    TH2F                  *fV0MinTriggeredNTr;         //!
+    TH2F                  fTriggerWeight;
     TH2F                  *fVtxEtaNTr;              //!
     TH2F                  *fVtxBeforeNTrAcc;        //!
     TH2F                  *fVtxAfterNTrAcc;         //!
@@ -341,6 +343,10 @@ public:
     TH2F                  *fDiffSPDMCVtx;           //!
     THnSparseF            *fnTrAccMaxGen;           //!
     THnSparseF            *fnTrAccGen;           //!
+    TH2F                  *fnTrAccGenTrueInel;   //!
+    TH2F                  *fnTrAccGenTrueInelTrig;   //!
+    TH2F                  *fnTrAccGenTrueInelVtxQA;   //!
+    TH2F                  *fnTrAccGenTrueInelVtxEx;   //!
     THnSparseF            *fnTrAccMinGen;           //!
     THnSparseF            *fnTrAccMeanGen;          //!
     THnSparseF            *fnTrAccMax;              //!
@@ -613,7 +619,11 @@ public:
     THnSparse             *fMCElecLPHadron;         //! 
     THnSparse             *fElecLPHa;               //!
     THnSparse             *fElecLPLSNoPartner;      //! 
-    THnSparse             *fElecLPULSNoPartner;     //! 
+    THnSparse             *fElecLPULSNoPartner;     //!
+    THnSparse             *fElecLPLSNoPartnerCorrTrue; //!
+    THnSparse             *fElecLPULSNoPartnerCorrTrue; //!
+    THnSparse             *fElecLPLSNoPartnerCorr; //!
+    THnSparse             *fElecLPULSNoPartnerCorr; //!
 
     THnSparse             *fMCElecLPTruePartner;    //! 
     THnSparse             *fMCElecLPNoPartner;      //! 
@@ -689,7 +699,7 @@ public:
     void      FindV0CandidatesAOD(AliAODEvent *Event);
     void      FindV0CandidatesESD(AliESDEvent *Event);
     void      ClearV0PIDList();
-    void      TRDQA(Int_t RunNumber, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[]);
+    void      TRDQA(Int_t RunNumber, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t EventWeight);
     void      FillV0Histograms(AliVTrack* track, Int_t Species, Int_t RunNumber);
     THnSparse *fTRDEtaPhi;               //!
     THnSparse *fTRDNTracklets;           //!

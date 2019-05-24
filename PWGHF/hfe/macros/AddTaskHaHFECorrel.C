@@ -112,13 +112,14 @@
   else printf("Could not open NonTag correction file \n");
   TH1::AddDirectory(kTRUE);
 
+  
   TH1::AddDirectory(kFALSE);
   printf("Loading EventWeightFile\n");
   TString EventWeightFileName="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/TriggerVtxEff.root";
   TFile *EventWeightFile = TFile::Open(EventWeightFileName.Data());
   EventWeightFile->ls();
   if (EventWeightFile) {    
-    TH1F * TriggerWeight  = (TH1F*)EventWeightFile->Get("TrigEffNoPU");
+    TH2F * TriggerWeight  = (TH2F*)EventWeightFile->Get("TrigEffPS");
     if (TriggerWeight) taskMB->SetTriggerWeight(*TriggerWeight); 
     TH1F * VtxWeight;
     if (IsMC) VtxWeight = (TH1F*)EventWeightFile->Get("VtxWeightMC");
@@ -128,7 +129,7 @@
   }
   else  printf("Could not open EventWeight file \n"); 
   TH1::AddDirectory(kTRUE);
-
+  
 
  
 
