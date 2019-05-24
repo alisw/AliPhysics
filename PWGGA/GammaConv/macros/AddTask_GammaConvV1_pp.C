@@ -991,6 +991,15 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 614) { // ITS area with large weights split in two
     cuts.AddCutPCM("00010113", "0dh00089267300008250404000", "0152103500000000"); // eta < 0.8   5-13
     cuts.AddCutPCM("00010113", "0di00089267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5
+  } else if (trainConfig == 615) { // scan of meson alpha cut
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "0152100500000000"); // alpha <0.7
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "0152108500000000"); // alpha <0.6
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210g500000000"); // alpha <0.5
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210f500000000"); // alpha <0.4
+  } else if (trainConfig == 616) { 
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210e500000000"); // alpha <0.3
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210a500000000"); // alpha <0.2
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210d500000000"); // alpha <0.1
 
  // Low B Field to be used with MBW
   } else if (trainConfig == 652) {
@@ -1043,6 +1052,15 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 664) { // asymetry cut removed from configs 702-703-704  and 753-754-755 on 14.06.2018 (cuts low pT)
     cuts.AddCutPCM("00010113", "0dh00089267300008250404000", "0152103500000000"); // eta < 0.8
     cuts.AddCutPCM("00010113", "0di00089267300008250404000", "0152103500000000"); // eta < 0.8
+  } else if (trainConfig == 665) { // scan of meson alpha cut
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "0152100500000000"); // alpha <0.7
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "0152108500000000"); // alpha <0.6
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210g500000000"); // alpha <0.5
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210f500000000"); // alpha <0.4
+  } else if (trainConfig == 666) { 
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210e500000000"); // alpha <0.3
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210a500000000"); // alpha <0.2
+    cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210d500000000"); // alpha <0.1
 
 
   // Material studies Ana-----nomB
