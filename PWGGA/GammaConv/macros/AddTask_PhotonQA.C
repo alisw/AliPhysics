@@ -51,18 +51,18 @@ void AddTask_PhotonQA(
 
   AliConversionPhotonCuts *analysisCuts = new AliConversionPhotonCuts();
   analysisCuts->SetV0ReaderName(V0ReaderName);
-  if (enableElecDeDxPostCalibration>0){
+  if (enableElecDeDxPostCalibration){
     if (isMC == 0){
-      if( analysisCuts->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
-        analysisCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
-      } else {
-        enableElecDeDxPostCalibration=kFALSE;
-        analysisCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
-      }
+      if(fileNamedEdxPostCalib.CompareTo("") != 0){
+        analysisCuts->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+        cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+     }
+      analysisCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      cout << "Enabled TPC dEdx recalibration." << endl;
     } else{
       cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
       enableElecDeDxPostCalibration=kFALSE;
-      analysisCuts->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      analysisCuts->SetDoElecDeDxPostCalibration(kFALSE);
     }
   }
   analysisCuts->InitializeCutsFromCutString(TaskPhotonCutnumber.Data());
@@ -73,7 +73,6 @@ void AddTask_PhotonQA(
   fQA->SetConversionCuts(analysisCuts,IsHeavyIon);
   fQA->FillType(kTree,kHistograms);
   fQA->SetIsMC(isMC);
-  fQA->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
   fQA->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fQA);
 

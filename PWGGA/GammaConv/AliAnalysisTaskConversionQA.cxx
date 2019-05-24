@@ -52,7 +52,6 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fIsHeavyIon(kFALSE),
   ffillTree(-100),
   ffillHistograms(kFALSE),
-  fDoElecDeDxPostCalibration(kFALSE),
   fOutputList(NULL),
   fESDList(NULL),
   hVertexZ(NULL),
@@ -143,7 +142,6 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fIsHeavyIon(kFALSE),
   ffillTree(-100),
   ffillHistograms(kFALSE),
-  fDoElecDeDxPostCalibration(kFALSE),
   fOutputList(NULL),
   fESDList(NULL),
   hVertexZ(NULL),
@@ -527,6 +525,12 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
     }
   }
 
+  if(fConversionCuts->GetDoElecDeDxPostCalibration()){
+    if(!fConversionCuts->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber())){
+      AliFatal(Form("ERROR: LoadElecDeDxPostCalibration returned kFALSE for %d despite being requested!",fInputEvent->GetRunNumber()));
+    }
+  }
+
   for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
     AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
     if (gamma==NULL) continue;
@@ -601,7 +605,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   Double_t electronNSigmaTPCCor=0.;
   Double_t positronNSigmaTPC = pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
   Double_t positronNSigmaTPCCor=0.;
-  if(fDoElecDeDxPostCalibration && fConversionCuts->GetElecDeDxPostCalibrationInitialized()){
+  if(fConversionCuts->GetDoElecDeDxPostCalibration()){
     electronNSigmaTPCCor = fConversionCuts->GetCorrectedElectronTPCResponse(negTrack->Charge(),electronNSigmaTPC,negTrack->P(),negTrack->Eta(),gamma->GetConversionRadius());
     positronNSigmaTPCCor = fConversionCuts->GetCorrectedElectronTPCResponse(posTrack->Charge(),positronNSigmaTPC,posTrack->P(),posTrack->Eta(),gamma->GetConversionRadius());
     fDaughterProp(3) =  positronNSigmaTPCCor;

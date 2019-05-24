@@ -50,7 +50,6 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
                                                                                             ffillHistograms = fillHistorams     ;
                                                                                           }
     void SetIsMC                            ( Bool_t isMC )                               { fIsMC = isMC                        ; }
-    void SetDoElecDeDxPostCalibration       (Bool_t k=kTRUE)                              { fDoElecDeDxPostCalibration = k      ; }
 
   private:
         
@@ -83,7 +82,6 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Bool_t                      fIsHeavyIon;                //
     Double_t                    ffillTree;                  //
     Bool_t                      ffillHistograms;            //
-    Bool_t                      fDoElecDeDxPostCalibration; ///<
     TList*                      fOutputList;                //
     TList*                      fESDList;                   //
     TH1F*                       hVertexZ;                   //
@@ -137,7 +135,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
-    ClassDef(AliAnalysisTaskConversionQA, 10);
+    ClassDef(AliAnalysisTaskConversionQA, 11);
 };
 
 #endif
