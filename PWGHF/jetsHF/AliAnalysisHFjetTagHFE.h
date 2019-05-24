@@ -216,6 +216,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistBGrandHFEev;
   TH2D                        *fHistJetEnergyReso;
   TH2D                        *fHistNmatchJet;
+  THnSparse                   *fHistJetEtaCorr0;
+  THnSparse                   *fHistJetEtaCorr1;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TF1                         *fpythia_b;
@@ -262,6 +264,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
   //ClassDef(AliAnalysisHFjetTagHFE, 7) // jet sample analysis task
-  ClassDef(AliAnalysisHFjetTagHFE, 8) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 9) // jet sample analysis task
 };
 #endif
