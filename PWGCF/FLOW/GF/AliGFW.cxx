@@ -257,6 +257,8 @@ TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZer
   Int_t ref = (corconf.Regs.size()>1)?corconf.Regs.at(1):corconf.Regs.at(0);
   AliGFWCumulant *qref = &fCumulants.at(ref);
   AliGFWCumulant *qpoi = &fCumulants.at(poi);
+  if(!qpoi->IsPtBinFilled(ptbin)) return TComplex(0,0);
+  //if(!qref->IsPtBinFilled(ptbin)) return TComplex(0,0);
   AliGFWCumulant *qovl = qpoi;
   if(SetHarmsToZero) for(Int_t i=0;i<(Int_t)corconf.Hars.size();i++) corconf.Hars.at(i) = 0;
   TComplex retval = RecursiveCorr(qpoi, qref, qovl, ptbin, corconf.Hars);
