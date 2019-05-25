@@ -239,6 +239,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
 
   std::string jettypename;
   AliJetContainer::JetAcceptanceType acceptance(AliJetContainer::kTPCfid);
+  AliJetContainer::EJetType_t mcjettype(jettype);
   bool addClusterContainer(false), addTrackContainer(false);
   switch(jettype){
     case AliJetContainer::kFullJet:
@@ -255,6 +256,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
         jettypename = "NeutralJet";
         acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
         addClusterContainer = true;
+        mcjettype = AliJetContainer::kFullJet;    // Correct back neutral detector-level jets to full particle level jets
         break;
     case AliJetContainer::kUndefinedJetType:
         break;
@@ -295,7 +297,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
     tracks = energyscaletask->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
   }
 
-  auto contpartjet = energyscaletask->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
+  auto contpartjet = energyscaletask->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, jetradius,
                                                       acceptance, partcont, nullptr);
   contpartjet->SetName("particleLevelJets");
   energyscaletask->SetNamePartJetContainer("particleLevelJets");
