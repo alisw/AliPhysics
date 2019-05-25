@@ -314,7 +314,11 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMassVariablesvsXiPtMC(0),
 	fHistoResponseElePt(0),
 	fHistoResponseXiPt(0),
+	
+	
 	fHistoResponseEleXiPt(0),
+    fHistoResponseEleXiPtweight(0),
+	
 	fHistoResponseXiPtvsEleXiPt(0),
 	fHistoResponseXiPtXib(0),
 	fHistoResponseEleXiPtXib(0),
@@ -351,11 +355,11 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistodPhiSdEtaSElectronBachelorR125WSMix(0),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kFALSE),
-	fNumberOfEventsForMixing		(5),
-	fNzVtxBins					(0), 
-	fNCentBins					(0),
-  fNRPBins					(0), 
-	fNOfPools(1),
+ fNumberOfEventsForMixing(5),
+  fNzVtxBins(0), 
+  fNCentBins(0),
+  fNRPBins(0), 
+  fNOfPools(1),
   fPoolIndex(-9999),
   nextResVec(),
   reservoirsReady(),
@@ -364,7 +368,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   m_ReservoirL2(),
   m_ReservoirVarsE(),
   m_ReservoirVarsL1(),
-  m_ReservoirVarsL2()
+  m_ReservoirVarsL2(),
+  fweightfit(0x0)
+
 {
   //
   // Default Constructor. 
@@ -379,6 +385,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	}
 	for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
 }
+
+
+
 
 //___________________________________________________________________________
 AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks(const Char_t* name,
@@ -612,7 +621,12 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	fHistoMassVariablesvsXiPtMC(0),
 	fHistoResponseElePt(0),
 	fHistoResponseXiPt(0),
+	
+	
 	fHistoResponseEleXiPt(0),
+	fHistoResponseEleXiPtweight(0),
+	
+	
 	fHistoResponseXiPtvsEleXiPt(0),
 	fHistoResponseXiPtXib(0),
 	fHistoResponseEleXiPtXib(0),
@@ -649,10 +663,10 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   fHistodPhiSdEtaSElectronBachelorR125WSMix(0),
   fDoEventMixing(0),
   fMixWithoutConversionFlag(kFALSE),
-	fNumberOfEventsForMixing		(5),
-	fNzVtxBins					(0), 
-	fNCentBins					(0),
-  fNRPBins					(0), 
+  fNumberOfEventsForMixing(5),
+  fNzVtxBins(0), 
+  fNCentBins(0),
+  fNRPBins(0), 
   fNOfPools(1),
   fPoolIndex(-9999),
   nextResVec(),
@@ -662,7 +676,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   m_ReservoirL2(),
   m_ReservoirVarsE(),
   m_ReservoirVarsL1(),
-  m_ReservoirVarsL2()
+  m_ReservoirVarsL2(),
+fweightfit(0x0)
+
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -1526,6 +1542,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 
 
   Double_t posVtx[3] = {0.,0.,0.};
+
   fVtx1->GetXYZ(posVtx);
 
   fCandidateVariables[ 0] = fCentrality;
@@ -1905,6 +1922,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							fHistoResponseElePt->Fill(mcxic->Pt(),trk->Pt());
 							fHistoResponseXiPt->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 							fHistoResponseEleXiPt->Fill(mcxic->Pt(),exobj->Pt());
+							fHistoResponseEleXiPtweight->Fill(mcxic->Pt(),exobj->Pt(),fweightfit->Eval(mcxic->Pt()));
 							fHistoResponseXiPtvsEleXiPt->Fill(exobj->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 
 							Double_t cont_eleptvsxiptvsxicpt[4];
@@ -2210,6 +2228,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
   // New strategy: Fully analyze correlation
   //
   for(Int_t iv=0;iv<19;iv++){
+ // for(Int_t iv=0;iv<16;iv++){
     fCorrelationVariables[iv] = -9999.;
   }
 	Double_t cont_cor_nd[7];
@@ -2311,8 +2330,13 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
     }
   }
   if(fUseMCInfo) fCorrelationVariables[14] = mcpdgele_array[1];
+//=====================add new branch to the tree ====================
 	fCorrelationVariables[15] = casc->MassXi();
-	fCorrelationVariables[16] = casc->MassLambda();
+	if(casc->ChargeXi()<0)
+         fCandidateVariables[16] = casc->MassLambda();
+     else
+         fCandidateVariables[16] = casc->MassAntiLambda();
+
 	fCorrelationVariables[17] = casc->CosPointingAngleXi(posVtx[0],posVtx[1],posVtx[2]);
 	fCorrelationVariables[18] = casc->CosPointingAngle(casc->GetDecayVertexXi());
 
@@ -2595,6 +2619,8 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillMixROOTObjects(TLorentzVector 
   fCorrelationVariables[11] = sqrt(pxsum*pxsum+pysum*pysum);
   fCorrelationVariables[12] = mexi;
   fCorrelationVariables[13] = cosoa;
+//  fCorrelationVariables[14] =casc->MassXi();
+ 
 
 	cont_cor_nd[0] =  sqrt(pxsum*pxsum+pysum*pysum);
 	cont_cor_nd[1] =  TVector2::Phi_mpi_pi(casc->Phi()-trke->Phi());
@@ -2733,7 +2759,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
 {
   //
   // Fill histograms or tree depending on fWriteVariableTree 
-  //
+  /////      Bool_t    fWriteVariableTree;        flag to decide whether to write the candidate variables on a tree variables 
 
 	if(!trk) return;
 
@@ -2883,7 +2909,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillElectronROOTObjects(AliAODTrac
     (*varvec)[3] = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
     (*varvec)[4] = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
     (*varvec)[5] = d0z0[0];
-    (*varvec)[6] = (Int_t)isconv + 2 * (Int_t)isconv_like;
+    (*varvec)[6] = (Int_t)isconv + 2 * (Int_t)isconv_like; // isconv, isconv_like is bool type ,the result is 0 or 1.
     (*varvec)[7] = mcetype;
 
     Int_t nextRes( nextResVec[fPoolIndex] );
@@ -3975,6 +4001,12 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoResponseXiPt);
   fHistoResponseEleXiPt = new TH2D("fHistoResponseEleXiPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseEleXiPt);
+
+  
+  fHistoResponseEleXiPtweight = new TH2D("fHistoResponseEleXiPtweight","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleXiPtweight);
+  
+  
   fHistoResponseXiPtvsEleXiPt = new TH2D("fHistoResponseXiPtvsEleXiPt","",100,0.,20.,100,0.,20.);
   fOutputAll->Add(fHistoResponseXiPtvsEleXiPt);
   fHistoResponseXiPtXib = new TH2D("fHistoResponseXiPtXib","",100,0.,50.,100,0.,20.);
@@ -4356,7 +4388,6 @@ AliAODVertex* AliAnalysisTaskSEXic2eleXifromAODtracks::PrimaryVertex(const TObjA
   AliAODVertex *vertexAOD = 0;
   
   //vertexESD = new AliESDVertex(*fV1);
-  
 
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) { 
     // primary vertex from the input event
@@ -4894,7 +4925,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			Bool_t xi_flag = kFALSE;
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mccascpart = 0;
-			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
+			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -4929,7 +4960,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mcxicpart = 0;
 			AliAODMCParticle *mccascpart = 0;
-			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
+			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -4946,7 +4977,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 
 			Bool_t xi_flag = kFALSE;
       if(e_flag && xic_flag){
-        for(Int_t idau=mcxicpart->GetDaughterFirst();idau<mcxicpart->GetDaughterLast()+1;idau++)
+        for(Int_t idau=mcxicpart->GetFirstDaughter();idau<mcxicpart->GetLastDaughter()+1;idau++)
         {
           if(idau<0) break;
           AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -5194,6 +5225,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
 
   const char* nameoutput = GetOutputSlot(12)->GetContainer()->GetName();
   fCorrelationVariablesTree = new TTree(nameoutput,"Correlation variables tree");
+//  Int_t nVar = 15;
    Int_t nVar = 19;
   fCorrelationVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
@@ -5213,6 +5245,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::DefineCorrelationTreeVariables()
   fCandidateVariableNames[12] = "EleXiMass";
   fCandidateVariableNames[13] = "EleXiCosOA";
   fCandidateVariableNames[14] = "MCEleMother";
+//=============================== Add new branches to the tree ======
   fCandidateVariableNames[15] = "MassXi";
   fCandidateVariableNames[16] = "MassLambda";
   fCandidateVariableNames[17] = "CosPointingAngleXi";

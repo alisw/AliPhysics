@@ -29,6 +29,7 @@
 #include "AliAODEvent.h"
 #include "AliPID.h"
 #include "AliRDHFCutsXictoeleXifromAODtracks.h"
+#include "TF1.h"
 
 /// \class AliAnalysisTaskSEXic2eleXifromAODtracks
 
@@ -143,7 +144,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void DoEventMixingWithPools(Int_t index);
   void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t chargexi);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult, Double_t rp);
-
+void SetFunction(TF1* weightfit){fweightfit=weightfit;}
 
  private:
 
@@ -410,12 +411,15 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   THnSparse* fHistoMassVariablesvsXiPtMix;         //!<! THnSparse of Correlation variablesa (Mix)
   THnSparse* fHistoMassVariablesvsXiPtMC;         //!<! THnSparse of Correlation variablesa (MC)
 
-	TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
-	TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
-	TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
+  TH2D *fHistoResponseElePt; //!<! Response function electron pT <- True ept
+  TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
+  
+  TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
+  TH2D *fHistoResponseEleXiPtweight; // weight the response funtion 
+  
   TH2D *fHistoResponseXiPtvsEleXiPt; //!<! Response function Xi pT <- e-Xi pT
-	TH2D *fHistoResponseXiPtXib; //!<! Response function Xi pT <- True ept
-	TH2D *fHistoResponseEleXiPtXib; //!<! Response function Xi pT <- True ept
+  TH2D *fHistoResponseXiPtXib; //!<! Response function Xi pT <- True ept
+  TH2D *fHistoResponseEleXiPtXib; //!<! Response function Xi pT <- True ept
   TH2D *fHistoResponseMcGenXibPtvsXicPt; //!<! Response function Xi-c pT <- Xi-b pT
 
   TH1F* fHistoPi0MCGen;         //!<! Number of electrons from pi0
@@ -457,6 +461,9 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WS;//!<! dPhiS vs dEtaS R125 WS
   TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
+
+  TF1 * fweightfit;
+
 
   //Mixing
   Int_t fDoEventMixing; /// flag for event mixing
