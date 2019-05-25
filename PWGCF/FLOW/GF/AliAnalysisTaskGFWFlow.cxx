@@ -96,6 +96,9 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
 AliAnalysisTaskGFWFlow::~AliAnalysisTaskGFWFlow() {
 };
 void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
+  printf("**************************************\n");
+  printf("************  AliGFW v2  *************\n");
+  printf("**************************************\n");
   OpenFile(1);
   fTotTrackFlags = AliGFWCuts::fNTrackFlags;
   fTotFlags = fTotTrackFlags+AliGFWCuts::fNEventFlags+1;
@@ -305,11 +308,11 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fWeightList = (TList*) GetInputData(1);
     if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
   };
-  printf("\n******************\nStarting the watch\n*****************\n");
+  // printf("\n******************\nStarting the watch\n*****************\n");
   CreateCorrConfigs();
-  mywatchFill.Reset();
-  mywatchStore.Reset();
-  mywatch.Start(kTRUE);
+  // mywatchFill.Reset();
+  // mywatchStore.Reset();
+  // mywatch.Start(kTRUE);
 };
 void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -393,7 +396,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     fGFW->Clear();
     AliAODTrack *lTrack;
     if(!fSelections[fCurrSystFlag]->AcceptVertex(fAOD,1)) return;
-    mywatchFill.Start(kFALSE);
+    // mywatchFill.Start(kFALSE);
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
       //if(!AcceptAODTrack(lTrack,tca)) continue;
@@ -424,26 +427,26 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
       /*if(fSelections[9]->AcceptTrack(lTrack, lDCA)) //No ITS for now
 	fGFW->Fill(lTrack->Eta(),fPtAxis->FindBin(lTrack->Pt())-1,lTrack->Phi(),nuaITS*nue,2);*/
     };
-    mywatchFill.Stop();
+    // mywatchFill.Stop();
     TRandom rndm(0);
     Double_t rndmn=rndm.Rndm();
     //Calculate & fill profiles:
     //V_2{n}, full acceptance
-    mywatchStore.Start(kFALSE);
+    // mywatchStore.Start(kFALSE);
     Bool_t filled;
     for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
       //printf("Index %i\n",l_ind);
       filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn);
     };
-    mywatchStore.Stop();
+    // mywatchStore.Stop();
     PostData(1,fFC);
     if(fAddQA) PostData(2,fQAList);
   };
 };
 void AliAnalysisTaskGFWFlow::Terminate(Option_t*) {
-  printf("\n********* Time: %f\n**********",mywatch.RealTime());
-  printf("Filling time: %f\n",mywatchFill.RealTime());
-  printf("Storing time: %f\n",mywatchStore.RealTime());
+  // printf("\n********* Time: %f\n**********",mywatch.RealTime());
+  // printf("Filling time: %f\n",mywatchFill.RealTime());
+  // printf("Storing time: %f\n",mywatchStore.RealTime());
 };
 void AliAnalysisTaskGFWFlow::SetPtBins(Int_t nBins, Double_t *bins, Double_t RFpTMin, Double_t RFpTMax) {
   fPtAxis->Set(nBins, bins);
