@@ -44,6 +44,14 @@ public:
     kHasNoTOF            = BIT(15)
   };
 
+  enum trackinfo {
+    kHasSPDAny   = BIT(0),
+    kHasSPDFirst = BIT(1),
+    kHasITSrefit = BIT(2),
+    kHasTPCrefit = BIT(3),
+    kPassGeomCut = BIT(4)
+  };
+
   enum centest {
     kCentOff,
     kCentV0M,
@@ -67,6 +75,7 @@ public:
   void SetTriggerInfo(TString trigClass, unsigned long long mask=0)           {fTriggerClass = trigClass; fTriggerMask = mask;}
   void SetNsigmaKaonForTagging(float nsigmamax = 0.02)                        {fNsigmaMaxForTag=nsigmamax;}
   void SetKinksSelections(float qtmin=0.15, float Rmin=120, float Rmax=210)   {fQtMinKinks=qtmin; fRMinKinks=Rmin; fRMaxKinks=Rmax;}
+  void SetfFillTreeWithPIDInfo(bool fillPID=true)                             {fFillTreeWithPIDInfo=fillPID;}
   void SetfFillTreeWithNsigmaPIDOnly(bool fillonlyNsigma=true)                {fFillTreeWithNsigmaPIDOnly=fillonlyNsigma;}
   void SetfFillTreeWithTrackQualityInfo(bool fillTrack=true)                  {fFillTreeWithTrackQualityInfo=fillTrack;}
   void EnableDownSampling(double fractokeep=0.1, double ptmax=1.5, int opt=0) {fEnabledDownSampling=true; fFracToKeepDownSampling=fractokeep; fPtMaxDownSampling=ptmax; fDownSamplingOpt=opt;}
@@ -76,6 +85,14 @@ public:
   void EnableNsigmaDataDrivenCorrection(int syst)                             {fEnableNsigmaTPCDataCorr=true; fSystNsigmaTPCDataCorr=syst;}
 
   void EnableSelectionWithAliEventCuts(bool useAliEventCuts=true, int opt=2)  {fUseAliEventCuts=useAliEventCuts; fApplyPbPbOutOfBunchPileupCuts=opt;}
+
+  void ConfigureCutGeoNcrNcl(double dz, double len, double onept, double fncr, double fncl) {
+    fDeadZoneWidth=dz;  
+    fCutGeoNcrNclLength=len; 
+    fCutGeoNcrNclGeom1Pt=onept;
+    fCutGeoNcrNclFractionNcr=fncr; 
+    fCutGeoNcrNclFractionNcl=fncl;
+  }
 
 private:
 
@@ -92,6 +109,7 @@ private:
   void GetNsigmaTPCMeanSigmaData(float &mean, float &sigma, AliPID::EParticleType species, float pTPC, float eta);
   void SetNsigmaTPCDataCorr(int run);
   int IsEventSelectedWithAliEventCuts();
+  bool IsSelectedByGeometricalCut(AliAODTrack* track);
 
   enum hypos{kPion,kKaon,kProton};
   static const int kNHypo = 3;
@@ -122,8 +140,9 @@ private:
   unsigned char fTPCNclsPID;                                                         /// number of PID clusters in TPC to fill the tree
   unsigned short fTrackLength;                                                       /// track length for TOF PID
   unsigned short fStartTimeRes;                                                      /// start time resolution for TOF PID
-  unsigned short fTPCNcrossed;                                                      /// number of TPC crossed rows
-  unsigned short fTPCFindable;                                                      /// number of TPC findable clusters
+  unsigned short fTPCNcrossed;                                                       /// number of TPC crossed rows
+  unsigned short fTPCFindable;                                                       /// number of TPC findable clusters
+  unsigned char fTrackInfoMap;                                                       /// bit map with some track info (see enum above)
   short fEta;                                                                        /// pseudorapidity of the track
   unsigned short fPhi;                                                               /// azimuthal angle of the track
   short fPDGcode;                                                                    /// PDG code in case of MC to fill the tree
@@ -132,6 +151,11 @@ private:
   float fQtMinKinks;                                                                 /// min qt for kinks
   float fRMinKinks;                                                                  /// min radius in XY for kinks
   float fRMaxKinks;                                                                  /// max radius in XY for kink
+  float fDeadZoneWidth;                                                              /// 1st parameter geometrical cut
+  float fCutGeoNcrNclLength;                                                         /// 2nd parameter geometrical cut
+  float fCutGeoNcrNclGeom1Pt;                                                        /// 3rd parameter geometrical cut
+  float fCutGeoNcrNclFractionNcr;                                                    /// 4th parameter geometrical cut
+  float fCutGeoNcrNclFractionNcl;                                                    /// 5th parameter geometrical cut
 
   float fCentMin;                                                                    /// min centrality
   float fCentMax;                                                                    /// max centrality
@@ -146,8 +170,9 @@ private:
   AliPIDResponse *fPIDresp;                                                          /// basic pid object
   AliAODv0KineCuts *fV0cuts;                                                         /// AOD V0 cuts
 
+  bool fFillTreeWithPIDInfo;                                                         /// flag to enable filling of the tree with PID variables
   bool fFillTreeWithNsigmaPIDOnly;                                                   /// flag to enable filling of the tree with only Nsigma variables for the PID
-  bool fFillTreeWithTrackQualityInfo;                                                /// flag to enable filling of the tree with only Nsigma variables for the PID
+  bool fFillTreeWithTrackQualityInfo;                                                /// flag to enable filling of the tree with track selections
   bool fEnabledDownSampling;                                                         /// flag to enable/disable downsampling
   double fFracToKeepDownSampling;                                                    /// fraction to keep when downsampling activated
   double fPtMaxDownSampling;                                                         /// pT max of tracks to downsample
@@ -172,7 +197,7 @@ private:
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 9);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 10);
 };
 
 #endif

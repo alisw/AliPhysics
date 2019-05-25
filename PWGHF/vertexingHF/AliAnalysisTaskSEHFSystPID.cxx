@@ -46,6 +46,7 @@ fTrackLength(0),
 fStartTimeRes(0),
 fTPCNcrossed(0),
 fTPCFindable(0),
+fTrackInfoMap(0),
 fEta(-9999),
 fPhi(9999),
 fPDGcode(-1),
@@ -54,6 +55,11 @@ fNsigmaMaxForTag(0.02),
 fQtMinKinks(0.15),
 fRMinKinks(120),
 fRMaxKinks(210),
+fDeadZoneWidth(3.),
+fCutGeoNcrNclLength(130.),
+fCutGeoNcrNclGeom1Pt(1.5),
+fCutGeoNcrNclFractionNcr(0.85),
+fCutGeoNcrNclFractionNcl(0.7),
 fCentMin(0.),
 fCentMax(100.),
 fCentEstimator(kCentOff),
@@ -65,6 +71,7 @@ fESDtrackCuts(nullptr),
 fAOD(nullptr),
 fPIDresp(nullptr),
 fV0cuts(nullptr),
+fFillTreeWithPIDInfo(true),
 fFillTreeWithNsigmaPIDOnly(false),
 fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
@@ -132,6 +139,7 @@ fTrackLength(0),
 fStartTimeRes(0),
 fTPCNcrossed(0),
 fTPCFindable(0),
+fTrackInfoMap(0),
 fEta(-9999),
 fPhi(9999),
 fPDGcode(-1),
@@ -140,6 +148,11 @@ fNsigmaMaxForTag(0.02),
 fQtMinKinks(0.15),
 fRMinKinks(120),
 fRMaxKinks(210),
+fDeadZoneWidth(3.),
+fCutGeoNcrNclLength(130.),
+fCutGeoNcrNclGeom1Pt(1.5),
+fCutGeoNcrNclFractionNcr(0.85),
+fCutGeoNcrNclFractionNcl(0.7),
 fCentMin(0.),
 fCentMax(100.),
 fCentEstimator(kCentOff),
@@ -151,6 +164,7 @@ fESDtrackCuts(nullptr),
 fAOD(nullptr),
 fPIDresp(nullptr),
 fV0cuts(nullptr),
+fFillTreeWithPIDInfo(true),
 fFillTreeWithNsigmaPIDOnly(false),
 fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
@@ -288,25 +302,28 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
 
   fPIDtree = new TTree("fPIDtree","fPIDtree");
   TString PIDbranchnames[6] = {"n_sigma_TPC_pi","n_sigma_TPC_K","n_sigma_TPC_p","n_sigma_TOF_pi","n_sigma_TOF_K","n_sigma_TOF_p"};
-  for(int iVar=0; iVar<6; iVar++) {
-    fPIDtree->Branch(PIDbranchnames[iVar].Data(),&fPIDNsigma[iVar],Form("%s/S",PIDbranchnames[iVar].Data()));
-  }
   fPIDtree->Branch("pT",&fPt,"pT/s");
-  fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
-  fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
   fPIDtree->Branch("eta",&fEta,"eta/S");
-  fPIDtree->Branch("phi",&fPhi,"phi/s"); 
-  if(!fFillTreeWithNsigmaPIDOnly) {
-    fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
-    fPIDtree->Branch("ToF",&fToF,"ToF/s");
-    fPIDtree->Branch("NclusterTPC",&fTPCNcls,"NclusterTPC/b");
-    fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
-    fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
-    fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
-    if(fFillTreeWithTrackQualityInfo) {
-      fPIDtree->Branch("NcrossedRowsTPC",&fTPCNcrossed,"NcrossedRowsTPC/b");
-      fPIDtree->Branch("NFindableTPC",&fTPCFindable,"NFindableClustersTPC/b");
+  fPIDtree->Branch("phi",&fPhi,"phi/s");
+  if(fFillTreeWithPIDInfo) {
+    fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
+    fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
+    for(int iVar=0; iVar<6; iVar++) {
+      fPIDtree->Branch(PIDbranchnames[iVar].Data(),&fPIDNsigma[iVar],Form("%s/S",PIDbranchnames[iVar].Data()));
     }
+    if(!fFillTreeWithNsigmaPIDOnly) {
+      fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
+      fPIDtree->Branch("ToF",&fToF,"ToF/s");
+      fPIDtree->Branch("NclusterTPC",&fTPCNcls,"NclusterTPC/b");
+      fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
+      fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
+      fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
+    }
+  } 
+  if(fFillTreeWithTrackQualityInfo) {
+      fPIDtree->Branch("NcrossedRowsTPC",&fTPCNcrossed,"NcrossedRowsTPC/s");
+      fPIDtree->Branch("NFindableTPC",&fTPCFindable,"NFindableClustersTPC/s");
+      fPIDtree->Branch("trackbits",&fTrackInfoMap,"trackbits/b");
   }
   fPIDtree->Branch("tag",&fTag,"tag/s");
   if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/S");
@@ -478,11 +495,32 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
           fToF = ConvertFloatToUnsignedShort((tof-time0)/10);
         }
       }
-      if(fFillTreeWithTrackQualityInfo) {
-        fTPCNcrossed = track->GetTPCNCrossedRows();
-        fTPCFindable = track->GetTPCNclsF();
-      }
     }
+    if(fFillTreeWithTrackQualityInfo) {
+      fTPCNcrossed = track->GetTPCNCrossedRows();
+      fTPCFindable = track->GetTPCNclsF();
+      if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
+        fTrackInfoMap |= kHasSPDAny;
+      else
+        fTrackInfoMap &= ~kHasSPDAny;
+      if(track->HasPointOnITSLayer(1))
+        fTrackInfoMap |= kHasSPDFirst;
+      else
+        fTrackInfoMap &= ~kHasSPDFirst;
+      if(track->GetStatus() & AliESDtrack::kITSrefit)
+        fTrackInfoMap |= kHasITSrefit;
+      else
+        fTrackInfoMap &= ~kHasITSrefit;
+      if(track->GetStatus() & AliESDtrack::kTPCrefit)
+        fTrackInfoMap |= kHasTPCrefit;
+      else
+        fTrackInfoMap &= ~kHasTPCrefit;
+      if(IsSelectedByGeometricalCut(track))
+        fTrackInfoMap |= kPassGeomCut;
+      else
+        fTrackInfoMap &= ~kPassGeomCut;
+    }
+
     //charge
     if(track->Charge()>0) {
       fTag &= ~kNegativeTrack;
@@ -612,6 +650,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     if(filltree && ((fIsMC && fPDGcode>=0) || !fIsMC)) fPIDtree->Fill();
 
     fTag = 0;
+    fTrackInfoMap = 0;
 
     // Post output data
     PostData(2, fPIDtree);
@@ -946,4 +985,27 @@ int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
     }
   }
   return 0;
+}
+
+//________________________________________________________________
+bool AliAnalysisTaskSEHFSystPID::IsSelectedByGeometricalCut(AliAODTrack* track) {
+
+  // convert to ESD track here
+  AliESDtrack esdTrack(track);
+  // set the TPC cluster info
+  esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  esdTrack.SetTPCPointsF(track->GetTPCNclsF());
+    
+  float nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
+  float lengthInActiveZoneTPC=esdTrack.GetLengthInActiveZone(0,fDeadZoneWidth,220.,fAOD->GetMagneticField());
+  double cutGeoNcrNclLength=fCutGeoNcrNclLength-TMath::Power(TMath::Abs(esdTrack.GetSigned1Pt()),fCutGeoNcrNclGeom1Pt);
+  if (lengthInActiveZoneTPC<cutGeoNcrNclLength) 
+    return false;
+  if (nCrossedRowsTPC<fCutGeoNcrNclFractionNcr*cutGeoNcrNclLength)       
+    return false;
+  if (esdTrack.GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength)
+    return false;
+
+  return true;
 }
