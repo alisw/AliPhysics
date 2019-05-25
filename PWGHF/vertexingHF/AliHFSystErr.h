@@ -343,6 +343,9 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2015PbPb3050();
   void InitDplustoKpipi2015PbPb6080();
 
+  void InitDplustoKpipi2018PbPb010();
+  void InitDplustoKpipi2018PbPb3050();
+
   void InitDstoKKpi2015PbPb010();
   void InitDstoKKpi2015PbPb3050();
   void InitDstoKKpi2015PbPb6080();
@@ -352,6 +355,9 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2015PbPb010();
   void InitDstartoD0pi2015PbPb3050();
   void InitDstartoD0pi2015PbPb6080();
+
+  void InitDstartoD0pi2018PbPb010();
+  void InitDstartoD0pi2018PbPb3050();
 
   void InitD0toKpi2018PbPb010();
   void InitD0toKpi2018PbPb3050();
