@@ -80,9 +80,7 @@
 using std::cout;
 using std::endl;
 
-/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSEXic2eleXifromAODtracks);
-/// \endcond
 
 //__________________________________________________________________________
 AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks() : 
@@ -317,7 +315,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	
 	
 	fHistoResponseEleXiPt(0),
-    fHistoResponseEleXiPtweight(0),
+    fHistoResponseEleXiPtweight(0),// check the weight
 	
 	fHistoResponseXiPtvsEleXiPt(0),
 	fHistoResponseXiPtXib(0),
