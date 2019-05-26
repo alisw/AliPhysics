@@ -314,15 +314,15 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
     if(!fFillTreeWithNsigmaPIDOnly) {
       fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
       fPIDtree->Branch("ToF",&fToF,"ToF/s");
-      fPIDtree->Branch("NclusterTPC",&fTPCNcls,"NclusterTPC/b");
       fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
       fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
       fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
     }
   } 
   if(fFillTreeWithTrackQualityInfo) {
-      fPIDtree->Branch("NcrossedRowsTPC",&fTPCNcrossed,"NcrossedRowsTPC/s");
-      fPIDtree->Branch("NFindableTPC",&fTPCFindable,"NFindableClustersTPC/s");
+      fPIDtree->Branch("NclusterTPC",&fTPCNcls,"NclusterTPC/b");
+      fPIDtree->Branch("NcrossedRowsTPC",&fTPCNcrossed,"NcrossedRowsTPC/b");
+      fPIDtree->Branch("NFindableTPC",&fTPCFindable,"NFindableClustersTPC/b");
       fPIDtree->Branch("trackbits",&fTrackInfoMap,"trackbits/b");
   }
   fPIDtree->Branch("tag",&fTag,"tag/s");
@@ -476,7 +476,6 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
 
     if(!fFillTreeWithNsigmaPIDOnly) {
       //TPC variables
-      fTPCNcls = static_cast<unsigned char>(track->GetTPCNcls());
       fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*100);
       fTPCNclsPID = static_cast<unsigned char>(track->GetTPCsignalN());
       
@@ -497,8 +496,9 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
       }
     }
     if(fFillTreeWithTrackQualityInfo) {
-      fTPCNcrossed = track->GetTPCNCrossedRows();
-      fTPCFindable = track->GetTPCNclsF();
+      fTPCNcls = static_cast<unsigned char>(track->GetTPCNcls());
+      fTPCNcrossed = static_cast<unsigned char>(track->GetTPCNCrossedRows());
+      fTPCFindable = static_cast<unsigned char>(track->GetTPCNclsF());
       if(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))
         fTrackInfoMap |= kHasSPDAny;
       else
