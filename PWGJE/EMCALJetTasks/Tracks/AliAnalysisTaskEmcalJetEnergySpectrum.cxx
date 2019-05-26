@@ -409,7 +409,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     auto partcont = task->AddMCParticleContainer(partcontname.Data());
     partcont->SetMinPt(0.);
     
-    auto pjcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, recoscheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);
+    AliJetContainer::EJetType_t mcjettype = (jettype == AliJetContainer::kNeutralJet) ? AliJetContainer::kFullJet : jettype;
+    auto pjcont = task->AddJetContainer(mcjettype, AliJetContainer::antikt_algorithm, recoscheme, radius, AliJetContainer::kTPCfid, partcont, nullptr);
     pjcont->SetName("partjets");
     pjcont->SetMinPt(0);
     pjcont->SetMaxTrackPt(1000.);
