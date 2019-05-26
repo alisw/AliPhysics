@@ -1,17 +1,12 @@
 #ifndef AliJFFlucAnalysis_cxx
 #define AliJFFlucAnalysis_cxx
 
-//#include <TVector.h>
-//#include <TObjArray.h>
-#include "AliAnalysisTaskSE.h"
-#include "AliGenEventHeader.h"
+#include <AliAnalysisTaskSE.h>
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
-#include "AliVVertex.h"
 #include <TComplex.h>
 
 class TClonesArray;
-class AliJBaseTrack;
 class AliJEfficiency;
 
 class AliJFFlucAnalysis : public AliAnalysisTaskSE {
@@ -47,7 +42,7 @@ public:
 		fQC_eta_gap_half = QC_eta_gap_half;
 		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
 	}
-	void SetPhiWeights(TH3D *p){
+	void SetPhiWeights(TH1 *p){
 		pPhiWeights = p;
 	}
 
@@ -101,7 +96,7 @@ private:
 	TClonesArray *fInputList;
 	AliJEfficiency *fEfficiency;
 	const double *fVertex;//!
-	TH3D *pPhiWeights;//!
+	TH1 *pPhiWeights;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int fCBin;
