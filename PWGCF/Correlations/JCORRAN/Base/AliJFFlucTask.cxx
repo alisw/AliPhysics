@@ -32,6 +32,7 @@
 #include <AliMCEvent.h>
 #include <AliGenHijingEventHeader.h>
 #include <AliAnalysisManager.h>
+#include <AliAnalysisDataContainer.h>
 #include <AliVEvent.h>
 #include <AliAODEvent.h>
 #include <AliMultSelection.h>
@@ -50,11 +51,8 @@ AliJFFlucTask::AliJFFlucTask():
 	AliAnalysisTaskSE(),
 	fInputList(0),
 	fOutput(0),
-	fFFlucAna(0),
-	h_ratio(0)
+	fFFlucAna(0)
 {
-	for(UInt_t i = 0, n = sizeof(pDataFile)/sizeof(pDataFile[0]); i < n; ++i)
-		pDataFile[i] = 0;
 	fEvtNum=0;
 	fFilterBit = 0;
 	fEta_min = 0;
@@ -69,11 +67,11 @@ AliJFFlucTask::AliJFFlucTask():
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
+	/*for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
 		}
-	}
+	}*/
 	fzvtxCut = 10;  // default z vertex cut
 	//  DefineOutput(1, TDirectory::Class());
 }
@@ -84,13 +82,10 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fInputList(0),
 	fOutput(0),
 	fFFlucAna(0x0),
-	h_ratio(0),
 	fTaskName(name)
 {
 	DefineOutput(1, TDirectory::Class());
 
-	for(UInt_t i = 0, n = sizeof(pDataFile)/sizeof(pDataFile[0]); i < n; ++i)
-		pDataFile[i] = 0;
 	fEvtNum=0;
 	fFilterBit = 0;
 	fEta_min = 0;
@@ -105,11 +100,11 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
 
-	for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
+	/*for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
 		}
-	}
+	}*/
 	fzvtxCut = 10;
 }
 
@@ -136,15 +131,9 @@ AliJFFlucTask& AliJFFlucTask::operator = (const AliJFFlucTask& ap)
 //______________________________________________________________________________
 AliJFFlucTask::~AliJFFlucTask()
 {
-	//delete pfOutlierLowCut;
-	//delete pfOutlierHighCut;
-	for(UInt_t i = 0, n = sizeof(pDataFile)/sizeof(pDataFile[0]); i < n; ++i)
-		if(pDataFile[i])
-			pDataFile[i]->Close();
 	delete fFFlucAna;
 	delete fInputList;
 	delete fOutput;
-	delete h_ratio;
 }
 
 //________________________________________________________________________
@@ -278,9 +267,12 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if(flags & FLUC_PHI_CORRECTION){
 			int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 			if(cbin != -1){
-				std::map<UInt_t, TH3D *>::const_iterator m = PhiWeightMap[cbin].find(fRunNum);
+				/*std::map<UInt_t, TH1 *>::const_iterator m = PhiWeightMap[cbin].find(fRunNum);
 				if(m != PhiWeightMap[cbin].end())
-					fFFlucAna->SetPhiWeights(m->second);
+					fFFlucAna->SetPhiWeights(m->second);*/
+				TH1 *pweightMap = GetCorrectionMap(fRunNum,cbin);
+				if(pweightMap)
+					fFFlucAna->SetPhiWeights(pweightMap);
 			}
 		}
 
@@ -363,13 +355,13 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 						continue ; // pt cut
 				}
 
-				if(flags & FLUC_PHI_REJECTION){
+				/*if(flags & FLUC_PHI_REJECTION){
 					int isub = (int)(track->Eta() > 0.0);
 					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 					int pbin = h_ModuledPhi[cbin][isub]->GetXaxis()->FindBin(TMath::Pi()-track->Phi());
 					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 						continue;
-				}
+				}*/
 
 				Int_t pdg = track->GetPdgCode();
 				Char_t ch = (Char_t) track->Charge();
@@ -413,7 +405,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 						continue ; // pt cut
 				}
 
-				if(flags & FLUC_PHI_REJECTION){
+				/*if(flags & FLUC_PHI_REJECTION){
 					int isub = (int)(track->Eta() > 0.0);
 					int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 					if(cbin != -1){
@@ -421,7 +413,7 @@ void AliJFFlucTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, flo
 						if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 							continue;
 					}
-				}
+				}*/
 
 				Char_t ch = (Char_t)track->Charge();
 				/*if( fPcharge !=0){ // fPcharge 0 : all particle
@@ -462,13 +454,13 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 		return kFALSE;
 
 	// event cent flatting  --- do it only when IsCentFlat is true
-	if(flags & FLUC_CENT_FLATTENING){
+	/*if(flags & FLUC_CENT_FLATTENING){
 		//float centrality = ReadAODCentrality( event, fCentDetName); //"V0M"
 		float centrality = ReadCentrality(event,fCentDetName);
 		double cent_flat_ratio = h_ratio->GetBinContent( (h_ratio->GetXaxis()->FindBin(centrality))) ;
 		if (gRandom->Uniform(0, cent_flat_ratio) > 1 )
 			return kFALSE;
-	}
+	}*/
 
 	if(flags & FLUC_KINEONLY)
 		return kTRUE;
@@ -659,7 +651,7 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 				}
 			}
 			
-			if(flags & FLUC_PHI_REJECTION){
+			/*if(flags & FLUC_PHI_REJECTION){
 				int isub = (int)(track->Eta() > 0.0);
 				int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 				if(cbin != -1){
@@ -667,7 +659,7 @@ void AliJFFlucTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackList
 					if(gRandom->Uniform(0,1) > h_ModuledPhi[cbin][isub]->GetBinContent(pbin)/h_ModuledPhi[cbin][isub]->GetMaximum())
 						continue;
 				}
-			}
+			}*/
 
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
@@ -707,40 +699,16 @@ double AliJFFlucTask::GetCentralityFromImpactPar(double ip) {
 	return 0.0;
 }
 
-//TODO: remove this bs
-void AliJFFlucTask::EnableCentFlat(const TString fname){
-	//cout << "Setting to flatting Centrality with LHC11h data : " << isCentFlat  << endl;
-	//flags |= FLUC_CENT_FLATTENING;
-	h_ratio = 0; //TODO: rename, add loading if we ever need this again.
-}
-
-void AliJFFlucTask::EnablePhiModule(const TString fname){
-	//flags |= FLUC_PHI_MODULATION;
-	cout<<"Phi modulation enabled: "<<fname.Data()<<endl;
-	//if(!TGrid::IsConnected())
-	TGrid::Connect("alien:");
-	pDataFile[0] = TFile::Open(fname.Data(),"read");
-	if(!pDataFile[0]){
-		cout<<"Unable to open file: "<<fname.Data()<<endl;
-		return;
-	}
-	for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
-		for(UInt_t isub = 0; isub < 2; isub++){
-			h_ModuledPhi[icent][isub] = (TH1D*)pDataFile[0]->Get(Form("h_phi_moduleC%02dS%02d",icent,isub));
-		}
-	}
-}
-
 void AliJFFlucTask::EnablePhiCorrection(const TString fname){
 	cout<<"Phi correction enabled: "<<fname.Data()<<endl;
 	//if(!TGrid::IsConnected())
-	TGrid::Connect("alien:");
+	/*TGrid::Connect("alien:");
 	pDataFile[1] = TFile::Open(fname.Data(),"read");
 	if(!pDataFile[1]){
 		cout<<"Unable to open file: "<<fname.Data()<<endl;
 		return;
-	}
-	TDirectory *pdir = (TDirectory*)pDataFile[1]->Get("PhiWeights");
+	}*/
+	/*TDirectory *pdir = (TDirectory*)pDataFile[1]->Get("PhiWeights");
 	TList *plist = (TList*)pdir->GetListOfKeys();
 	if(!plist){
 		cout<<"Unable to retrieve weight list"<<endl;
@@ -749,7 +717,43 @@ void AliJFFlucTask::EnablePhiCorrection(const TString fname){
 	for(const auto &&m: *plist){
 		UInt_t cent, run;
 		sscanf(m->GetName(),"PhiWeights_%u_%02u",&run,&cent);
-		PhiWeightMap[cent][run] = (TH3D*)pDataFile[1]->Get(Form("PhiWeights/%s",m->GetName()));
+		PhiWeightMap[cent][run] = (TH1*)pDataFile[1]->Get(Form("PhiWeights/%s",m->GetName()));
+	}*/
+	DefineInput(1,TList::Class());
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+		
+	TString containerName = Form("CorrectionMap-%u",fname.Hash());
+	cout<<"Container: "<<containerName<<endl;
+
+	TObjArray *ptaskContainer = mgr->GetContainers();
+	AliAnalysisDataContainer *pCorrMapCont = (AliAnalysisDataContainer*)ptaskContainer->FindObject(containerName);
+	if(!pCorrMapCont){
+		TGrid::Connect("alien:");
+		TFile *pfile = TFile::Open(fname);
+		TList *plist = (TList*)pfile->Get("PhiWeights");
+		pCorrMapCont = mgr->CreateContainer(containerName,
+			TList::Class(),AliAnalysisManager::kInputContainer);
+		pCorrMapCont->SetData(plist);
 	}
+	
+	mgr->ConnectInput(this,1,pCorrMapCont);
+}
+
+TH1 * AliJFFlucTask::GetCorrectionMap(UInt_t run, UInt_t cent){
+	auto m = PhiWeightMap[cent].find(run);
+	if(m == PhiWeightMap[cent].end()){
+		TList *plist = (TList*)GetInputData(1);
+		if(!plist)
+			return 0;
+		//printf("PhiWeights_%u_%02u\n",run,cent);
+		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,cent));
+		if(!pmap)
+			return 0;
+		PhiWeightMap[cent][run] = pmap;
+		//printf("ok\n");
+		return pmap;
+	}
+	return (*m).second;
 }
 
