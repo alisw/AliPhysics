@@ -1,5 +1,4 @@
 AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString finname="",
-								  // Bool_t theMCon=kFALSE,
 								   Bool_t theMCon=kTRUE,
 									 Int_t iscoltype= 0,
 								   Bool_t writeVariableTree=kTRUE,
