@@ -69,7 +69,8 @@ AliHFSystErr::AliHFSystErr(const Char_t* name, const Char_t* title) :
   fIsBDTAnalysis(false),
   fIsCentScan(false),
   fStandardBins(false),
-  fIsRapidityScan(false)
+  fIsRapidityScan(false),
+  fIsMLAnalysis(false)
 {
   //
   /// Default Constructor
@@ -476,9 +477,21 @@ void AliHFSystErr::Init(Int_t decay){
     case 6: // Lc->pK0S
       if (fCollisionType==0) InitLctopK0S2010pp();
       else if (fCollisionType==1) {
+	if (fIsBDTAnalysis) {
           if (fCentralityClass=="010") InitLctopK0S2018PbPb010BDT();
           else if (fCentralityClass=="3050") InitLctopK0S2018PbPb3050BDT();
           else AliFatal("Not yet implemented");
+	}
+	else if (fIsMLAnalysis) {
+          if (fCentralityClass=="010") InitLctopK0S2018PbPb010ML();
+          else if (fCentralityClass=="3050") InitLctopK0S2018PbPb3050ML();
+          else AliFatal("Not yet implemented");
+	}
+	else {
+	  if (fCentralityClass=="010") InitLctopK0S2018PbPb010();
+          else if (fCentralityClass=="3050") InitLctopK0S2018PbPb3050();
+          else AliFatal("Not yet implemented");
+	}
       }
       else if (fCollisionType==2) {
         if(fRunNumber==13 || fRunNumber==2013) {
@@ -8193,6 +8206,154 @@ void AliHFSystErr::InitLctopK0S2016pPbBDT() {
 void AliHFSystErr::InitLctopK0S2018PbPb010BDT() {
   //
   // Lc->pK0s syst errors. Responsible:
+  //   2018 PbPb sample, 010 CC, BDT analysis
+  //
+
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2018PbPb010BDT");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 3.7% error on sigmaV0and
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.04);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.04);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
+  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",12,0,12);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050);
+
+}
+
+void AliHFSystErr::InitLctopK0S2018PbPb3050BDT() {
+  //
+  // Lc->pK0s syst errors. Responsible:
+  //   2018 PbPb sample, 3050 CC, BDT analysis
+  //
+
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2018PbPb3050BDT");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 3.7% error on sigmaV0and
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.04);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.04);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
+  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",12,0,12);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050);
+
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopK0S2018PbPb010ML() {
+  //
+  // Lc->pK0s syst errors. Responsible:
+  //   2018 PbPb sample, 010 CC, ML analysis
+  //
+
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2018PbPb010ML");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 3.7% error on sigmaV0and
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.04);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.04);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
+  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",12,0,12);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050);
+
+}
+
+void AliHFSystErr::InitLctopK0S2018PbPb3050ML() {
+  //
+  // Lc->pK0s syst errors. Responsible:
+  //   2018 PbPb sample, 3050 CC, ML analysis
+  //
+
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2018PbPb3050ML");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 3.7% error on sigmaV0and
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.04);
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.04);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
+  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",12,0,12);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050);
+
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopK0S2018PbPb010() {
+  //
+  // Lc->pK0s syst errors. Responsible:
   //   2018 PbPb sample, 010 CC
   //
 
@@ -8227,7 +8388,7 @@ void AliHFSystErr::InitLctopK0S2018PbPb010BDT() {
 
 }
 
-void AliHFSystErr::InitLctopK0S2018PbPb3050BDT() {
+void AliHFSystErr::InitLctopK0S2018PbPb3050() {
   //
   // Lc->pK0s syst errors. Responsible:
   //   2018 PbPb sample, 3050 CC

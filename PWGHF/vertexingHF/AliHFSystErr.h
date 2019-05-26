@@ -101,6 +101,11 @@ class AliHFSystErr : public TNamed
     if(flag) AliInfo("Settings for the Lc and Ds BDT analysis");
   }
 
+  void SetIsMLAnalysis(Bool_t flag){
+    fIsMLAnalysis = flag;
+    if(flag) AliInfo("Settings for the Lc ML analysis");
+  }
+
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
     fIsCentScan = flag;
     if(flag) AliInfo(" Settings for the PbPb 2010 energy scan");
@@ -334,6 +339,10 @@ class AliHFSystErr : public TNamed
 
   void InitLctopK0S2018PbPb010BDT();
   void InitLctopK0S2018PbPb3050BDT();
+  void InitLctopK0S2018PbPb010ML();
+  void InitLctopK0S2018PbPb3050ML();
+  void InitLctopK0S2018PbPb010();
+  void InitLctopK0S2018PbPb3050();
 
   void InitD0toKpi2015PbPb010();
   void InitD0toKpi2015PbPb3050();
@@ -388,9 +397,10 @@ class AliHFSystErr : public TNamed
   Bool_t fIsCentScan;      /// flag fot the PbPb centrality scan
   Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV and pPb@5TeV
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
+  Bool_t fIsMLAnalysis;   /// flag for the Lc ML analysis
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,11);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,12);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 
