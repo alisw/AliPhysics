@@ -584,19 +584,18 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNTracksTPCoutVsNTracklets->Fill(ntracksTPCout,ntrkl);
     fHistNTracksFB4VsNTracklets->Fill(ntracksFB4,ntrkl);
     fHistNTracksBC0VsNTracksFB4->Fill(ntracksBC0,ntracksFB4);
-  }
   
-  Double_t vec4Sp[8];
-  vec4Sp[0]=centr;
-  vec4Sp[1]=zvSPD;
-  vec4Sp[2]=nTrackletsEta1;
-  vec4Sp[3]=nTrackletsGoldenEta14;
-  vec4Sp[4]=nTrackletsGoldenEta1;
-  vec4Sp[5]=nGenerEta1;
-  vec4Sp[6]=nGenerGoldenSPDEta14;
-  vec4Sp[7]=nGenerGoldenSPDEta1;
-  fEventProp->Fill(vec4Sp);
-
+    Double_t vec4Sp[8];
+    vec4Sp[0]=centr;
+    vec4Sp[1]=zvSPD;
+    vec4Sp[2]=nTrackletsEta1;
+    vec4Sp[3]=nTrackletsGoldenEta14;
+    vec4Sp[4]=nTrackletsGoldenEta1;
+    vec4Sp[5]=nGenerEta1;
+    vec4Sp[6]=nGenerGoldenSPDEta14;
+    vec4Sp[7]=nGenerGoldenSPDEta1;
+    fEventProp->Fill(vec4Sp);
+  }
 
   PostData(1,fOutput);
   PostData(2,fCounter);
