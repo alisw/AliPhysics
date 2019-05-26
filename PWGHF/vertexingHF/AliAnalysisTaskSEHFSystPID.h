@@ -140,8 +140,8 @@ private:
   unsigned char fTPCNclsPID;                                                         /// number of PID clusters in TPC to fill the tree
   unsigned short fTrackLength;                                                       /// track length for TOF PID
   unsigned short fStartTimeRes;                                                      /// start time resolution for TOF PID
-  unsigned short fTPCNcrossed;                                                       /// number of TPC crossed rows
-  unsigned short fTPCFindable;                                                       /// number of TPC findable clusters
+  unsigned char fTPCNcrossed;                                                        /// number of TPC crossed rows
+  unsigned char fTPCFindable;                                                        /// number of TPC findable clusters
   unsigned char fTrackInfoMap;                                                       /// bit map with some track info (see enum above)
   short fEta;                                                                        /// pseudorapidity of the track
   unsigned short fPhi;                                                               /// azimuthal angle of the track
@@ -197,7 +197,7 @@ private:
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 10);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 11);
 };
 
 #endif

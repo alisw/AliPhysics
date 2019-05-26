@@ -9,7 +9,7 @@ AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
                                             double centmin = 0.,
                                             double centmax = 100.,
                                             int estim = AliAnalysisTaskSEHFSystPID::kCentOff,
-                                            int SPDreq =  AliESDtrackCuts::kAny,
+                                            AliESDtrackCuts::ITSClusterRequirement SPDreq =  AliESDtrackCuts::kAny,
                                             int nClsTPC = 50) {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
