@@ -1,17 +1,12 @@
 #ifndef AliJFFlucAnalysis_cxx
 #define AliJFFlucAnalysis_cxx
 
-//#include <TVector.h>
-//#include <TObjArray.h>
-#include "AliAnalysisTaskSE.h"
-#include "AliGenEventHeader.h"
+#include <AliAnalysisTaskSE.h>
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
-#include "AliVVertex.h"
 #include <TComplex.h>
 
 class TClonesArray;
-class AliJBaseTrack;
 class AliJEfficiency;
 
 class AliJFFlucAnalysis : public AliAnalysisTaskSE {

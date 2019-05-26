@@ -24,8 +24,7 @@
 
 #include <TGrid.h>
 #include <TFile.h>
-#include <TRandom.h>
-#include <AliAnalysisUtils.h>
+//#include <TRandom.h>
 #include <AliAnalysisTaskSE.h>
 #include <AliAODHandler.h>
 #include <AliAODMCParticle.h>
@@ -33,16 +32,11 @@
 #include <AliGenHijingEventHeader.h>
 #include <AliAnalysisManager.h>
 #include <AliAnalysisDataContainer.h>
-#include <AliVEvent.h>
 #include <AliAODEvent.h>
 #include <AliMultSelection.h>
 #include "AliJFFlucTask.h"
 #include "AliJTrack.h"
-#include "AliJMCTrack.h"
-//#include "AliJPhoton.h"
-#include "AliJEventHeader.h"
 #include "AliJHistManager.h"
-#include "AliInputEventHandler.h"
 #include "AliJEfficiency.h"
 #include "AliJRunTable.h"
 //#pragma GCC diagnostic warning "-Wall"

@@ -22,12 +22,6 @@
 #include <AliAnalysisTaskSE.h>
 #include <AliAODMCParticle.h>
 #include "AliJHistManager.h"
-#include <AliESDpid.h>
-#include <AliPHOSGeoUtils.h>
-#include <AliPIDResponse.h>
-#include <AliPIDCombined.h>
-#include <AliAnalysisUtils.h>
-#include <AliVVertex.h>
 #include "AliJConst.h"
 #include "AliJFFlucAnalysis.h"
 
