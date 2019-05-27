@@ -349,7 +349,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	  
 	  //correlation function in kstarout, kstarside, kstarlong (run3DPRF)
 	  	  if(run3DPRF == 1) {
-		    ck3dprftpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("ck3dPRF%stpcM%i", chrgs[ichg], imult),200,1.0);
+		    ck3dprftpc[aniter] = new AliFemtoCorrFctn3DPRF(Form("ck3dPRF%stpcM%i", chrgs[ichg], imult),100,0.5);
 		    //ck3dprfkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		    anetaphitpc[aniter]->AddCorrFctn(ck3dprftpc[aniter]);
 		  }
