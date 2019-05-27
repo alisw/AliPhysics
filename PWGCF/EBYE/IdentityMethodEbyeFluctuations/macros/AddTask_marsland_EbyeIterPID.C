@@ -42,8 +42,8 @@ AliAnalysisTask *AddTask_marsland_EbyeIterPID(Bool_t getFromAlien=kFALSE, TStrin
     // gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
     //
     // MC closure for higher moments
-    settingType = 52;      // 4 for Real data 100 for full MC
-    lhcPeriod = 2;
+    settingType = 0;      // 4 for Real data 100 for full MC
+    lhcPeriod   = 2;
     lookUpTableIndex =0;
     suffix = "test";
     containerNameMode=0;
