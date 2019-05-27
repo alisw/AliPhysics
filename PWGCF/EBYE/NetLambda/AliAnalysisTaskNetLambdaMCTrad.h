@@ -26,9 +26,7 @@ public:
     virtual ~AliAnalysisTaskNetLambdaMCTrad(){};
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
-    
-    void SetIsMC(Bool_t val){fIsMC = val;};
-    Bool_t GetIsMC(){return fIsMC;};
+ 
     void SetEventSelection(UInt_t val) {fEvSel = val;}
     
 protected:
