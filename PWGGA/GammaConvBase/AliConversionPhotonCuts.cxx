@@ -27,6 +27,7 @@
 #include "AliAODv0.h"
 #include "AliAODEvent.h"
 #include "AliESDtrack.h"
+#include "AliDataFile.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEventHandler.h"
@@ -45,6 +46,7 @@
 #include "TList.h"
 #include "TFile.h"
 #include "AliLog.h"
+#include "AliOADBContainer.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -232,7 +234,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fProcessAODCheck(kFALSE),
   fMaterialBudgetWeightsInitialized(kFALSE),
   fProfileContainingMaterialBudgetWeights(NULL),
-  fElecDeDxPostCalibrationInitialized(kFALSE),
+  fFileNameElecDeDxPostCalibration(""),
+  fRecalibCurrentRun(-1),
   fnRBins(4),
   fHistoEleMapMean(NULL),
   fHistoEleMapWidth(NULL),
@@ -404,7 +407,8 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fProcessAODCheck(ref.fProcessAODCheck),
   fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized),
   fProfileContainingMaterialBudgetWeights(ref.fProfileContainingMaterialBudgetWeights),
-  fElecDeDxPostCalibrationInitialized(ref.fElecDeDxPostCalibrationInitialized),
+  fFileNameElecDeDxPostCalibration(ref.fFileNameElecDeDxPostCalibration),
+  fRecalibCurrentRun(ref.fRecalibCurrentRun),
   fnRBins(ref.fnRBins),
   fHistoEleMapMean(ref.fHistoEleMapMean),
   fHistoEleMapWidth(ref.fHistoEleMapWidth),
@@ -548,21 +552,21 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(fProfileContainingMaterialBudgetWeights);
   }
 
-  if (fElecDeDxPostCalibrationInitialized){
+  if (fDoElecDeDxPostCalibration){
     for (Int_t i = 0; i < fnRBins; i++) {
       if( fHistoEleMapMean[i] ){
-	fHistograms->Add(fHistoEleMapMean[i]);
+	      fHistograms->Add(fHistoEleMapMean[i]);
       }
       if( fHistoEleMapWidth[i]){
         fHistograms->Add(fHistoEleMapWidth[i]);
       }
       if(fHistoPosMapMean[i]){
-	fHistograms->Add(fHistoPosMapMean[i]);
+	      fHistograms->Add(fHistoPosMapMean[i]);
       }
       if( fHistoPosMapWidth[i]){
         fHistograms->Add(fHistoPosMapWidth[i]);
       }
-    }  
+    } 
   }
 
   if(!fDoLightOutput){
@@ -730,43 +734,97 @@ Bool_t AliConversionPhotonCuts::InitPIDResponse(){
   return kFALSE;
 }
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filename) {
+Bool_t AliConversionPhotonCuts::LoadElecDeDxPostCalibration(Int_t runNumber) {
 
-  AliInfo("Entering loading of correction map for post calibration");
+  if(runNumber==fRecalibCurrentRun)
+    return kTRUE;
+  else
+    fRecalibCurrentRun=runNumber;
 
-  TFile *file = TFile::Open(filename.Data());
-  if(!file){
-    AliError(Form("file for electron dEdx post calibration %s not found",filename.Data()));
-    return kFALSE;
-  }else{
-    AliInfo(Form("found %s ",filename.Data()));
-  }
+  if (fFileNameElecDeDxPostCalibration!="")
+  { //if fFileNameElecDeDxPostCalibration specified in the AddTask via SetElecDeDxPostCalibrationCustomFile()
+    AliInfo(Form("Loading dEdx recalibration maps from given path %s",fFileNameElecDeDxPostCalibration.Data()));
 
-  for(Int_t i=0;i<fnRBins;i++){
-     fHistoEleMapMean[i]  = (TH2F*)file->Get(Form("Ele_R%d_mean",i));
-     fHistoEleMapWidth[i] = (TH2F*)file->Get(Form("Ele_R%d_width",i));
-     fHistoPosMapMean[i]  = (TH2F*)file->Get(Form("Pos_R%d_mean",i));
-      fHistoPosMapWidth[i] = (TH2F*)file->Get(Form("Pos_R%d_width",i));
-  }
-  if (fHistoEleMapMean[0] == NULL || fHistoEleMapWidth[0] == NULL ||
-      fHistoEleMapMean[1] == NULL || fHistoEleMapWidth[1] == NULL ||
-      fHistoEleMapMean[2] == NULL || fHistoEleMapWidth[2] == NULL ||
-      fHistoEleMapMean[3] == NULL || fHistoEleMapWidth[3] == NULL ){
-    AliError("Histograms for dedx post calibration not found not found");
-    return kFALSE;// do nothing if correction map is not avaible
-  }
-  for(Int_t i=0;i<fnRBins;i++){
-    fHistoEleMapMean[i]  ->SetDirectory(0);
-    fHistoEleMapWidth[i] ->SetDirectory(0);
-    fHistoPosMapMean[i]  ->SetDirectory(0);
-    fHistoPosMapWidth[i] ->SetDirectory(0);
-  }
+    TFile *fileRecalib=new TFile(Form("%s",fFileNameElecDeDxPostCalibration.Data()),"read");
+    if (!fileRecalib || fileRecalib->IsZombie())
+    {
+      AliWarning(Form("Input file was not found in the path provided: %s",fFileNameElecDeDxPostCalibration.Data()));
+      return kFALSE;
+    }
 
-  file->Close();
-  delete file;
-  fElecDeDxPostCalibrationInitialized=kTRUE;
-  return kTRUE;
+    for(Int_t i=0;i<fnRBins;i++){
+      fHistoEleMapMean[i]  = (TH2F*)fileRecalib->Get(Form("Ele_R%d_mean",i));
+      fHistoEleMapWidth[i] = (TH2F*)fileRecalib->Get(Form("Ele_R%d_width",i));
+      fHistoPosMapMean[i]  = (TH2F*)fileRecalib->Get(Form("Pos_R%d_mean",i));
+      fHistoPosMapWidth[i] = (TH2F*)fileRecalib->Get(Form("Pos_R%d_width",i));
+    }
+    if (fHistoEleMapMean[0] == NULL || fHistoEleMapWidth[0] == NULL ||
+        fHistoEleMapMean[1] == NULL || fHistoEleMapWidth[1] == NULL ||
+        fHistoEleMapMean[2] == NULL || fHistoEleMapWidth[2] == NULL ||
+        fHistoEleMapMean[3] == NULL || fHistoEleMapWidth[3] == NULL ){
+      AliWarning(Form("Histograms for dedx post calibration not found in %s despite being requested!",fFileNameElecDeDxPostCalibration.Data()));
+      return kFALSE;// code must break if histograms are not found!
+    }
+    for(Int_t i=0;i<fnRBins;i++){
+      fHistoEleMapMean[i]  ->SetDirectory(0);
+      fHistoEleMapWidth[i] ->SetDirectory(0);
+      fHistoPosMapMean[i]  ->SetDirectory(0);
+      fHistoPosMapWidth[i] ->SetDirectory(0);
+    }
+    if (fileRecalib){
+      fileRecalib->Close();
+      delete fileRecalib;
+    }
+    AliInfo(Form("dEdx recalibration maps successfully loaded from %s",fFileNameElecDeDxPostCalibration.Data()));
+    return kTRUE;
+  }
+  else
+  { // Else choose the one in the $ALICE_PHYSICS directory (or EOS)
+    AliInfo("LoadingdEdx recalibration maps from OADB/PWGGA/TPCdEdxRecalibOADB.root");
+
+    TFile *fileRecalib=new TFile(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"read");
+    if (!fileRecalib || fileRecalib->IsZombie())
+    {
+      AliWarning("OADB/PWGGA/TPCdEdxRecalibOADB.root was not found");
+      return kFALSE;
+    }
+    if (fileRecalib) delete fileRecalib;
+      AliOADBContainer *contRecalibTPC = new AliOADBContainer("");
+      contRecalibTPC->InitFromFile(AliDataFile::GetFileNameOADB("PWGGA/TPCdEdxRecalibOADB.root").data(),"AliTPCdEdxRecalib");
+
+    TObjArray *arrayTPCRecalib=(TObjArray*)contRecalibTPC->GetObject(runNumber);
+    if (!arrayTPCRecalib)
+    {
+      AliWarning(Form("No TPC dEdx recalibration found for run number: %d", runNumber));
+      delete contRecalibTPC;
+      return kFALSE;
+    }
+
+    for(Int_t i=0;i<fnRBins;i++){
+      fHistoEleMapMean[i]  = (TH2F*)arrayTPCRecalib->FindObject(Form("Ele_R%d_mean",i));
+      fHistoEleMapWidth[i] = (TH2F*)arrayTPCRecalib->FindObject(Form("Ele_R%d_width",i));
+      fHistoPosMapMean[i]  = (TH2F*)arrayTPCRecalib->FindObject(Form("Pos_R%d_mean",i));
+      fHistoPosMapWidth[i] = (TH2F*)arrayTPCRecalib->FindObject(Form("Pos_R%d_width",i));
+    }
+    if (fHistoEleMapMean[0] == NULL || fHistoEleMapWidth[0] == NULL ||
+        fHistoEleMapMean[1] == NULL || fHistoEleMapWidth[1] == NULL ||
+        fHistoEleMapMean[2] == NULL || fHistoEleMapWidth[2] == NULL ||
+        fHistoEleMapMean[3] == NULL || fHistoEleMapWidth[3] == NULL ){
+      AliWarning("Histograms for dedx post calibration not found in %s despite being requested!");
+      return kFALSE;// code must break if histograms are not found!
+    }
+    for(Int_t i=0;i<fnRBins;i++){
+      fHistoEleMapMean[i]  ->SetDirectory(0);
+      fHistoEleMapWidth[i] ->SetDirectory(0);
+      fHistoPosMapMean[i]  ->SetDirectory(0);
+      fHistoPosMapWidth[i] ->SetDirectory(0);
+    }
+    delete contRecalibTPC;
+    AliInfo(Form("dEdx recalibration maps successfully loaded from OADB/PWGGA/TPCdEdxRecalibOADB.root for run %d",runNumber));
+    return kTRUE;
+  }
 }
+
 //_________________________________________________________________________
 Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge, Double_t nsig, Double_t P, Double_t Eta, Double_t R){
 
@@ -1347,7 +1405,6 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   if (fHistoEtaDistV0s)fHistoEtaDistV0s->Fill(photon->GetPhotonEta());
 
   // dEdx Cuts
-  //  if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
   if(!KappaCuts(photon, event) || !dEdxCuts(negTrack,photon) || !dEdxCuts(posTrack,photon)) {
     FillPhotonCutIndex(kdEdxCuts);
     return kFALSE;
@@ -1686,7 +1743,7 @@ Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, Ali
   Double_t R            =-1.;
 
   Float_t KappaPlus, KappaMinus, Kappa;
-  if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+  if(fDoElecDeDxPostCalibration){
     CentrnSig[0]=fPIDResponse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
     CentrnSig[1]=fPIDResponse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
     P[0]        =negTrack->P();
@@ -1762,7 +1819,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   Double_t Eta=0.;    
   Double_t R=0.;
 
-  if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+  if(fDoElecDeDxPostCalibration){
     P = fCurrentTrack->P();
     Eta = fCurrentTrack->Eta();
     R = photon->GetConversionRadius();
@@ -1776,7 +1833,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   cutIndex++; //1
   if(fDodEdxSigmaCut == kTRUE && !fSwitchToKappa){
     // TPC Electron Line
-    if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+    if(fDoElecDeDxPostCalibration){
       if( electronNSigmaTPCCor < fPIDnSigmaBelowElectronLine ||  electronNSigmaTPCCor >fPIDnSigmaAboveElectronLine ){
         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
@@ -1790,7 +1847,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
     cutIndex++; //2
     // TPC Pion Line
     if( fCurrentTrack->P()>fPIDMinPnSigmaAbovePionLine && fCurrentTrack->P()<fPIDMaxPnSigmaAbovePionLine ){
-      if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+      if(fDoElecDeDxPostCalibration){
         if( electronNSigmaTPCCor >fPIDnSigmaBelowElectronLine && electronNSigmaTPCCor < fPIDnSigmaAboveElectronLine && fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
           if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
           return kFALSE;
@@ -1806,7 +1863,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
 
     // High Pt Pion rej
     if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLine ){
-      if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+      if(fDoElecDeDxPostCalibration){
         if( electronNSigmaTPCCor > fPIDnSigmaBelowElectronLine && electronNSigmaTPCCor < fPIDnSigmaAboveElectronLine && fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
           if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
           return kFALSE;
@@ -1898,7 +1955,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   cutIndex++; //10
 
   if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-  if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+  if(fDoElecDeDxPostCalibration){
     if(fHistoTPCdEdxSigafter)fHistoTPCdEdxSigafter->Fill(fCurrentTrack->P(),electronNSigmaTPCCor);
   }else{
     if(fHistoTPCdEdxSigafter)fHistoTPCdEdxSigafter->Fill(fCurrentTrack->P(),electronNSigmaTPC);

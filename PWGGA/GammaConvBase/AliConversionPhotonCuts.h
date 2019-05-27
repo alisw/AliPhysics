@@ -258,8 +258,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
-    Bool_t GetElecDeDxPostCalibrationInitialized() {return fElecDeDxPostCalibrationInitialized;}
-    Bool_t  InitializeElecDeDxPostCalibration(TString filename);
+    Int_t GetDoElecDeDxPostCalibration() {return fDoElecDeDxPostCalibration;}
+    void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
+    Bool_t  LoadElecDeDxPostCalibration(Int_t runNumber);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
 
 
@@ -280,14 +281,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fMinPhiCut;                           ///< phi sector cut
     Float_t           fMaxPhiCut;                           ///< phi sector cut
     Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
-    Double_t          fGoodRegionCMin;                      ///< regions WITHOUT strong space charge distortions on C side
-    Double_t          fGoodRegionCMax;                      ///<
-    Double_t          fGoodRegionAMin;                      ///<
-    Double_t          fGoodRegionAMax;                      ///<
-    Double_t          fBadRegionCMin;                       ///< regions WITH strong space charge distortions on C side
-    Double_t          fBadRegionCMax;                       ///<
-    Double_t          fBadRegionAMin;                       ///<
-    Double_t          fBadRegionAMax;                       ///<
     Double_t          fPtCut;                               ///< pt cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
@@ -411,16 +404,25 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     TProfile*         fProfileContainingMaterialBudgetWeights;
-    Bool_t            fElecDeDxPostCalibrationInitialized;  ///< flag to check that initialization worked  
+    TString           fFileNameElecDeDxPostCalibration;     ///< name of recalibration file (if no special non-OADB is required)
+    Int_t             fRecalibCurrentRun;                   ///< runnumber for correct loading of recalib from OADB
     Int_t             fnRBins;                              //
     TH2F**            fHistoEleMapMean;  //[fnRBins]
     TH2F**            fHistoEleMapWidth; //[fnRBins] 
     TH2F**            fHistoPosMapMean;  //[fnRBins] 
     TH2F**            fHistoPosMapWidth; //[fnRBins] 
+    Double_t          fGoodRegionCMin;                      ///< regions WITHOUT strong space charge distortions on C side
+    Double_t          fGoodRegionAMin;                      ///<
+    Double_t          fBadRegionCMin;                       ///< regions WITH strong space charge distortions on C side
+    Double_t          fBadRegionAMin;                       ///<
+    Double_t          fGoodRegionCMax;                      ///<
+    Double_t          fGoodRegionAMax;                      ///<
+    Double_t          fBadRegionCMax;                       ///<
+    Double_t          fBadRegionAMax;                       ///<
 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,24)
+    ClassDef(AliConversionPhotonCuts,25)
     /// \endcond
 };
 
