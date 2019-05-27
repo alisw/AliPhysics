@@ -8337,7 +8337,7 @@ void AliHFSystErr::InitLctopK0S2018PbPb3050ML() {
   for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);  //Preliminary (usual track syst + 6% additional from GeoCut correction)
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);  //Preliminary (usual track syst + 4% additional from GeoCut correction)
   for(Int_t i=1;i<=2;i++) fTrackingEff->SetBinContent(i,0.00);
   for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.10);
   for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.11);
