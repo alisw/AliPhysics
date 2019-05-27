@@ -235,25 +235,25 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
       Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
   mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
 
-  AliAnalysisDataContainer *coutputCascadeCuts;
-  TString CascadeCutsName = Form("%sv0Cuts", addon.Data(), suffix.Data());
-  coutputCascadeCuts = mgr->CreateContainer(
+  AliAnalysisDataContainer *coutputv0Cuts;
+  TString v0CutsName = Form("%sv0Cuts%s", addon.Data(), suffix.Data());
+  coutputv0Cuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
-      CascadeCutsName.Data(),
+      v0CutsName.Data(),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), CascadeCutsName.Data()));
-  mgr->ConnectOutput(task, 4, coutputCascadeCuts);
+      Form("%s:%s", file.Data(), v0CutsName.Data()));
+  mgr->ConnectOutput(task, 4, coutputv0Cuts);
 
-  AliAnalysisDataContainer *coutputAntiCascadeCuts;
-  TString AntiCascadeCutsName = Form("%sAntiv0Cuts%s", addon.Data(), suffix.Data());
-  coutputAntiCascadeCuts = mgr->CreateContainer(
+  AliAnalysisDataContainer *coutputAntiv0Cuts;
+  TString Antiv0CutsName = Form("%sAntiv0Cuts%s", addon.Data(), suffix.Data());
+  coutputAntiv0Cuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
-      AntiCascadeCutsName.Data(),
+      Antiv0CutsName.Data(),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), AntiCascadeCutsName.Data()));
-  mgr->ConnectOutput(task, 5, coutputAntiCascadeCuts);
+      Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
+  mgr->ConnectOutput(task, 5, coutputAntiv0Cuts);
 
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
