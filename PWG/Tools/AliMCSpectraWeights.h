@@ -71,6 +71,7 @@ class AliMCSpectraWeights : public TNamed {
     Bool_t LoadFromTHnF(const char* histname);//!
     Bool_t CalculateMCWeights();//!
     Bool_t CalcMCFractions();//!
+    Bool_t CorrectFractionsforRest();//!
     Double_t GetMultFromCent(int CentBin);//!
     Double_t GetCentFromMult(double dMult);//!
     void CountEventMult();//!
