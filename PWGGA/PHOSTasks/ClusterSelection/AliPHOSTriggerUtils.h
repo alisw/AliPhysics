@@ -43,7 +43,8 @@ public:
   void SetTileOffset(Int_t left=-1, Int_t right=3){fbdrL=left;fbdrR=right ;}
   
   Bool_t TestBadMap(Int_t mod, Int_t ix,Int_t iz) ; //Check if trigger is in good/active region
-
+  Int_t  WhichDDL(Int_t module, Int_t cellx) ;      //Calculates DDL number from (offline) module number and x cell coordinate
+  
 protected:
   
   void InitForRun(Int_t run) ; //read trigger bad map for this run from OADB. Should be called once per run
