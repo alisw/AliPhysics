@@ -375,7 +375,6 @@ Bool_t AliMCSpectraWeights::CalcMCFractions(){
     h1pTMCAll->SetName("h1pTMCAll");
 
     for (int ipart = 0; ipart < fNPartTypes; ++ipart) {
-      if(ipart == AliMCSpectraWeights::ParticleType::kRest) continue;
       fHistMCGenPrimTrackParticle->GetAxis(2)->SetRange(ipart+1, ipart+1);
       TH1D *h1MCFraction = (TH1D *)fHistMCGenPrimTrackParticle->Projection(0);
       h1MCFraction->SetName("h1MCFraction_tmp");
