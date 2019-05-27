@@ -136,7 +136,7 @@ Int_t AliPHOSTriggerUtils::IsFiredTrigger(AliVCluster * clu){
      return 0 ;
   
    //Maximum energy tower
-   Int_t maxId, relid[4];
+   Int_t maxId=-1, relid[4];
    Double_t eMax = -111;
      
    AliVCaloCells * phsCells=fEvent->GetPHOSCells() ;
@@ -210,9 +210,15 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
       if(gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) result=1 ;
     }
     else{
-      for(Int_t bit=0; bit<4; bit++){
-        if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
-            result|=1<<bit ;
+      if(fRun>=282008 && fRun<=282441){ //LHC17pq
+        Int_t ddl = WhichDDL(mod, ix) ;  
+        if(gRandom->Uniform()<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;          
+      }
+      else{
+        for(Int_t bit=0; bit<4; bit++){
+          if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
+             result|=1<<bit ;
+        }
       }
     }
     return result ;
@@ -236,6 +242,23 @@ Int_t AliPHOSTriggerUtils::FindBranch(Int_t nX, Int_t nZ) {
 
   return sm;
 }
+//______________________________________________________
+Int_t AliPHOSTriggerUtils::WhichDDL(Int_t module, Int_t cellx)
+{
+  const Int_t Nmod=5;//totally, 5 PHOS modules are designed.
+  Int_t ddl = -1;
+
+  if(cellx<1 || 64<cellx) return -1;
+
+  if(module<1 || 4<module){
+    return -1;
+  }
+  else{
+    ddl = (Nmod-module) * 4 + (cellx-1)/16;//convert offline module numbering to online.
+    return ddl;
+  }
+}
+
 //-----------------------------------------------------------------------  
 Bool_t AliPHOSTriggerUtils::TestBadMap(Int_t mod, Int_t ix,Int_t iz){
   //Test if this is good cell
@@ -299,4 +322,29 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t 
   }
   return 0 ;  
   
+}
+
+
+//-----------------------------------------------------------------------  
+Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
+  //Parameterization of turn-on curve for period LHC17pq
+  // Note that it is done for DDLs, not modules
+
+  if(ddl>8 || ddl>19) return 0.;
+  switch(ddl){  
+    case 8 : return 7.946367e-01/(TMath::Exp((3.630929e+00-x)/2.650550e-01)+1.)+(1.-7.946367e-01)/(TMath::Exp((4.717280e+00-x)/2.650550e-01)+1.) ;
+    case 9 : return 9.187795e-01/(TMath::Exp((3.518032e+00-x)/2.574856e-01)+1.)+(1.-9.187795e-01)/(TMath::Exp((6.786027e+00-x)/2.574856e-01)+1.) ;
+    case 10 : return 9.481202e-01/(TMath::Exp((3.493639e+00-x)/2.636946e-01)+1.)+(1.-9.481202e-01)/(TMath::Exp((4.747057e+00-x)/2.636946e-01)+1.) ;
+    case 11 : return 8.488384e-01/(TMath::Exp((3.668059e+00-x)/2.530703e-01)+1.)+(1.-8.488384e-01)/(TMath::Exp((4.672624e+00-x)/2.530703e-01)+1.) ;
+    case 12 : return 1.005269e+00/(TMath::Exp((3.780906e+00-x)/3.094130e-01)+1.)+(1.-1.005269e+00)/(TMath::Exp((5.405344e+00-x)/3.094130e-01)+1.) ;
+    case 13 : return 9.053488e-01/(TMath::Exp((3.692956e+00-x)/2.726257e-01)+1.)+(1.-9.053488e-01)/(TMath::Exp((5.989596e+00-x)/2.726257e-01)+1.) ;
+    case 14 : return 9.367241e-01/(TMath::Exp((3.862653e+00-x)/3.323924e-01)+1.)+(1.-9.367241e-01)/(TMath::Exp((6.450591e+00-x)/3.323924e-01)+1.) ;
+    case 15 : return 8.933159e-01/(TMath::Exp((3.651933e+00-x)/2.881546e-01)+1.)+(1.-8.933159e-01)/(TMath::Exp((6.873774e+00-x)/2.881546e-01)+1.) ;
+    case 16 : return 8.160846e-01/(TMath::Exp((3.672457e+00-x)/2.896212e-01)+1.)+(1.-8.160846e-01)/(TMath::Exp((6.210016e+00-x)/2.896212e-01)+1.) ;
+    case 17 : return 6.796377e-01/(TMath::Exp((3.522688e+00-x)/2.978038e-01)+1.)+(1.-6.796377e-01)/(TMath::Exp((5.148284e+00-x)/2.978038e-01)+1.) ;
+    case 18 : return 9.036711e-01/(TMath::Exp((3.404802e+00-x)/3.163507e-01)+1.)+(1.-9.036711e-01)/(TMath::Exp((7.260047e+00-x)/3.163507e-01)+1.) ;
+    case 19 : return 7.960394e-01/(TMath::Exp((3.540966e+00-x)/2.851827e-01)+1.)+(1.-7.960394e-01)/(TMath::Exp((6.412796e+00-x)/2.851827e-01)+1.) ;
+    default: return 0.;
+  }
+  return 0.;
 }
