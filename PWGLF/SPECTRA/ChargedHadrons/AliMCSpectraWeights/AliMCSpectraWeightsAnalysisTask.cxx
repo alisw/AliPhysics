@@ -93,7 +93,7 @@ void AliMCSpectraWeightsAnalysisTask::UserCreateOutputObjects(){
   fOutputList = new TList();
   fOutputList -> SetOwner();
   if(fIsMC && fMCSpectraWeights){
-    printf("AliMCSpectraWeightsAnalysisTask:: Having non zero AliMCSpectraWeights obj\n");
+    // printf("AliMCSpectraWeightsAnalysisTask:: Having non zero AliMCSpectraWeights obj\n");
     if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: obj status: %d\n", fMCSpectraWeights->GetTaskStatus());
     /// Standard track histogram pt:eta:zV:multcent
     Int_t nBinsTrack[4]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsZv->GetSize()-1,fBinsMultCent->GetSize()-1};
@@ -123,7 +123,7 @@ void AliMCSpectraWeightsAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCWeights);
     // fOutputList->Add(fMCSpectraWeights);
   }
-  else printf("AliMCSpectraWeightsAnalysisTask:: Either running not MC or object of AliMCSpectraWeights is null pointer\n");
+  // else printf("AliMCSpectraWeightsAnalysisTask:: Either running not MC or object of AliMCSpectraWeights is null pointer\n");
 
   PostData(1, fOutputList);
 }
@@ -154,7 +154,7 @@ void AliMCSpectraWeightsAnalysisTask::UserExec(Option_t *option){
 
   // Double_t multEvent = AliMCSpectraWeightsAnalysisTask::GetEventMultCent(fEvent);
 
-  if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: Event got accepted; now analysing\n");
+  // if(fDebugLevel>0) printf("AliMCSpectraWeightsAnalysisTask:: Event got accepted; now analysing\n");
 
   ///------------------- Loop over Generated Tracks (True MC)------------------------------
   if(fMCSpectraWeights->GetTaskStatus()<AliMCSpectraWeights::TaskState::kMCSpectraObtained)
