@@ -469,8 +469,6 @@ AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
   Double_t eta_tr = etaPhi[0];
 
   fwd->Fill(eta_tr,phi_tr,1);
-  // if (dodNdeta) dNdeta->Fill(eta_tr,1);
-
   return;
 }
 
