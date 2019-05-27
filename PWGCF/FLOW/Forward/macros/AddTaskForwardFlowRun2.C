@@ -58,8 +58,8 @@ AliAnalysisDataContainer* makeWeightContainerSec(TString sec_file, TString conta
   AliAnalysisDataContainer* weights;
   if (sec_file.Contains("alien:") ) TGrid::Connect("alien:");
   TFile* file;
-  if (sec_file.Contains(containerName))
-    file = TFile::Open(sec_file.Data(), "READ");
+  //if (sec_file.Contains(containerName))
+  file = TFile::Open(sec_file.Data(), "READ");
 
   if(!file) { printf("E-AddTaskForwardFlowRun2: Input file with secondary weights not found!\n"); return NULL; }
 

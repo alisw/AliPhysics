@@ -38,10 +38,11 @@ AliAnalysisTaskSE* AddTaskForwardSecondaries()
   TString resName = "Secondaries";
 
 
+  task->fSettings.fileName = "secondarytask";
 
   AliAnalysisDataContainer *coutput_recon =
   mgr->CreateContainer(resName,
-   TList::Class(),
+   AliForwardFlowResultStorage::Class(), //TList::Class(),
    AliAnalysisManager::kOutputContainer,
    mgr->GetCommonFileName());
   //task->fSettings.fDataType = task->fSettings.kRECON;
