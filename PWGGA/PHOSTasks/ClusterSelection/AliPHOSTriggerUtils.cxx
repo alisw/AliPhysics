@@ -136,7 +136,7 @@ Int_t AliPHOSTriggerUtils::IsFiredTrigger(AliVCluster * clu){
      return 0 ;
   
    //Maximum energy tower
-   Int_t maxId, relid[4];
+   Int_t maxId=-1, relid[4];
    Double_t eMax = -111;
      
    AliVCaloCells * phsCells=fEvent->GetPHOSCells() ;
