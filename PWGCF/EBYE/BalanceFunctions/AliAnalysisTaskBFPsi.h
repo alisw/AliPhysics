@@ -60,6 +60,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   void SetInputListForNUACorr(TString fileNUA);
   void SetInputListForNUECorr(TString fileNUE);
+
+  void SetInputListForNUECorr3D(TString fileNUE);
  
   Double_t GetNUACorrection(Int_t gRun, Short_t vCharge, Double_t vVz, Float_t vEta, Float_t vPhi );
   Double_t GetNUECorrection(Int_t gCentrality, Short_t vCharge, Double_t vPt);
