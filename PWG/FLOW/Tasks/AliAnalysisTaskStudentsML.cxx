@@ -67,6 +67,10 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  bMultCut(kFALSE),
  fMainFilter(0),
  fSecondFilter(0),
+ fSlopeUpperLine(0.),
+ fAxisUpperLine(0.),
+ fSlopeLowerLine(0.),
+ fAxisLowerLine(0.),
  fMinCentrality(0.),
  fMaxCentrality(100.),
      //Global
@@ -79,6 +83,12 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMaxVertexY(-44.),
  fMinVertexZ(-10.),
  fMaxVertexZ(10.),
+  fVertexXBefore(NULL),
+ fVertexXAfter(NULL),
+ fVertexYBefore(NULL),
+ fVertexYAfter(NULL),
+ fVertexZBefore(NULL),
+ fVertexZAfter(NULL),
    //Physics
  bCutOnEta(kTRUE),
  bCutOnPt(kTRUE),
@@ -89,8 +99,10 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  //Variables for the correlation
  fMaxCorrelator(8),
  bUseWeights(kFALSE),
- fNumber(6),  //number of correlation
+ fNumber(6),  //number of correlation first correlator
+ fNumberSecond(6), //number of correlation second correlator
  fMinNumberPart(8),
+ bUseRatioWeight(kTRUE),
  fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0),  //harmonics
  fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0),  //second set of harmonics
  kSum((fh1<0?-1*fh1:fh1)+(fh2<0?-1*fh2:fh2)+(fh3<0?-1*fh3:fh3)+(fh4<0?-1*fh4:fh4)
@@ -104,6 +116,10 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fCentrality(NULL),
  fCentralitySecond(NULL),
  fEvCentrality(NULL),
+ fCentralitySecondSquare(NULL),
+ fCentralitySecondSquareUnit(NULL),
+ fCov(NULL),
+ fCovUnit(NULL),
  fCounterHistogram(NULL),
  // Final results:
  fFinalResultsList(NULL)
@@ -164,6 +180,10 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  bMultCut(kFALSE),
  fMainFilter(0),
  fSecondFilter(0),
+ fSlopeUpperLine(0.),
+ fAxisUpperLine(0.),
+ fSlopeLowerLine(0.),
+ fAxisLowerLine(0.),
  fMinCentrality(0.),
  fMaxCentrality(100.),
      //Global
@@ -176,6 +196,12 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMaxVertexY(-44.),
  fMinVertexZ(-10.),
  fMaxVertexZ(10.),
+ fVertexXBefore(NULL),
+ fVertexXAfter(NULL),
+ fVertexYBefore(NULL),
+ fVertexYAfter(NULL),
+ fVertexZBefore(NULL),
+ fVertexZAfter(NULL),
    //Physics
  bCutOnEta(kTRUE),
  bCutOnPt(kTRUE),
@@ -186,7 +212,8 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  //Variables for the correlation
  fMaxCorrelator(8),
  bUseWeights(kFALSE),
- fNumber(6),  //number of correlation
+ fNumber(6),  //number of correlation first correlator
+ fNumberSecond(6), //number of correlation second correlator
  fMinNumberPart(8),
  fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0),  //harmonics
  fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0),  //second set of harmonics
@@ -202,6 +229,10 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fCentrality(NULL),
  fCentralitySecond(NULL),
  fEvCentrality(NULL),
+ fCentralitySecondSquare(NULL),
+ fCentralitySecondSquareUnit(NULL),
+ fCov(NULL),
+ fCovUnit(NULL),
  fCounterHistogram(NULL),
  fFinalResultsList(NULL)
 {
@@ -272,6 +303,11 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  // a.1) Global QA (Centrality check, Vertex cut and high multiplicity outlier)
  if(!GlobalQualityAssurance(aAOD)){return;}
 
+ AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
+ fVertexXAfter->Fill(avtx->GetX());
+ fVertexYAfter->Fill(avtx->GetY());
+ fVertexZAfter->Fill(avtx->GetZ());
+
  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
  //b.0) Start analysis over AODs:
@@ -323,21 +359,44 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
 
  if(fParticles>=fMinNumberPart) //do the correlation only if there are more than 8 particles in the event
  { 
-    Correlation();  //do the correlation
 
-    if(fNumber>=6)
-    {
-    fEvCentrality->Fill(0.5,(fRecursion[0][fNumber-2]->GetBinContent(1))/(fRecursionSecond[0][fNumber-2]->GetBinContent(1)),1.);
-    fCentralitySecond->Fill(0.5,fRecursionSecond[0][fNumber-2]->GetBinContent(1),fRecursionSecond[0][fNumber-2]->GetBinContent(2));	
-    fRecursionSecond[0][fNumber-2]->Reset(); //Reset
-    fRecursionSecond[1][fNumber-2]->Reset(); //Reset
- 
-    } //if(fNumber>=6)
+    Double_t FirstCorrelation=0.;
+    Double_t Weight_FirstCorrelation=0.;
+    Double_t SecondCorrelation=0.;
+    Double_t Weight_SecondCorrelation=0.;
+    
+     //~~~~~~~~~~~~~~~~~
 
+    Correlation(fNumber,fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8);  //do the correlation for the first set
 
-    fCentrality->Fill(0.5,fRecursion[0][fNumber-2]->GetBinContent(1),fRecursion[0][fNumber-2]->GetBinContent(2)); //safe output first set of harmonics
+    FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(1);
+    Weight_FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(2);
+    
     fRecursion[0][fNumber-2]->Reset(); //Reset
     fRecursion[1][fNumber-2]->Reset(); //Reset
+
+    //~~~~~~~~~~~~~~~~~
+
+    Correlation(fNumberSecond,fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8);  //do the correlation for the second set
+
+    SecondCorrelation=fRecursion[0][fNumber-2]->GetBinContent(1);
+    Weight_SecondCorrelation=fRecursion[0][fNumber-2]->GetBinContent(2);
+    
+    fRecursion[0][fNumber-2]->Reset(); //Reset
+    fRecursion[1][fNumber-2]->Reset(); //Reset
+
+    //~~~~~~~~~~~~~~~~~
+
+    if(bUseRatioWeight){ fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),Weight_SecondCorrelation); } 
+   else { fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),1.); } 
+    
+    fCentrality->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
+    fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics
+
+   fCentralitySecondSquare->Fill(0.5,SecondCorrelation*SecondCorrelation,Weight_SecondCorrelation*Weight_SecondCorrelation);
+   fCentralitySecondSquareUnit->Fill(0.5,SecondCorrelation*SecondCorrelation,1.);
+   fCov->Fill(0.5,FirstCorrelation*SecondCorrelation,Weight_FirstCorrelation*Weight_SecondCorrelation);
+   fCovUnit->Fill(0.5,FirstCorrelation*SecondCorrelation,1.);
 
   } //if(fParticles>=fMinNumberPart)
 
@@ -384,7 +443,6 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
      {
    
       fRecursion[cs][c] = NULL; //! [cs]: real (0) or imaginary part (1) ....
-      fRecursionSecond[cs][c] = NULL; //! [cs]: real (0) or imaginary part (1) ....
    
      }  
     }  //for(Int_t cs=0;cs<2;cs++)
@@ -443,7 +501,14 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  // g) Book histogram to hold eta distribution after track selection:
  // h) Book Mult. Histo before after track selection
  // i) Book histogam to hold multiplicty distribution after track selection:
- // j) Book histogram to debug
+ // j) Book histogam to hold multiplicty distribution before high multiplicity outlier cut:
+ // k) Book histogam for Vertex X before Cut
+ // l) Book histogam for Vertex X after Cut
+ // m) Book histogam for Vertex Y before Cut
+ // n) Book histogam for Vertex Y after Cut
+ // o) Book histogam for Vertex Z before Cut
+ // p) Book histogam for Vertex Z after Cut
+ // q) Book histogram to debug
 
  // a) Book histogram to hold pt spectra:
  fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbins,fMinBin,fMaxBin);
@@ -503,7 +568,37 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  fMultiHistoBeforeMultCut->GetXaxis()->SetTitle("Multiplicity M");
  fControlHistogramsList->Add(fMultiHistoBeforeMultCut);
 
- // j) Book histogram to debug
+ // k) Book histogam for Vertex X before Cut
+ fVertexXBefore = new TH1F("fVertexXBefore","fVertexXBefore",-20.,20.,1000.); 
+ fVertexXBefore->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexXBefore);
+
+  // l) Book histogam for Vertex X after Cut
+ fVertexXAfter = new TH1F("fVertexXAfter","fVertexXAfter",-20.,20.,1000.); 
+ fVertexXAfter->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexXAfter);
+
+ // m) Book histogam for Vertex Y before Cut
+ fVertexYBefore = new TH1F("fVertexYBefore","fVertexYBefore",-20.,20.,1000.); 
+ fVertexYBefore->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexYBefore);
+
+ // n) Book histogam for Vertex Y after Cut
+ fVertexYAfter = new TH1F("fVertexYAfter","fVertexYAfter",-20.,20.,1000.); 
+ fVertexYAfter->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexYAfter);
+
+  // o) Book histogam for Vertex Y after Cut
+ fVertexZBefore = new TH1F("fVertexZBefore","fVertexZBefore",-20.,20.,1000.); 
+ fVertexZBefore->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexZBefore);
+
+  // p) Book histogam for Vertex Y after Cut
+ fVertexZAfter = new TH1F("fVertexZAfter","fVertexZAfter",-20.,20.,1000.); 
+ fVertexZAfter->GetXaxis()->SetTitle("");
+ fControlHistogramsList->Add(fVertexYAfter);
+
+ // q) Book histogram to debug
  fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.); 
  fControlHistogramsList->Add(fCounterHistogram);
 
@@ -515,22 +610,43 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
   
- fCentrality = new TProfile("fCentrality","Result Analysis Centrality Dependence",1,0.,1.); //centrality dependet output
+ fCentrality = new TProfile("fCentrality","Result Analysis First Set Correlators",1,0.,1.); //centrality dependet output
  fCentrality->GetXaxis()->SetTitle("Centrality");
  fCentrality->GetYaxis()->SetTitle("flow");
- fFinalResultsList->Add(fCentrality);
  fCentrality->Sumw2();
+ fFinalResultsList->Add(fCentrality);
 
- fCentralitySecond = new TProfile("fCentralitySecond","Result Analysis Centrality Dependence",1,0.,1.); //histogram for multiplicity
+ fCentralitySecond = new TProfile("fCentralitySecond","Result Analysis Second Set Correlators",1,0.,1.); //centrality dependet output
  fCentralitySecond->GetXaxis()->SetTitle("Centrality");
  fCentralitySecond->GetYaxis()->SetTitle("flow");
- fFinalResultsList->Add(fCentralitySecond);
  fCentralitySecond->Sumw2(); 
+ fFinalResultsList->Add(fCentralitySecond);
 
- fEvCentrality = new TProfile("fEvCentrality","Result Analysis Centrality Dependence",1,0.,1.); //centrality dependet output
+ fEvCentrality = new TProfile("fEvCentrality","Result Analysis EbE Method",1,0.,1.); //centrality dependet output
  fEvCentrality->GetXaxis()->SetTitle("Centrality");
+ fEvCentrality->Sumw2();  
  fFinalResultsList->Add(fEvCentrality);
- fEvCentrality->Sumw2(); 
+
+ fCentralitySecondSquare = new TProfile("fCentralitySecondSquare","Result Analysis Second Set Correlators Squared",1,0.,1.); //centrality dependet output
+ fCentralitySecondSquare->GetXaxis()->SetTitle("Centrality");
+ fCentralitySecondSquare->Sumw2();  
+ fFinalResultsList->Add(fCentralitySecondSquare);
+
+ fCentralitySecondSquareUnit = new TProfile("fCentralitySecondSquareUnit","Result Analysis Second Set Correlators Squared Unit Weight",1,0.,1.); //centrality dependet output
+ fCentralitySecondSquareUnit->GetXaxis()->SetTitle("Centrality");
+ fCentralitySecondSquareUnit->Sumw2();  
+ fFinalResultsList->Add(fCentralitySecondSquareUnit);
+
+ fCov = new TProfile("fCov","Result Analysis Covariance Term",1,0.,1.); //centrality dependet output
+ fCov->GetXaxis()->SetTitle("Centrality");
+ fCov->Sumw2();  
+ fFinalResultsList->Add(fCov);
+
+ fCovUnit = new TProfile("fCovUnit","Result Analysis Covariance Term Unit Weight",1,0.,1.); //centrality dependet output
+ fCovUnit->GetXaxis()->SetTitle("Centrality");
+ fCovUnit->Sumw2();  
+ fFinalResultsList->Add(fCovUnit);
+
 
  Cosmetics();
  
@@ -549,9 +665,6 @@ void AliAnalysisTaskStudentsML::Cosmetics()
    
    fRecursion[cs][c] = new TProfile("","",2,0.,2.); 
    fRecursion[cs][c]->Sumw2();
-
-   fRecursionSecond[cs][c] = new TProfile("","",2,0.,2.); 
-   fRecursionSecond[cs][c]->Sumw2();
  
    //NOTE for fRecursion: 1.) [cs] will say if its the real (0) or imaginary part (1) 
    // 2.) [c] gives gives the kind of correlation. [n] is the (n+2)-particle correlation
@@ -587,6 +700,12 @@ void AliAnalysisTaskStudentsML::Cosmetics()
 
   // c) Cuts on AliAODVertex:
   AliAODVertex *avtx = (AliAODVertex*)aAODevent->GetPrimaryVertex();
+ 
+  fVertexXBefore->Fill(avtx->GetX());
+  fVertexYBefore->Fill(avtx->GetY());
+  fVertexZBefore->Fill(avtx->GetZ());
+
+
   if(bCutOnVertexX)
   {
    if(avtx->GetX() < fMinVertexX) return kFALSE;
@@ -620,6 +739,8 @@ void AliAnalysisTaskStudentsML::Cosmetics()
    	  if(aTrack->TestFilterBit(fSecondFilter)){ nCounterSecondFilter++; } //one more track with second filter
   	}//for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
 	
+	if( (Float_t)nCounterMainFilter > (fSlopeUpperLine*(Float_t)nCounterSecondFilter + fAxisUpperLine) ) return kFALSE;
+	if( (Float_t)nCounterMainFilter < (fSlopeLowerLine*(Float_t)nCounterSecondFilter + fAxisLowerLine) ) return kFALSE;
 
 	nCounterMainFilter=0;
   	nCounterSecondFilter=0;
@@ -756,7 +877,7 @@ TComplex AliAnalysisTaskStudentsML::Recursion(Int_t n, Int_t* harmonic, Int_t mu
 //========================================================================================================================
 
 
-void AliAnalysisTaskStudentsML::Correlation()
+void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8)
 {
 	
     // Calculate Q-vectors for available angles and weights;
@@ -765,9 +886,9 @@ void AliAnalysisTaskStudentsML::Correlation()
     // Calculate n-particle correlations from Q-vectors (using recursion):	
 
          
-        if(fNumber==2)
+        if(Number==2)
         {
-         Int_t harmonicsTwoNum[2] = {fh1,fh2};     
+         Int_t harmonicsTwoNum[2] = {h1,h2};     
          Int_t harmonicsTwoDen[2] = {0,0};       
          TComplex twoRecursion = Recursion(2,harmonicsTwoNum)/Recursion(2,harmonicsTwoDen).Re();
          Double_t wTwoRecursion = Recursion(2,harmonicsTwoDen).Re();
@@ -778,9 +899,9 @@ void AliAnalysisTaskStudentsML::Correlation()
 
          }//  2-p correlation
         
-        if(fNumber==3)
+        if(Number==3)
         {
-         Int_t harmonicsThreeNum[3] = {fh1,fh2,fh3};       
+         Int_t harmonicsThreeNum[3] = {h1,h2,h3};       
          Int_t harmonicsThreeDen[3] = {0,0,0};       
          TComplex threeRecursion = Recursion(3,harmonicsThreeNum)/Recursion(3,harmonicsThreeDen).Re();
          Double_t wThreeRecursion = Recursion(3,harmonicsThreeDen).Re();
@@ -791,9 +912,9 @@ void AliAnalysisTaskStudentsML::Correlation()
 
          } //  3-p correlation
         
-        if(fNumber==4)
+        if(Number==4)
         {
-         Int_t harmonicsFourNum[4] = {fh1,fh2,fh3,fh4};       
+         Int_t harmonicsFourNum[4] = {h1,h2,h3,h4};       
          Int_t harmonicsFourDen[4] = {0,0,0,0};       
          TComplex fourRecursion = Recursion(4,harmonicsFourNum)/Recursion(4,harmonicsFourDen).Re();
          Double_t wFourRecursion = Recursion(4,harmonicsFourDen).Re();
@@ -804,9 +925,9 @@ void AliAnalysisTaskStudentsML::Correlation()
 
          }//  4-p correlation
         
-        if(fNumber==5)
+        if(Number==5)
         {
-         Int_t harmonicsFiveNum[5] = {fh1,fh2,fh3,fh4,fh5};       
+         Int_t harmonicsFiveNum[5] = {h1,h2,h3,h4,h5};       
          Int_t harmonicsFiveDen[5] = {0,0,0,0,0};       
          TComplex fiveRecursion = Recursion(5,harmonicsFiveNum)/Recursion(5,harmonicsFiveDen).Re();
          Double_t wFiveRecursion = Recursion(5,harmonicsFiveDen).Re();
@@ -816,9 +937,9 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[1][3]->Fill(1.5,wFiveRecursion,1.);
         }//  5-p correlation
 
-        if(fNumber==6)
+        if(Number==6)
         {
-         Int_t harmonicsSixNum[6] = {fh1,fh2,fh3,fh4,fh5,fh6};       
+         Int_t harmonicsSixNum[6] = {h1,h2,h3,h4,h5,h6};       
          Int_t harmonicsSixDen[6] = {0,0,0,0,0,0};       
          TComplex sixRecursion = Recursion(6,harmonicsSixNum)/Recursion(6,harmonicsSixDen).Re();
          Double_t wSixRecursion = Recursion(6,harmonicsSixDen).Re();
@@ -827,24 +948,12 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[1][4]->Fill(0.5,sixRecursion.Im(),wSixRecursion); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
          fRecursion[1][4]->Fill(1.5,wSixRecursion,1.);
 
-
-         Int_t harmonicsSixNumSecond[6] = {fa1,fa2,fa3,fa4,fa5,fa6};       
-         Int_t harmonicsSixDenSecond[6] = {0,0,0,0,0,0};       
-         TComplex sixRecursionSecond = Recursion(6,harmonicsSixNumSecond)/Recursion(6,harmonicsSixDenSecond).Re();
-         Double_t wSixRecursionSecond = Recursion(6,harmonicsSixDenSecond).Re();
-
-
-	 fRecursionSecond[0][4]->Fill(0.5,sixRecursionSecond.Re(),wSixRecursionSecond); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
-         fRecursionSecond[0][4]->Fill(1.5,wSixRecursionSecond,1.);
-         fRecursionSecond[1][4]->Fill(0.5,sixRecursionSecond.Im(),wSixRecursionSecond); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>>
-         fRecursionSecond[1][4]->Fill(1.5,wSixRecursionSecond,1.);
-
          }//  6-p correlation
         
         
-        if(fNumber==7)
+        if(Number==7)
         {
-         Int_t harmonicsSevenNum[7] = {fh1,fh2,fh3,fh4,fh5,fh6,fh7};       
+         Int_t harmonicsSevenNum[7] = {h1,h2,h3,h4,h5,h6,h7};       
          Int_t harmonicsSevenDen[7] = {0,0,0,0,0,0,0};       
          TComplex sevenRecursion = Recursion(7,harmonicsSevenNum)/Recursion(7,harmonicsSevenDen).Re();
          Double_t wSevenRecursion = Recursion(7,harmonicsSevenDen).Re();
@@ -852,22 +961,14 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[0][5]->Fill(1.5,wSevenRecursion,1.);
          fRecursion[1][5]->Fill(0.5,sevenRecursion.Im(),wSevenRecursion); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>>
          fRecursion[1][5]->Fill(1.5,wSevenRecursion,1.);
-
-         Int_t harmonicsSevenNumSecond[7] = {fa1,fa2,fa3,fa4,fa5,fa6,fa7};       
-         Int_t harmonicsSevenDenSecond[7] = {0,0,0,0,0,0,0};       
-         TComplex sevenRecursionSecond = Recursion(7,harmonicsSevenNumSecond)/Recursion(7,harmonicsSevenDenSecond).Re();
-         Double_t wSevenRecursionSecond = Recursion(7,harmonicsSevenDenSecond).Re();
-         fRecursionSecond[0][5]->Fill(0.5,sevenRecursionSecond.Re(),wSevenRecursionSecond); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>>
-         fRecursionSecond[0][5]->Fill(1.5,wSevenRecursionSecond,1.);
-         fRecursionSecond[1][5]->Fill(0.5,sevenRecursionSecond.Im(),wSevenRecursionSecond); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>>
-         fRecursionSecond[1][5]->Fill(1.5,wSevenRecursionSecond,1.);   
+  
 
         }//  7-p correlation
         
         
-        if(fNumber==8)
+        if(Number==8)
         {
-         Int_t harmonicsEightNum[8] = {fh1,fh2,fh3,fh4,fh5,fh6,fh7,fh8};       
+         Int_t harmonicsEightNum[8] = {h1,h2,h3,h4,h5,h6,h7,h8};       
          Int_t harmonicsEightDen[8] = {0,0,0,0,0,0,0,0};       
          TComplex eightRecursion = Recursion(8,harmonicsEightNum)/Recursion(8,harmonicsEightDen).Re();
          Double_t wEightRecursion = Recursion(8,harmonicsEightDen).Re();
@@ -876,20 +977,9 @@ void AliAnalysisTaskStudentsML::Correlation()
          fRecursion[1][6]->Fill(0.5,eightRecursion.Im(),wEightRecursion); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
          fRecursion[1][6]->Fill(1.5,wEightRecursion,1.);
         
-
-
-	 Int_t harmonicsEightNumSecond[8] = {fa1,fa2,fa3,fa4,fa5,fa6,fa7,fa8};       
-         Int_t harmonicsEightDenSecond[8] = {0,0,0,0,0,0,0,0};       
-         TComplex eightRecursionSecond = Recursion(8,harmonicsEightNumSecond)/Recursion(8,harmonicsEightDenSecond).Re();
-         Double_t wEightRecursionSecond = Recursion(8,harmonicsEightDenSecond).Re();
-         fRecursionSecond[0][6]->Fill(0.5,eightRecursionSecond.Re(),wEightRecursionSecond); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursionSecond[0][6]->Fill(1.5,wEightRecursionSecond,1.);
-         fRecursionSecond[1][6]->Fill(0.5,eightRecursionSecond.Im(),wEightRecursionSecond); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
-         fRecursionSecond[1][6]->Fill(1.5,wEightRecursionSecond,1.);
-
         }//  8-p correlation
 
-        if(fNumber!=2 && fNumber!=3 && fNumber!=4 && fNumber!=5 && fNumber!=6 && fNumber!=7 && fNumber!=8)
+        if(Number!=2 && Number!=3 && Number!=4 && Number!=5 && Number!=6 && Number!=7 && Number!=8)
         {
          return;
         }
