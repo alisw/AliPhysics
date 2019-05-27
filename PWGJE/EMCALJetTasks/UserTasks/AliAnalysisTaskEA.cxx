@@ -122,9 +122,16 @@ fIsV0ATriggered(0),
 fIsV0CTriggered(0),
 fMultV0A(0.),
 fMultV0C(0.),
+fMultV0M(0.),
 fMultV0Anorm(0.),
 fMultV0Cnorm(0.),
 fMultV0AV0Cnorm(0.),
+fMultV0A_PartLevel(0.),
+fMultV0C_PartLevel(0.),
+fMultV0M_PartLevel(0.),
+fMultV0Anorm_PartLevel(0.),
+fMultV0Cnorm_PartLevel(0.),
+fMultV0AV0Cnorm_PartLevel(0.),
 fZEM1Energy(0),
 fZEM2Energy(0),
 fTrackEtaWindow(0.9),
@@ -141,6 +148,7 @@ fhClusterPhiInclGA(0x0), fhClusterEtaInclGA(0x0),
 fhRhoMB(0x0),
 fhRhoHM(0x0),
 fhV0AvsV0C(0x0),
+fhV0MvsV0Mnorm(0x0),
 fhV0AvsSPD(0x0),
 fhV0CvsSPD(0x0),
 fhPtTrkTruePrimGen(0x0),
@@ -166,10 +174,12 @@ fnHadronTTBins(0),
 fnJetChTTBins(0),
 fnClusterTTBins(0),
 fFillTTree(0),
-fSystem(AliAnalysisTaskEA::kpPb),
+fSystem(AliAnalysisTaskEA::kpp),
 fFiducialCellCut(0x0),
 fMeanV0A(1.),
 fMeanV0C(1.),
+fMeanV0A_PartLevel(1.),
+fMeanV0C_PartLevel(1.),
 fPhiCut(TMath::Pi()-0.6),
 fRandom(0)
 {
@@ -194,6 +204,10 @@ fRandom(0)
       fJetChTT[i]    = 0;
       fClusterTT[i]  = 0;
 
+
+      fHadronTT_PartLevel[i]   = 0;
+      fClusterTT_PartLevel[i]   = 0;
+
       fhMultTTHinMB[i] = 0x0;   
       fhMultTTHinHM[i] = 0x0;   
       fhMultTTJinMB[i] = 0x0;  
@@ -202,17 +216,47 @@ fRandom(0)
       fhMultTTCinHM[i] = 0x0;  
       fhMultTTCinGA[i] = 0x0; 
 
-      fhTTHinMB[i] = 0x0;
-      fhTTHinHM[i] = 0x0;
-      fhTTCinMB[i] = 0x0;
-      fhTTCinHM[i] = 0x0;
-      fhTTCinGA[i] = 0x0;
+      fhTTHinMB_V0M[i]     = 0x0;
+      fhTTHinMB_V0Mnorm[i] = 0x0;
 
-      fhDrecoilTTHinMB[i] = 0x0;
-      fhDrecoilTTHinHM[i] = 0x0;
-      fhDrecoilTTCinMB[i] = 0x0;
-      fhDrecoilTTCinHM[i] = 0x0;
-      fhDrecoilTTCinGA[i] = 0x0;
+      fhTTHinMB_V0M_PartLevel[i]     = 0x0;
+      fhTTHinMB_V0Mnorm_PartLevel[i] = 0x0;
+
+      fhTTHinHM_V0M[i]     = 0x0;
+      fhTTHinHM_V0Mnorm[i] = 0x0;
+
+      fhTTCinMB_V0M[i]     = 0x0;
+      fhTTCinMB_V0Mnorm[i] = 0x0;
+
+      fhTTCinMB_V0M_PartLevel[i]     = 0x0;
+      fhTTCinMB_V0Mnorm_PartLevel[i] = 0x0;
+
+      fhTTCinHM_V0M[i]     = 0x0;
+      fhTTCinHM_V0Mnorm[i] = 0x0;
+
+      fhTTCinGA_V0M[i]     = 0x0;
+      fhTTCinGA_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTHinMB_V0M[i]     = 0x0;
+      fhRecoilJetPtTTHinMB_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTHinMB_V0M_PartLevel[i]     = 0x0;
+      fhRecoilJetPtTTHinMB_V0Mnorm_PartLevel[i] = 0x0;
+
+      fhRecoilJetPtTTHinHM_V0M[i]     = 0x0;
+      fhRecoilJetPtTTHinHM_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTCinMB_V0M[i]     = 0x0;
+      fhRecoilJetPtTTCinMB_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTCinMB_V0M_PartLevel[i]     = 0x0;
+      fhRecoilJetPtTTCinMB_V0Mnorm_PartLevel[i] = 0x0;
+
+      fhRecoilJetPtTTCinHM_V0M[i]     = 0x0;
+      fhRecoilJetPtTTCinHM_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTCinGA_V0M[i]     = 0x0;
+      fhRecoilJetPtTTCinGA_V0Mnorm[i] = 0x0;
    }
 
    for(Int_t i=0; i<fkTTbins;i++){
@@ -257,6 +301,16 @@ fRandom(0)
       }
    }
 
+   //particle level
+   for(Int_t ic=0; ic<fkCEmc;ic++){
+      fhSignalMB_PartLevel[ic] = 0x0; 
+
+      for(Int_t i=0; i<fkTTbins;i++){
+         fhSignalTTHinMB_PartLevel[ic][i] = 0x0;
+         fhSignalTTCinMB_PartLevel[ic][i] = 0x0;
+      } 
+   }
+
    for(Int_t i=0; i<fkTTbins;i++){
       fhRhoTTHinMB[i]=0x0;
       fhRhoTTHinHM[i]=0x0;   
@@ -274,9 +328,15 @@ fRandom(0)
       fIndexTTH[i] = -1;
       fIndexTTJ[i] = -1; 
 
+      fIndexTTH_PartLevel[i] = -1;
+      fIndexTTC_PartLevel[i] = -1;
+
       fTTC[i].resize(0);
       fTTH[i].resize(0);
       fTTJ[i].resize(0);
+
+      fTTH_PartLevel[i].resize(0);
+      fTTC_PartLevel[i].resize(0);
    }
 
 
@@ -319,9 +379,16 @@ fIsV0ATriggered(0),
 fIsV0CTriggered(0),
 fMultV0A(0.),
 fMultV0C(0.),
+fMultV0M(0.),
 fMultV0Anorm(0.),
 fMultV0Cnorm(0.),
 fMultV0AV0Cnorm(0.),
+fMultV0A_PartLevel(0.),
+fMultV0C_PartLevel(0.),
+fMultV0M_PartLevel(0.),
+fMultV0Anorm_PartLevel(0.),
+fMultV0Cnorm_PartLevel(0.),
+fMultV0AV0Cnorm_PartLevel(0.),
 fZEM1Energy(0),
 fZEM2Energy(0),
 fTrackEtaWindow(0.9),
@@ -338,6 +405,7 @@ fhClusterPhiInclGA(0x0), fhClusterEtaInclGA(0x0),
 fhRhoMB(0x0),
 fhRhoHM(0x0),
 fhV0AvsV0C(0x0),
+fhV0MvsV0Mnorm(0x0),
 fhV0AvsSPD(0x0),
 fhV0CvsSPD(0x0),
 fhPtTrkTruePrimGen(0x0),
@@ -363,10 +431,12 @@ fnHadronTTBins(0),
 fnJetChTTBins(0),
 fnClusterTTBins(0),
 fFillTTree(0),
-fSystem(AliAnalysisTaskEA::kpPb),
+fSystem(AliAnalysisTaskEA::kpp),
 fFiducialCellCut(0x0),
 fMeanV0A(1.),
 fMeanV0C(1.),
+fMeanV0A_PartLevel(1.),
+fMeanV0C_PartLevel(1.),
 fPhiCut(TMath::Pi()-0.6),
 fRandom(0)
 {
@@ -392,6 +462,9 @@ fRandom(0)
       fJetChTT[i]  = 0;
       fClusterTT[i]  = 0;
 
+      fHadronTT_PartLevel[i] = 0;
+      fClusterTT_PartLevel[i] = 0;
+
       fhMultTTHinMB[i] = 0x0;   
       fhMultTTHinHM[i] = 0x0;   
       fhMultTTJinMB[i] = 0x0;  
@@ -400,17 +473,47 @@ fRandom(0)
       fhMultTTCinHM[i] = 0x0;  
       fhMultTTCinGA[i] = 0x0; 
 
-      fhTTHinMB[i] = 0x0;
-      fhTTHinHM[i] = 0x0;
-      fhTTCinMB[i] = 0x0;
-      fhTTCinHM[i] = 0x0;
-      fhTTCinGA[i] = 0x0;
+      fhTTHinMB_V0M[i]     = 0x0;
+      fhTTHinMB_V0Mnorm[i] = 0x0;
 
-      fhDrecoilTTHinMB[i] = 0x0;
-      fhDrecoilTTHinHM[i] = 0x0;
-      fhDrecoilTTCinMB[i] = 0x0;
-      fhDrecoilTTCinHM[i] = 0x0;
-      fhDrecoilTTCinGA[i] = 0x0;
+      fhTTHinMB_V0M_PartLevel[i]     = 0x0;
+      fhTTHinMB_V0Mnorm_PartLevel[i] = 0x0;
+
+      fhTTHinHM_V0M[i]     = 0x0;
+      fhTTHinHM_V0Mnorm[i] = 0x0;
+
+      fhTTCinMB_V0M[i]     = 0x0;
+      fhTTCinMB_V0Mnorm[i] = 0x0;
+
+      fhTTCinMB_V0M_PartLevel[i]     = 0x0;
+      fhTTCinMB_V0Mnorm_PartLevel[i] = 0x0;
+
+      fhTTCinHM_V0M[i]     = 0x0;
+      fhTTCinHM_V0Mnorm[i] = 0x0;
+
+      fhTTCinGA_V0M[i]     = 0x0;
+      fhTTCinGA_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTHinMB_V0M[i]     = 0x0;
+      fhRecoilJetPtTTHinMB_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTHinMB_V0M_PartLevel[i]     = 0x0;
+      fhRecoilJetPtTTHinMB_V0Mnorm_PartLevel[i] = 0x0;
+
+      fhRecoilJetPtTTHinHM_V0M[i]     = 0x0;
+      fhRecoilJetPtTTHinHM_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTCinMB_V0M[i]     = 0x0;
+      fhRecoilJetPtTTCinMB_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTCinMB_V0M_PartLevel[i]     = 0x0;
+      fhRecoilJetPtTTCinMB_V0Mnorm_PartLevel[i] = 0x0;
+
+      fhRecoilJetPtTTCinHM_V0M[i]     = 0x0;
+      fhRecoilJetPtTTCinHM_V0Mnorm[i] = 0x0;
+
+      fhRecoilJetPtTTCinGA_V0M[i]     = 0x0;
+      fhRecoilJetPtTTCinGA_V0Mnorm[i] = 0x0;
    }
 
    for(Int_t i=0; i<fkTTbins;i++){
@@ -456,6 +559,17 @@ fRandom(0)
       }
    }
 
+   //particle level
+   for(Int_t ic=0; ic<fkCEmc;ic++){
+      fhSignalMB_PartLevel[ic] = 0x0; 
+
+      for(Int_t i=0; i<fkTTbins;i++){
+         fhSignalTTHinMB_PartLevel[ic][i] = 0x0;
+         fhSignalTTCinMB_PartLevel[ic][i] = 0x0;
+      } 
+   }
+
+
    for(Int_t i=0; i<fkTTbins;i++){
       fhRhoTTHinMB[i]=0x0;
       fhRhoTTHinHM[i]=0x0;   
@@ -474,11 +588,17 @@ fRandom(0)
    for(Int_t i=0; i<fkTTbins; i++){
       fIndexTTC[i] = -1;
       fIndexTTH[i] = -1;
-      fIndexTTJ[i] = -1; 
+      fIndexTTJ[i] = -1;
+ 
+      fIndexTTH_PartLevel[i] = -1;
+      fIndexTTC_PartLevel[i] = -1;
 
       fTTC[i].resize(0); 
       fTTH[i].resize(0); 
-      fTTJ[i].resize(0); 
+      fTTJ[i].resize(0);
+ 
+      fTTH_PartLevel[i].resize(0); 
+      fTTC_PartLevel[i].resize(0); 
    }
 
    DefineOutput(1, TList::Class());
@@ -541,9 +661,9 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
    //inspired by AliAnalysisTaskEmcalQGTagging
    //_____________________________________________
    //TRACK/PARTICLE CONTAINTERS
-   AliTrackContainer    *trackCont      = 0x0; //detector level track container 
-   AliParticleContainer *trackContTrue  = 0x0; //mc particle container
-   AliClusterContainer  *clusterCont    = 0x0; //detector level track container 
+   AliTrackContainer    *trackCont        = 0x0; //detector level track container 
+   AliParticleContainer *trackContTrue    = 0x0; //mc particle container for jets
+   AliClusterContainer  *clusterCont      = 0x0; //detector level track container 
 
    trackCont = task->AddTrackContainer(trackarrayname);  //detector level tracks 
    trackCont->SetMinPt(0.15);
@@ -555,7 +675,8 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
       trackContTrue = task->AddMCParticleContainer(mcpariclearrayname); //particle level MC particles   
       trackContTrue->SetClassName("AliAODMCParticle");
       trackContTrue->SetMinPt(0.15);
-      trackContTrue->SetEtaLimits(-trackEtaWindow,trackEtaWindow);
+      trackContTrue->SetEtaLimits(-5.1,5.1);
+      //trackContTrue->SetEtaLimits(-trackEtaWindow,trackEtaWindow); //V0 eta range
    }
 
    clusterCont = task->AddClusterContainer(clusterarrayname);  //detector level tracks 
@@ -646,8 +767,15 @@ Bool_t AliAnalysisTaskEA::PassedMinBiasTrigger(){
   //minimum bias trigger
   TString trigger = fInputEvent->GetFiredTriggerClasses();
   bool passedTrigger = kFALSE;
-  if(trigger.Contains("INT7")){
-     passedTrigger = kTRUE;
+
+  if(!fMC){
+     if(trigger.Contains("INT7")){
+        passedTrigger = kTRUE;
+     }
+  }else{
+     if(trigger.Contains("MB1")){
+        passedTrigger = kTRUE;
+     }
   }
   return passedTrigger;
 
@@ -835,6 +963,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    if(!fInitializedLocal) ExecOnceLocal(); 
 
    Double_t jetPtcorr;
+   TLorentzVector myTT;
+   Int_t idx;
 
    //_________________________________________________________________
    // EVENT SELECTION
@@ -870,7 +1000,6 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
 
    if(!fIsEmcalTrig && !fIsMinBiasTrig && !fIsHighMultTrig)  return kFALSE; //post data is in UserExec
-
    
    // END EVENT SELECTION
    //_________________________________________________________________
@@ -935,6 +1064,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    if(vzeroAOD){
       fMultV0A = vzeroAOD->GetMTotV0A();
       fMultV0C = vzeroAOD->GetMTotV0C();
+      fMultV0M =  fMultV0A + fMultV0C;
       fMultV0Anorm = fMultV0A/fMeanV0A;
       fMultV0Cnorm = fMultV0C/fMeanV0C;
       fMultV0AV0Cnorm = fMultV0Anorm + fMultV0Cnorm;
@@ -950,6 +1080,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    }else{
       fMultV0A = -1; 
       fMultV0C = -1; 
+      fMultV0M = -1; 
       fIsV0ATriggered = kFALSE; 
       fIsV0CTriggered = kFALSE; 
       
@@ -1020,20 +1151,68 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
    //READ  TRACK AND JET CONTAINERS
    //Container operations   http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerIterateTechniques
 
-   fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(fMyTrackContainerName.Data())); //reconstructed particle container 
-   fJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyJetContainerName.Data())); //AKT jet
+   fTrkContainerDetLevel = static_cast<AliTrackContainer*> (GetTrackContainer(fMyTrackContainerName.Data())); //reconstructed track container detector-level 
+   fJetContainerDetLevel = static_cast<AliJetContainer*> (GetJetContainer(fMyJetContainerName.Data())); //AKT jet  container detector-level 
 
 
 
    if(fMC){
-      fParticleContainerPartLevel = GetParticleContainer(fMyParticleContainerName.Data()); //reconstructed particle container 
-      fJetContainerPartLevel      = GetJetContainer(fMyJetParticleContainerName.Data()); //reconstructed particle container 
+      fParticleContainerPartLevel = GetParticleContainer(fMyParticleContainerName.Data()); // particle container particle-level 
+      fJetContainerPartLevel      = GetJetContainer(fMyJetParticleContainerName.Data());   //jet container  particle-level
 
       rhoMC = GetExternalRho(kPartLevel); //estimated backround pt density
    }
+   //_________________________________________________________
+   //                 TT
+
+   for(Int_t i=0; i<fkTTbins; i++){
+      fIndexTTC[i] = -1;
+      fIndexTTH[i] = -1;
+      fIndexTTJ[i] = -1; 
+
+      fIndexTTH_PartLevel[i] = -1;
+      fIndexTTC_PartLevel[i] = -1;
+
+      fTTC[i].resize(0);
+      fTTH[i].resize(0);
+      fTTJ[i].resize(0);
+
+      fTTH_PartLevel[i].resize(0);
+      fTTC_PartLevel[i].resize(0);
+   }
+
+   TLorentzVector ph;
+   for(Int_t i=0; i<fnClusterTTBins; i++){
+      fClusterTT[i] = 0;
+      fClusterTT_PartLevel[i] = 0;
+   }
+
+   for(Int_t i=0; i<fnHadronTTBins; i++){
+      fHadronTT[i] = 0;
+      fHadronTT_PartLevel[i] = 0;
+   }
+
+
    //___________________________________________
    //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
+
+   fMultV0A_PartLevel = 0.;
+   fMultV0C_PartLevel = 0.;
+   fMultV0M_PartLevel = 0.;
+   fMultV0Anorm_PartLevel = 0.;
+   fMultV0Cnorm_PartLevel = 0.;
+   fMultV0AV0Cnorm_PartLevel = 0.;
+
+
    if(fMC){
+      TClonesArray* arrayMC = 0; // array particles in the MC event
+      arrayMC = (TClonesArray*) InputEvent()->FindListObject(AliAODMCParticle::StdBranchName());
+      if(!arrayMC){
+         AliError("No MC array found!");
+         return kFALSE;
+      }
+      AliAODMCParticle* daughtermc; 
+
       Bool_t bRecPrim = kFALSE;
 
       if(fParticleContainerPartLevel){
@@ -1045,9 +1224,134 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
             if(IsTrackInAcceptance(mcParticle, kPartLevel)){
                fhPtTrkTruePrimGen->Fill(mcParticle->Pt(), mcParticle->Eta());
+
+               for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+                  if(fHadronTTLowPt[itt] < mcParticle->Pt() && mcParticle->Pt() < fHadronTTHighPt[itt]){
+                     myTT.SetPtEtaPhiM(mcParticle->Pt(),mcParticle->Eta(),mcParticle->Phi(),0.); 
+                     fTTH_PartLevel[itt].push_back(myTT);
+                     fHadronTT_PartLevel[itt]++;   // there was a high pt 
+                  }
+               }
+            } 
+          
+
+            if(mcParticle->Charge()){ 
+               if((static_cast<AliAODMCParticle*>(mcParticle))->IsPhysicalPrimary()){
+                  //get particle level charged particles multiplicities in V0A and V0C
+                  if(-3.7 < mcParticle->Eta() && mcParticle->Eta() < -1.7) fMultV0C_PartLevel++;
+                  if( 2.8 < mcParticle->Eta() && mcParticle->Eta() < 5.1)  fMultV0A_PartLevel++; 
+               } 
+            }else{
+               //TT Cluster
+                if(((static_cast<AliAODMCParticle*>(mcParticle))->IsPhysicalPrimary()) && TMath::Abs(mcParticle->Eta())<0.7){ //EMCAL acceptance
+                   if(((static_cast<AliAODMCParticle*>(mcParticle))->GetPdgCode())==22){ //photon
+                       //skip photons which have a photon as a daughter particle
+                       Int_t d1 = TMath::Abs((static_cast<AliAODMCParticle*> (mcParticle))->GetDaughterLabel(0));
+                       Int_t d2 = TMath::Abs((static_cast<AliAODMCParticle*> (mcParticle))->GetDaughterLabel(1)); 
+                       Bool_t hasPhotonicDaughter = 0;
+                       for(Int_t id=d1;id<=d2; id++){
+                          daughtermc = (AliAODMCParticle*) arrayMC->At(id);
+                          if(daughtermc->GetPdgCode()==22){ hasPhotonicDaughter=1;  break;}
+                       }
+                       if(!hasPhotonicDaughter){
+                   
+                          for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+                             if(fClusterTTLowPt[igg] < mcParticle->Pt() && mcParticle->Pt() < fClusterTTHighPt[igg]){
+                                         
+                                myTT.SetPtEtaPhiM(mcParticle->Pt(),mcParticle->Eta(),mcParticle->Phi(),0.); 
+                                fTTC_PartLevel[igg].push_back(myTT);
+                                fClusterTT_PartLevel[igg]++;   // there was a high pt emcal cluster 
+                             }
+                          }
+                       }
+                    }
+                } 
+             } 
+         }//end of mc particle loop
+
+         //combined V0 multiplicities particle level
+         fMultV0M_PartLevel = fMultV0A_PartLevel + fMultV0C_PartLevel;
+         fMultV0Anorm_PartLevel = fMultV0A_PartLevel/fMeanV0A_PartLevel;
+         fMultV0Cnorm_PartLevel = fMultV0C_PartLevel/fMeanV0C_PartLevel;
+         fMultV0AV0Cnorm_PartLevel = fMultV0Anorm_PartLevel + fMultV0Cnorm_PartLevel;
+
+
+         //minimum bias particle level
+
+         fhSignalMB_PartLevel[fkV0Amc]->Fill(fMultV0A_PartLevel);
+         fhSignalMB_PartLevel[fkV0Cmc]->Fill(fMultV0C_PartLevel);
+         fhSignalMB_PartLevel[fkV0Mmc]->Fill(fMultV0M_PartLevel);
+         fhSignalMB_PartLevel[fkV0Mnormmc]->Fill(fMultV0AV0Cnorm_PartLevel);
+
+
+         //chose trigger hadron TT   particle level
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+            if(fHadronTT_PartLevel[itt]>0){
+               fIndexTTH_PartLevel[itt] = fRandom->Integer(fHadronTT_PartLevel[itt]);
+
+               //signal in events with hadron TT   particle level
+               fhSignalTTHinMB_PartLevel[fkV0Amc][itt]->Fill(fMultV0A_PartLevel);
+               fhSignalTTHinMB_PartLevel[fkV0Cmc][itt]->Fill(fMultV0C_PartLevel);
+               fhSignalTTHinMB_PartLevel[fkV0Mmc][itt]->Fill(fMultV0M_PartLevel);
+               fhSignalTTHinMB_PartLevel[fkV0Mnormmc][itt]->Fill(fMultV0AV0Cnorm_PartLevel);
+
+               //hadron trigger particle level
+               idx = fIndexTTH_PartLevel[itt]; 
+               if(idx>-1){ 
+                  fhTTHinMB_V0M_PartLevel[itt]->Fill(fMultV0M_PartLevel, fTTH_PartLevel[itt][idx].Pt()); //fill trigger track pT for given V0M
+                  fhTTHinMB_V0Mnorm_PartLevel[itt]->Fill(fMultV0AV0Cnorm_PartLevel, fTTH_PartLevel[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
+                
+                  //recoil jets
+                  for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+                     // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+                     jet = jetIterator.second;  // Get the pointer to jet object
+                     if(!jet)  continue; 
+              
+                     if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTH_PartLevel[itt][idx].Phi())) > fPhiCut){     
+                        //recoil jet hadron trigger
+                        jetPtcorr = jet->Pt() - rho*jet->Area();
+                        fhRecoilJetPtTTHinMB_V0M_PartLevel[itt]->Fill(fMultV0M_PartLevel, jetPtcorr);
+                        fhRecoilJetPtTTHinMB_V0Mnorm_PartLevel[itt]->Fill(fMultV0AV0Cnorm_PartLevel, jetPtcorr);
+                     }
+                  } 
+               }
+            }
+         }
+
+         //chose trigger emcal cluster TT 
+         for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+            if(fClusterTT_PartLevel[igg]>0){ //HERE
+               fIndexTTC_PartLevel[igg] = fRandom->Integer(fClusterTT_PartLevel[igg]);
+
+               //signal in events with hadron TT   particle level
+               fhSignalTTCinMB_PartLevel[fkV0Amc][igg]->Fill(fMultV0A_PartLevel);
+               fhSignalTTCinMB_PartLevel[fkV0Cmc][igg]->Fill(fMultV0C_PartLevel);
+               fhSignalTTCinMB_PartLevel[fkV0Mmc][igg]->Fill(fMultV0M_PartLevel);
+               fhSignalTTCinMB_PartLevel[fkV0Mnormmc][igg]->Fill(fMultV0AV0Cnorm_PartLevel);
+
+               idx = fIndexTTC_PartLevel[igg];// gamma trigger
+               if(idx>-1){ 
+                  fhTTCinMB_V0M_PartLevel[igg]->Fill(fMultV0M_PartLevel, fTTC_PartLevel[igg][idx].Pt()); //fill trigger track pT
+                  fhTTCinMB_V0Mnorm_PartLevel[igg]->Fill(fMultV0AV0Cnorm_PartLevel, fTTC_PartLevel[igg][idx].Pt()); //fill trigger track pT
+ 
+                  //recoil jets
+                  for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
+                     // trackIterator is a std::map of AliTLorentzVector and AliVTrack
+                     jet = jetIterator.second;  // Get the pointer to jet object
+                     if(!jet)  continue; 
+                 
+                     if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC_PartLevel[igg][idx].Phi())) > fPhiCut){     
+                        //recoil jet
+                        jetPtcorr = jet->Pt() - rho*jet->Area();
+                        fhRecoilJetPtTTCinMB_V0M_PartLevel[igg]->Fill(fMultV0M_PartLevel, jetPtcorr);
+                        fhRecoilJetPtTTCinMB_V0Mnorm_PartLevel[igg]->Fill(fMultV0AV0Cnorm_PartLevel, jetPtcorr);
+                     }
+                  } 
+               }
             }
          }
       }
+
 
       //pT spectrum of detector level physical primary tracks and secondary tracks
       if(fTrkContainerDetLevel && fParticleContainerPartLevel){
@@ -1110,7 +1414,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
  
             //Get momentum shift due to fake tracks
             sumAllTrackPtInJet  = 0.;
-            sumFakeTrackPtInJet  = 0.;
+            sumFakeTrackPtInJet = 0.;
 
             for(Int_t iq=0; iq < jet->GetNumberOfTracks(); iq++) {
                track = static_cast<AliVParticle*> (jet->TrackAt(iq, fTrkContainerDetLevel->GetArray()));
@@ -1137,7 +1441,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
             if(sumAllTrackPtInJet>0){
                jetPtCorrDet = jet->Pt() - jet->Area()*rho;
-               fhFractionOfSecInJet->Fill(jetPtCorrDet, sumFakeTrackPtInJet/jetPtCorrDet); 
+               fhFractionOfSecInJet->Fill(jetPtCorrDet, sumFakeTrackPtInJet/sumAllTrackPtInJet); 
             }
 
             //Fill Response matrix
@@ -1156,18 +1460,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             }
          }
       }
-   
-      //TO BE DONE
-      //1) Delta pT for MC particle level events
-      //2) Signal for MC particle level events
-
-
-
    }
    //___________________________________________
    //    INCLUSIVE EVENTS (WITHOUT TT REQUIREMENT)
 
-    if(fIsMinBiasTrig){ 
+    if(fIsMinBiasTrig){ // run for all MC events   and for real data with min bias trigger
        fhVertex[0]->Fill(fxVertex);
        fhVertex[1]->Fill(fyVertex);
        fhVertex[2]->Fill(fzVertex);
@@ -1187,10 +1484,11 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
        fhSignalMB[fkSPD]->Fill(fNTracklets); 
        fhSignalMB[fkZNA]->Fill(fZNAtower[0]); 
        fhSignalMB[fkZNC]->Fill(fZNCtower[0]);
-       fhSignalMB[fkV0M]->Fill(fMultV0A+fMultV0C);
+       fhSignalMB[fkV0M]->Fill(fMultV0M);
        fhSignalMB[fkV0Mnorm]->Fill(fMultV0AV0Cnorm);
 
        fhV0AvsV0C->Fill(fMultV0C, fMultV0A);
+       fhV0MvsV0Mnorm->Fill(fMultV0AV0Cnorm, fMultV0M);
        fhV0AvsSPD->Fill(fNTracklets, fMultV0A);
        fhV0CvsSPD->Fill(fNTracklets,fMultV0C);
 
@@ -1204,32 +1502,12 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
        fhSignalHM[fkSPD]->Fill(fNTracklets); 
        fhSignalHM[fkZNA]->Fill(fZNAtower[0]); 
        fhSignalHM[fkZNC]->Fill(fZNCtower[0]);
-       fhSignalHM[fkV0M]->Fill(fMultV0A+fMultV0C);
+       fhSignalHM[fkV0M]->Fill(fMultV0M);
        fhSignalHM[fkV0Mnorm]->Fill(fMultV0AV0Cnorm);
    }
 
    //_________________________________________________________
-   //                 TT
-
-   for(Int_t i=0; i<fkTTbins; i++){
-      fIndexTTC[i] = -1;
-      fIndexTTH[i] = -1;
-      fIndexTTJ[i] = -1; 
-
-      fTTC[i].resize(0);
-      fTTH[i].resize(0);
-      fTTJ[i].resize(0);
-   }
-
-   TLorentzVector myTT;
-   Int_t idx;
-   //_________________________________________________________
    //LOOP OVER EMCAL CLUSTERS
-   TLorentzVector ph;
-   for(Int_t i=0; i<fnClusterTTBins; i++){
-      fClusterTT[i] = 0;
-   }
-
    if(fMyClusterContainerName.Data()){
       fClusterContainerDetLevel =  static_cast<AliClusterContainer*> ( GetClusterContainer(fMyClusterContainerName.Data()));
   
@@ -1290,7 +1568,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             fhSignalTTCinMB[fkSPD][igg]->Fill(fNTracklets); 
             fhSignalTTCinMB[fkZNA][igg]->Fill(fZNAtower[0]); 
             fhSignalTTCinMB[fkZNC][igg]->Fill(fZNCtower[0]);
-            fhSignalTTCinMB[fkV0M][igg]->Fill(fMultV0A+fMultV0C);
+            fhSignalTTCinMB[fkV0M][igg]->Fill(fMultV0M);
             fhSignalTTCinMB[fkV0Mnorm][igg]->Fill(fMultV0AV0Cnorm);
 
 
@@ -1300,7 +1578,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             //Recoil jets 
             idx = fIndexTTC[igg];// gamma trigger
             if(idx>-1){ 
-               fhTTCinMB[igg]->Fill(fTTC[igg][idx].Pt()); //fill trigger track pT
+               fhTTCinMB_V0M[igg]->Fill(fMultV0M, fTTC[igg][idx].Pt()); //fill trigger track pT
+               fhTTCinMB_V0Mnorm[igg]->Fill(fMultV0AV0Cnorm, fTTC[igg][idx].Pt()); //fill trigger track pT
              
                //recoil jets
                for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
@@ -1311,7 +1590,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                   if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC[igg][idx].Phi())) > fPhiCut){     
                      //recoil jet
                      jetPtcorr = jet->Pt() - rho*jet->Area();
-                     fhDrecoilTTCinMB[igg]->Fill(jetPtcorr);
+                     fhRecoilJetPtTTCinMB_V0M[igg]->Fill(fMultV0M, jetPtcorr);
+                     fhRecoilJetPtTTCinMB_V0Mnorm[igg]->Fill(fMultV0AV0Cnorm, jetPtcorr);
                   }
                } 
             }
@@ -1332,13 +1612,14 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             fhSignalTTCinHM[fkSPD][igg]->Fill(fNTracklets); 
             fhSignalTTCinHM[fkZNA][igg]->Fill(fZNAtower[0]); 
             fhSignalTTCinHM[fkZNC][igg]->Fill(fZNCtower[0]);
-            fhSignalTTCinHM[fkV0M][igg]->Fill(fMultV0A+fMultV0C);
+            fhSignalTTCinHM[fkV0M][igg]->Fill(fMultV0M);
             fhSignalTTCinHM[fkV0Mnorm][igg]->Fill(fMultV0AV0Cnorm);
 
             //Recoil jets 
             idx = fIndexTTC[igg];// gamma trigger
             if(idx>-1){ 
-               fhTTCinHM[igg]->Fill(fTTC[igg][idx].Pt()); //fill trigger track pT
+               fhTTCinHM_V0M[igg]->Fill(fMultV0M, fTTC[igg][idx].Pt()); //fill trigger track pT
+               fhTTCinHM_V0Mnorm[igg]->Fill(fMultV0AV0Cnorm, fTTC[igg][idx].Pt()); //fill trigger track pT
              
                //recoil jets
                for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
@@ -1349,7 +1630,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                   if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC[igg][idx].Phi())) > fPhiCut){     
                      //recoil jet
                      jetPtcorr = jet->Pt() - rho*jet->Area();
-                     fhDrecoilTTCinHM[igg]->Fill(jetPtcorr);
+                     fhRecoilJetPtTTCinHM_V0M[igg]->Fill(fMultV0M, jetPtcorr);
+                     fhRecoilJetPtTTCinHM_V0Mnorm[igg]->Fill(fMultV0AV0Cnorm, jetPtcorr);
                   }
                } 
             }
@@ -1379,7 +1661,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             fhSignalTTCinGA[fkSPD][igg]->Fill(fNTracklets); 
             fhSignalTTCinGA[fkZNA][igg]->Fill(fZNAtower[0]); 
             fhSignalTTCinGA[fkZNC][igg]->Fill(fZNCtower[0]);
-            fhSignalTTCinGA[fkV0M][igg]->Fill(fMultV0A+fMultV0C);
+            fhSignalTTCinGA[fkV0M][igg]->Fill(fMultV0M);
             fhSignalTTCinGA[fkV0Mnorm][igg]->Fill(fMultV0AV0Cnorm);
             
             fhV0AvsV0CTTCinGA[igg]->Fill(fMultV0C, fMultV0A);
@@ -1387,7 +1669,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
             //Recoil jets 
             idx = fIndexTTC[igg];// gamma trigger
             if(idx>-1){ 
-               fhTTCinGA[igg]->Fill(fTTC[igg][idx].Pt()); //fill trigger track pT
+               fhTTCinGA_V0M[igg]->Fill(fMultV0M, fTTC[igg][idx].Pt()); //fill trigger track pT
+               fhTTCinGA_V0Mnorm[igg]->Fill(fMultV0AV0Cnorm, fTTC[igg][idx].Pt()); //fill trigger track pT
              
                //recoil jets
                for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
@@ -1398,7 +1681,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                   if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTC[igg][idx].Phi())) > fPhiCut){     
                      //recoil jet
                      jetPtcorr = jet->Pt() - rho*jet->Area();
-                     fhDrecoilTTCinGA[igg]->Fill(jetPtcorr);
+                     fhRecoilJetPtTTCinGA_V0M[igg]->Fill(fMultV0M, jetPtcorr);
+                     fhRecoilJetPtTTCinGA_V0Mnorm[igg]->Fill(fMultV0AV0Cnorm, jetPtcorr);
                   }
                } 
             }//trigger exists
@@ -1412,10 +1696,6 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
 
    //_________________________________________________________
    //LOOP OVER TRACKS DETECTOR LEVEL + SEARCH FOR HIGH PT HADRON TRIGGER 
-
-   for(Int_t i=0; i<fnHadronTTBins; i++){
-      fHadronTT[i] = 0;
-   }
 
    Double_t xyz[50];
    Double_t pxpypz[50];
@@ -1530,7 +1810,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhSignalTTHinMB[fkSPD][itt]->Fill(fNTracklets); 
          fhSignalTTHinMB[fkZNA][itt]->Fill(fZNAtower[0]); 
          fhSignalTTHinMB[fkZNC][itt]->Fill(fZNCtower[0]); 
-         fhSignalTTHinMB[fkV0M][itt]->Fill(fMultV0A+fMultV0C);
+         fhSignalTTHinMB[fkV0M][itt]->Fill(fMultV0M);
          fhSignalTTHinMB[fkV0Mnorm][itt]->Fill(fMultV0AV0Cnorm);
 
          fhV0AvsV0CTTH[itt]->Fill(fMultV0C, fMultV0A);
@@ -1538,7 +1818,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          //hadron trigger
          idx = fIndexTTH[itt];
          if(idx>-1){ 
-            fhTTHinMB[itt]->Fill(fTTH[itt][idx].Pt()); //fill trigger track pT
+            fhTTHinMB_V0M[itt]->Fill(fMultV0M, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0M
+            fhTTHinMB_V0Mnorm[itt]->Fill(fMultV0AV0Cnorm, fTTH[itt][idx].Pt()); //fill trigger track pT for given V0Mnorm
           
             //recoil jets
             for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
@@ -1549,7 +1830,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi())) > fPhiCut){     
                   //recoil jet
                   jetPtcorr = jet->Pt() - rho*jet->Area();
-                  fhDrecoilTTHinMB[itt]->Fill(jetPtcorr);
+                  fhRecoilJetPtTTHinMB_V0M[itt]->Fill(fMultV0M, jetPtcorr);
+                  fhRecoilJetPtTTHinMB_V0Mnorm[itt]->Fill(fMultV0AV0Cnorm, jetPtcorr);
                }
             } 
          }
@@ -1570,13 +1852,14 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhSignalTTHinHM[fkSPD][itt]->Fill(fNTracklets); 
          fhSignalTTHinHM[fkZNA][itt]->Fill(fZNAtower[0]); 
          fhSignalTTHinHM[fkZNC][itt]->Fill(fZNCtower[0]); 
-         fhSignalTTHinHM[fkV0M][itt]->Fill(fMultV0A+fMultV0C);
+         fhSignalTTHinHM[fkV0M][itt]->Fill(fMultV0M);
          fhSignalTTHinHM[fkV0Mnorm][itt]->Fill(fMultV0AV0Cnorm);
 
          //hadron trigger
          idx = fIndexTTH[itt];
          if(idx>-1){ 
-            fhTTHinHM[itt]->Fill(fTTH[itt][idx].Pt()); //fill trigger track pT
+            fhTTHinHM_V0M[itt]->Fill(fMultV0M, fTTH[itt][idx].Pt()); //fill trigger track pT
+            fhTTHinHM_V0Mnorm[itt]->Fill(fMultV0AV0Cnorm, fTTH[itt][idx].Pt()); //fill trigger track pT
           
             //recoil jets
             for(auto jetIterator : fJetContainerDetLevel->accepted_momentum() ){
@@ -1587,7 +1870,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
                if(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi()-fTTH[itt][idx].Phi())) > fPhiCut){     
                   //recoil jet
                   jetPtcorr = jet->Pt() - rho*jet->Area();
-                  fhDrecoilTTHinHM[itt]->Fill(jetPtcorr);
+                  fhRecoilJetPtTTHinHM_V0M[itt]->Fill(fMultV0M, jetPtcorr);
+                  fhRecoilJetPtTTHinHM_V0Mnorm[itt]->Fill(fMultV0AV0Cnorm, jetPtcorr);
                }
             } 
          }
@@ -1669,7 +1953,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhSignalTTJinMB[fkSPD][ijj]->Fill(fNTracklets); 
          fhSignalTTJinMB[fkZNA][ijj]->Fill(fZNAtower[0]); 
          fhSignalTTJinMB[fkZNC][ijj]->Fill(fZNCtower[0]); 
-         fhSignalTTJinMB[fkV0M][ijj]->Fill(fMultV0A+fMultV0C);
+         fhSignalTTJinMB[fkV0M][ijj]->Fill(fMultV0M);
          fhSignalTTJinMB[fkV0Mnorm][ijj]->Fill(fMultV0AV0Cnorm);
       
          fhV0AvsV0CTTJ[ijj]->Fill(fMultV0C, fMultV0A);
@@ -1691,7 +1975,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
          fhSignalTTJinHM[fkSPD][ijj]->Fill(fNTracklets); 
          fhSignalTTJinHM[fkZNA][ijj]->Fill(fZNAtower[0]); 
          fhSignalTTJinHM[fkZNC][ijj]->Fill(fZNCtower[0]); 
-         fhSignalTTJinHM[fkV0M][ijj]->Fill(fMultV0A+fMultV0C);
+         fhSignalTTJinHM[fkV0M][ijj]->Fill(fMultV0M);
          fhSignalTTJinHM[fkV0Mnorm][ijj]->Fill(fMultV0AV0Cnorm);
       }
    }
@@ -1860,7 +2144,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    TString cest[fkCE] = {"V0A", "V0C", "SPD", "ZNA", "ZNC", "V0M", "V0Mnorm"}; //centrality estimators
 
-   if(fSystem!=AliAnalysisTaskEA::kpp){ //not pp
+   if(fSystem!=AliAnalysisTaskEA::kpp && !fMC){ //not pp
       for(Int_t ic=0; ic<fkCE;ic++){
          name = Form("hCentrality_MB_%s",cest[ic].Data());
          fhCentralityMB[ic] = new TH1D(name.Data(), name.Data(),101,0,101);
@@ -1906,20 +2190,20 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    Int_t signalN[]={1000,1000,500,100,100,1200,400};
 
    for(Int_t ic=0; ic<fkCE;ic++){ //MB
-      name = Form("hSignal_MB_%s", cest[ic].Data());
+      name = Form("hSignal_MB_%s", signal[ic].Data());
       fhSignalMB[ic] = new TH1D(name.Data(), name.Data(), signalN[ic], signalL[ic], signalH[ic]);
       fOutput->Add((TH1D*) fhSignalMB[ic]); 
    }
 
    for(Int_t ic=0; ic<fkCE;ic++){ //HM
-      name = Form("hSignal_HM_%s", cest[ic].Data());
+      name = Form("hSignal_HM_%s",  signal[ic].Data());
       fhSignalHM[ic] = new TH1D(name.Data(), name.Data(), signalN[ic], signalL[ic], signalH[ic]);
       fOutput->Add((TH1D*) fhSignalHM[ic]); 
    }
 
    for(Int_t ic=0; ic<fkCE;ic++){ //MB && TT hadron
       for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-         name = Form("hSignal_MB_%s_TTH%d_%d", cest[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         name = Form("hSignal_MB_%s_TTH%d_%d", signal[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
          fhSignalTTHinMB[ic][itt] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTHinMB[ic][itt]); 
       }
@@ -1927,7 +2211,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
  
    for(Int_t ic=0; ic<fkCE;ic++){ //HM && TT hadron
       for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-         name = Form("hSignal_HM_%s_TTH%d_%d", cest[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         name = Form("hSignal_HM_%s_TTH%d_%d",  signal[ic].Data(), fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
          fhSignalTTHinHM[ic][itt] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTHinHM[ic][itt]); 
       }
@@ -1935,7 +2219,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    
    for(Int_t ic=0; ic<fkCE;ic++){ //MB && TT jet
       for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-         name = Form("hSignal_MB_%s_TTJ%d_%d", cest[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+         name = Form("hSignal_MB_%s_TTJ%d_%d", signal[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
          fhSignalTTJinMB[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTJinMB[ic][ijj]); 
       }
@@ -1943,7 +2227,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    for(Int_t ic=0; ic<fkCE;ic++){ //HM && TT jet 
       for(Int_t ijj=0; ijj<fnJetChTTBins; ijj++){
-         name = Form("hSignal_HM_%s_TTJ%d_%d", cest[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
+         name = Form("hSignal_HM_%s_TTJ%d_%d", signal[ic].Data(), fJetChTTLowPt[ijj],fJetChTTHighPt[ijj]);
          fhSignalTTJinHM[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTJinHM[ic][ijj]); 
       }
@@ -1951,7 +2235,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    for(Int_t ic=0; ic<fkCE;ic++){ //MB && TT emcal 
       for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
-         name = Form("hSignal_MB_%s_TTC%d_%d", cest[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+         name = Form("hSignal_MB_%s_TTC%d_%d", signal[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
          fhSignalTTCinMB[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTCinMB[ic][ijj]); 
       }
@@ -1959,7 +2243,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    for(Int_t ic=0; ic<fkCE;ic++){ //HM && TT emcal 
       for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
-         name = Form("hSignal_HM_%s_TTC%d_%d", cest[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+         name = Form("hSignal_HM_%s_TTC%d_%d", signal[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
          fhSignalTTCinHM[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTCinHM[ic][ijj]); 
       }
@@ -1967,16 +2251,52 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
  
    for(Int_t ic=0; ic<fkCE;ic++){ //GA && TT emcal
       for(Int_t ijj=0; ijj<fnClusterTTBins; ijj++){
-         name = Form("hSignal_GA_%s_TTC%d_%d", cest[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
+         name = Form("hSignal_GA_%s_TTC%d_%d", signal[ic].Data(), fClusterTTLowPt[ijj],fClusterTTHighPt[ijj]);
          fhSignalTTCinGA[ic][ijj] = new TH1D(name.Data(),name.Data(),signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignalTTCinGA[ic][ijj]); 
       }
    }
 
+   if(fMC){ //PARTICLE LEVEL SIGNAL DISTRIBUTIONS
+      TString signalmc[]={"multV0A", "multV0C", "multV0M","fhNormSumV0AV0C"};
+      Float_t signalLmc[]={0,0,0,0};
+      Float_t signalHmc[]={500,500,500,40};
+      Int_t signalNmc[]={500,500,500,400};
+      
+      for(Int_t ic=0; ic<fkCEmc;ic++){ //MB
+         name = Form("hSignal_MB_%s_PartLevel", signalmc[ic].Data());
+         fhSignalMB_PartLevel[ic] = new TH1D(name.Data(), name.Data(), signalNmc[ic], signalLmc[ic], signalHmc[ic]);
+         fOutput->Add((TH1D*) fhSignalMB_PartLevel[ic]); 
+      }
+
+      //TT hadron
+      for(Int_t ic=0; ic<fkCEmc;ic++){ //MB
+         for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+            name = Form("hSignal_MB_%s_TTH%d_%d_PartLevel", signalmc[ic].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+            fhSignalTTHinMB_PartLevel[ic][itt] = new TH1D(name.Data(),name.Data(),signalNmc[ic], signalLmc[ic], signalHmc[ic]);
+            fOutput->Add((TH1D*) fhSignalTTHinMB_PartLevel[ic][itt]); 
+         }
+      }
+
+      //TT cluster
+      for(Int_t ic=0; ic<fkCEmc;ic++){ //MB
+         for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+            name = Form("hSignal_MB_%s_TTC%d_%d_PartLevel", signalmc[ic].Data(), fClusterTTLowPt[igg], fClusterTTHighPt[igg]);
+            fhSignalTTCinMB_PartLevel[ic][igg] = new TH1D(name.Data(),name.Data(),signalNmc[ic], signalLmc[ic], signalHmc[ic]);
+            fOutput->Add((TH1D*) fhSignalTTCinMB_PartLevel[ic][igg]); 
+         }
+      }
+   }
+ 
 
    name = Form("fhV0AvsV0C_MB");
    fhV0AvsV0C = new TH2F(name.Data(),name.Data(),100,0,1000, 100,0,1000);
    fOutput->Add((TH2F*) fhV0AvsV0C); 
+
+   name = Form("fhV0MvsV0Mnorm_MB");
+   fhV0MvsV0Mnorm = new TH2F(name.Data(),name.Data(),100,0,40, 100,0,1200);
+   fOutput->Add((TH2F*) fhV0MvsV0Mnorm); 
+
 
    name = Form("fhV0AvsSPD_MB");
    fhV0AvsSPD = new TH2F(name.Data(),name.Data(),100,0,500, 100,0,500);
@@ -2055,67 +2375,206 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fOutput->Add((TH1I*) fhMultTTCinGA[ijj]); 
    }
 
-   //Trigger track pT spectrum single inclusive
-   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-      name = Form("hTT_MB_TTH%d_%d", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
-      fhTTHinMB[itt] = new TH1D(name.Data(),name.Data(),100,0,100);
-      fOutput->Add((TH1D*) fhTTHinMB[itt]); 
-   }
+   //Trigger track pT spectrum single inclusive for  MB  versus V0M
+   Double_t nbinsV0M     = 100;
+   Double_t maxV0M       = 1000;
+   Double_t maxV0Mmc     = 500;
+   Double_t nbinsV0Mnorm = 100;
+   Double_t maxV0Mnorm   = 100;
 
    for(Int_t itt=0; itt<fnHadronTTBins; itt++){
-      name = Form("hTT_HM_TTH%d_%d", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
-      fhTTHinHM[itt] = new TH1D(name.Data(),name.Data(),100,0,100);
-      fOutput->Add((TH1D*) fhTTHinHM[itt]); 
+      name = Form("hTT_MB_TTH%d_%d_V0M", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhTTHinMB_V0M[itt] = new TH2D(name.Data(),name.Data(), nbinsV0M, 0, maxV0M, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTHinMB_V0M[itt]); 
    }
 
-   //Trigger emcal cluster pT spectrum single inclusive
+   //Trigger track pT spectrum single inclusive for MB  versus  V0Mnorm
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+      name = Form("hTT_MB_TTH%d_%d_V0Mnorm", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhTTHinMB_V0Mnorm[itt] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTHinMB_V0Mnorm[itt]); 
+   }
+
+   if(fMC){
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         name = Form("hTT_MB_TTH%d_%d_V0M_PartLevel", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhTTHinMB_V0M_PartLevel[itt] = new TH2D(name.Data(),name.Data(), nbinsV0M, 0, maxV0Mmc, 100, 0, 100);
+         fOutput->Add((TH2D*) fhTTHinMB_V0M_PartLevel[itt]); 
+      }
+      
+      //Trigger track pT spectrum single inclusive for MB  versus  V0Mnorm
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+         name = Form("hTT_MB_TTH%d_%d_V0Mnorm_PartLevel", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhTTHinMB_V0Mnorm_PartLevel[itt] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
+         fOutput->Add((TH2D*) fhTTHinMB_V0Mnorm_PartLevel[itt]); 
+      }
+   }
+
+
+   //Trigger track pT spectrum single inclusive for  HM  versus V0M
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+      name = Form("hTT_HM_TTH%d_%d_V0M", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhTTHinHM_V0M[itt] = new TH2D(name.Data(),name.Data(), nbinsV0M, 0, maxV0M, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTHinHM_V0M[itt]); 
+   }
+
+   //Trigger track pT spectrum single inclusive for  HM  versus V0Mnorm
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){
+      name = Form("hTT_HM_TTH%d_%d_V0Mnorm", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhTTHinHM_V0Mnorm[itt] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTHinHM_V0Mnorm[itt]); 
+   }
+
+
+   //TT emcal cluster pT spectrum single inclusive  in MB   with V0M
    for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-      name = Form("hTT_MB_TTC%d_%d", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
-      fhTTCinMB[igg] = new TH1D(name.Data(),name.Data(),100,0,100);
-      fOutput->Add((TH1D*) fhTTCinMB[igg]); 
+      name = Form("hTT_MB_TTC%d_%d_V0M", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhTTCinMB_V0M[igg] = new TH2D(name.Data(),name.Data(), nbinsV0M, 0, maxV0M, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTCinMB_V0M[igg]); 
    }
 
+   //TT emcal cluster pT spectrum single inclusive  in MB   with V0Mnorm
    for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-      name = Form("hTT_HM_TTC%d_%d",  fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
-      fhTTCinHM[igg] = new TH1D(name.Data(),name.Data(),100,0,100);
-      fOutput->Add((TH1D*) fhTTCinHM[igg]); 
+      name = Form("hTT_MB_TTC%d_%d_V0Mnorm", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhTTCinMB_V0Mnorm[igg] = new TH2D(name.Data(),name.Data(),  nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTCinMB_V0Mnorm[igg]); 
+   }
+   
+   if(fMC){
+      //TT emcal cluster pT spectrum single inclusive  in MB   with V0M
+      for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+         name = Form("hTT_MB_TTC%d_%d_V0M_PartLevel", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+         fhTTCinMB_V0M_PartLevel[igg] = new TH2D(name.Data(),name.Data(), nbinsV0M, 0, maxV0Mmc, 100, 0, 100);
+         fOutput->Add((TH2D*) fhTTCinMB_V0M_PartLevel[igg]); 
+      }
+     
+      //TT emcal cluster pT spectrum single inclusive  in MB   with V0Mnorm
+      for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+         name = Form("hTT_MB_TTC%d_%d_V0Mnorm_PartLevel", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+         fhTTCinMB_V0Mnorm_PartLevel[igg] = new TH2D(name.Data(),name.Data(),  nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
+         fOutput->Add((TH2D*) fhTTCinMB_V0Mnorm_PartLevel[igg]); 
+      }
    }
 
+
+   //TT emcal cluster pT spectrum single inclusive  in HM   with V0M
    for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-      name = Form("hTT_GA_TTC%d_%d",  fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
-      fhTTCinGA[igg] = new TH1D(name.Data(),name.Data(),100,0,100);
-      fOutput->Add((TH1D*) fhTTCinGA[igg]); 
+      name = Form("hTT_HM_TTC%d_%d_V0M",  fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhTTCinHM_V0M[igg] = new TH2D(name.Data(), name.Data(), nbinsV0M, 0, maxV0M, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTCinHM_V0M[igg]); 
    }
 
-   //DELTA RECOIL SPECTRA
-   for(Int_t itt=0; itt<fnHadronTTBins; itt++){        //! counter of semi-inclusive hadron trigges  in MB
-      name = Form("fhDrecoil_MB_TTH%d_%d", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
-      fhDrecoilTTHinMB[itt] = new TH1D(name.Data(), name.Data(), 200, -20, 180);            
-      fOutput->Add((TH1D*) fhDrecoilTTHinMB[itt]); 
-   }
-   for(Int_t itt=0; itt<fnHadronTTBins; itt++){         //! counter of semi-inclusive hadron trigges  in HM
-      name = Form("fhDrecoil_HM_TTH%d_%d", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
-      fhDrecoilTTHinHM[itt] = (TH1D*) fhDrecoilTTHinMB[itt]->Clone(name.Data()); 
-      fOutput->Add((TH1D*) fhDrecoilTTHinHM[itt]); 
-   }
-
+   //TT emcal cluster pT spectrum single inclusive  in HM   with V0Mnorm
    for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-      name = Form("fhDrecoil_MB_TTC%d_%d", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
-      fhDrecoilTTCinMB[igg] = (TH1D*) fhDrecoilTTHinMB[0]->Clone(name.Data()); 
-      fOutput->Add((TH1D*) fhDrecoilTTCinMB[igg]); 
+      name = Form("hTT_HM_TTC%d_%d_V0Mnorm",  fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhTTCinHM_V0Mnorm[igg] = new TH2D(name.Data(), name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTCinHM_V0Mnorm[igg]); 
    }
 
+   //TT emcal cluster pT spectrum single inclusive  in GA   with V0M
    for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-      name = Form("fhDrecoil_HM_TTC%d_%d", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
-      fhDrecoilTTCinHM[igg] =  (TH1D*) fhDrecoilTTHinMB[0]->Clone(name.Data()); 
-      fOutput->Add((TH1D*) fhDrecoilTTCinHM[igg]);   
+      name = Form("hTT_GA_TTC%d_%d_V0M",  fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhTTCinGA_V0M[igg] = new TH2D(name.Data(),name.Data(), nbinsV0M, 0, maxV0M, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTCinGA_V0M[igg]); 
+   }
+
+   //TT emcal cluster pT spectrum single inclusive  in GA   with V0Mnorm
+   for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+      name = Form("hTT_GA_TTC%d_%d_V0Mnorm",  fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhTTCinGA_V0Mnorm[igg] = new TH2D(name.Data(),name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 100, 0, 100);
+      fOutput->Add((TH2D*) fhTTCinGA_V0Mnorm[igg]); 
+   }
+
+
+   //RECOIL JET SPECTRA
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){        //!  recoil jets associated to semi-inclusive hadron TT  in MB  with V0M
+      name = Form("fhRecoilJetPt_MB_TTH%d_%d_V0M", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhRecoilJetPtTTHinMB_V0M[itt] = new TH2D(name.Data(), name.Data(), nbinsV0M, 0, maxV0M, 200, -20, 180);            
+      fOutput->Add((TH2D*) fhRecoilJetPtTTHinMB_V0M[itt]); 
+   }
+
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){        //!  recoil jets associated to semi-inclusive hadron TT  in MB  with V0Mnorm
+      name = Form("fhRecoilJetPt_MB_TTH%d_%d_V0Mnorm", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhRecoilJetPtTTHinMB_V0Mnorm[itt] = new TH2D(name.Data(), name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 200, -20, 180);            
+      fOutput->Add((TH2D*) fhRecoilJetPtTTHinMB_V0Mnorm[itt]); 
+   }
+
+   if(fMC){ // particle level 
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){        //!  recoil jets associated to semi-inclusive hadron TT  in MB  with V0M
+         name = Form("fhRecoilJetPt_MB_TTH%d_%d_V0M_PartLevel", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhRecoilJetPtTTHinMB_V0M_PartLevel[itt] = new TH2D(name.Data(), name.Data(), nbinsV0M, 0, maxV0Mmc, 200, -20, 180);            
+         fOutput->Add((TH2D*) fhRecoilJetPtTTHinMB_V0M_PartLevel[itt]); 
+      }
+      
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){        //!  recoil jets associated to semi-inclusive hadron TT  in MB  with V0Mnorm
+         name = Form("fhRecoilJetPt_MB_TTH%d_%d_V0Mnorm_PartLevel", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+         fhRecoilJetPtTTHinMB_V0Mnorm_PartLevel[itt] = new TH2D(name.Data(), name.Data(), nbinsV0Mnorm, 0, maxV0Mnorm, 200, -20, 180);            
+         fOutput->Add((TH2D*) fhRecoilJetPtTTHinMB_V0Mnorm_PartLevel[itt]); 
+      }
+   }
+
+
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){         //! recoil jets associated to semi-inclusive hadron TT  in HM  with V0M
+      name = Form("fhRecoilJetPt_HM_TTH%d_%d_V0M", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhRecoilJetPtTTHinHM_V0M[itt] = (TH2D*) fhRecoilJetPtTTHinMB_V0M[itt]->Clone(name.Data()); 
+      fOutput->Add((TH2D*) fhRecoilJetPtTTHinHM_V0M[itt]); 
+   }
+
+   for(Int_t itt=0; itt<fnHadronTTBins; itt++){         //! recoil jets associated to semi-inclusive hadron TT  in HM  with V0Mnorm
+      name = Form("fhRecoilJetPt_HM_TTH%d_%d_V0Mnorm", fHadronTTLowPt[itt],fHadronTTHighPt[itt]);
+      fhRecoilJetPtTTHinHM_V0Mnorm[itt] = (TH2D*) fhRecoilJetPtTTHinMB_V0Mnorm[itt]->Clone(name.Data()); 
+      fOutput->Add((TH2D*) fhRecoilJetPtTTHinHM_V0Mnorm[itt]); 
+   }
+
+   for(Int_t igg=0; igg<fnClusterTTBins; igg++){  //! recoil jets associated to semi-inclusive cluster TT  in MB  with V0M
+      name = Form("fhRecoilJetPt_MB_TTC%d_%d_V0M", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhRecoilJetPtTTCinMB_V0M[igg] = (TH2D*) fhRecoilJetPtTTHinMB_V0M[0]->Clone(name.Data()); 
+      fOutput->Add((TH2D*) fhRecoilJetPtTTCinMB_V0M[igg]); 
+   }
+
+   for(Int_t igg=0; igg<fnClusterTTBins; igg++){  //! recoil jets associated to semi-inclusive cluster TT  in MB  with V0M
+      name = Form("fhRecoilJetPt_MB_TTC%d_%d_V0Mnorm", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhRecoilJetPtTTCinMB_V0Mnorm[igg] = (TH2D*) fhRecoilJetPtTTHinMB_V0Mnorm[0]->Clone(name.Data()); 
+      fOutput->Add((TH2D*) fhRecoilJetPtTTCinMB_V0Mnorm[igg]); 
+   }
+   if(fMC){ //particle level
+      for(Int_t igg=0; igg<fnClusterTTBins; igg++){  //! recoil jets associated to semi-inclusive cluster TT  in MB  with V0M
+         name = Form("fhRecoilJetPt_MB_TTC%d_%d_V0M_PartLevel", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+         fhRecoilJetPtTTCinMB_V0M_PartLevel[igg] = (TH2D*) fhRecoilJetPtTTHinMB_V0M_PartLevel[0]->Clone(name.Data()); 
+         fOutput->Add((TH2D*) fhRecoilJetPtTTCinMB_V0M_PartLevel[igg]); 
+      }
+   
+      for(Int_t igg=0; igg<fnClusterTTBins; igg++){  //! recoil jets associated to semi-inclusive cluster TT  in MB  with V0M
+         name = Form("fhRecoilJetPt_MB_TTC%d_%d_V0Mnorm_PartLevel", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+         fhRecoilJetPtTTCinMB_V0Mnorm_PartLevel[igg] = (TH2D*) fhRecoilJetPtTTHinMB_V0Mnorm_PartLevel[0]->Clone(name.Data()); 
+         fOutput->Add((TH2D*) fhRecoilJetPtTTCinMB_V0Mnorm_PartLevel[igg]); 
+      }
+   }
+   for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+      name = Form("fhRecoilJetPt_HM_TTC%d_%d_V0M", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhRecoilJetPtTTCinHM_V0M[igg] =  (TH2D*) fhRecoilJetPtTTHinMB_V0M[0]->Clone(name.Data()); 
+      fOutput->Add((TH2D*) fhRecoilJetPtTTCinHM_V0M[igg]);   
+   }
+ 
+   for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+      name = Form("fhRecoilJetPt_HM_TTC%d_%d_V0Mnorm", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhRecoilJetPtTTCinHM_V0Mnorm[igg] =  (TH2D*) fhRecoilJetPtTTHinMB_V0Mnorm[0]->Clone(name.Data()); 
+      fOutput->Add((TH2D*) fhRecoilJetPtTTCinHM_V0Mnorm[igg]);   
    }
    
    for(Int_t igg=0; igg<fnClusterTTBins; igg++){
-      name = Form("fhDrecoil_GA_TTC%d_%d", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
-      fhDrecoilTTCinGA[igg] =   (TH1D*) fhDrecoilTTHinMB[0]->Clone(name.Data()); 
-      fOutput->Add((TH1D*) fhDrecoilTTCinGA[igg]); 
+      name = Form("fhRecoilJetPt_GA_TTC%d_%d_V0M", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhRecoilJetPtTTCinGA_V0M[igg] =   (TH2D*) fhRecoilJetPtTTHinMB_V0M[0]->Clone(name.Data()); 
+      fOutput->Add((TH2D*) fhRecoilJetPtTTCinGA_V0M[igg]); 
    } 
+
+   for(Int_t igg=0; igg<fnClusterTTBins; igg++){
+      name = Form("fhRecoilJetPt_GA_TTC%d_%d_V0Mnorm", fClusterTTLowPt[igg],fClusterTTHighPt[igg]);
+      fhRecoilJetPtTTCinGA_V0Mnorm[igg] =   (TH2D*) fhRecoilJetPtTTHinMB_V0Mnorm[0]->Clone(name.Data()); 
+      fOutput->Add((TH2D*) fhRecoilJetPtTTCinGA_V0Mnorm[igg]); 
+   } 
+
+
    if(fMC){
       fhPtTrkTruePrimGen = new TH2D("fhPtTrkTruePrimGen","fhPtTrkTruePrimGen",100,0,100,20,-1,1);
       fOutput->Add((TH2D*) fhPtTrkTruePrimGen); 
@@ -2138,7 +2597,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhJetPtPartLevelVsJetPtDetLevelCorr = new TH2D("fhJetPtPartLevelVsJetPtDetLevelCorr","fhJetPtPartLevelVsJetPtDetLevelCorr",270,-20,250,270,-20,250);
       fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelCorr); 
 
-      fhJetPtPartLevelVsJetPtDetLevelZero = new TH2D("fhJetPtPartLevelVsJetPtDetLevelCorr","fhJetPtPartLevelVsJetPtDetLevelCorr",250,0,250,250,0,250);
+      fhJetPtPartLevelVsJetPtDetLevelZero = new TH2D("fhJetPtPartLevelVsJetPtDetLevelZero","fhJetPtPartLevelVsJetPtDetLevelZero",250,0,250,250,0,250);
       fOutput->Add((TH2D*) fhJetPtPartLevelVsJetPtDetLevelZero);
  
       fhJetPtResolutionVsPtPartLevel = new TH2D("fhJetPtResolutionVsPtPartLevel","fhJetPtResolutionVsPtPartLevel",100,0,100,50,0,2);
