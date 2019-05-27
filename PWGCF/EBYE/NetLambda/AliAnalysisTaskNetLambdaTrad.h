@@ -45,46 +45,12 @@ protected:
     TH3F*  f3fHistCentVsInvMassLambda1point0;
     TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
     
-    TH3F*  f3fHistCentVsInvMassLambda1point0Sigtwo;
-    TH3F*  f3fHistCentVsInvMassLambda1point0SigtwoMasscut;
     
-    TH3F*  f3fHistCentVsInvMassLambda1point0Sigfour;
-    TH3F*  f3fHistCentVsInvMassLambda1point0SigfourMasscut;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0postight;
-    TH3F*  f3fHistCentVsInvMassLambda1point0postightMasscut;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0posloose;
-    TH3F*  f3fHistCentVsInvMassLambda1point0poslooseMasscut;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0negtight;
-    TH3F*  f3fHistCentVsInvMassLambda1point0negtightMasscut;
-    
-    TH3F*  f3fHistCentVsInvMassLambda1point0negloose;
-    TH3F*  f3fHistCentVsInvMassLambda1point0neglooseMasscut;
     
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
     
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Sigtwo;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0SigtwoMasscut;
-    
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Sigfour;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0SigfourMasscut;
-    
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0postight;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0postightMasscut;
-    
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0posloose;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0poslooseMasscut;
-    
-    
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0negtight;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0negtightMasscut;
-    
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0negloose;
-    TH3F*  f3fHistCentVsInvMassAntiLambda1point0neglooseMasscut;
-    
+   
     
     
     Float_t fCentrality;
@@ -95,20 +61,7 @@ protected:
     UInt_t fEvSel;
     Int_t  fNptBins;
     
-    
 
-    THnSparse *fPtBinNplusNminusChnegtightBKG;
-    THnSparse *fPtBinNplusNminusChnegtight;
-    THnSparse *fPtBinNplusNminusChneglooseBKG;
-    THnSparse *fPtBinNplusNminusChnegloose;
-    THnSparse *fPtBinNplusNminusChposlooseBKG;
-    THnSparse *fPtBinNplusNminusChposloose;
-    THnSparse *fPtBinNplusNminusChpostightBKG;
-    THnSparse *fPtBinNplusNminusChpostight;
-    THnSparse *fPtBinNplusNminusChSigfourBKG;
-    THnSparse *fPtBinNplusNminusChSigfour;
-    THnSparse *fPtBinNplusNminusChSigtwoBKG;
-    THnSparse *fPtBinNplusNminusChSigtwo;
     THnSparse *fPtBinNplusNminusChBKG;
     THnSparse *fPtBinNplusNminusCh;
     
@@ -121,3 +74,4 @@ protected:
 
 
 #endif
+
