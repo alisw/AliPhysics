@@ -30,7 +30,6 @@ Detailed description
 #include <AliAODVertex.h>
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
-#include <AliEventCuts.h>
 #include <AliMultiplicity.h>
 #include <AliCentrality.h>
 #include <AliESDVZERO.h>
@@ -68,7 +67,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fTriggerAnalysis(0x0),
   fkVertex(0x0),
   fkVertexAOD(0x0),
-  fRequireAliEventCuts(0),  
+  fRequireAliEventCuts(0),
   fparMean(0x0),
   fparSigma(0x0),
   fcutSigma(3.),
@@ -468,7 +467,6 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   
   // cut on AliEventCuts (consistency to Run 1 Pb-Pb LMee analysis)
   if(fRequireAliEventCuts){
-    AliEventCuts fAODeventCuts;
     if (!fAODeventCuts.AcceptEvent(ev)){
       return kFALSE;
     }

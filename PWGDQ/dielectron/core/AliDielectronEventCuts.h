@@ -25,6 +25,7 @@
 
 #include <AliAnalysisUtils.h>
 #include <AliAnalysisCuts.h>
+#include <AliEventCuts.h>
 
 class AliTriggerAnalysis;
 class AliESDVertex;
@@ -107,6 +108,7 @@ private:
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
   Bool_t  fRequireAliEventCuts;     // use AliEventCuts to reject events
+  AliEventCuts fAODeventCuts;       // use AliEventCuts to reject events
   
   TH1D* fCorrCutMin[5];       //parametrization of lower limit correlation cut
   TH1D* fCorrCutMax[5];       //parametrization of upper limit correlation cut
