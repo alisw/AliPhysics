@@ -10,7 +10,9 @@ AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
                                             double centmax = 100.,
                                             int estim = AliAnalysisTaskSEHFSystPID::kCentOff,
                                             AliESDtrackCuts::ITSClusterRequirement SPDreq =  AliESDtrackCuts::kAny,
-                                            int nClsTPC = 50) {
+                                            int nClsTPC = 50, 
+                                            bool useITSrefit=true, 
+                                            bool useTPCrefit=true) {
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -30,8 +32,10 @@ AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
 
     AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts();
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCuts->SetRequireTPCRefit(kTRUE);
-    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    if(useTPCrefit)
+        esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    if(useITSrefit)
+        esdTrackCuts->SetRequireITSRefit(kTRUE);
     esdTrackCuts->SetMinNClustersTPC(nClsTPC);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,SPDreq);
