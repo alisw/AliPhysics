@@ -2,7 +2,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void SetTPCCorr(AliDielectron *die);
 void SetupMCsignals(AliDielectron* die);
 void SetupCuts(AliDielectron *die, Int_t cutDefinition, Bool_t bESDANA);
-AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax, Bool_t reqAliEventCuts);
+AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax, Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated);
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
 AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition);
 AliESDtrackCuts *SetupPreFilterESDtrackCuts(Int_t cutDefinition);
@@ -1614,7 +1614,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
 }
 
-AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax, Bool_t reqAliEventCuts){
+AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax, Bool_t reqAliEventCuts, Bool_t reqAliEventCutsCorrelated){
 
   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex SPD && |vtxZ|<10 && ncontrib>0");
   eventCuts->SetRequireVertex();
@@ -1630,7 +1630,7 @@ AliDielectronEventCuts *GetEventCuts(Double_t centMin, Double_t centMax, Bool_t 
 
   // AliEventCuts if required
   if(reqAliEventCuts){
-    eventCuts->SetRequireAliEventCuts(reqAliEventCuts);
+    eventCuts->SetRequireAliEventCuts(reqAliEventCuts,reqAliEventCutsCorrelated);
   }
   
   return eventCuts;
