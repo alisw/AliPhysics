@@ -2239,11 +2239,12 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   Int_t MCtruthPdgCode = 0;
   Int_t TheTrueCode = 0;
   Double_t invMassD = 0;
+  Double_t xflagprompt;
   hname = TString::Format("%s/EfficiencyMatches", fName.Data());
-  TH2* EfficiencyMatches = static_cast<TH2*>(fHistManager->FindObject(hname));
+  TH3* EfficiencyMatches = static_cast<TH3*>(fHistManager->FindObject(hname));
   AliAODMCParticle* aodMcPart; 
   hname2 = TString::Format("%s/EfficiencyGenerator", fName.Data());
-  TH2* EfficiencyGenerator = static_cast<TH2*>(fHistManager->FindObject(hname2));
+  TH3* EfficiencyGenerator = static_cast<TH3*>(fHistManager->FindObject(hname2));
   
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
@@ -2253,27 +2254,38 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
    
      for(auto aodMcPartAll : fMCContainer->all()){
      TheTrueCode = aodMcPartAll->PdgCode();
-     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGenerator->Fill(aodMcPartAll->Pt(),jetPt);
+      auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+      if(origin.first == kFromCharm) xflagpromt=1;
+      if(origin.first == kFromBottom) xflagpromt=2;
+      else xflagprompt=0;
+      if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGenerator->Fill(aodMcPartAll->Pt(),jetPt,xflagprompt);
       }
   }
   
   if (isSelected == 1) { // selected as a D0
     if (i != 0) return kFALSE; // only one mass hypothesis thanks to PID
-
    
-    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly)if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatches->Fill(aodMcPart->Pt(),jetPt);
-    
-
+      if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly){
+         auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+      if(origin.first == kFromCharm) xflagpromt=1;
+      if(origin.first == kFromBottom) xflagpromt=2;
+      else xflagprompt=0;
+      if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatches->Fill(aodMcPart->Pt(),jetPt,xflagprompt);}
 
   }
   else if (isSelected == 2) { // selected as a D0bar
     if (i != 1) return kFALSE; // only one mass hypothesis thanks to PID
 
-   
-    if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatches->Fill(aodMcPart->Pt(),jetPt);
+      
+      if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly){
+      auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+      if(origin.first == kFromCharm) xflagpromt=1;
+      if(origin.first == kFromBottom) xflagpromt=2;
+      else xflagprompt=0;
+      if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatches->Fill(aodMcPart->Pt(),jetPt,xflagprompt);
   }
 
- 
+  }
   return kTRUE;
 }
 
@@ -2300,11 +2312,9 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   Int_t MCtruthPdgCode = 0;
   Int_t TheTrueCode = 0;
   Double_t invMassD = 0;
-  hname = TString::Format("%s/EfficiencyMatches", fName.Data());
-  TH2* EfficiencyMatches = static_cast<TH2*>(fHistManager->FindObject(hname));
+
   AliAODMCParticle* aodMcPart; 
-  hname2 = TString::Format("%s/EfficiencyGenerator", fName.Data());
-  TH2* EfficiencyGenerator = static_cast<TH2*>(fHistManager->FindObject(hname2));
+
   
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
@@ -2327,13 +2337,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     }
   }
   
-  if(fMCMode==kSignalOnly){
-   
-     for(auto aodMcPartAll : fMCContainer->all()){
-     TheTrueCode = aodMcPartAll->PdgCode();
-     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGenerator->Fill(aodMcPartAll->Pt(),jetpt);
-      }
-  }
+
   
   if (isSelected == 1) { // selected as a D0
     if (i != 0) return kFALSE; // only one mass hypothesis thanks to PID
@@ -2349,7 +2353,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
-    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly)if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatches->Fill(aodMcPart->Pt(),jetpt);
+   
     
 
 
@@ -2368,7 +2372,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
-    if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatches->Fill(aodMcPart->Pt(),jetpt);
+   
   }
   else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
     AliDebug(10,"Selected as either D0 or D0bar");
@@ -3384,11 +3388,11 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
 
      hname = TString::Format("%s/EfficiencyMatches",param.GetName());
       htitle = hname + ";D meson matches";
-      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
+      fHistManager.CreateTH3(hname,htitle,100,0,50,20,0,100,3,0,3);
 
       hname = TString::Format("%s/EfficiencyGenerator",param.GetName());
       htitle = hname + ";D meson part level";
-      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
+      fHistManager.CreateTH3(hname,htitle,100,0,50,20,0,100,3,0,3);
 
     if (param.fMCMode != kMCTruth) {
       if (param.fCandidateType == kD0toKpi || param.fCandidateType == kD0toKpiLikeSign) {
