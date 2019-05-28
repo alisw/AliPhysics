@@ -1,5 +1,7 @@
-AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString finname="",
-								   Bool_t theMCon=kFALSE,
+#include "TF1.h"
+//AliAnalysisTaskSEXic2eleXifromAODtracksnew *AddTaskXic2eleXifromAODtracksnew(TString finname="/Users/tiantiancheng/Xic_work/weight/tryweight.root",
+AliAnalysisTaskSEXic2eleXifromAODtracksnew *AddTaskXic2eleXifromAODtracksnew(TString finname="alien:///alice/cern.ch/user/t/ticheng/tryweightMC.root",
+								   Bool_t theMCon=kTRUE,
 								   Int_t iscoltype= 0,
 								   Bool_t writeVariableTree=kTRUE,
 								   Bool_t domixing=kFALSE,
@@ -11,6 +13,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 								   )
 
 {
+
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -25,8 +28,6 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   } else {
     filecuts=TFile::Open(finname.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      Printf("FATAL: Input file not found : check your cut object");
-      return NULL;
     }
   }
 
@@ -38,14 +39,14 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   RDHFCutsXic2eleXianal->SetMaxPtCandidate(10000.);
   if (!RDHFCutsXic2eleXianal) {
     cout << "Specific AliRDHFCutsXic2eleXianal not found\n";
-    return NULL;
+   // return;
   }
 
 
   //CREATE THE TASK
 
   printf("CREATE TASK\n");
-  AliAnalysisTaskSEXic2eleXifromAODtracks *task = new AliAnalysisTaskSEXic2eleXifromAODtracks("AliAnalysisTaskSEXic2eleXifromAODtracks",RDHFCutsXic2eleXianal,writeVariableTree);
+  AliAnalysisTaskSEXic2eleXifromAODtracksnew *task = new AliAnalysisTaskSEXic2eleXifromAODtracksnew("AliAnalysisTaskSEXic2eleXifromAODtracksnew",RDHFCutsXic2eleXianal,writeVariableTree);
   task->SetMC(theMCon);
 	if(iscoltype==0){
 		task->SetUseCentralityV0M(kFALSE);
@@ -108,8 +109,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
     } else{
       TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
       if(!fileEstimator)  {
-        Printf("FATAL: File with multiplicity estimator not found\n");
-        return NULL;
+       // return;
       }
       task->SetReferenceMultiplcity(9.26);
       const Char_t* profilebasename="SPDmult10";
@@ -118,8 +118,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
       for(Int_t ip=0; ip<4; ip++) {
         multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
         if (!multEstimatorAvg[ip]) {
-          Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
-          return NULL;
+        //  return;
         }
       }
       task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
@@ -133,7 +132,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 
   
 
-	TF1 * weightfit = new TF1("weightfit","expo");
+	TF1 * weightfit = new TF1 ("weightfit","expo");
 	weightfit -> SetParameter(0,7.85860e-01);
 	weightfit -> SetParameter(1,-1.45351e-01);
     task -> SetFunction(weightfit);
