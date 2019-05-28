@@ -25,7 +25,8 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
 						      
 						      Double_t centMin = -1.,
 						      Double_t centMax = -1.,
-						      Bool_t reqAliEventCuts = kFALSE
+						      Bool_t reqAliEventCuts = kFALSE,
+						      Bool_t reqAliEventCutsCorrelated = kFALSE
 						    ){
 
 
@@ -76,7 +77,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
 
   // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
   //Add event filter
-  task->SetEventFilter( GetEventCuts(centMin, centMax, reqAliEventCuts) );
+  task->SetEventFilter( GetEventCuts(centMin, centMax, reqAliEventCuts, reqAliEventCutsCorrelated) );
   
   //add dielectron analysis with selected cut to the task
   AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr,useRotation,useMixing,noPairing,hasMC);
