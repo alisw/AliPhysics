@@ -17,7 +17,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AlidNdPtEventCuts.h"
-
+#include "AliEventCuts.h"
 /*
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
@@ -51,6 +51,7 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
     fMCEvent(0),
     fMCStack(0),
     fEventCuts(0),
+    fAliEventCuts(0),
     fESDtrackCuts(0),
     //fAODtrackCuts(0),
     fUtils(0),
@@ -82,7 +83,8 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
     //Track-Histograms
     fHistTrack(0),
     fHistCentCorrelpt(0),
-    fHistCentCorrel(0),
+    fHistCentCorrelBeforeCuts(0),
+    fHistCentCorrelAfterCuts(0),
     fDCAyEtaPt(0),
     fDCAyEtaPtMCPrim(0),
     fDCAyEtaPtMCSecDecays(0),
@@ -227,12 +229,19 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistCentCorrelpt->SetBinEdges(4,fBinsPt->GetArray());
     fHistCentCorrelpt->Sumw2();
 
-    fHistCentCorrel = new THnF("fHistCentCorrel", "Centrality Correlation", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
-    fHistCentCorrel->GetAxis(0)->SetTitle("Centrality V0M");
-    fHistCentCorrel->GetAxis(1)->SetTitle("Centrality SPD Tracklets");
-    fHistCentCorrel->GetAxis(2)->SetTitle("Centrality CL0");
-    fHistCentCorrel->GetAxis(3)->SetTitle("Centrality CL1");
-    fHistCentCorrel->Sumw2();
+    fHistCentCorrelBeforeCuts = new THnF("fHistCentCorrel", "Centrality Correlation", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
+    fHistCentCorrelBeforeCuts->GetAxis(0)->SetTitle("Centrality V0M");
+    fHistCentCorrelBeforeCuts->GetAxis(1)->SetTitle("Centrality SPD Tracklets");
+    fHistCentCorrelBeforeCuts->GetAxis(2)->SetTitle("Centrality CL0");
+    fHistCentCorrelBeforeCuts->GetAxis(3)->SetTitle("Centrality CL1");
+    fHistCentCorrelBeforeCuts->Sumw2();
+    
+    fHistCentCorrelAfterCuts = new THnF("fHistCentCorrel", "Centrality Correlation", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
+    fHistCentCorrelAfterCuts->GetAxis(0)->SetTitle("Centrality V0M");
+    fHistCentCorrelAfterCuts->GetAxis(1)->SetTitle("Centrality SPD Tracklets");
+    fHistCentCorrelAfterCuts->GetAxis(2)->SetTitle("Centrality CL0");
+    fHistCentCorrelAfterCuts->GetAxis(3)->SetTitle("Centrality CL1");
+    fHistCentCorrelAfterCuts->Sumw2();
     
     fHistRelPtResoFromCov = new THnF("fHistRelPtResoFromCov", "Relative pT resolution from covariance matrix", 3, nBinsRelPtReso, minRelPtReso, maxRelPtReso);
     fHistRelPtResoFromCov->SetBinEdges(0,fBinsPtReso->GetArray());
@@ -336,7 +345,8 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
 
     fOutputList->Add(fHistTrack);
     fOutputList->Add(fHistCentCorrelpt);
-    fOutputList->Add(fHistCentCorrel);
+    fOutputList->Add(fHistCentCorrelBeforeCuts);
+    fOutputList->Add(fHistCentCorrelAfterCuts);
     fOutputList->Add(fHistEvent);
     fOutputList->Add(fEventCount);
     fOutputList->Add(fHistRelPtResoFromCov);
@@ -422,6 +432,11 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
     Double_t multRecPart = 0;		/// N_acc (of tracks that can be assigned to a real particle)
     Double_t multRecCorrPart = 0;		/// N_acc corrected with trk efficiency
 
+    Double_t V0MCent = MultSelection->GetMultiplicityPercentile("V0M");
+    Double_t CL0Cent = MultSelection->GetMultiplicityPercentile("CL0");
+    Double_t CL1Cent = MultSelection->GetMultiplicityPercentile("CL1");
+    Double_t SPDTCent = MultSelection->GetMultiplicityPercentile("SPDTracklets");  
+    Double_t eventCorrelValues[4] = {V0MCent, SPDTCent, CL0Cent, CL1Cent};
     /// ==================== Fill Histogramms ======================================
 
     /// -------------------- Generated Events --------------------------------------
@@ -430,29 +445,21 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
     /// \li Event Trigger Cut
     if(!isEventTriggered) return;
+    fHistCentCorrelBeforeCuts->Fill(eventCorrelValues);
 
     /// -------------------- Triggered Events ---------------------------------------
 
     if(fIsMC && isEventINEL0) fHistMCTrigINEL0Event->Fill(eventValues);
 
     /// \li Event Acceptance Cuts
-    if(!IsEventAcceptedGeometrics(fEvent)) return;   //Requires primary vertex in the limits
-    if(!IsEventAcceptedQuality(fEvent)) return;      //Requires vertex quality
-    if (fIs2013pA){	if(!IsEventAccepted2013pA(fEvent)) return;	}
-    if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}  // Requiring IncompleteDAQ, SPD background and Pileup cuts
-
+    if (!fAliEventCuts.AcceptEvent(fEvent)) return;
+    
     /// ------------------ Reconstructed Events --------------------------------------
 
     if(fIsMC && isEventINEL0) fHistMCRecINEL0Event->Fill(eventValues);
     fHistEvent->Fill(eventValues);
     
-    Double_t V0MCent = MultSelection->GetMultiplicityPercentile("V0M");
-    Double_t CL0Cent = MultSelection->GetMultiplicityPercentile("CL0");
-    Double_t CL1Cent = MultSelection->GetMultiplicityPercentile("CL1");
-    Double_t SPDTCent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-    
-    Double_t eventCorrelValues[4] = {V0MCent, SPDTCent, CL0Cent, CL1Cent};
-    fHistCentCorrel->Fill(eventCorrelValues);
+    fHistCentCorrelAfterCuts->Fill(eventCorrelValues);
 
     ///--------------- Loop over measured Tracks ---------------------------------
 
