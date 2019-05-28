@@ -4245,7 +4245,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSEXic2eleXifromAODtracks::MakeCascadeHF(AliA
   //------------------------------------------------
   // PrimaryVertex
   //------------------------------------------------
-  AliAODVertex *primVertexAOD;
+  AliAODVertex *primVertexAOD = NULL ;
   Bool_t unsetvtx = kFALSE;
   if(fReconstructPrimVert){
     primVertexAOD = CallPrimaryVertex(casc,part,aod);
@@ -4320,7 +4320,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSEXic2eleXifromAODtracks::MakeCascadeHF(AliA
   AliAODRecoCascadeHF *theCascade = new AliAODRecoCascadeHF(secVert,charge,px,py,pz,d0,d0err,dca);
   if(!theCascade)  
     {
-      if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
+      if(unsetvtx) delete primVertexAOD;
       if(esdtrack) delete esdtrack;
       if(trackCasc) delete trackCasc;
       return 0x0;
@@ -4331,7 +4331,7 @@ AliAODRecoCascadeHF* AliAnalysisTaskSEXic2eleXifromAODtracks::MakeCascadeHF(AliA
 
 	theCascade->GetSecondaryVtx()->AddDaughter(part);
 	theCascade->GetSecondaryVtx()->AddDaughter(casc);
-  if(unsetvtx) delete primVertexAOD; primVertexAOD=NULL;
+  if(unsetvtx) delete primVertexAOD;
   if(esdtrack) delete esdtrack;
   if(trackCasc) delete trackCasc;
 
@@ -4492,7 +4492,7 @@ AliAODVertex* AliAnalysisTaskSEXic2eleXifromAODtracks::ReconstructSecondaryVerte
   // Reconstruct secondary vertex from trkArray (Copied from AliAnalysisVertexingHF)
   //
 	
-  AliAODVertex *primVertexAOD;
+  AliAODVertex *primVertexAOD = NULL;
   Bool_t unsetvtx = kFALSE;
   if(fReconstructPrimVert){
     primVertexAOD = CallPrimaryVertex(casc,part,aod);
