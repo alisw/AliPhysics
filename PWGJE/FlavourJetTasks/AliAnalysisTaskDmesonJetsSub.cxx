@@ -2257,7 +2257,33 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
  Double_t jetPt = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
+    AliAODMCParticle* aodMcPart; 
+
+   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
+  // Checks also the origin, and if it matches the rejected origin mask, return false
+  if (fMCMode != kNoMC) {
+    Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
+    DmesonJet.fMCLabel = mcLab;
+
+    // Retrieve the generated particle (if exists) and its PDG code
+    if (mcLab >= 0) {
+      aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
+
+      if (aodMcPart) {
+        // Check origin and return false if it matches the rejected origin mask
+        if (fRejectedOrigin) {
+          auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+          if ((origin.first & fRejectedOrigin) == origin.first) return kFALSE;
+        }
+        MCtruthPdgCode = aodMcPart->PdgCode();
+      }
+    }
+  }
   
+
+
+
+ 
   if(fMCMode==kSignalOnly){
    
      for(auto aodMcPartAll : fMCContainer->all()){
@@ -2317,8 +2343,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   AliDebug(10,"Checking if D0 meson is selected");
   Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoDecayHF2Prong*>(Dcand), AliRDHFCuts::kAll, fAodEvent);
   if (isSelected == 0) return kFALSE;
-  TString hname;
-  TString hname2;
+  
   Int_t MCtruthPdgCode = 0;
   Int_t TheTrueCode = 0;
   Double_t invMassD = 0;
