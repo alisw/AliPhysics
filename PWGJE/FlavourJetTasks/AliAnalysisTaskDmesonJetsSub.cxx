@@ -2244,7 +2244,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   Double_t xflagprompt;
   hname = TString::Format("%s/EfficiencyMatchesPrompt", fName.Data());
   TH2* EfficiencyMatchesPrompt = static_cast<TH2*>(fHistManager->FindObject(hname));
-  AliAODMCParticle* aodMcPart; 
+ 
   hname2 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
   TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
 
