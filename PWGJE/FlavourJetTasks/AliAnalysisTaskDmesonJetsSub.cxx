@@ -2219,6 +2219,67 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractRecoDecayAttributes(
   }
 }
 
+Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractEfficiencies(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef,UInt_t i)
+{
+  if (fCandidateType == kD0toKpi || fCandidateType == kD0toKpiLikeSign) { // D0 candidate
+    return ExtractD0Efficiencies(Dcand, DmesonJet, jetDef, i);
+  }
+    else {
+    return kFALSE;
+  }
+}
+
+Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet,AliHFJetDefinition& jetDef, UInt_t i)
+{
+  AliDebug(10,"Checking if D0 meson is selected");
+  Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoDecayHF2Prong*>(Dcand), AliRDHFCuts::kAll, fAodEvent);
+  if (isSelected == 0) return kFALSE;
+  TString hname;
+  TString hname2;
+  Int_t MCtruthPdgCode = 0;
+  Int_t TheTrueCode = 0;
+  Double_t invMassD = 0;
+  hname = TString::Format("%s/EfficiencyMatches", fName.Data());
+  TH2* EfficiencyMatches = static_cast<TH2*>(fHistManager->FindObject(hname));
+  AliAODMCParticle* aodMcPart; 
+  hname2 = TString::Format("%s/EfficiencyGenerator", fName.Data());
+  TH2* EfficiencyGenerator = static_cast<TH2*>(fHistManager->FindObject(hname2));
+  
+  // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
+  // Checks also the origin, and if it matches the rejected origin mask, return false
+ Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
+  
+  if(fMCMode==kSignalOnly){
+   
+     for(auto aodMcPartAll : fMCContainer->all()){
+     TheTrueCode = aodMcPartAll->PdgCode();
+     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGenerator->Fill(aodMcPartAll->Pt(),jetPt);
+      }
+  }
+  
+  if (isSelected == 1) { // selected as a D0
+    if (i != 0) return kFALSE; // only one mass hypothesis thanks to PID
+
+   
+    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly)if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatches->Fill(aodMcPart->Pt(),jetPt);
+    
+
+
+  }
+  else if (isSelected == 2) { // selected as a D0bar
+    if (i != 1) return kFALSE; // only one mass hypothesis thanks to PID
+
+   
+    if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatches->Fill(aodMcPart->Pt(),jetPt);
+  }
+
+ 
+  return kTRUE;
+}
+
+
+
+
 
 
 
@@ -2240,10 +2301,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
   Int_t TheTrueCode = 0;
   Double_t invMassD = 0;
   hname = TString::Format("%s/EfficiencyMatches", fName.Data());
-  TH1* EfficiencyMatches = static_cast<TH1*>(fHistManager->FindObject(hname));
+  TH2* EfficiencyMatches = static_cast<TH2*>(fHistManager->FindObject(hname));
   AliAODMCParticle* aodMcPart; 
   hname2 = TString::Format("%s/EfficiencyGenerator", fName.Data());
-  TH1* EfficiencyGenerator = static_cast<TH1*>(fHistManager->FindObject(hname2));
+  TH2* EfficiencyGenerator = static_cast<TH2*>(fHistManager->FindObject(hname2));
   
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
@@ -2270,7 +2331,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
    
      for(auto aodMcPartAll : fMCContainer->all()){
      TheTrueCode = aodMcPartAll->PdgCode();
-     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<0.9)EfficiencyGenerator->Fill(aodMcPartAll->Pt());
+     if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGenerator->Fill(aodMcPartAll->Pt(),jetpt);
       }
   }
   
@@ -2288,7 +2349,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
-    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly)if(TMath::Abs(aodMcPart->Eta())<0.9) EfficiencyMatches->Fill(aodMcPart->Pt());
+    if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly)if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatches->Fill(aodMcPart->Pt(),jetpt);
     
 
 
@@ -2307,7 +2368,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Attributes(const A
     else { // conditions above not passed, so return FALSE
       return kFALSE;
     }
-    if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) if(TMath::Abs(aodMcPart->Eta())<0.9)EfficiencyMatches->Fill(aodMcPart->Pt());
+    if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatches->Fill(aodMcPart->Pt(),jetpt);
   }
   else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
     AliDebug(10,"Selected as either D0 or D0bar");
@@ -2594,6 +2655,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
         for (auto& def : fJetDefinitions) {
           if (FindJet(charmCand, DmesonJet, def,im)) {
             Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
+	    ExtractEfficiencies(charmCand,DmesonJet,def,im);
             if (jetPt > maxJetPt[&def]) maxJetPt[&def] = jetPt;
           }
           else {
@@ -3322,11 +3384,11 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
 
      hname = TString::Format("%s/EfficiencyMatches",param.GetName());
       htitle = hname + ";D meson matches";
-      fHistManager.CreateTH1(hname,htitle,100,0,50);
+      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
 
       hname = TString::Format("%s/EfficiencyGenerator",param.GetName());
       htitle = hname + ";D meson part level";
-      fHistManager.CreateTH1(hname,htitle,100,0,50);
+      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
 
     if (param.fMCMode != kMCTruth) {
       if (param.fCandidateType == kD0toKpi || param.fCandidateType == kD0toKpiLikeSign) {
