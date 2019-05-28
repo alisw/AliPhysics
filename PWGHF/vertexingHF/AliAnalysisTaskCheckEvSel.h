@@ -77,6 +77,12 @@ private:
   TH2F *fHistNTrackletsGoldenVsV0Cent;   //!<! Centrality-multiplicity correl
   TH3F *fHistNTrackletsGoldenVsV0CentVsZvert; //!<! Centrality-multiplicity correl
   TH1F *fHistPhiTrackelts;               //!<! Control plot
+  TH2F *fHistNCL0VsV0Cent;                //!<! pileup control plot
+  TH2F *fHistNCL1VsV0Cent;                //!<! pileup control plot
+  TH2F *fHistT0AmplVsV0Ampl;             //!<! pileup control plot
+  TH2F *fHistT0AmplVsV0Cent;             //!<! pileup control plot
+  TH2F *fHistT0AmplVsNCL0;               //!<! pileup control plot
+  TH2F *fHistT0AmplVsCL0Cent;               //!<! pileup control plot
   TH2F *fHistNTracksTPCoutVsNTracklets;  //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksFB4VsNTracklets;     //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksBC0VsNTracksFB4;     //!<! Centrality-multiplicity correl
@@ -93,7 +99,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,10);
+  ClassDef(AliAnalysisTaskCheckEvSel,11);
 };
 
 #endif
