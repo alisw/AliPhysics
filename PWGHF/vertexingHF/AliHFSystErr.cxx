@@ -9720,29 +9720,29 @@ void AliHFSystErr::InitD0toKpi2018PbPb010() {
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",100,0,50);
   fTrackingEff->SetBinContent(1,0*0.01); //
   fTrackingEff->SetBinContent(2,0*0.01); //
-  fTrackingEff->SetBinContent(3,9.5*0.01);
-  fTrackingEff->SetBinContent(4,9.5*0.01);
+  fTrackingEff->SetBinContent(3,10*0.01);
+  fTrackingEff->SetBinContent(4,10*0.01);
   fTrackingEff->SetBinContent(5,10*0.01);
   fTrackingEff->SetBinContent(6,10*0.01);
   fTrackingEff->SetBinContent(7,11*0.01);
   fTrackingEff->SetBinContent(8,11*0.01);
   fTrackingEff->SetBinContent(9,11*0.01);
   fTrackingEff->SetBinContent(10,11*0.01);
-  fTrackingEff->SetBinContent(11,9.5*0.01);
-  fTrackingEff->SetBinContent(12,9.5*0.01);
-  fTrackingEff->SetBinContent(13,9.0*0.01);
-  fTrackingEff->SetBinContent(14,9.0*0.01);
-  fTrackingEff->SetBinContent(15,8.5*0.01);
-  fTrackingEff->SetBinContent(16,8.5*0.01);
-  fTrackingEff->SetBinContent(17,8.0*0.01);
-  fTrackingEff->SetBinContent(18,8.0*0.01);
-  fTrackingEff->SetBinContent(19,8.0*0.01);
-  fTrackingEff->SetBinContent(20,8.0*0.01);
-  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,7.5*0.01); //10-12
-  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,7.0*0.01); //12-16
-  for(Int_t i=33;i<=48;i++) fTrackingEff->SetBinContent(i,6*0.01); //16-24
-  for(Int_t i=49;i<=72;i++) fTrackingEff->SetBinContent(i,5*0.01); //24-36
-  for(Int_t i=73;i<=100;i++) fTrackingEff->SetBinContent(i,5*0.01); //36-50
+  fTrackingEff->SetBinContent(11,10*0.01);
+  fTrackingEff->SetBinContent(12,10*0.01);
+  fTrackingEff->SetBinContent(13,9.5*0.01);
+  fTrackingEff->SetBinContent(14,9.5*0.01);
+  fTrackingEff->SetBinContent(15,9.0*0.01);
+  fTrackingEff->SetBinContent(16,9.0*0.01);
+  fTrackingEff->SetBinContent(17,8.5*0.01);
+  fTrackingEff->SetBinContent(18,8.5*0.01);
+  fTrackingEff->SetBinContent(19,8.5*0.01);
+  fTrackingEff->SetBinContent(20,8.5*0.01);
+  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,8.0*0.01); //10-12
+  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,7.5*0.01); //12-16
+  for(Int_t i=33;i<=48;i++) fTrackingEff->SetBinContent(i,6.5*0.01); //16-24
+  for(Int_t i=49;i<=72;i++) fTrackingEff->SetBinContent(i,5.5*0.01); //24-36
+  for(Int_t i=73;i<=100;i++) fTrackingEff->SetBinContent(i,5.5*0.01); //36-50
 
 
 
@@ -9863,14 +9863,14 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050() {
   fTrackingEff->SetBinContent(14,9.0*0.01);
   fTrackingEff->SetBinContent(15,9.0*0.01);
   fTrackingEff->SetBinContent(16,9.0*0.01);
-  fTrackingEff->SetBinContent(17,7.5*0.01);
-  fTrackingEff->SetBinContent(18,7.5*0.01);
-  fTrackingEff->SetBinContent(19,7.5*0.01);
-  fTrackingEff->SetBinContent(20,7.5*0.01);
-  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,7.5*0.01); //10-12
-  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,7.0*0.01); //12-16
-  for(Int_t i=33;i<=48;i++) fTrackingEff->SetBinContent(i,5.5*0.01); //16-24
-  for(Int_t i=49;i<=72;i++) fTrackingEff->SetBinContent(i,4.5*0.01); //24-36
+  fTrackingEff->SetBinContent(17,8.0*0.01);
+  fTrackingEff->SetBinContent(18,8.0*0.01);
+  fTrackingEff->SetBinContent(19,8.0*0.01);
+  fTrackingEff->SetBinContent(20,8.0*0.01);
+  for(Int_t i=21;i<=24;i++) fTrackingEff->SetBinContent(i,8.0*0.01); //10-12
+  for(Int_t i=25;i<=32;i++) fTrackingEff->SetBinContent(i,7.5*0.01); //12-16
+  for(Int_t i=33;i<=48;i++) fTrackingEff->SetBinContent(i,6.0*0.01); //16-24
+  for(Int_t i=49;i<=72;i++) fTrackingEff->SetBinContent(i,5.0*0.01); //24-36
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",72,0,36);
