@@ -9777,12 +9777,12 @@ void AliHFSystErr::InitD0toKpi2018PbPb010() {
   fCutsEff = new TH1F("fCutsEff","fCutsEff",100,0,50);
   fCutsEff->SetBinContent(1,0);
   fCutsEff->SetBinContent(2,0);
-  fCutsEff->SetBinContent(3,0.1); // 1-1.5
-  fCutsEff->SetBinContent(4,0.1); // 1.5-2
+  fCutsEff->SetBinContent(3,0.08); // 1-1.5
+  fCutsEff->SetBinContent(4,0.08); // 1.5-2
   fCutsEff->SetBinContent(5,0.05); // 2-2.5
   fCutsEff->SetBinContent(6,0.05); // 2.5-3
-  fCutsEff->SetBinContent(7,0.05); // 3-3.5
-  fCutsEff->SetBinContent(8,0.05); // 3.5-4
+  fCutsEff->SetBinContent(7,0.035); // 3-3.5
+  fCutsEff->SetBinContent(8,0.035); // 3.5-4
   fCutsEff->SetBinContent(9,0.03); // 4-4.5
   fCutsEff->SetBinContent(10,0.03); // 4.5-5
   fCutsEff->SetBinContent(11,0.03); // 5-5.5
@@ -9795,11 +9795,11 @@ void AliHFSystErr::InitD0toKpi2018PbPb010() {
   fCutsEff->SetBinContent(18,0.03); // 8.5-9
   fCutsEff->SetBinContent(19,0.03); // 9-9.5
   fCutsEff->SetBinContent(20,0.03); // 9.5-10
-  for(Int_t i=21;i<=24;i++) fCutsEff->SetBinContent(i,0.035); //10-12
-  for(Int_t i=25;i<=32;i++) fCutsEff->SetBinContent(i,0.035); //12-16
-  for(Int_t i=33;i<=48;i++) fCutsEff->SetBinContent(i,0.05); //16-24
-  for(Int_t i=49;i<=72;i++) fCutsEff->SetBinContent(i,0.05); //24-36
-  for(Int_t i=73;i<=100;i++) fCutsEff->SetBinContent(i,0.05); //36-50
+  for(Int_t i=21;i<=24;i++) fCutsEff->SetBinContent(i,0.03); //10-12
+  for(Int_t i=25;i<=32;i++) fCutsEff->SetBinContent(i,0.03); //12-16
+  for(Int_t i=33;i<=48;i++) fCutsEff->SetBinContent(i,0.03); //16-24
+  for(Int_t i=49;i<=72;i++) fCutsEff->SetBinContent(i,0.03); //24-36
+  for(Int_t i=73;i<=100;i++) fCutsEff->SetBinContent(i,0.03); //36-50
 
 
   // PID efficiency (from PID/noPID)
@@ -9904,26 +9904,26 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050() {
   fCutsEff->SetBinContent(2,0);
   fCutsEff->SetBinContent(3,0.08); // 1-1.5
   fCutsEff->SetBinContent(4,0.08); // 1.5-2
-  fCutsEff->SetBinContent(5,0.05); // 2-2.5
-  fCutsEff->SetBinContent(6,0.05); // 2.5-3
-  fCutsEff->SetBinContent(7,0.03); // 3-3.5
-  fCutsEff->SetBinContent(8,0.03); // 3.5-4
-  fCutsEff->SetBinContent(9,0.025); // 4-4.5
-  fCutsEff->SetBinContent(10,0.025); // 4.5-5
-  fCutsEff->SetBinContent(11,0.025); // 5-5.5
-  fCutsEff->SetBinContent(12,0.025); // 5.5-6
-  fCutsEff->SetBinContent(13,0.025); // 6-6.5
-  fCutsEff->SetBinContent(14,0.025); // 6.5-7
-  fCutsEff->SetBinContent(15,0.025); // 7-7.5
-  fCutsEff->SetBinContent(16,0.025); // 7.5-8
-  fCutsEff->SetBinContent(17,0.025); // 8-8.5
-  fCutsEff->SetBinContent(18,0.025); // 8.5-9
-  fCutsEff->SetBinContent(19,0.025); // 9-9.5
-  fCutsEff->SetBinContent(20,0.025); // 9.5-10
+  fCutsEff->SetBinContent(5,0.04); // 2-2.5
+  fCutsEff->SetBinContent(6,0.04); // 2.5-3
+  fCutsEff->SetBinContent(7,0.04); // 3-3.5
+  fCutsEff->SetBinContent(8,0.04); // 3.5-4
+  fCutsEff->SetBinContent(9,0.03); // 4-4.5
+  fCutsEff->SetBinContent(10,0.03); // 4.5-5
+  fCutsEff->SetBinContent(11,0.03); // 5-5.5
+  fCutsEff->SetBinContent(12,0.03); // 5.5-6
+  fCutsEff->SetBinContent(13,0.03); // 6-6.5
+  fCutsEff->SetBinContent(14,0.03); // 6.5-7
+  fCutsEff->SetBinContent(15,0.03); // 7-7.5
+  fCutsEff->SetBinContent(16,0.03); // 7.5-8
+  fCutsEff->SetBinContent(17,0.03); // 8-8.5
+  fCutsEff->SetBinContent(18,0.03); // 8.5-9
+  fCutsEff->SetBinContent(19,0.03); // 9-9.5
+  fCutsEff->SetBinContent(20,0.03); // 9.5-10
   for(Int_t i=21;i<=24;i++) fCutsEff->SetBinContent(i,0.03); //10-12
   for(Int_t i=25;i<=32;i++) fCutsEff->SetBinContent(i,0.03); //12-16
-  for(Int_t i=33;i<=48;i++) fCutsEff->SetBinContent(i,0.05); //16-24
-  for(Int_t i=49;i<=72;i++) fCutsEff->SetBinContent(i,0.05); //24-36
+  for(Int_t i=33;i<=48;i++) fCutsEff->SetBinContent(i,0.03); //16-24
+  for(Int_t i=49;i<=72;i++) fCutsEff->SetBinContent(i,0.03); //24-36
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",72,0,36);
