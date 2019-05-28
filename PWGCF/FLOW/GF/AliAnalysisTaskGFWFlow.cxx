@@ -437,7 +437,6 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
       Bool_t DisableOL=kFALSE;
       if(l_ind<14) DisableOL = (l_ind%2); //Only for 1, 3, 5 ... 13
-      //if(DisableOL) printf("Disabling OL!\n");
       filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn,DisableOL);
     };
     // mywatchStore.Stop();
@@ -646,7 +645,6 @@ void AliAnalysisTaskGFWFlow::CreateCorrConfigs() {
 //  corrconfigs = new AliGFW::CorrConfig[90];
   corrconfigs.push_back(GetConf("MidV22","refMid {2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidV22","poiMid refMid {2 -2}", kTRUE));
-  return;
   corrconfigs.push_back(GetConf("MidV24","refMid {2 2 -2 -2}", kFALSE));
   corrconfigs.push_back(GetConf("MidV24","poiMid refMid {2 2 -2 -2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV26","refMid {2 2 2 -2 -2 -2}", kFALSE));
