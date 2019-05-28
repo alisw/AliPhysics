@@ -60,7 +60,7 @@ GPUd() float GPUdEdx::GetSortTruncMean(float* array, int count, int trunclow, in
 {
   trunclow = count * trunclow / 128;
   trunchigh = count * trunchigh / 128;
-  if (count - trunclow - trunchigh <= 0) {
+  if (trunclow >= trunchigh) {
     return (0.);
   }
   CAAlgo::sort(array, array + count);

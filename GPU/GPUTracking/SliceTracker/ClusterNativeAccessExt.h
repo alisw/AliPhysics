@@ -27,7 +27,7 @@
 #else
 namespace o2
 {
-namespace TPC
+namespace tpc
 {
 struct ClusterNative {
 };
@@ -39,7 +39,7 @@ struct Constants {
   static constexpr int MAXSECTOR = GPUCA_NSLICES;
   static constexpr int MAXGLOBALPADROW = GPUCA_ROW_COUNT;
 };
-} // namespace TPC
+} // namespace tpc
 } // namespace o2
 #endif
 
@@ -47,7 +47,7 @@ namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
-struct ClusterNativeAccessExt : public o2::TPC::ClusterNativeAccessFullTPC {
+struct ClusterNativeAccessExt : public o2::tpc::ClusterNativeAccessFullTPC {
   unsigned int clusterOffset[GPUCA_NSLICES][GPUCA_ROW_COUNT];
 };
 } // namespace gpu

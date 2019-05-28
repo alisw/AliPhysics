@@ -36,8 +36,6 @@
 #include "GPUTPCSliceOutput.h"
 #include "GPUDataTypes.h"
 
-#include "utils/bitfield.h"
-
 namespace o2
 {
 namespace its
@@ -75,6 +73,8 @@ class GPUReconstruction
   using GeometryType = GPUDataTypes::GeometryType;
   using DeviceType = GPUDataTypes::DeviceType;
   using RecoStep = GPUDataTypes::RecoStep;
+  using RecoStepField = GPUDataTypes::RecoStepField;
+  using InOutTypeField = GPUDataTypes::InOutTypeField;
 
   static constexpr const char* const GEOMETRY_TYPE_NAMES[] = { "INVALID", "ALIROOT", "O2" };
 #ifdef GPUCA_TPC_GEOMETRY_O2
@@ -96,9 +96,10 @@ class GPUReconstruction
                                          TRD_TRACKLET = 8,
                                          RAW_CLUSTERS = 9,
                                          CLUSTERS_NATIVE = 10,
-                                         TRD_TRACKLET_MC = 11 };
-  static constexpr const char* const IOTYPENAMES[] = { "TPC Clusters", "TPC Slice Tracks", "TPC Slice Track Clusters", "TPC Cluster MC Labels", "TPC Track MC Informations", "TPC Tracks", "TPC Track Clusters", "TRD Tracks", "TRD Tracklets", "Raw Clusters", "ClusterNative", "TRD Tracklet MC Labels" };
-  typedef bitfield<RecoStep, unsigned int> RecoStepField;
+                                         TRD_TRACKLET_MC = 11,
+                                         TPC_COMPRESSED_CL = 12 };
+  static constexpr const char* const IOTYPENAMES[] = { "TPC Clusters", "TPC Slice Tracks", "TPC Slice Track Clusters", "TPC Cluster MC Labels", "TPC Track MC Informations", "TPC Tracks", "TPC Track Clusters",
+                                                       "TRD Tracks", "TRD Tracklets", "Raw Clusters", "ClusterNative", "TRD Tracklet MC Labels", "TPC Compressed Clusters" };
 
   // Functionality to create an instance of GPUReconstruction for the desired device
   static GPUReconstruction* CreateInstance(const GPUSettingsProcessing& cfg);
@@ -106,16 +107,51 @@ class GPUReconstruction
   static GPUReconstruction* CreateInstance(int type, bool forceType) { return CreateInstance((DeviceType)type, forceType); }
   static GPUReconstruction* CreateInstance(const char* type, bool forceType);
 
+  // Helpers for kernel launches
+  template <class T, int I = 0>
+  class classArgument
+  {
+  };
+
+  typedef void deviceEvent; // We use only pointers anyway, and since cl_event and cudaEvent_t are actually pointers, we can cast them to deviceEvent* this way.
+
+  enum class krnlDeviceType : int { CPU = 0,
+                                    Device = 1,
+                                    Auto = -1 };
+  struct krnlExec {
+    constexpr krnlExec(unsigned int b, unsigned int t, int s, krnlDeviceType d = krnlDeviceType::Auto) : nBlocks(b), nThreads(t), stream(s), device(d) {}
+    unsigned int nBlocks;
+    unsigned int nThreads;
+    int stream;
+    krnlDeviceType device;
+  };
+  struct krnlRunRange {
+    constexpr krnlRunRange() = default;
+    constexpr krnlRunRange(unsigned int a) : start(a), num(0) {}
+    constexpr krnlRunRange(unsigned int s, int n) : start(s), num(n) {}
+
+    unsigned int start = 0;
+    int num = 0;
+  };
+  struct krnlEvent {
+    constexpr krnlEvent(deviceEvent* e = nullptr, deviceEvent* el = nullptr, int n = 1) : ev(e), evList(el), nEvents(n) {}
+    deviceEvent* ev;
+    deviceEvent* evList;
+    int nEvents;
+  };
+
+  // Global steering functions
   template <class T>
   T* AddChain();
 
   int Init();
   int Finalize();
+  int Exit();
 
   void DumpSettings(const char* dir = "");
   void ReadSettings(const char* dir = "");
 
-  virtual int RunStandalone() = 0;
+  virtual int RunChains() = 0;
 
   // Helpers for memory allocation
   GPUMemoryResource& Res(short num) { return mMemoryResources[num]; }
@@ -144,28 +180,15 @@ class GPUReconstruction
   const GPUSettingsDeviceProcessing& GetDeviceProcessingSettings() const { return mDeviceProcessingSettings; }
   bool IsInitialized() const { return mInitialized; }
   void SetSettings(float solenoidBz);
-  void SetSettings(const GPUSettingsEvent* settings, const GPUSettingsRec* rec = nullptr, const GPUSettingsDeviceProcessing* proc = nullptr);
+  void SetSettings(const GPUSettingsEvent* settings, const GPUSettingsRec* rec = nullptr, const GPUSettingsDeviceProcessing* proc = nullptr, const GPURecoStepConfiguration* workflow = nullptr);
   void SetResetTimers(bool reset) { mDeviceProcessingSettings.resetTimers = reset; }
+  void SetDebugLevel(int level) { mDeviceProcessingSettings.debugLevel = level; }
   void SetOutputControl(const GPUOutputControl& v) { mOutputControl = v; }
   void SetOutputControl(void* ptr, size_t size);
   GPUOutputControl& OutputControl() { return mOutputControl; }
   virtual int GetMaxThreads();
   const void* DeviceMemoryBase() const { return mDeviceMemoryBase; }
 
-  RecoStepField& RecoSteps()
-  {
-    if (mInitialized) {
-      throw std::runtime_error("Cannot change reco steps once initialized");
-    }
-    return mRecoSteps;
-  }
-  RecoStepField& RecoStepsGPU()
-  {
-    if (mInitialized) {
-      throw std::runtime_error("Cannot change reco steps once initialized");
-    }
-    return mRecoStepsGPU;
-  }
   RecoStepField GetRecoSteps() const { return mRecoSteps; }
   RecoStepField GetRecoStepsGPU() const { return mRecoStepsGPU; }
 
@@ -220,8 +243,10 @@ class GPUReconstruction
   GPUSettingsDeviceProcessing mDeviceProcessingSettings; // Processing Parameters (at init level)
   GPUOutputControl mOutputControl;                       // Controls the output of the individual components
 
-  RecoStepField mRecoSteps = (unsigned char)-1;
-  RecoStepField mRecoStepsGPU = (unsigned char)-1;
+  RecoStepField mRecoSteps = RecoStep::AllRecoSteps;
+  RecoStepField mRecoStepsGPU = RecoStep::AllRecoSteps;
+  InOutTypeField mRecoStepsInputs = 0;
+  InOutTypeField mRecoStepsOutputs = 0;
 
   // Ptrs to host and device memory;
   void* mHostMemoryBase = nullptr;
@@ -423,10 +448,11 @@ inline std::unique_ptr<T> GPUReconstruction::ReadFlatObjectFromFile(const char* 
   if (fp == nullptr) {
     return nullptr;
   }
-  size_t size[2], r;
+  size_t size[2] = { 0 }, r;
   r = fread(size, sizeof(size[0]), 2, fp);
   if (r == 0 || size[0] != sizeof(T)) {
     fclose(fp);
+    printf("ERROR reading %s, invalid size: %lld (%lld expected)\n", file, (long long int)size[0], (long long int)sizeof(T));
     return nullptr;
   }
   std::unique_ptr<T> retVal(new T);

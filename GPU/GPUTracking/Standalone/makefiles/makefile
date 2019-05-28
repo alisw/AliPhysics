@@ -1,10 +1,10 @@
 all								: all_tmp
 
-ARCH							:= $(shell sort <<< $$MACHTYPE)
+SHELL							:= /bin/bash
+ARCH							:= $(shell echo $$MACHTYPE)
 ARCHCHK							:= $(shell if [ -a makefiles/$(ARCH).mak ]; then echo -n 1; else echo -n 0; fi)
-ifeq ($(ARCHCHK), 1)
-else
-$(warning Unknown Architecture: $(ARCH) $(ARCHCHK), defaulting to x86_64-pc-linux-gnu)
+ifeq ($(ARCHCHK), 0)
+$(warning Unknown Architecture: $(ARCH), defaulting to x86_64-pc-linux-gnu)
 ARCH							:= x86_64-pc-linux-gnu
 endif
 ifeq ($(ARCH), i686-pc-cygwin)
@@ -81,7 +81,13 @@ MKDIR							= $(HIDEECHOB) mkdir -p `echo $@ | sed 's,/[a-zA-Z0-9._-]*$$,,'` `ec
 
 ALLDEP							+= makefiles/makefile $(CONFIGFILE) makefiles/$(ARCHFILE) config.mak
 include							makefiles/$(ARCHFILE)
+ifneq ($(LINK_OVERRIDE), )
+LINK							= $(LINK_OVERRIDE)
+endif
 HIPCC							= hipcc
+ifneq ($(HIP_TARGET), )
+HIPCC							+= --amdgpu-target=$(HIP_TARGET)
+endif
 
 GCCFLAGSARCH					+= $(GCCARCHA)
 ifneq ($(CONFIG_CPP), )
@@ -201,7 +207,7 @@ LIBFILES						= $(LIBSUSE)
 									$(QTFILES:%.ui=$(WORKPATH)/qt/%_moc.cpp) $(QTFILES:%.ui=$(WORKPATH)/qt/%_ui.h) $(CLFILES:%.cl=$(WORKPATH)/cl/%.clbin)
 
 $(EXECUTABLE):					$(EXTRADEPS) $(OBJFILES) $(EXTRAOBJFILES) $(ALLDEP)
-								$(LINK) $(EXTRAFLAGSLINK) $(LIBPATHSUSE) $(OBJFILES) $(EXTRAOBJFILES) $(LIBFILES) $(LINKFLAGSUSE) $(LINKOUTPUT) $(LINKTARGETTYPE)
+								$(LINK) $(EXTRAFLAGSLINK) $(LIBPATHSUSE) $(OBJFILES) $(EXTRAOBJFILES) $(LIBFILES) $(LINKOUTPUT) $(LINKTARGETTYPE)
 								$(HIDEECHOA) if [ -e "$(BUILDSCRIPT)" ]; then ./$(BUILDSCRIPT); fi
 
 $(WORKPATH)/cpp/%.$(OBJ):		%.cpp $(ALLDEP)
@@ -221,7 +227,7 @@ $(WORKPATH)/cu/%.cpp:			%.cu $(ALLDEP)
 								$(NVCC) $(NVCCFLAGSUSE) $(NVCCFLAGSDC) $(CUDAINCLUDEPATHS) $(CUDADEFINES) $(FILEFLAGS$<) --cuda --output-file "$@" $<
 								
 $(WORKPATH)/hip/%.$(OBJ):		%.hip.cpp $(ALLDEP)
-								$(HIPCC) --amdgpu-target=gfx906 $(CLANGFLAGSUSE) $(CLANGFLAGSCOMMON) $(GCCINCLUDEPATHS) $(GCCDEFINES) $(COMPILETARGETTYPE) $(FILEFLAGS$<) -Wno-unused-command-line-argument -Wno-invalid-constexpr -c $< -o $@
+								$(HIPCC) $(CLANGFLAGSUSE) $(CLANGFLAGSCOMMON) $(GCCINCLUDEPATHS) $(GCCDEFINES) $(COMPILETARGETTYPE) $(FILEFLAGS$<) -Wno-unused-command-line-argument -Wno-invalid-constexpr -c $< -o $@
 
 $(WORKPATH)/asm/%.$(OBJ):		$(WORKPATH)/asm/%.asm $(ALLDEP)
 								$(ASM) $(COMPILEOUTPUT) $(ASMONLY) $<
@@ -260,7 +266,7 @@ $(WORKPATH)/_makefiles_support_opencl.$(OBJ):	makefiles/makefile_opencl_compiler
 								$(HIDEECHOB) mkdir -p $(WORKPATH)
 								$(CC) $(INCLUDEPATHSUSE) $(COMPILEONLY) $< $(COMPILEOUTPUT)
 $(WORKPATH)/_makefiles_support_opencl.exe:	$(WORKPATH)/_makefiles_support_opencl.$(OBJ) $(ALLDEP)
-								$(LINK) $(LIBPATHSUSE) $< $(LINKFLAGSUSE) $(LINKOUTPUT) $(LINKFLAGSARCH) $(OPENCLLIB)
+								$(LINK) $(LIBPATHSUSE) $< $(LINKOUTPUT) $(LINKFLAGSARCH) $(OPENCLLIB)
 
 $(WORKPATH)/cl/%.clbin:			%.cl $(WORKPATH)/_makefiles_support_opencl.exe $(ALLDEP)
 								$(HIDEECHOA) $(OPENCL_ENVIRONMENT) ./$(WORKPATH)/_makefiles_support_opencl.exe -output-file $@ $< -- -I. $(GCCINCLUDEPATHS:-isystem=-I) $(GCCDEFINES) $(OPENCL_DEF_OPTIONS) $(OPENCL_OPTIONS) > /dev/null
