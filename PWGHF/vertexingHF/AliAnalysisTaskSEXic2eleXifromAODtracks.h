@@ -144,7 +144,7 @@ class AliAnalysisTaskSEXic2eleXifromAODtracks : public AliAnalysisTaskSE
   void DoEventMixingWithPools(Int_t index);
   void FillBackground(std::vector<TLorentzVector * > mixTypeE,std::vector<TVector * > mixTypeEVars, std::vector<TLorentzVector * > mixTypeL, std::vector<TVector * > mixTypeLVars, Int_t chargexi);
   Int_t GetPoolIndex(Double_t zvert, Double_t mult, Double_t rp);
-void SetFunction(TF1* weightfit){fweightfit=weightfit;}
+void SetFunction(TF1* weightfit){fWeightFit=weightfit;}
 
  private:
 
@@ -415,7 +415,7 @@ void SetFunction(TF1* weightfit){fweightfit=weightfit;}
   TH2D *fHistoResponseXiPt; //!<! Response function Xi pT <- True Xic pt
   
   TH2D *fHistoResponseEleXiPt; //!<! Response function e-Xi pT <- XicPt
-  TH2D *fHistoResponseEleXiPtweight; // weight the response funtion 
+  TH2D *fHistoResponseEleXiPtWeight; // weight of  the response funtion 
   
   TH2D *fHistoResponseXiPtvsEleXiPt; //!<! Response function Xi pT <- e-Xi pT
   TH2D *fHistoResponseXiPtXib; //!<! Response function Xi pT <- True ept
@@ -462,7 +462,7 @@ void SetFunction(TF1* weightfit){fweightfit=weightfit;}
   TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
 
-  TF1 * fweightfit;// implement the fit  function of weight
+  TF1 * fWeightFit; //!<!  implement the fit  function of weight
 
 
   //Mixing
@@ -487,7 +487,7 @@ void SetFunction(TF1* weightfit){fweightfit=weightfit;}
   std::vector<std::vector< std::vector< TVector * > > > m_ReservoirVarsL2; //!<! reservoir
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,35); /// class for Xic->e Xi
+  ClassDef(AliAnalysisTaskSEXic2eleXifromAODtracks,36); /// class for Xic->e Xi
   /// \endcond
 };
 #endif

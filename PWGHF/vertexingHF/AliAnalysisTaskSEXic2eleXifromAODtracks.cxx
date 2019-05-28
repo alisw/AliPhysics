@@ -79,8 +79,9 @@
 
 using std::cout;
 using std::endl;
-
+/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskSEXic2eleXifromAODtracks);
+/// \endcond
 
 //__________________________________________________________________________
 AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks() : 
@@ -315,7 +316,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	
 	
 	fHistoResponseEleXiPt(0),
-    fHistoResponseEleXiPtweight(0),// check the weight
+    fHistoResponseEleXiPtWeight(0),// check the weight
 	
 	fHistoResponseXiPtvsEleXiPt(0),
 	fHistoResponseXiPtXib(0),
@@ -367,7 +368,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   m_ReservoirVarsE(),
   m_ReservoirVarsL1(),
   m_ReservoirVarsL2(),
-  fweightfit(0x0)
+  fWeightFit(0x0)
 
 {
   //
@@ -622,7 +623,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
 	
 	
 	fHistoResponseEleXiPt(0),
-	fHistoResponseEleXiPtweight(0),
+	fHistoResponseEleXiPtWeight(0),
 	
 	
 	fHistoResponseXiPtvsEleXiPt(0),
@@ -675,7 +676,7 @@ AliAnalysisTaskSEXic2eleXifromAODtracks::AliAnalysisTaskSEXic2eleXifromAODtracks
   m_ReservoirVarsE(),
   m_ReservoirVarsL1(),
   m_ReservoirVarsL2(),
-fweightfit(0x0)
+  fWeightFit(0x0)
 
 {
   //
@@ -1920,7 +1921,7 @@ void AliAnalysisTaskSEXic2eleXifromAODtracks::FillROOTObjects(AliAODRecoCascadeH
 							fHistoResponseElePt->Fill(mcxic->Pt(),trk->Pt());
 							fHistoResponseXiPt->Fill(mcxic->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 							fHistoResponseEleXiPt->Fill(mcxic->Pt(),exobj->Pt());
-							fHistoResponseEleXiPtweight->Fill(mcxic->Pt(),exobj->Pt(),fweightfit->Eval(mcxic->Pt()));
+							fHistoResponseEleXiPtWeight->Fill(mcxic->Pt(),exobj->Pt(),fWeightFit->Eval(mcxic->Pt()));
 							fHistoResponseXiPtvsEleXiPt->Fill(exobj->Pt(),sqrt(pow(casc->MomXiX(),2)+pow(casc->MomXiY(),2)));
 
 							Double_t cont_eleptvsxiptvsxicpt[4];
@@ -4001,8 +4002,8 @@ void  AliAnalysisTaskSEXic2eleXifromAODtracks::DefineAnalysisHistograms()
   fOutputAll->Add(fHistoResponseEleXiPt);
 
   
-  fHistoResponseEleXiPtweight = new TH2D("fHistoResponseEleXiPtweight","",100,0.,20.,100,0.,20.);
-  fOutputAll->Add(fHistoResponseEleXiPtweight);
+  fHistoResponseEleXiPtWeight = new TH2D("fHistoResponseEleXiPtWeight","",100,0.,20.,100,0.,20.);
+  fOutputAll->Add(fHistoResponseEleXiPtWeight);
   
   
   fHistoResponseXiPtvsEleXiPt = new TH2D("fHistoResponseXiPtvsEleXiPt","",100,0.,20.,100,0.,20.);
@@ -4923,7 +4924,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			Bool_t xi_flag = kFALSE;
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mccascpart = 0;
-			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -4958,7 +4959,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 			AliAODMCParticle *mcepart = 0;
 			AliAODMCParticle *mcxicpart = 0;
 			AliAODMCParticle *mccascpart = 0;
-			for(Int_t idau=mcpart->GetFirstDaughter();idau<mcpart->GetLastDaughter()+1;idau++)
+			for(Int_t idau=mcpart->GetDaughterFirst();idau<mcpart->GetDaughterLast()+1;idau++)
 			{
 				if(idau<0) break;
 				AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
@@ -4975,7 +4976,7 @@ Bool_t AliAnalysisTaskSEXic2eleXifromAODtracks::MakeMCAnalysis(TClonesArray *mcA
 
 			Bool_t xi_flag = kFALSE;
       if(e_flag && xic_flag){
-        for(Int_t idau=mcxicpart->GetFirstDaughter();idau<mcxicpart->GetLastDaughter()+1;idau++)
+        for(Int_t idau=mcxicpart->GetDaughterFirst();idau<mcxicpart->GetDaughterLast()+1;idau++)
         {
           if(idau<0) break;
           AliAODMCParticle *mcdau = (AliAODMCParticle*) mcArray->At(idau);
