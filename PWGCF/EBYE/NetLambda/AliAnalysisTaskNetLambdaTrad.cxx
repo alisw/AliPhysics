@@ -306,7 +306,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
         if(v0Radius > 200.) continue;
-        if(TMath::Abs(eta) < 0.5) continue;
+        if(TMath::Abs(eta) > 0.5) continue;
         
         
         
