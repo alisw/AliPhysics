@@ -2248,7 +2248,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
- Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
+ Double_t jetPt = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
   
   if(fMCMode==kSignalOnly){
    
