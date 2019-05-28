@@ -2236,6 +2236,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   if (isSelected == 0) return kFALSE;
   TString hname;
   TString hname2;
+   TString hname3;
+  TString hname4;
   Int_t MCtruthPdgCode = 0;
   Int_t TheTrueCode = 0;
   Double_t invMassD = 0;
@@ -2245,6 +2247,12 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   AliAODMCParticle* aodMcPart; 
   hname2 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
   TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
+
+   hname3 = TString::Format("%s/EfficiencyMatchesNonPrompt", fName.Data());
+  TH2* EfficiencyMatchesPrompt = static_cast<TH2*>(fHistManager->FindObject(hname3));
+  AliAODMCParticle* aodMcPart; 
+  hname4 = TString::Format("%s/EfficiencyGeneratorNonPrompt", fName.Data());
+  TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname4));
   
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
@@ -2257,7 +2265,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){ 
 	if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGeneratorPrompt->Fill(aodMcPartAll->Pt(),jetPt);}
-
+       if(origin.first !=kFromCharm){ 
+	if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGeneratorNonPrompt->Fill(aodMcPartAll->Pt(),jetPt);}
      }
   }
   
@@ -2267,7 +2276,11 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
       if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly){
          auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
 	 if(origin.first == kFromCharm) {
-	   if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetPt,xflagprompt);}}
+	   if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetPt);}
+         if(origin.first != kFromCharm) {
+	   if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetPt);}  
+
+      }
 
   }
   else if (isSelected == 2) { // selected as a D0bar
@@ -2277,7 +2290,9 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
       if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly){
       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
-	if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetPt,xflagprompt);}
+	if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetPt);}
+       if(origin.first != kFromCharm){
+	if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetPt);}
   }
 
   }
@@ -3381,13 +3396,22 @@ void AliAnalysisTaskDmesonJetsSub::UserCreateOutputObjects()
     htitle = hname + ";#it{#phi}_{D};counts";
     fHistManager.CreateTH1(hname, htitle, 200, 0, TMath::TwoPi());
 
-     hname = TString::Format("%s/EfficiencyMatches",param.GetName());
-      htitle = hname + ";D meson matches";
+     hname = TString::Format("%s/EfficiencyMatchesPrompt",param.GetName());
+      htitle = hname + ";D meson matches prompt";
       fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
 
-      hname = TString::Format("%s/EfficiencyGenerator",param.GetName());
-      htitle = hname + ";D meson part level";
+      hname = TString::Format("%s/EfficiencyGeneratorPrompt",param.GetName());
+      htitle = hname + ";D meson part level prompt";
       fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
+
+       hname = TString::Format("%s/EfficiencyMatchesNonPromopt",param.GetName());
+      htitle = hname + ";D meson matches prompt";
+      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
+
+      hname = TString::Format("%s/EfficiencyGeneratorNonPrompt",param.GetName());
+      htitle = hname + ";D meson part level prompt";
+      fHistManager.CreateTH2(hname,htitle,100,0,50,20,0,100);
+      
 
     if (param.fMCMode != kMCTruth) {
       if (param.fCandidateType == kD0toKpi || param.fCandidateType == kD0toKpiLikeSign) {
