@@ -9811,12 +9811,10 @@ void AliHFSystErr::InitD0toKpi2018PbPb010() {
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",100,0,50);
   for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0.);
-  fMCPtShape->SetBinContent(3,0.08);
-  fMCPtShape->SetBinContent(4,0.08);
-  fMCPtShape->SetBinContent(5,0.07);
-  fMCPtShape->SetBinContent(6,0.07);
-  fMCPtShape->SetBinContent(7,0.01);
-  fMCPtShape->SetBinContent(8,0.01);
+  fMCPtShape->SetBinContent(3,0.03);
+  fMCPtShape->SetBinContent(4,0.03);
+  fMCPtShape->SetBinContent(5,0.02);
+  fMCPtShape->SetBinContent(6,0.02);
   for(Int_t i=21;i<=24;i++) fMCPtShape->SetBinContent(i,0.); //10-12
   for(Int_t i=25;i<=32;i++) fMCPtShape->SetBinContent(i,0.); //12-16
   for(Int_t i=33;i<=48;i++) fMCPtShape->SetBinContent(i,0.); //16-24
@@ -9934,12 +9932,10 @@ void AliHFSystErr::InitD0toKpi2018PbPb3050() {
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",72,0,36);
   for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0.);
-  fMCPtShape->SetBinContent(3,0.08);
-  fMCPtShape->SetBinContent(4,0.08);
-  fMCPtShape->SetBinContent(5,0.07);
-  fMCPtShape->SetBinContent(6,0.07);
-  fMCPtShape->SetBinContent(7,0.01);
-  fMCPtShape->SetBinContent(8,0.01);
+  fMCPtShape->SetBinContent(3,0.03);
+  fMCPtShape->SetBinContent(4,0.03);
+  fMCPtShape->SetBinContent(5,0.01);
+  fMCPtShape->SetBinContent(6,0.01);
   for(Int_t i=21;i<=24;i++) fMCPtShape->SetBinContent(i,0.); //10-12
   for(Int_t i=25;i<=32;i++) fMCPtShape->SetBinContent(i,0.); //12-16
   for(Int_t i=33;i<=48;i++) fMCPtShape->SetBinContent(i,0.); //16-24
