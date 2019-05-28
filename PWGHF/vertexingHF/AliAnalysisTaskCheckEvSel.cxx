@@ -69,8 +69,14 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNTracksBC0VsV0Cent(0x0),
   fHistNTrackletsVsV0Cent(0x0),
   fHistNTrackletsGoldenVsV0Cent(0x0),
-  fHistNTrackletsGoldenVsV0CentVsZvert(0x0),
+  fHistNTrackletsGoldenVsV0CentVsZvert(0x0),  
   fHistPhiTrackelts(0x0),
+  fHistNCL0VsV0Cent(0x0),
+  fHistNCL1VsV0Cent(0x0),
+  fHistT0AmplVsV0Ampl(0x0),
+  fHistT0AmplVsV0Cent(0x0),
+  fHistT0AmplVsNCL0(0x0),
+  fHistT0AmplVsCL0Cent(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
   fHistNTracksBC0VsNTracksFB4(0x0),
@@ -119,6 +125,12 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNTrackletsGoldenVsV0Cent(0x0),
   fHistNTrackletsGoldenVsV0CentVsZvert(0x0),
   fHistPhiTrackelts(0x0),
+  fHistNCL0VsV0Cent(0x0),
+  fHistNCL1VsV0Cent(0x0),
+  fHistT0AmplVsV0Ampl(0x0),
+  fHistT0AmplVsV0Cent(0x0),
+  fHistT0AmplVsNCL0(0x0),
+  fHistT0AmplVsCL0Cent(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
   fHistNTracksBC0VsNTracksFB4(0x0),
@@ -169,6 +181,12 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNTrackletsGoldenVsV0Cent;
     delete fHistNTrackletsGoldenVsV0CentVsZvert;
     delete fHistPhiTrackelts;
+    delete fHistNCL0VsV0Cent;
+    delete fHistNCL1VsV0Cent;
+    delete fHistT0AmplVsV0Ampl;
+    delete fHistT0AmplVsV0Cent;
+    delete fHistT0AmplVsNCL0;
+    delete fHistT0AmplVsCL0Cent;
     delete fHistNTracksTPCoutVsNTracklets;
     delete fHistNTracksFB4VsNTracklets;
     delete fHistNTracksBC0VsNTracksFB4;
@@ -256,6 +274,19 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
 
   fHistPhiTrackelts = new TH1F("hPhiTrackelts"," ; #varphi (rad)",200,0.,2.*TMath::Pi());
   fOutput->Add(fHistPhiTrackelts);
+
+  fHistNCL0VsV0Cent = new TH2F("hNCL0VsV0Cent"," ; Centrality ; N_{CL0}",105,0.,105.,200,-0.5,2*maxMult-0.5);
+  fHistNCL1VsV0Cent = new TH2F("hNCL1VsV0Cent"," ; Centrality ; N_{CL1}",105,0.,105.,200,-0.5,2*maxMult-0.5);
+  fHistT0AmplVsV0Ampl = new TH2F("hT0AmplVsV0Ampl"," ; V0 amplitude ; T0 amplitude",200,0.,60000,200,0.,2000.);
+  fHistT0AmplVsV0Cent = new TH2F("hT0AmplVsV0Cent"," ; Centrality ; T0 amplitude",105,0.,105.,200,0.,2000.);
+  fHistT0AmplVsNCL0 = new TH2F("hT0AmplVsNCL0"," ; N_{CL0} ; T0 amplitude",200,-0.5,2*maxMult-0.5,200,0.,2000.);
+  fHistT0AmplVsCL0Cent = new TH2F("hT0AmplVsCL0Cent"," ; Centrality CL0 ; T0 amplitude",105,0.,105.,200,0.,2000.);
+  fOutput->Add(fHistNCL0VsV0Cent);
+  fOutput->Add(fHistNCL1VsV0Cent);
+  fOutput->Add(fHistT0AmplVsV0Ampl);
+  fOutput->Add(fHistT0AmplVsV0Cent);
+  fOutput->Add(fHistT0AmplVsNCL0);
+  fOutput->Add(fHistT0AmplVsCL0Cent);
   
   fHistZVertexSPDBeforeCuts = new TH2F("hZVertexSPDBeforeCuts"," ; z_{SPDvertex} ; z_{TRKvertex}",400,-20.,20.,400,-20.,20.);
   fOutput->Add(fHistZVertexSPDBeforeCuts);
@@ -417,9 +448,15 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     }
   }
 
+  Double_t ncl0 = aod->GetNumberOfITSClusters(0);
   Double_t ncl1 = aod->GetNumberOfITSClusters(1);
   Double_t zvSPD=vertexSPD->GetZ();
   Double_t zvTRK=vertex->GetZ();
+  AliAODVZERO* vzer=(AliAODVZERO*)aod->GetVZEROData();
+  Float_t v0ampl=vzer->GetMTotV0A()+vzer->GetMTotV0C();
+  AliAODTZERO* tz=aod->GetTZEROData();
+  Double_t t0ampl=0;
+  for(Int_t j=0; j<24; j++) t0ampl+=tz->GetAmp(j);
 
   if(!isEvSel)fHistWhyRej->Fill(wrej); 
     
@@ -584,7 +621,12 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNTracksTPCoutVsNTracklets->Fill(ntracksTPCout,ntrkl);
     fHistNTracksFB4VsNTracklets->Fill(ntracksFB4,ntrkl);
     fHistNTracksBC0VsNTracksFB4->Fill(ntracksBC0,ntracksFB4);
-  
+    fHistNCL0VsV0Cent->Fill(centr,ncl0);
+    fHistNCL1VsV0Cent->Fill(centr,ncl1);
+    fHistT0AmplVsV0Cent->Fill(centr,t0ampl);
+    fHistT0AmplVsV0Ampl->Fill(v0ampl,t0ampl);
+    fHistT0AmplVsNCL0->Fill(ncl0,t0ampl);
+    fHistT0AmplVsCL0Cent->Fill(centrCL0,t0ampl);
     Double_t vec4Sp[8];
     vec4Sp[0]=centr;
     vec4Sp[1]=zvSPD;
