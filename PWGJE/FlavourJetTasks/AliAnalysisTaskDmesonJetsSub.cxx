@@ -2249,10 +2249,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
 
    hname3 = TString::Format("%s/EfficiencyMatchesNonPrompt", fName.Data());
-  TH2* EfficiencyMatchesPrompt = static_cast<TH2*>(fHistManager->FindObject(hname3));
+  TH2* EfficiencyMatchesNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname3));
   AliAODMCParticle* aodMcPart; 
   hname4 = TString::Format("%s/EfficiencyGeneratorNonPrompt", fName.Data());
-  TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname4));
+  TH2* EfficiencyGeneratorNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname4));
   
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
