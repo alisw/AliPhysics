@@ -97,7 +97,7 @@ void AliGFW::Fill(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Int_t
 TComplex AliGFW::TwoRec(Int_t n1, Int_t n2, Int_t p1, Int_t p2, Int_t ptbin, AliGFWCumulant *r1, AliGFWCumulant *r2, AliGFWCumulant *r3) {
   TComplex part1 = r1->Vec(n1,p1,ptbin);
   TComplex part2 = r2->Vec(n2,p2,ptbin);
-  TComplex part3 = r3->Vec(n1+n2,p1+p2,ptbin);
+  TComplex part3 = r3?r3->Vec(n1+n2,p1+p2,ptbin):TComplex(0,0);
   TComplex formula = part1*part2-part3;
   return formula;
 };
@@ -251,7 +251,7 @@ TComplex AliGFW::Calculate(Int_t poi, Int_t ref, vector<Int_t> hars, Int_t ptbin
   AliGFWCumulant *qovl = qpoi;
   return RecursiveCorr(qpoi, qref, qovl, ptbin, hars);
 };
-TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero) {
+TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap) {
   if(corconf.Regs.size()==0) return TComplex(0,0);
   Int_t poi = corconf.Regs.at(0);
   Int_t ref = (corconf.Regs.size()>1)?corconf.Regs.at(1):corconf.Regs.at(0);
@@ -259,7 +259,7 @@ TComplex AliGFW::Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZer
   AliGFWCumulant *qpoi = &fCumulants.at(poi);
   if(!qpoi->IsPtBinFilled(ptbin)) return TComplex(0,0);
   //if(!qref->IsPtBinFilled(ptbin)) return TComplex(0,0);
-  AliGFWCumulant *qovl = qpoi;
+  AliGFWCumulant *qovl = DisableOverlap?0:qpoi;
   if(SetHarmsToZero) for(Int_t i=0;i<(Int_t)corconf.Hars.size();i++) corconf.Hars.at(i) = 0;
   TComplex retval = RecursiveCorr(qpoi, qref, qovl, ptbin, corconf.Hars);
   if(corconf.Regs2.size()==0) return retval;
