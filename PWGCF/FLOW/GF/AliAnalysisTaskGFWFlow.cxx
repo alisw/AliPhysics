@@ -435,8 +435,9 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     // mywatchStore.Start(kFALSE);
     Bool_t filled;
     for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
-      //printf("Index %i\n",l_ind);
-      filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn);
+      Bool_t DisableOL=kFALSE;
+      if(l_ind<14) DisableOL = (l_ind%2); //Only for 1, 3, 5 ... 13
+      filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn,DisableOL);
     };
     // mywatchStore.Stop();
     PostData(1,fFC);
@@ -618,7 +619,7 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(TString head, TString hn, Double_t cent, 
   };
   return kTRUE;
 };
-Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn) {
+Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t DisableOverlap) {
   Double_t dnx, val;
   dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
   if(dnx==0) return kFALSE;
@@ -627,12 +628,15 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
     fFC->FillProfile(corconf.Head.Data(),cent,val/dnx,dnx,rndmn);
     return kTRUE;
   };
+  Int_t binDisableOLFrom = fPtAxis->GetNbins()+1;
+  if(DisableOverlap)
+    binDisableOLFrom = fPtAxis->FindBin(fRFpTMax);
+  Bool_t NeedToDisable=kFALSE;
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
-    //TString tss(hn);
-    //tss.Prepend(Form("(%i) ",i-1));
-    dnx = fGFW->Calculate(corconf,i-1,kTRUE).Re();
+    if(DisableOverlap) NeedToDisable=(i>binDisableOLFrom);
+    dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).Re();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i-1,kFALSE).Re();
+    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).Re();
     fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val/dnx,dnx,rndmn);
   };
   return kTRUE;
