@@ -150,7 +150,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     // OAforPt->Add(new TNamed("MidV44","MidV44"));
     // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
     //   OAforPt->Add(new TNamed(Form("MidV44_pt_%i",i+1),"MidV44_pTDiff"));
-
+    if(0) {
     //2SENeg:
     OAforPt->Add(new TNamed("Mid2SENV22","Mid2SENV22"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
@@ -266,8 +266,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     // OAforPt->Add(new TNamed("MidGapPV44","MidGapPV44"));
     // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
     //   OAforPt->Add(new TNamed(Form("MidGapPV44_pt_%i",i+1),"MidGapPV44_pTDiff"));
-
-
+    }
 
 
     //Multi bins:
@@ -284,6 +283,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fGFW->AddRegion("poiMid",10,NoGap,-0.8,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refMid",10,NoGap,-0.8,0.8,1,2);
     //2 subevets:
+    if(0) {
     fGFW->AddRegion("poiSENeg",10,WithGap,-0.8,0.,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refSENeg",10,WithGap,-0.8,0.,1,2);
     fGFW->AddRegion("poiSEPos",10,WithGap,0.,0.8,1+fPtAxis->GetNbins(),1);
@@ -293,7 +293,7 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fGFW->AddRegion("refGapNeg",10,WithGap,-0.8,-0.5,1,2);
     fGFW->AddRegion("poiGapPos",10,WithGap,0.5,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refGapPos",10,WithGap,0.5,0.8,1,2);
-
+    }
 
   };
   if(fProduceWeights) PostData(1,fWeightList);
@@ -605,8 +605,9 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(TString head, TString hn, Double_t cent, 
   dnx = fGFW->Calculate(hn,kTRUE).Re();
   if(dnx==0) return kFALSE;
   if(!diff) {
-    val = fGFW->Calculate(hn).Re();
-    fFC->FillProfile(head.Data(),cent,val/dnx,dnx,rndmn);
+    val = fGFW->Calculate(hn).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(head.Data(),cent,val,dnx,rndmn);
     return kTRUE;
   };
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
@@ -614,8 +615,9 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(TString head, TString hn, Double_t cent, 
     tss.Prepend(Form("(%i) ",i-1));
     dnx = fGFW->Calculate(tss,kTRUE).Re();
     if(dnx==0) continue;
-    val = fGFW->Calculate(tss).Re();
-    fFC->FillProfile(Form("%s_pt_%i",head.Data(),i),cent,val/dnx,dnx,rndmn);
+    val = fGFW->Calculate(tss).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(Form("%s_pt_%i",head.Data(),i),cent,val,dnx,rndmn);
   };
   return kTRUE;
 };
@@ -624,41 +626,44 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
   dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re();
-    fFC->FillProfile(corconf.Head.Data(),cent,val/dnx,dnx,rndmn);
+    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
     return kTRUE;
   };
   Int_t binDisableOLFrom = fPtAxis->GetNbins()+1;
   if(DisableOverlap)
-    binDisableOLFrom = fPtAxis->FindBin(fRFpTMax);
+    binDisableOLFrom = fPtAxis->FindBin(fRFpTMax); //To stay in the right bin
   Bool_t NeedToDisable=kFALSE;
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
-    if(DisableOverlap) NeedToDisable=(i>binDisableOLFrom);
+    if(DisableOverlap) NeedToDisable=(i>=binDisableOLFrom);
     dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).Re();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).Re();
-    fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val/dnx,dnx,rndmn);
+    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
   };
   return kTRUE;
 };
 void AliAnalysisTaskGFWFlow::CreateCorrConfigs() {
 //  corrconfigs = new AliGFW::CorrConfig[90];
   corrconfigs.push_back(GetConf("MidV22","refMid {2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV22","poiMid refMid {2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV22","poiMid {2} refMid {-2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV24","refMid {2 2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV24","poiMid refMid {2 2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV24","poiMid {2} refMid {2 -2 -2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV26","refMid {2 2 2 -2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV26","poiMid refMid {2 2 2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV26","poiMid {2} refMid {2 2 -2 -2 -2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV28","refMid {2 2 2 2 -2 -2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV28","poiMid refMid {2 2 2 2 -2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV28","poiMid {2} refMid {2 2 2 -2 -2 -2 -2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV32","refMid {3 -3}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV32","poiMid refMid {3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV32","poiMid {3} refMid {-3}", kTRUE));
   corrconfigs.push_back(GetConf("MidV34","refMid {3 3 -3 -3}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV34","poiMid refMid {3 3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV34","poiMid {3} refMid {3 -3 -3}", kTRUE));
   corrconfigs.push_back(GetConf("MidV36","refMid {3 3 3 -3 -3 -3}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV36","poiMid refMid {3 3 3 -3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV36","poiMid {3} refMid {3 3 -3 -3 -3}", kTRUE));
   corrconfigs.push_back(GetConf("MidV42","refMid {4 -4}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV42","poiMid refMid {4 -4}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV42","poiMid {4} refMid {-4}", kTRUE));
+  return;
   //corrconfigs.push_back(GetConf("MidV44","refMid {4 4 -4 -4}", kFALSE));
   //corrconfigs.push_back(GetConf("MidV44","poiMid refMid {4 4 -4 -4}", kTRUE));
   corrconfigs.push_back(GetConf("Mid2SENV22","refSENeg {2} refSEPos {-2}", kFALSE));
