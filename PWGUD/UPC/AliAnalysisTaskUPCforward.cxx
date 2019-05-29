@@ -1030,7 +1030,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    * - with the number of events which pass the relative
    * - trigger conditions.
    * -
-   */ 
+   */
   // Int_t  counterForTrigger = 0;
   fRunNum    = fAOD->GetRunNumber();
   if ( trigger.Contains("CMUP11-B-NOPF-MUFAST") )  {
@@ -1564,7 +1564,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         fInvariantMassDistributionIncoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionIncoherentExtendedH->Fill(possibleJPsi.Mag());
   }
-  fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
+  // fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
+  if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) {
+    fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
+  }
 
 
 
