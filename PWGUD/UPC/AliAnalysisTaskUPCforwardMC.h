@@ -822,6 +822,33 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH2F*                   fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH;  //!
 
+                                /**
+                                 * This histogram shows the CosTheta vs Phi
+                                 * distribution for the J/Psi.
+                                 * The binning here reflects the binning from
+                                 * the signal extraction, meaning that this time
+                                 * we are operating in 10x10 bins, from
+                                 * -1.00 < CosTheta < 1.00 and
+                                 * -3.14 < Phi      < 3.14 .
+                                 * The name is the same just to remember its
+                                 * purpose...
+                                 * RECON level.
+                                 */
+        TH2F*                   fInvariantMassDistributionForSignalExtractionHelicityFrameH;  //!
+
+                                /**
+                                 * This histogram shows the CosTheta vs Phi
+                                 * distribution for the J/Psi.
+                                 * The binning here reflects the binning from
+                                 * the signal extraction, meaning that this time
+                                 * we are operating in 10x10 bins, from
+                                 * -1.00 < CosTheta < 1.00 and
+                                 * -3.14 < Phi      < 3.14 .
+                                 * The name is the same just to remember its
+                                 * purpose...
+                                 * GENERATED level.
+                                 */
+        TH2F*                   fMCInvariantMassDistributionForSignalExtractionHelicityFrameH;  //!
 
         //_______________________________
         // CUTS
@@ -904,7 +931,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 13);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 15);
 };
 
 #endif

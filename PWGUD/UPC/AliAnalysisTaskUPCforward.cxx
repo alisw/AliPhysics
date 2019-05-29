@@ -87,6 +87,17 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fInvariantMassDistributionAtDcaH(0),
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
+      fRunNumberTriggerCMUP11ClassH(0),
+      fRunNumberTriggerCMUP11ClassProperlyH(0),
+      fRunNumberTriggerCMUP26ClassH(0),
+      fRunNumberTriggerCMUP26ClassProperlyH(0),
+      fRunNumberTriggerCMUP6ClassH(0),
+      fRunNumberTriggerCMUP6ClassProperlyH(0),
+      fRunNumberTriggerCMUP10ClassH(0),
+      fRunNumberTriggerCMUP10ClassProperlyH(0),
+      fRunNumberTriggerCMUP13ClassH(0),
+      fRunNumberTriggerCMUP13ClassProperlyH(0),
+      fTriggersVsRunH(0),
       fInvariantMassDistributionCoherentH(0),
       fInvariantMassDistributionIncoherentH(0),
       fDimuonPtDistributionH(0),
@@ -212,6 +223,17 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fInvariantMassDistributionAtDcaH(0),
       fEntriesAgainstRunNumberH(0),
       fEntriesAgainstRunNumberProperlyH(0),
+      fRunNumberTriggerCMUP11ClassH(0),
+      fRunNumberTriggerCMUP11ClassProperlyH(0),
+      fRunNumberTriggerCMUP26ClassH(0),
+      fRunNumberTriggerCMUP26ClassProperlyH(0),
+      fRunNumberTriggerCMUP6ClassH(0),
+      fRunNumberTriggerCMUP6ClassProperlyH(0),
+      fRunNumberTriggerCMUP10ClassH(0),
+      fRunNumberTriggerCMUP10ClassProperlyH(0),
+      fRunNumberTriggerCMUP13ClassH(0),
+      fRunNumberTriggerCMUP13ClassProperlyH(0),
+      fTriggersVsRunH(0),
       fInvariantMassDistributionCoherentH(0),
       fInvariantMassDistributionIncoherentH(0),
       fDimuonPtDistributionH(0),
@@ -496,6 +518,59 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   // fEntriesAgainstRunNumberProperlyH->SetCanExtend(TH1::kAllAxes);
   fEntriesAgainstRunNumberProperlyH->LabelsDeflate();
   fOutputList->Add(fEntriesAgainstRunNumberProperlyH);
+
+  fRunNumberTriggerCMUP11ClassH = new TH1F("fRunNumberTriggerCMUP11ClassH", "fRunNumberTriggerCMUP11ClassH", 10000, 290000, 300000);
+  fOutputList->Add(fRunNumberTriggerCMUP11ClassH);
+
+  fRunNumberTriggerCMUP11ClassProperlyH = new TH1F("fRunNumberTriggerCMUP11ClassProperlyH", "fRunNumberTriggerCMUP11ClassProperlyH", 10000, 290000, 300000);
+  fRunNumberTriggerCMUP11ClassProperlyH->SetStats(0);
+  fRunNumberTriggerCMUP11ClassProperlyH->SetFillColor(38);
+  // fRunNumberTriggerCMUP11ClassProperlyH->SetCanExtend(TH1::kAllAxes);
+  fRunNumberTriggerCMUP11ClassProperlyH->LabelsDeflate();
+  fOutputList->Add(fRunNumberTriggerCMUP11ClassProperlyH);
+
+  fRunNumberTriggerCMUP26ClassH = new TH1F("fRunNumberTriggerCMUP26ClassH", "fRunNumberTriggerCMUP26ClassH", 10000, 290000, 300000);
+  fOutputList->Add(fRunNumberTriggerCMUP26ClassH);
+
+  fRunNumberTriggerCMUP26ClassProperlyH = new TH1F("fRunNumberTriggerCMUP26ClassProperlyH", "fRunNumberTriggerCMUP26ClassProperlyH", 10000, 290000, 300000);
+  fRunNumberTriggerCMUP26ClassProperlyH->SetStats(0);
+  fRunNumberTriggerCMUP26ClassProperlyH->SetFillColor(38);
+  // fRunNumberTriggerCMUP26ClassProperlyH->SetCanExtend(TH1::kAllAxes);
+  fRunNumberTriggerCMUP26ClassProperlyH->LabelsDeflate();
+  fOutputList->Add(fRunNumberTriggerCMUP26ClassProperlyH);
+
+  fRunNumberTriggerCMUP6ClassH = new TH1F("fRunNumberTriggerCMUP6ClassH", "fRunNumberTriggerCMUP6ClassH", 10000, 290000, 300000);
+  fOutputList->Add(fRunNumberTriggerCMUP6ClassH);
+
+  fRunNumberTriggerCMUP6ClassProperlyH = new TH1F("fRunNumberTriggerCMUP6ClassProperlyH", "fRunNumberTriggerCMUP6ClassProperlyH", 10000, 290000, 300000);
+  fRunNumberTriggerCMUP6ClassProperlyH->SetStats(0);
+  fRunNumberTriggerCMUP6ClassProperlyH->SetFillColor(38);
+  // fRunNumberTriggerCMUP6ClassProperlyH->SetCanExtend(TH1::kAllAxes);
+  fRunNumberTriggerCMUP6ClassProperlyH->LabelsDeflate();
+  fOutputList->Add(fRunNumberTriggerCMUP6ClassProperlyH);
+
+  fRunNumberTriggerCMUP10ClassH = new TH1F("fRunNumberTriggerCMUP10ClassH", "fRunNumberTriggerCMUP10ClassH", 10000, 290000, 300000);
+  fOutputList->Add(fRunNumberTriggerCMUP10ClassH);
+
+  fRunNumberTriggerCMUP10ClassProperlyH = new TH1F("fRunNumberTriggerCMUP10ClassProperlyH", "fRunNumberTriggerCMUP10ClassProperlyH", 10000, 290000, 300000);
+  fRunNumberTriggerCMUP10ClassProperlyH->SetStats(0);
+  fRunNumberTriggerCMUP10ClassProperlyH->SetFillColor(38);
+  // fRunNumberTriggerCMUP10ClassProperlyH->SetCanExtend(TH1::kAllAxes);
+  fRunNumberTriggerCMUP10ClassProperlyH->LabelsDeflate();
+  fOutputList->Add(fRunNumberTriggerCMUP10ClassProperlyH);
+
+  fRunNumberTriggerCMUP13ClassH = new TH1F("fRunNumberTriggerCMUP13ClassH", "fRunNumberTriggerCMUP13ClassH", 10000, 290000, 300000);
+  fOutputList->Add(fRunNumberTriggerCMUP13ClassH);
+
+  fRunNumberTriggerCMUP13ClassProperlyH = new TH1F("fRunNumberTriggerCMUP13ClassProperlyH", "fRunNumberTriggerCMUP13ClassProperlyH", 10000, 290000, 300000);
+  fRunNumberTriggerCMUP13ClassProperlyH->SetStats(0);
+  fRunNumberTriggerCMUP13ClassProperlyH->SetFillColor(38);
+  // fRunNumberTriggerCMUP13ClassProperlyH->SetCanExtend(TH1::kAllAxes);
+  fRunNumberTriggerCMUP13ClassProperlyH->LabelsDeflate();
+  fOutputList->Add(fRunNumberTriggerCMUP13ClassProperlyH);
+
+  fTriggersVsRunH = new TH2F("fTriggersVsRunH","",5,0,5,60000,240000,300000);
+  fOutputList->Add(fTriggersVsRunH);
 
   fInvariantMassDistributionCoherentH = new TH1F("fInvariantMassDistributionCoherentH", "fInvariantMassDistributionCoherentH", 2000, 0, 20);
   fOutputList->Add(fInvariantMassDistributionCoherentH);
@@ -949,6 +1024,48 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   fCounterH->Fill(iSelectionCounter); // right trigger found
   iSelectionCounter++;
 
+
+  /* - The following lines concern the LUMI computation.
+   * - What is being done is that we fill the histograms
+   * - with the number of events which pass the relative
+   * - trigger conditions.
+   * -
+   */
+  // Int_t  counterForTrigger = 0;
+  fRunNum    = fAOD->GetRunNumber();
+  if ( trigger.Contains("CMUP11-B-NOPF-MUFAST") )  {
+    fTriggersVsRunH->Fill( 0.5, fRunNum );
+    fRunNumberTriggerCMUP11ClassH        ->Fill(fRunNum);
+    fRunNumberTriggerCMUP11ClassProperlyH->Fill( Form("%d", fRunNum) , 1 );
+    // counterForTrigger++;
+  }
+  if ( trigger.Contains("CMUP26-B-NOPF-MUFAST") )  {
+    fTriggersVsRunH->Fill( 1.5, fRunNum );
+    fRunNumberTriggerCMUP26ClassH        ->Fill(fRunNum);
+    fRunNumberTriggerCMUP26ClassProperlyH->Fill( Form("%d", fRunNum) , 1 );
+    // counterForTrigger++;
+  }
+  if ( trigger.Contains("CMUP6-B-NOPF-MUFAST") )  {
+    fTriggersVsRunH->Fill( 2.5, fRunNum );
+    fRunNumberTriggerCMUP6ClassH        ->Fill(fRunNum);
+    fRunNumberTriggerCMUP6ClassProperlyH->Fill( Form("%d", fRunNum) , 1 );
+    // counterForTrigger++;
+  }
+  if ( trigger.Contains("CMUP10-B-NOPF-MUFAST") )  {
+    fTriggersVsRunH->Fill( 3.5, fRunNum );
+    fRunNumberTriggerCMUP10ClassH        ->Fill(fRunNum);
+    fRunNumberTriggerCMUP10ClassProperlyH->Fill( Form("%d", fRunNum) , 1 );
+    // counterForTrigger++;
+  }
+  if ( trigger.Contains("CMUP13-B-NOPF-MUFAST") )  {
+    fTriggersVsRunH->Fill( 4.5, fRunNum );
+    fRunNumberTriggerCMUP13ClassH        ->Fill(fRunNum);
+    fRunNumberTriggerCMUP13ClassProperlyH->Fill( Form("%d", fRunNum) , 1 );
+    // counterForTrigger++;
+  }
+
+  // if( counterForTrigger > 1 ) cout << "counterForTrigger = " << counterForTrigger << endl;
+
   /* - We are now checking if there were any tracks. If there were at least one,
      - then the histogram gets filled again. If not we are returning. There
      - would be no point in going further.
@@ -980,7 +1097,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - almost unit vector roughly 2 cm between two pixels of the SPD in different
      - layers.
    */
-  fRunNum    = fAOD->GetRunNumber();
+  // fRunNum    = fAOD->GetRunNumber();
   fTracklets = fAOD->GetTracklets()->GetNumberOfTracklets();
 
   /* - Trigger Inputs:
@@ -1162,7 +1279,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
      - https://alice-notes.web.cern.ch/system/files/notes/analysis/596/2017-Feb-08-analysis_note-2017-Feb-08-analysis-note.pdf
      -
    */
-  Int_t listOfGoodRunNumbersLHC15o[] = { 244918, 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
+  Int_t listOfGoodRunNumbersLHC15o[] = { /*244918,*/ 244980, 244982, 244983, 245064, 245066, 245068, 245145, 245146, 245151,
                                          245152, 245231, 245232, 245233, 245253, 245259, 245343, 245345, 245346, 245347,
                                          245353, 245401, 245407, 245409, 245410, 245446, 245450, 245496, 245501, 245504,
                                          245505, 245507, 245535, 245540, 245542, 245543, 245554, 245683, 245692, 245700,
@@ -1185,7 +1302,7 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   for( Int_t iRunLHC18r = 0; iRunLHC18r <  98; iRunLHC18r++){
     if( fRunNum == listOfGoodRunNumbersLHC18r[iRunLHC18r] ) checkIfGoodRun = kTRUE;
   }
-  for( Int_t iRunLHC15o = 0; iRunLHC15o < 137; iRunLHC15o++){
+  for( Int_t iRunLHC15o = 0; iRunLHC15o < 136/*137*/; iRunLHC15o++){
     if( fRunNum == listOfGoodRunNumbersLHC15o[iRunLHC15o] ) checkIfGoodRun = kTRUE;
   }
   // for( Int_t iRunZDC = 0; iRunZDC < 5; iRunZDC++){
@@ -1291,10 +1408,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   /* - 0 tracklets in SPD
      - Is it like this?? Not too sure what fTracklets was!
    */
-  if(fTracklets != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
+  // if(fTracklets != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
   /* - Maximum 2 V0C cells fired.
      -
      - Trying a more readable and immediate approach.
@@ -1447,7 +1564,10 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         fInvariantMassDistributionIncoherentH->Fill(possibleJPsi.Mag());
         fInvariantMassDistributionIncoherentExtendedH->Fill(possibleJPsi.Mag());
   }
-  fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
+  // fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
+  if ( (possibleJPsi.Mag() > 2.8) && (possibleJPsi.Mag() < 3.3) ) {
+    fDimuonPtDistributionH->Fill(ptOfTheDimuonPair);
+  }
 
 
 

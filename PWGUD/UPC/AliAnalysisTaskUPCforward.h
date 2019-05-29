@@ -200,6 +200,95 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fEntriesAgainstRunNumberProperlyH;         //!
 
                                 /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number.
+                                 * But only for the CMUP11 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP11ClassH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * But only for the CMUP11 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP11ClassProperlyH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number.
+                                 * But only for the CMUP26 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP26ClassH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * But only for the CMUP26 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP26ClassProperlyH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number.
+                                 * But only for the CMUP6 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP6ClassH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * But only for the CMUP6 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP6ClassProperlyH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number.
+                                 * But only for the CMUP10 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP10ClassH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * But only for the CMUP10 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP10ClassProperlyH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number.
+                                 * But only for the CMUP13 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP13ClassH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number, but the
+                                 * binning is done properly, like normally
+                                 * found for this type of histograms.
+                                 * But only for the CMUP13 Trigger Class.
+                                 */
+        TH1F*                   fRunNumberTriggerCMUP13ClassProperlyH;         //!
+
+                                /**
+                                 * This histogram records the number of entries
+                                 * against the respective run number.
+                                 * This is Evgeny's style, so it is a
+                                 * TH2F where the x-axis represents the
+                                 * trigger class...
+                                 */
+        TH2F*                   fTriggersVsRunH;         //!
+
+                                /**
                                  * This histogram records the invariant mass
                                  * distribution of the dimuon system, only
                                  * coherent component, so as to say, only
@@ -1052,7 +1141,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 20);
+        ClassDef(AliAnalysisTaskUPCforward, 22);
 };
 
 #endif
