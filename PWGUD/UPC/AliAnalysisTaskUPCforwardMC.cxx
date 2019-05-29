@@ -201,7 +201,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
       fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
       fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
-      fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0)
+      fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fMCInvariantMassDistributionForSignalExtractionHelicityFrameH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -328,7 +330,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
       fMCInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
       fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
-      fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0)
+      fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fMCInvariantMassDistributionForSignalExtractionHelicityFrameH(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -821,6 +825,23 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
                   YBINS, PhiBinning
                   );
   fOutputList->Add(fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH);
+
+
+  fInvariantMassDistributionForSignalExtractionHelicityFrameH =
+        new TH2F( "fInvariantMassDistributionForSignalExtractionHelicityFrameH",
+                  "fInvariantMassDistributionForSignalExtractionHelicityFrameH",
+                  10, -1.00, 1.00,
+                  10, -3.14, 3.14
+                  );
+  fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameH);
+
+  fMCInvariantMassDistributionForSignalExtractionHelicityFrameH =
+        new TH2F( "fMCInvariantMassDistributionForSignalExtractionHelicityFrameH",
+                  "fMCInvariantMassDistributionForSignalExtractionHelicityFrameH",
+                  10, -1.00, 1.00,
+                  10, -3.14, 3.14
+                  );
+  fOutputList->Add(fMCInvariantMassDistributionForSignalExtractionHelicityFrameH);
 
 
   //_______________________________
@@ -1495,6 +1516,15 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
                                                                                     possibleJPsiCopy
                                                                                     )
                                                                );
+    fInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                                              muonsCopy2[1],
+                                                                                              possibleJPsiCopy
+                                                                                              ),
+                                                                       CosPhiHelicityFrame( muonsCopy2[0],
+                                                                                            muonsCopy2[1],
+                                                                                            possibleJPsiCopy
+                                                                                            )
+                                                                       );
 
 
   }
@@ -1685,6 +1715,16 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                           possibleJPsiMC
                                                                           )
                                                                         );
+                  fMCInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                                              muonsMCcopy[1],
+                                                                                                              possibleJPsiMC
+                                                                                                              ),
+                                                                                       CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                                            muonsMCcopy[1],
+                                                                                                            possibleJPsiMC
+                                                                                                            )
+                                                                                       );
+
                   /* - Now we are filling in terms of rapidity...
                      - The easiest way to do so I have envisioned is to simply
                      - check everytime if we are below the following threshold
@@ -1805,6 +1845,16 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                           possibleJPsiMC
                                                                           )
                                                                         );
+                  fMCInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                                              muonsMCcopy[0],
+                                                                                                              possibleJPsiMC
+                                                                                                              ),
+                                                                                       CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                                            muonsMCcopy[0],
+                                                                                                            possibleJPsiMC
+                                                                                                            )
+                                                                                       );
+
                   /* - Now we are filling in terms of rapidity...
                      - The easiest way to do so I have envisioned is to simply
                      - check everytime if we are below the following threshold
