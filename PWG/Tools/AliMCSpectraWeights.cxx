@@ -498,7 +498,7 @@ AliMCSpectraWeights::GetMCSpectraWeight(TParticle *mcGenParticle,
     Double_t pt = mcGenParticle->Pt();
     if(pt<0.15) return 1;
     if(pt>=20) pt=19.9;
-    Double_t binEntry[3] = {pt, AliMCSpectraWeights::GetMultFromCent(icent), particleType};
+    Double_t binEntry[3] = {pt, AliMCSpectraWeights::GetMultFromCent(icent),  static_cast<Double_t>(particleType)};
     weight = fHistMCWeights->GetBinContent(fHistMCWeights->GetBin(binEntry));
     if(weight==0) weight=1;// printf("AliMCSpectraWeights:: got weight 0; return 1;\n");}
   // printf("AliMCSpectraWeights:: got weight %lf for pid %d at pt %lf\n", weight, mcGenParticle->GetPdgCode(), binEntry[0]);
