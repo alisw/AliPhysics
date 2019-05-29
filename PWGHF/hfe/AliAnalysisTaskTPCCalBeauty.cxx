@@ -48,7 +48,6 @@ fEMCEG1(kFALSE),
 fDCalDG1(kFALSE),
 fMaxM20Cut(0),
 fApplyM02Cut(kFALSE),
-fShingoCheck(kFALSE),
 fMinEoPCut(0),
 fMinNSigCut(0),
 fMinNSigAssoCut(0),
@@ -77,6 +76,7 @@ fTrkClsEta(0),
 fClsPhi(0),
 fClsEta(0),
 fClsE(0),
+fClsEnoTimeCut(0),
 //fClsEamDCal(0),
 //fClsEamEMCal(0),
 //fClsEAll(0),
@@ -126,6 +126,8 @@ fnSigaftM20EoPCut(0),
 fnSigaftSysM20EoPCut(0),
 fInclElecDCAnoSign(0),
 fElecEoPnoSig(0),
+fInclElecEoPnoShift(0),
+fHadronEoPnoShift(0),
 fInclElecEoP(0),
 fInclElecEoPNoM20(0),
 fTPCElecEoP(0),
@@ -254,7 +256,6 @@ fEMCEG1(kFALSE),
 fDCalDG1(kFALSE),
 fMaxM20Cut(0),
 fApplyM02Cut(kFALSE),
-fShingoCheck(kFALSE),
 fMinEoPCut(0),
 fMinNSigCut(0),
 fMinNSigAssoCut(0),
@@ -283,6 +284,7 @@ fTrkClsEta(0),
 fClsPhi(0),
 fClsEta(0),
 fClsE(0),
+fClsEnoTimeCut(0),
 //fClsEamDCal(0),
 //fClsEamEMCal(0),
 //fClsEAll(0),
@@ -332,6 +334,8 @@ fnSigaftM20EoPCut(0),
 fnSigaftSysM20EoPCut(0),
 fInclElecDCAnoSign(0),
 fElecEoPnoSig(0),
+fInclElecEoPnoShift(0),
+fHadronEoPnoShift(0),
 fInclElecEoP(0),
 fInclElecEoPNoM20(0),
 fTPCElecEoP(0),
@@ -463,11 +467,14 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fOutputList->SetOwner(kTRUE);
     
     //create our histos and add them to the list
-    fNevents = new TH1F("fNevents", "No. of Events; Counts", 3,-0.5,2.5);
+    fNevents = new TH1F("fNevents", "No. of Events; Counts", 6,-0.5,5.5);
     fOutputList->Add(fNevents);
     fNevents->GetXaxis()->SetBinLabel(1,"All");
     fNevents->GetXaxis()->SetBinLabel(2,">2 Trks");
     fNevents->GetXaxis()->SetBinLabel(3,">2 Trks, Vtx_{z}<10cm");
+    fNevents->GetXaxis()->SetBinLabel(4,"Vtx_{z}<10cm");
+    fNevents->GetXaxis()->SetBinLabel(5,"Vtx_{z}<10cm, Pile-up cuts");
+    fNevents->GetXaxis()->SetBinLabel(6,">2 Trks, Vtx_{z}<10cm, Pile-Up cuts");
     
     fVtX = new TH1F("fVtX","X Vertex Position;Vtx_{X};Counts",50,-5,5);
     fOutputList->Add(fVtX);
@@ -499,8 +506,11 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fClsEta = new TH1F("fClsEta","Cluster #eta Distribution;#eta;Counts",100,-1.5,1.5);
     fOutputList->Add(fClsEta);
     
-    fClsE = new TH1F("fClsE","Cluster Energy, Matched to EMCal or DCal;Cluster E;Counts",250,0.,50);
+    fClsE = new TH1F("fClsE","Cluster Energy after matching;Cluster E;Counts",250,0.,50);
     fOutputList->Add(fClsE);
+    
+    fClsEnoTimeCut = new TH1F("fClsEnoTimeCut","Cluster Energy after matching, no cluster time cut;Cluster E;Counts",250,0.,50);
+    fOutputList->Add(fClsEnoTimeCut);
     
     /*if(fFlagClsTypeDCAL && !fFlagClsTypeEMC){
         fClsEamDCal = new TH1F("fClsEamDCal","Cluster Energy after track matching to DCal;Cluster E;Counts",250,0.,50);
@@ -665,6 +675,12 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fElecEoPnoSig = new TH2F("fElecEoPnoSig","Elec E/p, no nSig cut; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fElecEoPnoSig);
+    
+    fInclElecEoPnoShift = new TH2F("fInclElecEoPnoShift","Incl Elec E/p no Shift; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
+    fOutputList->Add(fInclElecEoPnoShift);
+    
+    fHadronEoPnoShift = new TH2F("fHadronEoPnoShift","Incl Elec E/p no Shift; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
+    fOutputList->Add(fHadronEoPnoShift);
     
     fInclElecEoP = new TH2F("fInclElecEoP","Incl Elec E/p; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fInclElecEoP);
@@ -1381,15 +1397,58 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     Double_t NcontV = pVtx->GetNContributors();
     
-    //Making n track and vertex cut
-    fNevents->Fill(0);
-    if(NcontV<2)return;
-    if (!fShingoCheck) {
-        if(NcontV<2)return;
-    }
-    fNevents->Fill(1);
-    if(TMath::Abs(pVtx->GetZ())>10.0) return;
+    //Making event cuts
+    fNevents->Fill(0); //all events
+    if(NcontV>=2) fNevents->Fill(1); //>2 Trks
+    if(NcontV>=2 && TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(2); //>2 Trks, with Vtx_Z cut
+    if(TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(3); //with Vtx_Z cut
+    
+    //make cut in Vtx_Z
+    if(TMath::Abs(pVtx->GetZ())>10.0) return; //make cut in Vtx_Z
     fNevents->Fill(2);
+    
+    //Pile-up cuts
+    // remove event 1
+    const AliVVertex *spdVtx = fAOD->GetPrimaryVertexSPD();
+    double covTrc[6],covSPD[6];
+    pVtx->GetCovarianceMatrix(covTrc);
+    spdVtx->GetCovarianceMatrix(covSPD);
+    double dz = pVtx->GetZ()-spdVtx->GetZ();
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+    //cout << TMath::Abs(dz) << " ; " << nsigTot << " ; " << nsigTrc << endl;
+    if (fEnablePileupCut1){
+        if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20)return;
+    }
+        
+    // remove event2
+    Int_t nTPCout=0;
+    Float_t mTotV0=0;
+    AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
+    Float_t mTotV0A=v0data->GetMTotV0A();
+    Float_t mTotV0C=v0data->GetMTotV0C();
+    mTotV0=mTotV0A+mTotV0C;
+    Int_t ntracksEv = fAOD->GetNumberOfTracks();
+    for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+        AliAODTrack * atrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if(!atrack) {AliFatal("Not a standard AOD");}
+        if(atrack->GetID()<0)continue;
+        if((atrack->GetFlags())&(AliVTrack::kTPCout)) nTPCout++;
+        else continue;
+    }
+    Float_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
+    if(fEnablePileupRejVZEROTPCout)
+    {
+        if(mTotV0<mV0Cut) return;
+    }
+    
+    fNevents->Fill(4); //with Vtx_Z cut + pile-up cuts
+    
+    //make cut in Ncontributors
+    if(NcontV<2)return;
+    
+    fNevents->Fill(5); //with Vtx_Z cut + >2 Trks + pile-up cuts
     
     fVtX->Fill(pVtx->GetX());
     fVtY->Fill(pVtx->GetY());
@@ -1449,7 +1508,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
             
-            if (fShingoCheck) {
+            if (fApplyTimeCut) {
                 Float_t tof1 = clus->GetTOF()*1e+9; // ns
                 if(!fMCarray && fUseTender && fFlagFillMCHistos)
                 {
@@ -1535,6 +1594,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         Double_t DCAxyCut = 2.4, DCAzCut = 3.2;
         if(track->GetTPCNcls() < fNclusTPC) continue;
         if(track->GetITSNcls() < 3) continue;
+        if(track->GetTPCNCrossedRows() < fNCrossRows) continue;
+        if (fItsChi2>=0) {
+            if(track->GetITSchi2() > fItsChi2) continue;
+        }
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;
         
         double phiMatchIts = track->Phi();
@@ -1616,15 +1679,17 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
             
-            fClsE->Fill(clustMatch->E());
+            fClsEnoTimeCut->Fill(clustMatch->E());
             
-            if (fShingoCheck) {
+            if (fApplyTimeCut) {
                 Float_t tof = clustMatch->GetTOF()*1e+9; // ns
                 if(!fMCarray && fUseTender && fFlagFillMCHistos)
                 {
                     if(tof<-30 || tof>30)continue; // timing cut on data
                 }
             }
+            
+            fClsE->Fill(clustMatch->E());
             
             //if(fClsTypeEMC) fClsEamEMCal->Fill(clustMatch->E());
             //if(fClsTypeDCAL) fClsEamDCal->Fill(clustMatch->E());
@@ -1923,7 +1988,18 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Double_t M20 = clustMatch->GetM20();
             Double_t M02 = clustMatch->GetM02();
             
-            if(fShingoCheck && fMCarray && fFlagFillMCHistos)  // E/p MC mean shift correction
+            if((nsigma>fMinNSigCut) && (nsigma<3)) {
+                if ((M20>0.01) && (M20<fMaxM20Cut)) {
+                    fInclElecEoPnoShift->Fill(track->Pt(),EovP);
+                }
+            }
+            if(nsigma<-4.) {
+                if(M20>0.01 && M20<fMaxM20Cut) {
+                    fHadronEoPnoShift->Fill(track->Pt(),EovP);
+                }
+            }
+            
+            if(fShiftEoP && fMCarray && fFlagFillMCHistos)  // E/p MC mean shift correction
             {
                 if(fCentralityMin==30 && fCentralityMax==50)
                 {
@@ -1937,11 +2013,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 {
                     EovP += 0.0;
                 }
-            }
-            
-            Double_t maxEovP = 1.2;
-            if (fShingoCheck) {
-                maxEovP = 1.3;
             }
             
             if(fFlagFillMCHistos && fFlagFillSprs) {
@@ -1982,7 +2053,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(nsigma<-4.) {
                     if(M02>0.01 && M02<0.7) {
                         fHadronEoP->Fill(track->Pt(),EovP);
-                        if(EovP>fMinEoPCut && EovP<maxEovP){
+                        if(EovP>fMinEoPCut && EovP<fMaxEoPCut){
                             fHadronDCA->Fill(track->Pt(),DCA);
                         }
                     }
@@ -1991,7 +2062,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(nsigma<-4.) {
                     if(M20>0.01 && M20<fMaxM20Cut) {
                         fHadronEoP->Fill(track->Pt(),EovP);
-                        if(EovP>fMinEoPCut && EovP<maxEovP){
+                        if(EovP>fMinEoPCut && EovP<fMaxEoPCut){
                             fHadronDCA->Fill(track->Pt(),DCA);
                         }
                     }
@@ -2009,14 +2080,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             // Electron Cuts //
             ///////////////////
             if (fApplyM02Cut) {
-                if((EovP>fMinEoPCut) && (EovP<maxEovP)) {
+                if((EovP>fMinEoPCut) && (EovP<fMaxEoPCut)) {
                     fnSigaftEoPCut->Fill(track->Pt(),nsigma);
                     if (M02>0.01 && M02<0.7) {
                         fnSigaftM20EoPCut->Fill(track->Pt(),nsigma);
                     }
                 }
             } else {
-                if((EovP>fMinEoPCut) && (EovP<maxEovP)) {
+                if((EovP>fMinEoPCut) && (EovP<fMaxEoPCut)) {
                     fnSigaftEoPCut->Fill(track->Pt(),nsigma);
                     if (M20>0.01 && M20<0.35) {
                         fnSigaftM20EoPCut->Fill(track->Pt(),nsigma);
@@ -2024,12 +2095,12 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
             
-            if((EovP>fMinEoPCut) && (EovP<maxEovP)) {
+            if((EovP>fMinEoPCut) && (EovP<fMaxEoPCut)) {
                 fTPCElecEoP->Fill(track->Pt(),EovP);
                 fnSigaftSysEoPCut->Fill(track->Pt(),nsigma);
             }
             
-            if((EovP>fMinEoPCut) && (EovP<maxEovP)){
+            if((EovP>fMinEoPCut) && (EovP<fMaxEoPCut)){
                 if(kTruElec == kTRUE) fElecAftEoP->Fill(track->Pt());
                 if(kTruHFElec == kTRUE) fHFElecAftEoP->Fill(track->Pt());
                 if(kTruBElec == kTRUE) fBElecAftEoP->Fill(track->Pt());
@@ -2048,7 +2119,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if((nsigma>fMinNSigCut) && (nsigma<3)) fInclElecEoP->Fill(track->Pt(),EovP);
             
             //Apply E/p Cut for electrons
-            if((EovP<fMinEoPCut) || (EovP>maxEovP)) continue;
+            if((EovP<fMinEoPCut) || (EovP>fMaxEoPCut)) continue;
             fnSigaftSysM20EoPCut->Fill(track->Pt(),nsigma);
             
             if(kTruElec == kTRUE) fElecAftEMCeID->Fill(track->Pt());
