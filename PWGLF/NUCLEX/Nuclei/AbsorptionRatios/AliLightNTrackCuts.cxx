@@ -32,10 +32,10 @@ AliLightNTrackCuts::AliLightNTrackCuts()
 ,fCharge(0)
 ,fnTPCCls(0)
 ,fcutnTPCCls(false)
-,fdoITSnSigmaCut(false)
 ,fDCAProp(false)
 ,fDCAToVertexXY(0)
 ,fCutDCAToVtxXY(false)
+,fdoITSnSigmaCut(false)
 ,fDCAToVertexZ(0)
 ,fCutDCAToVtxZ(false)
 ,fMinMass(0.)
@@ -99,16 +99,16 @@ bool AliLightNTrackCuts::isSelected(AliLightNTrack *Track) {
         }
     }
     
-    if (pass) {
-        if (!DCACuts(Track)) {
+    if (pass && fdoITSnSigmaCut) {
+        if (!ITSPIDAODCuts(Track)) {
             pass=false;
             ForMassFitPass=false;
             PIDEffPass=false;
         }
     }
     
-    if (pass && fdoITSnSigmaCut) {
-        if (!ITSPIDAODCuts(Track)) {
+    if (pass) {
+        if (!DCACuts(Track)) {
             pass=false;
             ForMassFitPass=false;
             PIDEffPass=false;
