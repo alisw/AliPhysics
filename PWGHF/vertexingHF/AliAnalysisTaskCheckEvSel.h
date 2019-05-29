@@ -41,6 +41,7 @@ public:
     else AliError("Wrong option for cut on zVertexSPD");
   }
   void SetUseAliEventCuts(Bool_t opt=kTRUE){fUseAliEventCuts=opt;}
+  void SetEnableEvPropNtuple(Bool_t dontuple) {fEnableEvPropNtuple=dontuple;}
   void SetEnableVertexNtuple(Bool_t dontuple) {fEnableVertexNtuple=dontuple;}
   
 private:
@@ -91,6 +92,8 @@ private:
   TH2F* fHistZVertexSPDAfterCuts;        //!<! z-vertex distr.
   TH2F* fHistZVertexSPDBadTrackVert;     //!<! z-vertex distr.
   THnSparseF* fEventProp;                //!<! event properties
+  TNtuple* fNtupleEvProp;                //!<! ntuple of event props
+  Bool_t fEnableEvPropNtuple;            /// flag to enable ntuple
   TNtuple* fNtupleZvtxDistVsWhyRej;      //!<! ntuple of ZvtxTRK vs. ZvtxSPD vs. Ncontributors vs. whyrej flag
   Bool_t fEnableVertexNtuple;            /// flag to enable ntuple for primary vertex studies
   Bool_t fUseAliEventCuts;               /// flag to use AliEventCuts for selection
@@ -99,7 +102,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,11);
+  ClassDef(AliAnalysisTaskCheckEvSel,12);
 };
 
 #endif

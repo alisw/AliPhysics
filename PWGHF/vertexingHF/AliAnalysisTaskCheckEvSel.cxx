@@ -85,6 +85,8 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistZVertexSPDAfterCuts(0x0),
   fHistZVertexSPDBadTrackVert(0x0),
   fEventProp(0x0),
+  fNtupleEvProp(0x0),
+  fEnableEvPropNtuple(kFALSE),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
   fUseAliEventCuts(kFALSE),
@@ -139,6 +141,8 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistZVertexSPDAfterCuts(0x0),
   fHistZVertexSPDBadTrackVert(0x0),
   fEventProp(0x0),
+  fNtupleEvProp(0x0),
+  fEnableEvPropNtuple(kFALSE),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
   fUseAliEventCuts(kFALSE),
@@ -149,9 +153,8 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
 
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
-  if(fEnableVertexNtuple){
-    DefineOutput(3,TNtuple::Class());  
-  }
+  DefineOutput(3,TNtuple::Class());
+  DefineOutput(4,TNtuple::Class());
 }
 
 //________________________________________________________________________
@@ -199,6 +202,8 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
   delete fOutput;
   delete fCounter;
   if(fNtupleZvtxDistVsWhyRej) delete fNtupleZvtxDistVsWhyRej;
+  if(fNtupleEvProp) delete fNtupleEvProp;
+
 }
 
 //________________________________________________________________________
@@ -313,22 +318,19 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fEventProp->GetAxis(7)->SetTitle("nGener golden SPD eta<1");
   fOutput->Add(fEventProp);
   
+  PostData(1,fOutput);
+
   TString normName="NormalizationCounter";
   AliAnalysisDataContainer *cont = GetOutputSlot(2)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
   fCounter->Init();
+  PostData(2,fCounter);
 
-  PostData(1,fOutput);
-
-
-  
-  if(fEnableVertexNtuple) {
-    OpenFile(3); // 3 is the slot number of the ntuple
-    
-    fNtupleZvtxDistVsWhyRej = new TNtuple("fNtupleZvtxDistVsWhyRej","fNtupleZvtxDistVsWhyRej","zSPDvertex:zTRKvertex:NcontributorszSPD:NcontributorszTRK:whyrejection:vtxtype");
-  }
-
+  fNtupleEvProp = new TNtuple("fNtupleEvProp","ntupleEvProp","zSPDvert:centrV0:centrCL0:V0ampl:T0ampl:nTracklets:nClSPD0:nClSPD1:nTracksFB4");
+  PostData(3,fNtupleEvProp);
+  fNtupleZvtxDistVsWhyRej = new TNtuple("ntupleZvtxDistVsWhyRej","fNtupleZvtxDistVsWhyRej","zSPDvertex:zTRKvertex:NcontributorszSPD:NcontributorszTRK:whyrejection:vtxtype");
+  PostData(4,fNtupleZvtxDistVsWhyRej);
 
 }
 
@@ -475,7 +477,7 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
       
     Float_t vec4ntuple[6] = {(Float_t)zvSPD,(Float_t)zvTRK,(Float_t)vertexSPD->GetNContributors(),(Float_t)vertex->GetNContributors(),wrej4ntuple,vertextype};
     fNtupleZvtxDistVsWhyRej->Fill(vec4ntuple);
-    PostData(3,fNtupleZvtxDistVsWhyRej);
+    PostData(4,fNtupleZvtxDistVsWhyRej);
   }
   if(fAnalysisCuts->IsEventRejectedDueToTrigger()) fHistNEventsVsWhyRej->Fill(3,wrej);
   if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEventsVsWhyRej->Fill(4,wrej);
@@ -637,6 +639,14 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     vec4Sp[6]=nGenerGoldenSPDEta14;
     vec4Sp[7]=nGenerGoldenSPDEta1;
     fEventProp->Fill(vec4Sp);
+    if(fEnableEvPropNtuple){
+      Float_t vec4ep[9]={(Float_t)zvSPD,(Float_t)centr,(Float_t)centrCL0,
+			 (Float_t)v0ampl,(Float_t)t0ampl,
+			 (Float_t)ntrkl,(Float_t)ncl0,(Float_t)ncl1,
+			 (Float_t)ntracksFB4};
+      fNtupleEvProp->Fill(vec4ep);
+      PostData(3,fNtupleEvProp);
+    }
   }
 
   PostData(1,fOutput);
