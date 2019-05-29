@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/05/23
+//  Last Modified Date: 2019/05/29
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -994,8 +994,11 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             Double_t fMass_Xi = Xicandidate->M();
             if (fQA)
                 fHistos->FillTH1("hMass_Xi", fMass_Xi);
+            /*
+            // Disable for Xi study
             if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)
                 StandardXi = kFALSE;
+            */
 
             // Eta cut
             if (abs(Xicandidate->Eta()) > fXiEtaCut)
@@ -1222,6 +1225,9 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->M();
+                if ((SysCheck.at(sys) == "XiMassWindowLoose") &&
+                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose))
+                    continue;
                 if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
                     (fabs(fMass_Xi - Ximass) > fXiMassWindowCut))
                     continue;
