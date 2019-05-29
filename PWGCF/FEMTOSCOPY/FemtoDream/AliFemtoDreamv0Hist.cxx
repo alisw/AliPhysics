@@ -137,7 +137,7 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
     fv0CutQA[i]->Add(fpTDist[i]);
 
     TString etaname = Form("EtaDist_%s", sName[i].Data());
-    fetaDist[i] = new TH1F(etaname.Data(), etaname.Data(), 200, -10., 10.);
+    fetaDist[i] = new TH1F(etaname.Data(), etaname.Data(), 200, -2., 2.);
     fetaDist[i]->GetXaxis()->SetTitle("#eta");
     fv0CutQA[i]->Add(fetaDist[i]);
 

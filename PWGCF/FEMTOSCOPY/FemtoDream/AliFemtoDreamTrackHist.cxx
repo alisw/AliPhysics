@@ -138,7 +138,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     fTrackCutQA[i]->Add(fpTPCDist[i]);
 
     TString etaName = Form("EtaDist_%s", sName[i].Data());
-    fetaDist[i] = new TH1F(etaName.Data(), etaName.Data(), 200, -10., 10.);
+    fetaDist[i] = new TH1F(etaName.Data(), etaName.Data(), 200, -2., 2.);
     fetaDist[i]->GetXaxis()->SetTitle("#eta");
     fTrackCutQA[i]->Add(fetaDist[i]);
 
