@@ -8205,7 +8205,7 @@ void AliHFSystErr::InitLctopK0S2016pPbBDT() {
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitLctopK0S2018PbPb010BDT() {
   //
-  // Lc->pK0s syst errors. Responsible:
+  // Lc->pK0s syst errors. Responsible: A. Alici, C. Zampolli
   //   2018 PbPb sample, 010 CC, BDT analysis
   //
 
@@ -8233,10 +8233,10 @@ void AliHFSystErr::InitLctopK0S2018PbPb010BDT() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++) fRawYield->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++) fRawYield->SetBinContent(i, 0.06);
-  for (Int_t i = 5; i <= 6; i++) fRawYield->SetBinContent(i, 0.13);
-  for (Int_t i = 7; i <= 8; i++) fRawYield->SetBinContent(i, 0.09);
-  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.12);
+  for (Int_t i = 3; i <= 4; i++) fRawYield->SetBinContent(i, 0.08);  // smoothed: without smoothing, it was 6%
+  for (Int_t i = 5; i <= 6; i++) fRawYield->SetBinContent(i, 0.10); // smoothed: without smoothing, it was 12%
+  for (Int_t i = 7; i <= 8; i++) fRawYield->SetBinContent(i, 0.10); // smoothed: without smoothing, it was 9%
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.10); // smoothed: without smoothing, it was 12%
   
 
   fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
@@ -8297,10 +8297,10 @@ void AliHFSystErr::InitLctopK0S2018PbPb3050BDT() {
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
   for(Int_t i = 1; i <= 24; i++) fRawYield->SetBinContent(i, 0.0); // default value is set to zero
-  for (Int_t i = 3; i <= 4; i++) fRawYield->SetBinContent(i, 0.11);
-  for (Int_t i = 5; i <= 6; i++) fRawYield->SetBinContent(i, 0.09);
-  for (Int_t i = 7; i <= 8; i++) fRawYield->SetBinContent(i, 0.13);
-  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.08);
+  for (Int_t i = 3; i <= 4; i++) fRawYield->SetBinContent(i, 0.10); // smoothed: without smoothing, it was 11%
+  for (Int_t i = 5; i <= 6; i++) fRawYield->SetBinContent(i, 0.10); // smoothed: without smoothing, it was 9%
+  for (Int_t i = 7; i <= 8; i++) fRawYield->SetBinContent(i, 0.10); // smoothed: without smoothing, it was 13%
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.10); // smoothed: without smoothing, it was 8%
   
 
   fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
