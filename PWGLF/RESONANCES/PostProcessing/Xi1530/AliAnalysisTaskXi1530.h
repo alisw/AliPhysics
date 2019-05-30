@@ -210,6 +210,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         fXiMassWindowCut = 0.015;
         fTPCNsigXi1530PionCut = 1.5;
     }
+    void SetUseSimpleEventCut(Bool_t fInput){ fSimplieEventCut = fInput; };
 
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
@@ -347,6 +348,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsPrimaryMC = kTRUE;
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
+    Bool_t fSimplieEventCut = kFALSE;
     TString MultiplicityEstimator = "V0M";
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
@@ -376,6 +378,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 14: Modify Fill MC input function for the Signal Loss
     // 15: Separate Rapidity cut option for pA analysis.
     // 16: Add option for using different Multiplicity Estimators(Default: V0M).
+    // 17: Add Simple event cut option to use AliMultSelection cut only
 };
 
 #endif

@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/05/29
+//  Last Modified Date: 2019/05/30
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -75,7 +75,7 @@ enum {
     kINELg010,
     kAllType
 };                                                 // for Physicsl Results
-enum { kIsSelected = 1, kPS, kAllNone };           // for V0M signal QA plot
+enum { kIsSelected = 1, kPS, kIsMulti, kAllNone }; // for V0M signal QA plot
 enum {
     kTrueINELg0 = 1,
     kTrig_TrueINELg0,
@@ -229,7 +229,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     auto binPt = AxisFix("Pt", 200, 0, 20);
     auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
     binZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});
-    auto binType_V0M = AxisStr("Type", {"isSelected", "isSelectedPS"});
+    auto binType_V0M = AxisStr("Type", {"isSelected", "isSelectedPS", "isSelectedMult"});
     // Axis for the systematic study
     SysCheck = {"DefaultOption",
                 "TPCNsigmaXi1530PionLoose",
@@ -709,6 +709,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             intensity += lVV0->GetMultiplicity(i);
         }
         FillTHnSparse("hV0MSignal", {kIsSelected, (double)fCent, intensity});
+        if(IsMultSelcted)
+            FillTHnSparse("hV0MSignal", {kIsMulti, (double)fCent, intensity});
     }
     // ----------------------------------------------------------------------
 
@@ -729,6 +731,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     }
     // ----------------------------------------------------------------------
 
+    if(fSimplieEventCut) IsINEL0Rec = kTRUE; // for simple event cut, use only IsMultSelcted.
     // Check tracks and casade, Fill histo************************************
     if (IsINEL0Rec && IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
                                         // IsVtxInZCut) && IsMultSelcted
@@ -999,7 +1002,6 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)
                 StandardXi = kFALSE;
             */
-
             // Eta cut
             if (abs(Xicandidate->Eta()) > fXiEtaCut)
                 StandardXi = kFALSE;
