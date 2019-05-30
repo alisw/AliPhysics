@@ -28,8 +28,8 @@ ClassImp(AliMultDepSpecAnalysisTask);
    fMinPt(0.0),
    fMaxPt(50.0),
    fMaxZv(10.0),
-   fMinCent(0.0),
-   fMaxCent(100.0),
+   fMinCent(-1e3),
+   fMaxCent(1e3),
    //Arrays for Binning
    fBinsEventCuts(nullptr),
    fBinsMult(nullptr),
@@ -118,8 +118,8 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMinPt(0.0),
   fMaxPt(50.0),
   fMaxZv(10.0),
-  fMinCent(0.0),
-  fMaxCent(100.0),
+  fMinCent(-1e3),
+  fMaxCent(1e3),
   //Arrays for Binning
   fBinsEventCuts(nullptr),
   fBinsMult(nullptr),
@@ -929,8 +929,8 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
 
   Double_t cutVertexZ = 10.0;
 
-  Double_t cutCentLow = 0.0;
-  Double_t cutCentHigh = 100.0;
+  Double_t cutCentLow = -1e3;
+  Double_t cutCentHigh = 1e3;
 
   Double_t cutPtLow = 0.15;
   Double_t cutPtHigh = 50.0;
