@@ -210,7 +210,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         fXiMassWindowCut = 0.015;
         fTPCNsigXi1530PionCut = 1.5;
     }
-    void SetUseSimpleEventCut(Bool_t fInput){ fSimplieEventCut = fInput };
+    void SetUseSimpleEventCut(Bool_t fInput){ fSimplieEventCut = fInput; };
 
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
