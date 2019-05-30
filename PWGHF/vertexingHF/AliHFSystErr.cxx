@@ -505,7 +505,7 @@ void AliHFSystErr::Init(Int_t decay){
       }
       else AliFatal("Not yet implemented");
       break;
-
+      
     default:
       printf("Invalid decay type: %d\n",decay);
       break;
@@ -8217,22 +8217,34 @@ void AliHFSystErr::InitLctopK0S2018PbPb010BDT() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.00);
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.125);
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.14);
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.15);
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.145);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
   for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,  0.06);
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,  0.13);
+  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,  0.09);
+  for(Int_t i=9;i<=10;i++) fRawYield->SetBinContent(i, 0.12);
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
   for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.04);
-
+  for(Int_t i=3;i<=4;i++) fCutsEff->SetBinContent(i,  0.04);
+  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,  0.11);
+  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,  0.13);
+  for(Int_t i=9;i<=10;i++) fCutsEff->SetBinContent(i, 0.13);
+  
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.00);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
-  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.03);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",12,0,12);
@@ -8254,29 +8266,45 @@ void AliHFSystErr::InitLctopK0S2018PbPb3050BDT() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);
-
+  for(Int_t i=1;i<=2;i++) fTrackingEff->SetBinContent(i,0.00);
+  for(Int_t i=3;i<=4;i++) fTrackingEff->SetBinContent(i,0.10);
+  for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.11);
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.11);
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.11);
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.10);
+  
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i, 0.04);
+  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,  0.11);
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,  0.09);
+  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,  0.13);
+  for(Int_t i=9;i<=10;i++) fRawYield->SetBinContent(i, 0.08);
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i, 0.04);
+  for(Int_t i=3;i<=4;i++) fCutsEff->SetBinContent(i,  0.04);
+  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,  0.07);
+  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,  0.07);
+  for(Int_t i=9;i<=10;i++) fCutsEff->SetBinContent(i, 0.10);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.04);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i, 0.00);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
-  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
-
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i, 0.01);
+  for(Int_t i=3;i<=4;i++) fMCPtShape->SetBinContent(i,  0.03);
+    
   // Branching ratio
   fBR = new TH1F("fBR","fBR",12,0,12);
   for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050);
 
 }
+
 //--------------------------------------------------------------------------
+
 void AliHFSystErr::InitLctopK0S2018PbPb010ML() {
   //
   // Lc->pK0s syst errors. Responsible: L. Vermunt
@@ -8301,6 +8329,7 @@ void AliHFSystErr::InitLctopK0S2018PbPb010ML() {
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
   for(Int_t i=1;i<=4;i++) fRawYield->SetBinContent(i,0.00);
   for(Int_t i=5;i<=24;i++) fRawYield->SetBinContent(i,0.12);
+
 
   fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
   for(Int_t i=1;i<=4;i++) fCutsEff->SetBinContent(i,0.00);
