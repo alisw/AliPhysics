@@ -72,6 +72,7 @@ public:
   void SetRequestTriggerClusters(bool doRequest) { fRequestTriggerClusters = doRequest; }
   void SetCentralityEstimator(EMCAL_STRINGVIEW centest) { fCentralityEstimator = centest; }
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
+  void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
 
 
   static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix = "");
@@ -105,6 +106,7 @@ private:
   Bool_t                        fRequestCentrality;             ///< Request centrality
   Bool_t                        fUseAliEventCuts;               ///< Flag switching on AliEventCuts;
   Bool_t                        fUseSumw2;                      ///< Switch for sumw2 option in THnSparse (should not be used when a downscale weight is applied)
+  Bool_t                        fUseMuonCalo;                   ///< Use events from the (muon)-calo-(fast) cluster
   TString                       fCentralityEstimator;           ///< Centrality estimator
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
 
