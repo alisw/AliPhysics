@@ -34,9 +34,9 @@ public:
     void FillMCUnkn(double pT){fMCUnknownPt->Fill(pT);};
     void FillMCPrimary(double pT){fMCPrimaryPt->Fill(pT);};
     void FillMCMaterial(double pT){fMCMaterialPt->Fill(pT);};
-    void FillMCFeeddown(double pT, double pdg){
-        fMCFeeddownWeakPt->Fill(pT, pdg);
-    };
+    void FillMCFeeddown(double pT, double pdg){fMCFeeddownWeakPt->Fill(pT, pdg);};
+    void FillStackGen(double p){fMCStackGen->Fill(p);};
+    void FillStackGenPrimary(double p){fMCStackGenPrimary->Fill(p);};
     void FillMCpTPCCut(int i, double pTPC){fMCpTPCDist[i]->Fill(pTPC);};
     void FillMCetaCut(int i, double eta){fMCetaDist[i]->Fill(eta);};
     void FillMCphiCut(int i, double phi){fMCphiDist[i]->Fill(phi);};
@@ -75,6 +75,7 @@ private:
     bool fDoDCAPlots;               //!
     
     TList *fMCList;                 //!
+    TList *fMCStackList;            //!
     TList *fMCQAPlots[4];           //!
     TList *fDCAPlots;               //!
     TH1F *fMCCorrPt;                //!
@@ -89,6 +90,9 @@ private:
     TH1F *fMCPrimaryPt;             //!
     TH1F *fMCMaterialPt;            //!
     TH2F *fMCFeeddownWeakPt;        //!
+    
+    TH1F *fMCStackGen;              //!
+    TH1F *fMCStackGenPrimary;       //!
     
     TH2F *fMCPrimDCAXYPtBins;       //!
     TH2F *fMCMaterialDCAXYPtBins;   //!

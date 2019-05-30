@@ -75,6 +75,8 @@ public:
     TList *GetMCQAHists() {return fMCHists->GetHistList();};
     TString ClassName() {return "AliLightNTrackCuts";};
     void SetName(TString name){fHists->SetName(name.Data());};
+    void FillStackGenerated(float p) {if(fMCHists)fMCHists->FillStackGen(p);};
+    void FillStackGeneratedPrimary(float p) {if(fMCHists)fMCHists->FillStackGenPrimary(p);};
 private:
     bool TrackingCuts(AliLightNTrack *Track);
     bool TPCPIDAODCuts(AliLightNTrack *Track);

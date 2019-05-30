@@ -13,6 +13,7 @@ AliLightNTrackMCHist::AliLightNTrackMCHist()
 ,fDoSplitting(false)
 ,fDoDCAPlots(false)
 ,fMCList(0)
+,fMCStackList(0)
 ,fDCAPlots(0)
 ,fMCCorrPt(0)
 ,fMCIdentPt(0)
@@ -24,6 +25,8 @@ AliLightNTrackMCHist::AliLightNTrackMCHist()
 ,fMCPrimaryPt(0)
 ,fMCMaterialPt(0)
 ,fMCFeeddownWeakPt(0)
+,fMCStackGen(0)
+,fMCStackGenPrimary(0)
 ,fMCPrimDCAXYPtBins(0)
 ,fMCMaterialDCAXYPtBins(0)
 ,fMCSecondaryDCAXYPtBins(0)
@@ -124,6 +127,23 @@ AliLightNTrackMCHist::AliLightNTrackMCHist(bool contribSplitting,bool DCADist)
     fMCFeeddownWeakPt->Sumw2();
     fMCFeeddownWeakPt->GetXaxis()->SetTitle("p_{T}");
     fMCList->Add(fMCFeeddownWeakPt);
+    
+    
+    //MC stack for generated level
+    fMCStackList=new TList();
+    fMCStackList->SetName("MCStack_GenLevel");
+    fMCStackList->SetOwner();
+    fMCList->Add(fMCStackList);
+
+    fMCStackGen= new TH1F("Stack_Generated","Stack_Generated",ptBins,ptmin,ptmax);
+    fMCStackGen->Sumw2();
+    fMCStackGen->GetXaxis()->SetTitle("p");
+    fMCStackList->Add(fMCStackGen);
+    
+    fMCStackGenPrimary= new TH1F("Stack_Generated_primary","Stack_Generated_primary",ptBins,ptmin,ptmax);
+    fMCStackGenPrimary->Sumw2();
+    fMCStackGenPrimary->GetXaxis()->SetTitle("p");
+    fMCStackList->Add(fMCStackGenPrimary);
     
     if (contribSplitting) {
         TString MCModes[4]={"Primary","Secondary","Material","Contamination"};
