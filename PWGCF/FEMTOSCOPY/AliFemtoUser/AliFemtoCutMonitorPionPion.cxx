@@ -595,16 +595,18 @@ AliFemtoCutMonitorPionPion::Pair::Pair(const bool passing,
     fMCTrue_minv = new TH2F(
       hist_name("mc_Minv"),
       hist_title("Minv True vs Reconstructed",
-                 "M_{inv}^{r} (GeV);"
-                 "M_{inv}^{t} (Gev);"),
+                 "M_{inv}^{gen} (Gev);"
+                 "M_{inv}^{rec} (GeV);"
+                 ),
       144, 0.0, 4.5,
       144, 0.0, 4.5);
 
     fMCTrue_qinv = new TH2F(
       hist_name("mc_Qinv"),
       hist_title("q_{inv} True vs Reconstructed",
-                 "q_{inv}^{r} (GeV);"
-                 "q_{inv}^{t} (Gev);"),
+                 "q_{inv}^{gen} (Gev);"
+                 "q_{inv}^{rec} (GeV);"
+                 ),
       400, 0.0, 1.0,
       400, 0.0, 1.0);
   }
@@ -673,8 +675,8 @@ AliFemtoCutMonitorPionPion::Pair::Fill(const AliFemtoPair *pair)
       return;
     }
 
-    fMCTrue_qinv->Fill(qinv, true_qinv);
-    fMCTrue_minv->Fill(minv, true_minv);
+    fMCTrue_qinv->Fill(true_qinv, qinv);
+    fMCTrue_minv->Fill(true_minv, minv);
 
 //     if (0.2 < (qinv - true_qinv)) {
 //         printf(" => %6d %6d\n", mc_1->GetPDGPid(), mc_2->GetPDGPid());
