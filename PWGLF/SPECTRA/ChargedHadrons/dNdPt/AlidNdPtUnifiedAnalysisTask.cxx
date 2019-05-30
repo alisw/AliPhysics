@@ -229,14 +229,14 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistCentCorrelpt->SetBinEdges(4,fBinsPt->GetArray());
     fHistCentCorrelpt->Sumw2();
 
-    fHistCentCorrelBeforeCuts = new THnF("fHistCentCorrel", "Centrality Correlation", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
+    fHistCentCorrelBeforeCuts = new THnF("fHistCentCorrelBeforeCuts", "Centrality Correlation BC", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
     fHistCentCorrelBeforeCuts->GetAxis(0)->SetTitle("Centrality V0M");
     fHistCentCorrelBeforeCuts->GetAxis(1)->SetTitle("Centrality SPD Tracklets");
     fHistCentCorrelBeforeCuts->GetAxis(2)->SetTitle("Centrality CL0");
     fHistCentCorrelBeforeCuts->GetAxis(3)->SetTitle("Centrality CL1");
     fHistCentCorrelBeforeCuts->Sumw2();
     
-    fHistCentCorrelAfterCuts = new THnF("fHistCentCorrel", "Centrality Correlation", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
+    fHistCentCorrelAfterCuts = new THnF("fHistCentCorrelAfterCuts", "Centrality Correlation AC", 4, iBinCentCorr, iMinCentCorr, iMaxCentCorr);
     fHistCentCorrelAfterCuts->GetAxis(0)->SetTitle("Centrality V0M");
     fHistCentCorrelAfterCuts->GetAxis(1)->SetTitle("Centrality SPD Tracklets");
     fHistCentCorrelAfterCuts->GetAxis(2)->SetTitle("Centrality CL0");
