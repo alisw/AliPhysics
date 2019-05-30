@@ -8209,71 +8209,126 @@ void AliHFSystErr::InitLctopK0S2018PbPb010BDT() {
   //   2018 PbPb sample, 010 CC, BDT analysis
   //
 
+  // binning of syst histo is 1 GeV wide
+  // [2, 4] --> bins 3, 4
+  // [4, 6] --> bins 5, 6
+  // [6, 8] --> bins 7, 8
+  // [8, 12] --> 9, 10, 11, 12
+  // for now we don't have more 
+  
   SetNameTitle("AliHFSystErr","SystErrLctopK0S2018PbPb010BDT");
 
   // Normalization
-  fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 3.7% error on sigmaV0and
+  fNorm = new TH1F("fNorm", "fNorm", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fNorm->SetBinContent(i, 0.04); // TAA and pp norm
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);
+  fTrackingEff = new TH1F("fTrackingEff", "fTrackingEff", 24, 0., 24.); //Preliminary (usual track syst + 6% additional from GeoCut correction)
+  for (Int_t i = 1; i <= 24; i++) fTrackingEff->SetBinContent(i, 0.0);  // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fTrackingEff->SetBinContent(i, 0.09);
+  for (Int_t i = 5; i <= 6; i++) fTrackingEff->SetBinContent(i, 0.125);
+  for (Int_t i = 7; i <= 8; i++) fTrackingEff->SetBinContent(i, 0.14);
+  for (Int_t i = 9; i <= 12; i++) fTrackingEff->SetBinContent(i, 0.15);
 
   // Raw yield extraction
-  fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+  fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fRawYield->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fRawYield->SetBinContent(i, 0.06);
+  for (Int_t i = 5; i <= 6; i++) fRawYield->SetBinContent(i, 0.13);
+  for (Int_t i = 7; i <= 8; i++) fRawYield->SetBinContent(i, 0.09);
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.12);
+  
 
-  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.04);
+  fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fCutsEff->SetBinContent(i, 0.04);
+  for (Int_t i = 5; i <= 6; i++) fCutsEff->SetBinContent(i, 0.11);
+  for (Int_t i = 7; i <= 8; i++) fCutsEff->SetBinContent(i, 0.13);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.13);
 
-  // PID efficiency (from PID/noPID)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.04);
+  // PID efficiency (from PID/noPID) - not done for now
+  fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fPIDEff->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fPIDEff->SetBinContent(i, 0.0);
+  for (Int_t i = 5; i <= 6; i++) fPIDEff->SetBinContent(i, 0.0);
+  for (Int_t i = 7; i <= 8; i++) fPIDEff->SetBinContent(i, 0.0);
+  for (Int_t i = 9; i <= 12; i++) fPIDEff->SetBinContent(i, 0.0);
 
   // MC dN/dpt
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
-  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+  fMCPtShape = new TH1F("fMCPtShape", "fMCPtShape", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fMCPtShape->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fMCPtShape->SetBinContent(i, 0.3);
+  for (Int_t i = 5; i <= 6; i++) fMCPtShape->SetBinContent(i, 0.3);
+  for (Int_t i = 7; i <= 8; i++) fMCPtShape->SetBinContent(i, 0.3);
+  for (Int_t i = 9; i <= 12; i++) fMCPtShape->SetBinContent(i, 0.3);
 
   // Branching ratio
-  fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050);
+  fBR = new TH1F("fBR", "fBR", 12, 0, 12);
+  for(Int_t i = 1; i <= 24; i++) fBR->SetBinContent(i, 0.050);
 
 }
 
 void AliHFSystErr::InitLctopK0S2018PbPb3050BDT() {
   //
-  // Lc->pK0s syst errors. Responsible:
+  // Lc->pK0s syst errors. Responsible: A. Alici, C. Zampolli
   //   2018 PbPb sample, 3050 CC, BDT analysis
   //
+  // binning of syst histo is 1 GeV wide
+  // [2, 4] --> bins 3, 4
+  // [4, 6] --> bins 5, 6
+  // [6, 8] --> bins 7, 8
+  // [8, 12] --> 9, 10, 11, 12
+  // for now we don't have more
 
   SetNameTitle("AliHFSystErr","SystErrLctopK0S2018PbPb3050BDT");
 
   // Normalization
-  fNorm = new TH1F("fNorm","fNorm",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 3.7% error on sigmaV0and
+  fNorm = new TH1F("fNorm", "fNorm", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fNorm->SetBinContent(i, 0.04); // TAA and pp norm
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.04);
+  fTrackingEff = new TH1F("fTrackingEff", "fTrackingEff", 24, 0., 24.); //Preliminary (usual track syst + 6% additional from GeoCut correction)
+  for (Int_t i = 1; i <= 24; i++) fTrackingEff->SetBinContent(i, 0.0);  // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fTrackingEff->SetBinContent(i, 0.10);
+  for (Int_t i = 5; i <= 6; i++) fTrackingEff->SetBinContent(i, 0.11);
+  for (Int_t i = 7; i <= 8; i++) fTrackingEff->SetBinContent(i, 0.11);
+  for (Int_t i = 9; i <= 12; i++) fTrackingEff->SetBinContent(i, 0.11);
 
   // Raw yield extraction
-  fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fRawYield->SetBinContent(i,0.04);
+  fRawYield = new TH1F("fRawYield", "fRawYield", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fRawYield->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fRawYield->SetBinContent(i, 0.11);
+  for (Int_t i = 5; i <= 6; i++) fRawYield->SetBinContent(i, 0.09);
+  for (Int_t i = 7; i <= 8; i++) fRawYield->SetBinContent(i, 0.13);
+  for (Int_t i = 9; i <= 12; i++) fRawYield->SetBinContent(i, 0.08);
+  
 
-  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.04);
+  fCutsEff = new TH1F("fCutsEff", "fCutsEff", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fCutsEff->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fCutsEff->SetBinContent(i, 0.04);
+  for (Int_t i = 5; i <= 6; i++) fCutsEff->SetBinContent(i, 0.07);
+  for (Int_t i = 7; i <= 8; i++) fCutsEff->SetBinContent(i, 0.07);
+  for (Int_t i = 9; i <= 12; i++) fCutsEff->SetBinContent(i, 0.10);
 
-  // PID efficiency (from PID/noPID)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0.,24.);
-  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.04);
+  // PID efficiency (from PID/noPID) - not done for now
+  fPIDEff = new TH1F("fPIDEff", "fPIDEff", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fPIDEff->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fPIDEff->SetBinContent(i, 0.0);
+  for (Int_t i = 5; i <= 6; i++) fPIDEff->SetBinContent(i, 0.0);
+  for (Int_t i = 7; i <= 8; i++) fPIDEff->SetBinContent(i, 0.0);
+  for (Int_t i = 9; i <= 12; i++) fPIDEff->SetBinContent(i, 0.0);
 
   // MC dN/dpt
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0.,24.);
-  for(Int_t i=1; i<=24;i++) fMCPtShape->SetBinContent(i,0.01);
+  fMCPtShape = new TH1F("fMCPtShape", "fMCPtShape", 24, 0., 24.);
+  for(Int_t i = 1; i <= 24; i++) fMCPtShape->SetBinContent(i, 0.0); // default value is set to zero
+  for (Int_t i = 3; i <= 4; i++) fMCPtShape->SetBinContent(i, 0.03);
+  for (Int_t i = 5; i <= 6; i++) fMCPtShape->SetBinContent(i, 0.01);
+  for (Int_t i = 7; i <= 8; i++) fMCPtShape->SetBinContent(i, 0.01);
+  for (Int_t i = 9; i <= 12; i++) fMCPtShape->SetBinContent(i, 0.01);
 
   // Branching ratio
-  fBR = new TH1F("fBR","fBR",12,0,12);
-  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.050);
+  fBR = new TH1F("fBR", "fBR", 12, 0, 12);
+  for(Int_t i = 1; i <= 24; i++) fBR->SetBinContent(i, 0.050);
 
 }
 //--------------------------------------------------------------------------
