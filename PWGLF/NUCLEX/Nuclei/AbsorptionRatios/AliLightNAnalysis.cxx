@@ -14,8 +14,10 @@ AliLightNAnalysis::AliLightNAnalysis()
 ,fLightNTrack()
 ,fEvent()
 ,fEvtCuts()
-,fTrackCuts()
-,fAntiTrackCuts()
+,fTrackCutsProton()
+,fTrackCutsDeuteron()
+,fAntiTrackCutsProton()
+,fAntiTrackCutsDeuteron()
 ,fTrackBufferSize(0)
 ,fGTI(0)
 {
@@ -30,10 +32,15 @@ AliLightNAnalysis::~AliLightNAnalysis() {
 
 void AliLightNAnalysis::Init() {
     fLightNTrack=new AliLightNTrack();
-    fLightNTrack->SetUseMCInfo(fTrackCuts->GetIsMonteCarlo());
+    fLightNTrack->SetUseMCInfo(fTrackCutsProton->GetIsMonteCarlo());
+    fLightNTrack->SetUseMCInfo(fAntiTrackCutsProton->GetIsMonteCarlo());
+    fLightNTrack->SetUseMCInfo(fTrackCutsDeuteron->GetIsMonteCarlo());
+    fLightNTrack->SetUseMCInfo(fAntiTrackCutsDeuteron->GetIsMonteCarlo());
     fEvtCuts->InitQA();
-    fTrackCuts->Init();
-    fAntiTrackCuts->Init();
+    fTrackCutsProton->Init();
+    fAntiTrackCutsProton->Init();
+    fTrackCutsDeuteron->Init();
+    fAntiTrackCutsDeuteron->Init();
     fGTI=new AliAODTrack*[fTrackBufferSize];
     fQA=new TList();
     fQA->SetOwner();
@@ -170,11 +177,10 @@ void AliLightNAnalysis::Make(AliAODEvent *evt) {
             return;
         }
         fLightNTrack->SetTrack(track);
-        if (fTrackCuts->isSelected(fLightNTrack)) {
-        }
-        
-        if (fAntiTrackCuts->isSelected(fLightNTrack)) {
-        }
+        fTrackCutsProton->isSelected(fLightNTrack);
+        fAntiTrackCutsProton->isSelected(fLightNTrack);
+        fTrackCutsDeuteron->isSelected(fLightNTrack);
+        fAntiTrackCutsDeuteron->isSelected(fLightNTrack);
     }
     
     /*TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(evt->FindListObject(AliAODMCParticle::StdBranchName()));

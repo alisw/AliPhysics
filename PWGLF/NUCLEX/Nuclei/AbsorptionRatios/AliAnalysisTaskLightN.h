@@ -24,8 +24,7 @@ public:
     virtual void Terminate(Option_t *){};
     void SetMVPileUp(bool mvPileUp){fMVPileUp=mvPileUp;};
     void SetEvtCutQA(bool setQA){fEvtCutQA=setQA;};
-    void SetEventCutsProton(AliLightNEventCuts *cuts){fEvtCutsProton=cuts;};
-    void SetEventCutsDeuteron(AliLightNEventCuts *cuts){fEvtCutsDeuteron=cuts;};
+    void SetEventCutsParticle(AliLightNEventCuts *cuts){fEvtCutsParticle=cuts;};
     void SetTrackCutsProton(AliLightNTrackCuts *cuts){fTrackCutsProton=cuts;};
     void SetAntiTrackCutsProton(AliLightNTrackCuts *cuts){fAntiTrackCutsProton=cuts;};
     void SetTrackCutsDeuteron(AliLightNTrackCuts *cuts){fTrackCutsDeuteron=cuts;};
@@ -38,13 +37,10 @@ private:
     bool fEvtCutQA;					//
     bool fIsMC;					//
     TString fname;              //
-    AliLightNAnalysis *fAnalysisProton;		//!
-    AliLightNAnalysis *fAnalysisDeuteron;		//!
+    AliLightNAnalysis *fAnalysisParticle;		//!
     TList *fQA;					//!
-    AliLightNEventCuts *fEvtCutsProton;			//
-    AliLightNEventCuts *fEvtCutsDeuteron;            //
-    TList *fEvtHistListProton;				//!
-    TList *fEvtHistListDeuteron;                //!
+    AliLightNEventCuts *fEvtCutsParticle;			//
+    TList *fEvtHistListParticle;				//!
     AliLightNTrackCuts *fTrackCutsProton;			//
     AliLightNTrackCuts *fAntiTrackCutsProton;		//
     AliLightNTrackCuts *fTrackCutsDeuteron;			//

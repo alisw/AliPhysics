@@ -23,17 +23,16 @@ public:
     AliLightNAnalysis();
     void SetMVPileUp(bool mvPileUp){fMVPileUp=mvPileUp;};
     void SetEvtCutQA(bool setQA){fEvtCutQA=setQA;};
-    void SetEventCutsProton(AliLightNEventCuts *cuts){fEvtCuts=cuts;};
-    void SetEventCutsDeuteron(AliLightNEventCuts *cuts){fEvtCuts=cuts;};
+    void SetEventCutsParticle(AliLightNEventCuts *cuts){fEvtCuts=cuts;};
     TList *GetEventCutHists(){return fEvtCuts->GetHistList();};
-    void SetTrackCutsProton(AliLightNTrackCuts *cuts){fTrackCuts=cuts;};
-    void SetTrackCutsDeuteron(AliLightNTrackCuts *cuts){fTrackCuts=cuts;};
-    TList *GetTrackCutHists(){return fTrackCuts->GetQAHists();};
-    TList *GetTrackCutHistsMC(){return fTrackCuts->GetMCQAHists();};
-    void SetAntiTrackCutsProton(AliLightNTrackCuts *cuts){fAntiTrackCuts=cuts;};
-    void SetAntiTrackCutsDeuteron(AliLightNTrackCuts *cuts){fAntiTrackCuts=cuts;};
-    TList *GetAntitrackCutHists(){return fAntiTrackCuts->GetQAHists();};
-    TList *GetAntitrackCutHistsMC(){return fAntiTrackCuts->GetMCQAHists();};
+    void SetTrackCutsProton(AliLightNTrackCuts *cuts){fTrackCutsProton=cuts;};
+    void SetTrackCutsDeuteron(AliLightNTrackCuts *cuts){fTrackCutsDeuteron=cuts;};
+    TList *GetTrackCutHistsProton(){return fTrackCutsProton->GetQAHists();};
+    TList *GetTrackCutHistsDeuteron(){return fTrackCutsDeuteron->GetQAHists();};
+    void SetAntiTrackCutsProton(AliLightNTrackCuts *cuts){fAntiTrackCutsProton=cuts;};
+    void SetAntiTrackCutsDeuteron(AliLightNTrackCuts *cuts){fAntiTrackCutsDeuteron=cuts;};
+    TList *GetAntitrackCutHistsProton(){return fAntiTrackCutsProton->GetQAHists();};
+    TList *GetAntitrackCutHistsDeuteron(){return fAntiTrackCutsDeuteron->GetQAHists();};
     TList *GetQAList() {return fQA;};
     void SetTrackBufferSize(int size){fTrackBufferSize=size;};
     void Init();
@@ -50,8 +49,10 @@ private:
     AliLightNTrack *fLightNTrack;          //!
     AliLightNEvent *fEvent;               //!
     AliLightNEventCuts *fEvtCuts;         //!
-    AliLightNTrackCuts *fTrackCuts;       //!
-    AliLightNTrackCuts *fAntiTrackCuts;   //!
+    AliLightNTrackCuts *fTrackCutsProton;       //!
+    AliLightNTrackCuts *fTrackCutsDeuteron;       //!
+    AliLightNTrackCuts *fAntiTrackCutsProton;   //!
+    AliLightNTrackCuts *fAntiTrackCutsDeuteron;   //!
     int fTrackBufferSize;
     AliAODTrack **fGTI;			//!
     ClassDef(AliLightNAnalysis,1)

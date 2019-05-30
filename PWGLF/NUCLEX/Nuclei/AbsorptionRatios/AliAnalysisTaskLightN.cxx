@@ -16,13 +16,10 @@ AliAnalysisTaskLightN::AliAnalysisTaskLightN()
 ,fEvtCutQA(false)
 ,fIsMC(false)
 ,fname()
-,fAnalysisProton()
-,fAnalysisDeuteron()
+,fAnalysisParticle()
 ,fQA()
-,fEvtCutsProton()
-,fEvtCutsDeuteron()
-,fEvtHistListProton(0)
-,fEvtHistListDeuteron(0)
+,fEvtCutsParticle()
+,fEvtHistListParticle(0)
 ,fTrackCutsProton()
 ,fAntiTrackCutsProton()
 ,fTrackCutsDeuteron()
@@ -44,13 +41,10 @@ AliAnalysisTaskLightN::AliAnalysisTaskLightN(const char *name,bool isMC)
 ,fEvtCutQA(false)
 ,fIsMC(isMC)
 ,fname(name)
-,fAnalysisProton()
-,fAnalysisDeuteron()
+,fAnalysisParticle()
 ,fQA()
-,fEvtCutsProton()
-,fEvtCutsDeuteron()
-,fEvtHistListProton(0)
-,fEvtHistListDeuteron(0)
+,fEvtCutsParticle()
+,fEvtHistListParticle(0)
 ,fTrackCutsProton()
 ,fAntiTrackCutsProton()
 ,fTrackCutsDeuteron()
@@ -95,62 +89,76 @@ AliAnalysisTaskLightN::AliAnalysisTaskLightN(const char *name,bool isMC)
 }
 
 AliAnalysisTaskLightN::~AliAnalysisTaskLightN() {
-    if (fAnalysisProton) {
-        delete fAnalysisProton;
-    }
-    if (fAnalysisDeuteron) {
-        delete fAnalysisDeuteron;
+    if (fAnalysisParticle) {
+        delete fAnalysisParticle;
     }
 }
 
 void AliAnalysisTaskLightN::UserCreateOutputObjects() {
     
     
-    //Initialization for (anti)protons
-    fAnalysisProton=new AliLightNAnalysis();
-    fAnalysisProton->SetTrackBufferSize(fTrackBufferSize);
-    fAnalysisProton->SetMVPileUp(fMVPileUp);
-    fAnalysisProton->SetEvtCutQA(fEvtCutQA);
-    if (fEvtCutsProton) {
-        fAnalysisProton->SetEventCutsProton(fEvtCutsProton);
+    //Initialization for the analyis of all particles
+    fAnalysisParticle=new AliLightNAnalysis();
+    fAnalysisParticle->SetTrackBufferSize(fTrackBufferSize);
+    fAnalysisParticle->SetMVPileUp(fMVPileUp);
+    fAnalysisParticle->SetEvtCutQA(fEvtCutQA);
+    //Set the event cuts
+    if (fEvtCutsParticle) {
+        fAnalysisParticle->SetEventCutsParticle(fEvtCutsParticle);
     } else {
         AliFatal("Event cuts missing!");
     }
+    
+    //Set the track cuts for all particles to be analyzed
     if (fTrackCutsProton) {
-        fAnalysisProton->SetTrackCutsProton(fTrackCutsProton);
+        fAnalysisParticle->SetTrackCutsProton(fTrackCutsProton);
     } else {
         AliFatal("TrackCuts missing!");
     }
     if (fAntiTrackCutsProton) {
-        fAnalysisProton->SetAntiTrackCutsProton(fAntiTrackCutsProton);
+        fAnalysisParticle->SetAntiTrackCutsProton(fAntiTrackCutsProton);
+    } else {
+        AliFatal("Antitrack cuts missing");
+    }
+    if (fTrackCutsDeuteron) {
+        fAnalysisParticle->SetTrackCutsDeuteron(fTrackCutsDeuteron);
+    } else {
+        AliFatal("TrackCuts missing!");
+    }
+    if (fAntiTrackCutsDeuteron) {
+        fAnalysisParticle->SetAntiTrackCutsDeuteron(fAntiTrackCutsDeuteron);
     } else {
         AliFatal("Antitrack cuts missing");
     }
     
-    fAnalysisProton->Init();	
+    //Initialize the cuts and the histograms
+    fAnalysisParticle->Init();
     
-    if (fAnalysisProton->GetQAList()) {
-        fQA=fAnalysisProton->GetQAList();
+    //Outputs for the event selection
+    if (fAnalysisParticle->GetQAList()) {
+        fQA=fAnalysisParticle->GetQAList();
     } else {
         AliFatal("QA Histograms not available");
     }
-    if (fAnalysisProton->GetEventCutHists()) {
-        fEvtHistListProton=fAnalysisProton->GetEventCutHists();
+    if (fAnalysisParticle->GetEventCutHists()) {
+        fEvtHistListParticle=fAnalysisParticle->GetEventCutHists();
     } else {
         AliFatal("Event Cut Histograms not available");
     }
-    if (fAnalysisProton->GetTrackCutHists()) {
-        fTrackCutHistListProton=fAnalysisProton->GetTrackCutHists();
+    
+    //Outputs for (anti)proton
+    if (fAnalysisParticle->GetTrackCutHistsProton()) {
+        fTrackCutHistListProton=fAnalysisParticle->GetTrackCutHistsProton();
     } else {
         AliFatal("Event Cut Histograms not available");
     }
-    if (fAnalysisProton->GetAntitrackCutHists()) {
-        fAntiTrackCutHistListProton=fAnalysisProton->GetAntitrackCutHists();
+    if (fAnalysisParticle->GetAntitrackCutHistsProton()) {
+        fAntiTrackCutHistListProton=fAnalysisParticle->GetAntitrackCutHistsProton();
     } else {
         AliFatal("Event Cut Histograms not available");
     }
     if(strcmp(fname,"LightN")==0)PostData(1,fQA);
-    if(strcmp(fname,"LightN")==0)PostData(2,fEvtHistListProton);
+    if(strcmp(fname,"LightN")==0)PostData(2,fEvtHistListParticle);
     if(strcmp(fname,"LightN")==0)PostData(3,fTrackCutHistListProton);
     if(strcmp(fname,"LightN")==0)PostData(4,fAntiTrackCutHistListProton);
     
@@ -170,54 +178,19 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
     }
     
     
-    //Initialization for (anti)deuterons
-    fAnalysisDeuteron=new AliLightNAnalysis();
-    fAnalysisDeuteron->SetTrackBufferSize(fTrackBufferSize);
-    fAnalysisDeuteron->SetMVPileUp(fMVPileUp);
-    fAnalysisDeuteron->SetEvtCutQA(fEvtCutQA);
-    if (fEvtCutsDeuteron) {
-        fAnalysisDeuteron->SetEventCutsDeuteron(fEvtCutsDeuteron);
-    } else {
-        AliFatal("Event cuts missing!");
-    }
-    if (fTrackCutsDeuteron) {
-        fAnalysisDeuteron->SetTrackCutsDeuteron(fTrackCutsDeuteron);
-    } else {
-        AliFatal("TrackCuts missing!");
-    }
-    if (fAntiTrackCutsDeuteron) {
-        fAnalysisDeuteron->SetAntiTrackCutsDeuteron(fAntiTrackCutsDeuteron);
-    } else {
-        AliFatal("Antitrack cuts missing");
-    }
-    
-    fAnalysisDeuteron->Init();	
-    
-    if (fAnalysisDeuteron->GetQAList()) {
-        fQA=fAnalysisDeuteron->GetQAList();
-    } else {
-        AliFatal("QA Histograms not available");
-    }
-    if (fAnalysisDeuteron->GetEventCutHists()) {
-        fEvtHistListDeuteron=fAnalysisDeuteron->GetEventCutHists();
+    //Outputs for (anti)deuterons
+    if (fAnalysisParticle->GetTrackCutHistsDeuteron()) {
+        fTrackCutHistListDeuteron=fAnalysisParticle->GetTrackCutHistsDeuteron();
     } else {
         AliFatal("Event Cut Histograms not available");
     }
-    if (fAnalysisDeuteron->GetTrackCutHists()) {
-        fTrackCutHistListDeuteron=fAnalysisDeuteron->GetTrackCutHists();
-    } else {
-        AliFatal("Event Cut Histograms not available");
-    }
-    if (fAnalysisDeuteron->GetAntitrackCutHists()) {
-        fAntiTrackCutHistListDeuteron=fAnalysisDeuteron->GetAntitrackCutHists();
+    if (fAnalysisParticle->GetAntitrackCutHistsDeuteron()) {
+        fAntiTrackCutHistListDeuteron=fAnalysisParticle->GetAntitrackCutHistsDeuteron();
     } else {
         AliFatal("Event Cut Histograms not available");
     }
     if(strcmp(fname,"LightN")==0)PostData(5,fTrackCutHistListDeuteron);
     if(strcmp(fname,"LightN")==0)PostData(6,fAntiTrackCutHistListDeuteron);
-    // if(strcmp(fname,"LightN")==0)PostData(7,fQA);
-    // if(strcmp(fname,"LightN")==0)PostData(8,fEvtHistListDeuteron);
-    
     
     if (fIsMC) {
         if (fTrackCutsDeuteron->GetMCQAHists()) {
@@ -263,30 +236,30 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
         AliFatal("No Input Event");
     } else {
         
-        //Execute Proton Analysis 
-        fAnalysisProton->Make(Event);
-        if (fAnalysisProton->GetQAList()) {
-            fQA=fAnalysisProton->GetQAList();
+        //Execute the Analysis ((anti)p and (anti)d)
+        fAnalysisParticle->Make(Event);
+        if (fAnalysisParticle->GetQAList()) {
+            fQA=fAnalysisParticle->GetQAList();
         } else {
             AliFatal("QA Histograms not available");
         }
-        if (fAnalysisProton->GetEventCutHists()) {
-            fEvtHistListProton=fAnalysisProton->GetEventCutHists();
+        if (fAnalysisParticle->GetEventCutHists()) {
+            fEvtHistListParticle=fAnalysisParticle->GetEventCutHists();
         } else {
             AliFatal("Event Cut Histograms not available");
         }
-        if (fAnalysisProton->GetTrackCutHists()) {
-            fTrackCutHistListProton=fAnalysisProton->GetTrackCutHists();
+        if (fAnalysisParticle->GetTrackCutHistsProton()) {
+            fTrackCutHistListProton=fAnalysisParticle->GetTrackCutHistsProton();
         } else {
             AliFatal("Track Cut Histograms not available");
         }
-        if (fAnalysisProton->GetAntitrackCutHists()) {
-            fAntiTrackCutHistListProton=fAnalysisProton->GetAntitrackCutHists();
+        if (fAnalysisParticle->GetAntitrackCutHistsProton()) {
+            fAntiTrackCutHistListProton=fAnalysisParticle->GetAntitrackCutHistsProton();
         } else {
             AliFatal("AntiTrack Cut Histograms not available");
         }
         if(strcmp(fname,"LightN")==0)PostData(1,fQA);
-        if(strcmp(fname,"LightN")==0)PostData(2,fEvtHistListProton);
+        if(strcmp(fname,"LightN")==0)PostData(2,fEvtHistListParticle);
         if(strcmp(fname,"LightN")==0)PostData(3,fTrackCutHistListProton);
         if(strcmp(fname,"LightN")==0)PostData(4,fAntiTrackCutHistListProton);
         if (fIsMC) {
@@ -304,15 +277,13 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
             if(strcmp(fname,"LightN")==0)PostData(24,fAntiTrackCutHistMCListProton);
         }
         
-        //Execute Deuteron Analysis 
-        fAnalysisDeuteron->Make(Event);
-        if (fAnalysisDeuteron->GetTrackCutHists()) {
-            fTrackCutHistListDeuteron=fAnalysisDeuteron->GetTrackCutHists();
+        if (fAnalysisParticle->GetTrackCutHistsDeuteron()) {
+            fTrackCutHistListDeuteron=fAnalysisParticle->GetTrackCutHistsDeuteron();
         } else {
             AliFatal("Track Cut Histograms not available");
         }
-        if (fAnalysisDeuteron->GetAntitrackCutHists()) {
-            fAntiTrackCutHistListDeuteron=fAnalysisDeuteron->GetAntitrackCutHists();
+        if (fAnalysisParticle->GetAntitrackCutHistsDeuteron()) {
+            fAntiTrackCutHistListDeuteron=fAnalysisParticle->GetAntitrackCutHistsDeuteron();
         } else {
             AliFatal("AntiTrack Cut Histograms not available");
         }

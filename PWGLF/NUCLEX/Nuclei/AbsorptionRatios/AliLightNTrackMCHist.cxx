@@ -300,7 +300,8 @@ void AliLightNTrackMCHist::FillMCDCAXYPtBins(
     } else if (org==AliLightNBasePart::kMaterial) {
         fMCMaterialDCAXYPtBins->Fill(pT,dcaxy);
     } else {
-        AliFatal("Particle Origin not implemented");
+        //For all particles with other origin i.e. missidentified by the analysis
+        return;
     }
     return;
 }
