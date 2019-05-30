@@ -111,13 +111,17 @@ public:
   AliFemtoTrackCutPionPionAK()
     : fNumPass(0)
     , fNumFail(0)
-    {}
+    {
+      SetMass(0.139570);
+    }
 
   AliFemtoTrackCutPionPionAK(AliFemtoConfigObject &cfg)
     : Super(cfg)
     , fNumPass(0)
     , fNumFail(0)
-    {}
+    {
+      SetMass(0.139570);
+    }
 
   virtual ~AliFemtoTrackCutPionPionAK()
     { }
