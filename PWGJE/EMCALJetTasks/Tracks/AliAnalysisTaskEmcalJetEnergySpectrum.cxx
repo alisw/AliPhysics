@@ -70,6 +70,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fRequestCentrality(false),
   fUseAliEventCuts(false),
   fUseSumw2(false),
+  fUseMuonCalo(false),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
@@ -93,6 +94,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fRequestCentrality(false),
   fUseAliEventCuts(false),
   fUseSumw2(false),
+  fUseMuonCalo(false),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
@@ -277,7 +279,9 @@ std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysis
 bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   if(!fIsMC){
     // Pure data - do EMCAL trigger selection from selection string
-    if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
+    UInt_t triggerbits = fTriggerSelectionBits;
+    if(fUseMuonCalo) fTriggerSelectionBits = AliVEvent::kMuonCalo;  // in case of the muon-calo / calo(fast) cluster all data is in the 
+    if(!(fInputHandler->IsEventSelected() & triggerbits)) return false;
     if(fTriggerSelectionString.Length()) {
       if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
       if(fRequireSubsetMB && !(fInputHandler->IsEventSelected() & fMinBiasTrigger)) return false;   // Require EMCAL trigger to be subset of the min. bias trigger (for efficiency studies)
@@ -312,7 +316,11 @@ std::string AliAnalysisTaskEmcalJetEnergySpectrum::MatchTrigger(EMCAL_STRINGVIEW
   std::string result;
   for(const auto &t : triggerclasses) {
     // Use CENT cluster for downscaling
-    if(t.Triggercluster() != "CENT") continue;
+    if(t.BunchCrossing() != "B") continue;
+    if(fUseMuonCalo)
+      if(t.Triggercluster() != "CALO") continue;
+    else
+      if(t.Triggercluster() != "CENT") continue;
     if(t.Triggerclass().find(fTriggerSelectionString.Data()) == std::string::npos) continue; 
     result = t.ExpandClassName();
     break;

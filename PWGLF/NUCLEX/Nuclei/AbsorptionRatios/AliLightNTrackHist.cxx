@@ -17,29 +17,29 @@ AliLightNTrackHist::AliLightNTrackHist()
 ,fP_mass2_DCAxyHist(0)
 {
     for (int i=0;i<2;++i) {
-		fTrackCutQA[i]=0;
-		fpDist[i]=0;
-		fpTPCDist[i]=0;
+        fTrackCutQA[i]=0;
+        fpDist[i]=0;
+        fpTPCDist[i]=0;
         fDiff_p_pTPC[i]=0;
-		fetaDist[i]=0;
-		fphiDist[i]=0;
-		fTPCCls[i]=0;
-		fTPCClsS[i]=0;
-		fShrdClsITS[i]=0;
-		fDCAxy[i]=0;
-		fDCAz[i]=0;
-		fMass2sqHist[i]=0;
-		fTPCCrossedRows[i]=0;
-		fTPCRatio[i]=0;
-		fTPCdedx[i]=0;
-		fTOFbeta[i]=0;
-		fNSigTPC[i]=0;
-		fNSigTOF[i]=0;
-		fTPCStatus[i]=0;
-		fTOFStatus[i]=0;
-		fTPCClsCPiluUp[i]=0;
-		fITShrdClsPileUp[i]=0;
-	}
+        fetaDist[i]=0;
+        fphiDist[i]=0;
+        fTPCCls[i]=0;
+        fTPCClsS[i]=0;
+        fShrdClsITS[i]=0;
+        fDCAxy[i]=0;
+        fDCAz[i]=0;
+        fMass2sqHist[i]=0;
+        fTPCCrossedRows[i]=0;
+        fTPCRatio[i]=0;
+        fTPCdedx[i]=0;
+        fTOFbeta[i]=0;
+        fNSigTPC[i]=0;
+        fNSigTOF[i]=0;
+        fTPCStatus[i]=0;
+        fTOFStatus[i]=0;
+        fTPCClsCPiluUp[i]=0;
+        fITShrdClsPileUp[i]=0;
+    }
 }
 AliLightNTrackHist::AliLightNTrackHist(bool DCADist,bool CombSig,bool PlotPmass2dca3D) {
     TString sName[2] = {"before", "after"};

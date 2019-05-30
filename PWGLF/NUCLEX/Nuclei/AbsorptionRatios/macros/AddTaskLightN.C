@@ -36,8 +36,7 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, TString CentEst, Bool_t DoSyst
 		printf("This task requires an input event handler!\n");
 		return nullptr;
 	}
-	AliLightNEventCuts *evtCutsProton = AliLightNEventCuts::StandardCutsRun1();
-    AliLightNEventCuts *evtCutsDeuteron = AliLightNEventCuts::StandardCutsRun1();
+	AliLightNEventCuts *evtCutsParticle = AliLightNEventCuts::StandardCutsRun1();
 	bool DCAPlots=true;
 	bool CPAPlots=false;
 	bool CombSigma=false;
@@ -172,10 +171,9 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, TString CentEst, Bool_t DoSyst
 	task->SetDebugLevel(0);
 	task->SetEvtCutQA(true);
 	task->SetTrackBufferSize(2500);
-	task->SetEventCutsProton(evtCutsProton);
+	task->SetEventCutsParticle(evtCutsParticle);
 	task->SetTrackCutsProton(ProtonTrackCuts);
 	task->SetAntiTrackCutsProton(AntiProtonTrackCuts);
-    task->SetEventCutsDeuteron(evtCutsDeuteron);
 	task->SetTrackCutsDeuteron(DeuteronTrackCuts);
 	task->SetAntiTrackCutsDeuteron(AntiDeuteronTrackCuts);
 	//Systematics
@@ -183,40 +181,36 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, TString CentEst, Bool_t DoSyst
         task1->SetDebugLevel(0);
         task1->SetEvtCutQA(true);
         task1->SetTrackBufferSize(2500);
-        task1->SetEventCutsProton(evtCutsProton);
+        task1->SetEventCutsParticle(evtCutsParticle);
         task1->SetTrackCutsProton(ProtonTrackCuts);
         task1->SetAntiTrackCutsProton(AntiProtonTrackCuts);
-        task1->SetEventCutsDeuteron(evtCutsDeuteron);
         task1->SetTrackCutsDeuteron(DeuteronTrackCuts);
         task1->SetAntiTrackCutsDeuteron(AntiDeuteronTrackCuts);
         
         task2->SetDebugLevel(0);
         task2->SetEvtCutQA(true);
         task2->SetTrackBufferSize(2500);
-        task2->SetEventCutsProton(evtCutsProton);
+        task2->SetEventCutsParticle(evtCutsParticle);
         task2->SetTrackCutsProton(ProtonTrackCuts_sysTrackL);
         task2->SetAntiTrackCutsProton(AntiProtonTrackCuts_sysTrackL);
-        task2->SetEventCutsDeuteron(evtCutsDeuteron);
         task2->SetTrackCutsDeuteron(DeuteronTrackCuts_sysTrackL);
         task2->SetAntiTrackCutsDeuteron(AntiDeuteronTrackCuts_sysTrackL);
         
         task3->SetDebugLevel(0);
         task3->SetEvtCutQA(true);
         task3->SetTrackBufferSize(2500);
-        task3->SetEventCutsProton(evtCutsProton);
+        task3->SetEventCutsParticle(evtCutsParticle);
         task3->SetTrackCutsProton(ProtonTrackCuts_sysPIDT);
         task3->SetAntiTrackCutsProton(AntiProtonTrackCuts_sysPIDT);
-        task3->SetEventCutsDeuteron(evtCutsDeuteron);
         task3->SetTrackCutsDeuteron(DeuteronTrackCuts_sysPIDT);
         task3->SetAntiTrackCutsDeuteron(AntiDeuteronTrackCuts_sysPIDT);
         
         task4->SetDebugLevel(0);
         task4->SetEvtCutQA(true);
         task4->SetTrackBufferSize(2500);
-        task4->SetEventCutsProton(evtCutsProton);
+        task4->SetEventCutsParticle(evtCutsParticle);
         task4->SetTrackCutsProton(ProtonTrackCuts_sysPIDL);
         task4->SetAntiTrackCutsProton(AntiProtonTrackCuts_sysPIDL);
-        task4->SetEventCutsDeuteron(evtCutsDeuteron);
         task4->SetTrackCutsDeuteron(DeuteronTrackCuts_sysPIDL);
         task4->SetAntiTrackCutsDeuteron(AntiDeuteronTrackCuts_sysPIDL);
     }

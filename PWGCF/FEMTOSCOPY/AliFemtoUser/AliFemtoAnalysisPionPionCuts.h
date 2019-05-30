@@ -95,7 +95,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoEventCutPionPionAK"; }
 };
 
@@ -111,13 +111,17 @@ public:
   AliFemtoTrackCutPionPionAK()
     : fNumPass(0)
     , fNumFail(0)
-    {}
+    {
+      SetMass(0.139570);
+    }
 
   AliFemtoTrackCutPionPionAK(AliFemtoConfigObject &cfg)
     : Super(cfg)
     , fNumPass(0)
     , fNumFail(0)
-    {}
+    {
+      SetMass(0.139570);
+    }
 
   virtual ~AliFemtoTrackCutPionPionAK()
     { }
@@ -134,7 +138,7 @@ public:
       return passes;
     }
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoTrackCutPionPionAK"; }
 
   ULong_t fNumPass,
@@ -167,7 +171,7 @@ public:
       return AliFemtoTrackCutPionPionAK::Pass(track);
     }
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoTrackCutPionPionIdealAK"; }
 };
 
@@ -196,7 +200,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoPairCutPionPionAKAvgSep"; }
 };
 
@@ -228,7 +232,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoPairCutPionPionAKDetaDphi"; }
 };
 

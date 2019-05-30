@@ -80,7 +80,7 @@ public:
     }
     void SetName(TString name){fHistList->SetName(name.Data());};
     TList *GetHistList(){return fHistList;};
- private:
+private:
     TList *fHistList;         //!
     TList *fTrackCutQA[2];    //!
     TProfile *fConfig;        //!
