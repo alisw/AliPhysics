@@ -135,8 +135,8 @@ Bool_t Config_Xipi(
     TString pname="Xim";
     if(enableMonitor){
         Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-        gROOT->LoadMacro("./AddMonitorOutput.C");
-//        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    //    gROOT->LoadMacro("./AddMonitorOutput.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
 
         AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
         AddMonitorOutput(isMC,cutSetPi->GetMonitorOutput());
