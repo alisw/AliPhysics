@@ -84,6 +84,7 @@ void AliLightNTrack::SetTrackingInformation() {
     this->SetTheta(fTrack->Theta());
     this->SetCharge(fTrack->Charge());
     this->SetMomentum(fTrack->Px(), fTrack->Py(), fTrack->Pz());
+    this->SetP(fTrack->P());
     this->SetMomTPC(fGlobalTrack->GetTPCmomentum());
     this->SetPt(fTrack->Pt());
     this->fdcaXY=fTrack->DCA();

@@ -29,6 +29,8 @@ public:
     TVector3 GetMomentum() const {return fP;};
     void SetMCMomentum(double px,double py,double pz) {fMCP.SetXYZ(px,py,pz);};
     TVector3 GetMCMomentum() const {return fMCP;};
+    void SetP(double p){fMom=p;};
+    double GetP() const {return fMom;};
     void SetPt(double pT){fPt=pT;};
     double GetPt() const {return fPt;};
     void SetMCPt(double pT){fMCPt=pT;};
@@ -71,6 +73,7 @@ protected:
     int fTrackBufferSize;
     TVector3 fP;
     TVector3 fMCP;
+    double fMom;
     double fPt;
     double fMCPt;
     double fP_TPC;
