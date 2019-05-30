@@ -183,14 +183,12 @@ void AliLightNAnalysis::Make(AliAODEvent *evt) {
         fAntiTrackCutsDeuteron->isSelected(fLightNTrack);
     }
     
-    /*TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(evt->FindListObject(AliAODMCParticle::StdBranchName()));
+    
+   /* // Loop over all MC particle that are in the MCParticles array
+    TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(evt->FindListObject(AliAODMCParticle::StdBranchName()));
     if (AODMCTrackArray == NULL) return;
-     
-     // Loop over all primary MC particle
      for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
-     
      AliAODMCParticle* particle; = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
-
      if (!particle) continue;
      //std::cout << "PDG CODE = " << particle->GetPdgCode() << " particle->IsPhysicalPrimary() " << particle->IsPhysicalPrimary() << " LabelNr" << LabelNr <<" particle->Eta()" << particle->Eta() << " particle->Px()" << particle->Px() << " particle->Py()" << particle->Py() << " particle->Pz()" << particle->Pz()  << std::endl;
      }*/
