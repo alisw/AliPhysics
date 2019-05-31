@@ -81,12 +81,9 @@
 #include "AliEmcalParticleJetConstituent.h"
 #endif
 
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetSubstructureTree);
 
-/// \cond CLASSIMP
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetSubstructureTree);
-/// \endcond
-
-namespace EmcalTriggerJets {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree() :
     AliAnalysisTaskEmcalJet(),
@@ -992,7 +989,6 @@ void AliJetTreeGlobalParameters::LinkJetTreeBranches(TTree *jettree, bool fillRh
   }
 }
 
-void LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type) {
+void PWGJE::EMCALJetTasks::LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type) {
   jettree->Branch(branchname, data, Form("%s/%s", branchname, type));
 }
-} /* namespace EmcalTriggerJets */

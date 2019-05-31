@@ -43,9 +43,9 @@
 #include "AliLog.h"
 #include "AliVEventHandler.h"
 
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale)
 
-using namespace EmcalTriggerJets;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   AliAnalysisTaskEmcalJet(),

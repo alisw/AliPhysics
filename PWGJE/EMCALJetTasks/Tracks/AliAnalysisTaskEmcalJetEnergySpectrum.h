@@ -34,7 +34,9 @@
 class THistManager;
 class AliEventCuts;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet {
 public:
@@ -112,6 +114,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
 };
+
+}
 
 }
 #endif
