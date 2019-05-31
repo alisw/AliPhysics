@@ -473,7 +473,7 @@ AliRsnMiniAnalysisTask* AddTaskXipi_pp13(
     else task->UseCentrality("V0M");
     
     // set event mixing options
-    int nmix=20;
+    int nmix=5;
     if((EventCuts%10000)/1000==1) nmix=0;
     float maxDiffVzMix=1;
     float maxDiffMultMix=5;
