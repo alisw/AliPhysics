@@ -103,7 +103,7 @@ Bool_t Config_Xipi(
     cutSetXi->SetCutScheme(cutXi->GetName());
     Int_t icutXi=task->AddTrackCuts(cutSetXi);
     
-    AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kXiPlusBar,AliPID::kPion,AliPID::kProton,AliPID::kPion);
+    AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kXiPlusBar,AliPID::kProton,AliPID::kPion,AliPID::kPion);
     cutXibar->SetPIDCutV0Proton(XiPIDcut);
     cutXibar->SetPIDCutV0Pion(XiPIDcut);
     cutXibar->SetPIDCutBachelor(XiPIDcut);
@@ -135,7 +135,7 @@ Bool_t Config_Xipi(
     TString pname="Xim";
     if(enableMonitor){
         Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-    //    gROOT->LoadMacro("./AddMonitorOutput.C");
+    //  gROOT->LoadMacro("./AddMonitorOutput.C");
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
 
         AddMonitorOutput(isMC,cutSetQ->GetMonitorOutput());
