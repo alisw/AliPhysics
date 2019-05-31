@@ -31,6 +31,10 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
         return;
       }
     }
+    Bool_t IsPrimaryElectron(AliAODMCParticle *p);
+    Bool_t IsLF(AliAODMCParticle *parent);
+    Bool_t IsHF(AliAODMCParticle *parent);
+    Bool_t IsEWBoson(AliAODMCParticle *parent);//parent is electro-weak boson, i.e. W/Z, gamma
 
     void ClearVectorElement();
     void ClearVectorMemory();
@@ -149,7 +153,6 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<Float_t> fV0PhivPair;//N
     vector<Float_t> fV0PointingAngle;//N
     vector<Float_t> fV0Chi2;//N
-    vector<vector<Float_t>> fV0legChi2TPCConstrainedVsGlobal;
     vector<vector<Float_t>> fV0Mass;//N x 4//K0S Lambda Anti-Lambda, Gamma
     vector<vector<Float_t>> fV0legDCAxy;//N x 2
     vector<vector<Float_t>> fV0legDCAz;//N x 2
@@ -193,7 +196,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 5);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 6);
 
 };
 
