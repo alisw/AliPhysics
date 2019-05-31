@@ -611,6 +611,7 @@ void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
 }
 
 void AliLightNTrackCuts::BookMC(AliLightNTrack *Track) {
+    if(!Track->TestFilterBit(1))return;
     double p =Track->GetP();
     double RAPIDITY = Track->GetRapidity(fParticleID);
     Int_t PDGcode[6] = {11,13,211,321,2212,1000010020};

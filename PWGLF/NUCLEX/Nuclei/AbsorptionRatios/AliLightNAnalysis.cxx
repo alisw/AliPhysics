@@ -155,11 +155,46 @@ void AliLightNAnalysis::Make(AliAODEvent *evt) {
     if (!fEvtCuts->isSelected(fEvent)) {
         return;
     }
-    //  std::cout << "=============================" <<std::endl;
-    //  std::cout << "=============================" <<std::endl;
-    //  std::cout << "=========new Event===========" <<std::endl;
-    //  std::cout << "=============================" <<std::endl;
-    //  std::cout << "=============================" <<std::endl;
+      //std::cout << "=============================" <<std::endl;
+      //std::cout << "=============================" <<std::endl;
+      //std::cout << "=========new Event===========" <<std::endl;
+      //std::cout << "=============================" <<std::endl;
+      //std::cout << "=============================" <<std::endl;
+    
+    // Loop over all MC particle that are in the MCParticles array
+    //if(fTrackCutsProton->GetIsMonteCarlo()){
+    TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(evt->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (AODMCTrackArray == NULL) return;
+    for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+        AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
+        if (!particle) continue;
+        double p = particle->P();
+        //Same eta range for all particles
+        if(fTrackCutsProton->GetEtaMin()<particle->Eta() && particle->Eta()<fTrackCutsProton->GetEtaMax()){
+            if (particle->GetPdgCode() == 2212){
+                fTrackCutsProton->FillStackGenerated(p);
+                if(particle->IsPhysicalPrimary()){
+                    fTrackCutsProton->FillStackGeneratedPrimary(p);
+                }
+            }else if (particle->GetPdgCode() == -2212){
+                fAntiTrackCutsProton->FillStackGenerated(p);
+                if(particle->IsPhysicalPrimary()){
+                    fAntiTrackCutsProton->FillStackGeneratedPrimary(p);
+                }
+            }else if (particle->GetPdgCode() == 1000010020){
+                fTrackCutsDeuteron->FillStackGenerated(p);
+                if(particle->IsPhysicalPrimary()){
+                    fTrackCutsDeuteron->FillStackGeneratedPrimary(p);
+                }
+            }else if (particle->GetPdgCode() == -1000010020){
+                fAntiTrackCutsDeuteron->FillStackGenerated(p);
+                if(particle->IsPhysicalPrimary()){
+                    fAntiTrackCutsDeuteron->FillStackGeneratedPrimary(p);
+                }
+            }
+        }
+    }
+    
     ResetGlobalTrackReference();
     for(int iTrack = 0;iTrack<evt->GetNumberOfTracks();++iTrack){
         AliAODTrack *track=static_cast<AliAODTrack*>(evt->GetTrack(iTrack));
@@ -181,43 +216,6 @@ void AliLightNAnalysis::Make(AliAODEvent *evt) {
         fAntiTrackCutsProton->isSelected(fLightNTrack);
         fTrackCutsDeuteron->isSelected(fLightNTrack);
         fAntiTrackCutsDeuteron->isSelected(fLightNTrack);
-    }
-    
-    // Loop over all MC particle that are in the MCParticles array
-    if(fTrackCutsProton->GetIsMonteCarlo()){
-        TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(evt->FindListObject(AliAODMCParticle::StdBranchName()));
-        if (AODMCTrackArray == NULL) return;
-        for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
-            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
-            if (!particle) continue;
-            double p = particle->P();
-            //Same eta range for all particles
-            if(fTrackCutsProton->GetEtaMin()<particle->Eta() && particle->Eta()<fTrackCutsProton->GetEtaMax()){
-                if (particle->GetPdgCode() == 2212){
-                    fTrackCutsProton->FillStackGenerated(p);
-                    if(particle->IsPhysicalPrimary()){
-                        fTrackCutsProton->FillStackGeneratedPrimary(p);
-                    }
-                }else if (particle->GetPdgCode() == -2212){
-                    fAntiTrackCutsProton->FillStackGenerated(p);
-                    if(particle->IsPhysicalPrimary()){
-                        fAntiTrackCutsProton->FillStackGeneratedPrimary(p);
-                    }
-                }else if (particle->GetPdgCode() == 1000010020){
-                    fTrackCutsDeuteron->FillStackGenerated(p);
-                    if(particle->IsPhysicalPrimary()){
-                        fTrackCutsDeuteron->FillStackGeneratedPrimary(p);
-                    }
-                }else if (particle->GetPdgCode() == -1000010020){
-                    fAntiTrackCutsDeuteron->FillStackGenerated(p);
-                    if(particle->IsPhysicalPrimary()){
-                        fAntiTrackCutsDeuteron->FillStackGeneratedPrimary(p);
-                    }
-                }else{
-                    return;
-                }
-            }
-        }
     }
 }
 
