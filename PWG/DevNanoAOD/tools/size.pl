@@ -30,16 +30,18 @@ for (@treeInfo)
   $comprSize{$current} += $1 if (defined $current && /File Size  =\s+(\d+)/);
 }
 
-my $total = 0;
-
-printf "%15s: \t %10s \t %10s \n", "Branch", "Compressed", "Uncompressed";
 for (@keywords) {
-  next if $comprSize{$_} == 0;
-  printf "%15s: \t %10d \t %10d \n", $_, $comprSize{$_}, $totalSize{$_} ;
-  $total += $comprSize{$_};
+  $comprSize{"Total"} += $comprSize{$_};
+  $totalSize{"Total"} += $totalSize{$_};
 }
 
-print "Total: $total\n";
+push @keywords, "Total";
+
+printf "%17s: \t %10s \t         %10s \n", "Branch", "Compressed", "Uncompressed";
+for (@keywords) {
+  next if $comprSize{$_} == 0;
+  printf "%17s: \t %10d (%3d%%) \t %12d \n", $_, $comprSize{$_}, $comprSize{$_} / $comprSize{"Total"} * 100, $totalSize{$_} ;
+}
 
 # *Br   10 :fUniqueID : UInt_t                                                 *
 # *Entries :      547 : Total  Size=       2761 bytes  File Size  =        124 *
