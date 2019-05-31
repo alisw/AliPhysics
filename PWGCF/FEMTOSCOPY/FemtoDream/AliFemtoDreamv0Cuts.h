@@ -161,6 +161,12 @@ class AliFemtoDreamv0Cuts {
     fCutInvMass = true;
   }
   ;
+  void SetCutWindow(float down, float up) {
+    fCutInvMass = false;
+    fCutInvMassSidebands = true;
+    fInvMassCutSBdown = down;
+    fInvMassCutSBup = up;
+  }
   void Init();
   void SetName(TString OutputName) {
     if (fHistList)
@@ -266,6 +272,10 @@ class AliFemtoDreamv0Cuts {
   float fMinCPA;                     //
   bool fCutInvMass;                   //
   float fInvMassCutWidth;            //
+  bool fCutInvMassSidebands;         //
+  float fInvMassCutSBdown;           //
+  float fInvMassCutSBup;             //
+
   //Range for the axis of the hists
   float fAxisMinMass;                //
   float fAxisMaxMass;                //
@@ -275,7 +285,7 @@ class AliFemtoDreamv0Cuts {
   int fPDGv0;                         //
   int fPDGDaugP;                      //
   int fPDGDaugN;                      //
-ClassDef(AliFemtoDreamv0Cuts,5)
+ClassDef(AliFemtoDreamv0Cuts,6)
 };
 
 #endif /* ALIFEMTODREAMV0CUTS_H_ */
