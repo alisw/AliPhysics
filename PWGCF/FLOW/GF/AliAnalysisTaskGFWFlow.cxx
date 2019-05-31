@@ -270,11 +270,11 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
 
 
     //Multi bins:
-    Double_t multibins[] = {5,10,20,30,40,50,60,70,80};
+    Double_t multibins[] = {5,10,20,30,40,50,60,70};
     fFC = new AliGFWFlowContainer();
     fFC->SetName(Form("FC%s",fSelections[fCurrSystFlag]->GetSystPF()));
     fFC->SetXAxis(fPtAxis);
-    fFC->Initialize(OAforPt,8,multibins,fCurrSystFlag?1:10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
+    fFC->Initialize(OAforPt,7,multibins,10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
     //Powers per harmonic:
     Int_t NoGap[] = {9,0,8,6,7,0,6,0,5,4};
     Int_t WithGap[] = {5,0,2,2,3,0,6,0,5,4};
@@ -435,9 +435,9 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     // mywatchStore.Start(kFALSE);
     Bool_t filled;
     for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
-      Bool_t DisableOL=kFALSE;
-      if(l_ind<14) DisableOL = (l_ind%2); //Only for 1, 3, 5 ... 13
-      filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn,DisableOL);
+      //Bool_t DisableOL=kFALSE;
+      //if(l_ind<14) DisableOL = (l_ind%2); //Only for 1, 3, 5 ... 13
+      filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn);//,DisableOL);
     };
     // mywatchStore.Stop();
     PostData(1,fFC);
@@ -631,12 +631,12 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
       fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
     return kTRUE;
   };
-  Int_t binDisableOLFrom = fPtAxis->GetNbins()+1;
+  /*Int_t binDisableOLFrom = fPtAxis->GetNbins()+1;
   if(DisableOverlap)
-    binDisableOLFrom = fPtAxis->FindBin(fRFpTMax); //To stay in the right bin
+    binDisableOLFrom = fPtAxis->FindBin(fRFpTMax); //To stay in the right bin*/
   Bool_t NeedToDisable=kFALSE;
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
-    if(DisableOverlap) NeedToDisable=(i>=binDisableOLFrom);
+    //if(DisableOverlap) NeedToDisable=(i>=binDisableOLFrom);
     dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).Re();
     if(dnx==0) continue;
     val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).Re()/dnx;
@@ -648,22 +648,21 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
 void AliAnalysisTaskGFWFlow::CreateCorrConfigs() {
 //  corrconfigs = new AliGFW::CorrConfig[90];
   corrconfigs.push_back(GetConf("MidV22","refMid {2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV22","poiMid {2} refMid {-2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV22","poiMid refMid {2 -2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV24","refMid {2 2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV24","poiMid {2} refMid {2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV24","poiMid refMid {2 2 -2 -2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV26","refMid {2 2 2 -2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV26","poiMid {2} refMid {2 2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV26","poiMid refMid {2 2 2 -2 -2 -2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV28","refMid {2 2 2 2 -2 -2 -2 -2}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV28","poiMid {2} refMid {2 2 2 -2 -2 -2 -2}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV28","poiMid refMid {2 2 2 2 -2 -2 -2 -2}", kTRUE));
   corrconfigs.push_back(GetConf("MidV32","refMid {3 -3}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV32","poiMid {3} refMid {-3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV32","poiMid refMid {3 -3}", kTRUE));
   corrconfigs.push_back(GetConf("MidV34","refMid {3 3 -3 -3}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV34","poiMid {3} refMid {3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV34","poiMid refMid {3 3 -3 -3}", kTRUE));
   corrconfigs.push_back(GetConf("MidV36","refMid {3 3 3 -3 -3 -3}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV36","poiMid {3} refMid {3 3 -3 -3 -3}", kTRUE));
+  corrconfigs.push_back(GetConf("MidV36","poiMid refMid {3 3 3 -3 -3 -3}", kTRUE));
   corrconfigs.push_back(GetConf("MidV42","refMid {4 -4}", kFALSE));
-  corrconfigs.push_back(GetConf("MidV42","poiMid {4} refMid {-4}", kTRUE));
-  return;
+  corrconfigs.push_back(GetConf("MidV42","poiMid refMid {4 -4}", kTRUE));
   //corrconfigs.push_back(GetConf("MidV44","refMid {4 4 -4 -4}", kFALSE));
   //corrconfigs.push_back(GetConf("MidV44","poiMid refMid {4 4 -4 -4}", kTRUE));
   corrconfigs.push_back(GetConf("Mid2SENV22","refSENeg {2} refSEPos {-2}", kFALSE));
