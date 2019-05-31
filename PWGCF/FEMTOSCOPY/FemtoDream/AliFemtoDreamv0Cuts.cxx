@@ -55,6 +55,9 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
       fMinCPA(0),
       fCutInvMass(false),
       fInvMassCutWidth(0),
+      fCutInvMassSidebands(false),
+      fInvMassCutSBdown(0),
+      fInvMassCutSBup(0),
       fAxisMinMass(0),
       fAxisMaxMass(1),
       fNumberXBins(1),
@@ -109,6 +112,9 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts)
       fMinCPA(cuts.fMinCPA),
       fCutInvMass(cuts.fCutInvMass),
       fInvMassCutWidth(cuts.fInvMassCutWidth),
+      fCutInvMassSidebands(cuts.fCutInvMassSidebands),
+      fInvMassCutSBdown(cuts.fInvMassCutSBdown),
+      fInvMassCutSBup(cuts.fInvMassCutSBup),
       fAxisMinMass(cuts.fAxisMinMass),
       fAxisMaxMass(cuts.fAxisMaxMass),
       fNumberXBins(cuts.fNumberXBins),
@@ -165,6 +171,9 @@ AliFemtoDreamv0Cuts& AliFemtoDreamv0Cuts::operator=(
     this->fMinCPA = cuts.fMinCPA;
     this->fCutInvMass = cuts.fCutInvMass;
     this->fInvMassCutWidth = cuts.fInvMassCutWidth;
+    this->fCutInvMassSidebands = cuts.fCutInvMassSidebands;
+    this->fInvMassCutSBdown = cuts.fInvMassCutSBdown;
+    this->fInvMassCutSBup = cuts.fInvMassCutSBup;
     this->fAxisMinMass = cuts.fAxisMinMass;
     this->fAxisMaxMass = cuts.fAxisMaxMass;
     this->fNumberXBins = cuts.fNumberXBins;
@@ -501,6 +510,11 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
         || (massv0 + fInvMassCutWidth < v0->Getv0Mass())) {
       massPass = false;
     }
+  } else if (fCutInvMassSidebands) {
+    if ((v0->Getv0Mass() < fInvMassCutSBdown)
+        || (fInvMassCutSBup < v0->Getv0Mass())) {
+      massPass = false;
+    }
   }
   //now with this information fill the histograms
   if (cpaPass) {
@@ -737,19 +751,24 @@ void AliFemtoDreamv0Cuts::BookTrackCuts() {
       fHist->FillConfig(9, fMaxDCADaugToDecayVtx);
     }
     if (fCutInvMass) {
-      fHist->FillConfig(10, fInvMassCutWidth);
+      float massv0 = TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
+      fHist->FillConfig(10, massv0 - fInvMassCutWidth);
+      fHist->FillConfig(11, massv0 + fInvMassCutWidth);
+    } else if (fCutInvMassSidebands) {
+      fHist->FillConfig(10, fInvMassCutSBdown);
+      fHist->FillConfig(11, fInvMassCutSBup);
     }
     if (fCutCPA) {
-      fHist->FillConfig(11, fMinCPA);
+      fHist->FillConfig(12, fMinCPA);
     }
     if(fDoArmenterosCut) {
-      fHist->FillConfig(12, fArmenterosQtLow);
-      fHist->FillConfig(13, fArmenterosQtUp);
-      fHist->FillConfig(14, fArmenterosAlphaLow);
-      fHist->FillConfig(15, fArmenterosAlphaUp);
+      fHist->FillConfig(13, fArmenterosQtLow);
+      fHist->FillConfig(14, fArmenterosQtUp);
+      fHist->FillConfig(15, fArmenterosAlphaLow);
+      fHist->FillConfig(16, fArmenterosAlphaUp);
     }
     if (fDoCombinedTimingCut) {
-      fHist->FillConfig(16, fCombinedTiming);
+      fHist->FillConfig(17, fCombinedTiming);
     }
   }
 }

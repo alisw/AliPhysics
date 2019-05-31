@@ -2222,6 +2222,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractRecoDecayAttributes(
 Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractEfficiencies(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef,UInt_t i)
 {
   if (fCandidateType == kD0toKpi || fCandidateType == kD0toKpiLikeSign) { // D0 candidate
+    cout<<"high I am here"<<endl;
     return ExtractD0Efficiencies(Dcand, DmesonJet, jetDef, i);
   }
     else {
@@ -2256,12 +2257,34 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   // Checks also the origin, and if it matches the rejected origin mask, return false
  Double_t jetPt = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
   
-  if(fMCMode==kSignalOnly){
+   if (fMCMode != kNoMC) {
+    Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
+    DmesonJet.fMCLabel = mcLab;
+
+    // Retrieve the generated particle (if exists) and its PDG code
+    if (mcLab >= 0) {
+      aodMcPart = static_cast<AliAODMCParticle*>(fMCContainer->GetArray()->At(mcLab));
+
+      if (aodMcPart) {
+        // Check origin and return false if it matches the rejected origin mask
+        if (fRejectedOrigin) {
+          auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+          if ((origin.first & fRejectedOrigin) == origin.first) return kFALSE;
+        }
+        MCtruthPdgCode = aodMcPart->PdgCode();
+      }
+    }
+  }
+  
+
+
+ if(fMCMode==kSignalOnly){
    
      for(auto aodMcPartAll : fMCContainer->all()){
      TheTrueCode = aodMcPartAll->PdgCode();
-      auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
-      if(origin.first == kFromCharm){ 
+      auto origin = IsPromptCharm(aodMcPartAll, fMCContainer->GetArray());
+     
+      if(origin.first == kFromCharm){
 	if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGeneratorPrompt->Fill(aodMcPartAll->Pt(),jetPt);}
         if(origin.first == kFromBottom){ 
 	if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGeneratorNonPrompt->Fill(aodMcPartAll->Pt(),jetPt);}
@@ -2273,6 +2296,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
    
       if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly){
          auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
+
 	 if(origin.first == kFromCharm) {
 	   if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetPt);}
           if(origin.first == kFromBottom) {

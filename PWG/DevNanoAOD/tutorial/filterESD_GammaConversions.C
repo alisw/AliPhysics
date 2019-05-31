@@ -28,7 +28,7 @@ void filterESD_GammaConversions()
   
   AliCDBManager::Instance()->SetRun(285396);
   Int_t iCollision = 0;           // pp:0 , PbPb:1, pPb:2
-  gInterpreter->ExecuteMacro(Form("$ALICE_PHYSICS/PWGGA/GammaConv/macros/AddTask_ConversionAODProduction.C(%d, kFALSE, \"LHC18b\")", iCollision));
+  gInterpreter->ExecuteMacro(Form("$ALICE_PHYSICS/PWGGA/GammaConv/macros/AddTask_ConversionAODProduction.C(%d, kFALSE, \"\")", iCollision));
   mgr->RegisterExtraFile("AliAODGammaConversion.root");
   
   // ESD filter
