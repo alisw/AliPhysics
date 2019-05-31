@@ -119,6 +119,7 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t  IsPixelBad(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
   Bool_t  IsPixelSilent(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const; // silent = dead or inactive
   Bool_t  IsPixelDead(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
+  Bool_t  IsPixelSparseDead(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
   Bool_t  IsPixelNoisy(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) const;
   Bool_t  IsPixelBadM(UInt_t module, UInt_t colM, UInt_t row) const;
   Bool_t  IsPixelSilentM(UInt_t module, UInt_t colM, UInt_t row) const;
