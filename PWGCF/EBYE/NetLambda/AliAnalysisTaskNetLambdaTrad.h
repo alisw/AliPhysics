@@ -50,7 +50,8 @@ protected:
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
     
-   
+     TH3F*  f3fHistCentVsInvMassLambda1point0bkg;
+     TH3F*  f3fHistCentVsInvMassAntiLambda1point0bkg;
     
     
     Float_t fCentrality;
@@ -61,7 +62,7 @@ protected:
     UInt_t fEvSel;
     Int_t  fNptBins;
     
-
+    
     THnSparse *fPtBinNplusNminusChBKG;
     THnSparse *fPtBinNplusNminusCh;
     
