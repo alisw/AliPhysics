@@ -143,7 +143,17 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   if (conversionPhotons) {
     for (int i = 0; i < conversionPhotons->GetEntries(); i++) {
       auto photon = dynamic_cast<AliAODConversionPhoton*> (conversionPhotons->At(i));
-      Printf("Conversion photon candidate %d: mass = %e \t pT = %f", i, photon->GetPhotonMass(), photon->GetPhotonPt());
+      Printf("Conversion photon candidate %d: mass = %e \t pT = %f ids = %d %d", i, photon->GetPhotonMass(), photon->GetPhotonPt(), photon->GetTrackLabelPositive(), photon->GetTrackLabelNegative());
+      Int_t tracksFound = 0;
+      for (unsigned int i = 0; i < nTracks; i++) {
+        AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(i);
+        if (track->GetID() == photon->GetTrackLabelPositive() || track->GetID() == photon->GetTrackLabelNegative()) {
+          Printf("  Track %d: pT = %f", i, track->Pt());
+          tracksFound++;
+        }
+      }
+      if (tracksFound != 2)
+        AliFatal("Track missing");
     }
   }
   
