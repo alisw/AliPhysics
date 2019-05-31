@@ -26,7 +26,7 @@ public:
     virtual ~AliAnalysisTaskNetLambdaMCTrad(){};
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
- 
+    
     void SetEventSelection(UInt_t val) {fEvSel = val;}
     
 protected:
@@ -43,12 +43,13 @@ protected:
     
     TH3F*  f3fHistCentVsInvMassLambda1point0;
     TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
-    
+    TH3F*  f3fHistCentVsInvMassLambda1point0bkg;
     
     
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
-    
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0bkg;
+
     
     
     
@@ -66,7 +67,7 @@ protected:
     
     
     Int_t    GetPtBin(Double_t pt);
-
+    
     ClassDef(AliAnalysisTaskNetLambdaMCTrad,4);
 };
 
