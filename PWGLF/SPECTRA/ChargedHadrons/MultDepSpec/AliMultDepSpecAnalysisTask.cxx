@@ -19,6 +19,7 @@ ClassImp(AliMultDepSpecAnalysisTask);
    fIsESD(kTRUE),
    fIsMC(kFALSE),
    fUseCent(kFALSE),
+   fUseZDCCut(kFALSE),
    fMCUseDataDrivenCorrections(kFALSE),
    fMCSecScalingSysFlag(0),
    // Cut Parameters
@@ -28,8 +29,8 @@ ClassImp(AliMultDepSpecAnalysisTask);
    fMinPt(0.0),
    fMaxPt(50.0),
    fMaxZv(10.0),
-   fMinCent(-1e3),
-   fMaxCent(1e3),
+   fMinCent(-1000.0),
+   fMaxCent(1000.0),
    //Arrays for Binning
    fBinsEventCuts(nullptr),
    fBinsMult(nullptr),
@@ -109,6 +110,7 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fIsESD(kTRUE),
   fIsMC(kFALSE),
   fUseCent(kFALSE),
+  fUseZDCCut(kFALSE),
   fMCUseDataDrivenCorrections(kFALSE),
   fMCSecScalingSysFlag(0),
   // Cut Parameters
@@ -118,8 +120,8 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMinPt(0.0),
   fMaxPt(50.0),
   fMaxZv(10.0),
-  fMinCent(-1e3),
-  fMaxCent(1e3),
+  fMinCent(-1000.0),
+  fMaxCent(1000.0),
   //Arrays for Binning
   fBinsEventCuts(nullptr),
   fBinsMult(nullptr),
@@ -355,6 +357,13 @@ Bool_t AliMultDepSpecAnalysisTask::InitEvent()
     fTimeStamp = esdEvent->GetTimeStamp();
     //esdEvent->GetHeader()->GetEventIdAsLong();
 
+    if(fUseZDCCut)
+    {
+      AliESDZDC* zdc = esdEvent->GetESDZDC();
+      Double_t znaEnergy = zdc->GetZNAEnergy();
+      Double_t zncEnergy = zdc->GetZNCEnergy();
+      if ( (znaEnergy <  3503.0) || (zncEnergy <  3609.0) ) {return kFALSE;}
+    }
     Bool_t acceptEvent = fEventCuts.AcceptEvent(fEvent);
 
     LoopMeas(kTRUE); // set measured multiplicity fMeasMult, fMeasMultScaled
@@ -929,8 +938,8 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
 
   Double_t cutVertexZ = 10.0;
 
-  Double_t cutCentLow = -1e3;
-  Double_t cutCentHigh = 1e3;
+  Double_t cutCentLow = -1000.0;
+  Double_t cutCentHigh = 1000.0;
 
   Double_t cutPtLow = 0.15;
   Double_t cutPtHigh = 50.0;
@@ -944,6 +953,9 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
   Bool_t useCent = kFALSE;
   if(controlstring.Contains("useCent")) useCent = kTRUE;
   Double_t centBinEdges[9] = {0., 5., 10., 20., 40., 60., 80., 90., 100.};
+
+  Bool_t useZDC = kFALSE;
+  if(controlstring.Contains("useZDC")) useZDC = kTRUE;
 
 
   // colison system specific settings
@@ -992,7 +1004,7 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
     else task->SetUseAOD();
 
     task->SetBinsMult(maxMult);
-
+    task->SetUseZDCCut(useZDC);
     if(useCent){
       task->SetMinCent(cutCentLow);
       task->SetMaxCent(cutCentHigh);

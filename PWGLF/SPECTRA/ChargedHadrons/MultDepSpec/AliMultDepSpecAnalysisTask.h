@@ -26,12 +26,14 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliEventCuts.h"
+#include "AliESDZDC.h"
 
 #include "AliVTrack.h"
 #include "AliESDtrack.h"
 #include "AliMCParticle.h"
 #include "AliESDtrackCuts.h"
 #include "AliVHeader.h"
+
 
 
 #include "AlidNdPtTools.h"
@@ -61,6 +63,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     void SetUseAOD(){fIsESD = kFALSE;}
     void SetMCSpectraWeights(AliMCSpectraWeights* mcSpectraWeights){fMCSpectraWeights = mcSpectraWeights;}
     void SetUseDataDrivenCorrections(Bool_t useDataDrivenCorrections = kTRUE){fMCUseDataDrivenCorrections = useDataDrivenCorrections;}
+    void SetUseZDCCut(Bool_t useZDC){fUseZDCCut = useZDC;}
 
     void SetSecScalingSysFlag(Int_t sysFlag = 0){fMCSecScalingSysFlag = sysFlag;}
 
@@ -96,6 +99,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     Bool_t              fIsESD;			      ///< Flag for ESD usage
     Bool_t              fIsMC;            ///< Flag for MC usage
     Bool_t              fUseCent;         ///< Flag for Centrality usage
+    Bool_t              fUseZDCCut;         ///< Flag for zdc cut usage
     Bool_t              fMCUseDataDrivenCorrections; ///< Flag for data driven corrections usage
     Int_t               fMCSecScalingSysFlag; ///< Flag for secondary scaling systematics 0: nominal, -1,1 variations
     // Cuts
