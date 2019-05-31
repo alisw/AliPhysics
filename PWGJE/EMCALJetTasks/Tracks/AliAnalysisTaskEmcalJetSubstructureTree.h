@@ -45,7 +45,9 @@ class AliTrackContainer;
 
 #define EXPERIMENTAL_JETCONSTITUENTS
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @struct AliNSubjettinessResults
@@ -283,9 +285,7 @@ private:
   Bool_t                       fFillNSub;                   ///< Fill N-subjettiness
   Bool_t                       fFillStructGlob;             ///< Fill other substructure variables
 
-	/// \cond CLASSIMP
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);
-	/// \endcond
 };
 
 /**
@@ -298,6 +298,8 @@ private:
  */
 void LinkBranch(TTree *jettree, void *data, const char *branchname, const char *type);
 
-} /* namespace EmcalTriggerJets */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALJETSUBSTRUCTURETREE_H */

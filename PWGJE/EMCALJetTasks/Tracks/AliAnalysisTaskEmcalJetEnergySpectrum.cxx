@@ -49,9 +49,9 @@
 #include "AliMultSelection.h"
 #include "AliVEvent.h"
 
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergySpectrum);
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergySpectrum);
 
-using namespace EmcalTriggerJets;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   AliAnalysisTaskEmcalJet(),

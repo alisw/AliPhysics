@@ -34,7 +34,9 @@
 class THistManager;
 class TRandom;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+
+namespace EMCALJetTasks{
 
 class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
 public:
@@ -79,6 +81,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalJetEnergyScale, 1);
 };
+
+}
 
 }
 #endif // ALIANALYSISTASKEMCALJETENERGYSCALE_H
