@@ -1790,6 +1790,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	 PostData(3, fOutputList2);
 	 return;
        }
+     }
+       /*
      }else{
        if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 100){
 	 selectedTracksLeading->Clear();
@@ -1802,6 +1804,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	 return;
        } //events cuts
      }
+       */
    }
    
    fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
