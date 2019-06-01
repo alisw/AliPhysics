@@ -464,7 +464,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	fRunTable->SetRunNumber(fRunNum);
 
 	int fperiod = fRunTable->GetRunNumberToPeriod(fRunNum);
-	if(fperiod == AliJRunTable::kLHC15o){
+	if(fperiod == AliJRunTable::kLHC15o || fperiod == AliJRunTable::kLHC18q || fperiod == AliJRunTable::kLHC18r){
 		const AliVVertex* vtTrc = event->GetPrimaryVertex();
 		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
 		double covTrc[6],covSPD[6];
@@ -531,7 +531,7 @@ Bool_t AliJFFlucTask::IsGoodEvent( AliAODEvent *event){
 	}
 
 	if(flags & FLUC_CUT_OUTLIERS){
-		if(fperiod == AliJRunTable::kLHC15o){
+		if(fperiod == AliJRunTable::kLHC15o || fperiod == AliJRunTable::kLHC18q || fperiod == AliJRunTable::kLHC18r){
 			AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
 			if(!pms){
 				AliError("MultSelection unavailable.");
