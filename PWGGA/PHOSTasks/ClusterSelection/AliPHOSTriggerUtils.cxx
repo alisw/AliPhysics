@@ -13,10 +13,11 @@
 
 ClassImp(AliPHOSTriggerUtils)
 //-----------------------------------------------------------------------    
-AliPHOSTriggerUtils::AliPHOSTriggerUtils():TNamed(),
+AliPHOSTriggerUtils::AliPHOSTriggerUtils():TNamed(), 
 fbdrL(-1),
 fbdrR( 3),
 fRun(-1), 
+fFixedRun(kFALSE),
 fEvent(0x0),
 fGeom(0x0),
 fNtrg4x4(0)
@@ -31,6 +32,7 @@ TNamed(name, title),
 fbdrL(-1),
 fbdrR( 3),
 fRun(-1), 
+fFixedRun(kFALSE),
 fEvent(0x0),
 fGeom(new AliPHOSGeoUtils("IHEP","")),
 fNtrg4x4(0)
@@ -49,36 +51,62 @@ void AliPHOSTriggerUtils::SetEvent(AliVEvent * event){
   
   fEvent=event ;
 
-   Int_t runNumber=-999 ;
-   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event) ;
-   if(aod)
+  Int_t runNumber=-999 ;
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event) ;
+  if(aod)
       runNumber = aod->GetRunNumber() ;
-   else{
+  else{
       AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event) ;
       if(esd)
          runNumber = esd->GetRunNumber() ;
-   }
-  //Check if run number changed and one should (re)read bad map
-  if(fRun!=runNumber){
-   fRun = runNumber ;
-     // 
-    AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
-    badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
-//    badmapContainer.InitFromFile("$PHOSTrigBadMaps.root","phosTrigBadMap");
-    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(runNumber,"phosTriggerBadMap");
-    if(!maps){
-      AliError(Form("Can not read Trigger Bad map for run %d. \n",runNumber)) ;    
+  }
+  if(fFixedRun){
+    Bool_t toRead= kTRUE ;  
+    for(Int_t mod=0; mod<5;mod++){
+      if(fPHOSBadMap[mod]) 
+        toRead = kFALSE ; //already read
     }
-    else{
-      AliInfo(Form("Setting PHOS Trigger bad map with name %s \n",maps->GetName())) ;
-      for(Int_t mod=0; mod<5;mod++){
-        if(fPHOSBadMap[mod]) 
-          delete fPHOSBadMap[mod] ;
-        TH2I * h = (TH2I*)maps->At(mod) ;      
-	if(h)
-          fPHOSBadMap[mod]=new TH2I(*h) ;
+    if(toRead){
+      AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
+      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRun,"phosTriggerBadMap");
+      if(!maps){
+        AliError(Form("Can not read Trigger Bad map for run %d. \n",fRun)) ;    
       }
-    }    
+      else{
+        AliInfo(Form("Setting PHOS Trigger bad map with name %s \n",maps->GetName())) ;
+        for(Int_t mod=0; mod<5;mod++){
+          if(fPHOSBadMap[mod]) 
+            delete fPHOSBadMap[mod] ;
+          TH2I * h = (TH2I*)maps->At(mod) ;      
+          if(h)
+            fPHOSBadMap[mod]=new TH2I(*h) ;
+        }
+      }  
+    }
+  }
+  else{ //use runnumber from header
+    //Check if run number changed and one should (re)read bad map
+    if(fRun!=runNumber){
+      fRun = runNumber ;
+      // 
+      AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
+      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRun,"phosTriggerBadMap");
+      if(!maps){
+        AliError(Form("Can not read Trigger Bad map for run %d. \n",fRun)) ;    
+      }
+      else{
+        AliInfo(Form("Setting PHOS Trigger bad map with name %s \n",maps->GetName())) ;
+        for(Int_t mod=0; mod<5;mod++){
+          if(fPHOSBadMap[mod]) 
+            delete fPHOSBadMap[mod] ;
+          TH2I * h = (TH2I*)maps->At(mod) ;      
+          if(h)
+            fPHOSBadMap[mod]=new TH2I(*h) ;
+        }
+      }  
+    }
   }
   
   
@@ -179,7 +207,7 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
      return 0 ;
   
    //Maximum energy tower
-   Int_t maxId, relid[4];
+   Int_t maxId=-1, relid[4];
    Double_t eMax = -111;
      
    AliVCaloCells * phsCells=fEvent->GetPHOSCells() ;
