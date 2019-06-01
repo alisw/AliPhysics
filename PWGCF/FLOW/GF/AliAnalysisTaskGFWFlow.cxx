@@ -150,7 +150,6 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     // OAforPt->Add(new TNamed("MidV44","MidV44"));
     // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
     //   OAforPt->Add(new TNamed(Form("MidV44_pt_%i",i+1),"MidV44_pTDiff"));
-    if(0) {
     //2SENeg:
     OAforPt->Add(new TNamed("Mid2SENV22","Mid2SENV22"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
@@ -266,7 +265,6 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     // OAforPt->Add(new TNamed("MidGapPV44","MidGapPV44"));
     // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
     //   OAforPt->Add(new TNamed(Form("MidGapPV44_pt_%i",i+1),"MidGapPV44_pTDiff"));
-    }
 
 
     //Multi bins:
@@ -283,7 +281,6 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fGFW->AddRegion("poiMid",10,NoGap,-0.8,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refMid",10,NoGap,-0.8,0.8,1,2);
     //2 subevets:
-    if(0) {
     fGFW->AddRegion("poiSENeg",10,WithGap,-0.8,0.,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refSENeg",10,WithGap,-0.8,0.,1,2);
     fGFW->AddRegion("poiSEPos",10,WithGap,0.,0.8,1+fPtAxis->GetNbins(),1);
@@ -293,8 +290,6 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fGFW->AddRegion("refGapNeg",10,WithGap,-0.8,-0.5,1,2);
     fGFW->AddRegion("poiGapPos",10,WithGap,0.5,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refGapPos",10,WithGap,0.5,0.8,1,2);
-    }
-
   };
   if(fProduceWeights) PostData(1,fWeightList);
   else PostData(1,fFC);
@@ -331,6 +326,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   if(fCurrSystFlag==fTotTrackFlags+4) cent = lMultSel->GetMultiplicityPercentile("CL1"); //CL1 flag is EvFlag 4 = N_TrackFlags + 4
   if(fCurrSystFlag==fTotTrackFlags+5) cent = lMultSel->GetMultiplicityPercentile("CL0"); //CL0 flag is EvFlag 5 = N_TrackFlags + 5
   if(cent<5) return; //Do not consider 0-5%
+  if(cent>70) return; //Also, peripheral cutoff
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   Int_t vtxb = GetVtxBit(fAOD);
   if(!vtxb) return; //If no vertex pass, then do not consider further
