@@ -948,7 +948,8 @@ Double_t AliGFWFlowContainer::VDN8Value(Double_t d8, Double_t c8) {
   return d8/c8 * VN8Value(c8);
 };
 Double_t AliGFWFlowContainer::VDN8Error(Double_t d8, Double_t d8e, Double_t c8, Double_t c8e) {
-  if(c8>0) return 0;
+  if(c8>0) return 1;
+  if(d8==0) return 1;
   if(!fPropagateErrors) return 0;
   Double_t vdn8v = VDN8Value(d8,c8);
   Double_t dd = d8e/d8;

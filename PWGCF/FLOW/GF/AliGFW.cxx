@@ -117,6 +117,9 @@ TComplex AliGFW::RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGF
     vector<Int_t> lpows = pows;
     lhars.at(i)+=harlast;
     lpows.at(i)+=powlast;
+    //The issue is here. In principle, if i=0 (dif), then the overlap is only qpoi (0, if no overlap);
+    //Otherwise, if we are not working with the 1st entry (dif.), then overlap will always be from qref
+    //One should thus (probably) make a check if i=0, then qovl=qpoi, otherwise qovl=qref. But need to think more
     formula-=RecursiveCorr(qpoi, qref, qol, ptbin, lhars, lpows);
   };
   return formula;
