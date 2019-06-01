@@ -30,6 +30,8 @@ public:
   virtual ~AliPHOSTriggerUtils(void){} ; 
   AliPHOSTriggerUtils & operator = (const AliPHOSTriggerUtils  & rvalue) ;
 
+  void ForseUsingRun(Int_t run){fRun=run; fFixedRun=kTRUE; }  //Do not get run number from header, instead use this one
+  
   void SetEvent(AliVEvent * event); //sets ref. to current event; inits class for new run if necessary
   
   Int_t IsFiredTrigger(AliVCluster * clu) ; //Returns bits if this cluster fired PHOS trigger in event: L0, L1low, L1med, L1high
@@ -59,6 +61,7 @@ private:
   Int_t fbdrR ;  //in left/right (top/bottom) directions              
   
   Int_t fRun ;         //current run number (-1 not set yet, -2 use input file set with ReadTriggerParams)  
+  Bool_t fFixedRun;    //do not read runnumber from header
   AliVEvent * fEvent ; //! Ref to current ESD/AOD event
   
   //Trigger bad map for 5 modules
