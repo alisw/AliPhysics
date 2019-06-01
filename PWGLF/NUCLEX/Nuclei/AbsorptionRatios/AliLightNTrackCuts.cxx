@@ -288,7 +288,7 @@ bool AliLightNTrackCuts::ITSPIDAODCuts(AliLightNTrack *Track) {
     double p =Track->GetP();
     if (p<1.4) {
         double nSigITS=(Track->GetnSigmaITS((int)(fParticleID)));
-        if (nSigITS < -2)) {
+        if (nSigITS < -2) {
             pass=false;
         }
     }
