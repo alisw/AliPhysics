@@ -205,7 +205,7 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
   
    if(!fEvent)
      return 0 ;
-  
+     
    //Maximum energy tower
    Int_t maxId=-1, relid[4];
    Double_t eMax = -111;
@@ -230,7 +230,7 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
     if(!TestBadMap(mod,ix,iz)){
       return 0 ;
     }
-  
+
     //Now etimate probability from the parameterization
     
     Int_t result = 0;
@@ -240,7 +240,7 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
     else{
       if(fRun>=282008 && fRun<=282441){ //LHC17pq
         Int_t ddl = WhichDDL(mod, ix) ;  
-        if(gRandom->Uniform()<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;          
+        if(gRandom->Uniform()<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;         
       }
       else{
         for(Int_t bit=0; bit<4; bit++){
@@ -358,7 +358,7 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
   //Parameterization of turn-on curve for period LHC17pq
   // Note that it is done for DDLs, not modules
 
-  if(ddl>8 || ddl>19) return 0.;
+  if(ddl<8 || ddl>19) return 0.;
   switch(ddl){  
     case 8 : return 7.946367e-01/(TMath::Exp((3.630929e+00-x)/2.650550e-01)+1.)+(1.-7.946367e-01)/(TMath::Exp((4.717280e+00-x)/2.650550e-01)+1.) ;
     case 9 : return 9.187795e-01/(TMath::Exp((3.518032e+00-x)/2.574856e-01)+1.)+(1.-9.187795e-01)/(TMath::Exp((6.786027e+00-x)/2.574856e-01)+1.) ;
