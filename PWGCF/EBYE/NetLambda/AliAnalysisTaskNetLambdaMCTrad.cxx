@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated May 31
+// Updated Jun 2
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -329,7 +329,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     ptChEta1point0[iptbin] += 1;
                     f3fHistCentVsInvMassLambda1point0Masscut->Fill(fCentrality,invMassLambda,V0pt);
                 }
-                if(invMassLambda > 1.095 && invMassLambda < 1.106)
+                if(invMassLambda > 1.126 && invMassLambda < 1.14)
                 {
                     ptChEta1point0[iptbin+fNptBins] += 1;
                     f3fHistCentVsInvMassLambda1point0bkg->Fill(fCentrality,invMassLambda,V0pt);
@@ -348,7 +348,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     ptChEta1point0[iptbin+fNptBins+fNptBins] += 1;
                     f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                 }
-                if(invMassAntiLambda > 1.095 && invMassAntiLambda < 1.106)
+                if(invMassAntiLambda > 1.126 && invMassAntiLambda < 1.14)
                 {
                     ptChEta1point0[iptbin+fNptBins+fNptBins+fNptBins] += 1;
                     f3fHistCentVsInvMassAntiLambda1point0bkg->Fill(fCentrality,invMassAntiLambda,V0pt);
