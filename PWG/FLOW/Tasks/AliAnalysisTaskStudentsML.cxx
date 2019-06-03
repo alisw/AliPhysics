@@ -386,9 +386,10 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
     fRecursion[1][fNumber-2]->Reset(); //Reset
 
     //~~~~~~~~~~~~~~~~~
+    if(TMath::Abs(SecondCorrelation)<1.0e-16){return;} //protection against 0, we will come back to this later
 
     if(bUseRatioWeight){ fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),Weight_SecondCorrelation); } 
-   else { fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),1.); } 
+    else { fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),1.); } 
     
     fCentrality->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
     fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics
