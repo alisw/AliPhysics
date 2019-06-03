@@ -3050,7 +3050,7 @@ Bool_t AliCaloPhotonCuts::CheckDistanceToBadChannel(AliVCluster* cluster, AliVEv
     nMinRows = largestCellirow - distanceForLoop;
     nMaxRows = largestCellirow + distanceForLoop;
     if(nMinRows < 0) nMinRows = 0;
-    if(nMaxRows > AliEMCALGeoParams::fgkEMCALCols) nMaxRows = AliEMCALGeoParams::fgkEMCALCols; //AliEMCALGeoParams::fgkDCALRows; <- doesnt exist yet (DCAl = EMCAL here)
+    if(nMaxRows > AliEMCALGeoParams::fgkEMCALRows) nMaxRows = AliEMCALGeoParams::fgkEMCALRows; //AliEMCALGeoParams::fgkDCALRows; <- doesnt exist yet (DCAl = EMCAL here)
 
     nMinCols = largestCellicol - distanceForLoop;
     nMaxCols = largestCellicol + distanceForLoop;
