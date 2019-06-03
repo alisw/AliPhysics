@@ -78,7 +78,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
   fUtil(),
   fStored(0),
   fState(),
-  fMaxConsequtiveStrips(2),
+  fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fStorage(nullptr)
@@ -99,7 +99,7 @@ AliForwardSecondariesTask::AliForwardSecondariesTask(const char* name) : AliAnal
   fUtil(),
   fStored(0),
   fState(),
-  fMaxConsequtiveStrips(2),
+  fMaxConsequtiveStrips(3),
   fLowCutvalue(0),
   fTrackGammaToPi0(true),
   fStorage(nullptr)

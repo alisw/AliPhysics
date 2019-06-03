@@ -78,7 +78,7 @@ public:
   TComplex Two(Int_t n1, Int_t n2, Int_t eta1, Int_t eta2);
   TComplex TwoDiff(Int_t n1, Int_t n2, Int_t refetabin, Int_t diffetabin);
   TComplex Four(Int_t n1, Int_t n2, Int_t n3, Int_t n4,Int_t eta1, Int_t eta2);
-  TComplex FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t refetabin, Int_t diffetabin,Int_t qetabin);
+  TComplex FourDiff(Int_t n1, Int_t n2, Int_t n3, Int_t n4, Int_t refetabinPos, Int_t refetabinNeg, Int_t diffetabin,Int_t qetabin);
 
 
   ClassDef(AliForwardGenericFramework, 1); // object for eta dependent cumulant ananlysis
