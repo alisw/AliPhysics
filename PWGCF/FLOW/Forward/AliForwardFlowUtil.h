@@ -110,7 +110,6 @@ class AliForwardFlowUtil : public TObject {
      */
     State& operator=(const State& o);
   } fState; //! State
-  UShort_t fMaxConsequtiveStrips;
   Double_t fLowCutvalue;
   Bool_t            fTrackGammaToPi0;
   AliTrackReference*  ProcessRef(AliMCParticle* particle,AliTrackReference* ref,TH2D*& fwd);

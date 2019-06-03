@@ -46,6 +46,7 @@ AliForwardSettings::AliForwardSettings() :
   stdQC(kFALSE),
   sec_corr(kFALSE),
   a5(kFALSE),
-  fileName("")
+  fileName(""),
+  fMaxConsequtiveStrips(2)
 {
 }
