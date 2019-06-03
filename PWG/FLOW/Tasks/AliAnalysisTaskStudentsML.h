@@ -222,7 +222,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,11);
+  ClassDef(AliAnalysisTaskStudentsML,12);
 
 };
 
