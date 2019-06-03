@@ -79,6 +79,38 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts2->SetRejLowPtPionsTOF(true);
   TrackCuts2->SetCutSmallestSig(true);
 
+  AliFemtoDreamTrackCuts *TrackCuts3=new AliFemtoDreamTrackCuts();
+  TrackCuts3->SetIsMonteCarlo(isMC);
+  TrackCuts3->SetCutCharge(1);
+  TrackCuts3->SetFilterBit(128);
+  TrackCuts3->SetPtRange(0.5, 4.05);
+  TrackCuts3->SetEtaRange(-0.8, 0.8);
+  TrackCuts3->SetNClsTPC(80);
+  TrackCuts3->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
+  TrackCuts3->SetDCAVtxZ(0.2);
+  TrackCuts3->SetDCAVtxXY(0.1);
+  TrackCuts3->SetCutSharedCls(true);
+  TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
+  TrackCuts3->SetPID(AliPID::kProton, 0.75);
+  TrackCuts3->SetRejLowPtPionsTOF(true);
+  TrackCuts3->SetCutSmallestSig(true);
+
+  AliFemtoDreamTrackCuts *TrackCuts4=new AliFemtoDreamTrackCuts();
+  TrackCuts4->SetIsMonteCarlo(isMC);
+  TrackCuts4->SetCutCharge(1);
+  TrackCuts4->SetFilterBit(128);
+  TrackCuts4->SetPtRange(0.5, 4.05);
+  TrackCuts4->SetEtaRange(-0.8, 0.8);
+  TrackCuts4->SetNClsTPC(80);
+  TrackCuts4->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
+  TrackCuts4->SetDCAVtxZ(0.2);
+  TrackCuts4->SetDCAVtxXY(0.1);
+  TrackCuts4->SetCutSharedCls(true);
+  TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
+  TrackCuts4->SetPID(AliPID::kProton, 0.75);
+  TrackCuts4->SetRejLowPtPionsTOF(true);
+  TrackCuts4->SetCutSmallestSig(true);
+
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
   //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -211,6 +243,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   task->SetEventCuts(evtCuts);
   task->SetTrackCutsPart1(TrackCuts1);
   task->SetTrackCutsPart2(TrackCuts2);
+  task->SetTrackCutsPart3(TrackCuts3);
+  task->SetTrackCutsPart4(TrackCuts4);
   task->SetCollectionConfig(config);
 
   mgr->AddTask(task);

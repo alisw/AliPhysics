@@ -30,6 +30,8 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) {fEventCuts=evtCuts;};
   void SetTrackCutsPart1(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPart1=trkCuts;};
   void SetTrackCutsPart2(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPart2=trkCuts;};
+  void SetTrackCutsPart3(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPart3=trkCuts;};
+  void SetTrackCutsPart4(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsPart4=trkCuts;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig=config;};
  private:
   void ResetGlobalTrackReference();
@@ -41,6 +43,8 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   AliFemtoDreamEventCuts *fEventCuts;       //   Stream these bad boys
   AliFemtoDreamTrackCuts *fTrackCutsPart1;  //
   AliFemtoDreamTrackCuts *fTrackCutsPart2;  //
+  AliFemtoDreamTrackCuts *fTrackCutsPart3;  //
+  AliFemtoDreamTrackCuts *fTrackCutsPart4;  //
   AliFemtoDreamCollConfig *fConfig;         //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
