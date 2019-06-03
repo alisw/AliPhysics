@@ -57,6 +57,7 @@ set(SRCS
   AliFemtoDreamPartCollection.cxx 
   AliFemtoDreamAnalysis.cxx 
   AliAnalysisTaskFemtoDream.cxx
+  AliAnalysisTaskFemtoDreamDeuteron.cxx
   AliAnalysisTaskNanoXioton.cxx
   AliAnalysisTaskNanoLoton.cxx
   AliAnalysisTaskFemtoDreamPhi.cxx
