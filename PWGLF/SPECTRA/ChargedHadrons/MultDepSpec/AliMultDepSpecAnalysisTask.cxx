@@ -282,6 +282,7 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
   }
 
   // override event automatic event selection settings
+  fEventCuts.fUseEstimatorsCorrelationCut = false;
   fEventCuts.SetMaxVertexZposition(fMaxZv);
   fEventCuts.SetCentralityRange(fMinCent, fMaxCent);
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerMask);
