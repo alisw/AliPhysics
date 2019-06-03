@@ -40,10 +40,10 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, TString CentEst, Bool_t DoSyst
 	bool DCAPlots=true;
 	bool CPAPlots=false;
 	bool CombSigma=false;
-	bool ContributionSplitting=true;
+	bool ContributionSplitting=false;
 	bool ContributionSplittingDaug=false;
 	if(isMC){
-		ContributionSplitting=true;
+		ContributionSplitting=false;
 		ContributionSplittingDaug=false;
 	}else{
 		ContributionSplitting=false;
