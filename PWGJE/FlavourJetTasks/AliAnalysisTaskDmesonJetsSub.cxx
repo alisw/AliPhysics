@@ -2222,7 +2222,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractRecoDecayAttributes(
 Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractEfficiencies(const AliAODRecoDecayHF2Prong* Dcand, AliDmesonJetInfo& DmesonJet, AliHFJetDefinition& jetDef,UInt_t i)
 {
   if (fCandidateType == kD0toKpi || fCandidateType == kD0toKpiLikeSign) { // D0 candidate
-    cout<<"high I am here"<<endl;
+   
     return ExtractD0Efficiencies(Dcand, DmesonJet, jetDef, i);
   }
     else {
@@ -2235,27 +2235,26 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   AliDebug(10,"Checking if D0 meson is selected");
   Int_t isSelected = fRDHFCuts->IsSelected(const_cast<AliAODRecoDecayHF2Prong*>(Dcand), AliRDHFCuts::kAll, fAodEvent);
   if (isSelected == 0) return kFALSE;
-  TString hname;
+  TString hname1;
   TString hname2;
-   TString hname3;
-  TString hname4;
+ 
   Int_t MCtruthPdgCode = 0;
   Int_t TheTrueCode = 0;
   Double_t invMassD = 0;
-
-  hname = TString::Format("%s/EfficiencyMatchesPrompt", fName.Data());
-  TH2* EfficiencyMatchesPrompt = static_cast<TH2*>(fHistManager->FindObject(hname));
+  Int_t myflag=0;
+    Double_t jeteta=0;
+  Double_t jetpt=0;
+  hname1 = TString::Format("%s/EfficiencyMatchesPrompt", fName.Data());
+  TH2* EfficiencyMatchesPrompt = static_cast<TH2*>(fHistManager->FindObject(hname1));
   AliAODMCParticle* aodMcPart; 
-  hname2 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
-  TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
   
-  hname3 = TString::Format("%s/EfficiencyMatchesNonPrompt", fName.Data());
-  TH2* EfficiencyMatchesNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname3));
-  hname4 = TString::Format("%s/EfficiencyGeneratorNonPrompt", fName.Data());
-  TH2* EfficiencyGeneratorNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname4));
+  
+  hname2 = TString::Format("%s/EfficiencyMatchesNonPrompt", fName.Data());
+  TH2* EfficiencyMatchesNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
+  
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
- Double_t jetPt = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
+ Double_t jetPtdet = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
   
    if (fMCMode != kNoMC) {
     Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
@@ -2277,30 +2276,46 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   }
   
 
+ if(fMCMode==kSignalOnly && isSelected>0 && isSelected<3){
 
- if(fMCMode==kSignalOnly){
-   
-     for(auto aodMcPartAll : fMCContainer->all()){
-     TheTrueCode = aodMcPartAll->PdgCode();
-      auto origin = IsPromptCharm(aodMcPartAll, fMCContainer->GetArray());
+    fFastJetWrapper->Clear();
+    fFastJetWrapper->SetR(jetDef.fRadius);
+    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
+    AddInputVectors(fMCContainer, 100);
+    fFastJetWrapper->Run();
+    std::vector<fastjet::PseudoJet> jets_incl = sorted_by_pt(fFastJetWrapper->GetInclusiveJets());
+
+    for (auto jet : jets_incl) {
+          for (auto constituent : jet.constituents()) {
+             Int_t iPart = constituent.user_index() - 100;
+             if (constituent.perp() < 1e-6) continue; // reject ghost particles
+        AliAODMCParticle* part = fMCContainer->GetMCParticle(iPart);
+        if (!part) {
+          ::Error("AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
+          continue;
+        }
+	if(part==aodMcPart){myflag=1;
+	       jetpt=jet.perp();
+	       jeteta=jet.eta();
+	  break;}
+
+	  }}
+    if(myflag==0) return kFALSE;
      
-      if(origin.first == kFromCharm){
-	if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGeneratorPrompt->Fill(aodMcPartAll->Pt(),jetPt);}
-        if(origin.first == kFromBottom){ 
-	if(TMath::Abs(TheTrueCode)==fCandidatePDG) if(TMath::Abs(aodMcPartAll->Eta())<=0.5)EfficiencyGeneratorNonPrompt->Fill(aodMcPartAll->Pt(),jetPt);}
-     }
-  }
-  
-  if (isSelected == 1) { // selected as a D0
+      if(TMath::Abs(jeteta)>0.5) return kFALSE;
+ 
+   
+    if (isSelected == 1) { // selected as a D0
     if (i != 0) return kFALSE; // only one mass hypothesis thanks to PID
    
-      if(MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly){
+      if(MCtruthPdgCode == fCandidatePDG){
          auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
 
 	 if(origin.first == kFromCharm) {
-	   if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetPt);}
+	   if(TMath::Abs(aodMcPart->Eta())<=0.9) EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
           if(origin.first == kFromBottom) {
-	   if(TMath::Abs(aodMcPart->Eta())<=0.5) EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetPt);}
+	    if(TMath::Abs(aodMcPart->Eta())<=0.9) EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
       }
 
   }
@@ -2308,19 +2323,96 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
     if (i != 1) return kFALSE; // only one mass hypothesis thanks to PID
 
       
-      if(MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly){
+      if(MCtruthPdgCode == -fCandidatePDG){
       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
-	if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetPt);}
+	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
         if(origin.first == kFromBottom){
-	if(TMath::Abs(aodMcPart->Eta())<=0.5)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetPt);}
+	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
   }
 
   }
+ }
   return kTRUE;
 }
 
 
+Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(AliHFJetDefinition& jetDef)
+{
+  
+
+  TString hname1;
+  TString hname2;
+  Int_t myflag=0; 
+  Double_t jeteta=0;
+  Double_t jetpt=0;
+  Int_t TheTrueCode = 0;
+  Double_t invMassD = 0;
+
+    fMCContainer->SetSpecialPDG(fCandidatePDG);
+     if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
+  
+  hname1 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
+  TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname1));
+  AliAODMCParticle* aodMcPart; 
+  
+  
+  hname2 = TString::Format("%s/EfficiencyGeneratorNonPrompt", fName.Data());
+  TH2* EfficiencyGeneratorNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
+  if(fMCMode==kSignalOnly){
+   
+    fFastJetWrapper->Clear();
+    fFastJetWrapper->SetR(jetDef.fRadius);
+    fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
+    fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
+    AddInputVectors(fMCContainer, 100);
+    fFastJetWrapper->Run();
+    std::vector<fastjet::PseudoJet> jets_incl =  sorted_by_pt(fFastJetWrapper->GetInclusiveJets());
+   
+    for(auto aodMcPartAll : fMCContainer->all()){
+     TheTrueCode = aodMcPartAll->PdgCode();
+     
+     if(TMath::Abs(TheTrueCode)==fCandidatePDG){
+    
+      
+      myflag=0; 
+
+    for (auto jet : jets_incl) {
+    
+            for (auto constituent : jet.constituents()) {
+             Int_t iPart = constituent.user_index() - 100;
+             if (constituent.perp() < 1e-6) continue; // reject ghost particles
+             AliAODMCParticle* part = fMCContainer->GetMCParticle(iPart);
+             if (!part) {
+              ::Error("AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
+              continue;
+                         }
+	    
+	     if(part==aodMcPartAll){
+	      
+          myflag=1;
+	  jetpt=jet.perp();
+	  jeteta=jet.eta();
+	  break;}}}
+    
+    if(myflag==0) continue;
+   
+    if(TMath::Abs(jeteta)>0.5) continue;
+   
+       auto origin = IsPromptCharm(aodMcPartAll, fMCContainer->GetArray());
+     
+      if(origin.first == kFromCharm){
+	if(TMath::Abs(aodMcPartAll->Eta())<=0.9)EfficiencyGeneratorPrompt->Fill(aodMcPartAll->Pt(),jetpt);}
+        if(origin.first == kFromBottom){ 
+	  if(TMath::Abs(aodMcPartAll->Eta())<=0.9)EfficiencyGeneratorNonPrompt->Fill(aodMcPartAll->Pt(),jetpt);}
+     }
+
+  
+   }}
+
+ 
+  return kTRUE;
+  }
 
 
 
@@ -2673,12 +2765,20 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
   std::array<int, 3> nAccCharm = {0};
   std::array<std::array<int, 3>, 5> nAccCharmPt = {{{0}}};
 
+
+   //fill the mc efficiency//
+  for (auto& def : fJetDefinitions)GetEfficiencyDenominator(def);
+
+  
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(icharm)); // D candidates
     if (!charmCand) continue;
     if(!(vHF.FillRecoCand(fAodEvent,charmCand))) continue;
 
-    // region of interest + cuts
+
+   
+   
+    //region of interest + cuts
     if (!fRDHFCuts->IsInFiducialAcceptance(charmCand->Pt(), charmCand->Y(fCandidatePDG))) continue;
     Int_t nMassHypo = 0; // number of mass hypothesis accepted for this D meson
     if (charmCand->Pt() > maxDPt) maxDPt = charmCand->Pt();
@@ -2900,6 +3000,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::AddInputVectors(AliEmcalConta
       }
     }
     Int_t uid = offset >= 0 ? it.current_index() + offset: -it.current_index() - offset;
+   
     fFastJetWrapper->AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
   }
 }
