@@ -480,6 +480,8 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
       part->SetAt(isPrimary,0);
       part->SetAt(mcpart->GetMother(),1);
     }
+  } else if (fClassesFired.String().Contains("CTRUE-B")) {
+    // keep all events
   } else {
     if (fSATracks->GetEntriesFast()!=0) { PostData(1,fListOfHistos);  return; }
     if (fTracks->GetEntriesFast()<2)    { PostData(1,fListOfHistos);  return; }
