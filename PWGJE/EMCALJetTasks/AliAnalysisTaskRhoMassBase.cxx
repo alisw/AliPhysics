@@ -1,10 +1,29 @@
-// $Id$
-//
-// Base class for rho mass calculation.
-// Calculates parameterized rho mass for given centrality independent of input.
-//
-// Author: M. Verweij. Similar to AliAnalysisTaskRhoBase
-
+/************************************************************************************
+ * Copyright (C) 2014, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #include <TF1.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -20,7 +39,6 @@
 
 ClassImp(AliAnalysisTaskRhoMassBase)
 
-//________________________________________________________________________
 AliAnalysisTaskRhoMassBase::AliAnalysisTaskRhoMassBase() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoMassBase", kFALSE),
   fOutRhoMassName(),
@@ -47,10 +65,8 @@ AliAnalysisTaskRhoMassBase::AliAnalysisTaskRhoMassBase() :
   fHistRhoMassScaledvsNcluster(0),
   fHistGammaVsNtrack(0)
 {
-  // Constructor.
 }
 
-//________________________________________________________________________
 AliAnalysisTaskRhoMassBase::AliAnalysisTaskRhoMassBase(const char *name, Bool_t histo) :
   AliAnalysisTaskEmcalJet(name, histo),
   fOutRhoMassName(),
@@ -77,16 +93,11 @@ AliAnalysisTaskRhoMassBase::AliAnalysisTaskRhoMassBase(const char *name, Bool_t 
   fHistRhoMassScaledvsNcluster(0),
   fHistGammaVsNtrack(0)
 {
-  // Constructor.
-
   SetMakeGeneralHistograms(histo);
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
 {
-  // User create output objects, called at the beginning of the analysis.
-
   if (!fCreateHisto)
     return;
 
@@ -191,11 +202,8 @@ void AliAnalysisTaskRhoMassBase::UserCreateOutputObjects()
   }
 }
 
-//________________________________________________________________________
 Bool_t AliAnalysisTaskRhoMassBase::Run() 
 {
-  // Run the analysis.
-
   Double_t rhom = GetRhoMassFactor(fCent);
   fOutRhoMass->SetVal(rhom);
 
@@ -207,11 +215,8 @@ Bool_t AliAnalysisTaskRhoMassBase::Run()
   return kTRUE;
 }
 
-//________________________________________________________________________
 Bool_t AliAnalysisTaskRhoMassBase::FillHistograms() 
 {
-  // Fill histograms.
-
   Int_t Ntracks   = 0;
   Int_t Nclusters = 0;
 
@@ -275,11 +280,8 @@ Bool_t AliAnalysisTaskRhoMassBase::FillHistograms()
 }      
 
 
-//________________________________________________________________________
 void AliAnalysisTaskRhoMassBase::ExecOnce() 
 {
-  // Init the analysis.
-
   if (!fOutRhoMass) {
     fOutRhoMass = new AliRhoParameter(fOutRhoMassName, 0);
 
@@ -323,22 +325,16 @@ void AliAnalysisTaskRhoMassBase::ExecOnce()
   AliAnalysisTaskEmcalJet::ExecOnce();
 }
 
-//________________________________________________________________________
 Double_t AliAnalysisTaskRhoMassBase::GetRhoMassFactor(Double_t cent)
 {
-  // Return rho per centrality.
-
   Double_t rho = 0;
   if (fRhoMassFunction)
     rho = fRhoMassFunction->Eval(cent);
   return rho;
 }
 
-//________________________________________________________________________
 Double_t AliAnalysisTaskRhoMassBase::GetScaleFactor(Double_t cent)
 {
-  // Get scale factor.
-
   Double_t scale = 1;
   if (fScaleFunction)
     scale = fScaleFunction->Eval(cent);
