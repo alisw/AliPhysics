@@ -122,11 +122,11 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   int runtype = 2; // Types 0 - global, 1 - ITS only, 2 - TPC Inner
 
   int gammacut = 1;
-  double shqmax = 1.0;
+  double shqmax = 0.5;
   //if (runshlcms) shqmax = 2.0;
   //else shqmax = 0.9;
 
-  int nbinssh = 200;
+  int nbinssh = 100;
 
   // create analysis managers
   AliFemtoManager* Manager=new AliFemtoManager();
