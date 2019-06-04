@@ -71,6 +71,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fUseAliEventCuts(false),
   fUseSumw2(false),
   fUseMuonCalo(false),
+  fScaleShift(0.),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
@@ -95,6 +96,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fUseAliEventCuts(false),
   fUseSumw2(false),
   fUseMuonCalo(false),
+  fScaleShift(0.),
   fCentralityEstimator("V0M"),
   fUserPtBinning()
 {
@@ -195,9 +197,14 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   }
   for(auto j : datajets->accepted()){
     if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
-    double datapoint[6] = {eventCentrality, j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
+    Double_t ptjet = j->Pt();
+    if(TMath::Abs(fScaleShift) > DBL_EPSILON){
+      // Apply artificial (fixed) shift of the jet energy scale to det. level jets
+      ptjet += fScaleShift * ptjet; 
+    }
+    double datapoint[6] = {eventCentrality, ptjet, j->Eta(), j->Phi(), j->NEF(), 0.};
     for(auto t : trgclusters){
-      fHistos->FillTH2("hJetSpectrum", static_cast<double>(t), j->Pt(), weight);
+      fHistos->FillTH2("hJetSpectrum", static_cast<double>(t), ptjet, weight);
       if(fFillHSparse) {
         datapoint[5] = static_cast<double>(t);
         fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
@@ -210,6 +217,9 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   maxdata[0] = eventCentrality;
   if(maxjet){
     maxdata[1] = maxjet->Pt();
+    if(TMath::Abs(fScaleShift) > DBL_EPSILON) {
+      maxdata[1] += fScaleShift * maxdata[1];
+    }
     maxdata[2] = maxjet->Eta();
     maxdata[3] = maxjet->Phi();
     maxdata[4] = maxjet->NEF();
@@ -317,10 +327,11 @@ std::string AliAnalysisTaskEmcalJetEnergySpectrum::MatchTrigger(EMCAL_STRINGVIEW
   for(const auto &t : triggerclasses) {
     // Use CENT cluster for downscaling
     if(t.BunchCrossing() != "B") continue;
-    if(fUseMuonCalo)
+    if(fUseMuonCalo){
       if(t.Triggercluster() != "CALO") continue;
-    else
+    } else {
       if(t.Triggercluster() != "CENT") continue;
+    }
     if(t.Triggerclass().find(fTriggerSelectionString.Data()) == std::string::npos) continue; 
     result = t.ExpandClassName();
     break;
