@@ -64,6 +64,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     void SetMCSpectraWeights(AliMCSpectraWeights* mcSpectraWeights){fMCSpectraWeights = mcSpectraWeights;}
     void SetUseDataDrivenCorrections(Bool_t useDataDrivenCorrections = kTRUE){fMCUseDataDrivenCorrections = useDataDrivenCorrections;}
     void SetUseZDCCut(Bool_t useZDC){fUseZDCCut = useZDC;}
+    void SetOverridePbPbEventCuts(Bool_t overridePbPbEventCuts){fOverridePbPbEventCuts = overridePbPbEventCuts;}
 
     void SetSecScalingSysFlag(Int_t sysFlag = 0){fMCSecScalingSysFlag = sysFlag;}
 
@@ -100,6 +101,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     Bool_t              fIsMC;            ///< Flag for MC usage
     Bool_t              fUseCent;         ///< Flag for Centrality usage
     Bool_t              fUseZDCCut;         ///< Flag for zdc cut usage
+    Bool_t              fOverridePbPbEventCuts;         ///< override centrality cut in PbPb
     Bool_t              fMCUseDataDrivenCorrections; ///< Flag for data driven corrections usage
     Int_t               fMCSecScalingSysFlag; ///< Flag for secondary scaling systematics 0: nominal, -1,1 variations
     // Cuts
