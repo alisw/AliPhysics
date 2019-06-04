@@ -1796,7 +1796,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tClusterTimingEff[iCut]->Branch("InvMass",&fInvMassTreeInvMass,"fInvMassTreeInvMass/F");
         tClusterTimingEff[iCut]->Branch("Pt",&fInvMassTreePt,"fInvMassTreePt/F");
         tClusterTimingEff[iCut]->Branch("ClusterTimeTag",&fClusterTimeTag,"fClusterTimeTag/F");
-        tClusterTimingEff[iCut]->Branch("ClusterTimeProbe",&fClusterTimeTag,"fClusterTimeTag/F");
+        tClusterTimingEff[iCut]->Branch("ClusterTimeProbe",&fClusterTimeProbe,"fClusterTimeProbe/F");
         tClusterTimingEff[iCut]->Branch("ClusterETag",&fClusterETag,"fClusterETag/F");
         tClusterTimingEff[iCut]->Branch("ClusterEProbe",&fClusterEProbe,"fClusterEProbe/F");
         fOutputContainer->Add(tClusterTimingEff[iCut]);
