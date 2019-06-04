@@ -416,12 +416,12 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
 	fEventsList->Add(fTRDEventsHistogram);
 
   // EMCal event statistics histogram
-  const Char_t* offlineEMCalTriggerNames[18] = {"Total", "No Phys Sel",
+  const Char_t* offlineEMCalTriggerNames[22] = {"Total", "No Phys Sel",
     "EMC7orDMC7", "EMC7", "DMC7", "EMC1orDMC1", "EMC1", "DMC1",
-    "EMCEGA", "EG1", "EG2", "DG1", "DG2",
-    "EMCEJE", "EJ1", "EJ2", "DJ1", "DJ2"};
-  fEMCalEventsHistogram = new TH2I("EMCalEventStatistics", "EMCal Event statistics", 14,-0.5,13.5, 18,-2.5,15.5);
-  for(Int_t i=1;i<=18;++i) fEMCalEventsHistogram->GetYaxis()->SetBinLabel(i, offlineEMCalTriggerNames[i-1]);
+    "EMCEGA", "EG1/DG1", "EG2/DG2", "EG1", "EG2", "DG1", "DG2",
+    "EMCEJE", "EJ1/DJ1", "EJ2/DJ2", "EJ1", "EJ2", "DJ1", "DJ2"};
+  fEMCalEventsHistogram = new TH2I("EMCalEventStatistics", "EMCal Event statistics", 14,-0.5,13.5, 22,-2.5,19.5);
+  for(Int_t i=1;i<=22;++i) fEMCalEventsHistogram->GetYaxis()->SetBinLabel(i, offlineEMCalTriggerNames[i-1]);
   for(Int_t i=1;i<=14;++i) fEMCalEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   fEventsList->Add(fEMCalEventsHistogram);
 
@@ -502,7 +502,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   UInt_t isPhysAndTrigSel = AliVEvent::kAny;
   UInt_t trdtrgtype[5];
   memset(trdtrgtype,0,sizeof(trdtrgtype));
-  UInt_t emcaltrgtype[16];
+  UInt_t emcaltrgtype[20];
   memset(emcaltrgtype,0,sizeof(emcaltrgtype));
   if(inputHandler) {
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
@@ -526,15 +526,19 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
       if(trgClasses.Contains("EMC1")) emcaltrgtype[4]=1;
       if(trgClasses.Contains("DMC1")) emcaltrgtype[5]=1;
       if(trgClasses.Contains("EG1")||trgClasses.Contains("EG2")||trgClasses.Contains("DG1")||trgClasses.Contains("DG2")) emcaltrgtype[6]=1;
-      if(trgClasses.Contains("EG1")) emcaltrgtype[7]=1;
-      if(trgClasses.Contains("EG2")) emcaltrgtype[8]=1;
-      if(trgClasses.Contains("DG1")) emcaltrgtype[9]=1;
-      if(trgClasses.Contains("DG2")) emcaltrgtype[10]=1;
-      if(trgClasses.Contains("EJ1")||trgClasses.Contains("EJ2")||trgClasses.Contains("DJ1")||trgClasses.Contains("DJ2")) emcaltrgtype[11]=1;
-      if(trgClasses.Contains("EJ1")) emcaltrgtype[12]=1;
-      if(trgClasses.Contains("EJ2")) emcaltrgtype[13]=1;
-      if(trgClasses.Contains("DJ1")) emcaltrgtype[14]=1;
-      if(trgClasses.Contains("DJ2")) emcaltrgtype[15]=1;
+      if(trgClasses.Contains("EG1")||trgClasses.Contains("DG1")) emcaltrgtype[7]=1;
+      if(trgClasses.Contains("EG2")||trgClasses.Contains("DG2")) emcaltrgtype[8]=1;
+      if(trgClasses.Contains("EG1")) emcaltrgtype[9]=1;
+      if(trgClasses.Contains("EG2")) emcaltrgtype[10]=1;
+      if(trgClasses.Contains("DG1")) emcaltrgtype[11]=1;
+      if(trgClasses.Contains("DG2")) emcaltrgtype[12]=1;
+      if(trgClasses.Contains("EJ1")||trgClasses.Contains("EJ2")||trgClasses.Contains("DJ1")||trgClasses.Contains("DJ2")) emcaltrgtype[13]=1;
+      if(trgClasses.Contains("EJ1")||trgClasses.Contains("DJ1")) emcaltrgtype[14]=1;
+      if(trgClasses.Contains("EJ2")||trgClasses.Contains("DJ2")) emcaltrgtype[15]=1;
+      if(trgClasses.Contains("EJ1")) emcaltrgtype[16]=1;
+      if(trgClasses.Contains("EJ2")) emcaltrgtype[17]=1;
+      if(trgClasses.Contains("DJ1")) emcaltrgtype[18]=1;
+      if(trgClasses.Contains("DJ2")) emcaltrgtype[19]=1;
     }
   }
 
@@ -556,7 +560,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
       if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
     for(Int_t i=0;i<5;++i)
       if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(0.,i);
-    for(Int_t i=0;i<16;++i)
+    for(Int_t i=0;i<20;++i)
       if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(0.,i);
   }
   else{
@@ -591,7 +595,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
     for(Int_t i=0;i<5;++i)
       if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(1.,i);
-    for(Int_t i=0;i<16;++i)
+    for(Int_t i=0;i<20;++i)
       if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(1.,i);
   } else{
     fEventsHistogram->Fill(1.,-1.);
@@ -610,7 +614,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
      for(Int_t i=0;i<5;++i)
        if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(3.,i);
-    for(Int_t i=0;i<16;++i)
+    for(Int_t i=0;i<20;++i)
       if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(3.,i);
     fEventsHistogram->Fill(3.,-2.);
     fTRDEventsHistogram->Fill(3.,-2.);
@@ -625,7 +629,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
         if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
       for(Int_t i=0;i<5;++i)
         if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(4.,i);
-      for(Int_t i=0;i<16;++i)
+      for(Int_t i=0;i<20;++i)
         if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(4.,i);
     } else{
       fEventsHistogram->Fill(4.,-1.);
@@ -648,7 +652,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
         if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
       for(Int_t i=0;i<5;++i)
         if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(6.,i);
-      for(Int_t i=0;i<16;++i)
+      for(Int_t i=0;i<20;++i)
         if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(6.,i);
     } else{
       fEventsHistogram->Fill(6.,-1.);
@@ -669,7 +673,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
         if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
       for(Int_t i=0;i<5;++i)
         if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(5.,i);
-      for(Int_t i=0;i<16;++i)
+      for(Int_t i=0;i<20;++i)
         if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(5.,i);
     } else{
        fEventsHistogram->Fill(5.,-1.);
@@ -691,7 +695,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
         if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
       for(Int_t i=0;i<5;++i)
         if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(8.,i);
-      for(Int_t i=0;i<16;++i)
+      for(Int_t i=0;i<20;++i)
         if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(8.,i);
     } else{
       fEventsHistogram->Fill(8.,-1.);
@@ -712,7 +716,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
         if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
       for(Int_t i=0;i<5;++i)
         if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(7.,i);
-      for(Int_t i=0;i<16;++i)
+      for(Int_t i=0;i<20;++i)
         if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(7.,i);
     } else{
       fEventsHistogram->Fill(7.,-1.);
@@ -769,7 +773,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(Double_t(binToFill),Double_t(i));
         for(Int_t i=0;i<5;++i)
           if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(Double_t(binToFill),i);
-        for(Int_t i=0;i<16;++i)
+        for(Int_t i=0;i<20;++i)
           if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(Double_t(binToFill),i);
       }
       else{
@@ -792,7 +796,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(9.,Double_t(i));
         for(Int_t i=0;i<5;++i)
           if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(9.,i);
-        for(Int_t i=0;i<16;++i)
+        for(Int_t i=0;i<20;++i)
           if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(9.,i);
       } else{
         fEventsHistogram->Fill(9., -1.);
@@ -813,7 +817,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(12.,Double_t(i));
         for(Int_t i=0;i<5;++i)
           if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(12.,i);
-        for(Int_t i=0;i<16;++i)
+        for(Int_t i=0;i<20;++i)
           if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(12.,i);
       } else{
         fEventsHistogram->Fill(12., -1.);
@@ -832,7 +836,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(13.,Double_t(i));
         for(Int_t i=0;i<5;++i)
           if(trdtrgtype[i]!=0) fTRDEventsHistogram->Fill(13.,i);
-        for(Int_t i=0;i<16;++i)
+        for(Int_t i=0;i<20;++i)
           if(emcaltrgtype[i]!=0) fEMCalEventsHistogram->Fill(13.,i);
       } else{
         fEventsHistogram->Fill(13., -1.);
