@@ -2258,6 +2258,14 @@ void AddTask_GammaCalo_pPb(
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
 
+  Int_t nContainer = 2;
+  for(Int_t i = 0; i<numberOfCuts; i++){
+      if(enableQAMesonTask==5){
+          mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s ClusterTimingEff",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCalo_%i.root",trainConfig)) );
+          nContainer++;
+      }
+  }
+
   return;
 
 }

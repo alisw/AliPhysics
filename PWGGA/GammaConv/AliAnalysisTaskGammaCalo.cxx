@@ -856,7 +856,14 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
-}
+  DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class());
+  DefineOutput(5, TTree::Class());
+  DefineOutput(6, TTree::Class());
+  DefineOutput(7, TTree::Class());
+  DefineOutput(8, TTree::Class());
+  DefineOutput(9, TTree::Class());}
 
 AliAnalysisTaskGammaCalo::~AliAnalysisTaskGammaCalo()
 {
@@ -1796,10 +1803,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tClusterTimingEff[iCut]->Branch("InvMass",&fInvMassTreeInvMass,"fInvMassTreeInvMass/F");
         tClusterTimingEff[iCut]->Branch("Pt",&fInvMassTreePt,"fInvMassTreePt/F");
         tClusterTimingEff[iCut]->Branch("ClusterTimeTag",&fClusterTimeTag,"fClusterTimeTag/F");
-        tClusterTimingEff[iCut]->Branch("ClusterTimeProbe",&fClusterTimeTag,"fClusterTimeTag/F");
+        tClusterTimingEff[iCut]->Branch("ClusterTimeProbe",&fClusterTimeProbe,"fClusterTimeProbe/F");
         tClusterTimingEff[iCut]->Branch("ClusterETag",&fClusterETag,"fClusterETag/F");
         tClusterTimingEff[iCut]->Branch("ClusterEProbe",&fClusterEProbe,"fClusterEProbe/F");
-        fOutputContainer->Add(tClusterTimingEff[iCut]);
       }
 
       if (fProduceTreeEOverP ){
@@ -3197,7 +3203,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fOutputLocalDebug.close();
   }
 
+  OpenFile(1);
   PostData(1, fOutputContainer);
+  Int_t nContainerOutput = 2;
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+      if(fDoMesonQA == 5 && fIsMC == 0){
+          OpenFile(nContainerOutput);
+          PostData(nContainerOutput, tClusterTimingEff[iCut]);
+          nContainerOutput++;
+      }
+  }
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaCalo::Notify()
