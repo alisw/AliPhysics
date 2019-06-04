@@ -1401,11 +1401,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     fNevents->Fill(0); //all events
     if(NcontV>=2) fNevents->Fill(1); //>2 Trks
     if(NcontV>=2 && TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(2); //>2 Trks, with Vtx_Z cut
-    if(TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(3); //with Vtx_Z cut
+    //if(TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(3); //with Vtx_Z cut
     
     //make cut in Vtx_Z
     if(TMath::Abs(pVtx->GetZ())>10.0) return; //make cut in Vtx_Z
-    fNevents->Fill(2);
+    fNevents->Fill(3);
     
     //Pile-up cuts
     // remove event 1
