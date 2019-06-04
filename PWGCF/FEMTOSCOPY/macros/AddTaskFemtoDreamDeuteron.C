@@ -29,7 +29,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //event collection
   evtCuts->CleanUpMult(false,false,false,true);
 
-  //Track Cuts are defined here
+  //Track Cuts are defined here for deuterons
   AliFemtoDreamTrackCuts *TrackCuts1=new AliFemtoDreamTrackCuts();
   //This is used for the DCA distribution to estimate the fractions of
   //primaries, secondaries etc. At the moment the splitting of secondary contributions
@@ -44,7 +44,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts1->SetCutCharge(1);
   TrackCuts1->SetFilterBit(128);
   //You want to optimize this to only select regions with reasonable high purity
-  TrackCuts1->SetPtRange(0.4, 3.0);
+  TrackCuts1->SetPtRange(0.4, 4.0);
   //You want to ensure good tracking quality
   TrackCuts1->SetEtaRange(-0.8, 0.8);
   TrackCuts1->SetNClsTPC(80);
@@ -55,19 +55,19 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts1->SetCutSharedCls(true);
   TrackCuts1->SetCutTPCCrossedRows(true,70,0.83);
   //Here you define the PID
-  TrackCuts1->SetPID(AliPID::kDeuteron, 0.8);
+  TrackCuts1->SetPID(AliPID::kDeuteron, 1.4);
   //We are looking for pions rejecting them would be obstructive.
   TrackCuts1->SetRejLowPtPionsTOF(true);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
   TrackCuts1->SetCutSmallestSig(true);
 
-  //The same things for negative pions
+  //The same things for antideuterons
   AliFemtoDreamTrackCuts *TrackCuts2=new AliFemtoDreamTrackCuts();
   TrackCuts2->SetIsMonteCarlo(isMC);
   TrackCuts2->SetCutCharge(-1);
   TrackCuts2->SetFilterBit(128);
-  TrackCuts2->SetPtRange(0.4, 3.0);
+  TrackCuts2->SetPtRange(0.4, 4.0);
   TrackCuts2->SetEtaRange(-0.8, 0.8);
   TrackCuts2->SetNClsTPC(80);
   TrackCuts2->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
@@ -75,10 +75,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts2->SetDCAVtxXY(0.1);
   TrackCuts2->SetCutSharedCls(true);
   TrackCuts2->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts2->SetPID(AliPID::kDeuteron, 0.8);
+  TrackCuts2->SetPID(AliPID::kDeuteron, 1.4);
   TrackCuts2->SetRejLowPtPionsTOF(true);
   TrackCuts2->SetCutSmallestSig(true);
 
+  //protons
   AliFemtoDreamTrackCuts *TrackCuts3=new AliFemtoDreamTrackCuts();
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
@@ -95,9 +96,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
 
+  //antiprotons
   AliFemtoDreamTrackCuts *TrackCuts4=new AliFemtoDreamTrackCuts();
   TrackCuts4->SetIsMonteCarlo(isMC);
-  TrackCuts4->SetCutCharge(1);
+  TrackCuts4->SetCutCharge(-1);
   TrackCuts4->SetFilterBit(128);
   TrackCuts4->SetPtRange(0.5, 4.05);
   TrackCuts4->SetEtaRange(-0.8, 0.8);
