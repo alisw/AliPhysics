@@ -127,6 +127,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Double_t GetNFindableClustersTPC(AliVTrack* lTrack);
 	Bool_t   DoWeights(){return fDoWeights;}
 	Bool_t 	 DoMassCut(){return fDoMassCut;}
+	Bool_t 	 RequireVertexConstrain(){return fRequireVertexConstrain;}
+	Bool_t 	 Use4VecForMass(){return fUse4VecForMass;}
 	
 	protected:
 
@@ -159,6 +161,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
 	Bool_t   fDoMassCut;
 	Double_t fMassCut;	
+	Bool_t fUse4VecForMass; // use only momentum 4vector to calculate inv mass
+	Bool_t fRequireVertexConstrain; // require contrain to primary vertex (only for AOD)
 	Bool_t   fDoWeights;
     Double_t fMaxDCAToVertexZ;
     Double_t fMaxDCAToVertexXY;
@@ -201,7 +205,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,9)
+    ClassDef(AliPrimaryPionCuts,10)
 };
 
 #endif

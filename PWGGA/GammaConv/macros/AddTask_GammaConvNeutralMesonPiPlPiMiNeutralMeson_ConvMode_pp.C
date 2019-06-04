@@ -96,6 +96,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
       if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
+      fPionCuts->SetPeriodName(periodNameV0Reader);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("",kTRUE);
@@ -211,8 +212,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
 
     // charged pion cuts
   } else if ( trainConfig == 120) {
-    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","320510708","0103603500000000","0153503000000000"); // with TPC refit
-    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","520510708","0103603500000000","0153503000000000"); // eta 0.8 cut
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32c510708","0103603500000000","0153503000000000"); // std
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32d510708","0103603500000000","0153503000000000"); // vertex constrain
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32c51070a","0103603500000000","0153503000000000"); // use 4 vec
+    cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32d51070a","0103603500000000","0153503000000000"); // use 4 vec + vertex constrain
   } else if ( trainConfig == 121) { // pTCut
     cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32c000708","0103603500000000","0153503000000000"); // pt>0.075
     cuts.AddCutHeavyMesonPCM("00000113","00200009227000008250400000","32c020708","0103603500000000","0153503000000000"); // pt>0.125

@@ -89,6 +89,8 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fRequireTOF(kFALSE),
 	fDoMassCut(kFALSE),
 	fMassCut(10),
+	fUse4VecForMass(kFALSE),
+	fRequireVertexConstrain(kFALSE),
 	fDoWeights(kFALSE),
   fMaxDCAToVertexZ(8000),
   fMaxDCAToVertexXY(8000),
@@ -125,18 +127,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fCutString=new TObjString((GetCutNumber()).Data());
 
 	// Using standard function for setting Cuts
-	Bool_t selectPrimaries=kFALSE;
-	if (fEsdTrackCuts==NULL) fEsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
-	
-	// preset most ESD cuts to match those of AOD filtering
-  if(fPeriodName.Contains("LHC10") || fPeriodName.Contains("LHC14j4")){
-		AliInfo("Presetting ESD cuts for LHC10 AOD filtering");
-	  SetHybridTrackCutsAODFiltering(1000);
-	} else{
-		SetHybridTrackCutsAODFiltering(1500);
-		AliInfo("Presetting ESD cuts for run2 filtering");
-	}
-	
+	if (fEsdTrackCuts==NULL) fEsdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
 }
 
 //________________________________________________________________________
@@ -464,6 +455,11 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
     return kFALSE;
   }
 
+	// Absolute TPC cluster cut
+	// (should be already applied in fEsdTrackCuts, however it might
+	// not be properly applied together with pTDependent cut )
+	if(lTrack->GetTPCNcls()<fMinClsTPC) return kFALSE;
+ 
   if( fDoEtaCut ) {
     if(  lTrack->Eta() > (fEtaCut + fEtaShift) || lTrack->Eta() < (-fEtaCut + fEtaShift) ) {
       return kFALSE;
@@ -494,6 +490,10 @@ Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
   if( ! lTrack->IsHybridGlobalConstrainedGlobal()){
     return kFALSE;
   }
+
+	if(fRequireVertexConstrain && (! lTrack->IsGlobalConstrained())){
+    return kFALSE;
+	}
 
 	// since fEsdTrackCuts->AcceptTrack() is not available for AODTracks
 	// the following cuts will be applied manually
@@ -655,6 +655,15 @@ Bool_t AliPrimaryPionCuts::UpdateCutString() {
 Bool_t AliPrimaryPionCuts::InitializeCutsFromCutString(const TString analysisCutSelection ) {
   fCutStringRead = Form("%s",analysisCutSelection.Data());
   
+  // Set basic cuts for AOD compability
+	if(fPeriodName.Contains("LHC10") || fPeriodName.Contains("LHC14j4")){
+		AliInfo("Presetting ESD cuts for LHC10 AOD filtering");
+	  SetHybridTrackCutsAODFiltering(1000);
+	} else{
+		SetHybridTrackCutsAODFiltering(1500);
+		AliInfo("Presetting ESD cuts for run2 filtering");
+	}
+
 	// Initialize Cuts from a given Cut string
 
 	AliInfo(Form("Set PionCuts Number: %s",analysisCutSelection.Data()));
@@ -1040,10 +1049,15 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
             fRequireTPCRefit    = kTRUE;
             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
             break;
-
-		default:
-			cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
-			return kFALSE;
+        case 13:  // 80 + refit + vertex constrain (only for AOD)
+				    fRequireVertexConstrain = kTRUE;
+            fMinClsTPC= 80.;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            break;
+				default:
+						cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
+						return kFALSE;
 	}
 	return kTRUE;
 }
@@ -1280,6 +1294,12 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
          fDoMassCut = kTRUE;
          fMassCut = 1.5;
          break;
+		case 10: // overload mass cut for chi2 of vParticle
+		     fUse4VecForMass = kTRUE;
+				 fDoMassCut = kTRUE;
+         fMassCut = 0.85;
+         break;
+
 		default:
 			cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;
