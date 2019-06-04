@@ -44,12 +44,15 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
   fProf = new TProfile2D(Form("%s_CorrProfile",this->GetName()),"CorrProfile",nMultiBins, multiBins,inputList->GetEntries(),0.5,inputList->GetEntries()+0.5);
   for(Int_t i=0;i<inputList->GetEntries();i++)
     fProf->GetYaxis()->SetBinLabel(i+1,inputList->At(i)->GetName());
+  fProf->Sumw2();
   if(nRandom) {
     fNRandom=nRandom;
     fProfRand = new TObjArray();
     fProfRand->SetOwner(kTRUE);
-    for(Int_t i=0;i<nRandom;i++)
+    for(Int_t i=0;i<nRandom;i++) {
       fProfRand->Add((TProfile2D*)fProf->Clone(Form("%s_Rand_%i",fProf->GetName(),i)));
+      ((TProfile2D*)fProfRand->At(i))->Sumw2();
+    };
   };
 };
 void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t MultiMin, Double_t MultiMax, Int_t nRandom) {
@@ -63,14 +66,17 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
   };
   fProf = new TProfile2D(Form("%s_CorrProfile",this->GetName()),"CorrProfile",nMultiBins, MultiMin,MultiMax,inputList->GetEntries(),0.5,inputList->GetEntries()+0.5);
   fProf->SetDirectory(0);
+  fProf->Sumw2();
   for(Int_t i=0;i<inputList->GetEntries();i++)
     fProf->GetYaxis()->SetBinLabel(i+1,inputList->At(i)->GetName());
   if(nRandom) {
     fNRandom=nRandom;
     fProfRand = new TObjArray();
     fProfRand->SetOwner(kTRUE);
-    for(Int_t i=0;i<nRandom;i++)
+    for(Int_t i=0;i<nRandom;i++) {
       fProfRand->Add((TProfile2D*)fProf->Clone(Form("%s_Rand_%i",fProf->GetName(),i)));
+      ((TProfile2D*)fProfRand->At(i))->Sumw2();
+    };
   };
 };
 Bool_t AliGFWFlowContainer::CreateBinsFromAxis(TAxis *inax) {
@@ -336,7 +342,7 @@ TH1D *AliGFWFlowContainer::ProfToHist(TProfile *inpf) {
   for(Int_t i=1;i<=rethist->GetNbinsX();i++) {
     if(inpf->GetBinContent(i)!=0) {
       rethist->SetBinContent(i,inpf->GetBinContent(i));
-      rethist->SetBinError(i,inpf->GetBinError(i));
+      rethist->SetBinError(i,inpf->GetBinError(i));//*TMath::Sqrt(inpf->GetBinEntries(i)));
     };
   };
   return rethist;
