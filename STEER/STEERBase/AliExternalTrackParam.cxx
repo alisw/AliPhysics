@@ -2877,7 +2877,7 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
 	if (sn>0) {if (fy>det)  return kFALSE;} // track is along Y axis and above the circle
 	else      {if (fy<-det) return kFALSE;} // track is against Y axis amd belo the circle
       }
-      else if(dir>0) {                                    // agains track direction
+      else if (dir<0) {                                    // agains track direction
 	if (sn>0) {if (fy<-det) return kFALSE;} // track is along Y axis
         else if (fy>det)  return kFALSE;        // track is against Y axis
       }
