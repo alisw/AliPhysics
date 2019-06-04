@@ -357,7 +357,6 @@ Bool_t AliMultDepSpecAnalysisTask::InitEvent()
     }
 
     fCent = ((fBinsCent->GetSize()-1) > 1) ? GetCentrality(fEvent) : 50;
-
     // event info for random seeds
     fRunNumber = fEvent->GetRunNumber();
     AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(fEvent);
@@ -703,12 +702,9 @@ Bool_t AliMultDepSpecAnalysisTask::AcceptTrackQuality(AliVTrack* track){
  ******************************************************************************/
 Double_t AliMultDepSpecAnalysisTask::GetCentrality(AliVEvent* event)
 {
-  Double_t centrality = -1;
   AliMultSelection* multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
   if(!multSelection){AliError("No MultSelection found!"); return 999;}
-  centrality = multSelection->GetMultiplicityPercentile("V0M");
-  if(centrality > 100) {AliError("Centrality determination does not work proprely!"); return 999;}
-  return centrality;
+  return multSelection->GetMultiplicityPercentile("V0M");
 }
 
 /***************************************************************************//**
