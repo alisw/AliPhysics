@@ -379,11 +379,11 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
 
     Correlation(fNumberSecond,fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8);  //do the correlation for the second set
 
-    SecondCorrelation=fRecursion[0][fNumber-2]->GetBinContent(1);
-    Weight_SecondCorrelation=fRecursion[0][fNumber-2]->GetBinContent(2);
+    SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(1);
+    Weight_SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(2);
     
-    fRecursion[0][fNumber-2]->Reset(); //Reset
-    fRecursion[1][fNumber-2]->Reset(); //Reset
+    fRecursion[0][fNumberSecond-2]->Reset(); //Reset
+    fRecursion[1][fNumberSecond-2]->Reset(); //Reset
 
     //~~~~~~~~~~~~~~~~~
     if(TMath::Abs(SecondCorrelation)<1.0e-16){return;} //protection against 0, we will come back to this later
@@ -597,7 +597,7 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
   // p) Book histogam for Vertex Y after Cut
  fVertexZAfter = new TH1F("fVertexZAfter","fVertexZAfter",-20.,20.,1000.); 
  fVertexZAfter->GetXaxis()->SetTitle("");
- fControlHistogramsList->Add(fVertexYAfter);
+ fControlHistogramsList->Add(fVertexZAfter);
 
  // q) Book histogram to debug
  fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.); 
