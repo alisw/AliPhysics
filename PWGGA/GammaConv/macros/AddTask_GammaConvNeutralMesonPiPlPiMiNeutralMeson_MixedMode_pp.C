@@ -76,7 +76,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
   }
 
   // ================== GetInputEventHandler =============================
-  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
 
   //=========  Set Cutnumber for V0Reader ================================
@@ -104,7 +104,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
       if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
-
+      fPionCuts->SetPeriodName(periodNameV0Reader);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("",kTRUE);
@@ -216,9 +216,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     // ---------------------------------
 
   } else if( trainConfig == 120)  {
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","320510708","0103603700000000","0153503000000000"); // with TPC refit (new standard)
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","520510708","0103603700000000","0153503000000000"); // eta 0.8
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111040032230000","320510708","0103603700000000","0153503000000000"); // no track matching
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32c51070a","0103603700000000","0153503000000000"); // with TPC refit (new standard)
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111040032230000","32c51070a","0103603700000000","0153503000000000"); // no track matching
   } else if( trainConfig == 121)  {  // pT Cut
     cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32c000708","0103603700000000","0153503000000000"); // pt>0.075
     cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32c020708","0103603700000000","0153503000000000"); // pt>0.125
@@ -257,9 +256,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     // ---------------------------------
 
   } else if( trainConfig == 150 ) { // PHOS 7 TeV
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411043012300000","320510708","0103603n00000000","0153503000000000"); // with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411043012300000","520510708","0103603n00000000","0153503000000000"); // eta 0.8
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411040012300000","320510708","0103603n00000000","0153503000000000"); // without track matching
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411043012300000","32051070a","0103603n00000000","0153503000000000"); // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411043012300000","52051070a","0103603n00000000","0153503000000000"); // eta 0.8
+    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","2444411040012300000","32051070a","0103603n00000000","0153503000000000"); // without track matching
 
     // *************Variations in AliConvEventCuts**************************
   } else if (trainConfig == 151) { // remove pileup

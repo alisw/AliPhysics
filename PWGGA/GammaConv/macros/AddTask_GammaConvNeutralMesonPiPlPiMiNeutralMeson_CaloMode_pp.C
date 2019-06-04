@@ -104,7 +104,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     if( PionCuts!=""){
       fPionCuts= new AliPrimaryPionCuts(PionCuts.Data(),PionCuts.Data());
       if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
-      //if(runLightOutput>0) fPionCuts->SetLightOutput(kTRUE);
+      fPionCuts->SetPeriodName(periodNameV0Reader);
       if(fPionCuts->InitializeCutsFromCutString(PionCuts.Data())){
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("",kTRUE);
@@ -222,9 +222,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
 
     // charged pion cuts
   } else if( trainConfig == 120)   {
-    cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","320510708","0103603700000000","0153503000000000"); // with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","520510708","0103603700000000","0153503000000000"); // eta 0.8
-    cuts.AddCutHeavyMesonCalo("00000113","1111111040032230000","320510708","0103603700000000","0153503000000000"); // no track matching
+    cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","32c51070a","0103603700000000","0153503000000000"); // with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00000113","1111111040032230000","32c51070a","0103603700000000","0153503000000000"); // no track matching
   } else if (trainConfig == 121) { // pT Cut
     cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","32c000708","0103603700000000","0153503000000000"); // pt>0.075
     cuts.AddCutHeavyMesonCalo("00000113","1111111047032230000","32c020708","0103603700000000","0153503000000000"); // pt>0.125
@@ -264,9 +263,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     // ---------------------------------
 
   } else if(trainConfig == 150)  { // Standard PHOS
-    cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","320510708","0103603n00000000","0153503000000000"); //  with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","520510708","0103603n00000000","0153503000000000"); //  eta 0.8
-    cuts.AddCutHeavyMesonCalo("00000113","2444411040012300000","320510708","0103603n00000000","0153503000000000"); //  without track matching
+    cuts.AddCutHeavyMesonCalo("00000113","2444411043012300000","32c51070a","0103603n00000000","0153503000000000"); //  with TPC refit + ITS requirement
+    cuts.AddCutHeavyMesonCalo("00000113","2444411040012300000","32c51070a","0103603n00000000","0153503000000000"); //  without track matching
 
     // *************Variations in AliConvEventCuts**************************
   } else if(trainConfig == 151)  { // removePileUp
