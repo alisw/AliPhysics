@@ -3473,8 +3473,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
       Float_t chi2 = virtualPhoton.GetChi2perNDF();
      
       if(chi2>299) chi2 = 299; // to illustrate overflow bin
-      fHistovParticleChi2PerNDF[fiCut]->Fill(chi2);
-      fHistovParticledS[fiCut]->Fill(ds);
+      fHistovParticleChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+      fHistovParticledS[fiCut]->Fill(ds,fWeightJetJetMC);
 
       if(use4vecformass){
         vParticle->SetPxPyPzE(virtKFPionVec4.Px(),virtKFPionVec4.Py(),virtKFPionVec4.Pz(),virtKFPionVec4.E());
@@ -3488,39 +3488,39 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
               if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
                 if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
                   fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                  fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2);
-                  fHistoTruevParticledS[fiCut]->Fill(ds);
+                  fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                  fHistoTruevParticledS[fiCut]->Fill(ds,fWeightJetJetMC);
                   if (motherlabeln == motherlabelp){
                     fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                    fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2);
-                    fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds);
+                    fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                    fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds,fWeightJetJetMC);
                     switch( fSelectedHeavyNeutralMeson ) {
                     case 0: // ETA MESON
                       if( IsEtaPiPlPiMiPiZeroDaughter(labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
-                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
                       }
                       break;
                     case 1: // OMEGA MESON
                       if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
-                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
                       }
                       break;
                     case 2: // ETA PRIME MESON
                       if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
-                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
                       }
                       break;
                     case 3: // D0 MESON
                       if( IsD0PiPlPiMiPiZeroDaughter(labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
-                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
                       }
                       break;
                     default:
@@ -3532,39 +3532,39 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
             } else {
               if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
                 fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2);
-                fHistoTruevParticledS[fiCut]->Fill(ds);
+                fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                fHistoTruevParticledS[fiCut]->Fill(ds,fWeightJetJetMC);
                 if (motherlabeln == motherlabelp){
                   fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                  fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2);
-                  fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds);
+                  fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                  fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds,fWeightJetJetMC);
                   switch( fSelectedHeavyNeutralMeson ) {
                   case 0: // ETA MESON
                     if( IsEtaPiPlPiMiPiZeroDaughter(labeln) ){
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
-                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
                     }
                     break;
                   case 1: // OMEGA MESON
                     if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) ){
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
-                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
                     }
                     break;
                   case 2: // ETA PRIME MESON
                     if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) ){
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
-                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
                     }
                     break;
                   case 3: // D0 MESON
                     if( IsD0PiPlPiMiPiZeroDaughter(labeln) ){
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
-                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
                     }
                     break;
                   default:
@@ -5923,7 +5923,7 @@ AliExternalTrackParam* AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GetCon
   Double_t c[3]= { covar[2],0.,covar[5] };
   chi2 = par->GetPredictedChi2(p,c);
   if (chi2>1e9 || !par->Update(p,c)) {
-    cout << "chi2 = " << chi2 << endl;
+    AliFatal(Form("Propagation failed with chi2 = %f",chi2));
     delete par;
     return 0;
   }
