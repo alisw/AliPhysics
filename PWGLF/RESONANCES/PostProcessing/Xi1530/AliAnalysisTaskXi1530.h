@@ -265,8 +265,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     AliESDtrackCuts* fTrackCuts2 = nullptr;  //!
     AliESDtrackCuts* fTrackCuts3 = nullptr;  //!
     AliVEvent* fEvt = nullptr;               //!
-    UInt_t fFilterBit;
-    UInt_t fFilterBit_Xi;
+    UInt_t fFilterBit = 32;
+    UInt_t fFilterBit_Xi = 128;  // not using for the moment.
     AliAnalysisTaskXi1530RunTable* fRunTable = nullptr;  //!
 
     Double_t fCent = -1;
@@ -360,7 +360,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 18);
+    ClassDef(AliAnalysisTaskXi1530, 19);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -381,6 +381,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 16: Add option for using different Multiplicity Estimators(Default: V0M).
     // 17: Add Simple event cut option to use AliMultSelection cut only
     // 18: Enable AOD functionality
+    // 19: Update default filterbit
 };
 
 #endif
