@@ -7,7 +7,7 @@ class TH2F;
 
 /**
  * @class AliEmcalCorrectionClusterExotics
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Exotic cluster removal in the EMCal correction framework.
  *
  * "Exotic" clusters are energetic clusters where most energy deposition is concentrated in one single cell. This clusters are not reproduced in MC simulations and are believed to arise from neutrons showering directly into the APD. These clusters need to be flagged, so that they can be easily rejected during the analysis.
