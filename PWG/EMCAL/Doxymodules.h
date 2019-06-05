@@ -49,6 +49,14 @@
  */
 
 /**
+ * \defgroup EMCALCORRECTIONFW EMCAL correction framework
+ * \ingroup EMCALFW
+ * \brief Classes of the EMCAL correction framework
+ * 
+ * See \subpage READMEemcCorrections
+ */
+
+/**
  * \defgroup EMCALFWTASKS EMCAL framework tasks
  * \ingroup EMCALFW
  * \brief EMCAL framework tasks
