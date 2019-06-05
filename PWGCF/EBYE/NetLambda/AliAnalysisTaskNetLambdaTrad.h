@@ -63,7 +63,6 @@ protected:
     Int_t  fNptBins;
     
     
-    THnSparse *fPtBinNplusNminusChBKG;
     THnSparse *fPtBinNplusNminusCh;
     
     
