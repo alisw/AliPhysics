@@ -1,11 +1,3 @@
-// $Id$
-//
-// Calculation of rho from a collection of jets.
-// If scale function is given the scaled rho will be exported
-// with the name as "fOutRhoName".Apppend("_Scaled").
-//
-// Authors: R.Reed, S.Aiola
-
 #include "AliAnalysisTaskRho.h"
 
 #include <TClonesArray.h>
