@@ -2340,7 +2340,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
 Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(AliHFJetDefinition& jetDef)
 {
   
-
+  TString hname;
   TString hname1;
   TString hname2;
   Int_t myflag=0; 
@@ -2348,8 +2348,11 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(Al
   Double_t jetpt=0;
   Int_t TheTrueCode = 0;
   Double_t invMassD = 0;
-
-    fMCContainer->SetSpecialPDG(fCandidatePDG);
+  fMCContainer->SetSpecialPDG(fCandidatePDG);
+  fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
+  fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
+  fMCContainer->SetRejectISR(fRejectISR);
+  fMCContainer->SetSpecialPDG(fCandidatePDG);
      if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
   
   hname1 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
@@ -2365,54 +2368,50 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(Al
     fFastJetWrapper->SetR(jetDef.fRadius);
     fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
     fFastJetWrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetDef.fRecoScheme));
-    AddInputVectors(fMCContainer, 100);
+     hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", GetName(), jetDef.GetName());
+     AddInputVectors(fMCContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname))); 
+    
     fFastJetWrapper->Run();
     std::vector<fastjet::PseudoJet> jets_incl =  sorted_by_pt(fFastJetWrapper->GetInclusiveJets());
    
-    for(auto aodMcPartAll : fMCContainer->all()){
-     TheTrueCode = aodMcPartAll->PdgCode();
+ 
      
-     if(TMath::Abs(TheTrueCode)==fCandidatePDG){
-    
-      
-      myflag=0; 
-
-    for (auto jet : jets_incl) {
-    
+      for (auto jet : jets_incl) {
+      jetpt=0;
+      jeteta=0;
             for (auto constituent : jet.constituents()) {
              Int_t iPart = constituent.user_index() - 100;
              if (constituent.perp() < 1e-6) continue; // reject ghost particles
              AliAODMCParticle* part = fMCContainer->GetMCParticle(iPart);
              if (!part) {
-              ::Error("AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
+	       ::Error("AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunParticleLevelAnalysis", "Could not find jet constituent %d!", iPart);
               continue;
                          }
-	    
-	     if(part==aodMcPartAll){
-	      
-          myflag=1;
-	  jetpt=jet.perp();
+
+	     TheTrueCode=part->PdgCode();
+	     Int_t mother=part->GetMother();
+	      AliAODMCParticle* mypart = fMCContainer->GetMCParticle(mother);
+	     if(TMath::Abs(TheTrueCode)==fCandidatePDG){
+	  
+      	  jetpt=jet.perp();
 	  jeteta=jet.eta();
-	  break;}}}
-    
-    if(myflag==0) continue;
-   
-    if(TMath::Abs(jeteta)>0.5) continue;
-   
-       auto origin = IsPromptCharm(aodMcPartAll, fMCContainer->GetArray());
+          if(TMath::Abs(jeteta)>0.5) continue;
+	  
+          auto origin = IsPromptCharm(part, fMCContainer->GetArray());
      
       if(origin.first == kFromCharm){
-	if(TMath::Abs(aodMcPartAll->Eta())<=0.9)EfficiencyGeneratorPrompt->Fill(aodMcPartAll->Pt(),jetpt);}
+	if(TMath::Abs(part->Eta())<=0.9)EfficiencyGeneratorPrompt->Fill(part->Pt(),jetpt);}
         if(origin.first == kFromBottom){ 
-	  if(TMath::Abs(aodMcPartAll->Eta())<=0.9)EfficiencyGeneratorNonPrompt->Fill(aodMcPartAll->Pt(),jetpt);}
+	  if(TMath::Abs(part->Eta())<=0.9)EfficiencyGeneratorNonPrompt->Fill(part->Pt(),jetpt);}
      }
 
   
-   }}
-
+   
+	    }}
+  }
  
   return kTRUE;
-  }
+}
 
 
 
@@ -2988,10 +2987,11 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::AddInputVectors(AliEmcalConta
   auto itcont = cont->all_momentum();
   for (AliEmcalIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
     UInt_t rejectionReason = 0;
-    if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
+    //only physical primaries are accepted for the jet finding
+     if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
       if (rejectHist) rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
-    }
+     }
     if (fRandomGen && eff > 0 && eff < 1) {
       Double_t rnd = fRandomGen->Rndm();
       if (eff < rnd) {
