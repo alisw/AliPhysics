@@ -834,6 +834,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         Double_t fTPCNSigPion =
             fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
         Double_t pionZ = abs(track->GetZ() - fZ);
+        Double_t pionPt = track->Pt();
 
         if (fQA) {
             fHistos->FillTH2("hPhiEta", track->Phi(), track->Eta());
@@ -848,6 +849,8 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         if (abs(track->Eta()) > fXi1530PionEtaCut)
             continue;
         if (pionZ > fXi1530PionZVertexCut_loose)
+            continue;
+        if (pionPt > 0.15)
             continue;
         // if (fabs(track->M() - pionmass) > 0.007) continue;
 
@@ -1102,6 +1105,10 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             filtermapP = pTrackXi->GetFilterMap();
             filtermapN = nTrackXi->GetFilterMap();
             filtermapB = bTrackXi->GetFilterMap();
+
+            if ((pTrackXi->Pt() > 0.15) || (nTrackXi->Pt() > 0.15) ||
+                (bTrackXi->Pt() > 0.15))
+                continue;
 
             // Disabled in AOD check - need to check further!
             /*
