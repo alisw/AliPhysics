@@ -153,7 +153,8 @@ AliAnalysisTask *AddTaskHFEnpepp5New(Bool_t MCthere,
       kWeiLHC17l4b_tued = 403,    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
       kWeiLHC17l4b_tdeu = 404,    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
       // from neutral pions
-      kWeiLHC17l4b_neutral = 405    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
+      kWeiLHC17l4b_neutral = 405,    // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias
+      kWeiLHC17l4b_rescaled = 406   // weights pp @ 5.023 TeV: LHC17l4b, Pythia min. bias rescaled pion sectra from charged particle
    };
    int kWeiData;
    // The re-weighting concerns the photonic sources. The tagging efficiency is best taken
@@ -2317,15 +2318,15 @@ AliAnalysisTask *AddTaskHFEnpepp5New(Bool_t MCthere,
             
             // TPC only with cut at 0
             
-            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
-                              dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
-            
-            // TPC only with cut at -0.5
-            
-            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
-                              dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData,20);
+//             RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+//                               dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+//                               kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+//             
+//             // TPC only with cut at -0.5
+//             
+//             RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+//                               dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+//                               kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData,20);
             
 
             break;
@@ -2337,6 +2338,10 @@ AliAnalysisTask *AddTaskHFEnpepp5New(Bool_t MCthere,
          RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                            dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                            kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
+         
+        RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC17l4b_rescaled);
 
          if (RunSystematic == kSystAsociatedMinpTWeights) {
             //tilted weights
@@ -3335,6 +3340,10 @@ AliAnalysisTask *AddTaskHFEnpepp5New(Bool_t MCthere,
          RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
                            dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                            kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE);
+         
+                  RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+                           dEdxhm, 0., AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiLHC17l4b_rescaled);
 
          if (RunSystematic == kSystAsociatedMinpTWeights) {
 
