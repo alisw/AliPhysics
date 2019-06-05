@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/05/30
+//  Last Modified Date: 2019/06/05
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -733,8 +733,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
 
     if(fSimplieEventCut) IsINEL0Rec = kTRUE; // for simple event cut, use only IsMultSelcted.
     // Check tracks and casade, Fill histo************************************
-    if (IsINEL0Rec && IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
-                                        // IsVtxInZCut) && IsMultSelcted
+    if (IsSelectedTrig && IsINEL0Rec &&
+        IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
+                          // IsVtxInZCut) && IsMultSelcted
         // Draw Multiplicity QA plot in only selected event.
         if (fQA) {
             FillTHnSparse("hMult", {(double)fCent});
