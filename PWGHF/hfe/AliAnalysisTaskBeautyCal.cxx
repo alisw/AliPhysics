@@ -1659,7 +1659,10 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
            }
          else if(centrality>=30 && centrality<50)
            {
-            eop += 0.04; //30-50% 
+            if(iCorr==0)
+              { 
+               eop += 0.04; //30-50% 
+              }
            } 
          else if(centrality>=60 && centrality<80)
            {
