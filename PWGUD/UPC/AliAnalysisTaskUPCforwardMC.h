@@ -703,6 +703,34 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCPhiCollinsSoperFrameJPsiTenRapidityBinsH[10];
 
                                 /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY
+                                 * frame.  COS(THETA) distribution. RECON.
+                                 */
+        TH1F*                   fCosThetaHeFrameForSignalExH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY
+                                 * frame.  PHI distribution. RECON.
+                                 */
+        TH1F*                   fPhiHeFrameForSignalExH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY
+                                 * frame.  COS(THETA) distribution. GEN.
+                                 */
+        TH1F*                   fMCCosThetaHeFrameForSignalExH;
+
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY
+                                 * frame.  PHI distribution. GEN.
+                                 */
+        TH1F*                   fMCPhiHeFrameForSignalExH;
+
+                                /**
                                  * This histogram shows the invariant mass
                                  * distribution of the dimuon pairs in terms
                                  * of bins of cos theta of the positive muon
@@ -931,7 +959,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 15);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 17);
 };
 
 #endif

@@ -203,7 +203,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
       fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
       fInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
-      fMCInvariantMassDistributionForSignalExtractionHelicityFrameH(0)
+      fMCInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fCosThetaHeFrameForSignalExH(0),
+      fPhiHeFrameForSignalExH(0),
+      fMCCosThetaHeFrameForSignalExH(0),
+      fMCPhiHeFrameForSignalExH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -332,7 +336,11 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
       fMCCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
       fInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
-      fMCInvariantMassDistributionForSignalExtractionHelicityFrameH(0)
+      fMCInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fCosThetaHeFrameForSignalExH(0),
+      fPhiHeFrameForSignalExH(0),
+      fMCCosThetaHeFrameForSignalExH(0),
+      fMCPhiHeFrameForSignalExH(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -842,6 +850,18 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
                   10, -3.14, 3.14
                   );
   fOutputList->Add(fMCInvariantMassDistributionForSignalExtractionHelicityFrameH);
+
+  fCosThetaHeFrameForSignalExH = new TH1F("fCosThetaHeFrameForSignalExH", "fCosThetaHeFrameForSignalExH", 40, -1., 1.);
+  fOutputList->Add(fCosThetaHeFrameForSignalExH);
+
+  fMCCosThetaHeFrameForSignalExH = new TH1F("fMCCosThetaHeFrameForSignalExH", "fMCCosThetaHeFrameForSignalExH", 40, -1., 1.);
+  fOutputList->Add(fMCCosThetaHeFrameForSignalExH);
+
+  fPhiHeFrameForSignalExH = new TH1F("fPhiHeFrameForSignalExH", "fPhiHeFrameForSignalExH", 50, -3.14, 3.14);
+  fOutputList->Add(fPhiHeFrameForSignalExH);
+
+  fMCPhiHeFrameForSignalExH = new TH1F("fMCPhiHeFrameForSignalExH", "fMCPhiHeFrameForSignalExH", 50, -3.14, 3.14);
+  fOutputList->Add(fMCPhiHeFrameForSignalExH);
 
 
   //_______________________________
@@ -1525,7 +1545,8 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
                                                                                             possibleJPsiCopy
                                                                                             )
                                                                        );
-
+    fCosThetaHeFrameForSignalExH->Fill( CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy ) );
+    fPhiHeFrameForSignalExH     ->Fill( CosPhiHelicityFrame(   muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy ) );
 
   }
 
@@ -1715,6 +1736,16 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                           possibleJPsiMC
                                                                           )
                                                                         );
+                  fMCCosThetaHeFrameForSignalExH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                               muonsMCcopy[1],
+                                                                               possibleJPsiMC
+                                                                               )
+                                                                              );
+                  fMCPhiHeFrameForSignalExH->Fill( CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                          muonsMCcopy[1],
+                                                                          possibleJPsiMC
+                                                                          )
+                                                                         );
                   fMCInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
                                                                                                               muonsMCcopy[1],
                                                                                                               possibleJPsiMC
@@ -1845,6 +1876,16 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                           possibleJPsiMC
                                                                           )
                                                                         );
+                  fMCCosThetaHeFrameForSignalExH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                               muonsMCcopy[0],
+                                                                               possibleJPsiMC
+                                                                               )
+                                                                              );
+                  fMCPhiHeFrameForSignalExH->Fill( CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                          muonsMCcopy[0],
+                                                                          possibleJPsiMC
+                                                                          )
+                                                                         );
                   fMCInvariantMassDistributionForSignalExtractionHelicityFrameH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
                                                                                                               muonsMCcopy[0],
                                                                                                               possibleJPsiMC
