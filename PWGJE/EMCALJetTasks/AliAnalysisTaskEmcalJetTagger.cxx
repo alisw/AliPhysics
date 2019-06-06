@@ -63,8 +63,6 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fh3PtJetDEtaDPhiConst(nullptr),
   fh3PtJetAreaDRConst(nullptr)
 {
-
-
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -93,26 +91,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fh3PtJetDEtaDPhiConst(nullptr),
   fh3PtJetAreaDRConst(nullptr)
 {
-  fh3PtJet1VsDeltaEtaDeltaPhi = new TH3*[fNcentBins];
-  fh2PtJet1VsDeltaR           = new TH2*[fNcentBins];
-  fh2PtJet2VsFraction         = new TH2*[fNcentBins];
-  fh2PtJet1VsLeadPtAllSel     = new TH2*[fNcentBins];
-  fh2PtJet1VsLeadPtTagged     = new TH2*[fNcentBins];
-  fh2PtJet1VsPtJet2           = new TH2*[fNcentBins];
-  fh2PtJet2VsRelPt            = new TH2*[fNcentBins];
-
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
-    fh2PtJet1VsDeltaR[i]           = 0;
-    fh2PtJet2VsFraction[i]         = 0;
-    fh2PtJet1VsLeadPtAllSel[i]     = 0;
-    fh2PtJet1VsLeadPtTagged[i]     = 0;
-    fh2PtJet1VsPtJet2[i]           = 0;
-    fh2PtJet2VsRelPt[i]            = 0;
-  }
-
   SetMakeGeneralHistograms(kTRUE);
-  
 }
 
 AliAnalysisTaskEmcalJetTagger::~AliAnalysisTaskEmcalJetTagger()
@@ -142,6 +121,25 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   const Double_t maxDR       =  0.5;
   const Double_t minFraction =  -0.005;
   const Double_t maxFraction =  1.005;
+
+  // Prepare histogram containers
+  fh3PtJet1VsDeltaEtaDeltaPhi = new TH3*[fNcentBins];
+  fh2PtJet1VsDeltaR           = new TH2*[fNcentBins];
+  fh2PtJet2VsFraction         = new TH2*[fNcentBins];
+  fh2PtJet1VsLeadPtAllSel     = new TH2*[fNcentBins];
+  fh2PtJet1VsLeadPtTagged     = new TH2*[fNcentBins];
+  fh2PtJet1VsPtJet2           = new TH2*[fNcentBins];
+  fh2PtJet2VsRelPt            = new TH2*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
+    fh2PtJet1VsDeltaR[i]           = 0;
+    fh2PtJet2VsFraction[i]         = 0;
+    fh2PtJet1VsLeadPtAllSel[i]     = 0;
+    fh2PtJet1VsLeadPtTagged[i]     = 0;
+    fh2PtJet1VsPtJet2[i]           = 0;
+    fh2PtJet2VsRelPt[i]            = 0;
+  }
 
   TString histName = "";
   TString histTitle = "";
