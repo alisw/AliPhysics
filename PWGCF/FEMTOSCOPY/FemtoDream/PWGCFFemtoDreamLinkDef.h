@@ -33,6 +33,7 @@
 #pragma link C++ class AliAnalysisTaskNanoXioton+;
 #pragma link C++ class AliAnalysisTaskNanoLoton+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamPhi+;
+#pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamPhi+;
 #pragma link C++ class AliAnalysisTaskSigma0Femto+;
 #pragma link C++ class AliAnalysisTaskAODSigma0Femto+;
 #pragma link C++ class AliAnalysisTaskNanoAODSigma0Femto+;
