@@ -17,19 +17,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
-
-  if (suffix == "1") {
-  evtCuts->SetSphericityCuts(0,1);
-  }
-  if (suffix == "2") {
-  evtCuts->SetSphericityCuts(0,0.3);
-  }
-  if (suffix == "3") {
-  evtCuts->SetSphericityCuts(0.3,0.7);
-  }
-  if (suffix == "4") {
   evtCuts->SetSphericityCuts(0.7,1);
-  }
 
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -68,6 +56,18 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhi(bool isMC = false,
   TrackCutsPhi->SetPDGCodePosDaug(321);
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
+
+  //cutwindow 50 MeV
+  if (suffix == "1") {
+    TrackCutsPhi->SetCutWindow(1.08,1.13);
+  }
+  if (suffix == "2") {
+    TrackCutsPhi->SetCutWindow(1.13,1.18);
+  }
+  //cutwindow 100MeV
+  if (suffix == "3") {
+    TrackCutsPhi->SetCutWindow(1.08,1.18);
+  }
 
 //  if (suffix != "0") {
 //    TrackCutsPhi->SetMinimalBooking(true);
