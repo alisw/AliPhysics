@@ -257,6 +257,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
         jettypename = "FullJet";
         acceptance = useDCAL ? AliJetContainer::kDCALfid : AliJetContainer::kEMCALfid;
         addClusterContainer = addTrackContainer = true;
+        mcjettype = AliJetContainer::kFullJet;    // Correct back neutral detector-level jets to full particle level jets
         break;
     case AliJetContainer::kChargedJet:
         jettypename = "ChargedJet";
