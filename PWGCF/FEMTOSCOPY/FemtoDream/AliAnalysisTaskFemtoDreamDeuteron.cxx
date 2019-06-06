@@ -19,6 +19,8 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
 ,fEventCuts()
 ,fTrackCutsPart1()
 ,fTrackCutsPart2()
+,fTrackCutsPart3()
+,fTrackCutsPart4()
 ,fConfig()
 ,fPairCleaner()
 ,fPartColl()
@@ -37,6 +39,8 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char 
 ,fEventCuts()
 ,fTrackCutsPart1()
 ,fTrackCutsPart2()
+,fTrackCutsPart3()
+,fTrackCutsPart4()
 ,fConfig()
 ,fPairCleaner()
 ,fPartColl()
@@ -101,7 +105,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   }
   //Same game for the second track cuts object
   if (!fTrackCutsPart2) {
-    AliFatal("Track Cuts for Particle One not set!");
+    AliFatal("Track Cuts for Particle Two not set!");
   }
   fTrackCutsPart2->Init();
   fTrackCutsPart2->SetName("Particle2");
@@ -109,6 +113,28 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   if (fTrackCutsPart2->GetIsMonteCarlo()) {
     fTrackCutsPart2->SetMCName("MCParticle2"); // same as above
     fOutput->Add(fTrackCutsPart2->GetMCQAHists());
+  }
+
+  if (!fTrackCutsPart3) {
+    AliFatal("Track Cuts for Particle Three not set!");
+  }
+  fTrackCutsPart3->Init();
+  fTrackCutsPart3->SetName("Particle3");
+  fOutput->Add(fTrackCutsPart3->GetQAHists());
+  if (fTrackCutsPart3->GetIsMonteCarlo()) {
+    fTrackCutsPart3->SetMCName("MCParticle3"); // same as above
+    fOutput->Add(fTrackCutsPart3->GetMCQAHists());
+  }
+
+  if (!fTrackCutsPart4) {
+    AliFatal("Track Cuts for Particle Four not set!");
+  }
+  fTrackCutsPart4->Init();
+  fTrackCutsPart4->SetName("Particle4");
+  fOutput->Add(fTrackCutsPart4->GetQAHists());
+  if (fTrackCutsPart4->GetIsMonteCarlo()) {
+    fTrackCutsPart4->SetMCName("MCParticle4"); // same as above
+    fOutput->Add(fTrackCutsPart4->GetMCQAHists());
   }
   //Arguments for the pair cleaner as follows:
   //1. How many pairs of Tracks + Decays do you want to clean?
@@ -164,10 +190,15 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
       //cascade inherits from this base type, which carries all the information relevant for the
       //same and mixed event distributions (e.g. momentum, angles, etc. ). E.g. the dEdx of the TPC
       //doesnt matter for this porpouse.
-      static std::vector<AliFemtoDreamBasePart> Particles;
-      Particles.clear();
-      static std::vector<AliFemtoDreamBasePart> AntiParticles;
-      AntiParticles.clear();
+      static std::vector<AliFemtoDreamBasePart> Deuterons;
+      Deuterons.clear();
+      static std::vector<AliFemtoDreamBasePart> AntiDeuterons;
+      AntiDeuterons.clear();
+
+      static std::vector<AliFemtoDreamBasePart> Protons;
+      Protons.clear();
+      static std::vector<AliFemtoDreamBasePart> AntiProtons;
+      AntiProtons.clear();
       //Now we loop over all the tracks in the reconstructed event.
       for (int iTrack = 0;iTrack<Event->GetNumberOfTracks();++iTrack) {
         AliAODTrack *track=static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
@@ -181,25 +212,31 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
         //for particle 1 and if it returns true ...
         if (fTrackCutsPart1->isSelected(fTrack)) {
           //.. we add it to our particle buffer
-          Particles.push_back(*fTrack);
+          Deuterons.push_back(*fTrack);
         }
         //same game, different name for the selection criteria 2!
         if (fTrackCutsPart2->isSelected(fTrack)) {
-          AntiParticles.push_back(*fTrack);
+          AntiDeuterons.push_back(*fTrack);
+        }
+	if (fTrackCutsPart3->isSelected(fTrack)) {
+          Protons.push_back(*fTrack);
+        }
+	if (fTrackCutsPart4->isSelected(fTrack)) {
+          AntiProtons.push_back(*fTrack);
         }
       }
       //This is where the magic of selecting particles ends, and we can turn our attention to
       //calculating the results. First we need to ensure to not have any Autocorrelations by
       //selecting a track twice. Now this is hypothetical, because we are selecting opposite
       //charged particles, but imagine you want to use p+K^+ (Check for this is not yet implemented)!
-      fPairCleaner->CleanTrackAndDecay(&Particles,&AntiParticles,0);
+      fPairCleaner->CleanTrackAndDecay(&Deuterons,&AntiDeuterons,0);
       //The cleaner tags particles as 'bad' for use, these we don't want to give to our particle
       //pairer, that's why we call store particles, which only takes the particles marked 'good' from
       //our buffer vector.
       //First we need to reset any particles in the array!
       fPairCleaner->ResetArray();
-      fPairCleaner->StoreParticle(Particles);
-      fPairCleaner->StoreParticle(AntiParticles);
+      fPairCleaner->StoreParticle(Deuterons);
+      fPairCleaner->StoreParticle(AntiDeuterons);
       //Now we can give our particlers to the particle collection where the magic happens.
       //The arguments one by one:
       //1. A vector of a vector of cleaned particles fresh from the laundromat.

@@ -493,16 +493,16 @@ bool AliFemtoDreamTrackCuts::SmallestNSig(AliFemtoDreamTrack *Track) {
   bool pass = true;
   //check before if TPC and TOF PID are available
   //This should just be for PID of high pT particles
-  AliPID::EParticleType type[5] = { AliPID::kElectron, AliPID::kMuon,
-      AliPID::kPion, AliPID::kKaon, AliPID::kProton };
-  float nSigmaComb[5];
+  AliPID::EParticleType type[6] = { AliPID::kElectron, AliPID::kMuon,
+      AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron };
+  float nSigmaComb[6];
   //Form the combination:
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     nSigmaComb[i] = TMath::Sqrt(
         pow((Track->GetnSigmaTPC(i)), 2.) + pow((Track->GetnSigmaTOF(i)), 2.));
   }
   int index = 0;
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     if (nSigmaComb[index] > nSigmaComb[i]) {
       index = i;
     }
