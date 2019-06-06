@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/06/06
+//  Last Modified Date: 2019/06/07
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -850,7 +850,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
             continue;
         if (pionZ > fXi1530PionZVertexCut_loose)
             continue;
-        if (pionPt > 0.15)
+        if (pionPt < 0.15)
             continue;
         // if (fabs(track->M() - pionmass) > 0.007) continue;
 
@@ -1106,8 +1106,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             filtermapN = nTrackXi->GetFilterMap();
             filtermapB = bTrackXi->GetFilterMap();
 
-            if ((pTrackXi->Pt() > 0.15) || (nTrackXi->Pt() > 0.15) ||
-                (bTrackXi->Pt() > 0.15))
+            if ((pTrackXi->Pt() < 0.15) || (nTrackXi->Pt() < 0.15) ||
+                (bTrackXi->Pt() < 0.15))
                 continue;
 
             // Disabled in AOD check - need to check further!
