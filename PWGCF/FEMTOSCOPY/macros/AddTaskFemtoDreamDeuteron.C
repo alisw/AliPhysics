@@ -44,7 +44,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts1->SetCutCharge(1);
   TrackCuts1->SetFilterBit(128);
   //You want to optimize this to only select regions with reasonable high purity
-  TrackCuts1->SetPtRange(0.4, 3.0);
+  TrackCuts1->SetPtRange(0.4, 4.0);
   //You want to ensure good tracking quality
   TrackCuts1->SetEtaRange(-0.8, 0.8);
   TrackCuts1->SetNClsTPC(80);
@@ -55,19 +55,19 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts1->SetCutSharedCls(true);
   TrackCuts1->SetCutTPCCrossedRows(true,70,0.83);
   //Here you define the PID
-  TrackCuts1->SetPID(AliPID::kDeuteron, 0.8);
+  TrackCuts1->SetPID(AliPID::kDeuteron, 1.4);
   //We are looking for pions rejecting them would be obstructive.
   TrackCuts1->SetRejLowPtPionsTOF(true);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
   TrackCuts1->SetCutSmallestSig(true);
 
-  //The same things for negative pions
+  //The same things for anti deuterons
   AliFemtoDreamTrackCuts *TrackCuts2=new AliFemtoDreamTrackCuts();
   TrackCuts2->SetIsMonteCarlo(isMC);
   TrackCuts2->SetCutCharge(-1);
   TrackCuts2->SetFilterBit(128);
-  TrackCuts2->SetPtRange(0.4, 3.0);
+  TrackCuts2->SetPtRange(0.4, 4.0);
   TrackCuts2->SetEtaRange(-0.8, 0.8);
   TrackCuts2->SetNClsTPC(80);
   TrackCuts2->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
@@ -75,9 +75,17 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts2->SetDCAVtxXY(0.1);
   TrackCuts2->SetCutSharedCls(true);
   TrackCuts2->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts2->SetPID(AliPID::kDeuteron, 0.8);
+  TrackCuts2->SetPID(AliPID::kDeuteron, 1.4);
   TrackCuts2->SetRejLowPtPionsTOF(true);
   TrackCuts2->SetCutSmallestSig(true);
+
+  //protons
+  AliFemtoDreamTrackCuts *TrackCuts3=AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  TrackCuts3->SetCutCharge(1);
+
+  //antiprotons
+  AliFemtoDreamTrackCuts *TrackCuts4=AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  TrackCuts4->SetCutCharge(-1);
 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
@@ -211,6 +219,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   task->SetEventCuts(evtCuts);
   task->SetTrackCutsPart1(TrackCuts1);
   task->SetTrackCutsPart2(TrackCuts2);
+  task->SetTrackCutsPart3(TrackCuts3);
+  task->SetTrackCutsPart4(TrackCuts4);
   task->SetCollectionConfig(config);
 
   mgr->AddTask(task);
