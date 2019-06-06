@@ -630,8 +630,9 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
     fDaughterProp(21) =  20;
   }
 
-  // TOF 
-  if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+
+  //  if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if((posTrack->GetStatus() & AliVTrack::kTOFout) && (posTrack->GetStatus() & AliVTrack::kTIME) ){
     Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
     Double_t timesPos[9];
     posTrack->GetIntegratedTimes(timesPos,9);
@@ -643,14 +644,15 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
     fDaughterProp(4) =  20000;
     fDaughterProp(5) =  -20;
   }
-  if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  //if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if((negTrack->GetStatus() & AliVTrack::kTOFout) && (negTrack->GetStatus() & AliVTrack::kTIME) ){
     Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
     Double_t timesNeg[9];
     negTrack->GetIntegratedTimes(timesNeg,9);
     Double_t TOFsignalNeg =	negTrack->GetTOFsignal();
     Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
     fDaughterProp(11) =  dTneg;
-    fDaughterProp(12) =  pidResonse->NumberOfSigmasTOF(negTrack, AliPID::kElectron);
+    fDaughterProp(12) =  pidResonse->NumberOfSigmasTOF(negTrack, AliPID::kElectron);  
   } else {
     fDaughterProp(11) =  20000;
     fDaughterProp(12) =  -20;
@@ -711,7 +713,8 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
   hPositronNSigmaPiondEdxP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kPion));
   
   //TOF signal
-  if((negTrack->GetStatus() & AliESDtrack::kTOFpid)==0 && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if((negTrack->GetStatus() & AliVTrack::kTOFout) && (negTrack->GetStatus() & AliVTrack::kTIME) ){
+    //if((negTrack->GetStatus() & AliESDtrack::kTOFpid)==0 && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
     Double_t timesNeg[9];
     negTrack->GetIntegratedTimes(timesNeg,9);
@@ -720,7 +723,8 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
     hElectronTOFP->Fill(negTrack->P() ,dTneg);
     hElectronNSigmaTOFP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTOF(negTrack, AliPID::kElectron));
   }
-  if((posTrack->GetStatus() & AliESDtrack::kTOFpid)==0 && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if((posTrack->GetStatus() & AliVTrack::kTOFout) && (posTrack->GetStatus() & AliVTrack::kTIME) ){
+    //if((posTrack->GetStatus() & AliESDtrack::kTOFpid)==0 && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
     Double_t timesPos[9];
     posTrack->GetIntegratedTimes(timesPos,9);
