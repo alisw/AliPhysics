@@ -204,7 +204,16 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
       fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
       fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
-      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0)
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -340,7 +349,16 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
       fInvariantMassDistributionInBinsOfCosThetaHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
       fInvariantMassDistributionBinsOfCosThetaAndPhiHelicityFrameH(0),
       fCosThetaAndPhiHelicityFrameInclusivePeopleBinningH(0),
-      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0)
+      fInvariantMassDistributionForSignalExtractionHelicityFrameH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -933,6 +951,25 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
       fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameH[iCosTheta][iPhi]);
     }
   }
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]);
+  }
+
   // for( Int_t iCosTheta = 0; iCosTheta < 10; iCosTheta++ ){
   //   std::vector<TH1F> auxiliaryVector;
   //   for( Int_t iPhi = 0; iPhi < 10; iPhi++ ){
@@ -1941,6 +1978,33 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           }
         }
   }
+
+  /* - NEW:
+     -
+   */
+  Bool_t controlFlag2 = 0;
+  Bool_t controlFlag3 = 0;
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++) {
+          if( controlFlag2 == 1) break;
+          if( (CosThetaHelicityFrameValue + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/40. ){
+              fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+              controlFlag2 = 1;
+          }
+        }
+        for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++) {
+          if( controlFlag3 == 1) break;
+          if( (PhiHelicityFrameValue + 3.14) < 6.28*((Double_t)iPhiBins + 1.)/50. ){
+              fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]->Fill(possibleJPsiCopyMag);
+              controlFlag3 = 1;
+          }
+        }
+
+  }
+
+
 
   if ( (possibleJPsiCopy.Mag() > 2.8) && (possibleJPsiCopy.Mag() < 3.3) && (possibleJPsiCopy.Pt() < 0.25) ) {
     fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
