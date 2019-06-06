@@ -252,6 +252,7 @@ if(FASTJET_FOUND)
         AliJetEmbeddingFromAODTask.cxx
 	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
+        AliLundPlaneHelper.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
