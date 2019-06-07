@@ -12,6 +12,8 @@
 #include "AliVEvent.h"
 #include "AliAnalysisCuts.h"
 #include "AliAnalysisUtils.h"
+#include "AliTimeRangeMasking.h"
+#include "AliTimeRangeCut.h"
 
 class AliESDtrackCuts;
 class TList;
@@ -64,6 +66,7 @@ class AliEventCuts : public TList {
       kMultiplicity,
       kINELgt0,
       kCorrelations,
+      kTimeRangeCut,
       kAllCuts
     };
 
@@ -97,6 +100,12 @@ class AliEventCuts : public TList {
     void   SetAcceptedTriggerClasses(TString classes);
 
     static bool GoodPrimaryAODVertex(AliVEvent *ev);
+
+    /// set up the usage of the time range cut
+    void UseTimeRangeCut() { fUseTimeRangeCut = true;}
+
+    ///
+    const AliTimeRangeCut& GetTimeRangeCut() const { return fTimeRangeCut; }
 
     /// While the general philosophy here is to avoid setters and getters
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
@@ -164,7 +173,7 @@ class AliEventCuts : public TList {
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
     std::vector<std::string> fTriggerClasses;     ///< Trigger classes
-
+  
     AliEventCutsContainer fContainer;       //!<! Local copy of the event cuts container (safe against user changes)
     const std::string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
@@ -190,6 +199,9 @@ class AliEventCuts : public TList {
     bool          fOverrideAutoTriggerMask;       ///<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
     bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
     bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
+    bool          fUseTimeRangeCut;               ///< If to use the time range cut
+
+    AliTimeRangeCut fTimeRangeCut;       ///< Time Range cut
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1D* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
@@ -211,7 +223,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts,9)
+    ClassDef(AliEventCuts, 10)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
