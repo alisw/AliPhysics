@@ -28,6 +28,7 @@
 #define __ALINANLYSISTASKJETENERGYSPECTRUM_H__
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include <vector>
 #include <TArrayD.h>
 
@@ -38,7 +39,7 @@ namespace PWGJE {
 
 namespace EMCALJetTasks {
 
-class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
   enum TriggerCluster_t {
     kTrgClusterANY,
@@ -86,9 +87,6 @@ protected:
   virtual bool IsTriggerSelected();
   virtual Bool_t CheckMCOutliers();
   virtual void RunChanged(Int_t newrun);
-  std::vector<TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
-  bool IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const;
-  std::string MatchTrigger(EMCAL_STRINGVIEW striggerstring);
 
 private:
   AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);

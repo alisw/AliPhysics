@@ -181,10 +181,12 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     AliDebugStream(1) << GetName() << ": No centrality selection applied" << std::endl;
   }
 
-  auto trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses().Data());
+
+  auto trgclusters = GetTriggerClustersANY();
+  if(!fIsMC && fRequestTriggerClusters) GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses().Data());
   Double_t weight = 1.;
   if(fUseDownscaleWeight) {
-    weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data()));
+    weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data(), fTriggerSelectionString.Data(), fUseMuonCalo));
   }
   fHistos->FillTH1("hEventCounterAbs", 1.);
   fHistos->FillTH1("hEventCounter", weight);
@@ -243,49 +245,6 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::RunChanged(Int_t newrun){
   }
 }
 
-std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const {
-  // decode trigger string in order to determine the trigger clusters
-  std::vector<TriggerCluster_t> result;
-  result.emplace_back(kTrgClusterANY);      // cluster ANY always included 
-  if(!fIsMC && fRequestTriggerClusters){
-    // Data - separate trigger clusters
-    std::vector<std::string> clusternames;
-    auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.data());
-    for(auto t : triggerinfos) {
-      if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
-    }
-    bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
-         isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
-         isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
-         isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
-    if(isCENT || isCENTNOTRD) {
-      if(isCENT) {
-        result.emplace_back(kTrgClusterCENT);
-        if(isCENTNOTRD) {
-          result.emplace_back(kTrgClusterCENTNOTRD);
-          result.emplace_back(kTrgClusterCENTBOTH);
-        } else result.emplace_back(kTrgClusterOnlyCENT);
-      } else {
-        result.emplace_back(kTrgClusterCENTNOTRD);
-        result.emplace_back(kTrgClusterOnlyCENTNOTRD);
-      }
-    }
-    if(isCALO || isCALOFAST) {
-      if(isCALO) {
-        result.emplace_back(kTrgClusterCALO);
-        if(isCALOFAST) {
-          result.emplace_back(kTrgClusterCALOFAST);
-          result.emplace_back(kTrgClusterCALOBOTH);
-        } else result.emplace_back(kTrgClusterOnlyCALO);
-      } else {
-        result.emplace_back(kTrgClusterCALOFAST);
-        result.emplace_back(kTrgClusterOnlyCALOFAST);
-      }
-    }
-  }
-  return result;
-}
-
 bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   if(!fIsMC){
     // Pure data - do EMCAL trigger selection from selection string
@@ -320,39 +279,6 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   }
   return true;
 }
-
-std::string AliAnalysisTaskEmcalJetEnergySpectrum::MatchTrigger(EMCAL_STRINGVIEW triggerstring){
-  auto triggerclasses = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.data());
-  std::string result;
-  for(const auto &t : triggerclasses) {
-    // Use CENT cluster for downscaling
-    if(t.BunchCrossing() != "B") continue;
-    if(fUseMuonCalo){
-      if(t.Triggercluster() != "CALO") continue;
-    } else {
-      if(t.Triggercluster() != "CENT") continue;
-    }
-    if(t.Triggerclass().find(fTriggerSelectionString.Data()) == std::string::npos) continue; 
-    result = t.ExpandClassName();
-    break;
-  }
-  return result;
-}
-
-bool AliAnalysisTaskEmcalJetEnergySpectrum::IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const {
-  const std::array<std::string, 8> kEMCALTriggers = {
-    "EJ1", "EJ2", "DJ1", "DJ2", "EG1", "EG2", "DG1", "DG2"
-  };
-  bool isEMCAL = false;
-  for(auto emcaltrg : kEMCALTriggers) {
-    if(triggerstring.find(emcaltrg) != std::string::npos) {
-      isEMCAL = true;
-      break;
-    }
-  }
-  return isEMCAL;
-}
-
 
 AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
