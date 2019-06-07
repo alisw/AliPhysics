@@ -79,6 +79,7 @@ set(HDRS
   "${HDRS}"
   AliEmcalIterableContainer.h
   AliEmcalContainerIndexMap.h
+  AliEmcalStringView.h
   )
 
 # Generate the dictionary
