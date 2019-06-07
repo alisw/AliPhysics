@@ -32,6 +32,8 @@ using std::vector;
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
 
+#include <AliLog.h>
+
 ClassImp(AliEventCutsContainer);
 ClassImp(AliEventCuts);
 
@@ -131,10 +133,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// If not specified the cuts are set according to the run period
   const int current_run = ev->GetRunNumber();
-  if (!fManualMode && current_run != fCurrentRun) {
-    ::Info("AliEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
-    fCurrentRun = current_run;
-    AutomaticSetup(ev);
+  if (current_run != fCurrentRun) {
+    if (!fManualMode) {
+      ::Info("AliEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
+      fCurrentRun = current_run;
+      AutomaticSetup(ev);
+    }
+    if (fUseTimeRangeCut) {
+      fTimeRangeCut.InitFromRunNumber(fCurrentRun);
+    }
   }
 
   if (fSavePlots && !this->Last()) {
@@ -288,10 +295,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// Time Range masking
   if (fUseTimeRangeCut) {
-    fTimeRangeCut.InitFromEvent(ev);
-    const Bool_t cutEvent = fTimeRangeCut.CutEvent(ev);
-
-    if ( cutEvent ) {
+    if ( fTimeRangeCut.CutEvent(ev) ) {
       fFlag |= BIT(kTimeRangeCut);
     }
   }
@@ -443,7 +447,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     TClonesArray* aodMC = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     fMC = (eventHandler || aodMC);
   }
-
+  
   if (fCurrentRun == -1 && fMC) {
     ::Info("AliEventCuts::AutomaticSetup","MCGEN train / Kinematics only production detected, disabling all the cuts.");
     fGreenLight = true;
