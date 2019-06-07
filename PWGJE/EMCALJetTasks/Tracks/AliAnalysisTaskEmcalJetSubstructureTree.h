@@ -28,6 +28,7 @@
 #define ALIANALYSISTASKEMCALJETSUBSTRUCTURETREE_H
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include <exception>
 #include <vector>
 #include <string>
@@ -158,7 +159,7 @@ struct AliJetTreeGlobalParameters {
  * @ingroup PWGJETASKS
  *
  */
-class AliAnalysisTaskEmcalJetSubstructureTree : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalJetSubstructureTree : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
   class ReclusterizerException : public std::exception {
   public:
@@ -244,9 +245,6 @@ protected:
   void FillLuminosity();
   
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
-
-  std::string MatchTrigger(const std::string &triggerclass) const;
-  bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 
   bool SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
 
