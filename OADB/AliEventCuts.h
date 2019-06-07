@@ -102,7 +102,7 @@ class AliEventCuts : public TList {
     static bool GoodPrimaryAODVertex(AliVEvent *ev);
 
     /// set up the usage of the time range cut
-    void UseTimeRangeCut();
+    void UseTimeRangeCut() { fUseTimeRangeCut = true;}
 
     ///
     const AliTimeRangeCut& GetTimeRangeCut() const { return fTimeRangeCut; }
