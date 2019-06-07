@@ -622,7 +622,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
 
    const Int_t ipidBin[4] = {11, 40, 72, 15};
-   Double_t binning_pt_lead[12] = {0.3, 0.5, 0.75, 1.0, 1.25, 1.5,
+   Double_t binning_pt_lead[12] = {0.2, 0.5, 0.75, 1.0, 1.25, 1.5,
                                    2.0, 2.5, 3.0,  3.5, 4.0,  8.0};
    Double_t binning_eta[41] = {-1.,   -0.95, -0.9,  -0.85, -0.8,  -0.75, -0.7,
                                -0.65, -0.6,  -0.55, -0.5,  -0.45, -0.4,  -0.35,
@@ -1678,7 +1678,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    selectedTracksLeading->SetOwner(kTRUE);
    TObjArray *selectedTracksAssociated = new TObjArray;
    selectedTracksAssociated->SetOwner(kTRUE);
-
    
    fvzero = fEvent->GetVZEROData();
    if(fAnaMode=="TPCV0A"||fAnaMode=="TPCV0C"||fAnaMode=="V0AV0C"){
@@ -1739,15 +1738,30 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	 Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
 	 fh2_FMD_acceptance->Fill(eta,tPrimaryVtxPosition[2],mostProbableN);
 	 //Float_t corrfactor=fhcorr[ivzbin-1]->GetBinContent(iEta,iPhi);
+
+	 if (mostProbableN > 0) {
+	   if(eta>0){
+	     nFMD_fwd_hits+=mostProbableN;
+	   }else{
+	     nFMD_bwd_hits+=mostProbableN;
+	   }
+	 }
+	 Bool_t fmakehole=kTRUE;
+	 if(fmakehole){
+	   if((eta>-2.9 && eta<-2.7) && (5*2*TMath::Pi()/20.<phi && 7*2*TMath::Pi()/20.>phi)) continue;
+	   if((eta>-2.7 && eta<-2.5) && (1*2*TMath::Pi()/20.<phi && 2*2*TMath::Pi()/20.>phi)) continue;
+	   if((eta>-2.1 && eta<-1.9) && (17*2*TMath::Pi()/20.<phi && 20*2*TMath::Pi()/20.>phi)) continue;
+	 }
+	 
 	 
 	 if (mostProbableN > 0) {
 	   if(eta>0){
 	     if(fAnaMode=="TPCFMD" || fAnaMode=="ITSFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));			
 	     if(fAnaMode=="FMDFMD") selectedTracksLeading->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));	
-	     nFMD_fwd_hits+=mostProbableN;
+
 	   }else if(eta<0){
-	     if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));  
-	     nFMD_bwd_hits+=mostProbableN;
+	     if(fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMDC" ||fAnaMode=="FMDFMD") selectedTracksAssociated->Add(new AliAssociatedTrackYS(-999,eta,phi,-999,-999,-999,-999,-999,mostProbableN));
+
 	   }
 	   
 	   Double_t cont[4]={eta,phi,lCentrality,fPrimaryZVtx};
@@ -3244,6 +3258,7 @@ Bool_t AliAnalysisTaskSEpPbCorrelationsYS::IsAcceptedTrack(const AliAODTrack *ao
   if (nCrossedRowsTPC/findable < 0.8) return kFALSE;
   */
   if (aodTrack->Pt() < fPtMin)    return kFALSE;
+
   if (aodTrack->Pt() > 3.) return kFALSE;
   if (TMath::Abs(aodTrack->Eta()) > fEtaMax)
     return kFALSE;
@@ -3428,7 +3443,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracks( Double_t central
       AliAssociatedTrackYS* trigger = (AliAssociatedTrackYS*) triggerArray->At(i);
       if(!trigger)continue;
       Float_t  triggerMultiplicity= trigger->Multiplicity();
-      //if(triggerMultiplicity<1) cout<<"triggerMultiplicity=="<<triggerMultiplicity<<endl;
       Float_t  triggerEta  = trigger->Eta();
       Float_t  triggerPhi  = trigger->Phi();
       binscontTrig[0]=centrality;
@@ -3547,7 +3561,6 @@ void AliAnalysisTaskSEpPbCorrelationsYS::FillCorrelationTracksMixing(Double_t ce
       if(fAnaMode=="TPCTPC"){
         Double_t binscontTrig[2];
         Double_t binscont[6];
-	
 	for (Int_t i = 0; i < triggerArray->GetEntriesFast(); i++) {
           AliAssociatedTrackYS *trig = (AliAssociatedTrackYS *)triggerArray->At(i);
           if (!trig)          continue;
