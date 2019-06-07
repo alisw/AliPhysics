@@ -141,6 +141,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
     Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
+    Tracks/AliAnalysisEmcalTriggerSelectionHelper.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
     Tracks/AliAnalysisTaskEmcalResponseOutliers.cxx
