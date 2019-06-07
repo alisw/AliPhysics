@@ -784,11 +784,7 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
    task->SetClusterContainerName(clusterarrayname);
    task->SetJetContainerName(jetarrayname);
    task->SetMCJetContainerName(jetarraynameMC);
-   if(system!=AliAnalysisTaskEA::kpp){
-     task->SetUseNewCentralityEstimation(kTRUE);  //CENTRALITY
-   }else{
-     task->SetUseNewCentralityEstimation(kFALSE);  //CENTRALITY
-   }
+   task->SetUseNewCentralityEstimation(kTRUE);  //CENTRALITY
 
    task->SetDebugLevel(0); //No debug messages 0
 
@@ -1074,16 +1070,16 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       // events with 0-0.1% centrality (which unfortunately rejects about 50% of the statistics),
       // and to ensure the same turn-on, one has to in addition use the SetUseAnchor to kTRUE.
  
-      fMultSelection->GetEstimator("V0A")->SetUseAnchor(kTRUE);
-      fMultSelection->GetEstimator("V0C")->SetUseAnchor(kTRUE);
-      fMultSelection->GetEstimator("V0M")->SetUseAnchor(kTRUE);
+      //fMultSelection->GetEstimator("V0A")->SetUseAnchor(kTRUE);
+      //fMultSelection->GetEstimator("V0C")->SetUseAnchor(kTRUE);
+      //fMultSelection->GetEstimator("V0M")->SetUseAnchor(kTRUE);
  
       fCentralityV0A = fMultSelection->GetMultiplicityPercentile("V0A");
       fCentralityV0C = fMultSelection->GetMultiplicityPercentile("V0C");
       fCentralityV0M = fMultSelection->GetMultiplicityPercentile("V0M");
-      fCentralityCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-      fCentralityZNA = fMultSelection->GetMultiplicityPercentile("ZNA");
-      fCentralityZNC = fMultSelection->GetMultiplicityPercentile("ZNC");
+      //fCentralityCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+      //fCentralityZNA = fMultSelection->GetMultiplicityPercentile("ZNA");
+      //fCentralityZNC = fMultSelection->GetMultiplicityPercentile("ZNC");
    }else{
       fCentralityV0A = -1; 
       fCentralityV0C = -1;
