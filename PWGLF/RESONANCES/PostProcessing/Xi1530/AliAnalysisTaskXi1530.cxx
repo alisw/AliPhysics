@@ -267,8 +267,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
                     {binSystematics, binType, binCent, binPt, binMass},
                     "s");  // Normal inv mass distribution of Xi1530
     CreateTHnSparse("hMult", "Multiplicity", 1, {binCent}, "s");
-    CreateTHnSparse("hV0MSignal", "V0MSignal", 3,
-                    {binType_V0M, binCent, AxisFix("V0MSig", 2000, 0, 2000)},
+    CreateTHnSparse("hV0MSignal", "V0MSignal", 4,
+                    {binType_V0M, binCent, AxisFix("V0MSig", 25000, 0, 25000),
+                     AxisFix("SPDNtrk", 4000, 0, 4000)},
                     "s");
 
     auto binTrklet =
@@ -721,9 +722,12 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         for (int i = 0; i < 64; i++) {
             intensity += lVV0->GetMultiplicity(i);
         }
-        FillTHnSparse("hV0MSignal", {kIsSelected, (double)fCent, intensity});
+        FillTHnSparse("hV0MSignal", {kIsSelected, (double)fCent,
+                                     (double)intensity, (double)ftrackmult});
         if (IsMultSelcted)
-            FillTHnSparse("hV0MSignal", {kIsMulti, (double)fCent, intensity});
+            FillTHnSparse("hV0MSignal",
+                          {kIsMulti, (double)fCent, (double)intensity,
+                           (double)ftrackmult});
     }
     // ----------------------------------------------------------------------
 
@@ -765,13 +769,15 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     if (IsSelectedTrig && IsINEL0Rec &&
         IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
                           // IsVtxInZCut) && IsMultSelcted
+
         // Draw Multiplicity QA plot in only selected event.
         if (fQA) {
             FillTHnSparse("hMult", {(double)fCent});
             fHistos->FillTH1("hMult_QA", (double)fCent);
 
             // V0M signal QA
-            FillTHnSparse("hV0MSignal", {kPS, (double)fCent, intensity});
+            FillTHnSparse("hV0MSignal", {kPS, (double)fCent, (double)intensity,
+                                         (double)ftrackmult});
         }
         if (IsMC) {  // After All Event cut!
             if (fEvt->IsA() == AliESDEvent::Class()) {
