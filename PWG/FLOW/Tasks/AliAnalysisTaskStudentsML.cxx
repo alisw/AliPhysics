@@ -570,32 +570,32 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  fControlHistogramsList->Add(fMultiHistoBeforeMultCut);
 
  // k) Book histogam for Vertex X before Cut
- fVertexXBefore = new TH1F("fVertexXBefore","fVertexXBefore",-20.,20.,1000.); 
+ fVertexXBefore = new TH1F("fVertexXBefore","fVertexXBefore",1000,-20.,20.); 
  fVertexXBefore->GetXaxis()->SetTitle("");
  fControlHistogramsList->Add(fVertexXBefore);
 
   // l) Book histogam for Vertex X after Cut
- fVertexXAfter = new TH1F("fVertexXAfter","fVertexXAfter",-20.,20.,1000.); 
+ fVertexXAfter = new TH1F("fVertexXAfter","fVertexXAfter",1000,-20.,20.); 
  fVertexXAfter->GetXaxis()->SetTitle("");
  fControlHistogramsList->Add(fVertexXAfter);
 
  // m) Book histogam for Vertex Y before Cut
- fVertexYBefore = new TH1F("fVertexYBefore","fVertexYBefore",-20.,20.,1000.); 
+ fVertexYBefore = new TH1F("fVertexYBefore","fVertexYBefore",1000,-20.,20.); 
  fVertexYBefore->GetXaxis()->SetTitle("");
  fControlHistogramsList->Add(fVertexYBefore);
 
  // n) Book histogam for Vertex Y after Cut
- fVertexYAfter = new TH1F("fVertexYAfter","fVertexYAfter",-20.,20.,1000.); 
+ fVertexYAfter = new TH1F("fVertexYAfter","fVertexYAfter",1000,-20.,20.); 
  fVertexYAfter->GetXaxis()->SetTitle("");
  fControlHistogramsList->Add(fVertexYAfter);
 
   // o) Book histogam for Vertex Y after Cut
- fVertexZBefore = new TH1F("fVertexZBefore","fVertexZBefore",-20.,20.,1000.); 
+ fVertexZBefore = new TH1F("fVertexZBefore","fVertexZBefore",1000,-20.,20.); 
  fVertexZBefore->GetXaxis()->SetTitle("");
  fControlHistogramsList->Add(fVertexZBefore);
 
   // p) Book histogam for Vertex Y after Cut
- fVertexZAfter = new TH1F("fVertexZAfter","fVertexZAfter",-20.,20.,1000.); 
+ fVertexZAfter = new TH1F("fVertexZAfter","fVertexZAfter",1000,-20.,20.); 
  fVertexZAfter->GetXaxis()->SetTitle("");
  fControlHistogramsList->Add(fVertexZAfter);
 
