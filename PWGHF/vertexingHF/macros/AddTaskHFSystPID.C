@@ -48,11 +48,10 @@ AliAnalysisTaskSEHFSystPID *AddTaskHFSystPID(int system = 0,
     task->SetReadMC(readMC);
     task->SetTriggerInfo(trigClass.Data(),trigMask);
     task->SetESDtrackCuts(esdTrackCuts);
-    task->SetNsigmaKaonForTagging(nsigmafortag);
+    task->SetNsigmaForKaonTagging(nsigmafortag);
     if(fracdownsampl<1.)task->EnableDownSampling(fracdownsampl,ptmaxdownsampl);
     task->SetCentralityEstimator(estim);
     task->SetCentralityLimits(centmin,centmax);
-    task->SetfFillTreeWithNsigmaPIDOnly();
     mgr->AddTask(task);
 
     TString outputfile = AliAnalysisManager::GetCommonFileName();
