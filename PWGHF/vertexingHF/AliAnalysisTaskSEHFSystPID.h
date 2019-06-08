@@ -31,17 +31,21 @@ class AliAnalysisTaskSEHFSystPID : public AliAnalysisTaskSE {
 public:
 
   enum tagflags {
-    kIsPionFromK0s       = BIT(0),
-    kIsPionFromL         = BIT(1),
-    kIsProtonFromL       = BIT(2),
-    kIsElectronFromGamma = BIT(3),
-    kIsKaonFromKinks     = BIT(4),
-    kIsKaonFromTOF       = BIT(5),
-    kIsKaonFromTPC       = BIT(6),
-    kPositiveTrack       = BIT(12),
-    kNegativeTrack       = BIT(13),
-    kHasNoTPC            = BIT(14),
-    kHasNoTOF            = BIT(15)
+    kIsPionFromK0s        = BIT(0),
+    kIsPionFromL          = BIT(1),
+    kIsProtonFromL        = BIT(2),
+    kIsElectronFromGamma  = BIT(3),
+    kIsKaonFromKinks      = BIT(4),
+    kIsKaonFromTOF        = BIT(5),
+    kIsKaonFromTPC        = BIT(6),
+    kIsDeuteronFromTPCTOF = BIT(7),
+    kIsTritonFromTPCTOF   = BIT(8),
+    kIsHe3FromTPCTOF      = BIT(9),
+    kPositiveTrack        = BIT(11),
+    kNegativeTrack        = BIT(12),
+    kHasNoITS             = BIT(13),
+    kHasNoTPC             = BIT(14),
+    kHasNoTOF             = BIT(15)
   };
 
   enum trackinfo {
@@ -73,10 +77,12 @@ public:
   void SetCentralityEstimator(int centest=kCentV0M)                           {fCentEstimator=centest;}
   void SetESDtrackCuts(AliESDtrackCuts * trackCuts)                           {fESDtrackCuts = trackCuts;}
   void SetTriggerInfo(TString trigClass, unsigned long long mask=0)           {fTriggerClass = trigClass; fTriggerMask = mask;}
-  void SetNsigmaKaonForTagging(float nsigmamax = 0.02)                        {fNsigmaMaxForTag=nsigmamax;}
+  void SetNsigmaForKaonTagging(float nsigmamax = 0.02)                        {fNsigmaMaxForKaonTag=nsigmamax;}
+  void SetNsigmaForNucleiTagging(float nsigmamax = 3)                         {fNsigmaMaxForNucleiTag=nsigmamax;}
   void SetKinksSelections(float qtmin=0.15, float Rmin=120, float Rmax=210)   {fQtMinKinks=qtmin; fRMinKinks=Rmin; fRMaxKinks=Rmax;}
   void SetfFillTreeWithPIDInfo(bool fillPID=true)                             {fFillTreeWithPIDInfo=fillPID;}
   void SetfFillTreeWithNsigmaPIDOnly(bool fillonlyNsigma=true)                {fFillTreeWithNsigmaPIDOnly=fillonlyNsigma;}
+  void SetfFillTreeWithRawPIDOnly(bool fillonlyRawPID=true)                   {fFillTreeWithRawPIDOnly=fillonlyRawPID;}
   void SetfFillTreeWithTrackQualityInfo(bool fillTrack=true)                  {fFillTreeWithTrackQualityInfo=fillTrack;}
   void EnableDownSampling(double fractokeep=0.1, double ptmax=1.5, int opt=0) {fEnabledDownSampling=true; fFracToKeepDownSampling=fractokeep; fPtMaxDownSampling=ptmax; fDownSamplingOpt=opt;}
   void SetAODMismatchProtection(int opt=1)                                    {fAODProtection=opt;}
@@ -94,6 +100,9 @@ public:
     fCutGeoNcrNclFractionNcl=fncl;
   }
 
+  void EnableParticleSpecies(bool pi=true, bool kao=true, bool pr=true, bool el=false, bool deu=false, bool tr=false, bool He3=false);
+  void EnableDetectors(bool ITS=false, bool TPC=true, bool TOF=true);
+  
 private:
 
   bool IsVertexAccepted();
@@ -110,10 +119,15 @@ private:
   void SetNsigmaTPCDataCorr(int run);
   int IsEventSelectedWithAliEventCuts();
   bool IsSelectedByGeometricalCut(AliAODTrack* track);
+  bool FillNsigma(int iDet, AliAODTrack* track);
 
-  enum hypos{kPion,kKaon,kProton};
-  static const int kNHypo = 3;
-  const TString hyponames[kNHypo] = {"Pion","Kaon","Proton"};
+  static const int kNMaxHypo = 7;
+  enum {kPion,kKaon,kProton,kElectron,kDeuteron,kTriton,kHe3};
+  const TString hyponames[kNMaxHypo] = {"Pion","Kaon","Proton","Electron","Deuteron","Triton","He3"};
+  
+  static const int kNMaxDet=3;
+  enum {kITS,kTPC,kTOF};
+  const TString detnames[kNMaxDet] = {"ITS","TPC","TOF"};
 
   const float kCSPEED = 2.99792457999999984e-02; // cm / ps
 
@@ -126,14 +140,18 @@ private:
   TH2F *fHistdEdxVsPMotherKink;                                                      //!<! histo for mother kink TPC dEdx vs. p
   TH2F *fHistOpeningAngleVsPMotherKink;                                              //!<! histo for opening angle vs. pT mother kink
   TH2F *fHistNTPCclsVsRadius;                                                        //!<! histo for nTPC clusters vs. R mother kink
-  TH2F *fHistNsigmaTPCvsPt[kNHypo];                                                  //!<! array of histos for nsigmaTPC vs pt (MC truth)
-  TH2F *fHistNsigmaTOFvsPt[kNHypo];                                                  //!<! array of histos for nsigmaTPC vs pt (MC truth)
+  TH2F *fHistNsigmaVsPt[kNMaxDet][kNMaxHypo];                                        //!<! array of histos for nsigma vs pt (MC truth)
   TTree* fPIDtree;                                                                   //!<! tree with PID info
 
-  short fPIDNsigma[6];                                                               /// Nsigma PID to fill the tree
+  bool fEnabledSpecies[kNMaxHypo];                                                   /// array of flags to enable particle species 
+  bool fEnabledDet[kNMaxDet];                                                        /// array of flags to enable detectors 
+
+  short fPIDNsigma[kNMaxDet][kNMaxHypo];                                             /// Nsigma PID to fill the tree
+  unsigned short fP;                                                                 /// Momentum at primary vertex to fill the tree
   unsigned short fPTPC;                                                              /// TPC momentum to fill the tree
   unsigned short fPTOF;                                                              /// TOF momentum to fill the tree
   unsigned short fdEdxTPC;                                                           /// TPC dEdX to fill the tree
+  unsigned short fdEdxITS;                                                           /// ITS dEdX to fill the tree
   unsigned short fToF;                                                               /// ToF signal to fill the tree
   unsigned short fPt;                                                                /// transverse momentum to fill the tree
   unsigned char fTPCNcls;                                                            /// number of clusters in TPC to fill the tree
@@ -142,12 +160,14 @@ private:
   unsigned short fStartTimeRes;                                                      /// start time resolution for TOF PID
   unsigned char fTPCNcrossed;                                                        /// number of TPC crossed rows
   unsigned char fTPCFindable;                                                        /// number of TPC findable clusters
+  unsigned char fITSclsMap;                                                          /// ITS cluster map
   unsigned char fTrackInfoMap;                                                       /// bit map with some track info (see enum above)
   short fEta;                                                                        /// pseudorapidity of the track
   unsigned short fPhi;                                                               /// azimuthal angle of the track
   short fPDGcode;                                                                    /// PDG code in case of MC to fill the tree
   unsigned short fTag;                                                               /// bit map for tag (see enum above)
-  float fNsigmaMaxForTag;                                                            /// max nSigma value to tag kaons
+  float fNsigmaMaxForKaonTag;                                                        /// max nSigma value to tag kaons
+  float fNsigmaMaxForNucleiTag;                                                      /// max nSigma value to tag nuclei
   float fQtMinKinks;                                                                 /// min qt for kinks
   float fRMinKinks;                                                                  /// min radius in XY for kinks
   float fRMaxKinks;                                                                  /// max radius in XY for kink
@@ -172,6 +192,7 @@ private:
 
   bool fFillTreeWithPIDInfo;                                                         /// flag to enable filling of the tree with PID variables
   bool fFillTreeWithNsigmaPIDOnly;                                                   /// flag to enable filling of the tree with only Nsigma variables for the PID
+  bool fFillTreeWithRawPIDOnly;                                                      /// flag to enable filling of the tree with only raw variables for the PID  
   bool fFillTreeWithTrackQualityInfo;                                                /// flag to enable filling of the tree with track selections
   bool fEnabledDownSampling;                                                         /// flag to enable/disable downsampling
   double fFracToKeepDownSampling;                                                    /// fraction to keep when downsampling activated
@@ -197,7 +218,7 @@ private:
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 11);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 12);
 };
 
 #endif

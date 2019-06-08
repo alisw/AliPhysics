@@ -38,6 +38,7 @@ fPIDtree(nullptr),
 fPTPC(0),
 fPTOF(0),
 fdEdxTPC(0),
+fdEdxITS(0),
 fToF(0),
 fPt(0),
 fTPCNcls(0),
@@ -46,12 +47,14 @@ fTrackLength(0),
 fStartTimeRes(0),
 fTPCNcrossed(0),
 fTPCFindable(0),
+fITSclsMap(0),
 fTrackInfoMap(0),
 fEta(-9999),
 fPhi(9999),
 fPDGcode(-1),
 fTag(0),
-fNsigmaMaxForTag(0.02),
+fNsigmaMaxForKaonTag(0.02),
+fNsigmaMaxForNucleiTag(3.),
 fQtMinKinks(0.15),
 fRMinKinks(120),
 fRMaxKinks(210),
@@ -73,6 +76,7 @@ fPIDresp(nullptr),
 fV0cuts(nullptr),
 fFillTreeWithPIDInfo(true),
 fFillTreeWithNsigmaPIDOnly(false),
+fFillTreeWithRawPIDOnly(false),
 fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
@@ -100,12 +104,26 @@ fApplyPbPbOutOfBunchPileupCuts()
   // default constructur
   //
 
-  for(int iVar=0; iVar<6; iVar++) fPIDNsigma[iVar] = -999.;
   for(int iHisto=0; iHisto<5; iHisto++) fHistArmenteroPlot[iHisto] = nullptr;
-  for(int iHisto=0; iHisto<kNHypo; iHisto++) {
-    fHistNsigmaTPCvsPt[iHisto] = nullptr;
-    fHistNsigmaTOFvsPt[iHisto] = nullptr;
+  
+  for(int iDet=0; iDet<kNMaxDet; iDet++) {
+    for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+      fPIDNsigma[iDet][iHypo]      = numeric_limits<short>::min();
+      fHistNsigmaVsPt[iDet][iHypo] = nullptr;
+    }
   }
+
+  fEnabledSpecies[kPion]     = true;
+  fEnabledSpecies[kKaon]     = true;
+  fEnabledSpecies[kProton]   = true;
+  fEnabledSpecies[kElectron] = false;
+  fEnabledSpecies[kDeuteron] = false;
+  fEnabledSpecies[kTriton]   = false;
+  fEnabledSpecies[kHe3]      = false;
+  
+  fEnabledDet[kITS]          = false;
+  fEnabledDet[kTPC]          = true;
+  fEnabledDet[kTOF]          = true;
 
   for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
@@ -131,6 +149,7 @@ fPIDtree(nullptr),
 fPTPC(0),
 fPTOF(0),
 fdEdxTPC(0),
+fdEdxITS(0),
 fToF(0),
 fPt(0),
 fTPCNcls(0),
@@ -139,12 +158,14 @@ fTrackLength(0),
 fStartTimeRes(0),
 fTPCNcrossed(0),
 fTPCFindable(0),
+fITSclsMap(0),
 fTrackInfoMap(0),
 fEta(-9999),
 fPhi(9999),
 fPDGcode(-1),
 fTag(0),
-fNsigmaMaxForTag(0.02),
+fNsigmaMaxForKaonTag(0.02),
+fNsigmaMaxForNucleiTag(3.),
 fQtMinKinks(0.15),
 fRMinKinks(120),
 fRMaxKinks(210),
@@ -166,6 +187,7 @@ fPIDresp(nullptr),
 fV0cuts(nullptr),
 fFillTreeWithPIDInfo(true),
 fFillTreeWithNsigmaPIDOnly(false),
+fFillTreeWithRawPIDOnly(false),
 fFillTreeWithTrackQualityInfo(false),
 fEnabledDownSampling(false),
 fFracToKeepDownSampling(0.1),
@@ -193,12 +215,26 @@ fApplyPbPbOutOfBunchPileupCuts()
   // standard constructur
   //
 
-  for(int iVar=0; iVar<6; iVar++) fPIDNsigma[iVar] = -999.;
   for(int iHisto=0; iHisto<5; iHisto++) fHistArmenteroPlot[iHisto] = nullptr;
-  for(int iHisto=0; iHisto<kNHypo; iHisto++) {
-    fHistNsigmaTPCvsPt[iHisto] = nullptr;
-    fHistNsigmaTOFvsPt[iHisto] = nullptr;
+  
+  for(int iDet=0; iDet<kNMaxDet; iDet++) {
+    for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+      fPIDNsigma[iDet][iHypo]      = numeric_limits<short>::min();
+      fHistNsigmaVsPt[iDet][iHypo] = nullptr;
+    }
   }
+
+  fEnabledSpecies[kPion]     = true;
+  fEnabledSpecies[kKaon]     = true;
+  fEnabledSpecies[kProton]   = true;
+  fEnabledSpecies[kElectron] = false;
+  fEnabledSpecies[kDeuteron] = false;
+  fEnabledSpecies[kTriton]   = false;
+  fEnabledSpecies[kHe3]      = false;
+  
+  fEnabledDet[kITS]          = false;
+  fEnabledDet[kTPC]          = true;
+  fEnabledDet[kTOF]          = true;
 
   for(int iP=0; iP<=AliAODPidHF::kMaxPBins; iP++) {
     fPlimitsNsigmaTPCDataCorr[iP] = 0.;
@@ -292,31 +328,55 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fOutputList->Add(fHistNTPCclsVsRadius);
 
   if(fIsMC) {
-    for(int iHisto=0; iHisto<kNHypo; iHisto++) {
-      fHistNsigmaTPCvsPt[iHisto] = new TH2F(Form("fHistNsigmaTPCvsPt_%s",hyponames[iHisto].Data()),Form(";#it{p}_{T} (GeV/#it{c});N_{#sigma}^{TPC}(%s)",hyponames[iHisto].Data()),500,0,50,1000,-50,50);
-      fHistNsigmaTOFvsPt[iHisto] = new TH2F(Form("fHistNsigmaTOFvsPt_%s",hyponames[iHisto].Data()),Form(";#it{p}_{T} (GeV/#it{c});N_{#sigma}^{TOF}(%s)",hyponames[iHisto].Data()),500,0,50,1000,-50,50);
-      fOutputList->Add(fHistNsigmaTPCvsPt[iHisto]);
-      fOutputList->Add(fHistNsigmaTOFvsPt[iHisto]);
+    for(int iDet=0; iDet<kNMaxDet; iDet++) {
+      if(!fEnabledDet[iDet]) 
+        continue;
+      for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+        if(!fEnabledSpecies[iHypo]) 
+          continue;
+        fHistNsigmaVsPt[iDet][iHypo] = new TH2F(Form("fHistNsigma%svsPt_%s",detnames[iDet].Data(),hyponames[iHypo].Data()),Form(";#it{p}_{T} (GeV/#it{c});N_{#sigma}^{%s}(%s)",detnames[iDet].Data(),hyponames[iHypo].Data()),500,0,50,1000,-50,50);
+        fOutputList->Add(fHistNsigmaVsPt[iDet][iHypo]);
+      }
     }
   }
 
   fPIDtree = new TTree("fPIDtree","fPIDtree");
-  TString PIDbranchnames[6] = {"n_sigma_TPC_pi","n_sigma_TPC_K","n_sigma_TPC_p","n_sigma_TOF_pi","n_sigma_TOF_K","n_sigma_TOF_p"};
+  TString partnameshort[7] = {"pi","K","p","e","d","t","He3"};
   fPIDtree->Branch("pT",&fPt,"pT/s");
   fPIDtree->Branch("eta",&fEta,"eta/S");
   fPIDtree->Branch("phi",&fPhi,"phi/s");
   if(fFillTreeWithPIDInfo) {
-    fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
-    fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
-    for(int iVar=0; iVar<6; iVar++) {
-      fPIDtree->Branch(PIDbranchnames[iVar].Data(),&fPIDNsigma[iVar],Form("%s/S",PIDbranchnames[iVar].Data()));
+    if(fEnabledDet[kITS])
+      fPIDtree->Branch("p",&fP,"p/s");
+    if(fEnabledDet[kTPC])
+      fPIDtree->Branch("pTPC",&fPTPC,"pTPC/s");
+    if(fEnabledDet[kTOF])
+      fPIDtree->Branch("pTOF",&fPTOF,"pTOF/s");
+    if(!fFillTreeWithRawPIDOnly) {
+      for(int iDet=0; iDet<kNMaxDet; iDet++) {
+        if(!fEnabledDet[iDet]) 
+          continue;
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+          if(!fEnabledSpecies[iHypo]) 
+            continue;
+          fPIDtree->Branch(Form("n_sigma_%s_%s",detnames[iDet].Data(),partnameshort[iHypo].Data()),&fPIDNsigma[iDet][iHypo],Form("n_sigma_%s_%s/S",detnames[iDet].Data(),partnameshort[iHypo].Data()));
+        }
+      }
     }
     if(!fFillTreeWithNsigmaPIDOnly) {
-      fPIDtree->Branch("dEdx",&fdEdxTPC,"dEdx/s");
-      fPIDtree->Branch("ToF",&fToF,"ToF/s");
-      fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
-      fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
-      fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
+      if(fEnabledDet[kITS]) {
+        fPIDtree->Branch("dEdxITS",&fdEdxITS,"dEdxITS/s");
+        fPIDtree->Branch("NclusterPIDTPC",&fTPCNclsPID,"NclusterPIDTPC/b");
+      }
+      if(fEnabledDet[kTPC]) {
+        fPIDtree->Branch("dEdxTPC",&fdEdxTPC,"dEdxTPC/s");
+        fPIDtree->Branch("ITSclsMap",&fITSclsMap,"ITSclsMap/b");
+      }
+      if(fEnabledDet[kTOF]) {
+        fPIDtree->Branch("ToF",&fToF,"ToF/s");
+        fPIDtree->Branch("TrackLength",&fTrackLength,"TrackLength/s");
+        fPIDtree->Branch("StartTimeRes",&fStartTimeRes,"StartTimeRes/s");
+      }
     }
   } 
   if(fFillTreeWithTrackQualityInfo) {
@@ -459,6 +519,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     }
 
     fPt = ConvertFloatToUnsignedShort(track->Pt()*1000);
+    fP = ConvertFloatToUnsignedShort(track->P()*1000);
     fPTPC = ConvertFloatToUnsignedShort(track->GetTPCmomentum()*1000);
     fPTOF = ConvertFloatToUnsignedShort(GetTOFmomentum(track)*1000);
     fEta = ConvertFloatToShort(track->Eta()*1000);
@@ -474,27 +535,6 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
       fTag &= ~kPositiveTrack;
     }
 
-    if(!fFillTreeWithNsigmaPIDOnly) {
-      //TPC variables
-      fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*100);
-      fTPCNclsPID = static_cast<unsigned char>(track->GetTPCsignalN());
-      
-      //TOF variables
-      fTrackLength = ConvertFloatToUnsignedShort(track->GetIntegratedLength()*10);
-      fStartTimeRes = ConvertFloatToUnsignedShort(fPIDresp->GetTOFResponse().GetStartTimeRes(track->P())*100);
-
-      if (!(track->GetStatus() & AliESDtrack::kTOFout) || !(track->GetStatus() & AliESDtrack::kTIME)) {
-        fToF = 0;
-      }
-      else {
-        if (fTrackLength < 3500) fToF = 0;
-        else {
-          float tof = track->GetTOFsignal();
-          float time0 = fPIDresp->GetTOFResponse().GetStartTime(track->P());
-          fToF = ConvertFloatToUnsignedShort((tof-time0)/10);
-        }
-      }
-    }
     if(fFillTreeWithTrackQualityInfo) {
       fTPCNcls = static_cast<unsigned char>(track->GetTPCNcls());
       fTPCNcrossed = static_cast<unsigned char>(track->GetTPCNCrossedRows());
@@ -530,47 +570,67 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
       fTag &= ~kPositiveTrack;
     }
 
-    bool isTPCok = false;
-    bool isTOFok = false;
-    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTPC,track) == AliPIDResponse::kDetPidOk) isTPCok = true;
-    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track) == AliPIDResponse::kDetPidOk) isTOFok = true;
-
-    if(isTPCok) {
+    bool isDetOk[kNMaxDet] = {false,false,false};
+    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kITS,track) == AliPIDResponse::kDetPidOk) {
+      fTag &= ~kHasNoITS;
+      isDetOk[kITS] = true;
+    }
+    else {
+      fTag |= kHasNoITS;
+    }
+    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTPC,track) == AliPIDResponse::kDetPidOk) {
       fTag &= ~kHasNoTPC;
-      float nSigmaTPCPion = fPIDresp->NumberOfSigmasTPC(track,AliPID::kPion);
-      float nSigmaTPCKaon = fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon);
-      float nSigmaTPCProton = fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton);
-      if(fEnableNsigmaTPCDataCorr) {
-        float meanPion = 0., meanKaon = 0., meanProton = 0., sigmaPion = 1., sigmaKaon = 1., sigmaProton = 1.;
-        GetNsigmaTPCMeanSigmaData(meanPion, sigmaPion, AliPID::kPion, track->GetTPCmomentum(), track->Eta());
-        GetNsigmaTPCMeanSigmaData(meanKaon, sigmaKaon, AliPID::kKaon, track->GetTPCmomentum(), track->Eta());
-        GetNsigmaTPCMeanSigmaData(meanProton, sigmaProton, AliPID::kProton, track->GetTPCmomentum(), track->Eta());
-
-        if(nSigmaTPCPion>-990.)
-          nSigmaTPCPion = (nSigmaTPCPion-meanPion) / sigmaPion;
-        if(nSigmaTPCKaon>-990.)
-          nSigmaTPCKaon = (nSigmaTPCKaon-meanKaon) / sigmaKaon;
-        if(nSigmaTPCProton>-990.)
-          nSigmaTPCProton = (nSigmaTPCProton-meanProton) / sigmaProton;
-      }
-
-      fPIDNsigma[0] = ConvertFloatToShort(nSigmaTPCPion*100);
-      fPIDNsigma[1] = ConvertFloatToShort(nSigmaTPCKaon*100);
-      fPIDNsigma[2] = ConvertFloatToShort(nSigmaTPCProton*100);
+      isDetOk[kTPC] = true;
     }
-    else for(int iVar=0; iVar<3; iVar++) {
-      fTag |= kHasNoTPC;
-      fPIDNsigma[iVar] = numeric_limits<short>::min();
-    }
-    if(isTOFok) {
+    else {
       fTag &= ~kHasNoTOF;
-      fPIDNsigma[3] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kPion)*100);
-      fPIDNsigma[4] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon)*100);
-      fPIDNsigma[5] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,AliPID::kProton)*100);
     }
-    else for(int iVar=3; iVar<6; iVar++) {
+    if (fPIDresp->CheckPIDStatus(AliPIDResponse::kTOF,track) == AliPIDResponse::kDetPidOk) {
+      fTag &= ~kHasNoTOF;
+      isDetOk[kTOF] = true;
+    }
+    else {
       fTag |= kHasNoTOF;
-      fPIDNsigma[iVar] = numeric_limits<short>::min();
+    }
+
+    if(fFillTreeWithPIDInfo) {
+      if(!fFillTreeWithNsigmaPIDOnly) { //raw variables
+        //ITS variables
+        fdEdxITS = ConvertFloatToUnsignedShort(track->GetITSsignal()*100);
+        fITSclsMap = track->GetITSClusterMap();
+
+        //TPC variables
+        fdEdxTPC = ConvertFloatToUnsignedShort(track->GetTPCsignal()*100);
+        fTPCNclsPID = static_cast<unsigned char>(track->GetTPCsignalN());
+        
+        //TOF variables
+        fTrackLength = ConvertFloatToUnsignedShort(track->GetIntegratedLength()*10);
+        fStartTimeRes = ConvertFloatToUnsignedShort(fPIDresp->GetTOFResponse().GetStartTimeRes(track->P())*100);
+
+        if (!(track->GetStatus() & AliESDtrack::kTOFout) || !(track->GetStatus() & AliESDtrack::kTIME)) {
+          fToF = 0;
+        }
+        else {
+          if (fTrackLength < 3500) fToF = 0;
+          else {
+            float tof = track->GetTOFsignal();
+            float time0 = fPIDresp->GetTOFResponse().GetStartTime(track->P());
+            fToF = ConvertFloatToUnsignedShort((tof-time0)/10);
+          }
+        }
+      }
+      if(!fFillTreeWithRawPIDOnly) { // nsigma
+        for(int iDet=0; iDet<kNMaxDet; iDet++) {
+          if(isDetOk[iDet]) {
+            FillNsigma(iDet, track);
+          }
+          else {
+            for(int iHypo=0; iHypo<kNMaxHypo; iHypo++) {
+              fPIDNsigma[iDet][iHypo] = numeric_limits<short>::min();
+            }
+          }
+        }
+      }
     }
 
     short trackid = track->GetID();
@@ -616,33 +676,64 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
     else 
       fTag &= ~kIsKaonFromKinks;
 
-    if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForTag && isTOFok) {
+    if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForKaonTag && isDetOk[kTOF]) {
       filltree = true;
       fTag |= kIsKaonFromTOF;
     }
     else 
       fTag &= ~kIsKaonFromTOF;
     
-    if(TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon))<fNsigmaMaxForTag && isTPCok) {
+    if(TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon))<fNsigmaMaxForKaonTag && isDetOk[kTPC]) {
       filltree = true;
       fTag |= kIsKaonFromTPC;
     }
     else 
       fTag &= ~kIsKaonFromTPC;
-    
+
+    if(isDetOk[kTPC] && isDetOk[kTOF] && TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kDeuteron))<fNsigmaMaxForNucleiTag && TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kDeuteron))<fNsigmaMaxForNucleiTag) {
+      filltree = true;
+      fTag |= kIsDeuteronFromTPCTOF;
+    }
+    else 
+      fTag &= ~kIsDeuteronFromTPCTOF;
+
+    if(isDetOk[kTPC] && isDetOk[kTOF] && TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kTriton))<fNsigmaMaxForNucleiTag && TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kTriton))<fNsigmaMaxForNucleiTag) {
+      filltree = true;
+      fTag |= kIsTritonFromTPCTOF;
+    }
+    else 
+      fTag &= ~kIsTritonFromTPCTOF;
+
+    if(isDetOk[kTPC] && isDetOk[kTOF] && TMath::Abs(fPIDresp->NumberOfSigmasTPC(track,AliPID::kHe3))<fNsigmaMaxForNucleiTag && TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kHe3))<fNsigmaMaxForNucleiTag) {
+      filltree = true;
+      fTag |= kIsHe3FromTPCTOF;
+    }
+    else 
+      fTag &= ~kIsHe3FromTPCTOF;
+
     if(fIsMC) {
       fPDGcode = GetPDGcodeFromMC(track,arrayMC);
-      if(fPDGcode==211) {
-        fHistNsigmaTPCvsPt[kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTPC(track,AliPID::kPion));
-        fHistNsigmaTOFvsPt[kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTOF(track,AliPID::kPion));
-      }
-      else if(fPDGcode==321) {
-        fHistNsigmaTPCvsPt[kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTPC(track,AliPID::kKaon));
-        fHistNsigmaTOFvsPt[kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon));
-      }
-      else if(fPDGcode==2212) {
-        fHistNsigmaTPCvsPt[kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTPC(track,AliPID::kProton));
-        fHistNsigmaTOFvsPt[kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmasTOF(track,AliPID::kProton));
+      AliPIDResponse::EDetector det[3] = {AliPIDResponse::kITS,AliPIDResponse::kTPC,AliPIDResponse::kTOF}; 
+      for(int iDet=0; iDet<kNMaxDet; iDet++) {
+        if(!fEnabledDet[iDet])
+          continue;
+
+        switch(fPDGcode) {
+          case 211:
+            fHistNsigmaVsPt[iDet][kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kPion));
+          case 321:
+            fHistNsigmaVsPt[iDet][kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kKaon));
+          case 2212:
+            fHistNsigmaVsPt[iDet][kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kProton));
+          case 11:
+            fHistNsigmaVsPt[iDet][kElectron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kElectron));
+          case 1000010020:
+            fHistNsigmaVsPt[iDet][kDeuteron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kDeuteron));
+          case 1000010030:
+            fHistNsigmaVsPt[iDet][kTriton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kTriton));
+          case 1000020030:
+            fHistNsigmaVsPt[iDet][kHe3]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kHe3));
+        }
       }
     }
     else fPDGcode = 0;
@@ -667,6 +758,34 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
 
   // Post output data
   PostData(1, fOutputList);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSEHFSystPID::EnableParticleSpecies(bool pi, bool kao, bool pr, bool el, bool deu, bool tr, bool He3) 
+{
+  // function to enable/disable different particle species
+  for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+    fEnabledSpecies[iHypo] = false;
+
+  if(pi) fEnabledSpecies[kPion]      = true;
+  if(kao) fEnabledSpecies[kKaon]     = true;
+  if(pr) fEnabledSpecies[kProton]    = true;
+  if(el) fEnabledSpecies[kElectron]  = true;
+  if(deu) fEnabledSpecies[kDeuteron] = true;
+  if(tr) fEnabledSpecies[kTriton]    = true;
+  if(He3) fEnabledSpecies[kHe3]      = true;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSEHFSystPID::EnableDetectors(bool ITS, bool TPC, bool TOF) 
+{
+  // function to enable/disable different PID detectors
+  for(int iDet=0; iDet<kNMaxDet; iDet++)
+    fEnabledDet[iDet] = false;
+
+  if(ITS) fEnabledDet[kITS]  = true;
+  if(TPC) fEnabledDet[kTPC]  = true;
+  if(TOF) fEnabledDet[kTOF]  = true;
 }
 
 //________________________________________________________________________
@@ -1007,5 +1126,54 @@ bool AliAnalysisTaskSEHFSystPID::IsSelectedByGeometricalCut(AliAODTrack* track) 
   if (esdTrack.GetTPCncls()<fCutGeoNcrNclFractionNcl*cutGeoNcrNclLength)
     return false;
 
+  return true;
+}
+
+//________________________________________________________________
+bool AliAnalysisTaskSEHFSystPID::FillNsigma(int iDet, AliAODTrack* track) {
+  
+  if(iDet>=kNMaxDet)
+    return false;
+          
+    AliPID::EParticleType hypopidresp[7] = {AliPID::kPion,AliPID::kKaon,AliPID::kProton,AliPID::kElectron,AliPID::kDeuteron,AliPID::kTriton,AliPID::kHe3};
+
+    switch(iDet) {
+      case kITS:
+      {
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          fPIDNsigma[iDet][iHypo] = ConvertFloatToShort(fPIDresp->NumberOfSigmasITS(track,hypopidresp[iHypo])*100);
+        break;
+      }
+      case kTPC:
+      {
+        float nSigmaTPC[kNMaxHypo];
+    
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          nSigmaTPC[iHypo] = fPIDresp->NumberOfSigmasTPC(track,hypopidresp[iHypo]);
+
+        if(fEnableNsigmaTPCDataCorr) { //only pion, kaon and protons
+          float mean[kProton+1], sigma[kProton+1];
+          for(int iHypo=0; iHypo<=kProton; iHypo++) {
+            GetNsigmaTPCMeanSigmaData(mean[iHypo], sigma[iHypo], hypopidresp[iHypo], track->GetTPCmomentum(), track->Eta());
+
+            if(nSigmaTPC[iHypo]>-990.)
+              nSigmaTPC[iHypo] = (nSigmaTPC[iHypo]-mean[iHypo]) / sigma[iHypo];
+          }
+        }
+
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          fPIDNsigma[iDet][iHypo] = ConvertFloatToShort(nSigmaTPC[iHypo]*100);
+  
+        break;
+      }
+      case kTOF:
+      {
+        for(int iHypo=0; iHypo<kNMaxHypo; iHypo++)
+          fPIDNsigma[iDet][iHypo] = ConvertFloatToShort(fPIDresp->NumberOfSigmasTOF(track,hypopidresp[iHypo])*100);
+
+        break;
+      }
+    }    
+    
   return true;
 }
