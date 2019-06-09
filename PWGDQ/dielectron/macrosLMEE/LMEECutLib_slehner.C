@@ -17,7 +17,7 @@ public:
   }
   static AliDielectronPID* GetPIDCutsAna();
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0, Int_t MVACut=0, Bool_t useAODFilterCuts, TString TMVAweight="NONE");
-  AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax);
+  AliDielectronEventCuts* GetEventCuts(Double_t centMin, Double_t centMax, Bool_t usePileUpRej=kFALSE);
   void SetEtaCorrection( Int_t det, Bool_t isMC, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, int sel);
   static AliDielectronPID* pidFilterCuts;
   static TBits *fUsedVars;               // used variables
@@ -135,7 +135,7 @@ TH3D LMEECutLib::SetEtaCorrection(Int_t det, Bool_t isMC, Int_t corrXdim, Int_t 
 }  
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t centMax) {
+AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t centMax, Bool_t usePileUpRej) {
   ::Info("LMEE_CutLib_slehner","setting event cuts");
   
   AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts","evcuts");
@@ -145,6 +145,21 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t cent
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
   if(centMax!=0) eventCuts->SetCentralityRange(centMin,centMax,kTRUE);    //isRun2 = true 
+  
+  if(usePileUpRej){
+    Double_t pileUpCutsTPCClustersMin = 2.0e+06;
+    Double_t pileUpCutsTPCClustersMax = 3.1e+06;        
+
+    printf("Adding TPC-Cluster based Pile-up rejection! \n");
+    TF1* fFitMin = new TF1("fFit","pol6",0,90);
+    fFitMin->SetParameters(pileUpCutsTPCClustersMin,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+    TF1* fFitMax = new TF1("fFit","pol6",0,90);
+    fFitMax->SetParameters(pileUpCutsTPCClustersMax,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+        
+    eventCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+    eventCuts->SetMaxCorrCutFunction(fFitMax, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+}   
+  
   return eventCuts;
 }
 
@@ -310,6 +325,100 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
         pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
         pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
         break;   
+        
+      //same as above but with TOFreq
+       case 21:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0. ,100., kTRUE);
+        break;  
+        
+       case 22:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1. , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0. ,100., kTRUE);
+        break;  
+        
+       case 23:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3., 1. , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0. ,100., kTRUE);
+        break;  
+        
+       case 24:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3., 1. , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        break;   
+        
+       case 25:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3., 1.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        break;  
+        
+       case 26:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        break;  
+        
+       case 27:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0. ,100., kTRUE);
+        break;   
+        
+       case 28:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0. ,100., kTRUE);
+        break;   
+        
+       case 29:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1. , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3. , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.5 , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        break;   
+        
+       case 30:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1. , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3. , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        break;   
+          
+      case -1:
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.0 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+        break;  
+        
+      // loose and tight pid cuts
+       case -98:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 1.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2., 3.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+        break;   
+        
+      case -99:
+        pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 0.5 , 0. ,100., kFALSE);       
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1., 2.5 , 0. ,100., kFALSE);
+        pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -2.0 , 2.5 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+        pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 3.5 , 0. ,100., kTRUE);
+        break;        
+        
   }
   
   return(pidFilterCuts);       //Add nanoAODfilter PID cuts
