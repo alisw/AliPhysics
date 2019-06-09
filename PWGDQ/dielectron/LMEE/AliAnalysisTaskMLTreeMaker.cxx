@@ -486,8 +486,8 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   
   FillZDCEventPlane(ZDCev);
   
-  ZDCepA=ZDCev[0];
-  ZDCepC=ZDCev[1];
+  ZDCepC=ZDCev[0];
+  ZDCepA=ZDCev[1];
   
   AliMultSelection *MultSelection = 0x0; 
   MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
