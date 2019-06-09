@@ -9,6 +9,7 @@ Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 Bool_t kRot = kFALSE;
 Bool_t kMix = kTRUE;
 Bool_t randomizeDau = kTRUE;
+Bool_t bUsePileUpCutsTPCClusters=kTRUE;
 
 // available cut defintions
 const Int_t nMax = 3; 
@@ -29,7 +30,7 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
     trackCut=glcut;
     if(glcut==0) trackCut=-1;
     if(glcut==0) PIDCut=0;
-
+    
     for(MVACut = 0; MVACut<10;MVACut++){
       
       TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
@@ -61,8 +62,29 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
       diel_low->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
       InitHistograms(diel_low,0,hasMC);
 
+      if(bUsePileUpCutsTPCClusters){
+        Double_t pileUpCutsTPCClustersMin = 2.0e+06;
+        Double_t pileUpCutsTPCClustersMax = 3.1e+06;        
+        
+        printf("Adding TPC-Cluster based Pile-up rejection! \n");
+        TF1* fFitMin = new TF1("fFit","pol6",0,90);
+        fFitMin->SetParameters(pileUpCutsTPCClustersMin,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+        TF1* fFitMax = new TF1("fFit","pol6",0,90);
+        fFitMax->SetParameters(pileUpCutsTPCClustersMax,-95678.946999,2152.010478,-50.119000,0.780528,-0.006150,0.000019);
+               
+        AliDielectronEventCuts *pileUpCuts = new AliDielectronEventCuts("pileUpCuts","pileUpCuts");
+        pileUpCuts->SetMinCorrCutFunction(fFitMin, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+        pileUpCuts->SetMaxCorrCutFunction(fFitMax, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kNTPCclsEvent);
+
+        pileUpCuts->Print();
+        diel_low->GetEventFilter().AddCuts(pileUpCuts);
+    }      
+      
       std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
       diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
+      
+
+      
       task->AddDielectron(diel_low);
       printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
       }

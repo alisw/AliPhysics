@@ -92,6 +92,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   runn(0),      
   n(0),
   cent(0),
+  ZDCepA(0),
+  ZDCepC(0),
   fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
@@ -222,6 +224,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
   runn(0),      
   n(0),
   cent(0),
+  ZDCepA(0),        
+  ZDCepC(0),        
   fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
@@ -381,6 +385,8 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   fTree->Branch("centrality", &cent);
   fTree->Branch("#tracks", &n);
+  fTree->Branch("ZDCepA", &ZDCepA);
+  fTree->Branch("ZDCepC", &ZDCepC);
   fTree->Branch("pt", &pt);
   fTree->Branch("eta", &eta);
   fTree->Branch("phi", &phi);
@@ -476,6 +482,13 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     return;
   }
 
+  Double_t ZDCev[2];
+  
+  FillZDCEventPlane(ZDCev);
+  
+  ZDCepC=ZDCev[0];
+  ZDCepA=ZDCev[1];
+  
   AliMultSelection *MultSelection = 0x0; 
   MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
 
@@ -983,6 +996,39 @@ Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTr
 }
 
 
+Bool_t AliAnalysisTaskMLTreeMaker::FillZDCEventPlane(Double_t* ZDCevArr){
+  // this is a copy of the AliDielectronVarManager
+
+  AliFlowVector vQarray[2];
+  
+  AliAnalysisTaskZDCEP *fZDCEPTask = dynamic_cast<AliAnalysisTaskZDCEP*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP"));
+
+  if (fZDCEPTask != NULL) {
+
+    // get ZDC Q-vectors
+    TObjArray* dataContainers               = (AliAnalysisManager::GetAnalysisManager())->GetContainers();
+    AliAnalysisDataContainer* dataContainer = dynamic_cast<AliAnalysisDataContainer*>(dataContainers->FindObject("ZDCEPExchangeContainer"));
+    AliFlowEvent* anEvent                   = dynamic_cast<AliFlowEvent*>(dataContainer->GetData());
+    if(anEvent) {
+      // Get Q vectors for the subevents
+      anEvent->GetZDC2Qsub(vQarray);
+     } else { 
+      Printf("Flowevent not found. Aborting!!!\n");
+      return kFALSE;
+    }
+  } 
+  else {
+    Printf("This task needs AliAnalysisTaskZDCEP and it is not present. Aborting!!!");
+    return kFALSE;
+  }
+
+  // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
+  ZDCevArr[0] = TVector2::Phi_mpi_pi(vQarray[0].Phi())/2;
+  ZDCevArr[1] = TVector2::Phi_mpi_pi(vQarray[1].Phi())/2;
+
+  return kTRUE;
+}
+
 void AliAnalysisTaskMLTreeMaker::SetupTrackCuts(AliDielectronCutGroup* f)
 {
 filter   = new AliAnalysisFilter("filter","filter");  
@@ -995,7 +1041,6 @@ void AliAnalysisTaskMLTreeMaker::SetupEventCuts(AliDielectronEventCuts* f)
   evfilter   = new AliAnalysisFilter("evfilter","evfilter");  
   evfilter->AddCuts(f);
 }
-
 
 
 int AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if the generator is on the list of generators
