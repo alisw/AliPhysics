@@ -85,7 +85,7 @@ struct MacroParams : public TNamed {
   int eventreader_read_full_mc { false };
   bool eventreader_epvzero { true };
   bool eventreader_vertex_shift { true };
-  bool eventreader_dca_globaltrack { true };
+  int eventreader_dca_globaltrack { 1 };
   bool eventreader_centrality_flattening { false };
   int eventreader_use_multiplicity { AliFemtoEventReaderAOD::kCentrality };
 
@@ -849,7 +849,12 @@ BuildConfiguration(const TString &text,
     cmd += ";";
 
     cout << "I-BuildConfiguration: `" << cmd << "`\n";
-    gROOT->ProcessLineFast(cmd);
+    Int_t err = 0;
+    gROOT->ProcessLineFast(cmd, &err);
+
+    if (err != TInterpreter::EErrorCode::kNoError) {
+      throw std::runtime_error(Form("Bad configuration line: `%s`", cmd.Data()));
+    }
   }
 
   gDirectory->Remove(&a);
