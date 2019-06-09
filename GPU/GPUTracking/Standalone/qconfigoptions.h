@@ -75,6 +75,10 @@ AddOption(globalTracking, bool, true, "globalTracking", 0, "Enable global tracki
 AddOption(runTRD, int, -1, "trd", 0, "Enable TRD processing")
 AddOption(rundEdx, int, 1, "dEdx", 0, "Enable dEdx processing")
 AddOption(disableRefitAttachment, int, 0, "refitAttachmentMask", 0, "Mask to disable certain attachment steps during refit")
+AddOption(tpcReject, int, 0, "tpcReject", 0, "Enable rejection of TPC clusters for compression (1 = strategy A, 2 = strategy B)")
+AddOption(tpcRejectThreshold, float, 0.f, "tpcRejectThreshold", 0, "Pt threshold to reject clusters of TPC tracks")
+AddOption(tpcCompression, int, 7, "tpcCompression", 0, "TPC Compression mode bits (1=truncate charge/width LSB, 2=differences, 4=track-model)")
+AddOption(tpcCompressionSort, int, 0, "tpcCompressionSort", 0, "Sort order of TPC compression (0 = time, 1 = pad, 2 = Z-time-pad, 3 = Z-pad-time)")
 AddHelp("help", 'h')
 EndConfig()
 
@@ -86,7 +90,7 @@ AddHelp("help", 'h')
 EndConfig()
 
 BeginConfig(structConfigStandalone, configStandalone)
-#if defined(BUILD_CUDA) || defined(BUILD_OPENCL)
+#if defined(BUILD_CUDA) || defined(BUILD_OPENCL) || defined(BUILD_HIP)
 AddOption(runGPU, bool, true, "gpu", 'g', "Use GPU for processing", message("GPU processing: %s"))
 #else
 AddOption(runGPU, bool, false, "gpu", 'g', "Use GPU for processing", message("GPU processing: %s"))
@@ -96,6 +100,8 @@ AddOptionSet(runGPU, bool, false, "cpu", 'c', "Use CPU for processing", message(
 AddOption(gpuType, const char*, "CUDA", "gpuType", 0, "GPU type (CUDA / HIP / OCL)")
 #elif defined(BUILD_OPENCL)
 AddOption(gpuType, const char*, "OCL", "gpuType", 0, "GPU type (CUDA / HIP / OCL)")
+#elif defined(BUILD_HIP)
+AddOption(gpuType, const char*, "HIP", "gpuType", 0, "GPU type (CUDA / HIP / OCL)")
 #else
 AddOption(gpuType, const char*, "", "gpuType", 0, "GPU type (CUDA / HIP / OCL)")
 #endif
@@ -136,6 +142,7 @@ AddOption(referenceX, float, 500.f, "referenceX", 0, "Reference X position to tr
 AddOption(rejectMode, char, 5, "rejectMode", 0, "Merger Reject Mode")
 AddOption(allocationStrategy, int, 0, "allocationStrategy", 0, "Memory Allocation Stragegy (0 = auto, 1 = individual allocations, 2 = single global allocation)")
 AddOption(printSettings, bool, false, "printSettings", 0, "Print all settings")
+AddOption(compressionStat, bool, false, "compressionStat", 0, "Run statistics and verification for cluster compression")
 AddHelp("help", 'h')
 AddHelpAll("helpall", 'H')
 AddSubConfig(structConfigTF, configTF)

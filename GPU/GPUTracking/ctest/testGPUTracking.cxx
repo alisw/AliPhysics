@@ -25,7 +25,7 @@
 #include "GPUO2Interface.h"
 #include "TPCFastTransform.h"
 #include "GPUO2InterfaceConfiguration.h"
-#include "GPUReconstruction.h"
+#include "GPUDataTypes.h"
 
 using namespace o2::gpu;
 
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(CATracking_test1)
   bool continuous = true;      // time frame data v.s. triggered events
 
   GPUO2InterfaceConfiguration config;
-  config.configProcessing.deviceType = GPUReconstruction::DeviceType::CPU;
+  config.configProcessing.deviceType = GPUDataTypes::DeviceType::CPU;
   config.configProcessing.forceDeviceType = true;
 
   config.configDeviceProcessing.nThreads = 4;           // 4 threads if we run on the CPU, 1 = default, 0 = auto-detect
@@ -55,6 +55,6 @@ BOOST_AUTO_TEST_CASE(CATracking_test1)
   config.configReconstruction.SearchWindowDZDR = 2.5f; // Should always be 2.5 for looper-finding and/or continuous tracking
   config.configReconstruction.TrackReferenceX = refX;
 
-  interface->Initialize(config, nullptr);
+  interface->Initialize(config);
   delete interface;
 }

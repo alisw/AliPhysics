@@ -2,7 +2,6 @@
 INTELARCH					= Host
 GCCARCH						= native
 MSVCFAVOR					= INTEL64
-CUDAVERSION					= 61
 CUDAREGS					= 64
 ARCHBITS					= 64
 
@@ -11,7 +10,7 @@ HIDEECHO					= @
 CC_x86_64-pc-linux-gnu		= GCC
 CC_i686-pc-cygwin			= ICC
 
-INCLUDEPATHS				= . SliceTracker HLTHeaders Merger Base Global TRDTracking ITS dEdx TPCConvert Common TPCFastTransformation display qa
+INCLUDEPATHS				= . SliceTracker HLTHeaders Merger Base Global TRDTracking ITS dEdx TPCConvert DataCompression Common TPCFastTransformation display qa
 DEFINES						= GPUCA_STANDALONE
 
 EXTRAFLAGSGCC				+=
@@ -63,21 +62,22 @@ endif
 ifneq (${CONFIG_O2DIR}, )
 DEFINES						+= HAVE_O2HEADERS
 INCLUDEPATHS					+= O2Headers \
+								${CONFIG_O2DIR}/Common/Constants/include \
+								${CONFIG_O2DIR}/Common/MathUtils/include \
+								${CONFIG_O2DIR}/DataFormats/common/include \
 								${CONFIG_O2DIR}/Detectors/TPC/base/include \
 								${CONFIG_O2DIR}/DataFormats/Detectors/TPC/include \
+								${CONFIG_O2DIR}/DataFormats/common/include \
 								${CONFIG_O2DIR}/Detectors/TRD/base/include \
 								${CONFIG_O2DIR}/Detectors/TRD/base/src \
 								${CONFIG_O2DIR}/Detectors/ITSMFT/ITS/tracking/include \
 								${CONFIG_O2DIR}/Detectors/ITSMFT/ITS/tracking/cuda/include \
-								${CONFIG_O2DIR}/Common/Constants/include \
-								${CONFIG_O2DIR}/DataFormats/Reconstruction/include \
-								${CONFIG_O2DIR}/Common/MathUtils/include \
-								${CONFIG_O2DIR}/DataFormats/Detectors/Common/include \
-								${CONFIG_O2DIR}/DataFormats/Detectors/TPC/include \
-								${CONFIG_O2DIR}/DataFormats/simulation/include \
 								${CONFIG_O2DIR}/DataFormats/Detectors/ITSMFT/ITS/include \
+								${CONFIG_O2DIR}/DataFormats/Reconstruction/include \
+								${CONFIG_O2DIR}/DataFormats/simulation/include \
 								${CONFIG_O2DIR}/Detectors/Base/src \
-								${CONFIG_O2DIR}/Detectors/Base/include
+								${CONFIG_O2DIR}/Detectors/Base/include \
+								${CONFIG_O2DIR}/DataFormats/Detectors/Common/include
 endif
 
 ifeq ($(CONFIG_O2), 1)

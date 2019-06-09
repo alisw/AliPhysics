@@ -27,8 +27,9 @@
 
 using namespace GPUCA_NAMESPACE::gpu;
 
+constexpr size_t gGPUConstantMemBufferSize = (sizeof(GPUConstantMem) + sizeof(uint4) - 1);
 #ifndef GPUCA_CUDA_NO_CONSTANT_MEMORY
-__constant__ uint4 gGPUConstantMemBuffer[(sizeof(GPUConstantMem) + sizeof(uint4) - 1) / sizeof(uint4)];
+__constant__ uint4 gGPUConstantMemBuffer[gGPUConstantMemBufferSize / sizeof(uint4)];
 #define GPUCA_CONSMEM_PTR
 #define GPUCA_CONSMEM_CALL
 #define GPUCA_CONSMEM (GPUConstantMem&)gGPUConstantMemBuffer
@@ -107,8 +108,7 @@ GPUReconstructionCUDABackend::GPUReconstructionCUDABackend(const GPUSettingsProc
 
 GPUReconstructionCUDABackend::~GPUReconstructionCUDABackend()
 {
-  mChains.clear(); // Make sure we destroy the ITS tracker before we exit CUDA
-  GPUFailedMsgI(cudaDeviceReset());
+  Exit(); // Make sure we destroy everything (in particular the ITS tracker) before we exit CUDA
   delete mInternals;
 }
 
@@ -206,7 +206,7 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
 
   GPUFailedMsgI(cudaGetDeviceProperties(&cudaDeviceProp, mDeviceId));
 
-  if (mDeviceProcessingSettings.debugLevel >= 1) {
+  if (mDeviceProcessingSettings.debugLevel >= 2) {
     GPUInfo("Using CUDA Device %s with Properties:", cudaDeviceProp.name);
     GPUInfo("totalGlobalMem = %lld", (unsigned long long int)cudaDeviceProp.totalGlobalMem);
     GPUInfo("sharedMemPerBlock = %lld", (unsigned long long int)cudaDeviceProp.sharedMemPerBlock);
@@ -223,10 +223,11 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
     GPUInfo("memoryClockRate = %d", cudaDeviceProp.memoryClockRate);
     GPUInfo("multiProcessorCount = %d", cudaDeviceProp.multiProcessorCount);
     GPUInfo("textureAlignment = %lld", (unsigned long long int)cudaDeviceProp.textureAlignment);
+    GPUInfo(" ");
   }
   mCoreCount = cudaDeviceProp.multiProcessorCount;
 
-  if (cudaDeviceProp.major < 1 || (cudaDeviceProp.major == 1 && cudaDeviceProp.minor < 2)) {
+  if (cudaDeviceProp.major < 3) {
     GPUError("Unsupported CUDA Device");
     return (1);
   }
@@ -234,6 +235,12 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
 #ifdef GPUCA_USE_TEXTURES
   if (GPUCA_SLICE_DATA_MEMORY * NSLICES > (size_t)cudaDeviceProp.maxTexture1DLinear) {
     GPUError("Invalid maximum texture size of device: %lld < %lld\n", (long long int)cudaDeviceProp.maxTexture1DLinear, (long long int)(GPUCA_SLICE_DATA_MEMORY * NSLICES));
+    return (1);
+  }
+#endif
+#ifndef GPUCA_CUDA_NO_CONSTANT_MEMORY
+  if (gGPUConstantMemBufferSize > cudaDeviceProp.totalConstMem) {
+    GPUError("Insufficient constant memory available on GPU %d < %d!", (int)cudaDeviceProp.totalConstMem, (int)gGPUConstantMemBufferSize);
     return (1);
   }
 #endif
@@ -257,7 +264,7 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
     return (1);
   }
   if (mDeviceProcessingSettings.debugLevel >= 1) {
-    GPUInfo("GPU Memory used: %lld", (long long int)mDeviceMemorySize);
+    GPUInfo("GPU Memory used: %lld (Ptr 0x%p)", (long long int)mDeviceMemorySize, mDeviceMemoryBase);
   }
   if (GPUFailedMsgI(cudaMallocHost(&mHostMemoryBase, mHostMemorySize))) {
     GPUError("Error allocating Page Locked Host Memory");
@@ -265,7 +272,7 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
     return (1);
   }
   if (mDeviceProcessingSettings.debugLevel >= 1) {
-    GPUInfo("Host Memory used: %lld", (long long int)mHostMemorySize);
+    GPUInfo("Host Memory used: %lld (Ptr 0x%p)", (long long int)mHostMemorySize, mHostMemoryBase);
   }
 
   if (mDeviceProcessingSettings.debugLevel >= 1) {
@@ -293,7 +300,7 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
     return 1;
   }
 #else
-  if (GPUFailedMsgI(cudaMalloc(&devPtrConstantMem, sizeof(GPUConstantMem)))) {
+  if (GPUFailedMsgI(cudaMalloc(&devPtrConstantMem, gGPUConstantMemBufferSize))) {
     GPUError("CUDA Memory Allocation Error");
     GPUFailedMsgI(cudaDeviceReset());
     return (1);
@@ -302,8 +309,8 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
   mDeviceConstantMem = (GPUConstantMem*)devPtrConstantMem;
 
   for (unsigned int i = 0; i < mEvents.size(); i++) {
-    cudaEvent_t* events = (cudaEvent_t*)mEvents[i].first;
-    for (unsigned int j = 0; j < mEvents[i].second; j++) {
+    cudaEvent_t* events = (cudaEvent_t*)mEvents[i].data();
+    for (unsigned int j = 0; j < mEvents[i].size(); j++) {
       if (GPUFailedMsgI(cudaEventCreate(&events[j]))) {
         GPUError("Error creating event");
         GPUFailedMsgI(cudaDeviceReset());
@@ -313,7 +320,8 @@ int GPUReconstructionCUDABackend::InitDevice_Runtime()
   }
 
   ReleaseThreadContext();
-  GPUInfo("CUDA Initialisation successfull (Device %d: %s (Frequency %d, Cores %d), %'lld / %'lld bytes host / global memory, Stack frame %'d, Constant memory %'lld)", mDeviceId, cudaDeviceProp.name, cudaDeviceProp.clockRate, cudaDeviceProp.multiProcessorCount, (long long int)mHostMemorySize, (long long int)mDeviceMemorySize, GPUCA_GPU_STACK_SIZE, (long long int)sizeof(GPUConstantMem));
+  GPUInfo("CUDA Initialisation successfull (Device %d: %s (Frequency %d, Cores %d), %'lld / %'lld bytes host / global memory, Stack frame %'d, Constant memory %'lld)", mDeviceId, cudaDeviceProp.name, cudaDeviceProp.clockRate, cudaDeviceProp.multiProcessorCount, (long long int)mHostMemorySize,
+          (long long int)mDeviceMemorySize, GPUCA_GPU_STACK_SIZE, (long long int)gGPUConstantMemBufferSize);
 
   return (0);
 }
@@ -339,8 +347,8 @@ int GPUReconstructionCUDABackend::ExitDevice_Runtime()
   mHostMemoryBase = nullptr;
 
   for (unsigned int i = 0; i < mEvents.size(); i++) {
-    cudaEvent_t* events = (cudaEvent_t*)mEvents[i].first;
-    for (unsigned int j = 0; j < mEvents[i].second; j++) {
+    cudaEvent_t* events = (cudaEvent_t*)mEvents[i].data();
+    for (unsigned int j = 0; j < mEvents[i].size(); j++) {
       GPUFailedMsgI(cudaEventDestroy(events[j]));
     }
   }
