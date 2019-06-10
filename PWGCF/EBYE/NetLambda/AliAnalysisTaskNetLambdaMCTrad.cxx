@@ -535,9 +535,9 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             gpt = mctrack->Pt();
             eta = mctrack->Eta();
             abseta = TMath::Abs(eta);
-//            if(abseta > 0.5) continue;
+           if(abseta > 0.5) continue;
             lThisRap   = MyRapidity(mctrack->Energy(),mctrack->Pz());
-            if(lThisRap > 0.5) continue;
+//             if(lThisRap > 0.5) continue;
             
             Int_t iptbinMC = GetPtBin(gpt);
             
@@ -685,7 +685,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         pospion  = fPIDResponse->NumberOfSigmasTPC( esdpTrack, AliPID::kPion );
         negpion  = fPIDResponse->NumberOfSigmasTPC( esdnTrack, AliPID::kPion );
         //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        if(TMath::Abs(lRapLambda) > 0.5) continue;
+//         if(TMath::Abs(lRapLambda) > 0.5) continue;
         if(TMath::Abs(peta) > 0.8) continue;
         if(TMath::Abs(neta) > 0.8) continue;
         if(cosPointingAngle < 0.99) continue;
