@@ -2255,7 +2255,10 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
  Double_t jetPtdet = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
-  
+ Double_t jetEtadet=  DmesonJet.fJets[jetDef.GetName()].fMomentum.Eta();
+ if(TMath::Abs(jeteta)>0.5) return kFALSE;
+
+ 
    if (fMCMode != kNoMC) {
     Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
     DmesonJet.fMCLabel = mcLab;
