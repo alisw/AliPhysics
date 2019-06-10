@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated jun 5
+// Updated jun 10
 
 
 #include "AliAnalysisManager.h"
@@ -132,7 +132,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //THNSPARSE BINNING
     
-    const Int_t dim = 93; //23 pt bins*4 + 1 cent bin
+    const Int_t dim = 47; //23 pt bins*2 + 1 cent bin
     Int_t bin[dim];
     bin[0] = 81;
     for(Int_t ibin = 1; ibin < dim; ibin++) bin[ibin] = 500;
@@ -156,7 +156,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
 void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
 {
     
-    const Int_t dim = fNptBins*4;
+    const Int_t dim = fNptBins*2;
     
     Int_t ptChEta1point0[dim];
     
@@ -246,7 +246,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         lRapLambda  = esdv0->RapLambda();
         V0pt = esdv0->Pt();
         if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
-        if(TMath::Abs(lRapLambda)> 0.5 ) continue;
+//         if(TMath::Abs(lRapLambda)> 0.5 ) continue;
         
         
         //--------------------------------------------------------------------Track selection-------------------------------------------------------------------------------------------------------------------------------------
@@ -313,6 +313,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
         if(v0Radius > 200.) continue;
+        if(TMath::Abs(eta) > 0.5) continue;
         
         
         
@@ -332,7 +333,6 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 }
                 if(invMassLambda > 1.126 && invMassLambda < 1.138)
                 {
-                    ptChEta1point0[iptbin+fNptBins] += 1;
                     f3fHistCentVsInvMassLambda1point0bkg->Fill(fCentrality,invMassLambda,V0pt);
 
                 }
@@ -347,12 +347,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
                 if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                 {
-                    ptChEta1point0[iptbin+fNptBins+fNptBins] += 1;
+                    ptChEta1point0[iptbin+fNptBins] += 1;
                     f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                 }
                 if(invMassAntiLambda > 1.126 && invMassAntiLambda < 1.14)
                 {
-                    ptChEta1point0[iptbin+fNptBins+fNptBins+fNptBins] += 1;
                     f3fHistCentVsInvMassAntiLambda1point0bkg->Fill(fCentrality,invMassAntiLambda,V0pt);
 
                 }
