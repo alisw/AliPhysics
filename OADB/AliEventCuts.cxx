@@ -298,6 +298,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     if ( fTimeRangeCut.CutEvent(ev) ) {
       fFlag |= BIT(kTimeRangeCut);
     }
+  } else {
+    fFlag |= BIT(kTimeRangeCut);
   }
 
   /// Ignore SPD/tracks vertex position and reconstruction individual flags
