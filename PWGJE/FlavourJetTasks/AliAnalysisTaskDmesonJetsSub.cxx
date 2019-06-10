@@ -2256,7 +2256,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   // Checks also the origin, and if it matches the rejected origin mask, return false
  Double_t jetPtdet = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
  Double_t jetEtadet=  DmesonJet.fJets[jetDef.GetName()].fMomentum.Eta();
- if(TMath::Abs(jeteta)>0.5) return kFALSE;
+ if(TMath::Abs(jetEtadet)>0.5) return kFALSE;
 
  
    if (fMCMode != kNoMC) {
