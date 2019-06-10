@@ -239,33 +239,34 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
   Bool_t              fInitializedLocal;              //! trigger if tracks/jets are loaded  initiates calling   ExecOnce 
 
 
-   TH1I               *fHistEvtSelection;             //! gc event statistics
+   TH1D               *fHistEvtSelection;             //! gc event statistics
 
-   TH1F     *fhVertexZall;                            //! gc vertexZ inclusive before cut
-   TH1F     *fhVertexZ;                               //! gc vertexZ inclusive after cut
+   TH1D     *fhVertexZall;                            //! gc vertexZ inclusive before cut
+   TH1D     *fhVertexZ;                               //! gc vertexZ inclusive after cut
                                                       
-   TH2F     *fhTrackPhiIncl;                          //! minimum bias phi inclusive ch hadron
-   TH2F     *fhTrackEtaIncl;                          //! minimum bias eta inclusive
-   TH2F     *fhJetPhiIncl;                            //! minimum bias phi inclusive ch jet
-   TH2F     *fhJetEtaIncl;                            //! minimum bias eta inclusive
-   TH2F     *fhClusterPhiInclMB;                        //! minimum bias phi inclusive cluster
-   TH2F     *fhClusterEtaInclMB;                        //! minimum bias eta inclusive
-   TH2F     *fhClusterPhiInclGA;                      //! minimum bias phi inclusive cluster
-   TH2F     *fhClusterEtaInclGA;                      //! minimum bias eta inclusive
+   TH2D     *fhTrackPhiInclMB;                          //! minimum bias phi inclusive ch hadron
+   TH2D     *fhTrackEtaInclMB;                        //! minimum bias eta inclusive minimum bias
+   TH2D     *fhTrackEtaInclHM;                        //! minimum bias eta inclusive high multiplicity
+   TH2D     *fhJetPhiIncl;                            //! minimum bias phi inclusive ch jet
+   TH2D     *fhJetEtaIncl;                            //! minimum bias eta inclusive
+   TH2D     *fhClusterPhiInclMB;                        //! minimum bias phi inclusive cluster
+   TH2D     *fhClusterEtaInclMB;                        //! minimum bias eta inclusive
+   TH2D     *fhClusterPhiInclGA;                      //! minimum bias phi inclusive cluster
+   TH2D     *fhClusterEtaInclGA;                      //! minimum bias eta inclusive
  
-   TH1F     *fhRhoMB;                                 //! minimum bias rho inclusive
-   TH1F     *fhRhoHM;                                 //! high mult rho inclusive
-   TH1F     *fhRhoTTHinMB[fkTTbins];                  //! in events MB with hadron TT
-   TH1F     *fhRhoTTHinHM[fkTTbins];                  //! in events HM with hadron TT
-   TH1F     *fhRhoTTJinMB[fkTTbins];                  //! in events MB with jet TT
-   TH1F     *fhRhoTTJinHM[fkTTbins];                  //! in events HM with jet TT
-   TH1F     *fhRhoTTCinMB[fkTTbins];                  //! in events MB with cluster TT
-   TH1F     *fhRhoTTCinHM[fkTTbins];                  //! in events HM with cluster TT
-   TH1F     *fhRhoTTCinGA[fkTTbins];                  //! in events GA with cluster TT
+   TH1D     *fhRhoMB;                                 //! minimum bias rho inclusive
+   TH1D     *fhRhoHM;                                 //! high mult rho inclusive
+   TH1D     *fhRhoTTHinMB[fkTTbins];                  //! in events MB with hadron TT
+   TH1D     *fhRhoTTHinHM[fkTTbins];                  //! in events HM with hadron TT
+   TH1D     *fhRhoTTJinMB[fkTTbins];                  //! in events MB with jet TT
+   TH1D     *fhRhoTTJinHM[fkTTbins];                  //! in events HM with jet TT
+   TH1D     *fhRhoTTCinMB[fkTTbins];                  //! in events MB with cluster TT
+   TH1D     *fhRhoTTCinHM[fkTTbins];                  //! in events HM with cluster TT
+   TH1D     *fhRhoTTCinGA[fkTTbins];                  //! in events GA with cluster TT
 
-   TH1F     *fhRhoMBpart;                             //! minimum bias rho inclusive particle level
-   TH1F     *fhRhoTTHinMBpart[fkTTbins];              //! in events MB with hadron TT particle level
-   TH1F     *fhRhoTTCinMBpart[fkTTbins];              //! in events MB with cluster TT particle level
+   TH1D     *fhRhoMBpart;                             //! minimum bias rho inclusive particle level
+   TH1D     *fhRhoTTHinMBpart[fkTTbins];              //! in events MB with hadron TT particle level
+   TH1D     *fhRhoTTCinMBpart[fkTTbins];              //! in events MB with cluster TT particle level
 
    TH1D* fhVertex[fkVtx];                             //! vertex distribution 
    TH1D* fhVertexTTH[fkVtx][fkTTbins];                //! vertex distribution in events biased with hadron TT
@@ -294,22 +295,29 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH1D* fhSignalTTHinMB_PartLevel[fkCEmc][fkTTbins];  //! particle level distributions of centrality estimators biased with hadron TT in min bias
    TH1D* fhSignalTTCinMB_PartLevel[fkCEmc][fkTTbins];  //! particle level distributions of centrality estimators biased with cluster TT in min bias
 
-   TH2F* fhV0AvsV0C;                                   //! V0A vs V0C in MB 
+   TH2D* fhV0AvsV0C;                                   //! V0A vs V0C in MB 
    //TH2F* fhV0MvsV0Mnorm;                               //! V0M vs V0Mnorm in MB 
-   TH2F* fhV0AvsSPD;                                   //! V0A vs SPD in MB 
-   TH2F* fhV0CvsSPD;                                   //! V0C vs SPD in MB 
-   TH2F* fhV0AvsV0CTTH[fkTTbins];                      //! V0A vs V0C biased with hadron TT
-   TH2F* fhV0AvsV0CTTJ[fkTTbins];                      //! V0A vs V0C biased with ch jet TT
-   TH2F* fhV0AvsV0CTTCinMB[fkTTbins];                  //! V0A vs V0C biased with cluster TT in min bias 
-   TH2F* fhV0AvsV0CTTCinGA[fkTTbins];                  //! V0A vs V0C biased with cluster TT in Gamma trigger
+   TH2D* fhV0AvsSPD;                                   //! V0A vs SPD in MB 
+   TH2D* fhV0CvsSPD;                                   //! V0C vs SPD in MB 
+   TH2D* fhV0AvsV0CTTH[fkTTbins];                      //! V0A vs V0C biased with hadron TT
+   TH2D* fhV0AvsV0CTTJ[fkTTbins];                      //! V0A vs V0C biased with ch jet TT
+   TH2D* fhV0AvsV0CTTCinMB[fkTTbins];                  //! V0A vs V0C biased with cluster TT in min bias 
+   TH2D* fhV0AvsV0CTTCinGA[fkTTbins];                  //! V0A vs V0C biased with cluster TT in Gamma trigger
                                                       
-   TH1I* fhMultTTHinMB[fkTTbins];                       //! multiplicity of hadron TT in MB event
-   TH1I* fhMultTTHinHM[fkTTbins];                       //! multiplicity of hadron TT in HM event
-   TH1I* fhMultTTJinMB[fkTTbins];                       //! multiplicity of charged jet TT in MB event
-   TH1I* fhMultTTJinHM[fkTTbins];                       //! multiplicity of charged jet TT in HM event
-   TH1I* fhMultTTCinMB[fkTTbins];                       //! multiplicity of cluster TT in MB event
-   TH1I* fhMultTTCinHM[fkTTbins];                       //! multiplicity of cluster TT in HM event
-   TH1I* fhMultTTCinGA[fkTTbins];                       //! multiplicity of cluster TT in Gamma trigger event
+   TH1D* fhMultTTHinMB[fkTTbins];                       //! multiplicity of hadron TT in MB event
+   TH1D* fhMultTTHinHM[fkTTbins];                       //! multiplicity of hadron TT in HM event
+   TH1D* fhMultTTJinMB[fkTTbins];                       //! multiplicity of charged jet TT in MB event
+   TH1D* fhMultTTJinHM[fkTTbins];                       //! multiplicity of charged jet TT in HM event
+   TH1D* fhMultTTCinMB[fkTTbins];                       //! multiplicity of cluster TT in MB event
+   TH1D* fhMultTTCinHM[fkTTbins];                       //! multiplicity of cluster TT in HM event
+   TH1D* fhMultTTCinGA[fkTTbins];                       //! multiplicity of cluster TT in Gamma trigger event
+
+   TH1D* fhTrackMultMB;                                 //! multiplicity of midrapidity charged tracks for MB events 
+   TH1D* fhTrackMultHM;                                 //! multiplicity of  midrapidity charged tracks for HM events 
+   TH1D* fhTrackMultHM01;                                 //! mult charged tracks for HM events  cent<0.1
+   TH1D* fhMeanTrackPtMB;                               //! mean track pT for MB events 
+   TH1D* fhMeanTrackPtHM;                               //! mean track pT for HM events 
+   TH1D* fhMeanTrackPtHM01;                             //! mean track pT for HM events cent < 0.1 
 
    //hadron TT
    TH2D* fhTTHinMB_V0M[fkTTbins];                       //! counter of semi-inclusive hadron TT  in MB versus V0M   
@@ -387,15 +395,15 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhJetPtPartLevelVsJetPtDetLevelZero;           //! response matrix jet pT not corrected on rho
    TH2D* fhJetPtResolutionVsPtPartLevel;                //! resolution of jet pT
 
-   TH2F* fhOneOverPtVsPhiNeg;//!<! 1/p_T,track  versus phi for negative tracks //AID//             
-   TH2F* fhOneOverPtVsPhiPos;//!<! 1/p_T,track  versus phi for positive tracks //AID//             
-   TH2F* fhSigmaPtOverPtVsPt;//!<! resolution of 1/p_T,track  versus p_T,track //AID//             
-   TH2F* fhDCAinXVsPt;      //!<! X DCA versus pT  //AID// 
-   TH2F* fhDCAinYVsPt;      //!<! Y DCA versus pT  //AID//
-   TH2F* fhDCAinXVsPtPhysPrimary; //!<! X DCA versus pT for physical primaries  //AID// 
-   TH2F* fhDCAinYVsPtPhysPrimary; //!<! Y DCA versus pT for physical primaries  //AID//
-   TH2F* fhDCAinXVsPtSecondary; //!<! X DCA versus pT for secondaries //AID// 
-   TH2F* fhDCAinYVsPtSecondary; //!<! Y DCA versus pT for secondaries //AID//
+   TH2D* fhOneOverPtVsPhiNeg;//!<! 1/p_T,track  versus phi for negative tracks //AID//             
+   TH2D* fhOneOverPtVsPhiPos;//!<! 1/p_T,track  versus phi for positive tracks //AID//             
+   TH2D* fhSigmaPtOverPtVsPt;//!<! resolution of 1/p_T,track  versus p_T,track //AID//             
+   TH2D* fhDCAinXVsPt;      //!<! X DCA versus pT  //AID// 
+   TH2D* fhDCAinYVsPt;      //!<! Y DCA versus pT  //AID//
+   TH2D* fhDCAinXVsPtPhysPrimary; //!<! X DCA versus pT for physical primaries  //AID// 
+   TH2D* fhDCAinYVsPtPhysPrimary; //!<! Y DCA versus pT for physical primaries  //AID//
+   TH2D* fhDCAinXVsPtSecondary; //!<! X DCA versus pT for secondaries //AID// 
+   TH2D* fhDCAinYVsPtSecondary; //!<! Y DCA versus pT for secondaries //AID//
    TH2D* fhFractionOfSecInJet; //!<! Fraction of jet pT carried by secondaries //AID//
 
 
@@ -452,7 +460,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 9); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 10); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 #endif
