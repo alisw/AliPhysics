@@ -327,6 +327,10 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fHistNTPCclsVsRadius = new TH2F("fHistNTPCclsVsRadius","N TPC clusters (mother) vs. #it{R} kinks;#it{R} (cm);N TPC clusters (mother)",50,0,250,160,-0.5,159.5);
   fOutputList->Add(fHistNTPCclsVsRadius);
 
+  TString detnames[kNMaxDet]       = {"ITS","TPC","TOF"};
+  TString partnameshort[kNMaxHypo] = {"pi","K","p","e","d","t","He3"};
+  TString hyponames[kNMaxHypo]     = {"Pion","Kaon","Proton","Electron","Deuteron","Triton","He3"};
+  
   if(fIsMC) {
     for(int iDet=0; iDet<kNMaxDet; iDet++) {
       if(!fEnabledDet[iDet]) 
@@ -341,7 +345,6 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   }
 
   fPIDtree = new TTree("fPIDtree","fPIDtree");
-  TString partnameshort[7] = {"pi","K","p","e","d","t","He3"};
   fPIDtree->Branch("pT",&fPt,"pT/s");
   fPIDtree->Branch("eta",&fEta,"eta/S");
   fPIDtree->Branch("phi",&fPhi,"phi/s");
@@ -386,7 +389,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
       fPIDtree->Branch("trackbits",&fTrackInfoMap,"trackbits/b");
   }
   fPIDtree->Branch("tag",&fTag,"tag/s");
-  if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/S");
+  if(fIsMC) fPIDtree->Branch("PDGcode",&fPDGcode,"PDGcode/I");
 
   if(fUseAliEventCuts) { //add QA plots if event cuts used
     fAliEventCuts.AddQAplotsToList(fOutputList,true);
@@ -721,18 +724,25 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
         switch(fPDGcode) {
           case 211:
             fHistNsigmaVsPt[iDet][kPion]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kPion));
+            break;
           case 321:
             fHistNsigmaVsPt[iDet][kKaon]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kKaon));
+            break;
           case 2212:
             fHistNsigmaVsPt[iDet][kProton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kProton));
+            break;
           case 11:
             fHistNsigmaVsPt[iDet][kElectron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kElectron));
+            break;
           case 1000010020:
             fHistNsigmaVsPt[iDet][kDeuteron]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kDeuteron));
+            break;
           case 1000010030:
             fHistNsigmaVsPt[iDet][kTriton]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kTriton));
+            break;
           case 1000020030:
             fHistNsigmaVsPt[iDet][kHe3]->Fill(track->Pt(),fPIDresp->NumberOfSigmas(det[iDet],track,AliPID::kHe3));
+            break;
         }
       }
     }

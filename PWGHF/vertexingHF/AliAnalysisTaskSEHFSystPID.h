@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEHFSYSTNSIGMAPID_H
-#define ALIANALYSISTASKSEHFSYSTNSIGMAPID_H
+#ifndef ALIANALYSISTASKSEHFSYSTPID_H
+#define ALIANALYSISTASKSEHFSYSTPID_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. */
 
@@ -14,6 +14,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TList.h>
+#include <TString.h>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODv0KineCuts.h"
@@ -120,16 +121,13 @@ private:
   int IsEventSelectedWithAliEventCuts();
   bool IsSelectedByGeometricalCut(AliAODTrack* track);
   bool FillNsigma(int iDet, AliAODTrack* track);
-
-  static const int kNMaxHypo = 7;
-  enum {kPion,kKaon,kProton,kElectron,kDeuteron,kTriton,kHe3};
-  const TString hyponames[kNMaxHypo] = {"Pion","Kaon","Proton","Electron","Deuteron","Triton","He3"};
   
-  static const int kNMaxDet=3;
+  enum {kPion,kKaon,kProton,kElectron,kDeuteron,kTriton,kHe3};
   enum {kITS,kTPC,kTOF};
-  const TString detnames[kNMaxDet] = {"ITS","TPC","TOF"};
 
   const float kCSPEED = 2.99792457999999984e-02; // cm / ps
+  static const int kNMaxDet = 3;
+  static const int kNMaxHypo = 7;
 
   TList *fOutputList;                                                                //!<! output list for histograms
 
@@ -164,7 +162,7 @@ private:
   unsigned char fTrackInfoMap;                                                       /// bit map with some track info (see enum above)
   short fEta;                                                                        /// pseudorapidity of the track
   unsigned short fPhi;                                                               /// azimuthal angle of the track
-  short fPDGcode;                                                                    /// PDG code in case of MC to fill the tree
+  int fPDGcode;                                                                      /// PDG code in case of MC to fill the tree
   unsigned short fTag;                                                               /// bit map for tag (see enum above)
   float fNsigmaMaxForKaonTag;                                                        /// max nSigma value to tag kaons
   float fNsigmaMaxForNucleiTag;                                                      /// max nSigma value to tag nuclei
@@ -218,7 +216,7 @@ private:
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 12);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 13);
 };
 
 #endif
