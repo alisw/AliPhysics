@@ -199,8 +199,8 @@ void AliAnalysisTaskNanoAODFilter::FinishTaskOutput() {
   AliAODExtension *extNanoAOD = handler->GetFilteredAOD("AliAOD.NanoAOD.root");
 
   // copy production version info
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if (inputHandler->GetUserInfo()) {
-    AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
     TObject* prodInfo = inputHandler->GetUserInfo()->FindObject("alirootVersion");
     if (prodInfo)
       extNanoAOD->GetTree()->GetUserInfo()->Add(prodInfo->Clone());
