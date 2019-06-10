@@ -81,6 +81,8 @@
 #pragma link C++ class RCollision+;
 #pragma link C++ class RTracklet+;
 #pragma link C++ class std::vector<RTracklet>+;
+#pragma link C++ class SGenericV0+;
+#pragma link C++ class std::vector<SGenericV0>+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
@@ -93,6 +95,7 @@
 #endif
 
 /// * VertexerHyp3Body
+#pragma link C++ class AliVertexerHyperTriton2Body+;
 #pragma link C++ class AliVertexerHyperTriton3Body+;
 
 /// Utils
