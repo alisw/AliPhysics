@@ -481,6 +481,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::~AliAnalysisTaskSEpPbCorrelationsYS()
   }
 }
 void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
+
   
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
@@ -502,10 +503,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
   DefinedQAHistos();
   PostData(3, fOutputList2);
 
+  fEventCuts.AddQAplotsToList(fOutputList);
 
   frefvz=new TH1F("frefvz","z-vertex",10,-10,10);
   fOutputList2->Add(frefvz);
-    
   ///    TGrid::Connect("alien://");
   //   TFile*file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/correction.root");
   //  TFile*file=TFile::Open("/home/yuko/work/local_alicework/MCESDanalysis/draw_result/correction.root");
@@ -559,10 +560,10 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fHistzvertex = new TH1F("fHistzvertex", ";VZ;count", 60, -15, 15);
    fOutputList->Add(fHistzvertex);
 
-   fHistCentrality = new TH1F("fHistCentrality", ";centrality;count", 20, 0, 100);
+   fHistCentrality = new TH1F("fHistCentrality", ";centrality;count", 100, 0, 100);
    fOutputList->Add(fHistCentrality);
 
-   fHistCentrality_beforecut = new TH1F("fHistCentrality_beforecut", ";centrality;count", 20, 0, 100);
+   fHistCentrality_beforecut = new TH1F("fHistCentrality_beforecut", ";centrality;count", 100, 0, 100);
    fOutputList->Add(fHistCentrality_beforecut);
    
    TTree *settingsTree = new TTree("UEAnalysisSettings", "Analysis Settings in UE estimation");
