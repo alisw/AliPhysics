@@ -1423,7 +1423,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","2446642151083200000","0163103100000010"); // dist to bad channel: 1
     cuts.AddCutCalo("80010113","2446642251012200000","0163103100000010"); // dist to bad channel: 2
     cuts.AddCutCalo("80010113","2446642351082200000","0163103100000010"); // dist to bad channel: 3
-  } else if (trainConfing == 514){
+  } else if (trainConfig == 514){
     cuts.AddCutCalo("80010113","2446642151012200000","0163103100000010"); // standard
     cuts.AddCutCalo("80010113","2446642101012200000","0163103100000010"); // standard without timing cut
 
