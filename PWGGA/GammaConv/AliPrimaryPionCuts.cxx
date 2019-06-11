@@ -656,7 +656,8 @@ Bool_t AliPrimaryPionCuts::InitializeCutsFromCutString(const TString analysisCut
   fCutStringRead = Form("%s",analysisCutSelection.Data());
   
   // Set basic cuts for AOD compability
-	if(fPeriodName.Contains("LHC10") || fPeriodName.Contains("LHC14j4")){
+	if(fPeriodName.Contains("LHC10") || fPeriodName.Contains("LHC14j4")
+	   || fPeriodName.Contains("LHC14k1")){
 		AliInfo("Presetting ESD cuts for LHC10 AOD filtering");
 	  SetHybridTrackCutsAODFiltering(1000);
 	} else{
