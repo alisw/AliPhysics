@@ -25,6 +25,8 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
 ,fPairCleaner()
 ,fPartColl()
 ,fGTI()
+,fDInvMass()
+,fAntiDInvMass()
 ,fTrackBufferSize()
 {
 
@@ -45,6 +47,8 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char 
 ,fPairCleaner()
 ,fPartColl()
 ,fGTI()
+,fDInvMass()
+,fAntiDInvMass()
 ,fTrackBufferSize(2000)
 {
   DefineOutput(1,TList::Class());
@@ -54,10 +58,28 @@ AliAnalysisTaskFemtoDreamDeuteron::~AliAnalysisTaskFemtoDreamDeuteron() {
   // TODO Auto-generated destructor stub
 }
 
+Float_t AliAnalysisTaskFemtoDreamDeuteron::GetMass2sq(AliFemtoDreamTrack *track) {
+    Float_t p = track->GetP();
+    Float_t mass2sq = -999;
+    Float_t beta = track->GetBetaTOF();
+    if(!(beta<0)){
+        mass2sq = ((1/(beta*beta))-1)*(p*p);
+    }
+    return mass2sq;
+}
+
 void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   fOutput = new TList();
   fOutput->SetName("Output"); // Every output objects needs a name, be careful names can collide!
   fOutput->SetOwner();        // This tells ROOT that this list belongs to the top list / top object
+
+  // Here we are playing a little bit dirty and simply initialising the Histogramms for invariant mass inside the
+  // analysis task. This is bad style and in the future should definitely be outsourced but for the moment it is fine 
+  // as long as it works.	
+  fDInvMass = new TH2F("fDInvMass","Deuteron_InvMsq", 500, 0.4, 4., 500, 0.2, 2.); // (name, title, #binsx, xmin, xmax, #binsy, ymin, ymax)
+  fAntiDInvMass = new TH2F("fAntiDInvMass","Antideuteron_InvMsq", 500, 0.4, 4., 500, 0.2, 2.);
+  fOutput->Add(fDInvMass);
+  fOutput->Add(fAntiDInvMass);
 
   //Set up the Femto Event
   //Now not to go into the details the arguments are as follows:
@@ -213,10 +235,12 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
         if (fTrackCutsPart1->isSelected(fTrack)) {
           //.. we add it to our particle buffer
           Deuterons.push_back(*fTrack);
+	  fDInvMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
         //same game, different name for the selection criteria 2!
         if (fTrackCutsPart2->isSelected(fTrack)) {
           AntiDeuterons.push_back(*fTrack);
+	  fAntiDInvMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
 	if (fTrackCutsPart3->isSelected(fTrack)) {
           Protons.push_back(*fTrack);
