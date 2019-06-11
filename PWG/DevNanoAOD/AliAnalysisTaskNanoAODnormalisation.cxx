@@ -41,7 +41,7 @@ void AliAnalysisTaskNanoAODnormalisation::UserCreateOutputObjects() {
 
   for (int iF{0}; iF < 2; ++iF) {
     fCandidateEvents[iF] = new TH2D(Form("fCandidateEvents_%s",kNames[iF]), ";Multiplicity estimator;", nMultBins, multBegin, multEnd, 5, -0.5, 4.5);
-    fSelectedEvents[iF]  = (TH2D*) fCandidateEvents[iF]->Clone(Form("fSelectedEvents%s",kNames[iF]));
+    fSelectedEvents[iF]  = (TH2D*) fCandidateEvents[iF]->Clone(Form("fSelectedEvents_%s",kNames[iF]));
 
     std::string labels[5]{"Input events", "Triggered events", "Triggered + Quality cuts", "Triggered + QC + Reco vertex", "Analysis events"};
     for (int iType{0}; iType < 5; ++iType) {
