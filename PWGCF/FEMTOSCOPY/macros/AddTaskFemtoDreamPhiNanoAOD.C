@@ -228,7 +228,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   } else if (CentEst == "kHM") {
     addon += "HM";
   }
-  TString QAName = Form("%sResults%s", addon.Data(), suffix.Data());
+  TString QAName = Form("%sPhiResults%s", addon.Data(), suffix.Data());
   coutputQA = mgr->CreateContainer(
       QAName.Data(),
       TList::Class(),

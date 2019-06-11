@@ -496,6 +496,8 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
     const std::vector<AliFemtoDreamBasePart> &lambdaCandidates) {
   static float massK0 = TDatabasePDG::Instance()->GetParticle(311)->Mass();
 
+  auto *dummy = static_cast<AliAODEvent*>(fInputEvent);
+
   int nSigma = 0;
   const float lambdaMass = fDataBasePDG.GetParticle(fPDGDaughter1)->Mass();
   // SAME EVENT
@@ -507,7 +509,7 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
 
     for (const auto &lambda : lambdaCandidates) {
       if (!lambda.UseParticle()) continue;
-      sigma.Setv0(lambda, photon, true, true, false);
+      sigma.Setv0(lambda, photon, dummy, true, true, false);
       sigma.Setv0Mass(sigma.GetInvMass() - lambda.GetInvMass() + lambdaMass -
                       photon.GetInvMass());
       const float invMass = sigma.GetInvMass();
