@@ -18,10 +18,15 @@ namespace {
 }
 
 AliAnalysisTaskNanoAODnormalisation::AliAnalysisTaskNanoAODnormalisation(std::string taskName) : AliAnalysisTaskSE{taskName.data()},
-  fFirst{true},
   fOutputList{nullptr},
+  fCurrentFileName{""},
+  fNmultBins{100},
+  fMinMult{0.},
+  fMaxMult{100.f},
   fCandidateEvents{nullptr},
-  fSelectedEvents{nullptr}
+  fSelectedEvents{nullptr},
+  fCandidateEventsUE{nullptr},
+  fSelectedEventsUE{nullptr}
 {
   DefineInput(0, TChain::Class());  
   DefineOutput(1, TList::Class());
@@ -35,61 +40,66 @@ AliAnalysisTaskNanoAODnormalisation::~AliAnalysisTaskNanoAODnormalisation() {
 void AliAnalysisTaskNanoAODnormalisation::UserCreateOutputObjects() {
   fOutputList = new TList;
   fOutputList->SetOwner(true);
-  int nMultBins = 100;
-  float multBegin = 0;
-  float multEnd = 100;
 
   for (int iF{0}; iF < 2; ++iF) {
-    fCandidateEvents[iF] = new TH2D(Form("fCandidateEvents_%s",kNames[iF]), ";Multiplicity estimator;", nMultBins, multBegin, multEnd, 5, -0.5, 4.5);
+    fCandidateEvents[iF] = new TH2D(Form("fCandidateEvents_%s",kNames[iF]), ";Multiplicity estimator;", fNmultBins, fMinMult, fMaxMult, 5, -0.5, 4.5);
     fSelectedEvents[iF]  = (TH2D*) fCandidateEvents[iF]->Clone(Form("fSelectedEvents_%s",kNames[iF]));
+    fCandidateEventsUE[iF] = new TH2D(Form("fCandidateEventsUE_%s",kNames[iF]), ";Multiplicity estimator;", fNmultBins, fMinMult, fMaxMult, 5, -0.5, 4.5);
+    fSelectedEventsUE[iF]  = (TH2D*) fCandidateEvents[iF]->Clone(Form("fSelectedEventsUE_%s",kNames[iF]));
 
     std::string labels[5]{"Input events", "Triggered events", "Triggered + Quality cuts", "Triggered + QC + Reco vertex", "Analysis events"};
     for (int iType{0}; iType < 5; ++iType) {
       fCandidateEvents[iF]->GetYaxis()->SetBinLabel(iType + 1, labels[iType].data());
       fSelectedEvents[iF]->GetYaxis()->SetBinLabel(iType + 1, labels[iType].data());
+      fCandidateEventsUE[iF]->GetYaxis()->SetBinLabel(iType + 1, labels[iType].data());
+      fSelectedEventsUE[iF]->GetYaxis()->SetBinLabel(iType + 1, labels[iType].data());
     }
     fOutputList->Add(fCandidateEvents[iF]);
     fOutputList->Add(fSelectedEvents[iF]);
+    fOutputList->Add(fCandidateEventsUE[iF]);
+    fOutputList->Add(fSelectedEventsUE[iF]);
   }
   PostData(1, fOutputList);
 }
 
-Bool_t AliAnalysisTaskNanoAODnormalisation::UserNotify() {
+void AliAnalysisTaskNanoAODnormalisation::FillHistograms(TH2D* candidate[2], TH2D* selected[2]) {
   AliAODInputHandler* handler = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   if (!handler) {
-    ::Warning("AliAnalysisTaskNanoAODnormalisation::UserNotify","Missing input handler");
-    return true;
+    ::Warning("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing input handler");
+    return;
   }
   TList* userInfo = handler->GetUserInfo();
   if (!userInfo) {
-    ::Warning("AliAnalysisTaskNanoAODnormalisation::UserNotify","Missing User Info");
-    return true;
+    ::Warning("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing User Info");
+    return;
   }
 
   for (int iF{0}; iF < 2; ++iF) {
     AliNanoFilterNormalisation* normalisation = (AliNanoFilterNormalisation*)userInfo->FindObject(Form("NanoAOD%s_scaler",kNames[iF]));
     if (!normalisation) {
       if (!iF)
-        ::Fatal("AliAnalysisTaskNanoAODnormalisation::UserNotify","Missing filtering scalers!");
+        ::Fatal("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing filtering scalers!");
       else
-        ::Warning("AliAnalysisTaskNanoAODnormalisation::UserNotify","Missing skimming scalers!");
-      return true;
+        ::Warning("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing skimming scalers!");
+      return;
     }
-    if (fFirst) {
-      /// We do the copy, in case someone wanted a different multiplicity binning
-      normalisation->GetCandidateEventsHistogram()->Copy(*fCandidateEvents[iF]);
-      normalisation->GetSelectedEventsHistogram()->Copy(*fSelectedEvents[iF]);
-      fCandidateEvents[iF]->SetName(Form("fCandidateEvents_%s",kNames[iF]));
-      fSelectedEvents[iF]->SetName(Form("fSelectedEvents_%s",kNames[iF]));
-      if (iF)
-        fFirst = false;
-    } else {
-      fCandidateEvents[iF]->Add(normalisation->GetCandidateEventsHistogram());
-      fSelectedEvents[iF]->Add(normalisation->GetSelectedEventsHistogram());
-    }
+    candidate[iF]->Add(normalisation->GetCandidateEventsHistogram());
+    selected[iF]->Add(normalisation->GetSelectedEventsHistogram());
   }
-  PostData(1, fOutputList);  
+  PostData(1, fOutputList); 
+}
+
+Bool_t AliAnalysisTaskNanoAODnormalisation::UserNotify() {
+  FillHistograms(fCandidateEvents,fSelectedEvents);
   return true;
+}
+
+/// This is temporary to check if the UserNotify gives us the expected information
+void AliAnalysisTaskNanoAODnormalisation::UserExec(Option_t*) {
+  if (fCurrentFileName != CurrentFileName()) {
+    fCurrentFileName = CurrentFileName();
+    FillHistograms(fCandidateEventsUE,fSelectedEventsUE);
+  }
 }
 
 AliAnalysisTaskNanoAODnormalisation* AliAnalysisTaskNanoAODnormalisation::AddTask(std::string name) {
