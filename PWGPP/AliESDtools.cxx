@@ -779,11 +779,11 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
       if (TMath::Abs(dcaZ) < kMinDCAZ) continue;
       Double_t tgl = track->Pz() / track->Pt();
       if (tgl > 0.1) {
-        bufferP[++counterP] = track->GetZ();
+        bufferP[counterP++] = track->GetZ();
         fHisTPCVertexA->Fill(track->GetZ());
       }
       if (tgl < -0.1) {
-        bufferM[++counterM] = track->GetZ();
+        bufferM[counterM++] = track->GetZ();
         fHisTPCVertexC->Fill(track->GetZ());
       }
     }
