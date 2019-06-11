@@ -53,20 +53,23 @@ AliJFFlucTask::AliJFFlucTask():
 	fEta_max = 0;
 	fEffMode =0;
 	fEffFilterBit=0;
-	fPt_min=0;
-	fPt_max=0;
 	fCentDetName="V0M";
-	flags = 0;
 
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
+	fPt_min=0;
+	fPt_max=0;
+
+	fzvtxCut = 10;  // default z vertex cut
+
+	subeventMask = SUBEVENT_A|SUBEVENT_B;
+	flags = 0;
 
 	/*for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
 		}
 	}*/
-	fzvtxCut = 10;  // default z vertex cut
 	//  DefineOutput(1, TDirectory::Class());
 }
 
@@ -86,20 +89,23 @@ AliJFFlucTask::AliJFFlucTask(const char *name):
 	fEta_max = 0;
 	fEffMode =0;
 	fEffFilterBit=0;
-	fPt_min=0;
-	fPt_max=0;
 	fCentDetName="V0M";
-	flags = 0;
 
 	fQC_eta_min=-0.8;
 	fQC_eta_max=0.8;
+	fPt_min=0;
+	fPt_max=0;
+
+	fzvtxCut = 10;
+
+	subeventMask = SUBEVENT_A|SUBEVENT_B;
+	flags = 0;
 
 	/*for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
 		}
 	}*/
-	fzvtxCut = 10;
 }
 
 //____________________________________________________________________________
@@ -134,6 +140,7 @@ AliJFFlucTask::~AliJFFlucTask()
 void AliJFFlucTask::UserCreateOutputObjects()
 {
 	fFFlucAna =  new AliJFFlucAnalysis( fTaskName );
+	fFFlucAna->SelectSubevents(subeventMask);
 	if(flags & FLUC_SCPT)
 		fFFlucAna->AddFlags(AliJFFlucAnalysis::FLUC_SCPT);
 	if(flags & FLUC_EBE_WEIGHTING)
