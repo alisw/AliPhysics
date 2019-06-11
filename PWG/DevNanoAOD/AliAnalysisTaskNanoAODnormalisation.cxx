@@ -109,7 +109,7 @@ AliAnalysisTaskNanoAODnormalisation* AliAnalysisTaskNanoAODnormalisation::AddTas
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Skimming_Normalisation", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(), "NanoAODskimmingNormalisation"));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Normalisation", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(), "NanoAODNormalisation"));
   mgr->ConnectOutput(task, 1, coutput1);
   
   return task;
