@@ -29,6 +29,7 @@
 // L. van Doremalen, lennart.van.doremalen@cern.ch
 // J. Norman, jaime.norman@cern.ch
 // G. Luparello, grazia.luparello@cern.ch
+// J. Mulligan, james.mulligan@berkeley.edu
 ////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
@@ -175,6 +176,12 @@ fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
 fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars),
+fFillParticleTree(false),
+fVariablesTreeParticle(0),
+fVariablesTreeGenParticle(0),
+fTreeHandlerParticle(nullptr),
+fTreeHandlerGenParticle(nullptr),
+fParticleCollArray(),
 fWriteNJetTrees(0),
 fFillJetConstituentTrees(false),
 fVariablesTreeJet(0),
@@ -202,6 +209,7 @@ fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
 
 /// Default constructor
   
+  fParticleCollArray.SetOwner(kTRUE);
   fJetCollArray.SetOwner(kTRUE);
 
 }
@@ -294,6 +302,12 @@ fFillMCGenTrees(kTRUE),
 fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
 fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars),
+fFillParticleTree(false),
+fVariablesTreeParticle(0),
+fVariablesTreeGenParticle(0),
+fTreeHandlerParticle(nullptr),
+fTreeHandlerGenParticle(nullptr),
+fParticleCollArray(),
 fWriteNJetTrees(fillNJetTrees),
 fFillJetConstituentTrees(fillJetConstituentTrees),
 fVariablesTreeJet(0),
@@ -320,6 +334,7 @@ fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
 {
     /// Standard constructor
   
+    fParticleCollArray.SetOwner(kTRUE);
     fJetCollArray.SetOwner(kTRUE);
   
     if(fFiltCutsD0toKpi){
@@ -441,19 +456,23 @@ fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
     DefineOutput(18,TTree::Class());
     // Output slot #19 stores the tree of the gen Lc2V0bachelor variables
     DefineOutput(19,TTree::Class());
+    // Output slot #20 stores the tree of the track variables after track selection
+    DefineOutput(20,TTree::Class());
+    // Output slot #21 stores the tree of the MC particle variables
+    DefineOutput(21,TTree::Class());
   
     // Set up separate output slot for each jet tree
     // (for simplicity, keep the jet trees in the last slots)
     for (int i=0; i<fillNJetTrees; i++) {
       // Output slot #20 stores the tree of the jet variables
-      DefineOutput(20+i,TTree::Class());
+      DefineOutput(22+i,TTree::Class());
     }
   
     // Set up separate output slot for each jet constituent tree (if enabled)
     if (fillJetConstituentTrees) {
       for (int i=0; i<fillNJetTrees; i++) {
         // Output slot #20 stores the tree of the jet variables
-        DefineOutput(20+fillNJetTrees+i,TTree::Class());
+        DefineOutput(22+fillNJetTrees+i,TTree::Class());
       }
     }
   
@@ -570,6 +589,10 @@ AliAnalysisTaskSEHFTreeCreator::~AliAnalysisTaskSEHFTreeCreator()
       delete fTreeHandlerLc2V0bachelor;
       fTreeHandlerLc2V0bachelor = 0x0;
     }
+    if(fTreeHandlerParticle) {
+      delete fTreeHandlerParticle;
+      fTreeHandlerParticle = 0x0;
+    }
     if(fTreeHandlerJet.empty()) {
       fTreeHandlerJet.clear();
     }
@@ -600,6 +623,10 @@ AliAnalysisTaskSEHFTreeCreator::~AliAnalysisTaskSEHFTreeCreator()
     if(fTreeHandlerGenLc2V0bachelor) {
         delete fTreeHandlerGenLc2V0bachelor;
         fTreeHandlerGenLc2V0bachelor = 0x0;
+    }
+    if(fTreeHandlerGenParticle) {
+      delete fTreeHandlerGenParticle;
+      fTreeHandlerGenParticle = 0x0;
     }
     if(fTreeEvChar) {
         delete fTreeEvChar;
@@ -692,6 +719,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fWriteVariableTreeBplus) nEnabledTrees++;
     if(fWriteVariableTreeDstar) nEnabledTrees++;
     if(fWriteVariableTreeLc2V0bachelor) nEnabledTrees++;
+    if (fFillParticleTree) nEnabledTrees++;
     if(fReadMC && fFillMCGenTrees) {
       nEnabledTrees = (nEnabledTrees-1)*2+1;
     }
@@ -857,9 +885,27 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
             fTreeEvChar->AddFriend(fGenTreeLc2V0bachelor);
         }
     }
+    if(fFillParticleTree){
+      OpenFile(20);
+      TString nameoutput = "tree_Particle";
+      fTreeHandlerParticle = new AliParticleTreeHandler();
+      fTreeHandlerParticle->SetParticleContainer(GetParticleContainer(0));
+      fVariablesTreeParticle = (TTree*)fTreeHandlerParticle->BuildTree(nameoutput,nameoutput);
+      fVariablesTreeParticle->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+      fTreeEvChar->AddFriend(fVariablesTreeParticle);
+      if(fFillMCGenTrees && fReadMC) {
+        OpenFile(21);
+        TString nameoutput = "tree_Particle_gen";
+        fTreeHandlerGenParticle = new AliParticleTreeHandler();
+        fTreeHandlerGenParticle->SetParticleContainer(GetParticleContainer(1));
+        fVariablesTreeGenParticle = (TTree*)fTreeHandlerGenParticle->BuildTree(nameoutput,nameoutput);
+        fVariablesTreeGenParticle->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+        fTreeEvChar->AddFriend(fVariablesTreeGenParticle);
+      }
+    }
     if(fWriteNJetTrees > 0){
       for (int i=0; i<fJetCollArray.GetEntriesFast(); i++) {
-        OpenFile(20 + i);
+        OpenFile(22 + i);
         
         // Create jet tree handlers and configure them
         fTreeHandlerJet.push_back(new AliJetTreeHandler());
@@ -886,7 +932,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         
         // Build jet constituent trees (if enabled)
         if (fFillJetConstituentTrees) {
-          OpenFile(20 + fWriteNJetTrees + i);
+          OpenFile(22 + fWriteNJetTrees + i);
           TString nameoutput = Form("Constituents_%s", GetJetContainer(i)->GetName());
           fVariablesTreeJetConstituent.push_back((TTree*)fTreeHandlerJet.at(i)->BuildJetConstituentTree(nameoutput,nameoutput));
           fVariablesTreeJetConstituent.at(i)->SetMaxVirtualSize(1.e+8/nEnabledTrees);
@@ -928,16 +974,20 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       PostData(18,fVariablesTreeLc2V0bachelor);
       if(fFillMCGenTrees && fReadMC) PostData(19,fGenTreeLc2V0bachelor);
     }
+    if(fFillParticleTree){
+      PostData(20,fVariablesTreeParticle);
+      if(fFillMCGenTrees && fReadMC) PostData(21,fVariablesTreeGenParticle);
+    }
     if(fWriteNJetTrees > 0){
       // Post each jet tree to a separate output slot (for simplicity, keep the jet tree in the last slots)
       const int nJetCollections = fJetCollArray.GetEntriesFast();
       for (int i=0; i<nJetCollections; i++) {
-        PostData(20+i,fVariablesTreeJet.at(i));
+        PostData(22+i,fVariablesTreeJet.at(i));
       }
       // Post jet constituent trees (if enabled)
       if (fFillJetConstituentTrees) {
         for (int i=0; i<nJetCollections; i++) {
-          PostData(20+nJetCollections+i,fVariablesTreeJetConstituent.at(i));
+          PostData(22+nJetCollections+i,fVariablesTreeJetConstituent.at(i));
         }
       }
     }
@@ -952,9 +1002,19 @@ void AliAnalysisTaskSEHFTreeCreator::FillJetTree() {
     ExecOnce();
   }
 
-  // Retrieve jets corresponding to each jet container
+  // Retrieve particles/jets corresponding to each particle/jet container
   if (!RetrieveEventObjects()) {
     return;
+  }
+  
+  // Fill particle trees
+  if (fFillParticleTree) {
+    fTreeHandlerParticle->FillTree(fRunNumber, fEventID);
+    
+    if (fTreeHandlerGenParticle) {
+      fTreeHandlerGenParticle->FillTree(fRunNumber, fEventID);
+    }
+    
   }
   
   // Set Jet ID for all jets, as index of accepted jets in each event: 0, 1, 2, ..., N
@@ -1193,7 +1253,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     if(fFillMCGenTrees && fReadMC) ProcessMCGen(mcArray);
   
     // Fill the jet tree
-    if (fWriteNJetTrees > 0) {
+    if (fWriteNJetTrees > 0 || fFillParticleTree) {
       FillJetTree();
     }
   
@@ -1230,16 +1290,20 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
         PostData(18,fVariablesTreeLc2V0bachelor);
         if(fFillMCGenTrees && fReadMC) PostData(19,fGenTreeLc2V0bachelor);
     }
+    if(fFillParticleTree){
+      PostData(20,fVariablesTreeParticle);
+      if(fFillMCGenTrees && fReadMC) PostData(21,fVariablesTreeGenParticle);
+    }
     if(fWriteNJetTrees > 0){
       // Post each jet tree to a separate output slot (for simplicity, keep the jet tree in the last slots)
       const int nJetCollections = fJetCollArray.GetEntriesFast();
       for (int i=0; i<nJetCollections; i++) {
-        PostData(20+i,fVariablesTreeJet.at(i));
+        PostData(22+i,fVariablesTreeJet.at(i));
       }
       // Post jet constituent trees (if enabled)
       if (fFillJetConstituentTrees) {
         for (int i=0; i<nJetCollections; i++) {
-          PostData(20+nJetCollections+i,fVariablesTreeJetConstituent.at(i));
+          PostData(22+nJetCollections+i,fVariablesTreeJetConstituent.at(i));
         }
       }
     }
@@ -1267,11 +1331,23 @@ void AliAnalysisTaskSEHFTreeCreator::ExecOnce()
     return;
   }
   
-  if (!fRhoName.IsNull() && !fRho) { // get rho from the event
-    fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
-    if (!fRho) {
-      AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
-      fLocalInitialized = kFALSE;
+  //Load all requested track branches - each container knows name already
+  for (Int_t i =0; i<fParticleCollArray.GetEntriesFast(); i++) {
+    AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
+    cont->SetArray(InputEvent());
+  }
+  
+  if (fParticleCollArray.GetEntriesFast()>0) {
+    
+    AliParticleContainer *cont = GetParticleContainer(0);
+    if (!cont) {
+      AliError(Form("%s: Particle container %d not found",GetName(),0));
+      return;
+    }
+    TString contName = cont->GetArrayName();
+    TClonesArray* tracks = cont->GetArray();
+    if (!tracks) {
+      AliError(Form("%s: Could not retrieve first track branch!", GetName()));
       return;
     }
   }
@@ -1279,45 +1355,56 @@ void AliAnalysisTaskSEHFTreeCreator::ExecOnce()
   //Load all requested jet branches - each container knows name already
   if(fJetCollArray.GetEntriesFast()==0) {
     AliWarning("There are no jet collections");
-    return;
   }
-  
-  for(Int_t i =0; i<fJetCollArray.GetEntriesFast(); i++) {
-    AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
-    cont->SetRunNumber(InputEvent()->GetRunNumber());
-    cont->SetArray(InputEvent());
-    cont->LoadRho(InputEvent());
-  }
-  
-  //Get Jets, cuts and rho for first jet container
-  AliJetContainer *cont = GetJetContainer(0);
-  
-  if (!cont->GetArrayName().IsNull()) {
-    TClonesArray *jets = cont->GetArray();
-    if(!jets && fJetCollArray.GetEntriesFast()>0) {
-      AliErrorStream() << GetName() << ": Could not retrieve first jet branch!\n";
-      std::stringstream foundbranches;
-      bool first(true);
-      for(auto e : *(InputEvent()->GetList())){
-        if(first){
-          // Skip printing a comma on the first time through
-          first = false;
-        }
-        else {
-          foundbranches << ", ";
-        }
-        foundbranches << e->GetName();
+  else {
+    
+    // get rho from the event
+    if (!fRhoName.IsNull() && !fRho) {
+      fRho = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoName));
+      if (!fRho) {
+        AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoName.Data()));
+        fLocalInitialized = kFALSE;
+        return;
       }
-      std::string fbstring = foundbranches.str();
-      AliErrorStream() << "Found branches: " << fbstring << std::endl;
-      fLocalInitialized = kFALSE;
-      return;
     }
-  }
   
-  if (!fRho) { // if rho name is not provided, tries to use the rho object of the first jet branch
-    fRhoName = cont->GetRhoName();
-    fRho = cont->GetRhoParameter();
+    for(Int_t i =0; i<fJetCollArray.GetEntriesFast(); i++) {
+      AliJetContainer *cont = static_cast<AliJetContainer*>(fJetCollArray.At(i));
+      cont->SetRunNumber(InputEvent()->GetRunNumber());
+      cont->SetArray(InputEvent());
+      cont->LoadRho(InputEvent());
+    }
+    
+    //Get Jets, cuts and rho for first jet container
+    AliJetContainer *cont = GetJetContainer(0);
+    
+    if (!cont->GetArrayName().IsNull()) {
+      TClonesArray *jets = cont->GetArray();
+      if(!jets && fJetCollArray.GetEntriesFast()>0) {
+        AliErrorStream() << GetName() << ": Could not retrieve first jet branch!\n";
+        std::stringstream foundbranches;
+        bool first(true);
+        for(auto e : *(InputEvent()->GetList())){
+          if(first){
+            // Skip printing a comma on the first time through
+            first = false;
+          }
+          else {
+            foundbranches << ", ";
+          }
+          foundbranches << e->GetName();
+        }
+        std::string fbstring = foundbranches.str();
+        AliErrorStream() << "Found branches: " << fbstring << std::endl;
+        fLocalInitialized = kFALSE;
+        return;
+      }
+    }
+  
+    if (!fRho) { // if rho name is not provided, tries to use the rho object of the first jet branch
+      fRhoName = cont->GetRhoName();
+      fRho = cont->GetRhoParameter();
+    }
   }
   
   fLocalInitialized = kTRUE;
@@ -1330,12 +1417,18 @@ void AliAnalysisTaskSEHFTreeCreator::ExecOnce()
 Bool_t AliAnalysisTaskSEHFTreeCreator::RetrieveEventObjects()
 {
   
+  AliEmcalContainer* cont = nullptr;
+  TIter nextPartColl(&fParticleCollArray);
+  while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))){
+    cont->NextEvent(InputEvent());
+  }
+  
   if (fRho) fRhoVal = fRho->GetVal();
   
-  AliEmcalContainer* cont = 0;
+  AliEmcalContainer* contJet = nullptr;
   TIter nextJetColl(&fJetCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent(InputEvent());
-  
+  while ((contJet = static_cast<AliEmcalContainer*>(nextJetColl()))) contJet->NextEvent(InputEvent());
+
   return kTRUE;
 }
 
@@ -2633,9 +2726,93 @@ unsigned int AliAnalysisTaskSEHFTreeCreator::GetEvID() {
     fEventNumber++;
     return evID;
 }
+
+/**
+ * @brief Create new container for MC particles and attach it to the task.
+ * (copied from AliAnalysisTaskEmcal)
+ *
+ * The name provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new container for MC particles
+ */
+AliMCParticleContainer* AliAnalysisTaskSEHFTreeCreator::AddMCParticleContainer(const char *n)
+{
+  if (TString(n).IsNull()) return 0;
   
+  AliMCParticleContainer* cont = new AliMCParticleContainer(n);
+  fParticleCollArray.Add(cont);
+  
+  return cont;
+}
+
+/**
+ * @brief Create new track container and attach it to the task.
+ * (copied from AliAnalysisTaskEmcal)
+ *
+ * The name provided to this function must match the name of the array
+ * attached to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new track container
+ */
+AliTrackContainer* AliAnalysisTaskSEHFTreeCreator::AddTrackContainer(const char *n)
+{
+  if (TString(n).IsNull()) return 0;
+  
+  AliTrackContainer* cont = new AliTrackContainer(n);
+  fParticleCollArray.Add(cont);
+  
+  return cont;
+}
+
+/**
+ * @brief Create new particle container and attach it to the task.
+ * (copied from AliAnalysisTaskEmcal)
+ *
+ * The name provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new particle container
+ */
+AliParticleContainer* AliAnalysisTaskSEHFTreeCreator::AddParticleContainer(const char *n)
+{
+  if (TString(n).IsNull()) return 0;
+  
+  AliParticleContainer* cont = new AliParticleContainer(n);
+  fParticleCollArray.Add(cont);
+  
+  return cont;
+}
+
+/**
+ * @brief Get \f$ i^{th} \f$ particle container attached to this task
+ * (copied from AliAnalysisTaskEmcal)
+ * @param[in] i Index of the particle container
+ * @return Particle container found for the given index (NULL if no particle container exists for that index)
+ */
+AliParticleContainer* AliAnalysisTaskSEHFTreeCreator::GetParticleContainer(Int_t i) const
+{
+  if (i<0 || i>fParticleCollArray.GetEntriesFast()) return 0;
+  AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
+  return cont;
+}
+
+/**
+ * @brief Find particle container attached to this task according to its name
+ * (copied from AliAnalysisTaskEmcal)
+ * @param[in] name Name of the particle container
+ * @return Particle container found under the given name
+ */
+AliParticleContainer* AliAnalysisTaskSEHFTreeCreator::GetParticleContainer(const char *name) const
+{
+  AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.FindObject(name));
+  return cont;
+}
+
+
 /**
  * Create new jet container and attach it to the task. This method is usually called in the add task macro.
+ * (copied from AliAnalysisTaskEmcalJet)
  * @param[in] jetType One of the AliJetContainer::EJetType_t enumeration values (charged, full, neutral)
  * @param[in] jetAlgo One of the AliJetContainer::EJetAlgo_t enumeration values (anti-kt, kt, ...)
  * @param[in] recoScheme One of the AliJetContainer::ERecoScheme_t enumeration values (pt-scheme, ...)
@@ -2658,6 +2835,7 @@ AliJetContainer* AliAnalysisTaskSEHFTreeCreator::AddJetContainer(AliJetContainer
 
 /**
  * Create new jet container and attach it to the task. This method is usually called in the add task macro.
+ * (copied from AliAnalysisTaskEmcalJet)
  * @param[in] n Name of the jet branch
  * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (kTPC, kEMCAL, kDCAL, ...),
  * or a combination using bitwise OR: For example, (kEMCAL | kDCAL) will select all jets in either EMCal or DCal.
@@ -2678,6 +2856,7 @@ AliJetContainer* AliAnalysisTaskSEHFTreeCreator::AddJetContainer(const char *n, 
 
 /**
  * Get \f$ i^{th} \f$ jet container attached to this task
+ * (copied from AliAnalysisTaskEmcalJet)
  * @param[in] i Index of the jet container
  * @return Jet container found for the given index (NULL if no jet container exists for that index)
  */
