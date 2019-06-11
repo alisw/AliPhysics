@@ -13,7 +13,7 @@ void printStat(const char* path = "alien:///alice/cern.ch/user/a/alitrain/PWGZZ/
     if (!file)
       continue;
     
-    auto list = (TList*) file->Get("NanoAODskimmingNormalisation/Skimming_Normalisation");
+    auto list = (TList*) file->Get("NanoAODNormalisation/Normalisation");
     
     const char* hists[] = { "fCandidateEvents_Skimming", "fSelectedEvents_Skimming", "fCandidateEvents_Filter", "fSelectedEvents_Filter" };
     
