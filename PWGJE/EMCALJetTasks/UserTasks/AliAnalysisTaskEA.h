@@ -312,12 +312,10 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH1D* fhMultTTCinHM[fkTTbins];                       //! multiplicity of cluster TT in HM event
    TH1D* fhMultTTCinGA[fkTTbins];                       //! multiplicity of cluster TT in Gamma trigger event
 
-   TH1D* fhTrackMultMB;                                 //! multiplicity of midrapidity charged tracks for MB events 
-   TH1D* fhTrackMultHM;                                 //! multiplicity of  midrapidity charged tracks for HM events 
-   TH1D* fhTrackMultHM01;                                 //! mult charged tracks for HM events  cent<0.1
-   TH1D* fhMeanTrackPtMB;                               //! mean track pT for MB events 
-   TH1D* fhMeanTrackPtHM;                               //! mean track pT for HM events 
-   TH1D* fhMeanTrackPtHM01;                             //! mean track pT for HM events cent < 0.1 
+   TH2D* fhTrackMultMB;                                 //! multiplicity of midrapidity charged tracks for MB events 
+   TH2D* fhTrackMultHM;                                 //! multiplicity of  midrapidity charged tracks for HM events 
+   TH2D* fhMeanTrackPtMB;                               //! mean track pT for MB events 
+   TH2D* fhMeanTrackPtHM;                               //! mean track pT for HM events 
 
    //hadron TT
    TH2D* fhTTHinMB_V0M[fkTTbins];                       //! counter of semi-inclusive hadron TT  in MB versus V0M   
@@ -460,7 +458,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 10); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 11); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 #endif

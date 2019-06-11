@@ -155,10 +155,8 @@ fhV0AvsSPD(0x0),
 fhV0CvsSPD(0x0),
 fhTrackMultMB(0x0),
 fhTrackMultHM(0x0),
-fhTrackMultHM01(0x0),
 fhMeanTrackPtMB(0x0),
 fhMeanTrackPtHM(0x0),
-fhMeanTrackPtHM01(0x0),
 fhPtTrkTruePrimGen(0x0),
 fhPtTrkTruePrimRec(0x0),
 fhPtTrkSecOrFakeRec(0x0),
@@ -445,10 +443,8 @@ fhV0AvsSPD(0x0),
 fhV0CvsSPD(0x0),
 fhTrackMultMB(0x0),
 fhTrackMultHM(0x0),
-fhTrackMultHM01(0x0),
 fhMeanTrackPtMB(0x0),
 fhMeanTrackPtHM(0x0),
-fhMeanTrackPtHM01(0x0),
 fhPtTrkTruePrimGen(0x0),
 fhPtTrkTruePrimRec(0x0),
 fhPtTrkSecOrFakeRec(0x0),
@@ -1614,8 +1610,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
        fhV0AvsSPD->Fill(fNTracklets, fMultV0A);
        fhV0CvsSPD->Fill(fNTracklets, fMultV0C);
 
-       fhTrackMultMB->Fill(trackMult); 
-       fhMeanTrackPtMB->Fill(sumTrackPt);
+       fhTrackMultMB->Fill(fCentralityV0A, trackMult); 
+       fhMeanTrackPtMB->Fill(fCentralityV0A, sumTrackPt);
     }
 
     
@@ -1635,12 +1631,8 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
        //fhSignalHM[fkV0Mnorm]->Fill(fMultV0AV0Cnorm);
 
         
-       fhTrackMultHM->Fill(trackMult); 
-       fhMeanTrackPtHM->Fill(sumTrackPt);
-       if(fCentralityV0M<0.1){
-          fhTrackMultHM01->Fill(trackMult); 
-          fhMeanTrackPtHM01->Fill(sumTrackPt);       
-       } 
+       fhTrackMultHM->Fill(fCentralityV0A, trackMult); 
+       fhMeanTrackPtHM->Fill(fCentralityV0A, sumTrackPt);
    }
 
    //_________________________________________________________
@@ -2365,7 +2357,9 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
 
    Double_t arrcent[] = {
-     0.,0.05, 0.1, 0.15, 0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,  
+     0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
+     0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19,
+     0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,  
      1.,1.5,  
      2.,2.5,  
      3.,3.5,  
@@ -2383,7 +2377,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    for(Int_t ic=0; ic<fkCE;ic++){
       name = Form("hCentrality_MB_%s",cest[ic].Data());
-      fhCentralityMB[ic] = new TH2D(name.Data(), name.Data(), narrcent, arrcent , narrV0, arrV0);
+      fhCentralityMB[ic] = new TH2D(name.Data(), name.Data(), narrcent, arrcent, narrV0, arrV0);
       fOutput->Add((TH2D*) fhCentralityMB[ic]); 
    }
    for(Int_t ic=0; ic<fkCE;ic++){
@@ -2600,23 +2594,18 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    } 
 
    //+++++++++++++++++++++++++++++++
-   fhTrackMultMB = new TH1D("fhTrackMultMB","fhTrackMultMB",1000,0,1000); 
-   fOutput->Add((TH1D*) fhTrackMultMB); 
+   fhTrackMultMB = new TH2D("fhTrackMultMB","fhTrackMultMB", narrcent, arrcent, 1000, 0, 1000); 
+   fOutput->Add((TH2D*) fhTrackMultMB); 
 
-   fhTrackMultHM = new TH1D("fhTrackMultHM","fhTrackMultHM",1000,0,1000); 
+   fhTrackMultHM = new TH2D("fhTrackMultHM","fhTrackMultHM", narrcent, arrcent, 1000, 0, 1000); 
    fOutput->Add((TH1D*) fhTrackMultHM); 
 
-   fhTrackMultHM01 = new TH1D("fhTrackMultHM01","fhTrackMultHM01",1000,0,1000); 
-   fOutput->Add((TH1D*) fhTrackMultHM01); 
-
-   fhMeanTrackPtMB = new TH1D("fhMeanTrackPtMB","fhMeanTrackPtMB",100,0,20);
+   fhMeanTrackPtMB = new TH2D("fhMeanTrackPtMB","fhMeanTrackPtMB", narrcent, arrcent, 100, 0, 20);
    fOutput->Add((TH1D*) fhMeanTrackPtMB); 
 
-   fhMeanTrackPtHM = new TH1D("fhMeanTrackPtHM","fhMeanTrackPtHM",100,0,20);
+   fhMeanTrackPtHM = new TH2D("fhMeanTrackPtHM","fhMeanTrackPtHM", narrcent, arrcent, 100, 0, 20);
    fOutput->Add((TH1D*) fhMeanTrackPtHM); 
 
-   fhMeanTrackPtHM01 = new TH1D("fhMeanTrackPtHM01","fhMeanTrackPtHM for cent<0.1",100,0,20);
-   fOutput->Add((TH1D*) fhMeanTrackPtHM01); 
 
    //Trigger track candidate multiplicity
    for(Int_t itt=0; itt<fnHadronTTBins; itt++){
