@@ -61,7 +61,7 @@ AliAnalysisTaskFemtoDreamDeuteron::~AliAnalysisTaskFemtoDreamDeuteron() {
 Float_t AliAnalysisTaskFemtoDreamDeuteron::GetMass2sq(AliFemtoDreamTrack *track) {
     Float_t p = track->GetP();
     Float_t mass2sq = -999;
-    Float_t beta = track->GetBetaTOF();
+    Float_t beta = track->GetbetaTOF();
     if(!(beta<0)){
         mass2sq = ((1/(beta*beta))-1)*(p*p);
     }
@@ -76,8 +76,12 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   // Here we are playing a little bit dirty and simply initialising the Histogramms for invariant mass inside the
   // analysis task. This is bad style and in the future should definitely be outsourced but for the moment it is fine 
   // as long as it works.	
-  fDInvMass = new TH2F("fDInvMass","Deuteron_InvMsq", 500, 0.4, 4., 500, 0.2, 2.); // (name, title, #binsx, xmin, xmax, #binsy, ymin, ymax)
-  fAntiDInvMass = new TH2F("fAntiDInvMass","Antideuteron_InvMsq", 500, 0.4, 4., 500, 0.2, 2.);
+  fDInvMass = new TH2F("fDInvMass","Deuteron_InvMsq", 36, 0.4, 4., 300, 2., 5.);
+  fDInvMass->GetXaxis()->SetTitle("pT");
+  fDInvMass->GetYaxis()->SetTitle("m^2");
+  fAntiDInvMass = new TH2F("fAntiDInvMass","Antideuteron_InvMsq", 36, 0.4, 4., 300, 2., 5.);
+  fAntiDInvMass->GetXaxis()->SetTitle("pT");
+  fAntiDInvMass->GetYaxis()->SetTitle("m^2");
   fOutput->Add(fDInvMass);
   fOutput->Add(fAntiDInvMass);
 
