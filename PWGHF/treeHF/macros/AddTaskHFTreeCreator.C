@@ -20,6 +20,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
                                                      Int_t pidOptLc2V0bachelor=AliHFTreeHandler::kRawAndNsigmaPID,
                                                      Int_t pidOptBplus=AliHFTreeHandler::kRawAndNsigmaPID,
                                                      Int_t singletrackvarsopt=AliHFTreeHandler::kRedSingleTrackVars,
+                                                     Bool_t fillParticleTree = kFALSE,
                                                      Int_t fillNJetTrees = 0,
                                                      Bool_t fillJetConstituentTrees = kFALSE)
 {
@@ -109,6 +110,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     task->SetFillBplusTree(fillTreeBplus);
     task->SetFillDstarTree(fillTreeDstar);
     task->SetFillLc2V0bachelorTree(fillTreeLc2V0bachelor);
+    task->SetFillParticleTree(fillParticleTree);
     task->SetPIDoptD0Tree(pidOptD0);
     task->SetPIDoptDsTree(pidOptDs);
     task->SetPIDoptDplusTree(pidOptDplus);
@@ -144,6 +146,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     TString treeGenBplusname = "coutputTreeGenBplus";
     TString treeGenDstarname = "coutputTreeGenDstar";
     TString treeGenLc2V0bachelorname = "coutputTreeGenLc2V0bachelor";
+    TString treeParticleName = "coutputTreeParticle";
+    TString treeGenParticleName = "coutputTreeGenParticle";
     TString treeJetName = "coutputTreeJet%d";
     TString treeJetConstituentName = "coutputTreeJetConstituent%d";
  
@@ -167,6 +171,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     treeGenBplusname += finDirname.Data();
     treeGenDstarname += finDirname.Data();
     treeGenLc2V0bachelorname += finDirname.Data();
+    treeParticleName += finDirname.Data();
+    treeGenParticleName += finDirname.Data();
     treeJetName += finDirname.Data();
     treeJetConstituentName += finDirname.Data();
 
@@ -195,6 +201,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     AliAnalysisDataContainer *coutputTreeGenDstar = 0x0;
     AliAnalysisDataContainer *coutputTreeLc2V0bachelor = 0x0;
     AliAnalysisDataContainer *coutputTreeGenLc2V0bachelor = 0x0;
+    AliAnalysisDataContainer *coutputTreeParticle = 0x0;
+    AliAnalysisDataContainer *coutputTreeGenParticle = 0x0;
     std::vector<AliAnalysisDataContainer*> coutputTreeJet;
     std::vector<AliAnalysisDataContainer*> coutputTreeJetConstituent;
 
@@ -261,6 +269,15 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
         }
     }
   
+    if(fillParticleTree) {
+      coutputTreeParticle = mgr->CreateContainer(treeParticleName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+      coutputTreeParticle->SetSpecialOutput();
+      if(readMC && fillMGgenTrees) {
+        coutputTreeGenParticle = mgr->CreateContainer(treeGenParticleName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+        coutputTreeGenParticle->SetSpecialOutput();
+      }
+    }
+  
     for (int i=0; i<fillNJetTrees; i++) {
       coutputTreeJet.push_back(mgr->CreateContainer(Form(treeJetName, i),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()));
       coutputTreeJet.at(i)->SetSpecialOutput();
@@ -307,12 +324,16 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
         mgr->ConnectOutput(task,18,coutputTreeLc2V0bachelor);
         if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,19,coutputTreeGenLc2V0bachelor);
     }
+    if(fillParticleTree) {
+      mgr->ConnectOutput(task,20,coutputTreeParticle);
+      if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,21,coutputTreeGenParticle);
+    }
     for (int i=0; i<fillNJetTrees; i++) {
-      mgr->ConnectOutput(task,20+i,coutputTreeJet.at(i));
+      mgr->ConnectOutput(task,22+i,coutputTreeJet.at(i));
     }
     if (fillJetConstituentTrees) {
       for (int i=0; i<fillNJetTrees; i++) {
-        mgr->ConnectOutput(task,20+fillNJetTrees+i,coutputTreeJetConstituent.at(i));
+        mgr->ConnectOutput(task,22+fillNJetTrees+i,coutputTreeJetConstituent.at(i));
       }
     }
 

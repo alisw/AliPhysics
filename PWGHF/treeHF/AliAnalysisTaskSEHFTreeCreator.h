@@ -19,6 +19,7 @@
 // L. van Doremalen, lennart.van.doremalen@cern.ch
 // J. Norman, jaime.norman@cern.ch
 // G. Luparello, grazia.luparello@cern.ch
+// J. Mulligan, james.mulligan@berkeley.edu
 ///*************************************************************************
 
 #include <TROOT.h>
@@ -48,6 +49,10 @@
 #include "AliHFTreeHandlerDstartoKpipi.h"
 #include "AliHFTreeHandlerLc2V0bachelor.h"
 #include "AliJetTreeHandler.h"
+#include "AliParticleTreeHandler.h"
+#include "AliParticleContainer.h"
+#include "AliTrackContainer.h"
+#include "AliMCParticleContainer.h"
 #include "AliJetContainer.h"
 
 class AliAODEvent;
@@ -129,11 +134,20 @@ public:
         fEnableNsigmaTPCDataCorr=true; 
         fSystemForNsigmaTPCDataCorr=syst; 
     }
+  
+    // Particles (tracks or MC particles)
+    //-----------------------------------------------------------------------------------------------
+    void                        SetFillParticleTree(Bool_t b) {fFillParticleTree = b;}
+    AliParticleContainer*       AddParticleContainer(const char *n);
+    AliTrackContainer*          AddTrackContainer(const char *n);
+    AliMCParticleContainer*     AddMCParticleContainer(const char *n);
+    AliParticleContainer*       GetParticleContainer(Int_t i=0) const;
+    AliParticleContainer*       GetParticleContainer(const char* name) const;
+    void                        FillParticleTree();
 
     // Jets
     //-----------------------------------------------------------------------------------------------
     void SetFillNJetTrees(Int_t n){fWriteNJetTrees=n;}
-  
     AliJetContainer* AddJetContainer(AliJetContainer::EJetType_t jetType, AliJetContainer::EJetAlgo_t jetAlgo, AliJetContainer::ERecoScheme_t recoScheme, Double_t radius, UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
     AliJetContainer* AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius);
     AliJetContainer* GetJetContainer(Int_t i=0) const;
@@ -255,6 +269,19 @@ private:
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
   
+    // Particles (tracks / MC particles)
+    // Add a single AliTrackContainer and/or AliMCParticleContainer to select particles
+    // A separate (identical) AliParticleTreeHandler will be used to fill each tree.
+    //-----------------------------------------------------------------------------------------------
+    bool                    fFillParticleTree;                     ///< Store tree of all tracks inside the jet
+  
+    TTree*                  fVariablesTreeParticle;                //!<! Particle tree
+    TTree*                  fVariablesTreeGenParticle;             //!<! MC particle tree
+  
+    AliParticleTreeHandler* fTreeHandlerParticle;                  //!<! handler object for particle tree
+    AliParticleTreeHandler* fTreeHandlerGenParticle;               //!<! handler object for MC particle tree
+  
+    TObjArray               fParticleCollArray;                    ///< particle/track collection array
   
     // Jets
     //-----------------------------------------------------------------------------------------------

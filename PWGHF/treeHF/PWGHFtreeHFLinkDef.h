@@ -15,6 +15,7 @@
 #pragma link C++ class   AliHFTreeHandlerDstartoKpipi+;
 #pragma link C++ class   AliHFTreeHandlerLc2V0bachelor+;
 #pragma link C++ class   AliJetTreeHandler+;
+#pragma link C++ class   AliParticleTreeHandler+;
 
 
 #endif
