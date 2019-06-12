@@ -798,7 +798,8 @@ struct TrackCutAttrItsCluster {
 };
 
 
-/// Rapidity assuming mass
+/// Reject tracks within 3 TPC-sigma of electrons and outside 3-sigma
+/// of other particles
 struct TrackCutAttrElectronRejection {
 
   bool reject_electrons;
@@ -892,7 +893,6 @@ public:
   virtual ~AliFemtoTrackCutAttr()
     {}
 };
-
 
 
 #endif

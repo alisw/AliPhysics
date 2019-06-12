@@ -589,17 +589,14 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
   }
 
   if (p.event_use_basic) {
-  AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
+    AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
 
-  cut->SetEventMult(p.event_MultMin,
-                    p.event_MultMax);
-  cut->SetVertZPos(p.event_VertexZMin,
-                   p.event_VertexZMax);
-  cut->SetEPVZERO(p.event_EP_VZeroMin,
-                  p.event_EP_VZeroMax);
-  cut->SetTriggerSelection(p.event_TriggerSelection);
-  cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
-  return cut;
+    cut->SetEventMult(p.event_MultMin, p.event_MultMax);
+    cut->SetVertZPos(p.event_VertexZMin, p.event_VertexZMax);
+    cut->SetEPVZERO(p.event_EP_VZeroMin, p.event_EP_VZeroMax);
+    cut->SetTriggerSelection(p.event_TriggerSelection);
+    cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
+    return cut;
   }
 
   AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();
