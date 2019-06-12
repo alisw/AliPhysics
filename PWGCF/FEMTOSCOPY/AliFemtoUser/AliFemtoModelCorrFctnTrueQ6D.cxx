@@ -267,22 +267,26 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
   const AliFemtoLorentzVector p = p1 + p2,
                               d = p1 - p2;
 
-  Double_t k1 = p.Perp(),
-           k2 = d.x()*p.x() + d.y()*p.y();
+  #define FAST_DIVIDE(num, den) __builtin_expect(den == 0.0, 0) ? 0.0 : num / den
 
-  Double_t qout = (k1 == 0) ? 0.0 : k2/k1;
+  const Double_t
+    pt = p.Perp(),
+    E = p.e(),
+    pz = p.z(),
+    de = d.e(),
+    dz = d.z(),
 
-  Double_t qside = (k1 == 0) ? 0.0 : 2.0 * (p2.x()*p1.y() - p1.x()*p2.y())/k1;
+    qout = FAST_DIVIDE(d.x()*p.x() + d.y()*p.y(), pt),
+
+    qside = FAST_DIVIDE(p2.x()*p1.y() - p1.x()*p2.y(), pt),
+
+    qlong = (E*dz - pz*de) / std::sqrt(E*E - pz*pz);
 
   // Double_t beta = p.z()/p.t(),
   //         gamma = 1.0 / TMath::Sqrt((1.0-beta)*(1.0+beta)),
   //         qlong = gamma * (d.z() - beta*d.t());
 
-  Double_t pt = p.t(),
-           pz = p.z(),
-           dt = d.t(),
-           dz = d.z(),
-           qlong = (pt*dz - pz*dt) / TMath::Sqrt(pt*pt - pz*pz);
+  #undef FAST_DIVIDE
 
   return std::make_tuple(qout, qside, qlong);
 }
@@ -326,8 +330,8 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1,
   const AliFemtoThreeVector &true_momentum1 = *info1->GetTrueMomentum(),
                             &true_momentum2 = *info2->GetTrueMomentum();
 
-  const Double_t e1 = sqrt(mass1 * mass1 + true_momentum1.Mag2()),
-                 e2 = sqrt(mass2 * mass2 + true_momentum2.Mag2());
+  const Double_t e1 = std::sqrt(mass1 * mass1 + true_momentum1.Mag2()),
+                 e2 = std::sqrt(mass2 * mass2 + true_momentum2.Mag2());
 
   const AliFemtoLorentzVector p1(e1, true_momentum1),
                               p2(e2, true_momentum2);
@@ -346,16 +350,6 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1,
 void
 AliFemtoModelCorrFctnTrueQ6D::AddRealPair(AliFemtoPair *pair)
 {
-  const AliFemtoParticle *p1 = pair->Track1(),
-                         *p2 = pair->Track2();
-
-  // randomize to avoid ordering biases
-  if (fRng->Uniform() >= 0.5) {
-    std::swap(p1, p2);
-  }
-
-  Double_t femto_weight = fUseFemtoWeight ? fManager->GetWeight(pair) : 1.0;
-  AddPair(*p1, *p2, femto_weight);
 }
 
 void
@@ -365,7 +359,7 @@ AliFemtoModelCorrFctnTrueQ6D::AddMixedPair(AliFemtoPair *pair)
                          *p2 = pair->Track2();
 
   // randomize to avoid ordering biases
-  if (fRng->Uniform() >= 0.5) {
+  if (p1->FourMomentum().Perp() <= p2->FourMomentum().Perp()) {
     std::swap(p1, p2);
   }
 
