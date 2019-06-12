@@ -217,7 +217,13 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","1111111057032230000","32c51070a","0103603700000000","0153503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("00052113","1111111057032230000","32c51070a","0103603700000000","0153503000000000"); // EMC7
   } else if( trainConfig == 116){ // no bck calculation
+    cuts.AddCutHeavyMesonCalo("00010113","1111111057032230000","32c51070a","0103603700000000","0453503000000000"); // INT7
     cuts.AddCutHeavyMesonCalo("00052113","1111111057032230000","32c51070a","0103603700000000","0453503000000000"); // EMC7
+  // Test for EMCal (13 TeV) without background calculation
+  } else if( trainConfig == 117)  { 
+    cuts.AddCutHeavyMesonCalo("00010113","1111111047032230000","32c51070a","0103603700000000","0453503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00085113","1111111047032230000","32c51070a","0103603700000000","0453503000000000"); // EG2
+    cuts.AddCutHeavyMesonCalo("00083113","1111111047032230000","32c51070a","0103603700000000","0453503000000000"); // EG1
     // ---------------------------------
     // systematic studies 7 TeV (EMCal)
     // ---------------------------------

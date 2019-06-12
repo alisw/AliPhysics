@@ -474,11 +474,14 @@ Bool_t AliPrimaryPionCuts::TrackIsSelected(AliESDtrack* lTrack) {
     return kFALSE;
   }
 
-  fHistTrackSelectedEta->Fill(lTrack->Eta());
-  fHistTrackSelectedPhi->Fill(lTrack->Phi());
-  fHistTrackSelectedPt->Fill(lTrack->Pt());
+  if(!fDoLightOutput){
+  	fHistTrackSelectedEta->Fill(lTrack->Eta());
+  	fHistTrackSelectedPhi->Fill(lTrack->Phi());
+  	fHistTrackSelectedPt->Fill(lTrack->Pt());
 
-	if(lTrack->GetNumberOfITSClusters()==0) fHistTrackSelectedPtWithoutITS->Fill(lTrack->Pt());
+		if(lTrack->GetNumberOfITSClusters()==0) fHistTrackSelectedPtWithoutITS->Fill(lTrack->Pt());
+	}
+
   return kTRUE;
 }
 ///________________________________________________________________________
@@ -525,11 +528,12 @@ Bool_t AliPrimaryPionCuts::TrackIsSelectedAOD(AliAODTrack* lTrack) {
     return kFALSE;
   }
 
-	fHistTrackSelectedEta->Fill(lTrack->Eta());
-  fHistTrackSelectedPhi->Fill(lTrack->Phi());
-  fHistTrackSelectedPt->Fill(lTrack->Pt());
-
-	if(lTrack->GetITSNcls()==0) fHistTrackSelectedPtWithoutITS->Fill(lTrack->Pt());
+  if(!fDoLightOutput){
+		fHistTrackSelectedEta->Fill(lTrack->Eta());
+  	fHistTrackSelectedPhi->Fill(lTrack->Phi());
+  	fHistTrackSelectedPt->Fill(lTrack->Pt());
+		if(lTrack->GetITSNcls()==0) fHistTrackSelectedPtWithoutITS->Fill(lTrack->Pt());
+	}
 
   return kTRUE;
 }
