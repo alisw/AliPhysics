@@ -272,7 +272,6 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
       pass = false;
     }
   }
-
   v0->SetUse(pass);
   BookQA(v0);
   if (!fMinimalBooking) {
@@ -620,7 +619,7 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
   v0->GetPosDaughter()->SetUse(v0->UseParticle());
   v0->GetNegDaughter()->SetUse(v0->UseParticle());
 
-  if (v0->IsSet()) {
+  if (v0->IsSet()&&v0->GetHasDaughters()) {
     fPosCuts->BookQA(v0->GetPosDaughter());
     fNegCuts->BookQA(v0->GetNegDaughter());
   }
