@@ -2337,26 +2337,26 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   }
 
   else if (isSelected == 3) { // selected as either a D0bar or a D0 (PID on K and pi undecisive)
-   
+  
 
     // Accept the correct mass hypothesis for signal-only and the wrong one for background-only
     if (MCtruthPdgCode == fCandidatePDG){
       
-      if (i != 0) return kFALSE;
+      if (i == 0){
       auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
 	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
         if(origin.first == kFromBottom){
-	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
+	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}}
     }
     else if (MCtruthPdgCode == -fCandidatePDG){
-      if (i != 1) return kFALSE;
+      if (i == 1){
 
        auto origin = IsPromptCharm(aodMcPart, fMCContainer->GetArray());
       if(origin.first == kFromCharm){
 	if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesPrompt->Fill(aodMcPart->Pt(),jetpt);}
         if(origin.first == kFromBottom){
-	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}
+	  if(TMath::Abs(aodMcPart->Eta())<=0.9)EfficiencyMatchesNonPrompt->Fill(aodMcPart->Pt(),jetpt);}}
       
     }
   }
