@@ -200,6 +200,9 @@ class AliFemtoDreamv0Cuts {
     return "v0Cuts";
   }
   ;
+  void SetArmenterosCut(bool doIt) {
+    fDoArmenterosCut = doIt;
+  }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
     fDoArmenterosCut = true;
