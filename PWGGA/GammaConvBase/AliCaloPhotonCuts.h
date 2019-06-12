@@ -205,6 +205,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP13T17P1Pyt8Str,
       kPP13T17P1Pyt8LowB,
       kPP13T17P1JJ,
+      kPP13T17b1JJdecay,
+      kPP13T17c1JJdecay,
       // pp 13 TeV 2018
       kPP13T18P1JJ,
       // Xe-Xe MC
@@ -627,7 +629,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,87)
+    ClassDef(AliCaloPhotonCuts,88)
 };
 
 #endif
