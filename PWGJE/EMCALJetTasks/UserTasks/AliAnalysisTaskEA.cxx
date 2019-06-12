@@ -811,10 +811,14 @@ AliAnalysisTaskEA*  AliAnalysisTaskEA::AddTaskEA(
 Bool_t AliAnalysisTaskEA::PassedGATrigger(){
   //EG1 high EMCAL trigger
   TString trigger = fInputEvent->GetFiredTriggerClasses();
+  UInt_t triggerMask = fInputHandler->IsEventSelected();
   bool passedGammaTrigger = kFALSE;
-  //EG1 high EMCAL trigger, EG2 low EMCAL trigger, DG1 high DCAL trigger, DG2 low emcal trigger 
-  if(trigger.Contains("EG1")){
-     passedGammaTrigger = kTRUE;
+
+  if(triggerMask & AliVEvent::AliVEvent::kEMCEGA){
+     //EG1 high EMCAL trigger, EG2 low EMCAL trigger, DG1 high DCAL trigger, DG2 low emcal trigger 
+     if(trigger.Contains("EG1")){
+        passedGammaTrigger = kTRUE;
+     }
   }
   return passedGammaTrigger;
 
@@ -822,12 +826,15 @@ Bool_t AliAnalysisTaskEA::PassedGATrigger(){
 //_____________________________________________________________________________________
 Bool_t AliAnalysisTaskEA::PassedMinBiasTrigger(){
   //minimum bias trigger
-  TString trigger = fInputEvent->GetFiredTriggerClasses();
+  //TString trigger = fInputEvent->GetFiredTriggerClasses();
   bool passedTrigger = kFALSE;
 
   if(!fMC){
-     if(trigger.Contains("CINT7-B-NOPF-CENT")){
+     UInt_t triggerMask = fInputHandler->IsEventSelected();
+     if(triggerMask & AliVEvent::kINT7){
+        //if(trigger.Contains("CINT7-B-NOPF-CENT")){
         passedTrigger = kTRUE;
+         //}
      }
   }else{
      //if(trigger.Contains("MB1")){
@@ -839,13 +846,19 @@ Bool_t AliAnalysisTaskEA::PassedMinBiasTrigger(){
 }
 //_____________________________________________________________________________________
 Bool_t AliAnalysisTaskEA::PassedHighMultTrigger(){
-  //high multiplicity V0M trigger
-  TString trigger = fInputEvent->GetFiredTriggerClasses();
-  bool passedTrigger = kFALSE;
-  if(trigger.Contains("HMV0M")){
-     passedTrigger = kTRUE;
-  }
-  return passedTrigger;
+   //high multiplicity V0M trigger
+   //TString trigger = fInputEvent->GetFiredTriggerClasses();
+   UInt_t triggerMask = fInputHandler->IsEventSelected();
+   bool passedTrigger = kFALSE;
+
+   if(!fMC){
+      if(triggerMask & AliVEvent::kHighMultV0){
+      //if(trigger.Contains("HMV0M")){
+         passedTrigger = kTRUE;
+      //}
+      }
+   }
+   return passedTrigger;
 
 }
 
@@ -2185,6 +2198,7 @@ AliAnalysisTaskEA::~AliAnalysisTaskEA(){
    }
    delete fRandom;
    delete fHelperClass;
+   delete fFiducialCellCut; 
  
 } 
 //________________________________________________________________________
@@ -2230,9 +2244,6 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    fhTrackPhiInclMB = new TH2D("fhTrackPhiInclMB","Azim dist tracks vs pT MB", 50, 0, 100, 50,0,2*TMath::Pi());
    fOutput->Add((TH2D*) fhTrackPhiInclMB);
-
-   fhTrackEtaInclMB = new TH2D("fhTrackEtaInclMB","Eta dist inclusive track vs pT MB", 50,0, 100, 40,-0.9,0.9);
-   fOutput->Add((TH2D*) fhTrackEtaInclMB);
 
    fhTrackEtaInclHM = new TH2D("fhTrackEtaInclHM","Eta dist inclusive track vs pT HM", 50,0, 100, 40,-0.9,0.9);
    fOutput->Add((TH2D*) fhTrackEtaInclHM);
@@ -2359,8 +2370,11 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    Double_t arrcent[] = {
      0., 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 
      0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19,
-     0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,  
-     1.,1.5,  
+     0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29,
+     0.3, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39,
+     0.4, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49,
+     0.5,0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,  
+     1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
      2.,2.5,  
      3.,3.5,  
      4.,4.5,  
