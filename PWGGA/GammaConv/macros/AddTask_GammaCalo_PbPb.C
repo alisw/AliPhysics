@@ -1184,6 +1184,20 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("12410013","2446600000012200000","0163103100000010"); // 20-40
     cuts.AddCutCalo("10410013","2446600000012200000","0163103100000010"); // 0-40
     cuts.AddCutCalo("14810013","2446600000012200000","0163103100000010"); // 40-80
+  } else if (trainConfig == 403){ // PHOS clusters - 0-80% centrality for XeXe PHOS cluster QA, PHOS TM sigma 2
+    cuts.AddCutCalo("10810013","2446600007012200000","0163103100000010"); // 0-80
+  } else if (trainConfig == 404){ // PHOS clusters - centrality for XeXe PHOS cluster QA
+    cuts.AddCutCalo("10210013","2446600007012200000","0163103100000010"); // 0-20
+    cuts.AddCutCalo("12410013","2446600007012200000","0163103100000010"); // 20-40
+    cuts.AddCutCalo("10410013","2446600007012200000","0163103100000010"); // 0-40
+    cuts.AddCutCalo("14810013","2446600007012200000","0163103100000010"); // 40-80
+  } else if (trainConfig == 405){ // PHOS clusters - 0-80% centrality for XeXe PHOS cluster QA, PHOS TM sigma 2.5
+    cuts.AddCutCalo("10810013","2446600008012200000","0163103100000010"); // 0-80
+  } else if (trainConfig == 406){ // PHOS clusters - centrality for XeXe PHOS cluster QA
+    cuts.AddCutCalo("10210013","2446600008012200000","0163103100000010"); // 0-20
+    cuts.AddCutCalo("12410013","2446600008012200000","0163103100000010"); // 20-40
+    cuts.AddCutCalo("10410013","2446600008012200000","0163103100000010"); // 0-40
+    cuts.AddCutCalo("14810013","2446600008012200000","0163103100000010"); // 40-80
 
   //-----------------------------------------------------------------------------------------------
   // Systematics variations 0-20 PHOS
