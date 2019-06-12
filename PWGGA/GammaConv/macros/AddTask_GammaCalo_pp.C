@@ -1447,6 +1447,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","2446601044012300000","0163103100000010"); // PHOS people NL
     cuts.AddCutCalo("00010113","2446651044012300000","0163103100000010"); // INT7
     cuts.AddCutCalo("00010113","2446652044012300000","0163103100000010"); // PHOS calo NL
+  } else if( trainConfig == 705){ // DEFAULT 2018 oct 31 no NL
+    cuts.AddCutCalo("00010113","2446600004012300000","0163103100000010"); // no NL
+    cuts.AddCutCalo("00062113","2446600004012300000","0163103100000010"); // PHI7
 
   // *********************************************************************************************************
   // 13 TeV 2015 pp Run2 - PHOS configurations
@@ -1577,6 +1580,11 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2008){ // EMCAL+DCAL clusters standard cuts pp 5TeV triggered analysis
     cuts.AddCutCalo("000a1113","4117911070032230000","01631031000000d0"); // std EMC7
     cuts.AddCutCalo("000a2113","4117911070032230000","01631031000000d0"); // std EG2
+  } else if (trainConfig == 2009){ // EMCAL+DCAL clusters standard cuts pp 5TeV triggered analysis
+    cuts.AddCutCalo("00010113","4117911007032230000","01631031000000d0"); // Standard EDC
+    cuts.AddCutCalo("00010113","4117911000032230000","01631031000000d0"); // Standard EDC, no TM
+    cuts.AddCutCalo("000a1113","4117911000032230000","01631031000000d0"); // std EMC7
+    cuts.AddCutCalo("000a2113","4117911000032230000","01631031000000d0"); // std EG2
 
   // includes both stripes EMCal and DCal
   } else if (trainConfig == 2010){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, std TM, tight timing
