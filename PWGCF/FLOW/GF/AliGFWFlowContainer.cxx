@@ -120,6 +120,44 @@ Int_t AliGFWFlowContainer::FillProfile(const char *hname, Double_t multi, Double
   };
   return 0;
 };
+void AliGFWFlowContainer::OverrideProfileErrors(TProfile2D *inpf) {
+  Int_t nBinsX = fProf->GetNbinsX();
+  Int_t nBinsY = fProf->GetNbinsY();
+  if((inpf->GetNbinsX()!= nBinsX) || (inpf->GetNbinsY() != nBinsY)) {
+    printf("Number of bins in two profiles do not match, not doing anything\n");
+    return;
+  };
+  if(!inpf->GetBinSumw2()->fArray) {
+    printf("Input profile has no BinSumw2()! Returning\n");
+    return;
+  }
+  if(!fProf->GetBinSumw2()->fArray) fProf->Sumw2();
+  Double_t *sumw2Prof = fProf->GetSumw2()->fArray;
+  Double_t *sumw2Targ = inpf->GetSumw2()->fArray;
+  Double_t *binsw2Prof= fProf->GetBinSumw2()->fArray;
+  Double_t *binsw2Targ= inpf->GetBinSumw2()->fArray;
+  Double_t *farrProf  = fProf->fArray;
+  Double_t *farrTarg  = inpf->fArray;
+  for(Int_t ix=1;ix<=nBinsX;ix++) {
+    Double_t xval = fProf->GetXaxis()->GetBinCenter(ix);
+    printf("Processing x-bin %i\n", ix);
+    for(Int_t iy=1;iy<=nBinsY;iy++) {
+      //printf("Processing bin [%i, %i] out of [%i, %i]\n",ix,iy,nBinsX, nBinsY);
+      Double_t yval = fProf->GetYaxis()->GetBinCenter(iy);
+      Int_t binno = fProf->FindBin(xval,yval);
+      Double_t h = fProf->GetBinContent(binno);
+      Double_t lEnt = inpf->GetBinEntries(binno);
+      fProf->SetBinEntries(binno,lEnt);
+      sumw2Prof[binno] = sumw2Targ[binno];
+      binsw2Prof[binno]= binsw2Targ[binno];
+      farrProf[binno]  = h*lEnt;
+      /*fProf->GetBinSumw2()->fArray[binno] = inpf->GetBinSumw2()->fArray[binno];
+      fProf->SetBinEntries(binno,inpf->GetBinEntries(binno));
+      fProf->GetSumw2()->fArray[binno] = inpf->GetSumw2()->fArray[binno];
+      fProf->SetBinContent(binno,h*fProf->GetBinEntries(binno));*/
+    }
+  }
+}
 Long64_t AliGFWFlowContainer::Merge(TCollection *collist) {
   Long64_t nmerged=0;
   AliGFWFlowContainer *l_FC = 0;

@@ -32,6 +32,7 @@ class AliGFWFlowContainer:public TNamed {
   Double_t GetMultiAtBin(Int_t bin) { return fProf->GetXaxis()->GetBinCenter(bin); };
   Int_t FillProfile(const char *hname, Double_t multi, Double_t y, Double_t w, Double_t rn);
   TProfile2D *GetProfile() { return fProf; };
+  void OverrideProfileErrors(TProfile2D *inpf);
   void ReadAndMerge(const char *infile);
   void PickAndMerge(TFile *tfi);
   Bool_t OverrideMainWithSub(Int_t subind, Bool_t ExcludeChosen);
