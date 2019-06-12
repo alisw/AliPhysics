@@ -180,6 +180,15 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUseNUADeep = kTRUE;
   }
 
+  void SetUseRaaGeoCut(Float_t deadZoneWidth = 3, Float_t cutGeoNcrNclLength = 130, Float_t cutGeoNcrNclGeom1Pt = 1.5, Float_t cutGeoNcrNclFractionNcr = 0.85, Float_t cutGeoNcrNclFractionNcl = 0.7){
+    fUseRaaGeoCut=kTRUE;
+    fDeadZoneWidth = deadZoneWidth; 
+    fCutGeoNcrNclLength = cutGeoNcrNclLength;
+    fCutGeoNcrNclGeom1Pt = cutGeoNcrNclGeom1Pt;
+    fCutGeoNcrNclFractionNcr = cutGeoNcrNclFractionNcr;
+    fCutGeoNcrNclFractionNcl = cutGeoNcrNclFractionNcl;
+  }
+  
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
@@ -408,6 +417,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
   TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
   TH2F *fHistEtavZ;//eta vs Vz (QA histos)
+  TH2F *fHistPtPhi;//pt vs phi for GeOCut PbPb2018
   TH1F *fHistPdgMC;
   TH1F *fHistPdgMCAODrec;//pdg code of accepted tracks in MCAODrec
   TH1F *fHistSphericity; //sphericity of accepted tracks
@@ -544,6 +554,14 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   
   Int_t fnAODtrackCutBit;//track cut bit from track selection (only used for AODs)
 
+  Bool_t fUseRaaGeoCut; //flag to switch on GeoCut for 2018PbPb data pass1
+  Float_t fDeadZoneWidth; //parameters of the cut as implemented in AliESDtrackCuts.h, default values implemented as suggested by DPG and D mesons analysis
+  Float_t fCutGeoNcrNclLength;
+  Float_t fCutGeoNcrNclGeom1Pt;
+  Float_t fCutGeoNcrNclFractionNcr;
+  Float_t fCutGeoNcrNclFractionNcl;
+
+
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
   Double_t fEtaMin;//only used for AODs
@@ -609,7 +627,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 18); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 19); // example of analysis
 };
 
 

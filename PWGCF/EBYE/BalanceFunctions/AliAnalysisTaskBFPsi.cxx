@@ -133,6 +133,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistRefTracks(0),
   fHistPhivZ(0),
   fHistEtavZ(0),
+  fHistPtPhi(0),
   fHistSphericity(0),
   fHistMultiplicityVsSphericity(0),
   fHistMeanPtVsSphericity(0),
@@ -229,6 +230,12 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fPtTriggerMin(0.0),
   fHistPtTriggerThreshold(0),
   fnAODtrackCutBit(128),
+  fUseRaaGeoCut(kFALSE),
+  fDeadZoneWidth(3),
+  fCutGeoNcrNclLength(130),
+  fCutGeoNcrNclGeom1Pt(1.5),
+  fCutGeoNcrNclFractionNcr(0.85),
+  fCutGeoNcrNclFractionNcl(0.7),
   fPtMin(0.3),
   fPtMax(1.5),
   fEtaMin(-0.8),
@@ -614,6 +621,8 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistPhivZ);
   fHistEtavZ =  new TH2F("fHistEtavZ", "#eta vs Vz ; #eta; V_{z}", 40,-1.6,1.6, 140,-12.,12.);
   fList->Add(fHistEtavZ);
+  fHistPtPhi =  new TH2F("fHistPtPhi", "p_{T} vs #phi ; p_{T}; #phi", 200,0,20, 200,0.,2.*TMath::Pi());
+  fList->Add(fHistPtPhi);
 
   fHistSphericity = new TH1F("fHistSphericity",";S_{T};Counts",501,-0.05,1.05);
   fList->Add(fHistSphericity);
@@ -2168,7 +2177,14 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  continue;
       }
 
+      if(fUseRaaGeoCut){
+	AliESDtrackCuts *cuts = new AliESDtrackCuts();
+	cuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
+	if (!cuts->IsSelected(aodTrack))
+	  continue;
+      }
      
+      
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
@@ -2176,7 +2192,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       vPx      = aodTrack->Px();
       vPy      = aodTrack->Py();
       vY = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + vPt*vPt) ); // convert eta to y; be aware that this works only for mass assumption of POI 
-      
+
+      fHistPtPhi->Fill(aodTrack->Pt(), aodTrack->Phi());
       
 
       //===========================PID (so far only for electron rejection)===============================//		    
