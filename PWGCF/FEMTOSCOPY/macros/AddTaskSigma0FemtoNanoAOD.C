@@ -359,9 +359,9 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
 
   TString addon = "";
   if (trigger == "kINT7") {
-    addon += "MB";
+    addon += "MBSigma0";
   } else if (trigger == "kHighMultV0") {
-    addon += "HM";
+    addon += "HMSigma0";
   }
 
   TString file = AliAnalysisManager::GetCommonFileName();
