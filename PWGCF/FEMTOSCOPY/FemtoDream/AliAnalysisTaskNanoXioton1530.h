@@ -14,6 +14,8 @@
 #include "AliFemtoDreamTrack.h"
 #include "AliFemtoDreamCascade.h"
 #include "AliFemtoDreamCascadeCuts.h"
+#include "AliFemtoDreamv0.h"
+#include "AliFemtoDreamv0Cuts.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
@@ -41,11 +43,23 @@ class AliAnalysisTaskNanoXioton1530 : public AliAnalysisTaskSE {
   void SetAntiProtonCuts(AliFemtoDreamTrackCuts* trkCuts) {
     fAntiProton = trkCuts;
   }
+  void SetPionCuts(AliFemtoDreamTrackCuts* trkCuts) {
+    fPion = trkCuts;
+  }
+  void SetAntiPionCuts(AliFemtoDreamTrackCuts* trkCuts) {
+    fAntiPion = trkCuts;
+  }
   void SetXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
     fXi = cascCuts;
   }
   void SetAntiXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
     fAntiXi = cascCuts;
+  }
+  void SetXi1530Cuts(AliFemtoDreamv0Cuts* cascCuts) {
+    fXi1530Cuts = cascCuts;
+  }
+  void SetAntiXi1530Cuts(AliFemtoDreamv0Cuts* cascCuts) {
+    fAntiXi1530Cuts = cascCuts;
   }
   void SetCorrelationConfig(AliFemtoDreamCollConfig* config) {
     fConfig=config;
@@ -60,11 +74,20 @@ class AliAnalysisTaskNanoXioton1530 : public AliAnalysisTaskSE {
   TList* fProtonList;//!
   AliFemtoDreamTrackCuts* fAntiProton;//
   TList* fAntiProtonList;//!
+  AliFemtoDreamTrackCuts* fPion;//
+  TList* fPionList;//!
+  AliFemtoDreamTrackCuts* fAntiPion;//
+  TList* fAntiPionList;//!
   AliFemtoDreamCascade* fCascade;//!
   AliFemtoDreamCascadeCuts* fXi;//
   TList* fXiList;
   AliFemtoDreamCascadeCuts* fAntiXi;//
   TList* fAntiXiList;
+  AliFemtoDreamv0 *fXi1530;         //!
+  AliFemtoDreamv0Cuts *fXi1530Cuts;//
+  TList* fXi1530List;
+  AliFemtoDreamv0Cuts *fAntiXi1530Cuts;//
+  TList* fAntiXi1530List;
   AliFemtoDreamCollConfig *fConfig; //
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamPartCollection *fPartColl;   //!
