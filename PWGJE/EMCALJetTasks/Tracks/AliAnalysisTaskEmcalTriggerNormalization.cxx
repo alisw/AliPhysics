@@ -43,6 +43,7 @@ AliAnalysisTaskEmcalTriggerNormalization::AliAnalysisTaskEmcalTriggerNormalizati
     AliAnalysisTaskEmcal(),
     fHistos(nullptr),
     fTriggerCluster(),
+    fTriggerClusterEMCAL(),
     fMBTriggerClasses()
 {
 }
@@ -51,6 +52,7 @@ AliAnalysisTaskEmcalTriggerNormalization::AliAnalysisTaskEmcalTriggerNormalizati
     AliAnalysisTaskEmcal(name, kTRUE),
     fHistos(nullptr),
     fTriggerCluster(),
+    fTriggerClusterEMCAL(),
     fMBTriggerClasses()
 {
 }
@@ -75,6 +77,8 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   if(!fTriggerCluster.length()) throw TriggerClusterNotSetException(); 
   if(!fMBTriggerClasses.size()) throw MBTriggerNotSetException();
 
+  if(!fTriggerClusterEMCAL.length()) fTriggerClusterEMCAL = fTriggerCluster;
+
   double centralitypercentile = 99.;
   if(this->GetBeamType() == AliAnalysisTaskEmcal::kAA) {
     AliMultSelection *mult = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
@@ -85,11 +89,12 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
     }
   }
 
-  EMCAL_STRINGVIEW triggerstring(fInputEvent->GetFiredTriggerClasses().Data());
+  std::string triggerstring(fInputEvent->GetFiredTriggerClasses().Data());
 
   // Min. bias trigger (reference trigger)
   if(fInputHandler->IsEventSelected() & AliVEvent::kINT7) {
     auto match_triggerclass = MatchTrigger(triggerstring, fMBTriggerClasses, fTriggerCluster);
+    AliDebugStream(2) << "Matched trigger: " << match_triggerclass << std::endl;
     if(match_triggerclass.length()){
       double weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(match_triggerclass.data());
       auto normhist = static_cast<TH2 *>(fHistos->FindObject("hTriggerNorm"));
@@ -107,7 +112,8 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   for(Int_t i = 0; i < NEMCAL_TRIGGERS; i++) {
     std::vector<std::string> match_emctriggers = {EMCAL_TRIGGERS[i]};
     if(fInputHandler->IsEventSelected() & EMCAL_TRIGGERBITS[i]){
-      auto match_triggerclass = MatchTrigger(triggerstring, match_emctriggers, fTriggerCluster);
+      auto match_triggerclass = MatchTrigger(triggerstring, match_emctriggers, fTriggerClusterEMCAL);
+      AliDebugStream(2) << "Matched trigger: " << match_triggerclass << std::endl;
       if(!match_triggerclass.length()) continue;      // match trigger class not found
       double weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(match_triggerclass.data());
       auto normhist = static_cast<TH2 *>(fHistos->FindObject("hTriggerNorm"));
@@ -137,7 +143,7 @@ void AliAnalysisTaskEmcalTriggerNormalization::RunChanged(int newrun){
   PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(newrun);
 }
 
-AliAnalysisTaskEmcalTriggerNormalization *AliAnalysisTaskEmcalTriggerNormalization::AddTaskTriggerNormalization(const char *name) {
+AliAnalysisTaskEmcalTriggerNormalization *AliAnalysisTaskEmcalTriggerNormalization::AddTaskEmcalTriggerNormalization(const char *name) {
   auto mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     AliErrorGeneralStream("AliAnalysisTaskEmcalTriggerNormalization::AddTaskTriggerNormalization") << "No analysis manager defined" << std::endl;
