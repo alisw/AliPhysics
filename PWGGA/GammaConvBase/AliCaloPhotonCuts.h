@@ -240,7 +240,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17XeXe5440GeV,
       k17pp5TeV,
       k18pp13TeV,
-      k18pp13TeVLow
+      k18pp13TeVLow,
+      k18PbPb5TeV
     };
 
 
