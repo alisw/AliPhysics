@@ -45,9 +45,10 @@ public:
   virtual ~AliAnalysisTaskEmcalTriggerNormalization() {}
 
   void SetTriggerCluster(const char *triggercluster) { fTriggerCluster = triggercluster; } 
+  void SetTriggerClusterEMCAL(const char *triggercluster) { fTriggerClusterEMCAL = triggercluster; }
   void AddMBTriggerClass(const char *triggerclass) { fMBTriggerClasses.emplace_back(triggerclass); }
 
-  static AliAnalysisTaskEmcalTriggerNormalization *AddTaskTriggerNormalization(const char *name);
+  static AliAnalysisTaskEmcalTriggerNormalization *AddTaskEmcalTriggerNormalization(const char *name);
 
   class TriggerClusterNotSetException : public std::exception {
   public:
@@ -82,6 +83,7 @@ protected:
 private:
   THistManager             *fHistos;                ///< List of histograms
   std::string               fTriggerCluster;        ///< Trigger cluster       
+  std::string               fTriggerClusterEMCAL;   ///< Cluster of the EMCAL triggers (if different)
   std::vector<std::string>  fMBTriggerClasses;      ///< List of valid min. bias trigger classes
 
 
