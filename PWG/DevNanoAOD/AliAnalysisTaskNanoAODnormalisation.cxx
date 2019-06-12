@@ -81,7 +81,7 @@ void AliAnalysisTaskNanoAODnormalisation::FillHistograms(TH2D* candidate[2], TH2
         ::Fatal("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing filtering scalers!");
       else
         ::Warning("AliAnalysisTaskNanoAODnormalisation::FillHistograms","Missing skimming scalers!");
-      return;
+      continue;
     }
     candidate[iF]->Add(normalisation->GetCandidateEventsHistogram());
     selected[iF]->Add(normalisation->GetSelectedEventsHistogram());
