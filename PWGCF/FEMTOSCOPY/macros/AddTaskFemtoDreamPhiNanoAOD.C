@@ -57,6 +57,19 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
 
+  //cutwindow 50 MeV
+  if (suffix == "1") {
+    TrackCutsPhi->SetCutWindow(1.08,1.13);
+  }
+  if (suffix == "2") {
+    TrackCutsPhi->SetCutWindow(1.13,1.18);
+  }
+  //cutwindow 100MeV
+  if (suffix == "3") {
+    TrackCutsPhi->SetCutWindow(1.08,1.18);
+  }
+
+
 //  if (suffix != "0") {
 //    TrackCutsPhi->SetMinimalBooking(true);
 //  }
