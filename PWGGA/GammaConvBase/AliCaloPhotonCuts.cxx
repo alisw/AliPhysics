@@ -7258,6 +7258,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC18i") == 0 ||
             namePeriod.CompareTo("LHC18j") == 0 )       return k18pp13TeV;
   else if ( namePeriod.CompareTo("LHC18c") == 0 )       return k18pp13TeVLow;
+  else if ( namePeriod.CompareTo("LHC18q") == 0 ||
+            namePeriod.CompareTo("LHC18r") == 0 ||
+            namePeriod.CompareTo("LHC18qr") == 0 )      return k18PbPb5TeV;
   else return kNoMC;
 }
 
