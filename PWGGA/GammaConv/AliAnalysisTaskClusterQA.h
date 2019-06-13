@@ -75,7 +75,9 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t MakePhotonCandidates(AliVCluster* clus, AliVCaloCells* cells, Long_t indexCluster);
     void ProcessTracksAndMatching(AliVCluster* clus, Long_t indexCluster);
     Int_t  GetMCClusterFlag(AliVCluster* clus, AliVCaloCells* cells);
-   Float_t GetCentrality(AliVEvent *event);
+    Float_t GetCentrality(AliVEvent *event);
+    //  Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
+    // Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
     void ResetBuffer();
   private:
         
@@ -149,6 +151,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t           fBuffer_ClusterSupMod;                   //!<! array buffer
     Int_t           fBuffer_MC_Cluster_Flag;                   //!<! array buffer
     Int_t           fBuffer_ClusterNumCells;              //!<! array buffer
+    // Int_t           fBuffer_ClusterNLM;              //!<! array buffer
     Int_t           fBuffer_LeadingCell_ID;              //!<! array buffer
     Float_t         fBuffer_LeadingCell_E;              //!<! array buffer
     Float_t         fBuffer_LeadingCell_Eta;              //!<! array buffer
@@ -162,6 +165,8 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_Event_Multiplicity;             //!<! array buffer
     Int_t           fBuffer_Event_NumActiveCells;          //!<! array buffer
 
+    // Int_t*          fBuffer_ClusterNLM_ID;                      //!<! array buffer
+    // Float_t*          fBuffer_ClusterNLM_E;                      //!<! array buffer
     Int_t*          fBuffer_Cells_ID;                      //!<! array buffer
     Float_t*        fBuffer_Cells_E;                      //!<! array buffer
     Float_t*        fBuffer_Cells_RelativeEta;                      //!<! array buffer
@@ -186,7 +191,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_Cluster_MC_EFracLeadingPi0;              //!<! array buffer
 
     
-    ClassDef(AliAnalysisTaskClusterQA, 10);
+    ClassDef(AliAnalysisTaskClusterQA, 11);
 };
 
 const Int_t kMaxActiveCells = 18000;

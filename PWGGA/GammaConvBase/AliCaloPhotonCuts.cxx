@@ -2809,7 +2809,6 @@ Int_t AliCaloPhotonCuts::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent 
 //************************************************************************
 Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
   Bool_t areNeighbours = kFALSE ;
-
   Int_t irow1 = -1, icol1 = -1;
   Int_t irow2 = -1, icol2 = -1;
 
@@ -2817,11 +2816,10 @@ Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
 
   Int_t nSupMod1          = GetModuleNumberAndCellPosition(absCellId1, icol1, irow1);
   Int_t nSupMod2          = GetModuleNumberAndCellPosition(absCellId2, icol2, irow2);
-
   // check if super modules are correct
   if (nSupMod1== -1 || nSupMod2 == -1) return areNeighbours;
 
-  if(fClusterType==1 && nSupMod1!=nSupMod2) {
+  if((fClusterType==1 || fClusterType==4) && nSupMod1!=nSupMod2) {
     // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2-1
     // C Side impair SM, nSupMod%2=1;A side pair SM nSupMod%2=0
     if(nSupMod1%2) icol1+=AliEMCALGeoParams::fgkEMCALCols;
@@ -2831,9 +2829,9 @@ Bool_t AliCaloPhotonCuts::AreNeighbours(Int_t absCellId1, Int_t absCellId2){
   rowdiff = TMath::Abs( irow1 - irow2 ) ;
   coldiff = TMath::Abs( icol1 - icol2 ) ;
 
-//   if (( coldiff <= 1 )  && ( rowdiff <= 1 ) && (coldiff + rowdiff <= 2))
-  if ((coldiff + rowdiff == 1 ))
+  if ((coldiff + rowdiff == 1 )){
     areNeighbours         = kTRUE ;
+  }
 
   return areNeighbours;
 }
