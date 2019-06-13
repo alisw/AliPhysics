@@ -462,7 +462,7 @@ void SetFunction(TF1* weightfit){fWeightFit=weightfit;}
   TH2D *fHistodPhiSdEtaSElectronBachelorR125RSMix;//!<! dPhiS vs dEtaS R125 RS Mix
   TH2D *fHistodPhiSdEtaSElectronBachelorR125WSMix;//!<! dPhiS vs dEtaS R125 WS Mix
 
-  TF1 * fWeightFit; //!<!  implement the fit  function of weight
+  TF1 * fWeightFit; // implement the fit  function of weight (pass to the task)
 
 
   //Mixing
