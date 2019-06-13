@@ -40,6 +40,16 @@ AliLightNEventHist::AliLightNEventHist()
     fCutConfig->GetXaxis()->SetBinLabel(11,"AliEvtCuts");
     fEventCutList->Add(fCutConfig);
     
+    fV0Mpercentile=new TH1F("fV0Mpercentile","fV0Mpercentile",300,0,300);
+    fV0Mpercentile->Sumw2();
+    fV0Mpercentile->GetXaxis()->SetTitle("V0M percentile");
+    fEventCutList->Add(fV0Mpercentile);
+    
+    fV0MpercentileHM=new TH1F("fV0MpercentileHM","fV0MpercentileHM",1000,0,10);
+    fV0MpercentileHM->Sumw2();
+    fV0MpercentileHM->GetXaxis()->SetTitle("V0M percentileHM");
+    fEventCutList->Add(fV0MpercentileHM);
+    
     TString sName[2]={"before","after"};
     
     for(int i=0;i<2;++i){

@@ -34,8 +34,11 @@ public:
     //Everything else disabled if you use the following option:
     void UseDontWorryEvtCuts(bool apply) {fUseAliEvtCuts=apply;};
     void InitQA();
+    //Histogram things
     TList *GetHistList() const {return fHist->GetHistList();};
     void SetName(TString name){fHist->SetName(name.Data());};
+    void FillV0Mlpercentile(float val) {fHist->FillV0Mpercentile(val);};
+    void FillV0MlpercentileHM(float val) {fHist->FillV0MpercentileHM(val);};
 private:
     void BookQA(AliLightNEvent *evt);
     void BookCuts();

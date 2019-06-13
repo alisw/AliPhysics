@@ -151,6 +151,18 @@ void AliLightNAnalysis::Make(AliAODEvent *evt) {
         AliFatal("No Input Event");
     }
     
+    Float_t lPercentile = 300;
+    AliMultSelection *MultSelection = 0x0;
+    MultSelection = (AliMultSelection*)evt->FindListObject("MultSelection");
+    if( !MultSelection) {
+        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+        AliWarning("AliMultSelection object not found!");
+    }else{
+        lPercentile = MultSelection->GetMultiplicityPercentile("V0M",true);
+        fEvtCuts->FillV0Mlpercentile(lPercentile);
+        fEvtCuts->FillV0MlpercentileHM(lPercentile);
+    }
+    
     fEvent->SetEvent(evt);
     if (!fEvtCuts->isSelected(fEvent)) {
         return;

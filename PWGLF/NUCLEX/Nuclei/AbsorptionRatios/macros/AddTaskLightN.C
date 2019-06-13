@@ -161,6 +161,9 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, TString CentEst, Bool_t DoSyst
 	}else if(CentEst == "kMB"){
 		task->SelectCollisionCandidates(AliVEvent::kMB);
 		task->SetMVPileUp(kFALSE);
+    }else if(CentEst == "kHighMultV0"){
+        task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+        task->SetMVPileUp(kFALSE);
 	}else{
 		std::cout << "=====================================================================" << std::endl;
 		std::cout << "=====================================================================" << std::endl;
