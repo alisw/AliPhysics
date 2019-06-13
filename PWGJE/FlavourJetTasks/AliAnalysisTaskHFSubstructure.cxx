@@ -865,7 +865,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	for (UInt_t i_Jet_Truth=0; i_Jet_Truth < Inclusive_Jets_Truth.size(); i_Jet_Truth++){ 
 	  Bool_t Is_Jet_Truth_Matched=kFALSE;
-	  // if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
+	  if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
 	  std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth)); 
 	  for (UInt_t i_Constituents_Truth = 0; i_Constituents_Truth < Constituents_Truth.size(); i_Constituents_Truth++) { 
 	    if (Constituents_Truth[i_Constituents_Truth].user_index() == i_Matched_D_Jet_Truth) { 
