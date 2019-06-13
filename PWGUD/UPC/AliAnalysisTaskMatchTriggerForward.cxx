@@ -708,10 +708,10 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
        - I am basically requesting the presence of TWO good muons only.
        - Later I will be checking whether of they are likesign or unlikesign.
      */
-    // if(nGoodMuons > 2) {
-    //      PostData(1, fOutputList);
-    //      return;
-    // }
+    if(nGoodMuons > 2) {
+         PostData(1, fOutputList);
+         return;
+    }
     track[nGoodMuons] = static_cast<AliAODTrack*>(fAOD->GetTrack(iTrack));
     if(!track[nGoodMuons]) return;
 
@@ -740,32 +740,31 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
   /* - We need EXACTLY 2 good muons !!!!!
      -
    */
-  // if( nGoodMuons != 2 ) {
-  //       PostData(1, fOutputList);
-  //       return;
-  // }
+  if( nGoodMuons != 2 ) {
+        PostData(1, fOutputList);
+        return;
+  }
   /* - Implementing the track cut on the unlike muons
    * -
    */
-  // if( (track[0]->Charge()) == (track[1]->Charge()) ) {
-  //       PostData(1, fOutputList);
-  //       return;
-  // }
+  if( (track[0]->Charge()) == (track[1]->Charge()) ) {
+        PostData(1, fOutputList);
+        return;
+  }
   for(Int_t iFilling = 0; iFilling < nGoodMuons; iFilling++) {
         fEtaMuonH ->Fill(track[iFilling]->Eta());
         fRAbsMuonH->Fill(track[iFilling]->GetRAtAbsorberEnd());
   }
   // store muons
   fNumberMuonsH->Fill(nGoodMuons);
-  // fEntriesAgainstRunNumberH->Fill(fRunNum);
+  fEntriesAgainstRunNumberH->Fill(fRunNum);
   /* - This is the last part of my try to obtain a proper RunNumbers histogram...
      -
    */
   fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
   fEfficiencyPerRunH               ->Fill( Form("%d", fRunNum) , 1 );
-
-
-  
+  if (nGoodMuons>0) fCounterH->Fill(iSelectionCounter); // At least one good muon
+  iSelectionCounter++;
 
   /* - Finally the core!!!
    * - What will be happening is that we will instantiate TLorentzVectors to
