@@ -57,6 +57,8 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALGeometry.h"
 
+#include "AliTPCParamSR.h"
+
 //#include "AliQnCorrectionsManager.h"
 
 #include "AliAnalysisTaskHFEemcQA.h"
@@ -74,6 +76,7 @@ fAOD(0),
 fMCheader(0),
 fpidResponse(0),
 fEMCALGeo(0),
+fTPCparam(0), // rh add
 fFlagSparse(kFALSE),
 fUseTender(kTRUE),
 fEMCEG1(kFALSE),
@@ -94,6 +97,7 @@ fcentMim(0),
 fcentMax(0),
 fBitOption(0),
 fCentralityEstimator("V0M"),
+//fCentBin(0),
 fOutputList(0),
 fNevents(0),
 fCent(0),
@@ -138,6 +142,7 @@ fTPCnsig_Pi(0),
 fTPCnsigEta0(0),
 fTPCnsigEta1(0),
 fTPCnsigEta2(0),
+fTPCnTrkVsSector(), //rh add
 fHistPtMatch(0),
 fEMCTrkMatch(0),
 fEMCTrkPt(0),
@@ -222,6 +227,7 @@ fAOD(0),
 fMCheader(0),
 fpidResponse(0),
 fEMCALGeo(0),
+fTPCparam(0), //rh add
 fFlagSparse(kFALSE),
 fUseTender(kTRUE),
 fEMCEG1(kFALSE),
@@ -241,6 +247,7 @@ fcentMim(0),
 fcentMax(0),
 fBitOption(0),
 fCentralityEstimator("V0M"),
+//fCentBin(0),
 fFlagClsTypeDCAL(kTRUE),
 fOutputList(0),
 fNevents(0),
@@ -286,6 +293,7 @@ fTPCnsig_Pi(0),
 fTPCnsigEta0(0),
 fTPCnsigEta1(0),
 fTPCnsigEta2(0),
+fTPCnTrkVsSector(), //rh add
 fHistPtMatch(0),
 fEMCTrkMatch(0),
 fEMCTrkPt(0),
@@ -541,6 +549,14 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     
     fTPCnsigEta2 = new TH2F("fTPCnsigEta2","TPC Nsigma vs. Eta pT > 5 GeV/c;#eta;#sigma_{TPC-dE/dx}",40,-1,1,200,-10,10);
     fOutputList->Add(fTPCnsigEta2);
+
+    //rh add -->
+    if(!fTPCparam)fTPCparam  = new AliTPCParamSR(); 
+    for(Int_t iCentBin=0; iCentBin<4; iCentBin++) {
+      fTPCnTrkVsSector[iCentBin] = new TH2F(Form("fTPCnTrkVsSector_%d", iCentBin), "# of tracks vs. TPC sector index; sector index; # of tracks", fTPCparam->GetNSector()/2, 0 , fTPCparam->GetNSector()/2, 100, 0, 100);
+      fOutputList->Add(fTPCnTrkVsSector[iCentBin]);
+    }
+    //<--
     
     fHistPtMatch = new TH1F("fHistPtMatch", "p_{T} distribution of tracks matched to EMCAL;p_{T} (GeV/c);counts",500, 0.0, 50.0);
     fOutputList->Add(fHistPtMatch);
@@ -821,6 +837,19 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     {
         if(centrality < fcentMim || centrality > fcentMax)return;
     }
+    // rh add-->
+    Int_t CentBin=-1;
+    if(0 <= centrality && centrality < 10)
+      CentBin=0;
+    else if(10 <= centrality && centrality < 30)
+      CentBin=1;
+    else if(30 <= centrality && centrality < 50)
+      CentBin=2;
+    else if(50 <= centrality && centrality < 100)
+      CentBin=3;
+    else
+      CentBin=-1;
+    // <--
     
     ////////////////
     //Event vertex//
@@ -1093,7 +1122,14 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     ///////////////
 
     std::vector<double> MCinfo = {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0}; 
-
+    //rh add -->
+    static Int_t *nTracksPer1SectorPhi=0x0; 
+    if(!nTracksPer1SectorPhi)
+      nTracksPer1SectorPhi = new Int_t[fTPCparam->GetNSector()/2];
+    for(Int_t isector=0; isector<fTPCparam->GetNSector()/2; isector++)
+      nTracksPer1SectorPhi[isector] = 0;
+    // <--
+    
     for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
         
         AliVParticle* Vtrack = 0x0;
@@ -1217,7 +1253,13 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         if(TrkPt>2.0)fTPCnsigEta0->Fill(TrkEta,fTPCnSigma);
         if(TrkPt>3.0)fTPCnsigEta1->Fill(TrkEta,fTPCnSigma);
         if(TrkPt>5.0)fTPCnsigEta2->Fill(TrkEta,fTPCnSigma);
-        
+
+	//rh add-->
+	Int_t iSectorPhi = fTPCparam->GetSectorIndex(TrkPhi,0,TrkEta);
+	if(0 <= iSectorPhi && iSectorPhi < fTPCparam->GetNSector()/2)
+	  nTracksPer1SectorPhi[iSectorPhi]++;
+	// <--
+	
         ///////////////////////////
         //Track matching to EMCAL//
         //////////////////////////
@@ -1379,6 +1421,11 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             }
         }
     } //track loop
+
+    if(CentBin>-1) {
+      for(Int_t isector=0; isector<fTPCparam->GetNSector()/2; isector++) 
+	fTPCnTrkVsSector[CentBin]->Fill(isector, nTracksPer1SectorPhi[isector]);
+    }
     
     PostData(1, fOutputList);
 }
