@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskUPCforwardMC_H
-#define AliAnalysisTaskUPCforwardMC_H
+#ifndef AliAnalysisTaskMatchTriggerForward_H
+#define AliAnalysisTaskMatchTriggerForward_H
 
 /**
  * @file   AliAnalysisTaskMatchTriggerForward.h
