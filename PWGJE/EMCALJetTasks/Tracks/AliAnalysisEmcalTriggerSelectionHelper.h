@@ -60,6 +60,8 @@ public:
   std::vector<TriggerCluster_t> GetTriggerClustersANY() const { return {kTrgClusterANY}; }
   bool IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const;
   std::string MatchTrigger(EMCAL_STRINGVIEW striggerstring, EMCAL_STRINGVIEW triggerselectionstring, bool useMuonCalo = false) const;
+
+  ClassDef(AliAnalysisEmcalTriggerSelectionHelperImpl, 1);
 };
 
 class AliAnalysisEmcalTriggerSelectionHelper : public TObject, public AliAnalysisEmcalTriggerSelectionHelperImpl {
