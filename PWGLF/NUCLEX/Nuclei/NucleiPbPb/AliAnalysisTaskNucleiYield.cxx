@@ -109,6 +109,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fPropagateTracks{false}
    ,fPtCorrectionA{3}
    ,fPtCorrectionM{3}
+   ,fCurrentFileName{""}
    ,fTOFfunction{nullptr}
    ,fList{nullptr}
    ,fRTree{nullptr}
@@ -194,6 +195,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fTRDboundariesNeg{nullptr}
    ,fTRDvintage{0}
    ,fTRDin{false}
+   ,fNanoPIDindexTPC{-1}
+   ,fNanoPIDindexTOF{-1}
    {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
@@ -434,9 +437,13 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       return;
     }
   } else {
-    std::cout << "NANOAOD FOUND" << std::endl << std::endl;
+    if (fNanoPIDindexTPC == -1 || fNanoPIDindexTOF == -1) {
+      AliNanoAODTrack::InitPIDIndex();
+      fNanoPIDindexTPC  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, fParticle);
+      fNanoPIDindexTOF  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, fParticle);
+    }
+
     fCentrality = nanoHeader->GetCentralityV0M();
-    ///TODO: fill the event mask from the UserInfo
   }
 
   /// To perform the majority of the analysis - and also this one - the standard PID handler is
@@ -595,18 +602,18 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
 float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
   if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
     AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(t);
-    return nanoT ? nanoT->GetVar(nanoT->GetPIDIndex(AliNanoAODTrack::kSigmaTPC, fParticle)) : fPID->NumberOfSigmasTPC(t, fParticle);
+    return nanoT ? nanoT->GetVar(fNanoPIDindexTPC) : fPID->NumberOfSigmasTPC(t, fParticle);
   } else {
     const float p = t->GetTPCmomentum() / fPDGMass;
     const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
         fCustomTPCpid[2], fCustomTPCpid[3], fCustomTPCpid[4]);
-    return (t->GetTPCsignal() - r) / (fCustomTPCpid[5] * r);
+    return (t->GetTPCsignal() - r) / (fCustomTPCpid[5] * r); 
   }
 }
 
 float AliAnalysisTaskNucleiYield::GetTOFsigmas(AliVTrack* t) {
   AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(t);
-  return nanoT ? nanoT->GetVar(nanoT->GetPIDIndex(AliNanoAODTrack::kSigmaTOF, fParticle)) : fPID->NumberOfSigmasTOF(t, fParticle);
+  return nanoT ? nanoT->GetVar(fNanoPIDindexTOF) : fPID->NumberOfSigmasTOF(t, fParticle);
 }
 
 /// This function checks if the track passes the PID selection
