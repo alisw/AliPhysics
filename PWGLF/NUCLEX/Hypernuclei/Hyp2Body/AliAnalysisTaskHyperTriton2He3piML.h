@@ -11,7 +11,7 @@ class TTree;
 #include <TString.h>
 #include <string>
 #include <vector>
-
+#include "AliVertexerHyperTriton2Body.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "Math/Vector4D.h"
@@ -140,7 +140,8 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   bool fFillTracklet;
   bool fSaveFileNames;
   bool fPropagetToPV;
-
+  bool fLooseCuts;
+  AliVertexerHyperTriton2Body fV0Vertexer;      //!
  private:
   TList* fListHist;  //! List of Cascade histograms
   TTree* fTreeV0;    //! Output Tree, V0s
@@ -183,6 +184,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   std::vector<RHyperTritonHe3pi> fRHyperTriton; //!
   std::vector<RTracklet> fRTracklets;           //!
   RCollision fRCollision;                       //!
+
 
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML&);  // not implemented
