@@ -114,34 +114,23 @@ AliAnalysisTaskSE *AddTaskFemtoXoton1530(bool fullBlastQA = false,
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
   AntiCascadeCuts->SetPDGCodeBach(211);
 
-  AliFemtoDreamTrackCuts *dummyCutsPos = new AliFemtoDreamTrackCuts();
-  dummyCutsPos->SetIsMonteCarlo(false);
-  AliFemtoDreamTrackCuts *dummyCutsNeg = new AliFemtoDreamTrackCuts();
-  dummyCutsNeg->SetIsMonteCarlo(false);
-  AliFemtoDreamTrackCuts *dummy2CutsPos = new AliFemtoDreamTrackCuts();
-  dummyCutsPos->SetIsMonteCarlo(false);
-  AliFemtoDreamTrackCuts *dummy2CutsNeg = new AliFemtoDreamTrackCuts();
-  dummyCutsNeg->SetIsMonteCarlo(false);
-
   AliFemtoDreamv0Cuts *Xi1530Cuts = new AliFemtoDreamv0Cuts();
   Xi1530Cuts->SetIsMonteCarlo(false);
   Xi1530Cuts->SetAxisInvMassPlots(400, 1.46, 1.6);
   Xi1530Cuts->SetCutInvMass(0.007);
-  Xi1530Cuts->SetPosDaugterTrackCuts(dummyCutsPos);
-  Xi1530Cuts->SetNegDaugterTrackCuts(dummyCutsNeg);
   Xi1530Cuts->SetPDGCodePosDaug(211);
   Xi1530Cuts->SetPDGCodeNegDaug(3312);
   Xi1530Cuts->SetPDGCodev0(3324);
+  Xi1530Cuts->SetCutDaughters(false);
 
   AliFemtoDreamv0Cuts *AntiXi1530Cuts = new AliFemtoDreamv0Cuts();
   AntiXi1530Cuts->SetIsMonteCarlo(false);
   AntiXi1530Cuts->SetAxisInvMassPlots(400, 1.46, 1.6);
   AntiXi1530Cuts->SetCutInvMass(0.007);
-  AntiXi1530Cuts->SetPosDaugterTrackCuts(dummy2CutsPos);
-  AntiXi1530Cuts->SetNegDaugterTrackCuts(dummy2CutsNeg);
   AntiXi1530Cuts->SetPDGCodePosDaug(3312);
   AntiXi1530Cuts->SetPDGCodeNegDaug(211);
   AntiXi1530Cuts->SetPDGCodev0(3324);
+  AntiXi1530Cuts->SetCutDaughters(false);
 
   if (suffix != "0" && suffix != "999") {
     evtCuts->SetMinimalBooking(true);
