@@ -39,7 +39,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton1530(bool fullBlastQA = false,
 
   //Track Cuts
   AliFemtoDreamTrackCuts *PiPCuts = new AliFemtoDreamTrackCuts();
-  PiPCuts->SetPtRange(0.13, 4.0);
+  PiPCuts->SetPtRange(0.15, 4.0);
   PiPCuts->SetEtaRange(-0.8, 0.8);
   PiPCuts->SetNClsTPC(70);
   PiPCuts->SetDCAReCalculation(true);
@@ -48,12 +48,12 @@ AliAnalysisTaskSE *AddTaskFemtoXoton1530(bool fullBlastQA = false,
   PiPCuts->SetFilterBit(96);
   PiPCuts->SetCutSharedCls(true);
   PiPCuts->SetCutTPCCrossedRows(true, 70, 0.5);
-  PiPCuts->SetPID(AliPID::kPion, 99.5, 5);
-  PiPCuts->SetCutSmallestSig(true);
+  PiPCuts->SetPID(AliPID::kPion, 99.5, 3);
+//  PiPCuts->SetCutSmallestSig(true);
   PiPCuts->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *PiMCuts = new AliFemtoDreamTrackCuts();
-  PiMCuts->SetPtRange(0.13, 4.0);
+  PiMCuts->SetPtRange(0.15, 4.0);
   PiMCuts->SetEtaRange(-0.8, 0.8);
   PiMCuts->SetNClsTPC(70);
   PiMCuts->SetDCAReCalculation(true);
@@ -62,12 +62,12 @@ AliAnalysisTaskSE *AddTaskFemtoXoton1530(bool fullBlastQA = false,
   PiMCuts->SetFilterBit(96);
   PiMCuts->SetCutSharedCls(true);
   PiMCuts->SetCutTPCCrossedRows(true, 70, 0.5);
-  PiMCuts->SetPID(AliPID::kPion, 99.5, 5);
-  PiMCuts->SetCutSmallestSig(true);
+  PiMCuts->SetPID(AliPID::kPion, 99.5, 3);
+//  PiMCuts->SetCutSmallestSig(true);
   PiMCuts->SetCutCharge(-1);
 
   //Cascade Cuts
-  AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
+  AliFemtoDreamCascadeCuts* CascadeCuts = AliFemtoDreamCascadeCuts::XiFor1530Cuts(
       false, false);
   CascadeCuts->SetXiCharge(-1);
   AliFemtoDreamTrackCuts *XiNegCuts = AliFemtoDreamTrackCuts::Xiv0PionCuts(
@@ -89,7 +89,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton1530(bool fullBlastQA = false,
   CascadeCuts->SetPDGCodeNegDaug(-211);
   CascadeCuts->SetPDGCodeBach(-211);
 
-  AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiCuts(
+  AliFemtoDreamCascadeCuts* AntiCascadeCuts = AliFemtoDreamCascadeCuts::XiFor1530Cuts(
       false, false);
   AntiCascadeCuts->SetXiCharge(1);
   AliFemtoDreamTrackCuts *AntiXiNegCuts =
