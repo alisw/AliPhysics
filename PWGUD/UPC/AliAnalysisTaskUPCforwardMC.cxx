@@ -104,6 +104,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMuonTrackCuts(0x0),
       fRunNum(0),
       fTracklets(0),
+      fLumiPerRun(0),
       fL0inputs(0),
       fL1inputs(0),
       fZem1Energy(0),
@@ -239,6 +240,7 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMuonTrackCuts(0x0),
       fRunNum(0),
       fTracklets(0),
+      fLumiPerRun(0),
       fL0inputs(0),
       fL1inputs(0),
       fZem1Energy(0),
@@ -347,6 +349,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCEfficiencyPerRunH(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
+    for( Int_t iRun = 0; iRun < 60000; iRun++) {
+      fCounterGeneratedLevel[iRun] = 0;
+    }
 
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -915,6 +920,14 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
   }
   if(fMCEvent) {
     fRunNum    = fAOD->GetRunNumber();
+    SetLuminosityCap();
+    fCounterGeneratedLevel[ fRunNum - 240000 ] += 1;
+    // cout << "fCounterGeneratedLevel[ " << (fRunNum - 240000) << " ] = " << fCounterGeneratedLevel[ fRunNum - 240000 ] << endl;
+    // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( (Int_t)fLumiPerRun * (Int_t)40000 ) ) {
+    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000 ) ) {
+          PostData(1, fOutputList);
+          return;
+    }
     ProcessMCParticles(fMCEvent);
     fCounterUPCevent += 1;
     fMCEfficiencyPerRunH->Fill( Form("%d", fRunNum) , 1 );
@@ -2221,369 +2234,744 @@ void AliAnalysisTaskUPCforwardMC::Terminate(Option_t *)
     // called at the END of the analysis (when all events are processed)
 }
 //_____________________________________________________________________________
+/* - There were plenty of ways to do this...
+ * - However, recently the STL libraries were
+ * - creating confusion on the LEGO framework
+ * - (they didn't fire at all).
+ * - This problem was not found on local, where
+ * - things were working properly...
+ * - So I am using the most barbaric C-style
+ * - arrays/for...
+ */
+void AliAnalysisTaskUPCforwardMC::SetLuminosityCap()
+{
+  fLumiPerRun = 0;
+  /* - Here I am rounding up the number for 10k,
+   * - so that I don't have to do tedious conversions...
+   * - I am adding 1 entry to the number obtained by 40k,
+   * - so that I am not missing anything...
+   * -
+   */
+  if      ( fRunNum == 244980 ) { fLumiPerRun = 0.0505; }
+  else if ( fRunNum == 244982 ) { fLumiPerRun = 0.0761; }
+  else if ( fRunNum == 244983 ) { fLumiPerRun = 0.0291; }
+  else if ( fRunNum == 245064 ) { fLumiPerRun = 0.1643; }
+  else if ( fRunNum == 245066 ) { fLumiPerRun = 0.0236; }
+  else if ( fRunNum == 245068 ) { fLumiPerRun = 0.0202; }
+  else if ( fRunNum == 245145 ) { fLumiPerRun = 1.2115; }
+  else if ( fRunNum == 245146 ) { fLumiPerRun = 1.3773; }
+  else if ( fRunNum == 245151 ) { fLumiPerRun = 0.1469; }
+  else if ( fRunNum == 245152 ) { fLumiPerRun = 0.1655; }
+  else if ( fRunNum == 245231 ) { fLumiPerRun = 0.3084; }
+  else if ( fRunNum == 245232 ) { fLumiPerRun = 1.0146; }
+  else if ( fRunNum == 245233 ) { fLumiPerRun = 0.2373; }
+  else if ( fRunNum == 245253 ) { fLumiPerRun = 0.3067; }
+  else if ( fRunNum == 245259 ) { fLumiPerRun = 0.4893; }
+  else if ( fRunNum == 245343 ) { fLumiPerRun = 0.7006; }
+  else if ( fRunNum == 245345 ) { fLumiPerRun = 2.2153; }
+  else if ( fRunNum == 245346 ) { fLumiPerRun = 0.2785; }
+  else if ( fRunNum == 245347 ) { fLumiPerRun = 1.1752; }
+  else if ( fRunNum == 245353 ) { fLumiPerRun = 1.6505; }
+  else if ( fRunNum == 245401 ) { fLumiPerRun = 0.7485; }
+  else if ( fRunNum == 245407 ) { fLumiPerRun = 2.0625; }
+  else if ( fRunNum == 245409 ) { fLumiPerRun = 0.8705; }
+  else if ( fRunNum == 245410 ) { fLumiPerRun = 0.1819; }
+  else if ( fRunNum == 245446 ) { fLumiPerRun = 0.1261; }
+  else if ( fRunNum == 245450 ) { fLumiPerRun = 0.2621; }
+  else if ( fRunNum == 245496 ) { fLumiPerRun = 1.06;   }
+  else if ( fRunNum == 245501 ) { fLumiPerRun = 1.334;  }
+  else if ( fRunNum == 245504 ) { fLumiPerRun = 0.6492; }
+  else if ( fRunNum == 245505 ) { fLumiPerRun = 0.3624; }
+  else if ( fRunNum == 245507 ) { fLumiPerRun = 1.6192; }
+  else if ( fRunNum == 245535 ) { fLumiPerRun = 1.3612; }
+  else if ( fRunNum == 245540 ) { fLumiPerRun = 0.7121; }
+  else if ( fRunNum == 245542 ) { fLumiPerRun = 1.1181; }
+  else if ( fRunNum == 245543 ) { fLumiPerRun = 2.0169; }
+  else if ( fRunNum == 245554 ) { fLumiPerRun = 1.7248; }
+  else if ( fRunNum == 245683 ) { fLumiPerRun = 4.0406; }
+  else if ( fRunNum == 245692 ) { fLumiPerRun = 1.9090; }
+  else if ( fRunNum == 245700 ) { fLumiPerRun = 1.1167; }
+  else if ( fRunNum == 245705 ) { fLumiPerRun = 0.3239; }
+  else if ( fRunNum == 245729 ) { fLumiPerRun = 1.1548; }
+  else if ( fRunNum == 245731 ) { fLumiPerRun = 3.3932; }
+  else if ( fRunNum == 245738 ) { fLumiPerRun = 1.9485; }
+  else if ( fRunNum == 245752 ) { fLumiPerRun = 1.2497; }
+  else if ( fRunNum == 245759 ) { fLumiPerRun = 1.3785; }
+  else if ( fRunNum == 245766 ) { fLumiPerRun = 1.1429; }
+  else if ( fRunNum == 245775 ) { fLumiPerRun = 1.7326; }
+  else if ( fRunNum == 245785 ) { fLumiPerRun = 0.5102; }
+  else if ( fRunNum == 245793 ) { fLumiPerRun = 0.7093; }
+  else if ( fRunNum == 245829 ) { fLumiPerRun = 1.958;  }
+  else if ( fRunNum == 245831 ) { fLumiPerRun = 1.9939; }
+  else if ( fRunNum == 245833 ) { fLumiPerRun = 0.3559; }
+  else if ( fRunNum == 245949 ) { fLumiPerRun = 0.5652; }
+  else if ( fRunNum == 245952 ) { fLumiPerRun = 3.0759; }
+  else if ( fRunNum == 245954 ) { fLumiPerRun = 1.9965; }
+  else if ( fRunNum == 245963 ) { fLumiPerRun = 2.2815; }
+  else if ( fRunNum == 245996 ) { fLumiPerRun = 0.4644; }
+  else if ( fRunNum == 246001 ) { fLumiPerRun = 3.5684; }
+  else if ( fRunNum == 246003 ) { fLumiPerRun = 0.5803; }
+  else if ( fRunNum == 246012 ) { fLumiPerRun = 0.7302; }
+  else if ( fRunNum == 246036 ) { fLumiPerRun = 0.2143; }
+  else if ( fRunNum == 246037 ) { fLumiPerRun = 1.7465; }
+  else if ( fRunNum == 246042 ) { fLumiPerRun = 4.8713; }
+  else if ( fRunNum == 246048 ) { fLumiPerRun = 0.3835; }
+  else if ( fRunNum == 246049 ) { fLumiPerRun = 3.2666; }
+  else if ( fRunNum == 246053 ) { fLumiPerRun = 1.7691; }
+  else if ( fRunNum == 246087 ) { fLumiPerRun = 14.184; }
+  else if ( fRunNum == 246089 ) { fLumiPerRun = 0.3296; }
+  else if ( fRunNum == 246113 ) { fLumiPerRun = 1.4761; }
+  else if ( fRunNum == 246115 ) { fLumiPerRun = 0.4514; }
+  else if ( fRunNum == 246148 ) { fLumiPerRun = 5.3175; }
+  else if ( fRunNum == 246151 ) { fLumiPerRun = 3.0605; }
+  else if ( fRunNum == 246152 ) { fLumiPerRun = 0.4734; }
+  else if ( fRunNum == 246153 ) { fLumiPerRun = 4.6676; }
+  else if ( fRunNum == 246178 ) { fLumiPerRun = 0.8156; }
+  else if ( fRunNum == 246181 ) { fLumiPerRun = 2.7526; }
+  else if ( fRunNum == 246182 ) { fLumiPerRun = 2.2047; }
+  else if ( fRunNum == 246217 ) { fLumiPerRun = 3.4663; }
+  else if ( fRunNum == 246220 ) { fLumiPerRun = 0.682;  }
+  else if ( fRunNum == 246222 ) { fLumiPerRun = 3.6826; }
+  else if ( fRunNum == 246225 ) { fLumiPerRun = 1.2534; }
+  else if ( fRunNum == 246272 ) { fLumiPerRun = 5.5294; }
+  else if ( fRunNum == 246275 ) { fLumiPerRun = 1.242;  }
+  else if ( fRunNum == 246276 ) { fLumiPerRun = 0.5871; }
+  else if ( fRunNum == 246390 ) { fLumiPerRun = 0.0448; }
+  else if ( fRunNum == 246391 ) { fLumiPerRun = 0.1446; }
+  else if ( fRunNum == 246392 ) { fLumiPerRun = 0.1765; }
+  else if ( fRunNum == 246424 ) { fLumiPerRun = 2.866;  }
+  else if ( fRunNum == 246428 ) { fLumiPerRun = 0.4417; }
+  else if ( fRunNum == 246431 ) { fLumiPerRun = 1.7836; }
+  else if ( fRunNum == 246433 ) { fLumiPerRun = 0.4164; }
+  else if ( fRunNum == 246434 ) { fLumiPerRun = 4.103;  }
+  else if ( fRunNum == 246487 ) { fLumiPerRun = 0.7286; }
+  else if ( fRunNum == 246488 ) { fLumiPerRun = 7.5895; }
+  else if ( fRunNum == 246493 ) { fLumiPerRun = 1.3534; }
+  else if ( fRunNum == 246495 ) { fLumiPerRun = 0.4100; }
+  else if ( fRunNum == 246675 ) { fLumiPerRun = 2.3469; }
+  else if ( fRunNum == 246676 ) { fLumiPerRun = 0.4794; }
+  else if ( fRunNum == 246750 ) { fLumiPerRun = 2.0756; }
+  else if ( fRunNum == 246751 ) { fLumiPerRun = 2.0419; }
+  else if ( fRunNum == 246755 ) { fLumiPerRun = 1.4197; }
+  else if ( fRunNum == 246757 ) { fLumiPerRun = 0.59;   }
+  else if ( fRunNum == 246758 ) { fLumiPerRun = 1.626;  }
+  else if ( fRunNum == 246759 ) { fLumiPerRun = 0.3335; }
+  else if ( fRunNum == 246760 ) { fLumiPerRun = 1.1753; }
+  else if ( fRunNum == 246763 ) { fLumiPerRun = 0.549;  }
+  else if ( fRunNum == 246765 ) { fLumiPerRun = 0.3274; }
+  else if ( fRunNum == 246804 ) { fLumiPerRun = 1.0208; }
+  else if ( fRunNum == 246805 ) { fLumiPerRun = 3.1925; }
+  else if ( fRunNum == 246806 ) { fLumiPerRun = 2.5555; }
+  else if ( fRunNum == 246807 ) { fLumiPerRun = 2.5962; }
+  else if ( fRunNum == 246808 ) { fLumiPerRun = 0.3101; }
+  else if ( fRunNum == 246809 ) { fLumiPerRun = 2.4707; }
+  else if ( fRunNum == 246844 ) { fLumiPerRun = 0.7657; }
+  else if ( fRunNum == 246845 ) { fLumiPerRun = 1.4355; }
+  else if ( fRunNum == 246846 ) { fLumiPerRun = 0.8986; }
+  else if ( fRunNum == 246847 ) { fLumiPerRun = 1.7064; }
+  else if ( fRunNum == 246851 ) { fLumiPerRun = 1.2170; }
+  else if ( fRunNum == 246855 ) { fLumiPerRun = 1.3014; }
+  else if ( fRunNum == 246859 ) { fLumiPerRun = 1.2397; }
+  else if ( fRunNum == 246864 ) { fLumiPerRun = 2.4832; }
+  else if ( fRunNum == 246865 ) { fLumiPerRun = 0.8111; }
+  else if ( fRunNum == 246867 ) { fLumiPerRun = 1.5019; }
+  else if ( fRunNum == 246871 ) { fLumiPerRun = 0.8713; }
+  else if ( fRunNum == 246930 ) { fLumiPerRun = 0.5641; }
+  else if ( fRunNum == 246937 ) { fLumiPerRun = 0.699;  }
+  else if ( fRunNum == 246942 ) { fLumiPerRun = 1.0555; }
+  else if ( fRunNum == 246945 ) { fLumiPerRun = 2.1676; }
+  else if ( fRunNum == 246948 ) { fLumiPerRun = 0.8855; }
+  else if ( fRunNum == 246949 ) { fLumiPerRun = 2.8978; }
+  else if ( fRunNum == 246980 ) { fLumiPerRun = 7.1999; }
+  else if ( fRunNum == 246982 ) { fLumiPerRun = 0.5146; }
+  else if ( fRunNum == 246984 ) { fLumiPerRun = 4.143;  }
+  else if ( fRunNum == 246989 ) { fLumiPerRun = 3.8342; }
+  else if ( fRunNum == 246991 ) { fLumiPerRun = 0.4368; }
+  else if ( fRunNum == 246994 ) { fLumiPerRun = 1.2329; }
+  else if ( fRunNum == 295585 ) { fLumiPerRun = 0.0793; }
+  else if ( fRunNum == 295586 ) { fLumiPerRun = 0.2386; }
+  else if ( fRunNum == 295587 ) { fLumiPerRun = 0.1095; }
+  else if ( fRunNum == 295588 ) { fLumiPerRun = 0.1358; }
+  else if ( fRunNum == 295589 ) { fLumiPerRun = 0.2819; }
+  else if ( fRunNum == 295612 ) { fLumiPerRun = 0.449;  }
+  else if ( fRunNum == 295615 ) { fLumiPerRun = 0.0566; }
+  else if ( fRunNum == 295665 ) { fLumiPerRun = 0.3349; }
+  else if ( fRunNum == 295666 ) { fLumiPerRun = 0.3239; }
+  else if ( fRunNum == 295667 ) { fLumiPerRun = 0.0970; }
+  else if ( fRunNum == 295668 ) { fLumiPerRun = 0.1303; }
+  else if ( fRunNum == 295671 ) { fLumiPerRun = 0.3259; }
+  else if ( fRunNum == 295673 ) { fLumiPerRun = 0.3128; }
+  else if ( fRunNum == 295675 ) { fLumiPerRun = 0.132;  }
+  else if ( fRunNum == 295676 ) { fLumiPerRun = 0.3213; }
+  else if ( fRunNum == 295677 ) { fLumiPerRun = 0.2652; }
+  else if ( fRunNum == 295714 ) { fLumiPerRun = 0.3456; }
+  else if ( fRunNum == 295716 ) { fLumiPerRun = 0.3389; }
+  else if ( fRunNum == 295717 ) { fLumiPerRun = 0.2880; }
+  else if ( fRunNum == 295718 ) { fLumiPerRun = 0.2567; }
+  else if ( fRunNum == 295719 ) { fLumiPerRun = 0.2947; }
+  else if ( fRunNum == 295723 ) { fLumiPerRun = 0.5064; }
+  else if ( fRunNum == 295725 ) { fLumiPerRun = 0.8890; }
+  else if ( fRunNum == 295753 ) { fLumiPerRun = 0.3846; }
+  else if ( fRunNum == 295754 ) { fLumiPerRun = 0.7055; }
+  else if ( fRunNum == 295755 ) { fLumiPerRun = 0.7585; }
+  else if ( fRunNum == 295758 ) { fLumiPerRun = 1.8934; }
+  else if ( fRunNum == 295759 ) { fLumiPerRun = 0.5331; }
+  else if ( fRunNum == 295762 ) { fLumiPerRun = 0.2749; }
+  else if ( fRunNum == 295763 ) { fLumiPerRun = 1.0282; }
+  else if ( fRunNum == 295786 ) { fLumiPerRun = 0.7490; }
+  else if ( fRunNum == 295788 ) { fLumiPerRun = 3.0237; }
+  else if ( fRunNum == 295791 ) { fLumiPerRun = 0.8580; }
+  else if ( fRunNum == 295816 ) { fLumiPerRun = 1.2056; }
+  else if ( fRunNum == 295818 ) { fLumiPerRun = 0.1453; }
+  else if ( fRunNum == 295819 ) { fLumiPerRun = 2.7474; }
+  else if ( fRunNum == 295822 ) { fLumiPerRun = 2.2529; }
+  else if ( fRunNum == 295825 ) { fLumiPerRun = 0.2558; }
+  else if ( fRunNum == 295826 ) { fLumiPerRun = 1.5814; }
+  else if ( fRunNum == 295829 ) { fLumiPerRun = 0.9351; }
+  else if ( fRunNum == 295831 ) { fLumiPerRun = 0.7762; }
+  else if ( fRunNum == 295854 ) { fLumiPerRun = 1.3119; }
+  else if ( fRunNum == 295855 ) { fLumiPerRun = 1.7466; }
+  else if ( fRunNum == 295856 ) { fLumiPerRun = 1.4700; }
+  else if ( fRunNum == 295859 ) { fLumiPerRun = 1.0510; }
+  else if ( fRunNum == 295860 ) { fLumiPerRun = 0.8341; }
+  else if ( fRunNum == 295861 ) { fLumiPerRun = 1.0670; }
+  else if ( fRunNum == 295863 ) { fLumiPerRun = 0.7279; }
+  else if ( fRunNum == 295881 ) { fLumiPerRun = 0.7115; }
+  else if ( fRunNum == 295908 ) { fLumiPerRun = 2.9261; }
+  else if ( fRunNum == 295909 ) { fLumiPerRun = 0.7875; }
+  else if ( fRunNum == 295910 ) { fLumiPerRun = 3.1843; }
+  else if ( fRunNum == 295913 ) { fLumiPerRun = 3.1294; }
+  else if ( fRunNum == 295936 ) { fLumiPerRun = 1.4736; }
+  else if ( fRunNum == 295937 ) { fLumiPerRun = 0.4057; }
+  else if ( fRunNum == 295941 ) { fLumiPerRun = 1.6767; }
+  else if ( fRunNum == 295942 ) { fLumiPerRun = 1.9237; }
+  else if ( fRunNum == 295943 ) { fLumiPerRun = 1.6747; }
+  else if ( fRunNum == 295945 ) { fLumiPerRun = 2.0370; }
+  else if ( fRunNum == 295947 ) { fLumiPerRun = 2.6337; }
+  else if ( fRunNum == 296061 ) { fLumiPerRun = 1.2968; }
+  else if ( fRunNum == 296062 ) { fLumiPerRun = 1.8083; }
+  else if ( fRunNum == 296063 ) { fLumiPerRun = 2.6876; }
+  else if ( fRunNum == 296065 ) { fLumiPerRun = 2.4473; }
+  else if ( fRunNum == 296066 ) { fLumiPerRun = 0.7337; }
+  else if ( fRunNum == 296068 ) { fLumiPerRun = 1.9812; }
+  else if ( fRunNum == 296123 ) { fLumiPerRun = 0.5065; }
+  else if ( fRunNum == 296128 ) { fLumiPerRun = 0.4455; }
+  else if ( fRunNum == 296132 ) { fLumiPerRun = 1.312;  }
+  else if ( fRunNum == 296133 ) { fLumiPerRun = 1.7321; }
+  else if ( fRunNum == 296134 ) { fLumiPerRun = 3.9104; }
+  else if ( fRunNum == 296135 ) { fLumiPerRun = 2.3412; }
+  else if ( fRunNum == 296142 ) { fLumiPerRun = 1.7893; }
+  else if ( fRunNum == 296143 ) { fLumiPerRun = 0.5340; }
+  else if ( fRunNum == 296191 ) { fLumiPerRun = 5.0507; }
+  else if ( fRunNum == 296192 ) { fLumiPerRun = 0.4974; }
+  else if ( fRunNum == 296194 ) { fLumiPerRun = 2.8725; }
+  else if ( fRunNum == 296195 ) { fLumiPerRun = 0.7376; }
+  else if ( fRunNum == 296196 ) { fLumiPerRun = 2.352;  }
+  else if ( fRunNum == 296197 ) { fLumiPerRun = 2.0691; }
+  else if ( fRunNum == 296198 ) { fLumiPerRun = 0.8140; }
+  else if ( fRunNum == 296241 ) { fLumiPerRun = 0.8459; }
+  else if ( fRunNum == 296242 ) { fLumiPerRun = 0.9517; }
+  else if ( fRunNum == 296243 ) { fLumiPerRun = 1.5674; }
+  else if ( fRunNum == 296244 ) { fLumiPerRun = 8.3722; }
+  else if ( fRunNum == 296246 ) { fLumiPerRun = 1.8351; }
+  else if ( fRunNum == 296247 ) { fLumiPerRun = 1.1765; }
+  else if ( fRunNum == 296269 ) { fLumiPerRun = 3.8392; }
+  else if ( fRunNum == 296270 ) { fLumiPerRun = 1.5116; }
+  else if ( fRunNum == 296273 ) { fLumiPerRun = 7.2237; }
+  else if ( fRunNum == 296279 ) { fLumiPerRun = 0.4057; }
+  else if ( fRunNum == 296280 ) { fLumiPerRun = 1.5066; }
+  else if ( fRunNum == 296303 ) { fLumiPerRun = 2.006;  }
+  else if ( fRunNum == 296304 ) { fLumiPerRun = 6.0965; }
+  else if ( fRunNum == 296307 ) { fLumiPerRun = 2.9023; }
+  else if ( fRunNum == 296309 ) { fLumiPerRun = 2.1026; }
+  else if ( fRunNum == 296312 ) { fLumiPerRun = 2.1228; }
+  else if ( fRunNum == 296377 ) { fLumiPerRun = 6.0666; }
+  else if ( fRunNum == 296378 ) { fLumiPerRun = 5.3897; }
+  else if ( fRunNum == 296379 ) { fLumiPerRun = 2.0969; }
+  else if ( fRunNum == 296380 ) { fLumiPerRun = 2.8820; }
+  else if ( fRunNum == 296381 ) { fLumiPerRun = 1.4418; }
+  else if ( fRunNum == 296383 ) { fLumiPerRun = 1.5136; }
+  else if ( fRunNum == 296414 ) { fLumiPerRun = 4.8766; }
+  else if ( fRunNum == 296419 ) { fLumiPerRun = 2.7523; }
+  else if ( fRunNum == 296420 ) { fLumiPerRun = 1.4132; }
+  else if ( fRunNum == 296423 ) { fLumiPerRun = 1.5981; }
+  else if ( fRunNum == 296424 ) { fLumiPerRun = 0.3864; }
+  else if ( fRunNum == 296433 ) { fLumiPerRun = 4.0456; }
+  else if ( fRunNum == 296472 ) { fLumiPerRun = 0.8632; }
+  else if ( fRunNum == 296509 ) { fLumiPerRun = 2.9592; }
+  else if ( fRunNum == 296510 ) { fLumiPerRun = 9.0673; }
+  else if ( fRunNum == 296511 ) { fLumiPerRun = 2.5666; }
+  else if ( fRunNum == 296514 ) { fLumiPerRun = 0.4898; }
+  else if ( fRunNum == 296516 ) { fLumiPerRun = 0.6134; }
+  else if ( fRunNum == 296547 ) { fLumiPerRun = 1.0834; }
+  else if ( fRunNum == 296548 ) { fLumiPerRun = 1.3771; }
+  else if ( fRunNum == 296549 ) { fLumiPerRun = 4.8645; }
+  else if ( fRunNum == 296550 ) { fLumiPerRun = 3.9901; }
+  else if ( fRunNum == 296551 ) { fLumiPerRun = 2.0214; }
+  else if ( fRunNum == 296552 ) { fLumiPerRun = 0.4842; }
+  else if ( fRunNum == 296553 ) { fLumiPerRun = 0.7091; }
+  else if ( fRunNum == 296615 ) { fLumiPerRun = 1.5676; }
+  else if ( fRunNum == 296616 ) { fLumiPerRun = 0.5399; }
+  else if ( fRunNum == 296618 ) { fLumiPerRun = 1.7014; }
+  else if ( fRunNum == 296619 ) { fLumiPerRun = 1.5613; }
+  else if ( fRunNum == 296622 ) { fLumiPerRun = 0.7064; }
+  else if ( fRunNum == 296623 ) { fLumiPerRun = 2.1442; }
+  else if ( fRunNum == 296690 ) { fLumiPerRun = 6.8615; }
+  else if ( fRunNum == 296691 ) { fLumiPerRun = 0.6511; }
+  else if ( fRunNum == 296694 ) { fLumiPerRun = 5.1826; }
+  else if ( fRunNum == 296749 ) { fLumiPerRun = 9.2413; }
+  else if ( fRunNum == 296750 ) { fLumiPerRun = 8.2161; }
+  else if ( fRunNum == 296781 ) { fLumiPerRun = 0.8179; }
+  else if ( fRunNum == 296784 ) { fLumiPerRun = 2.98;   }
+  else if ( fRunNum == 296785 ) { fLumiPerRun = 1.9085; }
+  else if ( fRunNum == 296786 ) { fLumiPerRun = 0.7537; }
+  else if ( fRunNum == 296787 ) { fLumiPerRun = 3.2190; }
+  else if ( fRunNum == 296791 ) { fLumiPerRun = 0.7573; }
+  else if ( fRunNum == 296793 ) { fLumiPerRun = 1.3317; }
+  else if ( fRunNum == 296794 ) { fLumiPerRun = 3.1335; }
+  else if ( fRunNum == 296799 ) { fLumiPerRun = 2.7149; }
+  else if ( fRunNum == 296836 ) { fLumiPerRun = 1.5116; }
+  else if ( fRunNum == 296838 ) { fLumiPerRun = 0.5432; }
+  else if ( fRunNum == 296839 ) { fLumiPerRun = 2.9424; }
+  else if ( fRunNum == 296848 ) { fLumiPerRun = 2.1628; }
+  else if ( fRunNum == 296849 ) { fLumiPerRun = 11.469; }
+  else if ( fRunNum == 296850 ) { fLumiPerRun = 2.7979; }
+  else if ( fRunNum == 296851 ) { fLumiPerRun = 0.1392; }
+  else if ( fRunNum == 296852 ) { fLumiPerRun = 0.9565; }
+  else if ( fRunNum == 296890 ) { fLumiPerRun = 8.0545; }
+  else if ( fRunNum == 296894 ) { fLumiPerRun = 4.6472; }
+  else if ( fRunNum == 296899 ) { fLumiPerRun = 2.1355; }
+  else if ( fRunNum == 296900 ) { fLumiPerRun = 2.7833; }
+  else if ( fRunNum == 296903 ) { fLumiPerRun = 1.0391; }
+  else if ( fRunNum == 296930 ) { fLumiPerRun = 1.4575; }
+  else if ( fRunNum == 296931 ) { fLumiPerRun = 0.5292; }
+  else if ( fRunNum == 296932 ) { fLumiPerRun = 1.1863; }
+  else if ( fRunNum == 296934 ) { fLumiPerRun = 2.5917; }
+  else if ( fRunNum == 296935 ) { fLumiPerRun = 4.4039; }
+  else if ( fRunNum == 296938 ) { fLumiPerRun = 1.6678; }
+  else if ( fRunNum == 296941 ) { fLumiPerRun = 2.9181; }
+  else if ( fRunNum == 296966 ) { fLumiPerRun = 3.3611; }
+  else if ( fRunNum == 296967 ) { fLumiPerRun = 0.8051; }
+  else if ( fRunNum == 296968 ) { fLumiPerRun = 3.1905; }
+  else if ( fRunNum == 296969 ) { fLumiPerRun = 1.8878; }
+  else if ( fRunNum == 296971 ) { fLumiPerRun = 0.6907; }
+  else if ( fRunNum == 296975 ) { fLumiPerRun = 7.3683; }
+  else if ( fRunNum == 296976 ) { fLumiPerRun = 1.1175; }
+  else if ( fRunNum == 296979 ) { fLumiPerRun = 1.0995; }
+  else if ( fRunNum == 297029 ) { fLumiPerRun = 7.2370; }
+  else if ( fRunNum == 297031 ) { fLumiPerRun = 6.0499; }
+  else if ( fRunNum == 297035 ) { fLumiPerRun = 0.5705; }
+  else if ( fRunNum == 297085 ) { fLumiPerRun = 0.9774; }
+  else if ( fRunNum == 297117 ) { fLumiPerRun = 2.3096; }
+  else if ( fRunNum == 297118 ) { fLumiPerRun = 2.43;   }
+  else if ( fRunNum == 297119 ) { fLumiPerRun = 2.6870; }
+  else if ( fRunNum == 297123 ) { fLumiPerRun = 3.2804; }
+  else if ( fRunNum == 297124 ) { fLumiPerRun = 0.6395; }
+  else if ( fRunNum == 297128 ) { fLumiPerRun = 2.411;  }
+  else if ( fRunNum == 297129 ) { fLumiPerRun = 2.8300; }
+  else if ( fRunNum == 297132 ) { fLumiPerRun = 2.8179; }
+  else if ( fRunNum == 297133 ) { fLumiPerRun = 1.1454; }
+  else if ( fRunNum == 297193 ) { fLumiPerRun = 7.5602; }
+  else if ( fRunNum == 297194 ) { fLumiPerRun = 8.8428; }
+  else if ( fRunNum == 297196 ) { fLumiPerRun = 2.1255; }
+  else if ( fRunNum == 297218 ) { fLumiPerRun = 6.42;   }
+  else if ( fRunNum == 297219 ) { fLumiPerRun = 10.531; }
+  else if ( fRunNum == 297221 ) { fLumiPerRun = 2.8309; }
+  else if ( fRunNum == 297222 ) { fLumiPerRun = 1.7175; }
+  else if ( fRunNum == 297278 ) { fLumiPerRun = 0.6019; }
+  else if ( fRunNum == 297310 ) { fLumiPerRun = 0.6701; }
+  else if ( fRunNum == 297312 ) { fLumiPerRun = 2.4002; }
+  else if ( fRunNum == 297315 ) { fLumiPerRun = 7.8271; }
+  else if ( fRunNum == 297317 ) { fLumiPerRun = 4.3148; }
+  else if ( fRunNum == 297363 ) { fLumiPerRun = 1.9122; }
+  else if ( fRunNum == 297366 ) { fLumiPerRun = 2.1293; }
+  else if ( fRunNum == 297367 ) { fLumiPerRun = 3.1548; }
+  else if ( fRunNum == 297372 ) { fLumiPerRun = 3.2003; }
+  else if ( fRunNum == 297379 ) { fLumiPerRun = 6.8050; }
+  else if ( fRunNum == 297380 ) { fLumiPerRun = 1.5488; }
+  else if ( fRunNum == 297405 ) { fLumiPerRun = 0.6007; }
+  else if ( fRunNum == 297408 ) { fLumiPerRun = 4.1021; }
+  else if ( fRunNum == 297413 ) { fLumiPerRun = 2.9907; }
+  else if ( fRunNum == 297414 ) { fLumiPerRun = 2.2140; }
+  else if ( fRunNum == 297415 ) { fLumiPerRun = 6.8227; }
+  else if ( fRunNum == 297441 ) { fLumiPerRun = 5.0556; }
+  else if ( fRunNum == 297442 ) { fLumiPerRun = 1.9878; }
+  else if ( fRunNum == 297446 ) { fLumiPerRun = 8.1326; }
+  else if ( fRunNum == 297450 ) { fLumiPerRun = 1.9518; }
+  else if ( fRunNum == 297451 ) { fLumiPerRun = 1.3327; }
+  else if ( fRunNum == 297452 ) { fLumiPerRun = 1.1512; }
+  else if ( fRunNum == 297479 ) { fLumiPerRun = 7.7463; }
+  else if ( fRunNum == 297481 ) { fLumiPerRun = 10.645; }
+  else if ( fRunNum == 297483 ) { fLumiPerRun = 1.9505; }
+  else if ( fRunNum == 297512 ) { fLumiPerRun = 1.5848; }
+  else if ( fRunNum == 297537 ) { fLumiPerRun = 1.8096; }
+  else if ( fRunNum == 297540 ) { fLumiPerRun = 0.6286; }
+  else if ( fRunNum == 297541 ) { fLumiPerRun = 4.0120; }
+  else if ( fRunNum == 297542 ) { fLumiPerRun = 1.5362; }
+  else if ( fRunNum == 297544 ) { fLumiPerRun = 7.2900; }
+  else if ( fRunNum == 297558 ) { fLumiPerRun = 0.4783; }
+  else if ( fRunNum == 297588 ) { fLumiPerRun = 5.2912; }
+  else if ( fRunNum == 297590 ) { fLumiPerRun = 3.06;   }
 
+  // if      ( fRunNum == 244980 ) { fLumiPerRun = 0.0504512; }
+  // else if ( fRunNum == 244982 ) { fLumiPerRun = 0.0760554; }
+  // else if ( fRunNum == 244983 ) { fLumiPerRun = 0.0291017; }
+  // else if ( fRunNum == 245064 ) { fLumiPerRun = 0.164271; }
+  // else if ( fRunNum == 245066 ) { fLumiPerRun = 0.0235605; }
+  // else if ( fRunNum == 245068 ) { fLumiPerRun = 0.0202038; }
+  // else if ( fRunNum == 245145 ) { fLumiPerRun = 1.21146; }
+  // else if ( fRunNum == 245146 ) { fLumiPerRun = 1.37734; }
+  // else if ( fRunNum == 245151 ) { fLumiPerRun = 0.146884; }
+  // else if ( fRunNum == 245152 ) { fLumiPerRun = 0.16546; }
+  // else if ( fRunNum == 245231 ) { fLumiPerRun = 0.308407; }
+  // else if ( fRunNum == 245232 ) { fLumiPerRun = 1.01455; }
+  // else if ( fRunNum == 245233 ) { fLumiPerRun = 0.237275; }
+  // else if ( fRunNum == 245253 ) { fLumiPerRun = 0.306764; }
+  // else if ( fRunNum == 245259 ) { fLumiPerRun = 0.489333; }
+  // else if ( fRunNum == 245343 ) { fLumiPerRun = 0.700646; }
+  // else if ( fRunNum == 245345 ) { fLumiPerRun = 2.21529; }
+  // else if ( fRunNum == 245346 ) { fLumiPerRun = 0.278521; }
+  // else if ( fRunNum == 245347 ) { fLumiPerRun = 1.1752; }
+  // else if ( fRunNum == 245353 ) { fLumiPerRun = 1.65046; }
+  // else if ( fRunNum == 245401 ) { fLumiPerRun = 0.748546; }
+  // else if ( fRunNum == 245407 ) { fLumiPerRun = 2.06245; }
+  // else if ( fRunNum == 245409 ) { fLumiPerRun = 0.870463; }
+  // else if ( fRunNum == 245410 ) { fLumiPerRun = 0.181904; }
+  // else if ( fRunNum == 245446 ) { fLumiPerRun = 0.126099; }
+  // else if ( fRunNum == 245450 ) { fLumiPerRun = 0.262106; }
+  // else if ( fRunNum == 245496 ) { fLumiPerRun = 1.06; }
+  // else if ( fRunNum == 245501 ) { fLumiPerRun = 1.33395; }
+  // else if ( fRunNum == 245504 ) { fLumiPerRun = 0.649154; }
+  // else if ( fRunNum == 245505 ) { fLumiPerRun = 0.362348; }
+  // else if ( fRunNum == 245507 ) { fLumiPerRun = 1.61918; }
+  // else if ( fRunNum == 245535 ) { fLumiPerRun = 1.3612; }
+  // else if ( fRunNum == 245540 ) { fLumiPerRun = 0.712118; }
+  // else if ( fRunNum == 245542 ) { fLumiPerRun = 1.1181; }
+  // else if ( fRunNum == 245543 ) { fLumiPerRun = 2.01687; }
+  // else if ( fRunNum == 245554 ) { fLumiPerRun = 1.72478; }
+  // else if ( fRunNum == 245683 ) { fLumiPerRun = 4.04056; }
+  // else if ( fRunNum == 245692 ) { fLumiPerRun = 1.90903; }
+  // else if ( fRunNum == 245700 ) { fLumiPerRun = 1.11668; }
+  // else if ( fRunNum == 245705 ) { fLumiPerRun = 0.323852; }
+  // else if ( fRunNum == 245729 ) { fLumiPerRun = 1.15478; }
+  // else if ( fRunNum == 245731 ) { fLumiPerRun = 3.39319; }
+  // else if ( fRunNum == 245738 ) { fLumiPerRun = 1.94851; }
+  // else if ( fRunNum == 245752 ) { fLumiPerRun = 1.24974; }
+  // else if ( fRunNum == 245759 ) { fLumiPerRun = 1.37845; }
+  // else if ( fRunNum == 245766 ) { fLumiPerRun = 1.14287; }
+  // else if ( fRunNum == 245775 ) { fLumiPerRun = 1.73259; }
+  // else if ( fRunNum == 245785 ) { fLumiPerRun = 0.510202; }
+  // else if ( fRunNum == 245793 ) { fLumiPerRun = 0.709256; }
+  // else if ( fRunNum == 245829 ) { fLumiPerRun = 1.958; }
+  // else if ( fRunNum == 245831 ) { fLumiPerRun = 1.99389; }
+  // else if ( fRunNum == 245833 ) { fLumiPerRun = 0.355875; }
+  // else if ( fRunNum == 245949 ) { fLumiPerRun = 0.565192; }
+  // else if ( fRunNum == 245952 ) { fLumiPerRun = 3.07588; }
+  // else if ( fRunNum == 245954 ) { fLumiPerRun = 1.99647; }
+  // else if ( fRunNum == 245963 ) { fLumiPerRun = 2.28151; }
+  // else if ( fRunNum == 245996 ) { fLumiPerRun = 0.464359; }
+  // else if ( fRunNum == 246001 ) { fLumiPerRun = 3.56841; }
+  // else if ( fRunNum == 246003 ) { fLumiPerRun = 0.580254; }
+  // else if ( fRunNum == 246012 ) { fLumiPerRun = 0.730168; }
+  // else if ( fRunNum == 246036 ) { fLumiPerRun = 0.21434; }
+  // else if ( fRunNum == 246037 ) { fLumiPerRun = 1.74655; }
+  // else if ( fRunNum == 246042 ) { fLumiPerRun = 4.87131; }
+  // else if ( fRunNum == 246048 ) { fLumiPerRun = 0.383492; }
+  // else if ( fRunNum == 246049 ) { fLumiPerRun = 3.26661; }
+  // else if ( fRunNum == 246053 ) { fLumiPerRun = 1.76914; }
+  // else if ( fRunNum == 246087 ) { fLumiPerRun = 14.1839; }
+  // else if ( fRunNum == 246089 ) { fLumiPerRun = 0.329577; }
+  // else if ( fRunNum == 246113 ) { fLumiPerRun = 1.47609; }
+  // else if ( fRunNum == 246115 ) { fLumiPerRun = 0.45138; }
+  // else if ( fRunNum == 246148 ) { fLumiPerRun = 5.31746; }
+  // else if ( fRunNum == 246151 ) { fLumiPerRun = 3.06053; }
+  // else if ( fRunNum == 246152 ) { fLumiPerRun = 0.473422; }
+  // else if ( fRunNum == 246153 ) { fLumiPerRun = 4.66758; }
+  // else if ( fRunNum == 246178 ) { fLumiPerRun = 0.815641; }
+  // else if ( fRunNum == 246181 ) { fLumiPerRun = 2.7526; }
+  // else if ( fRunNum == 246182 ) { fLumiPerRun = 2.20471; }
+  // else if ( fRunNum == 246217 ) { fLumiPerRun = 3.46631; }
+  // else if ( fRunNum == 246220 ) { fLumiPerRun = 0.681981; }
+  // else if ( fRunNum == 246222 ) { fLumiPerRun = 3.68259; }
+  // else if ( fRunNum == 246225 ) { fLumiPerRun = 1.25344; }
+  // else if ( fRunNum == 246272 ) { fLumiPerRun = 5.52935; }
+  // else if ( fRunNum == 246275 ) { fLumiPerRun = 1.24195; }
+  // else if ( fRunNum == 246276 ) { fLumiPerRun = 0.587066; }
+  // else if ( fRunNum == 246390 ) { fLumiPerRun = 0.0447665; }
+  // else if ( fRunNum == 246391 ) { fLumiPerRun = 0.144587; }
+  // else if ( fRunNum == 246392 ) { fLumiPerRun = 0.176529; }
+  // else if ( fRunNum == 246424 ) { fLumiPerRun = 2.86597; }
+  // else if ( fRunNum == 246428 ) { fLumiPerRun = 0.441718; }
+  // else if ( fRunNum == 246431 ) { fLumiPerRun = 1.78356; }
+  // else if ( fRunNum == 246433 ) { fLumiPerRun = 0.41636; }
+  // else if ( fRunNum == 246434 ) { fLumiPerRun = 4.10295; }
+  // else if ( fRunNum == 246487 ) { fLumiPerRun = 0.728572; }
+  // else if ( fRunNum == 246488 ) { fLumiPerRun = 7.58954; }
+  // else if ( fRunNum == 246493 ) { fLumiPerRun = 1.3534; }
+  // else if ( fRunNum == 246495 ) { fLumiPerRun = 0.410001; }
+  // else if ( fRunNum == 246675 ) { fLumiPerRun = 2.34692; }
+  // else if ( fRunNum == 246676 ) { fLumiPerRun = 0.47941; }
+  // else if ( fRunNum == 246750 ) { fLumiPerRun = 2.07563; }
+  // else if ( fRunNum == 246751 ) { fLumiPerRun = 2.04192; }
+  // else if ( fRunNum == 246755 ) { fLumiPerRun = 1.41974; }
+  // else if ( fRunNum == 246757 ) { fLumiPerRun = 0.589975; }
+  // else if ( fRunNum == 246758 ) { fLumiPerRun = 1.62597; }
+  // else if ( fRunNum == 246759 ) { fLumiPerRun = 0.333544; }
+  // else if ( fRunNum == 246760 ) { fLumiPerRun = 1.17529; }
+  // else if ( fRunNum == 246763 ) { fLumiPerRun = 0.548986; }
+  // else if ( fRunNum == 246765 ) { fLumiPerRun = 0.327353; }
+  // else if ( fRunNum == 246804 ) { fLumiPerRun = 1.0208; }
+  // else if ( fRunNum == 246805 ) { fLumiPerRun = 3.19254; }
+  // else if ( fRunNum == 246806 ) { fLumiPerRun = 2.55545; }
+  // else if ( fRunNum == 246807 ) { fLumiPerRun = 2.59623; }
+  // else if ( fRunNum == 246808 ) { fLumiPerRun = 0.310122; }
+  // else if ( fRunNum == 246809 ) { fLumiPerRun = 2.47068; }
+  // else if ( fRunNum == 246844 ) { fLumiPerRun = 0.765679; }
+  // else if ( fRunNum == 246845 ) { fLumiPerRun = 1.4355; }
+  // else if ( fRunNum == 246846 ) { fLumiPerRun = 0.898577; }
+  // else if ( fRunNum == 246847 ) { fLumiPerRun = 1.70644; }
+  // else if ( fRunNum == 246851 ) { fLumiPerRun = 1.21702; }
+  // else if ( fRunNum == 246855 ) { fLumiPerRun = 1.30141; }
+  // else if ( fRunNum == 246859 ) { fLumiPerRun = 1.23973; }
+  // else if ( fRunNum == 246864 ) { fLumiPerRun = 2.48315; }
+  // else if ( fRunNum == 246865 ) { fLumiPerRun = 0.811053; }
+  // else if ( fRunNum == 246867 ) { fLumiPerRun = 1.50194; }
+  // else if ( fRunNum == 246871 ) { fLumiPerRun = 0.871307; }
+  // else if ( fRunNum == 246930 ) { fLumiPerRun = 0.564051; }
+  // else if ( fRunNum == 246937 ) { fLumiPerRun = 0.698979; }
+  // else if ( fRunNum == 246942 ) { fLumiPerRun = 1.05546; }
+  // else if ( fRunNum == 246945 ) { fLumiPerRun = 2.16762; }
+  // else if ( fRunNum == 246948 ) { fLumiPerRun = 0.88548; }
+  // else if ( fRunNum == 246949 ) { fLumiPerRun = 2.89783; }
+  // else if ( fRunNum == 246980 ) { fLumiPerRun = 7.19989; }
+  // else if ( fRunNum == 246982 ) { fLumiPerRun = 0.514646; }
+  // else if ( fRunNum == 246984 ) { fLumiPerRun = 4.14298; }
+  // else if ( fRunNum == 246989 ) { fLumiPerRun = 3.83424; }
+  // else if ( fRunNum == 246991 ) { fLumiPerRun = 0.4368; }
+  // else if ( fRunNum == 246994 ) { fLumiPerRun = 1.23287; }
+  // else if ( fRunNum == 295585 ) { fLumiPerRun = 0.0793352; }
+  // else if ( fRunNum == 295586 ) { fLumiPerRun = 0.238634; }
+  // else if ( fRunNum == 295587 ) { fLumiPerRun = 0.109518; }
+  // else if ( fRunNum == 295588 ) { fLumiPerRun = 0.135751; }
+  // else if ( fRunNum == 295589 ) { fLumiPerRun = 0.281934; }
+  // else if ( fRunNum == 295612 ) { fLumiPerRun = 0.448985; }
+  // else if ( fRunNum == 295615 ) { fLumiPerRun = 0.0565828; }
+  // else if ( fRunNum == 295665 ) { fLumiPerRun = 0.334899; }
+  // else if ( fRunNum == 295666 ) { fLumiPerRun = 0.323926; }
+  // else if ( fRunNum == 295667 ) { fLumiPerRun = 0.0970438; }
+  // else if ( fRunNum == 295668 ) { fLumiPerRun = 0.130269; }
+  // else if ( fRunNum == 295671 ) { fLumiPerRun = 0.325938; }
+  // else if ( fRunNum == 295673 ) { fLumiPerRun = 0.312761; }
+  // else if ( fRunNum == 295675 ) { fLumiPerRun = 0.13199; }
+  // else if ( fRunNum == 295676 ) { fLumiPerRun = 0.321306; }
+  // else if ( fRunNum == 295677 ) { fLumiPerRun = 0.26522; }
+  // else if ( fRunNum == 295714 ) { fLumiPerRun = 0.345554; }
+  // else if ( fRunNum == 295716 ) { fLumiPerRun = 0.338941; }
+  // else if ( fRunNum == 295717 ) { fLumiPerRun = 0.288033; }
+  // else if ( fRunNum == 295718 ) { fLumiPerRun = 0.256706; }
+  // else if ( fRunNum == 295719 ) { fLumiPerRun = 0.294713; }
+  // else if ( fRunNum == 295723 ) { fLumiPerRun = 0.506379; }
+  // else if ( fRunNum == 295725 ) { fLumiPerRun = 0.889047; }
+  // else if ( fRunNum == 295753 ) { fLumiPerRun = 0.384579; }
+  // else if ( fRunNum == 295754 ) { fLumiPerRun = 0.705466; }
+  // else if ( fRunNum == 295755 ) { fLumiPerRun = 0.758451; }
+  // else if ( fRunNum == 295758 ) { fLumiPerRun = 1.89342; }
+  // else if ( fRunNum == 295759 ) { fLumiPerRun = 0.53309; }
+  // else if ( fRunNum == 295762 ) { fLumiPerRun = 0.274898; }
+  // else if ( fRunNum == 295763 ) { fLumiPerRun = 1.02823; }
+  // else if ( fRunNum == 295786 ) { fLumiPerRun = 0.749037; }
+  // else if ( fRunNum == 295788 ) { fLumiPerRun = 3.02371; }
+  // else if ( fRunNum == 295791 ) { fLumiPerRun = 0.85803; }
+  // else if ( fRunNum == 295816 ) { fLumiPerRun = 1.20558; }
+  // else if ( fRunNum == 295818 ) { fLumiPerRun = 0.14533; }
+  // else if ( fRunNum == 295819 ) { fLumiPerRun = 2.74741; }
+  // else if ( fRunNum == 295822 ) { fLumiPerRun = 2.25289; }
+  // else if ( fRunNum == 295825 ) { fLumiPerRun = 0.255836; }
+  // else if ( fRunNum == 295826 ) { fLumiPerRun = 1.58143; }
+  // else if ( fRunNum == 295829 ) { fLumiPerRun = 0.935067; }
+  // else if ( fRunNum == 295831 ) { fLumiPerRun = 0.776182; }
+  // else if ( fRunNum == 295854 ) { fLumiPerRun = 1.31191; }
+  // else if ( fRunNum == 295855 ) { fLumiPerRun = 1.74655; }
+  // else if ( fRunNum == 295856 ) { fLumiPerRun = 1.47003; }
+  // else if ( fRunNum == 295859 ) { fLumiPerRun = 1.05103; }
+  // else if ( fRunNum == 295860 ) { fLumiPerRun = 0.834139; }
+  // else if ( fRunNum == 295861 ) { fLumiPerRun = 1.06703; }
+  // else if ( fRunNum == 295863 ) { fLumiPerRun = 0.727895; }
+  // else if ( fRunNum == 295881 ) { fLumiPerRun = 0.711464; }
+  // else if ( fRunNum == 295908 ) { fLumiPerRun = 2.92606; }
+  // else if ( fRunNum == 295909 ) { fLumiPerRun = 0.787541; }
+  // else if ( fRunNum == 295910 ) { fLumiPerRun = 3.18427; }
+  // else if ( fRunNum == 295913 ) { fLumiPerRun = 3.12937; }
+  // else if ( fRunNum == 295936 ) { fLumiPerRun = 1.47359; }
+  // else if ( fRunNum == 295937 ) { fLumiPerRun = 0.405657; }
+  // else if ( fRunNum == 295941 ) { fLumiPerRun = 1.67669; }
+  // else if ( fRunNum == 295942 ) { fLumiPerRun = 1.92368; }
+  // else if ( fRunNum == 295943 ) { fLumiPerRun = 1.67468; }
+  // else if ( fRunNum == 295945 ) { fLumiPerRun = 2.03704; }
+  // else if ( fRunNum == 295947 ) { fLumiPerRun = 2.63369; }
+  // else if ( fRunNum == 296061 ) { fLumiPerRun = 1.29676; }
+  // else if ( fRunNum == 296062 ) { fLumiPerRun = 1.80833; }
+  // else if ( fRunNum == 296063 ) { fLumiPerRun = 2.68761; }
+  // else if ( fRunNum == 296065 ) { fLumiPerRun = 2.44727; }
+  // else if ( fRunNum == 296066 ) { fLumiPerRun = 0.733648; }
+  // else if ( fRunNum == 296068 ) { fLumiPerRun = 1.98122; }
+  // else if ( fRunNum == 296123 ) { fLumiPerRun = 0.506486; }
+  // else if ( fRunNum == 296128 ) { fLumiPerRun = 0.445452; }
+  // else if ( fRunNum == 296132 ) { fLumiPerRun = 1.31195; }
+  // else if ( fRunNum == 296133 ) { fLumiPerRun = 1.73212; }
+  // else if ( fRunNum == 296134 ) { fLumiPerRun = 3.9104; }
+  // else if ( fRunNum == 296135 ) { fLumiPerRun = 2.34118; }
+  // else if ( fRunNum == 296142 ) { fLumiPerRun = 1.7893; }
+  // else if ( fRunNum == 296143 ) { fLumiPerRun = 0.534028; }
+  // else if ( fRunNum == 296191 ) { fLumiPerRun = 5.05074; }
+  // else if ( fRunNum == 296192 ) { fLumiPerRun = 0.497364; }
+  // else if ( fRunNum == 296194 ) { fLumiPerRun = 2.87252; }
+  // else if ( fRunNum == 296195 ) { fLumiPerRun = 0.737647; }
+  // else if ( fRunNum == 296196 ) { fLumiPerRun = 2.35196; }
+  // else if ( fRunNum == 296197 ) { fLumiPerRun = 2.06905; }
+  // else if ( fRunNum == 296198 ) { fLumiPerRun = 0.81402; }
+  // else if ( fRunNum == 296241 ) { fLumiPerRun = 0.845868; }
+  // else if ( fRunNum == 296242 ) { fLumiPerRun = 0.95166; }
+  // else if ( fRunNum == 296243 ) { fLumiPerRun = 1.56742; }
+  // else if ( fRunNum == 296244 ) { fLumiPerRun = 8.37223; }
+  // else if ( fRunNum == 296246 ) { fLumiPerRun = 1.83514; }
+  // else if ( fRunNum == 296247 ) { fLumiPerRun = 1.17651; }
+  // else if ( fRunNum == 296269 ) { fLumiPerRun = 3.8392; }
+  // else if ( fRunNum == 296270 ) { fLumiPerRun = 1.51158; }
+  // else if ( fRunNum == 296273 ) { fLumiPerRun = 7.22369; }
+  // else if ( fRunNum == 296279 ) { fLumiPerRun = 0.405699; }
+  // else if ( fRunNum == 296280 ) { fLumiPerRun = 1.50663; }
+  // else if ( fRunNum == 296303 ) { fLumiPerRun = 2.00598; }
+  // else if ( fRunNum == 296304 ) { fLumiPerRun = 6.09653; }
+  // else if ( fRunNum == 296307 ) { fLumiPerRun = 2.90228; }
+  // else if ( fRunNum == 296309 ) { fLumiPerRun = 2.10255; }
+  // else if ( fRunNum == 296312 ) { fLumiPerRun = 2.12275; }
+  // else if ( fRunNum == 296377 ) { fLumiPerRun = 6.06657; }
+  // else if ( fRunNum == 296378 ) { fLumiPerRun = 5.38973; }
+  // else if ( fRunNum == 296379 ) { fLumiPerRun = 2.09689; }
+  // else if ( fRunNum == 296380 ) { fLumiPerRun = 2.88204; }
+  // else if ( fRunNum == 296381 ) { fLumiPerRun = 1.44175; }
+  // else if ( fRunNum == 296383 ) { fLumiPerRun = 1.51363; }
+  // else if ( fRunNum == 296414 ) { fLumiPerRun = 4.87662; }
+  // else if ( fRunNum == 296419 ) { fLumiPerRun = 2.7523; }
+  // else if ( fRunNum == 296420 ) { fLumiPerRun = 1.41318; }
+  // else if ( fRunNum == 296423 ) { fLumiPerRun = 1.59805; }
+  // else if ( fRunNum == 296424 ) { fLumiPerRun = 0.386356; }
+  // else if ( fRunNum == 296433 ) { fLumiPerRun = 4.04558; }
+  // else if ( fRunNum == 296472 ) { fLumiPerRun = 0.863186; }
+  // else if ( fRunNum == 296509 ) { fLumiPerRun = 2.95923; }
+  // else if ( fRunNum == 296510 ) { fLumiPerRun = 9.06727; }
+  // else if ( fRunNum == 296511 ) { fLumiPerRun = 2.56663; }
+  // else if ( fRunNum == 296514 ) { fLumiPerRun = 0.489835; }
+  // else if ( fRunNum == 296516 ) { fLumiPerRun = 0.613431; }
+  // else if ( fRunNum == 296547 ) { fLumiPerRun = 1.08337; }
+  // else if ( fRunNum == 296548 ) { fLumiPerRun = 1.3771; }
+  // else if ( fRunNum == 296549 ) { fLumiPerRun = 4.86451; }
+  // else if ( fRunNum == 296550 ) { fLumiPerRun = 3.99007; }
+  // else if ( fRunNum == 296551 ) { fLumiPerRun = 2.02138; }
+  // else if ( fRunNum == 296552 ) { fLumiPerRun = 0.484243; }
+  // else if ( fRunNum == 296553 ) { fLumiPerRun = 0.709064; }
+  // else if ( fRunNum == 296615 ) { fLumiPerRun = 1.56764; }
+  // else if ( fRunNum == 296616 ) { fLumiPerRun = 0.53985; }
+  // else if ( fRunNum == 296618 ) { fLumiPerRun = 1.70141; }
+  // else if ( fRunNum == 296619 ) { fLumiPerRun = 1.56131; }
+  // else if ( fRunNum == 296622 ) { fLumiPerRun = 0.706373; }
+  // else if ( fRunNum == 296623 ) { fLumiPerRun = 2.14419; }
+  // else if ( fRunNum == 296690 ) { fLumiPerRun = 6.86147; }
+  // else if ( fRunNum == 296691 ) { fLumiPerRun = 0.651063; }
+  // else if ( fRunNum == 296694 ) { fLumiPerRun = 5.1826; }
+  // else if ( fRunNum == 296749 ) { fLumiPerRun = 9.24134; }
+  // else if ( fRunNum == 296750 ) { fLumiPerRun = 8.21606; }
+  // else if ( fRunNum == 296781 ) { fLumiPerRun = 0.817883; }
+  // else if ( fRunNum == 296784 ) { fLumiPerRun = 2.97965; }
+  // else if ( fRunNum == 296785 ) { fLumiPerRun = 1.9085; }
+  // else if ( fRunNum == 296786 ) { fLumiPerRun = 0.753734; }
+  // else if ( fRunNum == 296787 ) { fLumiPerRun = 3.21903; }
+  // else if ( fRunNum == 296791 ) { fLumiPerRun = 0.757278; }
+  // else if ( fRunNum == 296793 ) { fLumiPerRun = 1.33169; }
+  // else if ( fRunNum == 296794 ) { fLumiPerRun = 3.1335; }
+  // else if ( fRunNum == 296799 ) { fLumiPerRun = 2.71491; }
+  // else if ( fRunNum == 296836 ) { fLumiPerRun = 1.5116; }
+  // else if ( fRunNum == 296838 ) { fLumiPerRun = 0.543214; }
+  // else if ( fRunNum == 296839 ) { fLumiPerRun = 2.94239; }
+  // else if ( fRunNum == 296848 ) { fLumiPerRun = 2.16277; }
+  // else if ( fRunNum == 296849 ) { fLumiPerRun = 11.469; }
+  // else if ( fRunNum == 296850 ) { fLumiPerRun = 2.79789; }
+  // else if ( fRunNum == 296851 ) { fLumiPerRun = 0.139243; }
+  // else if ( fRunNum == 296852 ) { fLumiPerRun = 0.956479; }
+  // else if ( fRunNum == 296890 ) { fLumiPerRun = 8.05448; }
+  // else if ( fRunNum == 296894 ) { fLumiPerRun = 4.64718; }
+  // else if ( fRunNum == 296899 ) { fLumiPerRun = 2.13548; }
+  // else if ( fRunNum == 296900 ) { fLumiPerRun = 2.78325; }
+  // else if ( fRunNum == 296903 ) { fLumiPerRun = 1.03906; }
+  // else if ( fRunNum == 296930 ) { fLumiPerRun = 1.45745; }
+  // else if ( fRunNum == 296931 ) { fLumiPerRun = 0.529172; }
+  // else if ( fRunNum == 296932 ) { fLumiPerRun = 1.18632; }
+  // else if ( fRunNum == 296934 ) { fLumiPerRun = 2.59166; }
+  // else if ( fRunNum == 296935 ) { fLumiPerRun = 4.40388; }
+  // else if ( fRunNum == 296938 ) { fLumiPerRun = 1.6678; }
+  // else if ( fRunNum == 296941 ) { fLumiPerRun = 2.91812; }
+  // else if ( fRunNum == 296966 ) { fLumiPerRun = 3.36111; }
+  // else if ( fRunNum == 296967 ) { fLumiPerRun = 0.80508; }
+  // else if ( fRunNum == 296968 ) { fLumiPerRun = 3.19051; }
+  // else if ( fRunNum == 296969 ) { fLumiPerRun = 1.88784; }
+  // else if ( fRunNum == 296971 ) { fLumiPerRun = 0.690732; }
+  // else if ( fRunNum == 296975 ) { fLumiPerRun = 7.36828; }
+  // else if ( fRunNum == 296976 ) { fLumiPerRun = 1.11749; }
+  // else if ( fRunNum == 296979 ) { fLumiPerRun = 1.0995; }
+  // else if ( fRunNum == 297029 ) { fLumiPerRun = 7.23702; }
+  // else if ( fRunNum == 297031 ) { fLumiPerRun = 6.04991; }
+  // else if ( fRunNum == 297035 ) { fLumiPerRun = 0.570489; }
+  // else if ( fRunNum == 297085 ) { fLumiPerRun = 0.97735; }
+  // else if ( fRunNum == 297117 ) { fLumiPerRun = 2.30958; }
+  // else if ( fRunNum == 297118 ) { fLumiPerRun = 2.42995; }
+  // else if ( fRunNum == 297119 ) { fLumiPerRun = 2.68703; }
+  // else if ( fRunNum == 297123 ) { fLumiPerRun = 3.28037; }
+  // else if ( fRunNum == 297124 ) { fLumiPerRun = 0.639463; }
+  // else if ( fRunNum == 297128 ) { fLumiPerRun = 2.41097; }
+  // else if ( fRunNum == 297129 ) { fLumiPerRun = 2.83004; }
+  // else if ( fRunNum == 297132 ) { fLumiPerRun = 2.81789; }
+  // else if ( fRunNum == 297133 ) { fLumiPerRun = 1.14535; }
+  // else if ( fRunNum == 297193 ) { fLumiPerRun = 7.56024; }
+  // else if ( fRunNum == 297194 ) { fLumiPerRun = 8.84277; }
+  // else if ( fRunNum == 297196 ) { fLumiPerRun = 2.1255; }
+  // else if ( fRunNum == 297218 ) { fLumiPerRun = 6.41998; }
+  // else if ( fRunNum == 297219 ) { fLumiPerRun = 10.531; }
+  // else if ( fRunNum == 297221 ) { fLumiPerRun = 2.83092; }
+  // else if ( fRunNum == 297222 ) { fLumiPerRun = 1.71749; }
+  // else if ( fRunNum == 297278 ) { fLumiPerRun = 0.601879; }
+  // else if ( fRunNum == 297310 ) { fLumiPerRun = 0.670071; }
+  // else if ( fRunNum == 297312 ) { fLumiPerRun = 2.40024; }
+  // else if ( fRunNum == 297315 ) { fLumiPerRun = 7.82708; }
+  // else if ( fRunNum == 297317 ) { fLumiPerRun = 4.31479; }
+  // else if ( fRunNum == 297363 ) { fLumiPerRun = 1.91217; }
+  // else if ( fRunNum == 297366 ) { fLumiPerRun = 2.12929; }
+  // else if ( fRunNum == 297367 ) { fLumiPerRun = 3.15478; }
+  // else if ( fRunNum == 297372 ) { fLumiPerRun = 3.20026; }
+  // else if ( fRunNum == 297379 ) { fLumiPerRun = 6.80504; }
+  // else if ( fRunNum == 297380 ) { fLumiPerRun = 1.54879; }
+  // else if ( fRunNum == 297405 ) { fLumiPerRun = 0.600709; }
+  // else if ( fRunNum == 297408 ) { fLumiPerRun = 4.10208; }
+  // else if ( fRunNum == 297413 ) { fLumiPerRun = 2.9907; }
+  // else if ( fRunNum == 297414 ) { fLumiPerRun = 2.21401; }
+  // else if ( fRunNum == 297415 ) { fLumiPerRun = 6.82266; }
+  // else if ( fRunNum == 297441 ) { fLumiPerRun = 5.05562; }
+  // else if ( fRunNum == 297442 ) { fLumiPerRun = 1.98775; }
+  // else if ( fRunNum == 297446 ) { fLumiPerRun = 8.13263; }
+  // else if ( fRunNum == 297450 ) { fLumiPerRun = 1.95181; }
+  // else if ( fRunNum == 297451 ) { fLumiPerRun = 1.33273; }
+  // else if ( fRunNum == 297452 ) { fLumiPerRun = 1.15124; }
+  // else if ( fRunNum == 297479 ) { fLumiPerRun = 7.74629; }
+  // else if ( fRunNum == 297481 ) { fLumiPerRun = 10.6454; }
+  // else if ( fRunNum == 297483 ) { fLumiPerRun = 1.95052; }
+  // else if ( fRunNum == 297512 ) { fLumiPerRun = 1.58475; }
+  // else if ( fRunNum == 297537 ) { fLumiPerRun = 1.80959; }
+  // else if ( fRunNum == 297540 ) { fLumiPerRun = 0.62859; }
+  // else if ( fRunNum == 297541 ) { fLumiPerRun = 4.01201; }
+  // else if ( fRunNum == 297542 ) { fLumiPerRun = 1.5362; }
+  // else if ( fRunNum == 297544 ) { fLumiPerRun = 7.29002; }
+  // else if ( fRunNum == 297558 ) { fLumiPerRun = 0.478315; }
+  // else if ( fRunNum == 297588 ) { fLumiPerRun = 5.29117; }
+  // else if ( fRunNum == 297590 ) { fLumiPerRun = 3.05991; }
 
-/*
-RunNum = 244980 , Lumi = 0.0504512
-RunNum = 244982 , Lumi = 0.0760554
-RunNum = 244983 , Lumi = 0.0291017
-RunNum = 245064 , Lumi = 0.164271
-RunNum = 245066 , Lumi = 0.0235605
-RunNum = 245068 , Lumi = 0.0202038
-RunNum = 245145 , Lumi = 1.21146
-RunNum = 245146 , Lumi = 1.37734
-RunNum = 245151 , Lumi = 0.146884
-RunNum = 245152 , Lumi = 0.16546
-RunNum = 245231 , Lumi = 0.308407
-RunNum = 245232 , Lumi = 1.01455
-RunNum = 245233 , Lumi = 0.237275
-RunNum = 245253 , Lumi = 0.306764
-RunNum = 245259 , Lumi = 0.489333
-RunNum = 245343 , Lumi = 0.700646
-RunNum = 245345 , Lumi = 2.21529
-RunNum = 245346 , Lumi = 0.278521
-RunNum = 245347 , Lumi = 1.1752
-RunNum = 245353 , Lumi = 1.65046
-RunNum = 245401 , Lumi = 0.748546
-RunNum = 245407 , Lumi = 2.06245
-RunNum = 245409 , Lumi = 0.870463
-RunNum = 245410 , Lumi = 0.181904
-RunNum = 245446 , Lumi = 0.126099
-RunNum = 245450 , Lumi = 0.262106
-RunNum = 245496 , Lumi = 1.06
-RunNum = 245501 , Lumi = 1.33395
-RunNum = 245504 , Lumi = 0.649154
-RunNum = 245505 , Lumi = 0.362348
-RunNum = 245507 , Lumi = 1.61918
-RunNum = 245535 , Lumi = 1.3612
-RunNum = 245540 , Lumi = 0.712118
-RunNum = 245542 , Lumi = 1.1181
-RunNum = 245543 , Lumi = 2.01687
-RunNum = 245554 , Lumi = 1.72478
-RunNum = 245683 , Lumi = 4.04056
-RunNum = 245692 , Lumi = 1.90903
-RunNum = 245700 , Lumi = 1.11668
-RunNum = 245705 , Lumi = 0.323852
-RunNum = 245729 , Lumi = 1.15478
-RunNum = 245731 , Lumi = 3.39319
-RunNum = 245738 , Lumi = 1.94851
-RunNum = 245752 , Lumi = 1.24974
-RunNum = 245759 , Lumi = 1.37845
-RunNum = 245766 , Lumi = 1.14287
-RunNum = 245775 , Lumi = 1.73259
-RunNum = 245785 , Lumi = 0.510202
-RunNum = 245793 , Lumi = 0.709256
-RunNum = 245829 , Lumi = 1.958
-RunNum = 245831 , Lumi = 1.99389
-RunNum = 245833 , Lumi = 0.355875
-RunNum = 245949 , Lumi = 0.565192
-RunNum = 245952 , Lumi = 3.07588
-RunNum = 245954 , Lumi = 1.99647
-RunNum = 245963 , Lumi = 2.28151
-RunNum = 245996 , Lumi = 0.464359
-RunNum = 246001 , Lumi = 3.56841
-RunNum = 246003 , Lumi = 0.580254
-RunNum = 246012 , Lumi = 0.730168
-RunNum = 246036 , Lumi = 0.21434
-RunNum = 246037 , Lumi = 1.74655
-RunNum = 246042 , Lumi = 4.87131
-RunNum = 246048 , Lumi = 0.383492
-RunNum = 246049 , Lumi = 3.26661
-RunNum = 246053 , Lumi = 1.76914
-RunNum = 246087 , Lumi = 14.1839
-RunNum = 246089 , Lumi = 0.329577
-RunNum = 246113 , Lumi = 1.47609
-RunNum = 246115 , Lumi = 0.45138
-RunNum = 246148 , Lumi = 5.31746
-RunNum = 246151 , Lumi = 3.06053
-RunNum = 246152 , Lumi = 0.473422
-RunNum = 246153 , Lumi = 4.66758
-RunNum = 246178 , Lumi = 0.815641
-RunNum = 246181 , Lumi = 2.7526
-RunNum = 246182 , Lumi = 2.20471
-RunNum = 246217 , Lumi = 3.46631
-RunNum = 246220 , Lumi = 0.681981
-RunNum = 246222 , Lumi = 3.68259
-RunNum = 246225 , Lumi = 1.25344
-RunNum = 246272 , Lumi = 5.52935
-RunNum = 246275 , Lumi = 1.24195
-RunNum = 246276 , Lumi = 0.587066
-RunNum = 246390 , Lumi = 0.0447665
-RunNum = 246391 , Lumi = 0.144587
-RunNum = 246392 , Lumi = 0.176529
-RunNum = 246424 , Lumi = 2.86597
-RunNum = 246428 , Lumi = 0.441718
-RunNum = 246431 , Lumi = 1.78356
-RunNum = 246433 , Lumi = 0.41636
-RunNum = 246434 , Lumi = 4.10295
-RunNum = 246487 , Lumi = 0.728572
-RunNum = 246488 , Lumi = 7.58954
-RunNum = 246493 , Lumi = 1.3534
-RunNum = 246495 , Lumi = 0.410001
-RunNum = 246675 , Lumi = 2.34692
-RunNum = 246676 , Lumi = 0.47941
-RunNum = 246750 , Lumi = 2.07563
-RunNum = 246751 , Lumi = 2.04192
-RunNum = 246755 , Lumi = 1.41974
-RunNum = 246757 , Lumi = 0.589975
-RunNum = 246758 , Lumi = 1.62597
-RunNum = 246759 , Lumi = 0.333544
-RunNum = 246760 , Lumi = 1.17529
-RunNum = 246763 , Lumi = 0.548986
-RunNum = 246765 , Lumi = 0.327353
-RunNum = 246804 , Lumi = 1.0208
-RunNum = 246805 , Lumi = 3.19254
-RunNum = 246806 , Lumi = 2.55545
-RunNum = 246807 , Lumi = 2.59623
-RunNum = 246808 , Lumi = 0.310122
-RunNum = 246809 , Lumi = 2.47068
-RunNum = 246844 , Lumi = 0.765679
-RunNum = 246845 , Lumi = 1.4355
-RunNum = 246846 , Lumi = 0.898577
-RunNum = 246847 , Lumi = 1.70644
-RunNum = 246851 , Lumi = 1.21702
-RunNum = 246855 , Lumi = 1.30141
-RunNum = 246859 , Lumi = 1.23973
-RunNum = 246864 , Lumi = 2.48315
-RunNum = 246865 , Lumi = 0.811053
-RunNum = 246867 , Lumi = 1.50194
-RunNum = 246871 , Lumi = 0.871307
-RunNum = 246930 , Lumi = 0.564051
-RunNum = 246937 , Lumi = 0.698979
-RunNum = 246942 , Lumi = 1.05546
-RunNum = 246945 , Lumi = 2.16762
-RunNum = 246948 , Lumi = 0.88548
-RunNum = 246949 , Lumi = 2.89783
-RunNum = 246980 , Lumi = 7.19989
-RunNum = 246982 , Lumi = 0.514646
-RunNum = 246984 , Lumi = 4.14298
-RunNum = 246989 , Lumi = 3.83424
-RunNum = 246991 , Lumi = 0.4368
-RunNum = 246994 , Lumi = 1.23287
-RunNum = 295585 , Lumi = 0.0793352
-RunNum = 295586 , Lumi = 0.238634
-RunNum = 295587 , Lumi = 0.109518
-RunNum = 295588 , Lumi = 0.135751
-RunNum = 295589 , Lumi = 0.281934
-RunNum = 295612 , Lumi = 0.448985
-RunNum = 295615 , Lumi = 0.0565828
-RunNum = 295665 , Lumi = 0.334899
-RunNum = 295666 , Lumi = 0.323926
-RunNum = 295667 , Lumi = 0.0970438
-RunNum = 295668 , Lumi = 0.130269
-RunNum = 295671 , Lumi = 0.325938
-RunNum = 295673 , Lumi = 0.312761
-RunNum = 295675 , Lumi = 0.13199
-RunNum = 295676 , Lumi = 0.321306
-RunNum = 295677 , Lumi = 0.26522
-RunNum = 295714 , Lumi = 0.345554
-RunNum = 295716 , Lumi = 0.338941
-RunNum = 295717 , Lumi = 0.288033
-RunNum = 295718 , Lumi = 0.256706
-RunNum = 295719 , Lumi = 0.294713
-RunNum = 295723 , Lumi = 0.506379
-RunNum = 295725 , Lumi = 0.889047
-RunNum = 295753 , Lumi = 0.384579
-RunNum = 295754 , Lumi = 0.705466
-RunNum = 295755 , Lumi = 0.758451
-RunNum = 295758 , Lumi = 1.89342
-RunNum = 295759 , Lumi = 0.53309
-RunNum = 295762 , Lumi = 0.274898
-RunNum = 295763 , Lumi = 1.02823
-RunNum = 295786 , Lumi = 0.749037
-RunNum = 295788 , Lumi = 3.02371
-RunNum = 295791 , Lumi = 0.85803
-RunNum = 295816 , Lumi = 1.20558
-RunNum = 295818 , Lumi = 0.14533
-RunNum = 295819 , Lumi = 2.74741
-RunNum = 295822 , Lumi = 2.25289
-RunNum = 295825 , Lumi = 0.255836
-RunNum = 295826 , Lumi = 1.58143
-RunNum = 295829 , Lumi = 0.935067
-RunNum = 295831 , Lumi = 0.776182
-RunNum = 295854 , Lumi = 1.31191
-RunNum = 295855 , Lumi = 1.74655
-RunNum = 295856 , Lumi = 1.47003
-RunNum = 295859 , Lumi = 1.05103
-RunNum = 295860 , Lumi = 0.834139
-RunNum = 295861 , Lumi = 1.06703
-RunNum = 295863 , Lumi = 0.727895
-RunNum = 295881 , Lumi = 0.711464
-RunNum = 295908 , Lumi = 2.92606
-RunNum = 295909 , Lumi = 0.787541
-RunNum = 295910 , Lumi = 3.18427
-RunNum = 295913 , Lumi = 3.12937
-RunNum = 295936 , Lumi = 1.47359
-RunNum = 295937 , Lumi = 0.405657
-RunNum = 295941 , Lumi = 1.67669
-RunNum = 295942 , Lumi = 1.92368
-RunNum = 295943 , Lumi = 1.67468
-RunNum = 295945 , Lumi = 2.03704
-RunNum = 295947 , Lumi = 2.63369
-RunNum = 296061 , Lumi = 1.29676
-RunNum = 296062 , Lumi = 1.80833
-RunNum = 296063 , Lumi = 2.68761
-RunNum = 296065 , Lumi = 2.44727
-RunNum = 296066 , Lumi = 0.733648
-RunNum = 296068 , Lumi = 1.98122
-RunNum = 296123 , Lumi = 0.506486
-RunNum = 296128 , Lumi = 0.445452
-RunNum = 296132 , Lumi = 1.31195
-RunNum = 296133 , Lumi = 1.73212
-RunNum = 296134 , Lumi = 3.9104
-RunNum = 296135 , Lumi = 2.34118
-RunNum = 296142 , Lumi = 1.7893
-RunNum = 296143 , Lumi = 0.534028
-RunNum = 296191 , Lumi = 5.05074
-RunNum = 296192 , Lumi = 0.497364
-RunNum = 296194 , Lumi = 2.87252
-RunNum = 296195 , Lumi = 0.737647
-RunNum = 296196 , Lumi = 2.35196
-RunNum = 296197 , Lumi = 2.06905
-RunNum = 296198 , Lumi = 0.81402
-RunNum = 296241 , Lumi = 0.845868
-RunNum = 296242 , Lumi = 0.95166
-RunNum = 296243 , Lumi = 1.56742
-RunNum = 296244 , Lumi = 8.37223
-RunNum = 296246 , Lumi = 1.83514
-RunNum = 296247 , Lumi = 1.17651
-RunNum = 296269 , Lumi = 3.8392
-RunNum = 296270 , Lumi = 1.51158
-RunNum = 296273 , Lumi = 7.22369
-RunNum = 296279 , Lumi = 0.405699
-RunNum = 296280 , Lumi = 1.50663
-RunNum = 296303 , Lumi = 2.00598
-RunNum = 296304 , Lumi = 6.09653
-RunNum = 296307 , Lumi = 2.90228
-RunNum = 296309 , Lumi = 2.10255
-RunNum = 296312 , Lumi = 2.12275
-RunNum = 296377 , Lumi = 6.06657
-RunNum = 296378 , Lumi = 5.38973
-RunNum = 296379 , Lumi = 2.09689
-RunNum = 296380 , Lumi = 2.88204
-RunNum = 296381 , Lumi = 1.44175
-RunNum = 296383 , Lumi = 1.51363
-RunNum = 296414 , Lumi = 4.87662
-RunNum = 296419 , Lumi = 2.7523
-RunNum = 296420 , Lumi = 1.41318
-RunNum = 296423 , Lumi = 1.59805
-RunNum = 296424 , Lumi = 0.386356
-RunNum = 296433 , Lumi = 4.04558
-RunNum = 296472 , Lumi = 0.863186
-RunNum = 296509 , Lumi = 2.95923
-RunNum = 296510 , Lumi = 9.06727
-RunNum = 296511 , Lumi = 2.56663
-RunNum = 296514 , Lumi = 0.489835
-RunNum = 296516 , Lumi = 0.613431
-RunNum = 296547 , Lumi = 1.08337
-RunNum = 296548 , Lumi = 1.3771
-RunNum = 296549 , Lumi = 4.86451
-RunNum = 296550 , Lumi = 3.99007
-RunNum = 296551 , Lumi = 2.02138
-RunNum = 296552 , Lumi = 0.484243
-RunNum = 296553 , Lumi = 0.709064
-RunNum = 296615 , Lumi = 1.56764
-RunNum = 296616 , Lumi = 0.53985
-RunNum = 296618 , Lumi = 1.70141
-RunNum = 296619 , Lumi = 1.56131
-RunNum = 296622 , Lumi = 0.706373
-RunNum = 296623 , Lumi = 2.14419
-RunNum = 296690 , Lumi = 6.86147
-RunNum = 296691 , Lumi = 0.651063
-RunNum = 296694 , Lumi = 5.1826
-RunNum = 296749 , Lumi = 9.24134
-RunNum = 296750 , Lumi = 8.21606
-RunNum = 296781 , Lumi = 0.817883
-RunNum = 296784 , Lumi = 2.97965
-RunNum = 296785 , Lumi = 1.9085
-RunNum = 296786 , Lumi = 0.753734
-RunNum = 296787 , Lumi = 3.21903
-RunNum = 296791 , Lumi = 0.757278
-RunNum = 296793 , Lumi = 1.33169
-RunNum = 296794 , Lumi = 3.1335
-RunNum = 296799 , Lumi = 2.71491
-RunNum = 296836 , Lumi = 1.5116
-RunNum = 296838 , Lumi = 0.543214
-RunNum = 296839 , Lumi = 2.94239
-RunNum = 296848 , Lumi = 2.16277
-RunNum = 296849 , Lumi = 11.469
-RunNum = 296850 , Lumi = 2.79789
-RunNum = 296851 , Lumi = 0.139243
-RunNum = 296852 , Lumi = 0.956479
-RunNum = 296890 , Lumi = 8.05448
-RunNum = 296894 , Lumi = 4.64718
-RunNum = 296899 , Lumi = 2.13548
-RunNum = 296900 , Lumi = 2.78325
-RunNum = 296903 , Lumi = 1.03906
-RunNum = 296930 , Lumi = 1.45745
-RunNum = 296931 , Lumi = 0.529172
-RunNum = 296932 , Lumi = 1.18632
-RunNum = 296934 , Lumi = 2.59166
-RunNum = 296935 , Lumi = 4.40388
-RunNum = 296938 , Lumi = 1.6678
-RunNum = 296941 , Lumi = 2.91812
-RunNum = 296966 , Lumi = 3.36111
-RunNum = 296967 , Lumi = 0.80508
-RunNum = 296968 , Lumi = 3.19051
-RunNum = 296969 , Lumi = 1.88784
-RunNum = 296971 , Lumi = 0.690732
-RunNum = 296975 , Lumi = 7.36828
-RunNum = 296976 , Lumi = 1.11749
-RunNum = 296979 , Lumi = 1.0995
-RunNum = 297029 , Lumi = 7.23702
-RunNum = 297031 , Lumi = 6.04991
-RunNum = 297035 , Lumi = 0.570489
-RunNum = 297085 , Lumi = 0.97735
-RunNum = 297117 , Lumi = 2.30958
-RunNum = 297118 , Lumi = 2.42995
-RunNum = 297119 , Lumi = 2.68703
-RunNum = 297123 , Lumi = 3.28037
-RunNum = 297124 , Lumi = 0.639463
-RunNum = 297128 , Lumi = 2.41097
-RunNum = 297129 , Lumi = 2.83004
-RunNum = 297132 , Lumi = 2.81789
-RunNum = 297133 , Lumi = 1.14535
-RunNum = 297193 , Lumi = 7.56024
-RunNum = 297194 , Lumi = 8.84277
-RunNum = 297196 , Lumi = 2.1255
-RunNum = 297218 , Lumi = 6.41998
-RunNum = 297219 , Lumi = 10.531
-RunNum = 297221 , Lumi = 2.83092
-RunNum = 297222 , Lumi = 1.71749
-RunNum = 297278 , Lumi = 0.601879
-RunNum = 297310 , Lumi = 0.670071
-RunNum = 297312 , Lumi = 2.40024
-RunNum = 297315 , Lumi = 7.82708
-RunNum = 297317 , Lumi = 4.31479
-RunNum = 297363 , Lumi = 1.91217
-RunNum = 297366 , Lumi = 2.12929
-RunNum = 297367 , Lumi = 3.15478
-RunNum = 297372 , Lumi = 3.20026
-RunNum = 297379 , Lumi = 6.80504
-RunNum = 297380 , Lumi = 1.54879
-RunNum = 297405 , Lumi = 0.600709
-RunNum = 297408 , Lumi = 4.10208
-RunNum = 297413 , Lumi = 2.9907
-RunNum = 297414 , Lumi = 2.21401
-RunNum = 297415 , Lumi = 6.82266
-RunNum = 297441 , Lumi = 5.05562
-RunNum = 297442 , Lumi = 1.98775
-RunNum = 297446 , Lumi = 8.13263
-RunNum = 297450 , Lumi = 1.95181
-RunNum = 297451 , Lumi = 1.33273
-RunNum = 297452 , Lumi = 1.15124
-RunNum = 297479 , Lumi = 7.74629
-RunNum = 297481 , Lumi = 10.6454
-RunNum = 297483 , Lumi = 1.95052
-RunNum = 297512 , Lumi = 1.58475
-RunNum = 297537 , Lumi = 1.80959
-RunNum = 297540 , Lumi = 0.62859
-RunNum = 297541 , Lumi = 4.01201
-RunNum = 297542 , Lumi = 1.5362
-RunNum = 297544 , Lumi = 7.29002
-RunNum = 297558 , Lumi = 0.478315
-RunNum = 297588 , Lumi = 5.29117
-RunNum = 297590 , Lumi = 3.05991
-
-
-*/
+}

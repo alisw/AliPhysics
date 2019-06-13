@@ -86,6 +86,16 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         virtual void            NotifyRun();
 
                                 /**
+                                 * Set the cap for the luminosity.
+                                 * For 2018 MC this is 40k*lumi per run...
+                                 * For 2015 it is different because the
+                                 * amount of kCohJPsiToMu is double the
+                                 * other processes!
+                                 */
+        virtual void            SetLuminosityCap();
+
+
+                                /**
                                  * This will fill the vector containing the good
                                  * run numbers. For now this function will be
                                  * inside the constructor of the class.
@@ -910,6 +920,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          */
         Int_t                   fRunNum;        //!
         Int_t                   fTracklets;     //!
+        Double_t                fLumiPerRun;    //!
 
         UInt_t                  fL0inputs;      //!
       	UInt_t                  fL1inputs;      //!
@@ -958,6 +969,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         UInt_t                  fBBCFlagsAD;    //!
         UInt_t                  fBGAFlagsAD;    //!
         UInt_t                  fBGCFlagsAD;    //!
+        Double_t                fCounterGeneratedLevel[60000];    //!
 
         // FINISHED TRIGGER INPUTS for MC
         //_______________________________
@@ -983,7 +995,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 18);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 20);
 };
 
 #endif
