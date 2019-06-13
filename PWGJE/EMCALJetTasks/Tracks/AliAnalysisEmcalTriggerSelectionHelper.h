@@ -56,10 +56,19 @@ public:
   AliAnalysisEmcalTriggerSelectionHelperImpl() {}
   virtual ~AliAnalysisEmcalTriggerSelectionHelperImpl() {}
 
+#if (defined(__CINT_) && !defined(__CLING__)) || (defined(__MAKECINT__) && !defined(__ROOTCLING__))
+  // ROOT5 function headers
+  std::vector<PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelperImpl::TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
+  std::vector<PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelperImpl::TriggerCluster_t> GetTriggerClustersANY() const { return {kTrgClusterANY}; }
+#else
+  // ROOT6 function headers
   std::vector<TriggerCluster_t> GetTriggerClusterIndices(EMCAL_STRINGVIEW triggerstring) const;
   std::vector<TriggerCluster_t> GetTriggerClustersANY() const { return {kTrgClusterANY}; }
+#endif
   bool IsSelectEmcalTriggers(EMCAL_STRINGVIEW triggerstring) const;
   std::string MatchTrigger(EMCAL_STRINGVIEW striggerstring, EMCAL_STRINGVIEW triggerselectionstring, bool useMuonCalo = false) const;
+
+  ClassDef(AliAnalysisEmcalTriggerSelectionHelperImpl, 1);
 };
 
 class AliAnalysisEmcalTriggerSelectionHelper : public TObject, public AliAnalysisEmcalTriggerSelectionHelperImpl {

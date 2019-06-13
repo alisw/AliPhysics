@@ -30,6 +30,7 @@
 #include "AliAnalysisEmcalTriggerSelectionHelper.h"
 #include "AliEmcalTriggerStringDecoder.h"
 
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelperImpl)
 ClassImp(PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelper)
 
 using namespace PWGJE::EMCALJetTasks;
