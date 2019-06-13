@@ -79,12 +79,18 @@ class AliFemtoDreamv0Cuts {
   //Setters for the daughter track cuts
   void SetPosDaugterTrackCuts(AliFemtoDreamTrackCuts *cuts) {
     fPosCuts = cuts;
+    fCutDaughters = true;
   }
   ;
   void SetNegDaugterTrackCuts(AliFemtoDreamTrackCuts *cuts) {
     fNegCuts = cuts;
+    fCutDaughters = true;
   }
   ;
+  void SetCutDaughters(bool cut) {
+    fCutDaughters = cut;
+  }
+  bool GetCutDaughters() const { return fCutDaughters;};
   //Setters for PDG Codes of the daughters+v0
   void SetPDGCodev0(int pdgCode) {
     fPDGv0 = pdgCode;
@@ -235,6 +241,7 @@ class AliFemtoDreamv0Cuts {
   //Here the cut values for the Daughters are stored
   AliFemtoDreamTrackCuts *fPosCuts;   //
   AliFemtoDreamTrackCuts *fNegCuts;   //
+  bool fCutDaughters;
   //These are all the cuts directly linked to the v0
   bool fMinimalBooking;               //
   bool fMCData;                       //

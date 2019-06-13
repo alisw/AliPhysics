@@ -16,6 +16,7 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
       fHist(nullptr),
       fPosCuts(0),
       fNegCuts(0),
+      fCutDaughters(false),
       fMinimalBooking(false),
       fMCData(false),
       fCPAPlots(false),
@@ -73,6 +74,7 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts& cuts)
       fHist(cuts.fHist),
       fPosCuts(cuts.fPosCuts),
       fNegCuts(cuts.fNegCuts),
+      fCutDaughters(cuts.fCutDaughters),
       fMinimalBooking(cuts.fMinimalBooking),
       fMCData(cuts.fMCData),
       fCPAPlots(cuts.fCPAPlots),
@@ -132,6 +134,7 @@ AliFemtoDreamv0Cuts& AliFemtoDreamv0Cuts::operator=(
     this->fHist = cuts.fHist;
     this->fPosCuts = cuts.fPosCuts;
     this->fNegCuts = cuts.fNegCuts;
+    this->fCutDaughters = cuts.fCutDaughters;
     this->fMinimalBooking = cuts.fMinimalBooking;
     this->fMCData = cuts.fMCData;
     this->fCPAPlots = cuts.fCPAPlots;
@@ -248,7 +251,7 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0) {
       fHist->FillTrackCounter(0);
   }
   if (pass) {
-    if (!DaughtersPassCuts(v0)) {
+    if (fCutDaughters && !DaughtersPassCuts(v0)) {
       pass = false;
     }
   }
@@ -545,10 +548,12 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
 void AliFemtoDreamv0Cuts::Init() {
   //Cant be set externally cause else the lists don't exist. Needs to be changed in case
   //it is needed
-  fPosCuts->SetMinimalBooking(fMinimalBooking);
-  fPosCuts->Init();
-  fNegCuts->SetMinimalBooking(fMinimalBooking);
-  fNegCuts->Init();
+  if (fCutDaughters) {
+    fPosCuts->SetMinimalBooking(fMinimalBooking);
+    fPosCuts->Init();
+    fNegCuts->SetMinimalBooking(fMinimalBooking);
+    fNegCuts->Init();
+  }
   if (!fMinimalBooking) {
     fHist = new AliFemtoDreamv0Hist(fNumberXBins, fAxisMinMass, fAxisMaxMass,
                                     fCPAPlots, fRunNumberQA, fMinRunNumber,
@@ -558,10 +563,12 @@ void AliFemtoDreamv0Cuts::Init() {
     fHistList->SetOwner();
     fHistList->SetName("v0Cuts");
     fHistList->Add(fHist->GetHistList());
-    fPosCuts->SetName("PosCuts");
-    fHistList->Add(fPosCuts->GetQAHists());
-    fNegCuts->SetName("NegCuts");
-    fHistList->Add(fNegCuts->GetQAHists());
+    if (fCutDaughters) {
+      fPosCuts->SetName("PosCuts");
+      fHistList->Add(fPosCuts->GetQAHists());
+      fNegCuts->SetName("NegCuts");
+      fHistList->Add(fNegCuts->GetQAHists());
+    }
 
     if (fMCData) {
       fMCHist = new AliFemtoDreamv0MCHist(
@@ -571,10 +578,12 @@ void AliFemtoDreamv0Cuts::Init() {
       fMCHistList->SetOwner();
       fMCHistList->SetName("v0MCCuts");
       fMCHistList->Add(fMCHist->GetHistList());
-      fPosCuts->SetMCName("PosCuts");
-      fMCHistList->Add(fPosCuts->GetMCQAHists());
-      fNegCuts->SetMCName("NegCuts");
-      fMCHistList->Add(fNegCuts->GetMCQAHists());
+      if (fCutDaughters) {
+        fPosCuts->SetMCName("PosCuts");
+        fMCHistList->Add(fPosCuts->GetMCQAHists());
+        fNegCuts->SetMCName("NegCuts");
+        fMCHistList->Add(fNegCuts->GetMCQAHists());
+      }
     }
   } else {
     fHist = new AliFemtoDreamv0Hist("MinimalBooking", fNumberXBins,
@@ -583,11 +592,12 @@ void AliFemtoDreamv0Cuts::Init() {
     fHistList->SetOwner();
     fHistList->SetName("v0Cuts");
     fHistList->Add(fHist->GetHistList());
-    fPosCuts->SetName("PosCuts");
-    fHistList->Add(fPosCuts->GetQAHists());
-    fNegCuts->SetName("NegCuts");
-    fHistList->Add(fNegCuts->GetQAHists());
-
+    if (fCutDaughters) {
+      fPosCuts->SetName("PosCuts");
+      fHistList->Add(fPosCuts->GetQAHists());
+      fNegCuts->SetName("NegCuts");
+      fHistList->Add(fNegCuts->GetQAHists());
+    }
   }
 }
 
@@ -619,7 +629,7 @@ void AliFemtoDreamv0Cuts::BookQA(AliFemtoDreamv0 *v0) {
   v0->GetPosDaughter()->SetUse(v0->UseParticle());
   v0->GetNegDaughter()->SetUse(v0->UseParticle());
 
-  if (v0->IsSet()&&v0->GetHasDaughters()) {
+  if (v0->IsSet()&&fCutDaughters) {
     fPosCuts->BookQA(v0->GetPosDaughter());
     fNegCuts->BookQA(v0->GetNegDaughter());
   }
