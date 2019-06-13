@@ -879,6 +879,30 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH2F*                   fMCInvariantMassDistributionForSignalExtractionHelicityFrameH;  //!
 
         //_______________________________
+        // Efficiency plots.
+                                /**
+                                 * This histogram shows the entries distribution
+                                 * per run of the RECONSTRUCTED level.
+                                 * This has to be divided by the corresponding
+                                 * fMCEfficiencyPerRunH to extract the
+                                 * efficiency on a run-by-run basis.
+                                 */
+        TH1F*                   fEfficiencyPerRunH;  //!
+
+                                /**
+                                 * This histogram shows the entries distribution
+                                 * per run of the GENERATED level.
+                                 * I believe that the errors in each bin
+                                 * have to be set to 0...
+                                 * If this doesn't appear on the histograms,
+                                 * it is because this doesn't apply anymore
+                                 * and I forgot to eliminate  the comment
+                                 * from here....
+                                 */
+        TH1F*                   fMCEfficiencyPerRunH;  //!
+
+
+        //_______________________________
         // CUTS
         /*
          * The following is all the possible checks for the event selections
@@ -959,7 +983,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 17);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 18);
 };
 
 #endif

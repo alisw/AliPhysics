@@ -207,7 +207,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fCosThetaHeFrameForSignalExH(0),
       fPhiHeFrameForSignalExH(0),
       fMCCosThetaHeFrameForSignalExH(0),
-      fMCPhiHeFrameForSignalExH(0)
+      fMCPhiHeFrameForSignalExH(0),
+      fEfficiencyPerRunH(0),
+      fMCEfficiencyPerRunH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -340,7 +342,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fCosThetaHeFrameForSignalExH(0),
       fPhiHeFrameForSignalExH(0),
       fMCCosThetaHeFrameForSignalExH(0),
-      fMCPhiHeFrameForSignalExH(0)
+      fMCPhiHeFrameForSignalExH(0),
+      fEfficiencyPerRunH(0),
+      fMCEfficiencyPerRunH(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -863,6 +867,17 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   fMCPhiHeFrameForSignalExH = new TH1F("fMCPhiHeFrameForSignalExH", "fMCPhiHeFrameForSignalExH", 50, -3.14, 3.14);
   fOutputList->Add(fMCPhiHeFrameForSignalExH);
 
+  fEfficiencyPerRunH = new TH1F("fEfficiencyPerRunH", "fEfficiencyPerRunH", 3, 0, 3);
+  fEfficiencyPerRunH->SetStats(0);
+  fEfficiencyPerRunH->SetFillColor(38);
+  fEfficiencyPerRunH->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunH);
+
+  fMCEfficiencyPerRunH = new TH1F("fMCEfficiencyPerRunH", "fMCEfficiencyPerRunH", 3, 0, 3);
+  fMCEfficiencyPerRunH->SetStats(0);
+  fMCEfficiencyPerRunH->SetFillColor(38);
+  fMCEfficiencyPerRunH->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunH);
 
   //_______________________________
   // - End of the function
@@ -899,8 +914,10 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
       return;
   }
   if(fMCEvent) {
+    fRunNum    = fAOD->GetRunNumber();
     ProcessMCParticles(fMCEvent);
     fCounterUPCevent += 1;
+    fMCEfficiencyPerRunH->Fill( Form("%d", fRunNum) , 1 );
   }
   /* - We are now checking if there were any tracks. If there were at least one,
      - then the histogram gets filled again. If not we are returning. There
@@ -1314,6 +1331,7 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
      -
    */
   fEntriesAgainstRunNumberProperlyH->Fill( Form("%d", fRunNum) , 1 );
+  fEfficiencyPerRunH               ->Fill( Form("%d", fRunNum) , 1 );
   if (nGoodMuons>0) fCounterH->Fill(iSelectionCounter); // At least one good muon
   iSelectionCounter++;
 
@@ -2203,3 +2221,369 @@ void AliAnalysisTaskUPCforwardMC::Terminate(Option_t *)
     // called at the END of the analysis (when all events are processed)
 }
 //_____________________________________________________________________________
+
+
+/*
+RunNum = 244980 , Lumi = 0.0504512
+RunNum = 244982 , Lumi = 0.0760554
+RunNum = 244983 , Lumi = 0.0291017
+RunNum = 245064 , Lumi = 0.164271
+RunNum = 245066 , Lumi = 0.0235605
+RunNum = 245068 , Lumi = 0.0202038
+RunNum = 245145 , Lumi = 1.21146
+RunNum = 245146 , Lumi = 1.37734
+RunNum = 245151 , Lumi = 0.146884
+RunNum = 245152 , Lumi = 0.16546
+RunNum = 245231 , Lumi = 0.308407
+RunNum = 245232 , Lumi = 1.01455
+RunNum = 245233 , Lumi = 0.237275
+RunNum = 245253 , Lumi = 0.306764
+RunNum = 245259 , Lumi = 0.489333
+RunNum = 245343 , Lumi = 0.700646
+RunNum = 245345 , Lumi = 2.21529
+RunNum = 245346 , Lumi = 0.278521
+RunNum = 245347 , Lumi = 1.1752
+RunNum = 245353 , Lumi = 1.65046
+RunNum = 245401 , Lumi = 0.748546
+RunNum = 245407 , Lumi = 2.06245
+RunNum = 245409 , Lumi = 0.870463
+RunNum = 245410 , Lumi = 0.181904
+RunNum = 245446 , Lumi = 0.126099
+RunNum = 245450 , Lumi = 0.262106
+RunNum = 245496 , Lumi = 1.06
+RunNum = 245501 , Lumi = 1.33395
+RunNum = 245504 , Lumi = 0.649154
+RunNum = 245505 , Lumi = 0.362348
+RunNum = 245507 , Lumi = 1.61918
+RunNum = 245535 , Lumi = 1.3612
+RunNum = 245540 , Lumi = 0.712118
+RunNum = 245542 , Lumi = 1.1181
+RunNum = 245543 , Lumi = 2.01687
+RunNum = 245554 , Lumi = 1.72478
+RunNum = 245683 , Lumi = 4.04056
+RunNum = 245692 , Lumi = 1.90903
+RunNum = 245700 , Lumi = 1.11668
+RunNum = 245705 , Lumi = 0.323852
+RunNum = 245729 , Lumi = 1.15478
+RunNum = 245731 , Lumi = 3.39319
+RunNum = 245738 , Lumi = 1.94851
+RunNum = 245752 , Lumi = 1.24974
+RunNum = 245759 , Lumi = 1.37845
+RunNum = 245766 , Lumi = 1.14287
+RunNum = 245775 , Lumi = 1.73259
+RunNum = 245785 , Lumi = 0.510202
+RunNum = 245793 , Lumi = 0.709256
+RunNum = 245829 , Lumi = 1.958
+RunNum = 245831 , Lumi = 1.99389
+RunNum = 245833 , Lumi = 0.355875
+RunNum = 245949 , Lumi = 0.565192
+RunNum = 245952 , Lumi = 3.07588
+RunNum = 245954 , Lumi = 1.99647
+RunNum = 245963 , Lumi = 2.28151
+RunNum = 245996 , Lumi = 0.464359
+RunNum = 246001 , Lumi = 3.56841
+RunNum = 246003 , Lumi = 0.580254
+RunNum = 246012 , Lumi = 0.730168
+RunNum = 246036 , Lumi = 0.21434
+RunNum = 246037 , Lumi = 1.74655
+RunNum = 246042 , Lumi = 4.87131
+RunNum = 246048 , Lumi = 0.383492
+RunNum = 246049 , Lumi = 3.26661
+RunNum = 246053 , Lumi = 1.76914
+RunNum = 246087 , Lumi = 14.1839
+RunNum = 246089 , Lumi = 0.329577
+RunNum = 246113 , Lumi = 1.47609
+RunNum = 246115 , Lumi = 0.45138
+RunNum = 246148 , Lumi = 5.31746
+RunNum = 246151 , Lumi = 3.06053
+RunNum = 246152 , Lumi = 0.473422
+RunNum = 246153 , Lumi = 4.66758
+RunNum = 246178 , Lumi = 0.815641
+RunNum = 246181 , Lumi = 2.7526
+RunNum = 246182 , Lumi = 2.20471
+RunNum = 246217 , Lumi = 3.46631
+RunNum = 246220 , Lumi = 0.681981
+RunNum = 246222 , Lumi = 3.68259
+RunNum = 246225 , Lumi = 1.25344
+RunNum = 246272 , Lumi = 5.52935
+RunNum = 246275 , Lumi = 1.24195
+RunNum = 246276 , Lumi = 0.587066
+RunNum = 246390 , Lumi = 0.0447665
+RunNum = 246391 , Lumi = 0.144587
+RunNum = 246392 , Lumi = 0.176529
+RunNum = 246424 , Lumi = 2.86597
+RunNum = 246428 , Lumi = 0.441718
+RunNum = 246431 , Lumi = 1.78356
+RunNum = 246433 , Lumi = 0.41636
+RunNum = 246434 , Lumi = 4.10295
+RunNum = 246487 , Lumi = 0.728572
+RunNum = 246488 , Lumi = 7.58954
+RunNum = 246493 , Lumi = 1.3534
+RunNum = 246495 , Lumi = 0.410001
+RunNum = 246675 , Lumi = 2.34692
+RunNum = 246676 , Lumi = 0.47941
+RunNum = 246750 , Lumi = 2.07563
+RunNum = 246751 , Lumi = 2.04192
+RunNum = 246755 , Lumi = 1.41974
+RunNum = 246757 , Lumi = 0.589975
+RunNum = 246758 , Lumi = 1.62597
+RunNum = 246759 , Lumi = 0.333544
+RunNum = 246760 , Lumi = 1.17529
+RunNum = 246763 , Lumi = 0.548986
+RunNum = 246765 , Lumi = 0.327353
+RunNum = 246804 , Lumi = 1.0208
+RunNum = 246805 , Lumi = 3.19254
+RunNum = 246806 , Lumi = 2.55545
+RunNum = 246807 , Lumi = 2.59623
+RunNum = 246808 , Lumi = 0.310122
+RunNum = 246809 , Lumi = 2.47068
+RunNum = 246844 , Lumi = 0.765679
+RunNum = 246845 , Lumi = 1.4355
+RunNum = 246846 , Lumi = 0.898577
+RunNum = 246847 , Lumi = 1.70644
+RunNum = 246851 , Lumi = 1.21702
+RunNum = 246855 , Lumi = 1.30141
+RunNum = 246859 , Lumi = 1.23973
+RunNum = 246864 , Lumi = 2.48315
+RunNum = 246865 , Lumi = 0.811053
+RunNum = 246867 , Lumi = 1.50194
+RunNum = 246871 , Lumi = 0.871307
+RunNum = 246930 , Lumi = 0.564051
+RunNum = 246937 , Lumi = 0.698979
+RunNum = 246942 , Lumi = 1.05546
+RunNum = 246945 , Lumi = 2.16762
+RunNum = 246948 , Lumi = 0.88548
+RunNum = 246949 , Lumi = 2.89783
+RunNum = 246980 , Lumi = 7.19989
+RunNum = 246982 , Lumi = 0.514646
+RunNum = 246984 , Lumi = 4.14298
+RunNum = 246989 , Lumi = 3.83424
+RunNum = 246991 , Lumi = 0.4368
+RunNum = 246994 , Lumi = 1.23287
+RunNum = 295585 , Lumi = 0.0793352
+RunNum = 295586 , Lumi = 0.238634
+RunNum = 295587 , Lumi = 0.109518
+RunNum = 295588 , Lumi = 0.135751
+RunNum = 295589 , Lumi = 0.281934
+RunNum = 295612 , Lumi = 0.448985
+RunNum = 295615 , Lumi = 0.0565828
+RunNum = 295665 , Lumi = 0.334899
+RunNum = 295666 , Lumi = 0.323926
+RunNum = 295667 , Lumi = 0.0970438
+RunNum = 295668 , Lumi = 0.130269
+RunNum = 295671 , Lumi = 0.325938
+RunNum = 295673 , Lumi = 0.312761
+RunNum = 295675 , Lumi = 0.13199
+RunNum = 295676 , Lumi = 0.321306
+RunNum = 295677 , Lumi = 0.26522
+RunNum = 295714 , Lumi = 0.345554
+RunNum = 295716 , Lumi = 0.338941
+RunNum = 295717 , Lumi = 0.288033
+RunNum = 295718 , Lumi = 0.256706
+RunNum = 295719 , Lumi = 0.294713
+RunNum = 295723 , Lumi = 0.506379
+RunNum = 295725 , Lumi = 0.889047
+RunNum = 295753 , Lumi = 0.384579
+RunNum = 295754 , Lumi = 0.705466
+RunNum = 295755 , Lumi = 0.758451
+RunNum = 295758 , Lumi = 1.89342
+RunNum = 295759 , Lumi = 0.53309
+RunNum = 295762 , Lumi = 0.274898
+RunNum = 295763 , Lumi = 1.02823
+RunNum = 295786 , Lumi = 0.749037
+RunNum = 295788 , Lumi = 3.02371
+RunNum = 295791 , Lumi = 0.85803
+RunNum = 295816 , Lumi = 1.20558
+RunNum = 295818 , Lumi = 0.14533
+RunNum = 295819 , Lumi = 2.74741
+RunNum = 295822 , Lumi = 2.25289
+RunNum = 295825 , Lumi = 0.255836
+RunNum = 295826 , Lumi = 1.58143
+RunNum = 295829 , Lumi = 0.935067
+RunNum = 295831 , Lumi = 0.776182
+RunNum = 295854 , Lumi = 1.31191
+RunNum = 295855 , Lumi = 1.74655
+RunNum = 295856 , Lumi = 1.47003
+RunNum = 295859 , Lumi = 1.05103
+RunNum = 295860 , Lumi = 0.834139
+RunNum = 295861 , Lumi = 1.06703
+RunNum = 295863 , Lumi = 0.727895
+RunNum = 295881 , Lumi = 0.711464
+RunNum = 295908 , Lumi = 2.92606
+RunNum = 295909 , Lumi = 0.787541
+RunNum = 295910 , Lumi = 3.18427
+RunNum = 295913 , Lumi = 3.12937
+RunNum = 295936 , Lumi = 1.47359
+RunNum = 295937 , Lumi = 0.405657
+RunNum = 295941 , Lumi = 1.67669
+RunNum = 295942 , Lumi = 1.92368
+RunNum = 295943 , Lumi = 1.67468
+RunNum = 295945 , Lumi = 2.03704
+RunNum = 295947 , Lumi = 2.63369
+RunNum = 296061 , Lumi = 1.29676
+RunNum = 296062 , Lumi = 1.80833
+RunNum = 296063 , Lumi = 2.68761
+RunNum = 296065 , Lumi = 2.44727
+RunNum = 296066 , Lumi = 0.733648
+RunNum = 296068 , Lumi = 1.98122
+RunNum = 296123 , Lumi = 0.506486
+RunNum = 296128 , Lumi = 0.445452
+RunNum = 296132 , Lumi = 1.31195
+RunNum = 296133 , Lumi = 1.73212
+RunNum = 296134 , Lumi = 3.9104
+RunNum = 296135 , Lumi = 2.34118
+RunNum = 296142 , Lumi = 1.7893
+RunNum = 296143 , Lumi = 0.534028
+RunNum = 296191 , Lumi = 5.05074
+RunNum = 296192 , Lumi = 0.497364
+RunNum = 296194 , Lumi = 2.87252
+RunNum = 296195 , Lumi = 0.737647
+RunNum = 296196 , Lumi = 2.35196
+RunNum = 296197 , Lumi = 2.06905
+RunNum = 296198 , Lumi = 0.81402
+RunNum = 296241 , Lumi = 0.845868
+RunNum = 296242 , Lumi = 0.95166
+RunNum = 296243 , Lumi = 1.56742
+RunNum = 296244 , Lumi = 8.37223
+RunNum = 296246 , Lumi = 1.83514
+RunNum = 296247 , Lumi = 1.17651
+RunNum = 296269 , Lumi = 3.8392
+RunNum = 296270 , Lumi = 1.51158
+RunNum = 296273 , Lumi = 7.22369
+RunNum = 296279 , Lumi = 0.405699
+RunNum = 296280 , Lumi = 1.50663
+RunNum = 296303 , Lumi = 2.00598
+RunNum = 296304 , Lumi = 6.09653
+RunNum = 296307 , Lumi = 2.90228
+RunNum = 296309 , Lumi = 2.10255
+RunNum = 296312 , Lumi = 2.12275
+RunNum = 296377 , Lumi = 6.06657
+RunNum = 296378 , Lumi = 5.38973
+RunNum = 296379 , Lumi = 2.09689
+RunNum = 296380 , Lumi = 2.88204
+RunNum = 296381 , Lumi = 1.44175
+RunNum = 296383 , Lumi = 1.51363
+RunNum = 296414 , Lumi = 4.87662
+RunNum = 296419 , Lumi = 2.7523
+RunNum = 296420 , Lumi = 1.41318
+RunNum = 296423 , Lumi = 1.59805
+RunNum = 296424 , Lumi = 0.386356
+RunNum = 296433 , Lumi = 4.04558
+RunNum = 296472 , Lumi = 0.863186
+RunNum = 296509 , Lumi = 2.95923
+RunNum = 296510 , Lumi = 9.06727
+RunNum = 296511 , Lumi = 2.56663
+RunNum = 296514 , Lumi = 0.489835
+RunNum = 296516 , Lumi = 0.613431
+RunNum = 296547 , Lumi = 1.08337
+RunNum = 296548 , Lumi = 1.3771
+RunNum = 296549 , Lumi = 4.86451
+RunNum = 296550 , Lumi = 3.99007
+RunNum = 296551 , Lumi = 2.02138
+RunNum = 296552 , Lumi = 0.484243
+RunNum = 296553 , Lumi = 0.709064
+RunNum = 296615 , Lumi = 1.56764
+RunNum = 296616 , Lumi = 0.53985
+RunNum = 296618 , Lumi = 1.70141
+RunNum = 296619 , Lumi = 1.56131
+RunNum = 296622 , Lumi = 0.706373
+RunNum = 296623 , Lumi = 2.14419
+RunNum = 296690 , Lumi = 6.86147
+RunNum = 296691 , Lumi = 0.651063
+RunNum = 296694 , Lumi = 5.1826
+RunNum = 296749 , Lumi = 9.24134
+RunNum = 296750 , Lumi = 8.21606
+RunNum = 296781 , Lumi = 0.817883
+RunNum = 296784 , Lumi = 2.97965
+RunNum = 296785 , Lumi = 1.9085
+RunNum = 296786 , Lumi = 0.753734
+RunNum = 296787 , Lumi = 3.21903
+RunNum = 296791 , Lumi = 0.757278
+RunNum = 296793 , Lumi = 1.33169
+RunNum = 296794 , Lumi = 3.1335
+RunNum = 296799 , Lumi = 2.71491
+RunNum = 296836 , Lumi = 1.5116
+RunNum = 296838 , Lumi = 0.543214
+RunNum = 296839 , Lumi = 2.94239
+RunNum = 296848 , Lumi = 2.16277
+RunNum = 296849 , Lumi = 11.469
+RunNum = 296850 , Lumi = 2.79789
+RunNum = 296851 , Lumi = 0.139243
+RunNum = 296852 , Lumi = 0.956479
+RunNum = 296890 , Lumi = 8.05448
+RunNum = 296894 , Lumi = 4.64718
+RunNum = 296899 , Lumi = 2.13548
+RunNum = 296900 , Lumi = 2.78325
+RunNum = 296903 , Lumi = 1.03906
+RunNum = 296930 , Lumi = 1.45745
+RunNum = 296931 , Lumi = 0.529172
+RunNum = 296932 , Lumi = 1.18632
+RunNum = 296934 , Lumi = 2.59166
+RunNum = 296935 , Lumi = 4.40388
+RunNum = 296938 , Lumi = 1.6678
+RunNum = 296941 , Lumi = 2.91812
+RunNum = 296966 , Lumi = 3.36111
+RunNum = 296967 , Lumi = 0.80508
+RunNum = 296968 , Lumi = 3.19051
+RunNum = 296969 , Lumi = 1.88784
+RunNum = 296971 , Lumi = 0.690732
+RunNum = 296975 , Lumi = 7.36828
+RunNum = 296976 , Lumi = 1.11749
+RunNum = 296979 , Lumi = 1.0995
+RunNum = 297029 , Lumi = 7.23702
+RunNum = 297031 , Lumi = 6.04991
+RunNum = 297035 , Lumi = 0.570489
+RunNum = 297085 , Lumi = 0.97735
+RunNum = 297117 , Lumi = 2.30958
+RunNum = 297118 , Lumi = 2.42995
+RunNum = 297119 , Lumi = 2.68703
+RunNum = 297123 , Lumi = 3.28037
+RunNum = 297124 , Lumi = 0.639463
+RunNum = 297128 , Lumi = 2.41097
+RunNum = 297129 , Lumi = 2.83004
+RunNum = 297132 , Lumi = 2.81789
+RunNum = 297133 , Lumi = 1.14535
+RunNum = 297193 , Lumi = 7.56024
+RunNum = 297194 , Lumi = 8.84277
+RunNum = 297196 , Lumi = 2.1255
+RunNum = 297218 , Lumi = 6.41998
+RunNum = 297219 , Lumi = 10.531
+RunNum = 297221 , Lumi = 2.83092
+RunNum = 297222 , Lumi = 1.71749
+RunNum = 297278 , Lumi = 0.601879
+RunNum = 297310 , Lumi = 0.670071
+RunNum = 297312 , Lumi = 2.40024
+RunNum = 297315 , Lumi = 7.82708
+RunNum = 297317 , Lumi = 4.31479
+RunNum = 297363 , Lumi = 1.91217
+RunNum = 297366 , Lumi = 2.12929
+RunNum = 297367 , Lumi = 3.15478
+RunNum = 297372 , Lumi = 3.20026
+RunNum = 297379 , Lumi = 6.80504
+RunNum = 297380 , Lumi = 1.54879
+RunNum = 297405 , Lumi = 0.600709
+RunNum = 297408 , Lumi = 4.10208
+RunNum = 297413 , Lumi = 2.9907
+RunNum = 297414 , Lumi = 2.21401
+RunNum = 297415 , Lumi = 6.82266
+RunNum = 297441 , Lumi = 5.05562
+RunNum = 297442 , Lumi = 1.98775
+RunNum = 297446 , Lumi = 8.13263
+RunNum = 297450 , Lumi = 1.95181
+RunNum = 297451 , Lumi = 1.33273
+RunNum = 297452 , Lumi = 1.15124
+RunNum = 297479 , Lumi = 7.74629
+RunNum = 297481 , Lumi = 10.6454
+RunNum = 297483 , Lumi = 1.95052
+RunNum = 297512 , Lumi = 1.58475
+RunNum = 297537 , Lumi = 1.80959
+RunNum = 297540 , Lumi = 0.62859
+RunNum = 297541 , Lumi = 4.01201
+RunNum = 297542 , Lumi = 1.5362
+RunNum = 297544 , Lumi = 7.29002
+RunNum = 297558 , Lumi = 0.478315
+RunNum = 297588 , Lumi = 5.29117
+RunNum = 297590 , Lumi = 3.05991
+
+
+*/
