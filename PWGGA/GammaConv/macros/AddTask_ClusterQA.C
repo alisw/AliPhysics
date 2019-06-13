@@ -130,7 +130,7 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   
   AliCaloPhotonCuts *analysisClusterCutsEMC = new AliCaloPhotonCuts();
   analysisClusterCutsEMC->SetV0ReaderName(V0ReaderName);
-  //analysisClusterCutsEMC->SetCorrectionTaskSetting(corrTaskSetting);
+  analysisClusterCutsEMC->SetCorrectionTaskSetting(corrTaskSetting);
   // analysisClusterCutsEMC->SetCaloTrackMatcherName(TrackMatcherNameEMC);
   analysisClusterCutsEMC->SetExtendedMatchAndQA(enableExtMatchAndQA);
   analysisClusterCutsEMC->InitializeCutsFromCutString(TaskClusterCutnumber.Data());
@@ -156,6 +156,7 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   fQA->SetClusterCutsEMC(analysisClusterCutsEMC,IsHeavyIon);
   // fQA->SetClusterCutsDMC(analysisClusterCutsDMC,IsHeavyIon);
   // fQA->SetMesonCuts(analysisMesonCuts,IsHeavyIon);
+  fQA->SetCorrectionTaskSetting(corrTaskSetting);
   fQA->SetMinMaxNLMCut(minNLM,maxNLM);
   fQA->FillType(kTree,kHistograms);
   fQA->SetIsMC(isMC);
@@ -172,11 +173,9 @@ TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   fQA->SetDoAdditionalHistos(makeAdditionalHistos);
   mgr->AddTask(fQA);
 
-
   mgr->ConnectInput  (fQA, 0,  cinput );
-  mgr->ConnectOutput (fQA, 1, mgr->CreateContainer(Form("GammaCaloQA_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumber.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskClusterCutnumber.Data())) );
-  mgr->ConnectOutput (fQA, 2, mgr->CreateContainer(Form("ClusterTree_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumber.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
+  mgr->ConnectOutput (fQA, 1, mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ?  Form("GammaCaloQA_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumber.Data()) : Form("GammaCaloQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumber.Data(),corrTaskSetting.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaCaloQA_%s_%s", mgr->GetCommonFileName(), TaskEventCutnumber.Data(), TaskClusterCutnumber.Data())) );
+  mgr->ConnectOutput (fQA, 2, mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ?  Form("ClusterQA_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumber.Data()) : Form("ClusterQA_%s_%s_%s", TaskEventCutnumber.Data(), TaskClusterCutnumber.Data(),corrTaskSetting.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
 
   return;
 }
-
