@@ -46,6 +46,7 @@ public:
 
   void SetTriggerCluster(const char *triggercluster) { fTriggerCluster = triggercluster; } 
   void SetTriggerClusterEMCAL(const char *triggercluster) { fTriggerClusterEMCAL = triggercluster; }
+  void SetL0TriggerEMCAL(const char *trigger) { fEMCALL0trigger = trigger; }
   void AddMBTriggerClass(const char *triggerclass) { fMBTriggerClasses.emplace_back(triggerclass); }
 
   static AliAnalysisTaskEmcalTriggerNormalization *AddTaskEmcalTriggerNormalization(const char *name);
@@ -56,6 +57,14 @@ public:
     virtual ~TriggerClusterNotSetException() throw() {}
 
     virtual const char *what() const throw() { return "Trigger cluster not set."; }
+  };
+
+  class L0TriggerNotSetException : public std::exception {
+  public:
+    L0TriggerNotSetException() {}
+    virtual ~L0TriggerNotSetException() {}
+
+    virtual const char *what() const throw() { return "L0 trigger not defined."; }
   };
 
   class MBTriggerNotSetException : public std::exception {
@@ -84,6 +93,7 @@ private:
   THistManager             *fHistos;                ///< List of histograms
   std::string               fTriggerCluster;        ///< Trigger cluster       
   std::string               fTriggerClusterEMCAL;   ///< Cluster of the EMCAL triggers (if different)
+  std::string               fEMCALL0trigger;        ///< L0 trigger required for L1
   std::vector<std::string>  fMBTriggerClasses;      ///< List of valid min. bias trigger classes
 
 

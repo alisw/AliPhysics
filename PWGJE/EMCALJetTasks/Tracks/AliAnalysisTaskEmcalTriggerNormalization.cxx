@@ -24,6 +24,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
+#include <iostream>
+
 #include <THistManager.h>
 
 #include "AliAnalysisManager.h"
@@ -44,6 +47,7 @@ AliAnalysisTaskEmcalTriggerNormalization::AliAnalysisTaskEmcalTriggerNormalizati
     fHistos(nullptr),
     fTriggerCluster(),
     fTriggerClusterEMCAL(),
+    fEMCALL0trigger(),
     fMBTriggerClasses()
 {
 }
@@ -53,8 +57,10 @@ AliAnalysisTaskEmcalTriggerNormalization::AliAnalysisTaskEmcalTriggerNormalizati
     fHistos(nullptr),
     fTriggerCluster(),
     fTriggerClusterEMCAL(),
+    fEMCALL0trigger(),
     fMBTriggerClasses()
 {
+  SetMakeGeneralHistograms(true);
 }
 
 void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
@@ -64,7 +70,7 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
 
   fHistos->CreateTH2("hTriggerNorm", "Histogram for the trigger normalization", 11, -0.5, 10.5, 100, 0., 100.);
   auto normhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject("hTriggerNorm"));
-  std::array<std::string, 9> triggers = {"INT7", "EG", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2"};
+  std::array<std::string, 9> triggers = {"INT7", "EG1", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2"};
   for(auto ib = 0; ib < triggers.size(); ib++){
     normhist->GetXaxis()->SetBinLabel(ib+1, triggers[ib].data());
   }
@@ -76,6 +82,7 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
 Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   if(!fTriggerCluster.length()) throw TriggerClusterNotSetException(); 
   if(!fMBTriggerClasses.size()) throw MBTriggerNotSetException();
+  if(!fEMCALL0trigger.length()) throw L0TriggerNotSetException();
 
   if(!fTriggerClusterEMCAL.length()) fTriggerClusterEMCAL = fTriggerCluster;
 
@@ -109,8 +116,12 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   const Int_t NEMCAL_TRIGGERS = 8;
   const std::array<std::string, NEMCAL_TRIGGERS> EMCAL_TRIGGERS = {{"EG1", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2"}};
   const std::array<UInt_t, NEMCAL_TRIGGERS> EMCAL_TRIGGERBITS = {{EGABIT, EGABIT, EJEBIT, EJEBIT, EGABIT, EGABIT, EJEBIT, EJEBIT}};
+  bool hasEMCALtrigger = std::find_if(EMCAL_TRIGGERS.begin(), EMCAL_TRIGGERS.end(), [&triggerstring](const std::string &t) { return triggerstring.find(t) != std::string::npos; } ) != EMCAL_TRIGGERS.end();
+  if(hasEMCALtrigger) {
+    AliDebugStream(2) << "Found EMCAL trigger: "  << triggerstring << std::endl;
+  }
   for(Int_t i = 0; i < NEMCAL_TRIGGERS; i++) {
-    std::vector<std::string> match_emctriggers = {EMCAL_TRIGGERS[i]};
+    std::vector<std::string> match_emctriggers = {fEMCALL0trigger + EMCAL_TRIGGERS[i]};
     if(fInputHandler->IsEventSelected() & EMCAL_TRIGGERBITS[i]){
       auto match_triggerclass = MatchTrigger(triggerstring, match_emctriggers, fTriggerClusterEMCAL);
       AliDebugStream(2) << "Matched trigger: " << match_triggerclass << std::endl;
@@ -128,13 +139,16 @@ std::string AliAnalysisTaskEmcalTriggerNormalization::MatchTrigger(EMCAL_STRINGV
   std::string result;
   auto triggers = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring);
   for(const auto &t : triggers) {
+    bool found = false;
     if(t.Triggercluster() != triggercluster) continue;
     for(const auto &c : triggerclasses) {
       if(t.IsTriggerClass(c)) {
         result = t.ExpandClassName();
+        found = true;
         break;
       }
     }
+    if(found) break;
   }
   return result;
 }
