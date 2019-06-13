@@ -81,10 +81,10 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp,
 {
   // Return true if vp is accepted.
 
-  if (IsSpecialPDGDaughter(vp)) {
-    rejectionReason |= kHFCut;
-    return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
-  }
+  //  if (IsSpecialPDGDaughter(vp)) {
+  //  rejectionReason |= kHFCut;
+  //  return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
+  // }
 
   if (IsSpecialPDG(vp)) {
     // Special PDG particle, skip regular MC particle cuts and apply kinematic cuts.
@@ -111,10 +111,10 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionR
 
   AliAODMCParticle* vp = GetMCParticle(i);
 
-  if (IsSpecialPDGDaughter(vp)) {
-    rejectionReason = kHFCut;
-    return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
-  }
+  // if (IsSpecialPDGDaughter(vp)) {
+  //  rejectionReason = kHFCut;
+  //  return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
+  // }
 
   if (IsSpecialPDG(vp, fHistOrigin)) {
     // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
