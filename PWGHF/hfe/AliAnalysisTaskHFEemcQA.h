@@ -173,6 +173,7 @@ private:
     TH2F        *fHistNsigEop_Semi;//!pt vs E/p
     TH2F        *fHistNsigEop_Peri;//!pt vs E/p
     TH2F        *fHistEop;//!pt vs E/p
+    TH2F        *fHistEopHad;//!pt vs E/p
     TH2F        *fHistMcEopEle;//!pt vs E/p
     TH2F        *fHistMcEopHad;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt

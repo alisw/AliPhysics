@@ -157,6 +157,7 @@ fHistNsigEop_Most(0),
 fHistNsigEop_Semi(0),
 fHistNsigEop_Peri(0),
 fHistEop(0),
+fHistEopHad(0),
 fHistMcEopEle(0),
 fHistMcEopHad(0),
 fM20(0),
@@ -304,6 +305,7 @@ fHistNsigEop_Most(0),
 fHistNsigEop_Semi(0),
 fHistNsigEop_Peri(0),
 fHistEop(0),
+fHistEopHad(0),
 fHistMcEopEle(0),
 fHistMcEopHad(0),
 fM20(0),
@@ -585,9 +587,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fClsEtaPhiAftMatchEMCout = new TH2F("fClsEtaPhiAftMatchEMCout","EMCAL cluster #eta and #phi distribution after track matching outside EMC #phi acceptence;#eta;#phi",100,-0.9,0.9,200,0,6.3);
     fOutputList->Add(fClsEtaPhiAftMatchEMCout);
     
-    fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,40, 0.0, 2.0);
+    fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 800,0,80,40, 0.0, 2.0);
     fOutputList->Add(fHistEop);
-    
+ 
+    fHistEopHad = new TH2F("fHistEopHad", "E/p distribution for hadron;p_{T} (GeV/c);E/p", 800,0,80,40, 0.0, 2.0);
+    fOutputList->Add(fHistEopHad);
+   
     fHistMcEopEle = new TH2F("fHistMcEopEle", "E/p distribution (MC electron);p_{T} (GeV/c);E/p", 200,0,20,40, 0.0, 2.0);
     fOutputList->Add(fHistMcEopEle);
     
@@ -1337,6 +1342,7 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             ////////////////////////////////////////////////
             
             if((fTPCnSigma > -1 && fTPCnSigma < 3) && (m20 > 0.01 && m20 < 0.45))fHistEop->Fill(track->Pt(),eop);
+            if( fTPCnSigma < -2  && (m20 > 0.01 && m20 < 0.45))fHistEopHad->Fill(track->Pt(),eop);
             if(pid_ele==1.0)
                 fHistMcEopEle->Fill(track->Pt(),eop);
             else
