@@ -17,16 +17,22 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
 ,fEvent()
 ,fTrack()
 ,fEventCuts()
-,fTrackCutsPart1()
-,fTrackCutsPart2()
-,fTrackCutsPart3()
-,fTrackCutsPart4()
+,fTrackCutsDeuteronDCA()
+,fTrackCutsDeuteronMass()
+,fTrackCutsAntiDeuteronDCA()
+,fTrackCutsAntiDeuteronMass()
+,fTrackCutsProtonDCA()
+,fTrackCutsProtonMass()
+,fTrackCutsAntiProtonDCA()
+,fTrackCutsAntiProtonMass()
 ,fConfig()
 ,fPairCleaner()
 ,fPartColl()
 ,fGTI()
-,fDInvMass()
-,fAntiDInvMass()
+,fDRestMass()
+,fAntiDRestMass()
+,fPRestMass()
+,fAntiPRestMass()
 ,fTrackBufferSize()
 {
 
@@ -39,16 +45,22 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char 
 ,fEvent()
 ,fTrack()
 ,fEventCuts()
-,fTrackCutsPart1()
-,fTrackCutsPart2()
-,fTrackCutsPart3()
-,fTrackCutsPart4()
+,fTrackCutsDeuteronDCA()
+,fTrackCutsDeuteronMass()
+,fTrackCutsAntiDeuteronDCA()
+,fTrackCutsAntiDeuteronMass()
+,fTrackCutsProtonDCA()
+,fTrackCutsProtonMass()
+,fTrackCutsAntiProtonDCA()
+,fTrackCutsAntiProtonMass()
 ,fConfig()
 ,fPairCleaner()
 ,fPartColl()
 ,fGTI()
-,fDInvMass()
-,fAntiDInvMass()
+,fDRestMass()
+,fAntiDRestMass()
+,fPRestMass()
+,fAntiPRestMass()
 ,fTrackBufferSize(2000)
 {
   DefineOutput(1,TList::Class());
@@ -76,14 +88,22 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   // Here we are playing a little bit dirty and simply initialising the Histogramms for invariant mass inside the
   // analysis task. This is bad style and in the future should definitely be outsourced but for the moment it is fine 
   // as long as it works.	
-  fDInvMass = new TH2F("fDInvMass","Deuteron_InvMsq", 36, 0.4, 4., 300, 2., 5.);
-  fDInvMass->GetXaxis()->SetTitle("pT");
-  fDInvMass->GetYaxis()->SetTitle("m^2");
-  fAntiDInvMass = new TH2F("fAntiDInvMass","Antideuteron_InvMsq", 36, 0.4, 4., 300, 2., 5.);
-  fAntiDInvMass->GetXaxis()->SetTitle("pT");
-  fAntiDInvMass->GetYaxis()->SetTitle("m^2");
-  fOutput->Add(fDInvMass);
-  fOutput->Add(fAntiDInvMass);
+  fDRestMass = new TH2F("fDRestMass","Deuteron_RestMsq", 36, 0.4, 4., 300, 2., 5.);
+  fDRestMass->GetXaxis()->SetTitle("pT");
+  fDRestMass->GetYaxis()->SetTitle("m^2");
+  fAntiDRestMass = new TH2F("fAntiDRestMass","Antideuteron_RestMsq", 36, 0.4, 4., 300, 2., 5.);
+  fAntiDRestMass->GetXaxis()->SetTitle("pT");
+  fAntiDRestMass->GetYaxis()->SetTitle("m^2");
+  fPRestMass = new TH2F("fPRestMass","Proton_RestMsq", 36, 0.5, 4.05, 180, 0.2, 2.);
+  fPRestMass->GetXaxis()->SetTitle("pT");
+  fPRestMass->GetYaxis()->SetTitle("m^2");
+  fAntiPRestMass = new TH2F("fAntiPRestMass","Antiproton_RestMsq", 36, 0.5, 4.05, 180, 0.2, 2.);
+  fAntiPRestMass->GetXaxis()->SetTitle("pT");
+  fAntiPRestMass->GetYaxis()->SetTitle("m^2");
+  fOutput->Add(fDRestMass);
+  fOutput->Add(fAntiDRestMass);
+  fOutput->Add(fPRestMass);
+  fOutput->Add(fAntiPRestMass);
 
   //Set up the Femto Event
   //Now not to go into the details the arguments are as follows:
@@ -105,9 +125,9 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   //information available.
   fGTI=new AliAODTrack*[fTrackBufferSize];
 
-  if (!fTrackCutsPart1) {
+  if (!fTrackCutsDeuteronDCA) {
     // If the track cuts didn't arrive here, we can go home
-    AliFatal("Track Cuts for Particle One not set!");
+    AliFatal("Track Cuts for DCA Deuterons not set!");
   }
   //For the next step the order is really important, else you do not have histograms
    //First initialize the Histogramms in the Track Cut object. This is done to not initialize
@@ -117,50 +137,95 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   //And add the histograms to the output list
   fOutput->Add(fEventCuts->GetHistList());
   //same as for the event cuts
-  fTrackCutsPart1->Init();
+  fTrackCutsDeuteronDCA->Init();
   //To avoid collision in the output list, we rename the List carrying all the histograms of this object
-  fTrackCutsPart1->SetName("Particle1");
+  fTrackCutsDeuteronDCA->SetName("DCADeuterons");
   //Now connect the output of the Track Cuts to the output
-  fOutput->Add(fTrackCutsPart1->GetQAHists());
+  fOutput->Add(fTrackCutsDeuteronDCA->GetQAHists());
   //If we are running over MC more histos are created and we get them seperately
   //This is done, since later you might want to use seperate output slots, so you
   //do not overload one slot.
-  if (fTrackCutsPart1->GetIsMonteCarlo()) {
-    fTrackCutsPart1->SetMCName("MCParticle1"); // same as above
-    fOutput->Add(fTrackCutsPart1->GetMCQAHists());
+  if (fTrackCutsDeuteronDCA->GetIsMonteCarlo()) {
+    fTrackCutsDeuteronDCA->SetMCName("MCDCADeuterons"); // same as above
+    fOutput->Add(fTrackCutsDeuteronDCA->GetMCQAHists());
   }
   //Same game for the second track cuts object
-  if (!fTrackCutsPart2) {
-    AliFatal("Track Cuts for Particle Two not set!");
+  if (!fTrackCutsDeuteronMass) {
+    AliFatal("Track Cuts for Mass Deuterons not set!");
   }
-  fTrackCutsPart2->Init();
-  fTrackCutsPart2->SetName("Particle2");
-  fOutput->Add(fTrackCutsPart2->GetQAHists());
-  if (fTrackCutsPart2->GetIsMonteCarlo()) {
-    fTrackCutsPart2->SetMCName("MCParticle2"); // same as above
-    fOutput->Add(fTrackCutsPart2->GetMCQAHists());
-  }
-
-  if (!fTrackCutsPart3) {
-    AliFatal("Track Cuts for Particle Three not set!");
-  }
-  fTrackCutsPart3->Init();
-  fTrackCutsPart3->SetName("Particle3");
-  fOutput->Add(fTrackCutsPart3->GetQAHists());
-  if (fTrackCutsPart3->GetIsMonteCarlo()) {
-    fTrackCutsPart3->SetMCName("MCParticle3"); // same as above
-    fOutput->Add(fTrackCutsPart3->GetMCQAHists());
+  fTrackCutsDeuteronMass->Init();
+  fTrackCutsDeuteronMass->SetName("MassDeuterons");
+  fOutput->Add(fTrackCutsDeuteronMass->GetQAHists());
+  if (fTrackCutsDeuteronMass->GetIsMonteCarlo()) {
+    fTrackCutsDeuteronMass->SetMCName("MCMassDeuterons"); // same as above
+    fOutput->Add(fTrackCutsDeuteronMass->GetMCQAHists());
   }
 
-  if (!fTrackCutsPart4) {
-    AliFatal("Track Cuts for Particle Four not set!");
+  if (!fTrackCutsAntiDeuteronDCA) {
+    AliFatal("Track Cuts for DCA Antideuterons not set!");
   }
-  fTrackCutsPart4->Init();
-  fTrackCutsPart4->SetName("Particle4");
-  fOutput->Add(fTrackCutsPart4->GetQAHists());
-  if (fTrackCutsPart4->GetIsMonteCarlo()) {
-    fTrackCutsPart4->SetMCName("MCParticle4"); // same as above
-    fOutput->Add(fTrackCutsPart4->GetMCQAHists());
+  fTrackCutsAntiDeuteronDCA->Init();
+  fTrackCutsAntiDeuteronDCA->SetName("DCAAntiDeuterons");
+  fOutput->Add(fTrackCutsAntiDeuteronDCA->GetQAHists());
+  if (fTrackCutsAntiDeuteronDCA->GetIsMonteCarlo()) {
+    fTrackCutsAntiDeuteronDCA->SetMCName("MCDCAAntiDeuterons"); // same as above
+    fOutput->Add(fTrackCutsAntiDeuteronDCA->GetMCQAHists());
+  }
+
+  if (!fTrackCutsAntiDeuteronMass) {
+    AliFatal("Track Cuts for Mass Antideuterons not set!");
+  }
+  fTrackCutsAntiDeuteronMass->Init();
+  fTrackCutsAntiDeuteronMass->SetName("MassAntiDeuterons");
+  fOutput->Add(fTrackCutsAntiDeuteronMass->GetQAHists());
+  if (fTrackCutsAntiDeuteronMass->GetIsMonteCarlo()) {
+    fTrackCutsAntiDeuteronMass->SetMCName("MCMassAntiDeuterons"); // same as above
+    fOutput->Add(fTrackCutsAntiDeuteronMass->GetMCQAHists());
+  }
+
+if (!fTrackCutsProtonDCA) {
+    // If the track cuts didn't arrive here, we can go home
+    AliFatal("Track Cuts for DCA Protons not set!");
+  }
+  fTrackCutsProtonDCA->Init();
+  fTrackCutsProtonDCA->SetName("DCAProtons");
+  fOutput->Add(fTrackCutsProtonDCA->GetQAHists());
+  if (fTrackCutsProtonDCA->GetIsMonteCarlo()) {
+    fTrackCutsProtonDCA->SetMCName("MCDCAProtons"); // same as above
+    fOutput->Add(fTrackCutsProtonDCA->GetMCQAHists());
+  }
+  //Same game for the second track cuts object
+  if (!fTrackCutsProtonMass) {
+    AliFatal("Track Cuts for Mass Proton not set!");
+  }
+  fTrackCutsProtonMass->Init();
+  fTrackCutsProtonMass->SetName("MassProtons");
+  fOutput->Add(fTrackCutsProtonMass->GetQAHists());
+  if (fTrackCutsProtonMass->GetIsMonteCarlo()) {
+    fTrackCutsProtonMass->SetMCName("MCMassProtons"); // same as above
+    fOutput->Add(fTrackCutsProtonMass->GetMCQAHists());
+  }
+
+  if (!fTrackCutsAntiProtonDCA) {
+    AliFatal("Track Cuts for DCA Antiprotons not set!");
+  }
+  fTrackCutsAntiProtonDCA->Init();
+  fTrackCutsAntiProtonDCA->SetName("DCAAntiProtons");
+  fOutput->Add(fTrackCutsAntiProtonDCA->GetQAHists());
+  if (fTrackCutsAntiProtonDCA->GetIsMonteCarlo()) {
+    fTrackCutsAntiProtonDCA->SetMCName("MCDCAAntiProtons"); // same as above
+    fOutput->Add(fTrackCutsAntiProtonDCA->GetMCQAHists());
+  }
+
+  if (!fTrackCutsAntiProtonMass) {
+    AliFatal("Track Cuts for Mass Antiprotons not set!");
+  }
+  fTrackCutsAntiProtonMass->Init();
+  fTrackCutsAntiProtonMass->SetName("MassAntiProtons");
+  fOutput->Add(fTrackCutsAntiProtonMass->GetQAHists());
+  if (fTrackCutsAntiProtonMass->GetIsMonteCarlo()) {
+    fTrackCutsAntiProtonMass->SetMCName("MCMassAntiProtons"); // same as above
+    fOutput->Add(fTrackCutsAntiProtonMass->GetMCQAHists());
   }
   //Arguments for the pair cleaner as follows:
   //1. How many pairs of Tracks + Decays do you want to clean?
@@ -216,15 +281,23 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
       //cascade inherits from this base type, which carries all the information relevant for the
       //same and mixed event distributions (e.g. momentum, angles, etc. ). E.g. the dEdx of the TPC
       //doesnt matter for this porpouse.
-      static std::vector<AliFemtoDreamBasePart> Deuterons;
-      Deuterons.clear();
-      static std::vector<AliFemtoDreamBasePart> AntiDeuterons;
-      AntiDeuterons.clear();
+      static std::vector<AliFemtoDreamBasePart> DCADeuterons;
+      DCADeuterons.clear();
+      static std::vector<AliFemtoDreamBasePart> MassDeuterons;
+      MassDeuterons.clear();
+      static std::vector<AliFemtoDreamBasePart> DCAAntiDeuterons;
+      DCAAntiDeuterons.clear();
+      static std::vector<AliFemtoDreamBasePart> MassAntiDeuterons;
+      MassAntiDeuterons.clear();
 
-      static std::vector<AliFemtoDreamBasePart> Protons;
-      Protons.clear();
-      static std::vector<AliFemtoDreamBasePart> AntiProtons;
-      AntiProtons.clear();
+      static std::vector<AliFemtoDreamBasePart> DCAProtons;
+      DCAProtons.clear();
+      static std::vector<AliFemtoDreamBasePart> MassProtons;
+      MassProtons.clear();
+      static std::vector<AliFemtoDreamBasePart> DCAAntiProtons;
+      DCAAntiProtons.clear();
+      static std::vector<AliFemtoDreamBasePart> MassAntiProtons;
+      MassAntiProtons.clear();
       //Now we loop over all the tracks in the reconstructed event.
       for (int iTrack = 0;iTrack<Event->GetNumberOfTracks();++iTrack) {
         AliAODTrack *track=static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
@@ -236,35 +309,51 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
         fTrack->SetTrack(track);
         //then we pass it to the track cut objects, which checks if it passes our selection criteria
         //for particle 1 and if it returns true ...
-        if (fTrackCutsPart1->isSelected(fTrack)) {
+        if (fTrackCutsDeuteronDCA->isSelected(fTrack)) {
           //.. we add it to our particle buffer
-          Deuterons.push_back(*fTrack);
-	  fDInvMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+          DCADeuterons.push_back(*fTrack);
         }
-        //same game, different name for the selection criteria 2!
-        if (fTrackCutsPart2->isSelected(fTrack)) {
-          AntiDeuterons.push_back(*fTrack);
-	  fAntiDInvMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+        if (fTrackCutsDeuteronMass->isSelected(fTrack)) {
+          MassDeuterons.push_back(*fTrack);
+	  fDRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
-	if (fTrackCutsPart3->isSelected(fTrack)) {
-          Protons.push_back(*fTrack);
+	if (fTrackCutsAntiDeuteronDCA->isSelected(fTrack)) {
+          //.. we add it to our particle buffer
+          DCAAntiDeuterons.push_back(*fTrack);
         }
-	if (fTrackCutsPart4->isSelected(fTrack)) {
-          AntiProtons.push_back(*fTrack);
+        if (fTrackCutsAntiDeuteronMass->isSelected(fTrack)) {
+          MassAntiDeuterons.push_back(*fTrack);
+	  fAntiDRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+        }
+        if (fTrackCutsProtonDCA->isSelected(fTrack)) {
+          //.. we add it to our particle buffer
+          DCAProtons.push_back(*fTrack);
+        }
+        if (fTrackCutsProtonMass->isSelected(fTrack)) {
+          MassProtons.push_back(*fTrack);
+	  fPRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
+        }
+	if (fTrackCutsAntiProtonDCA->isSelected(fTrack)) {
+          //.. we add it to our particle buffer
+          DCAAntiProtons.push_back(*fTrack);
+        }
+        if (fTrackCutsAntiProtonMass->isSelected(fTrack)) {
+          MassAntiProtons.push_back(*fTrack);
+	  fAntiPRestMass->Fill(fTrack->GetPt(), GetMass2sq(fTrack));
         }
       }
       //This is where the magic of selecting particles ends, and we can turn our attention to
       //calculating the results. First we need to ensure to not have any Autocorrelations by
       //selecting a track twice. Now this is hypothetical, because we are selecting opposite
       //charged particles, but imagine you want to use p+K^+ (Check for this is not yet implemented)!
-      fPairCleaner->CleanTrackAndDecay(&Deuterons,&AntiDeuterons,0);
+      fPairCleaner->CleanTrackAndDecay(&DCADeuterons,&DCAAntiDeuterons,0);
       //The cleaner tags particles as 'bad' for use, these we don't want to give to our particle
       //pairer, that's why we call store particles, which only takes the particles marked 'good' from
       //our buffer vector.
       //First we need to reset any particles in the array!
       fPairCleaner->ResetArray();
-      fPairCleaner->StoreParticle(Deuterons);
-      fPairCleaner->StoreParticle(AntiDeuterons);
+      fPairCleaner->StoreParticle(DCADeuterons);
+      fPairCleaner->StoreParticle(DCAAntiDeuterons);
       //Now we can give our particlers to the particle collection where the magic happens.
       //The arguments one by one:
       //1. A vector of a vector of cleaned particles fresh from the laundromat.
