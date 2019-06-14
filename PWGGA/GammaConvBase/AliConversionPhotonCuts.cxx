@@ -93,7 +93,7 @@ const char* AliConversionPhotonCuts::fgkCutNames[AliConversionPhotonCuts::kNCuts
   "RejectToCloseV0s",       // 22
   "DcaRPrimVtx",            // 23
   "DcaZPrimVtx",            // 24
-  "EvetPlane"               // 25
+  "EventPlane"              // 25
 };
 
 //________________________________________________________________________
@@ -152,6 +152,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fDoQtGammaSelection(1),
   fDo2DQt(kFALSE),
   fQtMax(100),
+  fQtPtMax(100),
   fNSigmaMass(0.),
   fUseEtaMinCut(kFALSE),
   fUseOnFlyV0Finder(kTRUE),
@@ -325,6 +326,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fDoQtGammaSelection(ref.fDoQtGammaSelection),
   fDo2DQt(ref.fDo2DQt),
   fQtMax(ref.fQtMax),
+  fQtPtMax(ref.fQtPtMax),
   fNSigmaMass(ref.fNSigmaMass),
   fUseEtaMinCut(ref.fUseEtaMinCut),
   fUseOnFlyV0Finder(ref.fUseOnFlyV0Finder),
@@ -458,7 +460,7 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
 
   // if( fHistoEleMapMean != NULL){
   //   delete fHistoEleMapMean;
-  //   fHistoEleMapMean =NULL;	
+  //   fHistoEleMapMean =NULL;
   // }
 
   for (Int_t i = 0; i < fnRBins; i++) {
@@ -470,7 +472,7 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
       delete fHistoEleMapWidth[i] ;
       fHistoEleMapWidth[i]  =NULL;
     }
-    
+
     if( fHistoPosMapMean[i]  != NULL){
       delete fHistoPosMapMean[i] ;
       fHistoPosMapMean[i]  =NULL;
@@ -479,7 +481,7 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
       delete fHistoPosMapWidth[i] ;
       fHistoPosMapWidth[i]  =NULL;
     }
-    
+
   }
 
 
@@ -566,7 +568,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       if( fHistoPosMapWidth[i]){
         fHistograms->Add(fHistoPosMapWidth[i]);
       }
-    } 
+    }
   }
 
   if(!fDoLightOutput){
@@ -936,9 +938,9 @@ Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge
       width = 1.;
     }
   }
-  if (width!=0.){ 
+  if (width!=0.){
     CornSig = (nsig - mean) / width;
-  } 
+  }
   return CornSig;
 }
 ///________________________________________________________________________
@@ -1430,7 +1432,10 @@ Bool_t AliConversionPhotonCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
         return kFALSE;
       }
     } else if(fDoQtGammaSelection==2){
-      if ( !(TMath::Power(photon->GetArmenterosAlpha()/fMaxPhotonAsymmetry,2)+TMath::Power(photon->GetArmenterosQt()/(fQtMax*photon->GetPhotonPt()),2) < 1) ){
+      Float_t qtMaxPtDep = fQtPtMax*photon->GetPhotonPt();
+      if (qtMaxPtDep > fQtMax)
+        qtMaxPtDep      = fQtMax;
+      if ( !(TMath::Power(photon->GetArmenterosAlpha()/fMaxPhotonAsymmetry,2)+TMath::Power(photon->GetArmenterosQt()/(qtMaxPtDep*photon->GetPhotonPt()),2) < 1) ){
         return kFALSE;
       }
     }
@@ -1440,7 +1445,10 @@ Bool_t AliConversionPhotonCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
         return kFALSE;
       }
     } else if(fDoQtGammaSelection==2){
-      if(photon->GetArmenterosQt()>(fQtMax*photon->GetPhotonPt())){
+      Float_t qtMaxPtDep = fQtPtMax*photon->GetPhotonPt();
+      if (qtMaxPtDep > fQtMax)
+        qtMaxPtDep      = fQtMax;
+      if(photon->GetArmenterosQt()>(qtMaxPtDep*photon->GetPhotonPt())){
         return kFALSE;
       }
     }
@@ -1814,9 +1822,9 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
 
   Short_t Charge    = fCurrentTrack->Charge();
   Double_t electronNSigmaTPC = fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron);
-  Double_t electronNSigmaTPCCor=0.; 
-  Double_t P=0.;         
-  Double_t Eta=0.;    
+  Double_t electronNSigmaTPCCor=0.;
+  Double_t P=0.;
+  Double_t Eta=0.;
   Double_t R=0.;
 
   if(fDoElecDeDxPostCalibration){
@@ -3582,43 +3590,69 @@ Bool_t AliConversionPhotonCuts::SetQtMaxCut(Int_t QtMaxCut){   // Set Cut
     fQtMax=0.03;
     fDo2DQt=kTRUE;
     break;
-  case 10: //a
-    fQtMax=0.125;
+  case 10:  //a
+    fQtPtMax=0.11;
+    fQtMax=0.040;
     fDoQtGammaSelection=2;
     fDo2DQt=kTRUE;
     break;
-  case 11:  //b
-    fQtMax=0.125;
+  case 11: //b
+    fQtPtMax=0.125;
+    fQtMax=1;
     fDoQtGammaSelection=2;
-    fDo2DQt=kFALSE;
+    fDo2DQt=kTRUE;
     break;
   case 12:  //c
-    fQtMax=0.11;
-    fDoQtGammaSelection=2;
-    fDo2DQt=kTRUE;
-    break;
-  case 13:  //d
-    fQtMax=0.11;
+    fQtPtMax=0.125;
+    fQtMax=1;
     fDoQtGammaSelection=2;
     fDo2DQt=kFALSE;
     break;
+  case 13:  //d
+    fQtPtMax=0.125;
+    fQtMax=0.050;
+    fDoQtGammaSelection=2;
+    fDo2DQt=kTRUE;
+    break;
   case 14:  //e
-    fQtMax=0.13;
+    fQtPtMax=0.14;
+    fQtMax=0.060;
     fDoQtGammaSelection=2;
     fDo2DQt=kTRUE;
     break;
   case 15:  //f
-    fQtMax=0.13;
+    fQtPtMax=0.16;
+    fQtMax=0.070;
     fDoQtGammaSelection=2;
-    fDo2DQt=kFALSE;
+    fDo2DQt=kTRUE;
     break;
   case 16:  //g
-    fQtMax=0.14;
+    fQtPtMax=0.180;
+    fQtMax=0.032;
     fDoQtGammaSelection=2;
     fDo2DQt=kTRUE;
     break;
   case 17:  //h
-    fQtMax=0.14;
+    fQtPtMax=0.20;
+    fQtMax=1;
+    fDoQtGammaSelection=2;
+    fDo2DQt=kTRUE;
+    break;
+  case 18:  //i
+    fQtPtMax=0.20;
+    fQtMax=0.035;
+    fDoQtGammaSelection=2;
+    fDo2DQt=kTRUE;
+    break;
+  case 19:  //j
+    fQtPtMax=0.25;
+    fQtMax=0.040;
+    fDoQtGammaSelection=2;
+    fDo2DQt=kFALSE;
+    break;
+  case 20:  //k
+    fQtPtMax=0.30;
+    fQtMax=0.045;
     fDoQtGammaSelection=2;
     fDo2DQt=kFALSE;
     break;
@@ -3694,6 +3728,14 @@ Bool_t AliConversionPhotonCuts::SetChi2GammaCut(Int_t chi2GammaCut){   // Set Cu
     fChi2CutConversion = 50.;
     fChi2CutConversionExpFunc = -0.050;
     break;
+  case 18: //i for exp cut (fDo2DPsiPairChi2 = 2) low B
+    fChi2CutConversion = 50.;
+    fChi2CutConversionExpFunc = -0.075;
+    break;
+  case 19: //i for exp cut (fDo2DPsiPairChi2 = 2) low B
+    fChi2CutConversion = 50.;
+    fChi2CutConversionExpFunc = -0.085;
+    break;
   default:
     AliError(Form("Warning: Chi2GammaCut not defined %d",chi2GammaCut));
     return kFALSE;
@@ -3767,6 +3809,18 @@ Bool_t AliConversionPhotonCuts::SetPsiPairCut(Int_t psiCut) {
     break;
   case 15: //f
     fPsiPairCut = 0.20; //
+    fDo2DPsiPairChi2 = 2; //
+    break;
+  case 16: //g
+    fPsiPairCut = 0.3; //
+    fDo2DPsiPairChi2 = 2; //
+    break;
+  case 17: //h
+    fPsiPairCut = 0.35; //
+    fDo2DPsiPairChi2 = 2; //
+    break;
+  case 18: //i
+    fPsiPairCut = 0.40; //
     fDo2DPsiPairChi2 = 2; //
     break;
   default:

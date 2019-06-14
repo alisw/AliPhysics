@@ -35,13 +35,13 @@ void AddTask_GammaConvV1_PbPb(
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
-  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
+  TString   settingMaxFacPtHard           = "3.",     // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
   // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ;
   TString   fileNameExternalInputs        = "",
   Int_t     doWeightingPart               = 0,        // enable Weighting
-  Bool_t    enablePtWeighting             = kFALSE,        // enable Weighting
+  Bool_t    enablePtWeighting             = kFALSE,   // enable Weighting
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   TString   periodNameAnchor              = "",       //
@@ -51,10 +51,10 @@ void AddTask_GammaConvV1_PbPb(
   // special settings
   Bool_t    enableChargedPrimary          = kFALSE,
   Bool_t    enablePlotVsCentrality        = kFALSE,
-  Bool_t    processAODcheckForV0s         = kFALSE, // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
+  Bool_t    processAODcheckForV0s         = kFALSE,   // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig + special settings
-  )  {
+)  {
 
 
   AliCutHandlerPCM cuts;
@@ -2187,6 +2187,21 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("12410013","00200079327000008250400000","0163103100000000"); // 20-40
     cuts.AddCutPCM("10410013","00200079327000008250400000","0163103100000000"); // 0-40
     cuts.AddCutPCM("14810013","00200079327000008250400000","0163103100000000"); // 40-80
+  } else if (trainConfig == 404){ // optimized psi pair & chi2
+    cuts.AddCutPCM("10210013","00200009327000008ih0400000","0163103100000000"); // 0-20
+    cuts.AddCutPCM("12410013","00200009327000008ih0400000","0163103100000000"); // 20-40
+    cuts.AddCutPCM("10410013","00200009327000008ih0400000","0163103100000000"); // 0-40
+    cuts.AddCutPCM("14810013","00200009327000008ih0400000","0163103100000000"); // 40-80
+  } else if (trainConfig == 405){ // optimized qt vs pt
+    cuts.AddCutPCM("10210013","0020000932700000i250400000","0163103100000000"); // 0-20
+    cuts.AddCutPCM("12410013","0020000932700000i250400000","0163103100000000"); // 20-40
+    cuts.AddCutPCM("10410013","0020000932700000i250400000","0163103100000000"); // 0-40
+    cuts.AddCutPCM("14810013","0020000932700000i250400000","0163103100000000"); // 40-80
+  } else if (trainConfig == 406){ // optimized psi pair & chi2 & qt vs pt
+    cuts.AddCutPCM("10210013","0020000932700000iih0400000","0163103100000000"); // 0-20
+    cuts.AddCutPCM("12410013","0020000932700000iih0400000","0163103100000000"); // 20-40
+    cuts.AddCutPCM("10410013","0020000932700000iih0400000","0163103100000000"); // 0-40
+    cuts.AddCutPCM("14810013","0020000932700000iih0400000","0163103100000000"); // 40-80
 
     // LHC15o systematics,  kINT7 trigger, MC centrality from V0M, pileup rejection using V0+TPC
 

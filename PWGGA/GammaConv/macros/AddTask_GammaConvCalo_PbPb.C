@@ -31,34 +31,34 @@ void AddTask_GammaConvCalo_PbPb(
   // general setting for task
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAPhotonTask            = 0,        // enable additional QA task
-  Int_t     enableExtMatchAndQA           = 0,                            // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-  Int_t     enableLightOutput             = 0,   // switch to run light output (only essential histograms for afterburner)
+  Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
-  TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
+  TString   settingMaxFacPtHard           = "3.",     // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
   // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FCEF:fileNameCentFlattening,   FMAW:fileNameMatBudWeights, separate with ;
-  // Material Budget Weights file for Run 2  
+  // Material Budget Weights file for Run 2
   // FMAW:alien:///alice/cern.ch/user/a/amarin//MBW/MCInputFileMaterialBudgetWeightsLHC16_Pythia_00010103_0d000009266300008850404000_date181214.root
   TString   fileNameExternalInputs        = "",
-  Bool_t    doWeightingPart               = kFALSE,        // enable Weighting
+  Bool_t    doWeightingPart               = kFALSE,   // enable Weighting
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   Int_t     enableMatBudWeightsPi0        = 0,        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
   Bool_t    enableElecDeDxPostCalibration = kFALSE,
   TString   periodNameAnchor              = "",       //
-  Bool_t    enableFlattening              = kFALSE,                 // switch on centrality flattening for LHC11h
+  Bool_t    enableFlattening              = kFALSE,   // switch on centrality flattening for LHC11h
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
-  Bool_t    enableTreeConvGammaShape      = kFALSE,                 // enable additional tree for conversion properties for clusters
-  Bool_t    doPrimaryTrackMatching        = kTRUE,                  // enable basic track matching for all primary tracks to cluster
-  Int_t     headerSelectionInt            = 0,                      // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
-  Bool_t    enableHeaderOverlap           = kTRUE,                // allow overlapping header for the clusters
+  Bool_t    enableTreeConvGammaShape      = kFALSE,   // enable additional tree for conversion properties for clusters
+  Bool_t    doPrimaryTrackMatching        = kTRUE,    // enable basic track matching for all primary tracks to cluster
+  Int_t     headerSelectionInt            = 0,        // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
+  Bool_t    enableHeaderOverlap           = kTRUE,    // allow overlapping header for the clusters
   // subwagon config
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
-  ) {
+) {
 
   AliCutHandlerPCM cuts;
 
@@ -813,6 +813,11 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("12410013","00200089327000008250400000","4117902017032230000","0163103100000010"); // 20-40
     cuts.AddCutPCMCalo("10410013","00200089327000008250400000","4117902017032230000","0163103100000010"); // 0-40
     cuts.AddCutPCMCalo("14810013","00200089327000008250400000","4117902017032230000","0163103100000010"); // 40-80
+  } else if (trainConfig == 305){ // EMCAL clusters - optimized PCM cuts
+    cuts.AddCutPCMCalo("10210013","0020000932700000iih0400000","411790001k032230000","0163103100000010"); // 0-20
+    cuts.AddCutPCMCalo("12410013","0020000932700000iih0400000","411790001k032230000","0163103100000010"); // 20-40
+    cuts.AddCutPCMCalo("10410013","0020000932700000iih0400000","411790001k032230000","0163103100000010"); // 0-40
+    cuts.AddCutPCMCalo("14810013","0020000932700000iih0400000","411790001k032230000","0163103100000010"); // 40-80
 
   } else if (trainConfig == 310){ // EMCAL clusters  non lin vars 0-20
     cuts.AddCutPCMCalo("10210013","00200009327000008250400000","4117971017032230000","0163103100000010");
@@ -861,6 +866,22 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("12410013","00200089327000008250400000","2446601011012200000","0163103100000010"); // 20-40%
     cuts.AddCutPCMCalo("10410013","00200089327000008250400000","2446601011012200000","0163103100000010"); // 0-40%
     cuts.AddCutPCMCalo("14810013","00200089327000008250400000","2446601011012200000","0163103100000010"); // 40-80%
+  } else if (trainConfig == 404) {  // PHOS Cent dep Xe-Xe - optimized PCM cuts
+    cuts.AddCutPCMCalo("10210013","0020000932700000iih0400000","2446600000012200000","0163103100000010"); // 0-20%
+    cuts.AddCutPCMCalo("12410013","0020000932700000iih0400000","2446600000012200000","0163103100000010"); // 20-40%
+    cuts.AddCutPCMCalo("10410013","0020000932700000iih0400000","2446600000012200000","0163103100000010"); // 0-40%
+    cuts.AddCutPCMCalo("14810013","0020000932700000iih0400000","2446600000012200000","0163103100000010"); // 40-80%
+  } else if (trainConfig == 405) {  // PHOS Cent dep Xe-Xe - optimized PCM cuts
+    cuts.AddCutPCMCalo("10210013","0020000932700000iih0400000","2446600007012200000","0163103100000010"); // 0-20%
+    cuts.AddCutPCMCalo("12410013","0020000932700000iih0400000","2446600007012200000","0163103100000010"); // 20-40%
+    cuts.AddCutPCMCalo("10410013","0020000932700000iih0400000","2446600007012200000","0163103100000010"); // 0-40%
+    cuts.AddCutPCMCalo("14810013","0020000932700000iih0400000","2446600007012200000","0163103100000010"); // 40-80%
+  } else if (trainConfig == 406) {  // PHOS Cent dep Xe-Xe - optimized PCM cuts
+    cuts.AddCutPCMCalo("10210013","0020000932700000iih0400000","2446600008012200000","0163103100000010"); // 0-20%
+    cuts.AddCutPCMCalo("12410013","0020000932700000iih0400000","2446600008012200000","0163103100000010"); // 20-40%
+    cuts.AddCutPCMCalo("10410013","0020000932700000iih0400000","2446600008012200000","0163103100000010"); // 0-40%
+    cuts.AddCutPCMCalo("14810013","0020000932700000iih0400000","2446600008012200000","0163103100000010"); // 40-80%
+
   } else if (trainConfig == 410) {  // PHOS Cluster non lin vars 0-20
     cuts.AddCutPCMCalo("10210013","00200009327000008250400000","2446601011012200000","0163103100000010");
     cuts.AddCutPCMCalo("10210013","00200009327000008250400000","2446671011012200000","0163103100000010");
