@@ -31,6 +31,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fPsiPairMax(999),
       fChi2MaxFor2DPsiPair(999),
       fCPAMin(0.),
+      fDCAzMax(999.f),
       fElectronPtMin(0.),
       fElectronEtaMax(999),
       fElectronRatioFindable(0.),
@@ -59,8 +60,9 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistTransverseRadiusAfter(nullptr),
       fHistCosPABefore(nullptr),
       fHistCosPAAfter(nullptr),
-      fHistDCADaughtersBefore(nullptr),
-      fHistDCADaughtersAfter(nullptr),
+      fHistDCArBefore(nullptr),
+      fHistDCAzBefore(nullptr),
+      fHistDCAzAfter(nullptr),
       fHistDCA(nullptr),
       fHistDecayLength(nullptr),
       fHistArmenterosBefore(nullptr),
@@ -108,6 +110,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fPsiPairMax(999),
       fChi2MaxFor2DPsiPair(999),
       fCPAMin(0.),
+      fDCAzMax(999.f),
       fElectronPtMin(0.),
       fElectronEtaMax(999),
       fElectronRatioFindable(0.),
@@ -136,8 +139,10 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fHistTransverseRadiusAfter(nullptr),
       fHistCosPABefore(nullptr),
       fHistCosPAAfter(nullptr),
-      fHistDCADaughtersBefore(nullptr),
-      fHistDCADaughtersAfter(nullptr),
+      fHistDCArBefore(nullptr),
+      fHistDCArAfter(nullptr),
+      fHistDCAzBefore(nullptr),
+      fHistDCAzAfter(nullptr),
       fHistDCA(nullptr),
       fHistDecayLength(nullptr),
       fHistArmenterosBefore(nullptr),
@@ -344,7 +349,8 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event,
     fHistTransverseRadiusBefore->Fill(pt, transRadius);
     fHistCosPABefore->Fill(pt, cosinePointingAngle);
     fHistArmenterosBefore->Fill(armAlpha, armQt);
-    fHistDCADaughtersBefore->Fill(pt, dcaV0Daughters);
+    fHistDCArBefore->Fill(pt, DCAr);
+    fHistDCAzBefore->Fill(pt, DCAz);
     fHistPsiPairBefore->Fill(pt, psiPair);
 
     fHistSingleParticleEtaBefore[0]->Fill(posPt, pos->Eta());
@@ -408,28 +414,33 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event,
   }
   fHistCuts->Fill(7.f);
 
-  if (posPt < fElectronPtMin || negPt < fElectronPtMin) {
+  if (DCAz > fDCAzMax) {
     return false;
   }
   fHistCuts->Fill(8.f);
+
+  if (posPt < fElectronPtMin || negPt < fElectronPtMin) {
+    return false;
+  }
+  fHistCuts->Fill(9.f);
 
   if (TMath::Abs(posEta) > fElectronEtaMax
       || TMath::Abs(negEta) > fElectronEtaMax) {
     return false;
   }
-  fHistCuts->Fill(9.f);
+  fHistCuts->Fill(10.f);
 
   if (ratioFindableNeg < fElectronRatioFindable
       || ratioFindablePos < fElectronRatioFindable) {
     return false;
   }
-  fHistCuts->Fill(10.f);
+  fHistCuts->Fill(11.f);
 
   if (pidPos > fElectronNSigmaTPCMax || pidNeg > fElectronNSigmaTPCMax
       || pidPos < fElectronNSigmaTPCMin || pidNeg < fElectronNSigmaTPCMin) {
     return false;
   }
-  fHistCuts->Fill(11.f);
+  fHistCuts->Fill(12.f);
 
   // AFTER THE CUTS
   fHistV0MassPt->Fill(pt, invMass);
@@ -450,7 +461,8 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event,
     fHistCosPAAfter->Fill(pt, cosinePointingAngle);
     fHistArmenterosAfter->Fill(armAlpha, armQt);
 
-    fHistDCADaughtersAfter->Fill(pt, dcaV0Daughters);
+    fHistDCArAfter->Fill(pt, DCAr);
+    fHistDCAzAfter->Fill(pt, DCAz);
     fHistDCA->Fill(pt, DCA);
     fHistDecayLength->Fill(pt, decayLength);
 
@@ -640,7 +652,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistograms->Add(fHistV0MassPt);
 
   if (!fIsLightweight) {
-    fHistCuts = new TH1F("fHistCuts", ";;Entries", 11, 0, 11);
+    fHistCuts = new TH1F("fHistCuts", ";;Entries", 13, 0, 13);
     fHistCuts->GetXaxis()->SetBinLabel(1, "Photon candidates");
     fHistCuts->GetXaxis()->SetBinLabel(2, "V_{0} Matching");
     fHistCuts->GetXaxis()->SetBinLabel(3, "Track Matching");
@@ -648,10 +660,12 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     fHistCuts->GetXaxis()->SetBinLabel(5, "#it{p}_{T} min");
     fHistCuts->GetXaxis()->SetBinLabel(6, "#eta max");
     fHistCuts->GetXaxis()->SetBinLabel(7, "#Psi_{pair}");
-    fHistCuts->GetXaxis()->SetBinLabel(8, "Electron #it{p}_{T} min");
-    fHistCuts->GetXaxis()->SetBinLabel(9, "Electron #eta max");
-    fHistCuts->GetXaxis()->SetBinLabel(10, "Electron ratio findable");
-    fHistCuts->GetXaxis()->SetBinLabel(11, "n#sigma TPC");
+    fHistCuts->GetXaxis()->SetBinLabel(8, "cos#alpha");
+    fHistCuts->GetXaxis()->SetBinLabel(9, "DCA_{z}");
+    fHistCuts->GetXaxis()->SetBinLabel(10, "Electron #it{p}_{T} min");
+    fHistCuts->GetXaxis()->SetBinLabel(11, "Electron #eta max");
+    fHistCuts->GetXaxis()->SetBinLabel(12, "Electron ratio findable");
+    fHistCuts->GetXaxis()->SetBinLabel(13, "n#sigma TPC");
     fHistograms->Add(fHistCuts);
 
     fHistNV0 = new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 15, 0,
@@ -806,17 +820,29 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
                                10, 100, 0.95, 1);
     fHistogramsAfter->Add(fHistCosPAAfter);
 
-    fHistDCADaughtersBefore = new TH2F(
-        "fHistDCADaughtersBefore",
-        "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex (cm)", 50, 0,
-        10, 100, 0, 2);
-    fHistogramsBefore->Add(fHistDCADaughtersBefore);
+    fHistDCArBefore = new TH2F(
+        "fHistDCArBefore",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{r} (cm)", 50, 0,
+        10, 100, 0, 10);
+    fHistogramsBefore->Add(fHistDCArBefore);
 
-    fHistDCADaughtersAfter = new TH2F(
-        "fHistDCADaughtersAfter",
-        "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex (cm)", 50, 0,
-        10, 100, 0, 2);
-    fHistogramsAfter->Add(fHistDCADaughtersAfter);
+    fHistDCArAfter = new TH2F(
+        "fHistDCArAfter",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{r} (cm)", 50, 0,
+        10, 100, 0, 10);
+    fHistogramsAfter->Add(fHistDCArAfter);
+
+    fHistDCAzBefore = new TH2F(
+        "fHistDCAzBefore",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
+        10, 100, 0, 10);
+    fHistogramsBefore->Add(fHistDCAzBefore);
+
+    fHistDCAzAfter = new TH2F(
+        "fHistDCAzAfter",
+        "; #it{p}_{T} (GeV/#it{c}); DCA_{z} (cm)", 50, 0,
+        10, 100, 0, 10);
+    fHistogramsAfter->Add(fHistDCAzAfter);
 
     fHistDCA = new TH2F("fHistDCA", "; #it{p}_{T} (GeV/#it{c}); DCA to PV (cm)",
                         50, 0, 10, 100, 0, 10);

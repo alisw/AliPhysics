@@ -233,7 +233,7 @@ AliFemtoDreamv0Cuts *AliFemtoDreamv0Cuts::LambdaSigma0Cuts(bool isMC,
   LambdaCuts->SetCutTransverseRadius(0.2, 100);
   LambdaCuts->SetCutDCADaugToPrimVtx(0.05);
   LambdaCuts->SetCutDCADaugTov0Vtx(1.5);
-  LambdaCuts->SetCutCPA(0.99);
+  LambdaCuts->SetCutCPA(0.999);
   LambdaCuts->SetCutInvMass(0.006);
   LambdaCuts->SetAxisInvMassPlots(400, 1.0, 1.2);
   LambdaCuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
