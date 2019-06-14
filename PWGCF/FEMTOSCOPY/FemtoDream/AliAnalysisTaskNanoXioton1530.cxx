@@ -385,7 +385,7 @@ void AliAnalysisTaskNanoXioton1530::UserExec(Option_t *option) {
   }
   for (const auto &pi : PionMinus) {
     for (const auto &xi : AntiXis) {
-      fXi1530->Setv0(pi, xi, fInputEvent, true, false, fAntiXi1530Cuts->GetCutDaughters());
+      fXi1530->Setv0(xi, pi, fInputEvent, true, false, fAntiXi1530Cuts->GetCutDaughters());
       if (fAntiXi1530Cuts->isSelected(fXi1530)) {
         fXi1530->SetCPA(gRandom->Uniform());  //cpacode needed for CleanDecay v0;
         AntiXi1530s.push_back(*fXi1530);
