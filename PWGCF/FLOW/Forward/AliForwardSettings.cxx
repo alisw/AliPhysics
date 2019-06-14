@@ -25,7 +25,7 @@ AliForwardSettings::AliForwardSettings() :
   gap(0.0),
   minpt(0.2),
   maxpt(5),
-  mc(kFALSE),
+  mc(kTRUE),
   esd(kFALSE),
   tracktype(kHybrid),
   nua_mode(kNormal),
