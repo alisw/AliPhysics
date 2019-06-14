@@ -702,6 +702,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (Int_t i_Particle=0; i_Particle<Particle_Container->GetNParticles(); i_Particle++){ 
 	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptParticle(i_Particle));
 	if (!Truth_Particle) continue;
+	if (TMath::Abs(Truth_Particle->Eta())>0.9) continue;
 	if (TMath::Abs(Truth_Particle->PdgCode())==fCandidatePDG){
 	  std::pair<Int_t, Int_t> Inclusive_Jet_Truth_Labels;
 	  Inclusive_Jet_Truth_Labels.first=Truth_Particle->GetLabel(); 
@@ -826,6 +827,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       fFastJetWrapper->Clear();
       AliTLorentzVector D_Candidate_LorentzVector(0,0,0,0);
       D_Candidate_LorentzVector.SetPtEtaPhiM(D_Candidate->Pt(), D_Candidate->Eta(), D_Candidate->Phi(), Inv_Mass_D);
+      if (TMath::Abs(D_Candidate->Eta())>0.9) continue;
       fFastJetWrapper->AddInputVector(D_Candidate_LorentzVector.Px(), D_Candidate_LorentzVector.Py(), D_Candidate_LorentzVector.Pz(), D_Candidate_LorentzVector.E(), 0);
 
     
@@ -835,6 +837,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){ 
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	if(!Track) continue;
+	if (TMath::Abs(Track->Eta())>0.9) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100); 
       }
       // delete Track;
@@ -853,7 +856,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  }
 	}
 
-
+      
 	if (!Is_D_Jet) continue; 
 	fhEvent->Fill(22); 
 	
@@ -863,7 +866,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  if(Inclusive_Jets_Truth_Labels[k].first==D_Candidate_MatchedTruth_Label) i_Matched_D_Jet_Truth=Inclusive_Jets_Truth_Labels[k].second; 
 	}
 	
-	for (UInt_t i_Jet_Truth=0; i_Jet_Truth < Inclusive_Jets_Truth.size(); i_Jet_Truth++){ 
+	for (UInt_t i_Jet_Truth=0; i_Jet_Truth < Inclusive_Jets_Truth.size(); i_Jet_Truth++){
+	  Int_t NTracks=1;
+	  Int_t NTracks_Truth=1;
 	  Bool_t Is_Jet_Truth_Matched=kFALSE;
 	  if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
 	  std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth)); 
@@ -878,7 +883,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  if (!Is_Jet_Truth_Matched) continue; 
 	  fhEvent->Fill(23);
 	  NMatched_DMeson_Jets++;
-	
+		
 
 	
 	  
@@ -891,7 +896,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 	  Bool_t Is_D_SubJet=kFALSE;
 	  fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best); 
-  
+	
 	  try{
 	    std::vector<fastjet::PseudoJet> Reclustered_Particles(fFastJetWrapper->GetJetConstituents(i_Jet));
 	    fastjet::ClusterSequence Cluster_Sequence_CA(Reclustered_Particles, Jet_Definition);
@@ -902,8 +907,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    fastjet::PseudoJet Daughter_Jet = Reclustered_Jet[0];
 	    fastjet::PseudoJet Parent_SubJet_1; 
 	    fastjet::PseudoJet Parent_SubJet_2;  
-    
+	  
 	    while(Daughter_Jet.has_parents(Parent_SubJet_1,Parent_SubJet_2)){
+	      NTracks++;
 	      if(Parent_SubJet_1.perp() < Parent_SubJet_2.perp()) std::swap(Parent_SubJet_1,Parent_SubJet_2);
 	      Splittings_LeadingSubJetpT.push_back(Parent_SubJet_1.perp());
 	      vector < fastjet::PseudoJet > Hard_SubJet_Constituents = sorted_by_pt(Parent_SubJet_1.constituents());
@@ -926,8 +932,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
          
 	  } catch (fastjet::Error) { /*return -1;*/ }
+	  if (NTracks==1) continue;
 
-	  
 	  std::vector<Double_t> Splittings_Zg_Truth;
 	  std::vector<Double_t> Splittings_DeltaR_Truth;
 	  std::vector<Double_t> Splittings_LeadingSubJetpT_Truth;
@@ -951,6 +957,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    fastjet::PseudoJet Parent_SubJet_2_Truth;  
     
 	    while(Daughter_Jet_Truth.has_parents(Parent_SubJet_1_Truth,Parent_SubJet_2_Truth)){
+	      NTracks_Truth++;
 	      if(Parent_SubJet_1_Truth.perp() < Parent_SubJet_2_Truth.perp()) std::swap(Parent_SubJet_1_Truth,Parent_SubJet_2_Truth);
 	      Splittings_LeadingSubJetpT_Truth.push_back(Parent_SubJet_1_Truth.perp());
 	      vector < fastjet::PseudoJet > Hard_SubJet_Constituents_Truth = sorted_by_pt(Parent_SubJet_1_Truth.constituents());
@@ -973,8 +980,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
          
 	  } catch (fastjet::Error) { /*return -1;*/ }
-
-
+	  if (NTracks_Truth==1) continue;
 
 
 	  //set detector level flags
@@ -1058,7 +1064,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (UInt_t i_Jet_Truth=0; i_Jet_Truth < Inclusive_Jets_Truth.size(); i_Jet_Truth++){ 
 	AliAODMCParticle* Truth_D_Particle = NULL; 
 	Bool_t Is_Unmatched_D=kFALSE;
-	Int_t D_Meson_Matched_Index=-1; 
+	Int_t D_Meson_Matched_Index=-1;
+	Int_t NTracks_Truth=1;
 	if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
 	if (Inclusive_Jets_Truth[i_Jet_Truth].perp()<fJetMinPt) continue;
 	std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth)); 
@@ -1129,6 +1136,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fastjet::PseudoJet Parent_SubJet_2_Truth;  
     
 	  while(Daughter_Jet_Truth.has_parents(Parent_SubJet_1_Truth,Parent_SubJet_2_Truth)){
+	    NTracks_Truth++;
 	    if(Parent_SubJet_1_Truth.perp() < Parent_SubJet_2_Truth.perp()) std::swap(Parent_SubJet_1_Truth,Parent_SubJet_2_Truth);
 	    Splittings_LeadingSubJetpT_Truth.push_back(Parent_SubJet_1_Truth.perp());
 	    vector < fastjet::PseudoJet > Hard_SubJet_Constituents_Truth = sorted_by_pt(Parent_SubJet_1_Truth.constituents()); 
@@ -1151,7 +1159,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
          
 	} catch (fastjet::Error) { /*return -1;*/ }
-
+	
+	if(NTracks_Truth==1) continue;
 	Double_t Inv_Mass_D_Truth=0.0;
 	Double_t Flag_D_Truth=-1.0;
 	if (Truth_D_Particle->GetPdgCode()==fCandidatePDG){
