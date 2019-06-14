@@ -319,7 +319,8 @@ void AliAnalysisTaskNanoXioton1530::UserExec(Option_t *option) {
   if (!fEventCuts->isSelected(fEvent)) {
     return;
   }
-
+  static const float piMass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
+  static const float XiMass = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
   // PROTON SELECTION
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
@@ -345,6 +346,7 @@ void AliAnalysisTaskNanoXioton1530::UserExec(Option_t *option) {
     if (fAntiProton->isSelected(fTrack)) {
       AntiProtons.push_back(*fTrack);
     }
+    fTrack->SetInvMass(piMass);
     if (fPion->isSelected(fTrack)) {
       PionPlus.push_back(*fTrack);
     }
@@ -352,7 +354,6 @@ void AliAnalysisTaskNanoXioton1530::UserExec(Option_t *option) {
       PionMinus.push_back(*fTrack);
     }
   }
-
   std::vector<AliFemtoDreamBasePart> Xis;
   std::vector<AliFemtoDreamBasePart> AntiXis;
   AliAODEvent* aodEvt = dynamic_cast<AliAODEvent*>(fInputEvent);
@@ -362,6 +363,7 @@ void AliAnalysisTaskNanoXioton1530::UserExec(Option_t *option) {
       ++iCasc) {
     AliAODcascade* casc = aodEvt->GetCascade(iCasc);
     fCascade->SetCascade(fInputEvent, casc);
+    fCascade->SetInvMass(XiMass);
     if (fXi->isSelected(fCascade)) {
       Xis.push_back(*fCascade);
     }
@@ -390,11 +392,9 @@ void AliAnalysisTaskNanoXioton1530::UserExec(Option_t *option) {
       }
     }
   }
-
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Protons, &Xi1530s, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiProtons, &AntiXi1530s, 1);
-
   fPairCleaner->CleanDecay(&Xi1530s, 0);
   fPairCleaner->CleanDecay(&AntiXi1530s, 1);
 
