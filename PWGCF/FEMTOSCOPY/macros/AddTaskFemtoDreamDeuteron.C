@@ -1,8 +1,12 @@
 #include "TROOT.h"
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
-    bool isMC=false,
-    TString CentEst="kInt7")
+    bool isMC = false,//1
+    TString CentEst = "kInt7",//2
+    bool DCAPlots = false,//3
+    bool CombSigma = false,//4
+    bool ContributionSplitting = false//5
+)
 {
   //Framework specific blabla
   // the manager is static, so get the existing manager via the static method
@@ -34,10 +38,11 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //This is used for the DCA distribution to estimate the fractions of
   //primaries, secondaries etc. At the moment the splitting of secondary contributions
   //is only done for protons!
-  TrackCuts1->SetPlotDCADist(false);
+  TrackCuts1->SetPlotDCADist(DCAPlots);
   //A combined Sigma plot of the Sigma_TPC vs. Sigma_TOF in a TH3F, eats memory like
   //a student on D-Day.
-  TrackCuts1->SetPlotCombSigma(false);
+  TrackCuts1->SetPlotCombSigma(CombSigma);
+  trackCuts1->SetPlotContrib(ContributionSplitting);
 
   //Ill only comment on the non self speaking ones!
   TrackCuts1->SetIsMonteCarlo(isMC);
@@ -64,7 +69,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
 
   //The same things for anti deuterons
   AliFemtoDreamTrackCuts *TrackCuts2=new AliFemtoDreamTrackCuts();
+  TrackCuts2->SetPlotDCADist(DCAPlots);
+  TrackCuts2->SetPlotCombSigma(CombSigma);
   TrackCuts2->SetIsMonteCarlo(isMC);
+  trackCuts2->SetPlotContrib(ContributionSplitting);
   TrackCuts2->SetCutCharge(-1);
   TrackCuts2->SetFilterBit(128);
   TrackCuts2->SetPtRange(0.4, 4.0);
@@ -80,11 +88,13 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   TrackCuts2->SetCutSmallestSig(true);
 
   //protons
-  AliFemtoDreamTrackCuts *TrackCuts3=AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  AliFemtoDreamTrackCuts *TrackCuts3=AliFemtoDreamTrackCuts::PrimProtonCuts(
+      isMC, DCAPlots, CombSigma, ContributionSplitting);
   TrackCuts3->SetCutCharge(1);
 
   //antiprotons
-  AliFemtoDreamTrackCuts *TrackCuts4=AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  AliFemtoDreamTrackCuts *TrackCuts4=AliFemtoDreamTrackCuts::PrimProtonCuts(
+      isMC, DCAPlots, CombSigma, ContributionSplitting);
   TrackCuts4->SetCutCharge(-1);
 
   //Now we define stuff we want for our Particle collection
