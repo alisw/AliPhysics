@@ -971,6 +971,32 @@ AliFemtoDreamTrackCuts *AliFemtoDreamTrackCuts::PrimKaonCuts(
   return trackCuts;
 }
 
+AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+    bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting) {
+  AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
+  //you can leave DCA cut active, this will still be filled
+  //over the whole DCA_xy range
+  trackCuts->SetPlotDCADist(DCAPlots);
+  trackCuts->SetPlotCombSigma(CombSigma);
+  trackCuts->SetPlotContrib(ContribSplitting);
+  trackCuts->SetIsMonteCarlo(isMC);
+
+  trackCuts->SetFilterBit(128);
+  trackCuts->SetPtRange(0.4, 4.);
+  trackCuts->SetEtaRange(-0.8, 0.8);
+  trackCuts->SetNClsTPC(80);
+  trackCuts->SetDCAReCalculation(true);  //Get the dca from the PropagateToVetex
+  trackCuts->SetDCAVtxZ(0.2);
+  trackCuts->SetDCAVtxXY(0.1);
+  trackCuts->SetCutSharedCls(true);
+  trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
+  trackCuts->SetPID(AliPID::kDeuteron, 1.4);
+  trackCuts->SetRejLowPtPionsTOF(true);
+  trackCuts->SetCutSmallestSig(true);
+
+  return trackCuts;
+}
+
 AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::DecayProtonCuts(
     bool isMC, bool PileUpRej, bool ContribSplitting) {
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
