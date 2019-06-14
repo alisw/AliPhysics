@@ -1435,7 +1435,7 @@ Bool_t AliConversionPhotonCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
       Float_t qtMaxPtDep = fQtPtMax*photon->GetPhotonPt();
       if (qtMaxPtDep > fQtMax)
         qtMaxPtDep      = fQtMax;
-      if ( !(TMath::Power(photon->GetArmenterosAlpha()/fMaxPhotonAsymmetry,2)+TMath::Power(photon->GetArmenterosQt()/(qtMaxPtDep*photon->GetPhotonPt()),2) < 1) ){
+      if ( !(TMath::Power(photon->GetArmenterosAlpha()/fMaxPhotonAsymmetry,2)+TMath::Power(photon->GetArmenterosQt()/qtMaxPtDep,2) < 1) ){
         return kFALSE;
       }
     }
@@ -1448,7 +1448,7 @@ Bool_t AliConversionPhotonCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
       Float_t qtMaxPtDep = fQtPtMax*photon->GetPhotonPt();
       if (qtMaxPtDep > fQtMax)
         qtMaxPtDep      = fQtMax;
-      if(photon->GetArmenterosQt()>(qtMaxPtDep*photon->GetPhotonPt())){
+      if(photon->GetArmenterosQt()>qtMaxPtDep){
         return kFALSE;
       }
     }
