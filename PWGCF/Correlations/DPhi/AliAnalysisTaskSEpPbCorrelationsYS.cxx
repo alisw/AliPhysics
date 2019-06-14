@@ -1747,7 +1747,8 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	     nFMD_bwd_hits+=mostProbableN;
 	   }
 	 }
-	 Bool_t fmakehole=kTRUE;
+	 
+	 Bool_t fmakehole=kFALSE;
 	 if(fmakehole){
 	   if((eta>-2.9 && eta<-2.7) && (5*2*TMath::Pi()/20.<phi && 7*2*TMath::Pi()/20.>phi)) continue;
 	   if((eta>-2.7 && eta<-2.5) && (1*2*TMath::Pi()/20.<phi && 2*2*TMath::Pi()/20.>phi)) continue;
