@@ -64,6 +64,9 @@ class AliSigma0PhotonCuts : public TObject {
   void SetCPAMin(float cpamin) {
     fCPAMin = cpamin;
   }
+  void SetDCAzMax(float dcazmax) {
+    fDCAzMax = dcazmax;
+  }
 
   void SetElectronPtMin(float ptmin) {
     fElectronPtMin = ptmin;
@@ -109,6 +112,7 @@ class AliSigma0PhotonCuts : public TObject {
   float fPsiPairMax;  //
   float fChi2MaxFor2DPsiPair;  //
   float fCPAMin;  //
+  float fDCAzMax; //
 
   float fElectronPtMin;  //
   float fElectronEtaMax;  //
@@ -144,8 +148,10 @@ class AliSigma0PhotonCuts : public TObject {
   TH2F *fHistTransverseRadiusAfter;   //!
   TH2F *fHistCosPABefore;             //!
   TH2F *fHistCosPAAfter;              //!
-  TH2F *fHistDCADaughtersBefore;      //!
-  TH2F *fHistDCADaughtersAfter;       //!
+  TH2F *fHistDCArBefore;              //!
+  TH2F *fHistDCArAfter;               //!
+  TH2F *fHistDCAzBefore;              //!
+  TH2F *fHistDCAzAfter;               //!
   TH2F *fHistDCA;                     //!
   TH2F *fHistDecayLength;             //!
   TH2F *fHistArmenterosBefore;        //!
@@ -173,7 +179,7 @@ class AliSigma0PhotonCuts : public TObject {
   AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-ClassDef(AliSigma0PhotonCuts, 1)
+ClassDef(AliSigma0PhotonCuts, 2)
 };
 
 #endif
