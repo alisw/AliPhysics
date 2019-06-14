@@ -52,10 +52,10 @@ void AliVertexerHyperTriton2Body::SetupLooseVertexing()
     SetDoV0Refit(kTRUE);
 
     //V0-Related topological selections
-    SetV0VertexerDCAFirstToPV(0.1);
-    SetV0VertexerDCASecondtoPV(0.1);
-    SetV0VertexerDCAV0Daughters(1.40);
-    SetV0VertexerCosinePA(0.95);
+    SetV0VertexerDCAFirstToPV(0.05);
+    SetV0VertexerDCASecondtoPV(0.05);
+    SetV0VertexerDCAV0Daughters(1.60);
+    SetV0VertexerCosinePA(0.99);
     SetV0VertexerMinRadius(0.9);
     SetV0VertexerMaxRadius(200);
 }
@@ -100,7 +100,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
 
 
         const int index = int(esdTrack->GetSign() < 0.);
-        if (std::abs(pid->NumberOfSigmasTPC(esdTrack,AliPID::kHe3) < 5) &&
+        if (std::abs(pid->NumberOfSigmasTPC(esdTrack,AliPID::kHe3)) < 5 &&
             fHe3Cuts->AcceptTrack(esdTrack))
             tracks[0][index].push_back(i);
         else if (fPiCuts->AcceptTrack(esdTrack))
