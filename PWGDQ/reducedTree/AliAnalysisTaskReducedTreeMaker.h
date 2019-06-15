@@ -131,7 +131,7 @@ public:
   Double_t Rapidity(Double_t r, Double_t z);
   Double_t Radius(Double_t eta, Double_t z);
 
-  Bool_t  IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision);
+  Bool_t  IsTrackSelected(AliVParticle* track, Double_t* values, std::vector<Bool_t>& filterDecision);
   Bool_t  IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
   Bool_t  IsClusterSelected(AliVCluster* cluster, std::vector<Bool_t>& filterDecision);
   void    SetTrackFilterQualityFlags(AliReducedBaseTrack* track, std::vector<Bool_t> filterDecision);
@@ -239,6 +239,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 14); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 15); //Analysis Task for creating a reduced event information tree
 };
 #endif

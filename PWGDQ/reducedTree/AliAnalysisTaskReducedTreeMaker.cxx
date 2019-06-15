@@ -78,6 +78,8 @@
 #include "AliReducedFMDInfo.h"
 #include "AliReducedEventPlaneInfo.h"
 #include "AliSignalMC.h"
+#include "AliDielectronCutGroup.h"
+#include "AliDielectronVarCuts.h"
 #include "AliAnalysisTaskReducedTreeMaker.h"
 
 #include <iostream>
@@ -896,7 +898,7 @@ void AliAnalysisTaskReducedTreeMaker::AddCaloClusterFilter(AliAnalysisCuts * con
 }
 
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, std::vector<Bool_t>& filterDecision)
+Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, Double_t* values, std::vector<Bool_t>& filterDecision)
 {
   //
   // check if track is selected and write filter decision to vector
@@ -904,7 +906,11 @@ Bool_t AliAnalysisTaskReducedTreeMaker::IsTrackSelected(AliVParticle* track, std
   Bool_t trackIsSelected = kFALSE;
   for (Int_t i=0; i<fTrackFilter.GetEntries(); i++) {
     AliAnalysisCuts* filter = (AliAnalysisCuts*)fTrackFilter.At(i);
-    if (filter->IsSelected(track)) {
+    Bool_t                                                  filterIsSelected = kFALSE;
+    if (filter->IsA()==AliDielectronCutGroup::Class())      filterIsSelected = (dynamic_cast<AliDielectronCutGroup*>(filter))->IsSelected(track, values);
+    else if (filter->IsA()==AliDielectronVarCuts::Class())  filterIsSelected = (dynamic_cast<AliDielectronVarCuts*>(filter))->IsSelected(values);
+    else                                                    filterIsSelected = filter->IsSelected(track);
+    if (filterIsSelected) {
       filterDecision.push_back(kTRUE);
       trackIsSelected = kTRUE;
     } else {
@@ -2006,12 +2012,18 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       }
     }
     
+    // fill values
+    Double_t values[AliDielectronVarManager::kNMaxValues];
+    // set the fill map (all 1's) for the AliDielectronVarManager
+    AliDielectronVarManager::SetFillMap(fUsedVars);
+    AliDielectronVarManager::Fill(particle, values);
+
     // decide whether to write the track in the tree
     Bool_t writeTrack = kFALSE;
     Bool_t trackFilterDecision = kFALSE;
     std::vector<Bool_t> individualFilterDecisions;
     if (fTrackFilter.GetEntries()==0) trackFilterDecision = kTRUE;
-    if (fTrackFilter.GetEntries()>0)  trackFilterDecision = IsTrackSelected(particle, individualFilterDecisions);
+    if (fTrackFilter.GetEntries()>0)  trackFilterDecision = IsTrackSelected(particle, values, individualFilterDecisions);
     if(trackFilterDecision) writeTrack = kTRUE;
     if(matchedInTRD) {
        if(fFillAllTRDMatchedTracks) writeTrack = kTRUE;
@@ -2036,11 +2048,6 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
 
     // fill track statistics histogram
     FillTrackStatisticsHistogram(individualFilterDecisions, usedForV0Or);
-
-    Double_t values[AliDielectronVarManager::kNMaxValues];
-    // set the fill map (all 1's) for the AliDielectronVarManager
-    AliDielectronVarManager::SetFillMap(fUsedVars);
-    AliDielectronVarManager::Fill(particle, values);
     
     reducedParticle->PtPhiEta(values[AliDielectronVarManager::kPt],values[AliDielectronVarManager::kPhi],values[AliDielectronVarManager::kEta]);
     reducedParticle->fCharge        = values[AliDielectronVarManager::kCharge];
