@@ -288,7 +288,7 @@ bool AliLightNTrackCuts::ITSPIDAODCuts(AliLightNTrack *Track) {
     double p =Track->GetP();
     if (p<1.4) {
         double nSigITS=(Track->GetnSigmaITS((int)(fParticleID)));
-        if (!(nSigITS < -2)) {
+        if (nSigITS < -2) {
             pass=false;
         }
     }
@@ -611,9 +611,7 @@ void AliLightNTrackCuts::BookQA(AliLightNTrack *Track) {
 }
 
 void AliLightNTrackCuts::BookMC(AliLightNTrack *Track) {
-    if (!Track->TestFilterBit(fFilterBit)) {
-        return;
-    }
+    if(!Track->TestFilterBit(1))return;
     double p =Track->GetP();
     double RAPIDITY = Track->GetRapidity(fParticleID);
     Int_t PDGcode[6] = {11,13,211,321,2212,1000010020};
@@ -830,7 +828,7 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimProtonCuts(bool isMC,bool DCAPlots,b
     trackCuts->SetCutSharedCls(true);
     trackCuts->SetCutTPCCrossedRows(true);
     trackCuts->SetPID(AliPID::kProton, 0.7,3.,1e30);
-    trackCuts->SetRapidityRange(-1, 0);
+    trackCuts->SetRapidityRange(-1, 1);
     trackCuts->SetRejLowPtPionsTOF(false);
     trackCuts->SetCutSmallestSig(false);
     trackCuts->SetMassCut_ForDCA(0.3,1.8);
@@ -880,7 +878,7 @@ AliLightNTrackCuts* AliLightNTrackCuts::PrimDeuteronCuts(bool isMC,bool DCAPlots
     trackCuts->SetCutTPCCrossedRows(true);
     trackCuts->SetPID(AliPID::kDeuteron, 1.4,3.,1e30);
     trackCuts->SetCutITSPID(true);
-    trackCuts->SetRapidityRange(-1, 0);
+    trackCuts->SetRapidityRange(-1, 1);
     trackCuts->SetRejLowPtPionsTOF(false);
     trackCuts->SetCutSmallestSig(false);
     trackCuts->SetMassCut_ForDCA(3.0,5.0);
