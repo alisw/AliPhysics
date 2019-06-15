@@ -2291,6 +2291,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
     std::vector<fastjet::PseudoJet> jets_incl = sorted_by_pt(fFastJetWrapper->GetInclusiveJets());
 
     for (auto jet : jets_incl) {
+      std::vector<fastjet::PseudoJet> constituents = jet.constituents();
+      if(constituents.size()<2) continue;
           for (auto constituent : jet.constituents()) {
              Int_t iPart = constituent.user_index() - 100;
              if (constituent.perp() < 1e-6) continue; // reject ghost particles
@@ -2418,6 +2420,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(Al
       for (auto jet : jets_incl) {
       jetpt=0;
       jeteta=0;
+        std::vector<fastjet::PseudoJet> constituents = jet.constituents();
+      if(constituents.size()<2) continue;
             for (auto constituent : jet.constituents()) {
              Int_t iPart = constituent.user_index() - 100;
              if (constituent.perp() < 1e-6) continue; // reject ghost particles
