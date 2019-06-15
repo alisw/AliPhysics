@@ -64,6 +64,7 @@ public:
   //Analysis cuts interface
   //
   virtual Bool_t IsSelected(TObject* track);
+  virtual Bool_t IsSelected(Double_t* values);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
 
 //   virtual Bool_t IsSelected(TObject* track, TObject */*event*/=0);
@@ -103,7 +104,7 @@ public:
   AliDielectronVarCuts(const AliDielectronVarCuts &c);
   AliDielectronVarCuts &operator=(const AliDielectronVarCuts &c);
 
-  ClassDef(AliDielectronVarCuts,6)         //Cut class providing cuts to all infomation available for the AliVParticle interface
+  ClassDef(AliDielectronVarCuts,7)         //Cut class providing cuts to all infomation available for the AliVParticle interface
 };
 
 
