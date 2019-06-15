@@ -76,7 +76,6 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fFillTracklet{true},
       fSaveFileNames{false},
       fPropagetToPV{true},
-      fLooseCuts{false},
       fV0Vertexer{},
       fListHist{nullptr},
       fTreeV0{nullptr},
@@ -111,6 +110,8 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fRTracklets{},
       fRCollision{}
 {
+
+  fV0Vertexer.SetupStandardVertexing();
   // Standard output
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class()); // Basic Histograms
@@ -145,11 +146,6 @@ void AliAnalysisTaskHyperTriton2He3piML::UserCreateOutputObjects()
   fInputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
   fPIDResponse = fInputHandler->GetPIDResponse();
   fInputHandler->SetNeedField();
-  if (fLooseCuts)
-    fV0Vertexer.SetupLooseVertexing();
-  else
-    fV0Vertexer.SetupStandardVertexing();
-
   if (fSaveFileNames)
   {
     fFileNameTree = new TTree("fFileNameTree", "Filename tree");

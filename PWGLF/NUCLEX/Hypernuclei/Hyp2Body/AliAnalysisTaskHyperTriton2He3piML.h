@@ -140,7 +140,6 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   bool fFillTracklet;
   bool fSaveFileNames;
   bool fPropagetToPV;
-  bool fLooseCuts;
   AliVertexerHyperTriton2Body fV0Vertexer;      //!
  private:
   TList* fListHist;  //! List of Cascade histograms
