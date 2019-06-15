@@ -1616,7 +1616,7 @@ void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile
 /// \param axisAlias              - axis names
 /// \param axisTitle              - axis titles
 /// \return                       - resulting tree
-TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp, const char *chNotReg, TString inputFileSelection, TString axisAlias, TString axisTitle) {
+TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp, const char *chNotReg, TString inputFileSelection, TString axisAlias, TString axisTitle, Int_t verbose) {
   //
   TPRegexp regExp(chRegExp);
   TPRegexp notReg(chNotReg);
@@ -1684,7 +1684,7 @@ TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp,
       Int_t entriesF = tree->GetEntries();
       Int_t entriesB = treeBase->GetEntries();
       if (entriesB == entriesF) {
-        ::Info("InitMapTree", "%s\t%s.%s:\t%d\t%d", treeBase->GetName(), fileName.Data(), keys->At(iKey)->GetName(), entriesB, entriesF);
+        if (verbose>0) ::Info("InitMapTree", "%s\t%s.%s:\t%d\t%d", treeBase->GetName(), fileName.Data(), keys->At(iKey)->GetName(), entriesB, entriesF);
       } else {
         ::Error("InitMapTree", "%s\t%s.%s:\t%d\t%d", treeBase->GetName(), fileName.Data(), keys->At(iKey)->GetName(), entriesB, entriesF);
       }
