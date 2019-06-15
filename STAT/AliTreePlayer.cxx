@@ -1146,6 +1146,10 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   //
 
   const Int_t kMaxDim=10;
+  if (tree=NULL){
+    ::Error("AliTreePlayer::MakeHistograms","Tree=0");
+    return 0;
+  }
   Int_t entriesAll=tree->GetEntries();
   if (chunkSize<=0) chunkSize=entriesAll;
   if (lastEntry>entriesAll) lastEntry=entriesAll;
@@ -1563,7 +1567,10 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
 
 ///\brief Fill tree with information specified in varList of TTreeFormulas
 /// Used to cache CPU consuming formulas
-/// In case input tree is "flat" - not array output tree can be used as a friend ....
+/// To consider:
+///    1.) In case input tree is "flat" - not array output tree can be used as a friend ....
+///    2.) In case of not flat tree user should made appropiate tree->SetEstimate to allocate buffers otherwise only partial results available
+///
 /// \param tree         - TTree with input
 /// \param varList      - list of TTreeFormulas to export
 /// \param outFile      -  output file name
@@ -1574,6 +1581,7 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
 void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection, Int_t nEntries, Int_t firstEntry){
   TTreeSRedirector *pcstream = new TTreeSRedirector(outFile,"recreate");
   if (tree->GetEstimate()<tree->GetEntries()) tree->SetEstimate(tree->GetEntries());
+  Int_t estimate=tree->GetEstimate();
   Int_t entries=0;
   if (firstEntry>=0 && nEntries>0) {
     entries = tree->Draw(varList.Data(),selection,"goffpara",nEntries,firstEntry);
@@ -1584,6 +1592,7 @@ void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile
   const Int_t nVars=varName->GetEntries();
   Double_t vars[nVars];
   TTree *treeOut=NULL;
+  if (entries>estimate) entries=estimate;
   for (Int_t iPoint=0; iPoint <entries; iPoint++){
     for (Int_t iVar=0; iVar<nVars; iVar++){
       vars[iVar]=tree->GetVal(iVar)[iPoint];
@@ -1607,7 +1616,7 @@ void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile
 /// \param axisAlias              - axis names
 /// \param axisTitle              - axis titles
 /// \return                       - resulting tree
-TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp, const char *chNotReg, TString inputFileSelection, TString axisAlias, TString axisTitle) {
+TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp, const char *chNotReg, TString inputFileSelection, TString axisAlias, TString axisTitle, Int_t verbose) {
   //
   TPRegexp regExp(chRegExp);
   TPRegexp notReg(chNotReg);
@@ -1675,7 +1684,7 @@ TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp,
       Int_t entriesF = tree->GetEntries();
       Int_t entriesB = treeBase->GetEntries();
       if (entriesB == entriesF) {
-        ::Info("InitMapTree", "%s\t%s.%s:\t%d\t%d", treeBase->GetName(), fileName.Data(), keys->At(iKey)->GetName(), entriesB, entriesF);
+        if (verbose>0) ::Info("InitMapTree", "%s\t%s.%s:\t%d\t%d", treeBase->GetName(), fileName.Data(), keys->At(iKey)->GetName(), entriesB, entriesF);
       } else {
         ::Error("InitMapTree", "%s\t%s.%s:\t%d\t%d", treeBase->GetName(), fileName.Data(), keys->At(iKey)->GetName(), entriesB, entriesF);
       }
