@@ -167,6 +167,8 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  Double_t GetJetRadius()                                          {return fJetRadius;}
  void SetJetMinPt(Double_t JetMinPt)                              {fJetMinPt = JetMinPt;}
  Double_t GetJetMinPt()                                           {return fJetMinPt;}
+ void SetTrackingEfficiencyt(Double_t TrackingEfficiency)         {fTrackingEfficiency = TrackingEfficiency;}
+ Double_t GetTrackingEfficiency()                                 {return fTrackingEfficiency;}
  void SetRejectedOrigin(UInt_t RejectedOrigin)                    {fRejectedOrigin = RejectedOrigin;}
  void SetAcceptedDecay(UInt_t AcceptedDecay)                      {fAcceptedDecay = AcceptedDecay;}
  void SetRejectISR(Bool_t RejectISR)                              {fRejectISR = RejectISR;}
@@ -201,6 +203,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  Double_t                           fJetRadius             ;
  Double_t                           fJetMinPt              ;
+ Double_t                           fTrackingEfficiency    ;
  Double_t                           fShapesVar[nVar]       ;
 
    

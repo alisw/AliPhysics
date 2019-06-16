@@ -89,6 +89,7 @@ AliAnalysisTaskEmcal("AliAnalysisTaskHFSubstructure", kTRUE),
   fAcceptedDecay(kDecayD0toKpi),
   fJetRadius(0.4),
   fJetMinPt(0.0),
+  fTrackingEfficiency(1.0),
   fCandidateArray(0),
   fAodEvent(0),
   fRDHFCuts(0),
@@ -138,6 +139,7 @@ AliAnalysisTaskHFSubstructure::AliAnalysisTaskHFSubstructure(const char *name) :
   fAcceptedDecay(kDecayD0toKpi),
   fJetRadius(0.4),
   fJetMinPt(0.0),
+  fTrackingEfficiency(1.0),
   fCandidateArray(0),
   fAodEvent(0),
   fRDHFCuts(0),
@@ -284,6 +286,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   fFastJetWrapper_Truth=new AliFJWrapper("fastjetwrapper_truth","fastjetwrapper_truth");
 
   if (fJetShapeType == kData || fJetShapeType == kDetSignal || fJetShapeType == kDetBackground || fJetShapeType == kDetReflection || fJetShapeType == kDet){
+
+    TRandom3 Random;
+    Random.SetSeed(0);
     
     fCandidateArray = dynamic_cast<TClonesArray*>(fAodEvent->GetList()->FindObject("D0toKpi"));
 
@@ -305,6 +310,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       AliAODRecoDecayHF2Prong* D_Candidate = static_cast<AliAODRecoDecayHF2Prong*>(fCandidateArray->At(i_D));
       if (!D_Candidate) continue;
       if (!fRDHFCuts->IsInFiducialAcceptance(D_Candidate->Pt(), D_Candidate->Y(fCandidatePDG))) continue;
+      
+      Double_t Random_Number=Random.Rndm();
       
       Int_t Mass_Hypo_Type=fRDHFCuts->IsSelected(D_Candidate, AliRDHFCuts::kAll, fAodEvent);
       Int_t N_Mass_Hypotheses=1;
@@ -408,7 +415,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      }
 	    }
 	}
-	
+	if(Random_Number > fTrackingEfficiency*fTrackingEfficiency) continue; // here it shows that the D did not get reconstructed cause one of the daughters was missing...however should we do this before incase the same daughter is involved multiple times?
 	fFastJetWrapper->Clear();
 	AliTLorentzVector D_Candidate_LorentzVector(0,0,0,0);
 	D_Candidate_LorentzVector.SetPtEtaPhiM(D_Candidate->Pt(), D_Candidate->Eta(), D_Candidate->Phi(), Inv_Mass_D);
@@ -418,6 +425,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
 	  Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	  if(!Track) continue;
+	  if(Random_Number > fTrackingEfficiency) continue;
 	  fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
 	}
 	//	delete Track;
