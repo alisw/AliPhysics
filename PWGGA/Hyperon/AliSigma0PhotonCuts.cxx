@@ -32,6 +32,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fChi2MaxFor2DPsiPair(999),
       fCPAMin(0.),
       fDCAzMax(999.f),
+      fDCArMax(999.f),
       fElectronPtMin(0.),
       fElectronEtaMax(999),
       fElectronRatioFindable(0.),
@@ -111,6 +112,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fChi2MaxFor2DPsiPair(999),
       fCPAMin(0.),
       fDCAzMax(999.f),
+      fDCArMax(999.f),
       fElectronPtMin(0.),
       fElectronEtaMax(999),
       fElectronRatioFindable(0.),
@@ -191,12 +193,13 @@ AliSigma0PhotonCuts *AliSigma0PhotonCuts::PhotonCuts() {
   v0Cuts->SetPsiPair2DCut(true);
   v0Cuts->SetPsiPairMax(0.2);
   v0Cuts->SetChi2ForPsiMax(30);
-  v0Cuts->SetCPAMin(0.99);
+  v0Cuts->SetCPAMin(0.999);
   v0Cuts->SetElectronPtMin(0.05);
   v0Cuts->SetElectronEtaMax(0.9);
   v0Cuts->SetElectronRatioFindable(0.35);
   v0Cuts->SetElectronNSigmaTPCMax(7);
   v0Cuts->SetElectronNSigmaTPCMin(-6);
+  v0Cuts->SetDCAzMax(0.5);
   return v0Cuts;
 }
 
@@ -419,28 +422,33 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event,
   }
   fHistCuts->Fill(8.f);
 
-  if (posPt < fElectronPtMin || negPt < fElectronPtMin) {
+  if(DCAr > fDCArMax) {
     return false;
   }
   fHistCuts->Fill(9.f);
+
+  if (posPt < fElectronPtMin || negPt < fElectronPtMin) {
+    return false;
+  }
+  fHistCuts->Fill(10.f);
 
   if (TMath::Abs(posEta) > fElectronEtaMax
       || TMath::Abs(negEta) > fElectronEtaMax) {
     return false;
   }
-  fHistCuts->Fill(10.f);
+  fHistCuts->Fill(11.f);
 
   if (ratioFindableNeg < fElectronRatioFindable
       || ratioFindablePos < fElectronRatioFindable) {
     return false;
   }
-  fHistCuts->Fill(11.f);
+  fHistCuts->Fill(12.f);
 
   if (pidPos > fElectronNSigmaTPCMax || pidNeg > fElectronNSigmaTPCMax
       || pidPos < fElectronNSigmaTPCMin || pidNeg < fElectronNSigmaTPCMin) {
     return false;
   }
-  fHistCuts->Fill(12.f);
+  fHistCuts->Fill(13.f);
 
   // AFTER THE CUTS
   fHistV0MassPt->Fill(pt, invMass);
@@ -618,7 +626,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     }
   }
 
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 12, 0, 12);
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 14, 0, 14);
   fHistCutBooking->GetXaxis()->SetBinLabel(1, "2-D Armenteros");
   fHistCutBooking->GetXaxis()->SetBinLabel(2, "#it{q}_{T} max");
   fHistCutBooking->GetXaxis()->SetBinLabel(3, "#it{p}_{T} min");
@@ -631,6 +639,8 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->GetXaxis()->SetBinLabel(10, "Electron ratio findable");
   fHistCutBooking->GetXaxis()->SetBinLabel(11, "n#sigma TPC max");
   fHistCutBooking->GetXaxis()->SetBinLabel(12, "n#sigma TPC min");
+  fHistCutBooking->GetXaxis()->SetBinLabel(13, "DCA_{z} max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(14, "DCA_{r} max");
   fHistograms->Add(fHistCutBooking);
 
   fHistCutBooking->Fill(0.f, static_cast<double>(f2DArmenterosCut));
@@ -645,6 +655,8 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(9.f, fElectronRatioFindable);
   fHistCutBooking->Fill(10.f, fElectronNSigmaTPCMax);
   fHistCutBooking->Fill(11.f, fElectronNSigmaTPCMin);
+  fHistCutBooking->Fill(11.f, fElectronNSigmaTPCMin);
+  fHistCutBooking->Fill(11.f, fElectronNSigmaTPCMin);
 
   fHistV0MassPt = new TH2F(
       "InvMassPt", "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
@@ -652,7 +664,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistograms->Add(fHistV0MassPt);
 
   if (!fIsLightweight) {
-    fHistCuts = new TH1F("fHistCuts", ";;Entries", 13, 0, 13);
+    fHistCuts = new TH1F("fHistCuts", ";;Entries", 14, 0, 14);
     fHistCuts->GetXaxis()->SetBinLabel(1, "Photon candidates");
     fHistCuts->GetXaxis()->SetBinLabel(2, "V_{0} Matching");
     fHistCuts->GetXaxis()->SetBinLabel(3, "Track Matching");
@@ -662,10 +674,11 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     fHistCuts->GetXaxis()->SetBinLabel(7, "#Psi_{pair}");
     fHistCuts->GetXaxis()->SetBinLabel(8, "cos#alpha");
     fHistCuts->GetXaxis()->SetBinLabel(9, "DCA_{z}");
-    fHistCuts->GetXaxis()->SetBinLabel(10, "Electron #it{p}_{T} min");
-    fHistCuts->GetXaxis()->SetBinLabel(11, "Electron #eta max");
-    fHistCuts->GetXaxis()->SetBinLabel(12, "Electron ratio findable");
-    fHistCuts->GetXaxis()->SetBinLabel(13, "n#sigma TPC");
+    fHistCuts->GetXaxis()->SetBinLabel(10, "DCA_{r}");
+    fHistCuts->GetXaxis()->SetBinLabel(11, "Electron #it{p}_{T} min");
+    fHistCuts->GetXaxis()->SetBinLabel(12, "Electron #eta max");
+    fHistCuts->GetXaxis()->SetBinLabel(13, "Electron ratio findable");
+    fHistCuts->GetXaxis()->SetBinLabel(14, "n#sigma TPC");
     fHistograms->Add(fHistCuts);
 
     fHistNV0 = new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 15, 0,

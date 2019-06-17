@@ -84,6 +84,8 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   std::vector<AliFemtoDreamBasePart> &GetSidebandDown() {
     return fSidebandDown;
   }
+  std::vector<AliFemtoDreamBasePart> &GetLambda() { return fLambda; }
+  std::vector<AliFemtoDreamBasePart> &GetPhoton() { return fPhoton; }
 
  protected:
   TList *fHistograms;    //!
@@ -98,6 +100,8 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   TDatabasePDG fDataBasePDG;  //!
 
   std::vector<AliFemtoDreamBasePart> fSigma;         //!
+  std::vector<AliFemtoDreamBasePart> fLambda;         //!
+  std::vector<AliFemtoDreamBasePart> fPhoton;         //!
   std::vector<AliFemtoDreamBasePart> fSidebandUp;    //!
   std::vector<AliFemtoDreamBasePart> fSidebandDown;  //!
 
@@ -180,7 +184,7 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0AODPhotonMotherCuts, 2)
+  ClassDef(AliSigma0AODPhotonMotherCuts, 3)
 };
 
 #endif
