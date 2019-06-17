@@ -49,7 +49,7 @@ public:
     void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ) {
         fV0VertexerSels[1] = lParameter;
     }
-    void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ) {
+    void SetV0VertexerDCASecondToPV  ( Double_t lParameter ) {
         fV0VertexerSels[2] = lParameter;
     }
     void SetV0VertexerDCAV0Daughters ( Double_t lParameter ) {
