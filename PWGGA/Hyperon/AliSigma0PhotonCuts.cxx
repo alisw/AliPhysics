@@ -191,12 +191,13 @@ AliSigma0PhotonCuts *AliSigma0PhotonCuts::PhotonCuts() {
   v0Cuts->SetPsiPair2DCut(true);
   v0Cuts->SetPsiPairMax(0.2);
   v0Cuts->SetChi2ForPsiMax(30);
-  v0Cuts->SetCPAMin(0.99);
+  v0Cuts->SetCPAMin(0.999);
   v0Cuts->SetElectronPtMin(0.05);
   v0Cuts->SetElectronEtaMax(0.9);
   v0Cuts->SetElectronRatioFindable(0.35);
   v0Cuts->SetElectronNSigmaTPCMax(7);
   v0Cuts->SetElectronNSigmaTPCMin(-6);
+  v0Cuts->SetDCAzMax(0.5);
   return v0Cuts;
 }
 
