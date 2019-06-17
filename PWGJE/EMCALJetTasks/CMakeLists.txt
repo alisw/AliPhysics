@@ -151,7 +151,6 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
     Tracks/AliAnalysisTaskEmcalHighEClusterTree.cxx
     Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
-    Tracks/AliAnalysisTaskEmcalTriggerNormalization.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx

@@ -38,9 +38,9 @@
 #include "AliMultSelection.h"
 #include "AliVEvent.h"
 
-ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerNormalization)
+ClassImp(PWG::EMCAL::AliAnalysisTaskEmcalTriggerNormalization)
 
-using namespace PWGJE::EMCALJetTasks;
+using namespace PWG::EMCAL;
 
 AliAnalysisTaskEmcalTriggerNormalization::AliAnalysisTaskEmcalTriggerNormalization():
     AliAnalysisTaskEmcal(),
@@ -71,7 +71,7 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
   fHistos->CreateTH2("hTriggerNorm", "Histogram for the trigger normalization", 11, -0.5, 10.5, 100, 0., 100.);
   auto normhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject("hTriggerNorm"));
   std::array<std::string, 9> triggers = {"INT7", "EG1", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2"};
-  for(auto ib = 0; ib < triggers.size(); ib++){
+  for(size_t ib = 0; ib < triggers.size(); ib++){
     normhist->GetXaxis()->SetBinLabel(ib+1, triggers[ib].data());
   }
 
