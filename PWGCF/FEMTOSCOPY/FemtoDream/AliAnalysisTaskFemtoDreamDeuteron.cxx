@@ -124,7 +124,16 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   //Primary Vertex estimated with ITS tracks) to the global tracks. This is neccessary to have the full tracking
   //information available.
   fGTI=new AliAODTrack*[fTrackBufferSize];
-
+  
+  if (fEventCuts) {
+    fEventCuts->InitQA();
+    if (fEventCuts->GetHistList()) {
+      fOutput->Add(fEventCuts->GetHistList());
+    }
+  } else {
+    AliWarning("Event cuts are missing! \n");
+  }
+  
   if (!fTrackCutsDeuteronDCA) {
     // If the track cuts didn't arrive here, we can go home
     AliFatal("Track Cuts for DCA Deuterons not set!");
@@ -133,9 +142,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
    //First initialize the Histogramms in the Track Cut object. This is done to not initialize
    //the histograms already in the add task, but in the Analysis Task itself and therefore on the
    //worker node.
-  fEventCuts->InitQA();
-  //And add the histograms to the output list
-  fOutput->Add(fEventCuts->GetHistList());
   //same as for the event cuts
   fTrackCutsDeuteronDCA->Init();
   //To avoid collision in the output list, we rename the List carrying all the histograms of this object
@@ -146,10 +152,10 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   //This is done, since later you might want to use seperate output slots, so you
   //do not overload one slot.
   if (fTrackCutsDeuteronDCA->GetIsMonteCarlo()) {
-    fTrackCutsDeuteronDCA->SetMCName("MCDCADeuterons"); // same as above
+    fTrackCutsDeuteronDCA->SetMCName("MCDCADeuterons");
     fOutput->Add(fTrackCutsDeuteronDCA->GetMCQAHists());
   }
-  //Same game for the second track cuts object
+
   if (!fTrackCutsDeuteronMass) {
     AliFatal("Track Cuts for Mass Deuterons not set!");
   }
@@ -157,76 +163,37 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   fTrackCutsDeuteronMass->SetName("MassDeuterons");
   fOutput->Add(fTrackCutsDeuteronMass->GetQAHists());
   if (fTrackCutsDeuteronMass->GetIsMonteCarlo()) {
-    fTrackCutsDeuteronMass->SetMCName("MCMassDeuterons"); // same as above
+    fTrackCutsDeuteronMass->SetMCName("MCMassDeuterons");
     fOutput->Add(fTrackCutsDeuteronMass->GetMCQAHists());
   }
 
-  if (!fTrackCutsAntiDeuteronDCA) {
-    AliFatal("Track Cuts for DCA Antideuterons not set!");
+    if (!fTrackCutsAntiDeuteronDCA) {
+    AliFatal("Track Cuts for DCA Anti Deuterons not set!");
   }
   fTrackCutsAntiDeuteronDCA->Init();
   fTrackCutsAntiDeuteronDCA->SetName("DCAAntiDeuterons");
   fOutput->Add(fTrackCutsAntiDeuteronDCA->GetQAHists());
   if (fTrackCutsAntiDeuteronDCA->GetIsMonteCarlo()) {
-    fTrackCutsAntiDeuteronDCA->SetMCName("MCDCAAntiDeuterons"); // same as above
+    fTrackCutsAntiDeuteronDCA->SetMCName("MCDCAAntiDeuterons");
     fOutput->Add(fTrackCutsAntiDeuteronDCA->GetMCQAHists());
   }
 
   if (!fTrackCutsAntiDeuteronMass) {
-    AliFatal("Track Cuts for Mass Antideuterons not set!");
+    AliFatal("Track Cuts for Mass Anti Deuterons not set!");
   }
   fTrackCutsAntiDeuteronMass->Init();
   fTrackCutsAntiDeuteronMass->SetName("MassAntiDeuterons");
   fOutput->Add(fTrackCutsAntiDeuteronMass->GetQAHists());
   if (fTrackCutsAntiDeuteronMass->GetIsMonteCarlo()) {
-    fTrackCutsAntiDeuteronMass->SetMCName("MCMassAntiDeuterons"); // same as above
+    fTrackCutsAntiDeuteronMass->SetMCName("MCMassAntiDeuterons");
     fOutput->Add(fTrackCutsAntiDeuteronMass->GetMCQAHists());
   }
 
-if (!fTrackCutsProtonDCA) {
-    // If the track cuts didn't arrive here, we can go home
-    AliFatal("Track Cuts for DCA Protons not set!");
-  }
-  fTrackCutsProtonDCA->Init();
-  fTrackCutsProtonDCA->SetName("DCAProtons");
-  fOutput->Add(fTrackCutsProtonDCA->GetQAHists());
-  if (fTrackCutsProtonDCA->GetIsMonteCarlo()) {
-    fTrackCutsProtonDCA->SetMCName("MCDCAProtons"); // same as above
-    fOutput->Add(fTrackCutsProtonDCA->GetMCQAHists());
-  }
-  //Same game for the second track cuts object
-  if (!fTrackCutsProtonMass) {
-    AliFatal("Track Cuts for Mass Proton not set!");
-  }
-  fTrackCutsProtonMass->Init();
-  fTrackCutsProtonMass->SetName("MassProtons");
-  fOutput->Add(fTrackCutsProtonMass->GetQAHists());
-  if (fTrackCutsProtonMass->GetIsMonteCarlo()) {
-    fTrackCutsProtonMass->SetMCName("MCMassProtons"); // same as above
-    fOutput->Add(fTrackCutsProtonMass->GetMCQAHists());
-  }
+  InitHistograms(fTrackCutsProtonDCA, "DCAProtons", "MCDCAProtons");
+  InitHistograms(fTrackCutsProtonMass, "MassProtons", "MCMassProtons");
+  InitHistograms(fTrackCutsAntiProtonDCA, "DCAAntiProtons", "MCDCAAntiProtons");
+  InitHistograms(fTrackCutsAntiProtonMass, "MassAntiProtons", "MCMassAntiProtons");
 
-  if (!fTrackCutsAntiProtonDCA) {
-    AliFatal("Track Cuts for DCA Antiprotons not set!");
-  }
-  fTrackCutsAntiProtonDCA->Init();
-  fTrackCutsAntiProtonDCA->SetName("DCAAntiProtons");
-  fOutput->Add(fTrackCutsAntiProtonDCA->GetQAHists());
-  if (fTrackCutsAntiProtonDCA->GetIsMonteCarlo()) {
-    fTrackCutsAntiProtonDCA->SetMCName("MCDCAAntiProtons"); // same as above
-    fOutput->Add(fTrackCutsAntiProtonDCA->GetMCQAHists());
-  }
-
-  if (!fTrackCutsAntiProtonMass) {
-    AliFatal("Track Cuts for Mass Antiprotons not set!");
-  }
-  fTrackCutsAntiProtonMass->Init();
-  fTrackCutsAntiProtonMass->SetName("MassAntiProtons");
-  fOutput->Add(fTrackCutsAntiProtonMass->GetQAHists());
-  if (fTrackCutsAntiProtonMass->GetIsMonteCarlo()) {
-    fTrackCutsAntiProtonMass->SetMCName("MCMassAntiProtons"); // same as above
-    fOutput->Add(fTrackCutsAntiProtonMass->GetMCQAHists());
-  }
   //Arguments for the pair cleaner as follows:
   //1. How many pairs of Tracks + Decays do you want to clean?
   //(for the purpose of this tutorial, we are going to treat the
