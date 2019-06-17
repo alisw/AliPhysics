@@ -25,6 +25,7 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC);
   virtual ~AliAnalysisTaskFemtoDreamDeuteron();
   Float_t GetMass2sq(AliFemtoDreamTrack *track);
+  void InitHistograms(AliFemtoDreamTrackCuts *trkCuts, char *trkCutsName, char *MCName);
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *){};
