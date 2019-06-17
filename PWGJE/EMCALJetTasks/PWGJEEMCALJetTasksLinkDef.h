@@ -238,7 +238,6 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergySpectrum+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelper+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalTriggerSelectionHelperImpl+;
-#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerNormalization+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
 #pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 
