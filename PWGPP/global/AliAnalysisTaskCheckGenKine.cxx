@@ -11,6 +11,9 @@
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TChain.h>
+#include "AliGenerator.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliAnalysisTaskCheckGenKine.h"
 
 /**************************************************************************
@@ -103,6 +106,7 @@ AliAnalysisTaskCheckGenKine::AliAnalysisTaskCheckGenKine() :
     fDecLen[j]=0x0;
     fMassDiff[j]=0x0;
     fMomDiff[j]=0x0;
+    fPrimSecb[j]=0x0;
   }
 
   DefineInput(0, TChain::Class());
@@ -238,6 +242,14 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
     fOutput->Add(fDecLen[j]);
     fOutput->Add(fMassDiff[j]);
     fOutput->Add(fMomDiff[j]);
+    if(fIsAA){
+      fPrimSecb[j] = new TH3F(TString::Format("hPrimSecb%s",pname.Data())," ; ; p_{T} (GeV/c) ; impact parameter (fm)",4,-0.5,3.5,100,0.,20.,150,0.,15.);
+      fPrimSecb[j]->GetXaxis()->SetBinLabel(1,"Primary");
+      fPrimSecb[j]->GetXaxis()->SetBinLabel(2,"Secondary from weak");
+      fPrimSecb[j]->GetXaxis()->SetBinLabel(3,"Secondary from material");
+      fPrimSecb[j]->GetXaxis()->SetBinLabel(4,"Other");
+      fOutput->Add(fPrimSecb[j]);
+    }
   }
 
   PostData(1,fOutput);
@@ -270,7 +282,23 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
     Printf("AliAnalysisTaskCheckGenKine::Exec(): generated vertex not available");
     return;
   }
-
+  Double_t imppar=-999.;
+  TString genname=mcEvent->GenEventHeader()->ClassName();
+  if(genname.Contains("CocktailEventHeader")){
+    AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)mcEvent->GenEventHeader();
+    TList* lgen=cockhead->GetHeaders();
+    for(Int_t ig=0; ig<lgen->GetEntries(); ig++){
+      AliGenerator* gen=(AliGenerator*)lgen->At(ig);
+      TString title=gen->GetName();
+      if(title.Contains("hijing") || title.Contains("Hijing")){
+	AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lgen->At(ig);
+	imppar=hijh->ImpactParameter();
+      }
+    }
+  }else if(genname.Contains("hijing") || genname.Contains("Hijing")){
+    AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)mcEvent->GenEventHeader();
+    imppar=hijh->ImpactParameter();
+  }
   fHistoNEvents->Fill(0);
 
   //vertices
@@ -381,6 +409,7 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
       else if(mcEvent->IsSecondaryFromMaterial(i)) primSec=2;
     }
     fPrimSec[spId]->Fill(primSec,pt,distToVert);
+    if(fIsAA) fPrimSecb[spId]->Fill(primSec,pt,imppar);
     Int_t nDau=mcPart->GetNDaughters();
     Int_t iDau=mcPart->GetDaughterFirst();
     if(iDau>=0){
