@@ -17,7 +17,7 @@
 #endif
 
 
-AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, TString CentEst, Bool_t DoSystematics) {
+AliAnalysisTaskLightN* AddTaskLightNGrid(Bool_t isMC, TString CentEst, Bool_t DoSystematics) {
 
 	gInterpreter->ProcessLine(".include $ALICE_ROOT/include");
 	gInterpreter->ProcessLine(".include $ALICE_PHYSICS/include");
