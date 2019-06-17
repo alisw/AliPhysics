@@ -38,7 +38,7 @@ void AliVertexerHyperTriton2Body::SetupStandardVertexing()
 
     //V0-Related topological selections
     SetV0VertexerDCAFirstToPV(0.05);
-    SetV0VertexerDCASecondtoPV(0.05);
+    SetV0VertexerDCASecondToPV(0.05);
     SetV0VertexerDCAV0Daughters(1.20);
     SetV0VertexerCosinePA(0.98);
     SetV0VertexerMinRadius(0.9);
@@ -53,7 +53,7 @@ void AliVertexerHyperTriton2Body::SetupLooseVertexing()
 
     //V0-Related topological selections
     SetV0VertexerDCAFirstToPV(0.05);
-    SetV0VertexerDCASecondtoPV(0.05);
+    SetV0VertexerDCASecondToPV(0.05);
     SetV0VertexerDCAV0Daughters(1.60);
     SetV0VertexerCosinePA(0.99);
     SetV0VertexerMinRadius(0.9);
