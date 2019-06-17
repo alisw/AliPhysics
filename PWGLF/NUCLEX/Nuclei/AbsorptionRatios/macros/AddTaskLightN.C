@@ -85,7 +85,7 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, const char* suffix = "" ) {
     AliLightNTrackCuts *AntiDeuteronTrackCuts = AliLightNTrackCuts::PrimDeuteronCuts(isMC,DCAPlots,CombSigma,ContributionSplitting);
     AntiDeuteronTrackCuts->SetCutCharge(-1);
     
-    TString TaskName = Form("LightN_%s",suffix)
+    TString TaskName = Form("LightN_%s",suffix);
     AliAnalysisTaskLightN *task=new AliAnalysisTaskLightN(TaskName.Data(),isMC);
     
     /*if(CentEst == "kInt7"){
