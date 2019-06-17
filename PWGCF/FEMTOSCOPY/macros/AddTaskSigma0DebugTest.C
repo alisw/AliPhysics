@@ -65,99 +65,97 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
 
   if (suffix == "1") {
-    // default
-    v0Cuts->SetKaonRejection(0.48, 0.515);
-    antiv0Cuts->SetKaonRejection(0.48, 0.515);
-    v0Cuts->SetArmenterosCut(false);
-    antiv0Cuts->SetArmenterosCut(false);
-  } else if (suffix == "2") {
     // 1 sigma
     v0Cuts->SetKaonRejection(0.492, 0.503);
     antiv0Cuts->SetKaonRejection(0.492, 0.503);
     v0Cuts->SetArmenterosCut(false);
     antiv0Cuts->SetArmenterosCut(false);
+  } else if (suffix == "2") {
+    // 1 sigma + Armenteros
+    v0Cuts->SetKaonRejection(0.492, 0.503);
+    antiv0Cuts->SetKaonRejection(0.492, 0.503);
   } else if (suffix == "3") {
+    // 1.5 sigma
+    v0Cuts->SetKaonRejection(0.48925, 0.50575);
+    antiv0Cuts->SetKaonRejection(0.48925, 0.50575);
+    v0Cuts->SetArmenterosCut(false);
+    antiv0Cuts->SetArmenterosCut(false);
+  } else if (suffix == "4") {
+    // 1.5 sigma + Armenteros
+    v0Cuts->SetKaonRejection(0.48925, 0.50575);
+    antiv0Cuts->SetKaonRejection(0.48925, 0.50575);
+  } else if (suffix == "5") {
     // 2 sigma
     v0Cuts->SetKaonRejection(0.4865, 0.5085);
     antiv0Cuts->SetKaonRejection(0.4865, 0.5085);
     v0Cuts->SetArmenterosCut(false);
     antiv0Cuts->SetArmenterosCut(false);
-  } else if (suffix == "4") {
-    v0Cuts->SetDaughterTimingCut(AliFemtoDreamv0Cuts::BothDaughtersCombined);
-    antiv0Cuts->SetDaughterTimingCut(AliFemtoDreamv0Cuts::BothDaughtersCombined);
-  } else if (suffix == "5") {
-    v0Cuts->SetPtRange(0.6, 999.);
-    antiv0Cuts->SetPtRange(0.6, 999.);
   } else if (suffix == "6") {
-    v0Cuts->SetPtRange(0.7, 999.);
-    antiv0Cuts->SetPtRange(0.7, 999.);
+    // 2 sigma + Armenteros
+    v0Cuts->SetKaonRejection(0.4865, 0.5085);
+    antiv0Cuts->SetKaonRejection(0.4865, 0.5085);
   } else if (suffix == "7") {
-    v0Cuts->SetPtRange(0.8, 999.);
-    antiv0Cuts->SetPtRange(0.8, 999.);
+    v0Cuts->SetPtRange(0.2, 999.);
+    antiv0Cuts->SetPtRange(0.2, 999.);
   } else if (suffix == "8") {
-    v0Cuts->SetPtRange(0.9, 999.);
-    antiv0Cuts->SetPtRange(0.9, 999.);
+    v0Cuts->SetPtRange(0.25, 999.);
+    antiv0Cuts->SetPtRange(0.25, 999.);
   } else if (suffix == "9") {
-    v0Cuts->SetCutDCADaugTov0Vtx(1.4);
-    antiv0Cuts->SetCutDCADaugTov0Vtx(1.4);
+    v0Cuts->SetPtRange(0.3, 999.);
+    antiv0Cuts->SetPtRange(0.3, 999.);
   } else if (suffix == "10") {
-    v0Cuts->SetCutDCADaugTov0Vtx(1.3);
-    antiv0Cuts->SetCutDCADaugTov0Vtx(1.3);
+    v0Cuts->SetPtRange(0.35, 999.);
+    antiv0Cuts->SetPtRange(0.35, 999.);
   } else if (suffix == "11") {
-    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    v0Cuts->SetPtRange(0.4, 999.);
+    antiv0Cuts->SetPtRange(0.4, 999.);
   } else if (suffix == "12") {
-    v0Cuts->SetCutDCADaugTov0Vtx(1.1);
-    antiv0Cuts->SetCutDCADaugTov0Vtx(1.1);
+    v0Cuts->SetCutDCADaugToPrimVtx(0.055);
+    antiv0Cuts->SetCutDCADaugToPrimVtx(0.055);
   } else if (suffix == "13") {
-    v0Cuts->SetCutDCADaugTov0Vtx(1.0);
-    antiv0Cuts->SetCutDCADaugTov0Vtx(1.0);
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
   } else if (suffix == "14") {
-    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.4, 0.95);
-    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.4, 0.95);
+    v0Cuts->SetCutDCADaugToPrimVtx(0.065);
+    antiv0Cuts->SetCutDCADaugToPrimVtx(0.065);
   } else if (suffix == "15") {
-    v0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.9);
-    antiv0Cuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.9);
-  } else if (suffix == "16") {
-    v0Cuts->SetArmenterosCut(0.01, 0.1, 0.3, 0.95);
-    antiv0Cuts->SetArmenterosCut(0.01, 0.1, 0.3, 0.95);
-  } else if (suffix == "17") {
-    v0Cuts->SetArmenterosCut(0.01, 0.1, 0.3, 0.95);
-    antiv0Cuts->SetArmenterosCut(0.01, 0.1, 0.3, 0.95);
-  } else if (suffix == "18") {
-    v0Cuts->SetArmenterosCut(0.015, 0.12, 0.3, 0.95);
-    antiv0Cuts->SetArmenterosCut(0.015, 0.12, 0.3, 0.95);
+    v0Cuts->SetCutDCADaugToPrimVtx(0.07);
+    antiv0Cuts->SetCutDCADaugToPrimVtx(0.07);
   }
 
   AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
-  if (suffix == "18") {
-    photon->SetCPAMin(0.991);
-  } else if(suffix == "19") {
-    photon->SetCPAMin(0.993);
-  } else if(suffix == "20") {
-    photon->SetCPAMin(0.995);
-  } else if(suffix == "21") {
-    photon->SetCPAMin(0.997);
-  } else if(suffix == "22") {
-    photon->SetCPAMin(0.999);
-  } else if(suffix == "23") {
-    photon->SetDCAzMax(10);
-  } else if(suffix == "24") {
-    photon->SetDCAzMax(8);
-  } else if(suffix == "25") {
-    photon->SetDCAzMax(6);
-  } else if(suffix == "26") {
-    photon->SetDCAzMax(5);
-  } else if(suffix == "27") {
-    photon->SetDCAzMax(4);
-  } else if(suffix == "28") {
-    photon->SetDCAzMax(3);
-  } else if(suffix == "29") {
-    photon->SetDCAzMax(2);
-  } else if(suffix == "30") {
-    photon->SetDCAzMax(1);
-  } else if(suffix == "31") {
-    photon->SetDCAzMax(0.5);
+  if (suffix == "16") {
+    photon->SetDCAzMax(0.4);
+  } else if (suffix == "17") {
+    photon->SetDCAzMax(0.3);
+  } else if (suffix == "18") {
+    photon->SetDCAzMax(0.2);
+  } else if (suffix == "19") {
+    photon->SetDCAzMax(0.1);
+  } else if (suffix == "20") {
+    photon->SetDCAzMax(0.05);
+  } else if (suffix == "21") {
+    photon->SetDCArMax(5);
+  } else if (suffix == "22") {
+    photon->SetDCArMax(4);
+  } else if (suffix == "23") {
+    photon->SetDCArMax(3);
+  } else if (suffix == "24") {
+    photon->SetDCArMax(2);
+  } else if (suffix == "25") {
+    photon->SetDCArMax(1);
+  } else if (suffix == "26") {
+    photon->SetDCArMax(0.5);
+  } else if (suffix == "27") {
+    photon->SetDCArMax(0.4);
+  } else if (suffix == "28") {
+    photon->SetDCArMax(0.3);
+  } else if (suffix == "29") {
+    photon->SetDCArMax(0.2);
+  } else if (suffix == "30") {
+    photon->SetDCArMax(0.1);
+  } else if (suffix == "31") {
+    photon->SetDCArMax(0.05);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -188,23 +186,23 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
 
   if (suffix == "32") {
+    sigmaCuts->SetMinPt(0.8);
+    antiSigmaCuts->SetMinPt(0.8);
+  } else if (suffix == "33") {
+    sigmaCuts->SetMinPt(0.9);
+    antiSigmaCuts->SetMinPt(0.9);
+  } else if (suffix == "34") {
+    sigmaCuts->SetMinPt(1.0);
+    antiSigmaCuts->SetMinPt(1.0);
+  } else if (suffix == "35") {
+    sigmaCuts->SetMinPt(1.1);
+    antiSigmaCuts->SetMinPt(1.1);
+  } else if (suffix == "36") {
     sigmaCuts->SetMinPt(1.2);
     antiSigmaCuts->SetMinPt(1.2);
-  } else if (suffix == "33") {
+  } else if (suffix == "37") {
     sigmaCuts->SetMinPt(1.3);
     antiSigmaCuts->SetMinPt(1.3);
-  } else if (suffix == "34") {
-    sigmaCuts->SetMinPt(1.4);
-    antiSigmaCuts->SetMinPt(1.4);
-  } else if (suffix == "35") {
-    sigmaCuts->SetMinPt(1.5);
-    antiSigmaCuts->SetMinPt(1.5);
-  } else if (suffix == "36") {
-    sigmaCuts->SetMinPt(1.6);
-    antiSigmaCuts->SetMinPt(1.6);
-  } else if (suffix == "37") {
-    sigmaCuts->SetMinPt(1.7);
-    antiSigmaCuts->SetMinPt(1.7);
   }
 
   // Femto Collection
@@ -261,12 +259,11 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   if (suffix == "0") {
     NBins[0] = 750;  // pp
     NBins[8] = 750;  // barp barp
-
-    pairQA[0] = 11;   // pp
-    pairQA[2] = 14;   // pSigma
-    pairQA[8] = 11;   // barp barp
-    pairQA[10] = 14;  // barp bSigma
   }
+  pairQA[0] = 11;   // pp
+  pairQA[2] = 14;   // pSigma
+  pairQA[8] = 11;   // barp barp
+  pairQA[10] = 14;  // barp bSigma
 
   AliFemtoDreamCollConfig *config =
       new AliFemtoDreamCollConfig("Femto", "Femto");
@@ -336,8 +333,8 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     config->SetPhiEtaBinnign(true);
     config->SetkTBinning(true);
     config->SetmTBinning(true);
-    config->SetPtQA(true);
   }
+  config->SetPtQA(true);
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -346,9 +343,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
-  if (suffix != "0") {
-    config->SetMinimalBookingME(true);
-  }
+  config->SetMinimalBookingME(false);
 
   AliAnalysisTaskNanoAODSigma0Femto *task =
       new AliAnalysisTaskNanoAODSigma0Femto("AliAnalysisTaskNanoAODSigma0Femto", isMC);
