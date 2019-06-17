@@ -95,7 +95,9 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fNContributor(-1),
   fNTPCCluster(-1),
   fNTrackTPCout(-1),
+  fNTrackTPConly(-1),
   fNTrackTPC(-1),
+  fNITSCluster(),
   fNHybridTrack08(-1),
   fNSPDTracklet05(-1),
   fNSPDTracklet10(-1),
@@ -206,9 +208,9 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fMCFirstMotherIndex(0),
   fMCFirstMotherPdgCode(0)
 {
-
   for(Int_t i=0;i<3;i++) fVertex[i] = 0;
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
+  for(Int_t i=0;i<2;i++) fNITSCluster[i] = 0;
 
   for(Int_t i=0;i<2;i++){//Qx, Qy
     fQ2vectorTPC[i] = -999;
@@ -250,7 +252,9 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fNContributor(-1),
   fNTPCCluster(-1),
   fNTrackTPCout(-1),
+  fNTrackTPConly(-1),
   fNTrackTPC(-1),
+  fNITSCluster(),
   fNHybridTrack08(-1),
   fNSPDTracklet05(-1),
   fNSPDTracklet10(-1),
@@ -361,10 +365,9 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fMCFirstMotherIndex(0),
   fMCFirstMotherPdgCode(0)
 {
-
   for(Int_t i=0;i<3;i++) fVertex[i] = 0;
   for(Int_t i=0;i<3;i++) fMCVertex[i] = 0;
-
+  for(Int_t i=0;i<2;i++) fNITSCluster[i] = 0;
 
   for(Int_t i=0;i<2;i++){
     fQ2vectorTPC[i] = -999;
@@ -377,10 +380,8 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
     fQ2vectorZDCC[i] = -999;
   }
 
-
-
   DefineInput(0,TChain::Class());
-  DefineOutput(1, TTree::Class());  // reduced information tree
+  DefineOutput(1,TTree::Class());  // reduced information tree
 
 }
 //_______________________________________________________________________________________________
@@ -413,7 +414,9 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fNContributor",&fNContributor,"fNContributor/I");
   fTree->Branch("fNTPCCluster",&fNTPCCluster,"fNTPCCluster/I");
   fTree->Branch("fNTrackTPCout",&fNTrackTPCout,"fNTrackTPCout/I");
+  fTree->Branch("fNTrackTPConly",&fNTrackTPConly,"fNTrackTPConly/I");
   fTree->Branch("fNTrackTPC",&fNTrackTPC,"fNTrackTPC/I");
+  fTree->Branch("fNITSCluster",fNITSCluster,"fNITSCluster[2]/I");
   fTree->Branch("fNHybridTrack08",&fNHybridTrack08,"fNHybridTrack08/I");
   fTree->Branch("fNSPDTracklet05",&fNSPDTracklet05,"fNSPDTracklet05/I");
   fTree->Branch("fNSPDTracklet10",&fNSPDTracklet10,"fNSPDTracklet10/I");
@@ -582,12 +585,6 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     return;
   }
 
-  //fPIDResponse = fInputHandler->GetPIDResponse();
-  //if(!fPIDResponse){
-  //  AliFatal("fPIDResponse does not exist!");
-  //  return;
-  //}
-
   ClearVectorElement();
 
   fIskINT7        = kFALSE;
@@ -663,6 +660,10 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   fV0AMultiplicity = V0info->GetMTotV0A();
   fV0CMultiplicity = V0info->GetMTotV0C();
 
+  for(Int_t i=0;i<2;i++){
+    fNITSCluster[i] = fAODEvent->GetMultiplicity()->GetNumberOfITSClusters(i);
+  }//end of ITS layer loop 2 out of 6, i.e. loop over SPD[0-1]
+
   //Check SPD tracklet multilicity in |eta| < 1
   fNSPDTracklet05 = 0;
   fNSPDTracklet10 = 0;
@@ -706,6 +707,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   }//end of AOD
 
   fNTrackTPCout = 0;
+  fNTrackTPConly = dynamic_cast<AliAODHeader*>(fEvent->GetHeader())->GetTPConlyRefMultiplicity();
   Float_t DCAxy = -999, DCAz = -999;
   Float_t Chi2Global = -1;
   Float_t TOFbeta = -999;
@@ -872,7 +874,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
   }//end of track loop
 
-  AliInfo(Form("fNSPDTracklet05 = %d , fNSPDTracklet10 = %d , fNHybridTrack08 = %d , fNTPCCluster = %d , fNTrackTPCout = %d , fNTrackTPC = %d",fNSPDTracklet05,fNSPDTracklet10,fNHybridTrack08,fNTPCCluster,fNTrackTPCout,fNTrackTPC));
+  AliInfo(Form("fNSPDTracklet05 = %d , fNSPDTracklet10 = %d , fNHybridTrack08 = %d , fNTPCCluster = %d , fNTrackTPCout = %d , fNtrackTPConly = %d , fNTrackTPC = %d",fNSPDTracklet05,fNSPDTracklet10,fNHybridTrack08,fNTPCCluster,fNTrackTPCout,fNTrackTPConly,fNTrackTPC));
 
   AliKFVertex primaryVertexKF(*vVertex);
   Double_t secVtx[3] = {primaryVertexKF.GetX(), primaryVertexKF.GetY(), primaryVertexKF.GetZ()};
@@ -888,6 +890,8 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
     dca = v0->DcaV0Daughters();
     if(dca > 0.25) continue;
+
+    if(v0->InvMass2Prongs(0,1,11,11) > 0.1) continue;
 
     if(v0->RadiusV0() < 3.) continue;//in cm
     if(v0->RadiusV0() > 60.) continue;//in cm
@@ -918,10 +922,15 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     if(TMath::Abs(legPos->Eta()) > fMaxEtaCut) continue;
     if(TMath::Abs(legNeg->Eta()) > fMaxEtaCut) continue;
 
+    AliAODVertex *avp = (AliAODVertex*)legPos->GetProdVertex();
+    AliAODVertex *avn = (AliAODVertex*)legNeg->GetProdVertex();
+    if(avp->GetType() == AliAODVertex::kKink) continue;//reject kink
+    if(avn->GetType() == AliAODVertex::kKink) continue;//reject kink
+
     //if((Double_t)(legPos->GetITSchi2()) / (Double_t)(legPos->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
     //if((Double_t)(legNeg->GetITSchi2()) / (Double_t)(legNeg->GetNcls(0)) > 5.) continue;//maximum chi2 per cluster ITS
-    //if(legPos->GetNcls(0) < 3) continue;//minimum number of ITS cluster 3
-    //if(legNeg->GetNcls(0) < 3) continue;//minimum number of ITS cluster 3
+    if(legPos->GetNcls(0) < 3) continue;//minimum number of ITS cluster 3
+    if(legNeg->GetNcls(0) < 3) continue;//minimum number of ITS cluster 3
     if(!(legPos->GetStatus() & AliVTrack::kITSrefit)) continue;
     if(!(legNeg->GetStatus() & AliVTrack::kITSrefit)) continue;
 
@@ -947,9 +956,9 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     KFchi2ndf = DielePair->GetKFNdf() > 0 ? DielePair->GetKFChi2()/DielePair->GetKFNdf() : 999;
     delete DielePair;
     DielePair = 0x0;
-    if(KFchi2ndf > 30) continue;
+    if(KFchi2ndf > 10) continue;
 
-    if(v0->CosPointingAngle(secVtx) < 0.99) continue;
+    if(v0->CosPointingAngle(secVtx) < 0.998) continue;
 
     if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron)) > 5.) continue;
     if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron)) > 5.) continue;
@@ -1336,7 +1345,6 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
       fMCFirstMotherIndex.push_back(mother_index);
       fMCFirstMotherPdgCode.push_back(mother_pdg);//pdgcode 0 does not exist.
     }
-
 
   }//end of MC track loop
 
