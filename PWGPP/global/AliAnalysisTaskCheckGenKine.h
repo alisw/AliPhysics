@@ -86,13 +86,13 @@ class AliAnalysisTaskCheckGenKine : public AliAnalysisTaskSE {
   TH2F*  fDecLen[kMaxNumOfSpeciesToCheck];       //!<! histo with decay length per species
   TH2F*  fMassDiff[kMaxNumOfSpeciesToCheck];     //!<! histo of mass mother - inv mass daughters
   TH2F*  fMomDiff[kMaxNumOfSpeciesToCheck];      //!<! histo of mass mother - inv mass daughters
-
+  TH3F*  fPrimSecb[kMaxNumOfSpeciesToCheck];      //!<! histo with prim/sec, prod radius, impact parameter (A-A)
   Int_t  fPdgCodes[kMaxNumOfSpeciesToCheck];     //!<! array of pdg codes
   Bool_t fIsAA;                                  // flag for AA config
   Int_t  fNumOfSpeciesToCheck;                   // actual number of species to be checked
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCheckGenKine,1);
+  ClassDef(AliAnalysisTaskCheckGenKine,2);
   /// \endcond
 };
 
