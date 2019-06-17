@@ -36,6 +36,7 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetCheckDaughterCF(bool doIt) { fCheckDaughterCF = doIt; }
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) { fEvtCuts = cuts; }
@@ -88,6 +89,7 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
 
   bool fIsMC;              //
   bool fIsLightweight;     //
+  bool fCheckDaughterCF;   //
   float fV0PercentileMax;  //
   UInt_t fTrigger;         //
 
@@ -111,6 +113,6 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   TList *fResultList;              //!
   TList *fResultQAList;            //!
 
-  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 2)
+  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 3)
 };
 #endif

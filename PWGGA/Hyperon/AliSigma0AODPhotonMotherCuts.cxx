@@ -19,6 +19,8 @@ ClassImp(AliSigma0AODPhotonMotherCuts)
       fSigma(),
       fSidebandUp(),
       fSidebandDown(),
+      fLambda(),
+      fPhoton(),
       fPDG(0),
       fPDGDaughter1(0),
       fPDGDaughter2(0),
@@ -102,6 +104,8 @@ AliSigma0AODPhotonMotherCuts::AliSigma0AODPhotonMotherCuts(
       fSigma(),
       fSidebandUp(),
       fSidebandDown(),
+      fLambda(),
+      fPhoton(),
       fPDG(0),
       fPDGDaughter1(0),
       fPDGDaughter2(0),
@@ -198,6 +202,8 @@ void AliSigma0AODPhotonMotherCuts::SelectPhotonMother(
   fSigma.clear();
   fSidebandUp.clear();
   fSidebandDown.clear();
+  fLambda.clear();
+  fPhoton.clear();
 
   if(photonCandidates.size() == 0 || lambdaCandidates.size() == 0) {
     return;
@@ -555,6 +561,8 @@ void AliSigma0AODPhotonMotherCuts::SigmaToLambdaGamma(
       if (invMass < GetMassSigmaPt(pT) + fSigmaMassCut &&
           invMass > GetMassSigmaPt(pT) - fSigmaMassCut) {
         fSigma.push_back(sigma);
+        fLambda.push_back(lambda);
+        fPhoton.push_back(photon);
         if (!fIsLightweight) {
           fHistInvMassSelected->Fill(pT, invMass);
           fHistMassCutPt->Fill(pT);

@@ -31,6 +31,7 @@ ClassImp(AliAnalysisTaskNanoAODSigma0Femto)
       fPartColl(nullptr),
       fIsMC(false),
       fIsLightweight(false),
+      fCheckDaughterCF(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fGammaArray(nullptr),
@@ -77,6 +78,7 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
       fPartColl(nullptr),
       fIsMC(isMC),
       fIsLightweight(false),
+      fCheckDaughterCF(false),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fGammaArray(nullptr),
@@ -226,7 +228,8 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 
   std::vector<AliFemtoDreamBasePart> sigma0particles, sigma0sidebandUp,
       sigma0sidebandLow, antiSigma0particles, antiSigma0sidebandUp,
-      antiSigma0sidebandLow;
+      antiSigma0sidebandLow, sigma0lambda, sigma0photon, antiSigma0lambda,
+      antiSigma0photon;
 
   CastToVector(sigma0particles, fSigmaCuts->GetSigma());
   CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
@@ -236,12 +239,26 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   CastToVector(antiSigma0sidebandUp, fAntiSigmaCuts->GetSidebandUp());
   CastToVector(antiSigma0sidebandLow, fAntiSigmaCuts->GetSidebandDown());
 
+  // Get the Sigma0 daughters
+  if (fCheckDaughterCF) {
+    CastToVector(sigma0lambda, fSigmaCuts->GetLambda());
+    CastToVector(sigma0photon, fSigmaCuts->GetPhoton());
+    CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda());
+    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton());
+  }
+
   fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
   fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandUp, 2);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandUp, 3);
   fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandLow, 4);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandLow, 5);
+  if (fCheckDaughterCF) {
+    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0lambda, 6);
+    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0photon, 7);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 8);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0photon, 9);
+  }
 
   fPairCleaner->ResetArray();
   fPairCleaner->StoreParticle(Particles);
@@ -252,6 +269,12 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(antiSigma0sidebandUp);
   fPairCleaner->StoreParticle(sigma0sidebandLow);
   fPairCleaner->StoreParticle(antiSigma0sidebandLow);
+  if (fCheckDaughterCF) {
+     fPairCleaner->StoreParticle(sigma0lambda);
+     fPairCleaner->StoreParticle(sigma0photon);
+     fPairCleaner->StoreParticle(antiSigma0lambda);
+     fPairCleaner->StoreParticle(antiSigma0photon);
+   }
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
@@ -344,7 +367,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   fLambda->SetPDGDaughterNeg(fV0Cuts->GetPDGNegDaug());
   fLambda->GetNegDaughter()->SetUseMCInfo(fIsMC);
 
-  const int nPairs = 6;
+  const int nPairs = (fCheckDaughterCF) ? 10 : 6;
   fPairCleaner =
       new AliFemtoDreamPairCleaner(nPairs, 0, fConfig->GetMinimalBookingME());
   fPartColl =
