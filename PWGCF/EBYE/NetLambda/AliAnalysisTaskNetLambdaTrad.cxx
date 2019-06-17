@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated jun 10
+// Updated jun 17
 
 
 #include "AliAnalysisManager.h"
@@ -246,7 +246,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         lRapLambda  = esdv0->RapLambda();
         V0pt = esdv0->Pt();
         if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
-//         if(TMath::Abs(lRapLambda)> 0.5 ) continue;
+        if(TMath::Abs(lRapLambda)> 0.5 ) continue;
         
         
         //--------------------------------------------------------------------Track selection-------------------------------------------------------------------------------------------------------------------------------------
@@ -313,7 +313,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
         if(v0Radius > 200.) continue;
-        if(TMath::Abs(eta) > 0.5) continue;
+//         if(TMath::Abs(eta) > 0.5) continue;
         
         
         
