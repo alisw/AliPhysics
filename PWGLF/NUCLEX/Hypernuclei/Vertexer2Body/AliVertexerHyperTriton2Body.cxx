@@ -5,6 +5,8 @@
 #include <AliPIDResponse.h>
 #include <AliTrackerBase.h>
 
+#include <AliMCEvent.h>
+
 #include <iostream>
 
 ClassImp(AliVertexerHyperTriton2Body)
@@ -21,10 +23,14 @@ ClassImp(AliVertexerHyperTriton2Body)
       fkResetInitialPositions(kFALSE),
       fkDoImprovedDCAV0DauPropagation(kFALSE),
       fkDoMaterialCorrection(kFALSE),
-      fkMonteCarlo(kFALSE),
       fMinPtV0(2), //pre-selection
       fMaxPtV0(1000),
-      fMinXforXYtest(-3.0)
+      fMinXforXYtest(-3.0),
+      fV0VertexerSels{},
+      fMagneticField{0.},
+      fPrimaryVertexX{0.},
+      fPrimaryVertexY{0.},
+      fPrimaryVertexZ{0.}
 //________________________________________________
 {
 }
@@ -38,7 +44,7 @@ void AliVertexerHyperTriton2Body::SetupStandardVertexing()
 
     //V0-Related topological selections
     SetV0VertexerDCAFirstToPV(0.05);
-    SetV0VertexerDCASecondToPV(0.05);
+    SetV0VertexerDCASecondtoPV(0.05);
     SetV0VertexerDCAV0Daughters(1.20);
     SetV0VertexerCosinePA(0.98);
     SetV0VertexerMinRadius(0.9);
@@ -53,7 +59,7 @@ void AliVertexerHyperTriton2Body::SetupLooseVertexing()
 
     //V0-Related topological selections
     SetV0VertexerDCAFirstToPV(0.05);
-    SetV0VertexerDCASecondToPV(0.05);
+    SetV0VertexerDCASecondtoPV(0.05);
     SetV0VertexerDCAV0Daughters(1.60);
     SetV0VertexerCosinePA(0.99);
     SetV0VertexerMinRadius(0.9);
@@ -61,51 +67,33 @@ void AliVertexerHyperTriton2Body::SetupLooseVertexing()
 }
 
 //________________________________________________________________________
-std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid)
+std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid, AliMCEvent *mcEvent)
 {
     //--------------------------------------------------------------------
     //This function reconstructs V0 vertices
     //--------------------------------------------------------------------
     std::vector<AliESDv0> v0s;
 
+    fPID = pid;
     const AliESDVertex *vtxT3D = event->GetPrimaryVertex();
 
-    if (!fPiCuts)
-        fPiCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    if (!fHe3Cuts)
-        fHe3Cuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-
-    Double_t xPrimaryVertex = vtxT3D->GetX();
-    Double_t yPrimaryVertex = vtxT3D->GetY();
-    Double_t zPrimaryVertex = vtxT3D->GetZ();
+    fPrimaryVertexX = vtxT3D->GetX();
+    fPrimaryVertexY = vtxT3D->GetY();
+    fPrimaryVertexZ = vtxT3D->GetZ();
 
     Long_t nentr = event->GetNumberOfTracks();
-    Double_t b = event->GetMagneticField();
+    fMagneticField = event->GetMagneticField();
 
     if (nentr < 2)
         return v0s;
 
     std::vector<int> tracks[2][2];
-    for (int i = 0; i < nentr; i++)
-    {
-        AliESDtrack *esdTrack = event->GetTrack(i);
+    if (!mcEvent)
+        SelectTracks(event, tracks);
+    else
+        SelectTracksMC(event, mcEvent, tracks);
+    
 
-            
-
-        Double_t d = esdTrack->GetD(xPrimaryVertex, yPrimaryVertex, b);
-        if (TMath::Abs(d) < fV0VertexerSels[2])
-            continue;
-        if (TMath::Abs(d) > fV0VertexerSels[6])
-            continue;
-
-
-        const int index = int(esdTrack->GetSign() < 0.);
-        if (std::abs(pid->NumberOfSigmasTPC(esdTrack,AliPID::kHe3)) < 5 &&
-            fHe3Cuts->AcceptTrack(esdTrack))
-            tracks[0][index].push_back(i);
-        else if (fPiCuts->AcceptTrack(esdTrack))
-            tracks[1][index].push_back(i);
-    }
     for (int index{0}; index < 2; ++index) {
         for (auto& nidx: tracks[1][index])
         {
@@ -121,12 +109,11 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 Double_t lNegMassForTracking = ntrk->GetMassForTracking();
                 Double_t lPosMassForTracking = ptrk->GetMassForTracking();
 
-                if (TMath::Abs(ntrk->GetD(xPrimaryVertex, yPrimaryVertex, b)) < fV0VertexerSels[1])
-                    if (TMath::Abs(ptrk->GetD(xPrimaryVertex, yPrimaryVertex, b)) < fV0VertexerSels[2])
+                if (TMath::Abs(ntrk->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField)) < fV0VertexerSels[1])
+                    if (TMath::Abs(ptrk->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField)) < fV0VertexerSels[2])
                         continue;
 
                 AliExternalTrackParam nt(*ntrk), pt(*ptrk);
-                Bool_t lUsedOptimalParams = kFALSE;
 
                 AliExternalTrackParam *ntp = &nt, *ptp = &pt;
                 Double_t xn, xp, dca;
@@ -138,19 +125,19 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 {
                     Double_t dztemp[2], covartemp[3];
                     //Safety margin: 250 -> exceedingly large... not sure this makes sense, but ok
-                    ntp->PropagateToDCA(vtxT3D, b, 250, dztemp, covartemp);
-                    ptp->PropagateToDCA(vtxT3D, b, 250, dztemp, covartemp);
+                    ntp->PropagateToDCA(vtxT3D, fMagneticField, 250, dztemp, covartemp);
+                    ptp->PropagateToDCA(vtxT3D, fMagneticField, 250, dztemp, covartemp);
                 }
 
                 if (fkDoImprovedDCAV0DauPropagation)
                 {
                     //Improved: use own call
-                    dca = GetDCAV0Dau(ptp, ntp, xp, xn, b, lNegMassForTracking, lPosMassForTracking);
+                    dca = GetDCAV0Dau(ptp, ntp, xp, xn, fMagneticField, lNegMassForTracking, lPosMassForTracking);
                 }
                 else
                 {
                     //Old: use old call
-                    dca = nt.GetDCA(&pt, b, xn, xp);
+                    dca = nt.GetDCA(&pt, fMagneticField, xn, xp);
                 }
 
                 if (dca > fV0VertexerSels[3])
@@ -163,8 +150,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
 
                 if (!fkDoMaterialCorrection)
                 {
-                    nt.PropagateTo(xn, b);
-                    pt.PropagateTo(xp, b);
+                    nt.PropagateTo(xn, fMagneticField);
+                    pt.PropagateTo(xp, fMagneticField);
                 }
                 else
                 {
@@ -191,7 +178,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 if (r2 > fV0VertexerSels[6] * fV0VertexerSels[6])
                     continue;
 
-                Float_t cpa = vertex.GetV0CosineOfPointingAngle(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex);
+                Float_t cpa = vertex.GetV0CosineOfPointingAngle(fPrimaryVertexX, fPrimaryVertexY, fPrimaryVertexZ);
 
                 //Simple cosine cut (no pt dependence for now)
                 if (cpa < fV0VertexerSels[4])
@@ -339,7 +326,7 @@ void AliVertexerHyperTriton2Body::CheckChargeV0(AliESDv0 *v0)
     return;
 }
 
-Double_t AliVertexerHyperTriton2Body::GetDCAV0Dau(AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking, Double_t lPosMassForTracking)
+Double_t AliVertexerHyperTriton2Body::GetDCAV0Dau(AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, double b, Double_t lNegMassForTracking, Double_t lPosMassForTracking)
 {
     //--------------------------------------------------------------
     // Propagates this track and the argument track to the position of the
@@ -753,7 +740,7 @@ Double_t AliVertexerHyperTriton2Body::GetDCAV0Dau(AliExternalTrackParam *pt, Ali
 }
 
 ///________________________________________________________________________
-void AliVertexerHyperTriton2Body::GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2], Double_t b)
+void AliVertexerHyperTriton2Body::GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2], double b)
 {
     // Copied from AliV0ReaderV1::GetHelixCenter
     // Get Center of the helix track parametrization
@@ -788,3 +775,56 @@ void AliVertexerHyperTriton2Body::GetHelixCenter(const AliExternalTrackParam *tr
     center[1] = ypos + ypoint;
     return;
 }
+
+void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<int> tracks[2][2]) {
+
+    if (!fPiCuts)
+        fPiCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    if (!fHe3Cuts)
+        fHe3Cuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+
+    fMagneticField = event->GetMagneticField();
+    
+    for (int i = 0; i < event->GetNumberOfTracks(); i++)
+    {
+        AliESDtrack *esdTrack = event->GetTrack(i);
+
+            
+
+        Double_t d = esdTrack->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField);
+        if (TMath::Abs(d) < fV0VertexerSels[2])
+            continue;
+        if (TMath::Abs(d) > fV0VertexerSels[6])
+            continue;
+
+
+        const int index = int(esdTrack->GetSign() < 0.);
+        if (std::abs(fPID->NumberOfSigmasTPC(esdTrack,AliPID::kHe3)) < 5 &&
+            fHe3Cuts->AcceptTrack(esdTrack))
+            tracks[0][index].push_back(i);
+        else if (fPiCuts->AcceptTrack(esdTrack))
+            tracks[1][index].push_back(i);
+    }
+}
+
+void AliVertexerHyperTriton2Body::SelectTracksMC(AliESDEvent *event, AliMCEvent* mcEvent, std::vector<int> tracks[2][2]) {
+
+    for (int i = 0; i < event->GetNumberOfTracks(); i++)
+    {
+        AliESDtrack *esdTrack = event->GetTrack(i);
+
+        int label = std::abs(esdTrack->GetLabel());
+
+        AliVParticle* part = mcEvent->GetTrack(label);
+        AliMCParticle* mother = mcEvent->MotherOfParticle(label);
+        if (!mother || !part)
+            continue;
+        if (std::abs(mother->PdgCode()) != 1010010030)
+            continue;
+
+        const int pion = std::abs(part->PdgCode()) == 211;
+        const int index = int(esdTrack->GetSign() < 0.);
+        tracks[pion][index].push_back(i);
+    }
+}
+
