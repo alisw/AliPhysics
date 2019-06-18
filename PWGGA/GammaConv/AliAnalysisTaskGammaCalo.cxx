@@ -5244,7 +5244,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             tSigInvMassPtAlphaTheta[fiCut]->Fill();
           }
 
-          if (fDoMesonQA == 5 && fIsMC == 0 && (pi0cand->M() > 0.05 && pi0cand->M() < 0.17)){
+          if (fDoMesonQA == 5 && fIsMC == 0 && ((pi0cand->M() > 0.05 && pi0cand->M() < 0.17) || (pi0cand->Pt() > 15. && pi0cand->M() > 0.45 && pi0cand->M() < 0.65 ))){
 
             TClonesArray * arrClustersProcess = NULL;
             arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
