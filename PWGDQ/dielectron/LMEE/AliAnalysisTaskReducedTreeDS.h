@@ -65,7 +65,9 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Int_t fNContributor;
     Int_t fNTPCCluster;
     Int_t fNTrackTPCout;
+    Int_t fNTrackTPConly;
     Int_t fNTrackTPC;//number of TPC track with kITSout
+    Int_t fNITSCluster[2];
     Int_t fNHybridTrack08;
     Int_t fNSPDTracklet05;//|eta| < 0.5
     Int_t fNSPDTracklet10;//|eta| < 1.0
@@ -196,7 +198,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 6);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 7);
 
 };
 
