@@ -10,6 +10,7 @@
 #include <AliESDv0.h>
 
 class AliPIDResponse;
+class AliMCEvent;
 
 class AliVertexerHyperTriton2Body : public TNamed {
 public:
@@ -49,7 +50,7 @@ public:
     void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ) {
         fV0VertexerSels[1] = lParameter;
     }
-    void SetV0VertexerDCASecondToPV  ( Double_t lParameter ) {
+    void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ) {
         fV0VertexerSels[2] = lParameter;
     }
     void SetV0VertexerDCAV0Daughters ( Double_t lParameter ) {
@@ -70,9 +71,6 @@ public:
     }
     void SetMaxPtV0     ( Float_t lMaxPt ) {
         fMaxPtV0 = lMaxPt;
-    }
-    void SetUseMonteCarloAssociation( Bool_t lOpt = kTRUE) {
-        fkMonteCarlo=lOpt;
     }
 //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding(){
@@ -95,7 +93,9 @@ public:
     void SetupLooseVertexing();
 //---------------------------------------------------------------------------------------
     //Re-vertex V0s
-    std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event,AliPIDResponse* pid);
+    void SelectTracks(AliESDEvent *event, std::vector<int> indices[2][2]);
+    void SelectTracksMC(AliESDEvent *event, AliMCEvent* mcEvent, std::vector<int> indices[2][2]);
+    std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event,AliPIDResponse* pid, AliMCEvent* mcEvent = 0x0);
 
     //Helper functions
     Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
@@ -126,9 +126,6 @@ private:
     Bool_t fkDoImprovedDCAV0DauPropagation;
     Bool_t fkDoMaterialCorrection; //Replace AliExternalTrackParam::PropagateTo with AliTrackerBase::PropagateTrackTo
     
-    //Master MC switch
-    Bool_t fkMonteCarlo; //do MC association in vertexing
-    
     Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtV0; //maximum pt below which we keep candidates in TTree output
 
@@ -136,6 +133,11 @@ private:
     
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     
+    double fMagneticField;
+    double fPrimaryVertexX;
+    double fPrimaryVertexY;
+    double fPrimaryVertexZ;
+    AliPIDResponse* fPID;
     
     
     AliVertexerHyperTriton2Body(const AliVertexerHyperTriton2Body&);            // not implemented
