@@ -141,10 +141,10 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
     } else {
         AliFatal("Event Cut Histograms not available");
     }
-    if(strcmp(fname,"LightN")==0)PostData(1,fQA);
-    if(strcmp(fname,"LightN")==0)PostData(2,fEvtHistListParticle);
-    if(strcmp(fname,"LightN")==0)PostData(3,fTrackCutHistListProton);
-    if(strcmp(fname,"LightN")==0)PostData(4,fAntiTrackCutHistListProton);
+    PostData(1,fQA);
+    PostData(2,fEvtHistListParticle);
+    PostData(3,fTrackCutHistListProton);
+    PostData(4,fAntiTrackCutHistListProton);
     
     if (fIsMC) {
         if (fTrackCutsProton->GetMCQAHists()) {
@@ -157,8 +157,8 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
         } else {
             AliFatal("No Antitrack Cut MC Histograms!");
         }
-        if(strcmp(fname,"LightN")==0)PostData(7,fTrackCutHistMCListProton);
-        if(strcmp(fname,"LightN")==0)PostData(8,fAntiTrackCutHistMCListProton);
+        PostData(7,fTrackCutHistMCListProton);
+        PostData(8,fAntiTrackCutHistMCListProton);
     }
     
     
@@ -173,8 +173,8 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
     } else {
         AliFatal("Event Cut Histograms not available");
     }
-    if(strcmp(fname,"LightN")==0)PostData(5,fTrackCutHistListDeuteron);
-    if(strcmp(fname,"LightN")==0)PostData(6,fAntiTrackCutHistListDeuteron);
+    PostData(5,fTrackCutHistListDeuteron);
+    PostData(6,fAntiTrackCutHistListDeuteron);
     
     if (fIsMC) {
         if (fTrackCutsDeuteron->GetMCQAHists()) {
@@ -187,8 +187,8 @@ void AliAnalysisTaskLightN::UserCreateOutputObjects() {
         } else {
             AliFatal("No Antitrack Cut MC Histograms!");
         }
-        if(strcmp(fname,"LightN")==0)PostData(9,fTrackCutHistMCListDeuteron);
-        if(strcmp(fname,"LightN")==0)PostData(10,fAntiTrackCutHistMCListDeuteron);
+        PostData(9,fTrackCutHistMCListDeuteron);
+        PostData(10,fAntiTrackCutHistMCListDeuteron);
     }
     
 }
@@ -221,10 +221,10 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
         } else {
             AliFatal("AntiTrack Cut Histograms not available");
         }
-        if(strcmp(fname,"LightN")==0)PostData(1,fQA);
-        if(strcmp(fname,"LightN")==0)PostData(2,fEvtHistListParticle);
-        if(strcmp(fname,"LightN")==0)PostData(3,fTrackCutHistListProton);
-        if(strcmp(fname,"LightN")==0)PostData(4,fAntiTrackCutHistListProton);
+        PostData(1,fQA);
+        PostData(2,fEvtHistListParticle);
+        PostData(3,fTrackCutHistListProton);
+        PostData(4,fAntiTrackCutHistListProton);
         if (fIsMC) {
             if (fTrackCutsProton->GetMCQAHists()) {
                 fTrackCutHistMCListProton=fTrackCutsProton->GetMCQAHists();
@@ -236,8 +236,8 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
             } else {
                 AliFatal("No Antitrack Cut MC Histograms!");
             }
-            if(strcmp(fname,"LightN")==0)PostData(7,fTrackCutHistMCListProton);
-            if(strcmp(fname,"LightN")==0)PostData(8,fAntiTrackCutHistMCListProton);
+            PostData(7,fTrackCutHistMCListProton);
+            PostData(8,fAntiTrackCutHistMCListProton);
         }
         
         if (fAnalysisParticle->GetTrackCutHistsDeuteron()) {
@@ -251,8 +251,8 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
             AliFatal("AntiTrack Cut Histograms not available");
         }
         
-        if(strcmp(fname,"LightN")==0)PostData(5,fTrackCutHistListDeuteron);
-        if(strcmp(fname,"LightN")==0)PostData(6,fAntiTrackCutHistListDeuteron);
+        PostData(5,fTrackCutHistListDeuteron);
+        PostData(6,fAntiTrackCutHistListDeuteron);
         if (fIsMC) {
             if (fTrackCutsDeuteron->GetMCQAHists()) {
                 fTrackCutHistMCListDeuteron=fTrackCutsDeuteron->GetMCQAHists();
@@ -264,8 +264,8 @@ void AliAnalysisTaskLightN::UserExec(Option_t *) {
             } else {
                 AliFatal("No Antitrack Cut MC Histograms!");
             }
-            if(strcmp(fname,"LightN")==0)PostData(9,fTrackCutHistMCListDeuteron);
-            if(strcmp(fname,"LightN")==0)PostData(10,fAntiTrackCutHistMCListDeuteron);
+            PostData(9,fTrackCutHistMCListDeuteron);
+            PostData(10,fAntiTrackCutHistMCListDeuteron);
         }
     }
 }
