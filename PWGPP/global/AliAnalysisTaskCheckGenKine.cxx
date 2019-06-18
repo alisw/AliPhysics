@@ -69,6 +69,9 @@ AliAnalysisTaskCheckGenKine::AliAnalysisTaskCheckGenKine() :
   fHistoTrkVtxResidZ(0),
   fHistoTracklets(0),
   fHistoSelTracks(0),
+  fHistoGenMultVsb(0),
+  fHistoTrackletsVsb(0),
+  fHistoSelTracksVsb(0),
   fSpeciesAbundance(0),
   fIsAA(kFALSE),
   fNumOfSpeciesToCheck(0)
@@ -98,7 +101,7 @@ AliAnalysisTaskCheckGenKine::AliAnalysisTaskCheckGenKine() :
   fPdgCodes[fNumOfSpeciesToCheck++]=-511;
   fPdgCodes[fNumOfSpeciesToCheck++]=1000010020;
   fPdgCodes[fNumOfSpeciesToCheck++]=-1000010020;
-
+  
   for(Int_t j=0; j<kMaxNumOfSpeciesToCheck; j++){
     fEtaPt[j]=0x0;
     fPrimSec[j]=0x0;
@@ -153,6 +156,13 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
+  Double_t minMult=-0.5;
+  Double_t maxMult=99.5;
+  if(fIsAA){
+    maxMult=5000.;
+    minMult=0.;
+  }
+  
   fHistoNEvents = new TH1F("hNEvents", "Number of processed events",4,-0.5,3.5);
   fHistoNEvents->SetMinimum(0);
   fHistoNEvents->GetXaxis()->SetBinLabel(1,"Analyzed");
@@ -161,7 +171,7 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
   fHistoNEvents->GetXaxis()->SetBinLabel(4,"Track vertex");
   fOutput->Add(fHistoNEvents);
 
-  fHistoGenMult = new TH1F("hGenMult"," ;  Nch (|#eta|<0.9)",100,-0.5,99.5);
+  fHistoGenMult = new TH1F("hGenMult"," ;  Nch (|#eta|<0.9)",100,minMult,maxMult);
   fOutput->Add(fHistoGenMult);
 
   // vertex histos
@@ -173,13 +183,13 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
   fHistoTrkVtxX = new TH1F("hTrkVtxX"," ; Track vertex X (cm)",200,-1.,1.);
   fHistoTrkVtxY = new TH1F("hTrkVtxY"," ; Track vertex Y (cm)",200,-1.,1.);
   fHistoTrkVtxZ = new TH1F("hTrkVtxZ"," ; Track vertex Z (cm)",200,-20.,20.);
-  fHistoSPD3DVtxResidX = new TH3F("hSPD3DVtxResidX"," ; SPDVert contrib. ; z_{vertex} (cm) ; x_{reco}-x_{gen} (cm)",100,-0.5,99.5,40,-20.,20.,100,-0.1,0.1);
-  fHistoSPD3DVtxResidY = new TH3F("hSPD3DVtxResidY"," ; SPDVert contrib. ; z_{vertex} (cm) ; y_{reco}-y_{gen} (cm)",100,-0.5,99.5,40,-20.,20.,100,-0.1,0.1);
-  fHistoSPD3DVtxResidZ = new TH3F("hSPD3DVtxResidZ"," ; SPDVert contrib. ; z_{vertex} (cm) ; z_{reco}-z_{gen} (cm)",100,-0.5,99.5,40,-20.,20.,100,-0.1,0.1);
-  fHistoSPDZVtxResidZ = new TH3F("hSPDZVtxResidZ"," ; SPDVert contrib. ; z_{vertex} (cm) ; z_{reco}-z_{gen} (cm)",100,-0.5,99.5,40,-20.,20.,100,-0.1,0.1);
-  fHistoTrkVtxResidX = new TH3F("hTrkVtxResidX"," ; SPDVert contrib. ; z_{vertex} (cm) ; x_{reco}-x_{gen} (cm)",100,-0.5,99.5,40,-20.,20.,100,-0.1,0.1);
-  fHistoTrkVtxResidY = new TH3F("hTrkVtxResidY"," ; SPDVert contrib. ; z_{vertex} (cm) ; y_{reco}-y_{gen} (cm)",100,-0.5,99.5,40,-20.,20.,100,-0.1,0.1);
-  fHistoTrkVtxResidZ = new TH3F("hTrkVtxResidZ"," ; SPDVert contrib. ; z_{vertex} (cm) ; z_{reco}-z_{gen} (cm)",100,-0.5,99.5,40,-20.,20.,100,-0.1,0.1);
+  fHistoSPD3DVtxResidX = new TH3F("hSPD3DVtxResidX"," ; SPDVert contrib. ; z_{vertex} (cm) ; x_{reco}-x_{gen} (cm)",100,minMult,maxMult,40,-20.,20.,100,-0.1,0.1);
+  fHistoSPD3DVtxResidY = new TH3F("hSPD3DVtxResidY"," ; SPDVert contrib. ; z_{vertex} (cm) ; y_{reco}-y_{gen} (cm)",100,minMult,maxMult,40,-20.,20.,100,-0.1,0.1);
+  fHistoSPD3DVtxResidZ = new TH3F("hSPD3DVtxResidZ"," ; SPDVert contrib. ; z_{vertex} (cm) ; z_{reco}-z_{gen} (cm)",100,minMult,maxMult,40,-20.,20.,100,-0.1,0.1);
+  fHistoSPDZVtxResidZ = new TH3F("hSPDZVtxResidZ"," ; SPDVert contrib. ; z_{vertex} (cm) ; z_{reco}-z_{gen} (cm)",100,minMult,maxMult,40,-20.,20.,100,-0.1,0.1);
+  fHistoTrkVtxResidX = new TH3F("hTrkVtxResidX"," ; SPDVert contrib. ; z_{vertex} (cm) ; x_{reco}-x_{gen} (cm)",100,minMult,maxMult,40,-20.,20.,100,-0.1,0.1);
+  fHistoTrkVtxResidY = new TH3F("hTrkVtxResidY"," ; SPDVert contrib. ; z_{vertex} (cm) ; y_{reco}-y_{gen} (cm)",100,minMult,maxMult,40,-20.,20.,100,-0.1,0.1);
+  fHistoTrkVtxResidZ = new TH3F("hTrkVtxResidZ"," ; SPDVert contrib. ; z_{vertex} (cm) ; z_{reco}-z_{gen} (cm)",100,minMult,maxMult,40,-20.,20.,100,-0.1,0.1);
   fOutput->Add(fHistoVtxContrib);
   fOutput->Add(fHistoSPD3DVtxX);  
   fOutput->Add(fHistoSPD3DVtxY);
@@ -197,13 +207,19 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
   fOutput->Add(fHistoTrkVtxResidZ);
 
   // multiplicity histos
-  Double_t maxMult=500.;
-  if(fIsAA) maxMult=5000.;
-  fHistoTracklets = new TH2F("hTracklets"," ; N_{gen} ; N_{tracklets}",100,0.,maxMult,100,0.,maxMult);
-  fHistoSelTracks = new TH2F("hSelTracks"," ; N_{gen} ; N_{TPC+ITS tracks}",100,0.,maxMult,100,0.,maxMult);
+  fHistoTracklets = new TH2F("hTracklets"," ; N_{gen} ; N_{tracklets}",100,minMult,maxMult,100,minMult,maxMult);
+  fHistoSelTracks = new TH2F("hSelTracks"," ; N_{gen} ; N_{TPC+ITS tracks}",100,minMult,maxMult,100,minMult,maxMult);
   fOutput->Add(fHistoTracklets);
   fOutput->Add(fHistoSelTracks);
-
+  if(fIsAA){
+    fHistoGenMultVsb = new TH2F("hGenMultVsb"," ;  impact parameter (fm) ; Nch (|#eta|<0.9)",150,0.,15.,100,minMult,maxMult);
+    fHistoTrackletsVsb = new TH2F("hTrackletsVsb"," ; impact parameter (fm) ; N_{tracklets}",150,0.,15.,100,minMult,maxMult);
+    fHistoSelTracksVsb = new TH2F("hSelTracksVsb"," ; impact parameter (fm) ; N_{TPC+ITS tracks}",150,0.,15.,100,minMult,maxMult);
+    fOutput->Add(fHistoGenMultVsb);
+    fOutput->Add(fHistoTrackletsVsb);
+    fOutput->Add(fHistoSelTracksVsb);
+  }
+  
   // per-particle histos
   fSpeciesAbundance = new TH2F("hSpeciesAbundance","",fNumOfSpeciesToCheck,-0.5,fNumOfSpeciesToCheck-0.5,2,-0.5,1.5);
   fSpeciesAbundance->GetYaxis()->SetBinLabel(1,"From generator");
@@ -382,6 +398,12 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
   }
   fHistoSelTracks->Fill(nPiKPEta09,nSelTracks);
 
+  if(fIsAA){
+    fHistoGenMultVsb->Fill(imppar,nPiKPEta09);
+    fHistoTrackletsVsb->Fill(imppar,nTrackletsEta09);
+    fHistoSelTracksVsb->Fill(imppar,nSelTracks);
+  }
+  
   for (Int_t i=0;i<nParticles;i++){
     AliMCParticle* mcPart=(AliMCParticle*)mcEvent->GetTrack(i);
     TParticle* part = (TParticle*)mcEvent->Particle(i);
@@ -448,11 +470,14 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
       }
       Double_t pSquareDau=sumPxDau*sumPxDau+sumPyDau*sumPyDau+sumPzDau*sumPzDau;
       Double_t pDau=TMath::Sqrt(pSquareDau);
-      Double_t invMass=TMath::Sqrt(sumEDau*sumEDau-pSquareDau);
       Double_t pDiff=(mom-pDau)/mom;
-      Double_t mDiff=(mass-invMass)/mass;
-      fMassDiff[spId]->Fill(mDiff,dauOrig);
       fMomDiff[spId]->Fill(pDiff,dauOrig);
+      Double_t invMass2=sumEDau*sumEDau-pSquareDau;
+      if(invMass2>=0){
+	Double_t invMass=TMath::Sqrt(sumEDau*sumEDau-pSquareDau);
+	Double_t mDiff=(mass-invMass)/mass;
+	fMassDiff[spId]->Fill(mDiff,dauOrig);
+      }
       if(primSec==0) fDecLen[spId]->Fill(mom,decLen);
     }
   }
