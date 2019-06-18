@@ -316,6 +316,7 @@ public:
     TList                 *fOutputListHadron;       //!
     TList                 *fOutputListQA;           //!
     TH1F                  *fNoEvents;               //! no of events for different cuts
+    TH2F                  *fNoEventsNTr;               //! no of events for different cuts
     TH2F                  *fMCNoEvents;             //! no of events for different cuts
     TH2F                  *fHFENoEvents;            //! no of events for different cuts
     TH3F                  *fDiffractiveType;        //!
@@ -344,9 +345,9 @@ public:
     THnSparseF            *fnTrAccMaxGen;           //!
     THnSparseF            *fnTrAccGen;           //!
     TH2F                  *fnTrAccGenTrueInel;   //!
-    TH2F                  *fnTrAccGenTrueInelTrig;   //!
-    TH2F                  *fnTrAccGenTrueInelVtxQA;   //!
-    TH2F                  *fnTrAccGenTrueInelVtxEx;   //!
+    //TH2F                  *fnTrAccGenTrueInelTrig;   //!
+    //TH2F                  *fnTrAccGenTrueInelVtxQA;   //!
+    //TH2F                  *fnTrAccGenTrueInelVtxEx;   //!
     THnSparseF            *fnTrAccMinGen;           //!
     THnSparseF            *fnTrAccMeanGen;          //!
     THnSparseF            *fnTrAccMax;              //!
@@ -424,19 +425,22 @@ public:
     TH3F                  *fSPDMultiplicity;        //!
     Int_t                 *fRunList;                //!
 
-    TH2F                  *fElectronTrackCuts;      //! 
+    TH2F                  *fElectronTrackCuts;      //!
+    TH2F                  *fElectronTrackTPCChi2;   //!
+    TH2F                  *fElectronTrackTPCCrossedRows; //!
     TH2F                  *fElectronTrackTPCNcls;   //! 
     TH2F                  *fElectronTrackTPCNclsdEdx; //! 
-    TH2F                  *fElectronTrackTPCFrac;    //! 
+    TH2F                  *fElectronTrackTPCFrac;   //! 
     TH2F                  *fElectronTrackITSNcls;   //!
-    TH3F                  *fElectronTrackITSLayer;   //!
+    TH2F                  *fElectronTrackITSChi2;   //!
+    TH3F                  *fElectronTrackITSLayer;  //!
     TH3F                  *fElectronTrackRefit;     //!
     TH3F                  *fElectronTrackDCA;       //! 
-    THnSparseF*           fElectronTrackITSCuts; //!
-    THnSparseF*           fPhotTrackITSCuts; //!
-    TH2F                  *fHadronTrackTPCNcls;   //! 
-    TH3F                  *fHadronTrackRefit;     //!
-    TH3F                  *fHadronTrackDCA;       //! 
+    THnSparseF*           fElectronTrackITSCuts;    //!
+    THnSparseF*           fPhotTrackITSCuts;        //!
+    TH2F                  *fHadronTrackTPCNcls;     //! 
+    TH3F                  *fHadronTrackRefit;       //!
+    TH3F                  *fHadronTrackDCA;         //! 
 
 
 
@@ -448,9 +452,10 @@ public:
     TH2F                  *fHistTPCnSigITScut;      //! TPC sigma vs p (ITS cut)
     TH2F                  *fHistTPCnSigTOFcut;      //! TPC sigma vs p (TOF cut)
     TH2F                  *fHistTPCnSigITSTOFcut;   //! TPC sigma vs p (ITS+TOF cuts)
+    TH2F                  *fHistITSnSigTOFTPCcut;   //! ITS sigma vs p (TPC+TOF cuts)
 
     THnSparse             *fCheckNHadronScaling;    //!
-    THnSparse             *fCheckNPhotHadScaling;  //!
+    THnSparse             *fCheckNPhotHadScaling;   //!
     TH3F                  *fCheckTaggedEvent;       //!
 
     TH2F                  *fHadContPvsPt;           //!
@@ -458,9 +463,9 @@ public:
     TH3F                  *fHadContTPCEtaPhiPt;     //!
     THnSparse             *fHadContPPhiEtaTPC;      //!
     THnSparse             *fHadContamination;       //! HadronicContaminationTOF
-    THnSparse             *fHadContaminationPt;       //! HadronicContaminationTOF
+    THnSparse             *fHadContaminationPt;     //! HadronicContaminationTOF
     THnSparse             *fHadContMC;              //!
-    THnSparse             *fHadContMCPt;              //!
+    THnSparse             *fHadContMCPt;            //!
     
 
   
@@ -556,9 +561,9 @@ public:
 
    
     TH1F                  *fNoPartnerNoT; //!
-    THnSparse              *fNoPartnerNoTPt2; //!
+    THnSparse             *fNoPartnerNoTPt2; //!
     TH1F                  *fTPartnerNoT; //!
-    THnSparse              *fTPartnerNoTPt2; //!
+    THnSparse             *fTPartnerNoTPt2; //!
     TH3F                  *fElecHadTrigger;         //!
     TH2F                  *fElecHadTriggerLS;         //!
     TH2F                  *fElecHadTriggerULS;         //!
@@ -609,6 +614,7 @@ public:
     TH2F                  *fElecLPTriggerULS;        //!
     TH2F                  *fElecLPTriggerLSNoP;         //!
     TH2F                  *fElecLPTriggerULSNoP;        //!
+    TH2F                  *fElecLPTriggerULSNoPCorr; //!
     TH2F                  *fHadContLPTrigger;       //!
     TH2F                  *fLPElecTrigger;          //!
     TH2F                  *fLPNonElecTrigger;       //!
@@ -644,6 +650,7 @@ public:
     TH2F                  *fCheckMCEtavsRecEtaHad;   //!
     TH2F                  *fCheckMCPhivsRecPhiHad;   //!
     THnSparse             *fMCHadPtEtaPhiVtx;        //!
+    TH2F                  *fRecHadMCSecondaryCont;   //!
     THnSparse             *fRecHadMCPtEtaPhiVtx;     //!
     THnSparse             *fRecHadPtEtaPhiVtx;       //!
     THnSparse             *fRecHadPtEtaPhiVtxWRecEff; //!
