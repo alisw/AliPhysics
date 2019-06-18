@@ -1364,6 +1364,11 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310a13","411790005k0b2220000","01631061000000d0"); //
     cuts.AddCutCalo("13530a13","411790005k032220000","01631031000000d0"); //
     cuts.AddCutCalo("15910a13","411790005k032220000","01631031000000d0"); //
+  } else if (trainConfig == 754){ // EMCAL+DCal clusters
+    cuts.AddCutCalo("10130a13","411798305k0a2220000","01631061000000d0"); //
+    cuts.AddCutCalo("11310a13","411798305k0b2220000","01631061000000d0"); //
+    cuts.AddCutCalo("13530a13","411798305k032220000","01631031000000d0"); //
+    cuts.AddCutCalo("15910a13","411798305k032220000","01631031000000d0"); //
 
   // **********************************************************************************************************
   // ***************************** PHOS       QA configurations PbPb run 2 2018 *******************************
@@ -1385,6 +1390,11 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310a13","2446600051012200000","0163103100000010"); //
     cuts.AddCutCalo("13530a13","2446600051012200000","0163103100000010"); //
     cuts.AddCutCalo("15910a13","2446600051012200000","0163103100000010"); //
+  } else if (trainConfig == 854){ // PHOS clusters - 20181018
+    cuts.AddCutCalo("10130a13","244668305b012200000","0163103100000010"); //
+    cuts.AddCutCalo("11310a13","244668305b012200000","0163103100000010"); //
+    cuts.AddCutCalo("13530a13","244668305b012200000","0163103100000010"); //
+    cuts.AddCutCalo("15910a13","244668305b012200000","0163103100000010"); //
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
