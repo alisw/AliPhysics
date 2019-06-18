@@ -4574,14 +4574,14 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fUsePtDepTrackToCluster = 2;
         fMinTMDistSigma         = 3;
         break;
-      case 10: // a loose
+      case 10: // a loose phi
         if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
         fMaxDistTrackToClusterEta = 0.02;
         fMinDistTrackToClusterPhi = -0.08;
         fMaxDistTrackToClusterPhi = 0.08;
-      case 11: // b strict
+      case 11: // b strict phi
         if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-        fMaxDistTrackToClusterEta = 0.01;
+        fMaxDistTrackToClusterEta = 0.02;
         fMinDistTrackToClusterPhi = -0.03;
         fMaxDistTrackToClusterPhi = 0.03;
         break;
@@ -6556,6 +6556,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
             energy /= FunctionNL_kSDM(energy, 1.02357, -2.19441, -3.10045); //updated on 2019 01 18 - PCMPHOS based on centrality 20-50%
             energy /= FunctionNL_kSDM(energy, 1.00081, -2.09128, -2.41587); //updated on 2019 02 18 - PCMPHOS based on centrality 20-50%
           }
+        } else if( fCurrentMC==kPbPb5T18HIJING ){
+          if (fClusterType == 2 ){
+            energy /= FunctionNL_DPOW(energy, 0.9998079211, 0.0090667260, -2.2864021685, 0.9941384481, -0.0021830957, -1.1672607963) ; // added on 2019 06 18 , based on PHOS peri
+          }
         } else if( fCurrentMC==kXeXe5T17HIJING ){
           if (fClusterType == 1 ){
             energy /= (FunctionNL_DPOW(energy, 1.0547527663, -0.0927180446, -0.0800012482, 1.0254208020, -0.0345156682, -0.4999999199)); // based on peripheral XeXe
@@ -6593,6 +6597,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           if(fClusterType==1 || fClusterType==4){
             energy /= (FunctionNL_kSDM(energy, 0.91336, -2.57765, -0.334976) ); //updated 7 Dec 2018 - peripheral (60-80%) pcmcalo correction
             energy /= (FunctionNL_DPOW(energy, 1.1698155939, -0.1999998275, -0.2656304851, 1.1754720500, -0.1999999998, -0.1467153129) ); //additional calo correction 20190215
+          }
+        } else if( fCurrentMC==kPbPb5T18HIJING ){
+          if(fClusterType==1 || fClusterType==4){
+            energy /= 0.9633; // added on 2019 06 18 , based on PCM-EMC peri
           }
         } else {
           fPeriodNameAvailable = kFALSE;

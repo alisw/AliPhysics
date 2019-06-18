@@ -1374,7 +1374,9 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
 //     break;
   case 3:
     fSpecialTrigger=3; //specific centrality trigger selection
-    fSpecialTriggerName="AliVEvent::kCentral/kSemiCentral/kMB";
+    //fOfflineTriggerMask=AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+    fTriggerSelectedManually = kTRUE;
+    fSpecialTriggerName="AliVEvent::kCentral/kSemiCentral/kINT7";
     break;
   case 4:
     fSpecialTrigger=4; // trigger alias kTRD
@@ -2332,12 +2334,22 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
  case 10:            // for Pb-Pb
     fRemovePileUp     = kTRUE;
     fRemovePileUpSPD  = kTRUE;
-    fUtils->SetASPDCvsTCut(200.);
-    fUtils->SetBSPDCvsTCut(7.);
+    if(fPeriodEnum == kLHC18qr){
+      fUtils->SetASPDCvsTCut(750.);
+      fUtils->SetBSPDCvsTCut(4.);
+    } else {
+      fUtils->SetASPDCvsTCut(200.);
+      fUtils->SetBSPDCvsTCut(7.);
+    }
     fDoPileUpRejectV0MTPCout = kTRUE;
     fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
-    fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
-    fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+    if(fPeriodEnum == kLHC18qr){
+      fFPileUpRejectV0MTPCout->SetParameter(0,-2000.);
+      fFPileUpRejectV0MTPCout->SetParameter(1,6.0);
+    } else {
+      fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
+      fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+    }
     break;
  case 11:            // for Pb-Pb
     fRemovePileUp     = kTRUE;
@@ -2513,8 +2525,13 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
         return -1;
             } else{
         if(fDetectorCentrality==0){
-          if(fIsHeavyIon==2)           return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
-          else                         return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+          if(fIsHeavyIon==2){
+            return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
+          } else if ( fPeriodEnum == kLHC18qr ) {
+            return MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+          } else {
+            return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+          }
         }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
         else if(fDetectorCentrality==2) return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
       }
@@ -4213,7 +4230,11 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
       else {
         if (fIsHeavyIon == 1){
+          if( fPeriodEnum == kLHC18qr ){
+            fOfflineTriggerMask = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+          } else {
             fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+          }
         } else if (fIsHeavyIon == 2){
             fOfflineTriggerMask = AliVEvent::kINT7;
         } else {
@@ -4236,6 +4257,13 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
     // DG event selection; special condition
     if ( (fSpecialTrigger == 11)  && fTriggerSelectedManually &&  fSpecialSubTriggerName.CompareTo("CCUP25-B-SPD1-CENTNOTRD") == 0 ) {
       if (firedTrigClass.Contains(fSpecialSubTriggerName.Data())) isSelected = 1;
+    }
+
+    // select manually PbPb kINT7 | kCentral | kSemiCentral
+    if ( fIsHeavyIon == 1 && fSpecialTrigger == 3  && fTriggerSelectedManually) {
+      if (firedTrigClass.Contains("CENT")){
+        if ( firedTrigClass.Contains("CV0H7") || firedTrigClass.Contains("CMID7") ) isSelected = 1;
+      }
     }
 
 
