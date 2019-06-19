@@ -19,7 +19,6 @@ namespace {
 
 AliAnalysisTaskNanoAODnormalisation::AliAnalysisTaskNanoAODnormalisation(std::string taskName) : AliAnalysisTaskSE{taskName.data()},
   fOutputList{nullptr},
-  fCurrentFileName{""},
   fNmultBins{100},
   fMinMult{0.},
   fMaxMult{100.f},
@@ -92,14 +91,6 @@ void AliAnalysisTaskNanoAODnormalisation::FillHistograms(TH2D* candidate[2], TH2
 Bool_t AliAnalysisTaskNanoAODnormalisation::UserNotify() {
   FillHistograms(fCandidateEvents,fSelectedEvents);
   return true;
-}
-
-/// This is temporary to check if the UserNotify gives us the expected information
-void AliAnalysisTaskNanoAODnormalisation::UserExec(Option_t*) {
-  if (fCurrentFileName != CurrentFileName()) {
-    fCurrentFileName = CurrentFileName();
-    FillHistograms(fCandidateEventsUE,fSelectedEventsUE);
-  }
 }
 
 AliAnalysisTaskNanoAODnormalisation* AliAnalysisTaskNanoAODnormalisation::AddTask(std::string name) {
