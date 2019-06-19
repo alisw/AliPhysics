@@ -112,13 +112,16 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionR
   // Return true if vp is accepted.
 
   AliAODMCParticle* vp = GetMCParticle(i);
-
+  
    if (IsSpecialPDGDaughter(vp) || IsSpecialIndexDaughter(vp)) {
-    rejectionReason = kHFCut;
+    
+     rejectionReason = kHFCut;
+    
     return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
    }
 
-  if (IsSpecialPDG(vp, fHistOrigin) || IsSpecialIndexDaughter(vp)) {
+  if (IsSpecialPDG(vp, fHistOrigin) || IsSpecialIndex(vp)) {
+  
     // Special PDG particle, skip regular MC particle cuts and apply particle cuts.
     // For the future, may want to implement special kinematic cuts for D mesons
     AliTLorentzVector mom;
@@ -238,8 +241,11 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialIndex(const AliAODMCParticle* part,
   
   AliAODMCParticle* pmo;
   pmo=static_cast<AliAODMCParticle*>(fClArray->At(fSpecialIndex));
-  if(pmo==part) return kTRUE;
-
+  if(pmo==0) return kFALSE;
+  if(pmo==part){
+  
+     return kTRUE;
+  }
   
 
   // Special PDG particle
