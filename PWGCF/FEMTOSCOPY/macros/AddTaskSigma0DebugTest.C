@@ -252,9 +252,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   NBins[0] = 250;  // pp
   NBins[8] = 250;  // barp barp
 
-  closeRejection[0] = true;  // pp
-  closeRejection[8] = true;  // barp barp
-
   // do extended QA for the pairs in default mode
   if (suffix == "0") {
     NBins[0] = 750;  // pp
@@ -324,8 +321,9 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   }
 
   if (trigger == "kHighMultV0") {
-    config->SetDeltaEtaMax(0.01);
-    config->SetDeltaPhiMax(0.01);
+    // no close pair rejection since we don't care about pp
+    config->SetDeltaEtaMax(0.);
+    config->SetDeltaPhiMax(0.);
     config->SetClosePairRejection(closeRejection);
   }
 
