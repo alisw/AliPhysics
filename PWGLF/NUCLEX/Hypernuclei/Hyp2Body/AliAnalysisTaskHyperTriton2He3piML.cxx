@@ -323,7 +323,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   };
 
   esdEvent->ResetV0s();
-  std::vector<AliESDv0> V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse);
+  std::vector<AliESDv0> V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse,mcEvent);
   for (int iV0 = 0; iV0 < int(V0Vector.size());
        iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
