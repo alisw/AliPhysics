@@ -190,7 +190,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   AliAnalysisTaskHyperTriton2He3piML& operator=(
       const AliAnalysisTaskHyperTriton2He3piML&);  // not implemented
 
-  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 1);
+  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 2);
 };
 
 #endif
