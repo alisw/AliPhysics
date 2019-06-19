@@ -850,24 +850,26 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
     hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[6]);
     hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[7]);
     hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[8]);
-    hME_Sign_SoftPi_PtInt_AllPool = (TH2D*)hME_Sign_SoftPi_PtInt[0]->Clone("hME_Sign_SoftPi_PtInt_AllPool");
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[1]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[2]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[3]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[4]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[5]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[6]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[7]);
-    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[8]);
-    hME_Sideb_SoftPi_PtInt_AllPool = (TH2D*)hME_Sideb_SoftPi_PtInt[0]->Clone("hME_Sideb_SoftPi_PtInt_AllPool");
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[1]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[2]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[3]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[4]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[5]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[6]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[7]);
-    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[8]);
+    if(fSubtractSoftPiME) {
+      hME_Sign_SoftPi_PtInt_AllPool = (TH2D*)hME_Sign_SoftPi_PtInt[0]->Clone("hME_Sign_SoftPi_PtInt_AllPool");
+      hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[1]);
+      hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[2]);
+      hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[3]);
+      hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[4]);
+      hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[5]);
+      hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[6]);
+      hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[7]);
+      hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[8]);
+      hME_Sideb_SoftPi_PtInt_AllPool = (TH2D*)hME_Sideb_SoftPi_PtInt[0]->Clone("hME_Sideb_SoftPi_PtInt_AllPool");
+      hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[1]);
+      hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[2]);
+      hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[3]);
+      hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[4]);
+      hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[5]);
+      hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[6]);
+      hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[7]);
+      hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[8]);
+    }
 
     NormalizeMEplot(hME_Sign_PtInt_AllPool,hME_Sign_SoftPi_PtInt_AllPool);
     NormalizeMEplot(hME_Sideb_PtInt_AllPool,hME_Sideb_SoftPi_PtInt_AllPool);
@@ -885,10 +887,8 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   for(int iPool=0; iPool<fNpools; iPool++) {//new pool lopp
 
     //Normalize ME plots and (if requested) remove the softpion-compatible tracks
-    NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
-    NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
-
-
+    if(!fUseOneMEPool) NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
+    if(!fUseOneMEPool) NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
 
     //Apply Event Mixing Correction
     hCorr_Sign_PtInt[iPool] = (TH2D*)hSE_Sign_PtInt[iPool]->Clone(Form("hCorr_Sign_PtInt_p%d",iPool));
