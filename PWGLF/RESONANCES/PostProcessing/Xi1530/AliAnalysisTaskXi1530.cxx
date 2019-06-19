@@ -167,7 +167,6 @@ AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530() {
     delete fTrackCuts;
     delete fTrackCuts2;
     delete fPIDResponse;
-    delete fRunTable;
 }
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
