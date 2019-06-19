@@ -2468,7 +2468,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
   Double_t jetpt=0;
   Int_t TheTrueCode = 0;
  
-  Int_t dlabel[10];
+  vector<int> dlabel;
     fMCContainer->SetSpecialPDG(fCandidatePDG);
   fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
   fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
@@ -2476,17 +2476,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
   fMCContainer->SetSpecialPDG(fCandidatePDG);
   fMCContainer->SetSpecialIndex(-10);
      if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
-     dlabel[0]=0;
-     dlabel[1]=0;
-     dlabel[2]=0;
-      dlabel[3]=0;
-     dlabel[4]=0;
-     dlabel[5]=0;
-     dlabel[6]=0;
-      dlabel[7]=0;
-     dlabel[8]=0;
-     dlabel[9]=0;
-     Int_t en=0;
+   
+    
   hname1 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
   TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname1));
  
@@ -2501,8 +2492,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
     for (auto it = cont.begin(); it != cont.end(); ++it) {
     UInt_t rejectionReason = 0;
     if((*it)->PdgCode()==fCandidatePDG){
-      en=en+1;
-      dlabel[en-1]=it.current_index();}
+    
+      dlabel.push_back(it.current_index());}
       
  
      if (!fMCContainer->AcceptObject(it.current_index(), rejectionReason)) {
@@ -2514,7 +2505,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
      }
    
      // then, for each D meson I replace only its decays (not other D decays) and I  only keep for the jet finding the given D meson
-     for(Int_t j=0;j<en;j++){
+    for(Int_t j=0;j<dlabel.size();j++){
      
           fMCContainer->SetSpecialPDG(-10);
           fMCContainer->SetSpecialIndex(dlabel[j]);
@@ -2565,7 +2556,9 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
    
 	    }}
      
-     }}
+    }
+    dlabel.clear();
+  }
  
   return kTRUE;
 }
