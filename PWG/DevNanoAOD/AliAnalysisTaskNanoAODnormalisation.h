@@ -15,7 +15,7 @@ class AliAnalysisTaskNanoAODnormalisation : public AliAnalysisTaskSE {
 
   virtual void UserCreateOutputObjects();
   virtual Bool_t UserNotify();
-  virtual void   UserExec(Option_t *);
+  virtual void   UserExec(Option_t *) {}
 
   void SetMultBinning(int nbins, float min, float max) {
     fNmultBins = nbins;
@@ -28,7 +28,6 @@ class AliAnalysisTaskNanoAODnormalisation : public AliAnalysisTaskSE {
   void FillHistograms(TH2D* candidate[2], TH2D* selected[2]);
 
   TList*  fOutputList;                        //!<! Output list                    
-  TString fCurrentFileName;
 
   int   fNmultBins; ///
   float fMinMult;   ///
