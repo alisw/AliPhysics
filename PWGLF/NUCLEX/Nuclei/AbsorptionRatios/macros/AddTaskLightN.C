@@ -29,35 +29,6 @@ AliAnalysisTaskLightN* AddTaskLightN(Bool_t isMC, const char* suffix = "" ) {
         printf("This task requires an input event handler!\n");
         return nullptr;
     }
-    
-    
-    if (!(AliPhysicsSelection*) mgr->GetTask("PhysicsSelectionTask")) {
-        if (isMC) {
-            AliPhysicsSelectionTask *PhysicsSelectionTask = reinterpret_cast<AliPhysicsSelectionTask*>
-            (gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C (kTRUE,kTRUE)"));
-        }else{
-            AliPhysicsSelectionTask *PhysicsSelectionTask = reinterpret_cast<AliPhysicsSelectionTask*>
-            (gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C (kFALSE,kTRUE)"));
-        }
-    }
-    
-    if (!(AliMultSelection*) mgr->GetTask("MultSelectionTask")) {
-    AliMultSelectionTask *Multtask = reinterpret_cast<AliMultSelectionTask*>
-    (gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C(kFALSE)"));
-    }
-    
-    if (!(AliPIDResponse*) mgr->GetTask("PIDResponseTask")) {
-        if (isMC) {
-            // IMPORTANT - SET WHEN USING DIFFERENT PASS
-            AliAnalysisTaskPIDResponse *pidResponse =
-            reinterpret_cast<AliAnalysisTaskPIDResponse *>
-            (gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C (kTRUE, kTRUE, ""kTRUE, \"1\")"));
-        } else {
-            AliAnalysisTaskPIDResponse *pidResponse =
-            reinterpret_cast<AliAnalysisTaskPIDResponse *>
-            (gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C()"));
-        }
-    }
 
     AliLightNEventCuts *evtCutsParticle = AliLightNEventCuts::StandardCutsRun1();
     bool DCAPlots=true;
