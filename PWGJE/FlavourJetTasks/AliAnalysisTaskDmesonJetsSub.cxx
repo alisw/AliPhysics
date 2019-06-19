@@ -2468,7 +2468,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
   Double_t jetpt=0;
   Int_t TheTrueCode = 0;
  
-  Int_t dlabel[2];
+  Int_t dlabel[10];
     fMCContainer->SetSpecialPDG(fCandidatePDG);
   fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
   fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
@@ -2478,6 +2478,14 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
      if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
      dlabel[0]=0;
      dlabel[1]=0;
+     dlabel[2]=0;
+      dlabel[3]=0;
+     dlabel[4]=0;
+     dlabel[5]=0;
+     dlabel[6]=0;
+      dlabel[7]=0;
+     dlabel[8]=0;
+     dlabel[9]=0;
      Int_t en=0;
   hname1 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
   TH2* EfficiencyGeneratorPrompt = static_cast<TH2*>(fHistManager->FindObject(hname1));
@@ -2487,7 +2495,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
   hname2 = TString::Format("%s/EfficiencyGeneratorNonPrompt", fName.Data());
   TH2* EfficiencyGeneratorNonPrompt = static_cast<TH2*>(fHistManager->FindObject(hname2));
   if(fMCMode==kSignalOnly){
-    
+   
     //here I loop over the container and count the D mesons and store their indexes
     auto cont = fMCContainer->all();
     for (auto it = cont.begin(); it != cont.end(); ++it) {
@@ -2504,11 +2512,13 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
 
      
      }
+   
      // then, for each D meson I replace only its decays (not other D decays) and I  only keep for the jet finding the given D meson
-     for(Int_t j=0;j<en+1;j++){
-          fMCContainer->SetSpecialPDG(0);
+     for(Int_t j=0;j<en;j++){
+     
+          fMCContainer->SetSpecialPDG(-10);
           fMCContainer->SetSpecialIndex(dlabel[j]);
-       
+	 
     fFastJetWrapper->Clear();
     fFastJetWrapper->SetR(jetDef.fRadius);
     fFastJetWrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetDef.fJetAlgo));
@@ -2935,7 +2945,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
         for (auto& def : fJetDefinitions) {
           if (FindJet(charmCand, DmesonJet, def,im)) {
             Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
-	    ExtractEfficiencies(charmCand,DmesonJet,def,im);
+	    //  ExtractEfficiencies(charmCand,DmesonJet,def,im);
             if (jetPt > maxJetPt[&def]) maxJetPt[&def] = jetPt;
           }
           else {
