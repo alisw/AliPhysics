@@ -1,7 +1,7 @@
 AliAnalysisTask* AddTask_JPsi_EMCal(
 
 			Bool_t 	isMC 			= kFALSE, 
-			Bool_t 	isAOD 			= kFALSE,
+			Bool_t 	isAOD 			= kTRUE,
 			char * period			= "16l",
 			Int_t trigger_index=3,
             Int_t config=0,
@@ -49,11 +49,13 @@ AliAnalysisTask* AddTask_JPsi_EMCal(
     // >>> aliroot config
     else if(!alienconf){
         configFile=alirootPath_config.Data();
+        printf("Configuration file from aliphysics\n");
     }
     // >>> alien config
     else{
         if(!gSystem->Exec(Form("alien_cp %s/%s.C .",alienPath.Data(),cfg.Data()))) {
             configFile=gSystem->pwd();
+            printf("Configuration file from alien cjahnke\n");
         }
         else {
             printf("ERROR: couldn't copy file %s/%s.C from grid \n", alienPath.Data(),cfg.Data() );
