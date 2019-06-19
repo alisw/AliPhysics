@@ -6365,7 +6365,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
                   delete backgroundCandidate;
                   backgroundCandidate = 0x0;
                 }
-                for((Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
+                for(Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
                   AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
                   AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
                   backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
