@@ -223,6 +223,10 @@ fElecAftLooseTrkCuts(0),
 fHFElecAftLooseTrkCuts(0),
 fBElecAftLooseTrkCuts(0),
 
+fElecAftLooseTrkCutsDiffPID(0),
+fDElecAftLooseTrkCutsDiffPID(0),
+fBElecAftLooseTrkCutsDiffPID(0),
+
 fElecAftTrkMatch(0),
 fHFElecAftTrkMatch(0),
 fBElecAftTrkMatch(0),
@@ -432,6 +436,10 @@ fBElecAftTrkCuts(0),
 fElecAftLooseTrkCuts(0),
 fHFElecAftLooseTrkCuts(0),
 fBElecAftLooseTrkCuts(0),
+
+fElecAftLooseTrkCutsDiffPID(0),
+fDElecAftLooseTrkCutsDiffPID(0),
+fBElecAftLooseTrkCutsDiffPID(0),
 
 fElecAftTrkMatch(0),
 fHFElecAftTrkMatch(0),
@@ -1106,6 +1114,18 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fBElecAftLooseTrkCuts = new TH1F("fBElecAftLooseTrkCuts","B Elec after loose trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
         fBElecAftLooseTrkCuts->Sumw2();
         fOutputList->Add(fBElecAftLooseTrkCuts);
+        
+        fElecAftLooseTrkCutsDiffPID = new TH1F("fElecAftLooseTrkCutsDiffPID","Elec after loose trk cuts, Shingo's mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fElecAftLooseTrkCutsDiffPID->Sumw2();
+        fOutputList->Add(fElecAftLooseTrkCutsDiffPID);
+        
+        fDElecAftLooseTrkCutsDiffPID = new TH1F("fDElecAftLooseTrkCutsDiffPID","D Elec after loose trk cuts, Shingo's mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fDElecAftLooseTrkCutsDiffPID->Sumw2();
+        fOutputList->Add(fDElecAftLooseTrkCutsDiffPID);
+        
+        fBElecAftLooseTrkCutsDiffPID = new TH1F("fBElecAftLooseTrkCutsDiffPID","B Elec after loose trk cuts, Shingo's mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fBElecAftLooseTrkCutsDiffPID->Sumw2();
+        fOutputList->Add(fBElecAftLooseTrkCutsDiffPID);
     
         fElecAftTrkMatch = new TH1F("fElecAftTrkMatch","Elec after trk Match; p_{T}(GeV/c); counts;",100,0,50.);
         fElecAftTrkMatch->Sumw2();
@@ -1628,6 +1648,19 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(kTruElec == kTRUE) fElecAftLooseTrkCuts->Fill(track->Pt());
             if(kTruHFElec == kTRUE) fHFElecAftLooseTrkCuts->Fill(track->Pt());
             if(kTruBElec == kTRUE) fBElecAftLooseTrkCuts->Fill(track->Pt());
+        }
+        
+        //Looser cuts and Shingo's method of getting the mother PID
+        if(track->GetTPCNcls()>=60 && track->GetITSNcls()>=2 && track->GetTPCNCrossedRows()>=80){
+            if(pdg==11 && ilabelM>0){
+                fElecAftLooseTrkCutsDiffPID->Fill(track->Pt());
+                if(pidM==411 || pidM==421 || pidM==413 || pidM==423 || pidM==431 || pidM==433 || pidM==4122){
+                    fDElecAftLooseTrkCutsDiffPID->Fill(track->Pt());
+                }
+                if(pidM==511 || pidM==521 || pidM==513 || pidM==523 || pidM==531 || pidM==533){
+                    fBElecAftLooseTrkCutsDiffPID->Fill(track->Pt());
+                }
+            }
         }
             
         //Tighter track cuts
