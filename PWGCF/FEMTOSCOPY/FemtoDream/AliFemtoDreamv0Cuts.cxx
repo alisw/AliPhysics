@@ -236,7 +236,7 @@ AliFemtoDreamv0Cuts *AliFemtoDreamv0Cuts::LambdaSigma0Cuts(bool isMC,
   LambdaCuts->SetCutCPA(0.999);
   LambdaCuts->SetCutInvMass(0.006);
   LambdaCuts->SetAxisInvMassPlots(400, 1.0, 1.2);
-  LambdaCuts->SetArmenterosCut(0.01, 0.12, 0.3, 0.95);
+  LambdaCuts->SetKaonRejection(0.492, 0.503);
   LambdaCuts->SetDaughterTimingCut(OneDaughterCombined);
 
   return LambdaCuts;
