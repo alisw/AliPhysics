@@ -58,10 +58,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //Here you define the PID
   TrackCutsDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
   //We are looking for pions rejecting them would be obstructive.
-  TrackCutsDeuteronMass->SetRejLowPtPionsTOF(true);
+  TrackCutsDeuteronMass->SetRejLowPtPionsTOF(false);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
-  TrackCutsDeuteronMass->SetCutSmallestSig(true);
+  TrackCutsDeuteronMass->SetCutSmallestSig(false);
 
   //The same things for anti deuterons
    AliFemtoDreamTrackCuts *TrackCutsAntiDeuteronDCA=AliFemtoDreamTrackCuts::PrimDeuteronCuts(
@@ -88,10 +88,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //Here you define the PID
   TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.);
   //We are looking for pions rejecting them would be obstructive.
-  TrackCutsAntiDeuteronMass->SetRejLowPtPionsTOF(true);
+  TrackCutsAntiDeuteronMass->SetRejLowPtPionsTOF(false);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
-  TrackCutsAntiDeuteronMass->SetCutSmallestSig(true);
+  TrackCutsAntiDeuteronMass->SetCutSmallestSig(false);
 
   //Track Cuts are defined here for deuterons
   AliFemtoDreamTrackCuts *TrackCutsProtonDCA=AliFemtoDreamTrackCuts::PrimProtonCuts(
@@ -118,10 +118,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //Here you define the PID
   TrackCutsProtonMass->SetPID(AliPID::kProton, 999.);
   //We are looking for pions rejecting them would be obstructive.
-  TrackCutsProtonMass->SetRejLowPtPionsTOF(true);
+  TrackCutsProtonMass->SetRejLowPtPionsTOF(false);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
-  TrackCutsProtonMass->SetCutSmallestSig(true);
+  TrackCutsProtonMass->SetCutSmallestSig(false);
 
   //The same things for anti deuterons
    AliFemtoDreamTrackCuts *TrackCutsAntiProtonDCA=AliFemtoDreamTrackCuts::PrimProtonCuts(
@@ -148,10 +148,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //Here you define the PID
   TrackCutsAntiProtonMass->SetPID(AliPID::kProton, 999.);
   //We are looking for pions rejecting them would be obstructive.
-  TrackCutsAntiProtonMass->SetRejLowPtPionsTOF(true);
+  TrackCutsAntiProtonMass->SetRejLowPtPionsTOF(false);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
-  TrackCutsAntiProtonMass->SetCutSmallestSig(true);
+  TrackCutsAntiProtonMass->SetCutSmallestSig(false);
 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
