@@ -21,12 +21,14 @@
 // --- ROOT system ---
 #include <TObject.h>
 class TObjArray ;
+class TList   ;
 #include <TLorentzVector.h>
 
 // --- ANALYSIS system ---
 class AliCaloTrackParticleCorrelation ;
 class AliCaloTrackReader ;
 class AliCaloPID;
+class AliHistogramRanges;
 
 class AliIsolationCut : public TObject {
 
@@ -51,13 +53,15 @@ class AliIsolationCut : public TObject {
 
   Float_t    GetCellDensity(  AliCaloTrackParticleCorrelation * pCandidate,
                               AliCaloTrackReader * reader) const ;
+
+  TList *    GetCreateOutputObjects();  
   
   void       MakeIsolationCut(AliCaloTrackParticleCorrelation  * pCandidate, AliCaloTrackReader * reader,
                               Bool_t bFillAOD, Bool_t useRefs, TString aodObjArrayName,
                               TObjArray * bgTrk, TObjArray * bgCls,
                               Int_t calorimeter, AliCaloPID * pid,
-                              Int_t   & nPart, Int_t   & nfrac, 
-                              Float_t & ptSum, Float_t & ptLead, Bool_t & isolated) ;
+                              Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated, 
+                              Double_t histoWeight = 1) ;
 
   void       Print(const Option_t * opt) const ;
 
@@ -71,14 +75,16 @@ class AliIsolationCut : public TObject {
                                         Int_t     calorimeter , AliCaloPID * pid,
                                         Int_t   & nPart       , Int_t   & nfrac,
                                         Float_t & coneptsum   , Float_t & coneptLead,
-                                        Float_t & etaBandPtSum, Float_t & phiBandPtSum) ;
+                                        Float_t & etaBandPtSum, Float_t & phiBandPtSum, 
+                                        Double_t histoWeight = 1) ;
   
   void       CalculateTrackSignalInCone(AliCaloTrackParticleCorrelation * aodParticle, AliCaloTrackReader * reader,
                                         Bool_t    bFillAOD    , Bool_t    useRefs, 
                                         TString   refArrayName, TObjArray *bgCls,
                                         Int_t   & nPart       , Int_t   & nfrac,
                                         Float_t & coneptsum   , Float_t & coneptLead,  
-                                        Float_t & etaBandPtSum, Float_t & phiBandPtSum) ;
+                                        Float_t & etaBandPtSum, Float_t & phiBandPtSum, 
+                                        Double_t histoWeight = 1) ;
   
   // Cone background studies medthods
 
@@ -126,8 +132,11 @@ class AliIsolationCut : public TObject {
   void       SetFracIsThresh(Bool_t f )                        { fFracIsThresh      = f    ; }
   void       SetTrackMatchedClusterRejectionInCone(Bool_t tm)  { fIsTMClusterInConeRejected = tm ; }
   void       SetMinDistToTrigger(Float_t md)                   { fDistMinToTrigger  = md   ; }
-    
+  void       SetHistogramRanges(AliHistogramRanges * range)    { fHistoRanges       = range; } 
+  
  private:
+
+  Bool_t     fFillHistograms;    ///< Fill histograms if GetCreateOuputObjects() was called. 
 
   Float_t    fConeSize ;         ///< Size of the isolation cone
 
@@ -145,17 +154,45 @@ class AliIsolationCut : public TObject {
 
   Int_t      fPartInCone;        ///< Type of particles inside cone: kNeutralAndCharged, kOnlyNeutral, kOnlyCharged.
 
-  Int_t      fDebug;             ///< Debug level.
-
   Bool_t     fFracIsThresh;      ///< Use threshold instead of fraction when pt leading is small.
 
   Bool_t     fIsTMClusterInConeRejected; ///< Enable to remove the Track matching removal of clusters in cone sum pt calculation in case of kNeutralAndCharged analysis
   
   Float_t    fDistMinToTrigger;  ///<  Minimal distance between isolation candidate particle and particles in cone to count them for this isolation.
   
+  Int_t      fDebug;             ///< Debug level.
+
   TLorentzVector fMomentum;      //!<! Momentum of cluster, temporal object.
 
   TVector3   fTrackVector;       //!<! Track moment, temporal object.
+  
+  // Histograms
+  
+  AliHistogramRanges * fHistoRanges;                   ///!  Histogram bins and ranges  data-base
+  
+  TH2F *   fhPtInCone ;                                //!<! Cluster/track Pt in the cone.
+  TH2F *   fhPtClusterInCone ;                         //!<! Cluster Pt in the cone.
+  TH2F *   fhPtTrackInCone ;                           //!<! Track Pt in the cone.
+
+  TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
+  TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
+  TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
+  
+  TH2F *   fhConePtLead ;                              //!<! Cluster and tracks leading pt in the cone.
+  TH2F *   fhConePtLeadCluster ;                       //!<! Clusters leading pt in the cone.
+  TH2F *   fhConePtLeadTrack ;                         //!<! Tracks leading pt in the cone.
+  
+  TH2F *   fhConeSumPtClustervsTrack ;                 //!<! Cluster vs tracks Sum Pt Sum Pt in the cone.
+  
+  TH2F *   fhConeSumPtClusterTrackFrac ;               //!<! Cluster / tracks Sum Pt Sum Pt in the cone.
+  
+  TH2F *   fhConePtLeadClustervsTrack;                 //!<! Tracks vs Clusters leading pt.
+  
+  TH2F *   fhConePtLeadClusterTrackFrac;               //!<! Trigger pt vs cluster/track leading pt.
+  
+  TH2F *   fhConeSumPtTrigEtaPhi ;                     //!<! Cluster and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger.
+
+  
   
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
@@ -164,7 +201,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,11) ;
+  ClassDef(AliIsolationCut,12) ;
   /// \endcond
 
 } ;
