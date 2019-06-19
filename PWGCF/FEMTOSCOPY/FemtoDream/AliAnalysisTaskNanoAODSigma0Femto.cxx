@@ -228,8 +228,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 
   std::vector<AliFemtoDreamBasePart> sigma0particles, sigma0sidebandUp,
       sigma0sidebandLow, antiSigma0particles, antiSigma0sidebandUp,
-      antiSigma0sidebandLow, sigma0lambda, sigma0photon, antiSigma0lambda,
-      antiSigma0photon;
+      antiSigma0sidebandLow, sigma0lambda, antiSigma0lambda;
 
   CastToVector(sigma0particles, fSigmaCuts->GetSigma());
   CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
@@ -242,9 +241,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   // Get the Sigma0 daughters
   if (fCheckDaughterCF) {
     CastToVector(sigma0lambda, fSigmaCuts->GetLambda());
-    CastToVector(sigma0photon, fSigmaCuts->GetPhoton());
     CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda());
-    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton());
   }
 
   fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
@@ -255,9 +252,9 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandLow, 5);
   if (fCheckDaughterCF) {
     fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0lambda, 6);
-    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0photon, 7);
-    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 8);
-    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0photon, 9);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 7);
+    fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 8);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 9);
   }
 
   fPairCleaner->ResetArray();
@@ -271,9 +268,9 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(antiSigma0sidebandLow);
   if (fCheckDaughterCF) {
      fPairCleaner->StoreParticle(sigma0lambda);
-     fPairCleaner->StoreParticle(sigma0photon);
      fPairCleaner->StoreParticle(antiSigma0lambda);
-     fPairCleaner->StoreParticle(antiSigma0photon);
+     fPairCleaner->StoreParticle(Decays);
+     fPairCleaner->StoreParticle(AntiDecays);
    }
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),

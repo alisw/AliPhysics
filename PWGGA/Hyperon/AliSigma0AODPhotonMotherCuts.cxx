@@ -188,6 +188,7 @@ AliSigma0AODPhotonMotherCuts *AliSigma0AODPhotonMotherCuts::DefaultCuts() {
   AliSigma0AODPhotonMotherCuts *photonMotherCuts =
       new AliSigma0AODPhotonMotherCuts();
   photonMotherCuts->SetSigmaMassPt(true);
+  photonMotherCuts->SetMinPt(1.0);
   return photonMotherCuts;
 }
 
