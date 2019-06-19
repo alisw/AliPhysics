@@ -4634,9 +4634,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
-                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                   if(DeltaPhi > M_PI) {
                     DeltaPhi = 2*M_PI - DeltaPhi;
                   }
@@ -4681,9 +4681,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
-                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                   if(DeltaPhi > M_PI) {
                     DeltaPhi = 2*M_PI - DeltaPhi;
                   }
@@ -4728,9 +4728,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
                     fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                     fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                     Double_t RJetPi0Cand;
-                    for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                      Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                    for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                      Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                       if(DeltaPhi > M_PI) {
                         DeltaPhi = 2*M_PI - DeltaPhi;
                       }
@@ -4769,9 +4769,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
                     fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                     fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                     Double_t RJetPi0Cand;
-                    for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                      Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                    for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                      Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                       if(DeltaPhi > M_PI) {
                         DeltaPhi = 2*M_PI - DeltaPhi;
                       }
@@ -6288,76 +6288,87 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
     }
   }else if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoJetMixing()){
     if(fDoJetAnalysis){
-      for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
-        AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
-        if(fConvJetReader->GetNJets()>0){
-          fVectorJetEta = fConvJetReader->GetVectorJetEta();
-          fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
-          fVectorJetPt  = fConvJetReader->GetVectorJetPt();
-          Double_t MaxPt = 0.;
-          Int_t MaxPtPlace = 0;
-          Double_t JetNearEMCal = kFALSE;
-          for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
-            if(fVectorJetEta.at(i) > (-0.6687 -0.4) && fVectorJetEta.at(i) < (0.66465 + 0.4)){
-              if(fVectorJetPhi.at(i) > (1.39626 -0.4) && fVectorJetPhi.at(i) < (3.15 + 0.4)){ //INSIDE EMCAL
-                JetNearEMCal = kTRUE;
-                if(fVectorJetPt.at(i) > MaxPt){
-                  MaxPt = fVectorJetPt.at(i);
-                  MaxPtPlace = i;
-                }
+      if(fConvJetReader->GetNJets()>0){
+        fVectorJetEta = fConvJetReader->GetVectorJetEta();
+        fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
+        fVectorJetPt  = fConvJetReader->GetVectorJetPt();
+        Double_t MaxPt = 0.;
+        Int_t MaxPtPlace = 0;
+        Double_t JetNearEMCal = kFALSE;
+        for(Int_t i=0; i<fConvJetReader->GetNJets(); i++){
+          if(fVectorJetEta.at(i) > (-0.6687 -0.4) && fVectorJetEta.at(i) < (0.66465 + 0.4)){
+            if(fVectorJetPhi.at(i) > (1.39626 -0.4) && fVectorJetPhi.at(i) < (3.15 + 0.4)){ //INSIDE EMCAL
+              JetNearEMCal = kTRUE;
+              if(fVectorJetPt.at(i) > MaxPt){
+                MaxPt = fVectorJetPt.at(i);
+                MaxPtPlace = i;
               }
             }
           }
-          if(JetNearEMCal){
-            Double_t mbinJets = 0;
-            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoJetPtMixing()){
-               if(fVectorJetPt.at(MaxPtPlace) > 15) mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(3);
-               else mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(2);
-            }else{
-               mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(2);
-            }
-            Int_t zbinJets = fBGHandler[fiCut]->GetZBinIndex(2);
-            for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
-              AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbinJets,mbinJets,nEventsInBG);
-              AliGammaConversionAODBGHandler::GammaConversionVertex* BGVertex = fBGHandler[fiCut]->GetBGEventVertex(zbinJets,mbinJets,nEventsInBG);
-              if(previousEventV0s){
-                Double_t BGJetEta = BGVertex->fX;
-                Double_t BGJetPhi = BGVertex->fY;
-                Int_t EtaSwap = 1;
-                Bool_t DoPhiSwap = kFALSE;
-                if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoJetRotateMixing()){
-                  if((fVectorJetEta.at(MaxPtPlace) < 0 && BGJetEta > 0) || (fVectorJetEta.at(MaxPtPlace) > 0 && BGJetEta < 0)) EtaSwap = -1;
-                  if(fVectorJetPhi.at(MaxPtPlace) < 2.27313 && BGJetPhi > 2.27313){
-                    Double_t DeltaPhiMid = BGJetPhi - 2.27313;
-                    BGJetPhi = 2.27313 - DeltaPhiMid;
-                    DoPhiSwap = kTRUE;
-                  }
-                  if(fVectorJetPhi.at(MaxPtPlace) > 2.27313 && BGJetPhi < 2.27313){
-                    Double_t DeltaPhiMid = 2.27313 - BGJetPhi;
-                    BGJetPhi = 2.27313 + DeltaPhiMid;
-                    DoPhiSwap = kTRUE;
-                  }
+        }
+        if(JetNearEMCal){
+          Double_t mbinJets = 0;
+          if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoJetPtMixing()){
+             if(fVectorJetPt.at(MaxPtPlace) > 15) mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(3);
+             else mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(2);
+          }else{
+             mbinJets = fBGHandler[fiCut]->GetMultiplicityBinIndex(2);
+          }
+          Int_t zbinJets = fBGHandler[fiCut]->GetZBinIndex(2);
+          for(Int_t nEventsInBG=0;nEventsInBG <fBGHandler[fiCut]->GetNBGEvents();nEventsInBG++){
+            AliGammaConversionAODVector *previousEventV0s = fBGHandler[fiCut]->GetBGGoodV0s(zbinJets,mbinJets,nEventsInBG);
+            AliGammaConversionAODBGHandler::GammaConversionVertex* BGVertex = fBGHandler[fiCut]->GetBGEventVertex(zbinJets,mbinJets,nEventsInBG);
+            if(previousEventV0s){
+              Double_t BGJetEta = BGVertex->fX;
+              Double_t BGJetPhi = BGVertex->fY;
+              Int_t EtaSwap = 1;
+              Bool_t DoPhiSwap = kFALSE;
+              if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoJetRotateMixing()){
+                if((fVectorJetEta.at(MaxPtPlace) < 0 && BGJetEta > 0) || (fVectorJetEta.at(MaxPtPlace) > 0 && BGJetEta < 0)) EtaSwap = -1;
+                if(fVectorJetPhi.at(MaxPtPlace) < 2.27313 && BGJetPhi > 2.27313){
+                  Double_t DeltaPhiMid = BGJetPhi - 2.27313;
+                  BGJetPhi = 2.27313 - DeltaPhiMid;
+                  DoPhiSwap = kTRUE;
                 }
-                Double_t EtaShift = fVectorJetEta.at(MaxPtPlace) - BGJetEta*EtaSwap;
-                Double_t PhiShift = fVectorJetPhi.at(MaxPtPlace) - BGJetPhi;
-                for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
-                  AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
-                  Double_t EtaBackgroundAdjusted = previousGoodV0.Eta()*EtaSwap + EtaShift;
-                  Double_t PhiBackgroundAdjusted = 0.;
-                  if(DoPhiSwap){
-                    if(previousGoodV0.Phi() < 2.27313){
-                      Double_t DeltaPhiMid = 2.27313 - previousGoodV0.Phi();
-                      PhiBackgroundAdjusted = 2.27313 + DeltaPhiMid + PhiShift;
-                    }
-                    if(previousGoodV0.Phi() > 2.27313){
-                      Double_t DeltaPhiMid = previousGoodV0.Phi() - 2.27313;
-                      PhiBackgroundAdjusted = 2.27313 - DeltaPhiMid + PhiShift;
-                    }
-                  }else PhiBackgroundAdjusted = previousGoodV0.Phi() + PhiShift;
-                  previousGoodV0.SetPtEtaPhiE(previousGoodV0.Pt(), EtaBackgroundAdjusted, PhiBackgroundAdjusted, previousGoodV0.E());
+                if(fVectorJetPhi.at(MaxPtPlace) > 2.27313 && BGJetPhi < 2.27313){
+                  Double_t DeltaPhiMid = 2.27313 - BGJetPhi;
+                  BGJetPhi = 2.27313 + DeltaPhiMid;
+                  DoPhiSwap = kTRUE;
+                }
+              }
+              Double_t EtaShift = fVectorJetEta.at(MaxPtPlace) - BGJetEta*EtaSwap;
+              Double_t PhiShift = fVectorJetPhi.at(MaxPtPlace) - BGJetPhi;
+              for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+                AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
+                Double_t EtaBackgroundAdjusted = previousGoodV0.Eta()*EtaSwap + EtaShift;
+                Double_t PhiBackgroundAdjusted = 0.;
+                if(DoPhiSwap){
+                  if(previousGoodV0.Phi() < 2.27313){
+                    Double_t DeltaPhiMid = 2.27313 - previousGoodV0.Phi();
+                    PhiBackgroundAdjusted = 2.27313 + DeltaPhiMid + PhiShift;
+                  }
+                  if(previousGoodV0.Phi() > 2.27313){
+                    Double_t DeltaPhiMid = previousGoodV0.Phi() - 2.27313;
+                    PhiBackgroundAdjusted = 2.27313 - DeltaPhiMid + PhiShift;
+                  }
+                }else PhiBackgroundAdjusted = previousGoodV0.Phi() + PhiShift;
+                previousGoodV0.SetPtEtaPhiE(previousGoodV0.Pt(), EtaBackgroundAdjusted, PhiBackgroundAdjusted, previousGoodV0.E());
+
+                for(Int_t iCurrent=0;iCurrent<fClusterCandidates->GetEntries();iCurrent++){
+                  AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fClusterCandidates->At(iCurrent));
                   AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
                   backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-
+                  if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
+                    if(!fDoLightOutput) fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
+                    else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
+                  }
+                  delete backgroundCandidate;
+                  backgroundCandidate = 0x0;
+                }
+                for((Int_t iCurrent=0;iCurrent<fGammaCandidates->GetEntries();iCurrent++){
+                  AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGammaCandidates->At(iCurrent));
+                  AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
+                  backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
                   if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
                     if(!fDoLightOutput) fHistoMotherBackJetInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
                     else fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
@@ -6368,9 +6379,9 @@ void AliAnalysisTaskGammaConvCalo::CalculateBackground(){
               }
             }
           }
-          fVectorJetEta.clear();
-          fVectorJetPhi.clear();
         }
+        fVectorJetEta.clear();
+        fVectorJetPhi.clear();
       }
     }
   }else {
