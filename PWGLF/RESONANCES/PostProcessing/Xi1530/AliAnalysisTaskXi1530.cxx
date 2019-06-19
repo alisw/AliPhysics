@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/06/07
+//  Last Modified Date: 2019/06/19
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -124,23 +124,6 @@ enum {
     kIENLgtZERO,
     kAliMultSelection
 };  // for Event Check
-AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable()
-    : fCollisionType(kUnknownCollType) {
-    ;
-}
-
-AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable(
-    Int_t runnumber) {
-    // Need to be Modified
-    if (runnumber >= 256504 && runnumber <= 260014)
-        fCollisionType = kPP;  // LHC16kl
-    else
-        fCollisionType = kUnknownCollType;
-}
-AliAnalysisTaskXi1530RunTable::~AliAnalysisTaskXi1530RunTable() {
-    ;
-}
-
 //___________________________________________________________________
 AliAnalysisTaskXi1530::AliAnalysisTaskXi1530()
     : AliAnalysisTaskSE("AliAnalysisTaskXi1530"),
