@@ -60,6 +60,430 @@ fTrackVector()
 }
 
 //_________________________________________________________________________________________________________________________________
+/// Get the pt sum of the clusters inside the cone, the leading cluster pT and number of clusters 
+///
+/// \param aodParticle: Kinematics and + of candidate particle for isolation.
+/// \param reader: pointer to AliCaloTrackReader. Needed to access event info.
+/// \param bFillAOD: Indicate if particles in cone must be added to AOD particle object.
+/// \param useRefs: Get the list of tracks or clusters in cone from references
+/// \param aodArrayRefName: Name of array where list of tracks/clusters in cone is stored.
+/// \param bgCls: List of clusters from mixed event background pool AliAnaParticleHadronCorrelation.
+/// \param calorimeter: Which input trigger calorimeter used
+/// \param pid: pointer to AliCaloPID. Needed to reject matched clusters in isolation cone.
+/// \param nPart: number of tracks/clusters above threshold in cone, output.
+/// \param nfrac: 1 if fraction pT cluster-track / pT trigger in cone avobe threshold, output.
+/// \param coneptsumCluster: total momentum energy in cone (track+cluster), output.
+/// \param coneptLeadCluster: momentum of leading cluster or track in cone, output.
+//_________________________________________________________________________________________________________________________________
+void AliIsolationCut::CalculateCaloSignalInCone 
+(
+ AliCaloTrackParticleCorrelation * pCandidate, AliCaloTrackReader * reader,
+ Bool_t    bFillAOD           , Bool_t    useRefs, 
+ TString   aodArrayRefName    , TObjArray  * bgCls,
+ Int_t     calorimeter        , AliCaloPID * pid,
+ Int_t   & nPart              , Int_t   & nfrac,
+ Float_t & coneptsumCluster   , Float_t & coneptLeadCluster,
+ Float_t & etaBandPtSumCluster, Float_t & phiBandPtSumCluster
+) 
+{
+  if ( fPartInCone == kOnlyCharged ) return ;
+  
+  // Get the array with clusters
+  //
+  TObjArray * plNe = 0x0; 
+  
+  if ( bgCls )
+  {
+    plNe = bgCls ;
+  }
+  else if ( !useRefs )
+  {
+    if      (calorimeter == AliFiducialCut::kPHOS )
+      plNe = reader->GetPHOSClusters();
+    else if (calorimeter == AliFiducialCut::kEMCAL)
+      plNe = reader->GetEMCALClusters();
+  }
+  else
+  {
+    plNe = pCandidate->GetObjArray(aodArrayRefName+"Clusters"); 
+  }
+  
+  if ( !plNe ) return ;
+  
+  // Init parameters
+  //
+  Float_t ptC   = pCandidate->Pt() ;
+  Float_t phiC  = pCandidate->Phi() ;
+  if ( phiC < 0 ) phiC+=TMath::TwoPi();
+  Float_t etaC  = pCandidate->Eta() ;
+  
+  Float_t pt     = -100. ;
+  Float_t eta    = -100. ;
+  Float_t phi    = -100. ;
+  Float_t rad    = -100. ;
+  
+  TObjArray * refclusters  = 0x0;
+  Int_t       nclusterrefs = 0;
+  
+  // Get the clusters
+  //
+  for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
+  {
+    AliVCluster * calo = dynamic_cast<AliVCluster *>(plNe->At(ipr)) ;
+    
+    if(calo)
+    {
+      // Get the index where the cluster comes, to retrieve the corresponding vertex
+      Int_t evtIndex = 0 ;
+      if (reader->GetMixedEvent())
+        evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ;
+      
+      
+      // Do not count the candidate (photon or pi0) or the daughters of the candidate
+      if(calo->GetID() == pCandidate->GetCaloLabel(0) ||
+         calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;
+      
+      // Skip matched clusters with tracks in case of neutral+charged analysis
+      if(fIsTMClusterInConeRejected)
+      {
+        if( fPartInCone == kNeutralAndCharged &&
+           pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
+      }
+      
+      // Assume that come from vertex in straight line
+      calo->GetMomentum(fMomentum,reader->GetVertex(evtIndex)) ;
+      
+      pt  = fMomentum.Pt()  ;
+      eta = fMomentum.Eta() ;
+      phi = fMomentum.Phi() ;
+    }
+    else
+    {// Mixed event stored in AliCaloTrackParticles
+      AliCaloTrackParticle * calomix = dynamic_cast<AliCaloTrackParticle*>(plNe->At(ipr)) ;
+      if(!calomix)
+      {
+        AliWarning("Wrong calo data type, continue");
+        continue;
+      }
+      
+      pt  = calomix->Pt();
+      eta = calomix->Eta();
+      phi = calomix->Phi() ;
+    }
+    
+    // ** Calculate distance between candidate and tracks **
+    
+    if( phi < 0 ) phi+=TMath::TwoPi();
+    
+    rad = Radius(etaC, phiC, eta, phi);
+    
+    // ** Exclude clusters too close to the candidate, inactive by default **
+    
+    if(rad < fDistMinToTrigger) continue ;
+    
+    // ** For the background out of cone **
+    
+    if(rad > fConeSize)
+    {
+      if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize)) phiBandPtSumCluster += pt;
+      if(phi > (phiC-fConeSize) && phi < (phiC+fConeSize)) etaBandPtSumCluster += pt;
+    }
+    
+    // ** For the isolated particle **
+    
+    // Only loop the particle at the same side of candidate
+    if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
+    
+    //      // If at the same side has particle larger than candidate,
+    //      // then candidate can not be the leading, skip such events
+    //      if(pt > ptC)
+    //      {
+    //        n         = -1;
+    //        nfrac     = -1;
+    //        coneptsumCluster = -1;
+    //        isolated  = kFALSE;
+    //
+    //        pCandidate->SetLeadingParticle(kFALSE);
+    //
+    //        if(bFillAOD)
+    //        {
+    //          if(reftracks)
+    //          {
+    //            reftracks  ->Clear();
+    //            delete reftracks;
+    //          }
+    //
+    //          if(refclusters)
+    //          {
+    //            refclusters->Clear();
+    //            delete refclusters;
+    //          }
+    //        }
+    //        return ;
+    //      }
+    
+    AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
+    
+    //
+    // Select calorimeter clusters inside the isolation radius 
+    //
+    if(rad < fConeSize)
+    {
+      AliDebug(2,"Inside candidate cone");
+      
+      if ( bFillAOD )
+      {
+        nclusterrefs++;
+        
+        if ( nclusterrefs == 1 )
+        {
+          refclusters = new TObjArray(0);
+          //refclusters->SetName(Form("Clusters%s",aodArrayRefName.Data()));
+          TString tempo(aodArrayRefName)  ;
+          tempo += "Clusters" ;
+          refclusters->SetName(tempo);
+          refclusters->SetOwner(kFALSE);
+        }
+        
+        refclusters->Add(calo);
+      }
+      
+      coneptsumCluster+=pt;
+      
+      if ( coneptLeadCluster < pt ) coneptLeadCluster = pt;
+      
+      // *Before*, count particles in cone
+      //
+      if ( pt > fPtThreshold && pt < fPtThresholdMax )  nPart++;
+      
+      //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
+      if (fFracIsThresh )
+      {
+        if ( fPtFraction*ptC < fPtThreshold )
+        {
+          if ( pt > fPtThreshold )    nfrac++ ;
+        }
+        else
+        {
+          if ( pt > fPtFraction*ptC ) nfrac++;
+        }
+      }
+      else
+      {
+        if ( pt > fPtFraction*ptC ) nfrac++;
+      }
+      
+    }//in cone
+    
+  }// neutral particle loop
+  
+  // Add reference arrays to AOD when filling AODs only
+  if ( bFillAOD && refclusters ) pCandidate->AddObjArray(refclusters);  
+}
+
+//_________________________________________________________________________________________________________________________________
+/// Get the pt sum of the tracks inside the cone, the leading track pT and number of clusters 
+///
+/// \param aodParticle: Kinematics and + of candidate particle for isolation.
+/// \param reader: pointer to AliCaloTrackReader. Needed to access event info.
+/// \param bFillAOD: Indicate if particles in cone must be added to AOD particle object.
+/// \param useRefs: Get the list of tracks or clusters in cone from references
+/// \param aodArrayRefName: Name of array where list of tracks/clusters in cone is stored.
+/// \param nPart: number of tracks/clusters above threshold in cone, output.
+/// \param nfrac: 1 if fraction pT cluster-track / pT trigger in cone avobe threshold, output.
+/// \param coneptsumCluster: total momentum energy in cone (track+cluster), output.
+/// \param coneptLeadCluster: momentum of leading cluster or track in cone, output.
+//_________________________________________________________________________________________________________________________________
+void AliIsolationCut::CalculateTrackSignalInCone
+(
+ AliCaloTrackParticleCorrelation * pCandidate, AliCaloTrackReader * reader,
+ Bool_t    bFillAOD         , Bool_t    useRefs, 
+ TString   aodArrayRefName  , TObjArray * bgTrk,
+ Int_t   & nPart            , Int_t   & nfrac,
+ Float_t & coneptsumTrack   , Float_t & coneptLeadTrack,
+ Float_t & etaBandPtSumTrack, Float_t & phiBandPtSumTrack
+) 
+{  
+  if ( fPartInCone == kOnlyNeutral ) return ;
+
+  // Get the array with tracks
+  //
+  TObjArray * plCTS    = 0x0; 
+  if ( bgTrk )
+  {
+    plCTS = bgTrk;
+  }
+  else if ( !useRefs )
+  {
+    plCTS = reader->GetCTSTracks();
+  }
+  else
+  {
+    plCTS = pCandidate->GetObjArray(aodArrayRefName+"Tracks");
+  }
+  
+  if ( !plCTS ) return ;
+  
+  // Init parameters
+  //
+  Float_t ptC   = pCandidate->Pt() ;
+  Float_t phiC  = pCandidate->Phi() ;
+  if ( phiC < 0 ) phiC+=TMath::TwoPi();
+  Float_t etaC  = pCandidate->Eta() ;
+
+  Float_t pt     = -100. ;
+  Float_t eta    = -100. ;
+  Float_t phi    = -100. ;
+  Float_t rad    = -100. ;
+  
+  TObjArray * reftracks  = 0x0;
+  Int_t       ntrackrefs = 0;
+  
+  // Get the tracks
+  //
+  for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
+  {
+    AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ;
+    
+    if(track)
+    {
+      // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
+      // do not count the candidate or the daughters of the candidate
+      // in the isolation conte
+      if ( pCandidate->GetDetectorTag() == AliFiducialCut::kCTS ) // make sure conversions are tagged as kCTS!!!
+      {
+        Int_t  trackID   = reader->GetTrackID(track) ; // needed instead of track->GetID() since AOD needs some manipulations
+        Bool_t contained = kFALSE;
+        
+        for(Int_t i = 0; i < 4; i++) 
+        {
+          if( trackID == pCandidate->GetTrackLabel(i) ) contained = kTRUE;
+        }
+        
+        if ( contained ) continue ;
+      }
+      
+      fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
+      pt  = fTrackVector.Pt();
+      eta = fTrackVector.Eta();
+      phi = fTrackVector.Phi() ;
+    }
+    else
+    {// Mixed event stored in AliCaloTrackParticles
+      AliCaloTrackParticle * trackmix = dynamic_cast<AliCaloTrackParticle*>(plCTS->At(ipr)) ;
+      if(!trackmix)
+      {
+        AliWarning("Wrong track data type, continue");
+        continue;
+      }
+      
+      pt  = trackmix->Pt();
+      eta = trackmix->Eta();
+      phi = trackmix->Phi() ;
+    }
+    
+    // ** Calculate distance between candidate and tracks **
+    
+    if ( phi < 0 ) phi+=TMath::TwoPi();
+    
+    rad = Radius(etaC, phiC, eta, phi);
+    
+    // ** Exclude tracks too close to the candidate, inactive by default **
+    
+    if ( rad < fDistMinToTrigger ) continue ;
+    
+    // ** For the background out of cone **
+    
+    if ( rad > fConeSize )
+    {
+      if ( eta > (etaC-fConeSize) && eta < (etaC+fConeSize) ) phiBandPtSumTrack += pt;
+      if ( phi > (phiC-fConeSize) && phi < (phiC+fConeSize) ) etaBandPtSumTrack += pt;
+    }
+    
+    // ** For the isolated particle **
+    
+    // Only loop the particle at the same side of candidate
+    if ( TMath::Abs(phi-phiC) > TMath::PiOver2() ) continue ;
+    
+    //      // If at the same side has particle larger than candidate,
+    //      // then candidate can not be the leading, skip such events
+    //      if(pt > ptC)
+    //      {
+    //        n         = -1;
+    //        nfrac     = -1;
+    //        coneptsumTrack = -1;
+    //        isolated  = kFALSE;
+    //
+    //        pCandidate->SetLeadingParticle(kFALSE);
+    //
+    //        if(bFillAOD && reftracks)
+    //        {
+    //          reftracks->Clear();
+    //          delete reftracks;
+    //        }
+    //
+    //        return ;
+    //      }
+    
+    AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
+    
+    //
+    // Select tracks inside the isolation radius
+    //
+    if ( rad < fConeSize )
+    {
+      AliDebug(2,"Inside candidate cone");
+      
+      if ( bFillAOD )
+      {
+        ntrackrefs++;
+        
+        if ( ntrackrefs == 1 )
+        {
+          reftracks = new TObjArray(0);
+          //reftracks->SetName(Form("Tracks%s",aodArrayRefName.Data()));
+          TString tempo(aodArrayRefName)  ;
+          tempo += "Tracks" ;
+          reftracks->SetName(tempo);
+          reftracks->SetOwner(kFALSE);
+        }
+        
+        reftracks->Add(track);
+      }
+      
+      coneptsumTrack+=pt;
+      
+      if ( coneptLeadTrack < pt ) coneptLeadTrack = pt;
+      
+      // *Before*, count particles in cone
+      if ( pt > fPtThreshold && pt < fPtThresholdMax )  nPart++;
+      
+      //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
+      if ( fFracIsThresh )
+      {
+        if ( fPtFraction*ptC < fPtThreshold )
+        {
+          if ( pt > fPtThreshold )    nfrac++ ;
+        }
+        else
+        {
+          if ( pt > fPtFraction*ptC ) nfrac++;
+        }
+      }
+      else
+      {
+        if ( pt > fPtFraction*ptC ) nfrac++;
+      }
+      
+    } // Inside cone
+    
+  }// charged particle loop
+
+  // Add reference arrays to AOD when filling AODs only
+  if ( bFillAOD && reftracks ) pCandidate->AddObjArray(reftracks);  
+}
+
+//_________________________________________________________________________________________________________________________________
 /// Get normalization of cluster background band.
 //_________________________________________________________________________________________________________________________________
 void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /*reader*/, Float_t   etaC, Float_t /*phiC*/,
@@ -400,408 +824,111 @@ void AliIsolationCut::InitParameters()
 /// Declare a candidate particle isolated depending on the
 /// cluster or track particle multiplicity and/or momentum.
 ///
-/// \param plCTS: List of tracks.
-/// \param plNe: List of clusters.
-/// \param reader: pointer to AliCaloTrackReader. Needed to access event info.
-/// \param pid: pointer to AliCaloPID. Needed to reject matched clusters in isolation cone.
-/// \param bFillAOD: Indicate if particles in cone must be added to AOD particle object.
 /// \param pCandidate: Kinematics and + of candidate particle for isolation.
+/// \param reader: pointer to AliCaloTrackReader. Needed to access event info.
+/// \param bFillAOD: Indicate if particles in cone must be added to AOD particle object.
+/// \param useRefs: Get the list of tracks or clusters in cone from references
 /// \param aodArrayRefName: Name of array where list of tracks/clusters in cone is stored.
-/// \param n: number of tracks/clusters above threshold in cone, output.
+/// \param bgTrk: List of tracks from mixed event background pool AliAnaParticleHadronCorrelation.
+/// \param bgCls: List of clusters from mixed event background pool AliAnaParticleHadronCorrelation.
+/// \param calorimeter: Which input trigger calorimeter used
+/// \param pid: pointer to AliCaloPID. Needed to reject matched clusters in isolation cone.
+/// \param nPart: number of tracks/clusters above threshold in cone, output.
 /// \param nfrac: 1 if fraction pT cluster-track / pT trigger in cone avobe threshold, output.
 /// \param coneptsum: total momentum energy in cone (track+cluster), output.
 /// \param ptLead: momentum of leading cluster or track in cone, output.
 /// \param isolated: final bool with decission on isolation of candidate particle.
 ///
 //________________________________________________________________________________
-void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
-                                        TObjArray * plNe,
-                                        AliCaloTrackReader * reader,
-                                        AliCaloPID * pid,
-                                        Bool_t bFillAOD,
-                                        AliCaloTrackParticleCorrelation  *pCandidate,
-                                        TString aodArrayRefName,
-                                        Int_t   & n,
-                                        Int_t   & nfrac,
-                                        Float_t & coneptsum, Float_t & ptLead,
-                                        Bool_t  & isolated)
+void  AliIsolationCut::MakeIsolationCut
+(
+ AliCaloTrackParticleCorrelation  *pCandidate, AliCaloTrackReader * reader,
+ Bool_t    bFillAOD,    Bool_t    useRefs, TString aodArrayRefName,
+ TObjArray * bgTrk, TObjArray * bgCls,
+ Int_t     calorimeter, AliCaloPID * pid,
+ Int_t   & nPart      , Int_t   & nfrac,
+ Float_t & coneptsum  , Float_t & ptLead,
+ Bool_t  & isolated
+)
 {
   Float_t ptC   = pCandidate->Pt() ;
   Float_t phiC  = pCandidate->Phi() ;
   if ( phiC < 0 ) phiC+=TMath::TwoPi();
   Float_t etaC  = pCandidate->Eta() ;
   
-  Float_t pt     = -100. ;
-  Float_t eta    = -100. ;
-  Float_t phi    = -100. ;
-  Float_t rad    = -100. ;
-  
   Float_t coneptsumCluster = 0;
   Float_t coneptsumTrack   = 0;
+  Float_t coneptLeadCluster= 0;
+  Float_t coneptLeadTrack  = 0;
   
-  Float_t  etaBandPtSumTrack   = 0;
-  Float_t  phiBandPtSumTrack   = 0;
-  Float_t  etaBandPtSumCluster = 0;
-  Float_t  phiBandPtSumCluster = 0;
+  Float_t etaBandPtSumTrack   = 0;
+  Float_t phiBandPtSumTrack   = 0;
+  Float_t etaBandPtSumCluster = 0;
+  Float_t phiBandPtSumCluster = 0;
   
-  n         = 0 ;
+  nPart     = 0 ;
   nfrac     = 0 ;
   isolated  = kFALSE;
   
   AliDebug(1,Form("Candidate pT %2.2f, eta %2.2f, phi %2.2f, cone %1.2f, thres %2.2f, Fill AOD? %d",
-                  pCandidate->Pt(), pCandidate->Eta(), pCandidate->Phi()*TMath::RadToDeg(), fConeSize,fPtThreshold,bFillAOD));
-  
-  //Initialize the array with refrences
-  TObjArray * refclusters  = 0x0;
-  TObjArray * reftracks    = 0x0;
-  Int_t       ntrackrefs   = 0;
-  Int_t       nclusterrefs = 0;
+                  pCandidate->Pt(), pCandidate->Eta(), pCandidate->Phi()*TMath::RadToDeg(), 
+                  fConeSize, fPtThreshold, bFillAOD));
   
   // --------------------------------
-  // Check charged tracks in cone.
+  // Get charged tracks and clusters in cone.
   // --------------------------------
   
-  if(plCTS &&
-     (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged))
-  {
-    for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
-    {
-      AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ;
-      
-      if(track)
-      {
-        // In case of isolation of single tracks or conversion photon (2 tracks) or pi0 (4 tracks),
-        // do not count the candidate or the daughters of the candidate
-        // in the isolation conte
-        if ( pCandidate->GetDetectorTag() == AliFiducialCut::kCTS ) // make sure conversions are tagged as kCTS!!!
-        {
-          Int_t  trackID   = reader->GetTrackID(track) ; // needed instead of track->GetID() since AOD needs some manipulations
-          Bool_t contained = kFALSE;
-          
-          for(Int_t i = 0; i < 4; i++) 
-          {
-            if( trackID == pCandidate->GetTrackLabel(i) ) contained = kTRUE;
-          }
-          
-          if ( contained ) continue ;
-        }
-        
-        fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
-        pt  = fTrackVector.Pt();
-        eta = fTrackVector.Eta();
-        phi = fTrackVector.Phi() ;
-      }
-      else
-      {// Mixed event stored in AliCaloTrackParticles
-        AliCaloTrackParticle * trackmix = dynamic_cast<AliCaloTrackParticle*>(plCTS->At(ipr)) ;
-        if(!trackmix)
-        {
-          AliWarning("Wrong track data type, continue");
-          continue;
-        }
-        
-        pt  = trackmix->Pt();
-        eta = trackmix->Eta();
-        phi = trackmix->Phi() ;
-      }
-      
-      // ** Calculate distance between candidate and tracks **
-      
-      if ( phi < 0 ) phi+=TMath::TwoPi();
-      
-      rad = Radius(etaC, phiC, eta, phi);
-      
-      // ** Exclude tracks too close to the candidate, inactive by default **
-      
-      if(rad < fDistMinToTrigger) continue ;
-      
-      // ** For the background out of cone **
-      
-      if(rad > fConeSize)
-      {
-        if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize)) phiBandPtSumTrack += pt;
-        if(phi > (phiC-fConeSize) && phi < (phiC+fConeSize)) etaBandPtSumTrack += pt;
-      }
-      
-      // ** For the isolated particle **
-      
-      // Only loop the particle at the same side of candidate
-      if(TMath::Abs(phi-phiC) > TMath::PiOver2()) continue ;
-      
-//      // If at the same side has particle larger than candidate,
-//      // then candidate can not be the leading, skip such events
-//      if(pt > ptC)
-//      {
-//        n         = -1;
-//        nfrac     = -1;
-//        coneptsumTrack = -1;
-//        isolated  = kFALSE;
-//
-//        pCandidate->SetLeadingParticle(kFALSE);
-//
-//        if(bFillAOD && reftracks)
-//        {
-//          reftracks->Clear();
-//          delete reftracks;
-//        }
-//
-//        return ;
-//      }
-      
-      AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
-      
-      //
-      // Select tracks inside the isolation radius
-      //
-      if(rad < fConeSize)
-      {
-        AliDebug(2,"Inside candidate cone");
-        
-        if(bFillAOD)
-        {
-          ntrackrefs++;
-          if(ntrackrefs == 1)
-          {
-            reftracks = new TObjArray(0);
-            //reftracks->SetName(Form("Tracks%s",aodArrayRefName.Data()));
-            TString tempo(aodArrayRefName)  ;
-            tempo += "Tracks" ;
-            reftracks->SetName(tempo);
-            reftracks->SetOwner(kFALSE);
-          }
-          reftracks->Add(track);
-        }
-        
-        coneptsumTrack+=pt;
-        
-        if( ptLead < pt ) ptLead = pt;
-        
-//        // *Before*, count particles in cone
-//        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
-//
-//        //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-//        if(fFracIsThresh)
-//        {
-//          if( fPtFraction*ptC < fPtThreshold )
-//          {
-//            if( pt > fPtThreshold )    nfrac++ ;
-//          }
-//          else
-//          {
-//            if( pt > fPtFraction*ptC ) nfrac++;
-//          }
-//        }
-//        else
-//        {
-//          if( pt > fPtFraction*ptC ) nfrac++;
-//        }
-        
-      } // Inside cone
-      
-    }// charged particle loop
-    
-  }//Tracks
+  CalculateTrackSignalInCone   (pCandidate         , reader,
+                                bFillAOD           , useRefs, 
+                                aodArrayRefName    , bgTrk,
+                                nPart              , nfrac,
+                                coneptsumTrack     , coneptLeadTrack,
+                                etaBandPtSumTrack  , phiBandPtSumTrack);
   
-  // --------------------------------
-  // Check calorimeter clusters in cone.
-  // --------------------------------
-  
-  if(plNe &&
-     (fPartInCone==kOnlyNeutral || fPartInCone==kNeutralAndCharged))
-  {
-    
-    for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
-    {
-      AliVCluster * calo = dynamic_cast<AliVCluster *>(plNe->At(ipr)) ;
-      
-      if(calo)
-      {
-        // Get the index where the cluster comes, to retrieve the corresponding vertex
-        Int_t evtIndex = 0 ;
-        if (reader->GetMixedEvent())
-          evtIndex=reader->GetMixedEvent()->EventIndexForCaloCluster(calo->GetID()) ;
-        
-        
-        // Do not count the candidate (photon or pi0) or the daughters of the candidate
-        if(calo->GetID() == pCandidate->GetCaloLabel(0) ||
-           calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;
-        
-        // Skip matched clusters with tracks in case of neutral+charged analysis
-        if(fIsTMClusterInConeRejected)
-        {
-          if( fPartInCone == kNeutralAndCharged &&
-             pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
-        }
-        
-        // Assume that come from vertex in straight line
-        calo->GetMomentum(fMomentum,reader->GetVertex(evtIndex)) ;
-        
-        pt  = fMomentum.Pt()  ;
-        eta = fMomentum.Eta() ;
-        phi = fMomentum.Phi() ;
-      }
-      else
-      {// Mixed event stored in AliCaloTrackParticles
-        AliCaloTrackParticle * calomix = dynamic_cast<AliCaloTrackParticle*>(plNe->At(ipr)) ;
-        if(!calomix)
-        {
-          AliWarning("Wrong calo data type, continue");
-          continue;
-        }
-        
-        pt  = calomix->Pt();
-        eta = calomix->Eta();
-        phi = calomix->Phi() ;
-      }
-      
-      // ** Calculate distance between candidate and tracks **
-      
-      if( phi < 0 ) phi+=TMath::TwoPi();
-      
-      rad = Radius(etaC, phiC, eta, phi);
-      
-      // ** Exclude clusters too close to the candidate, inactive by default **
-      
-      if(rad < fDistMinToTrigger) continue ;
-      
-      // ** For the background out of cone **
-      
-      if(rad > fConeSize)
-      {
-        if(eta > (etaC-fConeSize) && eta < (etaC+fConeSize)) phiBandPtSumCluster += pt;
-        if(phi > (phiC-fConeSize) && phi < (phiC+fConeSize)) etaBandPtSumCluster += pt;
-      }
-      
-      // ** For the isolated particle **
-      
-      // Only loop the particle at the same side of candidate
-      if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
-      
-//      // If at the same side has particle larger than candidate,
-//      // then candidate can not be the leading, skip such events
-//      if(pt > ptC)
-//      {
-//        n         = -1;
-//        nfrac     = -1;
-//        coneptsumCluster = -1;
-//        isolated  = kFALSE;
-//
-//        pCandidate->SetLeadingParticle(kFALSE);
-//
-//        if(bFillAOD)
-//        {
-//          if(reftracks)
-//          {
-//            reftracks  ->Clear();
-//            delete reftracks;
-//          }
-//
-//          if(refclusters)
-//          {
-//            refclusters->Clear();
-//            delete refclusters;
-//          }
-//        }
-//        return ;
-//      }
-      
-      AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
-      
-      //
-      // Select calorimeter clusters inside the isolation radius 
-      //
-      if(rad < fConeSize)
-      {
-        AliDebug(2,"Inside candidate cone");
-        
-        if(bFillAOD)
-        {
-          nclusterrefs++;
-          if(nclusterrefs==1)
-          {
-            refclusters = new TObjArray(0);
-            //refclusters->SetName(Form("Clusters%s",aodArrayRefName.Data()));
-            TString tempo(aodArrayRefName)  ;
-            tempo += "Clusters" ;
-            refclusters->SetName(tempo);
-            refclusters->SetOwner(kFALSE);
-          }
-          refclusters->Add(calo);
-        }
-        
-        coneptsumCluster+=pt;
-        
-        if( ptLead < pt ) ptLead = pt;
-        
-//        // *Before*, count particles in cone
-//        if(pt > fPtThreshold && pt < fPtThresholdMax)  n++;
-//
-//        //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-//        if(fFracIsThresh)
-//        {
-//          if( fPtFraction*ptC < fPtThreshold )
-//          {
-//            if( pt > fPtThreshold )    nfrac++ ;
-//          }
-//          else
-//          {
-//            if( pt > fPtFraction*ptC ) nfrac++;
-//          }
-//        }
-//        else
-//        {
-//          if( pt > fPtFraction*ptC ) nfrac++;
-//        }
-        
-      }//in cone
-      
-    }// neutral particle loop
-    
-  }//neutrals
-  
-  //Add reference arrays to AOD when filling AODs only
-  if(bFillAOD)
-  {
-    if(refclusters)	pCandidate->AddObjArray(refclusters);
-    if(reftracks)	  pCandidate->AddObjArray(reftracks);
-  }
+  CalculateCaloSignalInCone    (pCandidate         , reader,
+                                bFillAOD           , useRefs, 
+                                aodArrayRefName    , bgCls,
+                                calorimeter        , pid, 
+                                nPart              , nfrac,
+                                coneptsumCluster   , coneptLeadCluster,
+                                etaBandPtSumCluster, phiBandPtSumCluster);
   
   coneptsum = coneptsumCluster + coneptsumTrack;
   
   // *Now*, just check the leading particle in the cone if the threshold is passed
-  if(ptLead > fPtThreshold && ptLead < fPtThresholdMax)  n = 1;
+  if ( ptLead > fPtThreshold && ptLead < fPtThresholdMax)  nPart = 1;
   
   //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-  if(fFracIsThresh)
+  if ( fFracIsThresh )
   {
-    if( fPtFraction*ptC < fPtThreshold )
+    if ( fPtFraction*ptC < fPtThreshold )
     {
-      if( ptLead > fPtThreshold )    nfrac = 1 ;
+      if ( ptLead > fPtThreshold )    nfrac = 1 ;
     }
     else
     {
-      if( ptLead > fPtFraction*ptC ) nfrac = 1;
+      if ( ptLead > fPtFraction*ptC ) nfrac = 1;
     }
   }
   else
   {
-    if( ptLead > fPtFraction*ptC ) nfrac = 1;
+    if ( ptLead > fPtFraction*ptC )   nfrac = 1;
   }
   
   //-------------------------------------------------------------------
   // Check isolation, depending on selected isolation criteria requested
   
-  if( fICMethod == kPtThresIC)
+  if ( fICMethod == kPtThresIC )
   {
-    if( n == 0 ) isolated = kTRUE ;
+    if ( nPart == 0 ) isolated = kTRUE ;
     
     AliDebug(1,Form("pT Cand %2.2f, pT Lead %2.2f, %2.2f<pT Lead< %2.2f, isolated %d",
                     ptC,ptLead,fPtThreshold,fPtThresholdMax,isolated));
   }
-  else if( fICMethod == kSumPtIC )
+  else if ( fICMethod == kSumPtIC )
   {
-    if( coneptsum > fSumPtThreshold &&
-        coneptsum < fSumPtThresholdMax )
+    if ( coneptsum > fSumPtThreshold &&
+         coneptsum < fSumPtThresholdMax )
       isolated  =  kFALSE ;
     else
       isolated  =  kTRUE  ;
@@ -809,35 +936,35 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
     AliDebug(1,Form("pT Cand %2.2f, SumPt %2.2f, %2.2f<Sum pT< %2.2f, isolated %d",
                     ptC,ptLead,fSumPtThreshold,fSumPtThresholdMax,isolated));
   }
-  else if( fICMethod == kPtFracIC )
+  else if ( fICMethod == kPtFracIC )
   {
-    if(nfrac == 0 ) isolated = kTRUE ;
+    if ( nfrac == 0 ) isolated = kTRUE ;
   }
-  else if( fICMethod == kSumPtFracIC )
+  else if ( fICMethod == kSumPtFracIC )
   {
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
     // printf("photon analysis IsDataMC() ?%i\n",IsDataMC());
-    if( fFracIsThresh )
+    if ( fFracIsThresh )
     {
       if( fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold ) isolated  =  kTRUE ;
       if( fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC ) isolated  =  kTRUE ;
     }
     else
     {
-      if( coneptsum < fPtFraction*ptC ) isolated  =  kTRUE ;
+      if ( coneptsum < fPtFraction*ptC ) isolated  =  kTRUE ;
     }
   }
-  else if( fICMethod == kSumDensityIC )
+  else if ( fICMethod == kSumDensityIC )
   {
     // Get good cell density (number of active cells over all cells in cone)
     // and correct energy in cone
     
     Float_t cellDensity = GetCellDensity(pCandidate,reader);
     
-    if( coneptsum < fSumPtThreshold*cellDensity )
+    if ( coneptsum < fSumPtThreshold*cellDensity )
       isolated = kTRUE;
   }
-  else if( fICMethod == kSumBkgSubIC )
+  else if ( fICMethod == kSumBkgSubIC )
   {
     Double_t coneptsumBkg = 0.;
     Float_t  etaBandPtSumTrackNorm   = 0;
@@ -851,21 +978,21 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
     Float_t  excessFracPhiCluster = 1;
     
     // Normalize background to cone area
-    if     (fPartInCone != kOnlyCharged       )
+    if     ( fPartInCone != kOnlyCharged )
       CalculateUEBandClusterNormalization(reader, etaC, phiC,
                                           phiBandPtSumCluster    , etaBandPtSumCluster,
                                           phiBandPtSumClusterNorm, etaBandPtSumClusterNorm,
                                           excessFracEtaCluster   , excessFracPhiCluster    );
     
-    if     (fPartInCone != kOnlyNeutral       )
+    if     ( fPartInCone != kOnlyNeutral )
       CalculateUEBandTrackNormalization(reader, etaC, phiC,
                                         phiBandPtSumTrack    , etaBandPtSumTrack  ,
                                         phiBandPtSumTrackNorm, etaBandPtSumTrackNorm,
                                         excessFracEtaTrack   , excessFracPhiTrack    );
     
-    if     (fPartInCone == kOnlyCharged       ) coneptsumBkg = etaBandPtSumTrackNorm;
-    else if(fPartInCone == kOnlyNeutral       ) coneptsumBkg = etaBandPtSumClusterNorm;
-    else if(fPartInCone == kNeutralAndCharged ) coneptsumBkg = etaBandPtSumClusterNorm + etaBandPtSumTrackNorm;
+    if      ( fPartInCone == kOnlyCharged       ) coneptsumBkg = etaBandPtSumTrackNorm;
+    else if ( fPartInCone == kOnlyNeutral       ) coneptsumBkg = etaBandPtSumClusterNorm;
+    else if ( fPartInCone == kNeutralAndCharged ) coneptsumBkg = etaBandPtSumClusterNorm + etaBandPtSumTrackNorm;
     
     //coneptsumCluster*=(coneBadCellsCoeff*excessFracEtaCluster*excessFracPhiCluster) ; // apply this correction earlier???
     // line commented out in last modif!!!
@@ -874,7 +1001,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
     
     coneptsum -= coneptsumBkg;
     
-    if( coneptsum > fSumPtThreshold && coneptsum < fSumPtThresholdMax )
+    if ( coneptsum > fSumPtThreshold && coneptsum < fSumPtThresholdMax )
       isolated  =  kFALSE ;
     else
       isolated  =  kTRUE  ;
