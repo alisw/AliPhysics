@@ -20,12 +20,12 @@
 
 /// * Instance of the AliESDtools allow usage of functions in the TTree formulas.
 /// ** Cache information (e.g mean event properties)
-/// ** Set of static function to access pre-calculated variables 
+/// ** Set of static function to access pre-calculated variables
 /// * enabling  ESD track functionality in TTree::Draw queries
 /// ** Double_t AliESDtools::LoadESD(Int_t entry, Int_t verbose)
 
 /// Example usage for Tree queries mode (used e.g in N-Dimensional analysis pipeline):
-/*   
+/*
   /// 0.) Initialize tool e.g:
   tree = AliXRDPROOFtoolkit::MakeChainRandom("esd.list","esdTree",0,10)
   //.L $AliPhysics_SRC/PWGPP/AliESDtools.cxx+
@@ -47,7 +47,8 @@
 
 
 #include "TStopwatch.h"
-#include "TTree.h" 
+#include "TTree.h"
+#include "TGrid.h"
 #include "TChain.h"
 #include "TVectorF.h"
 #include "AliStack.h"
@@ -66,6 +67,7 @@
 #include <stdarg.h>
 #include "AliNDLocalRegression.h"
 #include "AliESDEvent.h"
+#include "AliLumiTools.h"
 #include "AliPIDResponse.h"
 #include "TTreeStream.h"
 #include "AliCentrality.h"
@@ -797,7 +799,7 @@ Double_t AliESDtools::CachePileupVertexTPC(Int_t entry, Int_t verbose) {
     (*fTPCVertexInfo)[4] = counterM;
     (*fTPCVertexInfo)[5] = (counterP+counterM);
     if (verbose > 0) {
-      ::Info("AliESDtools::CachePileupVertexTPC", "%f\t%f\t%f\t%f\t", counterP, counterM, posZA, posZC);
+      ::Info("AliESDtools::CachePileupVertexTPC", "%d\t%d\t%f\t%f\t", counterP, counterM, posZA, posZC);
     }
   }
   return 1;
@@ -885,9 +887,25 @@ Int_t AliESDtools::DumpEventVariables() {
     if (track->IsOn(AliESDtrack::kTPCin)) TPCMult++;
   }
 
+  // retrieve interaction rate
+  Float_t intrate=-1.;
+  static Int_t timeStampCache = -1;
+  if (timeStampCache!=Int_t(timeStampS)) timeStampCache=Int_t(timeStampS);
+  if (!gGrid && timeStampCache>0) {
+    AliInfo("Trying to connect to AliEn ...");
+    TGrid::Connect("alien://");
+  } else {
+    const char *ocdb = "raw://";
+    TGraph *grLumiGraph = (TGraph*)AliLumiTools::GetLumiFromCTP(runNumber,ocdb);
+    intrate   = grLumiGraph->Eval(timeStamp);
+    delete grLumiGraph;
+  }
+
+  // dump event variables into tree
   (*fStreamer)<<"events"<<
-                     "run="                  << runNumber                 <<  // run Number
-                     "bField="               << bField                   <<  // b field
+                     "run="                  << runNumber             <<  // run Number
+                     "intrate="              << intrate               <<  // run Number
+                     "bField="               << bField                <<  // b field
                      "gid="                  << gid                   <<  // global event ID
                      "timeStampS="           << timeStampS            <<  // time stamp in seconds -event building
                      "timestamp="            << timeStamp             <<  // more precise timestamp based on LHC clock
