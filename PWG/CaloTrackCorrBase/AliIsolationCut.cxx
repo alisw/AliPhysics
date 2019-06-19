@@ -30,6 +30,8 @@
 #include "AliCalorimeterUtils.h"
 #include "AliCaloPID.h"
 #include "AliFiducialCut.h"
+#include "AliHistogramRanges.h"
+
 #include "AliIsolationCut.h"
 
 /// \cond CLASSIMP
@@ -41,20 +43,20 @@ ClassImp(AliIsolationCut) ;
 //____________________________________
 AliIsolationCut::AliIsolationCut() :
 TObject(),
-fConeSize(0.),
-fPtThreshold(0.),
-fPtThresholdMax(10000.),
-fSumPtThreshold(0.),
-fSumPtThresholdMax(10000.),
-fPtFraction(0.),
-fICMethod(0),
-fPartInCone(0),
-fDebug(0),
-fFracIsThresh(1),
-fIsTMClusterInConeRejected(1),
-fDistMinToTrigger(-1.),
-fMomentum(),
-fTrackVector()
+fFillHistograms(0),
+fConeSize(0.),       fPtThreshold(0.),              fPtThresholdMax(10000.),
+fSumPtThreshold(0.), fSumPtThresholdMax(10000.),    fPtFraction(0.),     
+fICMethod(0),        fPartInCone(0),
+fFracIsThresh(1),    fIsTMClusterInConeRejected(1), fDistMinToTrigger(-1.),
+fDebug(0),           fMomentum(),                   fTrackVector(),
+// Histograms
+fHistoRanges(0),
+fhPtInCone(0),       fhPtClusterInCone(0),          fhPtTrackInCone(0),
+fhConeSumPt(0),      fhConeSumPtCluster(0),         fhConeSumPtTrack(0),
+fhConePtLead(0),     fhConePtLeadCluster(0),        fhConePtLeadTrack(0),
+fhConeSumPtClustervsTrack(0),     fhConeSumPtClusterTrackFrac(0),
+fhConePtLeadClustervsTrack(0),    fhConePtLeadClusterTrackFrac(0),
+fhConeSumPtTrigEtaPhi(0)
 {
   InitParameters();
 }
@@ -74,6 +76,7 @@ fTrackVector()
 /// \param nfrac: 1 if fraction pT cluster-track / pT trigger in cone avobe threshold, output.
 /// \param coneptsumCluster: total momentum energy in cone (track+cluster), output.
 /// \param coneptLeadCluster: momentum of leading cluster or track in cone, output.
+/// \param histoWeight: Histograms weight (event, pt depedent)
 //_________________________________________________________________________________________________________________________________
 void AliIsolationCut::CalculateCaloSignalInCone 
 (
@@ -83,7 +86,8 @@ void AliIsolationCut::CalculateCaloSignalInCone
  Int_t     calorimeter        , AliCaloPID * pid,
  Int_t   & nPart              , Int_t   & nfrac,
  Float_t & coneptsumCluster   , Float_t & coneptLeadCluster,
- Float_t & etaBandPtSumCluster, Float_t & phiBandPtSumCluster
+ Float_t & etaBandPtSumCluster, Float_t & phiBandPtSumCluster, 
+ Double_t histoWeight
 ) 
 {
   if ( fPartInCone == kOnlyCharged ) return ;
@@ -108,7 +112,17 @@ void AliIsolationCut::CalculateCaloSignalInCone
     plNe = pCandidate->GetObjArray(aodArrayRefName+"Clusters"); 
   }
   
-  if ( !plNe ) return ;
+  if ( !plNe ) 
+  {
+    fhConeSumPtCluster ->Fill(pCandidate->Pt(), 0., histoWeight);
+    
+    fhConePtLeadCluster->Fill(pCandidate->Pt(), 0., histoWeight);
+  
+    if ( coneptLeadCluster > 0  || coneptsumCluster > 0 ) 
+      AliError(Form("No ref clusters!!! sum %f, lead %f",coneptsumCluster,coneptLeadCluster));
+    
+    return ;
+  }
   
   // Init parameters
   //
@@ -222,12 +236,13 @@ void AliIsolationCut::CalculateCaloSignalInCone
     //        return ;
     //      }
     
-    AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
+    AliDebug(2,Form("\t Cluster %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", 
+                    ipr,pt,eta,phi,rad));
     
     //
     // Select calorimeter clusters inside the isolation radius 
     //
-    if(rad < fConeSize)
+    if ( rad < fConeSize )
     {
       AliDebug(2,"Inside candidate cone");
       
@@ -252,12 +267,18 @@ void AliIsolationCut::CalculateCaloSignalInCone
       
       if ( coneptLeadCluster < pt ) coneptLeadCluster = pt;
       
+      if ( fFillHistograms )
+      {
+        fhPtInCone       ->Fill(ptC, pt, histoWeight);
+        fhPtClusterInCone->Fill(ptC, pt, histoWeight);
+      }
+      
       // *Before*, count particles in cone
       //
       if ( pt > fPtThreshold && pt < fPtThresholdMax )  nPart++;
       
       //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-      if (fFracIsThresh )
+      if ( fFracIsThresh )
       {
         if ( fPtFraction*ptC < fPtThreshold )
         {
@@ -277,6 +298,12 @@ void AliIsolationCut::CalculateCaloSignalInCone
     
   }// neutral particle loop
   
+  if ( fFillHistograms )
+  {
+    fhConeSumPtCluster ->Fill(ptC, coneptsumCluster , histoWeight);
+    fhConePtLeadCluster->Fill(ptC, coneptLeadCluster, histoWeight);
+  }
+  
   // Add reference arrays to AOD when filling AODs only
   if ( bFillAOD && refclusters ) pCandidate->AddObjArray(refclusters);  
 }
@@ -293,6 +320,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
 /// \param nfrac: 1 if fraction pT cluster-track / pT trigger in cone avobe threshold, output.
 /// \param coneptsumCluster: total momentum energy in cone (track+cluster), output.
 /// \param coneptLeadCluster: momentum of leading cluster or track in cone, output.
+/// \param histoWeight: Histograms weight (event, pt depedent)
 //_________________________________________________________________________________________________________________________________
 void AliIsolationCut::CalculateTrackSignalInCone
 (
@@ -301,7 +329,8 @@ void AliIsolationCut::CalculateTrackSignalInCone
  TString   aodArrayRefName  , TObjArray * bgTrk,
  Int_t   & nPart            , Int_t   & nfrac,
  Float_t & coneptsumTrack   , Float_t & coneptLeadTrack,
- Float_t & etaBandPtSumTrack, Float_t & phiBandPtSumTrack
+ Float_t & etaBandPtSumTrack, Float_t & phiBandPtSumTrack,
+ Double_t histoWeight
 ) 
 {  
   if ( fPartInCone == kOnlyNeutral ) return ;
@@ -322,25 +351,41 @@ void AliIsolationCut::CalculateTrackSignalInCone
     plCTS = pCandidate->GetObjArray(aodArrayRefName+"Tracks");
   }
   
-  if ( !plCTS ) return ;
+  if ( !plCTS ) 
+  {
+    if(fFillHistograms)
+    {
+      fhConeSumPtTrack      ->Fill(pCandidate->Pt(), 0., histoWeight);
+      
+      fhConePtLeadTrack     ->Fill(pCandidate->Pt(), 0., histoWeight);
+    } // histograms
+    
+    if(coneptLeadTrack > 0  || coneptsumTrack > 0) 
+      AliError(Form("No ref tracks!!! sum %f, lead %f",coneptsumTrack,coneptLeadTrack));
+    
+    return ;
+  }
   
+  //-----------------------------------------------------------
   // Init parameters
   //
-  Float_t ptC   = pCandidate->Pt() ;
-  Float_t phiC  = pCandidate->Phi() ;
-  if ( phiC < 0 ) phiC+=TMath::TwoPi();
-  Float_t etaC  = pCandidate->Eta() ;
-
-  Float_t pt     = -100. ;
-  Float_t eta    = -100. ;
-  Float_t phi    = -100. ;
-  Float_t rad    = -100. ;
+  Float_t ptTrig   = pCandidate->Pt() ;
+  Float_t phiTrig  = pCandidate->Phi() ;
+  if ( phiTrig < 0 ) phiTrig+=TMath::TwoPi();
+  Float_t etaTrig  = pCandidate->Eta() ;
+ 
+  Float_t ptTrack  = -100. ;
+  Float_t etaTrack = -100. ;
+  Float_t phiTrack = -100. ;
+  Float_t rad      = -100. ;
   
   TObjArray * reftracks  = 0x0;
   Int_t       ntrackrefs = 0;
-  
-  // Get the tracks
+    
+  //-----------------------------------------------------------
+  // Get the tracks in cone
   //
+  //-----------------------------------------------------------
   for(Int_t ipr = 0;ipr < plCTS->GetEntries() ; ipr ++ )
   {
     AliVTrack* track = dynamic_cast<AliVTrack*>(plCTS->At(ipr)) ;
@@ -364,9 +409,9 @@ void AliIsolationCut::CalculateTrackSignalInCone
       }
       
       fTrackVector.SetXYZ(track->Px(),track->Py(),track->Pz());
-      pt  = fTrackVector.Pt();
-      eta = fTrackVector.Eta();
-      phi = fTrackVector.Phi() ;
+      ptTrack  = fTrackVector.Pt();
+      etaTrack = fTrackVector.Eta();
+      phiTrack = fTrackVector.Phi() ;
     }
     else
     {// Mixed event stored in AliCaloTrackParticles
@@ -377,16 +422,16 @@ void AliIsolationCut::CalculateTrackSignalInCone
         continue;
       }
       
-      pt  = trackmix->Pt();
-      eta = trackmix->Eta();
-      phi = trackmix->Phi() ;
+      ptTrack  = trackmix->Pt();
+      etaTrack = trackmix->Eta();
+      phiTrack = trackmix->Phi() ;
     }
     
     // ** Calculate distance between candidate and tracks **
     
-    if ( phi < 0 ) phi+=TMath::TwoPi();
+    if ( phiTrack < 0 ) phiTrack+=TMath::TwoPi();
     
-    rad = Radius(etaC, phiC, eta, phi);
+    rad = Radius(etaTrig, phiTrig, etaTrack, phiTrack);
     
     // ** Exclude tracks too close to the candidate, inactive by default **
     
@@ -396,18 +441,18 @@ void AliIsolationCut::CalculateTrackSignalInCone
     
     if ( rad > fConeSize )
     {
-      if ( eta > (etaC-fConeSize) && eta < (etaC+fConeSize) ) phiBandPtSumTrack += pt;
-      if ( phi > (phiC-fConeSize) && phi < (phiC+fConeSize) ) etaBandPtSumTrack += pt;
+      if ( etaTrack > (etaTrig-fConeSize) && etaTrack < (etaTrig+fConeSize) ) phiBandPtSumTrack += ptTrack;
+      if ( phiTrack > (phiTrig-fConeSize) && phiTrack < (phiTrig+fConeSize) ) etaBandPtSumTrack += ptTrack;
     }
     
     // ** For the isolated particle **
     
     // Only loop the particle at the same side of candidate
-    if ( TMath::Abs(phi-phiC) > TMath::PiOver2() ) continue ;
+    if ( TMath::Abs(phiTrack-phiTrig) > TMath::PiOver2() ) continue ;
     
     //      // If at the same side has particle larger than candidate,
     //      // then candidate can not be the leading, skip such events
-    //      if(pt > ptC)
+    //      if(pt > ptTrig)
     //      {
     //        n         = -1;
     //        nfrac     = -1;
@@ -425,60 +470,71 @@ void AliIsolationCut::CalculateTrackSignalInCone
     //        return ;
     //      }
     
-    AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", ipr,pt,eta,phi,rad));
+    AliDebug(2,Form("\t Track %d, pT %2.2f, eta %1.2f, phi %2.2f, R candidate %2.2f", 
+                    ipr,ptTrack,etaTrack,phiTrack,rad));
     
     //
     // Select tracks inside the isolation radius
     //
-    if ( rad < fConeSize )
+    if ( rad > fConeSize ) continue ;
+    
+    AliDebug(2,"Inside candidate cone");
+    
+    if ( bFillAOD )
     {
-      AliDebug(2,"Inside candidate cone");
+      ntrackrefs++;
       
-      if ( bFillAOD )
+      if ( ntrackrefs == 1 )
       {
-        ntrackrefs++;
-        
-        if ( ntrackrefs == 1 )
-        {
-          reftracks = new TObjArray(0);
-          //reftracks->SetName(Form("Tracks%s",aodArrayRefName.Data()));
-          TString tempo(aodArrayRefName)  ;
-          tempo += "Tracks" ;
-          reftracks->SetName(tempo);
-          reftracks->SetOwner(kFALSE);
-        }
-        
-        reftracks->Add(track);
+        reftracks = new TObjArray(0);
+        //reftracks->SetName(Form("Tracks%s",aodArrayRefName.Data()));
+        TString tempo(aodArrayRefName)  ;
+        tempo += "Tracks" ;
+        reftracks->SetName(tempo);
+        reftracks->SetOwner(kFALSE);
       }
       
-      coneptsumTrack+=pt;
-      
-      if ( coneptLeadTrack < pt ) coneptLeadTrack = pt;
-      
-      // *Before*, count particles in cone
-      if ( pt > fPtThreshold && pt < fPtThresholdMax )  nPart++;
-      
-      //if fPtFraction*ptC<fPtThreshold then consider the fPtThreshold directly
-      if ( fFracIsThresh )
+      reftracks->Add(track);
+    }
+    
+    coneptsumTrack+=ptTrack;
+    
+    if ( coneptLeadTrack < ptTrack ) coneptLeadTrack = ptTrack;
+    
+    if ( fFillHistograms )
+    {
+      fhPtInCone      ->Fill(ptTrig , ptTrack, histoWeight);
+      fhPtTrackInCone ->Fill(ptTrig , ptTrack, histoWeight);
+    } // histograms
+    
+    // *Before*, count particles in cone
+    if ( ptTrack > fPtThreshold && ptTrack < fPtThresholdMax )  nPart++;
+    
+    //if fPtFraction*ptTrig<fPtThreshold then consider the fPtThreshold directly
+    if ( fFracIsThresh )
+    {
+      if ( fPtFraction*ptTrig < fPtThreshold )
       {
-        if ( fPtFraction*ptC < fPtThreshold )
-        {
-          if ( pt > fPtThreshold )    nfrac++ ;
-        }
-        else
-        {
-          if ( pt > fPtFraction*ptC ) nfrac++;
-        }
+        if ( ptTrack > fPtThreshold )    nfrac++ ;
       }
       else
       {
-        if ( pt > fPtFraction*ptC ) nfrac++;
+        if ( ptTrack > fPtFraction*ptTrig ) nfrac++;
       }
-      
-    } // Inside cone
+    }
+    else
+    {
+      if ( ptTrack > fPtFraction*ptTrig ) nfrac++;
+    }
     
   }// charged particle loop
 
+  if ( fFillHistograms )
+  {
+    fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , histoWeight);
+    fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, histoWeight);
+  }
+  
   // Add reference arrays to AOD when filling AODs only
   if ( bFillAOD && reftracks ) pCandidate->AddObjArray(reftracks);  
 }
@@ -771,6 +827,173 @@ void AliIsolationCut::GetCoeffNormBadCell(AliCaloTrackParticleCorrelation * pCan
   }
 }
 
+
+//_________________________________________________________
+/// Create histograms to be saved in output file and 
+/// store them in outputContainer of the analysis class that calls this class.
+//_________________________________________________________
+TList * AliIsolationCut::GetCreateOutputObjects()
+{    
+  if ( !fHistoRanges )
+  {
+    AliFatal("Histogram ranges data base not initialized!");
+    return 0x0;
+  }
+  
+  fFillHistograms = kTRUE;
+
+  TList * outputContainer = new TList() ; 
+  outputContainer->SetName("IsolationCutBase") ; 
+  outputContainer->SetOwner(kFALSE);
+
+  Int_t   nptbins       = fHistoRanges->GetHistoPtBins();
+  Int_t   nphibins      = fHistoRanges->GetHistoPhiBins();
+  Int_t   netabins      = fHistoRanges->GetHistoEtaBins();
+  Float_t ptmax         = fHistoRanges->GetHistoPtMax();
+  Float_t phimax        = fHistoRanges->GetHistoPhiMax();
+  Float_t etamax        = fHistoRanges->GetHistoEtaMax();
+  Float_t ptmin         = fHistoRanges->GetHistoPtMin();
+  Float_t phimin        = fHistoRanges->GetHistoPhiMin();
+  Float_t etamin        = fHistoRanges->GetHistoEtaMin();
+  
+  Int_t   nptsumbins    = fHistoRanges->GetHistoNPtSumBins();
+  Float_t ptsummax      = fHistoRanges->GetHistoPtSumMax();
+  Float_t ptsummin      = fHistoRanges->GetHistoPtSumMin();
+  Int_t   nptinconebins = fHistoRanges->GetHistoNPtInConeBins();
+  Float_t ptinconemax   = fHistoRanges->GetHistoPtInConeMax();
+  Float_t ptinconemin   = fHistoRanges->GetHistoPtInConeMin();
+  
+  TString sParticle = ", x^{0,#pm}";
+  if      ( fPartInCone == kOnlyNeutral )  sParticle = ", x^{0}";
+  else if ( fPartInCone == kOnlyCharged )  sParticle = ", x^{#pm}";
+  
+  TString parTitleR   = Form("#it{R} = %2.2f%s"       ,fConeSize,sParticle.Data());
+
+  fhPtInCone  = new TH2F
+  ("hPtInCone",
+   Form("#it{p}_{T} of clusters and tracks in isolation cone for %s",parTitleR.Data()),
+   nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+  fhPtInCone->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+  fhPtInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  outputContainer->Add(fhPtInCone) ;
+  
+  fhConePtLead  = new TH2F
+  ("hConePtLead",
+   Form("Track or Cluster  leading #it{p}_{T} in isolation cone for #it{R} =  %2.2f",fConeSize),
+   nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+  fhConePtLead->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
+  fhConePtLead->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+  outputContainer->Add(fhConePtLead) ;
+  
+  fhConeSumPt  = new TH2F
+  ("hConePtSum",
+   Form("Track and Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f",fConeSize),
+   nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+  fhConeSumPt->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+  fhConeSumPt->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+  outputContainer->Add(fhConeSumPt) ;
+    
+  fhConeSumPtTrigEtaPhi  = new TH2F
+  ("hConePtSumTrigEtaPhi",
+   Form("Trigger #eta vs #varphi, #Sigma #it{p}_{T} in isolation cone for %s",parTitleR.Data()),
+   netabins,etamin,etamax,nphibins,phimin,phimax);
+  fhConeSumPtTrigEtaPhi->SetZTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+  fhConeSumPtTrigEtaPhi->SetXTitle("#eta_{trigger}");
+  fhConeSumPtTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+  outputContainer->Add(fhConeSumPtTrigEtaPhi) ;
+  
+  if ( fPartInCone != kOnlyCharged )
+  {
+    fhPtClusterInCone  = new TH2F
+    ("hPtClusterInCone",
+     Form("#it{p}_{T} of clusters in isolation cone for #it{R} =  %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+    fhPtClusterInCone->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+    fhPtClusterInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtClusterInCone) ;
+    
+    fhConePtLeadCluster  = new TH2F
+    ("hConeLeadPtCluster",
+     Form("Cluster leading in isolation cone for #it{R} =  %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+    fhConePtLeadCluster->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
+    fhConePtLeadCluster->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+    outputContainer->Add(fhConePtLeadCluster) ;
+    
+    fhConeSumPtCluster  = new TH2F
+    ("hConePtSumCluster",
+     Form("Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} = %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+    fhConeSumPtCluster->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+    fhConeSumPtCluster->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+    outputContainer->Add(fhConeSumPtCluster) ;
+  }
+  
+  if ( fPartInCone != kOnlyNeutral )
+  {
+    fhPtTrackInCone  = new TH2F
+    ("hPtTrackInCone",
+     Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+    fhPtTrackInCone->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+    fhPtTrackInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhPtTrackInCone) ;
+    
+    fhConePtLeadTrack  = new TH2F
+    ("hConeLeadPtTrack",
+     Form("Track leading in isolation cone for #it{R} = %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+    fhConePtLeadTrack->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
+    fhConePtLeadTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+    outputContainer->Add(fhConePtLeadTrack) ;
+    
+    fhConeSumPtTrack  = new TH2F
+    ("hConePtSumTrack",
+     Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+    fhConeSumPtTrack->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+    fhConeSumPtTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+    outputContainer->Add(fhConeSumPtTrack) ;
+  }
+  
+  if ( fPartInCone == kNeutralAndCharged )
+  {
+    fhConeSumPtClustervsTrack   = new TH2F
+    ("hConePtSumClustervsTrack",
+     Form("Track vs Cluster #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",fConeSize),
+     nptsumbins,ptsummin,ptsummax,nptsumbins,ptsummin,ptsummax);
+    fhConeSumPtClustervsTrack->SetXTitle("#Sigma #it{p}_{T}^{cluster} (GeV/#it{c})");
+    fhConeSumPtClustervsTrack->SetYTitle("#Sigma #it{p}_{T}^{track} (GeV/#it{c})");
+    outputContainer->Add(fhConeSumPtClustervsTrack) ;
+    
+    fhConeSumPtClusterTrackFrac   = new TH2F
+    ("hConePtSumClusterTrackFraction",
+     Form("#Sigma #it{p}_{T}^{cluster}/#Sigma #it{p}_{T}^{track} in isolation cone for #it{R} =  %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,200,0,5);
+    fhConeSumPtClusterTrackFrac->SetYTitle("#Sigma #it{p}^{cluster}_{T} /#Sigma #it{p}_{T}^{track}");
+    fhConeSumPtClusterTrackFrac->SetXTitle("#it{p}^{trigger}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhConeSumPtClusterTrackFrac) ;
+    
+    fhConePtLeadClustervsTrack   = new TH2F
+    ("hConePtLeadClustervsTrack",
+     Form("Track vs Cluster lead #it{p}_{T} in isolation cone for #it{R} =  %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+    fhConePtLeadClustervsTrack->SetXTitle("#it{p}^{leading cluster}_{T} (GeV/#it{c})");
+    fhConePtLeadClustervsTrack->SetYTitle("#it{p}^{leading track}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhConePtLeadClustervsTrack) ;
+    
+    fhConePtLeadClusterTrackFrac   = new TH2F
+    ("hConePtLeadClusterTrackFraction",
+     Form(" #it{p}^{leading cluster}_{T}/#it{p}^{leading track}_{T} in isolation cone for #it{R} =  %2.2f",fConeSize),
+     nptbins,ptmin,ptmax,200,0,5);
+    fhConePtLeadClusterTrackFrac->SetYTitle("#it{p}^{leading cluster}_{T}/ #it{p}^{leading track}_{T}");
+    fhConePtLeadClusterTrackFrac->SetXTitle("#it{p}^{trigger}_{T} (GeV/#it{c})");
+    outputContainer->Add(fhConePtLeadClusterTrackFrac) ;
+  }
+  
+  return outputContainer;
+}
+
 //____________________________________________
 // Put data member values in string to keep
 // in output container.
@@ -808,6 +1031,7 @@ TString AliIsolationCut::GetICParametersList()
 //____________________________________
 void AliIsolationCut::InitParameters()
 {
+  fFillHistograms = kFALSE; // True in GetCreateOutputObjects();
   fConeSize       = 0.4 ;
   fPtThreshold    = 0.5  ;
   fPtThresholdMax = 10000.  ;
@@ -838,6 +1062,7 @@ void AliIsolationCut::InitParameters()
 /// \param coneptsum: total momentum energy in cone (track+cluster), output.
 /// \param ptLead: momentum of leading cluster or track in cone, output.
 /// \param isolated: final bool with decission on isolation of candidate particle.
+/// \param histoWeight: Histograms weight (event, pt depedent).
 ///
 //________________________________________________________________________________
 void  AliIsolationCut::MakeIsolationCut
@@ -848,7 +1073,7 @@ void  AliIsolationCut::MakeIsolationCut
  Int_t     calorimeter, AliCaloPID * pid,
  Int_t   & nPart      , Int_t   & nfrac,
  Float_t & coneptsum  , Float_t & ptLead,
- Bool_t  & isolated
+ Bool_t  & isolated   , Double_t histoWeight   
 )
 {
   Float_t ptC   = pCandidate->Pt() ;
@@ -883,7 +1108,11 @@ void  AliIsolationCut::MakeIsolationCut
                                 aodArrayRefName    , bgTrk,
                                 nPart              , nfrac,
                                 coneptsumTrack     , coneptLeadTrack,
-                                etaBandPtSumTrack  , phiBandPtSumTrack);
+                                etaBandPtSumTrack  , phiBandPtSumTrack,
+                                histoWeight);
+  
+  pCandidate->SetChargedLeadPtInCone(coneptLeadTrack);
+  pCandidate->SetChargedPtSumInCone (coneptsumTrack);
   
   CalculateCaloSignalInCone    (pCandidate         , reader,
                                 bFillAOD           , useRefs, 
@@ -891,7 +1120,11 @@ void  AliIsolationCut::MakeIsolationCut
                                 calorimeter        , pid, 
                                 nPart              , nfrac,
                                 coneptsumCluster   , coneptLeadCluster,
-                                etaBandPtSumCluster, phiBandPtSumCluster);
+                                etaBandPtSumCluster, phiBandPtSumCluster,
+                                histoWeight);
+  
+  pCandidate->SetNeutralLeadPtInCone(coneptLeadCluster);
+  pCandidate->SetNeutralPtSumInCone (coneptsumCluster);
   
   coneptsum = coneptsumCluster + coneptsumTrack;
   
@@ -917,7 +1150,8 @@ void  AliIsolationCut::MakeIsolationCut
   
   //-------------------------------------------------------------------
   // Check isolation, depending on selected isolation criteria requested
-  
+  //-------------------------------------------------------------------
+
   if ( fICMethod == kPtThresIC )
   {
     if ( nPart == 0 ) isolated = kTRUE ;
@@ -1007,6 +1241,31 @@ void  AliIsolationCut::MakeIsolationCut
       isolated  =  kTRUE  ;
     
   }
+  
+  //-------------------------------------------------------------------
+  // Fill histograms
+  //-------------------------------------------------------------------
+
+  if ( !fFillHistograms ) return;
+  
+  if ( fPartInCone == kNeutralAndCharged )
+  {
+    fhConeSumPtClustervsTrack ->Fill(coneptsumCluster, coneptsumTrack , histoWeight);
+    fhConePtLeadClustervsTrack->Fill(coneptLeadCluster,coneptLeadTrack, histoWeight);
+    
+    if(coneptsumTrack  > 0) fhConeSumPtClusterTrackFrac ->Fill(ptC, coneptsumCluster /coneptsumTrack , histoWeight);
+    if(coneptLeadTrack > 0) fhConePtLeadClusterTrackFrac->Fill(ptC, coneptLeadCluster/coneptLeadTrack, histoWeight);
+  }
+  
+  fhConeSumPt              ->Fill(ptC,        coneptsum, histoWeight);
+  fhConeSumPtTrigEtaPhi    ->Fill(etaC, phiC, coneptsum *histoWeight); // check
+
+  Float_t coneptLead = coneptLeadTrack;
+  if(coneptLeadCluster > coneptLeadTrack) 
+    coneptLead = coneptLeadCluster;
+  
+  fhConePtLead->Fill(ptC, coneptLead, histoWeight);
+  
 }
 
 //_____________________________________________________
