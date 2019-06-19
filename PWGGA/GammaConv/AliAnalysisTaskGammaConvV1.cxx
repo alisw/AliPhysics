@@ -3683,9 +3683,9 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
-                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                   if(DeltaPhi > M_PI) {
                     DeltaPhi = 2*M_PI - DeltaPhi;
                   }
@@ -3716,9 +3716,9 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
-                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                   if(DeltaPhi > M_PI) {
                     DeltaPhi = 2*M_PI - DeltaPhi;
                   }
@@ -3763,9 +3763,9 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
                     fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                     fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                     Double_t RJetPi0Cand;
-                    for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                      Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                    for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                      Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                      Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                       if(DeltaPhi > M_PI) {
                         DeltaPhi = 2*M_PI - DeltaPhi;
                       }
@@ -3791,9 +3791,9 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles()
                   fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                   fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                   Double_t RJetPi0Cand;
-                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                  for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                     if(DeltaPhi > M_PI) {
                       DeltaPhi = 2*M_PI - DeltaPhi;
                     }

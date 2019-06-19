@@ -15,6 +15,7 @@ ClassImp(AliVertexerHyperTriton2Body)
     : TNamed(), fHe3Cuts{nullptr}, fPiCuts{nullptr},
       //________________________________________________
       //Flags for V0 vertexer
+      fMC{kFALSE},
       fkDoV0Refit(kFALSE),
       fMaxIterationsWhenMinimizing(27),
       fkPreselectX{true},
@@ -30,7 +31,8 @@ ClassImp(AliVertexerHyperTriton2Body)
       fMagneticField{0.},
       fPrimaryVertexX{0.},
       fPrimaryVertexY{0.},
-      fPrimaryVertexZ{0.}
+      fPrimaryVertexZ{0.},
+      fPID{nullptr}
 //________________________________________________
 {
 }
@@ -44,7 +46,7 @@ void AliVertexerHyperTriton2Body::SetupStandardVertexing()
 
     //V0-Related topological selections
     SetV0VertexerDCAFirstToPV(0.05);
-    SetV0VertexerDCASecondtoPV(0.05);
+    SetV0VertexerDCASecondToPV(0.05);
     SetV0VertexerDCAV0Daughters(1.20);
     SetV0VertexerCosinePA(0.98);
     SetV0VertexerMinRadius(0.9);
@@ -59,7 +61,7 @@ void AliVertexerHyperTriton2Body::SetupLooseVertexing()
 
     //V0-Related topological selections
     SetV0VertexerDCAFirstToPV(0.05);
-    SetV0VertexerDCASecondtoPV(0.05);
+    SetV0VertexerDCASecondToPV(0.05);
     SetV0VertexerDCAV0Daughters(1.60);
     SetV0VertexerCosinePA(0.99);
     SetV0VertexerMinRadius(0.9);
@@ -88,19 +90,22 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
         return v0s;
 
     std::vector<int> tracks[2][2];
-    if (!mcEvent)
+    if (!mcEvent || fMC == kFALSE)
+    {
         SelectTracks(event, tracks);
+    }
     else
+    {
         SelectTracksMC(event, mcEvent, tracks);
-    
-
-    for (int index{0}; index < 2; ++index) {
-        for (auto& nidx: tracks[1][index])
+    }
+    for (int index{0}; index < 2; ++index)
+    {
+        for (auto &nidx : tracks[1][index])
         {
             AliESDtrack *ntrk = event->GetTrack(nidx);
             if (!ntrk)
                 continue;
-            for (auto& pidx: tracks[0][index > 0 ? 0 : 1])
+            for (auto &pidx : tracks[0][index > 0 ? 0 : 1])
             {
                 AliESDtrack *ptrk = event->GetTrack(pidx);
                 if (!ptrk)
@@ -162,7 +167,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
 
                 //select maximum eta range (after propagation)
                 v0s.emplace_back(nt, nidx, pt, pidx);
-                AliESDv0& vertex = v0s.back();
+                AliESDv0 &vertex = v0s.back();
 
                 //Experimental: refit V0 if asked to do so
                 if (fkDoV0Refit)
@@ -197,7 +202,6 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                     continue;
                 if (lTransvMom > fMaxPtV0)
                     continue;
-
             }
         }
     }
@@ -776,20 +780,19 @@ void AliVertexerHyperTriton2Body::GetHelixCenter(const AliExternalTrackParam *tr
     return;
 }
 
-void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<int> tracks[2][2]) {
+void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<int> tracks[2][2])
+{
 
     if (!fPiCuts)
-        fPiCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+        fPiCuts = SetPionTPCTrackCuts();
     if (!fHe3Cuts)
-        fHe3Cuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+        fHe3Cuts = SetHe3TPCTrackCuts();
 
     fMagneticField = event->GetMagneticField();
-    
+
     for (int i = 0; i < event->GetNumberOfTracks(); i++)
     {
         AliESDtrack *esdTrack = event->GetTrack(i);
-
-            
 
         Double_t d = esdTrack->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField);
         if (TMath::Abs(d) < fV0VertexerSels[2])
@@ -797,9 +800,8 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
         if (TMath::Abs(d) > fV0VertexerSels[6])
             continue;
 
-
         const int index = int(esdTrack->GetSign() < 0.);
-        if (std::abs(fPID->NumberOfSigmasTPC(esdTrack,AliPID::kHe3)) < 5 &&
+        if (std::abs(fPID->NumberOfSigmasTPC(esdTrack, AliPID::kHe3)) < 5 &&
             fHe3Cuts->AcceptTrack(esdTrack))
             tracks[0][index].push_back(i);
         else if (fPiCuts->AcceptTrack(esdTrack))
@@ -807,7 +809,8 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
     }
 }
 
-void AliVertexerHyperTriton2Body::SelectTracksMC(AliESDEvent *event, AliMCEvent* mcEvent, std::vector<int> tracks[2][2]) {
+void AliVertexerHyperTriton2Body::SelectTracksMC(AliESDEvent *event, AliMCEvent *mcEvent, std::vector<int> tracks[2][2])
+{
 
     for (int i = 0; i < event->GetNumberOfTracks(); i++)
     {
@@ -815,16 +818,37 @@ void AliVertexerHyperTriton2Body::SelectTracksMC(AliESDEvent *event, AliMCEvent*
 
         int label = std::abs(esdTrack->GetLabel());
 
-        AliVParticle* part = mcEvent->GetTrack(label);
-        AliMCParticle* mother = mcEvent->MotherOfParticle(label);
+        if (!fPiCuts)
+            fPiCuts = SetPionTPCTrackCuts();
+        if (!fHe3Cuts)
+            fHe3Cuts = SetHe3TPCTrackCuts();
+
+        fMagneticField = event->GetMagneticField();
+
+        Double_t d = esdTrack->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField);
+        if (TMath::Abs(d) < fV0VertexerSels[2])
+            continue;
+        if (TMath::Abs(d) > fV0VertexerSels[6])
+            continue;
+
+        AliVParticle *part = mcEvent->GetTrack(label);
+        AliMCParticle *mother = mcEvent->MotherOfParticle(label);
         if (!mother || !part)
             continue;
         if (std::abs(mother->PdgCode()) != 1010010030)
             continue;
-
-        const int pion = std::abs(part->PdgCode()) == 211;
         const int index = int(esdTrack->GetSign() < 0.);
-        tracks[pion][index].push_back(i);
+        const int pion = std::abs(part->PdgCode()) == 211;
+        if (pion == 1)
+        {
+            if (fPiCuts->AcceptTrack(esdTrack))
+                tracks[pion][index].push_back(i);
+        }
+
+        else
+        {
+            if (fHe3Cuts->AcceptTrack(esdTrack))
+                tracks[pion][index].push_back(i);
+        }
     }
 }
-

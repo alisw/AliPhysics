@@ -7292,13 +7292,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   Int_t n = 0, nfrac = 0;
   Bool_t  isolated  = kFALSE ;
   Float_t coneptsum = 0, coneptlead = 0;
-  TObjArray * pl    = 0x0; ;
-  
-  //Select the calorimeter for candidate isolation with neutral particles
-  if      (GetCalorimeter() == kPHOS )
-    pl = GetPHOSClusters();
-  else if (GetCalorimeter() == kEMCAL)
-    pl = GetEMCALClusters();
   
   //Loop on AOD branch, filled previously in AliAnaPhoton, find leading particle to do isolation only with it
   Int_t idLeading = -1 ;
@@ -7347,10 +7340,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     
     //After cuts, study isolation
     n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0; coneptlead = 0;
-    GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,
-                                        GetReader(), GetCaloPID(),
-                                        kTRUE, aodinput, GetAODObjArrayName(),
-                                        n,nfrac,coneptsum,coneptlead,isolated);
+    GetIsolationCut()->MakeIsolationCut(aodinput, GetReader(),
+                                        kTRUE, kFALSE, GetAODObjArrayName(), 
+                                        0x0, 0x0,
+                                        GetCalorimeter(), GetCaloPID(),
+                                        n, nfrac, coneptsum, coneptlead, isolated);
     
     if(!fMakeSeveralIC) aodinput->SetIsolated(isolated);
     
@@ -7404,21 +7398,22 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     // --- In case of redoing isolation multiple cuts ----
     
-    if(fReMakeIC)
+    if ( fReMakeIC )
     {
       //In case a more strict IC is needed in the produced AOD
       Bool_t  isolated = kFALSE;
       Int_t   n = 0, nfrac = 0;
       Float_t coneptsum = 0, coneptlead = 0;
       
-      // Recover reference arrays with clusters and tracks
-      TObjArray * refclusters = aod->GetObjArray(GetAODObjArrayName()+"Clusters");
-      TObjArray * reftracks   = aod->GetObjArray(GetAODObjArrayName()+"Tracks");
-      
-      GetIsolationCut()->MakeIsolationCut(reftracks,   refclusters,
-                                          GetReader(), GetCaloPID(),
-                                          kFALSE, aod, "",
-                                          n,nfrac,coneptsum,coneptlead,isolated);
+//      // Recover reference arrays with clusters and tracks
+//      TObjArray * refclusters = aod->GetObjArray(GetAODObjArrayName()+"Clusters");
+//      TObjArray * reftracks   = aod->GetObjArray(GetAODObjArrayName()+"Tracks");
+//      
+      GetIsolationCut()->MakeIsolationCut(aod, GetReader(), 
+                                          kFALSE, kTRUE, GetAODObjArrayName(), 
+                                          0x0, 0x0,
+                                          GetCalorimeter(), GetCaloPID(),
+                                          n, nfrac, coneptsum, coneptlead, isolated);
     }
     
     Bool_t  isolated   = aod->IsIsolated();
@@ -8482,10 +8477,11 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliCaloTrackParticleCorrela
       GetIsolationCut()->SetPtFraction(fPtFractions[ipt]) ;
       GetIsolationCut()->SetSumPtThreshold(fSumPtThresholds[ipt]);
       
-      GetIsolationCut()->MakeIsolationCut(reftracks, refclusters,
-                                          GetReader(), GetCaloPID(),
-                                          kFALSE, ph, "",
-                                          n[icone][ipt],nfrac[icone][ipt],
+      GetIsolationCut()->MakeIsolationCut(ph, GetReader(), 
+                                          kFALSE, kTRUE, GetAODObjArrayName(), 
+                                          0x0, 0x0,
+                                          GetCalorimeter(), GetCaloPID(),
+                                          n[icone][ipt], nfrac[icone][ipt],
                                           coneptsum, coneptlead, isolated);
       
       // Normal pT threshold cut

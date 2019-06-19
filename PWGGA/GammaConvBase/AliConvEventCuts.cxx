@@ -3848,7 +3848,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     2.5,                        // LHC16t (267161-267166)
                                     2.5,                        // LHC17c-o (270531-281961)
                                     2.5                         // LHC17pq (282008-282441)
-//                                     2.5                         // 2018
+                                    // 2.5                         // 2018
                                   };
 
   Double_t spreadEMCalL0[51]    = { 0., 0., 0, 0,               // LHC11a 7TeV
@@ -3872,7 +3872,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     0.1,                        // LHC16t (267161-267166)
                                     0.1,                        // LHC17c-o (270531-281961)
                                     0.1                         // LHC17pq (282008-282441)
-//                                     0.1                         // 2018
+                                    // 0.1                         // 2018
                                   };
 
   Int_t runRangesEMCalL1[22]     = {  179796,                     // LHC12c-i (EGA)
@@ -3994,18 +3994,18 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     if (runnumber < runRangesEMCalL0[0]) return kTRUE;
     Int_t binRun = 0;
     while (!(runnumber >= runRangesEMCalL0[binRun] && runnumber < runRangesEMCalL0[binRun+1] ) && binRun < 51 ){
-//       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << ":\t"<< thresholdEMCalL0[binRun] << "\t" << spreadEMCalL0[binRun] << endl;
+      // cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << ":\t"<< thresholdEMCalL0[binRun] << "\t" << spreadEMCalL0[binRun] << endl;
       binRun++;
     }
     if (binRun==51) return kFALSE;
-//     cout << runnumber << "\t"<< binRun << "\t"<< thresholdEMCalL0[binRun] << "\t" << spreadEMCalL0[binRun] << endl;
+    // cout << runnumber << "\t"<< binRun << "\t"<< thresholdEMCalL0[binRun] << "\t" << spreadEMCalL0[binRun] << endl;
     Double_t threshold = thresholdEMCalL0[binRun];
 
     if (isMC && spreadEMCalL0[binRun] != 0.){
       threshold = fRandom.Gaus(thresholdEMCalL0[binRun], spreadEMCalL0[binRun]);
     }
 
-//     cout << "modified" << "\t"<< threshold << endl;
+    // cout << "modified" << "\t"<< threshold << endl;
     Int_t nclus = 0;
     TClonesArray * arrClustersMimic = NULL;
     if(!fCorrTaskSetting.CompareTo("")){
@@ -4053,7 +4053,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         continue;
       }
       if (clus->E() > threshold ){
-//         cout << "found L0" << endl;
+        // cout << "found L0" << endl;
         eventIsAccepted = kTRUE;
       }
       if(arrClustersMimic)
@@ -4069,7 +4069,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       if (runnumber < runRangesEMCalL1[0]) return kTRUE;
       Int_t binRun = 0;
       while (!(runnumber >= runRangesEMCalL1[binRun] && runnumber < runRangesEMCalL1[binRun+1] ) && binRun < 20 ){
-//         cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL1[binRun] << "\t" << runRangesEMCalL1[binRun+1] << ":\t"<< thresholdEMCalL1[binRun]<<"\t"<< spreadEMCalL1[binRun]<< endl;
+        // cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL1[binRun] << "\t" << runRangesEMCalL1[binRun+1] << ":\t"<< thresholdEMCalL1[binRun]<<"\t"<< spreadEMCalL1[binRun]<< endl;
         binRun++;
       }
       if (binRun==20) return kFALSE;
@@ -4079,7 +4079,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         threshold = fRandom.Gaus(thresholdEMCalL1[binRun], spreadEMCalL1[binRun]);
       }
 
-//       cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
+      // cout << runnumber << "\t"<< binRun << "\t L1 \t"<< threshold << endl;
 
       TClonesArray * arrClustersMimic = NULL;
       Int_t nclus = 0;
@@ -4127,7 +4127,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
           continue;
         }
         if (clus->E() > threshold ){
-//           cout << "found L1G1\t" << clus->E() << endl;
+          // cout << "found L1G1\t" << clus->E() << endl;
           eventIsAccepted = kTRUE;
         }
       }
@@ -4136,16 +4136,16 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       if (runnumber < runRangesEMCalL1G2[0]) return kTRUE;
       Int_t binRun = 0;
       while (!(runnumber >= runRangesEMCalL1G2[binRun] && runnumber < runRangesEMCalL1G2[binRun+1] ) && binRun < 19 ){
-//         cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL1G2[binRun] << "\t" << runRangesEMCalL1G2[binRun+1] << ":\t"<< thresholdEMCalL1G2[binRun]<<"\t"<< spreadEMCalL1G2[binRun]<< endl;
+        // cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL1G2[binRun] << "\t" << runRangesEMCalL1G2[binRun+1] << ":\t"<< thresholdEMCalL1G2[binRun]<<"\t"<< spreadEMCalL1G2[binRun]<< endl;
         binRun++;
       }
-//       cout << runnumber << "\t"<< binRun << "\t L2 \t"<< thresholdEMCalL1G2[binRun]<<"\t"<< spreadEMCalL1G2[binRun]<< endl;
+      // cout << runnumber << "\t"<< binRun << "\t L2 \t"<< thresholdEMCalL1G2[binRun]<<"\t"<< spreadEMCalL1G2[binRun]<< endl;
       if (binRun==19) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
       if (isMC && spreadEMCalL1G2[binRun] != 0.){
         threshold = fRandom.Gaus(thresholdEMCalL1G2[binRun], spreadEMCalL1G2[binRun]);
       }
-//       cout << "\t L2 mod\t"<< threshold << endl;
+      // cout << "\t L2 mod\t"<< threshold << endl;
 
       Int_t nclus = 0;
       TClonesArray * arrClustersMimic = NULL;
@@ -4194,7 +4194,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
           continue;
         }
         if (clus->E() > threshold ){
-//           cout << "found L1G2" << endl;
+          // cout << "found L1G2" << endl;
           eventIsAccepted = kTRUE;
         }
       }
@@ -4270,12 +4270,12 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
     if (fOfflineTriggerMask){
       isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
       if (isSelected && !fPreSelCut){
-//         cout << firedTrigClass.Data() << endl;
-//         cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
-//         if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
-//           if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(event);
-//           fTriggersEMCAL= GetTriggerList();
-//         }
+        // cout << firedTrigClass.Data() << endl;
+        // cout << "Special trigger: "<< fSpecialTrigger << " initialized " << fEMCALTrigInitialized << endl;
+        // if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+        //   if (!fEMCALTrigInitialized ) InitializeEMCALTrigger(event);
+        //   fTriggersEMCAL= GetTriggerList();
+        // }
         if (fSpecialSubTrigger>0 && !isMC){
           if(fNSpecialSubTriggerOptions==2){ // in case two special triggers are available
             if (!firedTrigClass.Contains(fSpecialSubTriggerName.Data()) && !firedTrigClass.Contains(fSpecialSubTriggerNameAdditional.Data())) isSelected = 0;
@@ -4564,7 +4564,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
             }
           }
           if (isSelected != 0 ){
-//             cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
+            // cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
             if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 ){
               if (hTriggerClassesCorrelated){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
@@ -4612,12 +4612,12 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 
         } else if (isMC){
           if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
-//             isSelected = 0;
-//             if (fTriggersEMCAL > 0)cout << "Special Trigger " << fSpecialTrigger << " triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << " run number: " <<event->GetRunNumber()<<endl;
-//             if (fTriggersEMCAL&fTriggersEMCALSelected){
-//               cout << "accepted ++++++++++++++++++++" << endl;
+            // isSelected = 0;
+            // if (fTriggersEMCAL > 0)cout << "Special Trigger " << fSpecialTrigger << " triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << " run number: " <<event->GetRunNumber()<<endl;
+            // if (fTriggersEMCAL&fTriggersEMCALSelected){
+            //   cout << "accepted ++++++++++++++++++++" << endl;
               isSelected = 1;
-//             }
+            // }
           }
         }
         //if for specific centrality trigger selection

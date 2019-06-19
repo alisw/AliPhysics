@@ -44,25 +44,42 @@ class AliIsolationCut : public TObject {
   enum partInCone { kNeutralAndCharged=0, kOnlyNeutral=1, kOnlyCharged=2 } ;
 
   // Main Methods
-
+  
   void       InitParameters() ;
 
   TString    GetICParametersList() ;
 
   Float_t    GetCellDensity(  AliCaloTrackParticleCorrelation * pCandidate,
                               AliCaloTrackReader * reader) const ;
-
-  void       MakeIsolationCut(TObjArray * plCTS, TObjArray * plNe,
-                              AliCaloTrackReader * reader,
-                              AliCaloPID * pid,
-                              Bool_t bFillAOD,
-                              AliCaloTrackParticleCorrelation  * pCandidate, TString aodObjArrayName,
-                              Int_t &n, Int_t & nfrac, Float_t &ptSum, Float_t &ptLead, Bool_t & isolated) ;
+  
+  void       MakeIsolationCut(AliCaloTrackParticleCorrelation  * pCandidate, AliCaloTrackReader * reader,
+                              Bool_t bFillAOD, Bool_t useRefs, TString aodObjArrayName,
+                              TObjArray * bgTrk, TObjArray * bgCls,
+                              Int_t calorimeter, AliCaloPID * pid,
+                              Int_t   & nPart, Int_t   & nfrac, 
+                              Float_t & ptSum, Float_t & ptLead, Bool_t & isolated) ;
 
   void       Print(const Option_t * opt) const ;
 
   Float_t    Radius(Float_t etaCandidate, Float_t phiCandidate, Float_t eta, Float_t phi) const ;
 
+  // Cone content calculation
+  
+  void       CalculateCaloSignalInCone (AliCaloTrackParticleCorrelation * aodParticle, AliCaloTrackReader * reader, 
+                                        Bool_t    bFillAOD    , Bool_t    useRefs, 
+                                        TString   refArrayName, TObjArray *bgTrk,
+                                        Int_t     calorimeter , AliCaloPID * pid,
+                                        Int_t   & nPart       , Int_t   & nfrac,
+                                        Float_t & coneptsum   , Float_t & coneptLead,
+                                        Float_t & etaBandPtSum, Float_t & phiBandPtSum) ;
+  
+  void       CalculateTrackSignalInCone(AliCaloTrackParticleCorrelation * aodParticle, AliCaloTrackReader * reader,
+                                        Bool_t    bFillAOD    , Bool_t    useRefs, 
+                                        TString   refArrayName, TObjArray *bgCls,
+                                        Int_t   & nPart       , Int_t   & nfrac,
+                                        Float_t & coneptsum   , Float_t & coneptLead,  
+                                        Float_t & etaBandPtSum, Float_t & phiBandPtSum) ;
+  
   // Cone background studies medthods
 
   Float_t    CalculateExcessAreaFraction(Float_t excess) const ;
@@ -139,7 +156,7 @@ class AliIsolationCut : public TObject {
   TLorentzVector fMomentum;      //!<! Momentum of cluster, temporal object.
 
   TVector3   fTrackVector;       //!<! Track moment, temporal object.
-
+  
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
 

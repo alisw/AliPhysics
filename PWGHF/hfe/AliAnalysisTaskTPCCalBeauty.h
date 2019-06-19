@@ -305,6 +305,10 @@ private:
     TH1F                *fHFElecAftTrkCuts; //!
     TH1F                *fBElecAftTrkCuts; //!
     
+    TH1F                *fElecAftLooseTrkCuts; //!
+    TH1F                *fHFElecAftLooseTrkCuts; //!
+    TH1F                *fBElecAftLooseTrkCuts; //!
+    
     TH1F                *fElecAftTrkMatch; //!
     TH1F                *fHFElecAftTrkMatch; //!
     TH1F                *fBElecAftTrkMatch; //!

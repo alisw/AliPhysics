@@ -219,6 +219,10 @@ fElecAftTrkCuts(0),
 fHFElecAftTrkCuts(0),
 fBElecAftTrkCuts(0),
 
+fElecAftLooseTrkCuts(0),
+fHFElecAftLooseTrkCuts(0),
+fBElecAftLooseTrkCuts(0),
+
 fElecAftTrkMatch(0),
 fHFElecAftTrkMatch(0),
 fBElecAftTrkMatch(0),
@@ -424,6 +428,10 @@ fBElecTPCTrk(0),
 fElecAftTrkCuts(0),
 fHFElecAftTrkCuts(0),
 fBElecAftTrkCuts(0),
+
+fElecAftLooseTrkCuts(0),
+fHFElecAftLooseTrkCuts(0),
+fBElecAftLooseTrkCuts(0),
 
 fElecAftTrkMatch(0),
 fHFElecAftTrkMatch(0),
@@ -1086,6 +1094,18 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fBElecAftTrkCuts = new TH1F("fBElecAftTrkCuts","B Elec after trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
         fBElecAftTrkCuts->Sumw2();
         fOutputList->Add(fBElecAftTrkCuts);
+        
+        fElecAftLooseTrkCuts = new TH1F("fElecAftLooseTrkCuts","Elec after loose trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
+        fElecAftLooseTrkCuts->Sumw2();
+        fOutputList->Add(fElecAftLooseTrkCuts);
+        
+        fHFElecAftLooseTrkCuts = new TH1F("fHFElecAftLooseTrkCuts","HF Elec after loose trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
+        fHFElecAftLooseTrkCuts->Sumw2();
+        fOutputList->Add(fHFElecAftLooseTrkCuts);
+        
+        fBElecAftLooseTrkCuts = new TH1F("fBElecAftLooseTrkCuts","B Elec after loose trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
+        fBElecAftLooseTrkCuts->Sumw2();
+        fOutputList->Add(fBElecAftLooseTrkCuts);
     
         fElecAftTrkMatch = new TH1F("fElecAftTrkMatch","Elec after trk Match; p_{T}(GeV/c); counts;",100,0,50.);
         fElecAftTrkMatch->Sumw2();
@@ -1592,12 +1612,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         
         Double_t d0z0[2]={-999,-999}, cov[3];
         Double_t DCAxyCut = 2.4, DCAzCut = 3.2;
-        if(track->GetTPCNcls() < fNclusTPC) continue;
-        if(track->GetITSNcls() < 3) continue;
-        if(track->GetTPCNCrossedRows() < fNCrossRows) continue;
-        if (fItsChi2>=0) {
-            if(track->GetITSchi2() > fItsChi2) continue;
-        }
+        
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;
         
         double phiMatchIts = track->Phi();
@@ -1606,6 +1621,22 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
         }
         Double_t DCA = d0z0[0]*track->Charge()*MagSign;
+        
+        
+        //Looser cuts to fill histo
+        if(track->GetTPCNcls()>=60 && track->GetITSNcls()>=2 && track->GetTPCNCrossedRows()>=80){
+            if(kTruElec == kTRUE) fElecAftLooseTrkCuts->Fill(track->Pt());
+            if(kTruHFElec == kTRUE) fHFElecAftLooseTrkCuts->Fill(track->Pt());
+            if(kTruBElec == kTRUE) fBElecAftLooseTrkCuts->Fill(track->Pt());
+        }
+            
+        //Tighter track cuts
+        if(track->GetTPCNcls() < fNclusTPC) continue;
+        if(track->GetITSNcls() < 3) continue;
+        if(track->GetTPCNCrossedRows() < fNCrossRows) continue;
+        if (fItsChi2>=0) {
+            if(track->GetITSchi2() > fItsChi2) continue;
+        }
         
         //fill the track histograms
         fTrkPt->Fill(track->Pt());

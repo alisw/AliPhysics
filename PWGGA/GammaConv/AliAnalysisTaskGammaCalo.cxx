@@ -4819,9 +4819,9 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
-                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                   if(DeltaPhi > M_PI) {
                     DeltaPhi = 2*M_PI - DeltaPhi;
                   }
@@ -4852,9 +4852,9 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
-                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                   if(DeltaPhi > M_PI) {
                     DeltaPhi = 2*M_PI - DeltaPhi;
                   }
@@ -4894,9 +4894,9 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
                   fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                   fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                   Double_t RJetPi0Cand;
-                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                  for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                     if(DeltaPhi > M_PI) {
                       DeltaPhi = 2*M_PI - DeltaPhi;
                     }
@@ -4921,9 +4921,9 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
                   fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                   fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                   Double_t RJetPi0Cand;
-                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                  for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                     if(DeltaPhi > M_PI) {
                       DeltaPhi = 2*M_PI - DeltaPhi;
                     }
@@ -5244,7 +5244,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             tSigInvMassPtAlphaTheta[fiCut]->Fill();
           }
 
-          if (fDoMesonQA == 5 && fIsMC == 0 && (pi0cand->M() > 0.05 && pi0cand->M() < 0.17)){
+          if (fDoMesonQA == 5 && fIsMC == 0 && ((pi0cand->M() > 0.05 && pi0cand->M() < 0.17) || (pi0cand->Pt() > 15. && pi0cand->M() > 0.45 && pi0cand->M() < 0.65 ))){
 
             TClonesArray * arrClustersProcess = NULL;
             arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));

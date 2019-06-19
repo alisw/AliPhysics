@@ -97,6 +97,8 @@ AliAnalysisTaskNucleiv2pPb::AliAnalysisTaskNucleiv2pPb():
   EPVzAvsCentrality(0), 
   EPVzCvsCentrality(0), 
   hQVzAQVzCvsCentrality(0),
+  hQVzAQTPCvsCentrality(0),
+  hQVzCQTPCvsCentrality(0),
   hQxVzAvsCentrality(0),
   hQyVzAvsCentrality(0),
   hQxVzCvsCentrality(0),
@@ -153,6 +155,8 @@ AliAnalysisTaskNucleiv2pPb::AliAnalysisTaskNucleiv2pPb(const char *name):
     EPVzAvsCentrality(0), 
     EPVzCvsCentrality(0), 
     hQVzAQVzCvsCentrality(0),
+    hQVzAQTPCvsCentrality(0),
+    hQVzCQTPCvsCentrality(0),
     hQxVzAvsCentrality(0),
     hQyVzAvsCentrality(0),
     hQxVzCvsCentrality(0),
@@ -261,12 +265,21 @@ void AliAnalysisTaskNucleiv2pPb::UserCreateOutputObjects()
   fListHist->Add(EPVzCvsCentrality);
   
 
-  if(fNHarm < 3)
+  if(fNHarm < 3){
     hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",1000,-100,100,105,0,105);
-  else
+    hQVzAQTPCvsCentrality = new TH2F("hQVzAQTPCvsCentrality","hQVzAQTPCvsCentrality",1000,-100,100,105,0,105);
+    hQVzCQTPCvsCentrality = new TH2F("hQVzCQTPCvsCentrality","hQVzCQTPCvsCentrality",1000,-100,100,105,0,105);
+  }
+  else{
     hQVzAQVzCvsCentrality = new TH2F("hQVzAQVzCvsCentrality","hQVzAQVzCvsCentrality",5000,-1000,1000,105,0,105);
-  fListHist->Add(hQVzAQVzCvsCentrality);
+    hQVzAQTPCvsCentrality = new TH2F("hQVzAQTPCvsCentrality","hQVzAQTPCvsCentrality",5000,-5000,5000,105,0,105);
+    hQVzCQTPCvsCentrality = new TH2F("hQVzCQTPCvsCentrality","hQVzCQTPCvsCentrality",5000,-5000,5000,105,0,105);
+  }
 
+  fListHist->Add(hQVzAQVzCvsCentrality);
+  fListHist->Add(hQVzAQTPCvsCentrality);
+  fListHist->Add(hQVzCQTPCvsCentrality);
+  
   if(fNHarm < 3){
     hQxVzAvsCentrality = new TH2F("hQxVzAvsCentrality","hQxVzAvsCentrality",100,-20,20,105,0,105);
     hQyVzAvsCentrality = new TH2F("hQyVzAvsCentrality","hQyVzAvsCentrality",100,-20,20,105,0,105);
@@ -544,12 +557,40 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
 
     EPVzAvsCentrality  ->Fill(evPlAngV0A  , iCen); 
     EPVzCvsCentrality  ->Fill(evPlAngV0C  , iCen); 
+    //-------------------
+    Int_t TrackNumber = fevent->GetNumberOfTracks();
+    fHistTrackMultiplicity->Fill(TrackNumber,iCen); //tracce per evento
 
+    Double_t Qxtn = 0, Qytn = 0;
+ 
+    //TPC loop
+    for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
+
+      AliVTrack* atrack = (AliVTrack*) fevent->GetTrack(j);
+      if (!atrack)
+	continue;
+      
+      Bool_t trkFlag = ((AliAODTrack*)atrack)->TestFilterBit(768);
+      
+      if ( trkFlag && TMath::Abs(atrack->Eta()) < 0.8 && atrack->GetTPCNcls() >= 70 && atrack->Pt() >= 0.2 && atrack->Pt() < 5.){
+	
+	Qxtn += TMath::Cos(fNHarm*atrack->Phi());
+	Qytn += TMath::Sin(fNHarm*atrack->Phi());
+	
+      }
+    }
+    
     //Scalar Product
   
     Double_t  QV0AQV0C = QxanCor *  QxcnCor+ QyanCor*QycnCor;
-    hQVzAQVzCvsCentrality->Fill(QV0AQV0C,iCen);
+    //SP large eta
+    Double_t corV0ATPCvn = QxanCor*Qxtn + QyanCor*Qytn;
+    Double_t corV0CTPCvn = QxcnCor*Qxtn + QycnCor*Qytn;
     
+    hQVzAQVzCvsCentrality->Fill(QV0AQV0C,iCen);
+    hQVzAQTPCvsCentrality->Fill(corV0ATPCvn,iCen);
+    hQVzCQTPCvsCentrality->Fill(corV0CTPCvn,iCen);
+  
     //NUA correction
  
     hQxVzAvsCentrality->Fill(QxanCor,iCen);
@@ -580,124 +621,122 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
     Float_t  uqV0A = -999;
     Float_t  uqV0C = -999; 
 
-    Int_t TrackNumber = fevent->GetNumberOfTracks();
-    fHistTrackMultiplicity->Fill(TrackNumber,iCen); //tracce per evento
-
-    for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
   
+    for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
+
       AliVTrack* atrack = (AliVTrack*) fevent->GetTrack(j);
       if (!atrack)
 	continue;
-    
+      
       Bool_t trkFlag = ((AliAODTrack*)atrack)->TestFilterBit(fFilterBit);
       
       if(!trkFlag)continue;
       
-        status  = (ULong_t)atrack->GetStatus();
+      status  = (ULong_t)atrack->GetStatus();
     
-	Bool_t hasTOFout  = status&AliVTrack::kTOFout; 
-	Bool_t hasTOF     = kFALSE;
-	if (hasTOFout) hasTOF = kTRUE;
-	Float_t length = atrack->GetIntegratedLength(); 
-	if (length < 350.) hasTOF = kFALSE;
+      Bool_t hasTOFout  = status&AliVTrack::kTOFout; 
+      Bool_t hasTOF     = kFALSE;
+      if (hasTOFout) hasTOF = kTRUE;
+      Float_t length = atrack->GetIntegratedLength(); 
+      if (length < 350.) hasTOF = kFALSE;
+      
+      TPCSignal=atrack->GetTPCsignal(); 
+      
+      if(TPCSignal<10)continue;
+      if(TPCSignal>1000)continue;
+      
+      Double_t ptot = atrack->GetTPCmomentum(); // momentum for dEdx determination
+      Double_t pt  = atrack->Pt();
 	
-	TPCSignal=atrack->GetTPCsignal(); 
+      if(ptot<0.60)continue;
+      if(pt<0.60)continue;
 	
-	if(TPCSignal<10)continue;
-	if(TPCSignal>1000)continue;
-	
-	Double_t ptot = atrack->GetTPCmomentum(); // momentum for dEdx determination
-	Double_t pt  = atrack->Pt();
-	
-	if(ptot<0.60)continue;
-	if(pt<0.60)continue;
-	
-	fhBB->Fill(ptot*atrack->Charge(),TPCSignal);
+      fhBB->Fill(ptot*atrack->Charge(),TPCSignal);
 
-	Double_t d[2], covd[3];
-	AliAODTrack* track_clone=(AliAODTrack*)atrack->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
-	Bool_t isDCA = track_clone->PropagateToDCA(fevent->GetPrimaryVertex(),fevent->GetMagneticField(),9999.,d,covd);
-	delete track_clone;
-	if(!isDCA)d[0]=-999.;
-	impactXY = d[0];
-	impactZ  = d[1];
+      Double_t d[2], covd[3];
+      AliAODTrack* track_clone=(AliAODTrack*)atrack->Clone("track_clone"); // need to clone because PropagateToDCA updates the track parameters
+      Bool_t isDCA = track_clone->PropagateToDCA(fevent->GetPrimaryVertex(),fevent->GetMagneticField(),9999.,d,covd);
+      delete track_clone;
+      if(!isDCA)d[0]=-999.;
+      impactXY = d[0];
+      impactZ  = d[1];
 
-	if(fptc==1)
-	  pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)5)));;
-	if(fptc==2)
-	  pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)6)));;
-	if(fptc==3)
-	  pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)7)));;
+      if(fptc==1)
+	pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)5)));;
+      if(fptc==2)
+	pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)6)));;
+      if(fptc==3)
+	pullTPC  = TMath::Abs((fPIDResponse->NumberOfSigmasTPC(atrack,(AliPID::EParticleType)7)));;
 	
-	Double_t p    = atrack->P();
-	Double_t tof  = atrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
-	Double_t tPhi = atrack->Phi();
+      Double_t p    = atrack->P();
+      Double_t tof  = atrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(p);
+      Double_t tPhi = atrack->Phi();
 	
-	Float_t  beta = 0;
-	Float_t  gamma = 0;
-	Float_t  mass  = -99;
+      Float_t  beta = 0;
+      Float_t  gamma = 0;
+      Float_t  mass  = -99;
 	
-	if(fptc==3)
-	  pt = 2*pt;
+      if(fptc==3)
+	pt = 2*pt;
 
-	if(TMath::Abs(ptot) < pmax  && TMath::Abs(pt) < ptmax && TMath::Abs(pullTPC) <= 3){
+      if(TMath::Abs(ptot) < pmax  && TMath::Abs(pt) < ptmax && TMath::Abs(pullTPC) <= 3){
 	 
 
-	  if (hasTOF) {
-	    beta = length / (2.99792457999999984e-02 * tof);
-	    gamma = 1/TMath::Sqrt(1 - beta*beta);
-	    mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
+	if (hasTOF) {
+	  beta = length / (2.99792457999999984e-02 * tof);
+	  gamma = 1/TMath::Sqrt(1 - beta*beta);
+	  mass = ptot/TMath::Sqrt(gamma*gamma - 1); // using inner TPC mom. as approx.
 	    
-	    if(fptc==1){
-	      if(TMath::Abs(mass) > 2.65)continue;
-	      if(TMath::Abs(mass) < 1.05)continue;
-	    }
-	    if(fptc==2){
-	      if(TMath::Abs(mass) > 5.0)continue;
-	      if(TMath::Abs(mass) < 1.8 )continue;
-	    }
-	    if(fptc==3){
-	      if(TMath::Abs(mass) > 5.0)continue;
-	      if(TMath::Abs(mass) < 1.8)continue;
-	    }
-	    fhMassTOF->Fill(mass);
+	  if(fptc==1){
+	    if(TMath::Abs(mass) > 2.65)continue;
+	    if(TMath::Abs(mass) < 1.05)continue;
+	  }
+	  if(fptc==2){
+	    if(TMath::Abs(mass) > 5.0)continue;
+	    if(TMath::Abs(mass) < 1.8 )continue;
+	  }
+	  if(fptc==3){
+	    if(TMath::Abs(mass) > 5.0)continue;
+	    if(TMath::Abs(mass) < 1.8)continue;
+	  }
+	  fhMassTOF->Fill(mass);
 	    
-	    fhTOF->Fill(ptot*atrack->Charge(),beta);
+	  fhTOF->Fill(ptot*atrack->Charge(),beta);
 
-	  } //has tof loop
+	} //has tof loop
 
-	  fhBBDeu->Fill(ptot*atrack->Charge(),TPCSignal);
+	fhBBDeu->Fill(ptot*atrack->Charge(),TPCSignal);
       	    
-	  deltaphiV0A=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0A));
-	  deltaphiV0C=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0C));
+	deltaphiV0A=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0A));
+	deltaphiV0C=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0C));
       
-	  // Scalar Product
+	// Scalar Product
       
-	  uqV0A = TMath::Cos(fNHarm*tPhi)*QxanCor+TMath::Sin(fNHarm*tPhi)*QyanCor;
-	  uqV0C = TMath::Cos(fNHarm*tPhi)*QxcnCor+TMath::Sin(fNHarm*tPhi)*QycnCor;
+	uqV0A = TMath::Cos(fNHarm*tPhi)*QxanCor+TMath::Sin(fNHarm*tPhi)*QyanCor;
+	uqV0C = TMath::Cos(fNHarm*tPhi)*QxcnCor+TMath::Sin(fNHarm*tPhi)*QycnCor;
 	  
-	  tCentrality      = iCen;
-	  tType            = eventtype;
-	  tHasTOF          = hasTOF;
-	  tpT              = pt;
-	  tMassTOF         = mass;
-	  tuqV0A           = uqV0A;
-	  tuqV0C           = uqV0C;
-	  tCharge          = atrack->Charge();
-	  tCosdeltaphiV0A  = deltaphiV0A;
-	  tCosdeltaphiV0C  = deltaphiV0C;
-	  timpactXY        = impactXY;
-	  timpactZ         = impactZ;
-	  tpull            = pullTPC;
-	  tphi             = tPhi;
+	tCentrality      = iCen;
+	tType            = eventtype;
+	tHasTOF          = hasTOF;
+	tpT              = pt;
+	tMassTOF         = mass;
+	tuqV0A           = uqV0A;
+	tuqV0C           = uqV0C;
+	tCharge          = atrack->Charge();
+	tCosdeltaphiV0A  = deltaphiV0A;
+	tCosdeltaphiV0C  = deltaphiV0C;
+	timpactXY        = impactXY;
+	timpactZ         = impactZ;
+	tpull            = pullTPC;
+	tphi             = tPhi;
 	  
-	  if(pt<1.5)   
+	if(pt<1.5)   
+	  ftree->Fill();
+	else
+	  if(hasTOF==1)
 	    ftree->Fill();
-	  else
-	    if(hasTOF==1)
-	      ftree->Fill();
 	  
-	}//POI selection
+      }//POI selection
 	
     }//track loop
 
