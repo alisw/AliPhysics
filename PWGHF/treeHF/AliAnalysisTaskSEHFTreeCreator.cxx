@@ -593,8 +593,10 @@ AliAnalysisTaskSEHFTreeCreator::~AliAnalysisTaskSEHFTreeCreator()
       delete fTreeHandlerParticle;
       fTreeHandlerParticle = 0x0;
     }
-    if(fTreeHandlerJet.empty()) {
-      fTreeHandlerJet.clear();
+    for(auto& thj : fTreeHandlerJet) {
+      if(thj) {
+        delete thj;
+      }
     }
     if(fTreeHandlerGenD0) {
       delete fTreeHandlerGenD0;
