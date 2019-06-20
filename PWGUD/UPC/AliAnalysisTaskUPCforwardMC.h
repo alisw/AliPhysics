@@ -911,6 +911,24 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH1F*                   fMCEfficiencyPerRunH;  //!
 
+                                /**
+                                 * This array of histograms shows the
+                                 * distribution of the dead zones of the
+                                 * detector on a run-by-run basis.
+                                 * To avoid a complicated logic, I have
+                                 * declared 60k histograms.
+                                 * This is because there are runs from about
+                                 * 240k to 300k.
+                                 * However, this is too heavy for ROOT.
+                                 * Hence, I have declared them as
+                                 * SPARSE. Most of these 60k histograms
+                                 * are empty anyway, so it is best to save
+                                 * on space...
+                                 */
+        // THnSparseF*             fDeadZoneEtaVsPhiPerRunH[60000 + 1]; //!
+        // THnSparseF*             fDeadZoneEtaVsPhiPerRunH[364]; //!    number of total runs
+        TH2F*                   fDeadZoneEtaVsPhiPerRunH[364]; //!    number of total runs
+
 
         //_______________________________
         // CUTS
@@ -921,6 +939,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         Int_t                   fRunNum;        //!
         Int_t                   fTracklets;     //!
         Double_t                fLumiPerRun;    //!
+        Double_t*               fEtaAndPhi;     //!
 
         UInt_t                  fL0inputs;      //!
       	UInt_t                  fL1inputs;      //!
@@ -995,7 +1014,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 20);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 21);
 };
 
 #endif
