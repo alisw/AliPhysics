@@ -11,6 +11,8 @@
 #include <AliAnalysisTaskSE.h>
 #include <THnSparse.h>
 #include <deque>
+#include "AliEventCuts.h"
+
 class AliAnalysisTask;
 class AliESDtrackCuts;
 class AliESDEvent;
@@ -214,6 +216,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXiAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillTrackToEventPool();
+    double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
     TAxis AxisVar(TString name, std::vector<Double_t> bin);
@@ -238,6 +241,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Long64_t FillTHnSparse(THnSparse* h,
                            std::vector<Double_t> x,
                            Double_t w = 1.);
+
+    AliEventCuts fEventCuts;  // Event cuts
 
    private:
     typedef std::vector<AliVTrack*> tracklist;
@@ -344,7 +349,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 20);
+    ClassDef(AliAnalysisTaskXi1530, 21);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -367,6 +372,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 18: Enable AOD functionality
     // 19: Update default filterbit
     // 20: Remove RunTable Class.
+    // 21: Use AliEventCuts
 };
 
 #endif

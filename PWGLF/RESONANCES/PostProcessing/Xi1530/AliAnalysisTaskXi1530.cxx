@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/06/19
+//  Last Modified Date: 2019/06/20
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +47,7 @@
 #include "TFile.h"
 #include "TParticlePDG.h"
 #include "TSystem.h"
+#include "AliEventCuts.h"
 
 // from header
 #include "AliAODEvent.h"
@@ -57,7 +58,9 @@
 #include "AliPIDCombined.h"
 #include "AliPIDResponse.h"
 #include "THistManager.h"
-//
+// for NanoAOD
+#include <AliNanoAODHeader.h>
+#include <AliNanoAODTrack.h>
 
 #include "AliAnalysisTaskXi1530.h"
 
@@ -266,16 +269,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         CreateTHnSparse("htriggered_CINT7", "", 3, {MCType, binCent, binTrklet},
                         "s");
     }
-
-    std::vector<TString> ent = {"All",         "Trigger",    "InCompleteDAQ",
-                                "No BG",       "No pile up", "Good vertex",
-                                "|Zvtx|<10cm", "IENLgtZERO", "AliMultSelection",
-                                "INELg0True"};  // Normal setup
-    auto hNofEvt =
-        fHistos->CreateTH1("hEventNumbers", "", ent.size(), 0, ent.size());
-    for (auto i = 0u; i < ent.size(); i++)
-        hNofEvt->GetXaxis()->SetBinLabel(i + 1, ent.at(i).Data());
-
     // stupid method, should be modified later!
     const double* centbin_array = &centaxisbin[0];
     std::vector<double> eventbin = {0.5, 1.5, 2.5, 3.5, 4.5,
@@ -285,6 +278,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     fHistos->CreateTH2("hEventNumbers_multi", "", eventbin.size() - 1,
                        eventbin_array, centaxisbin.size() - 1, centbin_array);
 
+    fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
     // QA Histograms--------------------------------------------------
     //
     if (fQA) {
@@ -471,6 +465,11 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     }
     // ----------------------------------------------------------------------
 
+    // NanoAOD --------------------------------------------------------------
+    AliNanoAODHeader* nanoHeader =
+        dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
+    // ----------------------------------------------------------------------
+
     // Connect to ESD tree --------------------------------------------------
     event->IsA() == AliESDEvent::Class()
         ? fEvt = dynamic_cast<AliESDEvent*>(event)
@@ -485,68 +484,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             ->GetInputEventHandler();
     // ----------------------------------------------------------------------
 
-    // Preparation for MC ---------------------------------------------------
-    if (IsMC) {
-        if (fEvt->IsA() == AliESDEvent::Class()) {
-            fMCEvent = MCEvent();
-            IsINEL0True = IsMCEventTrueINEL0();
-        }  // ESD Case
-        else {
-            fMCArray = (TClonesArray*)fEvt->FindListObject("mcparticles");
-            fMCEvent = MCEvent();
-            IsINEL0True = IsMCEventTrueINEL0();
-        }  // AOD Case
-    }
-    // ----------------------------------------------------------------------
-    bField = fEvt->GetMagneticField();  // bField for track DCA
-
-    // Event Selection START ************************************************
-
-    // Trigger Check---------------------------------------------------------
-    Bool_t IsSelectedTrig;
-    if (!IsMC) {
-        if (!IsHighMult)
-            IsSelectedTrig =
-                (inputHandler->IsEventSelected() & AliVEvent::kINT7);
-        else
-            IsSelectedTrig =
-                (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0);
-    } else
-        IsSelectedTrig = (inputHandler->IsEventSelected() & AliVEvent::kINT7);
-
-    // SPD vs Cluster BG cut-------------------------------------------------
-    Bool_t SPDvsClustersBG = kFALSE;
-    AliAnalysisUtils* AnalysisUtils = new AliAnalysisUtils();
-    if (!AnalysisUtils) {
-        AliInfo("No AnalysisUtils Object Found");
-        return;
-    } else
-        SPDvsClustersBG = AnalysisUtils->IsSPDClusterVsTrackletBG(fEvt);
-
-    // Pile up rejection-----------------------------------------------------
-    // Enhanced Pileup rejection method for the higher multiplicity region
-    // detail: https://alice-notes.web.cern.ch/node/478
-    Bool_t IsNotPileUp = AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvt);
-
-    // In Complete DAQ Event Cut----------------------------------------------
-    Bool_t IncompleteDAQ = fEvt->IsIncompleteDAQ();
-
-    // Multiplicity(centrality) ---------------------------------------------
-    if (fEvt->IsA() == AliESDEvent::Class()) {
-        ftrackmult = AliESDtrackCuts::GetReferenceMultiplicity(
-            ((AliESDEvent*)fEvt), AliESDtrackCuts::kTracklets,
-            0.8);  // tracklet in eta +_0.8
-    } else {
-        ftrackmult = fEvt->GetMultiplicity()->GetNumberOfTracklets();
-    }
-    fCent = GetMultiplicty(fEvt);  // Centrality(AA), Multiplicity(pp)
-
-    // PID response ----------------------------------------------------------
-    fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
-    if (!fPIDResponse)
-        AliInfo("No PIDd");
-
-    // Vertex Check-----------------------------------------------------------
+    // Global Variables -----------------------------------------------------
+    // Vertex Check
     const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
     // const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTracks() ;
     const AliVVertex* spdVtx = fEvt->GetPrimaryVertexSPD();
@@ -555,151 +494,201 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     PVz = pVtx->GetZ();
     fZ = spdVtx->GetZ();
 
-    Bool_t IsGoodVertex =
-        AliMultSelectionTask::HasGoodVertex2016(fEvt) &&
-        AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(fEvt);
-    Bool_t IsVtxInZCut = (fabs(fZ) < 10);
-    Bool_t IsTrackletinEta1 = kFALSE;
-    if (fEvt->IsA() == AliESDEvent::Class()) {
-        IsTrackletinEta1 =
-            (AliESDtrackCuts::GetReferenceMultiplicity(
-                 ((AliESDEvent*)fEvt), AliESDtrackCuts::kTracklets, 1.0) >= 1);
-    } else {
-        for (int i = 0; i < fEvt->GetMultiplicity()->GetNumberOfTracklets();
-             i++) {
-            if (fEvt->GetMultiplicity()->GetEta(i) < 1.0) {
-                IsTrackletinEta1 = kTRUE;
-                break;
+    // Initialize
+    bool IsMultSelcted{false}, IsSelectedTrig{false}, IsEvtSelected{false};
+    Double_t intensity = 0.;
+    bField = fEvt->GetMagneticField();  // bField for track DCA
+
+    if (!nanoHeader) {
+        // Preparation for MC
+        // ---------------------------------------------------
+        if (IsMC) {
+            if (fEvt->IsA() == AliESDEvent::Class()) {
+                fMCEvent = MCEvent();
+                IsINEL0True = IsMCEventTrueINEL0();
+            }  // ESD Case
+            else {
+                fMCArray = (TClonesArray*)fEvt->FindListObject("mcparticles");
+                fMCEvent = MCEvent();
+                IsINEL0True = IsMCEventTrueINEL0();
+            }  // AOD Case
+        }
+        // Trigger Check
+        // ----------------------------------------------------------
+        if (!IsMC) {
+            if (!IsHighMult)
+                IsSelectedTrig =
+                    (inputHandler->IsEventSelected() & AliVEvent::kINT7);
+            else
+                IsSelectedTrig =
+                    (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0);
+        } else
+            IsSelectedTrig =
+                (inputHandler->IsEventSelected() & AliVEvent::kINT7);
+        
+        // Multiplicity(centrality)
+        // ---------------------------------------------
+        if (fEvt->IsA() == AliESDEvent::Class()) {
+            ftrackmult = AliESDtrackCuts::GetReferenceMultiplicity(
+                ((AliESDEvent*)fEvt), AliESDtrackCuts::kTracklets,
+                0.8);  // tracklet in eta +_0.8
+        } else {
+            ftrackmult = fEvt->GetMultiplicity()->GetNumberOfTracklets();
+        }
+        
+        //fCent = GetMultiplicty(fEvt);  // Centrality(AA), Multiplicity(pp)
+        fCent = fEventCuts.GetCentrality();
+
+        // PID response
+        // ----------------------------------------------------------
+        fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
+        if (!fPIDResponse)
+            AliInfo("No PIDd");
+        Bool_t IsGoodVertex =
+            AliMultSelectionTask::HasGoodVertex2016(fEvt) &&
+            AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(fEvt);
+        Bool_t IsVtxInZCut = (fabs(fZ) < 10);
+
+        Bool_t IsTrackletinEta1 = kFALSE;
+        if (fEvt->IsA() == AliESDEvent::Class()) {
+            IsTrackletinEta1 = (AliESDtrackCuts::GetReferenceMultiplicity(
+                                    ((AliESDEvent*)fEvt),
+                                    AliESDtrackCuts::kTracklets, 1.0) >= 1);
+        } else {
+            for (int i = 0; i < fEvt->GetMultiplicity()->GetNumberOfTracklets();
+                 i++) {
+                if (fEvt->GetMultiplicity()->GetEta(i) < 1.0) {
+                    IsTrackletinEta1 = kTRUE;
+                    break;
+                }
             }
         }
-    }
-    // Multi Selection--------------------------------------------------------
-    // Include:
-    //    – INEL>0 selection: At least one SPD tracklet is required within
-    //       |η| < 1 (IsTrackletinEta1)
-    //    – Pileup rejection using AliAnalysisUtils::IsPileUpSPD()
-    //      + IsPileupFromSPDInMultBins() (IsNotPileUp)
-    //      + IsPileUpMV()
-    //    - IsSPDClusterVsTrackletBG
-    //    - IsSelectedTrigger: for given trigger. default: AliVEvent::kMB
-    //    – SPD vertex z resolution < 0.2 cm (IsGoodVertex)
-    //    – z-position difference between trackand SPD vertex < 0.5 cm
-    //      (IsGoodVertex)
-    //    – vertex z position: |vz| < 10 cm (IsVtxInZCut)
-    //    - INEL>0: at least 1 tracklet in eta +_1 region. (IsTrackletinEta1)
-    //    - IsNotAsymmetricInVZERO: checks if VZERO signals are not heavily
-    //                              asymmetric
-    // Most of them are already choosed in above sections.
-    // Not included:
-    //    - IsPileUpMV
-    //    - IsNotAsymmetricInVZERO
+        AliMultSelection* MultSelection =
+            (AliMultSelection*)fEvt->FindListObject("MultSelection");
+        IsMultSelcted = MultSelection->IsEventSelected();
+        // Pile up rejection
+        // -----------------------------------------------------
+        // Enhanced Pileup rejection method for the higher multiplicity region
+        // detail: https://alice-notes.web.cern.ch/node/478
+        Bool_t IsNotPileUp = AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvt);
 
-    AliMultSelection* MultSelection =
-        (AliMultSelection*)fEvt->FindListObject("MultSelection");
-    Bool_t IsMultSelcted = MultSelection->IsEventSelected();
-    if (IsSelectedTrig && IsMultSelcted && fQA)
+        // In Complete DAQ Event Cut
+        // --------------------------------------------------
+        Bool_t IncompleteDAQ = fEvt->IsIncompleteDAQ();
+
+        // SPD vs Cluster BG cut
+        // -------------------------------------------------
+        Bool_t SPDvsClustersBG = kFALSE;
+        AliAnalysisUtils* AnalysisUtils = new AliAnalysisUtils();
+        if (!AnalysisUtils) {
+            AliInfo("No AnalysisUtils Object Found");
+            return;
+        } else
+            SPDvsClustersBG = AnalysisUtils->IsSPDClusterVsTrackletBG(fEvt);
+
+        IsPS = IsSelectedTrig       // CINT7 Trigger selected
+               && !IncompleteDAQ    // No IncompleteDAQ
+               && !SPDvsClustersBG  // No SPDvsClusters Background
+               && IsNotPileUp;      // PileUp rejection
+
+        IsINEL0Rec =
+            IsPS && IsGoodVertex &&
+            IsVtxInZCut &&  // recontructed INEL > 0 is PS + vtx + Zvtx inside
+                            // +-10
+            IsTrackletinEta1;  // at least 1 tracklet in eta +_1 region.
+
+        if (IsSelectedTrig && IsMultSelcted && fQA)
+            fHistos->FillTH1("hMult_QA_onlyMult", (double)fCent);
+
+        //  Missing Vetex and Trriger Efficiency
+        //  ---------------------------------
+        if (IsMC) {
+            // bin
+            if (IsINEL0True) {
+                FillTHnSparse("htriggered_CINT7",
+                              {(double)kTrueINELg0, (double)fCent, ftrackmult});
+                if (IsSelectedTrig)
+                    FillTHnSparse(
+                        "htriggered_CINT7",
+                        {(double)kTrig_TrueINELg0, (double)fCent, ftrackmult});
+                if (IsPS && IsGoodVertex)
+                    FillTHnSparse("htriggered_CINT7",
+                                  {(double)kGoodVtx_TrueINELg0, (double)fCent,
+                                   ftrackmult});
+                if (IsPS && IsGoodVertex && IsVtxInZCut)
+                    FillTHnSparse("htriggered_CINT7",
+                                  {(double)kVzCutted_TrueINELg0, (double)fCent,
+                                   ftrackmult});
+                if (IsINEL0Rec && IsMultSelcted)
+                    FillTHnSparse("htriggered_CINT7",
+                                  {(double)kSelected_TrueINELg0, (double)fCent,
+                                   ftrackmult});
+            }
+            FillTHnSparse("htriggered_CINT7",
+                          {(double)kTrue, (double)fCent, ftrackmult});
+            if (IsSelectedTrig)
+                FillTHnSparse("htriggered_CINT7",
+                              {(double)kTrig, (double)fCent, ftrackmult});
+            if (IsPS && IsGoodVertex)
+                FillTHnSparse("htriggered_CINT7",
+                              {(double)kGoodVtx, (double)fCent, ftrackmult});
+            if (IsPS && IsGoodVertex && IsVtxInZCut)
+                FillTHnSparse("htriggered_CINT7",
+                              {(double)kVzCutted, (double)fCent, ftrackmult});
+            if (IsINEL0Rec && IsMultSelcted)
+                FillTHnSparse("htriggered_CINT7",
+                              {(double)kSelected, (double)fCent, ftrackmult});
+        }
+        // -----------------------------------------------------------------------
+        // Signal Loss Correction
+        // -----------------------------------------------
+        if (IsMC) {
+            if (fEvt->IsA() == AliESDEvent::Class()) {
+                if (IsINEL0True && IsVtxInZCut) {  // INEL>0|10
+                    FillMCinput(fMCEvent, 1);
+                    FillMCinputdXi(fMCEvent, 1);
+                }
+                if (IsVtxInZCut) {  // INEL10
+                    FillMCinput(fMCEvent, 2);
+                    FillMCinputdXi(fMCEvent, 2);
+                }
+                if (IsSelectedTrig) {  // INEL>0 +|Vz| < 10 cm
+                    FillMCinput(fMCEvent, 3);
+                    FillMCinputdXi(fMCEvent, 3);
+                }
+            } else {
+                if (IsINEL0True && IsVtxInZCut) {  // INEL>0|10
+                    FillMCinputAOD(fMCEvent, 1);
+                    FillMCinputdXiAOD(fMCEvent, 1);
+                }
+                if (IsVtxInZCut) {  // INEL10
+                    FillMCinputAOD(fMCEvent, 2);
+                    FillMCinputdXiAOD(fMCEvent, 2);
+                }
+                if (IsSelectedTrig) {  // INEL>0 +|Vz| < 10 cm
+                    FillMCinputAOD(fMCEvent, 3);
+                    FillMCinputdXiAOD(fMCEvent, 3);
+                }
+            }
+        }
+        IsEvtSelected = fEventCuts.AcceptEvent(event);
+    } else {
+        ftrackmult = nanoHeader->GetCentr("TRK");
+        fCent = nanoHeader->GetCentr("V0M");
+
         fHistos->FillTH1("hMult_QA_onlyMult", (double)fCent);
-    // Physics Selection------------------------------------------------------
-    IsPS = IsSelectedTrig       // CINT7 Trigger selected
-           && !IncompleteDAQ    // No IncompleteDAQ
-           && !SPDvsClustersBG  // No SPDvsClusters Background
-           && IsNotPileUp;      // PileUp rejection
 
-    IsINEL0Rec =
-        IsPS && IsGoodVertex &&
-        IsVtxInZCut &&  // recontructed INEL > 0 is PS + vtx + Zvtx inside +-10
-        IsTrackletinEta1;  // at least 1 tracklet in eta +_1 region.
-
-    // Fill Numver of Events -------------------------------------------------
-    fHistos->FillTH1("hEventNumbers", "All", 1);
-    fHistos->FillTH2("hEventNumbers_multi", kALL, (double)fCent);
-    if (IsSelectedTrig) {
-        fHistos->FillTH1("hEventNumbers", "Trigger", 1);
-        fHistos->FillTH2("hEventNumbers_multi", kTrigger, (double)fCent);
+        IsSelectedTrig = true;
+        IsMultSelcted = true;
+        IsEvtSelected = true;
     }
-    if (IsSelectedTrig && !IncompleteDAQ) {
-        fHistos->FillTH1("hEventNumbers", "InCompleteDAQ", 1);
-        fHistos->FillTH2("hEventNumbers_multi", kInCompleteDAQ, (double)fCent);
-    }
-    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG) {
-        fHistos->FillTH1("hEventNumbers", "No BG", 1);
-        fHistos->FillTH2("hEventNumbers_multi", kNoBG, (double)fCent);
-    }
-    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG && IsNotPileUp) {
-        fHistos->FillTH1("hEventNumbers", "No pile up", 1);
-        fHistos->FillTH2("hEventNumbers_multi", kNoPileUp, (double)fCent);
-    }
-    if (IsPS && IsGoodVertex) {
-        fHistos->FillTH1("hEventNumbers", "Good vertex", 1);
-        fHistos->FillTH2("hEventNumbers_multi", kGoodVertex, (double)fCent);
-    }
-    if (IsPS && IsGoodVertex && IsVtxInZCut) {
-        fHistos->FillTH1("hEventNumbers", "|Zvtx|<10cm", 1);
-        fHistos->FillTH2("hEventNumbers_multi", kZvtx10, (double)fCent);
-    }
-    if (IsINEL0Rec) {
-        fHistos->FillTH1("hEventNumbers", "IENLgtZERO", 1);
-        fHistos->FillTH2("hEventNumbers_multi", kIENLgtZERO, (double)fCent);
-    }
-    if (IsINEL0Rec && IsMultSelcted) {
-        fHistos->FillTH1("hEventNumbers", "AliMultSelection", 1);
-        fHistos->FillTH2("hEventNumbers_multi", kAliMultSelection,
-                         (double)fCent);
-    }
-
-    if (IsMC && IsINEL0True)
-        fHistos->FillTH1("hEventNumbers", "INELg0True",
-                         1);  // For trigger efficiency
-    // -----------------------------------------------------------------------
-
-    // ***********************************************************************
-    // // Event Selection done
-
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(fZ) - 1;           // Event mixing z-bin
     centbin = binCent.FindBin(fCent) - 1;  // Event mixing cent bin
     // -----------------------------------------------------------------------
-
-    //  Missing Vetex and Trriger Efficiency ---------------------------------
-    if (IsMC) {
-        // bin
-        if (IsINEL0True) {
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kTrueINELg0, (double)fCent, ftrackmult});
-            if (IsSelectedTrig)
-                FillTHnSparse("htriggered_CINT7", {(double)kTrig_TrueINELg0,
-                                                   (double)fCent, ftrackmult});
-            if (IsPS && IsGoodVertex)
-                FillTHnSparse("htriggered_CINT7", {(double)kGoodVtx_TrueINELg0,
-                                                   (double)fCent, ftrackmult});
-            if (IsPS && IsGoodVertex && IsVtxInZCut)
-                FillTHnSparse("htriggered_CINT7", {(double)kVzCutted_TrueINELg0,
-                                                   (double)fCent, ftrackmult});
-            if (IsINEL0Rec && IsMultSelcted)
-                FillTHnSparse("htriggered_CINT7", {(double)kSelected_TrueINELg0,
-                                                   (double)fCent, ftrackmult});
-        }
-        FillTHnSparse("htriggered_CINT7",
-                      {(double)kTrue, (double)fCent, ftrackmult});
-        if (IsSelectedTrig)
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kTrig, (double)fCent, ftrackmult});
-        if (IsPS && IsGoodVertex)
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kGoodVtx, (double)fCent, ftrackmult});
-        if (IsPS && IsGoodVertex && IsVtxInZCut)
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kVzCutted, (double)fCent, ftrackmult});
-        if (IsINEL0Rec && IsMultSelcted)
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kSelected, (double)fCent, ftrackmult});
-    }
-    // -----------------------------------------------------------------------
-
-    // V0M Signal QA --------------------------------------------------------
+    // V0M Signal QA ---------------------------------------------------------
     // From BeomKyu Kim
     AliVVZERO* lVV0 = fEvt->GetVZEROData();
-    Double_t intensity = 0.;
     if (inputHandler->IsEventSelected()) {
         for (int i = 0; i < 64; i++) {
             intensity += lVV0->GetMultiplicity(i);
@@ -713,45 +702,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     }
     // ----------------------------------------------------------------------
 
-    // Signal Loss Correction -----------------------------------------------
-    if (IsMC) {
-        if (fEvt->IsA() == AliESDEvent::Class()) {
-            if (IsINEL0True && IsVtxInZCut) {  // INEL>0|10
-                FillMCinput(fMCEvent, 1);
-                FillMCinputdXi(fMCEvent, 1);
-            }
-            if (IsVtxInZCut) {  // INEL10
-                FillMCinput(fMCEvent, 2);
-                FillMCinputdXi(fMCEvent, 2);
-            }
-            if (IsSelectedTrig) {  // INEL>0 +|Vz| < 10 cm
-                FillMCinput(fMCEvent, 3);
-                FillMCinputdXi(fMCEvent, 3);
-            }
-        } else {
-            if (IsINEL0True && IsVtxInZCut) {  // INEL>0|10
-                FillMCinputAOD(fMCEvent, 1);
-                FillMCinputdXiAOD(fMCEvent, 1);
-            }
-            if (IsVtxInZCut) {  // INEL10
-                FillMCinputAOD(fMCEvent, 2);
-                FillMCinputdXiAOD(fMCEvent, 2);
-            }
-            if (IsSelectedTrig) {  // INEL>0 +|Vz| < 10 cm
-                FillMCinputAOD(fMCEvent, 3);
-                FillMCinputdXiAOD(fMCEvent, 3);
-            }
-        }
-    }
-    // ----------------------------------------------------------------------
-
-    if (fSimplieEventCut)
-        IsINEL0Rec = kTRUE;  // for simple event cut, use only IsMultSelcted.
     // Check tracks and casade, Fill histo************************************
-    if (IsSelectedTrig && IsINEL0Rec &&
-        IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
-                          // IsVtxInZCut) && IsMultSelcted
-
+    if (IsEvtSelected) { // In AliEventCuts
         // Draw Multiplicity QA plot in only selected event.
         if (fQA) {
             FillTHnSparse("hMult", {(double)fCent});
@@ -771,8 +723,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             }
         }
         if (this->GoodTracksSelection()         // If Good track
-            && this->GoodCascadeSelection()) {  // and Good cascade is in this
-                                                // event,
+            && this->GoodCascadeSelection()) {  // and Good cascade is in
+                                                // this event,
             if (fEvt->IsA() == AliESDEvent::Class())
                 this->FillTracks();  // Fill the histogram
             else
@@ -820,7 +772,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         }  // AOD Case
 
         Double_t fTPCNSigPion =
-            fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+            GetTPCnSigma(track, AliPID::kPion);
         Double_t pionZ = abs(track->GetZ() - fZ);
         Double_t pionPt = track->Pt();
 
@@ -911,9 +863,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             // PID cuts for Xi daughters
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
                 fTPCNSigProton =
-                    fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kProton);
+                    GetTPCnSigma(pTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion =
-                    fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kPion);
+                    GetTPCnSigma(nTrackXi, AliPID::kPion);
                 if (fQA) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      pTrackXi->GetTPCmomentum(),
@@ -924,9 +876,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                 }
             } else {  // Xi+ has -proton, +pion
                 fTPCNSigProton =
-                    fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+                    GetTPCnSigma(nTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion =
-                    fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+                    GetTPCnSigma(pTrackXi, AliPID::kPion);
                 if (fQA) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      nTrackXi->GetTPCmomentum(),
@@ -936,7 +888,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                      pTrackXi->GetTPCsignal());
                 }
             }
-            fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(
+            fTPCNSigBachelorPion = GetTPCnSigma(
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
             if (fQA) {
                 fHistos->FillTH2("hTPCPIDBachelorPion",
@@ -1111,9 +1063,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             // PID cuts for Xi daughters
             if (Xicandidate_aod->ChargeXi() == -1) {  // Xi- has +proton, -pion
                 fTPCNSigProton =
-                    fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kProton);
+                    GetTPCnSigma(pTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion =
-                    fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kPion);
+                    GetTPCnSigma(nTrackXi, AliPID::kPion);
                 if (fQA) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      pTrackXi->GetTPCmomentum(),
@@ -1124,9 +1076,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                 }
             } else {  // Xi+ has -proton, +pion
                 fTPCNSigProton =
-                    fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+                    GetTPCnSigma(nTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion =
-                    fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+                    GetTPCnSigma(pTrackXi, AliPID::kPion);
                 if (fQA) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      nTrackXi->GetTPCmomentum(),
@@ -1136,7 +1088,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                      pTrackXi->GetTPCsignal());
                 }
             }
-            fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(
+            fTPCNSigBachelorPion = GetTPCnSigma(
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
             if (fQA) {
                 fHistos->FillTH2("hTPCPIDBachelorPion",
@@ -1344,16 +1296,16 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
                 fTPCNSigProton =
-                    fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kProton);
+                    GetTPCnSigma(pTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion =
-                    fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kPion);
+                    GetTPCnSigma(nTrackXi, AliPID::kPion);
             } else {  // Xi+ has -proton, +pion
                 fTPCNSigProton =
-                    fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+                    GetTPCnSigma(nTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion =
-                    fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+                    GetTPCnSigma(pTrackXi, AliPID::kPion);
             }
-            fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(
+            fTPCNSigBachelorPion = GetTPCnSigma(
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
 
             temp1.SetXYZM(Xicandidate->Px(), Xicandidate->Py(),
@@ -1382,7 +1334,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 // PID Cut Systematic check
                 // -------------------------------------------------
                 Double_t fTPCNSigPion =
-                    fPIDResponse->NumberOfSigmasTPC(track1, AliPID::kPion);
+                    GetTPCnSigma(track1, AliPID::kPion);
 
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
@@ -1794,22 +1746,22 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Other default cuts
                 Double_t fTPCNSigPion =
-                    fPIDResponse->NumberOfSigmasTPC(track1, AliPID::kPion);
+                    GetTPCnSigma(track1, AliPID::kPion);
                 if ((abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
                     continue;
                 // Xi PID
                 if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                    fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(
+                    fTPCNSigProton = GetTPCnSigma(
                         pTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(
+                    fTPCNSigLambdaPion = GetTPCnSigma(
                         nTrackXi, AliPID::kPion);
                 } else {  // Xi+ has -proton, +pion
-                    fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(
+                    fTPCNSigProton = GetTPCnSigma(
                         nTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(
+                    fTPCNSigLambdaPion = GetTPCnSigma(
                         pTrackXi, AliPID::kPion);
                 }
-                fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(
+                fTPCNSigBachelorPion = GetTPCnSigma(
                     bTrackXi, AliPID::kPion);  // bachelor is always pion
                 if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut)
                     continue;
@@ -1918,16 +1870,16 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
             if (Xicandidate->ChargeXi() == -1) {  // Xi- has +proton, -pion
                 fTPCNSigProton =
-                    fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kProton);
+                    GetTPCnSigma(pTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion =
-                    fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kPion);
+                    GetTPCnSigma(nTrackXi, AliPID::kPion);
             } else {  // Xi+ has -proton, +pion
                 fTPCNSigProton =
-                    fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+                    GetTPCnSigma(nTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion =
-                    fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+                    GetTPCnSigma(pTrackXi, AliPID::kPion);
             }
-            fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(
+            fTPCNSigBachelorPion = GetTPCnSigma(
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
 
             temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
@@ -1956,7 +1908,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 // PID Cut Systematic check
                 // -------------------------------------------------
                 Double_t fTPCNSigPion =
-                    fPIDResponse->NumberOfSigmasTPC(track1, AliPID::kPion);
+                    GetTPCnSigma(track1, AliPID::kPion);
 
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
@@ -2368,22 +2320,22 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // Other default cuts
                 Double_t fTPCNSigPion =
-                    fPIDResponse->NumberOfSigmasTPC(track1, AliPID::kPion);
+                    GetTPCnSigma(track1, AliPID::kPion);
                 if ((abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
                     continue;
                 // Xi PID
                 if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                    fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(
+                    fTPCNSigProton = GetTPCnSigma(
                         pTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(
+                    fTPCNSigLambdaPion = GetTPCnSigma(
                         nTrackXi, AliPID::kPion);
                 } else {  // Xi+ has -proton, +pion
-                    fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(
+                    fTPCNSigProton = GetTPCnSigma(
                         nTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(
+                    fTPCNSigLambdaPion = GetTPCnSigma(
                         pTrackXi, AliPID::kPion);
                 }
-                fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(
+                fTPCNSigBachelorPion = GetTPCnSigma(
                     bTrackXi, AliPID::kPion);  // bachelor is always pion
                 if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut)
                     continue;
@@ -3046,4 +2998,18 @@ void AliAnalysisTaskXi1530::FillTrackToEventPool() {
             delete it;
         ep->pop_front();
     }
+}
+double AliAnalysisTaskXi1530::GetTPCnSigma(AliVTrack* track,
+                                           AliPID::EParticleType type) {
+    AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(track);
+    if (nanoT) {
+        static bool used = false;
+        if (!used) {
+            AliNanoAODTrack::InitPIDIndex();
+            used = true;
+        }
+        return nanoT->GetVar(
+            AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, type));
+    } else
+        return fPIDResponse->NumberOfSigmasTPC(track, type);
 }
