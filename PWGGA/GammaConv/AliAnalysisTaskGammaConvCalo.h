@@ -81,6 +81,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void SetDoTreeInvMassShowerShape    ( Bool_t flag )                                     { fDoInvMassShowerShapeTree = flag            ;}
     void SetAllowOverlapHeaders         ( Bool_t allowOverlapHeader )                       { fAllowOverlapHeaders = allowOverlapHeader   ;}
     void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag)                     { fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
+    void SetDoHBTHistoOutput            ( Bool_t flag )                                     { fDoHBTHistoOutput = flag                    ;}
 
     // Setting the cut lists for the conversion photons
     void SetEventCutList                ( Int_t nCuts,
@@ -138,6 +139,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void FillMultipleCountHistoAndClear ( map<Int_t,
                                           Int_t> &ma,
                                           TH1F* hist );
+    void ProcessAODMCParticlesForHBT    ();
+    void CalculateHBTBackgroundMC       ();
 
         // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels (Bool_t enableSort) { fEnableSortForClusMC   = enableSort;}
@@ -152,6 +155,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliConversionAODBGHandlerRP**       fBGHandlerRP;           // BG handler for Conversion (possibility to mix with respect to RP)
     AliGammaConversionAODBGHandler**    fBGClusHandler;         // BG handler for Cluster
     AliConversionAODBGHandlerRP**       fBGClusHandlerRP;       // BG handler for Cluster (possibility to mix with respect to RP)
+    AliGammaConversionAODBGHandler**    fBGHBTTrueGammaHandler; // BG handler for HBTTrueGamma
+    AliGammaConversionAODBGHandler**    fBGHBTGenGammaHandler;  // BG handler for HBTGenGamma
     AliVEvent*                          fInputEvent;            // current event
     AliMCEvent*                         fMCEvent;               // corresponding MC event
     TList**                             fCutFolder;             // Array of lists for containers belonging to cut
@@ -182,6 +187,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList**                             fTrueJetHistograms;     // True Jet Histograms
     Int_t                               fMaxPtNearEMCalPlace;   // Place in jet vector of highest pt jet that is near the EMCal
     Bool_t                              fJetNearEMCal;          // If a jet is near the EMCal in the current event
+    TList*                              fTrueGammaCandidates;   // current list of true photon candidates
+    TList*                              fMCGammaCandidates;     // current list of MC generated photon candidates
 
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
@@ -402,6 +409,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueSecondaryPi0FromLambdaPhotonPairPtconv;   //! array of histos with validated secondary pi0's from Lambda vs conversion photon pT
     TH2F**                  fHistoTrueSecondaryPi0DCPtconvSource;               //! array of histos with validated secondary pi0's vs conversion photon pT, double counting vs source
     TH2F**                  fHistoTrueSecondaryPi0MissingPtconvSource;          //! array of histos with validated secondary pi0's vs conversion photon pT, missing vs source
+    TH2F**                  fHistoTrueGammaInvMassPt;                           //! array of histos with Inv mass of validated gammas
+    TH2F**                  fHistoMCGammaHBTInvMassPt;                          //! array of histos with Inv mass of generated MC gammas
+    TH2F**                  fHistoBckTrueGammaInvMassPt;                        //! array of histos with Bck Inv mass of validated gammas
+    TH2F**                  fHistoBckMCGammaHBTInvMassPt;                       //! array of histos with Bck Inv mass of generated MC gammas
 
     TH1F**                 fHistoPtJet;                                          // Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         // Histogram of Jet Eta
@@ -557,12 +568,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TObjString*             fFileNameBroken;                                    // string object for broken file name
     Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
+    Bool_t                  fDoHBTHistoOutput;                                  // switch for additional HBT output
 
   private:
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 51);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 52);
 };
 
 #endif

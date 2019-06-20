@@ -70,6 +70,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fBGHandlerRP(NULL),
   fBGClusHandler(NULL),
   fBGClusHandlerRP(NULL),
+  fBGHBTTrueGammaHandler(NULL),
+  fBGHBTGenGammaHandler(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
   fCutFolder(NULL),
@@ -100,6 +102,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fTrueJetHistograms(NULL),
   fMaxPtNearEMCalPlace(0),
   fJetNearEMCal(kFALSE),
+  fTrueGammaCandidates(NULL),
+  fMCGammaCandidates(NULL),
   fHistoConvGammaPt(NULL),
   fTreeConvGammaPtDcazCat(NULL),
   fPtGamma(0),
@@ -291,6 +295,10 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoTrueSecondaryPi0FromLambdaPhotonPairPtconv(NULL),
   fHistoTrueSecondaryPi0DCPtconvSource(NULL),
   fHistoTrueSecondaryPi0MissingPtconvSource(NULL),
+  fHistoTrueGammaInvMassPt(NULL),
+  fHistoMCGammaHBTInvMassPt(NULL),
+  fHistoBckTrueGammaInvMassPt(NULL),
+  fHistoBckMCGammaHBTInvMassPt(NULL),
   fHistoPtJet(NULL),
   fHistoJetEta(NULL),
   fHistoJetPhi(NULL),
@@ -433,7 +441,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
   fAllowOverlapHeaders(kTRUE),
-  fTrackMatcherRunningMode(0)
+  fTrackMatcherRunningMode(0),
+  fDoHBTHistoOutput(kFALSE)
 {
 
 }
@@ -448,6 +457,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fBGHandlerRP(NULL),
   fBGClusHandler(NULL),
   fBGClusHandlerRP(NULL),
+  fBGHBTTrueGammaHandler(NULL),
+  fBGHBTGenGammaHandler(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
   fCutFolder(NULL),
@@ -478,6 +489,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fTrueJetHistograms(NULL),
   fMaxPtNearEMCalPlace(0),
   fJetNearEMCal(kFALSE),
+  fTrueGammaCandidates(NULL),
+  fMCGammaCandidates(NULL),
   fHistoConvGammaPt(NULL),
   fTreeConvGammaPtDcazCat(NULL),
   fPtGamma(0),
@@ -669,6 +682,10 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoTrueSecondaryPi0FromLambdaPhotonPairPtconv(NULL),
   fHistoTrueSecondaryPi0DCPtconvSource(NULL),
   fHistoTrueSecondaryPi0MissingPtconvSource(NULL),
+  fHistoTrueGammaInvMassPt(NULL),
+  fHistoMCGammaHBTInvMassPt(NULL),
+  fHistoBckTrueGammaInvMassPt(NULL),
+  fHistoBckMCGammaHBTInvMassPt(NULL),
   fHistoPtJet(NULL),
   fHistoJetEta(NULL),
   fHistoJetPhi(NULL),
@@ -811,7 +828,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
   fAllowOverlapHeaders(kTRUE),
-  fTrackMatcherRunningMode(0)
+  fTrackMatcherRunningMode(0),
+  fDoHBTHistoOutput(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -849,6 +867,22 @@ AliAnalysisTaskGammaConvCalo::~AliAnalysisTaskGammaConvCalo()
     delete[] fBGClusHandlerRP;
     fBGClusHandlerRP = 0x0;
   }
+  if(fBGHBTTrueGammaHandler){
+    delete[] fBGHBTTrueGammaHandler;
+    fBGHBTTrueGammaHandler = 0x0;
+  }
+  if(fBGHBTGenGammaHandler){
+    delete[] fBGHBTGenGammaHandler;
+    fBGHBTGenGammaHandler = 0x0;
+  }
+  if(fTrueGammaCandidates){
+    delete[] fTrueGammaCandidates;
+    fTrueGammaCandidates = 0x0;
+  }
+  if(fMCGammaCandidates){
+    delete[] fMCGammaCandidates;
+    fMCGammaCandidates = 0x0;
+  }
 }
 //___________________________________________________________
 void AliAnalysisTaskGammaConvCalo::InitBack(){
@@ -868,6 +902,11 @@ void AliAnalysisTaskGammaConvCalo::InitBack(){
 
   fBGClusHandler = new AliGammaConversionAODBGHandler*[fnCuts];
   fBGClusHandlerRP = new AliConversionAODBGHandlerRP*[fnCuts];
+
+  if(fIsMC>0 && fDoHBTHistoOutput){
+    fBGHBTTrueGammaHandler  = new AliGammaConversionAODBGHandler*[fnCuts];
+    fBGHBTGenGammaHandler   = new AliGammaConversionAODBGHandler*[fnCuts];
+  }
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if (((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
@@ -924,6 +963,18 @@ void AliAnalysisTaskGammaConvCalo::InitBack(){
                                   ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
                                   2,8,5);
         fBGHandlerRP[iCut] = NULL;
+        if(fIsMC>0 && fDoHBTHistoOutput){
+          fBGHBTTrueGammaHandler[iCut] = new AliGammaConversionAODBGHandler(
+                                  collisionSystem,centMin,centMax,
+                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetNumberOfBGEvents(),
+                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+                                  2,8,5);
+          fBGHBTGenGammaHandler[iCut]  = new AliGammaConversionAODBGHandler(
+                                  collisionSystem,centMin,centMax,
+                                  40,
+                                  ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseTrackMultiplicity(),
+                                  2,8,5);
+        }
       }else{
         fBGHandlerRP[iCut] = new AliConversionAODBGHandlerRP(
                                   ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsHeavyIon(),
@@ -1053,6 +1104,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoJetFragmFunc                        = new TH2F*[fnCuts];
       fHistoJetFragmFuncZInvMass                = new TH2F*[fnCuts];
     }
+  }
+
+  if(fIsMC>0 && fDoHBTHistoOutput){
+    fTrueGammaCandidates    = new TList();
+    fMCGammaCandidates      = new TList();
   }
 
   fClusterOutputList                  = new TList*[fnCuts];
@@ -1830,6 +1886,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoTrueSecondaryPi0DCPtconvSource          = new TH2F*[fnCuts];
         fHistoTruePrimaryPi0MissingPtconv             = new TH1F*[fnCuts];
         fHistoTrueSecondaryPi0MissingPtconvSource     = new TH2F*[fnCuts];
+      }
+      if(fDoHBTHistoOutput){
+        fHistoTrueGammaInvMassPt                      = new TH2F*[fnCuts];
+        fHistoMCGammaHBTInvMassPt                     = new TH2F*[fnCuts];
+        fHistoBckTrueGammaInvMassPt                      = new TH2F*[fnCuts];
+        fHistoBckMCGammaHBTInvMassPt                     = new TH2F*[fnCuts];
       }
 
 
@@ -2625,6 +2687,32 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           }
         }
 
+        if(fIsMC>0 && fDoHBTHistoOutput){
+          fHistoTrueGammaInvMassPt[iCut]                = new TH2F("ESD_TrueGamma_InvMass_Pt", "ESD_TrueGamma_InvMass_Pt", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+          fHistoTrueGammaInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2})");
+          fHistoTrueGammaInvMassPt[iCut]->SetYTitle("p_{T}(GeV/c)");
+          fHistoTrueGammaInvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTrueGammaInvMassPt[iCut]);
+
+          fHistoBckTrueGammaInvMassPt[iCut]                = new TH2F("ESD_TrueGammaBck_InvMass_Pt", "ESD_TrueGammaBck_InvMass_Pt", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+          fHistoBckTrueGammaInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2})");
+          fHistoBckTrueGammaInvMassPt[iCut]->SetYTitle("p_{T}(GeV/c)");
+          fHistoBckTrueGammaInvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoBckTrueGammaInvMassPt[iCut]);
+
+          fHistoMCGammaHBTInvMassPt[iCut]                = new TH2F("ESD_GenGamma_InvMass_Pt", "ESD_GenGamma_InvMass_Pt", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+          fHistoMCGammaHBTInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2})");
+          fHistoMCGammaHBTInvMassPt[iCut]->SetYTitle("p_{T}(GeV/c)");
+          fHistoMCGammaHBTInvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoMCGammaHBTInvMassPt[iCut]);
+
+          fHistoBckMCGammaHBTInvMassPt[iCut]                = new TH2F("ESD_GenGammaBck_InvMass_Pt", "ESD_GenGammaBck_InvMass_Pt", nBinsMinv, minMinv, maxMinv, nBinsPt, arrPtBinning);
+          fHistoBckMCGammaHBTInvMassPt[iCut]->SetXTitle("M_{inv}(GeV/c^{2})");
+          fHistoBckMCGammaHBTInvMassPt[iCut]->SetYTitle("p_{T}(GeV/c)");
+          fHistoBckMCGammaHBTInvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoBckMCGammaHBTInvMassPt[iCut]);
+        }
+
         if (fIsMC > 1){
           fHistoTruePi0InvMassPt[iCut]->Sumw2();
           fHistoTrueEtaInvMassPt[iCut]->Sumw2();
@@ -3139,9 +3227,14 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 
       CalculatePi0Candidates(); // Combine Gammas from conversion and from calo
 
+      if(fIsMC>0 && fDoHBTHistoOutput && fInputEvent->IsA()==AliAODEvent::Class()){
+        ProcessAODMCParticlesForHBT();
+      }
+
       if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
         if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0){
           CalculateBackground(); // Combinatorial Background
+          if(fIsMC>0 && fDoHBTHistoOutput) CalculateHBTBackgroundMC();
           UpdateEventByEventData(); // Store Event for mixed Events
         }
         else{
@@ -3191,6 +3284,11 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 
     fGammaCandidates->Clear(); // delete this cuts good gammas
     fClusterCandidates->Clear(); // delete cluster candidates
+
+    if(fIsMC>0 && fDoHBTHistoOutput){
+      fTrueGammaCandidates->Clear();
+      fMCGammaCandidates->Clear();
+    }
   }
 
   if(fIsMC>0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
@@ -4529,6 +4627,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles()
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
       }
 
+
       if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
       if(!fDoLightOutput){
         if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelectedMC(particle,fMCEvent,kFALSE)){
@@ -5798,6 +5897,16 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
     }
   }
 
+  if(fDoHBTHistoOutput){
+    if(gamma0MCLabel != -1 && gamma1MCLabel != -1){
+      if(((AliAODMCParticle*)AODMCTrackArray->At(gamma0MCLabel))->GetPdgCode() == 22 && ((AliAODMCParticle*)AODMCTrackArray->At(gamma1MCLabel))->GetPdgCode() == 22){
+        // this means we are dealing with two real photons
+        fHistoTrueGammaInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt());
+      }
+    }
+  }
+
+
   if(isTruePi0 || isTrueEta){// True Pion or Eta
     Double_t weightMatBudgetGamma = 1.;
     if (fDoMaterialBudgetWeightingOfGammasForTrueMesons && ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetMaterialBudgetWeightsInitialized()) {
@@ -6609,6 +6718,16 @@ void AliAnalysisTaskGammaConvCalo::UpdateEventByEventData(){
       fBGClusHandler[fiCut]->AddEvent(fClusterCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fGammaCandidates->GetEntries(),fEventPlaneAngle);
     }
   }
+  if(fIsMC>0 && fDoHBTHistoOutput){
+    if(fTrueGammaCandidates->GetEntries()>0){
+//       cout << "going to add event with " << fTrueGammaCandidates->GetEntries() << "  fTrueGammaCandidates->GetEntries() " << endl;
+        fBGHBTTrueGammaHandler[fiCut]->AddMCParticleEvent(fTrueGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fTrueGammaCandidates->GetEntries(),fEventPlaneAngle);
+    }
+    if(fMCGammaCandidates->GetEntries()){
+//       cout << "going to add event with " << fMCGammaCandidates->GetEntries() << "  fMCGammaCandidates->GetEntries() " << endl;
+        fBGHBTGenGammaHandler[fiCut]->AddMCParticleEvent(fMCGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fMCGammaCandidates->GetEntries(),fEventPlaneAngle);
+    }
+  }
 }
 
 
@@ -6924,4 +7043,135 @@ void AliAnalysisTaskGammaConvCalo::FillMultipleCountHistoAndClear(map<Int_t,Int_
   }
   ma.clear();
   return;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticlesForHBT()
+{
+  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (AODMCTrackArray == NULL) return;
+  TLorentzVector p1, p2, pTot;
+
+  // Loop over all primary MC particle
+  for(Long_t i = 0; i < AODMCTrackArray->GetEntriesFast(); i++) {
+    AliAODMCParticle* particle1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(i));
+    if (!particle1) continue;
+//     if(!particle1->IsPhysicalPrimary()) continue;
+    if(particle1->E()<0.10) continue;
+    if(TMath::Abs(particle1->Eta())>0.8) continue;
+    if(particle1->GetPdgCode() == 22){
+      p1.SetPxPyPzE(particle1->Px(),particle1->Py(),particle1->Pz(),particle1->E());
+      fMCGammaCandidates->Add(particle1);
+      for(Long_t j = i+1; j < AODMCTrackArray->GetEntriesFast(); j++) {
+        AliAODMCParticle* particle2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(j));
+        if (!particle2) continue;
+//         if(!particle2->IsPhysicalPrimary()) continue;
+        if(particle2->E()<0.1) continue;
+        if(TMath::Abs(particle2->Eta())>0.8) continue;
+        if(particle2->GetPdgCode() == 22){
+          p2.SetPxPyPzE(particle1->Px(),particle2->Py(),particle2->Pz(),particle2->E());
+          if(p1.Angle(p2.Vect())>0.005){
+            pTot = p1 + p2;
+            //for sure dealing with two generated photons
+            fHistoMCGammaHBTInvMassPt[fiCut]->Fill(pTot.M(),pTot.Pt());
+          }
+        }
+      }
+    }
+  }
+
+  if(fGammaCandidates->GetEntries()>0){
+    for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
+      AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+      if (gamma0==NULL) continue;
+      AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0->GetMCLabelPositive()));
+      AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0->GetMCLabelNegative()));
+      Int_t gamma0MCLabel = -1;
+      if(!positiveMC||!negativeMC) continue;
+      if (gamma0->IsTrueConvertedPhoton()){
+        gamma0MCLabel = positiveMC->GetMother();
+        AliAODMCParticle * gammaMC0 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma0MCLabel));
+        if(gammaMC0->GetPdgCode() == 22) fTrueGammaCandidates->Add(gammaMC0);
+      }
+    }
+  }
+  if(fClusterCandidates->GetEntries()>0){
+    for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+          Bool_t matched = kFALSE;
+          AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
+          if (gamma1==NULL) continue;
+          if (!gamma1->GetIsCaloPhoton()) AliFatal("CaloPhotonFlag has not been set. Aborting");
+          Int_t gamma1MCLabel = gamma1->GetCaloPhotonMCLabel(0); // get most probable MC label
+          AliAODMCParticle * gammaMC1 = 0x0;
+          if(gamma1MCLabel != -1){
+            gammaMC1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(gamma1MCLabel));
+            if(gammaMC1->GetPdgCode() == 22) fTrueGammaCandidates->Add(gammaMC1);
+          }
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvCalo::CalculateHBTBackgroundMC(){
+
+  Int_t zbin;
+  Int_t mbin;
+  TLorentzVector p1, p2, pTot;
+
+//   cout << "going to attempt to mix" << endl;
+//   cout << "first MC validated photons" << endl;
+//   cout << "fBGHBTTrueGammaHandler[fiCut]->GetNBGEvents() = " << fBGHBTTrueGammaHandler[fiCut]->GetNBGEvents() << endl;
+//   cout << "fTrueGammaCandidates->GetEntries() = " << fTrueGammaCandidates->GetEntries() << endl;
+
+  // mixing MC photons -> fHistoBckTrueGammaInvMassPt
+  zbin = fBGHBTTrueGammaHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+  mbin = fBGHBTTrueGammaHandler[fiCut]->GetMultiplicityBinIndex(fTrueGammaCandidates->GetEntries());
+  for(Int_t nEventsInBG=0;nEventsInBG <fBGHBTTrueGammaHandler[fiCut]->GetNBGEvents();nEventsInBG++){
+    AliAODMCParticleVector *previousEventV0s = fBGHBTTrueGammaHandler[fiCut]->GetBGGoodV0sMC(zbin,mbin,nEventsInBG);
+    if(previousEventV0s){
+//       cout << "previousEventV0s->size() = " << previousEventV0s->size() << endl;
+      for(Int_t iCurrent=0;iCurrent<fTrueGammaCandidates->GetEntries();iCurrent++){
+        AliAODMCParticle currentEventGoodV0 = *(AliAODMCParticle*)(fTrueGammaCandidates->At(iCurrent));
+        p1.SetPxPyPzE(currentEventGoodV0.Px(),currentEventGoodV0.Py(),currentEventGoodV0.Pz(),currentEventGoodV0.E());
+        for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+
+          AliAODMCParticle previousGoodV0 = (AliAODMCParticle)(*(previousEventV0s->at(iPrevious)));
+          p2.SetPxPyPzE(previousGoodV0.Px(),previousGoodV0.Py(),previousGoodV0.Pz(),previousGoodV0.E());
+
+          if(p1.Angle(p2.Vect())>0.005){
+            pTot = p1 + p2;
+            fHistoBckTrueGammaInvMassPt[fiCut]->Fill(pTot.M(),pTot.Pt());
+          }
+        }
+      }
+    }
+  }
+
+//   cout << "then MC generated photons" << endl;
+//   cout << "fBGHBTGenGammaHandler[fiCut]->GetNBGEvents() = " << fBGHBTGenGammaHandler[fiCut]->GetNBGEvents() << endl;
+//   cout << "fMCGammaCandidates->GetEntries() = " << fMCGammaCandidates->GetEntries() << endl;
+
+  // mixing MC photons -> fHistoBckMCGammaHBTInvMassPt
+  zbin = fBGHBTGenGammaHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+  mbin = fBGHBTGenGammaHandler[fiCut]->GetMultiplicityBinIndex(fMCGammaCandidates->GetEntries());
+  for(Int_t nEventsInBG=0;nEventsInBG <fBGHBTGenGammaHandler[fiCut]->GetNBGEvents();nEventsInBG++){
+    AliAODMCParticleVector *previousEventV0sGen = fBGHBTGenGammaHandler[fiCut]->GetBGGoodV0sMC(zbin,mbin,nEventsInBG);
+    if(previousEventV0sGen){
+//       cout << "previousEventV0sGen->size() = " << previousEventV0sGen->size() << endl;
+      for(Int_t iCurrent=0;iCurrent<fMCGammaCandidates->GetEntries();iCurrent++){
+        AliAODMCParticle currentEventGoodV0 = *(AliAODMCParticle*)(fMCGammaCandidates->At(iCurrent));
+        p1.SetPxPyPzE(currentEventGoodV0.Px(),currentEventGoodV0.Py(),currentEventGoodV0.Pz(),currentEventGoodV0.E());
+        for(UInt_t iPrevious=0;iPrevious<previousEventV0sGen->size();iPrevious++){
+
+          AliAODMCParticle previousGoodV0 = (AliAODMCParticle)(*(previousEventV0sGen->at(iPrevious)));
+          p2.SetPxPyPzE(previousGoodV0.Px(),previousGoodV0.Py(),previousGoodV0.Pz(),previousGoodV0.E());
+
+          if(p1.Angle(p2.Vect())>0.005){
+            pTot = p1 + p2;
+            fHistoBckMCGammaHBTInvMassPt[fiCut]->Fill(pTot.M(),pTot.Pt());
+          }
+        }
+      }
+    }
+  }
 }

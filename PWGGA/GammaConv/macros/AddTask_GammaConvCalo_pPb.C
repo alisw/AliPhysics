@@ -179,6 +179,7 @@ void AddTask_GammaConvCalo_pPb(
   if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+  if(trainConfig >= 520 && trainConfig < 530) task->SetDoHBTHistoOutput(kTRUE);
 
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
@@ -1319,6 +1320,16 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("86010113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("a0110113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("a1210113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
+  // PCM-PHOS run2 HBT studies
+  } else if (trainConfig == 520) {  // PHOS  INT7
+    cuts.AddCutPCMCalo("80010113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); //
+  } else if (trainConfig == 521) {  // PHOS  INT7 with cents
+    cuts.AddCutPCMCalo("80110113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 0-10%
+    cuts.AddCutPCMCalo("81210113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 10-20%
+    cuts.AddCutPCMCalo("82410113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 20-40%
+    cuts.AddCutPCMCalo("84610113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 40-60%
+    cuts.AddCutPCMCalo("86810113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 60-80%
+    cuts.AddCutPCMCalo("88010113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 80-100%
 
   //PCM-PHOS run 2 MB systematics
   } else if(trainConfig == 530){//dEdx e-line variation and dE/dx pi-line variation
