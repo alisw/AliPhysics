@@ -54,6 +54,8 @@ Int_t nDegreeBackPol[maxPtBins]={4,4,4,2,2,2,2,2};             // degree of poly
 Int_t optForNorm=1;
 Double_t rangeForNorm=0.05;
 Bool_t useEMwithLS=kTRUE;
+Bool_t useGeomMeanLS=kTRUE;
+Bool_t renormLS=kTRUE;
 Int_t smoothLS=0;
 
 TString fitoption="E";
@@ -714,7 +716,7 @@ void ProjectCombinHFAndFit(){
     TH1D* hMassPtBinlsp=0x0;
     TH1D* hMassPtBinlsm=0x0;
     TH1D* hMassPtBinls=0x0;
-    if(h3dlsp){ 
+    if(h3dlsp){
       hMassPtBinlsp=h3dlsp->ProjectionX(Form("hMassPtBinlsp%d",iPtBin),bin1,bin2,zbin1,zbin2);
       hMassPtBinlsm=h3dlsm->ProjectionX(Form("hMassPtBinlsm%d",iPtBin),bin1,bin2,zbin1,zbin2);
       hMassPtBinls=(TH1D*)hMassPtBinlsp->Clone(Form("hMassPtBinls%d",iPtBin));
@@ -722,11 +724,17 @@ void ProjectCombinHFAndFit(){
       for(Int_t iBin=1; iBin<=hMassPtBinlsp->GetNbinsX(); iBin++){
 	Double_t np=hMassPtBinlsp->GetBinContent(iBin);
 	Double_t nm=hMassPtBinlsm->GetBinContent(iBin);
-	Double_t tt=2*TMath::Sqrt(np*nm);
 	Double_t enp=hMassPtBinlsp->GetBinError(iBin);
 	Double_t enm=hMassPtBinlsm->GetBinError(iBin);
+	Double_t tt=0;
 	Double_t ett=0;
-	if(tt>0) ett=2./tt*TMath::Sqrt(np*np*enm*enm+nm*nm*enp*enp);
+	if(useGeomMeanLS){
+	  tt=2*TMath::Sqrt(np*nm);
+	  if(tt>0) ett=2./tt*TMath::Sqrt(np*np*enm*enm+nm*nm*enp*enp);
+	}else{
+	  tt=0.5*(np+nm);
+	  ett=0.5*TMath::Sqrt(enm*enm+enp*enp);
+	}
 	hMassPtBinls->SetBinContent(iBin,tt);
 	hMassPtBinls->SetBinError(iBin,ett);
       }
@@ -734,7 +742,6 @@ void ProjectCombinHFAndFit(){
       else if(smoothLS>0.5)QuadraticSmooth(hMassPtBinls,smoothLS);
       hMassPtBinls->SetLineColor(kGreen+1);
     }
-
     // hMassPtBin->Sumw2();
     // hMassPtBinr->Sumw2();
     // hMassPtBinme->Sumw2();
@@ -762,8 +769,8 @@ void ProjectCombinHFAndFit(){
     hRatioMEAll->Divide(hMassPtBin);
 
 
-    TCanvas* c0=new TCanvas(Form("CBin%d",iPtBin),Form("Bin%d norm",iPtBin),1000,700);
-    c0->Divide(2,2);
+    TCanvas* c0=new TCanvas(Form("CBin%d",iPtBin),Form("Bin%d norm",iPtBin),1300,700);
+    c0->Divide(3,2);
     c0->cd(1);
     TH1D* hRatio=(TH1D*)hMassPtBinr->Clone(Form("hRatioFormNorm%d",iPtBin));
     hRatio->Divide(hMassPtBin);
@@ -776,8 +783,22 @@ void ProjectCombinHFAndFit(){
     tnr->SetNDC();
     tnr->Draw();
     c0->cd(2);
+    TH1D* hRatioLS=(TH1D*)hMassPtBinls->Clone(Form("hRatioFormNormLS%d",iPtBin));
+    hRatioLS->Divide(hMassPtBin);
+    hRatioLS->Draw();
+    hRatioLS->GetYaxis()->SetTitle("LS/All");
+    hRatioLS->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
+    if(renormLS){
+      Double_t normLS=GetBackgroundNormalizationFactor(hRatioLS,rebin[iPtBin]);
+      hMassPtBinls->Scale(1./normLS);
+      TLatex* tnl=new TLatex(0.2,0.2,Form("Normaliz. factor = %f",normLS));
+      tnl->SetNDC();
+      tnl->Draw();
+    }
+    c0->cd(3);
     hMassPtBinme->GetYaxis()->SetTitle("Entries (EvMix)");
     hMassPtBinme->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
+    hMassPtBinme->SetMinimum(0);
     hMassPtBinme->DrawCopy();
     hMassPtBinmeLSpp->Draw("same");
     hMassPtBinmeLSmm->Draw("same");
@@ -788,18 +809,20 @@ void ProjectCombinHFAndFit(){
     tMEpp->Draw();
     tMEmm->Draw();
     c0->cd(4);
+    hRatioME->Draw();
+    hRatioME->GetYaxis()->SetTitle("EvMix (+-)/All");
+    hRatioME->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
+    c0->cd(5);
+    hRatioMEAll->Draw();
+    hRatioMEAll->GetYaxis()->SetTitle("EvMix (++,--)/All");
+    hRatioMEAll->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
+    c0->cd(6);
     hRatioMEpp->Draw();
-    hRatioMEpp->SetMinimum(0.4);
-    hRatioMEpp->SetMaximum(0.6);
+    hRatioMEpp->SetMinimum(0.49);
+    hRatioMEpp->SetMaximum(0.51);
     hRatioMEpp->GetYaxis()->SetTitle("ME with LS / ME with OS");
     hRatioMEpp->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
     hRatioMEmm->Draw("same");
-    c0->cd(3);
-    hRatioME->Draw();
-    hRatioME->SetMaximum(hRatioMEAll->GetMaximum()*1.05);
-    hRatioMEAll->Draw("same");
-    hRatioME->GetYaxis()->SetTitle("EvMix/All");
-    hRatioME->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
  
     Double_t normME=GetBackgroundNormalizationFactor(hRatioME,rebin[iPtBin]);
     Double_t normMEAll=GetBackgroundNormalizationFactor(hRatioMEAll,rebin[iPtBin]);
@@ -887,26 +910,26 @@ void ProjectCombinHFAndFit(){
       if(out4 && fitterSB[iPtBin]->GetMassFunc()){
 	c5->cd(iPtBin+1);
 	fitterSB[iPtBin]->DrawHere(gPad,3,0);
-	hRawYieldSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield());
-	hRawYieldSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError());
-	if(fitterSB[iPtBin]->GetRawYield()>0){
+	if(fitterSB[iPtBin]->GetRawYield()>0 && fitterSB[iPtBin]->GetReducedChiSquare()>0){
+	  hRawYieldSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield());
+	  hRawYieldSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError());
 	  hRelStatSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError()/fitterSB[iPtBin]->GetRawYield());
 	  hRelStatSB->SetBinError(iPtBin+1,0.00000001);
+	  fitterSB[iPtBin]->Background(3.,background,ebkg);
+	  hSignifSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterSB[iPtBin]->GetRawYield()));
+	  hSignifSB->SetBinError(iPtBin+1,0.00000001);
+	  hSoverBSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/background);
+	  hSoverBSB->SetBinError(iPtBin+1,0.00000001);
+	  hGausMeanSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMean());
+	  hGausMeanSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetMeanUncertainty());
+	  hGausSigmaSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetSigma());
+	  hGausSigmaSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetSigmaUncertainty());
+	  hChiSqSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReducedChiSquare());
+	  hChiSqSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	  hNdfSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMassFunc()->GetNDF());
+	  hNdfSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
 	}
-	fitterSB[iPtBin]->Background(3.,background,ebkg);
-	hSignifSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterSB[iPtBin]->GetRawYield()));
-	hSignifSB->SetBinError(iPtBin+1,0.00000001);
-	hSoverBSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/background);
-	hSoverBSB->SetBinError(iPtBin+1,0.00000001);
 	hInvMassHistoBinWidthSB->SetBinContent(iPtBin+1,hMassDirectFit->GetBinWidth(1));
-	hGausMeanSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMean());
-	hGausMeanSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetMeanUncertainty());
-	hGausSigmaSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetSigma());
-	hGausSigmaSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetSigmaUncertainty());
-	hChiSqSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReducedChiSquare());
-	hChiSqSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
-	hNdfSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMassFunc()->GetNDF());
-	hNdfSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
 	//	if(!correctForRefl)
 	WriteFitInfo(fitterSB[iPtBin],hMassPtBin);
 	fout->cd();
@@ -990,26 +1013,28 @@ void ProjectCombinHFAndFit(){
     if(out1 && fitterRot[iPtBin]->GetMassFunc()){
       fitterRot[iPtBin]->DrawHere(gPad,3,0);
       gPad->Update();
-      hRawYieldRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield());
-      hRawYieldRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError());
-      Double_t minBinBkg=hMassPtBin->FindBin(fitterRot[iPtBin]->GetMean()-3.*fitterRot[iPtBin]->GetSigma());
-      Double_t maxBinBkg=hMassPtBin->FindBin(fitterRot[iPtBin]->GetMean()+3.*fitterRot[iPtBin]->GetSigma());
-      background=hMassPtBin->Integral(minBinBkg,maxBinBkg);
-      hSoverBRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield()/background);
-      hSoverBRot->SetBinError(iPtBin+1,0.000001);
-      hRelStatRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError()/fitterRot[iPtBin]->GetRawYield());
-      hRelStatRot->SetBinError(iPtBin+1,0.000001);
-      hSignifRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterRot[iPtBin]->GetRawYield()));
-      hSignifRot->SetBinError(iPtBin+1,0.00000001);
+      if(fitterRot[iPtBin]->GetRawYield()>0 && fitterRot[iPtBin]->GetReducedChiSquare()>0){
+	hRawYieldRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield());
+	hRawYieldRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError());
+	Double_t minBinBkg=hMassPtBin->FindBin(fitterRot[iPtBin]->GetMean()-3.*fitterRot[iPtBin]->GetSigma());
+	Double_t maxBinBkg=hMassPtBin->FindBin(fitterRot[iPtBin]->GetMean()+3.*fitterRot[iPtBin]->GetSigma());
+	background=hMassPtBin->Integral(minBinBkg,maxBinBkg);
+	hSoverBRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield()/background);
+	hSoverBRot->SetBinError(iPtBin+1,0.000001);
+	hRelStatRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError()/fitterRot[iPtBin]->GetRawYield());
+	hRelStatRot->SetBinError(iPtBin+1,0.000001);
+	hSignifRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterRot[iPtBin]->GetRawYield()));
+	hSignifRot->SetBinError(iPtBin+1,0.00000001);
+	hGausMeanRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMean());
+	hGausMeanRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetMeanUncertainty());
+	hGausSigmaRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetSigma());
+	hGausSigmaRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetSigmaUncertainty());
+	hChiSqRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetReducedChiSquare());
+	hChiSqRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hNdfRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMassFunc()->GetNDF());
+	hNdfRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+      }
       hInvMassHistoBinWidthRot->SetBinContent(iPtBin+1,hMassSubRot->GetBinWidth(1));
-      hGausMeanRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMean());
-      hGausMeanRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetMeanUncertainty());
-      hGausSigmaRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetSigma());
-      hGausSigmaRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetSigmaUncertainty());
-      hChiSqRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetReducedChiSquare());
-      hChiSqRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
-      hNdfRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMassFunc()->GetNDF());
-      hNdfRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
       WriteFitInfo(fitterRot[iPtBin],hMassPtBin);
       fout->cd();
@@ -1053,27 +1078,29 @@ void ProjectCombinHFAndFit(){
 
     c3->cd(iPtBin+1);
     if(out2 && fitterLS[iPtBin]->GetMassFunc()){
-      fitterLS[iPtBin]->DrawHere(gPad,3,0); 
-      hRawYieldLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield());
-      hRawYieldLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError());
-      Double_t minBinBkg=hMassPtBin->FindBin(fitterLS[iPtBin]->GetMean()-3.*fitterLS[iPtBin]->GetSigma());
-      Double_t maxBinBkg=hMassPtBin->FindBin(fitterLS[iPtBin]->GetMean()+3.*fitterLS[iPtBin]->GetSigma());
-      background=hMassPtBin->Integral(minBinBkg,maxBinBkg);
-      hSoverBLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield()/background);
-      hSoverBLS->SetBinError(iPtBin+1,0.000001);
-      hRelStatLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError()/fitterLS[iPtBin]->GetRawYield());
-      hRelStatLS->SetBinError(iPtBin+1,0.0000001);
-      hSignifLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterLS[iPtBin]->GetRawYield()));
-      hSignifLS->SetBinError(iPtBin+1,0.00000001);
+      fitterLS[iPtBin]->DrawHere(gPad,3,0);
+      if(fitterLS[iPtBin]->GetRawYield()>0 && fitterLS[iPtBin]->GetReducedChiSquare()>0){
+	hRawYieldLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield());
+	hRawYieldLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError());
+	Double_t minBinBkg=hMassPtBin->FindBin(fitterLS[iPtBin]->GetMean()-3.*fitterLS[iPtBin]->GetSigma());
+	Double_t maxBinBkg=hMassPtBin->FindBin(fitterLS[iPtBin]->GetMean()+3.*fitterLS[iPtBin]->GetSigma());
+	background=hMassPtBin->Integral(minBinBkg,maxBinBkg);
+	hSoverBLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield()/background);
+	hSoverBLS->SetBinError(iPtBin+1,0.000001);
+	hRelStatLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError()/fitterLS[iPtBin]->GetRawYield());
+	hRelStatLS->SetBinError(iPtBin+1,0.0000001);
+	hSignifLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterLS[iPtBin]->GetRawYield()));
+	hSignifLS->SetBinError(iPtBin+1,0.00000001);
+	hGausMeanLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMean());
+	hGausMeanLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetMeanUncertainty());
+	hGausSigmaLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetSigma());
+	hGausSigmaLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetSigmaUncertainty());
+	hChiSqLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetReducedChiSquare());
+	hChiSqLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hNdfLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMassFunc()->GetNDF());
+	hNdfLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+      }
       hInvMassHistoBinWidthLS->SetBinContent(iPtBin+1,hMassSubLS->GetBinWidth(1));
-      hGausMeanLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMean());
-      hGausMeanLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetMeanUncertainty());
-      hGausSigmaLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetSigma());
-      hGausSigmaLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetSigmaUncertainty());
-      hChiSqLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetReducedChiSquare());
-      hChiSqLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
-      hNdfLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMassFunc()->GetNDF());
-      hNdfLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
       WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
       fout->cd();
@@ -1118,26 +1145,28 @@ void ProjectCombinHFAndFit(){
     c4->cd(iPtBin+1);
     if(out3 && fitterME[iPtBin]->GetMassFunc()){ 
       fitterME[iPtBin]->DrawHere(gPad,3,0); 
-      hRawYieldME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield());
-      hRawYieldME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetRawYieldError());
-      Double_t minBinBkg=hMassPtBin->FindBin(fitterME[iPtBin]->GetMean()-3.*fitterME[iPtBin]->GetSigma());
-      Double_t maxBinBkg=hMassPtBin->FindBin(fitterME[iPtBin]->GetMean()+3.*fitterME[iPtBin]->GetSigma());
-      background=hMassPtBin->Integral(minBinBkg,maxBinBkg);
-      hSoverBME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield()/background);
-      hSoverBME->SetBinError(iPtBin+1,0.000001);
-      hRelStatME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYieldError()/fitterME[iPtBin]->GetRawYield());
-      hRelStatME->SetBinError(iPtBin+1,0.000001);
-      hSignifME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterME[iPtBin]->GetRawYield()));
-      hSignifME->SetBinError(iPtBin+1,0.00000001);
+      if(fitterME[iPtBin]->GetRawYield()>0 && fitterME[iPtBin]->GetReducedChiSquare()>0){
+	hRawYieldME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield());
+	hRawYieldME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetRawYieldError());
+	Double_t minBinBkg=hMassPtBin->FindBin(fitterME[iPtBin]->GetMean()-3.*fitterME[iPtBin]->GetSigma());
+	Double_t maxBinBkg=hMassPtBin->FindBin(fitterME[iPtBin]->GetMean()+3.*fitterME[iPtBin]->GetSigma());
+	background=hMassPtBin->Integral(minBinBkg,maxBinBkg);
+	hSoverBME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield()/background);
+	hSoverBME->SetBinError(iPtBin+1,0.000001);
+	hRelStatME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYieldError()/fitterME[iPtBin]->GetRawYield());
+	hRelStatME->SetBinError(iPtBin+1,0.000001);
+	hSignifME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterME[iPtBin]->GetRawYield()));
+	hSignifME->SetBinError(iPtBin+1,0.00000001);
+	hGausMeanME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMean());
+	hGausMeanME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetMeanUncertainty());
+	hGausSigmaME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetSigma());
+	hGausSigmaME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetSigmaUncertainty());
+	hChiSqME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetReducedChiSquare());
+	hChiSqME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hNdfME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMassFunc()->GetNDF());
+	hNdfME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+      }
       hInvMassHistoBinWidthME->SetBinContent(iPtBin+1,hMassSubME->GetBinWidth(1));
-      hGausMeanME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMean());
-      hGausMeanME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetMeanUncertainty());
-      hGausSigmaME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetSigma());
-      hGausSigmaME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetSigmaUncertainty());
-      hChiSqME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetReducedChiSquare());
-      hChiSqME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
-      hNdfME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMassFunc()->GetNDF());
-      hNdfME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
       WriteFitInfo(fitterME[iPtBin],hMassPtBin);
       fout->cd();
@@ -1873,6 +1902,22 @@ Bool_t ReadConfig(TString configName){
 	return kFALSE;
       }
       useEMwithLS=n;
+    }
+    else if(strstr(line,"UseGeomMeanLS")){
+      readok=fscanf(confFil,"%d",&n);
+      if(n<0 || n>1){
+	printf("ERROR in UseGeomMeanLS setting\n");
+	return kFALSE;
+      }
+      useGeomMeanLS=n;
+    }
+    else if(strstr(line,"RenormalizeLS")){
+      readok=fscanf(confFil,"%d",&n);
+      if(n<0 || n>1){
+	printf("ERROR in RenormalizeLS setting\n");
+	return kFALSE;
+      }
+      renormLS=n;
     }
     else if(strstr(line,"SmoothLS")){
       readok=fscanf(confFil,"%d",&n);
