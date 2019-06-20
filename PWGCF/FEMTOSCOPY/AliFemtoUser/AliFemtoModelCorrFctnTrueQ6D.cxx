@@ -296,24 +296,14 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1,
                                       const AliFemtoParticle &particle2,
                                       double femto_weight /* = 1.0 */)
 {
-  // Fill reconstructed histogram with "standard" particle momentum
-  Double_t q_out, q_side, q_long;
-  std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
-
   auto out_of_bounds = [] (double q, const std::pair<double,double> limit) {
     return q < limit.first || limit.second < q;
   };
 
-  if (out_of_bounds(q_out, fQlimits[0]) ||
-      out_of_bounds(q_side, fQlimits[1]) ||
-      out_of_bounds(q_long, fQlimits[2])) {
-    return;
-  }
-
   // Get generated momentum from hidden info
   const AliFemtoModelHiddenInfo
-    *info1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(particle1.HiddenInfo()),
-    *info2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(particle2.HiddenInfo());
+    *info1 = static_cast<const AliFemtoModelHiddenInfo*>(particle1.HiddenInfo()),
+    *info2 = static_cast<const AliFemtoModelHiddenInfo*>(particle2.HiddenInfo());
 
   if (info1 == nullptr || info2 == nullptr) {
     return;
@@ -336,9 +326,17 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1,
   const AliFemtoLorentzVector p1(e1, true_momentum1),
                               p2(e2, true_momentum2);
 
-  // Fill generated-momentum histogram with "true" particle momentum
   Double_t true_q_out, true_q_side, true_q_long;
   std::tie(true_q_out, true_q_side, true_q_long) = Qcms(p1, p2);
+
+  if (out_of_bounds(true_q_out, fQlimits[0]) ||
+      out_of_bounds(true_q_side, fQlimits[1]) ||
+      out_of_bounds(true_q_long, fQlimits[2])) {
+    return;
+  }
+
+  Double_t q_out, q_side, q_long;
+  std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
 
   auto q = sort_q(fBinMethod,
                   q_out, q_side, q_long,
