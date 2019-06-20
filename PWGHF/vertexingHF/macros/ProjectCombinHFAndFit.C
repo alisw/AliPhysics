@@ -1022,26 +1022,7 @@ void ProjectCombinHFAndFit(){
       hRawYieldRotBC->SetBinError(iPtBin+1,errbc);
 
       c2sub->cd(iPtBin+1);
-      TH1F* hsubTempRot=(TH1F*)hMassSubRot->Clone(Form("%sSubBack%d",hMassSubRot->GetName(),iPtBin));
-      TH1F* hsubTempRotAllRange=(TH1F*)hMassSubRot->Clone(Form("%sSubBackAllRange%d",hMassSubRot->GetName(),iPtBin));
-      TF1* funcAllRot=fitterRot[iPtBin]->GetMassFunc();
-      TF1* funcBkgRot=fitterRot[iPtBin]->GetBackgroundRecalcFunc();
-      for(Int_t jst=1;jst<=hsubTempRot->GetNbinsX();jst++){
-	Double_t backg=funcBkgRot->Integral(hsubTempRot->GetBinLowEdge(jst),hsubTempRot->GetBinLowEdge(jst)+hsubTempRot->GetBinWidth(jst))/hsubTempRot->GetBinWidth(jst);
-	Double_t tot=funcAllRot->Integral(hsubTempRotAllRange->GetBinLowEdge(jst),hsubTempRotAllRange->GetBinLowEdge(jst)+hsubTempRotAllRange->GetBinWidth(jst))/hsubTempRotAllRange->GetBinWidth(jst);
-	hsubTempRot->SetBinContent(jst,hsubTempRot->GetBinContent(jst)-backg);
-	hsubTempRotAllRange->SetBinContent(jst,hsubTempRotAllRange->GetBinContent(jst)-tot);
-      }
-      hsubTempRot->SetLineColor(kBlue);
-      hsubTempRotAllRange->SetLineColor(kGray+2);
-      hsubTempRot->GetXaxis()->SetRangeUser(minMass,maxMass);
-      hsubTempRot->SetMarkerStyle(20);
-      hsubTempRot->SetMarkerColor(hsubTempRot->GetLineColor());
-      hsubTempRot->DrawCopy();
-      hsubTempRotAllRange->DrawCopy("same");
-      hsubTempRot->DrawCopy("same");
-      TF1* fgauspeakRot=fitterRot[iPtBin]->GetSignalFunc();
-      fgauspeakRot->DrawCopy("same");
+      fitterRot[iPtBin]->DrawHistoMinusFit(gPad);
 
       c2pulls->cd(iPtBin+1);
       TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
@@ -1106,26 +1087,7 @@ void ProjectCombinHFAndFit(){
       hRawYieldLSBC->SetBinError(iPtBin+1,errbc);
 
       c3sub->cd(iPtBin+1);
-      TH1F* hsubTempLS=(TH1F*)hMassSubLS->Clone(Form("%sSubBack%d",hMassSubLS->GetName(),iPtBin));
-      TH1F* hsubTempLSAllRange=(TH1F*)hMassSubLS->Clone(Form("%sSubBackAllRange%d",hMassSubLS->GetName(),iPtBin));
-      TF1* funcAllLS=fitterLS[iPtBin]->GetMassFunc();
-      TF1* funcBkgLS=fitterLS[iPtBin]->GetBackgroundRecalcFunc();
-      for(Int_t jst=1;jst<=hsubTempLS->GetNbinsX();jst++){
-	Double_t backg=funcBkgLS->Integral(hsubTempLS->GetBinLowEdge(jst),hsubTempLS->GetBinLowEdge(jst)+hsubTempLS->GetBinWidth(jst))/hsubTempLS->GetBinWidth(jst);
-	Double_t tot=funcAllLS->Integral(hsubTempLSAllRange->GetBinLowEdge(jst),hsubTempLSAllRange->GetBinLowEdge(jst)+hsubTempLSAllRange->GetBinWidth(jst))/hsubTempLSAllRange->GetBinWidth(jst);
-	hsubTempLS->SetBinContent(jst,hsubTempLS->GetBinContent(jst)-backg);
-	hsubTempLSAllRange->SetBinContent(jst,hsubTempLSAllRange->GetBinContent(jst)-tot);
-      }
-      hsubTempLS->SetLineColor(kBlue);
-      hsubTempLSAllRange->SetLineColor(kGray+2);
-      hsubTempLS->GetXaxis()->SetRangeUser(minMass,maxMass);
-      hsubTempLS->SetMarkerStyle(20);
-      hsubTempLS->SetMarkerColor(hsubTempLS->GetLineColor());
-      hsubTempLS->DrawCopy();
-      hsubTempLSAllRange->DrawCopy("same");
-      hsubTempLS->DrawCopy("same");
-      TF1* fgauspeakLS=fitterLS[iPtBin]->GetSignalFunc();
-      fgauspeakLS->DrawCopy("same");
+      fitterLS[iPtBin]->DrawHistoMinusFit(gPad);
       
       c3pulls->cd(iPtBin+1);
       TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
@@ -1188,26 +1150,7 @@ void ProjectCombinHFAndFit(){
       hRawYieldMEBC->SetBinError(iPtBin+1,errbc);
 
       c4sub->cd(iPtBin+1);
-      TH1F* hsubTempME=(TH1F*)hMassSubME->Clone(Form("%sSubBack%d",hMassSubME->GetName(),iPtBin));
-      TH1F* hsubTempMEAllRange=(TH1F*)hMassSubME->Clone(Form("%sSubBackAllRange%d",hMassSubME->GetName(),iPtBin));
-      TF1* funcAllME=fitterME[iPtBin]->GetMassFunc();
-      TF1* funcBkgME=fitterME[iPtBin]->GetBackgroundRecalcFunc();
-      for(Int_t jst=1;jst<=hsubTempME->GetNbinsX();jst++){
-	Double_t backg=funcBkgME->Integral(hsubTempME->GetBinLowEdge(jst),hsubTempME->GetBinLowEdge(jst)+hsubTempME->GetBinWidth(jst))/hsubTempME->GetBinWidth(jst);
-	Double_t tot=funcAllME->Integral(hsubTempMEAllRange->GetBinLowEdge(jst),hsubTempMEAllRange->GetBinLowEdge(jst)+hsubTempMEAllRange->GetBinWidth(jst))/hsubTempMEAllRange->GetBinWidth(jst);
-	hsubTempME->SetBinContent(jst,hsubTempME->GetBinContent(jst)-backg);
-	hsubTempMEAllRange->SetBinContent(jst,hsubTempMEAllRange->GetBinContent(jst)-tot);
-      }
-      hsubTempME->SetLineColor(kBlue);
-      hsubTempMEAllRange->SetLineColor(kGray+2);
-      hsubTempME->GetXaxis()->SetRangeUser(minMass,maxMass);
-      hsubTempME->SetMarkerStyle(20);
-      hsubTempME->SetMarkerColor(hsubTempME->GetLineColor());
-      hsubTempME->DrawCopy();
-      hsubTempMEAllRange->DrawCopy("same");
-      hsubTempME->DrawCopy("same");
-      TF1* fgauspeakME=fitterME[iPtBin]->GetSignalFunc();
-      fgauspeakME->DrawCopy("same");
+      fitterME[iPtBin]->DrawHistoMinusFit(gPad);
 
       c4pulls->cd(iPtBin+1);
       TH1F *hPullsTrend=new TH1F();// the name is changed afterwards, histo must not be deleted
