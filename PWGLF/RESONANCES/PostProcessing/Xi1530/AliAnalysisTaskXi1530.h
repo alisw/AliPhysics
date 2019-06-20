@@ -349,7 +349,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 20);
+    ClassDef(AliAnalysisTaskXi1530, 21);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -372,6 +372,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 18: Enable AOD functionality
     // 19: Update default filterbit
     // 20: Remove RunTable Class.
+    // 21: Use AliEventCuts
 };
 
 #endif

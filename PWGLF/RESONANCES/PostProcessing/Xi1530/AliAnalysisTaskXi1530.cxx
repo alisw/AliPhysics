@@ -672,23 +672,6 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             }
         }
         IsEvtSelected = fEventCuts.AcceptEvent(event);
-        // V0M Signal QA
-        // --------------------------------------------------------
-        // From BeomKyu Kim
-        AliVVZERO* lVV0 = fEvt->GetVZEROData();
-        if (inputHandler->IsEventSelected()) {
-            for (int i = 0; i < 64; i++) {
-                intensity += lVV0->GetMultiplicity(i);
-            }
-            FillTHnSparse("hV0MSignal",
-                          {kIsSelected, (double)fCent, (double)intensity,
-                           (double)ftrackmult});
-            if (IsMultSelcted)
-                FillTHnSparse("hV0MSignal",
-                              {kIsMulti, (double)fCent, (double)intensity,
-                               (double)ftrackmult});
-        }
-        // ----------------------------------------------------------------------
     } else {
         ftrackmult = nanoHeader->GetCentr("TRK");
         fCent = nanoHeader->GetCentr("V0M");
@@ -699,17 +682,28 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         IsMultSelcted = true;
         IsEvtSelected = true;
     }
-    
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(fZ) - 1;           // Event mixing z-bin
     centbin = binCent.FindBin(fCent) - 1;  // Event mixing cent bin
     // -----------------------------------------------------------------------
-
+    // V0M Signal QA ---------------------------------------------------------
+    // From BeomKyu Kim
+    AliVVZERO* lVV0 = fEvt->GetVZEROData();
+    if (inputHandler->IsEventSelected()) {
+        for (int i = 0; i < 64; i++) {
+            intensity += lVV0->GetMultiplicity(i);
+        }
+        FillTHnSparse("hV0MSignal", {kIsSelected, (double)fCent,
+                                     (double)intensity, (double)ftrackmult});
+        if (IsMultSelcted)
+            FillTHnSparse("hV0MSignal",
+                          {kIsMulti, (double)fCent, (double)intensity,
+                           (double)ftrackmult});
+    }
     // ----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
     if (IsEvtSelected) { // In AliEventCuts
-
         // Draw Multiplicity QA plot in only selected event.
         if (fQA) {
             FillTHnSparse("hMult", {(double)fCent});
@@ -729,8 +723,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             }
         }
         if (this->GoodTracksSelection()         // If Good track
-            && this->GoodCascadeSelection()) {  // and Good cascade is in this
-                                                // event,
+            && this->GoodCascadeSelection()) {  // and Good cascade is in
+                                                // this event,
             if (fEvt->IsA() == AliESDEvent::Class())
                 this->FillTracks();  // Fill the histogram
             else
