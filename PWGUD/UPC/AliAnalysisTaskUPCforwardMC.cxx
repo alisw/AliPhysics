@@ -212,7 +212,16 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
       fMCPhiHeFrameForSignalExH(0),
       fEfficiencyPerRunH(0),
       fMCEfficiencyPerRunH(0),
-      fEtaAndPhi(0)
+      fEtaAndPhi(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -349,7 +358,16 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
       fMCPhiHeFrameForSignalExH(0),
       fEfficiencyPerRunH(0),
       fMCEfficiencyPerRunH(0),
-      fEtaAndPhi(0)
+      fEtaAndPhi(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
     for( Int_t iRun = 0; iRun < 60000; iRun++) {
@@ -985,6 +1003,29 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
     fOutputList->Add(fDeadZoneEtaVsPhiPerRunH[iRuns]);
   }
 
+  //________________________________________
+  /* - Templates for polarisation analysis.
+   * -
+   */
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]);
+  }
+  //________________________________________
+
   //_______________________________
   // - End of the function
   PostData(1, fOutputList);
@@ -1618,6 +1659,32 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
                                                                                         );
           break;
         }
+    }
+
+
+    /* - NEW:
+       -
+     */
+    Bool_t controlFlag2 = 0;
+    Bool_t controlFlag3 = 0;
+    if ( possibleJPsiCopy.Pt() < 0.25 ) {
+          Double_t CosThetaHelicityFrameValue = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          Double_t PhiHelicityFrameValue      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+          for(Int_t iCosThetaBins = 0; iCosThetaBins < 40; iCosThetaBins++) {
+            if( controlFlag2 == 1) break;
+            if( (CosThetaHelicityFrameValue + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/40. ){
+                fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[iCosThetaBins]->Fill(possibleJPsiCopy.Mag());
+                controlFlag2 = 1;
+            }
+          }
+          for(Int_t iPhiBins = 0; iPhiBins < 50; iPhiBins++) {
+            if( controlFlag3 == 1) break;
+            if( (PhiHelicityFrameValue + 3.14) < 6.28*((Double_t)iPhiBins + 1.)/50. ){
+                fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[iPhiBins]->Fill(possibleJPsiCopy.Mag());
+                controlFlag3 = 1;
+            }
+          }
+
     }
 
 
