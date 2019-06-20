@@ -888,6 +888,56 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH2F*                   fMCInvariantMassDistributionForSignalExtractionHelicityFrameH;  //!
 
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 40 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[40];  //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 40 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[50];  //!
+
         //_______________________________
         // Efficiency plots.
                                 /**
@@ -911,6 +961,24 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH1F*                   fMCEfficiencyPerRunH;  //!
 
+                                /**
+                                 * This array of histograms shows the
+                                 * distribution of the dead zones of the
+                                 * detector on a run-by-run basis.
+                                 * To avoid a complicated logic, I have
+                                 * declared 60k histograms.
+                                 * This is because there are runs from about
+                                 * 240k to 300k.
+                                 * However, this is too heavy for ROOT.
+                                 * Hence, I have declared them as
+                                 * SPARSE. Most of these 60k histograms
+                                 * are empty anyway, so it is best to save
+                                 * on space...
+                                 */
+        // THnSparseF*             fDeadZoneEtaVsPhiPerRunH[60000 + 1]; //!
+        // THnSparseF*             fDeadZoneEtaVsPhiPerRunH[364]; //!    number of total runs
+        TH2F*                   fDeadZoneEtaVsPhiPerRunH[364]; //!    number of total runs
+
 
         //_______________________________
         // CUTS
@@ -921,6 +989,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         Int_t                   fRunNum;        //!
         Int_t                   fTracklets;     //!
         Double_t                fLumiPerRun;    //!
+        Double_t*               fEtaAndPhi;     //!
 
         UInt_t                  fL0inputs;      //!
       	UInt_t                  fL1inputs;      //!
@@ -995,7 +1064,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 20);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 22);
 };
 
 #endif
