@@ -2475,6 +2475,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
   fMCContainer->SetRejectISR(fRejectISR);
   fMCContainer->SetSpecialPDG(fCandidatePDG);
   fMCContainer->SetSpecialIndex(-10);
+  // fMCContainer->SetMinPt(0);
      if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
    
     
@@ -2491,7 +2492,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
     auto cont = fMCContainer->all();
     for (auto it = cont.begin(); it != cont.end(); ++it) {
     UInt_t rejectionReason = 0;
-    if((*it)->PdgCode()==fCandidatePDG){
+   
+    if(TMath::Abs((*it)->PdgCode())==fCandidatePDG){
     
       dlabel.push_back(it.current_index());}
       
