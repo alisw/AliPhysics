@@ -7069,7 +7069,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessAODMCParticlesForHBT()
         if(particle2->E()<0.1) continue;
         if(TMath::Abs(particle2->Eta())>0.8) continue;
         if(particle2->GetPdgCode() == 22){
-          p2.SetPxPyPzE(particle1->Px(),particle2->Py(),particle2->Pz(),particle2->E());
+          p2.SetPxPyPzE(particle2->Px(),particle2->Py(),particle2->Pz(),particle2->E());
           if(p1.Angle(p2.Vect())>0.005){
             pTot = p1 + p2;
             //for sure dealing with two generated photons
