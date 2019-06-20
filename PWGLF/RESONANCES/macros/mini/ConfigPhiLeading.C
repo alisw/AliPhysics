@@ -1,4 +1,4 @@
-Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Double_t nSigmaKaon = -1)
+Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaKaon = -1)
 {
 
     // -- Values ------------------------------------------------------------------------------------
@@ -61,8 +61,10 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Doub
         out->SetMotherMass(motherMass[i]);
 
         out->AddAxis(imID, 215, 0.985, 1.2);
-        out->AddAxis(ptID, 40, 0., 20.);                                 //default use mother pt
-        out->AddAxis(multID, 20, 0., 200.); 
+        out->AddAxis(ptID, 40, 0., 20.);
+        if(!isPP ) out->AddAxis(multID,100,0.,100.);
+        else out->AddAxis(multID, 20, 0., 200.); 
+
         out->AddAxis(alID, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
         out->AddAxis(ptlID, 40, 0., 20.); 
         
