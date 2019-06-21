@@ -929,6 +929,13 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-13
     cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5.
 
+  } else if (trainConfig == 450){ // PCM sphericity
+    cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000");
+    cuts.AddCutPCM("h0010113", "0d200009227300008250404000", "0152103500000000");
+    cuts.AddCutPCM("i0010113", "0d200009227300008250404000", "0152103500000000");
+    cuts.AddCutPCM("j0010113", "0d200009227300008250404000", "0152103500000000");
+    cuts.AddCutPCM("q0010113", "0d200009227300008250404000", "0152103500000000");
+    cuts.AddCutPCM("r0010113", "0d200009227300008250404000", "0152103500000000");
 
   //----------------------------- configuration for Jet analysis ----------------------------------------------------
   } else if ( trainConfig == 500){ // Jet analysis pp 5 TeV 2017
