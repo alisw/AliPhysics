@@ -251,11 +251,11 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
         
     }else if(d1==AliRsnDaughter::kXi && d2==AliRsnDaughter::kPion){
         Config_XiPi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-    }else if(d2==AliRsnDaughter::kPion && d1==AliRsnDaughter::kXi){
+    }else if(d2==AliRsnDaughter::kXi && d1==AliRsnDaughter::kPion){
         Config_XiPi(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
     }else if(d1==AliRsnDaughter::kXi && d2==AliRsnDaughter::kProton){
         Config_XiP(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-    }else if(d2==AliRsnDaughter::kProton && d1==AliRsnDaughter::kXi){
+    }else if(d2==AliRsnDaughter::kXi && d1==AliRsnDaughter::kProton){
         Config_XiP(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
     }
     cerr<<"done configuring"<<endl;
