@@ -677,18 +677,15 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             for (int i = 0; i < 64; i++) {
                 intensity += lVV0->GetMultiplicity(i);
             }
-            FillTHnSparse("hV0MSignal",
-                          {kIsSelected, (double)fCent, (double)intensity,
-                           (double)ftrackmult});
-            if (IsMultSelcted)
-                FillTHnSparse("hV0MSignal",
-                              {kIsMulti, (double)fCent, (double)intensity,
-                               (double)ftrackmult});
         }
+
         // ----------------------------------------------------------------------
     } else {
-        ftrackmult = nanoHeader->GetCentr("TRK");
         fCent = nanoHeader->GetCentr("V0M");
+        static int v0mValueIndex = nanoHeader->GetVarIndex("MultSelection.V0M.Value");
+        static int trkValueIndex = nanoHeader->GetVarIndex("MultSelection.SPDTracklets.Value");
+        intensity = nanoHeader->GetVar(v0mValueIndex);
+        ftrackmult = nanoHeader->GetVar(trkValueIndex);
 
         fHistos->FillTH1("hMult_QA_onlyMult", (double)fCent);
 
@@ -696,6 +693,17 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         IsMultSelcted = true;
         IsEvtSelected = true;
     }
+
+    if (IsSelectedTrig) {
+        FillTHnSparse("hV0MSignal",
+                      {kIsSelected, (double)fCent, (double)intensity,
+                       (double)ftrackmult});
+        if (IsMultSelcted)
+            FillTHnSparse("hV0MSignal",
+                          {kIsMulti, (double)fCent, (double)intensity,
+                           (double)ftrackmult});
+    }
+
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(fZ) - 1;           // Event mixing z-bin
     centbin = binCent.FindBin(fCent) - 1;  // Event mixing cent bin
