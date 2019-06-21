@@ -7,7 +7,7 @@ AliAnalysisTask_JPsi_EMCal* Config_JPsi_EMCal(
 											
 Bool_t isMC=kFALSE, 
 Bool_t isAOD = kTRUE,
-char * period  = "b",
+char * period  = "16l",
 Int_t trigger_index=0,
 Int_t config=0,
 Bool_t isTender
@@ -19,6 +19,7 @@ Bool_t isTender
     
 	AliAnalysisTask_JPsi_EMCal *task = new AliAnalysisTask_JPsi_EMCal();
 	printf("task ------------------------ %p\n ", task);
+    printf("Config loaded properly\n");
 	
 	task->SetAODanalysis(isAOD);
 

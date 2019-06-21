@@ -53,11 +53,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         CalculateTrackUEBand   (AliCaloTrackParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
   
-  void         CalculateCaloSignalInCone    (AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumCluster, Float_t & coneptLeadCluster) ;
+  void         CalculateCaloSignalInCone    (AliCaloTrackParticleCorrelation * aodParticle) ;
     
   void         CalculateCaloCellSignalInCone(AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
 
-  void         CalculateTrackSignalInCone   (AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumTrack  , Float_t & coneptLeadTrack  ) ;
+  void         CalculateTrackSignalInCone   (AliCaloTrackParticleCorrelation * aodParticle) ;
 
 
   void         CalculateNormalizeUEBandPerUnitArea(AliCaloTrackParticleCorrelation * pCandidate, Float_t coneptsumCluster,
@@ -349,10 +349,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiDecay   [2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! eta vs phi of (not) isolated leading Pi0 decay particles.
   TH2F *   fhPtLambda0Decay[2][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! Shower shape of (non) isolated leading Pi0 decay particles (do not apply SS cut previously).
 
-  TH2F *   fhPtInCone ;                                //!<! Cluster/track Pt in the cone.
-  TH2F *   fhPtClusterInCone ;                         //!<! Cluster Pt in the cone.
   TH2F *   fhPtCellInCone ;                            //!<! Cell amplitude in the cone.
-  TH2F *   fhPtTrackInCone ;                           //!<! Track Pt in the cone.
   TH2F *   fhPtTrackInConeMCPrimary  [4] ;             //!<! Track Pt in the cone for tracks originating from primary charged pions, kaons, protons and else, reconstructed pT.
   TH2F *   fhPtTrackInConeMCSecondary[4] ;             //!<! Track Pt in the cone for tracks originating from secondary charged pions, kaons, protons and else, reconstructed pT.
   TH2F *   fhPtTrackInConeMCPrimaryGener  [4] ;        //!<! Track Pt in the cone for tracks originating from primary charged pions, kaons, protons and else, generated pT.
@@ -390,19 +387,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPhiBandTrackPt   ;                        //!<! pT in Phi band to estimate UE in cone, only tracks.
   TH2F *   fhEtaBandCell ;                             //!<! Row vs Column in Eta band to estimate UE in cone, only cells.
   TH2F *   fhPhiBandCell ;                             //!<! Row vs Column in Phi band to estimate UE in cone, only cells.
-
-  TH2F *   fhConePtLead ;                              //!<! Cluster and tracks leading pt in the cone.
-  TH2F *   fhConePtLeadCluster ;                       //!<! Clusters leading pt in the cone.
-  TH2F *   fhConePtLeadTrack ;                         //!<! Tracks leading pt in the cone.
-  TH2F *   fhConePtLeadClustervsTrack;                 //!<! Tracks vs Clusters leading pt.
-  TH2F *   fhConePtLeadClusterTrackFrac;               //!<! Trigger pt vs cluster/track leading pt.
   
-  TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
 //TH3F *   fhPtLambda0Eiso;                            //!<! ABCD TH3F histogram Pt, ShowerShape and sum(ET)+sum(pT) cone
   TH2F *   fhConeSumPtCellTrack ;                      //!<! Cells and tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtCell ;                           //!<! Cells Sum Pt in the cone.
-  TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
-  TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
   
   TH2F *   fhConeSumPtExoTrigger ;                     //!<! Cluster and tracks Sum Pt in the cone. Trigger is exotic
   TH2F *   fhConeSumPtClusterExoTrigger ;              //!<! Clusters Sum Pt  in the cone. Trigger is exotic
@@ -415,7 +403,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtEtaBandUECell;                   //!<! Cell Sum amplitude in the eta band for cells, before normalization.
   TH2F *   fhConeSumPtPhiBandUECell;                   //!<! Cell Sum amplitude in the phi band for cells, before normalization.
 
-  TH2F *   fhConeSumPtTrigEtaPhi ;                     //!<! Cluster and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger.
   TH2F *   fhConeSumPtCellTrackTrigEtaPhi ;            //!<! Cell and tracks Sum Pt Sum Pt in the cone, per eta-phi bin of trigger.
   TH2F *   fhConeSumPtEtaBandUEClusterTrigEtaPhi;      //!<! Cluster Sum Pt in the eta band for clusters, per eta-phi bin of trigger,before normalization.
   TH2F *   fhConeSumPtPhiBandUEClusterTrigEtaPhi;      //!<! Cluster Sum Pt in the phi band for clusters, per eta-phi bin of trigger, before normalization.
@@ -465,8 +452,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhFractionCellOutConePhi;                   //!<! Fraction of cone out of cells acceptance in phi.
   TH2F *   fhFractionCellOutConePhiTrigEtaPhi;         //!<! Fraction of cone out of cells acceptance in phi, vs trigger eta-phi.
   
-  TH2F *   fhConeSumPtClustervsTrack ;                 //!<! Cluster vs tracks Sum Pt Sum Pt in the cone.
-  TH2F *   fhConeSumPtClusterTrackFrac ;               //!<! Cluster / tracks Sum Pt Sum Pt in the cone.
+ 
   TH2F *   fhConeSumPtEtaUESubClustervsTrack ;         //!<! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta band.
   TH2F *   fhConeSumPtPhiUESubClustervsTrack ;         //!<! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in phi band.
   TH2F *   fhConeSumPtCellvsTrack;                     //!<! Cell vs tracks Sum Pt Sum Pt in the cone.
@@ -915,7 +901,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,42) ;
+  ClassDef(AliAnaParticleIsolation,43) ;
   /// \endcond
 
 } ;

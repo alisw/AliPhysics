@@ -57,90 +57,53 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
 
-  //cutwindow
   if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(1.06,1.08);
+    TrackCutsPhi->SetCutWindow(0.987,0.991);
   }
-  //invmasscuts
   if (suffix == "2") {
-    TrackCutsPhi->SetCutInvMass(0.006);
+    TrackCutsPhi->SetCutWindow(0.991,1.011);
   }
   if (suffix == "3") {
-    TrackCutsPhi->SetCutInvMass(0.004);
+  TrackCutsPhi->SetCutWindow(1.027,1.047);
   }
-  //sphericitycuts
   if (suffix == "4") {
-    evtCuts->SetSphericityCuts(0.6,1);
+  TrackCutsPhi->SetCutWindow(1.047,1.067);
   }
   if (suffix == "5") {
-    evtCuts->SetSphericityCuts(0.65,1);
+  TrackCutsPhi->SetCutWindow(1.067,1.087);
   }
   if (suffix == "6") {
-    evtCuts->SetSphericityCuts(0.7,1);
+  TrackCutsPhi->SetCutWindow(1.087,1.107);
   }
   if (suffix == "7") {
-    evtCuts->SetSphericityCuts(0.75,1);
+  TrackCutsPhi->SetCutWindow(1.107,1.127);
   }
   if (suffix == "8") {
-    evtCuts->SetSphericityCuts(0.8,1);
+  TrackCutsPhi->SetCutWindow(1.127,1.147);
   }
   if (suffix == "9") {
-    evtCuts->SetSphericityCuts(0.85,1);
+  TrackCutsPhi->SetCutWindow(1.147,1.167);
   }
   if (suffix == "10") {
-    evtCuts->SetSphericityCuts(0.9,1);
+  TrackCutsPhi->SetCutWindow(1.167,1.187);
   }
   if (suffix == "11") {
-    evtCuts->SetSphericityCuts(0.95,1);
+  TrackCutsPhi->SetCutWindow(1.187,1.2);
   }
-  //sphericity and cutwindow
   if (suffix == "12") {
-    TrackCutsPhi->SetCutWindow(1.08,1.13);
-    evtCuts->SetSphericityCuts(0.6,1);
+  TrackCutsPhi->SetCutWindow(1.027,1.067);
   }
   if (suffix == "13") {
-    TrackCutsPhi->SetCutWindow(1.13,1.18);
-    evtCuts->SetSphericityCuts(0.6,1);
+  TrackCutsPhi->SetCutWindow(1.067,1.107);
   }
   if (suffix == "14") {
-    TrackCutsPhi->SetCutWindow(1.08,1.18);
-    evtCuts->SetSphericityCuts(0.6,1);
+  TrackCutsPhi->SetCutWindow(1.107,1.147);
   }
   if (suffix == "15") {
-    TrackCutsPhi->SetCutWindow(1.08,1.13);
-    evtCuts->SetSphericityCuts(0.7,1);
+  TrackCutsPhi->SetCutWindow(1.147,1.187);
   }
   if (suffix == "16") {
-    TrackCutsPhi->SetCutWindow(1.13,1.18);
-    evtCuts->SetSphericityCuts(0.7,1);
-  }
-  if (suffix == "17") {
-    TrackCutsPhi->SetCutWindow(1.08,1.18);
-    evtCuts->SetSphericityCuts(0.7,1);
-  }
-  if (suffix == "18") {
-    TrackCutsPhi->SetCutWindow(1.08,1.13);
-    evtCuts->SetSphericityCuts(0.8,1);
-  }
-  if (suffix == "19") {
-    TrackCutsPhi->SetCutWindow(1.13,1.18);
-    evtCuts->SetSphericityCuts(0.8,1);
-  }
-  if (suffix == "20") {
-    TrackCutsPhi->SetCutWindow(1.08,1.18);
-    evtCuts->SetSphericityCuts(0.8,1);
-  }
-  if (suffix == "21") {
-    TrackCutsPhi->SetCutWindow(1.08,1.13);
-    evtCuts->SetSphericityCuts(0.9,1);
-  }
-  if (suffix == "22") {
-    TrackCutsPhi->SetCutWindow(1.13,1.18);
-    evtCuts->SetSphericityCuts(0.9,1);
-  }
-  if (suffix == "23") {
-    TrackCutsPhi->SetCutWindow(1.08,1.18);
-    evtCuts->SetSphericityCuts(0.9,1);
+  TrackCutsPhi->SetCutWindow(0.987,1.011);
   }
 
 //  if (suffix != "0") {

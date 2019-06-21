@@ -1215,6 +1215,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane,gSphericity,nTracksAboveHighPtThreshold);
   gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();
 
+
   //Use sphericity cut
   if(fUseSphericityCut) {
     if((fSphericityMin > gSphericity)||(gSphericity > fSphericityMax)) {
@@ -2152,6 +2153,12 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 
   if(gAnalysisLevel == "AOD") { // handling of TPC only tracks different in AOD and ESD
     // Loop over tracks in event
+
+    if (fUseRaaGeoCut){
+      fESDtrackCuts = new AliESDtrackCuts();
+      fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
+    }
+    
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
       AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
       if (!aodTrack) {
@@ -2178,9 +2185,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
 
       if(fUseRaaGeoCut){
-	AliESDtrackCuts *cuts = new AliESDtrackCuts();
-	cuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
-	if (!cuts->IsSelected(aodTrack))
+	if (!fESDtrackCuts->IsSelected(aodTrack))
 	  continue;
       }
      
@@ -2803,6 +2808,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       
       nAcceptedTracks += 1;
     }//track loop
+    
+    if (fUseRaaGeoCut) delete fESDtrackCuts;
 
     if(nAcceptedTracks >= 2) { 
       if(sumPt != 0.) { 
@@ -2834,7 +2841,9 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  }
 	}
       }
+    
     }
+   
   }// AOD analysis
 
 

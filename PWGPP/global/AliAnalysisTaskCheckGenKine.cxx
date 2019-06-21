@@ -171,11 +171,11 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
   fHistoNEvents->GetXaxis()->SetBinLabel(4,"Track vertex");
   fOutput->Add(fHistoNEvents);
 
-  fHistoGenMult = new TH1F("hGenMult"," ;  Nch (|#eta|<0.9)",100,minMult,maxMult);
+  fHistoGenMult = new TH1F("hGenMult"," ;  N_{gen} (charged, |#eta|<0.9)",100,minMult,5.*maxMult);
   fOutput->Add(fHistoGenMult);
 
   // vertex histos
-  fHistoVtxContrib = new TH3F("kVtxContrib"," ;  Nch (|#eta|<0.9) ; SPDVert contrib. ; TrackVert contrib.",100,-0.5,99.5,102,-2.5,99.5,102,-2.5,99.5);
+  fHistoVtxContrib = new TH3F("kVtxContrib"," ;  Nch (pi,K,p |#eta|<0.9) ; SPDVert contrib. ; TrackVert contrib.",100,-0.5,99.5,102,-2.5,99.5,102,-2.5,99.5);
   fHistoSPD3DVtxX = new TH1F("hSPD3DVtxX"," ; SPD 3Dvertex X (cm)",200,-1.,1.);
   fHistoSPD3DVtxY = new TH1F("hSPD3DVtxY"," ; SPD 3Dvertex Y (cm)",200,-1.,1.);
   fHistoSPD3DVtxZ = new TH1F("hSPD3DVtxZ"," ; SPD 3Dvertex Z (cm)",200,-20.,20.);
@@ -207,12 +207,12 @@ void AliAnalysisTaskCheckGenKine::UserCreateOutputObjects() {
   fOutput->Add(fHistoTrkVtxResidZ);
 
   // multiplicity histos
-  fHistoTracklets = new TH2F("hTracklets"," ; N_{gen} ; N_{tracklets}",100,minMult,maxMult,100,minMult,maxMult);
-  fHistoSelTracks = new TH2F("hSelTracks"," ; N_{gen} ; N_{TPC+ITS tracks}",100,minMult,maxMult,100,minMult,maxMult);
+  fHistoTracklets = new TH2F("hTracklets"," ; N_{gen} (phys prim, |#eta|<0.9) ; N_{tracklets}",100,minMult,maxMult,100,minMult,maxMult);
+  fHistoSelTracks = new TH2F("hSelTracks"," ; N_{gen} (phys prim, |#eta|<0.9) ; N_{TPC+ITS tracks}",100,minMult,maxMult,100,minMult,maxMult);
   fOutput->Add(fHistoTracklets);
   fOutput->Add(fHistoSelTracks);
   if(fIsAA){
-    fHistoGenMultVsb = new TH2F("hGenMultVsb"," ;  impact parameter (fm) ; Nch (|#eta|<0.9)",150,0.,15.,100,minMult,maxMult);
+    fHistoGenMultVsb = new TH2F("hGenMultVsb"," ;  impact parameter (fm) ; N_{gen} (phys prim, |#eta|<0.9)",150,0.,15.,100,minMult,maxMult);
     fHistoTrackletsVsb = new TH2F("hTrackletsVsb"," ; impact parameter (fm) ; N_{tracklets}",150,0.,15.,100,minMult,maxMult);
     fHistoSelTracksVsb = new TH2F("hSelTracksVsb"," ; impact parameter (fm) ; N_{TPC+ITS tracks}",150,0.,15.,100,minMult,maxMult);
     fOutput->Add(fHistoGenMultVsb);
@@ -329,6 +329,7 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
   Int_t nParticles=mcEvent->GetNumberOfTracks();
   Int_t nChEta09 = 0.;
   Int_t nPhysPrimEta09=0;
+  Int_t nChPhysPrimEta09=0;
   Int_t nPiKPEta09=0;
   for (Int_t i=0;i<nParticles;i++){
     TParticle* part = (TParticle*)mcEvent->Particle(i);
@@ -336,7 +337,10 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
     Int_t absPdg=TMath::Abs(part->GetPdgCode());
     Double_t eta=part->Eta();
     if(TMath::Abs(eta)<0.9){
-      if(mcEvent->IsPhysicalPrimary(i)) nPhysPrimEta09++;
+      if(mcEvent->IsPhysicalPrimary(i)){
+	nPhysPrimEta09++;
+	if(ppdg && TMath::Abs(ppdg->Charge())>0.) nChPhysPrimEta09++;
+      }
       if(absPdg==211 || absPdg==321 || absPdg==2212) nPiKPEta09++;
       if(ppdg && TMath::Abs(ppdg->Charge())>0.) nChEta09++;
     }
@@ -385,7 +389,7 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
     Double_t eta=TMath::Abs(mult->GetEta(it));
     if(eta<0.9) nTrackletsEta09++;
   }
-  fHistoTracklets->Fill(nPiKPEta09,nTrackletsEta09);
+  fHistoTracklets->Fill(nChPhysPrimEta09,nTrackletsEta09);
 
   Int_t nTracks=esd->GetNumberOfTracks();
   Int_t nSelTracks=0;
@@ -396,10 +400,10 @@ void AliAnalysisTaskCheckGenKine::UserExec(Option_t *)
     if(!(status&AliESDtrack::kTPCin)) continue;
     nSelTracks++;
   }
-  fHistoSelTracks->Fill(nPiKPEta09,nSelTracks);
+  fHistoSelTracks->Fill(nChPhysPrimEta09,nSelTracks);
 
   if(fIsAA){
-    fHistoGenMultVsb->Fill(imppar,nPiKPEta09);
+    fHistoGenMultVsb->Fill(imppar,nChPhysPrimEta09);
     fHistoTrackletsVsb->Fill(imppar,nTrackletsEta09);
     fHistoSelTracksVsb->Fill(imppar,nSelTracks);
   }

@@ -725,7 +725,7 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
 
   TString fDetTPCConfName[3];
   TString fDetV0ConfName[3];
-  TString fNormMethod="QoverQlength";
+  TString fNormMethod="QoverM";//"QoverQlength";
 
   fDetTPCConfName[0] = "TPC";
   fDetTPCConfName[1] = "TPCNegEta";

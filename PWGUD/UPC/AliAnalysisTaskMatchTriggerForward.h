@@ -196,6 +196,34 @@ class AliAnalysisTaskMatchTriggerForward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fMCEfficiencyPerRunH;  //!
 
+                                /**
+                                 * This histogram shows the entries distribution
+                                 * per run of the RECONSTRUCTED level.
+                                 * This has to be divided by the corresponding
+                                 * fMCEfficiencyPerRunH to extract the
+                                 * efficiency on a run-by-run basis.
+                                 * NOTE: this is with the GetTrigger() request.
+                                 */
+        TH1F*                   fEfficiencyPerRunWithTriggeringH;  //!
+
+                                /**
+                                 * This array of histograms shows the
+                                 * distribution of the dead zones of the
+                                 * detector on a run-by-run basis.
+                                 * To avoid a complicated logic, I have
+                                 * declared 60k histograms.
+                                 * This is because there are runs from about
+                                 * 240k to 300k.
+                                 * However, this is too heavy for ROOT.
+                                 * Hence, I have declared them as
+                                 * SPARSE. Most of these 60k histograms
+                                 * are empty anyway, so it is best to save
+                                 * on space...
+                                 */
+        TH2F*                   fDeadZoneEtaVsPhiPerRunH[364];               //!    number of total runs
+        TH2F*                   fDeadZoneEtaVsPhiPerRunWithTriggeringH[364]; //!    number of total runs
+
+
 
         //_______________________________
         // CUTS
@@ -280,7 +308,7 @@ class AliAnalysisTaskMatchTriggerForward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskMatchTriggerForward, 1);
+        ClassDef(AliAnalysisTaskMatchTriggerForward, 3);
 };
 
 #endif
