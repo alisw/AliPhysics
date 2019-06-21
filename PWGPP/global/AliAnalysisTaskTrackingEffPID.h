@@ -77,6 +77,8 @@ public:
   }
   void SetUseMVPileup(bool flag) {fEventCut.fPileUpCutMV=flag;}
 
+  void SetUseImpactParameter(bool flag) {fUseImpPar=flag;}
+  
   void SelectedGeneratorName(TString name){
     fGenerToKeep=name.Data(); fSelectOnGenerator=kTRUE;}
   void ExcludedGeneratorName(TString name){
@@ -104,6 +106,7 @@ private:
   TString fGenerToExclude;       /// generator name to exclude
   bool fKeepOnlyInjected;        /// flag to keep only injected particles
   bool fKeepOnlyUE;              /// flag to keep only underlying event
+  bool fUseImpPar;               /// flag to enable plots vs. impact parameter
   TList* fOutputList;                                     //!<! Output list
   TList* fListCuts;                                       //!<! Output with cuts
   TH1F*  fHistNEvents;                                    //!<!  histo with N of events  
@@ -117,7 +120,7 @@ private:
 
 
   /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskTrackingEffPID, 6);
+  ClassDef(AliAnalysisTaskTrackingEffPID, 7);
   /// \endcond
 };
 
