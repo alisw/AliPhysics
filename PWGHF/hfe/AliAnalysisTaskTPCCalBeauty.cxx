@@ -1370,10 +1370,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     
                     fAllElecStackDiffPID->Fill(track->Pt());
                     if(pidM==411 || pidM==421 || pidM==413 || pidM==423 || pidM==431 || pidM==433 || pidM==4122){
-                        fDElecStackDiffPID->Fill(track->Pt());
+                        fDElecStackDiffPID->Fill(AODMCtrack->Pt());
                     }
                     if(pidM==511 || pidM==521 || pidM==513 || pidM==523 || pidM==531 || pidM==533){
-                        fBElecStackDiffPID->Fill(track->Pt());
+                        fBElecStackDiffPID->Fill(AODMCtrack->Pt());
                     }
                     
                     if(TrackPDG == 11 && pidM>400 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
