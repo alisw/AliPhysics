@@ -10,7 +10,7 @@ AliAnalysisTask *AddTask_LNNv0Bkg(Int_t bkg, Bool_t isMC){
   //========= Add task to the ANALYSIS manager =====
  TString name(Form("LNN_Bkg_Type_%i",bkg));
 
-  AliAnalysisTaskLNNv0BkgMC *taskLNNv0Bkg = new AliAnalysisTaskLNNv0BkgMC(name.Data());
+  AliAnalysisTaskLNNv0Bkg *taskLNNv0Bkg = new AliAnalysisTaskLNNv0Bkg(name.Data());
   taskLNNv0Bkg->SetBkgType(bkg);
   if(isMC) taskLNNv0Bkg->SetMC(); 
   mgr->AddTask(taskLNNv0Bkg);
