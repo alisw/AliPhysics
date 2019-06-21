@@ -2125,33 +2125,39 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fSpecialSubTriggerName="8DJ1";
       fSpecialTriggerName="AliVEvent::kCaloOnly/8DJ1";
       break;
-    case 21: // Gamma Low EMC and DMC
+    case 21: // Gamma Low EMC and DMC - l
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialTriggerName="AliVEvent::kCaloOnly/7EG1";
       fSpecialSubTriggerName="7EG1";
       fSpecialSubTriggerNameAdditional="7DG1";
       break;
-    case 22: // Gamma Low EMC and DMC
+    case 22: // Gamma Low EMC and DMC - m
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialTriggerName="AliVEvent::kCaloOnly/7EG2";
       fSpecialSubTriggerName="7EG2";
       fSpecialSubTriggerNameAdditional="7DG2";
       break;
-    case 23: // high Jet trigger EMC+DMC
+    case 23: // high Jet trigger EMC+DMC - n
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialTriggerName="AliVEvent::kCaloOnly/7EJ1";
       fSpecialSubTriggerName="7EJ1";
       fSpecialSubTriggerNameAdditional="7DJ1";
       break;
-    case 24: // low Jet trigger EMC+DMC
+    case 24: // low Jet trigger EMC+DMC - o
       fSpecialSubTrigger=1;
       fNSpecialSubTriggerOptions=2;
       fSpecialTriggerName="AliVEvent::kCaloOnly/7EJ2";
       fSpecialSubTriggerName="7EJ2";
       fSpecialSubTriggerNameAdditional="7DJ2";
+      break;
+    case 25: // CPHI7 - V0AND and PHOS fired - p
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CPHI7-";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/CPHI7";
       break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
@@ -4559,6 +4565,10 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 } else if (fSpecialSubTriggerName.CompareTo("8DG2") == 0){
                   if (firedTrigClass.Contains("INT7-")) isSelected = 0;
                   if (firedTrigClass.Contains("DMC8-")) isSelected = 0;
+                }
+                // trigger rejection PHOS triggers
+                if (fSpecialSubTriggerName.CompareTo("CPHI7-") == 0){
+                  if (firedTrigClass.Contains("INT7-")) isSelected = 0;
                 }
               }
             }

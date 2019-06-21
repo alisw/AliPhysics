@@ -188,6 +188,7 @@ void AddTask_GammaConvCalo_pp(
   if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+  if(trainConfig >= 850 && trainConfig < 860) task->SetDoHBTHistoOutput(kTRUE);
 
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
@@ -1644,50 +1645,65 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446651044012300000","0163103100000030"); // min opening angle 0.01 -> 2 cell diag
   } else if ( trainConfig == 812){ // NL variations
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446600044012300000","0163103100000010"); // No NL
+  } else if ( trainConfig == 813){ // new default 2019 june 21
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+  } else if ( trainConfig == 814){ // No non-lin corr, use with Run2Tune / Run2TuneMC
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+  } else if ( trainConfig == 815){ // Sphericity PCMPHOS
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+    cuts.AddCutPCMCalo("h0010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+    cuts.AddCutPCMCalo("i0010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+    cuts.AddCutPCMCalo("j0010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+    cuts.AddCutPCMCalo("q0010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+    cuts.AddCutPCMCalo("r0010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
 
-    //Normal B Option
- } else if ( trainConfig == 820){ // Default cut, with TM   with eta<0.8
+      //Normal B Option
+  } else if ( trainConfig == 820){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0d200009327000008250400000","2446651044012300000","0163103100000010"); // INT7
- } else if ( trainConfig == 821){ // Default cut, with TM   with eta<0.8
+  } else if ( trainConfig == 821){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0da00009327000008250400000","2446651044012300000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0db00009327000008250400000","2446651044012300000","0163103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dc00009327000008250400000","2446651044012300000","0163103100000010"); // INT7
- } else if ( trainConfig == 822){ // Default cut, with TM   with eta<0.8
+  } else if ( trainConfig == 822){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0dh00009327000008250400000","2446651044012300000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0di00009327000008250400000","2446651044012300000","0163103100000010"); // INT7
 
-    //Low B Option
- } else if ( trainConfig == 823){ // Default cut, with TM   with eta<0.8
+      //Low B Option
+  } else if ( trainConfig == 823){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0d200089327000008250400000","2446651044012300000","0163103100000010"); // INT7
- } else if ( trainConfig == 824){ // Default cut, with TM   with eta<0.8
+  } else if ( trainConfig == 824){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0da00089327000008250400000","2446651044012300000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0db00089327000008250400000","2446651044012300000","0163103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dc00089327000008250400000","2446651044012300000","0163103100000010"); // INT7
- } else if ( trainConfig == 825){ // Default cut, with TM   with eta<0.8
+  } else if ( trainConfig == 825){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0dh00089327000008250400000","2446651044012300000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0di00089327000008250400000","2446651044012300000","0163103100000010"); // INT7
 
-    //Normal B Option
- } else if ( trainConfig == 830){ // Default cut, with TM   with eta<0.8    //To be used with MBW
+      //Normal B Option
+  } else if ( trainConfig == 830){ // Default cut, with TM   with eta<0.8    //To be used with MBW
     cuts.AddCutPCMCalo("00010113","0d200009327000008250400000","2446651044012300000","0163103100000010"); // INT7
- } else if ( trainConfig == 831){ // Default cut, with TM   with eta<0.8
+  } else if ( trainConfig == 831){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0da00009327000008250400000","2446651044012300000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0db00009327000008250400000","2446651044012300000","0163103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dc00009327000008250400000","2446651044012300000","0163103100000010"); // INT7
- } else if ( trainConfig == 832){ // Default cut, with TM   with eta<0.8
+  } else if ( trainConfig == 832){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0dh00009327000008250400000","2446651044012300000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0di00009327000008250400000","2446651044012300000","0163103100000010"); // INT7
 
-    //Low B Option
- } else if ( trainConfig == 833){ // Default cut, with TM   with eta<0.8    //To be used with MBW
+      //Low B Option
+  } else if ( trainConfig == 833){ // Default cut, with TM   with eta<0.8    //To be used with MBW
     cuts.AddCutPCMCalo("00010113","0d200089327000008250400000","2446651044012300000","0163103100000010"); // INT7
- } else if ( trainConfig == 834){ // Default cut, with TM   with eta<0.8
+  } else if ( trainConfig == 834){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0da00089327000008250400000","2446651044012300000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0db00089327000008250400000","2446651044012300000","0163103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0dc00089327000008250400000","2446651044012300000","0163103100000010"); // INT7
- } else if ( trainConfig == 835){ // Default cut, with TM   with eta<0.8
+  } else if ( trainConfig == 835){ // Default cut, with TM   with eta<0.8
     cuts.AddCutPCMCalo("00010113","0dh00089327000008250400000","2446651044012300000","0163103100000010"); // INT7   RBins
     cuts.AddCutPCMCalo("00010113","0di00089327000008250400000","2446651044012300000","0163103100000010"); // INT7
+
+  //PCM-PHOS pp HBT studies <- reserved 850 to 860
+  } else if ( trainConfig == 850){ // Default cut, with TM
+    cuts.AddCutPCMCalo("00010113","00600009a27000006250800000","244665107a012200000","0h63103100000010"); // INT7
 
   //*************************************************************************************************
   // 13 TeV PHOS - setup
@@ -2018,6 +2034,14 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","41179180a7032230000","0163103100000010"); // time
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117918087032230000","0163103100000010"); // time
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117918097032230000","0163103100000010"); // time
+
+  } else if (trainConfig == 2220){  // EMCal+DCAL clusters standard cuts, Sphericity
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117918077032230000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("h0010113","00200009327000008250400000","4117918077032230000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("i0010113","00200009327000008250400000","4117918077032230000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("j0010113","00200009327000008250400000","4117918077032230000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("q0010113","00200009327000008250400000","4117918077032230000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("r0010113","00200009327000008250400000","4117918077032230000","0h63103100000010"); // INT7
 
  // special V0AND configurations for PCM cut QA
   } else if (trainConfig == 2250){  // std cut

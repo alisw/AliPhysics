@@ -7059,9 +7059,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC16k3b") == 0 ||                    // special pileup prods
             namePeriod.CompareTo("LHC16k3b2") == 0 )    return k16k3b;
   // PbPb 5TeV 2018 MB prods
-  else if ( namePeriod.CompareTo("kLHC18l8a") == 0 ||
-            namePeriod.CompareTo("kLHC18l8b") == 0 ||
-            namePeriod.CompareTo("kLHC18l8c") == 0  )   return kPbPb5T18HIJING;
+  else if ( namePeriod.CompareTo("LHC18l8a") == 0 ||
+            namePeriod.CompareTo("LHC18l8b") == 0 ||
+            namePeriod.CompareTo("LHC18l8c") == 0  )   return kPbPb5T18HIJING;
 
   // pp 13 TeV 2016 MB prod
   else if ( namePeriod.CompareTo("LHC16P1Pyt8") == 0 ||

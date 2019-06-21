@@ -189,6 +189,7 @@ void AddTask_GammaConvCalo_PbPb(
   if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+  if(trainConfig >= 950 && trainConfig <= 1000) task->SetDoHBTHistoOutput(kTRUE);
 
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
@@ -1093,6 +1094,7 @@ void AddTask_GammaConvCalo_PbPb(
   // **********************************************************************************************************
   // ***************************** PCM-PHOS  HBT configurations PbPb run 2 2018 *******************************
   // **********************************************************************************************************
+  // if(trainConfig >= 950 && trainConfig <= 1000) <--- RESERVED FOR HBT STUDY ENABLING
   } else if (trainConfig == 950){ // PHOS clusters - centrality selection for PbPb
     cuts.AddCutPCMCalo("10910a13","00200009327000008250400000","244660005a012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("10130a13","00200009327000008250400000","244660005a012200000","0h63103100000010"); //
@@ -1101,6 +1103,8 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("10910a13","00600009a27000006250800000","244668105a012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("10130a13","00600009a27000006250800000","244668105a012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("13530a13","00600009a27000006250800000","244668105a012200000","0h63103100000010"); //
+  } else if (trainConfig == 952){ // PHOS clusters - centrality selection for PbPb
+    cuts.AddCutPCMCalo("10910a13","00600009a27000006250800000","244668105a012200000","0h63103100000010"); //
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
