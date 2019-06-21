@@ -71,8 +71,8 @@ AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData() :
 
 }
 
-AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(const char *name) : 
-  AliAnalysisTaskEmcalJet(name, kTRUE),
+AliAnalysisTaskEmcalSoftDropData::AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name) : 
+  AliAnalysisTaskEmcalJet(name.data(), kTRUE),
   fBinningMode(kSDModeINT7),
   fTriggerBits(AliVEvent::kAny),
   fTriggerString(""),
@@ -117,7 +117,7 @@ void AliAnalysisTaskEmcalSoftDropData::UserCreateOutputObjects() {
 
 Bool_t AliAnalysisTaskEmcalSoftDropData::IsTriggerSelected(){
   if(!(fInputHandler->IsEventSelected() & fTriggerBits)) return false;
-  if(fTriggerString.Length()) {
+  if(fTriggerString.length()) {
     if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerString)) return false;
   }
   return true;
@@ -269,7 +269,7 @@ std::vector<double> AliAnalysisTaskEmcalSoftDropData::MakeSoftdrop(const AliEmca
   return result;
 }
 
-AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *trigger) {
+AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, EMCAL_STRINGVIEW trigger) {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -326,7 +326,7 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
   };
 
   EBinningMode_t binmode(kSDModeINT7);
-  UInt_t triggerbits(AliVEvent::kINT7);
+  ULong_t triggerbits(AliVEvent::kINT7);
   std::string triggerstring(trigger);
   if(triggerstring == "EJ1") {
     binmode = kSDModeEJ1;
@@ -335,6 +335,7 @@ AliAnalysisTaskEmcalSoftDropData *AliAnalysisTaskEmcalSoftDropData::AddTaskEmcal
     binmode = kSDModeEJ2;
     triggerbits = AliVEvent::kEMCEJE;
   }
+  datamaker->SetSelectTrigger(triggerbits, trigger.data());
   datamaker->SetBinningMode(binmode);
 
   // Connecting containers
