@@ -297,6 +297,10 @@ private:
     TH1F                *fHFElecStack; //!
     TH1F                *fBElecStack; //!
     
+    TH1F                *fAllElecStackDiffPID; //!
+    TH1F                *fDElecStackDiffPID; //!
+    TH1F                *fBElecStackDiffPID; //!
+    
     TH1F                *fElecTPCTrk; //!
     TH1F                *fHFElecTPCTrk; //!
     TH1F                *fBElecTPCTrk; //!
