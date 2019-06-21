@@ -638,11 +638,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             if (IsINEL0Rec && IsMultSelcted)
                 FillTHnSparse("htriggered_CINT7",
                               {(double)kSelected, (double)fCent, ftrackmult});
-        }
-        // -----------------------------------------------------------------------
-        // Signal Loss Correction
-        // -----------------------------------------------
-        if (IsMC) {
+        
+            // Signal Loss Correction
             if (fEvt->IsA() == AliESDEvent::Class()) {
                 if (IsINEL0True && IsVtxInZCut) {  // INEL>0|10
                     FillMCinput(fMCEvent, 1);
@@ -672,6 +669,23 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             }
         }
         IsEvtSelected = fEventCuts.AcceptEvent(event);
+        // V0M Signal QA
+        // ---------------------------------------------------------
+        // From BeomKyu Kim
+        AliVVZERO* lVV0 = fEvt->GetVZEROData();
+        if (inputHandler->IsEventSelected()) {
+            for (int i = 0; i < 64; i++) {
+                intensity += lVV0->GetMultiplicity(i);
+            }
+            FillTHnSparse("hV0MSignal",
+                          {kIsSelected, (double)fCent, (double)intensity,
+                           (double)ftrackmult});
+            if (IsMultSelcted)
+                FillTHnSparse("hV0MSignal",
+                              {kIsMulti, (double)fCent, (double)intensity,
+                               (double)ftrackmult});
+        }
+        // ----------------------------------------------------------------------
     } else {
         ftrackmult = nanoHeader->GetCentr("TRK");
         fCent = nanoHeader->GetCentr("V0M");
@@ -686,21 +700,6 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     zbin = binZ.FindBin(fZ) - 1;           // Event mixing z-bin
     centbin = binCent.FindBin(fCent) - 1;  // Event mixing cent bin
     // -----------------------------------------------------------------------
-    // V0M Signal QA ---------------------------------------------------------
-    // From BeomKyu Kim
-    AliVVZERO* lVV0 = fEvt->GetVZEROData();
-    if (inputHandler->IsEventSelected()) {
-        for (int i = 0; i < 64; i++) {
-            intensity += lVV0->GetMultiplicity(i);
-        }
-        FillTHnSparse("hV0MSignal", {kIsSelected, (double)fCent,
-                                     (double)intensity, (double)ftrackmult});
-        if (IsMultSelcted)
-            FillTHnSparse("hV0MSignal",
-                          {kIsMulti, (double)fCent, (double)intensity,
-                           (double)ftrackmult});
-    }
-    // ----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
     if (IsEvtSelected) { // In AliEventCuts
