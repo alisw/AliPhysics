@@ -824,10 +824,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     TString calo = "EMCAL";
     ana->SetCalorimeter(calo);
   }
-  
-  ana->SwitchOnUEBandSubtractionHistoFill();
-  ana->SwitchOffCellHistoFill() ;
-  
+    
   ana->SwitchOffLeadingOnly();
   ana->SwitchOffCheckNeutralClustersForLeading();
   if( leading > 0 )   ana->SwitchOnLeadingOnly();
@@ -912,6 +909,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   ic->SetPtFraction(0.1);
   ic->SetPtThreshold(0.5); // default, change in next lines
   ic->SetSumPtThreshold(1.0); // default, change in next lines
+  //ic->SwitchOnFillEtaPhiHistograms ();
   
   if(cone > 0 && pth > 0)
   {
