@@ -67,7 +67,7 @@ Double_t rOverSmodif=1;
 
 Int_t optBkgBinCount=1;
 Double_t nsigmaBinCounting=4.;      // defines the mass interval over which the signal is bin counted
-Double_t costhstcut=-1.;
+Double_t costhstcut=1.1;
 
 // outputfiles
 Bool_t saveCanvasAsRoot=kTRUE;
@@ -421,7 +421,9 @@ void ProjectCombinHFAndFit(){
   if(fileNameMC.Contains("_G3")) suffix.Append("_Geant3MC");
   else if(fileNameMC.Contains("_G4")) suffix.Append("_Geant4MC");
   if(smoothLS!=0) suffix.Append(Form("_smoothLS%d",smoothLS));
-
+  if(costhstcut<1.) suffix.Append(Form("_CosthSt%d",TMath::Nint(costhstcut*100)));
+  if(configFileName.Contains("coarse")) suffix.Append("_CoarsePt");
+     
   if(tuneMeanOnData<0){
     if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
     else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -476,7 +478,7 @@ void ProjectCombinHFAndFit(){
   TList* l=(TList*)df->Get(lstName.Data());
 
   TString var="Y";
-  if(costhstcut>-1.) var="CosthSt";
+  if(costhstcut<1.) var="CosthSt";
 
   TH3F* h3d=(TH3F*)l->FindObject(Form("hMassVsPtVs%s",var.Data()));
   if(!h3d){
@@ -489,7 +491,7 @@ void ProjectCombinHFAndFit(){
   }
   Int_t zbin1=0;
   Int_t zbin2=h3d->GetZaxis()->GetNbins()+1;
-  if(var=="CosthSt") zbin1=h3d->GetZaxis()->FindBin(costhstcut+0.000001);
+  if(var=="CosthSt") zbin2=h3d->GetZaxis()->FindBin(costhstcut-0.000001);
   
   printf("Binning in %s: %d %d\n",var.Data(),zbin1,zbin2);
 
@@ -910,7 +912,7 @@ void ProjectCombinHFAndFit(){
       if(out4 && fitterSB[iPtBin]->GetMassFunc()){
 	c5->cd(iPtBin+1);
 	fitterSB[iPtBin]->DrawHere(gPad,3,0);
-	if(fitterSB[iPtBin]->GetRawYield()>0 && fitterSB[iPtBin]->GetReducedChiSquare()>0){
+	if(fitterSB[iPtBin]->GetRawYield()>0 && fitterSB[iPtBin]->GetReducedChiSquare()>0 && fitterSB[iPtBin]->GetReducedChiSquare()<5){
 	  hRawYieldSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield());
 	  hRawYieldSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError());
 	  hRelStatSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError()/fitterSB[iPtBin]->GetRawYield());
@@ -1013,7 +1015,7 @@ void ProjectCombinHFAndFit(){
     if(out1 && fitterRot[iPtBin]->GetMassFunc()){
       fitterRot[iPtBin]->DrawHere(gPad,3,0);
       gPad->Update();
-      if(fitterRot[iPtBin]->GetRawYield()>0 && fitterRot[iPtBin]->GetReducedChiSquare()>0){
+      if(fitterRot[iPtBin]->GetRawYield()>0 && fitterRot[iPtBin]->GetReducedChiSquare()>0 && fitterRot[iPtBin]->GetReducedChiSquare()<5){
 	hRawYieldRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield());
 	hRawYieldRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError());
 	Double_t minBinBkg=hMassPtBin->FindBin(fitterRot[iPtBin]->GetMean()-3.*fitterRot[iPtBin]->GetSigma());
@@ -1079,7 +1081,7 @@ void ProjectCombinHFAndFit(){
     c3->cd(iPtBin+1);
     if(out2 && fitterLS[iPtBin]->GetMassFunc()){
       fitterLS[iPtBin]->DrawHere(gPad,3,0);
-      if(fitterLS[iPtBin]->GetRawYield()>0 && fitterLS[iPtBin]->GetReducedChiSquare()>0){
+      if(fitterLS[iPtBin]->GetRawYield()>0 && fitterLS[iPtBin]->GetReducedChiSquare()>0 && fitterLS[iPtBin]->GetReducedChiSquare()<5){
 	hRawYieldLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield());
 	hRawYieldLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError());
 	Double_t minBinBkg=hMassPtBin->FindBin(fitterLS[iPtBin]->GetMean()-3.*fitterLS[iPtBin]->GetSigma());
@@ -1145,7 +1147,7 @@ void ProjectCombinHFAndFit(){
     c4->cd(iPtBin+1);
     if(out3 && fitterME[iPtBin]->GetMassFunc()){ 
       fitterME[iPtBin]->DrawHere(gPad,3,0); 
-      if(fitterME[iPtBin]->GetRawYield()>0 && fitterME[iPtBin]->GetReducedChiSquare()>0){
+      if(fitterME[iPtBin]->GetRawYield()>0 && fitterME[iPtBin]->GetReducedChiSquare()>0 && fitterME[iPtBin]->GetReducedChiSquare()<5){
 	hRawYieldME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield());
 	hRawYieldME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetRawYieldError());
 	Double_t minBinBkg=hMassPtBin->FindBin(fitterME[iPtBin]->GetMean()-3.*fitterME[iPtBin]->GetSigma());
@@ -1448,7 +1450,7 @@ void ProjectCombinHFAndFit(){
   gPad->SetRightMargin(0.05);    
   hRelStatRot->SetStats(0);
   hRelStatRot->SetMinimum(0.04);
-  hRelStatRot->SetMaximum(0.2);
+  hRelStatRot->SetMaximum(0.4);
   hRelStatRot->Draw();
   hRelStatLS->Draw("same");
   hRelStatME->Draw("same");
@@ -1648,8 +1650,8 @@ TH1F* FitMCInvMassSpectra(TList* lMC, TString var){
   TH1F* hSigmaMC=new TH1F("hSigmaMC","",nPtBins,binLims);
   Int_t zbin1=0;
   Int_t zbin2=h3d->GetZaxis()->GetNbins()+1;
-  if(var=="CosthSt" && costhstcut<-1.){
-    zbin1=h3d->GetZaxis()->FindBin(costhstcut+0.000001);
+  if(var=="CosthSt" && costhstcut<1.){
+    zbin2=h3d->GetZaxis()->FindBin(costhstcut-0.000001);
   }
 
   TCanvas* cmc1=new TCanvas("InvMassMC","InvMassMC",1200,800);
