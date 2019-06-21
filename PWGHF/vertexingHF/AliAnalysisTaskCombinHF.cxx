@@ -560,16 +560,16 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fEventsPerPool);
   fOutput->Add(fMixingsPerPool);
 
-  fMassVsPtVsCosthSt=new TH3F("hMassVsPtVsCosthSt","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStRot=new TH3F("hMassVsPtVsCosthStRot","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStLSpp=new TH3F("hMassVsPtVsCosthStLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStLSmm=new TH3F("hMassVsPtVsCosthStLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStSig=new TH3F("hMassVsPtVsCosthStSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStRefl=new TH3F("hMassVsPtVsCosthStRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStBkg=new TH3F("hMassVsPtVsCosthStBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStME=new TH3F("hMassVsPtVsCosthStME","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStMELSpp=new TH3F("hMassVsPtVsCosthStMELSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStMELSmm=new TH3F("hMassVsPtVsCosthStMELSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthSt=new TH3F("hMassVsPtVsCosthSt","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStRot=new TH3F("hMassVsPtVsCosthStRot","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStLSpp=new TH3F("hMassVsPtVsCosthStLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStLSmm=new TH3F("hMassVsPtVsCosthStLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStSig=new TH3F("hMassVsPtVsCosthStSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStRefl=new TH3F("hMassVsPtVsCosthStRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStBkg=new TH3F("hMassVsPtVsCosthStBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStME=new TH3F("hMassVsPtVsCosthStME","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStMELSpp=new TH3F("hMassVsPtVsCosthStMELSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStMELSmm=new TH3F("hMassVsPtVsCosthStMELSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
   fOutput->Add(fMassVsPtVsCosthSt);
   fOutput->Add(fMassVsPtVsCosthStRot);
   fOutput->Add(fMassVsPtVsCosthStLSpp);
