@@ -1645,6 +1645,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446651044012300000","0163103100000030"); // min opening angle 0.01 -> 2 cell diag
   } else if ( trainConfig == 812){ // NL variations
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446600044012300000","0163103100000010"); // No NL
+  } else if ( trainConfig == 813){ // NL variations - new default 2019 june 21
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+  } else if ( trainConfig == 814){ // No non-lin corr, use with Run2Tune / Run2TuneMC
+    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
 
       //Normal B Option
   } else if ( trainConfig == 820){ // Default cut, with TM   with eta<0.8
@@ -1692,7 +1696,7 @@ void AddTask_GammaConvCalo_pp(
 
   //PCM-PHOS pp HBT studies <- reserved 850 to 860
   } else if ( trainConfig == 850){ // Default cut, with TM
-    cuts.AddCutPCMCalo("00010113","00600009a27000006250800000","244665105a012200000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","00600009a27000006250800000","244665107a012200000","0h63103100000010"); // INT7
 
   //*************************************************************************************************
   // 13 TeV PHOS - setup
