@@ -2602,7 +2602,7 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenDs->SetMCGenVariables(fRunNumber,fEventID, mcPart);
           fTreeHandlerGenDs->FillTree();
         }
-        if(absPDG == 4122 && fWriteVariableTreeLctopKpi) {
+        else if(absPDG == 4122 && fWriteVariableTreeLctopKpi) {
           deca = AliVertexingHFUtils::CheckLcpKpiDecay(arrayMC,mcPart,labDau);
           if(deca<1 || labDau[0]==-1 || labDau[1]<0) continue;
           isDaugInAcc = CheckDaugAcc(arrayMC,3,labDau);
@@ -2629,7 +2629,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
           fTreeHandlerGenDstar->SetMCGenVariables(fRunNumber,fEventID, mcPart);
           fTreeHandlerGenDstar->FillTree();
         }
-        else if(absPDG == 4122 && fWriteVariableTreeLc2V0bachelor) {
+        //New if-statement, otherwise it will not enter here when both Lc's are enabled
+        if(absPDG == 4122 && fWriteVariableTreeLc2V0bachelor) {
           deca = AliVertexingHFUtils::CheckLcV0bachelorDecay(arrayMC,mcPart,labDau2);
           if(deca!=1 || labDau2[0]<0 || labDau2[1]<0) continue;
           isDaugInAcc = CheckDaugAcc(arrayMC,3,labDau2);
