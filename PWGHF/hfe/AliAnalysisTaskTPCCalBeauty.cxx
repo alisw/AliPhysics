@@ -1368,7 +1368,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
                     pidM = TMath::Abs(momPart->GetPdgCode());
                     
-                    fAllElecStackDiffPID->Fill(track->Pt());
+                    fAllElecStackDiffPID->Fill(AODMCtrack->Pt());
                     if(pidM==411 || pidM==421 || pidM==413 || pidM==423 || pidM==431 || pidM==433 || pidM==4122){
                         fDElecStackDiffPID->Fill(AODMCtrack->Pt());
                     }
