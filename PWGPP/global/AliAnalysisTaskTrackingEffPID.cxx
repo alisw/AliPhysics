@@ -31,6 +31,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 
 #include "AliAnalysisTaskTrackingEffPID.h"
 
@@ -81,11 +82,15 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fKeepOnlyInjected{false},
   fKeepOnlyUE{false},
   fUseImpPar{false},
+  fSelectPtHardRange{false},
+  fMinPtHard{0.},
+  fMaxPtHard{99999.},
   fOutputList{0x0},
   fListCuts{0x0},
   fHistNEvents{0x0},
   fHistNParticles{0x0},
-  fHistNTracks{0x0}
+  fHistNTracks{0x0},
+  hHistXsecVsPtHard{0x0}
 {
   // default: use the filter bit 4 cuts
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
@@ -140,6 +145,9 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fHistNTracks->GetXaxis()->SetBinLabel(5,"Species sel.");
   fOutputList->Add(fHistNTracks);
 
+  hHistXsecVsPtHard = new TH1D("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
+  fOutputList->Add(hHistXsecVsPtHard);
+  
   TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)"};
   const int nPtBins=32;
   const int nMultBins=10;
@@ -258,7 +266,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
   // check the generator name
   TList *lh=0x0;
   double imppar=-999.;
-  if(fSelectOnGenerator || fKeepOnlyInjected || fKeepOnlyUE || fUseImpPar){
+  if(fSelectOnGenerator || fKeepOnlyInjected || fKeepOnlyUE || fUseImpPar || fSelectPtHardRange){
     if(isAOD){
       AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
       lh=mcHeader->GetCocktailHeaders();
@@ -267,6 +275,20 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(genname.Contains("CocktailEventHeader")){
 	AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)fMCEvent->GenEventHeader();
 	lh=cockhead->GetHeaders();
+      }
+    }
+    if(fSelectPtHardRange && lh){
+      Int_t nh=lh->GetEntries();
+      for(Int_t i=0;i<nh;i++){
+	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+	TString genname=gh->GetName();
+	if(genname.Contains("ythia") || genname.Contains("YTHIA")){
+	  AliGenPythiaEventHeader* pyth=(AliGenPythiaEventHeader*)lh->At(i);
+	  double ptha=pyth->GetPtHard();
+	  double xsec=pyth->GetXsection();
+	  if(ptha<fMinPtHard || ptha>fMaxPtHard) return;
+	  hHistXsecVsPtHard->SetBinContent(hHistXsecVsPtHard->GetXaxis()->FindBin(ptha),xsec);
+	}
       }
     }
     if(fUseImpPar && lh){
