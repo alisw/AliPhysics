@@ -205,8 +205,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     void FillTracks();
     void FillTracksAOD();
 
-    Double_t GetMultiplicty(AliVEvent* fEvt);
-    Bool_t IsMCEventTrueINEL0();
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi1530AOD(AliAODcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi(AliESDcascade* Xi);
@@ -349,7 +347,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 21);
+    ClassDef(AliAnalysisTaskXi1530, 22);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -373,6 +371,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 19: Update default filterbit
     // 20: Remove RunTable Class.
     // 21: Use AliEventCuts
+    // 22: Remove some function thanks to AliEventCuts
 };
 
 #endif
