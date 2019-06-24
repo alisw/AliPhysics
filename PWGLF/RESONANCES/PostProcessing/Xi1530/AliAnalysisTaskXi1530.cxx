@@ -860,13 +860,15 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                     ->GetTrack(TMath::Abs(Xicandidate->GetBindex()));
 
             // Standard track QA cuts
+            /*
             if (!fTrackCuts2->AcceptTrack(pTrackXi))
                 continue;
             if (!fTrackCuts2->AcceptTrack(nTrackXi))
                 continue;
             if (!fTrackCuts2->AcceptTrack(bTrackXi))
                 continue;
-
+            */
+           
             // PID cuts for Xi daughters
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
                 fTPCNSigProton =
