@@ -197,20 +197,18 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   std::vector<AliFemtoDreamBasePart> Decays;
   std::vector<AliFemtoDreamBasePart> AntiDecays;
 
-  AliAODEvent *aod = dynamic_cast<AliAODEvent *>(fInputEvent);
-  if (aod->GetV0s()) {
-    fLambda->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
-    for (int iv0 = 0;
-         iv0 < static_cast<TClonesArray *>(aod->GetV0s())->GetEntriesFast();
-         iv0++) {
-      AliAODv0 *v0 = aod->GetV0(iv0);
-      fLambda->Setv0(fInputEvent, v0, multiplicity);
-      if (fV0Cuts->isSelected(fLambda)) {
-        Decays.push_back(*fLambda);
-      }
-      if (fAntiV0Cuts->isSelected(fLambda)) {
-        AntiDecays.push_back(*fLambda);
-      }
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fInputEvent);
+  fLambda->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  for (int iv0 = 0;
+      iv0 < static_cast<TClonesArray*>(aod->GetV0s())->GetEntriesFast();
+      iv0++) {
+    AliAODv0 *v0 = aod->GetV0(iv0);
+    fLambda->Setv0(fInputEvent, v0, multiplicity);
+    if (fV0Cuts->isSelected(fLambda)) {
+      Decays.push_back(*fLambda);
+    }
+    if (fAntiV0Cuts->isSelected(fLambda)) {
+      AntiDecays.push_back(*fLambda);
     }
   }
 
@@ -244,6 +242,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
     CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda());
   }
 
+  fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
   fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandUp, 2);
@@ -255,9 +254,11 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
     fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 7);
     fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 8);
     fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 9);
+
+    fPairCleaner->CleanDecay(&Decays, 0);
+    fPairCleaner->CleanDecay(&AntiDecays, 1);
   }
 
-  fPairCleaner->ResetArray();
   fPairCleaner->StoreParticle(Particles);
   fPairCleaner->StoreParticle(AntiParticles);
   fPairCleaner->StoreParticle(sigma0particles);
@@ -365,8 +366,9 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   fLambda->GetNegDaughter()->SetUseMCInfo(fIsMC);
 
   const int nPairs = (fCheckDaughterCF) ? 10 : 6;
+  const int nDecays = (fCheckDaughterCF) ? 2 : 0;
   fPairCleaner =
-      new AliFemtoDreamPairCleaner(nPairs, 0, fConfig->GetMinimalBookingME());
+      new AliFemtoDreamPairCleaner(nPairs, nDecays, fConfig->GetMinimalBookingME());
   fPartColl =
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 

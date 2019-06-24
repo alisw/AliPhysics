@@ -200,6 +200,7 @@ AliSigma0PhotonCuts *AliSigma0PhotonCuts::PhotonCuts() {
   v0Cuts->SetElectronNSigmaTPCMax(7);
   v0Cuts->SetElectronNSigmaTPCMin(-6);
   v0Cuts->SetDCAzMax(0.5);
+  v0Cuts->SetDCArMax(0.75);
   return v0Cuts;
 }
 
