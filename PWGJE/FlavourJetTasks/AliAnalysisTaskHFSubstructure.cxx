@@ -205,6 +205,12 @@ void AliAnalysisTaskHFSubstructure::UserCreateOutputObjects()
   fShapesVarNames[7] = "Flag_D_Truth";
   fShapesVarNames[8] = "Prompt_PDG";
   fShapesVarNames[9] = "Prompt_PDG_Truth";
+  fShapesVarNames[10] = "NTracks";
+  fShapesVarNames[11] = "NTracks_Truth";
+  fShapesVarNames[12] = "Eta_Jet";
+  fShapesVarNames[13] = "Eta_Jet_Truth";
+  fShapesVarNames[14] = "Eta_D";
+  fShapesVarNames[15] = "Eta_D_Truth";
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
@@ -312,6 +318,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       if (!fRDHFCuts->IsInFiducialAcceptance(D_Candidate->Pt(), D_Candidate->Y(fCandidatePDG))) continue;
       
       Double_t Random_Number=Random.Rndm();
+
+      Double_t NTracks=0;
+      Double_t Dmeson_Eta=-5.0;
       
       Int_t Mass_Hypo_Type=fRDHFCuts->IsSelected(D_Candidate, AliRDHFCuts::kAll, fAodEvent);
       Int_t N_Mass_Hypotheses=1;
@@ -342,10 +351,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 		if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 4){
 		  Is_Prompt_Correct_Quark_PDG=4;
 		  fhEvent->Fill(4);
+		  break;
 		}
 		if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 5){
 		  Is_Prompt_Correct_Quark_PDG=5;
 		  fhEvent->Fill(5);
+		  break;
 		}
 		if (Matched_Truth_Particle_Mother_Label==Matched_Truth_Particle_Mother->GetMother()) break; 
 	        Matched_Truth_Particle_Mother_Label=Matched_Truth_Particle_Mother->GetMother();
@@ -435,10 +446,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){
 	Bool_t Is_D_Jet=kFALSE;
 	if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
-	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
+	//	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
 	std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet));
+	NTracks = Constituents.size();
 	for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
-	  if (Constituents[i_Constituents].user_index() == 0) { 
+	  if (Constituents[i_Constituents].user_index() == 0) {
+	    Dmeson_Eta=TMath::Abs(Constituents[i_Constituents].pseudorapidity());
 	    Is_D_Jet = kTRUE; 
 	  }
 	}
@@ -514,6 +527,13 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  else fShapesVar[7] = Matched_Truth_Particle_PDG;
 	  fShapesVar[8] = Is_Prompt_Correct_Quark_PDG;
 	  fShapesVar[9] = 0.0;
+	  fShapesVar[10] = NTracks;
+	  fShapesVar[11] = 0.0;
+	  fShapesVar[12] = TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity());
+	  fShapesVar[13] = 0.0;
+	  fShapesVar[14] = Dmeson_Eta;
+	  fShapesVar[15] = 0.0;
+	  
 
 
 	  fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR);
@@ -564,7 +584,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       }
       */
       AliAODTrack *Track = NULL;
-      Bool_t DMeson_Daughter_Track=kFALSE;
+      //Bool_t DMeson_Daughter_Track=kFALSE;
       for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
 	/*	for (UInt_t i_D_Found=0; i_D_Found<D_Candidates_Vector.size(); i_D_Found++){
 	  Track_Container->SetDMesonCandidate(D_Candidates_Vector[i_D_Found]);
@@ -576,12 +596,25 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	if(!Track) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
       }
+      Double_t NTracks=0;
+      Double_t HardestTrack_Eta=-5.0;
+      Double_t HardestTrack_Pt=-5.0;
       //delete Track;
       fFastJetWrapper->Run();
       std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets();
       for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){
 	if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
-	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
+	HardestTrack_Eta=-5.0;
+	HardestTrack_Pt=-5.0;
+	std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet));
+	NTracks=Constituents.size();
+	for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
+	  if (Constituents[i_Constituents].perp() > HardestTrack_Pt){
+	    HardestTrack_Pt=Constituents[i_Constituents].perp();
+	    HardestTrack_Eta=Constituents[i_Constituents].pseudorapidity();
+	  }
+	}
+	//	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
 	/*	Bool_t Is_D_Jet = kFALSE; 
 	std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet));
 	for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
@@ -631,7 +664,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
 	fShapesVar[0] = Inclusive_Jets[i_Jet].perp();
 	fShapesVar[1] = 0.0;
-	fShapesVar[2] = 0.0;
+	fShapesVar[2] = HardestTrack_Pt;
 	fShapesVar[3] = 0.0;
 	fShapesVar[4] = 0.0;
 	fShapesVar[5] = 0.0;
@@ -639,6 +672,13 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fShapesVar[7] = 0.0;
 	fShapesVar[8] = 0.0;
 	fShapesVar[9] = 0.0;
+	fShapesVar[10] = NTracks;
+	fShapesVar[11] = 0.0;
+	fShapesVar[12] = TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity());
+	fShapesVar[13] = 0.0;
+	fShapesVar[14] = HardestTrack_Eta;
+	fShapesVar[15] = 0.0;
+
 
 
 	fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR);
@@ -693,6 +733,15 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     std::vector<std::pair<Int_t, Int_t>> Inclusive_Jets_Truth_Labels; 
     std::vector<Int_t> Unmatched_Truth_Level_D; 
     Int_t NMatched_DMeson_Jets=0;
+
+    Double_t NTracks=0;
+    Double_t NTracks_Truth=0;
+    Double_t Jet_Eta=0;
+    Double_t Jet_Eta_Truth=0;
+    Double_t Dmeson_Eta=0;
+    Double_t Dmeson_Eta_Truth=0;
+
+    
     
     if (Particle_Container->IsSpecialPDGFound()){ 
 
@@ -710,7 +759,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (Int_t i_Particle=0; i_Particle<Particle_Container->GetNParticles(); i_Particle++){ 
 	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptParticle(i_Particle));
 	if (!Truth_Particle) continue;
-	if (TMath::Abs(Truth_Particle->Eta())>0.9) continue;
+	//	if (TMath::Abs(Truth_Particle->Eta())>0.9) continue;
 	if (TMath::Abs(Truth_Particle->PdgCode())==fCandidatePDG){
 	  std::pair<Int_t, Int_t> Inclusive_Jet_Truth_Labels;
 	  Inclusive_Jet_Truth_Labels.first=Truth_Particle->GetLabel(); 
@@ -775,10 +824,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 4){
 		fhEvent->Fill(12);		
 		Is_Prompt_Correct_Quark_PDG=4;
+		break;
 	      }
 	      if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode()) == 5){
 		fhEvent->Fill(13);
 		Is_Prompt_Correct_Quark_PDG=5;
+		break;
 	      }
 	      if (TMath::Abs(Matched_Truth_Particle_Mother->GetPdgCode())==Original_Quark_PDG) Is_Prompt_Correct_Quark=kTRUE; 
 	      if (Matched_Truth_Particle_Mother_Label==Matched_Truth_Particle_Mother->GetMother()) break; 
@@ -835,7 +886,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       fFastJetWrapper->Clear();
       AliTLorentzVector D_Candidate_LorentzVector(0,0,0,0);
       D_Candidate_LorentzVector.SetPtEtaPhiM(D_Candidate->Pt(), D_Candidate->Eta(), D_Candidate->Phi(), Inv_Mass_D);
-      if (TMath::Abs(D_Candidate->Eta())>0.9) continue;
+      //if (TMath::Abs(D_Candidate->Eta())>0.9) continue;
+      Dmeson_Eta=TMath::Abs(D_Candidate->Eta());
       fFastJetWrapper->AddInputVector(D_Candidate_LorentzVector.Px(), D_Candidate_LorentzVector.Py(), D_Candidate_LorentzVector.Pz(), D_Candidate_LorentzVector.E(), 0);
 
     
@@ -845,7 +897,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){ 
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	if(!Track) continue;
-	if (TMath::Abs(Track->Eta())>0.9) continue;
+	//if (TMath::Abs(Track->Eta())>0.9) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100); 
       }
       // delete Track;
@@ -856,8 +908,10 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){ 
 	Bool_t Is_D_Jet=kFALSE;
 	if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
-	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
-	std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet)); 
+	Jet_Eta=TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity());
+	//	if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
+	std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet));
+	NTracks=Constituents.size();
 	for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
 	  if (Constituents[i_Constituents].user_index() == 0) { 
 	    Is_D_Jet = kTRUE; 
@@ -875,14 +929,15 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	}
 	
 	for (UInt_t i_Jet_Truth=0; i_Jet_Truth < Inclusive_Jets_Truth.size(); i_Jet_Truth++){
-	  Int_t NTracks=1;
-	  Int_t NTracks_Truth=1;
 	  Bool_t Is_Jet_Truth_Matched=kFALSE;
-	  if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
-	  std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth)); 
+	  // if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
+	  Jet_Eta_Truth=TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity());
+	  std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth));
+	  NTracks_Truth=Constituents_Truth.size();
 	  for (UInt_t i_Constituents_Truth = 0; i_Constituents_Truth < Constituents_Truth.size(); i_Constituents_Truth++) { 
 	    if (Constituents_Truth[i_Constituents_Truth].user_index() == i_Matched_D_Jet_Truth) { 
 	      Is_Jet_Truth_Matched=kTRUE;
+	      Dmeson_Eta_Truth=TMath::Abs(Constituents_Truth[i_Constituents_Truth].pseudorapidity());
 	      for (UInt_t i_Unmacthed_D=0; i_Unmacthed_D<Unmatched_Truth_Level_D.size(); i_Unmacthed_D++){ 
 		if (Unmatched_Truth_Level_D[i_Unmacthed_D]==i_Matched_D_Jet_Truth) Unmatched_Truth_Level_D.erase(Unmatched_Truth_Level_D.begin()+i_Unmacthed_D); 
 	      }
@@ -917,7 +972,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    fastjet::PseudoJet Parent_SubJet_2;  
 	  
 	    while(Daughter_Jet.has_parents(Parent_SubJet_1,Parent_SubJet_2)){
-	      NTracks++;
 	      if(Parent_SubJet_1.perp() < Parent_SubJet_2.perp()) std::swap(Parent_SubJet_1,Parent_SubJet_2);
 	      Splittings_LeadingSubJetpT.push_back(Parent_SubJet_1.perp());
 	      vector < fastjet::PseudoJet > Hard_SubJet_Constituents = sorted_by_pt(Parent_SubJet_1.constituents());
@@ -940,7 +994,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
          
 	  } catch (fastjet::Error) { /*return -1;*/ }
-	  if (NTracks==1) continue;
 
 	  std::vector<Double_t> Splittings_Zg_Truth;
 	  std::vector<Double_t> Splittings_DeltaR_Truth;
@@ -965,7 +1018,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    fastjet::PseudoJet Parent_SubJet_2_Truth;  
     
 	    while(Daughter_Jet_Truth.has_parents(Parent_SubJet_1_Truth,Parent_SubJet_2_Truth)){
-	      NTracks_Truth++;
 	      if(Parent_SubJet_1_Truth.perp() < Parent_SubJet_2_Truth.perp()) std::swap(Parent_SubJet_1_Truth,Parent_SubJet_2_Truth);
 	      Splittings_LeadingSubJetpT_Truth.push_back(Parent_SubJet_1_Truth.perp());
 	      vector < fastjet::PseudoJet > Hard_SubJet_Constituents_Truth = sorted_by_pt(Parent_SubJet_1_Truth.constituents());
@@ -988,7 +1040,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
          
 	  } catch (fastjet::Error) { /*return -1;*/ }
-	  if (NTracks_Truth==1) continue;
 
 
 	  //set detector level flags
@@ -1013,6 +1064,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fShapesVar[7] = Flag_D_Truth;
 	  fShapesVar[8] = Is_Prompt_Correct_Quark_PDG;
 	  fShapesVar[9] = 0.0;
+	  fShapesVar[10] = NTracks;
+	  fShapesVar[11] = NTracks_Truth;
+	  fShapesVar[12] = Jet_Eta;
+	  fShapesVar[13] = Jet_Eta_Truth;
+	  fShapesVar[14] = Dmeson_Eta;
+	  fShapesVar[15] = Dmeson_Eta_Truth;
 
 
 
@@ -1073,10 +1130,11 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	AliAODMCParticle* Truth_D_Particle = NULL; 
 	Bool_t Is_Unmatched_D=kFALSE;
 	Int_t D_Meson_Matched_Index=-1;
-	Int_t NTracks_Truth=1;
-	if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
+	//	if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
+	Jet_Eta_Truth=TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity());
 	if (Inclusive_Jets_Truth[i_Jet_Truth].perp()<fJetMinPt) continue;
-	std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth)); 
+	std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth));
+	NTracks_Truth=Constituents_Truth.size();
 	for (UInt_t i_Constituents_Truth = 0; i_Constituents_Truth < Constituents_Truth.size(); i_Constituents_Truth++) { 
 	  for (UInt_t i_Unmacthed_D=0; i_Unmacthed_D<Unmatched_Truth_Level_D.size(); i_Unmacthed_D++){ 
 	    if(Constituents_Truth[i_Constituents_Truth].user_index() == Unmatched_Truth_Level_D[i_Unmacthed_D]){
@@ -1084,7 +1142,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	      D_Meson_Matched_Index=Constituents_Truth[i_Constituents_Truth].user_index();
 	      for(UInt_t i_MC_Label=0; i_MC_Label<Inclusive_Jets_Truth_Labels.size(); i_MC_Label++){ 
 		if (Inclusive_Jets_Truth_Labels[i_MC_Label].second==Constituents_Truth[i_Constituents_Truth].user_index()){
-		  Truth_D_Particle=static_cast<AliAODMCParticle*>(Particle_Container->GetArray()->At(Inclusive_Jets_Truth_Labels[i_MC_Label].first)); 
+		  Truth_D_Particle=static_cast<AliAODMCParticle*>(Particle_Container->GetArray()->At(Inclusive_Jets_Truth_Labels[i_MC_Label].first));
+		  Dmeson_Eta_Truth=Truth_D_Particle->Eta();
 		}
 	      }
 	    }
@@ -1105,10 +1164,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) == 4){
 	      fhEvent->Fill(39);		
 	      Is_Prompt_Correct_Quark_PDG=4;
+	      break;
 	    }
 	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) == 5){
 	      fhEvent->Fill(40);
 	      Is_Prompt_Correct_Quark_PDG=5;
+	      break;
 	    }
 	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode())==Original_Quark_PDG) Is_Prompt_Correct_Quark=kTRUE; 
 	    if (Truth_D_Particle_Mother_Label==Truth_D_Particle_Mother->GetMother()) break; 
@@ -1144,7 +1205,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  fastjet::PseudoJet Parent_SubJet_2_Truth;  
     
 	  while(Daughter_Jet_Truth.has_parents(Parent_SubJet_1_Truth,Parent_SubJet_2_Truth)){
-	    NTracks_Truth++;
 	    if(Parent_SubJet_1_Truth.perp() < Parent_SubJet_2_Truth.perp()) std::swap(Parent_SubJet_1_Truth,Parent_SubJet_2_Truth);
 	    Splittings_LeadingSubJetpT_Truth.push_back(Parent_SubJet_1_Truth.perp());
 	    vector < fastjet::PseudoJet > Hard_SubJet_Constituents_Truth = sorted_by_pt(Parent_SubJet_1_Truth.constituents()); 
@@ -1168,7 +1228,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
          
 	} catch (fastjet::Error) { /*return -1;*/ }
 	
-	if(NTracks_Truth==1) continue;
 	Double_t Inv_Mass_D_Truth=0.0;
 	Double_t Flag_D_Truth=-1.0;
 	if (Truth_D_Particle->GetPdgCode()==fCandidatePDG){
@@ -1193,7 +1252,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fShapesVar[7] = Flag_D_Truth;
 	fShapesVar[8] = Is_Prompt_Correct_Quark_PDG;
 	fShapesVar[9] = 0.0;
-
+	fShapesVar[10] = 0.0;
+	fShapesVar[11] = NTracks_Truth;
+	fShapesVar[12] = 0.0;
+	fShapesVar[13] = Jet_Eta_Truth;
+	fShapesVar[14] = 0.0;
+	fShapesVar[15] = Dmeson_Eta_Truth;
 
 	fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR_Truth);
 	fShapesVar_Splittings_DeltaR_Truth.push_back(Splittings_DeltaR_Truth); 
@@ -1236,6 +1300,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
     //truth level only jet finding
 
+    Double_t NTracks_Truth=0;
+    Double_t Jet_Eta_Truth=-5.0;
+    Double_t Dmeson_Eta_Truth=-5.0;
     
     AliHFAODMCParticleContainer *Particle_Container = (AliHFAODMCParticleContainer*) GetParticleContainer(0);
     Particle_Container->SetSpecialPDG(fCandidatePDG); 
@@ -1280,8 +1347,10 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	AliAODMCParticle* Truth_D_Particle = NULL; 
 	Bool_t Is_DJet_Truth=kFALSE;
 	Int_t D_Meson_Matched_Index=-1;
-	if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
-	std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth)); 
+	//if (TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity()) > 0.9-fJetRadius) continue;
+	Jet_Eta_Truth=TMath::Abs(Inclusive_Jets_Truth[i_Jet_Truth].pseudorapidity());
+	std::vector<fastjet::PseudoJet> Constituents_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth));
+	NTracks_Truth=Constituents_Truth.size();
 	for (UInt_t i_Constituents_Truth = 0; i_Constituents_Truth < Constituents_Truth.size(); i_Constituents_Truth++) { 
 	  
 	  if(Constituents_Truth[i_Constituents_Truth].user_index() >=0 && Constituents_Truth[i_Constituents_Truth].user_index() < NTruthD){
@@ -1290,6 +1359,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    for(UInt_t i_MC_Label=0; i_MC_Label<Inclusive_Jets_Truth_Labels.size(); i_MC_Label++){
 	      if (Inclusive_Jets_Truth_Labels[i_MC_Label].second==Constituents_Truth[i_Constituents_Truth].user_index()){
 		Truth_D_Particle=static_cast<AliAODMCParticle*>(Particle_Container->GetArray()->At(Inclusive_Jets_Truth_Labels[i_MC_Label].first));
+		Dmeson_Eta_Truth=Truth_D_Particle->Eta();
 	      }
 	    }
 		
@@ -1313,10 +1383,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) ==4){
 	      fhEvent->Fill(6);
 	      Is_Prompt_Correct_Quark_PDG=4;
+	      break;
 	    }
 	    if (TMath::Abs(Truth_D_Particle_Mother->GetPdgCode()) ==5){
 	      fhEvent->Fill(7);
 	      Is_Prompt_Correct_Quark_PDG=5;
+	      break;
 	    }
 	    if (Truth_D_Particle_Mother_Label==Truth_D_Particle_Mother->GetMother()) break; 
 	    Truth_D_Particle_Mother_Label=Truth_D_Particle_Mother->GetMother();
@@ -1407,6 +1479,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fShapesVar[7] = Flag_D_Truth;
 	fShapesVar[8] = 0.0;
 	fShapesVar[9] = Is_Prompt_Correct_Quark_PDG;
+	fShapesVar[10] = 0.0;
+	fShapesVar[11] = NTracks_Truth;
+	fShapesVar[12] = 0.0;
+	fShapesVar[13] = Jet_Eta_Truth;
+	fShapesVar[14] = 0.0;
+	fShapesVar[15] = Dmeson_Eta_Truth;
 	
 
 
@@ -1459,10 +1537,15 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
   if (fJetShapeType == kDataInclusive){
 
+
     AliHFTrackContainer* Track_Container=dynamic_cast<AliHFTrackContainer*>(GetTrackContainer(0));
     if (!Track_Container) return kTRUE;
     //Track_Container->SetDMesonCandidate(NULL);
     fFastJetWrapper->Clear();
+    Double_t NTracks=0;
+    Double_t Jet_Eta=-5.0;
+    Double_t HardestTrack_Eta=-5.0;
+    Double_t HardestTrack_Pt=-5.0;
     AliAODTrack *Track = NULL;
     for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
       Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
@@ -1473,8 +1556,22 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     std::vector<fastjet::PseudoJet> Inclusive_Jets = fFastJetWrapper->GetInclusiveJets();
     for (UInt_t i_Jet=0; i_Jet < Inclusive_Jets.size(); i_Jet++){
       if (Inclusive_Jets[i_Jet].perp()<fJetMinPt) continue;
-      if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
-      fhEvent->Fill(23); 
+      //if (TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity()) > 0.9-fJetRadius) continue;
+      Jet_Eta=TMath::Abs(Inclusive_Jets[i_Jet].pseudorapidity());
+      fhEvent->Fill(23);
+
+      HardestTrack_Eta=-5.0;
+      HardestTrack_Pt=-5.0;
+      std::vector<fastjet::PseudoJet> Constituents(fFastJetWrapper->GetJetConstituents(i_Jet));
+      NTracks=Constituents.size();
+      for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
+	if (Constituents[i_Constituents].perp() > HardestTrack_Pt){
+	  HardestTrack_Pt=Constituents[i_Constituents].perp();
+	  HardestTrack_Eta=Constituents[i_Constituents].pseudorapidity();
+	}
+      }
+
+      
       std::vector<Double_t> Splittings_Zg;
       std::vector<Double_t> Splittings_DeltaR;
       std::vector<Double_t> Splittings_LeadingSubJetpT;
@@ -1518,7 +1615,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	
       fShapesVar[0] = Inclusive_Jets[i_Jet].perp();
       fShapesVar[1] = 0.0;
-      fShapesVar[2] = 0.0;
+      fShapesVar[2] = HardestTrack_Pt;
       fShapesVar[3] = 0.0;
       fShapesVar[4] = 0.0;
       fShapesVar[5] = 0.0;
@@ -1526,6 +1623,12 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       fShapesVar[7] = 0.0;
       fShapesVar[8] = 0.0;
       fShapesVar[9] = 0.0;
+      fShapesVar[10] = NTracks;
+      fShapesVar[11] = 0.0;
+      fShapesVar[12] = Jet_Eta;
+      fShapesVar[13] = 0.0;
+      fShapesVar[14] = HardestTrack_Eta;
+      fShapesVar[15] = 0.0;
 
 
       fShapesVar_Splittings_DeltaR.push_back(Splittings_DeltaR);
