@@ -1,4 +1,4 @@
-AliAnalysisTask* AddTask_JPsi_EMCal(
+AliAnalysisTask_JPsi_EMCal* AddTask_JPsi_EMCal(
 
 			Bool_t 	isMC 			= kFALSE, 
 			Bool_t 	isAOD 			= kTRUE,

@@ -16,10 +16,10 @@ Bool_t isTender
 {
 ////____________
 ///Task config
-    
-	AliAnalysisTask_JPsi_EMCal *task = new AliAnalysisTask_JPsi_EMCal();
-	printf("task ------------------------ %p\n ", task);
     printf("Config loaded properly\n");
+	AliAnalysisTask_JPsi_EMCal *task = new AliAnalysisTask_JPsi_EMCal();
+	printf("task loaded ------------------------ %p\n ", task);
+    
 	
 	task->SetAODanalysis(isAOD);
 
