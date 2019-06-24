@@ -279,6 +279,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
                        eventbin_array, centaxisbin.size() - 1, centbin_array);
 
     fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
+    if (!IsHighMult)
+        fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
+    else
+        fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0);
+    if(IsMC)
+        fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
     // QA Histograms--------------------------------------------------
     //
     if (fQA) {
@@ -503,37 +509,22 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         // Preparation for MC
         // ---------------------------------------------------
         if (IsMC) {
-            if (fEvt->IsA() == AliESDEvent::Class()) {
-                fMCEvent = MCEvent();
-                IsINEL0True = IsMCEventTrueINEL0();
-            }  // ESD Case
-            else {
-                fMCArray = (TClonesArray*)fEvt->FindListObject("mcparticles");
-                fMCEvent = MCEvent();
-                IsINEL0True = IsMCEventTrueINEL0();
-            }  // AOD Case
+            if (fEvt->IsA() != AliESDEvent::Class())
+                fMCArray = (TClonesArray*)fEvt->FindListObject(
+                    "mcparticles");  // AOD Case
+            fMCEvent = MCEvent();
+            IsINEL0True = fEventCuts.IsTrueINELgtZero(fEvt, true);
         }
         // Trigger Check
         // ----------------------------------------------------------
-        if (!IsMC) {
-            if (!IsHighMult)
-                IsSelectedTrig =
-                    (inputHandler->IsEventSelected() & AliVEvent::kINT7);
-            else
-                IsSelectedTrig =
-                    (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0);
-        } else
-            IsSelectedTrig =
-                (inputHandler->IsEventSelected() & AliVEvent::kINT7);
-        
+        IsSelectedTrig = fEventCuts.PassedCut(AliEventCuts::kTrigger);
+
         // Multiplicity(centrality)
         // ---------------------------------------------
         if (fEvt->IsA() == AliESDEvent::Class()) {
-            ftrackmult = AliESDtrackCuts::GetReferenceMultiplicity(
-                ((AliESDEvent*)fEvt), AliESDtrackCuts::kTracklets,
-                0.8);  // tracklet in eta +_0.8
-        } else {
             ftrackmult = fEvt->GetMultiplicity()->GetNumberOfTracklets();
+        } else {
+            ftrackmult = ((AliAODEvent*)fEvt)->GetTracklets()->GetNumberOfTracklets();
         }
         
         //fCent = GetMultiplicty(fEvt);  // Centrality(AA), Multiplicity(pp)
@@ -544,58 +535,31 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
         if (!fPIDResponse)
             AliInfo("No PIDd");
-        Bool_t IsGoodVertex =
-            AliMultSelectionTask::HasGoodVertex2016(fEvt) &&
-            AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(fEvt);
-        Bool_t IsVtxInZCut = (fabs(fZ) < 10);
 
-        Bool_t IsTrackletinEta1 = kFALSE;
-        if (fEvt->IsA() == AliESDEvent::Class()) {
-            IsTrackletinEta1 = (AliESDtrackCuts::GetReferenceMultiplicity(
-                                    ((AliESDEvent*)fEvt),
-                                    AliESDtrackCuts::kTracklets, 1.0) >= 1);
-        } else {
-            for (int i = 0; i < fEvt->GetMultiplicity()->GetNumberOfTracklets();
-                 i++) {
-                if (fEvt->GetMultiplicity()->GetEta(i) < 1.0) {
-                    IsTrackletinEta1 = kTRUE;
-                    break;
-                }
-            }
-        }
+        // Vertex Cuts
+        Bool_t IsGoodVertex =
+            fEventCuts.PassedCut(AliEventCuts::kVertexQuality);
+        Bool_t IsVtxInZCut =
+            fEventCuts.PassedCut(AliEventCuts::kVertexPosition);
+
+        Bool_t IsINELg0 = fEventCuts.PassedCut(AliEventCuts::kINELgt0);
         AliMultSelection* MultSelection =
             (AliMultSelection*)fEvt->FindListObject("MultSelection");
         IsMultSelcted = MultSelection->IsEventSelected();
         // Pile up rejection
         // -----------------------------------------------------
-        // Enhanced Pileup rejection method for the higher multiplicity region
-        // detail: https://alice-notes.web.cern.ch/node/478
-        Bool_t IsNotPileUp = AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvt);
+        Bool_t IsNotPileUp = fEventCuts.PassedCut(AliEventCuts::kPileUp);
 
         // In Complete DAQ Event Cut
         // --------------------------------------------------
-        Bool_t IncompleteDAQ = fEvt->IsIncompleteDAQ();
-
-        // SPD vs Cluster BG cut
-        // -------------------------------------------------
-        Bool_t SPDvsClustersBG = kFALSE;
-        AliAnalysisUtils* AnalysisUtils = new AliAnalysisUtils();
-        if (!AnalysisUtils) {
-            AliInfo("No AnalysisUtils Object Found");
-            return;
-        } else
-            SPDvsClustersBG = AnalysisUtils->IsSPDClusterVsTrackletBG(fEvt);
+        Bool_t IncompleteDAQ =
+            fEventCuts.PassedCut(AliEventCuts::kDAQincomplete);
 
         IsPS = IsSelectedTrig       // CINT7 Trigger selected
                && !IncompleteDAQ    // No IncompleteDAQ
-               && !SPDvsClustersBG  // No SPDvsClusters Background
                && IsNotPileUp;      // PileUp rejection
 
-        IsINEL0Rec =
-            IsPS && IsGoodVertex &&
-            IsVtxInZCut &&  // recontructed INEL > 0 is PS + vtx + Zvtx inside
-                            // +-10
-            IsTrackletinEta1;  // at least 1 tracklet in eta +_1 region.
+        IsINEL0Rec = IsPS && IsGoodVertex && IsVtxInZCut && IsINELg0;
 
         if (IsSelectedTrig && IsMultSelcted && fQA)
             fHistos->FillTH1("hMult_QA_onlyMult", (double)fCent);
@@ -860,12 +824,15 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                     ->GetTrack(TMath::Abs(Xicandidate->GetBindex()));
 
             // Standard track QA cuts
+            // Let it be disabled for the consistency with AOD analysis
+            /*
             if (!fTrackCuts2->AcceptTrack(pTrackXi))
                 continue;
             if (!fTrackCuts2->AcceptTrack(nTrackXi))
                 continue;
             if (!fTrackCuts2->AcceptTrack(bTrackXi))
                 continue;
+            */
 
             // PID cuts for Xi daughters
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
@@ -2407,27 +2374,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 }
 void AliAnalysisTaskXi1530::Terminate(Option_t*) {}
 
-Double_t AliAnalysisTaskXi1530::GetMultiplicty(AliVEvent* fEvt) {
-    // Set multiplicity value
-    // fCenttemp:
-    //       0-100: Selected, value.
-    //       999: Not selected
-    //       -999: No MultSection
-    //
-    Double_t fCenttemp = -999;
-    AliMultSelection* MultSelection =
-        (AliMultSelection*)fEvt->FindListObject("MultSelection");
-    if (MultSelection) {
-        fCenttemp = MultSelection->GetMultiplicityPercentile(
-            MultiplicityEstimator.Data());
-    } else {
-        // If this happens, re-check if AliMultSelectionTask ran before your
-        // task!
-        AliInfo("Didn't find MultSelection!");
-        fCenttemp = 999;
-    }
-    return fCenttemp;
-}
 void AliAnalysisTaskXi1530::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
     // Fill MC input Xi1530 histogram
     // check = 1: INELg0|10
@@ -2676,54 +2622,6 @@ TAxis AliAnalysisTaskXi1530::AxisLog(TString name,
     TAxis axis(nbin, &bin.front());
     axis.SetName(name);
     return axis;
-}
-
-Bool_t AliAnalysisTaskXi1530::IsMCEventTrueINEL0() {
-    // From
-    // AliPhysics/PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
-    // Original author: Sergio Iga
-    Bool_t isINEL0 = kFALSE;
-
-    if (fEvt->IsA() == AliESDEvent::Class()) {
-        for (int iT = 0; iT < fMCEvent->GetNumberOfTracks(); iT++) {
-            TParticle* mcParticle =
-                (TParticle*)fMCEvent->GetTrack(iT)->Particle();
-            if (!mcParticle) {
-                AliInfo("no mcParticle");
-                continue;
-            }
-            if (!fMCEvent->IsPhysicalPrimary(iT))
-                continue;
-            if (!(mcParticle->Pt() > 0.0))
-                continue;
-            if (TMath::Abs(mcParticle->Eta()) > 1.0)
-                continue;
-            if (!(TMath::Abs(mcParticle->GetPDG()->Charge()) == 3))
-                continue;
-            isINEL0 = kTRUE;
-            break;
-        }
-    } else {
-        for (Int_t iT = 0; iT < fMCArray->GetEntriesFast(); iT++) {
-            AliAODMCParticle* mcParticle =
-                dynamic_cast<AliAODMCParticle*>(fMCArray->At(iT));
-            if (!mcParticle) {
-                AliInfo("no mcParticle");
-                continue;
-            }
-            if (!mcParticle->IsPhysicalPrimary())
-                continue;
-            if (!(mcParticle->Pt() > 0.0))
-                continue;
-            if (TMath::Abs(mcParticle->Eta()) > 1.0)
-                continue;
-            if (mcParticle->Charge() == 0)
-                continue;
-            isINEL0 = kTRUE;
-            break;
-        }
-    }
-    return isINEL0;
 }
 Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi,
                                                AliVTrack* pion) {
