@@ -1055,105 +1055,125 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F***                 fInvariantMassDistributionForSignalExtractionHelicityFrameH;  //!
 
-                            /**
-                             * This histogram shows the invariant mass
-                             * distribution of the dimuon pairs in terms
-                             * of bins of cos theta of the positive muon
-                             * in the helicity frame of the J/Psi.
-                             *
-                             * What it means is that we divide in 40 bins of
-                             * possible CosTheta of the decaying J/Psi,
-                             * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
-                             * (-0.4,-0.2) and so on until (0.8,1). We fill
-                             * the invariant mass distribution of the
-                             * dimuons in this many bins.
-                             *
-                             * The next step is to fit this invariant mass
-                             * distributions, so as to obtain the relative
-                             * contribution of J/Psi and GammaGamma to the
-                             * angular distributions. This should help in
-                             * validating our results...
-                             *
-                             * NEW: the mass range has been extended.
-                             * Meaning there are no bounds on the invariant
-                             * mass range BEFORE signal extraction.
-                             */
-        TH1F*               fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[40];  //!
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 40 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameH[40];  //!
 
-                            /**
-                             * This histogram shows the invariant mass
-                             * distribution of the dimuon pairs in terms
-                             * of bins of cos theta of the positive muon
-                             * in the helicity frame of the J/Psi.
-                             *
-                             * What it means is that we divide in 40 bins of
-                             * possible CosTheta of the decaying J/Psi,
-                             * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
-                             * (-0.4,-0.2) and so on until (0.8,1). We fill
-                             * the invariant mass distribution of the
-                             * dimuons in this many bins.
-                             *
-                             * The next step is to fit this invariant mass
-                             * distributions, so as to obtain the relative
-                             * contribution of J/Psi and GammaGamma to the
-                             * angular distributions. This should help in
-                             * validating our results...
-                             *
-                             * NEW: the mass range has been extended.
-                             * Meaning there are no bounds on the invariant
-                             * mass range BEFORE signal extraction.
-                             */
-        TH1F*               fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[50];  //!
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 40 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameH[50];  //!
 
-                            /**
-                             * This histogram shows the invariant mass
-                             * distribution of the dimuon pairs in terms
-                             * of bins of cos theta of the positive muon
-                             * in the helicity frame of the J/Psi.
-                             *
-                             * What it means is that we divide in 40 bins of
-                             * possible CosTheta of the decaying J/Psi,
-                             * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
-                             * (-0.4,-0.2) and so on until (0.8,1). We fill
-                             * the invariant mass distribution of the
-                             * dimuons in this many bins.
-                             *
-                             * The next step is to fit this invariant mass
-                             * distributions, so as to obtain the relative
-                             * contribution of J/Psi and GammaGamma to the
-                             * angular distributions. This should help in
-                             * validating our results...
-                             *
-                             * NEW: the mass range has been extended.
-                             * Meaning there are no bounds on the invariant
-                             * mass range BEFORE signal extraction.
-                             */
-        TH1F*               fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[40];  //!
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 40 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameTryingH[40];  //!
 
-                            /**
-                             * This histogram shows the invariant mass
-                             * distribution of the dimuon pairs in terms
-                             * of bins of cos theta of the positive muon
-                             * in the helicity frame of the J/Psi.
-                             *
-                             * What it means is that we divide in 40 bins of
-                             * possible CosTheta of the decaying J/Psi,
-                             * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
-                             * (-0.4,-0.2) and so on until (0.8,1). We fill
-                             * the invariant mass distribution of the
-                             * dimuons in this many bins.
-                             *
-                             * The next step is to fit this invariant mass
-                             * distributions, so as to obtain the relative
-                             * contribution of J/Psi and GammaGamma to the
-                             * angular distributions. This should help in
-                             * validating our results...
-                             *
-                             * NEW: the mass range has been extended.
-                             * Meaning there are no bounds on the invariant
-                             * mass range BEFORE signal extraction.
-                             */
-        TH1F*               fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[50];  //!
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * What it means is that we divide in 40 bins of
+                                 * possible CosTheta of the decaying J/Psi,
+                                 * meaning  (-1,-0.8), (-0.8,-0.6), (-0.6,-0.4),
+                                 * (-0.4,-0.2) and so on until (0.8,1). We fill
+                                 * the invariant mass distribution of the
+                                 * dimuons in this many bins.
+                                 *
+                                 * The next step is to fit this invariant mass
+                                 * distributions, so as to obtain the relative
+                                 * contribution of J/Psi and GammaGamma to the
+                                 * angular distributions. This should help in
+                                 * validating our results...
+                                 *
+                                 * NEW: the mass range has been extended.
+                                 * Meaning there are no bounds on the invariant
+                                 * mass range BEFORE signal extraction.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[50];  //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 *
+                                 * My variable binning: [-0.65, -0.35, -0.15,
+                                 * -0.05, 0.05, 0.15, 0.35, 0.65] vs
+                                 * 3.14*[1, 19/20, 18/20, 17/20, 13/20, 9/20,
+                                 * 6/20, 4/20, 2/20, 1/10, 0, negative side].
+                                 */
+        TH1F***                 fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH;  //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in a
+                                 * restricted bin of pt: 0.4 < pt < 0.6 GeV/c.
+                                 */
+        TH1F*                   fInvariantMassDistributionStrictPtH;  //!
 
         //_______________________________
         // CUTS
@@ -1215,7 +1235,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 24);
+        ClassDef(AliAnalysisTaskUPCforward, 25);
 };
 
 #endif

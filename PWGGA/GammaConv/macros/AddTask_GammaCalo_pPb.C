@@ -1521,6 +1521,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","2446600051012200000","0163103100000010"); // INT7
   } else if (trainConfig == 601){ // PHOS clusters standard cuts, triggers, no nonlin, +-50ns
     cuts.AddCutCalo("80062113","2446600051012200000","0163103100000010"); // PHI7
+  } else if( trainConfig == 602){ // No non-lin corr
+    cuts.AddCutCalo("80010113","244660007a012200000","0163103100000010"); // no NL
+    cuts.AddCutCalo("80010113","2446600070012200000","0163103100000010"); // no NL
+    cuts.AddCutCalo("800ap113","2446600070012200000","0163103100000010"); // PHI7 CALOFAST
+    cuts.AddCutCalo("80062113","244660007a012200000","0163103100000010"); // PHI7
 
   // ===============================================================================================
   // Run 2 data DMC clusters pPb 5TeV

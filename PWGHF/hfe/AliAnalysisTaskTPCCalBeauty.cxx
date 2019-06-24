@@ -211,6 +211,10 @@ fAllElecStack(0),
 fHFElecStack(0),
 fBElecStack(0),
 
+fAllElecStackDiffPID(0),
+fDElecStackDiffPID(0),
+fBElecStackDiffPID(0),
+
 fElecTPCTrk(0),
 fHFElecTPCTrk(0),
 fBElecTPCTrk(0),
@@ -424,6 +428,10 @@ fSprsTemplatesWeightVar2(0),
 fAllElecStack(0),
 fHFElecStack(0),
 fBElecStack(0),
+
+fAllElecStackDiffPID(0),
+fDElecStackDiffPID(0),
+fBElecStackDiffPID(0),
 
 fElecTPCTrk(0),
 fHFElecTPCTrk(0),
@@ -1078,6 +1086,18 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fBElecStack = new TH1F("fBElecStack","B Elec from Stack; p_{T}(GeV/c); counts;",100,0,50.);
         fBElecStack->Sumw2();
         fOutputList->Add(fBElecStack);
+        
+        fAllElecStackDiffPID = new TH1F("fAllElecStackDiffPID","All Elec from Stack, Shingo mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fAllElecStackDiffPID->Sumw2();
+        fOutputList->Add(fAllElecStackDiffPID);
+        
+        fDElecStackDiffPID = new TH1F("fDElecStackDiffPID","D Elec from Stack, Shingo mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fDElecStackDiffPID->Sumw2();
+        fOutputList->Add(fDElecStackDiffPID);
+        
+        fBElecStackDiffPID = new TH1F("fBElecStackDiffPID","B Elec from Stack, Shingo mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fBElecStackDiffPID->Sumw2();
+        fOutputList->Add(fBElecStackDiffPID);
     
         fElecTPCTrk = new TH1F("fElecTPCTrk","Elec TPC tracks; p_{T}(GeV/c); counts;",100,0,50.);
         fElecTPCTrk->Sumw2();
@@ -1347,6 +1367,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 
                     AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
                     pidM = TMath::Abs(momPart->GetPdgCode());
+                    
+                    fAllElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    if(pidM==411 || pidM==421 || pidM==413 || pidM==423 || pidM==431 || pidM==433 || pidM==4122){
+                        fDElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    }
+                    if(pidM==511 || pidM==521 || pidM==513 || pidM==523 || pidM==531 || pidM==533){
+                        fBElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    }
                     
                     if(TrackPDG == 11 && pidM>400 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
                         fHFElecStack->Fill(AODMCtrack->Pt());

@@ -222,7 +222,9 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH(0),
+      fInvariantMassDistributionStrictPtH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -376,7 +378,9 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH(0),
+      fInvariantMassDistributionStrictPtH(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -1006,25 +1010,27 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
     fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameTryingH[iPhiBins]);
   }
 
+  /* - Invariant mass distributions for signal extraction for POLARISATION.
+     - The usage will be:    histo[CosTheta][Phi];
+     - My variable binning.
+     -
+   */
+  fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH = new TH1F**[7];
+  for( Int_t iCosTheta = 0; iCosTheta < 7; iCosTheta++ ){
+    fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH[iCosTheta] = new TH1F*[20];
+    for( Int_t iPhi = 0; iPhi < 20; iPhi++ ){
+      fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH[iCosTheta][iPhi] =
+          new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH_%d_%d", iCosTheta, iPhi),
+                    Form("fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH_%d_%d", iCosTheta, iPhi),
+                    2000, 0, 20
+                    );
+      fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH[iCosTheta][iPhi]);
+    }
+  }
 
-  // for( Int_t iCosTheta = 0; iCosTheta < 10; iCosTheta++ ){
-  //   std::vector<TH1F> auxiliaryVector;
-  //   for( Int_t iPhi = 0; iPhi < 10; iPhi++ ){
-  //     // auxiliaryVector.push_back( new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
-  //     //                                      Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
-  //     //                                      2000, 0, 20
-  //     //                                      )
-  //     //                            );
-  //     TH1F* helphisto =         new TH1F( Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
-  //                                         Form("fInvariantMassDistributionForSignalExtractionHelicityFrameH_%d_%d", iCosTheta, iPhi),
-  //                                         2000, 0, 20
-  //                                       );
-  //     auxiliaryVector.push_back( *helphisto );
-  //
-  //   }
-  //   fInvariantMassDistributionForSignalExtractionHelicityFrameH.push_back(auxiliaryVector);
-  //   for( Int_t iPhi = 0; iPhi < 10; iPhi++ ) fOutputList->Add(fInvariantMassDistributionForSignalExtractionHelicityFrameH[iCosTheta][iPhi]);
-  // }
+  fInvariantMassDistributionStrictPtH = new TH1F("fInvariantMassDistributionStrictPtH", "fInvariantMassDistributionStrictPtH", 8000, 0, 40);
+  fOutputList->Add(fInvariantMassDistributionStrictPtH);
+
 
 
   //_______________________________
@@ -2205,8 +2211,41 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
   }
 
+  /* - NEW:
+     -
+   */
+  Bool_t controlFlag4 = 0;
+  Double_t MyVariableCosThetaBinning[] = { -0.65, -0.35, -0.15, -0.05,
+                                            0.05,  0.15,  0.35,  0.65 };
+  Double_t MyVariablePhiBinning[] = { -3.14*1,       -3.14*19*0.05, -3.14*18*0.05, -3.14*17*0.05,
+                                      -3.14*13*0.05, -3.14*9*0.05,  -3.14*6*0.05,  -3.14*4*0.05,
+                                      -3.14*2*0.05,  -3.14*1*0.05,   0,            +3.14*1*0.05,
+                                      +3.14*2*0.05,  +3.14*4*0.05,  +3.14*6*0.05,  +3.14*9*0.05,
+                                      +3.14*13*0.05, +3.14*17*0.05, +3.14*18*0.05, +3.14*19*0.05,
+                                      +3.14*1 };
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue3 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue3      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 7; iCosThetaBins++) {
+          if( controlFlag4 == 1) break;
+          if( CosThetaHelicityFrameValue3 < MyVariableCosThetaBinning[iCosThetaBins + 1] ){
+            for(Int_t iPhiBins = 0; iPhiBins < 20; iPhiBins++) {
+              if( controlFlag4 == 1) break;
+              if( PhiHelicityFrameValue3  < MyVariablePhiBinning[iPhiBins + 1] ){
+                  fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH[iCosThetaBins][iPhiBins]->Fill(possibleJPsiCopyMag);
+                  controlFlag4 = 1;
+              }
+            }
+          }
+        }
+  }
 
-
+  /* - Strict binning in Pt.
+   * - This is my hope to see the bottomonium states...
+   */
+  if ( (possibleJPsiCopy.Pt() > 0.4) && (possibleJPsiCopy.Pt() < 0.6) ) {
+    fInvariantMassDistributionStrictPtH->Fill( possibleJPsiCopy.Mag() );
+  }
 
   if ( (possibleJPsiCopy.Mag() > 2.8) && (possibleJPsiCopy.Mag() < 3.3) && (possibleJPsiCopy.Pt() < 0.25) ) {
     fAngularDistribOfPositiveMuonRestFrameJPsiH->Fill(cosThetaMuonsRestFrame[0]);
