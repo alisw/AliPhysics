@@ -1,11 +1,3 @@
-class TTree;
-class TParticle;
-class TVector3;
-
-class AliESDVertex;
-class AliAODVertex;
-class AliESDAD; //AD
-
 #include "Riostream.h"
 #include "TChain.h"
 #include "TH1F.h"
@@ -25,22 +17,20 @@ class AliESDAD; //AD
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliAODTrack.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDUtils.h"
 #include "AliVEvent.h"
-#include "AliAODHeader.h"
-#include "AliAODHandler.h"
-#include "AliAODInputHandler.h"
 #include "AliInputEventHandler.h"
+#include "AliESDInputHandler.h"
 #include "AliHeader.h"
 #include "AliMultSelection.h"
 #include "AliMultSelectionBase.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCVertex.h"
+#include "AliCentrality.h"
+#include "AliPhysicsSelection.h"
 #include "AliStack.h"
 #include "AliLog.h"
 #include "AliGenEventHeader.h"
@@ -48,6 +38,9 @@ class AliESDAD; //AD
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliVEventHandler.h"
+
+#include "AliGenHijingEventHeader.h"
+#include <AliStack.h>
 
 #include "AliAnalysisTaskEbyeNetChargeMCPbPbESD.h"
 
@@ -72,6 +65,9 @@ fTreeSRedirector(0x0),
 fEtaDown(-0.8),
 fEtaUp(0.8),
 fHistCentralityMultSelection(0),
+fHistCentralityImpPar(0),
+fMCImpactParameter(0),
+fCentrality(0),
 fHistVertexStats(0),
 fHistZVertexCent(0),
 fEventStatistics(0),
@@ -114,6 +110,9 @@ fTreeSRedirector(0x0),
 fEtaDown(-0.8),
 fEtaUp(0.8),
 fHistCentralityMultSelection(0),
+fHistCentralityImpPar(0),
+fMCImpactParameter(0),
+fCentrality(0),
 fHistVertexStats(0),
 fHistZVertexCent(0),
 fEventStatistics(0),
@@ -164,6 +163,8 @@ AliAnalysisTaskEbyeNetChargeMCPbPbESD::~AliAnalysisTaskEbyeNetChargeMCPbPbESD()
     if (fhCent)               		    delete fhCent;
     if (fHistCentralityMultSelection)   delete fHistCentralityMultSelection;
     if (fEventStatistics)               delete fEventStatistics;
+    if (fHistCentralityImpPar)delete fHistCentralityImpPar;
+
 }
 //============================================================
 //--------------UserCreateOutputObjects-----------------------
@@ -203,6 +204,11 @@ void AliAnalysisTaskEbyeNetChargeMCPbPbESD::UserCreateOutputObjects()
     fHistCentralityMultSelection->GetXaxis()->SetTitle("Centrality (%)");
     fOutputList->Add(fHistCentralityMultSelection);
     
+    fHistCentralityImpPar  = new TH1F("fCentralityImpPar",     "control histogram for centrality imppar"    , 100, 0., 100.);
+    fHistCentralityMultSelection->GetXaxis()->SetTitle("CentralityImpPar (%)");
+    fOutputList->Add(fHistCentralityImpPar);
+
+    
     fHistZVertexCent = new TH2F("fHistZVertexCent"," Vz of primary vertex Vs Centrality; V_{Z} {cm} ; Centrality {%}", 60, -15, 15,100,0,100);
     fOutputList->Add(fHistZVertexCent);
   
@@ -227,66 +233,58 @@ void AliAnalysisTaskEbyeNetChargeMCPbPbESD::UserCreateOutputObjects()
 //============================================================
 void AliAnalysisTaskEbyeNetChargeMCPbPbESD::UserExec(Option_t *){
     
-    // Called for each event
-    AliESDEvent *lESDevent = 0x0;
-    AliMCEvent  *lMCevent  = 0x0;
-    AliStack    *lMCstack  = 0x0;
     
-    AliVEvent* event = InputEvent();
-    
-    // Appropriate for ESD analysis!
-    lESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
-    if (!lESDevent) {
-        AliWarning("ERROR: lESDevent not available \n");
+  //  cout << "============================================================" << endl;
+  //  cout << "================ User Exec Object=================="  << endl;
+ //   cout << "============================================================" << endl;
+
+
+    AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
+    AliESDInputHandler *handler = (AliESDInputHandler*)anMan->GetInputEventHandler();
+
+    AliMCEventHandler* eventHandler = 0x0;
+                                                                                                                                                           
+    // ========================== MC EVENT INF O====================================>>>                                                                      
+    eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
+    if (!eventHandler) { printf("ERROR: Could not retrieve MC event handler\n"); return; }
+
+    AliMCEvent *fMCEvent = 0x0;
+    fMCEvent = eventHandler->MCEvent();
+    if (!fMCEvent) { printf("ERROR: Could not retrieve MC event\n"); return; }
+ 
+//========= Generator Info ==========================                                                                                                                                            
+    if(fMCEvent) {
+      AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+      if(!genHeader){
+        printf("  Event generator header not available!!!\n");
         return;
+      }
+      fMCImpactParameter = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
     }
-    
-    lMCevent = dynamic_cast<AliMCEvent *>(MCEvent());
-    if (!lMCevent) {
-        Printf("ERROR: Could not retrieve MC event \n");
-        cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
-        return;
-    }
-    
-    lMCstack = lMCevent->Stack();
-    if (!lMCstack) {
-        Printf("ERROR: Could not retrieve MC stack \n");
-        cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
-        return;
-    }
-    
-    fRunNumber = lESDevent->GetRunNumber();
-    
-    //Physics selection
-    Bool_t isINT7selected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-    if(!isINT7selected)return ;
-    
-    const AliESDVertex *fPrimaryVtx = lESDevent->GetPrimaryVertex();
-    if (!fPrimaryVtx){
-        printf ("ERROR: no primary vertex\n");
-        return;
-    }
-    
-    Double_t xv=fPrimaryVtx->GetX();
-    Double_t yv=fPrimaryVtx->GetY();
-    Double_t zv=fPrimaryVtx->GetZ();
-    
-    if (TMath::Abs(zv) > 10.0) return;
-    
+                  
+    AliStack *stack = fMCEvent->Stack();
+
     //===========================Centrality calculation =====================
+ 
+   // cout<< " hello here  Centrality selection "<< endl;   
+
+    Double_t impParArr[10] = {0.0, 3.72, 5.23, 7.31, 8.88, 10.20, 11.38, 12.47, 13.50, 14.5};
     
-    AliCentrality* centrality = lESDevent->GetCentrality();
-    
-    if (!centrality) {
-        printf ("ERROR: couldn't get the AliCentrality\n");
-        return;
-    }
-    
-    Double_t fCentrality = centrality->GetCentralityPercentile("V0M");
-    
-    if(fCentrality < 0 || fCentrality >= 80) return;
-    fHistCentralityMultSelection->Fill(fCentrality);
-    
+    if (fMCImpactParameter>=impParArr[0] && fMCImpactParameter<impParArr[1]) fCentrality=2.5;
+    if (fMCImpactParameter>=impParArr[1] && fMCImpactParameter<impParArr[2]) fCentrality=7.5;
+    if (fMCImpactParameter>=impParArr[2] && fMCImpactParameter<impParArr[3]) fCentrality=15.;
+    if (fMCImpactParameter>=impParArr[3] && fMCImpactParameter<impParArr[4]) fCentrality=25.;
+    if (fMCImpactParameter>=impParArr[4] && fMCImpactParameter<impParArr[5]) fCentrality=35.;
+    if (fMCImpactParameter>=impParArr[5] && fMCImpactParameter<impParArr[6]) fCentrality=45.;
+    if (fMCImpactParameter>=impParArr[6] && fMCImpactParameter<impParArr[7]) fCentrality=55.;
+    if (fMCImpactParameter>=impParArr[7] && fMCImpactParameter<impParArr[8]) fCentrality=65.;
+    if (fMCImpactParameter>=impParArr[8] && fMCImpactParameter<impParArr[9]) fCentrality=75.;
+    if (fMCImpactParameter<impParArr[0]  || fMCImpactParameter>impParArr[9]) fCentrality=-10.;
+
+  //  cout << " Centrality = " << fCentrality << " ------ Impact Parameter = " << fMCImpactParameter << endl;
+
+    fHistCentralityImpPar->Fill(fCentrality);
+
     // =========Different Acceptance cuts for Eta momentum and Centrality=============
     Double_t momDownArray[1]    = {0.2};
     Double_t momUpArray[1]      = {5.0};
@@ -294,95 +292,75 @@ void AliAnalysisTaskEbyeNetChargeMCPbPbESD::UserExec(Option_t *){
     Double_t etaUpArray[8]      = {0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8};
     Double_t centDownArray[9]   = {0., 5.,  10., 20., 30., 40., 50., 60., 70.};
     Double_t centUpArray[9]     = {5., 10., 20., 30., 40., 50., 60., 70., 80.};
- 
-
+    
     for (Int_t imom=0; imom<1; imom++){
         for (Int_t ieta=0; ieta<8; ieta++){
             for (Int_t icent=0; icent<9; icent++){
-                
-                // -----------------------------------------------------------------------------------------
-                // cout<< " ------------------Generated MC particles------------------------" << endl;
-                // -----------------------------------------------------------------------------------------
-                Double_t centBin = (centDownArray[icent]+centUpArray[icent])/2.;
-                Double_t etaBin  = (TMath::Abs(etaDownArray[ieta])+etaUpArray[ieta]);
-                
-                // Initialize the positive and negative particles
-                genPos = 0, genNeg   = 0;
-                Int_t trCountMCgen   = 0;
-                Int_t subsample1     = 0 ;
-                Int_t genTotalCharge = 0, primPhysicalCountgen = 0;
-                
-                subsample1 = EventNumber%30;
-                
-                //=============================== track loop ==============================
-                
-                // Loop over the MC gen tracks
-                Int_t ngen = lMCevent->GetNumberOfTracks();
-                
-                for(int iPart = 0; iPart < ngen; iPart++) {
-                    
-                    // Initialize the variables
-                    pdgMomPhysicalPrimgen = 0, pdgMomPrimgen = 0,pdgPhysicalPrimgen = 0, pdgPrimgen = 0;
-                    
-                    AliMCParticle *mctrack  = (AliMCParticle*)lMCevent->GetTrack(iPart);
-                    if(!mctrack){
-                        AliWarning("ERROR: Could not retrieve one of the ESD tracks ...");
-                        continue;
-                    }
-                    
-                    fpTMCgen     = mctrack->Pt();
-                    fPhiMCgen    = mctrack->Phi();
-                    fChargegen   = mctrack->Charge();
-                    fEtaMCgen    = mctrack->Eta();
-                    
-                    hGenPt->Fill(fpT);
+
+             Double_t centBin = (centDownArray[icent]+centUpArray[icent])/2.;   
+             Double_t etaBin  = (TMath::Abs(etaDownArray[ieta])+etaUpArray[ieta]);
+
+              genPos=0.,genNeg=0.,genNch=0.;
+ 	      Int_t subsample1     = 0 ;
+              Int_t trCountMCgen   = 0;
+              subsample1 = EventNumber%30;
+
+            //=========================== track loop ==============================
+         
+	        for (Int_t iTracks = 0; iTracks < fMCEvent->GetNumberOfTracks(); iTracks++) {
+		
+		pdgMomPhysicalPrimgen = 0, pdgMomPrimgen = 0,pdgPhysicalPrimgen = 0, pdgPrimgen = 0;
+
+		AliMCParticle* mctrack = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(iTracks));
+		if(!mctrack)
+		  continue;
+		
+		TParticle * part = mctrack->Particle();
+		if( !part )
+		  continue;                    
+	
+		if( !stack->IsPhysicalPrimary(iTracks) )
+		  continue;
+
+		fpTMCgen     = mctrack->Pt();
+		fPhiMCgen    = mctrack->Phi();
+		fChargegen   = mctrack->Charge();
+		fEtaMCgen    = mctrack->Eta();
+
+		//cout<<"pt  -->"<< fpTMCgen<< "   "<<"phi  -->"<<fPhiMCgen<< "   "<<"eta  -->"<< fChargegen<< endl;
+		
+		if (fChargegen == 0) continue;
+		if (fpTMCgen < 0.2) continue;
+
+		   hGenPt->Fill(fpT);
                     hGenPhi->Fill(fPhi);
                     hGenEta->Fill(fEta);
-                    
-                    if (fChargegen == 0) continue;
-                    if (fpTMCgen < 0.2) continue;
-                    
-                    // MC eta cut
+
+                 // MC eta cut
                     if ((fEtaMCgen < etaDownArray[ieta]) || (fEtaMCgen > etaUpArray[ieta])) continue;
-                    if(!lMCstack->IsPhysicalPrimary(iPart)) continue;   // select primary particle
-                    
-                    TParticle* part = lMCstack->Particle(iPart);
-                    if( !part ) continue;
-                    
-                    Int_t pdggen    = part->GetPdgCode();
-                    
-                    // get the mother of the daughter particle
-                    Int_t momlabgen            = mctrack->GetMother();
-                    AliVParticle *esdMothergen = lMCevent->GetTrack(momlabgen);
-                    if(esdMothergen) pdgMomgen = esdMothergen->PdgCode(); // pdg of mother
-                    
-                    //===================apply cuts on pt eta and centrality=====================
-                    if ((fpTMCgen>=momDownArray[imom])
+             	
+    //===================apply cuts on pt eta and centrality=====================
+                if ((fpTMCgen>=momDownArray[imom])
                         &&(fpTMCgen<momUpArray[imom])
-                        &&(fCentrality>=centDownArray[icent])
+ 			&&(fCentrality>=centDownArray[icent])
                         &&(fCentrality<centUpArray[icent])){
-                        
-                        // Select Physical primary particles and fill it on the tree
-                        if (lMCstack->IsPhysicalPrimary(iPart)) {
-                            pdgMomPhysicalPrimgen = pdgMomgen;
-                            primPhysicalCountgen++;
-                            // calculate first moments
-                            if (fChargegen < 0 || fChargegen > 0) genNch++;
-                            if(fChargegen > 0) genPos++;
-                            if(fChargegen < 0) genNeg++;
-                            trCountMCgen++;
-                            
-                        }
-                    } // end loop of apply cuts
-                    
-                } //============end of track loop====================
-                
-                // calculate second moments
+
+             // calculate first moments
+		if (fChargegen < 0 || fChargegen > 0) genNch++;
+		if(fChargegen > 0) genPos++;
+		if(fChargegen < 0) genNeg++;
+                 trCountMCgen++;
+
+} // end loop of apply cuts
+		
+	      } //============end of track loop====================
+	      
+  		// calculate second moments
                 genMomentsCross  = genPos * genNeg;
                 genMomentsPos    = genPos * genPos;
                 genMomentsNeg    = genNeg * genNeg;
-                
-                
+	  
+		  
                 // Fill the pt eta and centrality check in the tree
                 if ( trCountMCgen>0 ){
                     if(!fTreeSRedirector) return;
@@ -404,15 +382,15 @@ void AliAnalysisTaskEbyeNetChargeMCPbPbESD::UserExec(Option_t *){
                     "imom="                << imom                      <<    // mom index loop
                     "centBin="             << centBin                   <<    // centrality bin
                     "etabin="              << etaBin                    <<    // eta bin
-                    "fRunNumber="          << fRunNumber                <<    // Run Number
+                    "cent="                << fCentrality               <<
+                    "impPar="              << fMCImpactParameter        <<
                     "\n";
                     
                 } //===========tree filling========
-                
-            } //===========end of momentum loop
+   
+       } //===========end of momentum loop
         } //===========end of eta loop
-    } //===========end of centrality loop
-    
+ } //===========end of centrality loop
     EventNumber++;
     
     PostData(1, fOutputList);
