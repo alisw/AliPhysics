@@ -14,9 +14,12 @@ class AliESDEvent;
 class AliVEvent;
 class TString;
 class TObjArray;
+class AliMCParticle;
+//class AliStack;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliVEvent.h" 
 #include "THn.h"
 #include "TTreeStream.h"
 
@@ -35,27 +38,33 @@ public:
     
 private:
   
-  //  AliAODEvent            *fAOD;                   // input event
-    TClonesArray           *fArrayMC;               // array of MC particles
 
+    TClonesArray           *fArrayMC;               // array of MC particles
+ 
     TTree                  *fTreeMCgen;             // Tree for MC gen
     TTreeSRedirector       *fTreeSRedirector;       // temp tree to dump output
-    
+    AliStack               *fStack;                     //! MC stack
     TH1F                   *fhCent;                 // helper histogram for centrality
     TH1D                   *fHistCentralityMultSelection; // centrality class selection by AliMultSelection
+    TH1F                   *fHistCentralityImpPar;         // control histogram for centrality
+
     
     TList                  *fOutputList;            // output list
-
+ 
     Int_t                   EventNumber;
     Int_t                   fpT;
     Int_t                   fPhi;
     Int_t                   fEta;
     
+    Float_t                 fCentrality;             // centrality information
+
+
     Float_t                 fEtaMCgen;              // MC gen pseudo rapidity
     Float_t                 fpTMCgen;               // MC gen transverse momentum
     Float_t                 fPhiMCgen;
     Short_t                 fChargegen;             // charge information
  
+    Double_t                fMCImpactParameter;
     Double_t                fVxMax;                 // vxmax
     Double_t                fVyMax;                 // vymax
     Double_t                fVzMax;                 // vzmax
