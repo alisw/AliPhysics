@@ -43,55 +43,53 @@ ClassImp(AliIsolationCut) ;
 //____________________________________
 AliIsolationCut::AliIsolationCut() :
 TObject(),
-fFillHistograms(0),  fFillEtaPhiHistograms(0),
+fFillHistograms(0),  fFillEtaPhiHistograms(0),      fMakeConeExcessCorr(0),
 fConeSize(0.),       fPtThreshold(0.),              fPtThresholdMax(10000.),
 fSumPtThreshold(0.), fSumPtThresholdMax(10000.),    fPtFraction(0.),     
 fICMethod(0),        fPartInCone(0),
 fFracIsThresh(1),    fIsTMClusterInConeRejected(1), fDistMinToTrigger(-1.),
 fNeutralOverChargedRatio(0),
 fDebug(0),           fMomentum(),                   fTrackVector(),
+fEMCEtaSize(-1),     fEMCPhiMin(-1),                fEMCPhiMax(-1),
+fTPCEtaSize(-1),     fTPCPhiSize(-1),
 // Histograms
 fHistoRanges(0),
-fhPtInCone(0),       fhPtClusterInCone(0),          
-fhPtTrackInCone(0),  
-
-fhConeSumPt(0),      fhConeSumPtCluster(0),         fhConeSumPtTrack(0),
-fhConeSumPtClustervsTrack(0), fhConeSumPtClusterTrackFrac(0), fhConeSumPtTrigEtaPhi(0),
-
-fhConeSumPtUESub(0),      fhConeSumPtUESubCluster(0),         fhConeSumPtUESubTrack(0),
-fhConeSumPtUESubClustervsTrack(0), fhConeSumPtUESubClusterTrackFrac(0), fhConeSumPtUESubTrigEtaPhi(0),
-
-fhConePtLead(0),     fhConePtLeadCluster(0),        fhConePtLeadTrack(0),
-fhConePtLeadClustervsTrack(0),    fhConePtLeadClusterTrackFrac(0),
-
-fhEtaPhiCluster(0),       fhEtaPhiTrack(0),
-fhEtaPhiInConeCluster(0), fhEtaPhiInConeTrack(0),   
-
-fhPtInPerpCone(0),     fhPerpConeSumPt(0),
-fhEtaPhiInPerpCone(0), fhConeSumPtVSPerpCone(0), 
+fhPtInCone(0),       
+fhPtClusterInCone(0),                       fhPtTrackInCone(0),  
+fhConeSumPt(0),      
+fhConeSumPtCluster(0),                      fhConeSumPtTrack(0),
+fhConeSumPtClustervsTrack(0),               fhConeSumPtClusterTrackFrac(0), 
+fhConeSumPtTrigEtaPhi(0),
+fhConeSumPtUESub(0),      
+fhConeSumPtUESubCluster(0),                 fhConeSumPtUESubTrack(0),
+fhConeSumPtUESubClustervsTrack(0),          fhConeSumPtUESubClusterTrackFrac(0), 
+fhConeSumPtUESubTrigEtaPhi(0),
+fhConePtLead(0),     
+fhConePtLeadCluster(0),                     fhConePtLeadTrack(0),
+fhConePtLeadClustervsTrack(0),              fhConePtLeadClusterTrackFrac(0),
+fhEtaPhiCluster(0),                         fhEtaPhiTrack(0),
+fhEtaPhiInConeCluster(0),                   fhEtaPhiInConeTrack(0),   
+fhPtInPerpCone(0),                          fhPerpConeSumPt(0),
+fhEtaPhiInPerpCone(0),                      fhConeSumPtVSPerpCone(0), 
 fhPerpConeSumPtTrigEtaPhi(0),
-
-fhEtaBandClusterPt(0), fhPhiBandClusterPt(0),
-fhEtaBandTrackPt(0),   fhPhiBandTrackPt(0),
-
+fhEtaBandClusterPt(0),                      fhPhiBandClusterPt(0),
+fhEtaBandTrackPt(0),                        fhPhiBandTrackPt(0),
 fhConeSumPtEtaBandUECluster(0),             fhConeSumPtPhiBandUECluster(0),
 fhConeSumPtEtaBandUETrack(0),               fhConeSumPtPhiBandUETrack(0),
-
-fhEtaBandClusterEtaPhi(0),        fhPhiBandClusterEtaPhi(0),
-fhEtaBandTrackEtaPhi(0),          fhPhiBandTrackEtaPhi(0),
-
+fhEtaBandClusterEtaPhi(0),                  fhPhiBandClusterEtaPhi(0),
+fhEtaBandTrackEtaPhi(0),                    fhPhiBandTrackEtaPhi(0),
 fhConeSumPtEtaBandUEClusterTrigEtaPhi(0),   fhConeSumPtPhiBandUEClusterTrigEtaPhi(0),
 fhConeSumPtEtaBandUETrackTrigEtaPhi(0),     fhConeSumPtPhiBandUETrackTrigEtaPhi(0),
 fhConeSumPtVSUETracksEtaBand(0),            fhConeSumPtVSUETracksPhiBand(0),
 fhConeSumPtVSUEClusterEtaBand(0),           fhConeSumPtVSUEClusterPhiBand(0),
-
-fhConeSumPtUEBandNormCluster(0),             
-fhConeSumPtUEBandNormTrack(0),               
+fhConeSumPtUEBandNormCluster(0),            fhConeSumPtUEBandNormTrack(0), 
+fhFractionTrackOutConeEta(0),               fhFractionTrackOutConeEtaTrigEtaPhi(0),
+fhFractionClusterOutConeEta(0),             fhFractionClusterOutConeEtaTrigEtaPhi(0),
+fhFractionClusterOutConePhi(0),             fhFractionClusterOutConePhiTrigEtaPhi(0),
+fhFractionClusterOutConeEtaPhi(0),          fhFractionClusterOutConeEtaPhiTrigEtaPhi(0),
 fhConeSumPtUEBandSubClustervsTrack(0),       
-fhBandClustervsTrack(0),                
-fhBandNormClustervsTrack(0),             
-fhConeSumPtSubvsConeSumPtTotEtaTrack(0),   
-fhConeSumPtSubvsConeSumPtTotEtaCluster(0)  
+fhBandClustervsTrack(0),                    fhBandNormClustervsTrack(0),             
+fhConeSumPtTrackSubVsNoSub(0),              fhConeSumPtClusterSubVsNoSub(0)  
 {
   InitParameters();
 }
@@ -755,87 +753,64 @@ void AliIsolationCut::CalculateTrackSignalInCone
 //_________________________________________________________________________________________________________________________________
 /// Get normalization of cluster background band.
 //_________________________________________________________________________________________________________________________________
-void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /*reader*/, Float_t   etaC, Float_t /*phiC*/,
-                                                           Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
-                                                           Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
-                                                           Float_t & excessFracPhi,         Float_t & excessFracEta         ) const
+void AliIsolationCut::CalculateUEBandClusterNormalization( Float_t   etaC,                  Float_t   phiC,
+                                                           Float_t   excessEta,             Float_t   excessPhi,         
+                                                           Float_t   excessAreaEta,         Float_t   excessAreaPhi,         
+                                                           Float_t   etaUEptsumCluster,     Float_t   phiUEptsumCluster,
+                                                           Float_t & etaUEptsumClusterNorm, Float_t & phiUEptsumClusterNorm) const
 {
   Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
   if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
-  //Careful here if EMCal limits changed .. 2010 (4 SM) to 2011-12 (10 SM), for the moment consider 100 deg in phi
-  Float_t emcEtaSize = 0.7*2; // TO FIX
-  Float_t emcPhiSize = TMath::DegToRad()*100.; // TO FIX
-
+  Float_t fEMCPhiSize = fEMCPhiMax-fEMCPhiMin;
+  
   /* //Catherine code
-   if(((((2*fConeSize*emcPhiSize)-coneA))*phiBandBadCellsCoeff)!=0)phiUEptsumClusterNorm = phiUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*fConeSize*emcPhiSize)-coneA))*phiBandBadCellsCoeff); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
-   if(((((2*(fConeSize-excess)*emcPhiSize)-(coneA-excessFracEta))*etaBandBadCellsCoeff))!=0)phiUEptsumClusterNorm = phiUEptsumCluster*(coneA *coneBadCellsCoeff/ (((2*(fConeSize-excess)*emcPhiSize)-(coneA/excessFracEta))*etaBandBadCellsCoeff));
-   if(((2*(fConeSize-excess)*emcEtaSize)-(coneA-excessFracPhi))*phiBandBadCellsCoeff!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*(fConeSize-excess)*emcEtaSize)-(coneA/excessFracPhi))*phiBandBadCellsCoeff));
+   if(((((2*fConeSize*fEMCPhiSize)-coneA))*phiBandBadCellsCoeff)!=0)phiUEptsumClusterNorm = phiUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*fConeSize*fEMCPhiSize)-coneA))*phiBandBadCellsCoeff); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
+   if(((((2*(fConeSize-excess)*fEMCPhiSize)-(coneA-excessFracEta))*etaBandBadCellsCoeff))!=0)phiUEptsumClusterNorm = phiUEptsumCluster*(coneA *coneBadCellsCoeff/ (((2*(fConeSize-excess)*fEMCPhiSize)-(coneA/excessFracEta))*etaBandBadCellsCoeff));
+   if(((2*(fConeSize-excess)*fEMCEtaSize)-(coneA-excessFracPhi))*phiBandBadCellsCoeff!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA*coneBadCellsCoeff / (((2*(fConeSize-excess)*fEMCEtaSize)-(coneA/excessFracPhi))*phiBandBadCellsCoeff));
    */
-
-  if((2*fConeSize*emcPhiSize-coneA)!=0) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / (((2*fConeSize*emcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
-  if((2*fConeSize*emcEtaSize-coneA)!=0) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / (((2*fConeSize*emcEtaSize)-coneA))); // pi * R^2 / (2 R * 2*0.7)  -  trigger cone
-
-  //out of eta acceptance
-  excessFracEta = 1;
-  excessFracPhi = 1;
-
-  if(TMath::Abs(etaC)+fConeSize > emcEtaSize/2.)
-  {
-    Float_t excess = TMath::Abs(etaC) + fConeSize - emcEtaSize/2.;
-    excessFracEta  = CalculateExcessAreaFraction(excess);
-
-    if ( excessFracEta != 0) coneA /=  excessFracEta;
-
-    //UE band is also out of acceptance, need to estimate corrected area
-    if(((2*fConeSize-excess)*emcPhiSize-coneA) != 0 ) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / ((((2*fConeSize-excess)*emcPhiSize)-coneA)));
-    if(( 2*fConeSize        *emcEtaSize-coneA) != 0 ) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / ((( 2*fConeSize        *emcEtaSize)-coneA)));
-  }
+  
+  // UE band cans also be out of acceptance, need to estimate corrected area
+  //
+  if ( excessEta != 0 ) coneA /=  excessAreaEta;
+  if ( excessPhi != 0 ) coneA /=  excessAreaPhi;
+  if ( excessPhi != 0 ) coneA /=  excessAreaPhi;
+  
+  // Calculate normalization
+  //    
+  if(((2*fConeSize-excessEta)*fEMCPhiSize-coneA) != 0 ) phiUEptsumClusterNorm = phiUEptsumCluster*(coneA / ((((2*fConeSize-excessEta)*fEMCPhiSize)-coneA))); // pi * R^2 / (2 R * 2 100 deg) -  trigger cone
+  if(((2*fConeSize-excessPhi)*fEMCEtaSize-coneA) != 0 ) etaUEptsumClusterNorm = etaUEptsumCluster*(coneA / ((((2*fConeSize-excessPhi)*fEMCEtaSize)-coneA))); // pi * R^2 / (2 R * 2*0.7)  -  trigger cone
 }
 
 //________________________________________________________________________________________________________________________________
 /// Get normalization of track background band.
 //________________________________________________________________________________________________________________________________
-void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,    Float_t   etaC, Float_t /*phiC*/,
-                                                          Float_t   phiUEptsumTrack,      Float_t   etaUEptsumTrack,
-                                                          Float_t & phiUEptsumTrackNorm,  Float_t & etaUEptsumTrackNorm,
-                                                          Float_t & excessFracPhi,        Float_t & excessFracEta         ) const
+void AliIsolationCut::CalculateUEBandTrackNormalization  (Float_t   etaC               ,  
+                                                          Float_t   excessEta          ,          
+                                                          Float_t   excessAreaEta      ,         
+                                                          Float_t   etaUEptsumTrack    ,  Float_t   phiUEptsumTrack,
+                                                          Float_t & etaUEptsumTrackNorm,  Float_t & phiUEptsumTrackNorm) const
 {
   Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
   if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
-  
-  // Get the cut used for the TPC tracks in the reader, +-0.8, +-0.9 ...
-  // Only valid in simple fidutial cut case and if the cut is applied, careful!
-  Float_t tpcEtaSize = reader->GetFiducialCut()->GetCTSFidCutMaxEtaArray()->At(0) -
-                       reader->GetFiducialCut()->GetCTSFidCutMinEtaArray()->At(0) ;
-  Float_t tpcPhiSize = TMath::Pi(); // Half TPC tracks with respect trigger candidate inspected
 
   /*//Catherine code
    //phiUEptsumTrackNorm = phiUEptsumTrack*(coneA*coneBadCellsCoeff / (((2*fConeSize*tpcPhiSize)-coneA))*phiBandBadCellsCoeff); // pi * R^2 / (2 R * 2 pi) -  trigger cone
-   //etaUEptsumTrackNorm = etaUEptsumTrack*(coneA*coneBadCellsCoeff / (((2*fConeSize*tpcEtaSize)-coneA))*etaBandBadCellsCoeff); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+   //etaUEptsumTrackNorm = etaUEptsumTrack*(coneA*coneBadCellsCoeff / (((2*fConeSize*fTPCEtaSize)-coneA))*etaBandBadCellsCoeff); // pi * R^2 / (2 R * 1.6)  -  trigger cone
    if((2*fConeSize*tpcPhiSize-coneA)!=0)phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*fConeSize*tpcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
-   if((2*fConeSize*tpcEtaSize-coneA)!=0)etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*tpcEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+   if((2*fConeSize*fTPCEtaSize-coneA)!=0)etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*fTPCEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
    if((2*(fConeSize-excess)*tpcPhiSize)-(coneA-excessFracEta)!=0)phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*(fConeSize-excess)*tpcPhiSize)-(coneA/excessFracEta))));
    */ //end Catherine code
 
-  //correct out of eta acceptance
-  excessFracEta = 1;
-  excessFracPhi = 1;
-
-  if((2*fConeSize*tpcPhiSize-coneA)!=0) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / (((2*fConeSize*tpcPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
-  if((2*fConeSize*tpcEtaSize-coneA)!=0) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / (((2*fConeSize*tpcEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
-
-  if(TMath::Abs(etaC)+fConeSize > tpcEtaSize/2.)
-  {
-    Float_t excess = TMath::Abs(etaC) + fConeSize - tpcEtaSize/2.;
-    excessFracEta  = CalculateExcessAreaFraction(excess);
-    if (excessFracEta != 0) coneA /=  excessFracEta;
-
-    //UE band is also out of acceptance, need to estimate corrected area
-    if(((2*fConeSize-excess)*tpcPhiSize - coneA) !=0 ) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((((2*fConeSize-excess)*tpcPhiSize)-coneA)));
-    if(( 2*fConeSize        *tpcEtaSize - coneA) !=0 ) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((( 2*fConeSize        *tpcEtaSize)-coneA)));
-  }
+  // UE band cans also be out of acceptance, need to estimate corrected area
+  //
+  if ( excessEta != 0 ) coneA /=  excessAreaEta;
   
+  // Calculate normalization
+  //
+  if(((2*fConeSize-excessEta)*fTPCPhiSize - coneA) !=0 ) phiUEptsumTrackNorm = phiUEptsumTrack*(coneA / ((((2*fConeSize-excessEta)*fTPCPhiSize)-coneA))); // pi * R^2 / (2 R * 2 pi) -  trigger cone
+  if(( 2*fConeSize           *fTPCEtaSize - coneA) !=0 ) etaUEptsumTrackNorm = etaUEptsumTrack*(coneA / ((( 2*fConeSize           *fTPCEtaSize)-coneA))); // pi * R^2 / (2 R * 1.6)  -  trigger cone
+
 }
 
 //________________________________________________________________________
@@ -851,13 +826,88 @@ Float_t AliIsolationCut::CalculateExcessAreaFraction(Float_t excess) const
 
   Float_t excessA = fConeSize*fConeSize / 2 * (angle-TMath::Sin(angle));
 
-  if(coneA > excessA) return coneA / (coneA-excessA);
+  if ( coneA > excessA ) return coneA / (coneA-excessA);
   else
   {
-    AliWarning(Form("Please Check : Excess Track %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f",
+    AliWarning(Form("Please Check : Excess %2.3f, coneA %2.2f,  excessA %2.2f, angle %2.2f,factor %2.2f",
                     excess,coneA, excessA, angle*TMath::RadToDeg(), coneA / (coneA-excessA)));
     return  1;
   }
+}
+
+//________________________________________________________________________
+/// If isolation cone are is outside a detector, calculate the area in excess.
+/// \param etaC: Candidate pseudorapidity.
+/// \param phiC: Candidate azimuthal angle
+/// \param excessAreaTrkEta: cone excess out of TPC pseudo rapidity
+/// \param excessAreaClsEta: cone excess out of EMC pseudo rapidity
+/// \param excessAreaClsPhi: cone excess out of EMC azimuthal angle
+//________________________________________________________________________
+void AliIsolationCut::CalculateExcessAreaFractionForChargedAndNeutral
+( Float_t etaC, Float_t phiC, 
+  Float_t & excessTrkEta, Float_t & excessAreaTrkEta, 
+  Float_t & excessClsEta, Float_t & excessAreaClsEta, 
+  Float_t & excessClsPhi, Float_t & excessAreaClsPhi  ) const
+{
+  excessTrkEta = 0;
+  excessClsEta = 0;
+  excessClsPhi = 0;
+  
+  if ( TMath::Abs(etaC)+fConeSize > fTPCEtaSize/2. )
+    excessTrkEta = TMath::Abs(etaC) + fConeSize - fTPCEtaSize/2.;
+  
+  if(TMath::Abs(etaC)+fConeSize > fEMCEtaSize/2.)
+    excessClsEta = TMath::Abs(etaC) + fConeSize - fEMCEtaSize/2.;
+    
+  if     ( TMath::Abs(phiC)+fConeSize > fEMCPhiMax )
+    excessClsPhi = (TMath::Abs(phiC) + fConeSize) - fEMCPhiMax;
+  else if( TMath::Abs(phiC)-fConeSize < fEMCPhiMax )
+    excessClsPhi = fEMCPhiMin - (TMath::Abs(phiC) - fConeSize) ;
+  
+  excessAreaTrkEta = CalculateExcessAreaFraction(excessTrkEta);
+  excessAreaClsEta = CalculateExcessAreaFraction(excessClsEta);
+  excessAreaClsPhi = CalculateExcessAreaFraction(excessClsPhi);
+}
+
+//_________________________________________________________________________________
+/// Set TPC and EMCal angle limits. Do it once.
+/// Get the hardcoded value set in the fiducial cut class.
+/// \param reader: Access to reader class
+//_________________________________________________________________________________
+void AliIsolationCut::GetDetectorAngleLimits ( AliCaloTrackReader * reader, Int_t calorimeter )
+{
+  if ( fEMCEtaSize > 0 ) return ; // Already set
+  
+  fEMCEtaSize = reader->GetFiducialCut()->GetEMCALFidCutMaxEtaArray()->At(0) -
+                reader->GetFiducialCut()->GetEMCALFidCutMinEtaArray()->At(0) ;
+  fEMCPhiMin  = reader->GetFiducialCut()->GetEMCALFidCutMinPhiArray()->At(0) ;
+  fEMCPhiMax  = reader->GetFiducialCut()->GetEMCALFidCutMaxPhiArray()->At(0) ;
+  
+  if ( calorimeter == AliFiducialCut::kPHOS)
+  {
+    fEMCEtaSize = reader->GetFiducialCut()->GetPHOSFidCutMaxEtaArray()->At(0) -
+                  reader->GetFiducialCut()->GetPHOSFidCutMinEtaArray()->At(0) ;
+    fEMCPhiMin  = reader->GetFiducialCut()->GetPHOSFidCutMinPhiArray()->At(0) ;
+    fEMCPhiMax  = reader->GetFiducialCut()->GetPHOSFidCutMaxPhiArray()->At(0) ;
+  }
+  
+  // Info stored in degrees, put them on radians
+  fEMCPhiMin *= TMath::DegToRad();
+  fEMCPhiMax *= TMath::DegToRad();
+  
+  // Get the cut used for the TPC tracks in the reader, +-0.8, +-0.9 ...
+  // Only valid in simple fidutial cut case and if the cut is applied, careful!
+  fTPCEtaSize = reader->GetFiducialCut()->GetCTSFidCutMaxEtaArray()->At(0) -
+                reader->GetFiducialCut()->GetCTSFidCutMinEtaArray()->At(0) ;
+  fTPCPhiSize = TMath::Pi(); // Half TPC tracks with respect trigger candidate inspected
+
+  AliDebug(1,Form("TPC: Deta %2.2f; Dphi %2.2f; Calo: Deta %2.2f, phi min %2.2f, max %2.2f",
+                  fTPCEtaSize,fTPCPhiSize,fEMCEtaSize,
+                  fEMCPhiMin*TMath::RadToDeg(),fEMCPhiMax*TMath::RadToDeg()));
+  
+//  printf("TPC: Deta %2.2f; Dphi %2.2f; Calo: Deta %2.2f, phi min %2.2f, max %2.2f\n",
+//         fTPCEtaSize,fTPCPhiSize,fEMCEtaSize,
+//         fEMCPhiMin*TMath::RadToDeg(),fEMCPhiMax*TMath::RadToDeg());
 }
 
 //_________________________________________________________________________________
@@ -1399,50 +1449,13 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhConeSumPtUEBandNormCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtUEBandNormCluster) ;
       
-      if ( fFillEtaPhiHistograms )
-      {
-        fhFractionClusterOutConeEta  = new TH2F
-        ("hFractionClusterOutConeEta",
-         Form("Fraction of the isolation cone #it{R} =  %2.2f, out of clusters #eta acceptance",fConeSize),
-         nptbins,ptmin,ptmax,100,0,1);
-        fhFractionClusterOutConeEta->SetYTitle("#it{fraction}");
-        fhFractionClusterOutConeEta->SetXTitle("#it{p}_{T,trigger} (GeV/#it{c})");
-        outputContainer->Add(fhFractionClusterOutConeEta) ;
-        
-        fhFractionClusterOutConeEtaTrigEtaPhi  = new TH2F
-        ("hFractionClusterOutConeEtaTrigEtaPhi",
-         Form("Fraction of the isolation cone #it{R} =  %2.2f, out of clusters #eta acceptance, in trigger #eta-#varphi ",fConeSize),
-         netabins,etamin,etamax,nphibins,phimin,phimax);
-        fhFractionClusterOutConeEtaTrigEtaPhi->SetZTitle("#it{fraction}");
-        fhFractionClusterOutConeEtaTrigEtaPhi->SetXTitle("#eta_{trigger}");
-        fhFractionClusterOutConeEtaTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
-        outputContainer->Add(fhFractionClusterOutConeEtaTrigEtaPhi) ;
-        
-        fhFractionClusterOutConePhi  = new TH2F
-        ("hFractionClusterOutConePhi",
-         Form("Fraction of the isolation cone #it{R} =  %2.2f, out of clusters #varphi acceptance",fConeSize),
-         nptbins,ptmin,ptmax,100,0,1);
-        fhFractionClusterOutConePhi->SetYTitle("#it{fraction}");
-        fhFractionClusterOutConePhi->SetXTitle("#it{p}_{T,trigger} (GeV/#it{c})");
-        outputContainer->Add(fhFractionClusterOutConePhi) ;
-        
-        fhFractionClusterOutConePhiTrigEtaPhi  = new TH2F
-        ("hFractionClusterOutConePhiTrigEtaPhi",
-         Form("Fraction of the isolation cone #it{R} =  %2.2f, out of clusters #varphi acceptance, in trigger #eta-#varphi ",fConeSize),
-         netabins,etamin,etamax,nphibins,phimin,phimax);
-        fhFractionClusterOutConePhiTrigEtaPhi->SetZTitle("#it{fraction}");
-        fhFractionClusterOutConePhiTrigEtaPhi->SetXTitle("#eta_{trigger}");
-        fhFractionClusterOutConePhiTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
-        outputContainer->Add(fhFractionClusterOutConePhiTrigEtaPhi) ;
-        
-        fhConeSumPtSubvsConeSumPtTotEtaCluster = new TH2F
-        ("hConeSumPtSubvsConeSumPtTotEtaCluster",
-         Form("#Sigma #it{p}_{T} in cone after bkg sub from #eta or #varphi band vs #Sigma #it{p}_{T} in cone before bkg sub, R=%2.2f",fConeSize),
-         nptsumbins,ptsummin,ptsummax,nptsumbinsUESub,ptsumminUESub,ptsummaxUESub);
-        fhConeSumPtSubvsConeSumPtTotEtaCluster->SetXTitle("#Sigma #it{p}_{T, tot} (GeV/#it{c})");
-        fhConeSumPtSubvsConeSumPtTotEtaCluster->SetYTitle("#Sigma #it{p}_{T, sub} (GeV/#it{c})");
-        outputContainer->Add(fhConeSumPtSubvsConeSumPtTotEtaCluster);
-      }
+      fhConeSumPtClusterSubVsNoSub = new TH2F
+      ("hConeSumPtClusterSubVsNoSub",
+       Form("#Sigma #it{p}_{T} in cone before vs after UE bkg sub from #eta or #varphi band, R=%2.2f",fConeSize),
+       nptsumbins,ptsummin,ptsummax,nptsumbinsUESub,ptsumminUESub,ptsummaxUESub);
+      fhConeSumPtClusterSubVsNoSub->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtClusterSubVsNoSub->SetYTitle("#Sigma #it{p}_{T, sub} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtClusterSubVsNoSub);
     }
   } // clusters
   
@@ -1617,33 +1630,13 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhConeSumPtUEBandNormTrack->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtUEBandNormTrack) ;
       
-      if ( fFillEtaPhiHistograms )
-      {
-        fhFractionTrackOutConeEta  = new TH2F
-        ("hFractionTrackOutConeEta",
-         Form("Fraction of the isolation cone #it{R} =  %2.2f, out of tracks #eta acceptance",fConeSize),
-         nptbins,ptmin,ptmax,100,0,1);
-        fhFractionTrackOutConeEta->SetYTitle("#it{fraction}");
-        fhFractionTrackOutConeEta->SetXTitle("#it{p}_{T,trigger} (GeV/#it{c})");
-        outputContainer->Add(fhFractionTrackOutConeEta) ;
-        
-        fhFractionTrackOutConeEtaTrigEtaPhi  = new TH2F
-        ("hFractionTrackOutConeEtaTrigEtaPhi",
-         Form("Fraction of the isolation cone #it{R} =  %2.2f, out of tracks #eta acceptance, in trigger #eta-#varphi ",fConeSize),
-         netabins,etamin,etamax,nphibins,phimin,phimax);
-        fhFractionTrackOutConeEtaTrigEtaPhi->SetZTitle("#it{fraction}");
-        fhFractionTrackOutConeEtaTrigEtaPhi->SetXTitle("#eta_{trigger}");
-        fhFractionTrackOutConeEtaTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
-        outputContainer->Add(fhFractionTrackOutConeEtaTrigEtaPhi) ;
-        
-        fhConeSumPtSubvsConeSumPtTotEtaTrack = new TH2F
-        ("hConeSumPtSubvsConeSumPtTotEtaTrack",
-         Form("#Sigma #it{p}_{T} in cone after bkg sub from #eta band vs #Sigma #it{p}_{T} in cone before bkg sub, R=%2.2f",fConeSize),
-         nptsumbins,ptsummin,ptsummax,nptsumbinsUESub,ptsumminUESub,ptsummaxUESub);
-        fhConeSumPtSubvsConeSumPtTotEtaTrack->SetXTitle("#Sigma #it{p}_{T, tot} (GeV/#it{c})");
-        fhConeSumPtSubvsConeSumPtTotEtaTrack->SetYTitle("#Sigma #it{p}_{T, sub} (GeV/#it{c})");
-        outputContainer->Add(fhConeSumPtSubvsConeSumPtTotEtaTrack);
-      } // eta-phi
+      fhConeSumPtTrackSubVsNoSub = new TH2F
+      ("hConeSumPtTrackSubVsNoSub",
+       Form("#Sigma #it{p}_{T} in cone before and after UE bkg subtraction from #eta or #varphi band, R=%2.2f",fConeSize),
+       nptsumbins,ptsummin,ptsummax,nptsumbinsUESub,ptsumminUESub,ptsummaxUESub);
+      fhConeSumPtTrackSubVsNoSub->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtTrackSubVsNoSub->SetYTitle("#Sigma #it{p}_{T, UE sub} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtTrackSubVsNoSub);
     }
   } // charged
     
@@ -1676,6 +1669,80 @@ TList * AliIsolationCut::GetCreateOutputObjects()
     fhBandNormClustervsTrack->SetYTitle("#Sigma #it{p}_{T}^{track} (GeV/#it{c})");
     outputContainer->Add(fhBandNormClustervsTrack) ;
   } // UE, neutral + charged
+  
+  if ( fFillHistograms)
+  {
+    if( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )
+    {
+      fhFractionClusterOutConeEta  = new TH2F
+      ("hFractionClusterOutConeEta",
+       Form("Fraction of cone area (#it{R} =  %2.2f), out of clusters #eta acceptance",fConeSize),
+       nptbins,ptmin,ptmax,100,0,1);
+      fhFractionClusterOutConeEta->SetYTitle("1-(#it{A}_{cone}+#it{A}_{excess})/#it{A}_{cone}");
+      fhFractionClusterOutConeEta->SetXTitle("#it{p}_{T,trigger} (GeV/#it{c})");
+      outputContainer->Add(fhFractionClusterOutConeEta) ;
+      
+      fhFractionClusterOutConeEtaTrigEtaPhi  = new TH2F
+      ("hFractionClusterOutConeEtaTrigEtaPhi",
+       Form("Fraction of cone area (#it{R} =  %2.2f), out of clusters #eta acceptance, in trigger #eta-#varphi ",fConeSize),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhFractionClusterOutConeEtaTrigEtaPhi->SetZTitle("1-(#it{A}_{cone}+#it{A}_{excess})/#it{A}_{cone}");
+      fhFractionClusterOutConeEtaTrigEtaPhi->SetXTitle("#eta_{trigger}");
+      fhFractionClusterOutConeEtaTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+      outputContainer->Add(fhFractionClusterOutConeEtaTrigEtaPhi) ;
+      
+      fhFractionClusterOutConePhi  = new TH2F
+      ("hFractionClusterOutConePhi",
+       Form("Fraction of cone area (#it{R} =  %2.2f), out of clusters #varphi acceptance",fConeSize),
+       nptbins,ptmin,ptmax,100,0,1);
+      fhFractionClusterOutConePhi->SetYTitle("1-(#it{A}_{cone}+#it{A}_{excess})/#it{A}_{cone}");
+      fhFractionClusterOutConePhi->SetXTitle("#it{p}_{T,trigger} (GeV/#it{c})");
+      outputContainer->Add(fhFractionClusterOutConePhi) ;
+      
+      fhFractionClusterOutConePhiTrigEtaPhi  = new TH2F
+      ("hFractionClusterOutConePhiTrigEtaPhi",
+       Form("Fraction of cone area (#it{R} =  %2.2f), out of clusters #varphi acceptance, in trigger #eta-#varphi ",fConeSize),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhFractionClusterOutConePhiTrigEtaPhi->SetZTitle("1-(#it{A}_{cone}+#it{A}_{excess})/#it{A}_{cone}");
+      fhFractionClusterOutConePhiTrigEtaPhi->SetXTitle("#eta_{trigger}");
+      fhFractionClusterOutConePhiTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+      outputContainer->Add(fhFractionClusterOutConePhiTrigEtaPhi) ;
+      
+      fhFractionClusterOutConeEtaPhi  = new TH2F
+      ("hFractionClusterOutConeEtaPhi",
+       Form("Fraction of cone area (#it{R} =  %2.2f), out of clusters #eta x #varphi acceptance",fConeSize),
+       nptbins,ptmin,ptmax,100,0,1);
+      fhFractionClusterOutConeEtaPhi->SetYTitle("1-(#it{A}_{cone}+#it{A}_{excess})/#it{A}_{cone}");
+      fhFractionClusterOutConeEtaPhi->SetXTitle("#it{p}_{T,trigger} (GeV/#it{c})");
+      outputContainer->Add(fhFractionClusterOutConeEtaPhi) ;
+      
+      fhFractionClusterOutConeEtaPhiTrigEtaPhi  = new TH2F
+      ("hFractionClusterOutConeEtaPhiTrigEtaPhi",
+       Form("Fraction of cone area (#it{R} =  %2.2f), out of clusters #eta  x #varphi acceptance, in trigger #eta-#varphi ",fConeSize),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhFractionClusterOutConeEtaPhiTrigEtaPhi->SetZTitle("1-(#it{A}_{cone}+#it{A}_{excess})/#it{A}_{cone}");
+      fhFractionClusterOutConeEtaPhiTrigEtaPhi->SetXTitle("#eta_{trigger}");
+      fhFractionClusterOutConeEtaPhiTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+      outputContainer->Add(fhFractionClusterOutConeEtaPhiTrigEtaPhi) ;
+      
+      fhFractionTrackOutConeEta  = new TH2F
+      ("hFractionTrackOutConeEta",
+       Form("Fraction of cone area (#it{R} =  %2.2f), out of tracks #eta acceptance",fConeSize),
+       nptbins,ptmin,ptmax,100,0,1);
+      fhFractionTrackOutConeEta->SetYTitle("1-(#it{A}_{cone}+#it{A}_{excess})/#it{A}_{cone}");
+      fhFractionTrackOutConeEta->SetXTitle("#it{p}_{T,trigger} (GeV/#it{c})");
+      outputContainer->Add(fhFractionTrackOutConeEta) ;
+      
+      fhFractionTrackOutConeEtaTrigEtaPhi  = new TH2F
+      ("hFractionTrackOutConeEtaTrigEtaPhi",
+       Form("Fraction of cone area (#it{R} =  %2.2f), out of tracks #eta acceptance, in trigger #eta-#varphi ",fConeSize),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhFractionTrackOutConeEtaTrigEtaPhi->SetZTitle("1-(#it{A}_{cone}+#it{A}_{excess})/#it{A}_{cone}");
+      fhFractionTrackOutConeEtaTrigEtaPhi->SetXTitle("#eta_{trigger}");
+      fhFractionTrackOutConeEtaTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
+      outputContainer->Add(fhFractionTrackOutConeEtaTrigEtaPhi) ;
+    }
+  }
   
   return outputContainer;
 }
@@ -1823,7 +1890,59 @@ void  AliIsolationCut::MakeIsolationCut
                                 etaBandPtSumCluster, phiBandPtSumCluster,
                                 histoWeight);
   
-  coneptsum = coneptsumCluster + coneptsumTrack;
+  // Add leading found information to candidate object
+  pCandidate->SetNeutralLeadPtInCone(coneptLeadCluster);
+  pCandidate->SetChargedLeadPtInCone(coneptLeadTrack);
+  
+  // Calculate how much of the cone got out the detectors acceptance
+  //
+  Float_t excessAreaTrkEta = 1;
+  Float_t excessAreaClsEta = 1;
+  Float_t excessAreaClsPhi = 1;
+  Float_t excessTrkEta     = 0;
+  Float_t excessClsEta     = 0;
+  Float_t excessClsPhi     = 0;
+  
+  if( fMakeConeExcessCorr || fICMethod >= kSumBkgSubEtaBandIC )
+  {
+    GetDetectorAngleLimits(reader,calorimeter); // Do it once, check done inside
+    
+    CalculateExcessAreaFractionForChargedAndNeutral(etaC, phiC, 
+                                                    excessTrkEta, excessAreaTrkEta, 
+                                                    excessClsEta, excessAreaClsEta, 
+                                                    excessClsPhi, excessAreaClsPhi);
+    
+    // Store excess areas
+    pCandidate->SetNeutralConeExcessAreaEta(excessAreaClsEta);
+    pCandidate->SetNeutralConeExcessAreaPhi(excessAreaClsPhi);
+    pCandidate->SetChargedConeExcessAreaEta(excessAreaTrkEta);
+    pCandidate->SetChargedConeExcessAreaPhi(1);
+    
+    if ( fFillHistograms )
+    {                   
+      fhFractionTrackOutConeEta            ->Fill(ptC ,        excessAreaTrkEta-1, histoWeight);
+      fhFractionTrackOutConeEtaTrigEtaPhi  ->Fill(etaC, phiC, (excessAreaTrkEta-1)*histoWeight); // check
+      fhFractionClusterOutConeEta          ->Fill(ptC ,        excessAreaClsEta-1, histoWeight);
+      fhFractionClusterOutConeEtaTrigEtaPhi->Fill(etaC, phiC, (excessAreaClsEta-1)*histoWeight); // check
+      fhFractionClusterOutConePhi          ->Fill(ptC ,        excessAreaClsPhi-1, histoWeight);
+      fhFractionClusterOutConePhiTrigEtaPhi->Fill(etaC, phiC, (excessAreaClsPhi-1)*histoWeight); // check
+      fhFractionClusterOutConeEtaPhi          ->Fill(ptC ,        excessAreaClsPhi*excessAreaClsEta-1, histoWeight);
+      fhFractionClusterOutConeEtaPhiTrigEtaPhi->Fill(etaC, phiC, (excessAreaClsPhi*excessAreaClsEta-1)*histoWeight); // check
+    }
+  }
+  
+  // Calculate sum of cone energy, applying excess cone correction factor.
+  //
+  coneptsum = coneptsumCluster * excessAreaClsEta * excessAreaClsPhi + 
+              coneptsumTrack   * excessAreaTrkEta;
+  // coneptsum = coneptsumCluster + coneptsumTrack ;  
+  
+  //-------------------------------------------------------------------
+  // Check isolation, depending on selected isolation criteria requested
+  //-------------------------------------------------------------------
+  Double_t coneptsumUESub        = coneptsum;
+  Double_t coneptsumUESubCluster = coneptsumCluster;
+  Double_t coneptsumUESubTrack   = coneptsumTrack;
   
   // *Now*, just check the leading particle in the cone if the threshold is passed
   if ( ptLead > fPtThreshold && ptLead < fPtThresholdMax)  nPart = 1;
@@ -1845,13 +1964,8 @@ void  AliIsolationCut::MakeIsolationCut
     if ( ptLead > fPtFraction*ptC )   nfrac = 1;
   }
   
-  //-------------------------------------------------------------------
-  // Check isolation, depending on selected isolation criteria requested
-  //-------------------------------------------------------------------
-  Double_t coneptsumUESub        = coneptsum;
-  Double_t coneptsumUESubCluster = coneptsumCluster;
-  Double_t coneptsumUESubTrack   = coneptsumTrack;
-
+  // Here start each of the selection methods
+  //
   if      ( fICMethod == kPtThresIC )
   {
     if ( nPart == 0 ) isolated = kTRUE ;
@@ -1917,7 +2031,7 @@ void  AliIsolationCut::MakeIsolationCut
       //coneptsumBkg    = perpPtSumTrack*(1+fNeutralOverChargedRatio);
       
       // Add to candidate object
-      pCandidate->SetChargedPtSumInPerpCone(perpPtSumTrack);
+      pCandidate->SetChargedPtSumInPerpCone(perpPtSumTrack*excessAreaTrkEta);
     } // UE subtraction by perpendicular cones
     else if ( fICMethod >= kSumBkgSubEtaBandIC ) // eta or phi band
     {
@@ -1927,24 +2041,17 @@ void  AliIsolationCut::MakeIsolationCut
       Float_t  etaBandPtSumClusterNorm = 0;
       Float_t  phiBandPtSumClusterNorm = 0;
       
-      Float_t  excessFracEtaTrack   = 1;
-      Float_t  excessFracPhiTrack   = 1;
-      Float_t  excessFracEtaCluster = 1;
-      Float_t  excessFracPhiCluster = 1;
-      
       Float_t  coneptsumTrackSub   = 0 ;
       Float_t  coneptsumClusterSub = 0 ;
   
       // Normalize background to cone area
       if     ( fPartInCone != kOnlyCharged )
       {
-        CalculateUEBandClusterNormalization(reader, etaC, phiC,
-                                            phiBandPtSumCluster    , etaBandPtSumCluster,
-                                            phiBandPtSumClusterNorm, etaBandPtSumClusterNorm,
-                                            excessFracPhiCluster   , excessFracEtaCluster    );
-        
-        pCandidate->SetNeutralConeExcessAreaEta(excessFracEtaCluster);
-        pCandidate->SetNeutralConeExcessAreaPhi(excessFracPhiCluster);
+        CalculateUEBandClusterNormalization(etaC                   , phiC                  ,
+                                            excessClsEta           , excessClsPhi          ,
+                                            excessAreaClsEta       , excessAreaClsPhi      ,
+                                            etaBandPtSumCluster    , phiBandPtSumCluster   ,
+                                            etaBandPtSumClusterNorm, phiBandPtSumClusterNorm);
         
         if      ( fICMethod == kSumBkgSubEtaBandIC )
         {
@@ -1970,17 +2077,8 @@ void  AliIsolationCut::MakeIsolationCut
         
         if ( fFillHistograms )
         {
-          fhConeSumPtUEBandNormCluster  ->Fill(ptC, coneptsumBkgCls, histoWeight);
-          
-          if ( fFillEtaPhiHistograms )
-          {            
-            fhFractionClusterOutConeEta          ->Fill(ptC ,        excessFracEtaCluster-1, histoWeight);
-            fhFractionClusterOutConeEtaTrigEtaPhi->Fill(etaC, phiC, (excessFracEtaCluster-1)*histoWeight); // check
-            fhFractionClusterOutConePhi          ->Fill(ptC ,        excessFracPhiCluster-1, histoWeight);
-            fhFractionClusterOutConePhiTrigEtaPhi->Fill(etaC, phiC, (excessFracPhiCluster-1)*histoWeight); // check
-            
-            fhConeSumPtSubvsConeSumPtTotEtaCluster->Fill(coneptsumCluster, coneptsumClusterSub, histoWeight);
-          }
+          fhConeSumPtUEBandNormCluster->Fill(ptC, coneptsumBkgCls, histoWeight);
+          fhConeSumPtClusterSubVsNoSub->Fill(coneptsumCluster, coneptsumClusterSub, histoWeight);
         } // histograms
       } // clusters in cone
       
@@ -1988,13 +2086,11 @@ void  AliIsolationCut::MakeIsolationCut
 
       if     ( fPartInCone != kOnlyNeutral )
       {
-        CalculateUEBandTrackNormalization(reader, etaC, phiC,
-                                          phiBandPtSumTrack    , etaBandPtSumTrack  ,
-                                          phiBandPtSumTrackNorm, etaBandPtSumTrackNorm,
-                                          excessFracPhiTrack   , excessFracEtaTrack    );
-        
-        pCandidate->SetChargedConeExcessAreaEta(excessFracEtaTrack);
-        pCandidate->SetChargedConeExcessAreaPhi(excessFracPhiTrack);
+        CalculateUEBandTrackNormalization(etaC                 ,
+                                          excessTrkEta         ,    
+                                          excessAreaTrkEta     ,    
+                                          etaBandPtSumTrack    , phiBandPtSumTrack,
+                                          etaBandPtSumTrackNorm, phiBandPtSumTrackNorm);
         
         if      ( fICMethod == kSumBkgSubEtaBandIC )
         {
@@ -2018,22 +2114,15 @@ void  AliIsolationCut::MakeIsolationCut
         
         if ( fFillHistograms )
         {          
-          fhConeSumPtUEBandNormTrack ->Fill(ptC, coneptsumBkgTrk, histoWeight);
-          
-          if ( fFillEtaPhiHistograms )
-          {                   
-            fhFractionTrackOutConeEta          ->Fill(ptC ,      excessFracEtaTrack-1, histoWeight);
-            fhFractionTrackOutConeEtaTrigEtaPhi->Fill(etaC, phiC,excessFracEtaTrack-1 *histoWeight); // check
-            
-            fhConeSumPtSubvsConeSumPtTotEtaTrack->Fill(coneptsumTrack, coneptsumTrackSub, histoWeight);
-          }
+          fhConeSumPtUEBandNormTrack->Fill(ptC, coneptsumBkgTrk, histoWeight);
+          fhConeSumPtTrackSubVsNoSub->Fill(coneptsumTrack, coneptsumTrackSub, histoWeight);
         } // fill 
       } // tracks in cone
       
       //printf("Pass track\n");
 
       if ( fPartInCone == AliIsolationCut::kNeutralAndCharged && 
-          fFillHistograms )
+           fFillHistograms )
       {
         fhBandClustervsTrack    ->Fill(coneptsumBkgClsRaw, coneptsumBkgTrkRaw, histoWeight);
         fhBandNormClustervsTrack->Fill(coneptsumBkgCls   , coneptsumBkgTrk   , histoWeight);
@@ -2055,15 +2144,24 @@ void  AliIsolationCut::MakeIsolationCut
     coneptsumUESubCluster -= coneptsumBkgCls;
     coneptsumUESubTrack   -= coneptsumBkgTrk;
     
-    ///////////////// EXCESSS//////////////////
-    //coneptsumCluster*=(coneBadCellsCoeff*excessFracEtaCluster*excessFracPhiCluster) ; // apply this correction earlier???
-    // line commented out in last modif!!!
-    //printf("end\n");
-
-    if      ( fPartInCone == kNeutralAndCharged )  coneptsumUESub  = coneptsumUESubCluster+coneptsumUESubTrack;
-    else if ( fPartInCone == kOnlyCharged       )  coneptsumUESub  = coneptsumUESubTrack;
-    else if ( fPartInCone == kOnlyNeutral       )  coneptsumUESub  = coneptsumUESubCluster;
+    // Calculated in case of fICMethod == kSumBkgSubEtaBandIC, 
+    // reset excess areas to 1 if not used in final result.
+    if ( !fMakeConeExcessCorr )
+    {
+      excessAreaTrkEta = 1;
+      excessAreaClsEta = 1;
+      excessAreaClsPhi = 1;
+    }
     
+    if      ( fPartInCone == kNeutralAndCharged )  coneptsumUESub  = coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta +
+                                                                     coneptsumUESubTrack   * excessAreaTrkEta;
+    else if ( fPartInCone == kOnlyCharged       )  coneptsumUESub  = coneptsumUESubTrack   * excessAreaTrkEta;
+    else if ( fPartInCone == kOnlyNeutral       )  coneptsumUESub  = coneptsumUESubCluster * excessAreaClsPhi*excessAreaClsEta;
+    
+    // Put final subtracted and corrected (if requested, if not it will be without the correction)
+    pCandidate->SetNeutralPtSumInCone (coneptsumUESubCluster *excessAreaClsEta * excessAreaClsPhi);
+    pCandidate->SetChargedPtSumInCone (coneptsumUESubTrack   *excessAreaTrkEta);
+
     if ( coneptsumUESub > fSumPtThreshold && coneptsumUESub < fSumPtThresholdMax )
       isolated  =  kFALSE ;
     else
@@ -2072,14 +2170,6 @@ void  AliIsolationCut::MakeIsolationCut
 
   } // UE subtraction, different options
   
-  // Add cone found information to candidate object
-  pCandidate->SetNeutralLeadPtInCone(coneptLeadCluster);
-  pCandidate->SetChargedLeadPtInCone(coneptLeadTrack);
-
-  // Put final subtracted and corrected (if requested, if not it will be without the correction)
-  pCandidate->SetNeutralPtSumInCone (coneptsumUESubCluster);
-  pCandidate->SetChargedPtSumInCone (coneptsumUESubTrack);
-
   //-------------------------------------------------------------------
   // Fill histograms
   //-------------------------------------------------------------------
@@ -2106,7 +2196,7 @@ void  AliIsolationCut::MakeIsolationCut
   {
     fhConeSumPtUESub ->Fill(ptC, coneptsumUESub, histoWeight);
     
-    if (fFillEtaPhiHistograms )
+    if ( fFillEtaPhiHistograms )
       fhConeSumPtUESubTrigEtaPhi->Fill(etaC, phiC, coneptsumUESub*histoWeight); // check
     
     // No for charged/neutral only analysis
@@ -2120,7 +2210,7 @@ void  AliIsolationCut::MakeIsolationCut
       {
         
         fhConeSumPtUESubClustervsTrack ->Fill(coneptsumUESubCluster, coneptsumUESubTrack, histoWeight);
-        if(TMath::Abs(coneptsumUESubTrack) > 0) 
+        if ( TMath::Abs(coneptsumUESubTrack) > 0 ) 
           fhConeSumPtUESubClusterTrackFrac ->Fill(ptC, coneptsumUESubCluster /coneptsumUESubTrack, histoWeight);
       }
     }
@@ -2162,6 +2252,7 @@ void AliIsolationCut::Print(const Option_t * opt) const
   printf("particle type in cone =  %d\n",    fPartInCone ) ;
   printf("using fraction for high pt leading instead of frac ? %i\n",fFracIsThresh);
   printf("minimum distance to candidate, R>%1.2f\n",fDistMinToTrigger);
+  printf("correct cone excess = %d \n",fMakeConeExcessCorr);
   printf("    \n") ;
 }
 

@@ -101,17 +101,26 @@ class AliIsolationCut : public TObject {
   
   // Cone background studies medthods
 
+  void       GetDetectorAngleLimits( AliCaloTrackReader * reader, Int_t calorimeter );
+
   Float_t    CalculateExcessAreaFraction(Float_t excess) const ;
 
-  void       CalculateUEBandClusterNormalization(AliCaloTrackReader * reader,     Float_t   etaC, Float_t phiC,
-                                                 Float_t   phiUEptsumCluster,     Float_t   etaUEptsumCluster,
-                                                 Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
-                                                 Float_t & excessFracPhi,         Float_t & excessFracEta         ) const ;
+  void       CalculateExcessAreaFractionForChargedAndNeutral( Float_t etaC, Float_t phiC,
+                                                              Float_t & excessTrkEta, Float_t & excessAreaTrkEta, 
+                                                              Float_t & excessClsEta, Float_t & excessAreaClsEta, 
+                                                              Float_t & excessClsPhi, Float_t & excessAreaClsPhi) const ;
+  
+  void       CalculateUEBandClusterNormalization(Float_t   etaC,                  Float_t   phiC, 
+                                                 Float_t   excessEta,             Float_t   excessPhi,
+                                                 Float_t   excessAreaEta,         Float_t   excessAreaPhi,
+                                                 Float_t   etaUEptsumCluster,     Float_t   phiUEptsumCluster,
+                                                 Float_t & etaUEptsumClusterNorm, Float_t & phiUEptsumClusterNorm) const ;
 
-  void       CalculateUEBandTrackNormalization  (AliCaloTrackReader * reader,     Float_t   etaC,  Float_t phiC,
-                                                 Float_t   phiUEptsumTrack,       Float_t   etaUEptsumTrack    , 
-                                                 Float_t & phiUEptsumTrackNorm,   Float_t & etaUEptsumTrackNorm,
-                                                 Float_t & excessFracPhi,         Float_t & excessFracEta        ) const ;
+  void       CalculateUEBandTrackNormalization  (Float_t   etaC,                 
+                                                 Float_t   excessEta,                                          
+                                                 Float_t   excessAreaEta,                                          
+                                                 Float_t   etaUEptsumTrack,       Float_t   phiUEptsumTrack    , 
+                                                 Float_t & etaUEptsumTrackNorm,   Float_t & phiUEptsumTrackNorm) const ;
 
   void 	     GetCoeffNormBadCell(AliCaloTrackParticleCorrelation * pCandidate,
                                  AliCaloTrackReader * reader,
@@ -149,14 +158,19 @@ class AliIsolationCut : public TObject {
   void       SetHistogramRanges(AliHistogramRanges * range)    { fHistoRanges       = range; } 
   void       SetNeutralOverChargedRatio(Float_t r)             { fNeutralOverChargedRatio = r ; }
   
-  void       SwitchOnFillEtaPhiHistograms ()                   { fFillEtaPhiHistograms = kTRUE  ;}
-  void       SwitchOffFillEtaPhiHistograms()                   { fFillEtaPhiHistograms = kFALSE ;}
+  void       SwitchOnFillEtaPhiHistograms ()                   { fFillEtaPhiHistograms = kTRUE  ; }
+  void       SwitchOffFillEtaPhiHistograms()                   { fFillEtaPhiHistograms = kFALSE ; }
+ 
+  void       SwitchOnConeExcessCorrectionHistograms ()         { fMakeConeExcessCorr = kTRUE  ; }
+  void       SwitchOffConeExcessCorrectionHistograms()         { fMakeConeExcessCorr = kFALSE ; }
   
  private:
 
   Bool_t     fFillHistograms;    ///< Fill histograms if GetCreateOuputObjects() was called. 
   Bool_t     fFillEtaPhiHistograms; ///< Fill histograms if GetCreateOuputObjects() was called with eta/phi or band related histograms 
 
+  Bool_t     fMakeConeExcessCorr; /// Make cone excess from detector correction. 
+  
   Float_t    fConeSize ;         ///< Size of the isolation cone
 
   Float_t    fPtThreshold ;      ///< Minimum pt of the particles in the cone or sum in cone (UE pt mean in the forward region cone)
@@ -186,6 +200,12 @@ class AliIsolationCut : public TObject {
   TLorentzVector fMomentum;      //!<! Momentum of cluster, temporal object.
 
   TVector3   fTrackVector;       //!<! Track moment, temporal object.
+  
+  Float_t    fEMCEtaSize;        ///< Eta size of Calo
+  Float_t    fEMCPhiMin;         ///< Minimim Phi limit of Calo
+  Float_t    fEMCPhiMax;         ///< Maximum Phi limit of Calo
+  Float_t    fTPCEtaSize;        ///< Eta size of TPC
+  Float_t    fTPCPhiSize;        ///< Phi size of TPC, it is 360 degrees, but here set to half.
   
   // Histograms
   
@@ -264,14 +284,16 @@ class AliIsolationCut : public TObject {
   TH2F *   fhFractionClusterOutConeEtaTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in eta, vs trigger eta-phi.
   TH2F *   fhFractionClusterOutConePhi;                //!<! Fraction of cone out of clusters acceptance in phi.
   TH2F *   fhFractionClusterOutConePhiTrigEtaPhi;      //!<! Fraction of cone out of clusters acceptance in phi, vs trigger eta-phi.
+  TH2F *   fhFractionClusterOutConeEtaPhi;             //!<! Fraction of cone out of clusters acceptance in eta x phi.
+  TH2F *   fhFractionClusterOutConeEtaPhiTrigEtaPhi;   //!<! Fraction of cone out of clusters acceptance in eta x phi, vs trigger eta-phi.
   
   TH2F *   fhConeSumPtUEBandSubClustervsTrack ;        //!<! Cluster vs tracks Sum Pt Sum Pt in the cone, after subtraction in eta or phi band.
   
   TH2F *   fhBandClustervsTrack ;                     //!<! Accumulated pT in eta or phi band to estimate UE in cone, clusters vs tracks.
   TH2F *   fhBandNormClustervsTrack ;                 //!<! Accumulated pT in eta or phi band to estimate UE in cone, normalized to cone size, clusters vs tracks.
   
-  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaTrack;       //!<! Tracks, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
-  TH2F *   fhConeSumPtSubvsConeSumPtTotEtaCluster;     //!<! Clusters, eta band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtTrackSubVsNoSub;                //!<! Tracks, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
+  TH2F *   fhConeSumPtClusterSubVsNoSub;              //!<! Clusters, UE band: sum pT in cone after bkg sub vs sum pT in cone before bkg sub
   
   /// Copy constructor not implemented.
   AliIsolationCut(              const AliIsolationCut & g) ;
