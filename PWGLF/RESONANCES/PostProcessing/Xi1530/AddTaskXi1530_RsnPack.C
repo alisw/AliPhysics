@@ -377,7 +377,7 @@ Bool_t Config_Xipi(AliRsnMiniAnalysisTask* task, TString lname,
             AliRsnCutSetDaughterParticle::kTPCTOFtightPidKStarPPB2011,
             AliPID::kPion, nsigmaPiTPC, -1.);
     if (!cutSetPi) {
-        cerr << "Error in AddTaskRare_pp13::Config_Lambdapi(): missing cutSetPi"
+        cerr << "Error in AddTaskXi1530_RsnPack::Config_Xipi(): missing cutSetPi"
              << endl;
         return kFALSE;
     }
@@ -436,7 +436,7 @@ Bool_t Config_Xipi(AliRsnMiniAnalysisTask* task, TString lname,
     Int_t icutXi = task->AddTrackCuts(cutSetXi);
 
     AliRsnCutCascade* cutXibar = new AliRsnCutCascade(
-        "cutXibar", kXiPlusBar, AliPID::kPion, AliPID::kProton, AliPID::kPion);
+        "cutXibar", kXiPlusBar, AliPID::kProton, AliPID::kPion, AliPID::kPion);
     cutXibar->SetPIDCutV0Proton(XiPIDcut);
     cutXibar->SetPIDCutV0Pion(XiPIDcut);
     cutXibar->SetPIDCutBachelor(XiPIDcut);
