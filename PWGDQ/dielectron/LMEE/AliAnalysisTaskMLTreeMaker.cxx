@@ -483,11 +483,7 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   }
 
   Double_t ZDCev[2];
-  
-  FillZDCEventPlane(ZDCev);
-  
-  ZDCepC=ZDCev[0];
-  ZDCepA=ZDCev[1];
+
   
   AliMultSelection *MultSelection = 0x0; 
   MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
@@ -541,6 +537,16 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
 
   n= acceptedTracks;
   if(acceptedTracks){
+
+  if(FillZDCEventPlane(ZDCev)){  
+    ZDCepC=ZDCev[0];
+    ZDCepA=ZDCev[1];
+  }
+  else{
+    ZDCepC=-999;
+    ZDCepA=-999;
+  }      
+    
   fTree->Fill();
   fQAHist->Fill("Events_track_and_cent_selected",1);
   }
@@ -1013,7 +1019,7 @@ Bool_t AliAnalysisTaskMLTreeMaker::FillZDCEventPlane(Double_t* ZDCevArr){
       // Get Q vectors for the subevents
       anEvent->GetZDC2Qsub(vQarray);
      } else { 
-      Printf("Flowevent not found. Aborting!!!\n");
+      Printf("AliAnalysisTaskMLTreeMaker::FillZDCEventPlane: Flowevent not found. Aborting!\n");
       return kFALSE;
     }
   } 
@@ -1023,8 +1029,8 @@ Bool_t AliAnalysisTaskMLTreeMaker::FillZDCEventPlane(Double_t* ZDCevArr){
   }
 
   // ZDCC = vQarray[0], ZDCA = vQarray[1], see AliFlowEventSimple
-  ZDCevArr[0] = TVector2::Phi_mpi_pi(vQarray[0].Phi())/2;
-  ZDCevArr[1] = TVector2::Phi_mpi_pi(vQarray[1].Phi())/2;
+  ZDCevArr[0] = TVector2::Phi_mpi_pi(vQarray[0].Phi());
+  ZDCevArr[1] = TVector2::Phi_mpi_pi(vQarray[1].Phi());
 
   return kTRUE;
 }
