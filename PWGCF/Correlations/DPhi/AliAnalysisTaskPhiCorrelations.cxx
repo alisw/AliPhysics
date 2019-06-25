@@ -167,7 +167,11 @@ fEtaOrdering(kFALSE),
 fCutConversionsV(-1),
 fCutResonancesV(-1),
 fCutOnPhi(kFALSE),
+fCutOnPhiV(-1),
 fCutOnRho(kFALSE),
+fCutOnRhoV(-1),
+fCutOnLambdaV(-1),
+fCutOnK0sV(-1),
 fRejectResonanceDaughters(-1),
 fFillOnlyStep0(kFALSE),
 fSkipStep6(kFALSE),
@@ -340,8 +344,20 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetCutOnPhi(fCutOnPhi);
   fHistosMixed->SetCutOnPhi(fCutOnPhi);
   
+  fHistos->SetCutOnPhi(fCutOnPhiV);
+  fHistosMixed->SetCutOnPhi(fCutOnPhiV);
+  
   fHistos->SetCutOnRho(fCutOnRho);
   fHistosMixed->SetCutOnRho(fCutOnRho);
+  
+  fHistos->SetCutOnRho(fCutOnRhoV);
+  fHistosMixed->SetCutOnRho(fCutOnRhoV);
+  
+  fHistos->SetCutOnK0s(fCutOnK0sV);
+  fHistosMixed->SetCutOnK0s(fCutOnK0sV);
+  
+  fHistos->SetCutOnK0s(fCutOnLambdaV);
+  fHistosMixed->SetCutOnK0s(fCutOnLambdaV);
   
   fHistos->SetRejectResonanceDaughters(fRejectResonanceDaughters);
   fHistosMixed->SetRejectResonanceDaughters(fRejectResonanceDaughters);
@@ -578,7 +594,11 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fCutConversionsV", &fCutConversionsV,"CutConversionsV/D");
   settingsTree->Branch("fCutResonancesV", &fCutResonancesV,"CutResonancesV/D");
   settingsTree->Branch("fCutOnPhi", &fCutOnPhi,"fCutOnPhi/O");
+  settingsTree->Branch("fCutOnPhiV", &fCutOnPhiV,"fCutOnPhiV/O");
   settingsTree->Branch("fCutOnRho", &fCutOnRho,"fCutOnRho/O");
+  settingsTree->Branch("fCutOnRhoV", &fCutOnRhoV,"fCutOnRhoV/O");
+  settingsTree->Branch("fCutOnLambdaV", &fCutOnLambdaV,"fCutOnLambdaV/O");
+  settingsTree->Branch("fCutOnK0sV", &fCutOnK0sV,"fCutOnK0sV/O");
   settingsTree->Branch("fRejectResonanceDaughters", &fRejectResonanceDaughters,"RejectResonanceDaughters/I");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
