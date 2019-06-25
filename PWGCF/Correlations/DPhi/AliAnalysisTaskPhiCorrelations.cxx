@@ -1538,6 +1538,17 @@ Double_t AliAnalysisTaskPhiCorrelations::GetCentrality(AliVEvent* inputEvent, TO
     {
       centrality = ((AliNanoAODHeader*) fAOD->GetHeader())->GetCentrality();
     }
+    else if (fCentralityMethod.BeginsWith("Nano."))
+    {
+      AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fAOD->GetHeader());
+      if (!nanoHeader)
+        AliFatal("Nano Header not found");
+      
+      static TString nanoField = fCentralityMethod(5, fCentralityMethod.Length());
+      static const Int_t kField = nanoHeader->GetVarIndex(nanoField);
+
+      centrality = nanoHeader->GetVar(kField);
+    }
     else if (fCentralityMethod == "PPVsMultUtils")
     {
       if (fAnalysisUtils) centrality = fAnalysisUtils->GetMultiplicityPercentile(inputEvent);
