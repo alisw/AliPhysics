@@ -979,6 +979,19 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         // THnSparseF*             fDeadZoneEtaVsPhiPerRunH[364]; //!    number of total runs
         TH2F*                   fDeadZoneEtaVsPhiPerRunH[364]; //!    number of total runs
 
+                                /**
+                                 * This histogram shows CosTheta and Phi
+                                 * distribution with my variable binning.
+                                 * RECON level.
+                                 */
+        TH2F*                   fCosThetaAndPhiHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta and Phi
+                                 * distribution with my variable binning.
+                                 * GENERATED level.
+                                 */
+        TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningH;   //!
 
         //_______________________________
         // CUTS
@@ -1064,7 +1077,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 22);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 23);
 };
 
 #endif

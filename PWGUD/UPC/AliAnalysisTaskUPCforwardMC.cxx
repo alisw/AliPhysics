@@ -221,7 +221,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC()
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameMyBinningH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -367,7 +369,9 @@ AliAnalysisTaskUPCforwardMC::AliAnalysisTaskUPCforwardMC( const char* name )
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+                                                                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaAndPhiHelicityFrameMyBinningH(0),
+      fMCCosThetaAndPhiHelicityFrameMyBinningH(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
     for( Int_t iRun = 0; iRun < 60000; iRun++) {
@@ -1026,6 +1030,37 @@ void AliAnalysisTaskUPCforwardMC::UserCreateOutputObjects()
   }
   //________________________________________
 
+
+  /* - My Variable binning for CosTheta and Phi.
+     -
+   */
+  const Int_t XBINS2 = 7;
+  const Int_t YBINS2 = 20;
+  Double_t MyVariableCosThetaBinning2[] = { -0.65, -0.35, -0.15, -0.05,
+                                             0.05,  0.15,  0.35,  0.65 };
+  Double_t MyVariablePhiBinning2[] = { -3.14*1,       -3.14*19*0.05, -3.14*18*0.05, -3.14*17*0.05,
+                                       -3.14*13*0.05, -3.14*9*0.05,  -3.14*6*0.05,  -3.14*4*0.05,
+                                       -3.14*2*0.05,  -3.14*1*0.05,   0,            +3.14*1*0.05,
+                                       +3.14*2*0.05,  +3.14*4*0.05,  +3.14*6*0.05,  +3.14*9*0.05,
+                                       +3.14*13*0.05, +3.14*17*0.05, +3.14*18*0.05, +3.14*19*0.05,
+                                       +3.14*1 };
+  fCosThetaAndPhiHelicityFrameMyBinningH =
+        new TH2F( "fCosThetaAndPhiHelicityFrameMyBinningH",
+                  "fCosThetaAndPhiHelicityFrameMyBinningH",
+                  XBINS2, MyVariableCosThetaBinning2,
+                  YBINS2, MyVariablePhiBinning2
+                  );
+  fOutputList->Add(fCosThetaAndPhiHelicityFrameMyBinningH);
+
+  fMCCosThetaAndPhiHelicityFrameMyBinningH =
+        new TH2F( "fMCCosThetaAndPhiHelicityFrameMyBinningH",
+                  "fMCCosThetaAndPhiHelicityFrameMyBinningH",
+                  XBINS2, MyVariableCosThetaBinning2,
+                  YBINS2, MyVariablePhiBinning2
+                  );
+  fOutputList->Add(fMCCosThetaAndPhiHelicityFrameMyBinningH);
+
+
   //_______________________________
   // - End of the function
   PostData(1, fOutputList);
@@ -1623,6 +1658,16 @@ void AliAnalysisTaskUPCforwardMC::UserExec(Option_t *)
                                                           possibleJPsiCopy
                                                           )
                                                         );
+
+    fCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsCopy2[0],
+                                                                         muonsCopy2[1],
+                                                                         possibleJPsiCopy
+                                                                         ),
+                                                  CosPhiHelicityFrame( muonsCopy2[0],
+                                                                       muonsCopy2[1],
+                                                                       possibleJPsiCopy
+                                                                       )
+                                                  );
     /* - Now we are filling in terms of rapidity...
        - The easiest way to do so I have envisioned is to simply
        - check everytime if we are below the following threshold
@@ -2063,6 +2108,15 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                                                                                                     possibleJPsiMC
                                                                                                     )
                                                                                );
+                  fMCCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[0],
+                                                                                       muonsMCcopy[1],
+                                                                                       possibleJPsiMC
+                                                                                       ),
+                                                                CosPhiHelicityFrame( muonsMCcopy[0],
+                                                                                     muonsMCcopy[1],
+                                                                                     possibleJPsiMC
+                                                                                     )
+                                                                );
           } else  {
                   fMCthetaDistribOfNegativeMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[0]);
                   fMCthetaDistribOfPositiveMuonRestFrameJPsiGeneratedTruthH->Fill(cosThetaMuonsRestFrameMC[1]);
@@ -2177,6 +2231,15 @@ void AliAnalysisTaskUPCforwardMC::ProcessMCParticles(AliMCEvent* fMCEventArg)
                         break;
                       }
                   }
+                  fMCCosThetaAndPhiHelicityFrameMyBinningH->Fill( CosThetaHelicityFrame( muonsMCcopy[1],
+                                                                                       muonsMCcopy[0],
+                                                                                       possibleJPsiMC
+                                                                                       ),
+                                                                CosPhiHelicityFrame( muonsMCcopy[1],
+                                                                                     muonsMCcopy[0],
+                                                                                     possibleJPsiMC
+                                                                                     )
+                                                                );
                   /* - What we do here is very similar.
                      - This time we divide firstly in bins of CosTheta.
                      - As many as needed.
