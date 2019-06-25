@@ -35,7 +35,8 @@ AliAODcascade::AliAODcascade() :
   
   fMomBachX(999),
   fMomBachY(999),
-  fMomBachZ(999)
+  fMomBachZ(999),
+  fBachBaryonCosPA(0)
    
 {
   //--------------------------------------------------------------------
@@ -58,7 +59,8 @@ AliAODcascade::AliAODcascade(const AliAODcascade& rSource) :
   
   fMomBachX( rSource.fMomBachX ),
   fMomBachY( rSource.fMomBachY ),
-  fMomBachZ( rSource.fMomBachZ )
+  fMomBachZ( rSource.fMomBachZ ),
+  fBachBaryonCosPA( rSource.fBachBaryonCosPA)
   
 {
   /// Copy constructor
@@ -79,7 +81,8 @@ AliAODcascade::AliAODcascade( AliAODVertex* rAODVertexXi,
 		      Double_t rDcaV0ToPrimVertex,
 		const Double_t *rMomPos,
 		const Double_t *rMomNeg,
-		      Double_t *rDcaDaughterToPrimVertex
+		      Double_t *rDcaDaughterToPrimVertex,
+              Double_t  rBachBaryonCosPA
 		) :
   AliAODv0(rAODVertexV0, rDcaV0Daughters, rDcaV0ToPrimVertex, rMomPos, rMomNeg, rDcaDaughterToPrimVertex),
   fDecayVertexXi( rAODVertexXi ),
@@ -89,7 +92,8 @@ AliAODcascade::AliAODcascade( AliAODVertex* rAODVertexXi,
   fDcaBachToPrimVertex( rDcaBachToPrimVertex ),
   fMomBachX( rMomBach[0] ),          
   fMomBachY( rMomBach[1] ),      
-  fMomBachZ( rMomBach[2] )  
+  fMomBachZ( rMomBach[2] ),
+  fBachBaryonCosPA( rBachBaryonCosPA )
 {
   /// Constructor via setting each data member
 
@@ -104,7 +108,8 @@ AliAODcascade::AliAODcascade( AliAODVertex* rAODVertexXi,
 		      Double_t      rDcaXiToPrimVertex,
 		      Double_t      rDcaBachToPrimVertex,
 		const Double_t*     rMomBach,
-		const AliAODv0&     rAODv0 ) :
+		const AliAODv0&     rAODv0,
+              Double_t  rBachBaryonCosPA ) :
   AliAODv0(rAODv0),
   fDecayVertexXi(rAODVertexXi),
   fChargeXi( rChargeXi ),    
@@ -113,7 +118,8 @@ AliAODcascade::AliAODcascade( AliAODVertex* rAODVertexXi,
   fDcaBachToPrimVertex( rDcaBachToPrimVertex ),
   fMomBachX( rMomBach[0] ),          
   fMomBachY( rMomBach[1] ),      
-  fMomBachZ( rMomBach[2] )
+  fMomBachZ( rMomBach[2] ),
+  fBachBaryonCosPA( rBachBaryonCosPA )
 {
   /// Constructor via setting each Xi data member + setting AODv0
 
@@ -141,6 +147,8 @@ AliAODcascade& AliAODcascade::operator=(const AliAODcascade& rSource){
   this->fMomBachY            = rSource.fMomBachY;
   this->fMomBachZ            = rSource.fMomBachZ;
   
+  this->fBachBaryonCosPA     = rSource.fBachBaryonCosPA;
+    
   return *this;
 }
 
@@ -163,7 +171,8 @@ void  AliAODcascade::Fill(AliAODVertex* rAODVertexXi,
 		      Double_t      rDcaV0ToPrimVertex,
 		const Double_t*     rMomPos,
 		const Double_t*     rMomNeg,
-		      Double_t*     rDcaDaughterToPrimVertex )
+		      Double_t*     rDcaDaughterToPrimVertex,
+              Double_t      rBachBaryonCosPA )
 {
   /// Fill the AODcascade
 
@@ -177,7 +186,9 @@ void  AliAODcascade::Fill(AliAODVertex* rAODVertexXi,
 
       fMomBachX = rMomBach[0];   
       fMomBachY = rMomBach[1];          
-      fMomBachZ = rMomBach[2];        
+      fMomBachZ = rMomBach[2];
+    
+      fBachBaryonCosPA = rBachBaryonCosPA;
 }                
 
 
@@ -204,6 +215,8 @@ void AliAODcascade::ResetXi(){
   fMomBachX = 999;
   fMomBachY = 999;
   fMomBachZ = 999;
+    
+  fBachBaryonCosPA = 0.0; 
   
   
 }
