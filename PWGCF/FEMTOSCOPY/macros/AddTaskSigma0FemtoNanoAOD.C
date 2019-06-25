@@ -207,9 +207,9 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   PDGParticles.push_back(3212);
   if (suffix == "0" && fullBlastQA) {
     PDGParticles.push_back(3122);
-    PDGParticles.push_back(22);
     PDGParticles.push_back(3122);
-    PDGParticles.push_back(22);
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(3122);
   }
 
   std::vector<float> ZVtxBins;
