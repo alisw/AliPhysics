@@ -91,8 +91,8 @@ class AliUEHistograms : public TNamed
   void SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
   void SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutK0sV = resonances; fCutLambdaV = resonances; }
-  void SetCutOnPhi(bool cutOnPhi) { fCutPhiV = 0.05; }
-  void SetCutOnRho(bool cutOnRho) { fCutRhoV = 0.05; }
+  void SetCutOnPhi(bool cutOnPhi) { if (cutOnPhi) fCutPhiV = 0.005; }
+  void SetCutOnRho(bool cutOnRho) { if (cutOnRho) fCutRhoV = 0.005; }
   void SetCutOnK0s(Float_t cutOnK0sV) { fCutK0sV = cutOnK0sV; }
   void SetCutOnLambda(Float_t cutOnLambdaV) { fCutLambdaV = cutOnLambdaV; }
   void SetCutOnPhi(Float_t cutOnPhiV) { fCutPhiV = cutOnPhiV; }
