@@ -506,6 +506,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     bField = fEvt->GetMagneticField();  // bField for track DCA
 
     if (!nanoHeader) {
+        IsEvtSelected = fEventCuts.AcceptEvent(event);
         // Preparation for MC
         // ---------------------------------------------------
         if (IsMC) {
@@ -528,7 +529,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         }
         
         //fCent = GetMultiplicty(fEvt);  // Centrality(AA), Multiplicity(pp)
-        fCent = fEventCuts.GetCentrality();
+        fCent = fEventCuts.GetCentrality(0);
 
         // PID response
         // ----------------------------------------------------------
@@ -632,15 +633,13 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
                 }
             }
         }
-        IsEvtSelected = fEventCuts.AcceptEvent(event);
         // V0M Signal QA
         // ---------------------------------------------------------
         // From BeomKyu Kim
-        AliVVZERO* lVV0 = fEvt->GetVZEROData();
+        AliVVZERO* lV0 = fEvt->GetVZEROData();
         if (inputHandler->IsEventSelected()) {
-            for (int i = 0; i < 64; i++) {
-                intensity += lVV0->GetMultiplicity(i);
-            }
+            for (int i = 0; i < 64; i++)
+                intensity += lV0->GetMultiplicity(i);
         }
 
         // ----------------------------------------------------------------------
