@@ -134,9 +134,9 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// If not specified the cuts are set according to the run period
   const int current_run = ev->GetRunNumber();
   if (current_run != fCurrentRun) {
+    fCurrentRun = current_run;
     if (!fManualMode) {
       ::Info("AliEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
-      fCurrentRun = current_run;
       AutomaticSetup(ev);
     }
     if (fUseTimeRangeCut) {
