@@ -49,6 +49,7 @@ set(SRCS
     AliAnaConvIsolation.cxx
     AliAnalysisTaskConvCaloCalibration.cxx
     AliAnalysisTaskConversionQA.cxx
+    AliAnalysisTaskConversionTree.cxx
     AliAnalysisTaskConvJet.cxx
     AliAnalysisTaskClusterQA.cxx
     AliAnalysisTaskdPhi.cxx
