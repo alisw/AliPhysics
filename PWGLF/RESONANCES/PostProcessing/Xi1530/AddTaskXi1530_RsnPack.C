@@ -410,7 +410,8 @@ Bool_t Config_Xipi(AliRsnMiniAnalysisTask* task, TString lname,
     cutXi->SetPIDCutV0Proton(XiPIDcut);
     cutXi->SetPIDCutV0Pion(XiPIDcut);
     cutXi->SetPIDCutBachelor(XiPIDcut);
-    cutXi->SetESDtrackCuts(esdTrackCuts);
+    if (TrackCutsXi == 1)
+        cutXi->SetESDtrackCuts(esdTrackCuts);
     cutXi->SetV0MaxDaughtersDCA(V0dDCA);
     cutXi->SetCascadeMaxDaughtersDCA(XidDCA);
     cutXi->SetV0MaxDCAVertex(1e5);  // not using
@@ -440,7 +441,8 @@ Bool_t Config_Xipi(AliRsnMiniAnalysisTask* task, TString lname,
     cutXibar->SetPIDCutV0Proton(XiPIDcut);
     cutXibar->SetPIDCutV0Pion(XiPIDcut);
     cutXibar->SetPIDCutBachelor(XiPIDcut);
-    cutXibar->SetESDtrackCuts(esdTrackCuts);
+    if (TrackCutsXi == 1)
+        cutXibar->SetESDtrackCuts(esdTrackCuts);
     cutXibar->SetV0MaxDaughtersDCA(V0dDCA);
     cutXibar->SetCascadeMaxDaughtersDCA(XidDCA);
     cutXibar->SetV0MaxDCAVertex(1e5);  // not using
