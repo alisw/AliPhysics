@@ -56,6 +56,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNEventsVsCL1(0x0),
   fHistWhyRej(0x0),
   fHistNEventsVsWhyRej(0x0),
+  fHistNEventsVsTime(0x0),
   fHistNTrackletsBeforePileup(0x0),
   fHistNTrackletsAfterPileup(0x0),
   fHistNCL1BeforePileup(0x0),
@@ -112,6 +113,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNEventsVsCL1(0x0),
   fHistWhyRej(0x0),
   fHistNEventsVsWhyRej(0x0),
+  fHistNEventsVsTime(0x0),
   fHistNTrackletsBeforePileup(0x0),
   fHistNTrackletsAfterPileup(0x0),
   fHistNCL1BeforePileup(0x0),
@@ -169,6 +171,7 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNEventsVsCL1;
     delete fHistWhyRej;
     delete fHistNEventsVsWhyRej;
+    delete fHistNEventsVsTime;
     delete fHistNTrackletsBeforePileup;
     delete fHistNTrackletsAfterPileup;
     delete fHistNCL1BeforePileup;
@@ -234,6 +237,9 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   ConfigureEvSelAxis(fHistNEventsVsCL1->GetXaxis());
   fOutput->Add(fHistNEventsVsCL1);
 
+  fHistNEventsVsTime = new TH1F("hNEventsVsTime", " ; Timestamp",44640,1541462400,1544140800);
+  fOutput->Add(fHistNEventsVsTime);
+  
   fHistWhyRej = new TH1F("hWhyRej"," ; WhyRej",11,-0.5,10.5);
   fOutput->Add(fHistWhyRej);
   fHistNEventsVsWhyRej = new TH2F("hNEventsVsWhyRej", " ; ; WhyRej ",21,-0.5,20.5,11,-0.5,10.5);
@@ -584,6 +590,10 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNEventsVsWhyRej->Fill(20,wrej);
     fHistNTrackletsAfterPileup->Fill(ntrkl);
     fHistNCL1AfterPileup->Fill(ncl1);
+    Int_t runNumb=aod->GetRunNumber();
+    if(fAnalysisCuts->GetUseTimeRangeCutForPbPb2018() && runNumb >= 295369 && runNumb <= 297624){
+      fHistNEventsVsTime->Fill(aod->GetTimeStamp());
+    }
   }
 
   if(fAnalysisCuts->GetUseCentrality()>0 && fAnalysisCuts->IsEventSelectedInCentrality(aod)!=0) return;
