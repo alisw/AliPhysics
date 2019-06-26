@@ -117,7 +117,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  };
 
  enum TreeSize {
-   nVar = 16,
+   nVar = 18,
    nVar_Splittings =12
   };
 
@@ -245,7 +245,7 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  AliAnalysisTaskHFSubstructure(const AliAnalysisTaskHFSubstructure&);            
  AliAnalysisTaskHFSubstructure &operator=(const AliAnalysisTaskHFSubstructure&); 
 
- ClassDef(AliAnalysisTaskHFSubstructure, 2)
+ ClassDef(AliAnalysisTaskHFSubstructure, 3)
     
    };
 
