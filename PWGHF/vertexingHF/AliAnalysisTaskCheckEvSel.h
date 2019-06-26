@@ -65,6 +65,7 @@ private:
   TH2F *fHistNEventsVsCL1;               //!<! hist. for No. of events
   TH1F *fHistWhyRej;                     //!<! hist. for No. of events
   TH2F *fHistNEventsVsWhyRej;            //!<! hist. for No. of events
+  TH1F *fHistNEventsVsTime;              //!<! hist. for No. of events
   TH1F *fHistNTrackletsBeforePileup;     //!<! hist. for No. of tracklets
   TH1F *fHistNTrackletsAfterPileup;      //!<! hist. for No. of tracklets
   TH1F *fHistNCL1BeforePileup;           //!<! hist. for No. of tracklets
@@ -104,7 +105,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,12);
+  ClassDef(AliAnalysisTaskCheckEvSel,13);
 };
 
 #endif
