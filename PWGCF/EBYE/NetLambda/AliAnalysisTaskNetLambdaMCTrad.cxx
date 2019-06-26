@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated jun 25
+// Updated jun 26 XiPtbins
 
 
 #include "AliAnalysisManager.h"
@@ -164,7 +164,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserCreateOutputObjects()
     Double_t CentBins[CentbinNum+1];
     for(Int_t ic = 0; ic <= CentbinNum; ic++) CentBins[ic] = ic - 0.5;
     Double_t LambdaPtBins[24] = {0.9,1.0,1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,4.2, 4.4};
-    Double_t xibinlimits[24] = {0.00,  0.20,  0.40,  0.60,  0.80,  0.90,1.00,  1.10,  1.20,  1.30,  1.40,  1.50, 1.70,  1.90,  2.20,  2.60,  3.10,  3.90,4.90,  6.00,  7.20,  8.50 ,10.00, 12.00};
+    Double_t xibinlimits[27] = {0.9,  1.1,  1.3,  1.5,  1.7,  1.9,2.1,  2.3,  2.5,  2.7,  1.40,  2.9, 3.1,  3.3,  3.5,  3.9,  4.1,  4.3, 4.5, 4.7,  4.9,  5.25 ,5.75, 6.5,7.5,8.5,9.5};
     Long_t xibinnumb = sizeof(xibinlimits)/sizeof(Double_t) - 1;
     Double_t MassBins[103]
     = {1.0788,1.0796,1.0804,1.0812,1.082,1.0828,1.0836,1.0844,1.0852,1.086,1.0868,1.0876,1.0884,1.0892,1.09,1.0908,1.0916,1.0924,1.0932,1.094,1.0948,1.0956,1.0964,1.0972,1.098,1.0988,1.0996,1.1004,1.1012,1.102,
