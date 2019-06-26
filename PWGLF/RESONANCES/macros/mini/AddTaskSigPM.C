@@ -11,7 +11,7 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
  TString     outNameSuffix = "SigPM",                         //suffix for output container
  Bool_t      isMC          = kFALSE,                            //MC flag
  AliPIDResponse::EBeamType collSys = AliPIDResponse::kPBPB, //=0, kPPB=1, kPBPB=2 outNameSuffix
- UInt_t      triggerMask   = AliVEvent::kSemiCentral,             //trigger selection
+ UInt_t      triggerMask   = AliVEvent::kCentral,             //trigger selection
  Bool_t      enaMultSel    = kTRUE,                        //enable multiplicity axis
  Float_t     nsigma        = 3.0,   //PID cut
  Float_t     masslow       = 1.2,   //inv mass range lower boundary
@@ -206,8 +206,8 @@ AliRsnMiniAnalysisTask * AddTaskSigPM
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
- // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
- gROOT->LoadMacro("ConfigSigPM.C"); 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigSigPM.C");
+// gROOT->LoadMacro("ConfigSigPM.C");
  if (!ConfigSigPM(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, nsigma, 
 enableMonitor) ) return 0x0;
   
