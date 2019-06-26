@@ -44,6 +44,8 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
     } 
     if(foption.Contains("HM")){
         taskXi1530->SetHighMult(kTRUE); // default: kFALSE
+        taskXi1530->fEventCuts.fTriggerMask =
+            AliVEvent::kHighMultV0;  // default: kINT7
         std::cout << "AliAnaylsisTaskXi1530:: HighMultV0 mode " << std::endl;
     }  
     if(foption.Contains("SYS")){
