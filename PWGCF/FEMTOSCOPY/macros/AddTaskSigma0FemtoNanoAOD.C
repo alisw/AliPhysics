@@ -263,8 +263,12 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
 
     pairQA[0] = 11;   // pp
     pairQA[2] = 14;   // pSigma
+    pairQA[8] = 12;   // pLambda(Sigma0)
+    pairQA[10] = 12;   // pLambda
     pairQA[12] = 11;  // barp barp
     pairQA[14] = 14;  // barp bSigma
+    pairQA[20] = 12;   // barpbarLambda(barSigma0)
+    pairQA[22] = 12;   // barpbarLambda
   }
 
   AliFemtoDreamCollConfig *config =
@@ -337,6 +341,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     config->SetkTBinning(true);
     config->SetmTBinning(true);
     config->SetPtQA(true);
+    config->SetMassQA(true);
   }
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
