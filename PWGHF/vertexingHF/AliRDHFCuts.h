@@ -19,6 +19,7 @@
 #include "AliAODEvent.h"
 #include "AliVEvent.h"
 #include "TObjArray.h"
+#include "AliTimeRangeCut.h"
 
 class AliAODTrack;
 class AliAODRecoDecayHF;
@@ -524,12 +525,15 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t fApplyPbPbOutOfBunchPileupCuts; /// switch for additional correlation cuts for out-of-bunch pileup (0=no cut, 1=AliEVentCuts, 2=Ionut cut vs. nTPC cls)
   Bool_t fUseAliEventCuts;  /// flag for using AliEventCuts
   Bool_t fUseTimeRangeCutForPbPb2018; /// flag to enable the timestamp based selection of good events in the 7 runs of LHC18r with problems in TPC dE/dx
+  AliTimeRangeCut fTimeRangeCut;   /// object to manage time range cut
+  Int_t  fCurrentRun;              /// needed to use the time range cut
+  
   
   Bool_t fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
   Int_t fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCuts,50);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,51);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

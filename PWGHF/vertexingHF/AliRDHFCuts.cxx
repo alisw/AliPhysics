@@ -39,6 +39,8 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliVertexerTracks.h"
+#include "AliTimeRangeMasking.h"
+#include "AliEventCuts.h"
 #include "AliRDHFCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
@@ -47,7 +49,6 @@
 #include "AliAnalysisUtils.h"
 #include "AliMultSelection.h"
 #include "AliAODVZERO.h"
-#include "AliEventCuts.h"
 #include "TRandom.h"
 #include <TF1.h>
 #include <TFile.h>
@@ -140,6 +141,8 @@ fApplyCentralityCorrCuts(kFALSE),
 fApplyPbPbOutOfBunchPileupCuts(0),
 fUseAliEventCuts(kFALSE),
 fUseTimeRangeCutForPbPb2018(kFALSE),
+fTimeRangeCut(),
+fCurrentRun(-1),
 fEnableNsigmaTPCDataCorr(kFALSE),
 fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
 {
@@ -230,6 +233,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fApplyPbPbOutOfBunchPileupCuts(source.fApplyPbPbOutOfBunchPileupCuts),
   fUseAliEventCuts(source.fUseAliEventCuts),
   fUseTimeRangeCutForPbPb2018(source.fUseTimeRangeCutForPbPb2018),
+  fTimeRangeCut(),
+  fCurrentRun(source.fCurrentRun),
   fEnableNsigmaTPCDataCorr(source.fEnableNsigmaTPCDataCorr),
   fSystemForNsigmaTPCDataCorr(source.fSystemForNsigmaTPCDataCorr)
 {
@@ -343,6 +348,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fApplyPbPbOutOfBunchPileupCuts=source.fApplyPbPbOutOfBunchPileupCuts;
   fUseAliEventCuts=source.fUseAliEventCuts;
   fUseTimeRangeCutForPbPb2018=source.fUseTimeRangeCutForPbPb2018;
+  fCurrentRun=source.fCurrentRun;
   fEnableNsigmaTPCDataCorr=source.fEnableNsigmaTPCDataCorr;
   fSystemForNsigmaTPCDataCorr=source.fSystemForNsigmaTPCDataCorr;
 
@@ -625,6 +631,20 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }
   }
 
+  if(fUseTimeRangeCutForPbPb2018){
+    Int_t nrun=event->GetRunNumber();
+    if(nrun!=fCurrentRun){
+      fCurrentRun=nrun;
+      fTimeRangeCut.InitFromRunNumber(fCurrentRun);
+    }
+    if(fTimeRangeCut.CutEvent((AliAODEvent*)event)){
+      // use same fWhyRejection as for physics selection, to have proper counting of events for norm
+      if(accept) fWhyRejection=7;
+      fEvRejectionBits+=1<<kBadTimeRange;
+      accept=kFALSE;
+    }
+  }
+  
   // centrality selection
   if (fUseCentrality!=kCentOff) {
     Int_t rejection=IsEventSelectedInCentrality(event);
