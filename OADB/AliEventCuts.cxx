@@ -296,7 +296,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// Time Range masking
   if (fUseTimeRangeCut) {
-    if ( fTimeRangeCut.CutEvent(ev) ) {
+    if ( fTimeRangeCut.CutEvent(ev) == kFALSE ) {
+      // good event: should be accepted
       fFlag |= BIT(kTimeRangeCut);
     }
   } else {
