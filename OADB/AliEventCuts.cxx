@@ -69,7 +69,6 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fCentralityFramework{0},
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
-  fSelectInelGt0{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
@@ -100,6 +99,8 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fOverrideAutoPileUpCuts{false},
   fMultSelectionEvCuts{false},  
   fUseTimeRangeCut{false},
+  fSelectInelGt0{false},
+  fOverrideInelGt0{false},
   fTimeRangeCut{},
   fCutStats{nullptr},
   fCutStatsAfterTrigger{nullptr},
@@ -134,9 +135,9 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// If not specified the cuts are set according to the run period
   const int current_run = ev->GetRunNumber();
   if (current_run != fCurrentRun) {
+    fCurrentRun = current_run;
     if (!fManualMode) {
       ::Info("AliEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
-      fCurrentRun = current_run;
       AutomaticSetup(ev);
     }
     if (fUseTimeRangeCut) {
@@ -688,7 +689,7 @@ void AliEventCuts::SetupRun2pp() {
   else if (fCentralityFramework == 1) {
     fCentEstimators[0] = "V0M";
     fCentEstimators[1] = "CL0";
-    fSelectInelGt0 = true;
+    fSelectInelGt0 = fOverrideInelGt0 ? fSelectInelGt0 : true;
   }
 
   fFB128vsTrklLinearCut[0] = 32.077;

@@ -1213,7 +1213,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
   fEventCuts.fSPDpileupNsigmaDiamZ = 5.;
   fEventCuts.fTrackletBGcut = true;
 
-  fEventCuts.fSelectInelGt0=false; // this cuts away all inel>0 with not reconstructed tracks
+  fEventCuts.SelectOnlyInelGt0(false); // this cuts away all inel>0 with not reconstructed tracks
   
   fEventCuts.fUseVariablesCorrelationCuts = false; // maybe remove this cut, small effect, not recommended
   fEventCuts.fFB128vsTrklLinearCut[0] = 32.077;

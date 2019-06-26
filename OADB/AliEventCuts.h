@@ -118,6 +118,7 @@ class AliEventCuts : public TList {
     void          SetCentralityEstimators (std::string first = "V0M", std::string second = "CL0") { fCentEstimators[0] = first; fCentEstimators[1] = second; }
     void          SetCentralityRange (float min, float max) { fMinCentrality = min; fMaxCentrality = max; }
     void          SetMaxVertexZposition (float max) { fMinVtz = -fabs(max); fMaxVtz = fabs(max); }
+    void          SelectOnlyInelGt0(bool toogle) { fOverrideInelGt0 = true; fSelectInelGt0 = toogle; }
 
     AliAnalysisUtils fUtils;                      ///< Analysis utils for the pileup rejection
 
@@ -154,7 +155,6 @@ class AliEventCuts : public TList {
     unsigned int  fCentralityFramework;           ///< 0: skip centrality checks, 1: multiplicity framework, 2: legacy centrality framework
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised
-    bool          fSelectInelGt0;                 ///< Select only INEL > 0 events
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
@@ -201,6 +201,9 @@ class AliEventCuts : public TList {
     bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
     bool          fUseTimeRangeCut;               ///< If to use the time range cut
 
+    bool          fSelectInelGt0;                 ///< Select only INEL > 0 events
+    bool          fOverrideInelGt0;               ///< If the user ask for a configuration, let's not touch it
+
     AliTimeRangeCut fTimeRangeCut;       ///< Time Range cut
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
@@ -223,7 +226,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts, 10)
+    ClassDef(AliEventCuts, 11)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
