@@ -139,6 +139,7 @@ fAliEventCuts(0x0),
 fApplyCentralityCorrCuts(kFALSE),
 fApplyPbPbOutOfBunchPileupCuts(0),
 fUseAliEventCuts(kFALSE),
+fUseTimeRangeCutForPbPb2018(kFALSE),
 fEnableNsigmaTPCDataCorr(kFALSE),
 fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
 {
@@ -228,6 +229,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fApplyCentralityCorrCuts(source.fApplyCentralityCorrCuts),
   fApplyPbPbOutOfBunchPileupCuts(source.fApplyPbPbOutOfBunchPileupCuts),
   fUseAliEventCuts(source.fUseAliEventCuts),
+  fUseTimeRangeCutForPbPb2018(source.fUseTimeRangeCutForPbPb2018),
   fEnableNsigmaTPCDataCorr(source.fEnableNsigmaTPCDataCorr),
   fSystemForNsigmaTPCDataCorr(source.fSystemForNsigmaTPCDataCorr)
 {
@@ -340,6 +342,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fApplyCentralityCorrCuts=source.fApplyCentralityCorrCuts;
   fApplyPbPbOutOfBunchPileupCuts=source.fApplyPbPbOutOfBunchPileupCuts;
   fUseAliEventCuts=source.fUseAliEventCuts;
+  fUseTimeRangeCutForPbPb2018=source.fUseTimeRangeCutForPbPb2018;
   fEnableNsigmaTPCDataCorr=source.fEnableNsigmaTPCDataCorr;
   fSystemForNsigmaTPCDataCorr=source.fSystemForNsigmaTPCDataCorr;
 
@@ -538,7 +541,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   //if(fTriggerMask && event->GetTriggerMask()!=fTriggerMask) return kFALSE;
 
   // commented for the time being
-  // if(fUseAliEventCuts) return IsEventSelectedWithAliEventCuts(event);
+  if(fUseAliEventCuts) return IsEventSelectedWithAliEventCuts(event);
 
   fWhyRejection=0;
   fEvRejectionBits=0;
@@ -832,6 +835,8 @@ Bool_t AliRDHFCuts::IsEventSelectedWithAliEventCuts(AliVEvent *event) {
   else if(runNumb >= 295369 && runNumb <= 297624) fAliEventCuts->SetupPbPb2018();
   else fAliEventCuts->SetManualMode(kFALSE);
 
+  if(fUseTimeRangeCutForPbPb2018) fAliEventCuts->UseTimeRangeCut();
+    
   // setup cuts
   TString selTrigClassClass="";
   if(!isMC && (event->GetRunNumber()<136851 || event->GetRunNumber()>139517)) {
@@ -888,7 +893,15 @@ Bool_t AliRDHFCuts::IsEventSelectedWithAliEventCuts(AliVEvent *event) {
       }
     }
   }
-
+  if(fUseTimeRangeCutForPbPb2018){
+    if(!fAliEventCuts->PassedCut(AliEventCuts::kTimeRangeCut)){
+      // use same fWhyRejection as for physics selection, to have proper counting of events for norm
+      if(accept) fWhyRejection=7;
+      fEvRejectionBits+=1<<kBadTimeRange;
+      accept=kFALSE;
+    }
+  }
+  
   // centrality selection
   if (fUseCentrality!=kCentOff) {
     Int_t rejection=IsEventSelectedInCentrality(event);
