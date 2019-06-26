@@ -265,9 +265,9 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition, Bool_t isMC)
 //  histos->UserHistogram("Event","ZVertex","ZVertex;ZVertex/cm",120,-12.,12.,AliDielectronVarManager::kZvPrim);
   histos->UserHistogram("Event","Centrality","Centrality;Centrality/%",202,-1.,100.,AliDielectronVarManager::kCentralityNew);
 //  histos->UserHistogram("Event","nEvTPC_eventplaneents",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi()/-2.,TMath::Pi()/2.),AliDielectronVarManager::kQnTPCrpH2);
-  histos->UserHistogram("Event","ZdcEpC",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi().,TMath::Pi()),AliDielectronVarManager::kQnZDCCrpH1);
+  histos->UserHistogram("Event","ZdcEpC",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kQnZDCCrpH1);
   histos->UserHistogram("Event","ZdcEpA",";;ev plane;",AliDielectronHelper::MakeLinBinning(180,  TMath::Pi(),TMath::Pi()),AliDielectronVarManager::kQnZDCArpH1);
-  histos->UserHistogram("Event","ZdcEpA:ZdcEpC",";;ev plane;", 100,-TMath::Pi(),TMath::Pi(),100,-TMath::Pi(),TMath::Pi().,AliDielectronVarManager::kQnZDCArpH1,AliDielectronVarManager::kQnZDCCrpH1);
+  histos->UserHistogram("Event","ZdcEpA:ZdcEpC",";;ev plane;", 100,-TMath::Pi(),TMath::Pi(),100,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kQnZDCArpH1,AliDielectronVarManager::kQnZDCCrpH1);
 
 
   //add histograms to track class
