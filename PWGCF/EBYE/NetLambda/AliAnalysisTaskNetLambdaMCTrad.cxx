@@ -1,7 +1,6 @@
-
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated jun 17
+// Updated jun 25
 
 
 #include "AliAnalysisManager.h"
@@ -537,7 +536,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             abseta = TMath::Abs(eta);
             //            if(abseta > 0.5) continue;
             lThisRap   = MyRapidity(mctrack->Energy(),mctrack->Pz());
-            if(lThisRap > 0.5) continue;
+            if (TMath::Abs (lThisRap) >0.5) continue;
             
             Int_t iptbinMC = GetPtBin(gpt);
             
@@ -778,9 +777,9 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         else if (isSecFromMaterial) {f2fHistRecMaterialCentVsPtLambdaFourSigthree->Fill(fCentrality,mcpt);}
                         ptChTagFour[iptbinRecUntag] += 1;
                     }
-            }
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 2.5 && TMath::Abs(negpion)  <= 2.5) //tight
-            {
+                }
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 2.5 && TMath::Abs(negpion)  <= 2.5) //tight
+                {
                     f3fHistCentInvMassVsPtLambdaRecFourUntagtight->Fill(fCentrality,invMassLambda,mcpt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
                     {
@@ -808,9 +807,9 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                         else if (isSecFromMaterial) {f2fHistRecMaterialCentVsPtLambdaFourtight->Fill(fCentrality,mcpt);}
                     }
-            }
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 4 && TMath::Abs(negpion)  <= 4) //loose
-            {
+                }
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 4 && TMath::Abs(negpion)  <= 4) //loose
+                {
                     f3fHistCentInvMassVsPtLambdaRecFourUntagloose->Fill(fCentrality,invMassLambda,mcpt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
                     {
@@ -838,11 +837,11 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                         else if (isSecFromMaterial) {f2fHistRecMaterialCentVsPtLambdaFourloose->Fill(fCentrality,mcpt);}
                     }
-            }
-            
-            //L-BAR
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
-            {
+                }
+                
+                //L-BAR
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
+                {
                     f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                     {
@@ -871,10 +870,10 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         else if (isSecFromMaterial) {f2fHistRecMaterialCentVsPtAntiLambdaFourSigthree->Fill(fCentrality,mcpt);}
                         ptChTagFour[iptbinRecUntag+fNptBins] += 1;
                     }
-            }
-            
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 2.5 && TMath::Abs(pospion)  <= 2.5) //tight
-            {
+                }
+                
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 2.5 && TMath::Abs(pospion)  <= 2.5) //tight
+                {
                     f3fHistCentInvMassVsPtAntiLambdaRecFourUntagtight->Fill(fCentrality,invMassAntiLambda,mcpt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                     {
@@ -902,9 +901,9 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                         else if (isSecFromMaterial) {f2fHistRecMaterialCentVsPtAntiLambdaFourtight->Fill(fCentrality,mcpt);}
                     }
-            }
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 4 && TMath::Abs(pospion)  <= 4) //loose
-            {
+                }
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 4 && TMath::Abs(pospion)  <= 4) //loose
+                {
                     f3fHistCentInvMassVsPtAntiLambdaRecFourUntagloose->Fill(fCentrality,invMassAntiLambda,mcpt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                     {
@@ -932,13 +931,13 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                         else if (isSecFromMaterial) {f2fHistRecMaterialCentVsPtAntiLambdaFourloose->Fill(fCentrality,mcpt);}
                     }
-            }
-            
-            
-            ////DCA POS L
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.13  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
-            {
-             
+                }
+                
+                
+                ////DCA POS L
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.13  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
+                {
+                    
                     if(fTreeVariablePID == 3122)
                     {
                         if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourpostight->Fill(fCentrality,mcpt);}
@@ -953,11 +952,11 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-              
-            }
-            
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.08  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
-            {
+                    
+                }
+                
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.08  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
+                {
                     if(fTreeVariablePID == 3122)
                     {
                         if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFourposloose->Fill(fCentrality,mcpt);}
@@ -972,12 +971,12 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-            }
-            
-            ////DCA POS L-bar
-            
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.3 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
-            {
+                }
+                
+                ////DCA POS L-bar
+                
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.3 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
+                {
                     if(fTreeVariablePID == -3122)
                     {
                         if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourpostight->Fill(fCentrality,mcpt);}
@@ -992,11 +991,11 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-            }
-            
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.2 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
-            {
-        
+                }
+                
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.2 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
+                {
+                    
                     if(fTreeVariablePID == -3122)
                     {
                         if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFourposloose->Fill(fCentrality,mcpt);}
@@ -1011,11 +1010,11 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-            }
-            //DCA L neg
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.3 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
-            {
-             
+                }
+                //DCA L neg
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.3 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
+                {
+                    
                     if(fTreeVariablePID == 3122)
                     {
                         if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFournegtight->Fill(fCentrality,mcpt);}
@@ -1030,10 +1029,10 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-            }
-            
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.2 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
-            {
+                }
+                
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.2 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
+                {
                     if(fTreeVariablePID == 3122)
                     {
                         if(isPrim){f2fHistRecPrimariesCentVsPtLambdaFournegloose->Fill(fCentrality,mcpt);}
@@ -1048,12 +1047,12 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-            }
-            
-            //Bar-L Neg to PV
-            
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.13 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
-            {
+                }
+                
+                //Bar-L Neg to PV
+                
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.13 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
+                {
                     if(fTreeVariablePID == -3122)
                     {
                         if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFournegtight->Fill(fCentrality,mcpt);}
@@ -1068,10 +1067,10 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-            }
-            
-            if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.08 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
-            {
+                }
+                
+                if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.08 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
+                {
                     if(fTreeVariablePID == -3122)
                     {
                         if(isPrim){f2fHistRecPrimariesCentVsPtAntiLambdaFournegloose->Fill(fCentrality,mcpt);}
@@ -1086,76 +1085,76 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-            }
-            
-        } //MC condition
-    }// zero onfly V0
-}// end of V0 loop
-
-
-f2fHistLRecstat->Fill(fCentrality, nRecL);
-f2fHistARecstat->Fill(fCentrality, nRecA);
-//-------------------------------------------------
-Double_t ptContainerFour[dim+1];
-ptContainerFour[0] = (Double_t)fCentrality;
-for(Int_t i = 1; i <= dim; i++)
-{
-    ptContainerFour[i] = ptChUnTagFour[i-1];
-}
-fPtBinNplusNminusChUNTagFour->Fill(ptContainerFour);
-Double_t ptContainerFourBKG[dim+1];
-ptContainerFourBKG[0] = (Double_t)fCentrality;
-for(Int_t i = 1; i <= dim; i++)
-{
-    ptContainerFourBKG[i] = ptChUnTagFourLFBIG[i-1];
-}
-fPtBinNplusNminusChUNTagFourBKG->Fill(ptContainerFourBKG);
-////
-
-Double_t ptContainerFourtight[dim+1];
-ptContainerFourtight[0] = (Double_t)fCentrality;
-for(Int_t i = 1; i <= dim; i++)
-{
-    ptContainerFourtight[i] = ptChUnTagFourtight [i-1];
-}
-fPtBinNplusNminusChUNTagFourTight->Fill(ptContainerFourtight);
-
-Double_t ptContainerFourtightBKG[dim+1];
-ptContainerFourtightBKG[0] = (Double_t)fCentrality;
-for(Int_t i = 1; i <= dim; i++)
-{
-    ptContainerFourtightBKG[i] = ptChUnTagFourLFBIGtight [i-1];
-}
-fPtBinNplusNminusChUNTagFourTightBKG->Fill(ptContainerFourtightBKG);
-///////
-
-Double_t ptContainerFourloose[dim+1];
-ptContainerFourloose[0] = (Double_t)fCentrality;
-for(Int_t i = 1; i <= dim; i++)
-{
-    ptContainerFourloose[i] = ptChUnTagFourloose [i-1];
-}
-fPtBinNplusNminusChUNTagFourloose->Fill(ptContainerFourloose);
-
-Double_t ptContainerFourloosetBKG[dim+1];
-ptContainerFourloosetBKG[0] = (Double_t)fCentrality;
-for(Int_t i = 1; i <= dim; i++)
-{
-    ptContainerFourloosetBKG[i] = ptChUnTagFourLFBIGloose [i-1];
-}
-fPtBinNplusNminusChUNTagFourlooseBKG->Fill(ptContainerFourloosetBKG);
-
-//////
-
-Double_t ptContainerFourtag[dim+1];
-ptContainerFourtag[0] = (Double_t)fCentrality;
-for(Int_t i = 1; i <= dim; i++)
-{
-    ptContainerFourtag[i] = ptChTagFour[i-1];
-}
-fPtBinNplusNminusChTagFour->Fill(ptContainerFourtag);
-
-PostData(1,fListHist);
+                }
+                
+            } //MC condition
+        }// zero onfly V0
+    }// end of V0 loop
+    
+    
+    f2fHistLRecstat->Fill(fCentrality, nRecL);
+    f2fHistARecstat->Fill(fCentrality, nRecA);
+    //-------------------------------------------------
+    Double_t ptContainerFour[dim+1];
+    ptContainerFour[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerFour[i] = ptChUnTagFour[i-1];
+    }
+    fPtBinNplusNminusChUNTagFour->Fill(ptContainerFour);
+    Double_t ptContainerFourBKG[dim+1];
+    ptContainerFourBKG[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerFourBKG[i] = ptChUnTagFourLFBIG[i-1];
+    }
+    fPtBinNplusNminusChUNTagFourBKG->Fill(ptContainerFourBKG);
+    ////
+    
+    Double_t ptContainerFourtight[dim+1];
+    ptContainerFourtight[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerFourtight[i] = ptChUnTagFourtight [i-1];
+    }
+    fPtBinNplusNminusChUNTagFourTight->Fill(ptContainerFourtight);
+    
+    Double_t ptContainerFourtightBKG[dim+1];
+    ptContainerFourtightBKG[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerFourtightBKG[i] = ptChUnTagFourLFBIGtight [i-1];
+    }
+    fPtBinNplusNminusChUNTagFourTightBKG->Fill(ptContainerFourtightBKG);
+    ///////
+    
+    Double_t ptContainerFourloose[dim+1];
+    ptContainerFourloose[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerFourloose[i] = ptChUnTagFourloose [i-1];
+    }
+    fPtBinNplusNminusChUNTagFourloose->Fill(ptContainerFourloose);
+    
+    Double_t ptContainerFourloosetBKG[dim+1];
+    ptContainerFourloosetBKG[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerFourloosetBKG[i] = ptChUnTagFourLFBIGloose [i-1];
+    }
+    fPtBinNplusNminusChUNTagFourlooseBKG->Fill(ptContainerFourloosetBKG);
+    
+    //////
+    
+    Double_t ptContainerFourtag[dim+1];
+    ptContainerFourtag[0] = (Double_t)fCentrality;
+    for(Int_t i = 1; i <= dim; i++)
+    {
+        ptContainerFourtag[i] = ptChTagFour[i-1];
+    }
+    fPtBinNplusNminusChTagFour->Fill(ptContainerFourtag);
+    
+    PostData(1,fListHist);
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1195,7 +1194,4 @@ Double_t AliAnalysisTaskNetLambdaMCTrad::MyRapidity(Double_t rE, Double_t rPz) c
     }
     return ReturnValue;
 }
-
-
-
 
