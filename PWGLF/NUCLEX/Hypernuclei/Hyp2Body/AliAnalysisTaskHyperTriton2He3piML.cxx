@@ -111,7 +111,7 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fRCollision{}
 {
 
-  fV0Vertexer.SetupStandardVertexing();
+
   // Standard output
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class()); // Basic Histograms
