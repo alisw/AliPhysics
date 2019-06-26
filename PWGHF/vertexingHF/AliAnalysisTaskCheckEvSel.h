@@ -43,6 +43,8 @@ public:
   void SetUseAliEventCuts(Bool_t opt=kTRUE){fUseAliEventCuts=opt;}
   void SetEnableEvPropNtuple(Bool_t dontuple) {fEnableEvPropNtuple=dontuple;}
   void SetEnableVertexNtuple(Bool_t dontuple) {fEnableVertexNtuple=dontuple;}
+
+  AliRDHFCuts* GetCutObject() { return (AliRDHFCuts*)fAnalysisCuts;}
   
 private:
 
