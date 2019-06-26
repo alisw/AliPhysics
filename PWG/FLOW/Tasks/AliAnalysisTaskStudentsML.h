@@ -20,10 +20,11 @@
 #include "TH1F.h"
 #include "TH1I.h"
 #include "TComplex.h"
-#include <TArrayF.h>
+#include <TArrayD.h>
 #include <vector>
 #include "TMath.h"
 #include "TF1.h"
+#include "TRandom3.h"
 
 //================================================================================================================
 
@@ -197,16 +198,13 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8;  //harmonics
   Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8;  //second set of harmonics
 
-   
-  const Int_t kSum; 
-  const Int_t kMaxHarmonic; 
-  const Int_t kMaxPower; 
+
   Int_t fParticles;        // number of particles after all selections
   TArrayD *fAngles;              //! Azimuthal angles 
   TArrayD *fWeights;            //! Particle weights
   TArrayI *fBin;                   //! Bins for particle weight
   
-  TComplex fQvector[17][9];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+  TComplex fQvector[49][9];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
   // 4.) Final results:
    
