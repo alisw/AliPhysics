@@ -4,7 +4,9 @@
 // Author: Valentina Zaccolo: valentina.zaccolo@cern.ch          //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
- class AliAnalysisDataContainer;
+
+
+class AliAnalysisDataContainer;
 
 AliAnalysisTask* AddTaskPPvsUE()
 {
@@ -19,6 +21,15 @@ AliAnalysisTask* AddTaskPPvsUE()
     ::Error("AddTaskPPvsUE", "No analysis manager to connect to.");
       return NULL; 
     }
+
+  // set the MC online spectra weights task
+  
+  AliMCSpectraWeights* fMCSpectraWeights = new AliMCSpectraWeights("pp", "fMCSpectraWeights", (AliMCSpectraWeights::SysFlag) 0);
+  // TODO: VZ this is still not implemented properly
+  fMCSpectraWeights->SetMCSpectraFile("alien:///alice/cern.ch/user/a/alitrain/PWGLF/LF_pp_MC/1154_20190521-2046/merge/AnalysisResults.root" ); 
+  fMCSpectraWeights->Init();
+  if (!fMCSpectraWeights) printf("no fMCSpectraWeights object!");//
+
 // Check the analysis type using the event handlers connected to the analysis manager.  
 //==============================================================================
   if(!mgr->GetInputEventHandler()){
@@ -26,8 +37,6 @@ AliAnalysisTask* AddTaskPPvsUE()
       return NULL;   
    }
 
-
-  gROOT->LoadMacro("CreateTrackCutsPWGJE.C");
 
    AliAnalysisTaskPPvsUE * task = new AliAnalysisTaskPPvsUE("AnalysisPPvsUE");
    if(!task) return 0x0;
@@ -40,10 +49,14 @@ AliAnalysisTask* AddTaskPPvsUE()
    task->SetDebugLevel(0);
    task->SetEtaCut(0.8);
    task->SetVtxCut(10.0);
+   task->SetPtLeadMin(6.0);
    task->SetPileUpRej(kTRUE);	
    task->SetAveMultiInTrans(4.939);
-   task->SetAveGenMultiInTrans(7.392); // this is PYTHIA 8
-
+   task->SetAveRecMultiInTrans(4.895); // reco MC PYTHIA 8
+   task->SetAveGenMultiInTrans(7.392); // true MC PYTHIA 8
+   //task->SetAveRecMultiInTrans(5.003); // reco MC EPOS LHC
+   //task->SetAveGenMultiInTrans(7.72); // true MC EPOS LHC
+   task->SetMCSpectraWeightObject(fMCSpectraWeights);
    mgr->AddTask(task);
 
    TString fileName = AliAnalysisManager::GetCommonFileName();
