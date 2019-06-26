@@ -27,10 +27,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetCutCharge(-1);
 
-//  if (suffix != "0") {
-//    TrackCuts->SetMinimalBooking(true);
-//    AntiTrackCuts->SetMinimalBooking(true);
-//  }
+  if (suffix != "0") {
+    TrackCuts->SetMinimalBooking(true);
+    AntiTrackCuts->SetMinimalBooking(true);
+  }
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
@@ -38,10 +38,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
 
-//  if (suffix != "0") {
-//    TrackPosKaonCuts->SetMinimalBooking(true);
-//    TrackNegKaonCuts->SetMinimalBooking(true);
-//  }
+  if (suffix != "0") {
+    TrackPosKaonCuts->SetMinimalBooking(true);
+    TrackNegKaonCuts->SetMinimalBooking(true);
+  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
@@ -153,9 +153,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
 
 
 
-//  if (suffix != "0") {
-//    TrackCutsPhi->SetMinimalBooking(true);
-//  }
+  if (suffix != "0") {
+    TrackCutsPhi->SetMinimalBooking(true);
+  }
 
 
   // Now we define stuff we want for our Particle collection
