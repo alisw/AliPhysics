@@ -236,7 +236,7 @@ void AliEmcalJetTree::FillBuffer_ImpactParameters(std::vector<Float_t>& trackIP_
 }
 
 //________________________________________________________________________
-void AliEmcalJetTree::FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedJetDistance_Det, Float_t matchedJetPt_Det, Float_t matchedJetMass_Det, Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetMass_Part, Float_t truePtFraction, Float_t truePtFraction_PartLevel,  Float_t ptHard, Float_t eventWeight, Float_t impactParameter)
+void AliEmcalJetTree::FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadron, Int_t partonInitialCollision, Float_t matchedJetDistance_Det, Float_t matchedJetPt_Det, Float_t matchedJetMass_Det, Float_t matchedJetAngularity_Det, Float_t matchedJetpTD_Det, Float_t matchedJetDistance_Part, Float_t matchedJetPt_Part, Float_t matchedJetMass_Part, Float_t matchedJetAngularity_Part, Float_t matchedJetpTD_Part, Float_t truePtFraction, Float_t truePtFraction_PartLevel, Float_t ptHard, Float_t eventWeight, Float_t impactParameter)
 {
   fBuffer_Jet_MC_MotherParton = motherParton;
   fBuffer_Jet_MC_MotherHadron = motherHadron;
@@ -244,9 +244,15 @@ void AliEmcalJetTree::FillBuffer_MonteCarlo(Int_t motherParton, Int_t motherHadr
   fBuffer_Jet_MC_MatchedDetLevelJet_Distance = matchedJetDistance_Det;
   fBuffer_Jet_MC_MatchedDetLevelJet_Pt = matchedJetPt_Det;
   fBuffer_Jet_MC_MatchedDetLevelJet_Mass = matchedJetMass_Det;
+  fBuffer_Jet_MC_MatchedDetLevelJet_Angularity = matchedJetAngularity_Det;
+  fBuffer_Jet_MC_MatchedDetLevelJet_pTD = matchedJetpTD_Det;
+
   fBuffer_Jet_MC_MatchedPartLevelJet_Distance = matchedJetDistance_Part;
   fBuffer_Jet_MC_MatchedPartLevelJet_Pt = matchedJetPt_Part;
   fBuffer_Jet_MC_MatchedPartLevelJet_Mass = matchedJetMass_Part;
+  fBuffer_Jet_MC_MatchedPartLevelJet_Angularity = matchedJetAngularity_Part;
+  fBuffer_Jet_MC_MatchedPartLevelJet_pTD = matchedJetpTD_Part;
+
   fBuffer_Jet_MC_TruePtFraction = truePtFraction;
   fBuffer_Jet_MC_TruePtFraction_PartLevel = truePtFraction_PartLevel;
 
@@ -321,7 +327,7 @@ void AliEmcalJetTree::FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std
 }
 
 //________________________________________________________________________
-void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks)
+void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks)
 {
   // Create the tree with active branches
 
@@ -445,12 +451,24 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
     fJetTree->Branch("Jet_MC_MotherParton",&fBuffer_Jet_MC_MotherParton,"Jet_MC_MotherParton/I");
     fJetTree->Branch("Jet_MC_MotherHadron",&fBuffer_Jet_MC_MotherHadron,"Jet_MC_MotherHadron/I");
     fJetTree->Branch("Jet_MC_MotherIC",&fBuffer_Jet_MC_MotherIC,"Jet_MC_MotherIC/I");
-    fJetTree->Branch("Jet_MC_MatchedDetLevelJet_Distance",&fBuffer_Jet_MC_MatchedDetLevelJet_Distance,"Jet_MC_MatchedDetLevelJet_Distance/F");
-    fJetTree->Branch("Jet_MC_MatchedDetLevelJet_Pt",&fBuffer_Jet_MC_MatchedDetLevelJet_Pt,"Jet_MC_MatchedDetLevelJet_Pt/F");
-    fJetTree->Branch("Jet_MC_MatchedDetLevelJet_Mass",&fBuffer_Jet_MC_MatchedDetLevelJet_Mass,"Jet_MC_MatchedDetLevelJet_Mass/F");
-    fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Distance",&fBuffer_Jet_MC_MatchedPartLevelJet_Distance,"Jet_MC_MatchedPartLevelJet_Distance/F");
-    fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Pt",&fBuffer_Jet_MC_MatchedPartLevelJet_Pt,"Jet_MC_MatchedPartLevelJet_Pt/F");
-    fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Mass",&fBuffer_Jet_MC_MatchedPartLevelJet_Mass,"Jet_MC_MatchedPartLevelJet_Mass/F");
+
+    if(saveMatchedJets_Det)
+    {
+      fJetTree->Branch("Jet_MC_MatchedDetLevelJet_Distance",&fBuffer_Jet_MC_MatchedDetLevelJet_Distance,"Jet_MC_MatchedDetLevelJet_Distance/F");
+      fJetTree->Branch("Jet_MC_MatchedDetLevelJet_Pt",&fBuffer_Jet_MC_MatchedDetLevelJet_Pt,"Jet_MC_MatchedDetLevelJet_Pt/F");
+      fJetTree->Branch("Jet_MC_MatchedDetLevelJet_Mass",&fBuffer_Jet_MC_MatchedDetLevelJet_Mass,"Jet_MC_MatchedDetLevelJet_Mass/F");
+      fJetTree->Branch("Jet_MC_MatchedDetLevelJet_Angularity",&fBuffer_Jet_MC_MatchedDetLevelJet_Angularity,"Jet_MC_MatchedDetLevelJet_Angularity/F");
+      fJetTree->Branch("Jet_MC_MatchedDetLevelJet_pTD",&fBuffer_Jet_MC_MatchedDetLevelJet_pTD,"Jet_MC_MatchedDetLevelJet_pTD/F");
+    }
+    if(saveMatchedJets_Part)
+    {
+      fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Distance",&fBuffer_Jet_MC_MatchedPartLevelJet_Distance,"Jet_MC_MatchedPartLevelJet_Distance/F");
+      fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Pt",&fBuffer_Jet_MC_MatchedPartLevelJet_Pt,"Jet_MC_MatchedPartLevelJet_Pt/F");
+      fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Mass",&fBuffer_Jet_MC_MatchedPartLevelJet_Mass,"Jet_MC_MatchedPartLevelJet_Mass/F");
+      fJetTree->Branch("Jet_MC_MatchedPartLevelJet_Angularity",&fBuffer_Jet_MC_MatchedPartLevelJet_Angularity,"Jet_MC_MatchedPartLevelJet_Angularity/F");
+      fJetTree->Branch("Jet_MC_MatchedPartLevelJet_pTD",&fBuffer_Jet_MC_MatchedPartLevelJet_pTD,"Jet_MC_MatchedPartLevelJet_pTD/F");
+    }
+
     fJetTree->Branch("Jet_MC_TruePtFraction",&fBuffer_Jet_MC_TruePtFraction,"Jet_MC_TruePtFraction/F");
     fJetTree->Branch("Jet_MC_TruePtFraction_PartLevel",&fBuffer_Jet_MC_TruePtFraction_PartLevel,"Jet_MC_TruePtFraction_PartLevel/F");
   }
@@ -496,8 +514,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fHadronMatchingRadius(0.4),
   fMatchedDetLevelJetsArrayName(""),
   fMatchedPartLevelJetsArrayName(""),
-  fMatchedJetsRhoName(""),
-  fMatchedJetsRhoMassName(""),
+  fMatchedDetLevelJetsRhoName(""),
+  fMatchedDetLevelJetsRhoMassName(""),
   fMCParticleArrayName("mcparticles"),
   fNeedEmbedClusterContainer(0),
   fRandomSeed(0),
@@ -545,8 +563,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fHadronMatchingRadius(0.4),
   fMatchedDetLevelJetsArrayName(""),
   fMatchedPartLevelJetsArrayName(""),
-  fMatchedJetsRhoName(""),
-  fMatchedJetsRhoMassName(""),
+  fMatchedDetLevelJetsRhoName(""),
+  fMatchedDetLevelJetsRhoMassName(""),
   fMCParticleArrayName("mcparticles"),
   fNeedEmbedClusterContainer(0),
   fRandomSeed(0),
@@ -608,7 +626,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->SetRandomGenerator(fRandomGenerator);
-  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveSecondaryVertices, fSaveTriggerTracks);
+  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, (fMatchedDetLevelJetsArrayName != ""), (fMatchedPartLevelJetsArrayName != ""), fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveSecondaryVertices, fSaveTriggerTracks);
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
 
@@ -780,24 +798,32 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       Double_t matchedJetDistance_Det = 0;
       Double_t matchedJetPt_Det = 0;
       Double_t matchedJetMass_Det = 0;
+      Double_t matchedJetAngularity_Det = 0;
+      Double_t matchedJetpTD_Det = 0;
       Double_t matchedJetDistance_Part = 0;
       Double_t matchedJetPt_Part = 0;
       Double_t matchedJetMass_Part = 0;
+      Double_t matchedJetAngularity_Part = 0;
+      Double_t matchedJetpTD_Part = 0;
       Double_t truePtFraction = 0;
       Double_t truePtFraction_PartLevel = 0;
       Int_t currentJetType_HM = 0;
       Int_t currentJetType_PM = 0;
       Int_t currentJetType_IC = 0;
+
       // Get jet type from MC (hadron matching, parton matching definition - for HF jets)
       GetJetType(jet, currentJetType_HM, currentJetType_PM, currentJetType_IC);
       // Get true estimators: for pt, jet mass, ...
       GetTrueJetPtFraction(jet, truePtFraction, truePtFraction_PartLevel);
       if(fMatchedDetLevelJetsArrayName != "")
-        GetMatchedJetObservables(jet, matchedJetPt_Det, matchedJetMass_Det, matchedJetDistance_Det, kFALSE);
+        GetMatchedJetObservables(jet, matchedJetPt_Det, matchedJetDistance_Det, matchedJetMass_Det, matchedJetAngularity_Det, matchedJetpTD_Det, kFALSE);
       // if we have a second matching array name given, do the second Matching
       if(fMatchedPartLevelJetsArrayName != "")
-        GetMatchedJetObservables(jet, matchedJetPt_Part, matchedJetMass_Part, matchedJetDistance_Part, kTRUE);
-      fJetTree->FillBuffer_MonteCarlo(currentJetType_PM,currentJetType_HM,currentJetType_IC,matchedJetDistance_Det,matchedJetPt_Det,matchedJetMass_Det,matchedJetDistance_Part,matchedJetPt_Part,matchedJetMass_Part,truePtFraction,truePtFraction_PartLevel,fPtHard,fEventWeight,fImpactParameter);
+        GetMatchedJetObservables(jet, matchedJetPt_Part, matchedJetDistance_Part, matchedJetMass_Part, matchedJetAngularity_Part, matchedJetpTD_Part, kTRUE);
+      fJetTree->FillBuffer_MonteCarlo(currentJetType_PM,currentJetType_HM,currentJetType_IC,
+                                      matchedJetDistance_Det,matchedJetPt_Det,matchedJetMass_Det,matchedJetAngularity_Det,matchedJetpTD_Det,
+                                      matchedJetDistance_Part,matchedJetPt_Part,matchedJetMass_Part,matchedJetAngularity_Part,matchedJetpTD_Part,
+                                      truePtFraction,truePtFraction_PartLevel,fPtHard,fEventWeight,fImpactParameter);
     }
 
     // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
@@ -1085,17 +1111,17 @@ void AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet, Double_
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetMass, Double_t& matchedJetDistance, Bool_t IsPartLevelMatching)
+void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& matchedJetDistance, Double_t& matchedJetMass, Double_t& matchedJetAngularity, Double_t& matchedJetpTD, Bool_t isPartLevelMatching)
 {
   // need to specify which array name to pick based on if this is the second matching
   TString jet_array_name = "";
-  if(IsPartLevelMatching)
+  if(isPartLevelMatching)
     jet_array_name = fMatchedPartLevelJetsArrayName;
   else
     jet_array_name = fMatchedDetLevelJetsArrayName;
 
   // #################################################################################
-  // ##### OBSERVABLES FROM MATCHED JETS: Jet pt, jet mass
+  // ##### OBSERVABLES FROM MATCHED JETS: Jet pt, jet mass + angularity + pTD(momentum dispersion)
   matchedJetDistance = 8.; // 8 is higher than maximum possible matching distance
   if(jet_array_name != "")
   {
@@ -1103,21 +1129,22 @@ void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Dou
     AliRhoParameter* rho = 0;
     AliRhoParameter* rhoMass = 0;
     Double_t trueRho = 0;
-    if(!IsPartLevelMatching){
+    if(!isPartLevelMatching){
       // "True" background for pt
-      rho = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fMatchedJetsRhoName.Data()));
+      rho = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fMatchedDetLevelJetsRhoName.Data()));
       if(rho)
        trueRho = rho->GetVal();
       // "True" background for mass
-      rhoMass = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fMatchedJetsRhoMassName.Data()));
+      rhoMass = static_cast<AliRhoParameter*>(InputEvent()->FindListObject(fMatchedDetLevelJetsRhoMassName.Data()));
     }
     TClonesArray* matchedJetArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", jet_array_name.Data())));
 
-    // Loop over all true jets to find the best match
+    // Loop over all true jets to find the best match & fill properties
     matchedJetPt = 0;
     matchedJetMass = 0;
     if(matchedJetArray)
     {
+      AliEmcalJet* bestMatchedJet = 0;
       for(Int_t i=0; i<matchedJetArray->GetEntries(); i++)
       {
         AliEmcalJet* matchedJet = static_cast<AliEmcalJet*>(matchedJetArray->At(i));
@@ -1128,12 +1155,21 @@ void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Dou
         if(deltaR < matchedJetDistance)
         {
           matchedJetDistance = deltaR;
-          matchedJetPt   = matchedJet->Pt() - matchedJet->Area()* trueRho;
-          if(rhoMass)
-            matchedJetMass = matchedJet->GetShapeProperties()->GetSecondOrderSubtracted();
-          else
-            matchedJetMass = matchedJet->M();
+          bestMatchedJet =  matchedJet;
         }
+      }
+      // Fill properties for best match
+      if(bestMatchedJet)
+      {
+        matchedJetPt   = bestMatchedJet->Pt() - bestMatchedJet->Area()* trueRho;
+        if(rhoMass)
+          matchedJetMass = bestMatchedJet->GetShapeProperties()->GetSecondOrderSubtracted();
+        else
+          matchedJetMass = bestMatchedJet->M();
+
+        Double_t leSub_noCorr = 0; Double_t trackPtMean = 0; Double_t trackPtMedian = 0;
+        matchedJetAngularity = 0; matchedJetpTD = 0;
+        CalculateJetShapes(bestMatchedJet, leSub_noCorr, matchedJetAngularity, matchedJetpTD, trackPtMean, trackPtMedian);
       }
     }
   }
@@ -1670,9 +1706,9 @@ void AliAnalysisTaskJetExtractor::PrintConfig()
   if(fIsEmbeddedEvent)
     std::cout << Form("* EMCal embedding framework will be used (at least on container has IsEmbedded() true)") << std::endl;
   if(fMatchedDetLevelJetsArrayName != "")
-    std::cout << Form("* Detector Level Jet matching active , array=%s, rho=%s, rho_mass=%s", fMatchedDetLevelJetsArrayName.Data(), fMatchedJetsRhoName.Data(), fMatchedJetsRhoMassName.Data()) << std::endl;
+    std::cout << Form("* Detector level jet matching active , array=%s, rho=%s, rho_mass=%s", fMatchedDetLevelJetsArrayName.Data(), fMatchedDetLevelJetsRhoName.Data(), fMatchedDetLevelJetsRhoMassName.Data()) << std::endl;
   if(fMatchedPartLevelJetsArrayName != "")
-    std::cout << Form("* Particle Level Jet matching active, array=%s",  fMatchedPartLevelJetsArrayName.Data()) << std::endl;
+    std::cout << Form("* Particle level jet matching active, array=%s",  fMatchedPartLevelJetsArrayName.Data()) << std::endl;
   if(fMCParticleArray)
     std::cout << Form("* Particle level information available (for jet origin calculation, particle code): %s", fMCParticleArrayName.Data()) << std::endl;
   if(extractionHM.size())
