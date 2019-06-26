@@ -94,6 +94,11 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   cent(0),
   ZDCepA(0),
   ZDCepC(0),
+  TPCep(0),
+  TPCepA(0),
+  TPCepC(0),
+  fQnList(0),        
+  man(0),        
   fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
@@ -225,7 +230,12 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name,TString 
   n(0),
   cent(0),
   ZDCepA(0),        
-  ZDCepC(0),        
+  ZDCepC(0),
+  TPCep(0),
+  TPCepA(0),
+  TPCepC(0),     
+  fQnList(0),         
+  man(0),         
   fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
@@ -355,7 +365,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     if (useTMVA) SetupTMVAReader(TMVAWeightFileName);  
   
     
-   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+   man=AliAnalysisManager::GetAnalysisManager();
    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
    inputHandler->SetNeedField();
 
@@ -387,6 +397,9 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("#tracks", &n);
   fTree->Branch("ZDCepA", &ZDCepA);
   fTree->Branch("ZDCepC", &ZDCepC);
+  fTree->Branch("TPCep", &TPCep);
+  fTree->Branch("TPCepA", &TPCepA);
+  fTree->Branch("TPCepC", &TPCepC);
   fTree->Branch("pt", &pt);
   fTree->Branch("eta", &eta);
   fTree->Branch("phi", &phi);
@@ -495,9 +508,11 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   else cent = MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
 
   if(cent<fCentralityPercentileMin || cent>fCentralityPercentileMax) return;
-  
+
   UInt_t selectedMask=(1<<evfilter->GetCuts()->GetEntries())-1;
-  varManager->SetFillMap(NULL);
+  TBits* fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
+  fUsedVars->SetBitNumber(AliDielectronVarManager::kP, kTRUE);  
+  varManager->SetFillMap(fUsedVars);
   varManager->SetEvent(event);
   if(selectedMask!=(evfilter->IsSelected(event))){
     fQAHist->Fill("Events_not_selected_filter",1);
@@ -546,7 +561,15 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     ZDCepC=-999;
     ZDCepA=-999;
   }      
-    
+ 
+//  man=AliAnalysisManager::GetAnalysisManager(); 
+  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections"));  
+  AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+  TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+//  TList *qnlist = (TList*) event->FindListObject("qnVectorList");    
+  if(qnlist != NULL)  AliAnalysisTaskMLTreeMaker::FillQnEventplanes(qnlist);
+//  else cout<<"No qnVectorList found!"<<endl;
+  
   fTree->Fill();
   fQAHist->Fill("Events_track_and_cent_selected",1);
   }
@@ -999,6 +1022,44 @@ Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTr
     d0z0[1]=-999.;
   }
   return ok;
+}
+
+void AliAnalysisTaskMLTreeMaker::FillQnEventplanes(TList* qnlist){
+  TString qnListDetector;
+  TString fgQnVectorNorm="";
+  // TPC Eventplane q-Vector
+  qnListDetector = "TPC" + fgQnVectorNorm;
+  const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+  TVector2 *qVectorTPC = new TVector2(-200.,-200.);
+  if(qVecQnFrameworkTPC != NULL){
+    qVectorTPC->Set(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
+    TPCep = TVector2::Phi_mpi_pi(qVectorTPC->Phi())/2;
+  }
+  delete qVectorTPC;
+  
+          
+  // TPC A-Side/Neg. Eta Eventplane q-Vector
+//  qnListDetector = "TPCNegEta" + fgQnVectorNorm;
+//  const AliQnCorrectionsQnVector *qVecQnFrameworkTPCaSide = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+//  TVector2 *qVectorTPCaSide = new TVector2(-200.,-200.);
+//  cout<<"TPC A-Side test"<<endl;
+//  if(qVecQnFrameworkTPCaSide != NULL){
+//    qVectorTPCaSide->Set(qVecQnFrameworkTPCaSide->Qx(2),qVecQnFrameworkTPCaSide->Qy(2));
+//    TPCepA = TVector2::Phi_mpi_pi(qVectorTPCaSide->Phi())/2;
+//    cout<<"qVecQnFrameworkTPCaSide->Qx(2):"<<qVecQnFrameworkTPCaSide->Qx(2)<<endl;
+//  }
+//  else cout<<"qVecQnFrameworkTPCaSide == NULL!"<<endl;
+//  delete qVectorTPCaSide;
+
+  // TPC C-Side/Pos. Eta Eventplane q-Vector
+//  qnListDetector = "TPCPosEta" + fgQnVectorNorm;
+//  const AliQnCorrectionsQnVector *qVecQnFrameworkTPCcSide = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
+//  TVector2 *qVectorTPCcSide = new TVector2(-200.,-200.);
+//  if(qVecQnFrameworkTPCcSide != NULL){
+//    qVectorTPCcSide->Set(qVecQnFrameworkTPCcSide->Qx(2),qVecQnFrameworkTPCcSide->Qy(2));
+//    TPCepC = TVector2::Phi_mpi_pi(qVectorTPCcSide->Phi())/2;
+//  }
+//  delete qVectorTPCcSide;        
 }
 
 
