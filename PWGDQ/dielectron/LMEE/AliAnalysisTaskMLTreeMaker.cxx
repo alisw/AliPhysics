@@ -1031,11 +1031,9 @@ void AliAnalysisTaskMLTreeMaker::FillQnEventplanes(TList* qnlist){
   qnListDetector = "TPC" + fgQnVectorNorm;
   const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,qnListDetector.Data(),"latest","latest");
   TVector2 *qVectorTPC = new TVector2(-200.,-200.);
-  cout<<"qVecQnFrameworkTPC: "<<qVecQnFrameworkTPC<<endl;
   if(qVecQnFrameworkTPC != NULL){
     qVectorTPC->Set(qVecQnFrameworkTPC->Qx(2),qVecQnFrameworkTPC->Qy(2));
     TPCep = TVector2::Phi_mpi_pi(qVectorTPC->Phi())/2;
-    cout<<"qVecQnFrameworkTPC->Qx(2): "<<qVecQnFrameworkTPC->Qx(2)<<endl;
   }
   delete qVectorTPC;
   
