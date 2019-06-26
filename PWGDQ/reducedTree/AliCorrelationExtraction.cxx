@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <vector>
+#include <memory>
 
 #include <TH1.h>
 #include <TH1D.h>
@@ -402,9 +403,9 @@ void AliCorrelationExtraction::ApplyUserRanges(THnBase* h) {
   // NOTE:  user ranges are applied only to the specified fNVariables variables
   //        THnF may contain more than fNVariables, but those unspecified will be automatically integrated over
   //
-  THnBase*              seosHist = NULL;
-  if (fSEOS)            seosHist = (THnF*)fSEOS->Clone("seosHist");
-  else if (fSEOSSparse) seosHist = (THnSparseF*)fSEOSSparse->Clone("seosHist");
+  std::unique_ptr<THnBase> seosHist;
+  if (fSEOS)            seosHist = std::unique_ptr<THnF>(       static_cast<THnF*>(       fSEOS->Clone(       "seosHist")));
+  else if (fSEOSSparse) seosHist = std::unique_ptr<THnSparseF>( static_cast<THnSparseF*>( fSEOSSparse->Clone( "seosHist")));
   for (Int_t i=0; i<fNVariables; ++i) {
     if (TMath::Abs(fVarLimits[i][0]-fVarLimits[i][1])<EPSILON) {
       fVarLimits[i][0] = seosHist->GetAxis(fVarIndices[i])->GetXmin()+EPSILON;
@@ -418,7 +419,6 @@ void AliCorrelationExtraction::ApplyUserRanges(THnBase* h) {
     }
     h->GetAxis(fVarIndices[i])->SetRangeUser(fVarLimits[i][0], fVarLimits[i][1]);
   }
-  delete seosHist;
 }
 
 //_______________________________________________________________________________
@@ -598,10 +598,10 @@ Bool_t AliCorrelationExtraction::Initialize() {
   if (fMEMMSparse)  ApplyUserRanges(fMEMMSparse);
 
   // set mixing variable bin limits
-  TH1F* tmpHist = NULL;
+  std::unique_ptr<TH1D> tmpHist;
   for (Int_t i=0; i<fNMixingVariables; ++i) {
-    if (fSEOS)            tmpHist = (TH1F*)fSEOS->Projection(fMixingVarIndices[i]);
-    else if (fSEOSSparse) tmpHist = (TH1F*)fSEOSSparse->Projection(fMixingVarIndices[i]);
+    if (fSEOS)        tmpHist = std::unique_ptr<TH1D>(static_cast<TH1D*>(fSEOS->Projection(       fMixingVarIndices[i])));
+    if (fSEOSSparse)  tmpHist = std::unique_ptr<TH1D>(static_cast<TH1D*>(fSEOSSparse->Projection( fMixingVarIndices[i])));
     tmpHist->SetName(Form("tmpHist_%.6f", gRandom->Rndm()));
     fNMixingVarBins[i] = tmpHist->GetNbinsX();
     for (Int_t bin=0; bin<fNMixingVarBins[i]; ++bin) {
@@ -609,7 +609,6 @@ Bool_t AliCorrelationExtraction::Initialize() {
       fMixingVarBinLimits[i][bin][1] = tmpHist->GetXaxis()->GetBinUpEdge(bin+1);
     }
   }
-  delete tmpHist;
   
   return kTRUE;
 }
@@ -664,7 +663,7 @@ TH1D* AliCorrelationExtraction::ProjectToDeltaPhi(TH2D* hIn, TString name) {
   //
   if (!hIn) return NULL;
   Double_t deltaEtaRange = hIn->GetXaxis()->GetXmax() - hIn->GetXaxis()->GetXmin();
-  TH2D* hTmp = (TH2D*)hIn->Clone(Form("hTmp_%.6f", gRandom->Rndm()));
+  std::unique_ptr<TH2D> hTmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(hIn->Clone(Form("hTmp_%.6f", gRandom->Rndm()))));
   for (Int_t etaBin=1; etaBin<hTmp->GetNbinsX()+1; ++etaBin) {
     Double_t deltaEtaBinWidth = hTmp->GetXaxis()->GetBinWidth(etaBin);
     for (Int_t phiBin=1; phiBin<hTmp->GetNbinsY()+1; ++phiBin) {
@@ -676,7 +675,6 @@ TH1D* AliCorrelationExtraction::ProjectToDeltaPhi(TH2D* hIn, TString name) {
   }
   TH1D* hOut = (TH1D*)hTmp->ProjectionY(name, 1, hTmp->GetNbinsX(), "e");
   hOut->Scale(1./deltaEtaRange);
-  delete hTmp;
   return hOut;
 }
 
@@ -691,14 +689,10 @@ Bool_t  AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins(Int_
   if (nCalls && !inclCF) return kFALSE;
   
   // loop over mixinga variable bins
-  TH2D* inclCFTmp = NULL;
-  TH2D* seosTmp   = NULL;
-  TH2D* meosTmp   = NULL;
+  std::unique_ptr<TH2D> seosTmp;
+  std::unique_ptr<TH2D> meosTmp;
+  std::unique_ptr<TH2D> inclCFTmp;
   for (Int_t bin=0; bin<fNMixingVarBins[currentVar]; ++bin) {
-    //if (fVerboseFlag) {
-    //  for (Int_t j=0; j<currentVar; ++j) std::cout << "\t";
-    //  std::cout << "-> mixing var. " << currentVar << ", bin " << bin << endl;
-    //}
     if (currentVar<fNMixingVariables-1) {
       CalculateInclusiveCorrelationInMixingBins(currentVar+1, nCalls, seos, meos, inclCF);
     } else {
@@ -709,8 +703,8 @@ Bool_t  AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins(Int_
                                                                  fMixingVarBinLimits[currentVar][bin][1]-EPSILON);
 
       // project
-      seosTmp = (TH2D*)seos->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
-      meosTmp = (TH2D*)meos->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
+      seosTmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(seos->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e")));
+      meosTmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(meos->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e")));
       seosTmp->SetName(Form("projSEOS_%.6f", gRandom->Rndm()));
       meosTmp->SetName(Form("projMEOS_%.6f", gRandom->Rndm()));
 
@@ -725,26 +719,21 @@ Bool_t  AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins(Int_
       if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) seosTmp->Scale(1./2.);  // normalize to absolute delta eta range, NOTE: do we need this?
 
       // normalize ME-OS
-      if (!NormalizeToNearSidePeak(meosTmp)) {
+      if (!NormalizeToNearSidePeak(meosTmp.get())) {
         cout << "AliCorrelationExtraction::CalculateInclusiveCorrelationInMixingBins() Warning: ME-OS normalization failed, skipping mixing bin!" << endl;
         continue;
       }
       
       // calculate incl CF for current step in iteration
-      inclCFTmp = (TH2D*)seosTmp->Clone(Form("inclCFTmp_%.6f", gRandom->Rndm()));
-      inclCFTmp->Divide(meosTmp);
+      inclCFTmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(seosTmp->Clone(Form("inclCFTmp_%.6f", gRandom->Rndm()))));
+      inclCFTmp->Divide(meosTmp.get());
 
       // sum bins
       if (!nCalls)  inclCF = (TH2D*)inclCFTmp->Clone(Form("inclCF_%.6f", gRandom->Rndm()));
-      else          inclCF->Add(inclCFTmp);
+      else          inclCF->Add(inclCFTmp.get());
       nCalls++;
     }
   }
-  
-  delete inclCFTmp;
-  delete seosTmp;
-  delete meosTmp;
-  
   return kTRUE;
 }
 
@@ -773,12 +762,12 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
   }
   
   // clone THnF and set mass range to signal region
-  THnBase*              seostmp = NULL;
-  THnBase*              meostmp = NULL;
-  if (fSEOS)            seostmp = (THnF*)fSEOS->Clone(Form("seostmp_%.6f", gRandom->Rndm()));
-  else if (fSEOSSparse) seostmp = (THnSparseF*)fSEOSSparse->Clone(Form("seostmp_%.6f", gRandom->Rndm()));
-  if (fMEOS)            meostmp = (THnF*)fMEOS->Clone(Form("meostmp_%.6f", gRandom->Rndm()));
-  else if (fMEOSSparse) meostmp = (THnSparseF*)fMEOSSparse->Clone(Form("meostmp_%.6f", gRandom->Rndm()));
+  std::unique_ptr<THnBase> seostmp;
+  std::unique_ptr<THnBase> meostmp;
+  if (fSEOS)            seostmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fSEOS->Clone(       Form("seostmp_%.6f", gRandom->Rndm()))));
+  else if (fSEOSSparse) seostmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fSEOSSparse->Clone( Form("seostmp_%.6f", gRandom->Rndm()))));
+  if (fMEOS)            meostmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fMEOS->Clone(       Form("meostmp_%.6f", gRandom->Rndm()))));
+  else if (fMEOSSparse) meostmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEOSSparse->Clone( Form("meostmp_%.6f", gRandom->Rndm()))));
   seostmp->GetAxis(fMassVariableIndex)->SetRangeUser(minMass+EPSILON, maxMass-EPSILON);
   meostmp->GetAxis(fMassVariableIndex)->SetRangeUser(minMass+EPSILON, maxMass-EPSILON);
   
@@ -793,14 +782,14 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
   seos->Scale(1./vals[AliResonanceFits::kSplusB]);                                // normalize to number of triggers
   if (fDeltaPhiVariable==AliReducedVarManager::kDeltaPhiSym) seos->Scale(1./2.);  // normalize to symmetric delta phi range
   if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) seos->Scale(1./2.);  // normalize to absolute delta eta range, NOTE: do we need this?
-  
+
   // normalize mixed event to near-side peak
   Bool_t meosNormFlag = NormalizeToNearSidePeak(meos);
   if (!meosNormFlag) {
     cout << "AliCorrelationExtraction::CalculateInclusiveCorrelation() Fatal: ME-OS normalization failed!" << endl;
     return kFALSE;
   }
-  
+
   // calculate inclusive correlation
   if (!fUseMixingVars) {
     inclCF2D = (TH2D*)seos->Clone(Form("inclCF2D_%.6f", gRandom->Rndm()));
@@ -809,7 +798,7 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
     if (fVerboseFlag) cout << "AliCorrelationExtraction::CalculateInclusiveCorrelation() calculating inclusive correlation in mixing variable bins!" << endl;
     Int_t startVar  = 0;
     Int_t nCalls    = 0;
-    CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, seostmp, meostmp, inclCF2D);
+    CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, seostmp.get(), meostmp.get(), inclCF2D);
     inclCF2D->SetName(Form("inclCF2D_%.6f", gRandom->Rndm()));
     inclCF2D->Scale(1./vals[AliResonanceFits::kSplusB]);
   }
@@ -847,9 +836,6 @@ Bool_t AliCorrelationExtraction::CalculateInclusiveCorrelation(Double_t minMass,
     fTrigValSig[kBkgFrac]                 = fTrigValSig[kBkg]/fTrigValSig[kSplusB];
     fTrigValSig[kBkgFracErr]              = fTrigValSig[kSigFracErr];
   }
-  
-  delete seostmp;
-  delete meostmp;
 
   return kTRUE;
 }
@@ -866,14 +852,14 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
   else if (fSEOSSparse) fInclusiveCF3D = (TH3D*)fSEOSSparse->Projection(fMassVariableIndex, fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
   Int_t nMassBins = fInclusiveCF3D->GetNbinsX();
   Int_t nPhiBins  = fInclusiveCF3D->GetNbinsY();
-  if (fIntegrateDeltaEta[kBkgFitting]) fInclusiveCF3D = (TH3D*)fInclusiveCF3D->RebinZ(fInclusiveCF3D->GetNbinsZ());
+  if (fIntegrateDeltaEta[kBkgFitting]) fInclusiveCF3D->RebinZ(fInclusiveCF3D->GetNbinsZ());
   Int_t nEtaBins  = fInclusiveCF3D->GetNbinsZ();
 
-  THnBase*  seosthnftmp = NULL;
-  THnBase*  meosthnftmp = NULL;
-  TH2D*     seostmp     = NULL;
-  TH2D*     meostmp     = NULL;
-  TH2D*     inclCF2Dtmp = NULL;
+  std::unique_ptr<THnBase> seosthnftmp;
+  std::unique_ptr<THnBase> meosthnftmp;
+  std::unique_ptr<TH2D> seostmp;
+  std::unique_ptr<TH2D> meostmp;
+  std::unique_ptr<TH2D> inclCF2Dtmp;
   for (Int_t massBin=1; massBin<=nMassBins; ++massBin) {
     // mass range
     Double_t minMass = fInclusiveCF3D->GetXaxis()->GetBinLowEdge( massBin);
@@ -882,43 +868,46 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
     if (fVerboseFlag) cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() Inclusive correlation slice in mass [" << minMass << ", " << maxMass << "]" << endl;
     
     // set range
-    if (fSEOS)            seosthnftmp = (THnF*)fSEOS->Clone(Form("seosthnftmp_%.6f", gRandom->Rndm()));
-    else if (fSEOSSparse) seosthnftmp = (THnSparseF*)fSEOSSparse->Clone(Form("seosthnftmp_%.6f", gRandom->Rndm()));
-    if (fMEOS)            meosthnftmp = (THnF*)fMEOS->Clone(Form("meosthnftmp_%.6f", gRandom->Rndm()));
-    else if (fMEOSSparse) meosthnftmp = (THnSparseF*)fMEOSSparse->Clone(Form("meosthnftmp_%.6f", gRandom->Rndm()));
+    if (fSEOS)        seosthnftmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fSEOS->Clone(       Form("seosthnftmp_%d", massBin))));
+    if (fSEOSSparse)  seosthnftmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fSEOSSparse->Clone( Form("seosthnftmp_%d", massBin))));
+    if (fMEOS)        meosthnftmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fMEOS->Clone(       Form("meosthnftmp_%d", massBin))));
+    if (fMEOSSparse)  meosthnftmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEOSSparse->Clone( Form("meosthnftmp_%d", massBin))));
     seosthnftmp->GetAxis(fMassVariableIndex)->SetRangeUser(minMass+EPSILON, maxMass-EPSILON);
     meosthnftmp->GetAxis(fMassVariableIndex)->SetRangeUser(minMass+EPSILON, maxMass-EPSILON);
 
     if (!fUseMixingVars) {
       // project into 2D
       // NOTE: x = fDeltaEtaVariableIndex, y = fDeltaPhiVariableIndex
-      seostmp = (TH2D*)seosthnftmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
-      meostmp = (TH2D*)meosthnftmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e");
-      seostmp->SetName(Form("projSEOS_%.6f", gRandom->Rndm()));
-      meostmp->SetName(Form("projMEOS_%.6f", gRandom->Rndm()));
+      seostmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(seosthnftmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e")));
+      meostmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(meosthnftmp->Projection(fDeltaPhiVariableIndex, fDeltaEtaVariableIndex, "e")));
+      seostmp->SetName(Form("projSEOS_%df", massBin));
+      meostmp->SetName(Form("projMEOS_%df", massBin));
 
       // normalize same event
       if (fDeltaPhiVariable==AliReducedVarManager::kDeltaPhiSym) seostmp->Scale(1./2.);  // normalize to symmetric delta phi range
       if (fDeltaEtaVariable==AliReducedVarManager::kDeltaEtaAbs) seostmp->Scale(1./2.);  // normalize to absolute delta eta range
       
       // normalize mixed event to near-side peak
-      Bool_t meosNormFlag = NormalizeToNearSidePeak(meostmp);
+      Bool_t meosNormFlag = NormalizeToNearSidePeak(meostmp.get());
       if (!meosNormFlag) {
         cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() Fatal: ME-OS normalization failed!" << endl;
         return kFALSE;
       }
 
       // calculate inclusive correlation
-      inclCF2Dtmp = (TH2D*)seostmp->Clone(Form("inclCF2D_%.6f", gRandom->Rndm()));
-      inclCF2Dtmp->Divide(meostmp);
+      inclCF2Dtmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(seostmp->Clone(Form("inclCF2D_%d", massBin))));
+      inclCF2Dtmp->Divide(meostmp.get());
     } else {
       if (fVerboseFlag) cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() calculating inclusive correlation in mixing variable bins!" << endl;
       Int_t startVar  = 0;
       Int_t nCalls    = 0;
-      CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, seosthnftmp, meosthnftmp, inclCF2Dtmp);
-      inclCF2Dtmp->SetName(Form("inclCF2D_%.6f", gRandom->Rndm()));
+
+      TH2D* inclCF2Dtmp_mixing = NULL;
+      CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, seosthnftmp.get(), meosthnftmp.get(), inclCF2Dtmp_mixing);
+      inclCF2Dtmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(inclCF2Dtmp_mixing->Clone(Form("inclCF2D_%d", massBin))));
+      delete inclCF2Dtmp_mixing;
     }
-    if (fIntegrateDeltaEta[kBkgFitting]) inclCF2Dtmp = (TH2D*)inclCF2Dtmp->RebinX(inclCF2Dtmp->GetNbinsX());
+    if (fIntegrateDeltaEta[kBkgFitting]) inclCF2Dtmp->RebinX(inclCF2Dtmp->GetNbinsX());
 
     // fill 3D inclusive correlation histogram
     for (Int_t phiBin=1; phiBin<=nPhiBins; ++phiBin) {
@@ -1066,12 +1055,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationFitting() {
     fBackgroundCF1D = (TH1D*)fBackgroundCF2D->ProjectionY("backgroundCF_1D",  1, fBackgroundCF2D->GetNbinsX(),  "e");
     fSignalCF1D     = (TH1D*)fSignalCF2D->ProjectionY(    "signalCF_1D",      1, fSignalCF2D->GetNbinsX(),      "e");
   }
-
-  delete seosthnftmp;
-  delete meosthnftmp;
-  delete seostmp;
-  delete meostmp;
-  delete inclCF2Dtmp;
   
   return kTRUE;
 }
@@ -1132,18 +1115,18 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationLikeSign() {
   fTrigValSig[kNTrigSEMMErr]    = nTriggerMMErr;
 
   // clone THnF (or THnSparseF) and set mass range to signal region
-  THnBase*              sepptmp = NULL;
-  THnBase*              semmtmp = NULL;
-  THnBase*              mepptmp = NULL;
-  THnBase*              memmtmp = NULL;
-  if (fSEPP)            sepptmp = (THnF*)fSEPP->Clone(Form("sepptmp_%.6f", gRandom->Rndm()));
-  else if (fSEPPSparse) sepptmp = (THnSparseF*)fSEPPSparse->Clone(Form("sepptmp_%.6f", gRandom->Rndm()));
-  if (fSEMM)            semmtmp = (THnF*)fSEMM->Clone(Form("semmtmp_%.6f", gRandom->Rndm()));
-  else if (fSEMMSparse) semmtmp = (THnSparseF*)fSEMMSparse->Clone(Form("semmtmp_%.6f", gRandom->Rndm()));
-  if (fMEPP)            mepptmp = (THnF*)fMEPP->Clone(Form("mepptmp_%.6f", gRandom->Rndm()));
-  else if (fMEPPSparse) mepptmp = (THnSparseF*)fMEPPSparse->Clone(Form("mepptmp_%.6f", gRandom->Rndm()));
-  if (fMEMM)            memmtmp = (THnF*)fMEMM->Clone(Form("memmtmp_%.6f", gRandom->Rndm()));
-  else if (fMEMMSparse) memmtmp = (THnSparseF*)fMEMMSparse->Clone(Form("memmtmp_%.6f", gRandom->Rndm()));
+  std::unique_ptr<THnBase> sepptmp;
+  std::unique_ptr<THnBase> semmtmp;
+  std::unique_ptr<THnBase> mepptmp;
+  std::unique_ptr<THnBase> memmtmp;
+  if (fSEPP)        sepptmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fSEPP->Clone(       Form("sepptmp_%.6f", gRandom->Rndm()))));
+  if (fSEPPSparse)  sepptmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fSEPPSparse->Clone( Form("sepptmp_%.6f", gRandom->Rndm()))));
+  if (fSEMM)        semmtmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fSEMM->Clone(       Form("semmtmp_%.6f", gRandom->Rndm()))));
+  if (fSEMMSparse)  semmtmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fSEMMSparse->Clone( Form("semmtmp_%.6f", gRandom->Rndm()))));
+  if (fMEPP)        mepptmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fMEPP->Clone(       Form("mepptmp_%.6f", gRandom->Rndm()))));
+  if (fMEPPSparse)  mepptmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEPPSparse->Clone( Form("mepptmp_%.6f", gRandom->Rndm()))));
+  if (fMEMM)        memmtmp = std::unique_ptr<THnF>(      static_cast<THnF*>(       fMEMM->Clone(       Form("memmtmp_%.6f", gRandom->Rndm()))));
+  if (fMEMMSparse)  memmtmp = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEMMSparse->Clone( Form("memmtmp_%.6f", gRandom->Rndm()))));
   sepptmp->GetAxis(fMassVariableIndex)->SetRangeUser(fBackgroundMassRanges[0][0]+EPSILON, fBackgroundMassRanges[0][1]-EPSILON);
   semmtmp->GetAxis(fMassVariableIndex)->SetRangeUser(fBackgroundMassRanges[0][0]+EPSILON, fBackgroundMassRanges[0][1]-EPSILON);
   mepptmp->GetAxis(fMassVariableIndex)->SetRangeUser(fBackgroundMassRanges[0][0]+EPSILON, fBackgroundMassRanges[0][1]-EPSILON);
@@ -1182,11 +1165,11 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationLikeSign() {
   }
 
   // calculate inclusive correlation - separately for both signs
-  TH2D* inclCF2DPP = NULL;
-  TH2D* inclCF2DMM = NULL;
+  std::unique_ptr<TH2D> inclCF2DPP;
+  std::unique_ptr<TH2D> inclCF2DMM;
   if (!fUseMixingVars) {
-    inclCF2DPP = (TH2D*)fSEPPNormBackgroundMassWindow[0]->Clone(Form("inclCF2D_pp_%.6f", gRandom->Rndm()));
-    inclCF2DMM = (TH2D*)fSEMMNormBackgroundMassWindow[0]->Clone(Form("inclCF2D_mm_%.6f", gRandom->Rndm()));
+    inclCF2DPP = std::unique_ptr<TH2D>( static_cast<TH2D*>(fSEPPNormBackgroundMassWindow[0]->Clone(Form("inclCF2D_pp_%.6f", gRandom->Rndm()))));
+    inclCF2DMM = std::unique_ptr<TH2D>( static_cast<TH2D*>(fSEMMNormBackgroundMassWindow[0]->Clone(Form("inclCF2D_mm_%.6f", gRandom->Rndm()))));
     inclCF2DPP->Divide(fMEPPNormBackgroundMassWindow[0]);
     inclCF2DMM->Divide(fMEMMNormBackgroundMassWindow[0]);
   } else {
@@ -1195,19 +1178,23 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationLikeSign() {
     Int_t startVarMM  = 0;
     Int_t nCallsPP    = 0;
     Int_t nCallsMM    = 0;
-    CalculateInclusiveCorrelationInMixingBins(startVarPP, nCallsPP, sepptmp, mepptmp, inclCF2DPP);
-    CalculateInclusiveCorrelationInMixingBins(startVarMM, nCallsMM, semmtmp, memmtmp, inclCF2DMM);
-    inclCF2DPP->SetName(Form("inclCF2D_pp_%.6f", gRandom->Rndm()));
-    inclCF2DMM->SetName(Form("inclCF2D_mm_%.6f", gRandom->Rndm()));
+    TH2D* inclCF2DPP_mixing = NULL;
+    TH2D* inclCF2DMM_mixing = NULL;
+    CalculateInclusiveCorrelationInMixingBins(startVarPP, nCallsPP, sepptmp.get(), mepptmp.get(), inclCF2DPP_mixing);
+    CalculateInclusiveCorrelationInMixingBins(startVarMM, nCallsMM, semmtmp.get(), memmtmp.get(), inclCF2DMM_mixing);
+    inclCF2DPP = std::unique_ptr<TH2D>( static_cast<TH2D*>(inclCF2DPP_mixing->Clone(Form("inclCF2D_pp_%.6f", gRandom->Rndm()))));
+    inclCF2DMM = std::unique_ptr<TH2D>( static_cast<TH2D*>(inclCF2DMM_mixing->Clone(Form("inclCF2D_mm_%.6f", gRandom->Rndm()))));
     inclCF2DPP->Scale(1./nTriggerPP);
     inclCF2DMM->Scale(1./nTriggerMM);
+    delete inclCF2DPP_mixing;
+    delete inclCF2DMM_mixing;
   }
   inclCF2DPP->Scale(1., "width"); // normalize to bin area
   inclCF2DMM->Scale(1., "width"); // normalize to bin area
 
   // average ++ and -- contributions
   fInclusiveCF2DBackgroundMassWindow[0] = (TH2D*)inclCF2DPP->Clone("inclusiveCF_LS_backgroundRegion0_2D");
-  fInclusiveCF2DBackgroundMassWindow[0]->Add(inclCF2DMM);
+  fInclusiveCF2DBackgroundMassWindow[0]->Add(inclCF2DMM.get());
   fInclusiveCF2DBackgroundMassWindow[0]->Scale(0.5);
   
   // project inclusive LS correlation into 1D
@@ -1216,13 +1203,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationLikeSign() {
   // set background correlation
   fBackgroundCF2D = (TH2D*)fInclusiveCF2DBackgroundMassWindow[0]->Clone("backgroundCF_2D");
   fBackgroundCF1D = (TH1D*)fInclusiveCF1DBackgroundMassWindow[0]->Clone("backgroundCF_1D");
-  
-  delete sepptmp;
-  delete semmtmp;
-  delete mepptmp;
-  delete memmtmp;
-  delete inclCF2DPP;
-  delete inclCF2DMM;
   
   return kTRUE;
 }
@@ -1454,15 +1434,15 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoC
   }
   
   // build 2D combinatorial background correlation
-  THnBase*  meos2tmp  = NULL;
-  THnBase*  meostmp   = NULL;
-  TH2D*     bkgtmp    = NULL;
+  std::unique_ptr<THnBase>  meos2tmp;
+  std::unique_ptr<THnBase>  meostmp;
+  std::unique_ptr<TH2D>     bkgtmp;
   for (Int_t i=0; i<fNBackgroundMassRanges; ++i) {
     if (i<fNBackgroundMassRanges) {
-      if (fMEOS2)             meos2tmp  = (THnF*)fMEOS2->Clone(Form("meos2tmp_%.6f", gRandom->Rndm()));
-      else if (fMEOS2Sparse)  meos2tmp  = (THnSparseF*)fMEOS2Sparse->Clone(Form("meos2tmp_%.6f", gRandom->Rndm()));
-      if (fMEOS)              meostmp   = (THnF*)fMEOS->Clone(Form("meostmp_%.6f", gRandom->Rndm()));
-      else if (fMEOSSparse)   meostmp   = (THnSparseF*)fMEOSSparse->Clone(Form("meostmp_%.6f", gRandom->Rndm()));
+      if (fMEOS2)       meos2tmp  = std::unique_ptr<THnF>(      static_cast<THnF*>(       fMEOS2->Clone(      Form("meos2tmp_%.6f", gRandom->Rndm()))));
+      if (fMEOS2Sparse) meos2tmp  = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEOS2Sparse->Clone(Form("meos2tmp_%.6f", gRandom->Rndm()))));
+      if (fMEOS)        meostmp   = std::unique_ptr<THnF>(      static_cast<THnF*>(       fMEOS->Clone(       Form("meostmp_%.6f", gRandom->Rndm()))));
+      if (fMEOSSparse)  meostmp   = std::unique_ptr<THnSparseF>(static_cast<THnSparseF*>( fMEOSSparse->Clone( Form("meostmp_%.6f", gRandom->Rndm()))));
       meos2tmp->GetAxis(fMassVariableIndex)->SetRangeUser(fBackgroundMassRanges[i][0]+EPSILON, fBackgroundMassRanges[i][1]-EPSILON);
       meostmp->GetAxis(fMassVariableIndex)->SetRangeUser(fBackgroundMassRanges[i][0]+EPSILON, fBackgroundMassRanges[i][1]-EPSILON);
 
@@ -1490,7 +1470,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoC
         if (fVerboseFlag) cout << "AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoComponent() calculating inclusive correlation in mixing variable bins!" << endl;
         Int_t startVar  = 0;
         Int_t nCalls    = 0;
-        CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, meos2tmp, meostmp, fCombinatorialBackgroundCF2D[i]);
+        CalculateInclusiveCorrelationInMixingBins(startVar, nCalls, meos2tmp.get(), meostmp.get(), fCombinatorialBackgroundCF2D[i]);
         fCombinatorialBackgroundCF2D[i]->SetName(Form("backgroundCF_combinatorial_backgroundRegion%d_2D", i));
         fCombinatorialBackgroundCF2D[i]->Scale(1./nTriggerMEOS[i]);
       }
@@ -1498,7 +1478,7 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoC
 
       // project 1D combinatorial background correlation from 2D
       Double_t deltaEtaRange = fCombinatorialBackgroundCF2D[i]->GetXaxis()->GetXmax() - fCombinatorialBackgroundCF2D[i]->GetXaxis()->GetXmin();
-      bkgtmp = (TH2D*)fCombinatorialBackgroundCF2D[i]->Clone(Form("bkgCF2DTmp_%.6f", gRandom->Rndm()));
+      bkgtmp = std::unique_ptr<TH2D>(static_cast<TH2D*>(fCombinatorialBackgroundCF2D[i]->Clone(Form("bkgCF2DTmp_%.6f", gRandom->Rndm()))));
       for (Int_t etaBin=1; etaBin<bkgtmp->GetNbinsX()+1; ++etaBin) {
         Double_t deltaEtaBinWidth = bkgtmp->GetXaxis()->GetBinWidth(etaBin);
         for (Int_t phiBin=1; phiBin<bkgtmp->GetNbinsY()+1; ++phiBin) {
@@ -1666,10 +1646,6 @@ Bool_t AliCorrelationExtraction::CalculateBackgroundCorrelationSuperpositionTwoC
   fBackgroundCF1D = ProjectToDeltaPhi(fBackgroundCF2D,  "backgroundCF_1D");
   fSignalCF1D     = ProjectToDeltaPhi(fSignalCF2D,      "signalCF_1D");
   
-  delete meos2tmp;
-  delete meostmp;
-  delete bkgtmp;
-
   return kTRUE;
 }
 
@@ -1725,10 +1701,10 @@ Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
   //
   // correct signal correlation for hadron efficiency
   //
-  TH1D*                 normHist = NULL;
-  if (fSEOS)            normHist = (TH1D*)fSEOS->Projection(fEfficiencyVariableIndex, "e");
-  else if (fSEOSSparse) normHist = (TH1D*)fSEOSSparse->Projection(fEfficiencyVariableIndex, "e");
-  if (!normHist) {
+  std::unique_ptr<TH1D> normHist;
+  if (fSEOS)        normHist = std::unique_ptr<TH1D>(static_cast<TH1D*>(fSEOS->Projection(      fEfficiencyVariableIndex, "e")));
+  if (fSEOSSparse)  normHist = std::unique_ptr<TH1D>(static_cast<TH1D*>(fSEOSSparse->Projection(fEfficiencyVariableIndex, "e")));
+  if (!normHist.get()) {
     cout << "AliCorrelationExtraction::EfficiencyCorrection() Fatal: There was an issue with the histogram needed for normalization! Efficiency correction can't be applied!" << endl;
     return kFALSE;
   }
@@ -1763,8 +1739,8 @@ Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
   // rebin norm and eff histograms to matching binning
   Double_t* newBins = new Double_t[commonBins.size()];
   for (Int_t i=0; i<commonBins.size(); ++i) newBins[i] = commonBins.at(i);
-  TH1D* normHistTmp = (TH1D*)normHist->Clone(   "normHistTmp");
-  TH1D* effHistTmp  = (TH1D*)fHadronEff->Clone( "effHistTmp");
+  std::unique_ptr<TH1D> normHistTmp = std::unique_ptr<TH1D>(static_cast<TH1D*>(normHist->Clone(   "normHistTmp")));
+  std::unique_ptr<TH1D> effHistTmp  = std::unique_ptr<TH1D>(static_cast<TH1D*>(fHadronEff->Clone( "effHistTmp")));
   for (Int_t i=1; i<normHistTmp->GetNbinsX()+1; ++i) {
     normHistTmp->SetBinContent( i, normHistTmp->GetXaxis()->GetBinWidth(i)*normHistTmp->GetBinContent(i));
     normHistTmp->SetBinError(   i, normHistTmp->GetXaxis()->GetBinWidth(i)*normHistTmp->GetBinError(  i));
@@ -1773,10 +1749,11 @@ Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
     effHistTmp->SetBinContent( i, effHistTmp->GetXaxis()->GetBinWidth(i)*effHistTmp->GetBinContent(i));
     effHistTmp->SetBinError(   i, effHistTmp->GetXaxis()->GetBinWidth(i)*effHistTmp->GetBinError(  i));
   }
-  normHistTmp = (TH1D*)normHistTmp->Rebin(commonBins.size()-1, "normHistTmp", newBins);
-  effHistTmp  = (TH1D*)effHistTmp->Rebin( commonBins.size()-1, "effHistTmp",  newBins);
+  normHistTmp = std::unique_ptr<TH1D>(static_cast<TH1D*>(normHistTmp->Rebin(commonBins.size()-1, "normHistTmp", newBins)));
+  effHistTmp  = std::unique_ptr<TH1D>(static_cast<TH1D*>(effHistTmp->Rebin( commonBins.size()-1, "effHistTmp",  newBins)));
   normHistTmp->Scale( 1., "width");
   effHistTmp->Scale(  1., "width");
+  delete[] newBins;
 
   // calculate weighted average of efficiency:
   // 1/eff_{tot} = sum_{i=1}^{n} N_{bin i}/N_{tot}*1/eff_{bin i}
@@ -1821,9 +1798,6 @@ Bool_t AliCorrelationExtraction::EfficiencyCorrection() {
     }
   }
 
-  delete normHist;
-  delete normHistTmp;
-  delete effHistTmp;
   return kTRUE;
 }
 
