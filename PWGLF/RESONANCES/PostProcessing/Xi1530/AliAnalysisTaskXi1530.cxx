@@ -455,7 +455,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     fHistos->CreateTH1("hTotalInvMass_data", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_LS", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_Mix", "", 2000, 0.5, 2.5, "s");
-
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -692,9 +691,11 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
                 FillMCinputdXiAOD(fMCEvent, 4);
             }
         }
-        if (this->GoodTracksSelection()         // If Good track
-            && this->GoodCascadeSelection()) {  // and Good cascade is in
-                                                // this event,
+        bool checkPionTrack = this->GoodTracksSelection();
+        bool checkCascade = this->GoodCascadeSelection();
+        if (checkPionTrack      // If Good track
+            && checkCascade) {  // and Good cascade is in
+                                // this event,
             if (fEvt->IsA() == AliESDEvent::Class())
                 this->FillTracks();  // Fill the histogram
             else
@@ -1019,10 +1020,11 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             filtermapN = nTrackXi->GetFilterMap();
             filtermapB = bTrackXi->GetFilterMap();
 
+            /*
             if ((pTrackXi->Pt() < 0.15) || (nTrackXi->Pt() < 0.15) ||
                 (bTrackXi->Pt() < 0.15))
                 continue;
-
+            */
             // Disabled in AOD check - need to check further!
             /*
             if (!(pTrackXi->TestFilterBit(fFilterBit_Xi)))
