@@ -455,7 +455,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	for (UInt_t i_Constituents = 0; i_Constituents < Constituents.size(); i_Constituents++) { 
 	  if (Constituents[i_Constituents].user_index() == 0) {
 	    Dmeson_Eta=TMath::Abs(Constituents[i_Constituents].pseudorapidity());
-	    Dmeson_Eta=TMath::Abs(Constituents[i_Constituents].rapidity());
+	    Dmeson_Y=TMath::Abs(Constituents[i_Constituents].rapidity());
 	    Is_D_Jet = kTRUE; 
 	  }
 	}
