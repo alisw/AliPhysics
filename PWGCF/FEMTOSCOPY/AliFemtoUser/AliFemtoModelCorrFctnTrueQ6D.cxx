@@ -246,10 +246,10 @@ AliFemtoModelCorrFctnTrueQ6D
 
   auto axis_titles = sort_q(fBinMethod, "q_{o}", "q_{s}", "q_{l}", "q_{t,o}", "q_{t,s}", "q_{t,l}");
 
-  TString title = "Momentum Correction Hypercube Histogram";
+  TString title = "Momentum Correction Hypercube Histogram;";
 
   for (const TString &axis_title : axis_titles) {
-    title += "; " + axis_title;
+    title += axis_title + ";";
   }
 
   fHistogram = new HistType(prefix + "HyperCube", title, 6, nbins_v.data(), hist_min.data(), hist_max.data());
