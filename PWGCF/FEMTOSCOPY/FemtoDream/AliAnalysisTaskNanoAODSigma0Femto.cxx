@@ -185,6 +185,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
     fProtonTrack->SetTrack(track, fInputEvent, multiplicity);
+    fProtonTrack->SetInvMass(0.938);
     if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       Particles.push_back(*fProtonTrack);
     }

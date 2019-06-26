@@ -14,6 +14,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fkTBinning(false),
       fmTBinning(false),
       fPtQA(false),
+      fMassQA(false),
       fMomentumResolution(false),
       fPhiEtaBinning(false),
       fdPhidEtaPlots(false),
@@ -53,6 +54,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fkTBinning(config.fkTBinning),
       fmTBinning(config.fmTBinning),
       fPtQA(config.fPtQA),
+      fMassQA(config.fMassQA),
       fMomentumResolution(config.fMomentumResolution),
       fPhiEtaBinning(config.fPhiEtaBinning),
       fdPhidEtaPlots(config.fdPhidEtaPlots),
@@ -91,6 +93,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fkTBinning(false),
       fmTBinning(false),
       fPtQA(false),
+      fMassQA(false),
       fMomentumResolution(false),
       fPhiEtaBinning(false),
       fdPhidEtaPlots(false),
@@ -139,6 +142,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fkTBinning = config.fkTBinning;
     this->fmTBinning = config.fmTBinning;
     this->fPtQA = config.fPtQA;
+    this->fMassQA = config.fMassQA;
     this->fMomentumResolution = config.fMomentumResolution;
     this->fPhiEtaBinning = config.fPhiEtaBinning;
     this->fdPhidEtaPlots = config.fdPhidEtaPlots;

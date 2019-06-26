@@ -247,6 +247,7 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     config->SetmTBinning(true);
   }
   config->SetPtQA(true);
+  config->SetMassQA(true);
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
