@@ -638,18 +638,21 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
       AliDebugStream(4) << "Jet passed momentum fraction cut with value of " << sharedFraction << "\n";
     }
 
-    // Apply additional selection to jet 2
-    // TODO: Should we apply acceptance criteria to jet 2 here?
+    // NOTE: We apply no explicit event selection to jet 2 because the matching in the tagger
+    // only matches jets which are accepted.
 
-    // Get MC level jet
+    // Determine the jet to use to fill the response
+    // The jet that is passed may be the embedded detector level (for two stage matching), or it may
+    // be the embedded particle level (for direct matching).
     AliEmcalJet * jetToPass = 0;
     if (fResponseFromThreeJetCollections) {
+      // Retrieve the MC level jet
       AliEmcalJet * jet3 = jet2->ClosestJet();
-
-      // Accept jet 3
       UInt_t rejectionReason = 0;
       if (!jetsPartLevel->AcceptJet(jet3, rejectionReason)) {
-        // TODO: Store rejection reasons
+        // NOTE: This shouldn't ever happen because the tagger applies acceptance
+        //       cuts when matching. However, we keep the check here for good measure.
+        // NOTE: Could store rejection reasons if needed with below:
         //fHistRejectionReason2->Fill(jets2->GetRejectionReasonBitPosition(rejectionReason), jet2->Pt());
         continue;
       }
@@ -658,12 +661,12 @@ void AliAnalysisTaskEmcalJetHPerformance::ResponseMatrix()
       AliDebugStream(4) << "jet3 address: " << jet3 << "\n";
 
       // Use for the response
-      AliDebugStream(4) << "Using part level jet for response\n";
+      AliDebugStream(4) << "Using part level jet for response (ie. two stage matching)\n";
       jetToPass = jet3;
     }
     else {
       // Use for the response
-      AliDebugStream(4) << "Using det level jet for response\n";
+      AliDebugStream(4) << "Using one stage matching for response\n";
       jetToPass = jet2;
     }
 
