@@ -183,7 +183,27 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 if (r2 > fV0VertexerSels[6] * fV0VertexerSels[6])
                     continue;
 
-                Float_t cpa = vertex.GetV0CosineOfPointingAngle(fPrimaryVertexX, fPrimaryVertexY, fPrimaryVertexZ);
+                Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
+                Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
+                Double_t posMom[3], negMom[3];
+                ntrk->GetPxPyPz(negMom);
+                ptrk->GetPxPyPz(posMom);
+                Double_t momV0[3] = {posCharge * posMom[0] + negCharge * negMom[0], posCharge * posMom[1] + negCharge * negMom[1], posCharge * posMom[2] + negCharge * negMom[2]};
+                Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
+                Double_t SPos[3];
+                vertex.GetXYZ(SPos[0], SPos[1], SPos[2]);
+
+                deltaPos[0] = SPos[0] - fPrimaryVertexX;
+                deltaPos[1] = SPos[1] - fPrimaryVertexY;
+                deltaPos[2] = SPos[2] - fPrimaryVertexZ;
+                Double_t momV02 = momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
+                Double_t deltaPos2 = deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1] + deltaPos[2] * deltaPos[2];
+
+                Float_t cpa = (deltaPos[0] * momV0[0] +
+                               deltaPos[1] * momV0[1] +
+                               deltaPos[2] * momV0[2]) /
+                              TMath::Sqrt(momV02 * deltaPos2);
+                //   Float_t cpa = vertex.GetV0CosineOfPointingAngle(fPrimaryVertexX, fPrimaryVertexY, fPrimaryVertexZ);
 
                 //Simple cosine cut (no pt dependence for now)
                 if (cpa < fV0VertexerSels[4])
