@@ -1013,13 +1013,14 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // Standard track QA cuts
             // check quality cuts
+            /*
             UInt_t filtermapP = 9999;
             UInt_t filtermapN = 9999;
             UInt_t filtermapB = 9999;
             filtermapP = pTrackXi->GetFilterMap();
             filtermapN = nTrackXi->GetFilterMap();
             filtermapB = bTrackXi->GetFilterMap();
-
+            */
             /*
             if ((pTrackXi->Pt() < 0.15) || (nTrackXi->Pt() < 0.15) ||
                 (bTrackXi->Pt() < 0.15))
@@ -1221,7 +1222,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
     TLorentzVector temp1, temp2;
     TLorentzVector vecsum;  // Xi1530 candidate
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
-    Double_t fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV;
 
     // The following CovMatrix is set so that PropogateToDCA() ignores track
     // errors. Only used to propagate Xi to third pion for XiStar reconstruction
@@ -1801,7 +1801,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     TLorentzVector temp1, temp2;
     TLorentzVector vecsum;  // Xi1530 candidate
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
-    Double_t fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV;
 
     // The following CovMatrix is set so that PropogateToDCA() ignores track
     // errors. Only used to propagate Xi to third pion for XiStar reconstruction
