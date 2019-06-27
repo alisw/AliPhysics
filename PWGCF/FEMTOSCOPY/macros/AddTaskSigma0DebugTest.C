@@ -64,32 +64,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
     antiv0Cuts->SetMinimalBooking(true);
   }
 
-  if (suffix == "1") {
-    v0Cuts->SetCutInvMass(0.00625);
-    antiv0Cuts->SetCutInvMass(0.00625);
-  } else if (suffix == "2") {
-    v0Cuts->SetCutInvMass(0.0065);
-    antiv0Cuts->SetCutInvMass(0.0065);
-  } else if (suffix == "3") {
-    v0Cuts->SetCutInvMass(0.00675);
-    antiv0Cuts->SetCutInvMass(0.00675);
-  } else if (suffix == "4") {
-    v0Cuts->SetCutInvMass(0.007);
-    antiv0Cuts->SetCutInvMass(0.007);
-  } else if (suffix == "5") {
-    v0Cuts->SetCutInvMass(0.00725);
-    antiv0Cuts->SetCutInvMass(0.00725);
-  } else if (suffix == "6") {
-    v0Cuts->SetCutInvMass(0.0075);
-    antiv0Cuts->SetCutInvMass(0.0075);
-  } else if (suffix == "7") {
-    v0Cuts->SetCutInvMass(0.00775);
-    antiv0Cuts->SetCutInvMass(0.00775);
-  } else if (suffix == "8") {
-    v0Cuts->SetCutInvMass(0.008);
-    antiv0Cuts->SetCutInvMass(0.008);
-  }
-
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212);  // Proton
@@ -117,6 +91,11 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
+  }
+
+  if (suffix == "1") {
+    sigmaCuts->SetSigmaMassCut(0.01);
+    antiSigmaCuts->SetSigmaMassCut(0.01);
   }
 
   // Femto Collection
