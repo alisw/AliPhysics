@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/06/27'
+//  Last Modified Date: 2019/06/30
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +33,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
 #include "AliESDcascade.h"
+#include "AliEventCuts.h"
 #include "AliGenEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
@@ -47,7 +48,6 @@
 #include "TFile.h"
 #include "TParticlePDG.h"
 #include "TSystem.h"
-#include "AliEventCuts.h"
 
 // from header
 #include "AliAODEvent.h"
@@ -140,7 +140,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530()
 }
 //___________________________________________________________________
 AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(const char* name,
-                                                     const char* option)
+                                             const char* option)
     : AliAnalysisTaskSE(name),
       fOption(option),
       goodtrackindices(),
@@ -150,8 +150,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(const char* name,
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class());
 }
-AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(
-    const AliAnalysisTaskXi1530& ap)
+AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(const AliAnalysisTaskXi1530& ap)
     : fOption(ap.fOption),
       goodtrackindices(ap.goodtrackindices),
       goodcascadeindices(ap.goodcascadeindices),
@@ -214,7 +213,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     } else
         centaxisbin = {
             0,  0.01, 0.03, 0.05, 0.07, 0.1, 1,  5,
-            10, 15,   20,   30,   40,   50,   70, 100};  // for kINT7 study
+            10, 15,   20,   30,   40,   50,  70, 100};  // for kINT7 study
 
     binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
     auto binPt = AxisFix("Pt", 200, 0, 20);
@@ -283,7 +282,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
     else
         fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0);
-    if(IsMC)
+    if (IsMC)
         fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
     // QA Histograms--------------------------------------------------
     //
@@ -524,10 +523,11 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         if (fEvt->IsA() == AliESDEvent::Class()) {
             ftrackmult = fEvt->GetMultiplicity()->GetNumberOfTracklets();
         } else {
-            ftrackmult = ((AliAODEvent*)fEvt)->GetTracklets()->GetNumberOfTracklets();
+            ftrackmult =
+                ((AliAODEvent*)fEvt)->GetTracklets()->GetNumberOfTracklets();
         }
-        
-        //fCent = GetMultiplicty(fEvt);  // Centrality(AA), Multiplicity(pp)
+
+        // fCent = GetMultiplicty(fEvt);  // Centrality(AA), Multiplicity(pp)
         fCent = fEventCuts.GetCentrality(0);
 
         // PID response
@@ -555,9 +555,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         Bool_t IncompleteDAQ =
             fEventCuts.PassedCut(AliEventCuts::kDAQincomplete);
 
-        IsPS = IsSelectedTrig       // CINT7 Trigger selected
-               && !IncompleteDAQ    // No IncompleteDAQ
-               && IsNotPileUp;      // PileUp rejection
+        IsPS = IsSelectedTrig     // CINT7 Trigger selected
+               && !IncompleteDAQ  // No IncompleteDAQ
+               && IsNotPileUp;    // PileUp rejection
 
         IsINEL0Rec = IsPS && IsGoodVertex && IsVtxInZCut && IsINELg0;
 
@@ -602,7 +602,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             if (IsINEL0Rec && IsMultSelcted)
                 FillTHnSparse("htriggered_CINT7",
                               {(double)kSelected, (double)fCent, ftrackmult});
-        
+
             // Signal Loss Correction
             if (fEvt->IsA() == AliESDEvent::Class()) {
                 if (IsINEL0True && IsVtxInZCut) {  // INEL>0|10
@@ -644,8 +644,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
         // ----------------------------------------------------------------------
     } else {
         fCent = nanoHeader->GetCentr("V0M");
-        static int v0mValueIndex = nanoHeader->GetVarIndex("MultSelection.V0M.Value");
-        static int trkValueIndex = nanoHeader->GetVarIndex("MultSelection.SPDTracklets.Value");
+        static int v0mValueIndex =
+            nanoHeader->GetVarIndex("MultSelection.V0M.Value");
+        static int trkValueIndex =
+            nanoHeader->GetVarIndex("MultSelection.SPDTracklets.Value");
         intensity = nanoHeader->GetVar(v0mValueIndex);
         ftrackmult = nanoHeader->GetVar(trkValueIndex);
 
@@ -657,9 +659,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     }
 
     if (IsSelectedTrig) {
-        FillTHnSparse("hV0MSignal",
-                      {kIsSelected, (double)fCent, (double)intensity,
-                       (double)ftrackmult});
+        FillTHnSparse("hV0MSignal", {kIsSelected, (double)fCent,
+                                     (double)intensity, (double)ftrackmult});
         if (IsMultSelcted)
             FillTHnSparse("hV0MSignal",
                           {kIsMulti, (double)fCent, (double)intensity,
@@ -672,7 +673,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     // -----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
-    if (IsEvtSelected) { // In AliEventCuts
+    if (IsEvtSelected) {  // In AliEventCuts
         // Draw Multiplicity QA plot in only selected event.
         if (fQA) {
             FillTHnSparse("hMult", {(double)fCent});
@@ -742,8 +743,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
                 continue;
         }  // AOD Case
 
-        Double_t fTPCNSigPion =
-            GetTPCnSigma(track, AliPID::kPion);
+        Double_t fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
         Double_t pionZ = abs(track->GetZ() - fZ);
         Double_t pionPt = track->Pt();
 
@@ -836,10 +836,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // PID cuts for Xi daughters
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                fTPCNSigProton =
-                    GetTPCnSigma(pTrackXi, AliPID::kProton);
-                fTPCNSigLambdaPion =
-                    GetTPCnSigma(nTrackXi, AliPID::kPion);
+                fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
                 if (fQA) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      pTrackXi->GetTPCmomentum(),
@@ -849,10 +847,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                      nTrackXi->GetTPCsignal());
                 }
             } else {  // Xi+ has -proton, +pion
-                fTPCNSigProton =
-                    GetTPCnSigma(nTrackXi, AliPID::kProton);
-                fTPCNSigLambdaPion =
-                    GetTPCnSigma(pTrackXi, AliPID::kPion);
+                fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
                 if (fQA) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      nTrackXi->GetTPCmomentum(),
@@ -941,7 +937,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                 StandardXi = kFALSE;
 
             // Mass window cut
-            Double_t fMass_Xi = Xicandidate->M();
+            Double_t fMass_Xi = Xicandidate->GetEffMassXi();
             if (fQA)
                 fHistos->FillTH1("hMass_Xi", fMass_Xi);
             /*
@@ -974,12 +970,13 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             if (StandardXi) {  // Save only the Xi is good candidate
                 FillTHnSparse("hInvMass_dXi",
                               {(int)kData, (double)fCent, Xicandidate->Pt(),
-                               Xicandidate->M()});
+                               Xicandidate->GetEffMassXi()});
                 if (IsMC)
                     if (IsTrueXi(((AliESDEvent*)fEvt)->GetCascade(it))) {
-                        FillTHnSparse("hInvMass_dXi",
-                                      {(int)kMCReco, (double)fCent,
-                                       Xicandidate->Pt(), Xicandidate->M()});
+                        FillTHnSparse(
+                            "hInvMass_dXi",
+                            {(int)kMCReco, (double)fCent, Xicandidate->Pt(),
+                             Xicandidate->GetEffMassXi()});
                     }
 
                 goodcascadeindices.push_back(it);
@@ -1038,10 +1035,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // PID cuts for Xi daughters
             if (Xicandidate_aod->ChargeXi() == -1) {  // Xi- has +proton, -pion
-                fTPCNSigProton =
-                    GetTPCnSigma(pTrackXi, AliPID::kProton);
-                fTPCNSigLambdaPion =
-                    GetTPCnSigma(nTrackXi, AliPID::kPion);
+                fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
                 if (fQA) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      pTrackXi->GetTPCmomentum(),
@@ -1051,10 +1046,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                      nTrackXi->GetTPCsignal());
                 }
             } else {  // Xi+ has -proton, +pion
-                fTPCNSigProton =
-                    GetTPCnSigma(nTrackXi, AliPID::kProton);
-                fTPCNSigLambdaPion =
-                    GetTPCnSigma(pTrackXi, AliPID::kPion);
+                fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
                 if (fQA) {
                     fHistos->FillTH2("hTPCPIDLambdaProton",
                                      nTrackXi->GetTPCmomentum(),
@@ -1270,21 +1263,17 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     ->GetTrack(TMath::Abs(Xicandidate->GetBindex()));
 
             if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                fTPCNSigProton =
-                    GetTPCnSigma(pTrackXi, AliPID::kProton);
-                fTPCNSigLambdaPion =
-                    GetTPCnSigma(nTrackXi, AliPID::kPion);
+                fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
             } else {  // Xi+ has -proton, +pion
-                fTPCNSigProton =
-                    GetTPCnSigma(nTrackXi, AliPID::kProton);
-                fTPCNSigLambdaPion =
-                    GetTPCnSigma(pTrackXi, AliPID::kPion);
+                fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
             }
             fTPCNSigBachelorPion = GetTPCnSigma(
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
 
             temp1.SetXYZM(Xicandidate->Px(), Xicandidate->Py(),
-                          Xicandidate->Pz(), Xicandidate->M());
+                          Xicandidate->Pz(), Xicandidate->GetEffMassXi());
 
             // for PropogateToDCA
             xiVtx[0] = Xicandidate->Xv();
@@ -1308,8 +1297,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // PID Cut Systematic check
                 // -------------------------------------------------
-                Double_t fTPCNSigPion =
-                    GetTPCnSigma(track1, AliPID::kPion);
+                Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
 
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
@@ -1394,7 +1382,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 // Xi Mass Window Check
-                Double_t fMass_Xi = Xicandidate->M();
+                Double_t fMass_Xi = Xicandidate->GetEffMassXi();
                 if ((SysCheck.at(sys) == "XiMassWindowLoose") &&
                     (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose))
                     continue;
@@ -1670,7 +1658,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
             if (!Xicandidate)
                 continue;
             temp1.SetXYZM(Xicandidate->Px(), Xicandidate->Py(),
-                          Xicandidate->Pz(), Xicandidate->M());
+                          Xicandidate->Pz(), Xicandidate->GetEffMassXi());
 
             AliESDtrack* pTrackXi =
                 ((AliESDEvent*)fEvt)
@@ -1710,21 +1698,16 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;  // rapidity cut
 
                 // Other default cuts
-                Double_t fTPCNSigPion =
-                    GetTPCnSigma(track1, AliPID::kPion);
+                Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
                 if ((abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
                     continue;
                 // Xi PID
                 if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                    fTPCNSigProton = GetTPCnSigma(
-                        pTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = GetTPCnSigma(
-                        nTrackXi, AliPID::kPion);
+                    fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                    fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
                 } else {  // Xi+ has -proton, +pion
-                    fTPCNSigProton = GetTPCnSigma(
-                        nTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = GetTPCnSigma(
-                        pTrackXi, AliPID::kPion);
+                    fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                    fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
                 }
                 fTPCNSigBachelorPion = GetTPCnSigma(
                     bTrackXi, AliPID::kPion);  // bachelor is always pion
@@ -1766,7 +1749,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if (fXiCPA < fCascadeCosineOfPointingAngleCut)
                     continue;
                 // Xi Mass Window Check
-                Double_t fMass_Xi = Xicandidate->M();
+                Double_t fMass_Xi = Xicandidate->GetEffMassXi();
                 if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)
                     continue;
 
@@ -1833,15 +1816,11 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 (AliAODTrack*)(Xicandidate->GetDecayVertexXi()->GetDaughter(0));
 
             if (Xicandidate->ChargeXi() == -1) {  // Xi- has +proton, -pion
-                fTPCNSigProton =
-                    GetTPCnSigma(pTrackXi, AliPID::kProton);
-                fTPCNSigLambdaPion =
-                    GetTPCnSigma(nTrackXi, AliPID::kPion);
+                fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
             } else {  // Xi+ has -proton, +pion
-                fTPCNSigProton =
-                    GetTPCnSigma(nTrackXi, AliPID::kProton);
-                fTPCNSigLambdaPion =
-                    GetTPCnSigma(pTrackXi, AliPID::kPion);
+                fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
             }
             fTPCNSigBachelorPion = GetTPCnSigma(
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
@@ -1871,8 +1850,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // PID Cut Systematic check
                 // -------------------------------------------------
-                Double_t fTPCNSigPion =
-                    GetTPCnSigma(track1, AliPID::kPion);
+                Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
 
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
@@ -2270,7 +2248,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     track1->GetID() == nTrackXi->GetID() ||
                     track1->GetID() == bTrackXi->GetID())
                     continue;
-                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), track1->M());
+                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
+                              track1->M());
                 vecsum = temp1 + temp2;  // two pion vector sum
 
                 if ((Xicandidate->ChargeXi() == -1 && track1->Charge() == -1) ||
@@ -2282,21 +2261,16 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;  // rapidity cut
 
                 // Other default cuts
-                Double_t fTPCNSigPion =
-                    GetTPCnSigma(track1, AliPID::kPion);
+                Double_t fTPCNSigPion = GetTPCnSigma(track1, AliPID::kPion);
                 if ((abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
                     continue;
                 // Xi PID
                 if (Xicandidate->Charge() == -1) {  // Xi- has +proton, -pion
-                    fTPCNSigProton = GetTPCnSigma(
-                        pTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = GetTPCnSigma(
-                        nTrackXi, AliPID::kPion);
+                    fTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
+                    fTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
                 } else {  // Xi+ has -proton, +pion
-                    fTPCNSigProton = GetTPCnSigma(
-                        nTrackXi, AliPID::kProton);
-                    fTPCNSigLambdaPion = GetTPCnSigma(
-                        pTrackXi, AliPID::kPion);
+                    fTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
+                    fTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
                 }
                 fTPCNSigBachelorPion = GetTPCnSigma(
                     bTrackXi, AliPID::kPion);  // bachelor is always pion
@@ -2408,8 +2382,7 @@ void AliAnalysisTaskXi1530::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
                                        mcInputTrack->GetCalcMass()});
     }
 }
-void AliAnalysisTaskXi1530::FillMCinputAOD(AliMCEvent* fMCEvent,
-                                               Int_t check) {
+void AliAnalysisTaskXi1530::FillMCinputAOD(AliMCEvent* fMCEvent, Int_t check) {
     // Fill MC input Xi1530 histogram
     // check = 1: INELg0|10
     // check = 2: INEL10
@@ -2454,8 +2427,7 @@ void AliAnalysisTaskXi1530::FillMCinputAOD(AliMCEvent* fMCEvent,
                                        mcInputTrack->GetCalcMass()});
     }
 }
-void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent,
-                                               Int_t check) {
+void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check) {
     // Fill MC input Xi1530 histogram
     // check = 1: INEL>0|10
     // check = 2: INEL10
@@ -2490,7 +2462,7 @@ void AliAnalysisTaskXi1530::FillMCinputdXi(AliMCEvent* fMCEvent,
     }
 }
 void AliAnalysisTaskXi1530::FillMCinputdXiAOD(AliMCEvent* fMCEvent,
-                                                  Int_t check) {
+                                              Int_t check) {
     // Fill MC input Xi1530 histogram
     // check = 1: INEL>0|10
     // check = 2: INEL10
@@ -2526,10 +2498,10 @@ void AliAnalysisTaskXi1530::FillMCinputdXiAOD(AliMCEvent* fMCEvent,
 }
 
 THnSparse* AliAnalysisTaskXi1530::CreateTHnSparse(TString name,
-                                                      TString title,
-                                                      Int_t ndim,
-                                                      std::vector<TAxis> bins,
-                                                      Option_t* opt) {
+                                                  TString title,
+                                                  Int_t ndim,
+                                                  std::vector<TAxis> bins,
+                                                  Option_t* opt) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     const TAxis* axises[bins.size()];
@@ -2540,8 +2512,8 @@ THnSparse* AliAnalysisTaskXi1530::CreateTHnSparse(TString name,
 }
 
 Long64_t AliAnalysisTaskXi1530::FillTHnSparse(TString name,
-                                                  std::vector<Double_t> x,
-                                                  Double_t w) {
+                                              std::vector<Double_t> x,
+                                              Double_t w) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     auto hsparse = dynamic_cast<THnSparse*>(fHistos->FindObject(name));
@@ -2553,8 +2525,8 @@ Long64_t AliAnalysisTaskXi1530::FillTHnSparse(TString name,
 }
 
 Long64_t AliAnalysisTaskXi1530::FillTHnSparse(THnSparse* h,
-                                                  std::vector<Double_t> x,
-                                                  Double_t w) {
+                                              std::vector<Double_t> x,
+                                              Double_t w) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     if (int(x.size()) != h->GetNdimensions()) {
@@ -2566,9 +2538,9 @@ Long64_t AliAnalysisTaskXi1530::FillTHnSparse(THnSparse* h,
 }
 
 TAxis AliAnalysisTaskXi1530::AxisFix(TString name,
-                                         int nbin,
-                                         Double_t xmin,
-                                         Double_t xmax) {
+                                     int nbin,
+                                     Double_t xmin,
+                                     Double_t xmax) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(nbin, xmin, xmax);
@@ -2576,8 +2548,7 @@ TAxis AliAnalysisTaskXi1530::AxisFix(TString name,
     return axis;
 }
 
-TAxis AliAnalysisTaskXi1530::AxisStr(TString name,
-                                         std::vector<TString> bin) {
+TAxis AliAnalysisTaskXi1530::AxisStr(TString name, std::vector<TString> bin) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis ax = AxisFix(name, bin.size(), 0.5, bin.size() + 0.5);
@@ -2587,8 +2558,7 @@ TAxis AliAnalysisTaskXi1530::AxisStr(TString name,
     return ax;
 }
 
-TAxis AliAnalysisTaskXi1530::AxisVar(TString name,
-                                         std::vector<Double_t> bin) {
+TAxis AliAnalysisTaskXi1530::AxisVar(TString name, std::vector<Double_t> bin) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(bin.size() - 1, &bin.front());
@@ -2597,10 +2567,10 @@ TAxis AliAnalysisTaskXi1530::AxisVar(TString name,
 }
 
 TAxis AliAnalysisTaskXi1530::AxisLog(TString name,
-                                         int nbin,
-                                         Double_t xmin,
-                                         Double_t xmax,
-                                         Double_t xmin0) {
+                                     int nbin,
+                                     Double_t xmin,
+                                     Double_t xmax,
+                                     Double_t xmin0) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     int binoffset = (xmin0 < 0 || (xmin - xmin0) < 1e-9) ? 0 : 1;
@@ -2612,8 +2582,7 @@ TAxis AliAnalysisTaskXi1530::AxisLog(TString name,
     axis.SetName(name);
     return axis;
 }
-Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi,
-                                               AliVTrack* pion) {
+Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion) {
     // Check if associated Xi1530 is true Xi1530 in MC set
     if (!Xi)
         return kFALSE;
@@ -2694,7 +2663,7 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi,
     return TrueXi1530;
 }
 Bool_t AliAnalysisTaskXi1530::IsTrueXi1530AOD(AliAODcascade* Xi,
-                                                  AliVTrack* pion) {
+                                              AliVTrack* pion) {
     // Check if associated Xi1530 is true Xi1530 in MC set
     if (!Xi)
         return kFALSE;
