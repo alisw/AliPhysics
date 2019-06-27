@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/06/20
+//  Last Modified Date: 2019/06/27
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -213,7 +213,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
             centaxisbin = {0, 0.01, 0.03, 0.05, 0.07, 0.1};  // for HM study
     } else
         centaxisbin = {
-            0,  0.01, 0.03, 0.05, 0.07, 0.01, 1,  5,
+            0,  0.01, 0.03, 0.05, 0.07, 0.1, 1,  5,
             10, 15,   20,   30,   40,   50,   70, 100};  // for kINT7 study
 
     binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
