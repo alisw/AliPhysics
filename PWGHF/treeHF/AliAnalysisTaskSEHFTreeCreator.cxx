@@ -177,9 +177,12 @@ fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
 fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars),
 fFillParticleTree(false),
+fFillTrackletTree(false),
 fVariablesTreeParticle(0),
+fVariablesTreeTracklet(0),
 fVariablesTreeGenParticle(0),
 fTreeHandlerParticle(nullptr),
+fTreeHandlerTracklet(nullptr),
 fTreeHandlerGenParticle(nullptr),
 fParticleCollArray(),
 fWriteNJetTrees(0),
@@ -303,9 +306,12 @@ fDsMassKKOpt(1),
 fLc2V0bachelorCalcSecoVtx(0),
 fTreeSingleTrackVarsOpt(AliHFTreeHandler::kRedSingleTrackVars),
 fFillParticleTree(false),
+fFillTrackletTree(false),
 fVariablesTreeParticle(0),
+fVariablesTreeTracklet(0),
 fVariablesTreeGenParticle(0),
 fTreeHandlerParticle(nullptr),
+fTreeHandlerTracklet(nullptr),
 fTreeHandlerGenParticle(nullptr),
 fParticleCollArray(),
 fWriteNJetTrees(fillNJetTrees),
@@ -593,6 +599,10 @@ AliAnalysisTaskSEHFTreeCreator::~AliAnalysisTaskSEHFTreeCreator()
       delete fTreeHandlerParticle;
       fTreeHandlerParticle = 0x0;
     }
+    if(fTreeHandlerTracklet) {
+      delete fTreeHandlerTracklet;
+      fTreeHandlerTracklet = 0x0;
+    }
     for(auto& thj : fTreeHandlerJet) {
       if(thj) {
         delete thj;
@@ -722,6 +732,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
     if(fWriteVariableTreeDstar) nEnabledTrees++;
     if(fWriteVariableTreeLc2V0bachelor) nEnabledTrees++;
     if (fFillParticleTree) nEnabledTrees++;
+    if (fFillTrackletTree) nEnabledTrees++;
     if(fReadMC && fFillMCGenTrees) {
       nEnabledTrees = (nEnabledTrees-1)*2+1;
     }
@@ -905,9 +916,17 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         fTreeEvChar->AddFriend(fVariablesTreeGenParticle);
       }
     }
+    if(fFillTrackletTree){
+      OpenFile(22);
+      TString nameoutput = "tree_Tracklet";
+      fTreeHandlerTracklet = new AliTrackletTreeHandler();
+      fVariablesTreeTracklet = (TTree*)fTreeHandlerTracklet->BuildTree(nameoutput,nameoutput);
+      fVariablesTreeTracklet->SetMaxVirtualSize(1.e+8/nEnabledTrees);
+      fTreeEvChar->AddFriend(fVariablesTreeTracklet); 
+    }
     if(fWriteNJetTrees > 0){
       for (int i=0; i<fJetCollArray.GetEntriesFast(); i++) {
-        OpenFile(22 + i);
+        OpenFile(23 + i);
         
         // Create jet tree handlers and configure them
         fTreeHandlerJet.push_back(new AliJetTreeHandler());
@@ -980,16 +999,19 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
       PostData(20,fVariablesTreeParticle);
       if(fFillMCGenTrees && fReadMC) PostData(21,fVariablesTreeGenParticle);
     }
+    if(fFillTrackletTree){
+      PostData(22,fVariablesTreeTracklet);
+    }
     if(fWriteNJetTrees > 0){
       // Post each jet tree to a separate output slot (for simplicity, keep the jet tree in the last slots)
       const int nJetCollections = fJetCollArray.GetEntriesFast();
       for (int i=0; i<nJetCollections; i++) {
-        PostData(22+i,fVariablesTreeJet.at(i));
+        PostData(23+i,fVariablesTreeJet.at(i));
       }
       // Post jet constituent trees (if enabled)
       if (fFillJetConstituentTrees) {
         for (int i=0; i<nJetCollections; i++) {
-          PostData(22+nJetCollections+i,fVariablesTreeJetConstituent.at(i));
+          PostData(23+nJetCollections+i,fVariablesTreeJetConstituent.at(i));
         }
       }
     }
@@ -1122,8 +1144,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     Bool_t isSameEvSelLctopKpi=kTRUE;
     Bool_t isSameEvSelBplus=kTRUE;
     Bool_t isSameEvSelDstar=kTRUE;
-    Bool_t isSameEvSelLc2V0bachelor=kTRUE;
-
+    Bool_t isSameEvSelLc2V0bachelor=kTRUE;	
     if(fWriteVariableTreeD0)
       isSameEvSelD0=!((fFiltCutsD0toKpi->IsEventSelected(aod) && !fCutsD0toKpi->IsEventSelected(aod))||(!fFiltCutsD0toKpi->IsEventSelected(aod) && fCutsD0toKpi->IsEventSelected(aod)));
     if(fWriteVariableTreeDs)
@@ -1258,6 +1279,10 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     if (fWriteNJetTrees > 0 || fFillParticleTree) {
       FillJetTree();
     }
+    if (fFillTrackletTree){
+      fTreeHandlerTracklet->SetTrackletContainer(aod->GetTracklets());
+      fTreeHandlerTracklet->FillTree(fRunNumber, fEventID);
+    }
   
     // Post the data
     PostData(1,fNentries);
@@ -1295,17 +1320,20 @@ void AliAnalysisTaskSEHFTreeCreator::UserExec(Option_t */*option*/)
     if(fFillParticleTree){
       PostData(20,fVariablesTreeParticle);
       if(fFillMCGenTrees && fReadMC) PostData(21,fVariablesTreeGenParticle);
+    } 
+    if(fFillTrackletTree){
+      PostData(22,fVariablesTreeTracklet);
     }
     if(fWriteNJetTrees > 0){
       // Post each jet tree to a separate output slot (for simplicity, keep the jet tree in the last slots)
       const int nJetCollections = fJetCollArray.GetEntriesFast();
       for (int i=0; i<nJetCollections; i++) {
-        PostData(22+i,fVariablesTreeJet.at(i));
+        PostData(23+i,fVariablesTreeJet.at(i));
       }
       // Post jet constituent trees (if enabled)
       if (fFillJetConstituentTrees) {
         for (int i=0; i<nJetCollections; i++) {
-          PostData(22+nJetCollections+i,fVariablesTreeJetConstituent.at(i));
+          PostData(23+nJetCollections+i,fVariablesTreeJetConstituent.at(i));
         }
       }
     }

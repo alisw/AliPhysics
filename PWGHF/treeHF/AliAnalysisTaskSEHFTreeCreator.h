@@ -50,6 +50,7 @@
 #include "AliHFTreeHandlerLc2V0bachelor.h"
 #include "AliJetTreeHandler.h"
 #include "AliParticleTreeHandler.h"
+#include "AliTrackletTreeHandler.h"
 #include "AliParticleContainer.h"
 #include "AliTrackContainer.h"
 #include "AliMCParticleContainer.h"
@@ -138,6 +139,7 @@ public:
     // Particles (tracks or MC particles)
     //-----------------------------------------------------------------------------------------------
     void                        SetFillParticleTree(Bool_t b) {fFillParticleTree = b;}
+    void                        SetFillTrackletTree(Bool_t b) {fFillTrackletTree = b;}
     AliParticleContainer*       AddParticleContainer(const char *n);
     AliTrackContainer*          AddTrackContainer(const char *n);
     AliMCParticleContainer*     AddMCParticleContainer(const char *n);
@@ -274,11 +276,14 @@ private:
     // A separate (identical) AliParticleTreeHandler will be used to fill each tree.
     //-----------------------------------------------------------------------------------------------
     bool                    fFillParticleTree;                     ///< Store tree of all tracks inside the jet
+    bool                    fFillTrackletTree;                     ///< Store tree of all tracklets
   
     TTree*                  fVariablesTreeParticle;                //!<! Particle tree
+    TTree*                  fVariablesTreeTracklet;                //!<! Tracklet tree
     TTree*                  fVariablesTreeGenParticle;             //!<! MC particle tree
   
     AliParticleTreeHandler* fTreeHandlerParticle;                  //!<! handler object for particle tree
+    AliTrackletTreeHandler* fTreeHandlerTracklet;                  //!<! handler object for tracklet tree
     AliParticleTreeHandler* fTreeHandlerGenParticle;               //!<! handler object for MC particle tree
   
     TObjArray               fParticleCollArray;                    ///< particle/track collection array
