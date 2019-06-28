@@ -21,6 +21,7 @@
 #include "yaml-cpp/yaml.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
 #include "AliTrackContainer.h"
+#include "AliTLorentzVector.h"
 #include "AliClusterContainer.h"
 #include "AliEmcalContainerUtils.h"
 #include "AliJetContainer.h"
@@ -341,23 +342,45 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
   // Cell level QA
   SetupCellQAHists();
 
+  // Tracks
+  AliTrackContainer * trackCont = nullptr;
+  TIter nextTrackColl(&fParticleCollArray);
+  while ((trackCont = static_cast<AliTrackContainer*>(nextTrackColl()))) {
+    std::string name = "QA/%s/fHistTrackPtEtaPhi";
+    std::string title = name + ";p_{#mathrm{T}} (GeV);#eta;#phi)";
+    fHistManager.CreateTH3(TString::Format(name.c_str(), trackCont->GetName()),
+                TString::Format(title.c_str(), trackCont-> GetName()), 50, 0, 25, 40, -1, 1, 72, 0,
+                TMath::TwoPi());
+  }
+
   // Clusters
-  AliEmcalContainer* cont = 0;
+  AliClusterContainer * clusterCont = nullptr;
   TIter nextClusColl(&fClusterCollArray);
-  while ((cont = static_cast<AliClusterContainer*>(nextClusColl()))) {
+  while ((clusterCont = static_cast<AliClusterContainer*>(nextClusColl()))) {
     // Cluster time vs energy
     std::string name = "QA/%s/fHistClusterEnergyVsTime";
-    std::string title = name + ";E_{cluster} (GeV);t_{cluster} (s)";
-    fHistManager.CreateTH2(TString::Format(name.c_str(), cont->GetName()), TString::Format(title.c_str(), cont->GetName()), 1000, 0, 100, 300, -300e-9, 300e-9);
+    std::string title = name + ";#it{E}_{cluster} (GeV);t_{cluster} (s);counts";
+    fHistManager.CreateTH2(TString::Format(name.c_str(), clusterCont->GetName()),
+                TString::Format(title.c_str(), clusterCont->GetName()), 1000, 0, 100, 300, -300e-9,
+                300e-9);
+    // Hadronically corrected energy (which is usually what we're using)
+    name = "QA/%s/fHistClusterHadCorrEnergy";
+    title = name + ";#it{E}_{cluster}^{had.corr.} (GeV);counts";
+    fHistManager.CreateTH1(TString::Format(name.c_str(), clusterCont->GetName()), TString::Format(title.c_str(), clusterCont->GetName()), 200, 0, 100);
+    // Cluster eta-phi
+    name = "QA/%s/fHistClusterEtaPhi";
+    title = name + ";#eta_{cluster};#phi_{cluster};counts";
+    fHistManager.CreateTH2(TString::Format(name.c_str(), clusterCont->GetName()), TString::Format(title.c_str(), clusterCont->GetName()), 28, -0.7, 0.7, 72, 0, TMath::TwoPi());
   }
 
   // Jets
+  AliJetContainer * jetCont = nullptr;
   TIter nextJetColl(&fJetCollArray);
-  while ((cont = static_cast<AliJetContainer*>(nextJetColl()))) {
+  while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
     // Jet pT
     std::string name = "QA/%s/fHistJetPt";
     std::string title = name + ";p_{T} (GeV)";
-    fHistManager.CreateTH1(TString::Format(name.c_str(), cont->GetName()), TString::Format(title.c_str(), cont->GetName()), 500, 0, 250);
+    fHistManager.CreateTH1(TString::Format(name.c_str(), jetCont->GetName()), TString::Format(title.c_str(), jetCont->GetName()), 500, 0, 250);
   }
 }
 
@@ -554,6 +577,17 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
 {
   FillCellQAHists();
 
+  // Tracks
+  AliTrackContainer * trackCont = 0;
+  TIter nextTrackColl(&fParticleCollArray);
+  while ((trackCont = static_cast<AliTrackContainer*>(nextTrackColl()))) {
+    for (auto track : trackCont->accepted())
+    {
+      fHistManager.FillTH3(TString::Format("QA/%s/fHistTrackPtEtaPhi", trackCont->GetName()), track->Pt(),
+                 track->Eta(), track->Phi());
+    }
+  }
+
   // Clusters
   AliClusterContainer* clusCont = 0;
   TIter nextClusColl(&fClusterCollArray);
@@ -561,9 +595,15 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
   while ((clusCont = static_cast<AliClusterContainer*>(nextClusColl()))) {
     for (auto clusIter : clusCont->accepted_momentum())
     {
+      AliTLorentzVector c = clusIter.first;
       cluster = clusIter.second;
       // Intentionally plotting against raw energy
       fHistManager.FillTH2(TString::Format("QA/%s/fHistClusterEnergyVsTime", clusCont->GetName()), cluster->E(), cluster->GetTOF());
+      // Hadronically corrected energy (which is usually what we're using)
+      fHistManager.FillTH1(TString::Format("QA/%s/fHistClusterHadCorrEnergy", clusCont->GetName()),
+                 cluster->GetHadCorrEnergy());
+      fHistManager.FillTH2(TString::Format("QA/%s/fHistClusterEtaPhi", clusCont->GetName()), c.Eta(),
+                 c.Phi_0_2pi());
     }
   }
 
