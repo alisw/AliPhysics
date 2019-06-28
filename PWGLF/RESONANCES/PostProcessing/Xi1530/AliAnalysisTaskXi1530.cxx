@@ -67,7 +67,7 @@
 // Some constants
 const Double_t pi = TMath::Pi();
 const Double_t pionmass = AliPID::ParticleMass(AliPID::kPion);
-const Double_t Ximass = 1.32171;
+const Double_t Ximass = 1.11568;
 enum {
     kData = 1,
     kLS,
@@ -1405,16 +1405,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
                     continue;
 
-                // XiTrack Cut Systematic check
-                // ---------------------------------------------
-                if (SysCheck.at(sys) == "XiTrackCut") {
-                    if (!fTrackCuts3->AcceptTrack(pTrackXi))
-                        continue;
-                    if (!fTrackCuts3->AcceptTrack(nTrackXi))
-                        continue;
-                    if (!fTrackCuts3->AcceptTrack(bTrackXi))
-                        continue;
-                }
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
                               pionmass);
 
