@@ -27,10 +27,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
   AntiTrackCuts->SetCutCharge(-1);
 
-  if (suffix != "0") {
-    TrackCuts->SetMinimalBooking(true);
-    AntiTrackCuts->SetMinimalBooking(true);
-  }
+//  if (suffix != "0") {
+//    TrackCuts->SetMinimalBooking(true);
+//    AntiTrackCuts->SetMinimalBooking(true);
+//  }
 
   AliFemtoDreamTrackCuts *TrackPosKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackPosKaonCuts->SetCutCharge(1);
@@ -38,10 +38,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC);
   TrackNegKaonCuts->SetCutCharge(-1);
 
-  if (suffix != "0") {
-    TrackPosKaonCuts->SetMinimalBooking(true);
-    TrackNegKaonCuts->SetMinimalBooking(true);
-  }
+//  if (suffix != "0") {
+//    TrackPosKaonCuts->SetMinimalBooking(true);
+//    TrackNegKaonCuts->SetMinimalBooking(true);
+//  }
 
   AliFemtoDreamv0Cuts *TrackCutsPhi = new AliFemtoDreamv0Cuts();
   TrackCutsPhi->SetIsMonteCarlo(isMC);
@@ -56,106 +56,18 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPhiNanoAOD(bool isMC = false,
   TrackCutsPhi->SetPDGCodePosDaug(321);
   TrackCutsPhi->SetPDGCodeNegDaug(321);
   TrackCutsPhi->SetPDGCodev0(333);
-
+  double Phimass=TDatabasePDG::Instance()->GetParticle(333)->Mass();
   if (suffix == "1") {
-    TrackCutsPhi->SetCutWindow(1.8,2);
+    TrackCutsPhi->SetCutWindow(Phimass-0.008,Phimass);
   }
   if (suffix == "2") {
-    TrackCutsPhi->SetCutWindow(1.027,1.1);
-  }
-  if (suffix == "3") {
-  TrackCutsPhi->SetCutWindow(1.1,1.2);
-  }
-  if (suffix == "4") {
-  TrackCutsPhi->SetCutWindow(1.2,1.3);
-  }
-  if (suffix == "5") {
-  TrackCutsPhi->SetCutWindow(1.3,1.4);
-  }
-  if (suffix == "6") {
-  TrackCutsPhi->SetCutWindow(1.4,1.5);
-  }
-  if (suffix == "7") {
-  TrackCutsPhi->SetCutWindow(1.5,1.6);
-  }
-  if (suffix == "8") {
-  TrackCutsPhi->SetCutWindow(1.6,1.7);
-  }
-  if (suffix == "9") {
-  TrackCutsPhi->SetCutWindow(1.7,1.8);
-  }
-  if (suffix == "10") {
-  TrackCutsPhi->SetCutWindow(1.8,1.9);
-  }
-  if (suffix == "11") {
-  TrackCutsPhi->SetCutWindow(1.9,2);
-  }
-  if (suffix == "12") {
-  TrackCutsPhi->SetCutWindow(1.187,1.227);
-  }
-  if (suffix == "13") {
-  TrackCutsPhi->SetCutWindow(1.227,1.267);
-  }
-  if (suffix == "14") {
-  TrackCutsPhi->SetCutWindow(1.267,1.307);
-  }
-  if (suffix == "15") {
-  TrackCutsPhi->SetCutWindow(1.307,1.347);
-  }
-  if (suffix == "16") {
-  TrackCutsPhi->SetCutWindow(1.347,1.387);
-  }
-  if (suffix == "17") {
-  TrackCutsPhi->SetCutWindow(1.387,1.427);
-  }
-  if (suffix == "18") {
-  TrackCutsPhi->SetCutWindow(1.427,1.467);
-  }
-  if (suffix == "19") {
-  TrackCutsPhi->SetCutWindow(1.467,1.507);
-  }
-  if (suffix == "20") {
-  TrackCutsPhi->SetCutWindow(1.507,1.547);
-  }
-  if (suffix == "21") {
-  TrackCutsPhi->SetCutWindow(1.547,1.587);
-  }
-  if (suffix == "22") {
-  TrackCutsPhi->SetCutWindow(1.587,1.627);
-  }
-  if (suffix == "23") {
-  TrackCutsPhi->SetCutWindow(1.627,1.667);
-  }
-  if (suffix == "24") {
-  TrackCutsPhi->SetCutWindow(1.667,1.707);
-  }
-  if (suffix == "25") {
-  TrackCutsPhi->SetCutWindow(1.707,1.747);
-  }
-  if (suffix == "26") {
-  TrackCutsPhi->SetCutWindow(1.747,1.787);
-  }
-  if (suffix == "27") {
-  TrackCutsPhi->SetCutWindow(1.787,1.827);
-  }
-  if (suffix == "28") {
-  TrackCutsPhi->SetCutWindow(1.827,1.867);
-  }
-  if (suffix == "29") {
-  TrackCutsPhi->SetCutWindow(1.867,1.907);
-  }
-  if (suffix == "30") {
-  TrackCutsPhi->SetCutWindow(1.907,1.947);
-  }
-  if (suffix == "31") {
-  TrackCutsPhi->SetCutWindow(1.947,1.987);
+    TrackCutsPhi->SetCutWindow(Phimass,Phimass+0.008);
   }
 
 
-
-  if (suffix != "0") {
-    TrackCutsPhi->SetMinimalBooking(true);
-  }
+//  if (suffix != "0") {
+//    TrackCutsPhi->SetMinimalBooking(true);
+//  }
 
 
   // Now we define stuff we want for our Particle collection
