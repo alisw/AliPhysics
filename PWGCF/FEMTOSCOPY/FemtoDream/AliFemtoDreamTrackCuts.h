@@ -55,7 +55,7 @@ class AliFemtoDreamTrackCuts {
     fDCAPlots = plot;
   }
   ;
-  void SetTOFMass(bool mass) {
+  void SetPlotTOFMass(bool mass) {
     fTOFM = mass;
   }
   ;

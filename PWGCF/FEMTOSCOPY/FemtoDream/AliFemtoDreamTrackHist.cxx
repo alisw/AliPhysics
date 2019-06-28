@@ -385,12 +385,12 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   {
   TString TOFMassName = Form("TOFMass");
   fTOFMass = new TH2F(TOFMassName.Data(), TOFMassName.Data(), ptBins,
-                         ptmin, ptmax, 3.5 * twoDBins, 0.4, 1.1);
+                         ptmin, ptmax, 1400, 0., 1.1);
   fTOFMass->GetXaxis()->SetTitle("p_{primary}");
   fTOFMass->GetYaxis()->SetTitle("m_{TOF}");
   fHistList->Add(fTOFMass);
   } else {
-      fTOFMass = 0;
+      fTOFMass = nullptr;
   }
 
 }

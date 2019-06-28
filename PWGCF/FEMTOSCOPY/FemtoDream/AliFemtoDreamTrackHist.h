@@ -147,7 +147,7 @@ class AliFemtoDreamTrackHist {
       fTOFMass->Fill(mom, mom/beta*TMath::Sqrt(1-beta*beta));
       }
       else {
-      fTOFMass=0;
+      fTOFMass->Fill(0.,-999.);
       }
   }
 
