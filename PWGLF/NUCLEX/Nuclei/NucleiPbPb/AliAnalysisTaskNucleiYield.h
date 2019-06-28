@@ -119,6 +119,7 @@ public:
   void SetDCABins (Int_t nbins, Float_t* bins);
   void SetPtBins (Int_t nbins, Float_t min, Float_t max);
   void SetPtBins (Int_t nbins, Float_t *bins);
+  void SetSigmaBins (Int_t nbins, Float_t min, Float_t max);
   void SetCustomTPCpid (Float_t *par, Float_t sigma);
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
@@ -235,6 +236,7 @@ private:
   TArrayF               fCentBins;              ///<  Centrality bins
   TArrayF               fDCABins;               ///<  DCA bins
   TArrayF               fPtBins;                ///<  Transverse momentum bins
+  TArrayF               fSigmaBins;             ///<  n_Sigma TPC bins
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
   TArrayF               fPtShapeParams;         ///<  Params used by the pt shape function

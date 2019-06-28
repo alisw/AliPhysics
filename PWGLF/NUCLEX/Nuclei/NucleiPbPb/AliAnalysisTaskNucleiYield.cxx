@@ -165,6 +165,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fCentBins{0}
    ,fDCABins{0}
    ,fPtBins{0}
+   ,fSigmaBins{0}
    ,fCustomTPCpid{0}
    ,fFlatteningProbs{0}
    ,fPtShapeParams{0}
@@ -238,8 +239,10 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   const Int_t nPtBins = fPtBins.GetSize() - 1;
   const Int_t nCentBins = fCentBins.GetSize() - 1;
   const Int_t nDCAbins = fDCABins.GetSize() - 1;
+  const Int_t nSigmaBins = fSigmaBins.GetSize() - 1;
   const float *pTbins = fPtBins.GetArray();
   const float *centBins = fCentBins.GetArray();
+  const float *sigmaBins = fSigmaBins.GetArray();
   double doubleCentBins[nCentBins+1];
   std::copy(centBins,centBins+nCentBins+1,doubleCentBins);
   const float *dcaBins = fDCABins.GetArray();
@@ -300,10 +303,6 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     const float deltaDCAz = 2.f * fDCAzLimit / fDCAzNbins;
     for (int i = 0; i <= fDCAzNbins; ++i)
       dcazBins[i] = i * deltaDCAz - fDCAzLimit;
-    const int nSigmaBins = 240;
-    float sigmaBins[nSigmaBins + 1];
-    for (int i = 0; i <= nSigmaBins; ++i)
-      sigmaBins[i] = -6.f + i * 0.05;
     const int nTOFSigmaBins = 240;
     float tofSigmaBins[nTOFSigmaBins + 1];
     for (int i = 0; i <= nTOFSigmaBins; ++i)
@@ -580,6 +579,22 @@ void AliAnalysisTaskNucleiYield::SetPtBins(Int_t nbins, Float_t min, Float_t max
 ///
 void AliAnalysisTaskNucleiYield::SetPtBins(Int_t nbins, Float_t *bins) {
   fPtBins.Set(nbins + 1, bins);
+}
+
+/// This functions sets the \f$n_{\sigma}\f$ bins used in the analysis
+///
+/// \param nbins Number of \f$n_{\sigma}\f$ bins
+/// \param min Lower limit for the \f$n_{\sigma}\f$ axis
+/// \param max Upper limit for the \f$n_{\sigma}\f$ axis
+/// \return void
+///
+void AliAnalysisTaskNucleiYield::SetSigmaBins(Int_t nbins, Float_t min, Float_t max) {
+  const float delta = (max - min) / nbins;
+  fSigmaBins.Set(nbins + 1);
+  for (int iB = 0; iB < nbins; ++iB) {
+    fSigmaBins[iB] = min + iB * delta;
+  }
+  fSigmaBins[nbins] = max;
 }
 
 /// This function allows to set a custom parametrisation for the TPC response function
