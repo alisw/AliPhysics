@@ -466,19 +466,21 @@ fSystemForNsigmaTPCDataCorr(AliAODPidHF::kNone)
     DefineOutput(20,TTree::Class());
     // Output slot #21 stores the tree of the MC particle variables
     DefineOutput(21,TTree::Class());
+    // Output slot #22 stores tracklets
+    DefineOutput(22,TTree::Class());
   
     // Set up separate output slot for each jet tree
     // (for simplicity, keep the jet trees in the last slots)
     for (int i=0; i<fillNJetTrees; i++) {
       // Output slot #20 stores the tree of the jet variables
-      DefineOutput(22+i,TTree::Class());
+      DefineOutput(23+i,TTree::Class());
     }
   
     // Set up separate output slot for each jet constituent tree (if enabled)
     if (fillJetConstituentTrees) {
       for (int i=0; i<fillNJetTrees; i++) {
         // Output slot #20 stores the tree of the jet variables
-        DefineOutput(22+fillNJetTrees+i,TTree::Class());
+        DefineOutput(23+fillNJetTrees+i,TTree::Class());
       }
     }
   
