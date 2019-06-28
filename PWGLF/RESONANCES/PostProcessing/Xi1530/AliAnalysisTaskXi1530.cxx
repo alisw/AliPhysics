@@ -1284,7 +1284,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
 
             temp1.SetXYZM(Xicandidate->Px(), Xicandidate->Py(),
-                          Xicandidate->Pz(), Ximass);
+                          Xicandidate->Pz(), Xicandidate->M());
 
             // for PropogateToDCA
             xiVtx[0] = Xicandidate->Xv();
@@ -1670,7 +1670,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
             if (!Xicandidate)
                 continue;
             temp1.SetXYZM(Xicandidate->Px(), Xicandidate->Py(),
-                          Xicandidate->Pz(), Ximass);
+                          Xicandidate->Pz(), Xicandidate->M());
 
             AliESDtrack* pTrackXi =
                 ((AliESDEvent*)fEvt)
@@ -1847,8 +1847,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
 
             temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
-                          Xicandidate->MomXiZ(), Ximass);
 
+                          Xicandidate->MomXiZ(), Xicandidate->MassXi());
             // for PropogateToDCA
             xiVtx[0] = Xicandidate->DecayVertexXiX();
             xiVtx[1] = Xicandidate->DecayVertexXiY();
@@ -2248,7 +2248,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
             if (!Xicandidate)
                 continue;
             temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
-                          Xicandidate->MomXiZ(), Ximass);
+                          Xicandidate->MomXiZ(), Xicandidate->MassXi());
 
             AliAODTrack* pTrackXi = (AliAODTrack*)(Xicandidate->GetDaughter(0));
             AliAODTrack* nTrackXi = (AliAODTrack*)(Xicandidate->GetDaughter(1));
