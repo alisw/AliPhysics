@@ -112,7 +112,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     task->SetFillDstarTree(fillTreeDstar);
     task->SetFillLc2V0bachelorTree(fillTreeLc2V0bachelor);
     task->SetFillParticleTree(fillParticleTree);
-    task->SetFillParticleTree(fillTrackletTree);
+    task->SetFillTrackletTree(fillTrackletTree);
     task->SetPIDoptD0Tree(pidOptD0);
     task->SetPIDoptDsTree(pidOptDs);
     task->SetPIDoptDplusTree(pidOptDplus);
@@ -284,7 +284,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kTRUE,
     }
   
     if(fillTrackletTree) {
-      coutputTreeTracklet = mgr->CreateContainer(treeParticleName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+      coutputTreeTracklet = mgr->CreateContainer(treeTrackletName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
       coutputTreeTracklet->SetSpecialOutput();
     }
     for (int i=0; i<fillNJetTrees; i++) {
