@@ -13,7 +13,6 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
     TString foption = option;
     AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(Form("%s%s", taskname,suffix), Form("%s_%s", taskname, option));
     taskXi1530->fEventCuts.fCentralityFramework = 1;
-
     std::cout << "AliAnaylsisTaskXi1530:: Option: " << option << std::endl;
     if(foption.Contains("MC")){
         taskXi1530->SetIsMC(kTRUE); // default: kFALSE
