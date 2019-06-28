@@ -33,6 +33,8 @@
  * \brief Helper class to handle a tree for cut optimisation and MVA analyses, based heavily on AliHFTreeHandler and AliAnalysisTaskDmesonJets
  *
  * \author Nima Zardoshti nima.zardoshti@cern.ch
+ *         Benedikt Volkel benedikt.volkel@cern.ch
+ *         Cristina Terrevoli cristina.terrevoli@cern.ch
  *         Gian Michele Innocenti ginnocen@cern.ch
  * \date June 27 2019
  */
@@ -59,7 +61,7 @@ class AliTrackletTreeHandler : public TObject
 
     TTree*                       fTreeTracklet;            ///< Tree with tracklet variables
 
-    AliAODTracklets*        fTrackletContainer;       //!<! Particle container for this tree
+    AliAODTracklets*        fTrackletContainer;       //!<! Tracklet container for this tree
 
     // Track quantities.
     float                        fTrackletEta;             //!<! Eta of tracklet
