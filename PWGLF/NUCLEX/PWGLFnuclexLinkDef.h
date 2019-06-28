@@ -11,6 +11,7 @@
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
 /// * LambdaNN
 #pragma link C++ class AliAnalysisTaskLNNntuple+;
+#pragma link C++ class AliAnalysisTaskLNNv0Bkg+;
 /// * Ps
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
 /// * dStar
