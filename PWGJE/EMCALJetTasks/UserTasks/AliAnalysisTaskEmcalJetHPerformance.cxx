@@ -776,10 +776,9 @@ AliAnalysisTaskEmcalJetHPerformance * AliAnalysisTaskEmcalJetHPerformance::AddTa
 
   // Create containers for input/output
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer * outputContainer = mgr->CreateContainer(task->GetName(),
-                TList::Class(),
-                AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer* outputContainer =
+   mgr->CreateContainer(task->GetName(), TList::Class(), AliAnalysisManager::kOutputContainer,
+              Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectOutput(task, 1, outputContainer);
 
   return task;

@@ -265,7 +265,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
     }
   }
 
-  UInt_t cifras = 0; // bit coded, see GetDimParams() below 
+  UInt_t cifras = 0; // bit coded, see GetDimParams() below
   if(fDoLessSparseAxes) {
     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
   } else {
@@ -275,11 +275,11 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
   fhnJH->Sumw2();
   fOutput->Add(fhnJH);
 
-  if(fDoEventMixing){    
+  if(fDoEventMixing){
     // The event plane angle does not need to be included because the semi-central determined that the EP angle didn't change
     // significantly for any of the EP orientations. However, it will be included so this can be demonstrated for the central
     // analysis if so desired.
-    if(fDoLessSparseAxes) { 
+    if(fDoLessSparseAxes) {
       cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
     } else {
       cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<9;
@@ -301,7 +301,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
   while ((obj = next())) {
     fOutput->Add(obj);
   }
-  
+
   PostData(1, fOutput);
 
   // Event Mixing
@@ -543,7 +543,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           if(fDoLessSparseAxes) { // check if we want all dimensions
             double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
-          } else { 
+          } else {
             double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           }
@@ -681,7 +681,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   } // end of event mixing
 
   return kTRUE;
-}      
+}
 
 /**
  * Determine if a jet passes the track or cluster bias and is therefore a "biased" jet.
@@ -930,7 +930,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       nbins = 72;
       xmin = -0.5*pi;
       xmax = 1.5*pi;
-      break;         
+      break;
 
     case 5:
       label = "Leading Jet";
@@ -1232,7 +1232,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::FillHist(TH1 * hist, Double_t fillVal
       if (yBinsContent.at(index-1) > 0) {
         // Determine the value to fill based on the center of the bins.
         // This in principle allows the binning between the correction and hist to be different
-        Double_t fillLocation = fJESCorrectionHist->GetYaxis()->GetBinCenter(index); 
+        Double_t fillLocation = fJESCorrectionHist->GetYaxis()->GetBinCenter(index);
         AliDebug(4, TString::Format("fillLocation: %f, weight: %f", fillLocation, yBinsContent.at(index-1)));
         // minus 1 since loop starts at 1
         hist->Fill(fillLocation, weight*yBinsContent.at(index-1));
@@ -1283,7 +1283,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::FillHist(THnSparse * hist, Double_t *
       if (yBinsContent.at(index-1) > 0) {
         // Determine the value to fill based on the center of the bins.
         // This in principle allows the binning between the correction and hist to be different
-        fillValue[1] = fJESCorrectionHist->GetYaxis()->GetBinCenter(index); 
+        fillValue[1] = fJESCorrectionHist->GetYaxis()->GetBinCenter(index);
         AliDebug(4,TString::Format("fillValue[1]: %f, weight: %f", fillValue[1], yBinsContent.at(index-1)));
         // minus 1 since loop starts at 1
         hist->Fill(fillValue, weight*yBinsContent.at(index-1));
@@ -1511,10 +1511,9 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
 
   // Create containers for input/output
   mgr->ConnectInput (correlationTask, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer * cojeth = mgr->CreateContainer(correlationTask->GetName(),
-                TList::Class(),
-                AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer* cojeth =
+   mgr->CreateContainer(correlationTask->GetName(), TList::Class(), AliAnalysisManager::kOutputContainer,
+              Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectOutput(correlationTask, 1, cojeth);
 
   return correlationTask;

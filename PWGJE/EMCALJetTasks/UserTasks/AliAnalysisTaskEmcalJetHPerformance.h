@@ -24,7 +24,7 @@ class AliVCaloCells;
 // For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
 namespace PWGJE { namespace EMCALJetTasks { class AliAnalysisTaskEmcalJetHPerformance; } }
 std::ostream & operator<< (std::ostream &in, const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance &myTask);
-void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & second); 
+void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & second);
 
 namespace PWGJE {
 namespace EMCALJetTasks {
@@ -49,7 +49,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Additional constructors
   AliAnalysisTaskEmcalJetHPerformance(const AliAnalysisTaskEmcalJetHPerformance & other);
   AliAnalysisTaskEmcalJetHPerformance& operator=(AliAnalysisTaskEmcalJetHPerformance other);
-  friend void ::swap(AliAnalysisTaskEmcalJetHPerformance & first, AliAnalysisTaskEmcalJetHPerformance & second); 
+  friend void ::swap(AliAnalysisTaskEmcalJetHPerformance & first, AliAnalysisTaskEmcalJetHPerformance & second);
   // Avoid implementing move since c++11 is not allowed in the header
 
   void UserCreateOutputObjects();
