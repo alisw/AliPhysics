@@ -14,7 +14,7 @@
 //************************************
 
 Bool_t runLocal=kTRUE;                                  // flag to run locally on AliAOD.root + AliAOD.VertexingHF.root
-TString pathToLocalAODfiles="./";               // path to find AOD files when running locally
+TString pathToLocalAODfiles="/data2/InputsAODLc/002";               // path to find AOD files when running locally
 Bool_t runGridTest=kFALSE;                                // flag to run a grid test: kTRUE (+runLocal=kFALSE). To run job on GRID: runGridTest=kFALSE, runLocal=kFALSE 
 TString runMode="full";                                  // sets the run grid mode: "full", "terminate"
 
@@ -133,7 +133,7 @@ void runAnalysis()
 
 
         // start the analysis locally, reading the events from the tchain
-        mgr->StartAnalysis("local", chainAOD);
+        mgr->StartAnalysis("local", chainAOD, 1000, 0);
 
 
 

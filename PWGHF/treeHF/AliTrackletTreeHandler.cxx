@@ -35,6 +35,7 @@
  */
 
 #include "AliTrackletTreeHandler.h"
+#include <iostream>
 
 //________________________________________________________________
 /// \cond CLASSIMP
@@ -91,12 +92,13 @@ void AliTrackletTreeHandler::FillTree(int runNumber, unsigned int eventID)
   
   fRunNumber = runNumber;
   fEventID = eventID;
-
   Int_t nTr=fTrackletContainer->GetNumberOfTracklets();
   for(Int_t iTr=0; iTr<nTr; iTr++){
-    Double_t phi = fTrackletContainer->GetPhi(iTr);
+    Double_t phi=fTrackletContainer->GetPhi(iTr);
     Double_t theta=fTrackletContainer->GetTheta(iTr);
-    Double_t eta = -TMath::Log(TMath::Tan(theta/2.));
+    Double_t eta=-TMath::Log(TMath::Tan(theta/2.));
+    fTrackletEta = eta;
+    fTrackletPhi = phi;
     fTreeTracklet->Fill();
   } 
 }
