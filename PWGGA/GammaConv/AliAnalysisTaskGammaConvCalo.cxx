@@ -6755,8 +6755,8 @@ void AliAnalysisTaskGammaConvCalo::UpdateEventByEventData(){
     if(fTrueGammaCandidatesConv->GetEntries()>0){
         fBGHBTTrueGammaHandler[fiCut]->AddMCParticleEvent(fTrueGammaCandidatesConv,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fTrueGammaCandidatesConv->GetEntries(),fEventPlaneAngle);
     }
-    if(fMCGammaCandidatesCalo->GetEntries()>0){
-        fBGHBTGenGammaHandler[fiCut]->AddMCParticleEvent(fMCGammaCandidatesCalo,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fMCGammaCandidatesCalo->GetEntries(),fEventPlaneAngle);
+    if(fMCGammaCandidates->GetEntries()>0){
+        fBGHBTGenGammaHandler[fiCut]->AddMCParticleEvent(fMCGammaCandidates,fInputEvent->GetPrimaryVertex()->GetX(),fInputEvent->GetPrimaryVertex()->GetY(),fInputEvent->GetPrimaryVertex()->GetZ(),fMCGammaCandidates->GetEntries(),fEventPlaneAngle);
     }
   }
 }
