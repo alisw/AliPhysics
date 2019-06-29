@@ -1,7 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated jun 29
+// Updated jun 29 remove DCA V0 to PV cut
 
 
 #include "AliAnalysisManager.h"
