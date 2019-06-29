@@ -732,9 +732,14 @@ void AliAnalysisTaskCTrue::UserExec(Option_t *)
      - This means at least one...
      -
    */
-  if (fAOD->GetNumberOfTracks() > 0) {
-    PostData(2, fOutputList);
-    return;
+  // if (fAOD->GetNumberOfTracks() > 0) {
+  //   PostData(2, fOutputList);
+  //   return;
+  // }
+  Int_t nTracks(fAOD->GetNumberOfTracks());
+  if(nTracks<1) {
+      PostData(2, fOutputList);
+      return;
   }
   fCounterH->Fill(4);
 
