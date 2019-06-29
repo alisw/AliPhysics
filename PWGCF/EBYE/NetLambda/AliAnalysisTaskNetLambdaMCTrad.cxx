@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated jun 27
+// Updated jun 29: remove stack, DCA V0 to PV in default only
 
 
 #include "AliAnalysisManager.h"
@@ -695,7 +695,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if(TMath::Abs(eta) < 0.5)
                 {
                     //L
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.) //default
+                    if(dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.) //default
                     {
                         
                         f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassLambda,mcpt);
@@ -759,7 +759,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     //L-BAR
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
+                    if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
                     {
                         f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag->Fill(fCentrality,invMassAntiLambda,mcpt);
                         if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
@@ -980,7 +980,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if(TMath::Abs(lRapLambda) < 0.5)
                 {
                     //L
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.) //default
+                    if(dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.) //default
                     {
                         
                         if(fTreeVariablePID == 3122)
@@ -1000,7 +1000,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     //L-BAR
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
+                    if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
                     {
                         
                         if(fTreeVariablePID == -3122)
