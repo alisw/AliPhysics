@@ -33,8 +33,10 @@ ClassImp(AliVertexerHyperTriton2Body)
       fPrimaryVertexY{0.},
       fPrimaryVertexZ{0.},
       fPID{nullptr}
+
 //________________________________________________
 {
+    SetupStandardVertexing();
 }
 
 //________________________________________________________________________
