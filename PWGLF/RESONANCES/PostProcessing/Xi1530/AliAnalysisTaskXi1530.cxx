@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/06/20
+//  Last Modified Date: 2019/06/27'
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +67,7 @@
 // Some constants
 const Double_t pi = TMath::Pi();
 const Double_t pionmass = AliPID::ParticleMass(AliPID::kPion);
-const Double_t Ximass = 1.32171;
+const Double_t Ximass = 1.11568;
 enum {
     kData = 1,
     kLS,
@@ -213,7 +213,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
             centaxisbin = {0, 0.01, 0.03, 0.05, 0.07, 0.1};  // for HM study
     } else
         centaxisbin = {
-            0,  0.01, 0.03, 0.05, 0.07, 0.01, 1,  5,
+            0,  0.01, 0.03, 0.05, 0.07, 0.1, 1,  5,
             10, 15,   20,   30,   40,   50,   70, 100};  // for kINT7 study
 
     binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
@@ -1013,13 +1013,14 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // Standard track QA cuts
             // check quality cuts
+            /*
             UInt_t filtermapP = 9999;
             UInt_t filtermapN = 9999;
             UInt_t filtermapB = 9999;
             filtermapP = pTrackXi->GetFilterMap();
             filtermapN = nTrackXi->GetFilterMap();
             filtermapB = bTrackXi->GetFilterMap();
-
+            */
             /*
             if ((pTrackXi->Pt() < 0.15) || (nTrackXi->Pt() < 0.15) ||
                 (bTrackXi->Pt() < 0.15))
@@ -1221,7 +1222,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
     TLorentzVector temp1, temp2;
     TLorentzVector vecsum;  // Xi1530 candidate
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
-    Double_t fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV;
 
     // The following CovMatrix is set so that PropogateToDCA() ignores track
     // errors. Only used to propagate Xi to third pion for XiStar reconstruction
@@ -1284,7 +1284,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
 
             temp1.SetXYZM(Xicandidate->Px(), Xicandidate->Py(),
-                          Xicandidate->Pz(), Ximass);
+                          Xicandidate->Pz(), Xicandidate->M());
 
             // for PropogateToDCA
             xiVtx[0] = Xicandidate->Xv();
@@ -1405,18 +1405,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
                     continue;
 
-                // XiTrack Cut Systematic check
-                // ---------------------------------------------
-                if (SysCheck.at(sys) == "XiTrackCut") {
-                    if (!fTrackCuts3->AcceptTrack(pTrackXi))
-                        continue;
-                    if (!fTrackCuts3->AcceptTrack(nTrackXi))
-                        continue;
-                    if (!fTrackCuts3->AcceptTrack(bTrackXi))
-                        continue;
-                }
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              pionmass);
+                              track1->M());
 
                 vecsum = temp1 + temp2;  // temp1 = cascade, temp2=pion
                 // Y cut
@@ -1680,7 +1670,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
             if (!Xicandidate)
                 continue;
             temp1.SetXYZM(Xicandidate->Px(), Xicandidate->Py(),
-                          Xicandidate->Pz(), Ximass);
+                          Xicandidate->Pz(), Xicandidate->M());
 
             AliESDtrack* pTrackXi =
                 ((AliESDEvent*)fEvt)
@@ -1708,7 +1698,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     track1->GetID() == bTrackXi->GetID())
                     continue;
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              pionmass);
+                              track1->M());
                 vecsum = temp1 + temp2;  // two pion vector sum
 
                 if ((Xicandidate->Charge() == -1 && track1->Charge() == -1) ||
@@ -1801,7 +1791,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     TLorentzVector temp1, temp2;
     TLorentzVector vecsum;  // Xi1530 candidate
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
-    Double_t fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV;
 
     // The following CovMatrix is set so that PropogateToDCA() ignores track
     // errors. Only used to propagate Xi to third pion for XiStar reconstruction
@@ -1858,8 +1847,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
 
             temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
-                          Xicandidate->MomXiZ(), Ximass);
 
+                          Xicandidate->MomXiZ(), Xicandidate->MassXi());
             // for PropogateToDCA
             xiVtx[0] = Xicandidate->DecayVertexXiX();
             xiVtx[1] = Xicandidate->DecayVertexXiY();
@@ -1997,7 +1986,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 }
                 */
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              pionmass);
+                              track1->M());
 
                 vecsum = temp1 + temp2;  // temp1 = cascade, temp2=pion
                 // Y cut
@@ -2259,7 +2248,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
             if (!Xicandidate)
                 continue;
             temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
-                          Xicandidate->MomXiZ(), Ximass);
+                          Xicandidate->MomXiZ(), Xicandidate->MassXi());
 
             AliAODTrack* pTrackXi = (AliAODTrack*)(Xicandidate->GetDaughter(0));
             AliAODTrack* nTrackXi = (AliAODTrack*)(Xicandidate->GetDaughter(1));
@@ -2281,8 +2270,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     track1->GetID() == nTrackXi->GetID() ||
                     track1->GetID() == bTrackXi->GetID())
                     continue;
-                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              pionmass);
+                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), track1->M());
                 vecsum = temp1 + temp2;  // two pion vector sum
 
                 if ((Xicandidate->ChargeXi() == -1 && track1->Charge() == -1) ||
