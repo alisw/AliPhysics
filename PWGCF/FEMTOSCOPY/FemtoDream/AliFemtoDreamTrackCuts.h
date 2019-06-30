@@ -55,6 +55,10 @@ class AliFemtoDreamTrackCuts {
     fDCAPlots = plot;
   }
   ;
+  void SetPlotTOFMass(bool mass) {
+    fTOFM = mass;
+  }
+  ;
   void SetOriginMultiplicityHists(bool plot) {
     fDoMultBinning = plot;
   }
@@ -255,6 +259,7 @@ class AliFemtoDreamTrackCuts {
   bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fDCAPlots;                     //
+  bool fTOFM;                         //
   bool fDoMultBinning;                //
   bool fCheckMother;                  //
   bool fCombSigma;                    //

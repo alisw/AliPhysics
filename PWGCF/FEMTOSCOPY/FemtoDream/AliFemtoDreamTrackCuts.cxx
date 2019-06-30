@@ -17,6 +17,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fMinimalBooking(false),
       fMCData(false),
       fDCAPlots(false),
+      fTOFM(false),
       fDoMultBinning(false),
       fCheckMother(false),
       fCombSigma(false),
@@ -71,6 +72,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fMinimalBooking(cuts.fMinimalBooking),
       fMCData(cuts.fMCData),
       fDCAPlots(cuts.fDCAPlots),
+      fTOFM(cuts.fTOFM),
       fDoMultBinning(cuts.fDoMultBinning),
       fCheckMother(cuts.fCheckMother),
       fCombSigma(cuts.fCombSigma),
@@ -128,6 +130,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fMinimalBooking = cuts.fMinimalBooking;
   this->fMCData = cuts.fMCData;
   this->fDCAPlots = cuts.fDCAPlots;
+  this->fTOFM= cuts.fTOFM;
   this->fDoMultBinning = cuts.fDoMultBinning;
   this->fCheckMother = cuts.fCheckMother;
   this->fCombSigma = cuts.fCombSigma;
@@ -578,7 +581,7 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
-    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma);
+    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM);
     if (fMCData) {
       fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots,
                                               fDoMultBinning, fCheckMother);
@@ -595,6 +598,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
     std::vector<float> phi = Track->GetPhi();
     float pT = Track->GetPt();
     float p = Track->GetMomTPC();
+    float Pprim = Track->GetP();
     for (int i = 0; i < 2; ++i) {
       if (i == 0 || (i == 1 && Track->UseParticle())) {
         fHists->FilletaCut(i, eta.at(0));
@@ -670,6 +674,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         }
         fHists->FillTPCdedx(i, p, Track->GetdEdxTPC());
         fHists->FillTOFbeta(i, p, Track->GetbetaTOF());
+
         fHists->FillNSigTPC(i, p, (Track->GetnSigmaTPC(fParticleID)));
         fHists->FillNSigTPCMod(i, p, (Track->GetnSigmaTPC(fParticleID)));
         fHists->FillNSigTOF(i, p, (Track->GetnSigmaTOF(fParticleID)));
@@ -681,6 +686,10 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         if (i == 0 && fCombSigma) {
           fHists->FillNSigComb(pT, Track->GetnSigmaTPC(fParticleID),
                                Track->GetnSigmaTOF(fParticleID));
+        }
+        //Fill These After
+        if (i == 1 && fTOFM) {
+            fHists->FillTOFMass(Pprim, Track->GetbetaTOF());
         }
       }
     }
