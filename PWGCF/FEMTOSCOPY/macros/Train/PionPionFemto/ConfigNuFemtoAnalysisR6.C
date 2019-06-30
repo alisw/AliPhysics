@@ -461,7 +461,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_moco6_cf) {
         AliFemtoModelCorrFctnTrueQ6D *moco6_cf = new AliFemtoModelCorrFctnTrueQ6D("MRC6D", macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        moco6_cf->SetManager(model_manager);
+        moco6_cf->ConnectToManager(model_manager);
         analysis->AddCorrFctn(moco6_cf);
       }
 
@@ -577,14 +577,14 @@ ConfigFemtoAnalysis(const TString& param_str="")
       if (macro_config.do_trueq3dbp_cf) {
         AliFemtoModelCorrFctnTrueQ3DByParent *trueq3dbp_cf = new AliFemtoModelCorrFctnTrueQ3DByParent(macro_config.q3d_bin_count,
                                                                                               macro_config.q3d_maxq);
-        trueq3dbp_cf->SetManager(model_manager);
+        trueq3dbp_cf->ConnectToManager(model_manager);
         analysis->AddCorrFctn(trueq3dbp_cf);
       }
 
       if (macro_config.do_kt_trueq3dbp_cf) {
         AliFemtoModelCorrFctnTrueQ3DByParent *kt_trueq3dbp_cf = new AliFemtoModelCorrFctnTrueQ3DByParent(macro_config.q3d_bin_count,
                                                                                               macro_config.q3d_maxq);
-        kt_trueq3dbp_cf->SetManager(model_manager);
+        kt_trueq3dbp_cf->ConnectToManager(model_manager);
 
         AliFemtoKtBinnedCorrFunc *kt_trueq3dbp_cf_container = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3DByP", kt_trueq3dbp_cf);
 
