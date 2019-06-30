@@ -230,6 +230,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   , fPtPhi(nullptr)
   , fEtaPhi(nullptr)
   , fChi2Tpc(nullptr)
+  , fChi2Its(nullptr)
   , fChiTpcIts(nullptr)
   , fdEdX(nullptr)
   , fTofVsP(nullptr)
@@ -288,7 +289,13 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   fChi2Tpc = new TH1F(
     hist_name("Chi2Tpc"),
     hist_title("#chi^{2} / N_{cls} TPC", "TPC"),
-    144, 0.0, 3.0
+    144, 0.0, 5.0
+  );
+
+  fChi2Its = new TH1F(
+    hist_name("Chi2Its"),
+    hist_title("#chi^{2} / N_{cls} ITS", "ITS"),
+    144, 0.0, 5.0
   );
 
   fChiTpcIts = new TH2F(
@@ -452,6 +459,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const Pion &orig):
   , fPtPhi(static_cast<TH2F*>(orig.fPtPhi->Clone()))
   , fEtaPhi(static_cast<TH2F*>(orig.fEtaPhi->Clone()))
   , fChi2Tpc(static_cast<TH1F*>(orig.fChi2Tpc->Clone()))
+  , fChi2Its(static_cast<TH1F*>(orig.fChi2Its->Clone()))
   , fChiTpcIts(static_cast<TH2F*>(orig.fChiTpcIts->Clone()))
   , fdEdX(static_cast<TH2F*>(orig.fdEdX->Clone()))
   , fTofVsP(static_cast<TH2F*>(orig.fTofVsP->Clone()))
@@ -477,6 +485,7 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fPtPhi);
   output->Add(fEtaPhi);
   output->Add(fChi2Tpc);
+  output->Add(fChi2Its);
   output->Add(fChiTpcIts);
   output->Add(fdEdX);
   output->Add(fTofVsP);
@@ -512,6 +521,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
              rapidity = 0.5 * ::log((energy + pz) / (energy - pz));
 
   const Int_t TPC_ncls = track->TPCncls();
+  const Int_t ITS_ncls = track->ITSncls();
 
   if (fMC_mass) {
     const auto &mc = static_cast<const AliFemtoModelHiddenInfo&>(*track->GetHiddenInfo());
@@ -556,6 +566,7 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fNsigTof->Fill(p, track->NSigmaTOFPi());
   fNsigTpc->Fill(p, track->NSigmaTPCPi());
   fChi2Tpc->Fill(TPC_ncls > 0 ? track->TPCchi2() / TPC_ncls : -1.0);
+  fChi2Its->Fill(ITS_ncls > 0 ? track->ITSchi2() / ITS_ncls : -1.0);
 
   fChiTpcIts->Fill(track->TPCchi2perNDF(), track->ITSchi2perNDF());
 
