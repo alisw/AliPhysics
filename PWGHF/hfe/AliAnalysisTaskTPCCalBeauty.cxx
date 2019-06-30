@@ -21,6 +21,7 @@
 #include "AliKFParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliESDtrack.h"
 
 //#include "AliCentralitySelectionTask.h"
 #include "AliMultSelection.h"
@@ -1288,7 +1289,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     }*/
     
     
-    if (fFlagFillMCHistos && fFlagRunStackLoop) {
+    /*if (fFlagFillMCHistos && fFlagRunStackLoop) {
         Int_t eleinStack=0;
         if (fMCarray) {
             //cout<<"Test2..................................."<<endl;
@@ -1319,7 +1320,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     eleinStack++;
                 }
                 //
-                /*if(TMath::Abs(AODMCtrack->Y()) < 2.25) {
+                *//*if(TMath::Abs(AODMCtrack->Y()) < 2.25) {
                     if (TrackPDG>500 && TrackPDG<599) fBMesonPtATLAS->Fill(AODMCtrack->Pt());
                     if (TrackPDG == 521) fBPlusPtATLAS->Fill(AODMCtrack->Pt());
                 }
@@ -1353,7 +1354,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     if (TrackPDG == 521) fBPlusPtLHCb->Fill(AODMCtrack->Pt());
                 }*/
                 
-                if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
+                /*if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
                 if (TrackPDG>500 && TrackPDG<599) {
                     fBMesonPt->Fill(AODMCtrack->Pt());
                 }
@@ -1435,7 +1436,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
             }
         }
-    }
+    }*/
     //cout << "Electron in stack -------------- " << eleinStack <<endl;
     ///////////////////
     // Trigger Check //
@@ -1521,6 +1522,125 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     fVtX->Fill(pVtx->GetX());
     fVtY->Fill(pVtx->GetY());
     fVtZ->Fill(pVtx->GetZ());
+    
+    ///////////////////
+    //Loop over Stack//
+    ///////////////////
+    
+    if (fFlagFillMCHistos && fFlagRunStackLoop) {
+        Int_t eleinStack=0;
+        if (fMCarray) {
+            //cout<<"Test2..................................."<<endl;
+            // Make Pi0 and Eta Weight Sparse
+            GetPi0EtaWeight(fSprsPi0EtaWeightCal);
+            Int_t TrackPDG = -999;
+            Int_t ilabelM = -99;
+            Int_t ilabelGM = -99;
+            Int_t ilabelGGM = -99;
+            Int_t pidM, pidGM, pidGGM;
+            
+            for(int i=0; i<(fMCarray->GetEntries()); i++)
+            {
+                //cout<<"Test "<<fMCarray->GetEntries()<<" ..................................."<<i<<endl;
+                //if (i<fNpureMC) continue; //reject plain Hijing
+                
+                Bool_t fromDStar = kFALSE;
+                
+                AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(i);
+                
+                //-------Get PDG
+                TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
+                ilabelM = AODMCtrack->GetMother();
+                
+                if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary() && TMath::Abs(AODMCtrack->Eta()) <= 0.6) {
+                    // cout<<"TESTINGGGGGGGGGGGG"<<endl;
+                    fAllElecStack->Fill(AODMCtrack->Pt());
+                    eleinStack++;
+                }
+                
+                if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
+                if (TrackPDG>500 && TrackPDG<599) {
+                    fBMesonPt->Fill(AODMCtrack->Pt());
+                }
+                if (TrackPDG>5000 && TrackPDG<5999) {
+                    fBBaryonPt->Fill(AODMCtrack->Pt());
+                }
+                
+                //Fill Charm species pT histos
+                if (ilabelM>0 && TrackPDG == 11) {
+                    //cout<<"Test4..................................."<<endl;
+                    
+                    AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
+                    pidM = TMath::Abs(momPart->GetPdgCode());
+                    
+                    fAllElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    if(pidM==411 || pidM==421 || pidM==413 || pidM==423 || pidM==431 || pidM==433 || pidM==4122){
+                        fDElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    }
+                    if(pidM==511 || pidM==521 || pidM==513 || pidM==523 || pidM==531 || pidM==533){
+                        fBElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    }
+                    
+                    if(TrackPDG == 11 && pidM>400 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
+                        fHFElecStack->Fill(AODMCtrack->Pt());
+                        
+                    }
+                    if(TrackPDG == 11 && pidM>500 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
+                        fBElecStack->Fill(AODMCtrack->Pt());
+                        fBMesonElecPt->Fill(AODMCtrack->Pt());
+                    }
+                    if(TrackPDG == 11 && pidM>5000 && pidM<5999 && AODMCtrack->IsPhysicalPrimary()) {
+                        fBBaryonElecPt->Fill(AODMCtrack->Pt());
+                    }
+                    
+                    if (pidM==413) fromDStar = kTRUE;
+                    if (pidM>500 && pidM<599) {
+                        continue; //reject beauty feed down
+                    }
+                    if (pidM>5000 && pidM<5999) {
+                        continue; //reject beauty feed down
+                    }
+                    
+                    ilabelGM = momPart->GetMother();
+                    if (ilabelGM>0) {
+                        AliAODMCParticle *gmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM);//get grandma particle
+                        pidGM = TMath::Abs(gmomPart->GetPdgCode());
+                        if (pidGM>500 && pidGM<599) {
+                            if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            continue; //reject beauty feed down
+                        }
+                        if (pidGM>5000 && pidGM<5999) {
+                            continue; //reject beauty feed down
+                        }
+                        ilabelGGM = gmomPart->GetMother();
+                        if (ilabelGGM>0) {
+                            AliAODMCParticle *ggmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGGM); //get great grandma particle
+                            pidGGM = TMath::Abs(ggmomPart->GetPdgCode());
+                            if (pidGGM>500 && pidGGM<599) {
+                                if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            }
+                        }
+                    }
+                }
+                if(TrackPDG>4000 && TrackPDG<4999) fCBaryonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==4122)fLambdaCPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==4132)fEtaCPt->Fill(AODMCtrack->Pt());
+                
+                if (TrackPDG<400 || TrackPDG>499) {
+                    continue; //reject stuff that's not in charm meson range
+                }
+                fDMesonPDG->Fill(TrackPDG);
+                fAllDMesonPt->Fill(AODMCtrack->Pt());
+                
+                if(TrackPDG==421) fD0MesonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==421 && fromDStar==kTRUE) fD0MesonFromDStarPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==411) fDPlusMesonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==431) fDsMesonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==413) fDStarMesonPt->Fill(AODMCtrack->Pt());
+                // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
+            }
+        }
+    }
     
     //////////////////////
     // Find Kink Mother //
@@ -1670,6 +1790,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         }
         Double_t DCA = d0z0[0]*track->Charge()*MagSign;
         
+        //Refit
+        if((!(track->GetStatus()&AliESDtrack::kITSrefit)|| (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         
         //Looser cuts to fill histo
         if(track->GetTPCNcls()>=60 && track->GetITSNcls()>=2 && track->GetTPCNCrossedRows()>=80){
