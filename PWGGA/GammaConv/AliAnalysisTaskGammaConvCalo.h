@@ -187,9 +187,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList**                             fTrueJetHistograms;     // True Jet Histograms
     Int_t                               fMaxPtNearEMCalPlace;   // Place in jet vector of highest pt jet that is near the EMCal
     Bool_t                              fJetNearEMCal;          // If a jet is near the EMCal in the current event
-    TList*                              fTrueGammaCandidates;   // current list of true photon candidates
-    TList*                              fMCGammaCandidatesConv;     // current list of MC generated photon candidates
-    TList*                              fMCGammaCandidatesCalo;     // current list of MC generated photon candidates
+    TList*                              fTrueGammaCandidatesConv;   // current list of true Conv photon candidates
+    TList*                              fTrueGammaCandidatesCalo;   // current list of true Calo photon candidates
+    TList*                              fMCGammaCandidates;     // current list of MC generated photon candidates
 
     //histograms for Conversions reconstructed quantities
     TH1F**                  fHistoConvGammaPt;                  //! histogram conversion photon pT
