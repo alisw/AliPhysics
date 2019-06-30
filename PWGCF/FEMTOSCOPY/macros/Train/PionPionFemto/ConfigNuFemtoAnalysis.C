@@ -385,7 +385,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_moco6_cf) {
         AliFemtoModelCorrFctnTrueQ6D *moco6_cf = new AliFemtoModelCorrFctnTrueQ6D("MRC6D", macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        moco6_cf->SetManager(model_manager);
         analysis->AddCorrFctn(moco6_cf);
       }
 
