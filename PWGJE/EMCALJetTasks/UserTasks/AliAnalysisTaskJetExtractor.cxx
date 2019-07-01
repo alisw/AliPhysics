@@ -29,6 +29,7 @@
 #include <TGrid.h>
 #include <TFile.h>
 #include <TSystem.h>
+//#include <TTimeStamp.h>
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(6,0,0)
   #include <TPython.h>
@@ -639,7 +640,6 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetPtExtracted", "Extracted jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hJetPhiEta", "Jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
   AddHistogram2D<TH2D>("hJetArea", "Jet area", "COLZ", 200, 0., 2., 100, 0, 100, "Jet A", "Centrality", "dN^{Jets}/dA");
-  AddHistogram2D<TH2D>("hDeltaPt", "#delta p_{T} distribution", "", 400, -100., 300., 100, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
   AddHistogram2D<TH2D>("hConstituentPhiEta", "Jet constituent relative #phi/#eta distribution", "COLZ", 120, -0.6, 0.6, 120, -0.6, 0.6, "#Delta#phi", "#Delta#eta", "dN^{Const}/d#phi d#eta");
   AddHistogram1D<TH1D>("hExtractionPercentage", "Extracted jets p_{T} distribution (background subtracted)", "e1p", 400, -100., 300., "p_{T, jet} (GeV/c)", "Extracted percentage");
@@ -734,6 +734,10 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
 Bool_t AliAnalysisTaskJetExtractor::Run()
 {
   // ################################### EVENT SELECTION
+  // For debugging
+  //auto startTime = std::chrono::high_resolution_clock::now();
+  //auto elapsedTime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
+  //std::cout << Form("%s, Time (start): %E s", GetName(), elapsedTime/100000000.) << std::endl;
 
   if(!IsTriggerTrackInEvent())
     return kFALSE;
@@ -904,6 +908,9 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
       FillTrackControlHistograms(track);
   }
 
+  // For debugging
+  //elapsedTime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
+  //std::cout << Form("Time (end): %E s", elapsedTime/100000000.) << std::endl;
   return kTRUE;
 }
 
@@ -1091,7 +1098,7 @@ void AliAnalysisTaskJetExtractor::GetTrueJetPtFraction(AliEmcalJet* jet, Double_
   Bool_t fulljets = (GetJetContainer(0)->GetJetType() == AliJetContainer::kFullJet);
   Double_t jetRadius = GetJetContainer(0)->GetJetRadius();
   if(fMCParticleArray)
-    for(Int_t iPart=0; iPart<fMCParticleArray->GetEntries();iPart++)
+    for(Int_t iPart=0; iPart<fMCParticleArray->GetEntriesFast();iPart++)
     {
       AliAODMCParticle* part = (AliAODMCParticle*)fMCParticleArray->At(iPart);
       if(!part) continue;
@@ -1145,7 +1152,7 @@ void AliAnalysisTaskJetExtractor::GetMatchedJetObservables(AliEmcalJet* jet, Dou
     if(matchedJetArray)
     {
       AliEmcalJet* bestMatchedJet = 0;
-      for(Int_t i=0; i<matchedJetArray->GetEntries(); i++)
+      for(Int_t i=0; i<matchedJetArray->GetEntriesFast(); i++)
       {
         AliEmcalJet* matchedJet = static_cast<AliEmcalJet*>(matchedJetArray->At(i));
         if(matchedJet->Pt() < 0.15)
@@ -1358,7 +1365,7 @@ Bool_t AliAnalysisTaskJetExtractor::IsStrangeJet(AliEmcalJet* jet)
   // ... if not explicitly deactivated
   if (fMCParticleArray)
   {
-    for(Int_t i=0; i<fMCParticleArray->GetEntries();i++)
+    for(Int_t i=0; i<fMCParticleArray->GetEntriesFast();i++)
     {
       AliAODMCParticle* part = (AliAODMCParticle*)fMCParticleArray->At(i);
       if(!part) continue;
@@ -1440,27 +1447,6 @@ void AliAnalysisTaskJetExtractor::FillJetControlHistograms(AliEmcalJet* jet)
     FillHistogram("hConstituentPhiEta", deltaPhi, deltaEta);
   }
 
-  // ### Random cone / delta pT plots
-  const Int_t kNumRandomConesPerEvent = 4;
-  for(Int_t iCone=0; iCone<kNumRandomConesPerEvent; iCone++)
-  {
-    // Throw random cone
-    Double_t tmpRandConeEta = jetContainer->GetJetEtaMin() + fRandomGeneratorCones->Rndm()*TMath::Abs(jetContainer->GetJetEtaMax()-jetContainer->GetJetEtaMin());
-    Double_t tmpRandConePhi = fRandomGeneratorCones->Rndm()*TMath::TwoPi();
-    Double_t tmpRandConePt  = 0;
-    // Fill pT that is in cone
-
-    for(Int_t iCont=0; iCont<fParticleCollArray.GetEntriesFast(); iCont++)
-    {
-      GetParticleContainer(iCont)->ResetCurrentID();
-      while(AliVTrack *track = static_cast<AliVTrack*>(GetParticleContainer(iCont)->GetNextAcceptParticle()))
-        if(IsTrackInCone(track, tmpRandConeEta, tmpRandConePhi, jetContainer->GetJetRadius()))
-          tmpRandConePt += track->Pt();
-    }
-
-    // Fill histograms
-    FillHistogram("hDeltaPt", tmpRandConePt - jetContainer->GetRhoVal()*jetContainer->GetJetRadius()*jetContainer->GetJetRadius()*TMath::Pi(), fCent);
-  }
 }
 
 //________________________________________________________________________
@@ -1500,7 +1486,7 @@ void AliAnalysisTaskJetExtractor::AddPIDInformation(const AliVParticle* particle
   // Get truth values if we are on MC
   if(fMCParticleArray)
   {
-    for(Int_t i=0; i<fMCParticleArray->GetEntries();i++)
+    for(Int_t i=0; i<fMCParticleArray->GetEntriesFast();i++)
     {
       AliAODMCParticle* mcParticle = dynamic_cast<AliAODMCParticle*>(fMCParticleArray->At(i));
       if(!mcParticle) continue;
