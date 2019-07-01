@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  UeSpectra/AliAnalysisTaskPPvsUE.cxx
   UeSpherocity/AliAnalysisTaskUeSpherocity.cxx
   UePid/AliAnalysisTaskUePid.cxx
   UeMultDep/AliAnalysisTaskUeMultDep.cxx	
@@ -93,6 +94,7 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros
+install(DIRECTORY UeSpectra DESTINATION  PWGMM/UE)
 install(DIRECTORY UeSpherocity DESTINATION  PWGMM/UE)
 install(DIRECTORY UePid DESTINATION  PWGMM/UE)
 install(DIRECTORY UeMultDep DESTINATION  PWGMM/UE)	
