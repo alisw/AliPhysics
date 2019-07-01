@@ -1331,8 +1331,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(atrack->GetTPCNcls() < 80) continue;
       if(atrack->GetITSNcls() < 3) continue;
       if(atrack->GetTPCNCrossedRows() < 120) continue; // add
-      if(atrack->GetTPCchi2() > fitschi2) continue; // add
-      //if(atrack->GetITSchi2() > 36) continue; // add
+      if(atrack->GetITSchi2() > fitschi2) continue; 
     
       if(fetarange==0)
         {
