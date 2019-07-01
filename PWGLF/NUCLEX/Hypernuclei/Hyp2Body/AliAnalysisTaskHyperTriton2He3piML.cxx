@@ -111,7 +111,6 @@ AliAnalysisTaskHyperTriton2He3piML::AliAnalysisTaskHyperTriton2He3piML(
       fRCollision{}
 {
 
-
   // Standard output
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class()); // Basic Histograms
@@ -323,7 +322,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
   };
 
   esdEvent->ResetV0s();
-  std::vector<AliESDv0> V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse,mcEvent);
+  std::vector<AliESDv0> V0Vector = fV0Vertexer.Tracks2V0vertices(esdEvent, fPIDResponse, mcEvent);
   for (int iV0 = 0; iV0 < int(V0Vector.size());
        iV0++)
   { // This is the begining of the V0 loop (we analyse only offline
@@ -471,6 +470,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
             fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
             fSHyperTriton[mcMap[ilab]].fFake = false;
             fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
+            if (fSHyperTriton[mcMap[ilab]].fFake && fV0Vertexer.GetMonteCarloStatus())
+              continue;
           }
           else
           {
