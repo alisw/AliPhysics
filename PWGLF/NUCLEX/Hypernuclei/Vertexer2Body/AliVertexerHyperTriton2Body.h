@@ -166,6 +166,11 @@ class AliVertexerHyperTriton2Body : public TNamed
     Double_t GetDCAV0Dau(AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking = 0.139, Double_t lPosMassForTracking = 0.139);
     void GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2], Double_t b);
     //---------------------------------------------------------------------------------------
+    Bool_t GetMonteCarloStatus(){
+        return fMC;
+    }
+
+    //----------------------------------------------------------------------------------------
 
     AliESDtrackCuts *fHe3Cuts; //->
     AliESDtrackCuts *fPiCuts;  //->
