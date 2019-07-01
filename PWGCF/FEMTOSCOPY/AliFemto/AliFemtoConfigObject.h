@@ -1007,8 +1007,12 @@ public:
   Popper pop_all() const
     { return Popper(*this); }
 
+  /// Return a pointer to new config object with values copied
+  virtual AliFemtoConfigObject* Clone() const
+    { return new AliFemtoConfigObject(*this); }
+
   /// Return a new config object with values copied
-  AliFemtoConfigObject Clone() const
+  AliFemtoConfigObject Copy() const
     { return AliFemtoConfigObject(*this); }
 
   /// return a string of valid JSON that may be parsed by other

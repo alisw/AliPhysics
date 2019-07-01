@@ -388,7 +388,7 @@ void
 AbstractConfiguration<AliFemtoCorrFctn>::Configure(AliFemtoCorrFctn &cf) const
 {
   if (!pair_cut_cfg.is_empty()) {
-    cf.SetPairSelectionCut(pair_cut_cfg.Clone().Into<AliFemtoPairCut>());
+    cf.SetPairSelectionCut(pair_cut_cfg.Copy().Into<AliFemtoPairCut>());
   }
 }
 
