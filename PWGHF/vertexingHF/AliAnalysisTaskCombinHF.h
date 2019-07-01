@@ -83,10 +83,7 @@ public:
   void SetCutCosPiDsLabFrame(Double_t cut){
     fCutCosPiDsLabFrame=cut;
   }
-  void SetPIDHF(AliAODPidHF* pid){
-    if(fPidHF) delete fPidHF;
-    fPidHF=new AliAODPidHF(*pid);
-  }
+
   void SetRDHFCuts(AliRDHFCuts* cuts){
     fAnalysisCuts=cuts;
   }
@@ -202,6 +199,10 @@ private:
   TH3F *fMassVsPtVsCosthStME;       //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
   TH3F *fMassVsPtVsCosthStMELSpp;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
   TH3F *fMassVsPtVsCosthStMELSmm;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
+  TH1F *fHistonSigmaTPCPion;        //!<! hist. of nSigmaTPC pion 
+  TH1F *fHistonSigmaTOFPion;        //!<! hist. of nSigmaTOF pion 
+  TH1F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon 
+  TH1F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon 
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
@@ -268,7 +269,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,22); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,23); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
