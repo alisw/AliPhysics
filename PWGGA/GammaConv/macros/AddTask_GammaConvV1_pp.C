@@ -1012,6 +1012,10 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210e500000000"); // alpha <0.3
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210a500000000"); // alpha <0.2
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210d500000000"); // alpha <0.1
+  } else if (trainConfig == 617) { // RBins studies, 
+    cuts.AddCutPCM("00010113", "0dj00089267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
+    cuts.AddCutPCM("00010113", "0dk00089267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
+
 
  // Low B Field to be used with MBW
   } else if (trainConfig == 652) {
@@ -1073,6 +1077,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210e500000000"); // alpha <0.3
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210a500000000"); // alpha <0.2
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "015210d500000000"); // alpha <0.1
+  } else if (trainConfig == 667) { // RBins studies, 
+    cuts.AddCutPCM("00010113", "0dj00089267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
+    cuts.AddCutPCM("00010113", "0dk00089267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
 
 
   // Material studies Ana-----nomB
@@ -1146,6 +1153,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210e500000000"); // alpha <0.3
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210a500000000"); // alpha <0.2
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210d500000000"); // alpha <0.1
+  } else if (trainConfig == 717) { // RBins studies, 
+    cuts.AddCutPCM("00010113", "0dj00009267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
+    cuts.AddCutPCM("00010113", "0dk00009267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
 
     // config like 70X but to be used with weights +50
   } else if (trainConfig == 752) { // as iConfig 702 to be used with MBW
@@ -1209,6 +1219,9 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210e500000000"); // alpha <0.3
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210a500000000"); // alpha <0.2
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "015210d500000000"); // alpha <0.1
+  } else if (trainConfig == 767) { // RBins studies, 
+    cuts.AddCutPCM("00010113", "0dj00009267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
+    cuts.AddCutPCM("00010113", "0dk00009267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
 
 
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
