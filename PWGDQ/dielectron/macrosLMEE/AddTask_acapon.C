@@ -34,6 +34,8 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     }
     std::cout << "Monte Carlo     : " << hasMC          << std::endl;
     std::cout << "Wagon number    : " << wagonNum       << std::endl;
+    std::cout << "Pairing         : " << doPairing      << std::endl;
+    std::cout << "Event mixing    : " << doMixing       << std::endl;
     if(useCutLibrary){
       std::cout << "Pairing         : " << doPairing      << std::endl;
       std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
@@ -129,7 +131,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                  useITScorr, useTPCcorr, useTOFcorr,
                                  plots3D, useRun1binning);
       }else{
-        diel_low = Config_acapon(dielTaskName, i);
+        diel_low = Config_acapon(dielTaskName, hasMC, doPairing, doMixing);
       }
       if(!diel_low){
         continue;

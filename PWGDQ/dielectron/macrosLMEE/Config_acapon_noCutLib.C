@@ -1,7 +1,7 @@
 // Simple config file not requiring cutLlibrary.
 // Used for testing. Would not recommend using as base for a new config.
 
-void InitHistograms(AliDielectron* die, Int_t cutDefinition);
+void InitHistograms(AliDielectron* die, Int_t cutDefinition, Bool_t doPairing);
 void SetupCuts(AliDielectron* die, Int_t cutDefinition);
 AliESDtrackCuts* SetupESDtrackCuts(Int_t cutDefinition);
 AliDielectronPID* SetPIDcuts(Int_t cutDefinition);
@@ -11,23 +11,44 @@ TVectorD* GetVector(Int_t var);
 enum {kMee = 0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
 
 
-AliDielectron* Config_acapon(TString name, Int_t cutDefinition = 0)
+AliDielectron* Config_acapon(TString name,
+                             Bool_t hasMC,
+                             Bool_t doPairing,
+                             Bool_t doMixing)
 {
   // Setup the instance of AliDielectron
   AliDielectron* die = new AliDielectron(Form("%s", name.Data()), Form("Track cuts: %s", name.Data()));
+
+  die->SetHasMC(hasMC);
+  if(!doPairing){
+    die->SetNoPairing();
+  }
   
+  Int_t cutDefinition = -99;
+  // Standard set of cuts and output histograms
+  if(name == "kTheoPID"){
+    cutDefinition = 0;
+  }
+
+  else{
+    std::cout << "Invalid cut set specified!!!!" << std::endl;
+    return 0x0;
+  }
+ 
   AliDielectronMixingHandler* mix = new AliDielectronMixingHandler;
   mix->SetMixType(AliDielectronMixingHandler::kAll);
   mix->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
   mix->AddVariable(AliDielectronVarManager::kNacc,"0,10000");
   mix->SetDepth(30);
-  die->SetMixingHandler(mix);
+  if(doMixing){
+    die->SetMixingHandler(mix);
+  }
 
-	// set track cuts
+	// Set track cuts
   SetupCuts(die,cutDefinition);
 
-  // histogram setup
-  InitHistograms(die,cutDefinition);
+  // Histogram setup
+  InitHistograms(die,cutDefinition, doPairing);
 
   die->SetNoPairing(kFALSE);
   
@@ -111,7 +132,7 @@ AliESDtrackCuts* SetupESDtrackCuts(Int_t cutDefinition){
 }
 //______________________________________________________________________________________
 //-------------------------------Histogram definition-----------------------------------
-void InitHistograms(AliDielectron* die, Int_t cutDefinition)
+void InitHistograms(AliDielectron* die, Int_t cutDefinition, Bool_t doPairing)
 {
   
   // Setup histogram classes
@@ -128,16 +149,18 @@ void InitHistograms(AliDielectron* die, Int_t cutDefinition)
     histos->AddClass(Form("Track_%s", AliDielectron::TrackClassName(i)));
   }
   // Pair classes
-  for(Int_t i = 0; i < 3; ++i){
-    histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(i)));
-    // Legs of final Pairs. Both charges together. No duplicate entries.
-  }
-  // Mixed event pairs if mixing handler present
-  if(die->GetMixingHandler()){
-    histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(3)));
-    histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(4)));
-    histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(6)));
-    histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(7)));
+  if(doPairing){
+    for(Int_t i = 0; i < 3; ++i){
+      histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(i)));
+      // Legs of final Pairs. Both charges together. No duplicate entries.
+    }
+    // Mixed event pairs if mixing handler present
+    if(die->GetMixingHandler()){
+      histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(3)));
+      histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(4)));
+      histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(6)));
+      histos->AddClass(Form("Pair_%s", AliDielectron::PairClassName(7)));
+    }
   }
 
   TH1::AddDirectory(kFALSE);
@@ -147,10 +170,20 @@ void InitHistograms(AliDielectron* die, Int_t cutDefinition)
   histos->UserHistogram("Event","nEvents","",1,0.,1.,AliDielectronVarManager::kNevents);
   histos->UserHistogram("Event","nESDTracks","",800,0,800,AliDielectronVarManager::kNTrk);
   histos->UserHistogram("Event","zVertexPrimary","",122,-11,11,AliDielectronVarManager::kZvPrim);
-  histos->UserHistogram("Event","NVtxContrib","Number of Vertex Contributor;N of Vertex Contributors;N of events",
-                        200,-0.5,199.5,AliDielectronVarManager::kNVtxContrib);
-  histos->UserHistogram("Event","CentralityV0A","Centrality V0;V0A percentile",   102, -1, 101, AliDielectronVarManager::kCentralityV0A);
-  histos->UserHistogram("Event","CentralityV0C","Centrality V0;V0C percentile",   102, -1, 101, AliDielectronVarManager::kCentralityV0C);
+  histos->UserHistogram("Event","NVtxContrib","", 200,-0.5,199.5,AliDielectronVarManager::kNVtxContrib);
+  histos->UserHistogram("Event","nESDTracks","",                        1000, 0, 1000, AliDielectronVarManager::kNTrk);
+  histos->UserHistogram("Event","NumTrack(after cuts)","",              1000, 0, 100, AliDielectronVarManager::kTracks); //run2only
+  histos->UserHistogram("Event","Num. acc. tracks","",                  1000, 0, 100, AliDielectronVarManager::kNacc);
+  histos->UserHistogram("Event","Num. ac.. Tracklets (eta<0.9)","",     1000, 0, 100, AliDielectronVarManager::kNaccTrcklts09);
+  histos->UserHistogram("Event","Num. ac.. Tracklets (eta<1)","",        1000, 0, 100, AliDielectronVarManager::kNaccTrcklts10);
+  histos->UserHistogram("Event","Num. acc. Tracklets (eta<1.6)","",      1000, 0, 100, AliDielectronVarManager::kNaccTrcklts);
+  histos->UserHistogram("Event","RefMultTPConly","",                    1000, 0, 1000, AliDielectronVarManager::kRefMultTPConly); //run2only
+  histos->UserHistogram("Event","nTrckltsSPD05","",                 1000, 0, 1000, AliDielectronVarManager::kNaccTrckltsEsd05); 
+  histos->UserHistogram("Event","nTrckltsSPD10","",                 1001, 0, 1000, AliDielectronVarManager::kNaccTrckltsEsd10); 
+  histos->UserHistogram("Event","nTrItsPureESD05","",               1000, 0, 1000, AliDielectronVarManager::kNaccItsPureEsd05); 
+  histos->UserHistogram("Event","nTrItsPureESD10","",               1000, 0, 1000, AliDielectronVarManager::kNaccItsPureEsd10); 
+  histos->UserHistogram("Event","nTrITSTPC05","",                   1000, 0, 1000, AliDielectronVarManager::kNaccItsTpcEsd05Corr); 
+  histos->UserHistogram("Event","nTrITSTPC10","",                   1000, 0, 1000, AliDielectronVarManager::kNaccItsTpcEsd10); 
 
   //---------------------------------------------------------------------------
   // Single track histograms
@@ -188,15 +221,21 @@ void InitHistograms(AliDielectron* die, Int_t cutDefinition)
 
   //---------------------------------------------------------------------------
   // Pair histograms
-  histos->UserHistogram("Pair","InvMass_PairPt_Rapdity",";Inv. Mass (GeV);Pair Pt (GeV);Y_{ee}",
-                        GetVector(kMee), GetVector(kPtee), BinsToVector(200, -2, 2),
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kY);
-  histos->UserHistogram("Pair", "InvMass_PairPt_PhiV", ";Inv. Mass (GeV);Pair Pt (GeV);PhiV",
-                        GetVector(kMee), GetVector(kPtee), GetVector(kPhiV),
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-  histos->UserHistogram("Pair", "InvMass_PairPt_Centrality", ";Inv. Mass (GeV);Pair Pt (GeV);Centrality",
-                        GetVector(kMee), GetVector(kPtee), GetVector(kCent),
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0A);
+  if(doPairing){
+    histos->UserHistogram("Pair","InvMass_PairPt_Rapdity",";Inv. Mass (GeV);Pair Pt (GeV);Y_{ee}",
+                          GetVector(kMee), GetVector(kPtee), BinsToVector(200, -2, 2),
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kY);
+    histos->UserHistogram("Pair", "InvMass_PairPt_PhiV", ";Inv. Mass (GeV);Pair Pt (GeV);PhiV",
+                          GetVector(kMee), GetVector(kPtee), GetVector(kPhiV),
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
+    histos->UserHistogram("Pair", "InvMass_PairPt_Centrality", ";Inv. Mass (GeV);Pair Pt (GeV);Centrality",
+                          GetVector(kMee), GetVector(kPtee), GetVector(kCent),
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0A);
+
+    histos->UserHistogram("Pair","InvMass_pPt_PairDCA","InvMass:PairPt:PairDCA;Inv. Mass [GeV];Pair Pt [GeV];PairDCA [sigma]",
+                          GetVector(kMee),GetVector(kPtee), GetVector(kDCA),
+                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPairDCAsigXY);
+  }
 
   die->SetHistogramManager(histos);
 
@@ -206,8 +245,10 @@ const AliDielectronEventCuts* GetEventCuts(){
 
   AliDielectronEventCuts* eventCuts= new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
   eventCuts->SetRequireVertex();
+  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD);
   eventCuts->SetVertexZ(-10.,10.);
   eventCuts->SetMinVtxContributors(1); 
+  eventCuts->Print();
   
   return eventCuts;
 }
