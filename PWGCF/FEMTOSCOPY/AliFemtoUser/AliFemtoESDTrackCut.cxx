@@ -144,7 +144,6 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
   // test the particle and return
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-  float tMost[5];
 
   if (fStatus && (track->Flags() & fStatus) != fStatus) {
     return false;
@@ -304,12 +303,6 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 
   if (fMostProbable) {
     int imost=0;
-    tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
-    tMost[1] = 0.0;
-    tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
-    tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
-    tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
-
 
     float ipidmax = 0.0;
     //****N Sigma Method****
@@ -413,6 +406,13 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 
     //****Contour Method****
     if (fPIDMethod==1) {
+      float tMost[5];
+      tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
+      tMost[1] = 0.0;
+      tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
+      tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
+      tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
+
       for (int ip=0; ip<5; ip++) {
         if (tMost[ip] > ipidmax) {
           ipidmax = tMost[ip];
