@@ -384,7 +384,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 9);
+    ClassDef(AliMultSelectionTask, 10);
     //3 - extra QA histograms
     //8 - fOADB ponter
 };
