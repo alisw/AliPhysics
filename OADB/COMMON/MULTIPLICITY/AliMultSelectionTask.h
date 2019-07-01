@@ -134,6 +134,9 @@ public:
     void SetUseDefaultMCCalib ( Bool_t lVar ){ fkUseDefaultMCCalib = lVar; }
     Bool_t GetUseDefaultMCCalib () const { return fkUseDefaultMCCalib; }
     
+    void SetSkipVertexZ ( Bool_t lVar ){ fkSkipVertexZ = lVar; }
+    Bool_t GetSkipVertexZ () const { return fkSkipVertexZ; }
+
     //Calibration mode downscaling for manageable output
     void SetDownscaleFactor ( Double_t lDownscale ) { fDownscaleFactor = lDownscale; }
     
@@ -177,6 +180,8 @@ private:
     Bool_t fkUseDefaultCalib; //if true, allow for default data calibration
     Bool_t fkUseDefaultMCCalib; //if true, allow for default scaling factor in MC
     
+    Bool_t fkSkipVertexZ; //if true, skip vertex-Z selection for evselcode determination
+
     //Downscale factor:
     //-> if smaller than unity, reduce change of accepting a given event for calib tree
     Double_t fDownscaleFactor;
