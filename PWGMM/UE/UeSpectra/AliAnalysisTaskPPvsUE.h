@@ -35,7 +35,7 @@
 #include <AliStack.h>
 
 
-#include "AliPPVsMultUtils.h"
+// #include "AliPPVsMultUtils.h"
 #include "AliAnalysisUtils.h"
 
 #include "AliMultiplicity.h"
@@ -49,7 +49,7 @@
 #include "AliMultSelectionTask.h"
 
 
-class AliPPVsMultUtils;
+// class AliPPVsMultUtils;
 class AliTransverseEventShape;
 class AliMCSpectraWeights;
 
@@ -112,7 +112,7 @@ class AliAnalysisTaskPPvsUE : public AliAnalysisTaskSE {
 		UInt_t       ftrigBit;		    //
 		TRandom*      fRandom;              //! random number generator
 		Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
-		AliPPVsMultUtils *fPPVsMultUtils;   //!
+//		AliPPVsMultUtils *fPPVsMultUtils;   //!
 		AliMCSpectraWeights *fMCSpectraWeights;//!
 
 		//

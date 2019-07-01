@@ -66,7 +66,7 @@
 #include <AliAODHeader.h>
 
 
-#include "AliPPVsMultUtils.h"
+//#include "AliPPVsMultUtils.h"
 #include "AliAnalysisUtils.h"
 
 #include "AliMultiplicity.h"
@@ -101,7 +101,7 @@ ClassImp(AliAnalysisTaskPPvsUE)
 	ftrigBit(0x0),
 	fRandom(0x0),
 	fPileUpRej(kFALSE),
-	fPPVsMultUtils(0x0),
+// 	fPPVsMultUtils(0x0),
 	fVtxCut(10.0),  
 	fEtaCut(0.9),  
 	fLeadMin(6.0),
@@ -261,7 +261,7 @@ AliAnalysisTaskPPvsUE::AliAnalysisTaskPPvsUE(const char *name):
 	ftrigBit(0x0),
 	fRandom(0x0),
 	fPileUpRej(kFALSE),
-	fPPVsMultUtils(0x0),
+// 	fPPVsMultUtils(0x0),
 	fVtxCut(10.0),  
 	fEtaCut(0.9),  
 	fLeadMin(6.0),
@@ -420,12 +420,12 @@ AliAnalysisTaskPPvsUE::~AliAnalysisTaskPPvsUE()
     fListOfObjects = 0x0;
   }
   
-  if (fPPVsMultUtils)
+/*  if (fPPVsMultUtils)
   {
     delete fPPVsMultUtils;
     fPPVsMultUtils = 0x0;
   }
-  
+ */ 
 }
 
 //______________________________________________________________________________
