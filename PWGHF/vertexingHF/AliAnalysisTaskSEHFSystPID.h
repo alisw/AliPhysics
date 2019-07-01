@@ -93,6 +93,7 @@ public:
   void EnableNsigmaDataDrivenCorrection(int syst)                             {fEnableNsigmaTPCDataCorr=true; fSystNsigmaTPCDataCorr=syst;}
 
   void EnableSelectionWithAliEventCuts(bool useAliEventCuts=true, int opt=2)  {fUseAliEventCuts=useAliEventCuts; fApplyPbPbOutOfBunchPileupCuts=opt;}
+  void SetUseTimeRangeCutForPbPb2018(bool opt)                                {fUseTimeRangeCutForPbPb2018=opt;}
 
   void ConfigureCutGeoNcrNcl(double dz, double len, double onept, double fncr, double fncl) {
     fDeadZoneWidth=dz;  
@@ -219,8 +220,10 @@ private:
   bool fUseAliEventCuts;                                                             /// flag to enable usage of AliEventCuts foe event-selection
   AliEventCuts fAliEventCuts;                                                        /// event-cut object for centrality correlation event cuts
   int fApplyPbPbOutOfBunchPileupCuts;                                                /// option for Pb-Pb out-of bunch pileup cuts with AliEventCuts
+  bool fUseTimeRangeCutForPbPb2018;                                                  /// flag to enable time-range cut in PbPb 2018
+  AliTimeRangeCut fTimeRangeCut;                                                     /// object to manage time range cut
 
-  ClassDef(AliAnalysisTaskSEHFSystPID, 14);
+  ClassDef(AliAnalysisTaskSEHFSystPID, 15);
 };
 
 #endif

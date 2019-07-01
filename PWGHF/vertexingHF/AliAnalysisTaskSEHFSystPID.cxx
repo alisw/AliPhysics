@@ -101,7 +101,9 @@ fEtalimitsNsigmaTPCDataCorr{},
 fNEtabinsNsigmaTPCDataCorr(0),
 fUseAliEventCuts(false),
 fAliEventCuts(),
-fApplyPbPbOutOfBunchPileupCuts()
+fApplyPbPbOutOfBunchPileupCuts(),
+fUseTimeRangeCutForPbPb2018(true),
+fTimeRangeCut()
 {
   //
   // default constructur
@@ -216,7 +218,9 @@ fEtalimitsNsigmaTPCDataCorr{},
 fNEtabinsNsigmaTPCDataCorr(0),
 fUseAliEventCuts(false),
 fAliEventCuts(),
-fApplyPbPbOutOfBunchPileupCuts()
+fApplyPbPbOutOfBunchPileupCuts(),
+fUseTimeRangeCutForPbPb2018(true),
+fTimeRangeCut()
 {
   //
   // standard constructur
@@ -296,7 +300,7 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(true);
 
-  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",12,-1.5,10.5);
+  fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",13,-1.5,11.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"Read from AOD");
@@ -310,7 +314,8 @@ void AliAnalysisTaskSEHFSystPID::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(9,"Good Z vertex");
   fHistNEvents->GetXaxis()->SetBinLabel(10,"Cent corr cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(11,"V0mult vs. nTPC cls");  
-  fHistNEvents->GetXaxis()->SetBinLabel(12,"Selected events");  
+  fHistNEvents->GetXaxis()->SetBinLabel(12,"excluded time range");  
+  fHistNEvents->GetXaxis()->SetBinLabel(13,"Selected events");  
   fOutputList->Add(fHistNEvents);
 
   TString armenteronames[5] = {"All","K0s","Lambda","AntiLambda","Gamma"};
@@ -482,8 +487,20 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
       return;
     }
   }
+  else {
+    if(fUseTimeRangeCutForPbPb2018){
+      if(fAOD->GetRunNumber() != fRunNumberPrevEvent){
+        fTimeRangeCut.InitFromRunNumber(fAOD->GetRunNumber());
+      }
+      if(fTimeRangeCut.CutEvent(fAOD)){
+        fHistNEvents->Fill(10);   
+        PostData(1, fOutputList);
+        return;
+      }
+    }
+  }
 
-  fHistNEvents->Fill(10);   
+  fHistNEvents->Fill(11);   
 
   // load MC particles
   TClonesArray *arrayMC=0;
@@ -1126,7 +1143,7 @@ int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
     else if(run >= 295369 && run <= 297624)
       fAliEventCuts.SetupPbPb2018();
   }
-  
+
   // cut on correlations for out of bunch pileup in PbPb run2  
   if(fApplyPbPbOutOfBunchPileupCuts==1){
     if(!fAliEventCuts.PassedCut(AliEventCuts::kCorrelations))
@@ -1142,6 +1159,13 @@ int AliAnalysisTaskSEHFSystPID::IsEventSelectedWithAliEventCuts() {
       return 9;
     }
   }
+
+  if(fUseTimeRangeCutForPbPb2018){
+    fAliEventCuts.UseTimeRangeCut();
+    if(!fAliEventCuts.PassedCut(AliEventCuts::kTriggerClasses))
+      return 10;
+  }
+  
   return 0;
 }
 
