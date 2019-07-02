@@ -89,6 +89,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fVertexYAfter(NULL),
  fVertexZBefore(NULL),
  fVertexZAfter(NULL),
+ fCentralityfromVZero(kTRUE),
    //Physics
  bCutOnEta(kTRUE),
  bCutOnPt(kTRUE),
@@ -97,14 +98,14 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMinPtCut(0.2),
  fMaxPtCut(5.0),
  //Variables for the correlation
- fMaxCorrelator(8),
+ fMaxCorrelator(10),
  bUseWeights(kFALSE),
  fNumber(6),  //number of correlation first correlator
  fNumberSecond(6), //number of correlation second correlator
- fMinNumberPart(8),
+ fMinNumberPart(10),
  bUseRatioWeight(kTRUE),
- fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0),  //harmonics
- fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0),  //second set of harmonics
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0),  //harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0),  //second set of harmonics
  fParticles(0),
  fAngles(NULL),
  fWeights(NULL),
@@ -198,6 +199,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fVertexYAfter(NULL),
  fVertexZBefore(NULL),
  fVertexZAfter(NULL),
+ fCentralityfromVZero(kTRUE),
    //Physics
  bCutOnEta(kTRUE),
  bCutOnPt(kTRUE),
@@ -206,13 +208,13 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMinPtCut(0.2),
  fMaxPtCut(5.0),
  //Variables for the correlation
- fMaxCorrelator(8),
+ fMaxCorrelator(10),
  bUseWeights(kFALSE),
  fNumber(6),  //number of correlation first correlator
  fNumberSecond(6), //number of correlation second correlator
- fMinNumberPart(8),
- fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0),  //harmonics
- fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0),  //second set of harmonics
+ fMinNumberPart(10),
+ fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0),  //harmonics
+ fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0),  //second set of harmonics
  fParticles(0), 
  fAngles(NULL),
  fWeights(NULL),
@@ -362,7 +364,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
     
     //~~~~~~~~~~~~~~~~~
 
-    this->Correlation(fNumber,fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8);  //do the correlation for the first set
+    this->Correlation(fNumber,fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8, fh9, fh10);  //do the correlation for the first set
 
     FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(1);
     Weight_FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(2);
@@ -372,7 +374,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
 
     //~~~~~~~~~~~~~~~~~
 
-    this->Correlation(fNumberSecond,fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8);  //do the correlation for the second set
+    this->Correlation(fNumberSecond,fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10);  //do the correlation for the second set
 
     SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(1);
     Weight_SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(2);
@@ -443,9 +445,9 @@ void AliAnalysisTaskStudentsML::InitializeArrays()
      }  
     }  //for(Int_t cs=0;cs<2;cs++)
 
-   for(Int_t js=0;js<49;js++) 
+   for(Int_t js=0;js<61;js++) 
    {
-     for(Int_t j=0;j<9;j++)
+     for(Int_t j=0;j<11;j++)
      {
    
       fQvector[js][j] = TComplex(0.,0.); //! 
@@ -690,9 +692,16 @@ void AliAnalysisTaskStudentsML::Cosmetics()
   if(!ams){return kFALSE;}
   fCounterHistogram->Fill(2.5); // counter hist 3rd bin
  
+  if(fCentralityfromVZero) {
   if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality){ }
   else{ return kFALSE; } // this event do not belong to the centrality class specified for this particular analysis 
+   }
 
+  if(!fCentralityfromVZero) {
+  if(ams->GetMultiplicityPercentile("CL1") >= fMinCentrality && ams->GetMultiplicityPercentile("CL1") < fMaxCentrality){ }
+  else{ return kFALSE; } // this event do not belong to the centrality class specified for this particular analysis 
+   }
+ 
 
   // c) Cuts on AliAODVertex:
   AliAODVertex *avtx = (AliAODVertex*)aAODevent->GetPrimaryVertex();
@@ -787,9 +796,9 @@ void AliAnalysisTaskStudentsML::CalculateQvectors()
  // b) Calculate Q-vectors for available angles and weights. 
 
  // a) Make sure all Q-vectors are initially zero:
- for(Int_t h=0;h<49;h++)
+ for(Int_t h=0;h<61;h++)
  {
-  for(Int_t p=0;p<9;p++)
+  for(Int_t p=0;p<11;p++)
   {
    fQvector[h][p] = TComplex(0.,0.);
   } //  for(Int_t p=0;p<kMaxPower;p++)
@@ -803,9 +812,9 @@ void AliAnalysisTaskStudentsML::CalculateQvectors()
  {
   dPhi2 = fAngles->GetAt(i);
   if(bUseWeights){wPhi = fWeights->GetAt(i);}
-  for(Int_t h=0;h<49;h++)
+  for(Int_t h=0;h<61;h++)
   {
-   for(Int_t p=0;p<9;p++)
+   for(Int_t p=0;p<11;p++)
    {
     if(bUseWeights){wPhiToPowerP = pow(wPhi,p);}
     fQvector[h][p] += TComplex(wPhiToPowerP*TMath::Cos(h*dPhi2),wPhiToPowerP*TMath::Sin(h*dPhi2));
@@ -874,10 +883,10 @@ TComplex AliAnalysisTaskStudentsML::Recursion(Int_t n, Int_t* harmonic, Int_t mu
 //========================================================================================================================
 
 
-void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8)
+void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10)
 {
 	
-     if(h1+h2+h3+h4+h5+h6+h7+h8!=0.){return;} //protection against anisotropic correlators
+     if(h1+h2+h3+h4+h5+h6+h7+h8+h9+h10!=0.){return;} //protection against anisotropic correlators
 	
     // Calculate n-particle correlations from Q-vectors (using recursion):	
 
@@ -975,7 +984,34 @@ void AliAnalysisTaskStudentsML::Correlation(Int_t Number, Int_t h1, Int_t h2, In
         
         }//  8-p correlation
 
-        if(Number!=2 && Number!=3 && Number!=4 && Number!=5 && Number!=6 && Number!=7 && Number!=8)
+
+        if(9==Number)
+        {
+         Int_t harmonicsNineNum[9] = {h1,h2,h3,h4,h5,h6,h7,h8,h9};       
+         Int_t harmonicsNineDen[9] = {0,0,0,0,0,0,0,0,0};       
+         TComplex nineRecursion = Recursion(9,harmonicsNineNum)/Recursion(9,harmonicsNineDen).Re();
+         Double_t wnineRecursion = Recursion(9,harmonicsNineDen).Re();
+         fRecursion[0][7]->Fill(0.5,nineRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursion[0][7]->Fill(1.5,wnineRecursion);
+         fRecursion[1][7]->Fill(0.5,nineRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursion[1][7]->Fill(1.5,wnineRecursion);
+        
+        }//  8-p correlation
+
+        if(10==Number)
+        {
+         Int_t harmonicsTenNum[10] = {h1,h2,h3,h4,h5,h6,h7,h8,h9,h10};       
+         Int_t harmonicsTenDen[10] = {0,0,0,0,0,0,0,0,0,0};       
+         TComplex tenRecursion = Recursion(10,harmonicsTenNum)/Recursion(10,harmonicsTenDen).Re();
+         Double_t wtenRecursion = Recursion(10,harmonicsTenDen).Re();
+         fRecursion[0][8]->Fill(0.5,tenRecursion.Re()); // <<cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursion[0][8]->Fill(1.5,wtenRecursion);
+         fRecursion[1][8]->Fill(0.5,tenRecursion.Im()); // <<<sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>>
+         fRecursion[1][8]->Fill(1.5,wtenRecursion);
+        
+        }//  8-p correlation
+
+        if(Number!=2 && Number!=3 && Number!=4 && Number!=5 && Number!=6 && Number!=7 && Number!=8 && Number!=9 && Number!=10) 
         {
          return;
         }
