@@ -17,6 +17,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamPairCleaner.h"
 #include "AliFemtoDreamPartCollection.h"
+#include "AliFemtoDreamControlSample.h"
 
 class AliAnalysisTaskNanoLoton : public AliAnalysisTaskSE {
  public:
@@ -68,6 +69,9 @@ class AliAnalysisTaskNanoLoton : public AliAnalysisTaskSE {
   AliFemtoDreamPartCollection *fPartColl;   //!
   TList *fResults;//!
   TList *fResultsQA;//!
+  AliFemtoDreamControlSample *fSample;   //!
+  TList *fResultsSample;//!
+  TList *fResultsSampleQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
   ClassDef(AliAnalysisTaskNanoLoton,1)
