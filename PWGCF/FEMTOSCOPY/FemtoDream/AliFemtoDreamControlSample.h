@@ -10,6 +10,12 @@
 #include "vector"
 
 class AliFemtoDreamControlSample {
+  enum UncorrelatedMode {
+    kNone = 0,
+    kPhiSpin = 1,
+    kStravinsky = 2,
+    kCorrelatedPhi = 3
+  };
  public:
   AliFemtoDreamControlSample();
   AliFemtoDreamControlSample(const AliFemtoDreamControlSample& samp);
@@ -20,15 +26,6 @@ class AliFemtoDreamControlSample {
 
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
                 float mult);
-
-  float RelativePairMomentum(TVector3 Part1Momentum, int PDGPart1,
-                             TVector3 Part2Momentum, int PDGPart2, bool random =
-                                 false);
-  float ComputeDeltaEta(AliFemtoDreamBasePart &part1,
-                        AliFemtoDreamBasePart &part2);
-  float ComputeDeltaPhi(AliFemtoDreamBasePart &part1,
-                        AliFemtoDreamBasePart &part2);
-  int FindBin(float Multiplicity);
   TString ClassName() {
     return "Control sample leaking";
   }
@@ -42,19 +39,50 @@ class AliFemtoDreamControlSample {
   }
 
  private:
-
+  void CorrelatedSample(std::vector<AliFemtoDreamBasePart> &part1,
+                        int &PDGPart1,
+                        std::vector<AliFemtoDreamBasePart> &part2,
+                        int &PDGPart2, bool SameParticle, int Mult,
+                        int HistCounter);
+  void UncorrelatedSample(std::vector<AliFemtoDreamBasePart> &part1,
+                          int &PDGPart1,
+                          std::vector<AliFemtoDreamBasePart> &part2,
+                          int &PDGPart2, bool SameParticle, int Mult,
+                          int HistCounter);
+  void PhiSpinning(std::vector<AliFemtoDreamBasePart> &part1, int PDGPart1,
+                   std::vector<AliFemtoDreamBasePart> &part2, int PDGPart2,
+                   bool SameParticle, int Mult, int HistCounter);
+  void LimitedPhiSpinning(std::vector<AliFemtoDreamBasePart> &part1,
+                          int PDGPart1,
+                          std::vector<AliFemtoDreamBasePart> &part2,
+                          int PDGPart2, bool SameParticle, int Mult,
+                          int HistCounter);
+  void Randomizer(std::vector<AliFemtoDreamBasePart*> &part);
+  float RelativePairMomentum(TVector3 Part1Momentum, int PDGPart1,
+                             TVector3 Part2Momentum, int PDGPart2,
+                             UncorrelatedMode mode = kNone);
+  float ComputeDeltaEta(AliFemtoDreamBasePart *part1,
+                        AliFemtoDreamBasePart *part2);
+  float ComputeDeltaPhi(AliFemtoDreamBasePart *part1,
+                        AliFemtoDreamBasePart *part2);
+  float ComputeDeltaEta(AliFemtoDreamBasePart &part1,
+                        AliFemtoDreamBasePart &part2);
+  float ComputeDeltaPhi(AliFemtoDreamBasePart &part1,
+                        AliFemtoDreamBasePart &part2);
+  int FindBin(float Multiplicity);
   AliFemtoDreamCorrHists *fHists;
   std::vector<int> fPDGParticleSpecies;
   std::vector<int> fMultBins;
   TRandom3 fRandom;
   double fPi;
+  UncorrelatedMode fmode;
   int fSpinningDepth;
-  bool fStravinsky;
+  double fCorrelationRange;
   float fDeltaEtaMax;
   float fDeltaPhiMax;
   bool fDoDeltaEtaDeltaPhiCut;
 
-  ClassDef(AliFemtoDreamControlSample, 3)
+ClassDef(AliFemtoDreamControlSample, 3)
 };
 
 #endif
