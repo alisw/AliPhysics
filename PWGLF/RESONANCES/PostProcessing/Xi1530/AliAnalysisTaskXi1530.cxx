@@ -1772,7 +1772,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
     }  // mix loop
 }
 void AliAnalysisTaskXi1530::FillTracksAOD() {
-    AliAODTrack* track1;         // charged track, pion
+    AliVTrack* track1;         // charged track, pion
     AliAODcascade* Xicandidate;  // Cascade
 
     TLorentzVector temp1, temp2;
@@ -1845,7 +1845,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                           Short_t(Xicandidate->ChargeXi()));
 
             for (UInt_t j = 0; j < ntracks; j++) {
-                track1 = (AliAODTrack*)fEvt->GetTrack(goodtrackindices[j]);
+                track1 = (AliVTrack*)fEvt->GetTrack(goodtrackindices[j]);
                 if (!track1){
                     AliInfo(Form("No track! %s", (const char*)SysCheck.at(sys)));
                     continue;
@@ -2287,7 +2287,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                           Short_t(Xicandidate->ChargeXi()));
 
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
-                track1 = (AliAODTrack*)trackpool.at(jt);
+                track1 = (AliVTrack*)trackpool.at(jt);
                 if (track1->GetID() == pTrackXi->GetID() ||
                     track1->GetID() == nTrackXi->GetID() ||
                     track1->GetID() == bTrackXi->GetID())
