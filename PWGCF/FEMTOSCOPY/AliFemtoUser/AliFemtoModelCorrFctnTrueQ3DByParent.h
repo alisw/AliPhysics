@@ -32,15 +32,19 @@ public:
     TString prefix;
     AliFemtoModelManager *mc_manager;
 
+    Parameters()
+      : bin_count(57)
+      , qmin(-0.1425)
+      , qmax(0.1425)
+      , prefix("")
+      , mc_manager(NULL)
+      { }
+
     /// Build Parameters object with default values
     static Parameters Default()
-    {
-      return {
-        57, -0.1425, 0.1425,  // histogram bin-count & range
-        "CF_Q3DByParent",     // name
-        NULL                  // pointer to MC manager
-      };
-    }
+      {
+        return Parameters().NamePrefix("CF_Q3DByParent");
+      }
 
     #define ImplSetter(__name, __type, __target) \
       Parameters __name(__type var) const  \
