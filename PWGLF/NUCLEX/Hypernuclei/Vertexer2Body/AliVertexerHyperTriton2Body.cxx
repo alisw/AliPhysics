@@ -168,8 +168,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 }
 
                 //select maximum eta range (after propagation)
-                v0s.emplace_back(nt, nidx, pt, pidx);
-                AliESDv0 &vertex = v0s.back();
+                AliESDv0 vertex(nt, nidx, pt, pidx);
 
                 //Experimental: refit V0 if asked to do so
                 if (fkDoV0Refit)
@@ -210,7 +209,6 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 //Simple cosine cut (no pt dependence for now)
                 if (cpa < fV0VertexerSels[4])
                     continue;
-
                 vertex.SetDcaV0Daughters(dca);
                 vertex.SetV0CosineOfPointingAngle(cpa);
                 vertex.ChangeMassHypothesis(kK0Short);
@@ -224,6 +222,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                     continue;
                 if (lTransvMom > fMaxPtV0)
                     continue;
+                v0s.push_back(vertex);
             }
         }
     }
