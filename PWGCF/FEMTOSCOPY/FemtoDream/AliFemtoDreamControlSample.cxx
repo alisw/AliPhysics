@@ -9,6 +9,8 @@ ClassImp(AliFemtoDreamControlSample)
 AliFemtoDreamControlSample::AliFemtoDreamControlSample()
     : fHists(nullptr),
       fPDGParticleSpecies(),
+      fWhichPairs(),
+      fRejPairs(),
       fMultBins(),
       fRandom(),
       fPi(TMath::Pi()),
@@ -25,6 +27,8 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
     const AliFemtoDreamControlSample &samp)
     : fHists(samp.fHists),
       fPDGParticleSpecies(samp.fPDGParticleSpecies),
+      fWhichPairs(samp.fWhichPairs),
+      fRejPairs(samp.fRejPairs),
       fMultBins(samp.fMultBins),
       fRandom(),
       fPi(TMath::Pi()),
@@ -41,6 +45,8 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
     AliFemtoDreamCollConfig *conf, bool minimalBooking)
     : fHists(new AliFemtoDreamCorrHists(conf, minimalBooking)),
       fPDGParticleSpecies(conf->GetPDGCodes()),
+      fWhichPairs(conf->GetWhichPairs()),
+      fRejPairs(conf->GetClosePairRej()),
       fMultBins(conf->GetMultBins()),
       fRandom(),
       fPi(TMath::Pi()),
@@ -60,6 +66,8 @@ AliFemtoDreamControlSample& AliFemtoDreamControlSample::operator=(
   }
   this->fHists = samp.fHists;
   this->fPDGParticleSpecies = samp.fPDGParticleSpecies;
+  this->fWhichPairs = samp.fWhichPairs;
+  this->fRejPairs = samp.fRejPairs;
   this->fMultBins = samp.fMultBins;
   this->fRandom.SetSeed(0);
   this->fPi = TMath::Pi();
@@ -105,11 +113,9 @@ void AliFemtoDreamControlSample::SetEvent(
   }
 }
 
-float AliFemtoDreamControlSample::RelativePairMomentum(TVector3 Part1Momentum,
-                                                       int PDGPart1,
-                                                       TVector3 Part2Momentum,
-                                                       int PDGPart2,
-                                                       AliFemtoDreamCollConfig::UncorrelatedMode mode) {
+float AliFemtoDreamControlSample::RelativePairMomentum(
+    TVector3 Part1Momentum, int PDGPart1, TVector3 Part2Momentum, int PDGPart2,
+    AliFemtoDreamCollConfig::UncorrelatedMode mode) {
   if (PDGPart1 == 0 || PDGPart2 == 0) {
     AliError("Invalid PDG Code");
   }
@@ -171,10 +177,11 @@ void AliFemtoDreamControlSample::CorrelatedSample(
     int Mult, int HistCounter) {
   float RelativeK = 0;
   auto itPart1 = part1.begin();
+  bool CPR = fRejPairs.at(HistCounter);
   while (itPart1 != part1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : part2.begin();
     while (itPart2 != part2.end()) {
-      if (fDoDeltaEtaDeltaPhiCut) {
+      if (fDoDeltaEtaDeltaPhiCut && CPR) {
         if (ComputeDeltaEta(*itPart1, *itPart2) < fDeltaEtaMax) {
           ++itPart2;
           continue;
@@ -183,12 +190,12 @@ void AliFemtoDreamControlSample::CorrelatedSample(
           ++itPart2;
           continue;
         }
-        RelativeK = RelativePairMomentum(itPart1->GetMomentum(), PDGPart1,
-                                         itPart2->GetMomentum(), PDGPart2);
-        fHists->FillSameEventDist(HistCounter, RelativeK);
-        if (fHists->GetDoMultBinning()) {
-          fHists->FillSameEventMultDist(HistCounter, Mult + 1, RelativeK);
-        }
+      }
+      RelativeK = RelativePairMomentum(itPart1->GetMomentum(), PDGPart1,
+                                       itPart2->GetMomentum(), PDGPart2);
+      fHists->FillSameEventDist(HistCounter, RelativeK);
+      if (fHists->GetDoMultBinning()) {
+        fHists->FillSameEventMultDist(HistCounter, Mult + 1, RelativeK);
       }
       itPart2++;
     }
@@ -200,11 +207,14 @@ void AliFemtoDreamControlSample::UncorrelatedSample(
     std::vector<AliFemtoDreamBasePart> &part1, int &PDGPart1,
     std::vector<AliFemtoDreamBasePart> &part2, int &PDGPart2, bool SameParticle,
     int Mult, int HistCounter) {
-  if (fmode == AliFemtoDreamCollConfig::kPhiSpin || fmode == AliFemtoDreamCollConfig::kStravinsky) {
-    PhiSpinning(part1, PDGPart1, part2, PDGPart2, SameParticle,Mult, HistCounter);
+  if (fmode == AliFemtoDreamCollConfig::kPhiSpin
+      || fmode == AliFemtoDreamCollConfig::kStravinsky) {
+    PhiSpinning(part1, PDGPart1, part2, PDGPart2, SameParticle, Mult,
+                HistCounter);
   } else if (fmode == AliFemtoDreamCollConfig::kCorrelatedPhi) {
     for (int iSpin = 0; iSpin < fSpinningDepth; ++iSpin) {
-      LimitedPhiSpinning(part1, PDGPart1, part2, PDGPart2, SameParticle,Mult, HistCounter);
+      LimitedPhiSpinning(part1, PDGPart1, part2, PDGPart2, SameParticle, Mult,
+                         HistCounter);
     }
   } else {
     Error("AliFemtoDreamControlSample::UncorrelatedSample",
@@ -219,10 +229,13 @@ void AliFemtoDreamControlSample::PhiSpinning(
     int Mult, int HistCounter) {
   float RelativeK = 0;
   auto itPart1 = part1.begin();
+  bool CPR = fRejPairs.at(HistCounter);
   while (itPart1 != part1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : part2.begin();
     while (itPart2 != part2.end()) {
-      if (fDoDeltaEtaDeltaPhiCut) {
+      //in this case it does NOT work as intended since the new phi of the particle has to
+      //be considered for this cut
+      if (fDoDeltaEtaDeltaPhiCut && CPR) {
         if (ComputeDeltaEta(*itPart1, *itPart2) < fDeltaEtaMax) {
           ++itPart2;
           continue;
@@ -231,15 +244,15 @@ void AliFemtoDreamControlSample::PhiSpinning(
           ++itPart2;
           continue;
         }
-        for (int i = 0; i < fSpinningDepth; ++i) {
-          // randomized sample - who is the father???
-          RelativeK = RelativePairMomentum(itPart1->GetMomentum(), PDGPart1,
-                                           itPart2->GetMomentum(), PDGPart2,
-                                           fmode);
-          fHists->FillMixedEventDist(HistCounter, RelativeK);
-          if (fHists->GetDoMultBinning()) {
-            fHists->FillMixedEventMultDist(HistCounter, Mult + 1, RelativeK);
-          }
+      }
+      for (int i = 0; i < fSpinningDepth; ++i) {
+        // randomized sample - who is the father???
+        RelativeK = RelativePairMomentum(itPart1->GetMomentum(), PDGPart1,
+                                         itPart2->GetMomentum(), PDGPart2,
+                                         fmode);
+        fHists->FillMixedEventDist(HistCounter, RelativeK);
+        if (fHists->GetDoMultBinning()) {
+          fHists->FillMixedEventMultDist(HistCounter, Mult + 1, RelativeK);
         }
       }
       itPart2++;
@@ -278,11 +291,14 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
   Randomizer(RandomizeMe);
   // calculate the relative momentum
   float RelativeK = 0;
+  bool CPR = fRejPairs.at(HistCounter);
   auto itPart1 = CopyPart1.begin();
   while (itPart1 != CopyPart1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : CopyPart2.begin();
     while (itPart2 != CopyPart2.end()) {
-      if (fDoDeltaEtaDeltaPhiCut) {
+      //in this case it does NOT work as intended since the new phi of the particle has to
+      //be considered for this cut
+      if (fDoDeltaEtaDeltaPhiCut && CPR) {
         if (ComputeDeltaEta(*itPart1, *itPart2) < fDeltaEtaMax) {
           ++itPart2;
           continue;
@@ -291,15 +307,15 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
           ++itPart2;
           continue;
         }
-        for (int i = 0; i < fSpinningDepth; ++i) {
-          // randomized sample - who is the father???
-          RelativeK = RelativePairMomentum((*itPart1)->GetMomentum(), PDGPart1,
-                                           (*itPart2)->GetMomentum(), PDGPart2,
-                                           AliFemtoDreamCollConfig::kNone);
-          fHists->FillMixedEventDist(HistCounter, RelativeK);
-          if (fHists->GetDoMultBinning()) {
-            fHists->FillMixedEventMultDist(HistCounter, Mult + 1, RelativeK);
-          }
+      }
+      for (int i = 0; i < fSpinningDepth; ++i) {
+        // randomized sample - who is the father???
+        RelativeK = RelativePairMomentum((*itPart1)->GetMomentum(), PDGPart1,
+                                         (*itPart2)->GetMomentum(), PDGPart2,
+                                         AliFemtoDreamCollConfig::kNone);
+        fHists->FillMixedEventDist(HistCounter, RelativeK);
+        if (fHists->GetDoMultBinning()) {
+          fHists->FillMixedEventMultDist(HistCounter, Mult + 1, RelativeK);
         }
       }
       itPart2++;

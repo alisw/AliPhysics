@@ -66,6 +66,8 @@ class AliFemtoDreamControlSample {
   int FindBin(float Multiplicity);
   AliFemtoDreamCorrHists *fHists;
   std::vector<int> fPDGParticleSpecies;
+  std::vector<unsigned int> fWhichPairs;
+  std::vector<bool> fRejPairs;
   std::vector<int> fMultBins;
   TRandom3 fRandom;
   double fPi;
