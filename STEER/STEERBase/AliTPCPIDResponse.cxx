@@ -1164,6 +1164,11 @@ Double_t AliTPCPIDResponse::GetMultiplicityCorrectionFast(const AliVTrack *track
   Double_t multCorrectionFactor = 1.0;
   
   if (!fIsNewPbPbParam) {
+    if (!track) {
+      AliError("Need track for TanTheta Info for multiplicity correction");
+      return 1.0;
+    }
+    
     Double_t relSlope = fCorrFuncMultiplicity->Eval(dEdxExpectedInv);
     
     const Double_t tanTheta = GetTrackTanTheta(track);
@@ -1175,7 +1180,7 @@ Double_t AliTPCPIDResponse::GetMultiplicityCorrectionFast(const AliVTrack *track
     Double_t relSlope = fCorrFuncSlope->Eval(dEdxExpectedInv);
     Double_t relCurv = fCorrFuncCurv->Eval(dEdxExpectedInv);
     
-    if (multiplicity <= -relSlope/(2*relCurv)) 
+    if (relCurv <= 0.0 || (multiplicity <= -relSlope/(2*relCurv))) 
       multCorrectionFactor += relSlope * multiplicity + relCurv * multiplicity * multiplicity;
     else
       multCorrectionFactor -= 0.25 *relSlope * relSlope/relCurv;  
