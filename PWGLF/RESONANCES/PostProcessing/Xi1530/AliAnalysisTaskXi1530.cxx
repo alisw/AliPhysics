@@ -1912,7 +1912,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 Double_t fDCADist_Lambda_PV =
                     fabs(Xicandidate->DcaV0ToPrimVertex());
                 Double_t fDCADist_Xi_PV =
-                    fabs(Xicandidate->DcaXiToPrimVertex());
+                    fabs(Xicandidate->DcaXiToPrimVertex(PVx, PVy, PVz));
                 if ((SysCheck.at(sys) != "DCADistLambdaPVLoose") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut))
                     continue;
