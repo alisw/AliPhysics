@@ -145,9 +145,9 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
 	 femtoAnalysis[anIter]->SetFirstParticleCut(firstXiTrackCut);
       else if(firstV0TrackCut)
 	{
-	  cutPass1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", sysNames[iSys], imult));
-	  cutFail1V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", sysNames[iSys], imult));
-	  firstV0TrackCut->AddCutMonitor(cutPass1V0[aniter], cutFail1V0[aniter]);
+	  cutPass1V0[anIter] = new AliFemtoCutMonitorV0(Form("cutPass1%stpcM%i", sysNames[iSys], imult));
+	  cutFail1V0[anIter] = new AliFemtoCutMonitorV0(Form("cutFail1%stpcM%i", sysNames[iSys], imult));
+	  firstV0TrackCut->AddCutMonitor(cutPass1V0[anIter], cutFail1V0[anIter]);
 	  femtoAnalysis[anIter]->SetFirstParticleCut(firstV0TrackCut);
 	}
       else
@@ -156,9 +156,9 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, bool sepCuts=false, 
         femtoAnalysis[anIter]->SetSecondParticleCut(secondXiTrackCut);
       else if(secondV0TrackCut)
 	{
-	  cutPass2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutPass2%stpcM%i", sysNames[iSys], imult));
-	  cutFail2V0[aniter] = new AliFemtoCutMonitorV0(Form("cutFail2%stpcM%i", sysNames[iSys], imult));
-	  secondV0TrackCut->AddCutMonitor(cutPass2V0[aniter], cutFail2V0[aniter]);
+	  cutPass2V0[anIter] = new AliFemtoCutMonitorV0(Form("cutPass2%stpcM%i", sysNames[iSys], imult));
+	  cutFail2V0[anIter] = new AliFemtoCutMonitorV0(Form("cutFail2%stpcM%i", sysNames[iSys], imult));
+	  secondV0TrackCut->AddCutMonitor(cutPass2V0[anIter], cutFail2V0[anIter]);
 	  femtoAnalysis[anIter]->SetSecondParticleCut(secondV0TrackCut);
 	}
       else
