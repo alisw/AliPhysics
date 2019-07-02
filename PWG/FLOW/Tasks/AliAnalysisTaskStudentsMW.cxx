@@ -246,7 +246,7 @@ void AliAnalysisTaskStudentsMW::UserExec(Option_t *)
  // c) Reset event-by-event objects;
  // d) PostData.
 
-/*
+
  // a) Get pointer to AOD event:
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
  if(!aAOD){return;}
@@ -311,33 +311,8 @@ void AliAnalysisTaskStudentsMW::UserExec(Option_t *)
 
  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  
- fAngles->Set(fParticles); */
+ fAngles->Set(fParticles); 
 
- //sssssssssssssssssssssssssssssssssssssssssssssss
- //Hier kleine MC ueberprufung mit ner fourier p.d.f.
- TF1 *pdf = new TF1("p.d.f.","1/(2*pi)*(1+2*[0]*TMath::Cos(2*(x-[1])))",0.,2*pi);
-
- //set v2 [0]= 0.05 and random psi=uniform
- pdf->SetParameter(0,0.05);
-
- //b.0) Start analysis over AODs:
- Int_t nTracks = 6000; // number of all tracks in current event 
- fAngles = new TArrayD(nTracks); //new Array
- fParticles=0; //number of particles after selections
-
-
-  //b.1) Loop over the tracks in the event with PhysicsSelection(Eta Cut, Pt Cut)
- for(Int_t iTrack=0;iTrack<5000;iTrack++) // starting a loop over all tracks
- { 
-     Double_t phi=pdf->GetRandom();
-     fAngles->AddAt(phi,fParticles);
-     fParticles += 1;
-	
- } 
-
-fAngles->Set(fParticles);
- // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
- //sssssssssssssssssssssssssssssssssssssssssssssssssssss 
 
  if(fParticles>0){fMultiHistoAfterTrackSeletion->Fill(fParticles);} //multiplicity distribution after track selection
  for(Int_t u=0;u<fParticles;u++){fTotalMultAfterTrackSeletion->Fill(0.5);} //total number of particles in whole centrality class after track sel.
