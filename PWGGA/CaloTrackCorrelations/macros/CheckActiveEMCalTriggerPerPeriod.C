@@ -162,6 +162,21 @@ Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString & trigger, TS
     return kFALSE;
   }
 
+  // Run2: Triggers not used in first LHC16 periods 
+  //
+  if ( year == 2016 && trigger.Contains("L") )
+  { 
+    if ( period == "LHC16b" || period == "LHC16c" || period == "LHC16d" ||
+        period == "LHC16e" || period == "LHC16f" || period == "LHC16g" || 
+        period == "LHC16h" ) 
+    {
+      printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal for period %s, SKIP \n", 
+             trigger.Data(),period.Data());
+      
+      return kFALSE;
+    }
+  }
+  
   // Run2: triggers not used in LHC17n period XeXe
   //
   if ( year == 2017 && period == "LHC17n" && trigger.Contains("L") ) 
