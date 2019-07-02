@@ -108,4 +108,6 @@
 /// * NanoAOD
 #pragma link C++ class AliNanoFilterPID+;
 #pragma link C++ class AliNanoSkimmingPID+;
+/// * ChunkFilter
+#pragma link C++ class AliAnalysisTaskFilterHe3+;
 #endif
