@@ -31,152 +31,184 @@ class AliESDtrackCuts;
 class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
   public:
-  AliAnalysisTaskSimpleTreeMaker(const char *name, Bool_t ExtraDCA = kFALSE);
-    AliAnalysisTaskSimpleTreeMaker();
-    ~AliAnalysisTaskSimpleTreeMaker();
+    AliAnalysisTaskSimpleTreeMaker(const char *name, Bool_t ExtraDCA = kFALSE);
+		AliAnalysisTaskSimpleTreeMaker();
+		~AliAnalysisTaskSimpleTreeMaker();
 
-    virtual void   UserCreateOutputObjects();
-    virtual void   UserExec(Option_t *option);
-    virtual void   FinishTaskOutput();
-    virtual void   Terminate(Option_t *);
+		virtual void   UserCreateOutputObjects();
+		virtual void   UserExec(Option_t *option);
+		virtual void   FinishTaskOutput();
+		virtual void   Terminate(Option_t *);
 
-    void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
-    void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
+		void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
+		void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
+	
+		// PID calibration function to correct the width and mean of detector
+		// response (I.e should be unit guassian)
+		void SetCorrWidthMeanTPC(TH3D* width, TH3D* mean){
+			fMeanTPC  = mean;
+			fWidthTPC = width;
+		};
+		
+		void SetCorrWidthMeanITS(TH3D* width, TH3D* mean){
+			fMeanITS  = mean;
+			fWidthITS = width;
+		};
+		
+		void SetCorrWidthMeanTOF(TH3D* width, TH3D* mean){
+			fMeanTOF  = mean;
+			fWidthTOF = width;
+		};
 
-    // PID calibration function to correct the width and mean of detector
-    // response (I.e should be unit guassian)
-    void SetCorrWidthMeanTPC(TH3D* width, TH3D* mean){
-      fMeanTPC  = mean;
-      fWidthTPC = width;
-    };
+		void SetCentralityPercentileRange(Float_t min, Float_t max){
+				fCentralityPercentileMin = min;
+				fCentralityPercentileMax = max;
+		}
 
-    void SetCorrWidthMeanITS(TH3D* width, TH3D* mean){
-      fMeanITS  = mean;
-      fWidthITS = width;
-    };
+		// Kinematic cuts set here only applied to V0 TTrees
+		// For standard TTree a dielectron cut library is needed
+		void SetPtRange(Float_t min, Float_t max){
+			fPtMin = min;
+			fPtMax = max;
+		}
 
-    void SetCorrWidthMeanTOF(TH3D* width, TH3D* mean){
-      fMeanTOF  = mean;
-      fWidthTOF = width;
-    };
+		void SetEtaRange(Float_t min, Float_t max){
+			fEtaMin = min;
+			fEtaMax = max;
+		}
 
-    void SetCentralityPercentileRange(Float_t min, Float_t max){
-        fCentralityPercentileMin = min;
-        fCentralityPercentileMax = max;
+		// PID cut used for V0 TTrees
+		void SetESigRangeTPC(Float_t min, Float_t max){
+			fESigTPCMin = min;
+			fESigTPCMax = max;
+		}
+
+		// Kaon PID values not saved by default
+		void writeKaonPIDtoTree(Bool_t answer){
+			storeKaonPID = answer;
+		}
+
+		void SetMC(Bool_t answer){ hasMC = answer; }
+
+		// Track cut setters. StandardITSTPC2011 cuts used if nothing specified
+		void SetTPCminClusters(Int_t number){
+				fESDtrackCuts->SetMinNClustersTPC(number);
+		}
+
+		void SetTPCminCrossedRows(Int_t number){
+				fESDtrackCuts->SetMinNCrossedRowsTPC(number);
+		}
+
+		void SetTPCRatio(Double_t number){
+				fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(number);
+		}
+
+		void SetTPCChi2PerCluster(Float_t number){
+				fESDtrackCuts->SetMaxChi2PerClusterTPC(number);
+		}
+
+		void SetITSclusterRequirements(AliESDtrackCuts::Detector detector, AliESDtrackCuts::ITSClusterRequirement requirement){
+				fESDtrackCuts->SetClusterRequirementITS(detector, requirement);
+		}
+
+		void SetITSChi2PerCluster(Float_t number){
+				fESDtrackCuts->SetMaxChi2PerClusterITS(number);
+		}
+
+		void SetMaxDCAxy(Float_t number){
+				fESDtrackCuts->SetMaxDCAToVertexXY(number);
+		}
+
+		void SetMaxDCAPtDep(const char* dist){
+				fESDtrackCuts->SetMaxDCAToVertexXYPtDep(dist);
+		}
+
+		void SetMaxDCAz(Double_t number){
+				fESDtrackCuts->SetMaxDCAToVertexZ(number);
+		 }
+
+		void SetTPCconstrainedGlobalChi2(Double_t number){
+				fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(number);
+		}
+
+		void SetGridPID(std::string string){
+				fGridPID = std::stoi(string);
+		}
+		void GRIDanalysis(Bool_t answer){
+				fIsGRIDanalysis = answer;
+		}
+		void createDCAbranches(Bool_t answer){
+		  fExtraDCA = answer;
+		}
+		void createV0tree(Bool_t answer){
+				fIsV0tree = answer;
+		}
+		void setSDDstatus(Bool_t answer){
+				fHasSDD = answer;
+		}
+		Bool_t isV0daughterAccepted(AliVTrack* track);
+
+		void setFilterBitSelection(Int_t filterBit){
+				fFilterBit = filterBit;
+		}
+		void analyseMC(Bool_t answer){
+			hasMC = answer;
+		}
+
+		void SetUseTPCcorr(Bool_t answer){
+			fUseTPCcorr = answer;
+		}
+
+		void SetUseITScorr(Bool_t answer){
+			fUseITScorr = answer;
+		}
+		
+		void SetUseTOFcorr(Bool_t answer){
+			fUseTOFcorr = answer;
+		}
+
+		void SetMaxPtPIDcorrection(Float_t answer){
+			maxPtPIDcorrection = answer;
+		}
+
+    inline Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0){
+      // this is a copy of the AliDielectronVarManager
+
+      if(track->TestBit(AliAODTrack::kIsDCA)){
+        d0z0[0] = track->DCA();
+        d0z0[1] = track->ZAtDCA();
+        // the covariance matrix is not stored in case of AliAODTrack::kIsDCA
+        return kTRUE;
+      }
+
+      Bool_t ok = kFALSE;
+      if(event){
+        AliExternalTrackParam etp;
+        etp.CopyFromVTrack(track);
+
+        Float_t xstart = etp.GetX();
+        if(xstart>3.){
+          d0z0[0] = -999.;
+          d0z0[1] = -999.;
+          return kFALSE;
+        }
+
+        const AliAODVertex* vtx =dynamic_cast<const AliAODVertex*>((event->GetPrimaryVertex()));
+        Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
+        ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+      }
+
+      if(!ok){
+        d0z0[0] = -999.;
+        d0z0[1] = -999.;
+      }
+      return ok;
     }
 
-    // Kinematic cuts set here only applied to V0 TTrees
-    // For standard TTree a dielectron cut library is needed
-    void SetPtRange(Float_t min, Float_t max){
-      fPtMin = min;
-      fPtMax = max;
-    }
-
-    void SetEtaRange(Float_t min, Float_t max){
-      fEtaMin = min;
-      fEtaMax = max;
-    }
-
-    // PID cut used for V0 TTrees
-    void SetESigRangeTPC(Float_t min, Float_t max){
-      fESigTPCMin = min;
-      fESigTPCMax = max;
-    }
-
-    // Kaon PID values not saved by default
-    void writeKaonPIDtoTree(Bool_t answer){
-      storeKaonPID = answer;
-    }
-
-    void SetMC(Bool_t answer){ hasMC = answer; }
-
-    // Track cut setters. StandardITSTPC2011 cuts used if nothing specified
-    void SetTPCminClusters(Int_t number){
-        fESDtrackCuts->SetMinNClustersTPC(number);
-    }
-
-    void SetTPCminCrossedRows(Int_t number){
-        fESDtrackCuts->SetMinNCrossedRowsTPC(number);
-    }
-
-    void SetTPCRatio(Double_t number){
-        fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(number);
-    }
-
-    void SetTPCChi2PerCluster(Float_t number){
-        fESDtrackCuts->SetMaxChi2PerClusterTPC(number);
-    }
-
-    void SetITSclusterRequirements(AliESDtrackCuts::Detector detector, AliESDtrackCuts::ITSClusterRequirement requirement){
-        fESDtrackCuts->SetClusterRequirementITS(detector, requirement);
-    }
-
-    void SetITSChi2PerCluster(Float_t number){
-        fESDtrackCuts->SetMaxChi2PerClusterITS(number);
-    }
-
-    void SetMaxDCAxy(Float_t number){
-        fESDtrackCuts->SetMaxDCAToVertexXY(number);
-    }
-
-    void SetMaxDCAPtDep(const char* dist){
-        fESDtrackCuts->SetMaxDCAToVertexXYPtDep(dist);
-    }
-
-    void SetMaxDCAz(Double_t number){
-        fESDtrackCuts->SetMaxDCAToVertexZ(number);
-     }
-
-    void SetTPCconstrainedGlobalChi2(Double_t number){
-        fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(number);
-    }
-
-    void SetGridPID(std::string string){
-        fGridPID = std::stoi(string);
-    }
-    void GRIDanalysis(Bool_t answer){
-        fIsGRIDanalysis = answer;
-    }
-    void createDCAbranches(Bool_t answer){
-      fExtraDCA = answer;
-    }
-    void createV0tree(Bool_t answer){
-        fIsV0tree = answer;
-    }
-    void setSDDstatus(Bool_t answer){
-        fHasSDD = answer;
-    }
-    Bool_t isV0daughterAccepted(AliVTrack* track);
-
-    void setFilterBitSelection(Int_t filterBit){
-        fFilterBit = filterBit;
-    }
-    void analyseMC(Bool_t answer){
-      hasMC = answer;
-    }
-
-    void SetUseTPCcorr(Bool_t answer){
-      fUseTPCcorr = answer;
-    }
-
-    void SetUseITScorr(Bool_t answer){
-      fUseITScorr = answer;
-    }
-
-    void SetUseTOFcorr(Bool_t answer){
-      fUseTOFcorr = answer;
-    }
-
-    void SetMaxPtPIDcorrection(Float_t answer){
-      maxPtPIDcorrection = answer;
-    }
-
-    inline Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
-
-    // Check if the generator is on the list of generators
-    // If found, assign track with integer value correspding to generator
-    // 0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
-    Int_t CheckGenerator(Int_t trackID);
+		// Check if the generator is on the list of generators
+		// If found, assign track with integer value correspding to generator
+		// 0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
+		Int_t CheckGenerator(Int_t trackID);
 
   private:
 
@@ -327,7 +359,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     // or not the track was injected
     std::vector<UInt_t> fGeneratorHashes;
 
-    ClassDef(AliAnalysisTaskSimpleTreeMaker, 6);
+    ClassDef(AliAnalysisTaskSimpleTreeMaker, 7);
 
 };
 

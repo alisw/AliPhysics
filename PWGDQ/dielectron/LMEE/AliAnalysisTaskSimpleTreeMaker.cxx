@@ -1367,40 +1367,6 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::isV0daughterAccepted(AliVTrack* track){
     return answer;
 }
 
-inline Bool_t AliAnalysisTaskSimpleTreeMaker::GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0){
-// This is a copy from the AliDielectronVarManager
-
-  if(track->TestBit(AliAODTrack::kIsDCA)){
-    d0z0[0] = track->DCA();
-    d0z0[1] = track->ZAtDCA();
-    // The covariance matrix is not stored in case of AliAODTrack::kIsDCA
-    return kTRUE;
-  }
-
-  Bool_t ok = kFALSE;
-  if(event){
-    AliExternalTrackParam etp;
-    etp.CopyFromVTrack(track);
-
-    Float_t xstart = etp.GetX();
-    if(xstart>3.){
-      d0z0[0] = -999.;
-      d0z0[1] = -999.;
-      return kFALSE;
-    }
-
-    const AliAODVertex* vtx =dynamic_cast<const AliAODVertex*>((event->GetPrimaryVertex()));
-    Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
-    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
-  }
-
-  if(!ok){
-    d0z0[0] = -999.;
-    d0z0[1] = -999.;
-  }
-  return ok;
-}
-
 //
 void AliAnalysisTaskSimpleTreeMaker::SetupTrackCuts(AliDielectronCutGroup* cuts){
 
