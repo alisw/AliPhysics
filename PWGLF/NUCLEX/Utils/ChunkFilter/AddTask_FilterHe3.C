@@ -18,7 +18,7 @@ AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(){
 
   //========= Add task to the ANALYSIS manager =====
   AliAnalysisTaskFilterHe3* task = new AliAnalysisTaskFilterHe3("akalweitTaskFilterHe3");
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  task->SelectCollisionCandidates(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);
 
    
   //================================================
