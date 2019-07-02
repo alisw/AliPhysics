@@ -32,144 +32,144 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
   public:
     AliAnalysisTaskSimpleTreeMaker(const char *name, Bool_t ExtraDCA = kFALSE);
-		AliAnalysisTaskSimpleTreeMaker();
-		~AliAnalysisTaskSimpleTreeMaker();
+    AliAnalysisTaskSimpleTreeMaker();
+    ~AliAnalysisTaskSimpleTreeMaker();
 
-		virtual void   UserCreateOutputObjects();
-		virtual void   UserExec(Option_t *option);
-		virtual void   FinishTaskOutput();
-		virtual void   Terminate(Option_t *);
+    virtual void   UserCreateOutputObjects();
+    virtual void   UserExec(Option_t *option);
+    virtual void   FinishTaskOutput();
+    virtual void   Terminate(Option_t *);
 
-		void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
-		void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
-	
-		// PID calibration function to correct the width and mean of detector
-		// response (I.e should be unit guassian)
-		void SetCorrWidthMeanTPC(TH3D* width, TH3D* mean){
-			fMeanTPC  = mean;
-			fWidthTPC = width;
-		};
-		
-		void SetCorrWidthMeanITS(TH3D* width, TH3D* mean){
-			fMeanITS  = mean;
-			fWidthITS = width;
-		};
-		
-		void SetCorrWidthMeanTOF(TH3D* width, TH3D* mean){
-			fMeanTOF  = mean;
-			fWidthTOF = width;
-		};
+    void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
+    void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
+  
+    // PID calibration function to correct the width and mean of detector
+    // response (I.e should be unit guassian)
+    void SetCorrWidthMeanTPC(TH3D* width, TH3D* mean){
+      fMeanTPC  = mean;
+      fWidthTPC = width;
+    };
+    
+    void SetCorrWidthMeanITS(TH3D* width, TH3D* mean){
+      fMeanITS  = mean;
+      fWidthITS = width;
+    };
+    
+    void SetCorrWidthMeanTOF(TH3D* width, TH3D* mean){
+      fMeanTOF  = mean;
+      fWidthTOF = width;
+    };
 
-		void SetCentralityPercentileRange(Float_t min, Float_t max){
-				fCentralityPercentileMin = min;
-				fCentralityPercentileMax = max;
-		}
+    void SetCentralityPercentileRange(Float_t min, Float_t max){
+        fCentralityPercentileMin = min;
+        fCentralityPercentileMax = max;
+    }
 
-		// Kinematic cuts set here only applied to V0 TTrees
-		// For standard TTree a dielectron cut library is needed
-		void SetPtRange(Float_t min, Float_t max){
-			fPtMin = min;
-			fPtMax = max;
-		}
+    // Kinematic cuts set here only applied to V0 TTrees
+    // For standard TTree a dielectron cut library is needed
+    void SetPtRange(Float_t min, Float_t max){
+      fPtMin = min;
+      fPtMax = max;
+    }
 
-		void SetEtaRange(Float_t min, Float_t max){
-			fEtaMin = min;
-			fEtaMax = max;
-		}
+    void SetEtaRange(Float_t min, Float_t max){
+      fEtaMin = min;
+      fEtaMax = max;
+    }
 
-		// PID cut used for V0 TTrees
-		void SetESigRangeTPC(Float_t min, Float_t max){
-			fESigTPCMin = min;
-			fESigTPCMax = max;
-		}
+    // PID cut used for V0 TTrees
+    void SetESigRangeTPC(Float_t min, Float_t max){
+      fESigTPCMin = min;
+      fESigTPCMax = max;
+    }
 
-		// Kaon PID values not saved by default
-		void writeKaonPIDtoTree(Bool_t answer){
-			storeKaonPID = answer;
-		}
+    // Kaon PID values not saved by default
+    void writeKaonPIDtoTree(Bool_t answer){
+      storeKaonPID = answer;
+    }
 
-		void SetMC(Bool_t answer){ hasMC = answer; }
+    void SetMC(Bool_t answer){ hasMC = answer; }
 
-		// Track cut setters. StandardITSTPC2011 cuts used if nothing specified
-		void SetTPCminClusters(Int_t number){
-				fESDtrackCuts->SetMinNClustersTPC(number);
-		}
+    // Track cut setters. StandardITSTPC2011 cuts used if nothing specified
+    void SetTPCminClusters(Int_t number){
+        fESDtrackCuts->SetMinNClustersTPC(number);
+    }
 
-		void SetTPCminCrossedRows(Int_t number){
-				fESDtrackCuts->SetMinNCrossedRowsTPC(number);
-		}
+    void SetTPCminCrossedRows(Int_t number){
+        fESDtrackCuts->SetMinNCrossedRowsTPC(number);
+    }
 
-		void SetTPCRatio(Double_t number){
-				fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(number);
-		}
+    void SetTPCRatio(Double_t number){
+        fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(number);
+    }
 
-		void SetTPCChi2PerCluster(Float_t number){
-				fESDtrackCuts->SetMaxChi2PerClusterTPC(number);
-		}
+    void SetTPCChi2PerCluster(Float_t number){
+        fESDtrackCuts->SetMaxChi2PerClusterTPC(number);
+    }
 
-		void SetITSclusterRequirements(AliESDtrackCuts::Detector detector, AliESDtrackCuts::ITSClusterRequirement requirement){
-				fESDtrackCuts->SetClusterRequirementITS(detector, requirement);
-		}
+    void SetITSclusterRequirements(AliESDtrackCuts::Detector detector, AliESDtrackCuts::ITSClusterRequirement requirement){
+        fESDtrackCuts->SetClusterRequirementITS(detector, requirement);
+    }
 
-		void SetITSChi2PerCluster(Float_t number){
-				fESDtrackCuts->SetMaxChi2PerClusterITS(number);
-		}
+    void SetITSChi2PerCluster(Float_t number){
+        fESDtrackCuts->SetMaxChi2PerClusterITS(number);
+    }
 
-		void SetMaxDCAxy(Float_t number){
-				fESDtrackCuts->SetMaxDCAToVertexXY(number);
-		}
+    void SetMaxDCAxy(Float_t number){
+        fESDtrackCuts->SetMaxDCAToVertexXY(number);
+    }
 
-		void SetMaxDCAPtDep(const char* dist){
-				fESDtrackCuts->SetMaxDCAToVertexXYPtDep(dist);
-		}
+    void SetMaxDCAPtDep(const char* dist){
+        fESDtrackCuts->SetMaxDCAToVertexXYPtDep(dist);
+    }
 
-		void SetMaxDCAz(Double_t number){
-				fESDtrackCuts->SetMaxDCAToVertexZ(number);
-		 }
+    void SetMaxDCAz(Double_t number){
+        fESDtrackCuts->SetMaxDCAToVertexZ(number);
+     }
 
-		void SetTPCconstrainedGlobalChi2(Double_t number){
-				fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(number);
-		}
+    void SetTPCconstrainedGlobalChi2(Double_t number){
+        fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(number);
+    }
 
-		void SetGridPID(std::string string){
-				fGridPID = std::stoi(string);
-		}
-		void GRIDanalysis(Bool_t answer){
-				fIsGRIDanalysis = answer;
-		}
-		void createDCAbranches(Bool_t answer){
-		  fExtraDCA = answer;
-		}
-		void createV0tree(Bool_t answer){
-				fIsV0tree = answer;
-		}
-		void setSDDstatus(Bool_t answer){
-				fHasSDD = answer;
-		}
-		Bool_t isV0daughterAccepted(AliVTrack* track);
+    void SetGridPID(std::string string){
+        fGridPID = std::stoi(string);
+    }
+    void GRIDanalysis(Bool_t answer){
+        fIsGRIDanalysis = answer;
+    }
+    void createDCAbranches(Bool_t answer){
+      fExtraDCA = answer;
+    }
+    void createV0tree(Bool_t answer){
+        fIsV0tree = answer;
+    }
+    void setSDDstatus(Bool_t answer){
+        fHasSDD = answer;
+    }
+    Bool_t isV0daughterAccepted(AliVTrack* track);
 
-		void setFilterBitSelection(Int_t filterBit){
-				fFilterBit = filterBit;
-		}
-		void analyseMC(Bool_t answer){
-			hasMC = answer;
-		}
+    void setFilterBitSelection(Int_t filterBit){
+        fFilterBit = filterBit;
+    }
+    void analyseMC(Bool_t answer){
+      hasMC = answer;
+    }
 
-		void SetUseTPCcorr(Bool_t answer){
-			fUseTPCcorr = answer;
-		}
+    void SetUseTPCcorr(Bool_t answer){
+      fUseTPCcorr = answer;
+    }
 
-		void SetUseITScorr(Bool_t answer){
-			fUseITScorr = answer;
-		}
-		
-		void SetUseTOFcorr(Bool_t answer){
-			fUseTOFcorr = answer;
-		}
+    void SetUseITScorr(Bool_t answer){
+      fUseITScorr = answer;
+    }
+    
+    void SetUseTOFcorr(Bool_t answer){
+      fUseTOFcorr = answer;
+    }
 
-		void SetMaxPtPIDcorrection(Float_t answer){
-			maxPtPIDcorrection = answer;
-		}
+    void SetMaxPtPIDcorrection(Float_t answer){
+      maxPtPIDcorrection = answer;
+    }
 
     inline Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0){
       // this is a copy of the AliDielectronVarManager
@@ -205,10 +205,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
       return ok;
     }
 
-		// Check if the generator is on the list of generators
-		// If found, assign track with integer value correspding to generator
-		// 0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
-		Int_t CheckGenerator(Int_t trackID);
+    // Check if the generator is on the list of generators
+    // If found, assign track with integer value correspding to generator
+    // 0 = gen purp, 1=Pythia CC_1, 2= Pythia BB_1, 3=Pythia B_1, 4=Jpsi2ee_1, 5=B2Jpsi2ee_1";
+    Int_t CheckGenerator(Int_t trackID);
 
   private:
 
