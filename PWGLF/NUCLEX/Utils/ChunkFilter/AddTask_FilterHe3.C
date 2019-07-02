@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_FilterHe3(){
+AliAnalysisTaskFilterHe3 *AddTask_FilterHe3(){
 
 
   //get the current analysis manager
@@ -39,8 +39,8 @@ AliAnalysisTask *AddTask_FilterHe3(){
 
 // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("akalweit_filterHe3_hist", TList::Class(),AliAnalysisManager::kOutputContainer, "FilterHe3.root");
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("akalweit_filterHe3_names", TTree::Class(),AliAnalysisManager::kOutputContainer, "FilterHe3_List.root");
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("akalweit_filterHe3_hist", TList::Class(),AliAnalysisManager::kOutputContainer, "AnalysisResults.root:FilterHe3");
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("akalweit_filterHe3_names", TTree::Class(),AliAnalysisManager::kOutputContainer, "AnalysisResults.root:FilterHe3_List");
 
 
   // Connect input/output
