@@ -27,8 +27,6 @@ namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
-class GPUReconstruction;
-
 class GPUChain
 {
   friend class GPUReconstruction;
@@ -37,6 +35,12 @@ class GPUChain
   using RecoStep = GPUReconstruction::RecoStep;
   using InOutPointerType = GPUReconstruction::InOutPointerType;
   using GeometryType = GPUReconstruction::GeometryType;
+  using krnlRunRange = GPUReconstruction::krnlRunRange;
+  using krnlExec = GPUReconstruction::krnlExec;
+  using krnlEvent = GPUReconstruction::krnlEvent;
+  using deviceEvent = GPUReconstruction::deviceEvent;
+  static constexpr krnlRunRange krnlRunRangeNone{ 0, -1 };
+  static constexpr krnlEvent krnlEventNone = krnlEvent{ nullptr, nullptr, 0 };
 
   virtual ~GPUChain() = default;
   virtual void RegisterPermanentMemoryAndProcessors() = 0;
@@ -44,7 +48,7 @@ class GPUChain
   virtual int Init() = 0;
   virtual int PrepareEvent() = 0;
   virtual int Finalize() = 0;
-  virtual int RunStandalone() = 0;
+  virtual int RunChain() = 0;
   virtual void MemorySize(size_t& gpuMem, size_t& pageLockedHostMem) = 0;
 
   constexpr static int NSLICES = GPUReconstruction::NSLICES;

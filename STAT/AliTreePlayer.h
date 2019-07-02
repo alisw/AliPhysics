@@ -109,7 +109,7 @@ public:
   static void AddStatInfo(TTree* treeLeft,  TTree * treeRight , const TString refQuery, Double_t deltaT,
 		   const TString statString="median:medianLeft:medianRight:RMS:Mean:LTM0.60:LTMRMS0.60:Max:Min",
 		   Int_t maxEntries=100000000);
-  static TTree *  LoadTrees(const char *inputDataList, const char *  chRegExp, const char * chNotReg,  TString  inputFileSelection, TString axisAlias,  TString axisTitle);
+  static TTree *  LoadTrees(const char *inputDataList, const char *  chRegExp, const char * chNotReg,  TString  inputFileSelection, TString axisAlias,  TString axisTitle, Int_t verbose=1);
   /// TODO -
   /// Metadata query from the TStatToolkit (GetMetadata, AddMetadata)
   /// TH1* DrawSorted(const char * expression, const char weights, Bool_t down, Int_t cut);  // draw sorted version of histogram

@@ -25,6 +25,16 @@
 //Some GPU configuration settings, must be included first
 #include "GPUCommonDefSettings.h"
 
+#if (!defined(__OPENCL__) || defined(__OPENCLCPP__)) && (!(defined(__CINT__) || defined(__ROOTCINT__)) || defined(__CLING__)) && defined(__cplusplus) && __cplusplus >= 201103L
+  #define GPUCA_NOCOMPAT // C++11 + No old ROOT5 + No old OpenCL
+  #ifndef __OPENCL__
+    #define GPUCA_NOCOMPAT_ALLOPENCL // + No OpenCL at all
+  #endif
+  #ifndef __CINT__
+    #define GPUCA_NOCOMPAT_ALLCINT // + No ROOT CINT at all
+  #endif
+#endif
+
 #if !(defined(__CINT__) || defined(__ROOTCINT__) || defined(__CLING__) || defined(__ROOTCLING__) || defined(G__ROOT)) //No GPU code for ROOT
   #if defined(__CUDACC__) || defined(__OPENCL__) || defined(__HIPCC__)
     #define GPUCA_GPUCODE //Compiled by GPU compiler
@@ -36,14 +46,14 @@
 #endif
 
 //Definitions for C++11 features not supported by CINT / OpenCL
-#if ((defined(__CINT__) || defined(__ROOTCINT__)) && !defined(__CLING__)) || (defined(__OPENCL__) && !defined(__OPENCLCPP__))
-  #define CON_DELETE
-  #define CON_DEFAULT
-  #define CONSTEXPR const
-#else
+#ifdef GPUCA_NOCOMPAT
   #define CON_DELETE = delete
   #define CON_DEFAULT = default
   #define CONSTEXPR constexpr
+#else
+  #define CON_DELETE
+  #define CON_DEFAULT
+  #define CONSTEXPR const
 #endif
 
 //Set AliRoot / O2 namespace
@@ -58,17 +68,6 @@
 
 //API Definitions for GPU Compilation
 #include "GPUCommonDefAPI.h"
-
-//Definitions steering enabling of GPU processing components
-#if (!defined(__OPENCL__) || defined(__OPENCLCPP__)) && !defined(GPUCA_ALIROOT_LIB)
-  #define GPUCA_BUILD_MERGER
-  #if defined(HAVE_O2HEADERS)
-    #define GPUCA_BUILD_DEDX
-    #define GPUCA_BUILD_TPCCONVERT
-    #define GPUCA_BUILD_TRD
-    #define GPUCA_BUILD_ITS
-  #endif
-#endif
 
 // clang-format on
 

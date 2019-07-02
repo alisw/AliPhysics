@@ -20,7 +20,7 @@
 #ifndef GPUDISPLAYBACKENDNONE_H
 #define GPUDISPLAYBACKENDNONE_H
 
-#include "GPUDisplay.h"
+#include "GPUDisplayBackend.h"
 
 namespace GPUCA_NAMESPACE
 {

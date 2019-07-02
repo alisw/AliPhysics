@@ -267,8 +267,8 @@ class AliTPCDcalibRes: public TNamed
   Int_t   GetXBinExact(float x);
   Float_t GetY2X(int ix, int iy);
   Float_t GetY2XLow(int ix, int iy);
-  Float_t GetDY2X(int ix);
-  Float_t GetDY2XI(int ix);
+  Float_t GetDY2X(int ix, int iy=0);
+  Float_t GetDY2XI(int ix, int iy=0);
   Float_t GetX(int i);
   Float_t GetXLow(int i);
   Float_t GetDX(int i);
@@ -279,8 +279,8 @@ class AliTPCDcalibRes: public TNamed
   Int_t   GetZ2XBin(float z2x);
   Float_t GetZ2XLow(int iz);
   Float_t GetZ2X(int iz);
-  Float_t GetDZ2X();
-  Float_t GetDZ2XI();
+  Float_t GetDZ2X(int iz=0);
+  Float_t GetDZ2XI(int iz=0);
   void    FindVoxel(float x, float y2x, float z2x, int &ix,int &ip, int &iz);
   void    FindVoxel(float x, float y2x, float z2x, UChar_t &ix,UChar_t &ip, UChar_t &iz);
   void    GetVoxelCoordinates(int isec, int ix, int ip, int iz,float &x, float &p, float &z);
@@ -296,6 +296,8 @@ class AliTPCDcalibRes: public TNamed
   void     SetNXBins(int n=kNPadRows)            {fNXBins = n;}
   void     SetNY2XBins(int n=15)                 {fNY2XBins = n;}
   void     SetNZ2XBins(int n=5)                  {fNZ2XBins = n;}
+  void     SetZ2XBinning(int n=5, float* binning=0); // for non-uniform binning
+  void     SetY2XBinning(int n=15, float* binning=0); // for non-uniform binning
   void     SetMaxTracks(int n=4000000)           {fMaxTracks = n;}
   void     SetNominalTimeBin(int nsec=2400)      {fNominalTimeBin = nsec;}
   void     SetNominalTimeBinPrec(float p=0.3)    {fNominalTimeBinPrec = p;}
@@ -497,10 +499,18 @@ class AliTPCDcalibRes: public TNamed
   Int_t    fNXYBinsProd; // nx*ny bins
   Int_t    fNBins[kVoxDim]; // bins
   Bool_t   fUniformBins[kVoxDim]; // uniform binning? Currently only X may be non-uniform (per pad-row)
+
+  Float_t*  fZ2XBinsCenter; //[fNZ2XBins] centers of bins in Z/X
+  Float_t*  fZ2XBinsDH;     //[fNZ2XBins] widths/2 of bins in Z/X
+  Float_t*  fZ2XBinsDI;     //[fNZ2XBins] inverse widths of bins in Z/X
+
+  Float_t*  fY2XBinsCenter; //[fNY2XBins] centers of bins in Y/X
+  Float_t*  fY2XBinsDH;     //[fNY2XBins] widths/2 of bins in Y/X
+  Float_t*  fY2XBinsDI;     //[fNY2XBins] inverse widths of bins in Y/X
   
-  Float_t  fDZ2X;            // Z2X bin size
+  Float_t  fDZ2X;          // Z2X bin size
   Float_t  fDX;            // X bin size
-  Float_t  fDZ2XI;           // inverse Z2X bin size 
+  Float_t  fDZ2XI;         // inverse Z2X bin size 
   Float_t  fDXI;           // inverse X bin size 
 
   Int_t    fNGVoxPerSector; // total number of geometrical voxels per sector
@@ -613,7 +623,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,17);
+  ClassDef(AliTPCDcalibRes,18);
 };
 
 //________________________________________________________________
@@ -631,28 +641,40 @@ inline Int_t AliTPCDcalibRes::GetXBinExact(float x)
 inline Float_t AliTPCDcalibRes::GetY2X(int ix, int iy)
 {
   // get Y2X bin center for ix,iy bin
-  return (0.5f+iy)*fDY2X[ix] - fMaxY2X[ix];
+  if (fUniformBins[kVoxF]) {
+    return (0.5f+iy)*fDY2X[ix] - fMaxY2X[ix];
+  }
+  return fMaxY2X[ix]*fY2XBinsCenter[iy];
 }
 
 //________________________________________________________________
 inline Float_t AliTPCDcalibRes::GetY2XLow(int ix, int iy)
 {
   // get Y2X bin low edge for ix,iy bin
-  return iy*fDY2X[ix] - fMaxY2X[ix];
+  if (fUniformBins[kVoxF]) {
+    return iy*fDY2X[ix] - fMaxY2X[ix];
+  }
+  return fMaxY2X[ix]*(fY2XBinsCenter[iy] - fY2XBinsDH[iy]);
 }
 
 //________________________________________________________________
-inline Float_t AliTPCDcalibRes::GetDY2X(int ix)
+inline Float_t AliTPCDcalibRes::GetDY2X(int ix, int iy)
 {
   // get Y2X bin size value for ix bin
-  return fDY2X[ix];
+  if (fUniformBins[kVoxF]) {
+    return fDY2X[ix];
+  }
+  return fMaxY2X[ix]*fY2XBinsDH[iy];
 }
 
 //________________________________________________________________
-inline Float_t AliTPCDcalibRes::GetDY2XI(int ix)
+inline Float_t AliTPCDcalibRes::GetDY2XI(int ix, int iy)
 {
   // get Y2X inverse bin size  for ix bin
-  return fDY2XI[ix];
+  if (fUniformBins[kVoxF]) {
+    return fDY2XI[ix];
+  }
+  return fY2XBinsDI[iy]/fMaxY2X[ix];
 }
 
 //________________________________________________________________
@@ -687,67 +709,91 @@ inline Float_t AliTPCDcalibRes::GetDXI(int i)
 inline Int_t AliTPCDcalibRes::GetY2XBinExact(float y2x, int ix) 
 {
   // get exact y2x bin at given x range
-  float bf = ( y2x + fMaxY2X[ix] ) * GetDY2XI(ix);
-  if (bf<0) return -1;
-  else if (bf>=fNY2XBins) return fNY2XBins;
-  return int(bf);
+  if (y2x<-fMaxY2X[ix]) return -1;
+  if (y2x>fMaxY2X[ix]) return fNY2XBins;
+  if (fUniformBins[kVoxF]) {
+    return int( ( y2x + fMaxY2X[ix] ) * GetDY2XI(ix) );
+  }
+  y2x /= fMaxY2X[ix];
+  for (int i=0;i<fNY2XBins;i++) {
+    if (y2x<fY2XBinsCenter[i]+fY2XBinsDH[i]) return i;
+  }
+  return fNY2XBins;
 }
 
 //________________________________________________________________
 inline Int_t AliTPCDcalibRes::GetY2XBin(float y2x, int ix) 
 {
   // get closest y2x bin at given x range
-  int bf = ( y2x + fMaxY2X[ix] ) * GetDY2XI(ix);
-  if (bf<0) bf = 0;
-  else if (bf>=fNY2XBins) bf = fNY2XBins-1;
-  return bf;
+  int iy = GetY2XBinExact(y2x,ix);
+  return iy>-1 ? (iy<fNY2XBins ? iy :  fNY2XBins-1) : 0;
 }
 
 //________________________________________________________________
 inline Int_t AliTPCDcalibRes::GetZ2XBinExact(float z2x)
 {
   // get exact z2x bin at given x range (z2x is positive for clusters not changing the side)
-  float bz = z2x*GetDZ2XI();
-  if (bz>=fNZ2XBins) return -1;
-  if (bz<0) bz = 0; // to account for clusters which moved to wrong side
-  return int(bz);
+  if (fUniformBins[kVoxZ]) {
+    float bz = z2x*GetDZ2XI();
+    if (bz>=fNZ2XBins) return -1;
+    if (bz<0) bz = 0; // to account for clusters which moved to wrong side
+    return int(bz);
+  }
+  for (int i=0;i<fNZ2XBins;i++) {
+    if (z2x<fZ2XBinsCenter[i]+fZ2XBinsDH[i]) return i;
+  }
+  return -1;
 }
 
 //________________________________________________________________
 inline Int_t AliTPCDcalibRes::GetZ2XBin(float z2x) 
 {
   // get closest z2x bin (z2x is positive for clusters not changing the side)
-  int bz = z2x*GetDZ2XI();
-  if (bz<0) bz = 0; // to account for clusters which moved to wrong side
-  return bz<fNZ2XBins ? bz : fNZ2XBins-1;
+  int iz = GetZ2XBinExact(z2x);
+  return iz<0 ? fNZ2XBins-1 : iz; // negative means overflow
 }
 
 //________________________________________________________________
 inline Float_t AliTPCDcalibRes::GetZ2X(int iz)
 {
   // get Z2X bin center for iz, !! always positive
-  return (0.5f+iz)*GetDZ2X();
+  if (fUniformBins[kVoxZ]) {
+    return (0.5f+iz)*GetDZ2X();
+  }
+  // variable size
+  return fZ2XBinsCenter[iz];
+  
 }
 
 //________________________________________________________________
 inline Float_t AliTPCDcalibRes::GetZ2XLow(int iz)
 {
   // get Z2X bin low edge for iz !! bin positive
-  return iz*GetDZ2X();
+  if (fUniformBins[kVoxZ]) {
+    return iz*GetDZ2X();
+  }
+  // variable size
+  return fZ2XBinsCenter[iz] - fZ2XBinsDH[iz];
 }
 
 //________________________________________________________________
-inline Float_t AliTPCDcalibRes::GetDZ2X()
+inline Float_t AliTPCDcalibRes::GetDZ2X(int iz)
 {
   // get Z2X bin size value
-  return fDZ2X;
+  if (fUniformBins[kVoxZ]) {
+    return fDZ2X;
+  }
+  return 2*fZ2XBinsDH[iz];
 }
 
 //________________________________________________________________
-inline Float_t AliTPCDcalibRes::GetDZ2XI()
+inline Float_t AliTPCDcalibRes::GetDZ2XI(int iz)
 {
   // get Z2X inverse bin size
-  return fDZ2XI;
+  if (fUniformBins[kVoxZ]) {
+    return fDZ2XI;
+  }
+  return fZ2XBinsDI[iz];
 }
 
 //_____________________________________

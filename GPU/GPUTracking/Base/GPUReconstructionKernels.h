@@ -38,6 +38,12 @@ class GPUReconstructionKernels : public T
 #endif
 {
  public:
+  using krnlRunRange = GPUReconstruction::krnlRunRange;
+  using krnlExec = GPUReconstruction::krnlExec;
+  using krnlEvent = GPUReconstruction::krnlEvent;
+  template <class X, int Y = 0>
+  using classArgument = GPUReconstruction::classArgument<X, Y>;
+
   virtual ~GPUReconstructionKernels() = default; // NOLINT: Do not declare override in template class! AMD hcc will not create the destructor otherwise.
   GPUReconstructionKernels(const GPUSettingsProcessing& cfg) : GPUCA_KRNL_CLASS(cfg) {}
 
@@ -54,6 +60,8 @@ class GPUReconstructionKernels : public T
   virtual int runKernelImpl(classArgument<GPUTRDTrackerGPU>, const krnlExec& x, const krnlRunRange& y, const krnlEvent& z) GPUCA_KRNL(({ return T::template runKernelBackend<GPUTRDTrackerGPU>(x, y, z); }));                                     // NOLINT
   virtual int runKernelImpl(classArgument<GPUITSFitterKernel>, const krnlExec& x, const krnlRunRange& y, const krnlEvent& z) GPUCA_KRNL(({ return T::template runKernelBackend<GPUITSFitterKernel>(x, y, z); }));                                 // NOLINT
   virtual int runKernelImpl(classArgument<GPUTPCConvertKernel>, const krnlExec& x, const krnlRunRange& y, const krnlEvent& z) GPUCA_KRNL(({ return T::template runKernelBackend<GPUTPCConvertKernel>(x, y, z); }));                               // NOLINT
+  virtual int runKernelImpl(classArgument<GPUTPCCompressionKernels, 0>, const krnlExec& x, const krnlRunRange& y, const krnlEvent& z) GPUCA_KRNL(({ return T::template runKernelBackend<GPUTPCCompressionKernels, 0>(x, y, z); }));               // NOLINT
+  virtual int runKernelImpl(classArgument<GPUTPCCompressionKernels, 1>, const krnlExec& x, const krnlRunRange& y, const krnlEvent& z) GPUCA_KRNL(({ return T::template runKernelBackend<GPUTPCCompressionKernels, 1>(x, y, z); }));               // NOLINT
 };
 
 #undef GPUCA_KRNL

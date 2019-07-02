@@ -34,6 +34,7 @@ class AliDecayerExodus : public AliDecayer
 {
  public:
     AliDecayerExodus();
+    virtual ~AliDecayerExodus();
     virtual void    Init();
     virtual void    Decay(Int_t idpart,TLorentzVector* pparent);
     virtual Int_t   ImportParticles(TClonesArray *particles);

@@ -149,6 +149,12 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fNZ2XBins(5)
   ,fNXBins(-1)
   ,fNXYBinsProd(0)
+  ,fZ2XBinsCenter(0)
+  ,fZ2XBinsDH(0)
+  ,fZ2XBinsDI(0)
+  ,fY2XBinsCenter(0)
+  ,fY2XBinsDH(0)
+  ,fY2XBinsDI(0)
   ,fDZ2X(0)
   ,fDX(0)
   ,fDZ2XI(0)
@@ -233,6 +239,9 @@ AliTPCDcalibRes::~AliTPCDcalibRes()
   delete[] fMaxY2X;
   delete[] fDY2X;
   delete[] fDY2XI;
+  delete[] fZ2XBinsCenter;
+  delete[] fZ2XBinsDH;
+  delete[] fZ2XBinsDI;
   delete fVDriftParam;
   delete fVDriftGraph;
   for (int i=0;i<kNSect2;i++) {
@@ -3575,8 +3584,8 @@ Bool_t AliTPCDcalibRes::GetSmoothEstimate(int isect, float x, float p, float z, 
     //
     // effective kernel widths accounting for the increased bandwidth at the edges and missing data
     float kWXI = GetDXI(ix0)  *fKernelWInv[kVoxX]*fStepKern[kVoxX]/stepX;
-    float kWFI = GetDY2XI(ix0)*fKernelWInv[kVoxF]*fStepKern[kVoxF]/stepF;
-    float kWZI = GetDZ2XI()   *fKernelWInv[kVoxZ]*fStepKern[kVoxZ]/stepZ;
+    float kWFI = GetDY2XI(ix0,ip0)*fKernelWInv[kVoxF]*fStepKern[kVoxF]/stepF;
+    float kWZI = GetDZ2XI(iz0)*fKernelWInv[kVoxZ]*fStepKern[kVoxZ]/stepZ;
     int istepX = TMath::Nint(stepX+0.5);
     int istepF = TMath::Nint(stepF+0.5);
     int istepZ = TMath::Nint(stepZ+0.5);
@@ -4076,16 +4085,40 @@ void AliTPCDcalibRes::InitBinning()
   fDY2X   = new Float_t[fNXBins];        // Y/X bin size at given X bin
   //
   const float kMaxY2X = TMath::Tan(0.5f*kSecDPhi);
-
+  
   for (int ix=0;ix<fNXBins;ix++) {
     float x = GetX(ix);
     fMaxY2X[ix] = kMaxY2X - kDeadZone/x;
     fDY2XI[ix] = fNY2XBins / (2.f*fMaxY2X[ix]);
     fDY2X[ix] = 1.f/fDY2XI[ix];
+  }   
+  if (fUniformBins[kVoxF]) { // for uniform case only, non-uniform is set in SetY2XBinning
+    fY2XBinsCenter = new Float_t[fNY2XBins];
+    fY2XBinsDH = new Float_t[fNY2XBins];
+    fY2XBinsDI = new Float_t[fNY2XBins];
+    for (int i=0;i<fNY2XBins;i++) {
+      fY2XBinsDH[i] = 1./fNY2XBins; // fractional to fMaxY2X[ix]
+      fY2XBinsCenter[i] = -1. + (0.5+i)*2.*fY2XBinsDH[i];
+      fY2XBinsDI[i] = 0.5/fY2XBinsDH[i];
+    }
   }
+  printf("Y2X binning: %d bin, uniform = %d, Fractional bins [Center/HalfWidth] mapped to +-Y2XMax:\n",fNY2XBins, fUniformBins[kVoxF]);
+  for (int i=0;i<fNY2XBins;i++) printf("bin%2d: [%+.4f/%.4f]\n",i,fY2XBinsCenter[i],fY2XBinsDH[i]);
   //
   fDZ2XI = fNZ2XBins/kMaxZ2X;
-  fDZ2X  = 1.0f/fDZ2XI;
+  fDZ2X  = 1.0f/fDZ2XI; // for uniform case only, non-uniform is set in SetZ2XBinning
+  if (fUniformBins[kVoxZ]) {
+    fZ2XBinsCenter = new Float_t[fNZ2XBins];
+    fZ2XBinsDH = new Float_t[fNZ2XBins];
+    fZ2XBinsDI = new Float_t[fNZ2XBins];
+    for (int i=0;i<fNZ2XBins;i++) {
+      fZ2XBinsDH[i] = fDZ2X*0.5;
+      fZ2XBinsCenter[i] = (0.5+i)*fDZ2X;
+      fZ2XBinsDI[i] = fDZ2XI;
+    }
+  }
+  printf("Z2X binning: %d bin, uniform = %d, 1side bins [Center/HalfWidth]:\n",fNZ2XBins, fUniformBins[kVoxZ]);
+  for (int i=0;i<fNZ2XBins;i++) printf("bin%2d: [%+.4f/%.4f]\n",i,fZ2XBinsCenter[i],fZ2XBinsDH[i]);
   //
   fNBins[kVoxX] = fNXBins;
   fNBins[kVoxF] = fNY2XBins;
@@ -4730,3 +4763,51 @@ void AliTPCDcalibRes::SetMorphingFunctionXZY(TF1* fun)
   fun->Print();
   fgMorphingFunctionXZY = fun;
 }
+
+//_____________________________________________
+void AliTPCDcalibRes::SetZ2XBinning(int n, float* binning)
+{
+  SetNZ2XBins(n);
+  fUniformBins[kVoxZ] = true;
+  if (binning) {
+    // n+1 values deliming fraction of ph.space for each bin,
+    // should cover [0:1], internally mapped to [0:kMaxZ2X] in Z/2
+    if (TMath::Abs(binning[0])>1e-6 || TMath::Abs(binning[n]-1)>1e-6) {
+      AliFatalF("Provided binning %.2f : %.2f does not cover 0-1",binning[0],binning[n]);
+    } 
+    fUniformBins[kVoxZ] = false;
+    fZ2XBinsCenter = new Float_t[fNZ2XBins];
+    fZ2XBinsDH = new Float_t[fNZ2XBins];
+    fZ2XBinsDI = new Float_t[fNZ2XBins];
+    for (int i=0;i<n;i++) {
+      fZ2XBinsDH[i] = 0.5*(binning[i+1]-binning[i])*kMaxZ2X;
+      fZ2XBinsDI[i] = 0.5/fZ2XBinsDH[i];
+      fZ2XBinsCenter[i] = binning[i]*kMaxZ2X + fZ2XBinsDH[i];
+      
+    }
+  }
+}
+
+//_____________________________________________
+void AliTPCDcalibRes::SetY2XBinning(int n, float* binning)
+{
+  SetNY2XBins(n);
+  fUniformBins[kVoxF] = true;
+  if (binning) {
+    // n+1 values deliming fraction of ph.space for each bin,
+    //should cover [-1:1], internally mapped to [-fMaxY2X[ix] : fMaxY2X[ix]] at X-bin ix
+    if (TMath::Abs(binning[0]+1.)>1e-6 || TMath::Abs(binning[n]-1)>1e-6) {
+      AliFatalF("Provided binning %.2f : %.2f does not cover 0-1",binning[0],binning[n]);
+    } 
+    fUniformBins[kVoxF] = false;
+    fY2XBinsCenter = new Float_t[fNY2XBins];
+    fY2XBinsDH = new Float_t[fNY2XBins];
+    fY2XBinsDI = new Float_t[fNY2XBins];
+    for (int i=0;i<n;i++) {
+      fY2XBinsDH[i] = 0.5*(binning[i+1]-binning[i]);
+      fY2XBinsDI[i] = 0.5/fY2XBinsDH[i];
+      fY2XBinsCenter[i] = binning[i] + fY2XBinsDH[i];      
+    }
+  }
+}
+  

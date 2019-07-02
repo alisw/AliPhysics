@@ -38,49 +38,12 @@
 #include "GPUTRDTrackerGPU.h"
 #include "GPUITSFitterKernels.h"
 #include "GPUTPCConvertKernel.h"
+#include "GPUTPCCompressionKernels.h"
 
 namespace GPUCA_NAMESPACE
 {
 namespace gpu
 {
-namespace GPUReconstruction_krnlHelpers
-{
-template <class T, int I = 0>
-class classArgument
-{
-};
-
-typedef void deviceEvent; // We use only pointers anyway, and since cl_event and cudaEvent_t are actually pointers, we can cast them to deviceEvent* this way.
-
-enum class krnlDeviceType : int { CPU = 0,
-                                  Device = 1,
-                                  Auto = -1 };
-struct krnlExec {
-  krnlExec(unsigned int b, unsigned int t, int s, krnlDeviceType d = krnlDeviceType::Auto) : nBlocks(b), nThreads(t), stream(s), device(d) {}
-  unsigned int nBlocks;
-  unsigned int nThreads;
-  int stream;
-  krnlDeviceType device;
-};
-struct krnlRunRange {
-  krnlRunRange() = default;
-  krnlRunRange(unsigned int a) : start(a), num(0) {}
-  krnlRunRange(unsigned int s, int n) : start(s), num(n) {}
-
-  unsigned int start = 0;
-  int num = 0;
-};
-static const krnlRunRange krnlRunRangeNone(0, -1);
-struct krnlEvent {
-  krnlEvent(deviceEvent* e = nullptr, deviceEvent* el = nullptr, int n = 1) : ev(e), evList(el), nEvents(n) {}
-  deviceEvent* ev;
-  deviceEvent* evList;
-  int nEvents;
-};
-static const krnlEvent krnlEventNone{};
-} // namespace GPUReconstruction_krnlHelpers
-
-using namespace GPUReconstruction_krnlHelpers;
 
 class GPUReconstructionCPUBackend : public GPUReconstruction
 {
@@ -112,7 +75,9 @@ class GPUReconstructionCPU : public GPUReconstructionKernels<GPUReconstructionCP
   friend class GPUChain;
 
  public:
-  ~GPUReconstructionCPU() override = default;
+  ~GPUReconstructionCPU() override;
+  static constexpr krnlRunRange krnlRunRangeNone{ 0, -1 };
+  static constexpr krnlEvent krnlEventNone = krnlEvent{ nullptr, nullptr, 0 };
 
 #ifdef __clang__ // BUG: clang seems broken and does not accept default parameters before parameter pack
   template <class S, int I = 0>
@@ -164,15 +129,16 @@ class GPUReconstructionCPU : public GPUReconstructionKernels<GPUReconstructionCP
   void TransferMemoryResourceLinkToGPU(short res, int stream = -1, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1) { TransferMemoryResourceToGPU(&mMemoryResources[res], stream, ev, evList, nEvents); }
   void TransferMemoryResourceLinkToHost(short res, int stream = -1, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1) { TransferMemoryResourceToHost(&mMemoryResources[res], stream, ev, evList, nEvents); }
   virtual void GPUMemCpy(void* dst, const void* src, size_t size, int stream, bool toGPU, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1);
+  virtual void GPUMemCpyAlways(void* dst, const void* src, size_t size, int stream, bool toGPU, deviceEvent* ev = nullptr, deviceEvent* evList = nullptr, int nEvents = 1);
   virtual void WriteToConstantMemory(size_t offset, const void* src, size_t size, int stream = -1, deviceEvent* ev = nullptr);
   int GPUStuck() { return mGPUStuck; }
   int NStreams() { return mNStreams; }
   void SetThreadCounts(RecoStep step);
   void ResetDeviceProcessorTypes();
   template <class T>
-  void AddGPUEvents(T& events);
+  void AddGPUEvents(T*& events);
 
-  int RunStandalone() override;
+  int RunChains() override;
 
  protected:
   struct GPUProcessorProcessors : public GPUProcessor {
@@ -227,16 +193,17 @@ class GPUReconstructionCPU : public GPUReconstructionKernels<GPUReconstructionCP
   int mNStreams = 1;
 
   GPUConstantMem* mDeviceConstantMem = nullptr;
-  std::vector<std::pair<deviceEvent*, size_t>> mEvents;
+  std::vector<std::vector<deviceEvent*>> mEvents;
 
  private:
   void TransferMemoryResourcesHelper(GPUProcessor* proc, int stream, bool all, bool toGPU);
 };
 
 template <class T>
-inline void GPUReconstructionCPU::AddGPUEvents(T& events)
+inline void GPUReconstructionCPU::AddGPUEvents(T*& events)
 {
-  mEvents.emplace_back((void*)&events, sizeof(T) / sizeof(deviceEvent*));
+  mEvents.emplace_back(std::vector<deviceEvent*>(sizeof(T) / sizeof(deviceEvent*)));
+  events = (T*)mEvents.back().data();
 }
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE

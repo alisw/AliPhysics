@@ -36,7 +36,8 @@ public:
 		      Double_t      rDcaV0ToPrimVertex, 
 		const Double_t*     rMomPos,            
 		const Double_t*     rMomNeg,
-		      Double_t*     rDcaDaughterToPrimVertex ); // const? -> Need agreement at AliAODRecoDecay level
+		      Double_t*     rDcaDaughterToPrimVertex,
+              Double_t      rBachBaryonCosPA = 0 ); // const? -> Need agreement at AliAODRecoDecay level
 
   		
   AliAODcascade( AliAODVertex* rAODVertexXi,  // No "const" param, see above.
@@ -45,9 +46,8 @@ public:
 		      Double_t      rDcaXiToPrimVertex,
 		      Double_t      rDcaBachToPrimVertex,
 		const Double_t*     rMomBach,
-		const AliAODv0&     rAODv0 );
-		
-		
+		const AliAODv0&     rAODv0,
+              Double_t      rBachBaryonCosPA = 0 );
 		
   virtual ~AliAODcascade();
 
@@ -65,7 +65,8 @@ public:
 		      Double_t  rDcaV0ToPrimVertex,
 		const Double_t* rMomPos,
 		const Double_t* rMomNeg,
-		      Double_t* rDcaDaughterToPrimVertex ); // const? -> Need agreement at AliAODRecoDecay level
+		      Double_t* rDcaDaughterToPrimVertex,
+              Double_t  rBachBaryonCosPA = 0 ); // const? -> Need agreement at AliAODRecoDecay level
   
 //   void  Fill(   AliAODVertex*   rAODVertexXi, 
 //                       Int_t     rChargeXi,
@@ -110,6 +111,8 @@ public:
   Double_t MomBachX()       const;
   Double_t MomBachY()       const;
   Double_t MomBachZ()       const;
+    
+  Double_t BachBaryonCosPA()const;
   
   Double_t MomXiX()         const;
   Double_t MomXiY()         const;
@@ -147,7 +150,9 @@ protected:
   Double32_t    fMomBachY;            ///< momemtum of bachelor along Y
   Double32_t    fMomBachZ;            ///< momemtum of bachelor along Z
   
-  ClassDef(AliAODcascade,1)   
+    Double32_t    fBachBaryonCosPA;     ///< bach/baryon cosPA (for rejection)
+    
+  ClassDef(AliAODcascade,2)
 };
 
 //-----------------------------------------------------------
@@ -182,6 +187,8 @@ inline Double_t AliAODcascade::DecayLengthXi(const Double_t& rPrimVtxX,
 inline Double_t AliAODcascade::MomBachX() const {return fMomBachX;}
 inline Double_t AliAODcascade::MomBachY() const {return fMomBachY;}
 inline Double_t AliAODcascade::MomBachZ() const {return fMomBachZ;}
+
+inline Double_t AliAODcascade::BachBaryonCosPA() const {return fBachBaryonCosPA;}
 
 inline Double_t AliAODcascade::MomXiX() const {return MomV0X()+fMomBachX;}
 inline Double_t AliAODcascade::MomXiY() const {return MomV0Y()+fMomBachY;}

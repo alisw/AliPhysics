@@ -48,7 +48,15 @@ class AliEMCALDigit : public AliDigitNew
   AliEMCALDigit operator*(Float_t factor) ; 
   AliEMCALDigit& operator = (const AliEMCALDigit & digit) ;
   
-  enum  digitType{kUnknown=-1, kHG=0, kLG=1, kLGnoHG=2, kTrigger=3, kEmbedded = 4};
+  enum  digitType
+  {
+    kUnknown  = -1, ///< Not know digit, default, it should not happen 
+    kHG       =  0, ///< High gain digit (E < 16 GeV)
+    kLG       =  1, ///< Low gain digit (E > 16 GeV)
+    kLGnoHG   =  2, ///< Low gain but high gain digit did not exist, see AliEMCALRawUtils::AddDigit() 
+    kTrigger  =  3, ///< Trigger digit from FastOr
+    kEmbedded =  4  ///< S/Digit from raw data background to be embedded in MC, set in AliEMCAL::Raw2SDigits()
+  };
 
   void     Clear(Option_t*) ;	
   Int_t    Compare(const TObject * obj) const ;

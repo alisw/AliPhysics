@@ -62,13 +62,8 @@ GPUReconstruction::GPUReconstruction(const GPUSettingsProcessing& cfg) : mHostCo
 
 GPUReconstruction::~GPUReconstruction()
 {
-  // Reset these explicitly before the destruction of other members unloads the library
-  mHostConstantMem.reset();
-  if (mDeviceProcessingSettings.memoryAllocationStrategy == GPUMemoryResource::ALLOCATION_INDIVIDUAL) {
-    for (unsigned int i = 0; i < mMemoryResources.size(); i++) {
-      operator delete(mMemoryResources[i].mPtrDevice);
-      mMemoryResources[i].mPtr = mMemoryResources[i].mPtrDevice = nullptr;
-    }
+  if (mInitialized) {
+    printf("ERROR, GPU Reconstruction not properly deinitialized!\n");
   }
 }
 
@@ -96,6 +91,9 @@ int GPUReconstruction::Init()
 #ifndef HAVE_O2HEADERS
   mRecoSteps.setBits(RecoStep::ITSTracking, false);
   mRecoSteps.setBits(RecoStep::TRDTracking, false);
+  mRecoSteps.setBits(RecoStep::TPCConversion, false);
+  mRecoSteps.setBits(RecoStep::TPCCompression, false);
+  mRecoSteps.setBits(RecoStep::TPCdEdx, false);
 #endif
   mRecoStepsGPU &= mRecoSteps;
   mRecoStepsGPU &= AvailableRecoSteps();
@@ -155,7 +153,26 @@ int GPUReconstruction::Init()
 
 int GPUReconstruction::Finalize()
 {
-  ExitDevice();
+  for (unsigned int i = 0; i < mChains.size(); i++) {
+    mChains[i]->Finalize();
+  }
+  return 0;
+}
+
+int GPUReconstruction::Exit()
+{
+  mChains.clear();          // Make sure we destroy a possible ITS GPU tracker before we call the destructors
+  mHostConstantMem.reset(); // Reset these explicitly before the destruction of other members unloads the library
+  if (mDeviceProcessingSettings.memoryAllocationStrategy == GPUMemoryResource::ALLOCATION_INDIVIDUAL) {
+    for (unsigned int i = 0; i < mMemoryResources.size(); i++) {
+      operator delete(mMemoryResources[i].mPtrDevice);
+      mMemoryResources[i].mPtr = mMemoryResources[i].mPtrDevice = nullptr;
+    }
+  }
+  mMemoryResources.clear();
+  if (mInitialized) {
+    ExitDevice();
+  }
   mInitialized = false;
   return 0;
 }
@@ -387,13 +404,18 @@ void GPUReconstruction::SetSettings(float solenoidBz)
   SetSettings(&ev, nullptr, nullptr);
 }
 
-void GPUReconstruction::SetSettings(const GPUSettingsEvent* settings, const GPUSettingsRec* rec, const GPUSettingsDeviceProcessing* proc)
+void GPUReconstruction::SetSettings(const GPUSettingsEvent* settings, const GPUSettingsRec* rec, const GPUSettingsDeviceProcessing* proc, const GPURecoStepConfiguration* workflow)
 {
   mEventSettings = *settings;
   if (proc) {
     mDeviceProcessingSettings = *proc;
   }
-  param().SetDefaults(&mEventSettings, rec, proc);
+  if (workflow) {
+    mRecoSteps = workflow->steps;
+    mRecoStepsInputs = workflow->inputs;
+    mRecoStepsOutputs = workflow->outputs;
+  }
+  param().SetDefaults(&mEventSettings, rec, proc, workflow);
 }
 
 void GPUReconstruction::SetOutputControl(void* ptr, size_t size)

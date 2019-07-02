@@ -297,8 +297,7 @@ Int_t  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad,
 #ifdef HAVE_ALIGPU
   if( fTransformKind == TransformFastIRS ){
     //if( st<100) cout<<"IRS"<<endl;
-    int err = fFastTransformIRS->Transform( Slice, Row, Pad, Time, XYZ[0], XYZ[1], XYZ[2]);
-    if( err!=0 ) return Error(-1,Form( "AliHLTTPCClusterTransformation::Transform: Fast Transformation failed with error %d ",err) );
+    fFastTransformIRS->Transform( Slice, Row, Pad, Time, XYZ[0], XYZ[1], XYZ[2]);    
   } else
 #endif
   if( fTransformKind == TransformOriginal ){

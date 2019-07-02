@@ -68,6 +68,21 @@ AliDecayerExodus::AliDecayerExodus():
 // Constructor
 }
 
+AliDecayerExodus::~AliDecayerExodus()
+{
+  delete fEPMassPion;          
+  delete fEPMassEta;       
+  delete fEPMassEtaPrime;
+  delete fEPMassEtaPrime_toOmega;
+  delete fEPMassRho;
+  delete fEPMassOmega;
+  delete fEPMassOmegaDalitz;
+  delete fEPMassPhi;
+  delete fEPMassPhiDalitz;
+  delete fEPMassPhiDalitz_toPi0;
+  delete fEPMassJPsi;
+  delete fPol;
+}
 
 void AliDecayerExodus::Init()
 {
@@ -148,14 +163,20 @@ void AliDecayerExodus::Init()
     delta_phi_toPi0        = (pionmass / phimass) * (pionmass / phimass);    
 
     // create pair mass histograms for Dalitz decays of pi0, eta, omega, eta' and phi
-    if (!fEPMassPion)          {delete fEPMassPion;        fEPMassPion          = new TH1F("fEPMassPion", "Dalitz electron pair from pion", nbins, min, maxpion); }
-    if (!fEPMassEta)           {delete fEPMassEta;         fEPMassEta           = new TH1F("fEPMassEta", "Dalitz electron pair from eta", nbins, min, maxeta);}
-    if (!fEPMassOmegaDalitz)   {delete fEPMassOmegaDalitz; fEPMassOmegaDalitz   = new TH1F("fEPMassOmegaDalitz", "Dalitz electron pair from omega ", nbins, min, maxomega);}
-    if (!fEPMassEtaPrime)      {delete fEPMassEtaPrime;    fEPMassEtaPrime      = new TH1F("fEPMassEtaPrime", "Dalitz electron pair from etaprime", nbins, min, maxetaprime);}
-    if (!fEPMassEtaPrime_toOmega)      {delete fEPMassEtaPrime_toOmega;    fEPMassEtaPrime_toOmega      = new TH1F("fEPMassEtaPrime_toOmega", "Dalitz electron pair from etaprime_toOmega", nbins, min, maxetaprime_toOmega);}
-    if (!fEPMassPhiDalitz)     {delete fEPMassPhiDalitz;   fEPMassPhiDalitz     = new TH1F("fEPMassPhiDalitz", "Dalitz electron pair from phi ", nbins, min, maxphi);}
-    if (!fEPMassPhiDalitz_toPi0)     {delete fEPMassPhiDalitz_toPi0;   fEPMassPhiDalitz_toPi0     = new TH1F("fEPMassPhiDalitz_toPi0", "Dalitz electron pair from phi_toPi0 ", nbins, min, maxphi_toPi0);}
-
+    fEPMassPion = new TH1F("fEPMassPion", "Dalitz electron pair from pion", nbins, min, maxpion);
+    fEPMassPion->SetDirectory(0);
+    fEPMassEta = new TH1F("fEPMassEta", "Dalitz electron pair from eta", nbins, min, maxeta);
+    fEPMassEta->SetDirectory(0);
+    fEPMassOmegaDalitz = new TH1F("fEPMassOmegaDalitz", "Dalitz electron pair from omega ", nbins, min, maxomega);
+    fEPMassOmegaDalitz->SetDirectory(0);
+    fEPMassEtaPrime = new TH1F("fEPMassEtaPrime", "Dalitz electron pair from etaprime", nbins, min, maxetaprime);
+    fEPMassEtaPrime->SetDirectory(0);
+    fEPMassEtaPrime_toOmega = new TH1F("fEPMassEtaPrime_toOmega", "Dalitz electron pair from etaprime_toOmega", nbins, min, maxetaprime_toOmega);
+    fEPMassEtaPrime_toOmega->SetDirectory(0);
+    fEPMassPhiDalitz = new TH1F("fEPMassPhiDalitz", "Dalitz electron pair from phi ", nbins, min, maxphi);
+    fEPMassPhiDalitz->SetDirectory(0);
+    fEPMassPhiDalitz_toPi0  = new TH1F("fEPMassPhiDalitz_toPi0", "Dalitz electron pair from phi_toPi0 ", nbins, min, maxphi_toPi0);
+    fEPMassPhiDalitz_toPi0->SetDirectory(0);
 
     mLL_pion =  mLL_eta = mLL_omega = mLL_etaprime = mLL_etaprime_toOmega = mLL_phi = mLL_phi_toPi0 = 0.;
 
@@ -322,10 +343,14 @@ void AliDecayerExodus::Init()
      binwidth  = (mass_max-mass_min)/(Double_t)nbins;
 
      // create pair mass histograms for resonances of rho, omega, phi and jpsi
-     if (!fEPMassRho)   {delete fEPMassRho;   fEPMassRho    = new TH1F("fEPMassRho","mass rho",nbins,mass_min,mass_max);}
-     if (!fEPMassOmega) {delete fEPMassOmega; fEPMassOmega  = new TH1F("fEPMassOmega","mass omega",nbins,mass_min,mass_max);}
-     if (!fEPMassPhi)   {delete fEPMassPhi;   fEPMassPhi    = new TH1F("fEPMassPhi","mass phi",nbins,mass_min,mass_max);}
-     if (!fEPMassJPsi)  {delete fEPMassJPsi;  fEPMassJPsi   = new TH1F("fEPMassJPsi","mass jpsi",nbins,mass_min,mass_max);}
+     fEPMassRho    = new TH1F("fEPMassRho","mass rho",nbins,mass_min,mass_max);
+     fEPMassRho->SetDirectory(0);
+     fEPMassOmega  = new TH1F("fEPMassOmega","mass omega",nbins,mass_min,mass_max);
+     fEPMassOmega->SetDirectory(0);
+     fEPMassPhi    = new TH1F("fEPMassPhi","mass phi",nbins,mass_min,mass_max);
+     fEPMassPhi->SetDirectory(0);
+     fEPMassJPsi   = new TH1F("fEPMassJPsi","mass jpsi",nbins,mass_min,mass_max);
+     fEPMassJPsi->SetDirectory(0);
 
      for (ibin=1; ibin<=nbins; ibin++ )
      {

@@ -21,13 +21,14 @@
 #define GPURECONSTRUCTIONTIMEFRAME_H
 
 #include "GPUChainTracking.h"
+#include "GPUDataTypes.h"
 #include <vector>
 #include <random>
 #include <tuple>
 
 namespace o2
 {
-namespace TPC
+namespace tpc
 {
 struct ClusterNative;
 }
@@ -76,7 +77,7 @@ class GPUReconstructionTimeframe
   long long int mEventStride;
   int mSimBunchNoRepeatEvent;
   std::vector<char> mEventUsed;
-  std::vector<std::tuple<GPUChainTracking::InOutPointers, GPUChainTracking::InOutMemory, o2::TPC::ClusterNativeAccessFullTPC>> mShiftedEvents;
+  std::vector<std::tuple<GPUTrackingInOutPointers, GPUChainTracking::InOutMemory, o2::tpc::ClusterNativeAccessFullTPC>> mShiftedEvents;
 };
 } // namespace gpu
 } // namespace GPUCA_NAMESPACE

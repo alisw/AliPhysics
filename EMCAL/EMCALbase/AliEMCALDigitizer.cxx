@@ -299,7 +299,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   fSDigitizer->SetEventRange(0, -1) ;
   
   //-------------------------------------------------------
-  //take all the inputs to add together and load the SDigits
+  // Take all the inputs to add together and load the SDigits,
+  // check if the additional inputs are from data or MC, 
+  // if data set embed to true.
+  //
   TObjArray * sdigArray = new TObjArray(fInput) ;
   sdigArray->AddAt(emcalLoader->SDigits(), 0) ;
   
@@ -344,17 +347,26 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       return; // not needed but in case coverity complains ...
     }
 
-    //Merge 2 simulated sdigits
+    // Add additional inputs sdigits arrays to sdigArray
+    //
     if(!emcalLoader2->SDigits()) continue;
     
     TClonesArray* sdigits2 = emcalLoader2->SDigits();
     sdigArray->AddAt(sdigits2, i) ;
     
-    // Check if first sdigit is of embedded type, if so, handle the sdigits differently:
-    // do not smear energy of embedded, do not add noise to any sdigits
+    // Check if first sdigit is of embedded type MC-to-Data, 
+    // if so, handle the additional sdigits differently:
+    // do not smear energy and time of embedded, 
+    // do not add noise to any sdigits, already in data.
+    // Set embed = true if this is the case.
+    //
     if( sdigits2->GetEntriesFast() <= 0 ) continue;
     
     //printf("Merged digit type: %d\n",dynamic_cast<AliEMCALDigit*> (sdigits2->At(0))->GetType());
+    
+    // kEmbedded flag set in AliEMCAL::Raw2SDigits() to all sdigits produced there.
+    // This only happens for embedding case, in normal data processing 
+    // digits are produced directly, not sdigits.
     AliEMCALDigit * digit2 = dynamic_cast<AliEMCALDigit*> (sdigits2->At(0));
     if( digit2 && digit2->GetType()==AliEMCALDigit::kEmbedded ) embed = kTRUE;
     
@@ -413,9 +425,12 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     
     // amplitude set to zero, noise will be added later
     Float_t noiseTime = 0.;
-    if(!embed) noiseTime = TimeOfNoise(); //No need for embedded events?
+    if(!embed) noiseTime = TimeOfNoise(); //Not needed for MC-to-Data embedded events
+    
+    // add new noise digit
     new((*digits)[absID]) AliEMCALDigit( -1, -1, absID, 0., noiseTime,kFALSE); // absID-1->absID
-    //look if we have to add signal?
+    
+    // Check if we have to add signal?
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(absID)); // absID-1->absID
     
     if (!digit)
@@ -429,13 +444,17 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       // Calculate time as time of the largest digit
       Float_t time = digit->GetTime() ;
       Float_t aTime= digit->GetAmplitude() ;
-      
-      // loop over input
+            
+      // Loop over input streams
+      //
+      // In case of MC-to-Data embedding, merge later real digits, 
+      // do not smear energy and time of data
       Int_t nInputs = fInput;
-      if(embed) nInputs = 1; // In case of embedding, merge later real digits, do not smear energy and time of data
+      if(embed) nInputs = 1; 
+      
       for(i = 0; i< nInputs ; i++)
       {
-        //loop over (possible) merge sources
+        // Loop over (possible) merge sources
         TClonesArray* sdtclarr = dynamic_cast<TClonesArray *>(sdigArray->At(i));
         if(sdtclarr)
         {
@@ -444,10 +463,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
           if(sDigitEntries > index[i] ) curSDigit = dynamic_cast<AliEMCALDigit*>(sdtclarr->At(index[i])) ;
           else                          curSDigit = 0 ;
           
-          //May be several digits will contribute from the same input
+          // Maybe several digits will contribute from same or different input streams
           while(curSDigit && (curSDigit->GetId() == absID))
           {
-            //Shift primary to separate primaries belonging different inputs
+            // Shift primary to separate primaries belonging different inputs
             Int_t primaryoffset = i ;
             if(fDigInput) primaryoffset = fDigInput->GetMask(i) ;
             curSDigit->ShiftPrimary(primaryoffset) ;
@@ -468,10 +487,11 @@ void AliEMCALDigitizer::Digitize(Int_t event)
         }// source exists
       }// loop over merging sources
       
-      //Here we convert the summed amplitude to an energy in GeV only for simulation or mixing of simulations
+      // Here we convert the summed amplitude to an energy in GeV 
+      // only for simulation or mixing of simulations
       energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ; // GeV
       
-      // add fluctuations for photo-electron creation
+      // Add fluctuations for photo-electron creation
       // corrected fluctuations after comparison with beam test, Paraskevi Ganoti (06/11/2011)
       Float_t fluct = static_cast<Float_t>((energy*fMeanPhotonElectron)/fGainFluctuations);
       energy       *= static_cast<Float_t>(gRandom->Poisson(fluct)) / fluct ;
@@ -479,7 +499,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       //calculate and set time
       digit->SetTime(time) ;
       
-      //Find next signal module
+      // Find next signal module
       nextSig = nEMC + 1 ;
       for(i = 0 ; i < nInputs ; i++)
       {
@@ -500,7 +520,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       
     }//absID==nextSig
     
-    // add the noise now, no need for embedded events with real data
+    // Add the noise now, no need for embedded MC-to-Data events
     if(!embed)
       energy += gRandom->Gaus(0., fPinNoise) ;
     
@@ -510,7 +530,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     //check that the stored value matches our allowed dynamic ranges
     digit->SetAmplitude(fSDigitizer->Digitize(energy)) ;
     
-    //Set time resolution with final energy
+    // Set time resolution with final energy
     timeResolution = GetTimeResolution(energy);
     digit->SetTime(gRandom->Gaus(digit->GetTime(),timeResolution) ) ;
     AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
@@ -521,7 +541,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   } // for(absID = 0; absID < nEMC; absID++)
   
   //---------------------------------------------------------
-  //Embed simulated amplitude (and time?) to real data digits
+  // MC-to-Data embedding. First input is MC, next inputs are data.
+  // Embed simulated amplitude and time to real data digits.
+  // For digits time, use the time of the highest energy digit.
   if ( embed )
   {
     for(Int_t input = 1; input<fInput; input++)
