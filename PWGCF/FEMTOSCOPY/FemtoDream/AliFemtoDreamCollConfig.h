@@ -12,6 +12,7 @@
 #include "TNamed.h"
 #include "TNtuple.h"
 #include "AliFemtoDreamEvent.h"
+#include "AliFemtoDreamControlSample.h"
 
 class AliFemtoDreamCollConfig : public TNamed {
  public:
@@ -71,8 +72,8 @@ class AliFemtoDreamCollConfig : public TNamed {
     fGetTheControlSampel = use;
   }
   ;
-  void SetUseStravinskyMethod(bool use) {
-    fStravinsky = use;
+  void SetControlMethod(AliFemtoDreamControlSample::UncorrelatedMode mode) {
+    fMode = mode;
   }
   ;
   void SetZBins(std::vector<float> ZBins);
@@ -93,6 +94,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     fSpinningDepth = SpinningDepth;
   }
   ;
+  void SetCorrelationRange(float CorrRange) {
+    fCorrelationRange = CorrRange;
+  }
   void SetMinimalBookingME(bool doIt) {
     fMinimalBookingME = doIt;
   }
@@ -147,8 +151,8 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fGetTheControlSampel;
   }
   ;
-  bool GetDoStravinsky() {
-    return fStravinsky;
+  AliFemtoDreamControlSample::UncorrelatedMode GetControlMode() {
+    return fMode;
   }
   ;
   bool GetdPhidEtaPlots() {
@@ -211,7 +215,10 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fSpinningDepth;
   }
   ;
-
+  int GetCorrelationRange() {
+    return fCorrelationRange;
+  }
+  ;
   void SetDeltaEtaMax(float delta) {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaEtaMax = delta;
@@ -240,7 +247,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
-  bool fStravinsky;             //
+  AliFemtoDreamControlSample::UncorrelatedMode fMode; //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
   int fNumberRadii;             //
@@ -256,6 +263,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fClosePairRej;       //
   int fMixingDepth;             //
   int fSpinningDepth;			      //
+  int fCorrelationRange;	      //
   bool fkTCentrality;           //
   bool fmTdEtadPhi;             //
   AliFemtoDreamEvent::MultEstimator fEst;  //

@@ -44,17 +44,12 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fMultBins(conf->GetMultBins()),
       fRandom(),
       fPi(TMath::Pi()),
-      fmode(kNone),
-      fSpinningDepth(0),
-      fCorrelationRange(0.),
+      fmode(conf->GetControlMode()),
+      fSpinningDepth(conf->GetSpinningDepth()),
+      fCorrelationRange(conf->GetCorrelationRange()),
       fDeltaEtaMax(conf->GetDeltaEtaMax()),
       fDeltaPhiMax(conf->GetDeltaPhiMax()),
       fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()) {
-//  if (fStravinsky) {
-//    fSpinningDepth = 1;
-//  } else {
-//    fSpinningDepth = conf->GetSpinningDepth();
-//  }
   fRandom.SetSeed(0);
 }
 
