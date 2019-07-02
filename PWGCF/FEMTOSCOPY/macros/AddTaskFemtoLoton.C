@@ -8,6 +8,9 @@
 #include "AliFemtoDreamCollConfig.h"
 
 AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
+                                     bool phiSpinning = false,
+                                     int nSpins = 1,
+                                     double corrRange = 0.1,
                                      const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
 
@@ -133,8 +136,13 @@ AliAnalysisTaskSE *AddTaskFemtoLoton(bool fullBlastQA = false,
 
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
+  if (phiSpinning) {
+    config->SetUsePhiSpinning(true);
+    config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
+    config->SetCorrelationRange(corrRange);
+    config->SetSpinningDepth(nSpins);
+  }
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
-
   std::vector<int> MultBins;
   MultBins.push_back(0);
   MultBins.push_back(4);
