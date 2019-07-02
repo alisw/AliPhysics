@@ -456,6 +456,7 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
 
     // Filling the V0 vector
     int ilab = -1;
+    bool isFake=true;
     if (fMC)
     {
       int label = 0;
@@ -470,8 +471,8 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
             fSHyperTriton[mcMap[ilab]].fRecoIndex = (fRHyperTriton.size());
             fSHyperTriton[mcMap[ilab]].fFake = false;
             fSHyperTriton[mcMap[ilab]].fNegativeLabels = (label < 0);
-            if (fSHyperTriton[mcMap[ilab]].fFake && fV0Vertexer.GetMonteCarloStatus())
-              continue;
+            isFake=false;
+
           }
           else
           {
@@ -501,7 +502,9 @@ void AliAnalysisTaskHyperTriton2He3piML::UserExec(Option_t *)
         }
       }
     }
+    if (isFake && fV0Vertexer.GetMonteCarloStatus())
 
+      continue;
     double x{0.}, y{0.}, z{0.};
     v0->GetXYZ(x, y, z);
 
