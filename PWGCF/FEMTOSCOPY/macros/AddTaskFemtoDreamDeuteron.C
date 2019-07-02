@@ -300,9 +300,15 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   mgr->ConnectInput(task, 0, cinput);
+  TString addon="";
+  if (CentEst=="kInt7") {
+    addon+="MB";
+  } else if (CentEst=="kHM") {
+    addon+="HM";
+  }
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("MyTask");
+  TString QAName = Form("%sQA",addon.Data());
   coutputQA = mgr->CreateContainer(
       QAName.Data(), TList::Class(),
       AliAnalysisManager::kOutputContainer,
