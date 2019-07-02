@@ -109,8 +109,6 @@ AliAnalysisTaskSE(),
   DCA{0,0},
   DCAsigma{0,0},
   DCA3{0,0,0},
-  //DCA3sigma{0,0,0},
-  DCAXYtest(0),
   nITS(0),
   chi2ITS(0),
   fITSshared(0),
@@ -143,6 +141,7 @@ AliAnalysisTaskSE(),
   HasMother(0),
   motherLabel(0),
   isInj(0),
+  isPhysPrimary(0),
   iPdgFirstMother(0),
   gLabelFirstMother(0),
   gLabelMinFirstMother(0),
@@ -163,8 +162,8 @@ AliAnalysisTaskSE(),
   fESigTPCMin(-4.),
   fESigTPCMax(4.),
   fHasSDD(kTRUE),
-  fIsV0tree(kFALSE),
   fExtraDCA(kFALSE),
+  fIsV0tree(kFALSE),
   fArmPlot(0),
   fIsAOD(kTRUE),
   fFilterBit(16),
@@ -220,8 +219,6 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name,
 	DCA{0,0},
 	DCAsigma{0,0},
 	DCA3{0,0,0},
-	//DCA3sigma{0,0,0},
-	DCAXYtest(0),
 	nITS(0),
 	chi2ITS(0),
 	fITSshared(0),
@@ -254,6 +251,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name,
 	HasMother(0),
 	motherLabel(0),
 	isInj(0),
+  isPhysPrimary(0),
 	iPdgFirstMother(0),
 	gLabelFirstMother(0),
 	gLabelMinFirstMother(0),
@@ -274,9 +272,9 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name,
 	fESigTPCMin(-4.),
 	fESigTPCMax(4.),
 	fHasSDD(kTRUE),
+	fExtraDCA(addDCA),
 	fIsV0tree(kFALSE),
 	fArmPlot(0),
-	fExtraDCA(addDCA),
 	fIsAOD(kTRUE),
 	fFilterBit(16),
 	fIsGRIDanalysis(kTRUE),
@@ -347,9 +345,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	}
 
 	fTree = new TTree("tracks", "tracks");
-	//Common branches to all variants of class
 
-	//Track variables
+	// Track variables
 	fTree->Branch("pt",                &pt,                "pt/F");
 	fTree->Branch("eta",               &eta,               "eta/F");
 	fTree->Branch("phi",               &phi,               "phi/F");
@@ -363,23 +360,17 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	fTree->Branch("fITSshared",        &fITSshared,        "fITSshared/F");
 	fTree->Branch("chi2ITS",           &chi2ITS,           "chi2ITS/F");
 	fTree->Branch("SPDfirst",          &SPDfirst,          "SPDfirst/O");
-	//DCA variables
-	fTree->Branch("DCAxy",             &DCA[0]);
-	fTree->Branch("DCAz",              &DCA[1]);
+	fTree->Branch("DCAxy",             &DCA[0],            "DCAxy/F");
+	fTree->Branch("DCAz",              &DCA[1],            "DCAz/F");
 	if(fExtraDCA){
-	  fTree->Branch("DCAsigmaxy",        &DCAsigma[0]);
-	  fTree->Branch("DCAsigmaz",         &DCAsigma[1]);
-	  fTree->Branch("DCA3x",             &DCA3[0]);
-	  fTree->Branch("DCA3y",             &DCA3[1]);
-	  fTree->Branch("DCA3z",             &DCA3[2]);
-	  //Once you have also the normalized components x,y,z:
-	  //fTree->Branch("DCA3sigmax",             &DCA3sigma[0]);
-	  //fTree->Branch("DCA3sigmay",             &DCA3sigma[1]);
-	  //fTree->Branch("DCA3sigmaz",             &DCA3sigma[2]);
-	  fTree->Branch("DCAxytest",         &DCAXYtest);
+	  fTree->Branch("DCAsigmaxy",        &DCAsigma[0],    "DCAsigmaxy/F");
+	  fTree->Branch("DCAsigmaz",         &DCAsigma[1],    "DCAsigmaz/F");
+	  fTree->Branch("DCA3x",             &DCA3[0],        "DCA3x/F");
+	  fTree->Branch("DCA3y",             &DCA3[1],        "DCA3y/F");
+	  fTree->Branch("DCA3z",             &DCA3[2],        "DCA3z/F");
 	}
-	fTree->Branch("goldenChi2",        &goldenChi2,        "goldenChi2/F");
-	fTree->Branch("charge",            &charge,            "charge/I");
+	fTree->Branch("goldenChi2",        &goldenChi2,     "goldenChi2/F");
+	fTree->Branch("charge",            &charge,         "charge/I");
 	fTree->Branch("EsigITS",           &EnSigmaITS,     "EsigITS/F");
 	if(fUseITScorr){
 	  fTree->Branch("EsigITScorr",     &EnSigmaITScorr, "EsigITScorr/F");
@@ -403,7 +394,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	fTree->Branch("ITSsignal",         &ITSsignal,  "ITSsignal/F");
 	fTree->Branch("TPCsignal",         &TPCsignal,  "TPCsignal/F");
 	fTree->Branch("TOFsignal",         &TOFsignal,  "TOFsignal/F");
-	//V0 tree variables
+	// V0 tree variables
 	if(fIsV0tree){
 		fTree->Branch("pointingAngle", &pointingAngle, "pointingAngle/F");
 		fTree->Branch("daughtersDCA",  &daughtersDCA,  "daughtersDCA/F");
@@ -412,7 +403,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fTree->Branch("ptArm",         &ptArm,         "ptArm/F");
 		fTree->Branch("alpha",         &alpha,         "alpha/F");
 	}
-	//MC variables
+	// MC variables
 	if(hasMC){
 		fTree->Branch("mcPt",              &mcPt,                 "mcPt/F");
 		fTree->Branch("mcEta",             &mcEta,                "mcEta/F");
@@ -429,8 +420,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fTree->Branch("labelMinInitial",   &gLabelMinFirstMother, "labelMinInitial/I");
 		fTree->Branch("labelMaxInitial",   &gLabelMaxFirstMother, "labelMaxInitial/I");
 		fTree->Branch("isInjected",        &isInj,                "isInjected/I");
+	  fTree->Branch("isPhysPrim",        &isPhysPrimary,        "isPhysPrim/O");
 	}
-	//Event variables
+	// Event variables
 	fTree->Branch("vertexX",         &primaryVertex[0], "vertexX/F");
 	fTree->Branch("vertexY",         &primaryVertex[1], "vertexY/F");
 	fTree->Branch("vertexZ",         &primaryVertex[2], "vertexZ/F");
@@ -442,7 +434,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	fTree->Branch("gridPID",         &fGridPID,         "gridPID/I");
 	fTree->Branch("TOFstartMask",    &TOFstartMask,     "TOFstartMask/I");
 
-	//Get grid PID which can be used later to assign unique event numbers
+	// Get grid PID which can be used later to assign unique event numbers
 	if(fIsGRIDanalysis){
 		const char* gridIDchar = gSystem->Getenv("ALIEN_PROC_ID");
 		std::string str(gridIDchar);
@@ -452,7 +444,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fGridPID = -1;
 	}
 
-	//Setup correction maps
+	// Setup correction maps
 	if(fUseTPCcorr){
 		AliDielectronPID::SetCentroidCorrFunction( (TH1*)fMeanTPC->Clone() );
 		AliDielectronPID::SetWidthCorrFunction( (TH1*)fWidthTPC->Clone() );
@@ -471,13 +463,13 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting TOF Correction Histos");
 	}
 
-	//Needed by the dielectron framework
+	// Needed by the dielectron framework
 	varManager->SetPIDResponse(fPIDResponse);
 
-	//Create TH2F for armenteros plot. Filled if creating v0 tree
-	//NOTE: Class designed to study electrons with weak EsigTPC cuts
-	//applied. Therefore, the number of tracks will not necessarily be twice the
-	//number of V0 particles (as one might expect).
+	// Create TH2F for armenteros plot. Filled if creating v0 tree
+	// NOTE: Class designed to study electrons with weak EsigTPC cuts
+	// applied. Therefore, the number of tracks will not necessarily be twice the
+	// number of V0 particles (as one might expect).
 	fArmPlot = new TH2F("ArmPlot", "Armenteros Plot", 100, -1, 1, 100, 0, 0.4);
 	if(fIsV0tree){
 		fArmPlot->GetXaxis()->SetTitle("#alpha = (p^{+}-p^{-})/(p^{+}+p^{-})");
@@ -485,7 +477,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 	}
 
 	fQAhist = new TH1F("h1", "Event and track QA", 8, 0, 8);
-	//Fill each bin with nothing to ensure correct ordering
+	// Fill each bin with nothing to ensure correct ordering
 	fQAhist->Fill("Events_check",0);
 	fQAhist->Fill("Events_accepted",0);
 	fQAhist->Fill("Events_MCcheck",0);
@@ -499,7 +491,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 }
 
 //________________________________________________________________________
-//Main loop: called for each event
+// Main loop: called for each event
 void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 	AliVEvent* event = 0x0;
@@ -624,15 +616,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 				if(fIsAOD){
 					mcTrack = dynamic_cast<AliAODMCParticle*>(fMCevent->GetTrack(TMath::Abs(track->GetLabel())));
-
-					// Check valid pointer has been returned. If not, disregard track.
 					if(!mcTrack){
 						continue;
 					}
 				}else{
 					mcTrack = dynamic_cast<AliMCParticle*>(fMCevent->GetTrack(TMath::Abs(track->GetLabel())));
-
-					// Check valid pointer has been returned. If not, disregard track.
 					if(!mcTrack){
 						continue;
 					}
@@ -642,12 +630,10 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 				// Get basic MC information
 				iPdg  = mcTrack->PdgCode();
-				//std::cout << mcTrack->PdgCode() << std::endl;
-				if(iPdg == 1000822080)
-				  {
-				    //std::cout << "Ion lead found..skip" << std::endl;
-				    continue;
-				  }
+        // Skip lead ion (present in some MC productions....)
+				if(iPdg == 1000822080){
+          continue;
+				}
 				mcEta = mcTrack->Eta();
 				mcPhi = mcTrack->Phi();
 				mcPt  = mcTrack->Pt();
@@ -659,6 +645,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 				// Check which generator was used
 				isInj = CheckGenerator(track->GetLabel());
+        // Flag to indicated physical primary or not
+        isPhysPrimary = mcTrack->IsPhysicalPrimary();
 
 				// Get label of mother particle
 				// Will return -1 if no mother particle
@@ -682,12 +670,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 					iPdgMother  = motherMCtrack->PdgCode();
 					// Get mother label so tracks can be correctly paired
 					motherLabel = TMath::Abs(motherMCtrack->GetLabel());
-					/*	if(iPdgMother == 1000822080)
-					  {
-					    std::cout << "Ion lead found..skip" << std::endl;
-					    break;
-					    }*/
-					    //std::cout << "First print, PdgMother= "<< iPdgMother << " " << "mother lable= " << motherLabel << std::endl;
+				
 					// If index is minus then particle has no mother particle
 					// Otherwise, begin search for original particle
 					Int_t gFirstMotherIndex = motherMCtrack->GetMother();
@@ -698,39 +681,29 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 						AliMCParticle* firstMotherTrack = (AliMCParticle*)(fMCevent->GetTrack(gFirstMotherIndex));
 						// Scan down decay chain until a negative index is returned
 						// I.e. first particle in decay is found
-						//std::cout << "next while start!!" << std::endl;
 						while(gFirstMotherIndex > 0){
 
 							gLabelFirstMother = gFirstMotherIndex; // Use label as temp. index storage
 							firstMotherTrack  = (AliMCParticle*)(fMCevent->GetTrack(gLabelFirstMother));
 							gFirstMotherIndex = firstMotherTrack->GetMother();
-							//	std::cout << "PdgFirstMother=" <<  firstMotherTrack->PdgCode() << "  " << gLabelFirstMother << "  "  << gFirstMotherIndex << std::endl;
 						}
-						//std::cout << "while is finished!!" << std::endl;
 
 						// If greatgrand-mother (etc) was found, store pdg code
 						// Otherwise, grandmother was already primary
-						if(gLabelFirstMother != -1) {
-						  //Printf("gLabelFirstMother != -1");
+						if(gLabelFirstMother != -1){
 							iPdgFirstMother = firstMotherTrack->PdgCode();
-							//std::cout << iPdgFirstMother << "   " << gLabelFirstMother << std::endl;
-					    
 						}
 						else{
 						  gLabelFirstMother = gFirstMotherIndex; // set mother to first mother
 						  iPdgFirstMother   = iPdgMother;
-						  //		std::cout << "gLabelFirstMother = -1  " << "PdgFirstMother=" << iPdgFirstMother << " Label=  " << gLabelFirstMother << std::endl;
 						}
 						
-						//std::cout << iPdgFirstMother << " pdgFirstMother" << std::endl;
-						//std::cout << gLabelFirstMother << "LabelFirstMother" << std::endl;
-						
 						Int_t nParticles = fMCevent->GetNumberOfTracks();
-							if(iPdgFirstMother == 1000822080)
-							  {
-							    continue;
-							  }
-						//Needed for HIJING....
+            // Ignore initial lead ion
+            if(iPdgFirstMother == 1000822080){
+              continue;
+            }
+						// Needed for HIJING....
 						// find range of -1 - minimum
 						gLabelMinFirstMother = gLabelFirstMother;
 						while(gFirstMotherIndex < 0){
@@ -850,62 +823,60 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 			chi2TPC = track->GetTPCchi2(); 
 
-			//DCA values
-			Float_t  DCAesd[2] = {0.0, 0.0};
-			Double_t DCAaod[2] = {0.0, 0.0};
-			Double_t DCAcov[3] = {-999., -999., -999.}; //covariance matrix
+			// DCA values
+			Float_t  DCAesd[2] = {-999, -999};
+			Double_t DCAaod[2] = {-999, -999};
+			Double_t DCAcov[3] = {-999., -999., -999.}; // Covariance matrix
 		
 			if(!fIsAOD){
-				//Arguments: xy, z
-			            // 'Float_t' needed for 'virtual void AliESDtrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const'
-			  Float_t DCAcov1[3] = {-999., -999., -999.}; //covariance matrix
-				track->GetImpactParameters( DCAesd, DCAcov1);
+				// Arguments: xy, z
+			  // 'Float_t' needed for 'virtual void AliESDtrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const'
+			  Float_t DCAcov1[3] = {-999., -999., -999.}; // Covariance matrix
+				track->GetImpactParameters(DCAesd, DCAcov1);
 				DCAcov[0] = DCAcov1[0]; DCAcov[1] = DCAcov1[1]; DCAcov[2] = DCAcov1[2];				
 			}
 			else{
-			  
 				GetDCA(const_cast<const AliVEvent*>(event), dynamic_cast<const AliAODTrack*>(track), DCAaod, DCAcov);
 			}
-			//Final DCA values stored here 
+			// Final DCA values stored here 
 			if(!fIsAOD){
-			  DCA[0] = static_cast<Double_t>(DCAesd[0]); 
-			  DCA[1] = static_cast<Double_t>(DCAesd[1]);
+			  DCA[0] = DCAesd[0]; 
+			  DCA[1] = DCAesd[1];
 			}
 			else{
-			  DCA[0] = static_cast<Double_t>(DCAaod[0]);
-			  DCA[1] = static_cast<Double_t>(DCAaod[1]);
+			  DCA[0] = static_cast<Float_t>(DCAaod[0]);
+			  DCA[1] = static_cast<Float_t>(DCAaod[1]);
 			}
 			if(fExtraDCA){
-			// compute the normalized DCAs
-			// neglect the resolution mixed term DCAcov[1]
-			//if(DCAcov[0]>0.)
-			DCAsigma[0] = static_cast<Double_t>(DCA[0])/TMath::Sqrt(static_cast<Double_t>(DCAcov[0]));
-			//if(DCAcov[2]>0.)
-			DCAsigma[1] = static_cast<Double_t>(DCA[1])/TMath::Sqrt(static_cast<Double_t>(DCAcov[2]));
-			
-			//Approximation of the Impact Parameter
-			//Get TVectors for primary and secondary vertex as well as for particle momentum
-			// ImpPar = |p x (priVertex- secVertex)|/|p|
+        // Compute the normalized DCAs
+        // Neglect the resolution mixed term DCAcov[1]
+        //if(DCAcov[0]>0.)
+        DCAsigma[0] = DCA[0]/TMath::Sqrt(static_cast<Float_t>(DCAcov[0]));
+        //if(DCAcov[2]>0.)
+        DCAsigma[1] = DCA[1]/TMath::Sqrt(static_cast<Float_t>(DCAcov[2]));
+        
+        // Approximation of the Impact Parameter
+        // Get TVectors for primary and secondary vertex as well as for particle momentum
+        // ImpPar = |p x (priVertex- secVertex)|/|p|
 
-			TVector3 priVtx(primaryVertex[0],primaryVertex[1],primaryVertex[2]); //primary vertex
-			 
-			Double_t secvtx[3];
-			track->GetXYZ(secvtx);
-			TVector3 secVtx(secvtx[0],secvtx[1],secvtx[2]); //particle position
+        TVector3 priVtx(primaryVertex[0],primaryVertex[1],primaryVertex[2]); //primary vertex
+        
+        Double_t secvtx[3];
+        track->GetXYZ(secvtx);
+        TVector3 secVtx(secvtx[0],secvtx[1],secvtx[2]); // Particle position
 
-			Double_t  mompart[3];
-			track->GetPxPyPz(mompart);
-			TVector3 momPart(mompart[0],mompart[1],mompart[2]); //particle momentum
-			
-			priVtx -= secVtx; 
-			
-			TVector3 numerator = momPart.Cross(priVtx);
-			Double_t denominator = momPart.Mag();
+        Double_t  mompart[3];
+        track->GetPxPyPz(mompart);
+        TVector3 momPart(mompart[0],mompart[1],mompart[2]); // Particle momentum
+        
+        priVtx -= secVtx; 
+        
+        TVector3 numerator = momPart.Cross(priVtx);
+        Double_t denominator = momPart.Mag();
 
-			DCA3[0] = numerator.X()/denominator;
-			DCA3[1] = numerator.Y()/denominator;
-			DCA3[2] = numerator.Z()/denominator;
-			DCAXYtest = static_cast<Double_t>((TMath::Sqrt(numerator.X()*numerator.X() + numerator.Y()*numerator.Y()))/denominator);
+        DCA3[0] = numerator.X()/denominator;
+        DCA3[1] = numerator.Y()/denominator;
+        DCA3[2] = numerator.Z()/denominator;
 			}
 
 			// Get ITS information
@@ -1396,12 +1367,12 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::isV0daughterAccepted(AliVTrack* track){
     return answer;
 }
 
-Bool_t AliAnalysisTaskSimpleTreeMaker::GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0){
+inline Bool_t AliAnalysisTaskSimpleTreeMaker::GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0){
 // this is a copy of the AliDielectronVarManager
 
   if(track->TestBit(AliAODTrack::kIsDCA)){
-    d0z0[0]=track->DCA();
-    d0z0[1]=track->ZAtDCA();
+    d0z0[0] = track->DCA();
+    d0z0[1] = track->ZAtDCA();
     // the covariance matrix is not stored in case of AliAODTrack::kIsDCA
     return kTRUE;
   }
@@ -1418,7 +1389,7 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::GetDCA(const AliVEvent* event, const AliA
       return kFALSE;
     }
 
-    const AliAODVertex *vtx =dynamic_cast<const AliAODVertex*>((event->GetPrimaryVertex()));
+    const AliAODVertex* vtx =dynamic_cast<const AliAODVertex*>((event->GetPrimaryVertex()));
     Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
     ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
   }

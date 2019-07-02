@@ -171,7 +171,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 			maxPtPIDcorrection = answer;
 		}
 
-		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
+		inline Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
 		// Check if the generator is on the list of generators
 		// If found, assign track with integer value correspding to generator
@@ -230,11 +230,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Float_t nTPCshared;
 		Float_t chi2TPC;
 		//DCA
-		Double_t DCA[2];
-		Double_t DCAsigma[2];
-		Double_t DCA3[3];
+		Float_t DCA[2];
+		Float_t DCAsigma[2];
+		Float_t DCA3[3];
 		//Double_t DCA3sigma[3];  
-		Double_t DCAXYtest;
 		Int_t nITS;
 		Float_t chi2ITS;
 		Float_t fITSshared;
@@ -268,6 +267,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Bool_t HasMother;
 		Int_t motherLabel;
 		Int_t isInj; 
+    Bool_t isPhysPrimary;
 		// Pdg and label for initial particle in decay chain
 		Int_t iPdgFirstMother;
 		Int_t gLabelFirstMother;
