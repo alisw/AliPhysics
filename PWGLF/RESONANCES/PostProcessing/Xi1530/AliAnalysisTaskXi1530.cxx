@@ -968,17 +968,19 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // After selection above
             if (StandardXi) {  // Save only the Xi is good candidate
-                FillTHnSparse("hInvMass_dXi",
-                              {(int)kData, (double)fCent, Xicandidate->Pt(),
-                               Xicandidate->GetEffMassXi()});
-                if (IsMC)
-                    if (IsTrueXi(((AliESDEvent*)fEvt)->GetCascade(it))) {
-                        FillTHnSparse(
-                            "hInvMass_dXi",
-                            {(int)kMCReco, (double)fCent, Xicandidate->Pt(),
-                             Xicandidate->GetEffMassXi()});
-                    }
-
+                if ((Xicandidate->RapXi() > fXi1530RapidityCut_high) ||
+                    (Xicandidate->RapXi() < fXi1530RapidityCut_low)) {
+                    FillTHnSparse("hInvMass_dXi",
+                                  {(int)kData, (double)fCent, Xicandidate->Pt(),
+                                   Xicandidate->GetEffMassXi()});
+                    if (IsMC)
+                        if (IsTrueXi(((AliESDEvent*)fEvt)->GetCascade(it))) {
+                            FillTHnSparse(
+                                "hInvMass_dXi",
+                                {(int)kMCReco, (double)fCent, Xicandidate->Pt(),
+                                 Xicandidate->GetEffMassXi()});
+                        }
+                }
                 goodcascadeindices.push_back(it);
             }  // for standard Xi
         }      // All Xi loop
@@ -1189,17 +1191,19 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // After selection above
             if (StandardXi) {  // Save only the Xi is good candidate
-                FillTHnSparse("hInvMass_dXi", {(int)kData, (double)fCent,
-                                               Xicandidate_aod->Pt2Xi(),
-                                               Xicandidate_aod->MassXi()});
-                if (IsMC)
-                    if (IsTrueXiAOD(((AliAODEvent*)fEvt)->GetCascade(it))) {
-                        FillTHnSparse("hInvMass_dXi",
-                                      {(int)kMCReco, (double)fCent,
-                                       Xicandidate_aod->Pt2Xi(),
-                                       Xicandidate_aod->MassXi()});
-                    }
-
+                if ((Xicandidate_aod->RapXi() > fXi1530RapidityCut_high) ||
+                    (Xicandidate_aod->RapXi() < fXi1530RapidityCut_low)) {
+                    FillTHnSparse("hInvMass_dXi", {(int)kData, (double)fCent,
+                                                Xicandidate_aod->Pt2Xi(),
+                                                Xicandidate_aod->MassXi()});
+                    if (IsMC)
+                        if (IsTrueXiAOD(((AliAODEvent*)fEvt)->GetCascade(it))) {
+                            FillTHnSparse("hInvMass_dXi",
+                                        {(int)kMCReco, (double)fCent,
+                                        Xicandidate_aod->Pt2Xi(),
+                                        Xicandidate_aod->MassXi()});
+                        }
+                }
                 goodcascadeindices.push_back(it);
             }  // for standard Xi
         }      // All Xi loop
