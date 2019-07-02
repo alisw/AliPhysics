@@ -1285,8 +1285,8 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
     if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
     if (track->Pt() < 0.15) continue;
     if(TMath::Abs(track->Eta()) > 0.8) continue;
-    //pt[i1] = track->Pt();
-    pt[i1] = 1.0;
+    pt[i1] = track->Pt();
+    //pt[i1] = 1.0;
     sumapt += pt[i1];
     GoodTracks++;
   }
@@ -1308,8 +1308,8 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	  if (esdt) if (!fTrackFilter->IsSelected(esdt)) continue;
 	  if (track->Pt() < 0.15) continue;
 	  if(TMath::Abs(track->Eta()) > 0.8) continue;
-	  //pt[i1] = track->Pt();
-	  pt[i1] = 1.0;
+	  pt[i1] = track->Pt();
+	  //pt[i1] = 1.0;
 	  phi[i1] = track->Phi();
 	  Float_t pxA = pt[i1] * TMath::Cos( phi[i1] );
 	  Float_t pyA = pt[i1] * TMath::Sin( phi[i1] );
