@@ -31,7 +31,7 @@ class AliESDtrackCuts;
 class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
   public:
-  AliAnalysisTaskSimpleTreeMaker(const char *name, Bool_t ExtraDCA = kFALSE);
+    AliAnalysisTaskSimpleTreeMaker(const char *name, Bool_t ExtraDCA = kFALSE);
     AliAnalysisTaskSimpleTreeMaker();
     ~AliAnalysisTaskSimpleTreeMaker();
 
@@ -42,19 +42,19 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
     void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
     void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
-
+  
     // PID calibration function to correct the width and mean of detector
     // response (I.e should be unit guassian)
     void SetCorrWidthMeanTPC(TH3D* width, TH3D* mean){
       fMeanTPC  = mean;
       fWidthTPC = width;
     };
-
+    
     void SetCorrWidthMeanITS(TH3D* width, TH3D* mean){
       fMeanITS  = mean;
       fWidthITS = width;
     };
-
+    
     void SetCorrWidthMeanTOF(TH3D* width, TH3D* mean){
       fMeanTOF  = mean;
       fWidthTOF = width;
@@ -162,7 +162,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     void SetUseITScorr(Bool_t answer){
       fUseITScorr = answer;
     }
-
+    
     void SetUseTOFcorr(Bool_t answer){
       fUseTOFcorr = answer;
     }
@@ -171,7 +171,39 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
       maxPtPIDcorrection = answer;
     }
 
-    inline Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
+    inline Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0){
+      // this is a copy of the AliDielectronVarManager
+
+      if(track->TestBit(AliAODTrack::kIsDCA)){
+        d0z0[0] = track->DCA();
+        d0z0[1] = track->ZAtDCA();
+        // the covariance matrix is not stored in case of AliAODTrack::kIsDCA
+        return kTRUE;
+      }
+
+      Bool_t ok = kFALSE;
+      if(event){
+        AliExternalTrackParam etp;
+        etp.CopyFromVTrack(track);
+
+        Float_t xstart = etp.GetX();
+        if(xstart>3.){
+          d0z0[0] = -999.;
+          d0z0[1] = -999.;
+          return kFALSE;
+        }
+
+        const AliAODVertex* vtx =dynamic_cast<const AliAODVertex*>((event->GetPrimaryVertex()));
+        Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
+        ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
+      }
+
+      if(!ok){
+        d0z0[0] = -999.;
+        d0z0[1] = -999.;
+      }
+      return ok;
+    }
 
     // Check if the generator is on the list of generators
     // If found, assign track with integer value correspding to generator
@@ -327,7 +359,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     // or not the track was injected
     std::vector<UInt_t> fGeneratorHashes;
 
-    ClassDef(AliAnalysisTaskSimpleTreeMaker, 6);
+    ClassDef(AliAnalysisTaskSimpleTreeMaker, 7);
 
 };
 

@@ -834,32 +834,32 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
         Float_t DCAcov1[3] = {-999., -999., -999.}; // Covariance matrix
         track->GetImpactParameters(DCAesd, DCAcov1);
         DCAcov[0] = DCAcov1[0]; DCAcov[1] = DCAcov1[1]; DCAcov[2] = DCAcov1[2];
-      }
-      else{
-        GetDCA(const_cast<const AliVEvent*>(event), dynamic_cast<const AliAODTrack*>(track), DCAaod, DCAcov);
-      }
-      // Final DCA values stored here
-      if(!fIsAOD){
+        // Store DCA values
         DCA[0] = DCAesd[0];
         DCA[1] = DCAesd[1];
       }
       else{
+        GetDCA(const_cast<const AliVEvent*>(event), dynamic_cast<const AliAODTrack*>(track), DCAaod, DCAcov);
+        // Store DCA values
         DCA[0] = static_cast<Float_t>(DCAaod[0]);
         DCA[1] = static_cast<Float_t>(DCAaod[1]);
       }
+
       if(fExtraDCA){
         // Compute the normalized DCAs
         // Neglect the resolution mixed term DCAcov[1]
-        //if(DCAcov[0]>0.)
-        DCAsigma[0] = DCA[0]/TMath::Sqrt(static_cast<Float_t>(DCAcov[0]));
-        //if(DCAcov[2]>0.)
-        DCAsigma[1] = DCA[1]/TMath::Sqrt(static_cast<Float_t>(DCAcov[2]));
+        if(DCAcov[0] > 0.){
+          DCAsigma[0] = DCA[0]/TMath::Sqrt(static_cast<Float_t>(DCAcov[0]));
+        }
+        if(DCAcov[2] > 0.){
+          DCAsigma[1] = DCA[1]/TMath::Sqrt(static_cast<Float_t>(DCAcov[2]));
+        }
 
         // Approximation of the Impact Parameter
         // Get TVectors for primary and secondary vertex as well as for particle momentum
         // ImpPar = |p x (priVertex- secVertex)|/|p|
 
-        TVector3 priVtx(primaryVertex[0],primaryVertex[1],primaryVertex[2]); //primary vertex
+        TVector3 priVtx(primaryVertex[0],primaryVertex[1],primaryVertex[2]); // Primary vertex
 
         Double_t secvtx[3];
         track->GetXYZ(secvtx);
@@ -1365,40 +1365,6 @@ Bool_t AliAnalysisTaskSimpleTreeMaker::isV0daughterAccepted(AliVTrack* track){
 
     answer = kTRUE;
     return answer;
-}
-
-inline Bool_t AliAnalysisTaskSimpleTreeMaker::GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0){
-// this is a copy of the AliDielectronVarManager
-
-  if(track->TestBit(AliAODTrack::kIsDCA)){
-    d0z0[0] = track->DCA();
-    d0z0[1] = track->ZAtDCA();
-    // the covariance matrix is not stored in case of AliAODTrack::kIsDCA
-    return kTRUE;
-  }
-
-  Bool_t ok = kFALSE;
-  if(event){
-    AliExternalTrackParam etp;
-    etp.CopyFromVTrack(track);
-
-    Float_t xstart = etp.GetX();
-    if(xstart>3.){
-      d0z0[0] = -999.;
-      d0z0[1] = -999.;
-      return kFALSE;
-    }
-
-    const AliAODVertex* vtx =dynamic_cast<const AliAODVertex*>((event->GetPrimaryVertex()));
-    Double_t fBzkG = event->GetMagneticField(); // z componenent of field in kG
-    ok = etp.PropagateToDCA(vtx,fBzkG,kVeryBig,d0z0,covd0z0);
-  }
-
-  if(!ok){
-    d0z0[0] = -999.;
-    d0z0[1] = -999.;
-  }
-  return ok;
 }
 
 //
