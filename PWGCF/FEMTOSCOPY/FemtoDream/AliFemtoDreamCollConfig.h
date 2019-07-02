@@ -12,10 +12,15 @@
 #include "TNamed.h"
 #include "TNtuple.h"
 #include "AliFemtoDreamEvent.h"
-#include "AliFemtoDreamControlSample.h"
 
 class AliFemtoDreamCollConfig : public TNamed {
  public:
+  enum UncorrelatedMode {
+    kNone = 0,
+    kPhiSpin = 1,
+    kStravinsky = 2,
+    kCorrelatedPhi = 3
+  };
   AliFemtoDreamCollConfig();
   AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig& config);
   AliFemtoDreamCollConfig(const char *name, const char *title);
@@ -72,7 +77,7 @@ class AliFemtoDreamCollConfig : public TNamed {
     fGetTheControlSampel = use;
   }
   ;
-  void SetControlMethod(AliFemtoDreamControlSample::UncorrelatedMode mode) {
+  void SetControlMethod(AliFemtoDreamCollConfig::UncorrelatedMode mode) {
     fMode = mode;
   }
   ;
@@ -151,7 +156,7 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fGetTheControlSampel;
   }
   ;
-  AliFemtoDreamControlSample::UncorrelatedMode GetControlMode() {
+  AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode() {
     return fMode;
   }
   ;
@@ -247,7 +252,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
-  AliFemtoDreamControlSample::UncorrelatedMode fMode; //
+  AliFemtoDreamCollConfig::UncorrelatedMode fMode; //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
   int fNumberRadii;             //

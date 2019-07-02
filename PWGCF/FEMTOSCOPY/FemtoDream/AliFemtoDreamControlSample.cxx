@@ -12,7 +12,7 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample()
       fMultBins(),
       fRandom(),
       fPi(TMath::Pi()),
-      fmode(kNone),
+      fmode(AliFemtoDreamCollConfig::kNone),
       fSpinningDepth(0),
       fCorrelationRange(0.),
       fDeltaEtaMax(0.f),
@@ -109,7 +109,7 @@ float AliFemtoDreamControlSample::RelativePairMomentum(TVector3 Part1Momentum,
                                                        int PDGPart1,
                                                        TVector3 Part2Momentum,
                                                        int PDGPart2,
-                                                       UncorrelatedMode mode) {
+                                                       AliFemtoDreamCollConfig::UncorrelatedMode mode) {
   if (PDGPart1 == 0 || PDGPart2 == 0) {
     AliError("Invalid PDG Code");
   }
@@ -123,13 +123,13 @@ float AliFemtoDreamControlSample::RelativePairMomentum(TVector3 Part1Momentum,
   TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
   // Do the randomization here
-  if (mode == kStravinsky) {
+  if (mode == AliFemtoDreamCollConfig::kStravinsky) {
     if (fRandom.Uniform() < 0.5) {
       SPtrack.SetPhi(SPtrack.Phi() + fPi);
     } else {
       TPProng.SetPhi(TPProng.Phi() + fPi);
     }
-  } else if (mode == kStravinsky) {
+  } else if (mode == AliFemtoDreamCollConfig::kPhiSpin) {
     SPtrack.SetPhi(SPtrack.Phi() + fRandom.Uniform(2 * fPi));
     TPProng.SetPhi(TPProng.Phi() + fRandom.Uniform(2 * fPi));
   }
@@ -200,9 +200,9 @@ void AliFemtoDreamControlSample::UncorrelatedSample(
     std::vector<AliFemtoDreamBasePart> &part1, int &PDGPart1,
     std::vector<AliFemtoDreamBasePart> &part2, int &PDGPart2, bool SameParticle,
     int Mult, int HistCounter) {
-  if (fmode == kPhiSpin || fmode == kStravinsky) {
+  if (fmode == AliFemtoDreamCollConfig::kPhiSpin || fmode == AliFemtoDreamCollConfig::kStravinsky) {
     PhiSpinning(part1, PDGPart1, part2, PDGPart2, SameParticle,Mult, HistCounter);
-  } else if (fmode == kCorrelatedPhi) {
+  } else if (fmode == AliFemtoDreamCollConfig::kCorrelatedPhi) {
     for (int iSpin = 0; iSpin < fSpinningDepth; ++iSpin) {
       LimitedPhiSpinning(part1, PDGPart1, part2, PDGPart2, SameParticle,Mult, HistCounter);
     }
@@ -295,7 +295,7 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
           // randomized sample - who is the father???
           RelativeK = RelativePairMomentum((*itPart1)->GetMomentum(), PDGPart1,
                                            (*itPart2)->GetMomentum(), PDGPart2,
-                                           kNone);
+                                           AliFemtoDreamCollConfig::kNone);
           fHists->FillMixedEventDist(HistCounter, RelativeK);
           if (fHists->GetDoMultBinning()) {
             fHists->FillMixedEventMultDist(HistCounter, Mult + 1, RelativeK);

@@ -10,12 +10,6 @@
 #include "vector"
 
 class AliFemtoDreamControlSample {
-  enum UncorrelatedMode {
-    kNone = 0,
-    kPhiSpin = 1,
-    kStravinsky = 2,
-    kCorrelatedPhi = 3
-  };
  public:
   AliFemtoDreamControlSample();
   AliFemtoDreamControlSample(const AliFemtoDreamControlSample& samp);
@@ -60,7 +54,7 @@ class AliFemtoDreamControlSample {
   void Randomizer(std::vector<AliFemtoDreamBasePart*> &part);
   float RelativePairMomentum(TVector3 Part1Momentum, int PDGPart1,
                              TVector3 Part2Momentum, int PDGPart2,
-                             UncorrelatedMode mode = kNone);
+                             AliFemtoDreamCollConfig::UncorrelatedMode mode = AliFemtoDreamCollConfig::kNone);
   float ComputeDeltaEta(AliFemtoDreamBasePart *part1,
                         AliFemtoDreamBasePart *part2);
   float ComputeDeltaPhi(AliFemtoDreamBasePart *part1,
@@ -75,7 +69,7 @@ class AliFemtoDreamControlSample {
   std::vector<int> fMultBins;
   TRandom3 fRandom;
   double fPi;
-  UncorrelatedMode fmode;
+  AliFemtoDreamCollConfig::UncorrelatedMode fmode;
   int fSpinningDepth;
   double fCorrelationRange;
   float fDeltaEtaMax;
