@@ -1592,8 +1592,11 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *){
     fiCut = iCut;
     fNVirtualGammas = 0;
 
+    //ALERT Cross Check for the Vertex on the event.
+    if(!(fAODESDEvent->GetPrimaryVertex())){
+        continue;
+    }
     Int_t eventNotAccepted = ((AliConvEventCuts*)fCutEventArray->At(iCut))->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
-
     if(eventNotAccepted){
       hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       continue;
@@ -1921,13 +1924,6 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessTruePhotonCandidates(AliAODConvers
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){ //NOTE Complet 4 Marzo
 
-  Double_t magField = fInputEvent->GetMagneticField();
-  if( magField  < 0.0 ){
-    magField =  1.0;
-  } else {
-    magField =  -1.0;
-  }
-
   for(Int_t virtualGammaIndex=0; virtualGammaIndex < fGoodVirtualGammas->GetEntries();  virtualGammaIndex++ ){
     AliAODConversionPhoton *Vgamma=dynamic_cast<AliAODConversionPhoton*>(fGoodVirtualGammas->At(virtualGammaIndex));
 
@@ -1944,7 +1940,8 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessVirtualGammasCandidates(){ //NOTE 
     if ( fDoMesonQA > 0 ) {
 //NOTE Only here on PsiPair are Constrained param
       Double_t psiPair = GetPsiPair(positronVgamma.get(),electronVgamma.get());
-      Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronVgamma->GetConstrainedParamPhiG()-positronVgamma->GetConstrainedParamPhiG());
+//      momPos[0]= trackPos->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Px();
+      Double_t deltaPhi = GetdeltaPhi(electronVgamma.get(),positronVgamma.get());
       hESDEposEnegPsiPairDPhi[fiCut]->Fill(deltaPhi,psiPair);
       hESDEposEnegPsiPairpTleptonsDPhi[fiCut]->Fill(deltaPhi,psiPair,Vgamma->Pt());
       hESDEposEnegPsiPairEta[fiCut]->Fill(psiPair,Vgamma->Eta());
@@ -2155,7 +2152,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
           std::unique_ptr<AliDalitzAODESD> positronCandidate = std::unique_ptr<AliDalitzAODESD>(fAODESDEvent->GetTrack(lGoodPositronIndexPrev[j]));
 //NOTE Again only here Constrained Param
         Double_t psiPair = GetPsiPair(positronCandidate.get(),electronCandidate.get());
-        Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->GetConstrainedParamPhiG()-positronCandidate->GetConstrainedParamPhiG());
+        Double_t deltaPhi = GetdeltaPhi(electronCandidate.get(),positronCandidate.get());
 
         if( ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->IsFromGammaConversion(psiPair,deltaPhi) ){
           lElectronPsiIndex[i] = kFALSE;
@@ -3353,7 +3350,7 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
         // cout<<Radios<<" 3D "<<radiussum<<" 2D "<<endl;
         posDaughterB.SetXYZ( trackPos->GetPxG(), trackPos->GetPyG(), trackPos->GetPzG());
         negDaughterB.SetXYZ( trackNeg->GetPxG(), trackNeg->GetPyG(), trackNeg->GetPzG());
-        //ALERT I will add this selection soon for the event Selection on AOD, to check for the Vertex, but in principle, this never happends for the track selection, I will send a especial valor of psipair on principle to check.
+        //ALERT update, I add this selection at the start.
     // activate the following two lines if you want to check that the event primary vertex is that reconstructed with tracks
      TString title=vtxAOD->GetTitle();
      if(!title.Contains("VertexerTracks")){
@@ -3387,6 +3384,34 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair(AliDalitzAODESD *trackPos,
   }
   psiAngle = TMath::ASin( deltaTheta/openingAngle );
   return psiAngle;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskGammaConvDalitzV1::GetdeltaPhi(AliDalitzAODESD *trackelectronVgamma, AliDalitzAODESD *trackpositronVgamma ) const
+{
+//Function to calculate deltaPhi with constrained Param on AOD and ESD
+    Double_t magField = fInputEvent->GetMagneticField();
+    if( magField  < 0.0 ){
+        magField =  1.0;
+    } else {
+        magField =  -1.0;
+    }
+    Double_t deltaPhiC=0.0;
+    if (fAODESDEvent->GetIsESD()){
+        //NOTE On ESD constrainedparam for the pt using the Kalman fit
+        deltaPhiC = magField * TVector2::Phi_mpi_pi( trackelectronVgamma->GetConstrainedParamPhiG()-trackpositronVgamma->GetConstrainedParamPhiG());
+    }
+    else {
+        AliAODVertex *vtxAODPhi = (AliAODVertex*)fAODESDEvent->GetPrimaryVertex();
+        TString title=vtxAODPhi->GetTitle();
+        if(!title.Contains("VertexerTracks")){
+            return 0.8;
+        }
+        //We Use the Primary Vertex and Magnetic Field.
+   deltaPhiC =magField * TVector2::Phi_mpi_pi( trackelectronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Phi()-trackpositronVgamma->GetParamG(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField())->Phi());
+    }
+
+    return deltaPhiC;
 }
 
 //________________________________________________________________________
