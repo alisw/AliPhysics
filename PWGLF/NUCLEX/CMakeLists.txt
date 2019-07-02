@@ -81,6 +81,7 @@ set(SRCS
   Utils/CODEX/AliAnalysisCODEXtask.cxx
   Utils/NanoAOD/AliNanoFilterPID.cxx
   Utils/NanoAOD/AliNanoSkimmingPID.cxx
+  Utils/ChunkFilter/AliAnalysisTaskFilterHe3.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
