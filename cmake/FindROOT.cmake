@@ -206,7 +206,8 @@ if(ROOTSYS)
 
     set(ROOT_HASALIEN TRUE)
     else(ALIEN)
-    message(FATAL_ERROR "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
+        set(ROOT_HASALIEN FALSE)
+        message(WARNING "ROOT was built with AliEn support but no AliEn installation found. Please set \"ALIEN\" to point to your AliEn installation.")
     endif(ALIEN)
 
     # Checking for xml support
