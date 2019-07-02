@@ -140,7 +140,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   bool fFillTracklet;
   bool fSaveFileNames;
   bool fPropagetToPV;
-  AliVertexerHyperTriton2Body fV0Vertexer;      //!
+  AliVertexerHyperTriton2Body fV0Vertexer;      //
  private:
   TList* fListHist;  //! List of Cascade histograms
   TTree* fTreeV0;    //! Output Tree, V0s
@@ -190,7 +190,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   AliAnalysisTaskHyperTriton2He3piML& operator=(
       const AliAnalysisTaskHyperTriton2He3piML&);  // not implemented
 
-  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 2);
+  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 3);
 };
 
 #endif
