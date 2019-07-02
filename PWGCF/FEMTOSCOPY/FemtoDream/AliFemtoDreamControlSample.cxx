@@ -322,6 +322,17 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
     }
     itPart1++;
   }
+  for (auto iDel : RandomizeMe) {
+    delete iDel;
+  }
+  RandomizeMe.clear();
+  for (auto iTest :  CopyPart1) {
+    if (iTest) {
+      Warning("LimitedPhiSpinning", "This should be deleted, think about your code \n");
+    }
+  }
+  CopyPart1.clear();
+  CopyPart2.clear();
 }
 
 void AliFemtoDreamControlSample::Randomizer(
