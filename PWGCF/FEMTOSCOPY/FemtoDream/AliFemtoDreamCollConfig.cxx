@@ -429,6 +429,7 @@ std::vector<int> AliFemtoDreamCollConfig::GetStandardPairs() {
   return pairs;
 }
 
+
 void AliFemtoDreamCollConfig::SetClosePairRejection(
     std::vector<bool> whichPairs) {
   // Decider for if one wants plots like mT, kT, TrackSplitting etc. for a pair

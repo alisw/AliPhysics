@@ -276,7 +276,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
 
-ClassDef(AliFemtoDreamCollConfig,12)
+ClassDef(AliFemtoDreamCollConfig,13)
   ;
 };
 

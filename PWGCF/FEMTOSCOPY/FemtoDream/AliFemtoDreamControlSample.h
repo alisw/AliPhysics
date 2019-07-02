@@ -78,7 +78,7 @@ class AliFemtoDreamControlSample {
   float fDeltaPhiMax;
   bool fDoDeltaEtaDeltaPhiCut;
 
-ClassDef(AliFemtoDreamControlSample, 3)
+ClassDef(AliFemtoDreamControlSample, 4)
 };
 
 #endif
