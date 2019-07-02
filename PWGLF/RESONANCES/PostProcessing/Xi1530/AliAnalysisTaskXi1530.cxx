@@ -1096,7 +1096,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
             Double_t fDCADist_Lambda_PV =
                 fabs(Xicandidate_aod->DcaV0ToPrimVertex());
             Double_t fDCADist_Xi_PV =
-                fabs(Xicandidate_aod->DcaXiToPrimVertex());
+                fabs(Xicandidate_aod->DcaXiToPrimVertex(PVx, PVy, PVz));
             if (Xicandidate_aod->ChargeXi() == -1) {  // Xi- has +proton, -pion
                 fDCADist_LambdaProton_PV =
                     fabs(Xicandidate_aod->DcaPosToPrimVertex());
