@@ -268,15 +268,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
         CreateTHnSparse("htriggered_CINT7", "", 3, {MCType, binCent, binTrklet},
                         "s");
     }
-    // stupid method, should be modified later!
-    const double* centbin_array = &centaxisbin[0];
-    std::vector<double> eventbin = {0.5, 1.5, 2.5, 3.5, 4.5,
-                                    5.5, 6.5, 7.5, 8.5, 9.5};
-    const double* eventbin_array = &eventbin[0];
-
-    fHistos->CreateTH2("hEventNumbers_multi", "", eventbin.size() - 1,
-                       eventbin_array, centaxisbin.size() - 1, centbin_array);
-
     fEventCuts.AddQAplotsToList(fHistos->GetListOfHistograms());
     if (!IsHighMult)
         fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7);
