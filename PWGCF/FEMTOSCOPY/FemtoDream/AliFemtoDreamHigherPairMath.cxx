@@ -126,6 +126,7 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
   PartTwo.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+
   float RelativeK = RelativePairMomentum(PartOne, PartTwo);
   fHists->FillSameEventDist(iHC, RelativeK);
   if (fHists->GetDoMultBinning()) {
@@ -149,28 +150,12 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   return RelativeK;
 }
 
-//  if (fillHists && fHists->GetEtaPhiPlots()) {
-//    DeltaEtaDeltaPhi(iHC, part1, part2, true, fHists, RelativeK);
-//  }
-//  if (fillHists && fHists->GetDodPhidEtaPlots()) {
-//    float deta = itPart1->GetEta().at(0) - itPart2->GetEta().at(0);
-//    float dphi = itPart1->GetPhi().at(0) - itPart2->GetPhi().at(0);
-//    float mT =
-//        fHists->GetDodPhidEtamTPlots() ?
-//            RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-//                           itPart2->GetMomentum(), *itPDGPar2) :
-//            0;
-//    if (dphi < 0) {
-//      fHists->FilldPhidEtaSE(iHC, dphi + 2 * TMath::Pi(), deta, mT);
-//    } else {
-//      fHists->FilldPhidEtaSE(iHC, dphi, deta, mT);
-//    }
-//  }
-//
-//  if (fillHists && fHists->GetDoMassQA()) {
-//    fHists->FillMassQADist(iHC, RelativeK, itPart1->GetInvMass(),
-//                           itPart2->GetInvMass());
-//  }
+void AliFemtoDreamHigherPairMath::MassQA(int iHC, float RelK, float massOne,
+                                         float massTwo) {
+  if (fWhichPairs.at(iHC) && fHists->GetDoMassQA()) {
+    fHists->FillMassQADist(iHC, RelK, massOne, massTwo);
+  }
+}
 
 float AliFemtoDreamHigherPairMath::FillMixedEvent(
     int iHC, int Mult, float cent, TVector3 Part1Momentum, int PDGPart1,
@@ -204,7 +189,6 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   if (fHists->GetDoMultBinning()) {
     fHists->FillMixedEventMultDist(iHC, Mult + 1, RelativeK);
   }
-
   if (fillHists && fHists->GetDoCentBinning()) {
     fHists->FillMixedEventCentDist(iHC, cent, RelativeK);
   }
@@ -219,38 +203,95 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   return RelativeK;
 }
 
-//  if (fillHists && fHists->GetEtaPhiPlots()) {
-//    DeltaEtaDeltaPhi(iHC, part1, part2, false, fHists, RelativeK);
-//  }
-//  if (fillHists && fHists->GetDodPhidEtaPlots()) {
-//    float deta = itPart1->GetEta().at(0) - itPart2->GetEta().at(0);
-//    float dphi = itPart1->GetPhi().at(0) - itPart2->GetPhi().at(0);
-//    float mT =
-//        fHists->GetDodPhidEtamTPlots() ?
-//            RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
-//                           itPart2->GetMomentum(), *itPDGPar2) :
-//            0;
-//    if (dphi < 0) {
-//      fHists->FilldPhidEtaME(HistCounter, dphi + 2 * TMath::Pi(), deta, mT);
-//    } else {
-//      fHists->FilldPhidEtaME(HistCounter, dphi, deta, mT);
-//    }
-//  }
-//  if (fillHists && fHists->GetObtainMomentumResolution()) {
-//    //It is sufficient to do this in Mixed events, which allows
-//    //to increase the statistics. The Resolution of the tracks and therefore
-//    //of the pairs does not change event by event.
-//    //Now we only want to use the momentum of particles we are after, hence
-//    //we check the PDG Code!
-//    if ((*itPDGPar1 == TMath::Abs(itPart1->GetMCPDGCode()))
-//        && ((*itPDGPar2 == TMath::Abs(itPart2->GetMCPDGCode())))) {
-//      float RelKTrue = RelativePairMomentum(itPart1->GetMCMomentum(),
-//                                            *itPDGPar1,
-//                                            itPart2->GetMCMomentum(),
-//                                            *itPDGPar2);
-//      fHists->FillMomentumResolution(HistCounter, RelKTrue, RelativeK);
-//    }
-//  }
+void AliFemtoDreamHigherPairMath::SEDetaDPhiPlots(int iHC,
+                                                  AliFemtoDreamBasePart* part1,
+                                                  int PDGPart1,
+                                                  AliFemtoDreamBasePart* part2,
+                                                  int PDGPart2, float RelativeK,
+                                                  bool recalculate) {
+  if (fWhichPairs.at(iHC) && fHists->GetEtaPhiPlots()) {
+    DeltaEtaDeltaPhi(iHC, part1, part2, true, RelativeK, recalculate);
+  }
+  if (fWhichPairs.at(iHC) && fHists->GetDodPhidEtaPlots()) {
+    float deta = part1->GetEta().at(0) - part2->GetEta().at(0);
+    float dphi = part1->GetPhi().at(0) - part2->GetPhi().at(0);
+    float mT = 0;
+    if (fHists->GetDodPhidEtamTPlots()) {
+      TLorentzVector PartOne, PartTwo;
+      PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
+                      part1->GetMCMomentum().Z(),
+                      TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+      PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
+                      part2->GetMCMomentum().Z(),
+                      TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+      mT = RelativePairmT(PartOne, PartTwo);
+    }
+    if (dphi < 0) {
+      fHists->FilldPhidEtaSE(iHC, dphi + 2 * TMath::Pi(), deta, mT);
+    } else {
+      fHists->FilldPhidEtaSE(iHC, dphi, deta, mT);
+    }
+  }
+}
+
+void AliFemtoDreamHigherPairMath::MEDetaDPhiPlots(int iHC,
+                                                  AliFemtoDreamBasePart* part1,
+                                                  int PDGPart1,
+                                                  AliFemtoDreamBasePart* part2,
+                                                  int PDGPart2, float RelativeK,
+                                                  bool recalculate) {
+  if (fWhichPairs.at(iHC) && fHists->GetEtaPhiPlots()) {
+    DeltaEtaDeltaPhi(iHC, part1, part2, false, RelativeK, recalculate);
+  }
+  if (fWhichPairs.at(iHC) && fHists->GetDodPhidEtaPlots()) {
+    float deta = part1->GetEta().at(0) - part2->GetEta().at(0);
+    float dphi = part1->GetPhi().at(0) - part2->GetPhi().at(0);
+    float mT = 0;
+    if (fHists->GetDodPhidEtamTPlots()) {
+      TLorentzVector PartOne, PartTwo;
+      PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
+                      part1->GetMCMomentum().Z(),
+                      TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+      PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
+                      part2->GetMCMomentum().Z(),
+                      TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+      mT = RelativePairmT(PartOne, PartTwo);
+    }
+    if (dphi < 0) {
+      fHists->FilldPhidEtaME(iHC, dphi + 2 * TMath::Pi(), deta, mT);
+    } else {
+      fHists->FilldPhidEtaME(iHC, dphi, deta, mT);
+    }
+  }
+}
+
+void AliFemtoDreamHigherPairMath::MEMomentumResolution(
+    int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
+    AliFemtoDreamBasePart* part2, int PDGPart2, float RelativeK) {
+  if (fWhichPairs[iHC] && fHists->GetObtainMomentumResolution()) {
+    //It is sufficient to do this in Mixed events, which allows
+    //to increase the statistics. The Resolution of the tracks and therefore
+    //of the pairs does not change event by event.
+    //Now we only want to use the momentum of particles we are after, hence
+    //we check the PDG Code!
+    //This should not be used in the rotated sample, since the MC Truth is not rotated
+    if ((PDGPart1 == TMath::Abs(part1->GetMCPDGCode()))
+        && ((PDGPart2 == TMath::Abs(part2->GetMCPDGCode())))) {
+      TLorentzVector PartOne, PartTwo;
+      // Even if the Daughter tracks were switched up during PID doesn't play a role
+      // here cause we are
+      // only looking at the mother mass
+      PartOne.SetXYZM(part1->GetMCMomentum().X(), part1->GetMCMomentum().Y(),
+                      part1->GetMCMomentum().Z(),
+                      TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+      PartTwo.SetXYZM(part2->GetMCMomentum().X(), part2->GetMCMomentum().Y(),
+                      part2->GetMCMomentum().Z(),
+                      TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+      float RelKTrue = RelativePairMomentum(PartOne, PartTwo);
+      fHists->FillMomentumResolution(iHC, RelKTrue, RelativeK);
+    }
+  }
+}
 
 float AliFemtoDreamHigherPairMath::RelativePairMomentum(
     TLorentzVector &PartOne, TLorentzVector &PartTwo) {
@@ -290,4 +331,73 @@ float AliFemtoDreamHigherPairMath::RelativePairmT(TLorentzVector &PartOne,
   float averageMass = 0.5 * (PartOne.M() + PartTwo.M());
   results = TMath::Sqrt(pow(pairKT, 2.) + pow(averageMass, 2.));
   return results;
+}
+
+void AliFemtoDreamHigherPairMath::DeltaEtaDeltaPhi(int Hist,
+                                                   AliFemtoDreamBasePart *part1,
+                                                   AliFemtoDreamBasePart *part2,
+                                                   bool SEorME, float relk,
+                                                   bool recalculate) {
+  if (recalculate) {
+    RecalculatePhiStar(part1);
+    RecalculatePhiStar(part2);
+  }
+
+  unsigned int DoThisPair = fWhichPairs.at(Hist);
+  unsigned int nDaug1 = (unsigned int) DoThisPair / 10;
+  if (nDaug1 > 9) {
+    AliWarning("you are doing something wrong \n");
+  }
+  unsigned int nDaug2 = (unsigned int) DoThisPair % 10;
+  std::vector<float> eta1 = part1->GetEta();
+  std::vector<float> eta2 = part2->GetEta();
+  for (unsigned int iDaug1 = 0; iDaug1 < nDaug1; ++iDaug1) {
+    std::vector<float> PhiAtRad1 = part1->GetPhiAtRaidius().at(iDaug1);
+    float etaPar1;
+    if (nDaug1 == 1) {
+      etaPar1 = eta1.at(0);
+    } else {
+      etaPar1 = eta1.at(iDaug1 + 1);
+    }
+    for (unsigned int iDaug2 = 0; iDaug2 < part2->GetPhiAtRaidius().size();
+        ++iDaug2) {
+      std::vector<float> phiAtRad2 = part2->GetPhiAtRaidius().at(iDaug2);
+      float etaPar2;
+      if (nDaug2 == 1) {
+        etaPar2 = eta2.at(0);
+      } else {
+        etaPar2 = eta2.at(iDaug2 + 1);
+      }
+      float deta = etaPar1 - etaPar2;
+      const int size =
+          (PhiAtRad1.size() > phiAtRad2.size()) ?
+              phiAtRad2.size() : PhiAtRad1.size();
+      float dphiAvg = 0;
+      for (int iRad = 0; iRad < size; ++iRad) {
+        float dphi = PhiAtRad1.at(iRad) - phiAtRad2.at(iRad);
+        dphiAvg += dphi;
+        if (dphi > piHi) {
+          dphi += -piHi * 2;
+        } else if (dphi < -piHi) {
+          dphi += piHi * 2;
+        }
+        if (SEorME) {
+          fHists->FillEtaPhiAtRadiiSE(Hist, 3 * iDaug1 + iDaug2, iRad, dphi,
+                                      deta, relk);
+        } else {
+          fHists->FillEtaPhiAtRadiiME(Hist, 3 * iDaug1 + iDaug2, iRad, dphi,
+                                      deta, relk);
+        }
+      }
+      //fill dPhi avg
+      if (SEorME) {
+        fHists->FillEtaPhiAverageSE(Hist, 3 * iDaug1 + iDaug2,
+                                    dphiAvg / (float) size, deta, false);
+      } else {
+        fHists->FillEtaPhiAverageME(Hist, 3 * iDaug1 + iDaug2,
+                                    dphiAvg / (float) size, deta, false);
+      }
+    }
+  }
+  return;
 }
