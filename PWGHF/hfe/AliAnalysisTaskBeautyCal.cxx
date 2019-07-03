@@ -1321,18 +1321,20 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       Double_t nTPCstand = 80;
       Double_t nITSstand = 3;
-      /*
+     
       // applied lose cut first
       if(atrack->GetTPCNcls() < 60) continue;
       if(atrack->GetITSNcls() < 2) continue;
       if(atrack->GetTPCNCrossedRows() < 80) continue; 
-      */
       
+      /*
       if(atrack->GetTPCNcls() < 80) continue;
       if(atrack->GetITSNcls() < 3) continue;
       if(atrack->GetTPCNCrossedRows() < 120) continue; // add
       if(atrack->GetITSchi2() > fitschi2) continue; 
-    
+      // vAN06212019 - vAN07032019 (for cross check with b->e)
+
+      */
       if(fetarange==0)
         {
          if(TMath::Abs(atrack->Eta()) > 0.6) continue;
@@ -1746,7 +1748,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
         fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());
      
-      /*
+      
       // track cut + eID
       if(atrack->GetTPCNcls() < 80) continue;
       if(atrack->GetITSNcls() < 3) continue;
@@ -1756,7 +1758,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //if(atrack->GetITSchi2() > 26) continue; 
       //cout << "itschi2 = " << fitschi2 << endl;
       if(atrack->GetITSchi2() > fitschi2) continue; 
-      */
+    
   
       // SM
       if(iSelSM>-0.5)
