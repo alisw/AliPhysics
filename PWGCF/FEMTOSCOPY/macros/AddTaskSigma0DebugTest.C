@@ -85,6 +85,27 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
 
   AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
+  if (suffix == "2") {
+    photon->SetTransverseRadiusRejection(80, 90);
+  } else if (suffix == "3") {
+    photon->SetTransverseRadiusRejection(82.5, 90);
+  } else if (suffix == "4") {
+    photon->SetTransverseRadiusRejection(85, 90);
+  } else if (suffix == "5") {
+    photon->SetTransverseRadiusRejection(77.5, 90);
+  } else if (suffix == "6") {
+    photon->SetTransverseRadiusRejection(75, 90);
+  } else if (suffix == "7") {
+    photon->SetTransverseRadiusRejection(72.5, 90);
+  } else if (suffix == "8") {
+    photon->SetTransverseRadiusRejection(80, 85);
+  } else if (suffix == "9") {
+    photon->SetTransverseRadiusRejection(80, 87.5);
+  } else if (suffix == "10") {
+    photon->SetTransverseRadiusRejection(80, 92.5);
+  } else if (suffix == "11") {
+    photon->SetTransverseRadiusRejection(80, 95);
+  }
 
   AliSigma0AODPhotonMotherCuts *sigmaCuts =
       AliSigma0AODPhotonMotherCuts::DefaultCuts();
@@ -100,53 +121,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
-  }
-
-  if (suffix == "1") {
-    sigmaCuts->SetSigmaMassCut(0.01);
-    antiSigmaCuts->SetSigmaMassCut(0.01);
-  } else if (suffix == "2") {
-    sigmaCuts->SetSigmaMassCut(0.05);
-    antiSigmaCuts->SetSigmaMassCut(0.05);
-  } else if (suffix == "3") {
-    sigmaCuts->SetPhotonMinPt(0.08);
-    antiSigmaCuts->SetPhotonMinPt(0.08);
-  } else if (suffix == "4") {
-    sigmaCuts->SetPhotonMinPt(0.1);
-    antiSigmaCuts->SetPhotonMinPt(0.1);
-  } else if (suffix == "5") {
-    sigmaCuts->SetPhotonMinPt(0.12);
-    antiSigmaCuts->SetPhotonMinPt(0.12);
-  } else if (suffix == "6") {
-    sigmaCuts->SetPhotonMinPt(0.15);
-    antiSigmaCuts->SetPhotonMinPt(0.15);
-  } else if (suffix == "7") {
-    sigmaCuts->SetPhotonMinPt(0.18);
-    antiSigmaCuts->SetPhotonMinPt(0.18);
-  } else if (suffix == "8") {
-    sigmaCuts->SetPhotonMinPt(0.2);
-    antiSigmaCuts->SetPhotonMinPt(0.2);
-  } else if (suffix == "9") {
-    sigmaCuts->SetPhotonMaxPt(0.4);
-    antiSigmaCuts->SetPhotonMaxPt(0.4);
-  } else if (suffix == "10") {
-    sigmaCuts->SetPhotonMaxPt(0.5);
-    antiSigmaCuts->SetPhotonMaxPt(0.5);
-  } else if (suffix == "11") {
-    sigmaCuts->SetPhotonMaxPt(0.6);
-    antiSigmaCuts->SetPhotonMaxPt(0.6);
-  } else if (suffix == "12") {
-    sigmaCuts->SetPhotonMaxPt(0.7);
-    antiSigmaCuts->SetPhotonMaxPt(0.7);
-  } else if (suffix == "13") {
-    sigmaCuts->SetPhotonMaxPt(0.8);
-    antiSigmaCuts->SetPhotonMaxPt(0.8);
-  } else if (suffix == "14") {
-    sigmaCuts->SetPhotonMaxPt(0.9);
-    antiSigmaCuts->SetPhotonMaxPt(0.9);
-  } else if (suffix == "15") {
-    sigmaCuts->SetPhotonMaxPt(1);
-    antiSigmaCuts->SetPhotonMaxPt(1);
   }
 
   // Femto Collection
@@ -290,6 +264,11 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
 
   AliAnalysisTaskNanoAODSigma0Femto *task =
       new AliAnalysisTaskNanoAODSigma0Femto("AliAnalysisTaskNanoAODSigma0Femto", isMC);
+
+  // test what happens when the track cleaner is turned off
+  if (suffix == "1") {
+    task->SetGoDoThisFemtoJanitor(false);
+  }
 
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
