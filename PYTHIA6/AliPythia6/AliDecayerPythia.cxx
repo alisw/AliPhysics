@@ -594,6 +594,9 @@ void AliDecayerPythia::ForceDecay()
      case kLcpK0SBDTsig:
         ForceHadronicD(0,0,4);
         break;
+     case kEtaPrime:
+	ForceParticleDecay(331,22,2);
+	break;
     }
 }
 
