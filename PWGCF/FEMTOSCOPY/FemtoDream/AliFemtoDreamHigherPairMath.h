@@ -18,8 +18,8 @@ class AliFemtoDreamHigherPairMath {
  public:
   AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf);
   virtual ~AliFemtoDreamHigherPairMath();
-  AliFemtoDreamHigherPairMath(const AliFemtoDreamHigherPairMath& samp) = delete;
-  AliFemtoDreamHigherPairMath& operator=(const AliFemtoDreamHigherPairMath& math) = delete;
+  AliFemtoDreamHigherPairMath(const AliFemtoDreamHigherPairMath& samp);
+  AliFemtoDreamHigherPairMath& operator=(const AliFemtoDreamHigherPairMath& math);
   void SetBField(float bielefield) {
     fBField = bielefield;
   }

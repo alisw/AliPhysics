@@ -24,6 +24,30 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
 AliFemtoDreamHigherPairMath::~AliFemtoDreamHigherPairMath() {
 }
 
+AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
+    const AliFemtoDreamHigherPairMath& samp)
+    : fHists(samp.fHists),
+      fWhichPairs(samp.fWhichPairs),
+      fBField(-99.),
+      fDeltaPhiEtaMax(samp.fDeltaPhiEtaMax),
+      fRandom(),
+      fPi(TMath::Pi()) {
+  fRandom.SetSeed(0);
+}
+AliFemtoDreamHigherPairMath& AliFemtoDreamHigherPairMath::operator=(
+    const AliFemtoDreamHigherPairMath& math) {
+  if (this == &math) {
+    return *this;
+  }
+  fHists = math.fHists;
+  fWhichPairs = math.fWhichPairs;
+  fBField = math.fBField;
+  fDeltaPhiEtaMax = math.fDeltaPhiEtaMax;
+  fRandom = math.fRandom;
+  fPi(TMath::Pi());
+  return *this;
+}
+
 bool AliFemtoDreamHigherPairMath::PassesPairSelection(
     AliFemtoDreamBasePart* part1, AliFemtoDreamBasePart* part2,
     bool Recalculate) {
