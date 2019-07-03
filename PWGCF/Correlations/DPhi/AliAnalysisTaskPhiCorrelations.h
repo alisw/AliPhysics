@@ -122,11 +122,11 @@ public:
   void   SetSelectAssociatedCharge(Int_t selectCharge) { fAssociatedSelectCharge = selectCharge; }
   void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void   SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
-  void   SetPairCuts(Float_t conversions = 0.004, Float_t resonances = 0.005) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
+  void   SetPairCuts(Float_t conversions = 0.004, Float_t resonances = 0.005) { fCutConversionsV = conversions; fCutResonancesV = resonances; fCutOnLambdaV = resonances; fCutOnK0sV = resonances; }
   void   SetCutOnPhi(bool cutOnPhi) { fCutOnPhi = cutOnPhi; }
-  void   SetCutOnPhi(Float_t cutOnPhi) { fCutOnPhi = cutOnPhi; }
+  void   SetCutOnPhi(Float_t cutOnPhi) { fCutOnPhiV = cutOnPhi; }
   void   SetCutOnRho(bool cutOnRho) { fCutOnRho = cutOnRho; }
-  void   SetCutOnRho(Float_t cutOnRho) { fCutOnRho = cutOnRho; }
+  void   SetCutOnRho(Float_t cutOnRho) { fCutOnRhoV = cutOnRho; }
   void   SetCutOnLambda(bool cutOnLambda) { fCutOnLambdaV = cutOnLambda; }
   void   SetCutOnK0s(bool cutOnK0s) { fCutOnK0sV = cutOnK0s; }
   void   SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }

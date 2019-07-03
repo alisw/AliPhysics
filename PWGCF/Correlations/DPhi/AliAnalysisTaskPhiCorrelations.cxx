@@ -356,8 +356,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fHistos->SetCutOnK0s(fCutOnK0sV);
   fHistosMixed->SetCutOnK0s(fCutOnK0sV);
   
-  fHistos->SetCutOnK0s(fCutOnLambdaV);
-  fHistosMixed->SetCutOnK0s(fCutOnLambdaV);
+  fHistos->SetCutOnLambda(fCutOnLambdaV);
+  fHistosMixed->SetCutOnLambda(fCutOnLambdaV);
   
   fHistos->SetRejectResonanceDaughters(fRejectResonanceDaughters);
   fHistosMixed->SetRejectResonanceDaughters(fRejectResonanceDaughters);
@@ -593,12 +593,12 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fEtaOrdering", &fEtaOrdering,"EtaOrdering/O");
   settingsTree->Branch("fCutConversionsV", &fCutConversionsV,"CutConversionsV/D");
   settingsTree->Branch("fCutResonancesV", &fCutResonancesV,"CutResonancesV/D");
-  settingsTree->Branch("fCutOnPhi", &fCutOnPhi,"fCutOnPhi/O");
-  settingsTree->Branch("fCutOnPhiV", &fCutOnPhiV,"fCutOnPhiV/O");
-  settingsTree->Branch("fCutOnRho", &fCutOnRho,"fCutOnRho/O");
-  settingsTree->Branch("fCutOnRhoV", &fCutOnRhoV,"fCutOnRhoV/O");
-  settingsTree->Branch("fCutOnLambdaV", &fCutOnLambdaV,"fCutOnLambdaV/O");
-  settingsTree->Branch("fCutOnK0sV", &fCutOnK0sV,"fCutOnK0sV/O");
+  settingsTree->Branch("fCutOnPhi", &fCutOnPhi,"CutOnPhi/O");
+  settingsTree->Branch("fCutOnPhiV", &fCutOnPhiV,"CutOnPhiV/D");
+  settingsTree->Branch("fCutOnRho", &fCutOnRho,"CutOnRho/O");
+  settingsTree->Branch("fCutOnRhoV", &fCutOnRhoV,"CutOnRhoV/D");
+  settingsTree->Branch("fCutOnLambdaV", &fCutOnLambdaV,"CutOnLambdaV/D");
+  settingsTree->Branch("fCutOnK0sV", &fCutOnK0sV,"CutOnK0sV/D");
   settingsTree->Branch("fRejectResonanceDaughters", &fRejectResonanceDaughters,"RejectResonanceDaughters/I");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
