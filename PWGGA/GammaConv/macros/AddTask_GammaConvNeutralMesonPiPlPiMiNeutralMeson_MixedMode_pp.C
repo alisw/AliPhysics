@@ -228,7 +228,6 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
   } else if( trainConfig == 120)  { //std
     cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32c51070a","0103603700000000","0153503000000000"); // with TPC refit (new standard)
-    cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111040032230000","32c51070a","0103603700000000","0153503000000000"); // no track matching
   } else if( trainConfig == 121)  { //pileup
     cuts.AddCutHeavyMesonPCMCalo("00000113","00200009227000008250400000","1111111047032230000","32c51070a","0103603700000000","0153503000000000"); // pileup
   } else if ( trainConfig == 122){ // singlept
