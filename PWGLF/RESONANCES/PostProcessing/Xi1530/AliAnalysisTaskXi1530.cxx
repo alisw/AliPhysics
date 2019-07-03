@@ -1899,7 +1899,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 Double_t pionZ = abs(track1->GetZ() - fZ);
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)){
-                        std::cout << "PionZ: " << pionZ << ", fZ: " << fZ  << ", PVz" << PVz << std::endl;
                     AliInfo(Form("pionZ! %s", (const char*)SysCheck.at(sys)));
                     continue;
                 }
