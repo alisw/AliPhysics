@@ -60,7 +60,6 @@ class GPUTPCTracker : public GPUProcessor
 
   struct StructGPUParameters {
     GPUAtomic(unsigned int) nextTracklet; // Next Tracklet to process
-    int gpuError;                         // Signalizes error on GPU during GPU Reconstruction, kind of return value
   };
 
   MEM_CLASS_PRE2()
@@ -75,6 +74,7 @@ class GPUTPCTracker : public GPUProcessor
     int nLocalTracks;                   // number of reconstructed tracks before global tracking
     GPUAtomic(unsigned int) nTrackHits; // number of track hits
     int nLocalTrackHits;                // see above
+    int kernelError;                    // Error code during kernel execution
     StructGPUParameters gpuParameters;  // GPU parameters
   };
 
@@ -107,10 +107,11 @@ class GPUTPCTracker : public GPUProcessor
   GPUh() MakeType(const MEM_LG(GPUTPCRow) &) Row(const GPUTPCHitId& HitId) const { return mData.Row(HitId.RowIndex()); }
 
   GPUhd() GPUTPCSliceOutput* Output() const { return mOutput; }
-
-  GPUh() GPUglobalref() commonMemoryStruct* CommonMemory() const { return (mCommonMem); }
-
 #endif
+  GPUhdni() GPUglobalref() commonMemoryStruct* CommonMemory() const
+  {
+    return (mCommonMem);
+  }
 
   MEM_CLASS_PRE2()
   GPUd() void GetErrors2(int iRow, const MEM_LG2(GPUTPCTrackParam) & t, float& ErrY2, float& ErrZ2) const
@@ -156,8 +157,11 @@ class GPUTPCTracker : public GPUProcessor
 
   GPUhd() GPUglobalref() const MEM_GLOBAL(GPUTPCRow) & Row(int rowIndex) const { return mData.Row(rowIndex); }
 
-  GPUhd() int NHitsTotal() const { return mData.NumberOfHits(); }
-  GPUhd() int NMaxTracks() const { return mNMaxTracks; }
+  GPUhd() unsigned int NHitsTotal() const { return mData.NumberOfHits(); }
+  GPUhd() unsigned int NMaxTracklets() const { return mNMaxTracklets; }
+  GPUhd() unsigned int NMaxTracks() const { return mNMaxTracks; }
+  GPUhd() unsigned int NMaxTrackHits() const { return mNMaxTrackHits; }
+  GPUhd() unsigned int NMaxStartHits() const { return mNMaxStartHits; }
 
   MEM_TEMPLATE()
   GPUd() void SetHitLinkUpData(const MEM_TYPE(GPUTPCRow) & row, int hitIndex, calink v) { mData.SetHitLinkUpData(row, hitIndex, v); }
@@ -246,7 +250,7 @@ class GPUTPCTracker : public GPUProcessor
     float fSortVal; // Value to sort for
   };
 
-  void PerformGlobalTracking(GPUTPCTracker& sliceLeft, GPUTPCTracker& sliceRight, unsigned int MaxTracksLeft, unsigned int MaxTracksRight);
+  void PerformGlobalTracking(GPUTPCTracker& sliceLeft, GPUTPCTracker& sliceRight);
 
   void* LinkTmpMemory() { return mLinkTmpMemory; }
 
@@ -267,10 +271,10 @@ class GPUTPCTracker : public GPUProcessor
   MEM_LG(GPUTPCSliceData)
   mData; // The SliceData object. It is used to encapsulate the storage in memory from the access
 
-  int mNMaxStartHits;
-  int mNMaxTracklets;
-  int mNMaxTracks;
-  int mNMaxTrackHits;
+  unsigned int mNMaxStartHits;
+  unsigned int mNMaxTracklets;
+  unsigned int mNMaxTracks;
+  unsigned int mNMaxTrackHits;
   short mMemoryResLinksScratch;
   short mMemoryResScratch;
   short mMemoryResScratchHost;

@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <memory>
 #include <fstream>
 #include <vector>
@@ -161,9 +162,9 @@ class GPUReconstruction
   size_t AllocateRegisteredMemory(GPUProcessor* proc);
   size_t AllocateRegisteredMemory(short res);
   void* AllocateUnmanagedMemory(size_t size, int type);
-  void FreeRegisteredMemory(GPUProcessor* proc, bool freeCustom = false);
+  void FreeRegisteredMemory(GPUProcessor* proc, bool freeCustom = false, bool freePermanent = false);
   void FreeRegisteredMemory(short res);
-  void ClearAllocatedMemory();
+  void ClearAllocatedMemory(bool clearOutputs = true);
   void ResetRegisteredMemoryPointers(GPUProcessor* proc);
   void ResetRegisteredMemoryPointers(short res);
   void PrepareEvent();
@@ -191,6 +192,8 @@ class GPUReconstruction
 
   RecoStepField GetRecoSteps() const { return mRecoSteps; }
   RecoStepField GetRecoStepsGPU() const { return mRecoStepsGPU; }
+  InOutTypeField GetRecoStepsInputs() const { return mRecoStepsInputs; }
+  InOutTypeField GetRecoStepsOutputs() const { return mRecoStepsOutputs; }
 
   // Registration of GPU Processors
   template <class T>
@@ -247,6 +250,8 @@ class GPUReconstruction
   RecoStepField mRecoStepsGPU = RecoStep::AllRecoSteps;
   InOutTypeField mRecoStepsInputs = 0;
   InOutTypeField mRecoStepsOutputs = 0;
+
+  std::string mDeviceName = "CPU";
 
   // Ptrs to host and device memory;
   void* mHostMemoryBase = nullptr;

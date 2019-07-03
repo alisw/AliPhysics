@@ -188,6 +188,9 @@ class IrregularSpline1D : public FlatObject
   ///
   void construct(int numberOfKnots, const float knots[], int numberOfAxisBins);
 
+  /// Constructor for a regular spline
+  void constructRegular(int numberOfKnotsU);
+
   /// _______________  Main functionality   ________________________
 
   /// Correction of data values at both edge knots.
@@ -251,7 +254,7 @@ class IrregularSpline1D : public FlatObject
   GPUd() static void getEdgeCorrectionCoefficients(double u0, double u1, double u2, double u3, double& c0, double& c1, double& c2, double& c3);
 
   /// Print method
-  void Print() const;
+  void print() const;
 
  private:
   /// Non-const accessor to knots array
