@@ -1175,6 +1175,24 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fInvariantMassDistributionStrictPtH;  //!
 
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 * My variable binning.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[26];  //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 * My variable binning.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[30];  //!
+
         //_______________________________
         // CUTS
         /*
@@ -1235,7 +1253,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 25);
+        ClassDef(AliAnalysisTaskUPCforward, 27);
 };
 
 #endif

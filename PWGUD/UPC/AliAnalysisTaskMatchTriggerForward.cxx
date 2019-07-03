@@ -481,10 +481,10 @@ void AliAnalysisTaskMatchTriggerForward::UserCreateOutputObjects()
     fOutputList->Add(fZNAEnergyPerRunH[iRuns]);
   }
 
-  fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -1500, 1500);
+  fZNCTimeAgainstEntriesH = new TH1F("fZNCTimeAgainstEntriesH", "fZNCTimeAgainstEntriesH", 6000, -150, 150);
   fOutputList->Add(fZNCTimeAgainstEntriesH);
 
-  fZNATimeAgainstEntriesH = new TH1F("fZNATimeAgainstEntriesH", "fZNATimeAgainstEntriesH", 6000, -1500, 1500);
+  fZNATimeAgainstEntriesH = new TH1F("fZNATimeAgainstEntriesH", "fZNATimeAgainstEntriesH", 6000, -150, 150);
   fOutputList->Add(fZNATimeAgainstEntriesH);
 
   fSingleMuonPtDistributionH = new TH1F("fSingleMuonPtDistributionH", "fSingleMuonPtDistributionH", 4000, 0, 20);
@@ -643,6 +643,15 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
 
   fZem1Energy = dataZDC->GetZEM1Energy();
   fZem2Energy = dataZDC->GetZEM2Energy();
+
+  /* - Reset Event information.
+   * -
+   */
+  fZNAEnergy  = -8999;
+  fZNCEnergy  = -8999;
+  fZPAEnergy  = -8999;
+  fZPCEnergy  = -8999;
+
   fZNAEnergy  = dataZDC->GetZNATowerEnergy()[0];
   fZNCEnergy  = dataZDC->GetZNCTowerEnergy()[0];
   fZPAEnergy  = dataZDC->GetZPATowerEnergy()[0];
@@ -650,6 +659,14 @@ void AliAnalysisTaskMatchTriggerForward::UserExec(Option_t *)
 
   fZNATime    = dataZDC->GetZNATime();
   fZNCTime    = dataZDC->GetZNCTime();
+
+  /* - Reset Event information.
+   * -
+   */
+  for (Int_t i=0;i<4;i++) fZNATDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZNCTDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZPATDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZPCTDC[i] = -999;
 
   for (Int_t i=0;i<4;i++) fZNATDC[i] = dataZDC->GetZNATDCm(i);
   for (Int_t i=0;i<4;i++) fZNCTDC[i] = dataZDC->GetZNCTDCm(i);
