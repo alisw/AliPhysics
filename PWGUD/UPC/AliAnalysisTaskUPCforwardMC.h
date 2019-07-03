@@ -993,6 +993,56 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
                                  */
         TH2F*                   fMCCosThetaAndPhiHelicityFrameMyBinningH;   //!
 
+        /* - 1D analysis.
+         * - My variable binning.
+         */
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable binning.
+                                 * RECON level.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable binning.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows  Phi
+                                 * distribution with my variable binning.
+                                 * RECON level.
+                                 */
+        TH1F*                   fPhiHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows  Phi
+                                 * distribution with my variable binning.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCPhiHelicityFrameMyBinningH;   //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 * My variable binning.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[26];  //!
+
+                                /**
+                                 * This histogram shows the invariant mass
+                                 * distribution of the dimuon pairs in terms
+                                 * of bins of cos theta of the positive muon
+                                 * in the helicity frame of the J/Psi.
+                                 * My variable binning.
+                                 */
+        TH1F*                   fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[30];  //!
+
+
         //_______________________________
         // CUTS
         /*
@@ -1077,7 +1127,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 23);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 24);
 };
 
 #endif
