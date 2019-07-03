@@ -1,4 +1,13 @@
 #include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamv0Cuts.h"
+#include "AliSigma0PhotonCuts.h"
+#include "AliSigma0AODPhotonMotherCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliAnalysisTaskNanoAODSigma0Femto.h"
 
 AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
                                           bool MomRes = false,

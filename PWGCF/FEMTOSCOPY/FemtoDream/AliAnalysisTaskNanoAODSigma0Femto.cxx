@@ -9,8 +9,8 @@
 
 ClassImp(AliAnalysisTaskNanoAODSigma0Femto)
 
-    //____________________________________________________________________________________________________
-    AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto()
+//____________________________________________________________________________________________________
+AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto()
     : AliAnalysisTaskSE("AliAnalysisTaskNanoAODSigma0Femto"),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
@@ -133,7 +133,8 @@ AliAnalysisTaskNanoAODSigma0Femto::~AliAnalysisTaskNanoAODSigma0Femto() {
 //____________________________________________________________________________________________________
 void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   AliVEvent *fInputEvent = InputEvent();
-  if (fIsMC) fMCEvent = MCEvent();
+  if (fIsMC)
+    fMCEvent = MCEvent();
 
   // PREAMBLE - CHECK EVERYTHING IS THERE
   if (!fInputEvent) {
@@ -168,7 +169,8 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 
   // EVENT SELECTION
   fEvent->SetEvent(fInputEvent);
-  if (!fEvtCuts->isSelected(fEvent)) return;
+  if (!fEvtCuts->isSelected(fEvent))
+    return;
 
   // PROTON SELECTION
   ResetGlobalTrackReference();
@@ -216,8 +218,8 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   }
 
   // PHOTON SELECTION
-  fGammaArray = dynamic_cast<TClonesArray *>(
-      fInputEvent->FindListObject("conversionphotons"));
+  fGammaArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(
+      "conversionphotons"));
   std::vector<AliFemtoDreamBasePart> Gammas;
   fPhotonCuts->PhotonCuts(aod, fMCEvent, fGammaArray, Gammas);
 
@@ -229,7 +231,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 
   std::vector<AliFemtoDreamBasePart> sigma0particles, sigma0sidebandUp,
       sigma0sidebandLow, antiSigma0particles, antiSigma0sidebandUp,
-      antiSigma0sidebandLow, sigma0lambda, antiSigma0lambda;
+      antiSigma0sidebandLow, sigma0lambda, antiSigma0lambda, sigma0photon, antiSigma0photon;
 
   CastToVector(sigma0particles, fSigmaCuts->GetSigma());
   CastToVector(sigma0sidebandUp, fSigmaCuts->GetSidebandUp());
@@ -243,6 +245,8 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   if (fCheckDaughterCF) {
     CastToVector(sigma0lambda, fSigmaCuts->GetLambda());
     CastToVector(antiSigma0lambda, fAntiSigmaCuts->GetLambda());
+    CastToVector(sigma0photon, fSigmaCuts->GetPhoton());
+    CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton());
   }
 
   fPairCleaner->ResetArray();
@@ -258,9 +262,10 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
       fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 7);
       fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 8);
       fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 9);
-
-      fPairCleaner->CleanDecay(&Decays, 0);
-      fPairCleaner->CleanDecay(&AntiDecays, 1);
+      fPairCleaner->CleanTrackAndDecay(&Particles, &Gammas, 10);
+      fPairCleaner->CleanTrackAndDecay(&AntiParticles, &sigma0photon, 11);
+      fPairCleaner->CleanTrackAndDecay(&Particles, &antiSigma0photon, 12);
+      fPairCleaner->CleanTrackAndDecay(&AntiParticles, &Gammas, 13);
     }
   }
 
@@ -273,11 +278,14 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(sigma0sidebandLow);
   fPairCleaner->StoreParticle(antiSigma0sidebandLow);
   if (fCheckDaughterCF) {
-     fPairCleaner->StoreParticle(sigma0lambda);
-     fPairCleaner->StoreParticle(antiSigma0lambda);
-     fPairCleaner->StoreParticle(Decays);
-     fPairCleaner->StoreParticle(AntiDecays);
-   }
+    fPairCleaner->StoreParticle(sigma0lambda);
+    fPairCleaner->StoreParticle(antiSigma0lambda);
+    fPairCleaner->StoreParticle(Decays);
+    fPairCleaner->StoreParticle(AntiDecays);
+    fPairCleaner->StoreParticle(sigma0photon);
+    fPairCleaner->StoreParticle(antiSigma0photon);
+    fPairCleaner->StoreParticle(Gammas);
+  }
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
@@ -340,8 +348,8 @@ void AliAnalysisTaskNanoAODSigma0Femto::StoreGlobalTrackReference(
     if ((!nanoTrack->GetFilterMap()) && (!track->GetTPCNcls())) {
       return;
     }
-    if (dynamic_cast<AliNanoAODTrack *>(fGTI[trackID])->GetFilterMap() ||
-        fGTI[trackID]->GetTPCNcls()) {
+    if (dynamic_cast<AliNanoAODTrack *>(fGTI[trackID])->GetFilterMap()
+        || fGTI[trackID]->GetTPCNcls()) {
       printf("Warning! global track info already there!");
       printf("         TPCNcls track1 %u track2 %u",
              (fGTI[trackID])->GetTPCNcls(), track->GetTPCNcls());
@@ -370,19 +378,16 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   fLambda->SetPDGDaughterNeg(fV0Cuts->GetPDGNegDaug());
   fLambda->GetNegDaughter()->SetUseMCInfo(fIsMC);
 
-  const int nPairs = (fCheckDaughterCF) ? 10 : 6;
-  const int nDecays = (fCheckDaughterCF) ? 2 : 0;
-  fPairCleaner =
-      new AliFemtoDreamPairCleaner(nPairs, nDecays, fConfig->GetMinimalBookingME());
-  fPartColl =
-      new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
+  const int nPairs = (fCheckDaughterCF) ? 14 : 6;
+  fPairCleaner = new AliFemtoDreamPairCleaner(nPairs, 0,
+                                              fConfig->GetMinimalBookingME());
+  fPartColl = new AliFemtoDreamPartCollection(fConfig,
+                                              fConfig->GetMinimalBookingME());
 
   fQA = new TList();
   fQA->SetName("QA");
   fQA->SetOwner(kTRUE);
 
-  std::cout << "Setting up the event cuts \n";
-  std::cout << fEvtCuts << "\n";
   if (fEvtCuts) {
     fEvtCuts->InitQA();
     fQA->Add(fEvent->GetEvtCutList());
@@ -397,8 +402,8 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
     AliWarning("Event cuts are missing! \n");
   }
 
-  if (!fConfig->GetMinimalBookingME() && fPairCleaner &&
-      fPairCleaner->GetHistList()) {
+  if (!fConfig->GetMinimalBookingME() && fPairCleaner
+      && fPairCleaner->GetHistList()) {
     fQA->Add(fPairCleaner->GetHistList());
   }
 
@@ -408,8 +413,8 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartProton && fTrackCutsPartProton->GetQAHists()) {
     fTrackCutHistList = fTrackCutsPartProton->GetQAHists();
-    if (fIsMC && fTrackCutsPartProton->GetMCQAHists() &&
-        fTrackCutsPartProton->GetIsMonteCarlo()) {
+    if (fIsMC && fTrackCutsPartProton->GetMCQAHists()
+        && fTrackCutsPartProton->GetIsMonteCarlo()) {
       fTrackCutHistMCList = fTrackCutsPartProton->GetMCQAHists();
     }
   }
@@ -420,8 +425,8 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
 
   if (fTrackCutsPartAntiProton && fTrackCutsPartAntiProton->GetQAHists()) {
     fAntiTrackCutHistList = fTrackCutsPartAntiProton->GetQAHists();
-    if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists() &&
-        fTrackCutsPartAntiProton->GetIsMonteCarlo()) {
+    if (fIsMC && fTrackCutsPartAntiProton->GetMCQAHists()
+        && fTrackCutsPartAntiProton->GetIsMonteCarlo()) {
       fAntiTrackCutHistMCList = fTrackCutsPartAntiProton->GetMCQAHists();
     }
   }
@@ -462,8 +467,10 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
     fAntiLambdaHistMCList->SetOwner();
   }
 
-  if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
-  if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
+  if (fSigmaCuts)
+    fSigmaCuts->InitCutHistograms(TString("Sigma0"));
+  if (fAntiSigmaCuts)
+    fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
 
   if (fPhotonCuts) {
     fPhotonCuts->InitCutHistograms(TString("Photon"));
