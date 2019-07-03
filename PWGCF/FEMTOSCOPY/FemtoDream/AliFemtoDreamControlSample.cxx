@@ -103,16 +103,16 @@ void AliFemtoDreamControlSample::SetEvent(
                                      itSpec2->size());
       if (itSpec1 == itSpec2) {
         sameParticle = true;
-        minimumSize = 2;
-      } else {
         minimumSize = 1;
+      } else {
+        minimumSize = 0;
         sameParticle = false;
       }
       //if it is the same particle, then we need at least two to pair them 2*2 is the minimum
       if ((itSpec1->size() > minimumSize) && (itSpec2->size() > minimumSize)) {  // for single particle pairs, this is pointless
-        CorrelatedSample(*itSpec1, *itPDGPar1, *itSpec2, *itPDGPar1,
+        CorrelatedSample(*itSpec1, *itPDGPar1, *itSpec2, *itPDGPar2,
                          sameParticle, HistCounter);
-        UncorrelatedSample(*itSpec1, *itPDGPar1, *itSpec2, *itPDGPar1,
+        UncorrelatedSample(*itSpec1, *itPDGPar1, *itSpec2, *itPDGPar2,
                            sameParticle, HistCounter);
       }
       ++itSpec2;
@@ -153,8 +153,13 @@ void AliFemtoDreamControlSample::CorrelatedSample(
         }
       }
       RelativeK = fHigherMath->FillSameEvent(HistCounter, fMult, fCent,
-                                 itPart1->GetMomentum(), PDGPart1,
-                                 itPart2->GetMomentum(), PDGPart2);
+                                             itPart1->GetMomentum(), PDGPart1,
+                                             itPart2->GetMomentum(), PDGPart2);
+      fHigherMath->MassQA(HistCounter, RelativeK, itPart1->GetInvMass(),
+                          itPart2->GetInvMass());
+      fHigherMath->SEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
+                                   PDGPart2, RelativeK, true);
+
       itPart2++;
     }
     itPart1++;
@@ -201,8 +206,12 @@ void AliFemtoDreamControlSample::PhiSpinning(
       for (int i = 0; i < fSpinningDepth; ++i) {
         // randomized sample - who is the father???
         RelativeK = fHigherMath->FillMixedEvent(HistCounter, fMult, fCent,
-                                    itPart1->GetMomentum(), PDGPart1,
-                                    itPart2->GetMomentum(), PDGPart2, fmode);
+                                                itPart1->GetMomentum(),
+                                                PDGPart1,
+                                                itPart2->GetMomentum(),
+                                                PDGPart2, fmode);
+        fHigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
+                                     PDGPart2, RelativeK, true);
       }
       itPart2++;
     }
@@ -257,9 +266,13 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
       }
       // randomized sample - who is the father???
       RelativeK = fHigherMath->FillMixedEvent(HistCounter, fMult, fCent,
-                                  (*itPart1)->GetMomentum(), PDGPart1,
-                                  (*itPart2)->GetMomentum(), PDGPart2,
-                                  AliFemtoDreamCollConfig::kNone);
+                                              (*itPart1)->GetMomentum(),
+                                              PDGPart1,
+                                              (*itPart2)->GetMomentum(),
+                                              PDGPart2,
+                                              AliFemtoDreamCollConfig::kNone);
+      fHigherMath->MEDetaDPhiPlots(HistCounter, *itPart1, PDGPart1, *itPart2,
+                                   PDGPart2, RelativeK, true);
       itPart2++;
     }
     itPart1++;
