@@ -12,7 +12,7 @@ AliAnalysisTask* AddTaskPPvsUE (Bool_t AnalysisMC = kFALSE,
 		                        const Char_t* taskname = "UeSpectra")
 {
   // set authomatically to true if MC
-  Bool_t AnalysisMC= (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  // Bool_t AnalysisMC= (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   // set to true if you wish to build corrections (memory consuming)
   Bool_t AnalysisCorr = kTRUE; 
 
