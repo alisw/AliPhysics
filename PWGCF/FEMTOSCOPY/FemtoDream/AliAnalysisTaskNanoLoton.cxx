@@ -146,7 +146,7 @@ void AliAnalysisTaskNanoLoton::UserCreateOutputObjects() {
                                                 fConfig->GetMinimalBookingME());
     if (fConfig->GetUsePhiSpinning()) {
       fSample = new AliFemtoDreamControlSample(
-          fConfig, fConfig->GetMinimalBookingSample());
+          fConfig);
     }
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
@@ -301,8 +301,8 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
   if (fConfig->GetUsePhiSpinning()) {
-    fSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                      fEvent->GetMultiplicity());
+    fSample->SetBField(fEvent->GetMagneticField());
+    fSample->SetEvent(fPairCleaner->GetCleanParticles(),fEvent);
   }
   PostData(1, fEvtList);
   PostData(2, fProtonList);
