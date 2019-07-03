@@ -258,7 +258,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP13TeV_PID_sp
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP13TeV_PID_sp.C");
     //gROOT->LoadMacro("ConfigKStarPP13TeV_PID_sp.C");
    
-    if (!ConfigKStarPP13TeV_PID_sp(task,sp_bin,sp_min,m_bin,m_min,m_max,sp_max,useHIST, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
+    if (!ConfigKStarPP13TeV_PID_sp(task,sp_bin,sp_min,sp_max,m_bin,m_min,m_max,useHIST, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
    
    
    //
