@@ -2241,7 +2241,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
   Int_t MCtruthPdgCode = 0;
  
   Int_t myflag=0;
-    Double_t jeteta=0;
+  Double_t jeteta=0;
   Double_t jetpt=0;
   hname1 = TString::Format("%s/EfficiencyMatchesPrompt", fName.Data());
   TH2* EfficiencyMatchesPrompt = static_cast<TH2*>(fHistManager->FindObject(hname1));
@@ -2256,7 +2256,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
  Double_t jetPtdet = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
  Double_t jetEtadet=  DmesonJet.fJets[jetDef.GetName()].fMomentum.Eta();
  if(TMath::Abs(jetEtadet)>0.5) return kFALSE;
- if(jetPtdet>100) return kFALSE;
+ 
 
  
    if (fMCMode != kNoMC) {
@@ -2291,7 +2291,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
 
     for (auto jet : jets_incl) {
       std::vector<fastjet::PseudoJet> constituents = jet.constituents();
-      if(constituents.size()<2) continue;
+      // if(constituents.size()<2) continue;
           for (auto constituent : jet.constituents()) {
              Int_t iPart = constituent.user_index() - 100;
              if (constituent.perp() < 1e-6) continue; // reject ghost particles
@@ -2393,6 +2393,8 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominator(Al
   fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
   fMCContainer->SetRejectISR(fRejectISR);
   fMCContainer->SetSpecialPDG(fCandidatePDG);
+  fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
+  
      if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
   
   hname1 = TString::Format("%s/EfficiencyGeneratorPrompt", fName.Data());
@@ -2469,12 +2471,13 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::GetEfficiencyDenominatorOne
   Int_t TheTrueCode = 0;
  
   vector<int> dlabel;
-    fMCContainer->SetSpecialPDG(fCandidatePDG);
+  fMCContainer->SetSpecialPDG(fCandidatePDG);
   fMCContainer->SetRejectedOriginMap(fRejectedOrigin);
   fMCContainer->SetAcceptedDecayMap(fAcceptedDecay);
   fMCContainer->SetRejectISR(fRejectISR);
   fMCContainer->SetSpecialPDG(fCandidatePDG);
   fMCContainer->SetSpecialIndex(-10);
+  fMCContainer->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
      if (!fMCContainer->IsSpecialPDGFound()) return kFALSE;
    
     
@@ -2915,7 +2918,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
 
 
    //fill the mc efficiency//
-  for (auto& def : fJetDefinitions)GetEfficiencyDenominatorOneByOne(def);
+  for (auto& def : fJetDefinitions)GetEfficiencyDenominator(def);
 
   
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
@@ -2938,7 +2941,7 @@ void AliAnalysisTaskDmesonJetsSub::AnalysisEngine::RunDetectorLevelAnalysis()
         for (auto& def : fJetDefinitions) {
           if (FindJet(charmCand, DmesonJet, def,im)) {
             Double_t jetPt = DmesonJet.fJets[def.GetName()].fMomentum.Pt();
-	    //  ExtractEfficiencies(charmCand,DmesonJet,def,im);
+	    ExtractEfficiencies(charmCand,DmesonJet,def,im);
             if (jetPt > maxJetPt[&def]) maxJetPt[&def] = jetPt;
           }
           else {
