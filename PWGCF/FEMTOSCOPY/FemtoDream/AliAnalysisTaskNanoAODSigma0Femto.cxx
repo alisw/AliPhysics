@@ -32,6 +32,7 @@ ClassImp(AliAnalysisTaskNanoAODSigma0Femto)
       fIsMC(false),
       fIsLightweight(false),
       fCheckDaughterCF(false),
+      fFemtoJanitor(true),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fGammaArray(nullptr),
@@ -79,6 +80,7 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
       fIsMC(isMC),
       fIsLightweight(false),
       fCheckDaughterCF(false),
+      fFemtoJanitor(true),
       fV0PercentileMax(100.f),
       fTrigger(AliVEvent::kINT7),
       fGammaArray(nullptr),
@@ -244,20 +246,22 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   }
 
   fPairCleaner->ResetArray();
-  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
-  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
-  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandUp, 2);
-  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandUp, 3);
-  fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandLow, 4);
-  fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandLow, 5);
-  if (fCheckDaughterCF) {
-    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0lambda, 6);
-    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 7);
-    fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 8);
-    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 9);
+  if (fFemtoJanitor) {
+    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
+    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandUp, 2);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandUp, 3);
+    fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0sidebandLow, 4);
+    fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0sidebandLow, 5);
+    if (fCheckDaughterCF) {
+      fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0lambda, 6);
+      fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 7);
+      fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 8);
+      fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 9);
 
-    fPairCleaner->CleanDecay(&Decays, 0);
-    fPairCleaner->CleanDecay(&AntiDecays, 1);
+      fPairCleaner->CleanDecay(&Decays, 0);
+      fPairCleaner->CleanDecay(&AntiDecays, 1);
+    }
   }
 
   fPairCleaner->StoreParticle(Particles);
