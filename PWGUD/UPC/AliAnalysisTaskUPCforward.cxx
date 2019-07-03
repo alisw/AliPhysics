@@ -224,7 +224,13 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH(0),
-      fInvariantMassDistributionStrictPtH(0)
+      fInvariantMassDistributionStrictPtH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -380,7 +386,13 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fInvariantMassDistributionForSignalExtractionHelicityFrameMyBinningH(0),
-      fInvariantMassDistributionStrictPtH(0)
+      fInvariantMassDistributionStrictPtH(0),
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                                0, 0, 0, 0, 0, 0 },
+      fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -1031,6 +1043,26 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fInvariantMassDistributionStrictPtH = new TH1F("fInvariantMassDistributionStrictPtH", "fInvariantMassDistributionStrictPtH", 8000, 0, 40);
   fOutputList->Add(fInvariantMassDistributionStrictPtH);
 
+  /* - My variable binning
+   * - for 1D analysis.
+   */
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins]);
+  }
+
+  for(Int_t iPhiBins = 0; iPhiBins < 30; iPhiBins++ ){
+    fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH_%d", iPhiBins),
+                Form("fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH_%d", iPhiBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]);
+  }
 
 
   //_______________________________
@@ -1222,6 +1254,15 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
   fZem1Energy = dataZDC->GetZEM1Energy();
   fZem2Energy = dataZDC->GetZEM2Energy();
+
+  /* - Reset Event information.
+   * -
+   */
+  fZNAEnergy  = -8999;
+  fZNCEnergy  = -8999;
+  fZPAEnergy  = -8999;
+  fZPCEnergy  = -8999;
+
   fZNAEnergy  = dataZDC->GetZNATowerEnergy()[0];
   fZNCEnergy  = dataZDC->GetZNCTowerEnergy()[0];
   fZPAEnergy  = dataZDC->GetZPATowerEnergy()[0];
@@ -1229,6 +1270,14 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
 
   fZNATime    = dataZDC->GetZNATime();
   fZNCTime    = dataZDC->GetZNCTime();
+
+  /* - Reset Event information.
+   * -
+   */
+  for (Int_t i=0;i<4;i++) fZNATDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZNCTDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZPATDC[i] = -999;
+  for (Int_t i=0;i<4;i++) fZPCTDC[i] = -999;
 
   for (Int_t i=0;i<4;i++) fZNATDC[i] = dataZDC->GetZNATDCm(i);
   for (Int_t i=0;i<4;i++) fZNCTDC[i] = dataZDC->GetZNCTDCm(i);
@@ -2239,6 +2288,45 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
           }
         }
   }
+
+  /* - NEW:
+   * - My variable binning for 1D analysis
+   */
+  Bool_t controlFlag5 = 0;
+  Bool_t controlFlag6 = 0;
+  Double_t MyVariableCosThetaBinning1D[] = { -0.65,  -0.5,  -0.4,  -0.35,  -0.3,
+                                             -0.25,  -0.2,  -0.15, -0.125, -0.1,
+                                             -0.075, -0.05, -0.025, 0,      0.025,
+                                              0.05,   0.075, 0.1,   0.125,  0.15,
+                                              0.2,    0.25,  0.3,   0.35,   0.4,
+                                              0.5,    0.65 };
+  Double_t MyVariablePhiBinning1D[] = { -3.14*1,      -3.14*14/15,  -3.14*13/15,  -3.14*12/15,
+                                        -3.14*11/15,  -3.14*10/15,  -3.14*9/15,   -3.14*8/15,
+                                        -3.14*7/15,   -3.14*6/15,   -3.14*5/15,   -3.14*4/15,
+                                        -3.14*3/15,   -3.14*2/15,   -3.14*1/15,    0,
+                                        +3.14*1/15,   +3.14*2/15,   +3.14*3/15,   +3.14*4/15,
+                                        +3.14*5/15,   +3.14*6/15,   +3.14*7/15,   +3.14*8/15,
+                                        +3.14*9/15,   +3.14*10/15,  +3.14*11/15,  +3.14*12/15,
+                                        +3.14*13/15,  +3.14*14/15,  +3.14*1 };
+  if ( possibleJPsiCopy.Pt() < 0.25 ) {
+        Double_t CosThetaHelicityFrameValue4 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t PhiHelicityFrameValue4      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 26; iCosThetaBins++) {
+          if( controlFlag5 == 1) break;
+          if( CosThetaHelicityFrameValue4 < MyVariableCosThetaBinning1D[iCosThetaBins + 1] ){
+            fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyVariableBinningH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag5 = 1;
+          }
+        }
+        for(Int_t iPhiBins = 0; iPhiBins < 30; iPhiBins++) {
+          if( controlFlag6 == 1) break;
+          if( PhiHelicityFrameValue4  < MyVariablePhiBinning1D[iPhiBins + 1] ){
+            fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyVariableBinningH[iPhiBins]->Fill(possibleJPsiCopyMag);
+            controlFlag6 = 1;
+          }
+        }
+  }
+
 
   /* - Strict binning in Pt.
    * - This is my hope to see the bottomonium states...
