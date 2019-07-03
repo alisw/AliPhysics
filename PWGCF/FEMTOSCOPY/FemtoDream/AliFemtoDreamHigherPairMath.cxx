@@ -7,35 +7,41 @@
 
 #include <AliFemtoDreamHigherPairMath.h>
 #include "TMath.h"
+#include "TDatabasePDG.h"
 static const float piHi = TMath::Pi();
 
-AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath()
-    : fBField(-99.),
-      fDeltaPhiEtaMax(-99.){
-
+AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
+    AliFemtoDreamCollConfig *conf)
+    : fHists(new AliFemtoDreamCorrHists(conf, conf->GetMinimalBookingSample())),
+      fWhichPairs(conf->GetWhichPairs()),
+      fBField(-99.),
+      fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
+      fRandom(),
+      fPi(TMath::Pi()) {
+  fRandom.SetSeed(0);
 }
 
 AliFemtoDreamHigherPairMath::~AliFemtoDreamHigherPairMath() {
-  // TODO Auto-generated destructor stub
 }
 
 bool AliFemtoDreamHigherPairMath::PassesPairSelection(
-    AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2, bool Recalculate) {
+    AliFemtoDreamBasePart* part1, AliFemtoDreamBasePart* part2,
+    bool Recalculate) {
   bool outBool = true;
   //Method calculates the average separation between two tracks
   //at different radii within the TPC and rejects pairs which a
   //too low separation
-  if(Recalculate) {
+  if (Recalculate) {
     RecalculatePhiStar(part1);
     RecalculatePhiStar(part2);
   }
-  unsigned int nDaug1 = part1.GetPhiAtRaidius().size();
-  unsigned int nDaug2 = part2.GetPhiAtRaidius().size();
+  unsigned int nDaug1 = part1->GetPhiAtRaidius().size();
+  unsigned int nDaug2 = part2->GetPhiAtRaidius().size();
   // if nDaug == 1 => Single Track, else decay
-  std::vector<float> eta1 = part1.GetEta();
-  std::vector<float> eta2 = part2.GetEta();
+  std::vector<float> eta1 = part1->GetEta();
+  std::vector<float> eta2 = part2->GetEta();
   for (unsigned int iDaug1 = 0; iDaug1 < nDaug1 && outBool; ++iDaug1) {
-    std::vector<float> PhiAtRad1 = part1.GetPhiAtRaidius().at(iDaug1);
+    std::vector<float> PhiAtRad1 = part1->GetPhiAtRaidius().at(iDaug1);
     float etaPar1;
     if (nDaug1 == 1) {
       etaPar1 = eta1.at(0);
@@ -43,8 +49,8 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
       etaPar1 = eta1.at(iDaug1 + 1);
     }
     for (unsigned int iDaug2 = 0;
-        iDaug2 < part2.GetPhiAtRaidius().size() && outBool; ++iDaug2) {
-      std::vector<float> phiAtRad2 = part2.GetPhiAtRaidius().at(iDaug2);
+        iDaug2 < part2->GetPhiAtRaidius().size() && outBool; ++iDaug2) {
+      std::vector<float> phiAtRad2 = part2->GetPhiAtRaidius().at(iDaug2);
       float etaPar2;
       if (nDaug2 == 1) {
         etaPar2 = eta2.at(0);
@@ -74,7 +80,7 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
 }
 
 void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
-    AliFemtoDreamBasePart &part) {
+    AliFemtoDreamBasePart *part) {
   //Only use this for Tracks, this was implemented for the case where particles
   //were added a random phi to obtain an uncorrelated sample. This should be extended
   //to the daughter tracks. For some reason the momentum is stored in a TVector3,
@@ -83,14 +89,16 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
   //e.g. the Lambda was phi shifted.
   //
   if (fBField < -95) {
-    AliWarning("BField was most probably not set! PhiStar Calculation meaningless. \n");
+    AliWarning(
+        "BField was most probably not set! PhiStar Calculation meaningless. \n");
   }
-  part.GetPhiAtRaidius().clear();
-  float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
+  part->GetPhiAtRaidius().clear();
+  static float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225.,
+      245. };
   std::vector<float> tmpVec;
-  auto phi0 = part.GetMomentum().Phi();
-  float pt = part.GetPt();
-  float chg = part.GetCharge().at(0);
+  auto phi0 = part->GetMomentum().Phi();
+  float pt = part->GetMomentum().Pt();
+  float chg = part->GetCharge().at(0);
   for (int radius = 0; radius < 9; radius++) {
     tmpVec.push_back(
         phi0
@@ -98,5 +106,188 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
                 0.1 * chg * fBField * 0.3 * TPCradii[radius] * 0.01
                     / (2. * pt)));
   }
-  part.SetPhiAtRadius(tmpVec);
+  part->SetPhiAtRadius(tmpVec);
+}
+
+float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
+                                                 TVector3 Part1Momentum,
+                                                 int PDGPart1,
+                                                 TVector3 Part2Momentum,
+                                                 int PDGPart2) {
+  if (PDGPart1 == 0 || PDGPart2 == 0) {
+    AliError("Invalid PDG Code");
+  }
+  bool fillHists = fWhichPairs.at(iHC);
+  TLorentzVector PartOne, PartTwo;
+  // Even if the Daughter tracks were switched up during PID doesn't play a role
+  // here cause we are
+  // only looking at the mother mass
+  PartOne.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(), Part1Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+  PartTwo.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+  float RelativeK = RelativePairMomentum(PartOne, PartTwo);
+  fHists->FillSameEventDist(iHC, RelativeK);
+  if (fHists->GetDoMultBinning()) {
+    fHists->FillSameEventMultDist(iHC, Mult + 1, RelativeK);
+  }
+  if (fillHists && fHists->GetDoCentBinning()) {
+    fHists->FillSameEventCentDist(iHC, cent, RelativeK);
+  }
+  if (fillHists && fHists->GetDokTBinning()) {
+    fHists->FillSameEventkTDist(iHC, RelativePairkT(PartOne, PartTwo),
+                                RelativeK, cent);
+  }
+  if (fillHists && fHists->GetDomTBinning()) {
+    fHists->FillSameEventmTDist(iHC, RelativePairmT(PartOne, PartTwo),
+                                RelativeK);
+  }
+  if (fillHists && fHists->GetDoPtQA()) {
+    fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
+                         Part2Momentum.Pt());
+  }
+  return RelativeK;
+}
+
+//  if (fillHists && fHists->GetEtaPhiPlots()) {
+//    DeltaEtaDeltaPhi(iHC, part1, part2, true, fHists, RelativeK);
+//  }
+//  if (fillHists && fHists->GetDodPhidEtaPlots()) {
+//    float deta = itPart1->GetEta().at(0) - itPart2->GetEta().at(0);
+//    float dphi = itPart1->GetPhi().at(0) - itPart2->GetPhi().at(0);
+//    float mT =
+//        fHists->GetDodPhidEtamTPlots() ?
+//            RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
+//                           itPart2->GetMomentum(), *itPDGPar2) :
+//            0;
+//    if (dphi < 0) {
+//      fHists->FilldPhidEtaSE(iHC, dphi + 2 * TMath::Pi(), deta, mT);
+//    } else {
+//      fHists->FilldPhidEtaSE(iHC, dphi, deta, mT);
+//    }
+//  }
+//
+//  if (fillHists && fHists->GetDoMassQA()) {
+//    fHists->FillMassQADist(iHC, RelativeK, itPart1->GetInvMass(),
+//                           itPart2->GetInvMass());
+//  }
+
+float AliFemtoDreamHigherPairMath::FillMixedEvent(
+    int iHC, int Mult, float cent, TVector3 Part1Momentum, int PDGPart1,
+    TVector3 Part2Momentum, int PDGPart2,
+    AliFemtoDreamCollConfig::UncorrelatedMode mode) {
+  if (PDGPart1 == 0 || PDGPart2 == 0) {
+    AliError("Invalid PDG Code");
+  }
+  bool fillHists = fWhichPairs.at(iHC);
+  TLorentzVector PartOne, PartTwo;
+  // Even if the Daughter tracks were switched up during PID doesn't play a role
+  // here cause we are
+  // only looking at the mother mass
+  PartOne.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(), Part1Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+  PartTwo.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+  // Do the randomization here
+  if (mode == AliFemtoDreamCollConfig::kStravinsky) {
+    if (fRandom.Uniform() < 0.5) {
+      PartOne.SetPhi(PartOne.Phi() + fPi);
+    } else {
+      PartTwo.SetPhi(PartTwo.Phi() + fPi);
+    }
+  } else if (mode == AliFemtoDreamCollConfig::kPhiSpin) {
+    PartOne.SetPhi(PartOne.Phi() + fRandom.Uniform(2 * fPi));
+    PartTwo.SetPhi(PartTwo.Phi() + fRandom.Uniform(2 * fPi));
+  }
+  float RelativeK = RelativePairMomentum(PartOne, PartTwo);
+  fHists->FillMixedEventDist(iHC, RelativeK);
+  if (fHists->GetDoMultBinning()) {
+    fHists->FillMixedEventMultDist(iHC, Mult + 1, RelativeK);
+  }
+
+  if (fillHists && fHists->GetDoCentBinning()) {
+    fHists->FillMixedEventCentDist(iHC, cent, RelativeK);
+  }
+  if (fillHists && fHists->GetDokTBinning()) {
+    fHists->FillMixedEventkTDist(iHC, RelativePairkT(PartOne, PartTwo),
+                                 RelativeK, cent);
+  }
+  if (fillHists && fHists->GetDomTBinning()) {
+    fHists->FillMixedEventmTDist(iHC, RelativePairmT(PartOne, PartTwo),
+                                 RelativeK);
+  }
+  return RelativeK;
+}
+
+//  if (fillHists && fHists->GetEtaPhiPlots()) {
+//    DeltaEtaDeltaPhi(iHC, part1, part2, false, fHists, RelativeK);
+//  }
+//  if (fillHists && fHists->GetDodPhidEtaPlots()) {
+//    float deta = itPart1->GetEta().at(0) - itPart2->GetEta().at(0);
+//    float dphi = itPart1->GetPhi().at(0) - itPart2->GetPhi().at(0);
+//    float mT =
+//        fHists->GetDodPhidEtamTPlots() ?
+//            RelativePairmT(itPart1->GetMomentum(), *itPDGPar1,
+//                           itPart2->GetMomentum(), *itPDGPar2) :
+//            0;
+//    if (dphi < 0) {
+//      fHists->FilldPhidEtaME(HistCounter, dphi + 2 * TMath::Pi(), deta, mT);
+//    } else {
+//      fHists->FilldPhidEtaME(HistCounter, dphi, deta, mT);
+//    }
+//  }
+//  if (fillHists && fHists->GetObtainMomentumResolution()) {
+//    //It is sufficient to do this in Mixed events, which allows
+//    //to increase the statistics. The Resolution of the tracks and therefore
+//    //of the pairs does not change event by event.
+//    //Now we only want to use the momentum of particles we are after, hence
+//    //we check the PDG Code!
+//    if ((*itPDGPar1 == TMath::Abs(itPart1->GetMCPDGCode()))
+//        && ((*itPDGPar2 == TMath::Abs(itPart2->GetMCPDGCode())))) {
+//      float RelKTrue = RelativePairMomentum(itPart1->GetMCMomentum(),
+//                                            *itPDGPar1,
+//                                            itPart2->GetMCMomentum(),
+//                                            *itPDGPar2);
+//      fHists->FillMomentumResolution(HistCounter, RelKTrue, RelativeK);
+//    }
+//  }
+
+float AliFemtoDreamHigherPairMath::RelativePairMomentum(
+    TLorentzVector &PartOne, TLorentzVector &PartTwo) {
+  TLorentzVector trackSum = PartOne + PartTwo;
+
+  float beta = trackSum.Beta();
+  float betax = beta * cos(trackSum.Phi()) * sin(trackSum.Theta());
+  float betay = beta * sin(trackSum.Phi()) * sin(trackSum.Theta());
+  float betaz = beta * cos(trackSum.Theta());
+
+  TLorentzVector PartOneCMS = PartOne;
+  TLorentzVector PartTwoCMS = PartTwo;
+
+  PartOneCMS.Boost(-betax, -betay, -betaz);
+  PartTwoCMS.Boost(-betax, -betay, -betaz);
+
+  TLorentzVector trackRelK = PartOneCMS - PartTwoCMS;
+
+  return 0.5 * trackRelK.P();
+}
+
+float AliFemtoDreamHigherPairMath::RelativePairkT(TLorentzVector &PartOne,
+                                                  TLorentzVector &PartTwo) {
+  float results = 0.;
+  TLorentzVector trackSum;
+  trackSum = PartOne + PartTwo;
+  results = 0.5 * trackSum.Pt();
+  return results;
+}
+
+float AliFemtoDreamHigherPairMath::RelativePairmT(TLorentzVector &PartOne,
+                                                  TLorentzVector &PartTwo) {
+  float results = 0.;
+  TLorentzVector trackSum;
+  trackSum = PartOne + PartTwo;
+  float pairKT = 0.5 * trackSum.Pt();
+  float averageMass = 0.5 * (PartOne.M() + PartTwo.M());
+  results = TMath::Sqrt(pow(pairKT, 2.) + pow(averageMass, 2.));
+  return results;
 }
