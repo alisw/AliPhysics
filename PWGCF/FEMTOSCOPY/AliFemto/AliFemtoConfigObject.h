@@ -1008,11 +1008,11 @@ public:
     { return Popper(*this); }
 
   /// Return a pointer to new config object with values copied
-  virtual AliFemtoConfigObject* Clone() const
+  virtual AliFemtoConfigObject* Clone(const char *) const
     { return new AliFemtoConfigObject(*this); }
 
   /// Return a new config object with values copied
-  AliFemtoConfigObject Copy() const
+  AliFemtoConfigObject DeepCopy() const
     { return AliFemtoConfigObject(*this); }
 
   /// return a string of valid JSON that may be parsed by other
