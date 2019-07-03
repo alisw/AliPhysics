@@ -13,6 +13,7 @@
 #include "AliFemtoDreamv0.h"
 #include "AliFemtoDreamv0Cuts.h"
 #include "AliSigma0PhotonCuts.h"
+#include "AliFemtoDreamControlSample.h"
 #include "AliMCEvent.h"
 #include "AliSigma0AODPhotonMotherCuts.h"
 #include "AliStack.h"
@@ -87,6 +88,7 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig;                  //
   AliFemtoDreamPairCleaner *fPairCleaner;            //!
   AliFemtoDreamPartCollection *fPartColl;            //!
+  AliFemtoDreamControlSample *fSample;               //!
 
   bool fIsMC;              //
   bool fIsLightweight;     //
@@ -114,7 +116,9 @@ class AliAnalysisTaskNanoAODSigma0Femto : public AliAnalysisTaskSE {
   TList *fAntiSigmaHistList;       //!
   TList *fResultList;              //!
   TList *fResultQAList;            //!
+  TList *fResultsSample;           //!
+  TList *fResultsSampleQA;         //!
 
-  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 4)
+  ClassDef(AliAnalysisTaskNanoAODSigma0Femto, 5)
 };
 #endif

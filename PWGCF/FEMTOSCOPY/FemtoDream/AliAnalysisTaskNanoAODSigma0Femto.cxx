@@ -29,6 +29,7 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto()
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
+      fSample(nullptr),
       fIsMC(false),
       fIsLightweight(false),
       fCheckDaughterCF(false),
@@ -52,7 +53,9 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto()
       fSigmaHistList(nullptr),
       fAntiSigmaHistList(nullptr),
       fResultList(nullptr),
-      fResultQAList(nullptr) {
+      fResultQAList(nullptr),
+      fResultsSample(nullptr),
+      fResultsSampleQA(nullptr) {
   fRandom = new TRandom3();
 }
 
@@ -77,6 +80,7 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
       fConfig(nullptr),
       fPairCleaner(nullptr),
       fPartColl(nullptr),
+      fSample(nullptr),
       fIsMC(isMC),
       fIsLightweight(false),
       fCheckDaughterCF(false),
@@ -100,7 +104,9 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
       fSigmaHistList(nullptr),
       fAntiSigmaHistList(nullptr),
       fResultList(nullptr),
-      fResultQAList(nullptr) {
+      fResultQAList(nullptr),
+      fResultsSample(nullptr),
+      fResultsSampleQA(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -113,13 +119,15 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
   DefineOutput(9, TList::Class());
   DefineOutput(10, TList::Class());
   DefineOutput(11, TList::Class());
+  DefineOutput(12, TList::Class());
+  DefineOutput(13, TList::Class());
 
   fRandom = new TRandom3();
   if (fIsMC) {
-    DefineOutput(12, TList::Class());
-    DefineOutput(13, TList::Class());
     DefineOutput(14, TList::Class());
     DefineOutput(15, TList::Class());
+    DefineOutput(16, TList::Class());
+    DefineOutput(17, TList::Class());
   }
 }
 
@@ -127,6 +135,7 @@ AliAnalysisTaskNanoAODSigma0Femto::AliAnalysisTaskNanoAODSigma0Femto(
 AliAnalysisTaskNanoAODSigma0Femto::~AliAnalysisTaskNanoAODSigma0Femto() {
   delete fPartColl;
   delete fPairCleaner;
+  delete fSample;
   delete fProtonTrack;
   delete fLambda;
 }
@@ -290,6 +299,11 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                       fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
 
+  if (fConfig->GetUsePhiSpinning()) {
+    fSample->SetEvent(fPairCleaner->GetCleanParticles(),
+                      fEvent->GetMultiplicity());
+  }
+
   // flush the data
   PostData(1, fQA);
   PostData(2, fEvtHistList);
@@ -302,11 +316,13 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   PostData(9, fAntiSigmaHistList);
   PostData(10, fResultList);
   PostData(11, fResultQAList);
+  PostData(12, fResultsSample);
+  PostData(13, fResultsSampleQA);
   if (fIsMC) {
-    PostData(12, fTrackCutHistMCList);
-    PostData(13, fAntiTrackCutHistMCList);
-    PostData(14, fLambdaHistMCList);
-    PostData(15, fAntiLambdaHistMCList);
+    PostData(14, fTrackCutHistMCList);
+    PostData(15, fAntiTrackCutHistMCList);
+    PostData(16, fLambdaHistMCList);
+    PostData(17, fAntiLambdaHistMCList);
   }
 }
 
@@ -383,6 +399,10 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
                                               fConfig->GetMinimalBookingME());
   fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                               fConfig->GetMinimalBookingME());
+  if (fConfig->GetUsePhiSpinning()) {
+    fSample = new AliFemtoDreamControlSample(
+        fConfig, fConfig->GetMinimalBookingSample());
+  }
 
   fQA = new TList();
   fQA->SetName("QA");
@@ -500,6 +520,18 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
     fResultQAList->SetOwner(true);
   }
 
+  fResultsSampleQA = new TList();
+  fResultsSampleQA->SetOwner();
+  fResultsSampleQA->SetName("ResultsSampleQA");
+  if (fConfig->GetUsePhiSpinning() && !fConfig->GetMinimalBookingSample()) {
+    fResultsSample = fSample->GetHistList();
+    fResultsSampleQA->Add(fSample->GetQAList());
+  } else {
+    fResultsSample = new TList();
+    fResultsSample->SetOwner();
+    fResultsSample->SetName("Results");
+  }
+
   PostData(1, fQA);
   PostData(2, fEvtHistList);
   PostData(3, fTrackCutHistList);
@@ -511,10 +543,12 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   PostData(9, fAntiSigmaHistList);
   PostData(10, fResultList);
   PostData(11, fResultQAList);
+  PostData(12, fResultsSample);
+  PostData(13, fResultsSampleQA);
   if (fIsMC) {
-    PostData(12, fTrackCutHistMCList);
-    PostData(13, fAntiTrackCutHistMCList);
-    PostData(14, fLambdaHistMCList);
-    PostData(15, fAntiLambdaHistMCList);
+    PostData(14, fTrackCutHistMCList);
+    PostData(15, fAntiTrackCutHistMCList);
+    PostData(16, fLambdaHistMCList);
+    PostData(17, fAntiLambdaHistMCList);
   }
 }
