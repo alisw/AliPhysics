@@ -55,7 +55,7 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fCorrelationRange(conf->GetCorrelationRange()),
       fDeltaEtaMax(conf->GetDeltaEtaMax()),
       fDeltaPhiMax(conf->GetDeltaPhiMax()),
-      fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()) {
+      fDoDeltaEtaDeltaPhiCut(false) {
   fRandom.SetSeed(0);
 }
 
@@ -88,17 +88,21 @@ void AliFemtoDreamControlSample::SetEvent(
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   auto itSpec1 = Particles.begin();
   bool sameParticle = false;
+  int minimumSize;
   while (itSpec1 != Particles.end()) {
     auto itSpec2 = itSpec1;
     auto itPDGPar2 = itPDGPar1;
     while (itSpec2 != Particles.end()) {
       fHists->FillPartnersSE(HistCounter, itSpec1->size(), itSpec2->size());
-      if ((itSpec1->size() + itSpec2->size()) > 1) {  // for single particle pairs, this is pointless
-        if (itSpec1 == itSpec2) {
-          sameParticle = true;
-        } else {
-          sameParticle = false;
-        }
+      if (itSpec1 == itSpec2) {
+        sameParticle = true;
+        minimumSize = 2;
+      } else {
+        minimumSize = 1;
+        sameParticle = false;
+      }
+      //if it is the same particle, then we need at least two to pair them 2*2 is the minimum
+      if ((itSpec1->size() > minimumSize) && (itSpec2->size() > minimumSize)) {  // for single particle pairs, this is pointless
         CorrelatedSample(*itSpec1, *itPDGPar1, *itSpec2, *itPDGPar1,
                          sameParticle, iMult, HistCounter);
         UncorrelatedSample(*itSpec1, *itPDGPar1, *itSpec2, *itPDGPar1,
@@ -295,7 +299,7 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
   auto itPart1 = CopyPart1.begin();
   while (itPart1 != CopyPart1.end()) {
     auto itPart2 = SameParticle ? itPart1 + 1 : CopyPart2.begin();
-    while (itPart2 != CopyPart2.end()) {
+    while (itPart2 != (SameParticle ? CopyPart1 : CopyPart2).end()) {
       //in this case it does NOT work as intended since the new phi of the particle has to
       //be considered for this cut
       if (fDoDeltaEtaDeltaPhiCut && CPR) {
@@ -308,15 +312,13 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
           continue;
         }
       }
-      for (int i = 0; i < fSpinningDepth; ++i) {
-        // randomized sample - who is the father???
-        RelativeK = RelativePairMomentum((*itPart1)->GetMomentum(), PDGPart1,
-                                         (*itPart2)->GetMomentum(), PDGPart2,
-                                         AliFemtoDreamCollConfig::kNone);
-        fHists->FillMixedEventDist(HistCounter, RelativeK);
-        if (fHists->GetDoMultBinning()) {
-          fHists->FillMixedEventMultDist(HistCounter, Mult + 1, RelativeK);
-        }
+      // randomized sample - who is the father???
+      RelativeK = RelativePairMomentum((*itPart1)->GetMomentum(), PDGPart1,
+                                       (*itPart2)->GetMomentum(), PDGPart2,
+                                       AliFemtoDreamCollConfig::kNone);
+      fHists->FillMixedEventDist(HistCounter, RelativeK);
+      if (fHists->GetDoMultBinning()) {
+        fHists->FillMixedEventMultDist(HistCounter, Mult + 1, RelativeK);
       }
       itPart2++;
     }
@@ -326,13 +328,17 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
     delete iDel;
   }
   RandomizeMe.clear();
-  for (auto iTest :  CopyPart1) {
-    if (iTest) {
-      Warning("LimitedPhiSpinning", "This should be deleted, think about your code \n");
-    }
-  }
+//  it was checked with massif that there is no memory leak and even if the pointer and its members
+//  still exist.
+//  for (auto iTest : CopyPart1) {
+//    if (iTest){
+//      Warning("LimitedPhiSpinning",
+//              "This should be deleted, think about your code \n");
+//    }
+//  }
   CopyPart1.clear();
   CopyPart2.clear();
+  return;
 }
 
 void AliFemtoDreamControlSample::Randomizer(
@@ -359,7 +365,7 @@ void AliFemtoDreamControlSample::Randomizer(
     Part2Mom -= Part1Mom;
     (*itPart1)->SetMomentum(Part1Mom);
     (*itPart2)->SetMomentum(Part2Mom);
-    itPart2 += 2;
+    itPart1 += 2;
   }
 }
 
