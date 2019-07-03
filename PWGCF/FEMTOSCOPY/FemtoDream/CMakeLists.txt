@@ -71,6 +71,7 @@ set(SRCS
   AliOtonOmegaAnalysis.cxx
   AliOtonOmegaCascadeCuts.cxx
   AliOtonOmegaCascade.cxx
+  AliFemtoDreamHigherPairMath.cxx
   )
 
 
