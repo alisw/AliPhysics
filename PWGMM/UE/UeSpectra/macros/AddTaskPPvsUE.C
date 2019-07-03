@@ -8,7 +8,8 @@
 
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskPPvsUE()
+AliAnalysisTask* AddTaskPPvsUE (Bool_t AnalysisMC = kFALSE, 
+		                        const Char_t* taskname = "UeSpectra")
 {
   // set authomatically to true if MC
   Bool_t AnalysisMC= (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
@@ -43,6 +44,9 @@ AliAnalysisTask* AddTaskPPvsUE()
    TString kInputDataType = mgr->GetInputEventHandler()->GetDataType(); 
 
    Bool_t is13TeV = kTRUE;
+   UInt_t trigSel = AliVEvent::kINT7;
+
+   task->SetTrigger(trigSel);
    task->SetAnalysisMC(AnalysisMC);
    task->SetAnalysisCorr(AnalysisCorr);
    task->SetAnalysisType(kInputDataType);
