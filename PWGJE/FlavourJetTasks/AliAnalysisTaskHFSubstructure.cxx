@@ -439,7 +439,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
 	  Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	  if(!Track) continue;
-	  if (Track->Charge()==0) continue;
 	  if(Random_Number > fTrackingEfficiency) continue;
 	  fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
 	}
@@ -601,7 +600,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  if (DMeson_Daughter_Track) continue;*/
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	if(!Track) continue;
-	if(Track->Charge()==0) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
       }
       Double_t NTracks=0;
@@ -738,7 +736,8 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     Particle_Container->SetSpecialPDG(fCandidatePDG); 
     Particle_Container->SetRejectedOriginMap(fRejectedOrigin); 
     Particle_Container->SetAcceptedDecayMap(fAcceptedDecay);
-    Particle_Container->SetRejectISR(fRejectISR); 
+    Particle_Container->SetRejectISR(fRejectISR);
+    Particle_Container->SetCharge(1);
 
     std::vector<fastjet::PseudoJet> Inclusive_Jets_Truth; 
     std::vector<std::pair<Int_t, Int_t>> Inclusive_Jets_Truth_Labels; 
@@ -771,7 +770,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       Int_t NTruthD=0; 
       for (Int_t i_Particle=0; i_Particle<Particle_Container->GetNParticles(); i_Particle++){ 
 	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptParticle(i_Particle));
-	if (Truth_Particle->Charge()==0) continue;
 	if (!Truth_Particle) continue;
 	//	if (TMath::Abs(Truth_Particle->Eta())>0.9) continue;
 	if (TMath::Abs(Truth_Particle->PdgCode())==fCandidatePDG){
@@ -912,7 +910,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){ 
 	Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
 	if(!Track) continue;
-	if (Track->Charge()==0) continue;
 	//if (TMath::Abs(Track->Eta())>0.9) continue;
 	fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100); 
       }
@@ -1330,8 +1327,9 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     AliHFAODMCParticleContainer *Particle_Container = (AliHFAODMCParticleContainer*) GetParticleContainer(0);
     Particle_Container->SetSpecialPDG(fCandidatePDG); 
     Particle_Container->SetRejectedOriginMap(fRejectedOrigin); 
-    Particle_Container->SetAcceptedDecayMap(kDecayD0toKpi); 
-    Particle_Container->SetRejectISR(fRejectISR); 
+    Particle_Container->SetAcceptedDecayMap(fAcceptedDecay); 
+    Particle_Container->SetRejectISR(fRejectISR);
+    Particle_Container->SetCharge(1);
 
     std::vector<fastjet::PseudoJet> Inclusive_Jets_Truth; 
     std::vector<std::pair<Int_t, Int_t>> Inclusive_Jets_Truth_Labels; 
@@ -1351,7 +1349,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       for (Int_t i_Particle=0; i_Particle<Particle_Container->GetNParticles(); i_Particle++){ 
 	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptParticle(i_Particle));
 	if (!Truth_Particle) continue;
-	if (Truth_Particle->Charge()==0) continue;
 	if (TMath::Abs(Truth_Particle->GetPdgCode())==fCandidatePDG){ 
 	  fhEvent->Fill(3); 	  
 	  std::pair<Int_t, Int_t> Inclusive_Jet_Truth_Labels;
@@ -1578,7 +1575,6 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     for (Int_t i_Track=0; i_Track<Track_Container->GetNTracks(); i_Track++){
       Track = static_cast<AliAODTrack*>(Track_Container->GetAcceptParticle(i_Track));
       if(!Track) continue;
-      if (Track->Charge()==0) continue;
       fFastJetWrapper->AddInputVector(Track->Px(), Track->Py(), Track->Pz(), Track->E(),i_Track+100);
     }
     fFastJetWrapper->Run();
