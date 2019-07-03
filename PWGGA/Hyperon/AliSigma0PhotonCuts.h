@@ -24,10 +24,12 @@ class AliSigma0PhotonCuts : public TObject {
   static AliSigma0PhotonCuts *PhotonCuts();
 
   void PhotonCuts(AliAODEvent *inputEvent, AliMCEvent *mcEvent,
-                  const TClonesArray *photons, std::vector<AliFemtoDreamBasePart> &container);
-  bool ProcessPhoton(AliVEvent* event, AliAODConversionPhoton *PhotonCandidate, AliAODv0 *v0,
-                     AliVTrack *pos, AliVTrack *neg);
-  float ComputeInvMass(AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg, int pdgPos, int pgdNeg) const;
+                  const TClonesArray *photons,
+                  std::vector<AliFemtoDreamBasePart> &container);
+  bool ProcessPhoton(AliVEvent* event, AliAODConversionPhoton *PhotonCandidate,
+                     AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg);
+  float ComputeInvMass(AliAODv0 *v0, AliVTrack *pos, AliVTrack *neg, int pdgPos,
+                       int pgdNeg) const;
   AliVTrack *GetTrack(AliVEvent * event, int label);
   void SetLightweight(bool isLightweight) {
     fIsLightweight = isLightweight;
@@ -86,6 +88,11 @@ class AliSigma0PhotonCuts : public TObject {
   void SetElectronNSigmaTPCMin(float nsigmamin) {
     fElectronNSigmaTPCMin = nsigmamin;
   }
+  void SetTransverseRadiusRejection(float low, float up) {
+    fDoTransvRadRejection = true;
+    fTransvRadRejectionLow = low;
+    fTransvRadRejectionUp = up;
+  }
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const {
@@ -115,14 +122,18 @@ class AliSigma0PhotonCuts : public TObject {
   float fPsiPairMax;  //
   float fChi2MaxFor2DPsiPair;  //
   float fCPAMin;  //
-  float fDCAzMax; //
-  float fDCArMax; //
+  float fDCAzMax;  //
+  float fDCArMax;  //
 
   float fElectronPtMin;  //
   float fElectronEtaMax;  //
   float fElectronRatioFindable;  //
   float fElectronNSigmaTPCMax;  //
   float fElectronNSigmaTPCMin;  //
+
+  bool fDoTransvRadRejection;   //
+  float fTransvRadRejectionLow; //
+  float fTransvRadRejectionUp;  //
 
   // Histograms
   // =====================================================================
@@ -183,7 +194,7 @@ class AliSigma0PhotonCuts : public TObject {
   AliPIDResponse *fPIDResponse;  //!  pid response
 
  private:
-ClassDef(AliSigma0PhotonCuts, 3)
+ClassDef(AliSigma0PhotonCuts, 4)
 };
 
 #endif

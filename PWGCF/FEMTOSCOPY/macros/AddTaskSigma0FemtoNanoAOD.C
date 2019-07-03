@@ -1,4 +1,13 @@
 #include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamv0Cuts.h"
+#include "AliSigma0PhotonCuts.h"
+#include "AliSigma0AODPhotonMotherCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliAnalysisTaskNanoAODSigma0Femto.h"
 
 AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
                                              bool MomRes = false,
@@ -210,6 +219,9 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     PDGParticles.push_back(3122);
     PDGParticles.push_back(3122);
     PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+    PDGParticles.push_back(22);
+    PDGParticles.push_back(22);
   }
 
   std::vector<float> ZVtxBins;
@@ -230,7 +242,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  const int nPairs = (suffix == "0" && fullBlastQA) ? 78 : 36;
+  const int nPairs = (suffix == "0" && fullBlastQA) ? 120 : 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -259,16 +271,20 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     pairQA[10] = 14;  // barp bSigma
   } else if (suffix == "0" && fullBlastQA) {
     NBins[0] = 750;   // pp
-    NBins[12] = 750;  // barp barp
+    NBins[14] = 750;  // barp barp
 
     pairQA[0] = 11;   // pp
     pairQA[2] = 14;   // pSigma
     pairQA[8] = 12;   // pLambda(Sigma0)
     pairQA[10] = 12;   // pLambda
-    pairQA[12] = 11;  // barp barp
-    pairQA[14] = 14;  // barp bSigma
-    pairQA[20] = 12;   // barpbarLambda(barSigma0)
-    pairQA[22] = 12;   // barpbarLambda
+    pairQA[12] = 12;   // pPhoton(Sigma0)
+    pairQA[14] = 12;   // pPhoton
+    pairQA[15] = 11;  // barp barp
+    pairQA[17] = 14;  // barp bSigma
+    pairQA[23] = 12;   // barpbarLambda(barSigma0)
+    pairQA[25] = 12;   // barpbarLambda
+    pairQA[27] = 12;   // barpPhoton(Sigma0)
+    pairQA[28] = 12;   // barpPhoton
   }
 
   AliFemtoDreamCollConfig *config =
