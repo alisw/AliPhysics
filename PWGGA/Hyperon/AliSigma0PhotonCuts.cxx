@@ -38,6 +38,9 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fElectronRatioFindable(0.),
       fElectronNSigmaTPCMax(999),
       fElectronNSigmaTPCMin(-999),
+      fDoTransvRadRejection(false),
+      fTransvRadRejectionLow(0.),
+      fTransvRadRejectionUp(0.),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
       fHistNV0(nullptr),
@@ -63,6 +66,7 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts()
       fHistCosPAAfter(nullptr),
       fHistDCArBefore(nullptr),
       fHistDCAzBefore(nullptr),
+      fHistDCArAfter(nullptr),
       fHistDCAzAfter(nullptr),
       fHistDCA(nullptr),
       fHistDecayLength(nullptr),
@@ -118,6 +122,9 @@ AliSigma0PhotonCuts::AliSigma0PhotonCuts(const AliSigma0PhotonCuts &ref)
       fElectronRatioFindable(0.),
       fElectronNSigmaTPCMax(999),
       fElectronNSigmaTPCMin(-999),
+      fDoTransvRadRejection(false),
+      fTransvRadRejectionLow(0.),
+      fTransvRadRejectionUp(0.),
       fHistCutBooking(nullptr),
       fHistCuts(nullptr),
       fHistNV0(nullptr),
@@ -451,6 +458,12 @@ bool AliSigma0PhotonCuts::ProcessPhoton(AliVEvent* event,
   }
   fHistCuts->Fill(13.f);
 
+  if (fDoTransvRadRejection && transRadius > fTransvRadRejectionLow
+      && transRadius < fTransvRadRejectionUp) {
+    return false;
+  }
+  fHistCuts->Fill(14.f);
+
   // AFTER THE CUTS
   fHistV0MassPt->Fill(pt, invMass);
 
@@ -627,7 +640,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     }
   }
 
-  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 14, 0, 14);
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 16, 0, 16);
   fHistCutBooking->GetXaxis()->SetBinLabel(1, "2-D Armenteros");
   fHistCutBooking->GetXaxis()->SetBinLabel(2, "#it{q}_{T} max");
   fHistCutBooking->GetXaxis()->SetBinLabel(3, "#it{p}_{T} min");
@@ -642,6 +655,8 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->GetXaxis()->SetBinLabel(12, "n#sigma TPC min");
   fHistCutBooking->GetXaxis()->SetBinLabel(13, "DCA_{z} max");
   fHistCutBooking->GetXaxis()->SetBinLabel(14, "DCA_{r} max");
+  fHistCutBooking->GetXaxis()->SetBinLabel(15, "Transv. radius rej. low");
+  fHistCutBooking->GetXaxis()->SetBinLabel(16, "Transv. radius rej. up");
   fHistograms->Add(fHistCutBooking);
 
   fHistCutBooking->Fill(0.f, static_cast<double>(f2DArmenterosCut));
@@ -656,8 +671,10 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(9.f, fElectronRatioFindable);
   fHistCutBooking->Fill(10.f, fElectronNSigmaTPCMax);
   fHistCutBooking->Fill(11.f, fElectronNSigmaTPCMin);
-  fHistCutBooking->Fill(11.f, fElectronNSigmaTPCMin);
-  fHistCutBooking->Fill(11.f, fElectronNSigmaTPCMin);
+  fHistCutBooking->Fill(12.f, fDCAzMax);
+  fHistCutBooking->Fill(13.f, fDCArMax);
+  fHistCutBooking->Fill(14.f, fTransvRadRejectionLow);
+  fHistCutBooking->Fill(15.f, fTransvRadRejectionUp);
 
   fHistV0MassPt = new TH2F(
       "InvMassPt", "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
@@ -665,7 +682,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
   fHistograms->Add(fHistV0MassPt);
 
   if (!fIsLightweight) {
-    fHistCuts = new TH1F("fHistCuts", ";;Entries", 14, 0, 14);
+    fHistCuts = new TH1F("fHistCuts", ";;Entries", 15, 0, 15);
     fHistCuts->GetXaxis()->SetBinLabel(1, "Photon candidates");
     fHistCuts->GetXaxis()->SetBinLabel(2, "V_{0} Matching");
     fHistCuts->GetXaxis()->SetBinLabel(3, "Track Matching");
@@ -680,6 +697,7 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
     fHistCuts->GetXaxis()->SetBinLabel(12, "Electron #eta max");
     fHistCuts->GetXaxis()->SetBinLabel(13, "Electron ratio findable");
     fHistCuts->GetXaxis()->SetBinLabel(14, "n#sigma TPC");
+    fHistCuts->GetXaxis()->SetBinLabel(15, "Transverse radius rejection");
     fHistograms->Add(fHistCuts);
 
     fHistNV0 = new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 15, 0,
