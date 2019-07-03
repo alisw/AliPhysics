@@ -737,7 +737,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     Particle_Container->SetRejectedOriginMap(fRejectedOrigin); 
     Particle_Container->SetAcceptedDecayMap(fAcceptedDecay);
     Particle_Container->SetRejectISR(fRejectISR);
-    Particle_Container->SetCharge(1);
+    Particle_Container->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
 
     std::vector<fastjet::PseudoJet> Inclusive_Jets_Truth; 
     std::vector<std::pair<Int_t, Int_t>> Inclusive_Jets_Truth_Labels; 
@@ -1329,7 +1329,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
     Particle_Container->SetRejectedOriginMap(fRejectedOrigin); 
     Particle_Container->SetAcceptedDecayMap(fAcceptedDecay); 
     Particle_Container->SetRejectISR(fRejectISR);
-    Particle_Container->SetCharge(1);
+    Particle_Container->SetCharge(AliParticleContainer::EChargeCut_t::kCharged);
 
     std::vector<fastjet::PseudoJet> Inclusive_Jets_Truth; 
     std::vector<std::pair<Int_t, Int_t>> Inclusive_Jets_Truth_Labels; 
