@@ -1635,6 +1635,26 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="8WUHQU";
       break;
+    case 9: // INT7HSE - V0AND with single high pt electron in TRD run 2
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="INT7HSE";
+      break;
+    case 10: // INT7HQU - V0AND with dielectron  in TRD run 2
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="INT7HQU";
+      break;
+    case 11: // INT7HJT - V0AND with jet in TRD run 2
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="INT7HJT";
+      break;
+    case 12: // INT7HNU - V0AND with nuclei in TRD run 2
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="INT7HNU";
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
@@ -2435,38 +2455,152 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
 
 //-------------------------------------------------------------
 Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
-  if (fPeriodEnum == kLHC15n ||                                                                                            // pp 5TeV
-      fPeriodEnum == kLHC15o ||                                                                                            // PbPb 5TeV
-      fPeriodEnum == kLHC15k1a1 || fPeriodEnum == kLHC15k1a2 || fPeriodEnum == kLHC15k1a3  || fPeriodEnum == kLHC16j7 ||   // MC PbPb 5TeV LowIR
-      fPeriodEnum == kLHC18e1 || fPeriodEnum == kLHC18e1a || fPeriodEnum == kLHC18e1b || fPeriodEnum == kLHC18e1c ||       // MC PbPb 5TeV general purpose
-      fPeriodEnum == kLHC16g2 ||                                                                                           // MC PbPb 5TeV EPOS-LHC
-      fPeriodEnum == kLHC16g3 ||                                                                                           // MC PbPb 5TeV DPMJET
-      fPeriodEnum == kLHC16h4 ||                                                                                           // MC PbPb 5TeV GA added pi0 and eta
-      fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c ||                                  // MC PbPb 5TeV LF added (multi-)strange
-      fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c ||                                  // MC PbPb 5TeV HF added hadronic decays
-      fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c ||                                  // MC PbPb 5TeV HF added electron decays
-      fPeriodEnum == kLHC16h2a || fPeriodEnum ==  kLHC16h2b || fPeriodEnum ==  kLHC16h2c ||                                // MC PbPb 5TeV jet-jet
-      fPeriodEnum == kLHC15fm || fPeriodEnum == kLHC16NomB || fPeriodEnum == kLHC16LowB || fPeriodEnum == kLHC17NomB || fPeriodEnum == kLHC17LowB || // pp 13TeV
-      fPeriodEnum == kLHC15g3a3 || fPeriodEnum == kLHC15g3c3 ||                                                            // MC pp 13TeV
-      fPeriodEnum == kLHC16qt ||                                                                                           // pPb 5TeV LHC16qt
-      fPeriodEnum == kLHC16r || fPeriodEnum == kLHC16s ||                                                                  // pPb 8TeV LHC16rs
-      fPeriodEnum == kLHC17f2a || fPeriodEnum == kLHC17f2b || fPeriodEnum == kLHC17g8a || fPeriodEnum == kLHC18f3 ||       // MC pPb 5TeV LHC16qt
-      fPeriodEnum == kLHC16rP1JJ || fPeriodEnum == kLHC16sP1JJ || fPeriodEnum == kLHC18f3bc ||
-      fPeriodEnum == kLHC17f3 || fPeriodEnum == kLHC17f4 ||                                                                 // MC pPb 8TeV LHC16sr
-      fPeriodEnum == kLHC17n ||                                                                                             // Xe-Xe LHC17n
-      fPeriodEnum == kLHC17XeXeHi ||                                                                                        // MC Xe-Xe LHC17n
-      fPeriodEnum == kLHC17pq ||                                                                                            // pp 5TeV LHC17pq
-      fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 ||                                                                // MC pp 5TeV LHC17pq
-      fPeriodEnum == kLHC17l4b ||                                                                                           // MC pp 5TeV LHC17pq
-      fPeriodEnum == kLHC18b8  || fPeriodEnum == kLHC18b10 || fPeriodEnum == kLHC18l2  ||                                   // MC Jet Jet pp 5TeV LHC17pq
-      fPeriodEnum == kLHC18l6b1 || fPeriodEnum == kLHC18l6c1 ||                                                             // MC Jet Jet pp 13 TeV with decay photon in EMCal acc.
-      fPeriodEnum == kLHC18qr ||                                                                                            // PbPb 5TeV 2018
-      fPeriodEnum == kLHC18l8a || fPeriodEnum == kLHC18l8b || fPeriodEnum == kLHC18l8c                                      // MC gen. purp. LHC18qr
-      ){
+  switch (fPeriodEnum){
+    // pp 5TeV
+    case kLHC15n :
+    case kLHC17pq :
+    // pp 5TeV MC
+    case kLHC15l1a2 :
+    case kLHC15l1b2 :
+    case kLHC16h8a :
+    case kLHC16h8b :
+    case kLHC16k3a2 :
+    case kLHC16k3a :
+    case kLHC16k5a :
+    case kLHC16k5b :
+    case kLHC17e2 :
+    case kLHC18j3 :
+    case kLHC16h3 :
+    case kLHC17l3b :
+    case kLHC18j2 :
+    case kLHC17l4b :
+    case kLHC18b8 :
+    case kLHC18b10 :
+    case kLHC18l2 :
+    case kLHC17P1PHO :
+    // pp 13 TeV
+    case kLHC15fm :
+    case kLHC16NomB :
+    case kLHC16LowB :
+    case kLHC17NomB :
+    case kLHC17LowB :
+    case kLHC18NomB :
+    case kLHC18LowB :
+    // pp 13 TeV MC
+    case kLHC15g3a3 :
+    case kLHC15g3a :
+    case kLHC15g3c2 :
+    case kLHC15g3c3 :
+    case kLHC15g3 :
+    case kLHC16a2a :
+    case kLHC16a2b :
+    case kLHC16a2c :
+    case kLHC15P2EPos :
+    case kLHC15P2Pyt8 :
+    case kLHC15k5a :
+    case kLHC15k5b :
+    case kLHC15k5c :
+    case kLHC16P1Pyt8 :
+    case kLHC16P1Pyt8LowB:
+    case kLHC16P1EPOS :
+    case kLHC16P1PHO :
+    case kLHC16P1JJ :
+    case kLHC16P1JJLowB:
+    case kLHC17h8a :
+    case kLHC17h8b :
+    case kLHC17h8c :
+    case kLHC17c3b1 :
+    case kLHC17c3a1 :
+    case kLHC17c3b2 :
+    case kLHC17c3a2 :
+    case kLHC17i3a1 :
+    case kLHC17i3c1 :
+    case kLHC17P1Pyt8NomB :
+    case kLHC17P1Pyt6NomB :
+    case kLHC17P1PHONomB13TeV :
+    case kLHC17P1Pyt8LowB :
+    case kLHC17j5a :
+    case kLHC17j5b :
+    case kLHC17j5c :
+    case kLHC17P1JJ :
+    case kLHC17P1JJLowB :
+    case kLHC18l6b1 :
+    case kLHC18l6c1 :
+    case kLHC18P1JJ :
+    case kLHC18P1Pyt8NomB :
+    case kLHC18P1Pyt8LowB :
+    // pPb 5 TeV
+    case kLHC16qt :
+    // pPb 5 TeV MC
+    case kLHC17f2a :
+    case kLHC17f2b :
+    case kLHC18f3 :
+    case kLHC17g8a :
+    case kLHC17d2a :
+    case kLHC17d2b :
+    // pPb 8 TeV
+    case kLHC16r :
+    case kLHC16s :
+    // pPb 8 TeV MC
+    case kLHC17a3a :
+    case kLHC17a3b :
+    case kLHC17a4a :
+    case kLHC17a4b :
+    case kLHC18f3bc :
+    case kLHC17f3 :
+    case kLHC17f3a :
+    case kLHC17f3b :
+    case kLHC17f4 :
+    case kLHC17f4a :
+    case kLHC17f4b :
+    case kLHC16rP1JJ :
+    case kLHC16sP1JJ :
+    // Xe-Xe 5.44 TeV
+    case kLHC17n :
+    // Xe-Xe 5.44 TeV MC
+    case kLHC17XeXeHi :
+    // PbPb 5 TeV
+    case kLHC15o :
+    case kLHC18qr :
+    // PbPb 5 TeV MC
+    case kLHC15k1a1 :
+    case kLHC15k1a2 :
+    case kLHC15k1a3 :
+    case kLHC16j7 :
+    case kLHC16g2 :
+    case kLHC16g3 :
+    case kLHC16h4 :
+    case kLHC16i1a :
+    case kLHC16i1b :
+    case kLHC16i1c :
+    case kLHC16i2a :
+    case kLHC16i2b :
+    case kLHC16i2c :
+    case kLHC16i3a :
+    case kLHC16i3b :
+    case kLHC16i3c :
+    case kLHC16h2a :
+    case kLHC16h2b :
+    case kLHC16h2c :
+    case kLHC16k3b :
+    case kLHC16k3b2 :
+    case kLHC18b11a :
+    case kLHC18b11b :
+    case kLHC18b11c :
+    case kLHC18e1 :
+    case kLHC18e1a :
+    case kLHC18e1b :
+    case kLHC18e1c :
+    case kLHC18l8a :
+    case kLHC18l8b :
+    case kLHC18l8c :
       return kTRUE;
-  } else {
-     return kFALSE;
+      break;
+    default :
+      return kFALSE;
+      break;
   }
+  return kFALSE;
 }
 
 //-------------------------------------------------------------
