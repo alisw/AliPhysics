@@ -815,7 +815,8 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
     {
         AliESDtrack *esdTrack = event->GetTrack(i);
 
-        Double_t d = esdTrack->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField);
+        float d,z;
+        esdTrack->GetImpactParameters(d,z);
         if (TMath::Abs(d) < fV0VertexerSels[2])
             continue;
         if (TMath::Abs(d) > fV0VertexerSels[6])
@@ -846,7 +847,8 @@ void AliVertexerHyperTriton2Body::SelectTracksMC(AliESDEvent *event, AliMCEvent 
 
         fMagneticField = event->GetMagneticField();
 
-        Double_t d = esdTrack->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField);
+        float d,z;
+        esdTrack->GetImpactParameters(d,z);
         if (TMath::Abs(d) < fV0VertexerSels[2])
             continue;
         if (TMath::Abs(d) > fV0VertexerSels[6])
