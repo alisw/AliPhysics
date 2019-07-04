@@ -82,6 +82,8 @@
 #include "TGeoManager.h"
 #include "iostream"
 #include "fstream"
+#include "AliHFEmcQA.h"
+#include "AliHFEsignalCuts.h"
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliVParticle.h"
@@ -208,7 +210,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
 ,fDCAz_pt_had_WoPID(0)
-,fDCAxy_pt_had_onlyDCA_phi1(0)
+/*,fDCAxy_pt_had_onlyDCA_phi1(0)
 ,fDCAxy_pt_had_onlyDCA_phi2(0)
 ,fDCAxy_pt_had_onlyDCA_phi3(0)
 ,fDCAxy_pt_had_onlyDCA_phi4(0)
@@ -227,7 +229,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fResGausCorr_phi1(0)
 ,fResGausCorr_phi2(0)
 ,fResGausCorr_phi3(0)
-,fResGausCorr_phi4(0)
+,fResGausCorr_phi4(0)*/
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -303,6 +305,16 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty(const char *name)
 ,fDcorr21(0)
 ,fDcorr22(0)
 ,fHC(0)
+,fDCAxy_pt_Dalitz(0)
+,fDCAxy_pt_DalitzFromFeeddown(0)
+,fDCAxy_pt_Conversions(0)
+,fDCAxy_pt_ConversionsFromFeeddown(0)
+,fDCAxy_pt_ConversionsFromStrangeFeeddown(0)
+,fDCAxy_pt_Dalitz2(0)
+,fDCAxy_pt_DalitzFromFeeddown2(0)
+,fDCAxy_pt_Conversions2(0)
+,fDCAxy_pt_Beauty2(0)
+,fDCAxy_pt_Charm2(0)
 {
     //Named constructor
     // Define input and output slots here
@@ -425,7 +437,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fDCAxy_pt_had_onlyDCA_Phytia(0)
 ,fDCAz_pt_had(0)
 ,fDCAz_pt_had_WoPID(0)
-,fDCAxy_pt_had_onlyDCA_phi1(0)
+/*,fDCAxy_pt_had_onlyDCA_phi1(0)
 ,fDCAxy_pt_had_onlyDCA_phi2(0)
 ,fDCAxy_pt_had_onlyDCA_phi3(0)
 ,fDCAxy_pt_had_onlyDCA_phi4(0)
@@ -444,7 +456,7 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fResGausCorr_phi1(0)
 ,fResGausCorr_phi2(0)
 ,fResGausCorr_phi3(0)
-,fResGausCorr_phi4(0)
+,fResGausCorr_phi4(0)*/
 ,fDCAxy_pt_ele(0)
 ,fDCAz_pt_ele(0)
 ,hCharmMotherPt(0)
@@ -520,7 +532,16 @@ AliAnalysisHFEppTPCTOFBeauty::AliAnalysisHFEppTPCTOFBeauty()
 ,fDcorr21(0)
 ,fDcorr22(0)
 ,fHC(0)
-
+,fDCAxy_pt_Dalitz(0)
+,fDCAxy_pt_DalitzFromFeeddown(0)
+,fDCAxy_pt_Conversions(0)
+,fDCAxy_pt_ConversionsFromFeeddown(0)
+,fDCAxy_pt_ConversionsFromStrangeFeeddown(0)
+,fDCAxy_pt_Dalitz2(0)
+,fDCAxy_pt_DalitzFromFeeddown2(0)
+,fDCAxy_pt_Conversions2(0)
+,fDCAxy_pt_Beauty2(0)
+,fDCAxy_pt_Charm2(0)
 {
     // Constructor
     // Define input and output slots here
@@ -835,7 +856,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fDCAz_pt_had = new TH2F("fDCAz_pt_had",";p_{t} (GeV/c);DCAz hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAz_pt_had);
     
-    fDCAxy_pt_had_onlyDCA_phi1 = new TH2F("fDCAxy_pt_had_onlyDCA_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
+  /*  fDCAxy_pt_had_onlyDCA_phi1 = new TH2F("fDCAxy_pt_had_onlyDCA_phi1",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_onlyDCA_phi1);
     
     fDCAxy_pt_had_phi1_ChB = new TH2F("fDCAxy_pt_had_phi1_ChB",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
@@ -883,7 +904,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     
     fDCAxy_pt_had_ResCorr_phi4 = new TH2F("fDCAxy_pt_had_ResCorr_phi4",";p_{t} (GeV/c);DCAxy hadrons",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAxy_pt_had_ResCorr_phi4);
-    
+    */
     
     fDCAz_pt_had_WoPID = new TH2F("fDCAz_pt_had_WoPID",";p_{t} (GeV/c);DCAz hadrons_WoPID",300,0,30,8000,-0.5,0.5);
     fOutputList->Add(fDCAz_pt_had_WoPID);
@@ -943,6 +964,47 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fPtBeautyReconstructedTracksPIDTOF = new TH1F("fPtBeautyReconstructedTracksPIDTOF","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtBeautyReconstructedTracksPIDTOF);
     
+  fDCAxy_pt_Dalitz = new TH2F("fDCAxy_pt_Dalitz","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_Dalitz->Sumw2();
+  fOutputList->Add(fDCAxy_pt_Dalitz);
+  
+  fDCAxy_pt_DalitzFromFeeddown = new TH2F("fDCAxy_pt_DalitzFromFeeddown","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_DalitzFromFeeddown->Sumw2();
+  fOutputList->Add(fDCAxy_pt_DalitzFromFeeddown);
+  
+  fDCAxy_pt_Conversions = new TH2F("fDCAxy_pt_Conversions","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_Conversions->Sumw2();
+  fOutputList->Add(fDCAxy_pt_Conversions);
+  
+  fDCAxy_pt_ConversionsFromFeeddown = new TH2F("fDCAxy_pt_ConversionsFromFeeddown","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_ConversionsFromFeeddown->Sumw2();
+  fOutputList->Add(fDCAxy_pt_ConversionsFromFeeddown);
+  
+  fDCAxy_pt_ConversionsFromStrangeFeeddown = new TH2F("fDCAxy_pt_ConversionsFromStrangeFeeddown","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_ConversionsFromStrangeFeeddown->Sumw2();
+  fOutputList->Add(fDCAxy_pt_ConversionsFromStrangeFeeddown);
+  
+  
+  fDCAxy_pt_Dalitz2 = new TH2F("fDCAxy_pt_Dalitz2","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_Dalitz2->Sumw2();
+  fOutputList->Add(fDCAxy_pt_Dalitz2);
+  
+  fDCAxy_pt_DalitzFromFeeddown2 = new TH2F("fDCAxy_pt_DalitzFromFeeddown2","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_DalitzFromFeeddown2->Sumw2();
+  fOutputList->Add(fDCAxy_pt_DalitzFromFeeddown2);
+  
+  fDCAxy_pt_Conversions2 = new TH2F("fDCAxy_pt_Conversions2","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_Conversions2->Sumw2();
+  fOutputList->Add(fDCAxy_pt_Conversions2);
+  
+  fDCAxy_pt_Beauty2 = new TH2F("fDCAxy_pt_Beauty2","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_Beauty2->Sumw2();
+  fOutputList->Add(fDCAxy_pt_Beauty2);
+  
+  fDCAxy_pt_Charm2 = new TH2F("fDCAxy_pt_Charm2","; p_{T} [GeV/c]; Count",32,ptbinning,8000,-0.5,0.5);
+  fDCAxy_pt_Charm2->Sumw2();
+  fOutputList->Add(fDCAxy_pt_Charm2);
+      
       
     ///THnSparse to store DCA of different particle species in MC-------------
     Int_t nBinspdg2 = 30;
@@ -1026,7 +1088,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fD0Data->Sumw2();
     fOutputList->Add(fD0Data);
     
-    
+    /*
     const Int_t nDima4=5;
     Int_t nBina4[nDima4] = {32,nBinsdcaxy,nBinsITSchi2,nBinsITSsha,nBinspdg2};
     fD0HC = new THnSparseF("fD0HC","fD0HC",nDima4,nBina4);
@@ -1037,7 +1099,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserCreateOutputObjects()
     fD0HC->SetBinEdges(4,binLimpdg2); /// electrons and pions
     fD0HC->Sumw2();
     fOutputList->Add(fD0HC);
-    
+    */
     
     PostData(1, fOutputList);
     
@@ -1514,7 +1576,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			fDCAxy_pt_had->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAz_pt_had->Fill(fPt,DCAz);	
 			
-			if(phi_d0 > 315.0 || phi_d0 < 45.0){
+			/*if(phi_d0 > 315.0 || phi_d0 < 45.0){
 			fDCAxy_pt_had_onlyDCA_phi1->Fill(fPt,DCAxy);
 			fDCAxy_pt_had_phi1_ChB->Fill(fPt,DCAxy*track->Charge()*signB);
 			fDCAxy_pt_had_phi1_B->Fill(fPt,DCAxy*signB);
@@ -1569,7 +1631,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 			//fResGausCorr_phi4->Fill(correction_phi4);
 			fDCAxy_pt_had_ResCorr_phi4->Fill(fPt,DCAResCorr_phi4);
 			//cout<<"Phi4 value:===   "<<phi_d0<<endl;
-			}
+			}*/
 			
 			
 			///Checking the effect of the improver in the resolution for hijing events separetely
@@ -1660,7 +1722,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		//THnSparse to store the DCA information of Hadron Contamination///
 		///////////////////////////////////////////////////
          //if(!fIsMC){
-			 qadcaHC[0] = fPt;
+		/*	 qadcaHC[0] = fPt;
          
 			 qadcaHC[1] = DCAxy*track->Charge()*signB;
 			
@@ -1701,7 +1763,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
          		//cout<<WeightHC<<endl;
 			if(qadcaHC[4]>0.) fD0HC->Fill(qadcaHC, WeightHC);
         //}
-        
+        */
        
         
                
@@ -2064,6 +2126,8 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 						qadca[1]=3.5;
 					}
                 }//end of electrons from beauty
+                 Double_t DCANew = DCAxy*track->Charge()*signB;
+        	if(fIsMC) GetHFElectronTemplates2(fMCarray, track, fPt, DCANew);
             }//end of hfe
             
             
@@ -2079,6 +2143,10 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
                 fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
                 pdg_mother = fMCparticleMother->GetPdgCode();
                 
+                Double_t DCANew = DCAxy*track->Charge()*signB;
+        	if(fIsMC) GetGammaAndDalitzElectronTemplates(fMCarray, track, fPt, DCANew);
+        	if(fIsMC) GetGammaAndDalitzElectronTemplates2(fMCarray, track, fPt, DCANew);
+                
                 ///Photonic Electrons:
                 if(TMath::Abs(pdg_mother) == 111 || TMath::Abs(pdg_mother) == 221 || TMath::Abs(pdg_mother) == 22){
 					if(TMath::Abs(pdg_mother) == 111) qadca[1]=4.5; 
@@ -2091,7 +2159,7 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 
      
              ///DCAxy
-            	float DCAResCorr;
+            	/*float DCAResCorr;
             	
            	if(phi_d0 > 315.0 || phi_d0 < 45.0){
 		float DCAMCRes_phi1 = GetDCAResolMC_phi1(fPt); ///resolution of the MC
@@ -2120,10 +2188,10 @@ void AliAnalysisHFEppTPCTOFBeauty::UserExec(Option_t *)
 		float correction_phi4 = gRandom->Gaus(DCAMCMean_phi4,DCAMCRes_phi4);  
 		DCAResCorr =  DCAxy*track->Charge()*signB + correction_phi4;
 		}
-		
+		*/
 	    qadca[2]=DCAxy*track->Charge()*signB;	
             
-            qadca[9]=DCAResCorr;
+            //qadca[9]=DCAResCorr;
             
             Double_t ITSNcls = atrack->GetITSNcls();
             //cout<<"atrack->GetITSNcls() = "<<atrack->GetITSNcls()<<endl;
@@ -2194,6 +2262,110 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::ProcessCutStep(Int_t cutStep, AliVParticle 
     return kTRUE;
 }
 //=======================================================================
+
+void AliAnalysisHFEppTPCTOFBeauty::GetGammaAndDalitzElectronTemplates(TClonesArray *fMCarray, AliVTrack *track, Double_t fpt, Double_t NewDCA){
+
+       //Float_t dcaxy = -999., dcaz = -999.;
+       //fExtraCuts->GetImpactParameters(track, dcaxy, dcaz);
+
+      const AliAODMCParticle  *fMCparticle = (const AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+      //AliHFEmcQA *aodmcqa = dynamic_cast< AliAODmcQA *>(mctrack);
+     
+      AliHFEmcQA *hfemcqa = new AliHFEmcQA();
+      if(hfemcqa) hfemcqa->SetMCArray(fMCarray);
+      //fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+      //Int_t PhotonicType = fSignalCuts->GetMCQAObject()->GetElecSource(fMCparticle,kTRUE);
+      Int_t PhotonicType = hfemcqa->GetElecSource(fMCparticle, kTRUE);
+      if(PhotonicType == 5 || PhotonicType == 8){ // electrons from Dalitz 
+      fDCAxy_pt_Dalitz->Fill(fpt, NewDCA);
+      }
+     
+      if(PhotonicType == 31 || PhotonicType == 32 || PhotonicType == 33 || PhotonicType == 34 || PhotonicType == 39){ // electrons from Dalitz from feeddown strange
+      fDCAxy_pt_DalitzFromFeeddown->Fill(fpt, NewDCA);
+      }
+      
+      if(PhotonicType == 13 || PhotonicType == 14){ // electrons from photon conversions
+      fDCAxy_pt_Conversions->Fill(fpt, NewDCA);
+      }
+      
+      if(PhotonicType == 15 || PhotonicType == 16 || PhotonicType == 17 || PhotonicType == 18){ // electrons from photon conversions from light mesons
+      fDCAxy_pt_ConversionsFromFeeddown->Fill(fpt, NewDCA);
+      }
+      
+      if(PhotonicType == 24){ // electrons from photon conversions from light mesons
+      fDCAxy_pt_DalitzFromFeeddown2->Fill(fpt, NewDCA);
+      }
+      
+      if(PhotonicType == 35 || PhotonicType == 36 || PhotonicType == 37 || PhotonicType == 38 || PhotonicType == 40){ // electrons from photon conversions from strange
+      fDCAxy_pt_ConversionsFromStrangeFeeddown->Fill(fpt, NewDCA);
+      }
+
+      
+    }
+
+void AliAnalysisHFEppTPCTOFBeauty::GetGammaAndDalitzElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2){
+
+       //Float_t dcaxy = -999., dcaz = -999.;
+       //fExtraCuts->GetImpactParameters(track, dcaxy, dcaz);
+
+      const AliAODMCParticle  *fMCparticle = (const AliAODMCParticle*) fMCarray2->At(TMath::Abs(track2->GetLabel()));
+      //AliHFEmcQA *aodmcqa = dynamic_cast< AliAODmcQA *>(mctrack);
+      //AliHFEsignalCuts *fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
+       AliHFEsignalCuts *fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
+      if(fMCarray){
+      fSignalCuts->SetMCAODInfo(fMCarray);
+      }
+      
+      AliHFEmcQA *hfemcqa = new AliHFEmcQA();
+      if(hfemcqa) hfemcqa->SetMCArray(fMCarray2);
+      //fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+      Double_t mcmpt = -999;
+      Int_t mcmpdg = 0;
+      Int_t PhotonicType = fSignalCuts->GetSignalSource(track2);
+      if(PhotonicType == 3){ // electrons from Dalitz 
+      fDCAxy_pt_Dalitz2->Fill(fpt2, NewDCA2);
+      }
+          
+      if(PhotonicType == 2){ // electrons from photon conversions
+      fDCAxy_pt_Conversions2->Fill(fpt2, NewDCA2);
+      }
+      
+  
+      
+    }
+
+
+void AliAnalysisHFEppTPCTOFBeauty::GetHFElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2){
+
+       //Float_t dcaxy = -999., dcaz = -999.;
+       //fExtraCuts->GetImpactParameters(track, dcaxy, dcaz);
+
+      const AliAODMCParticle  *fMCparticle = (const AliAODMCParticle*) fMCarray2->At(TMath::Abs(track2->GetLabel()));
+      //AliHFEmcQA *aodmcqa = dynamic_cast< AliAODmcQA *>(mctrack);
+      //AliHFEsignalCuts *fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
+       AliHFEsignalCuts *fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
+      if(fMCarray){
+      fSignalCuts->SetMCAODInfo(fMCarray);
+      }
+      
+      AliHFEmcQA *hfemcqa = new AliHFEmcQA();
+      if(hfemcqa) hfemcqa->SetMCArray(fMCarray2);
+      //fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
+      Double_t mcmpt = -999;
+      Int_t mcmpdg = 0;
+      Int_t PhotonicType = fSignalCuts->GetSignalSource(track2);
+      
+      if(PhotonicType == 1){ // electrons from photon conversions from light mesons
+      fDCAxy_pt_Charm2->Fill(fpt2, NewDCA2);
+      }
+      
+      if(PhotonicType == 0){ // electrons from photon conversions from strange
+      fDCAxy_pt_Beauty2->Fill(fpt2, NewDCA2);
+      }
+
+      
+    }
+
 
 
 //=======================================================================
@@ -2672,7 +2844,7 @@ Bool_t AliAnalysisHFEppTPCTOFBeauty::PassCorrCuts(AliAODEvent *fAOD)
   
 }
 
-
+/*
 Float_t AliAnalysisHFEppTPCTOFBeauty::GetDCAMeanMC_phi1(Float_t x){
     
 // Return the DCA resolution of the track (in MC) accordingly to its pT
@@ -2951,7 +3123,7 @@ if (x >= 7.00 && x < 8.00) sigmaG = 0.002009;
 
 return sigmaG;   
 }
-
+*/
 //=======================================================================
 
 

@@ -110,7 +110,9 @@ public:
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
     
     void SetHCFunction(TF1* HC) {fHC = HC;};
-    
+    void GetGammaAndDalitzElectronTemplates(TClonesArray *fMCarray, AliVTrack *track, Double_t fpt, Double_t NewDCA);
+    void GetGammaAndDalitzElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2);
+    void GetHFElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2);
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
     //______________________________________________________________________
@@ -277,7 +279,7 @@ private:
     TH2F                *fDCAxy_pt_BaryonB_beautybef;//!
     TH2F                *fDCAxy_pt_BaryonBD_beautybef;//!
     TH2F				*fDCAxy_pt_had_onlyDCA;//!
-    TH2F				*fDCAxy_pt_had_onlyDCA_phi1;//!
+   /* TH2F				*fDCAxy_pt_had_onlyDCA_phi1;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi2;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi3;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_phi4;//!
@@ -296,7 +298,7 @@ private:
     TH1F				*fResGausCorr_phi1;//!
     TH1F				*fResGausCorr_phi2;//!
     TH1F				*fResGausCorr_phi3;//!
-    TH1F				*fResGausCorr_phi4;//!
+    TH1F				*fResGausCorr_phi4;//!*/
     TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
@@ -314,6 +316,16 @@ private:
 	TH2F                *hBeautyMotherPt2Daft;//!
 	TH1F                *hBeautyMotherPtbef;//!
 	TH1F                *hBeautyMotherPtaft;//!
+	TH2F			*fDCAxy_pt_Dalitz;//!
+    	TH2F			*fDCAxy_pt_DalitzFromFeeddown;//!
+   	TH2F			*fDCAxy_pt_Conversions;//!
+   	TH2F			*fDCAxy_pt_ConversionsFromFeeddown;//!
+    	TH2F			*fDCAxy_pt_ConversionsFromStrangeFeeddown;//!
+    	TH2F			*fDCAxy_pt_Dalitz2;//!
+    	TH2F			*fDCAxy_pt_DalitzFromFeeddown2;//!
+    	TH2F			*fDCAxy_pt_Conversions2;//!
+    	TH2F			*fDCAxy_pt_Beauty2;//!
+    	TH2F			*fDCAxy_pt_Charm2;//!
 	TH1F				*fPtBeautyGenerated;//!
 	TH1F				*fPtBeautyReconstructedAll;//!
 	TH1F				*fPtGeneratedBmesons;//!
