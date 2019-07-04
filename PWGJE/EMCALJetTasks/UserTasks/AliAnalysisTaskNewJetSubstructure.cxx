@@ -576,47 +576,38 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(AliEmcalJet *f
    double xktg=0;
    double z=0;
    
-   double area1=0;
-   double area2=0;
+   fastjet::PseudoJet area1,area2;
+   
     while(jj.has_parents(j1,j2) && z<fHardCutoff){
       nall=nall+1;
   
       flagSubjet=0;
-      area1 = j1.area();
-      area2 = j2.area();
+      area1 = j1.area_4vector();
+      area2 = j2.area_4vector();
+       fastjet::PseudoJet jet_sub1=j1-GetRhoVal(0)*area1;
+       fastjet::PseudoJet jet_sub2=j2-GetRhoVal(0)*area2; 
       
-      if(fJetShapeSub!=kNoSub) if(j1.perp() < j2.perp()) swap(j1,j2);
+     
+    	if(jet_sub1.perp() < jet_sub2.perp()) swap(jet_sub1,jet_sub2);
+        if(jet_sub1.perp()<0 && jet_sub2.perp()<0) break;
       
-      if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE){
-	
-	if((j1.perp()-area1*GetRhoVal(0)) < (j2.perp()-area2*GetRhoVal(0))) swap(j1,j2);
-        area1 = j1.area();
-        area2 = j2.area();
-        if(j1.perp()-area1*GetRhoVal(0)<0 && j2.perp()-area2*GetRhoVal(0)<0) break;
-        //if both are negative after subtraction, then skip
-      }
 
       
-      if(j2.perp()-area2*GetRhoVal(0)>0){
+      if(jet_sub2.perp()>0){
        
     
     
 
-     
-   
-     if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) {z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));
-      }
-     if(fJetShapeSub!=kNoSub) z=j2.perp()/(j1.perp()+j2.perp());
 
-         double delta_R = j1.delta_R(j2);
-         double xkt=(j2.perp()-area2*GetRhoVal(0))*sin(delta_R);
+         double delta_R = jet_sub1.delta_R(jet_sub2);
+         double xkt=jet_sub2.perp()*sin(delta_R);
          double lnpt_rel = log(xkt);
 	 double y = log(1./delta_R);
-	 double form=2*0.197*j2.e()/(xkt*xkt); 
-         double rad=j2.e();
+	 double form=2*0.197*jet_sub2.e()/(xkt*xkt); 
+         double rad=jet_sub2.e();
 
-     if(fJetShapeSub==kNoSub && fDoAreaIterative== kTRUE) {z = (j2.perp()-area2*GetRhoVal(0))/((j1.perp()-area1*GetRhoVal(0))+(j2.perp()-area2*GetRhoVal(0)));}
-     if(fJetShapeSub!=kNoSub) z=j2.perp()/(j1.perp()+j2.perp()); 
+	 z = jet_sub2.perp()/(jet_sub1.perp()+jet_sub2.perp());
+      
 	 
 	 if(z>fHardCutoff) nsd=nsd+1;
          if(z>fHardCutoff && flagSubjet==0){
@@ -633,7 +624,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(AliEmcalJet *f
 
       }
       
-      jj=j1;}
+      jj=jet_sub1;}
 
      fShapesVar[2]=xktg;
      fShapesVar[3]=nsd;
