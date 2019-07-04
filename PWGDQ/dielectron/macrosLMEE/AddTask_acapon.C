@@ -19,7 +19,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Bool_t useCutLibrary   = kTRUE, // Use simple config instead?
                                 Bool_t getFromAlien    = kFALSE)
 {
-  
+
     TObjArray* arrNames = names.Tokenize(";");
     Int_t nDie = arrNames->GetEntries();
     Printf("Number of implemented cuts: %i", nDie);
@@ -37,9 +37,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     std::cout << "Pairing         : " << doPairing      << std::endl;
     std::cout << "Event mixing    : " << doMixing       << std::endl;
     if(useCutLibrary){
-      std::cout << "Pairing         : " << doPairing      << std::endl;
       std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
-      std::cout << "Event mixing    : " << doMixing       << std::endl;
       std::cout << "Track plots     : " << trackVarPlots  << std::endl;
       std::cout << "Which det plots : " << whichDetPlots  << std::endl;
       std::cout << "v0 plots        : " << v0plots        << std::endl;
@@ -64,7 +62,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
 
     // Load updated macros from private ALIEN path
     TString myConfig = "alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/Config_acapon.C .";
-    TString myCutLib = "alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C ."; 
+    TString myCutLib = "alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C .";
     if(getFromAlien && (!gSystem->Exec(myConfig)) && (!gSystem->Exec(myCutLib))){
       std::cout << "Copy config from Alien" << std::endl;
       configBasePath = TString::Format("%s/",gSystem->pwd());
@@ -82,10 +80,10 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     }
 
     // Determine if ESDs or AODs are being analysed
-    // CutLibrary only tested for AODs
-    // noCutLib option only works with ESDs
+    // CutLibrary version only works/tested for AODs
+    // noCutLib version is mixed depending on cut setting
     if(mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()){
-      ::Info("AddTask_acapon", "AOD configuration"); 
+      ::Info("AddTask_acapon", "AOD configuration");
     }
     else if(mgr->GetInputEventHandler()->IsA() == AliESDInputHandler::Class()){
       if(useCutLibrary){
@@ -105,7 +103,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     Int_t triggerNames = (AliVEvent::kINT7);
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
-    
+
     // Event cuts are the same for all cut settings regardless
     // of config setup
     LMEECutLib* cutLib = 0x0;
@@ -120,13 +118,13 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     // Add the task to the manager
     mgr->AddTask(task);
     // Add dielectron analysis with different cuts to the task
-    for(Int_t i = 0; i < nDie; ++i){ 
+    for(Int_t i = 0; i < nDie; ++i){
       TString dielTaskName(arrNames->At(i)->GetName());
       AliDielectron* diel_low = 0x0;
 
       if(useCutLibrary){
         diel_low = Config_acapon(dielTaskName, hasMC, SDDstatus,
-                                 doPairing, applyPairCuts, doMixing, 
+                                 doPairing, applyPairCuts, doMixing,
                                  trackVarPlots, whichDetPlots, v0plots,
                                  useITScorr, useTPCcorr, useTOFcorr,
                                  plots3D, useRun1binning);
@@ -142,25 +140,25 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
 
 
     // Create output container
-    AliAnalysisDataContainer *coutput1 =
+    AliAnalysisDataContainer* coutput1 =
     mgr->CreateContainer(::Form("acapon_tree_%d",wagonNum),
                          TTree::Class(),
                          AliAnalysisManager::kExchangeContainer,
                          outputFileName.Data());
 
-    AliAnalysisDataContainer *cOutputHist1 =
+    AliAnalysisDataContainer* cOutputHist1 =
     mgr->CreateContainer(::Form("acapon_out_%d", wagonNum),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
 
-    AliAnalysisDataContainer *cOutputHist2 =
+    AliAnalysisDataContainer* cOutputHist2 =
     mgr->CreateContainer(::Form("acapon_CF_%d", wagonNum),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          outputFileName.Data());
 
-    AliAnalysisDataContainer *cOutputHist3 =
+    AliAnalysisDataContainer* cOutputHist3 =
     mgr->CreateContainer(::Form("acapon_EventStat_%d", wagonNum),
                          TH1D::Class(),
                          AliAnalysisManager::kOutputContainer,
