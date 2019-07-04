@@ -258,6 +258,7 @@
 #pragma link C++ class AliJetEmbeddingFromAODTask+;
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliAnalysisTaskEmcalQGTagging+;
+#pragma link C++ class AliAnalysisTaskNewJetSubstructure+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapesMC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetShapeExtra+;
 #pragma link C++ class AliAnalysisTaskFullpAJets+;

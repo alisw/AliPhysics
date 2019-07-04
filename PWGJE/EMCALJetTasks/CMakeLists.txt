@@ -255,6 +255,7 @@ if(FASTJET_FOUND)
         AliJetShape.cxx
         AliLundPlaneHelper.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
+	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
 	    UserTasks/AliAnalysisTaskFullpAJets.cxx
