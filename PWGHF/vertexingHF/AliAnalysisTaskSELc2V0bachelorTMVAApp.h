@@ -35,6 +35,10 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAODRecoCascadeHF.h"
 
+#include <TMVA/Tools.h>
+#include <TMVA/Reader.h>
+#include <TMVA/MethodCuts.h>
+
 /// \class AliAnalysisTaskSELc2V0bachelorTMVAApp
 
 class IClassifierReader;
@@ -158,6 +162,24 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
 
   void SetTimestampCut(UInt_t value) {fTimestampCut = value;}
   UInt_t GetTimestampCut() const {return fTimestampCut;}
+
+  void SetTMVAReader(TMVA::Reader* r) {fReader = r;}
+  TMVA::Reader* GetTMVAReader() const {return fReader;}
+
+  void SetNVarsSpectators(Int_t n) {fNVarsSpectators = n;}
+  Int_t GetNVarsSpectators() const {return fNVarsSpectators;}
+
+  void SetNamesTMVAVariablesSpectators(TString names) {fNamesTMVAVarSpectators = names;}
+  TString GetNamesTMVAVariablesSpectators() {return fNamesTMVAVarSpectators;}
+
+  void SetUseXmlWeightsFile(Bool_t flag) {fUseXmlWeightsFile = flag;}
+  Bool_t GetUseXmlWeightsFile() const {return fUseXmlWeightsFile;}
+
+  void SetUseWeightsLibrary(Bool_t flag) {fUseWeightsLibrary = flag;}
+  Bool_t GetUseWeightsLibrary() const {return fUseWeightsLibrary;}
+
+  void SetXmlWeightsFile(TString fileName) {fXmlWeightsFile = fileName;}
+  TString GetXmlWeightsFile() const {return fXmlWeightsFile;}
 
  private:
   
@@ -314,7 +336,8 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   
   Bool_t fFillTree;                    /// flag to decide whether to fill the sgn and bkg trees
 
-  IClassifierReader *fBDTReader;       //!<! BDT reader
+  Bool_t fUseWeightsLibrary;           // flag to decide whether to use or not the BDT class
+  IClassifierReader *fBDTReader;       //!<! BDT reader using BDT class
   TString fTMVAlibName;                /// Name of the library to load to have the TMVA weights
   TString fTMVAlibPtBin;               /// Pt bin that will be in the library to be loaded for the TMVA
   TString fNamesTMVAVar;               /// vector of the names of the input variables
@@ -347,9 +370,18 @@ class AliAnalysisTaskSELc2V0bachelorTMVAApp : public AliAnalysisTaskSE
   Int_t fNVars;  /// Number of training variables
 
   UInt_t fTimestampCut; // cut on timestamp
- 
+
+  Bool_t fUseXmlWeightsFile;                   // flag to decide whether to use or not the xml file
+  TMVA::Reader *fReader;                // TMVA reader using xml file
+  Float_t* fVarsTMVA;                   //[fNVars] // variables to be used by TMVA
+  Int_t fNVarsSpectators;               // number of spectator variables
+  Float_t* fVarsTMVASpectators;         //[fNVarsSpectators] // variables to be used by TMVA
+  TString fNamesTMVAVarSpectators;      // vector of the names of the spectators variables
+  TString fXmlWeightsFile;              // file with TMVA weights
+  TH2D *fBDTHistoTMVA;                  //!<! BDT histo file for the case in which the xml file is used
+  
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 8); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVAApp, 9); /// class for Lc->p K0
   /// \endcond    
 };
 
