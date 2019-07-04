@@ -168,7 +168,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   }
   ;
   bool GetdPhidEtamTPlots() {
-    return (fdPhidEtaPlots&&fmTdEtadPhi);
+    return (fdPhidEtaPlots && fmTdEtadPhi);
   }
   bool GetMinimalBookingME() {
     return fMinimalBookingME;
@@ -228,16 +228,27 @@ class AliFemtoDreamCollConfig : public TNamed {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaEtaMax = delta;
   }
-  float GetDeltaEtaMax() const { return fDeltaEtaMax; }
+  float GetDeltaEtaMax() const {
+    return fDeltaEtaMax;
+  }
 
   void SetDeltaPhiMax(float delta) {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaPhiMax = delta;
   }
-  float GetDeltaPhiMax() const { return fDeltaPhiMax; }
-
-  void DoDeltaEtaDeltaPhiCut(bool doIt) { fDoDeltaEtaDeltaPhiCut = doIt; }
-  float GetDoDeltaEtaDeltaPhiCut() const { return fDoDeltaEtaDeltaPhiCut; }
+  float GetDeltaPhiMax() const {
+    return fDeltaPhiMax;
+  }
+  float GetSqDeltaPhiEtaMax() const {
+    return fDeltaEtaMax * fDeltaEtaMax + fDeltaPhiMax * fDeltaPhiMax;
+  }
+  ;
+  void DoDeltaEtaDeltaPhiCut(bool doIt) {
+    fDoDeltaEtaDeltaPhiCut = doIt;
+  }
+  float GetDoDeltaEtaDeltaPhiCut() const {
+    return fDoDeltaEtaDeltaPhiCut;
+  }
 
  private:
   bool fMultBinning;            //
@@ -252,7 +263,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
-  AliFemtoDreamCollConfig::UncorrelatedMode fMode; //
+  AliFemtoDreamCollConfig::UncorrelatedMode fMode;  //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
   int fNumberRadii;             //

@@ -301,7 +301,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
 
   if (fConfig->GetUsePhiSpinning()) {
     fSample->SetEvent(fPairCleaner->GetCleanParticles(),
-                      fEvent->GetMultiplicity());
+                      fEvent);
   }
 
   // flush the data
@@ -400,8 +400,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                               fConfig->GetMinimalBookingME());
   if (fConfig->GetUsePhiSpinning()) {
-    fSample = new AliFemtoDreamControlSample(
-        fConfig, fConfig->GetMinimalBookingSample());
+    fSample = new AliFemtoDreamControlSample(fConfig);
   }
 
   fQA = new TList();
