@@ -769,7 +769,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       AliAODMCParticle* Truth_Particle=NULL; 
       Int_t NTruthD=0; 
       for (Int_t i_Particle=0; i_Particle<Particle_Container->GetNParticles(); i_Particle++){ 
-	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptParticle(i_Particle));
+	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptMCParticle(i_Particle));
 	if (!Truth_Particle) continue;
 	//	if (TMath::Abs(Truth_Particle->Eta())>0.9) continue;
 	if (TMath::Abs(Truth_Particle->PdgCode())==fCandidatePDG){
@@ -1347,7 +1347,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       AliAODMCParticle* Truth_Particle=NULL;
       Int_t NTruthD=0;
       for (Int_t i_Particle=0; i_Particle<Particle_Container->GetNParticles(); i_Particle++){ 
-	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptParticle(i_Particle));
+	Truth_Particle = static_cast<AliAODMCParticle*>(Particle_Container->GetAcceptMCParticle(i_Particle));
 	if (!Truth_Particle) continue;
 	if (TMath::Abs(Truth_Particle->GetPdgCode())==fCandidatePDG){ 
 	  fhEvent->Fill(3); 	  
