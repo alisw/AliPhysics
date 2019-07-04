@@ -300,7 +300,6 @@ void AliAnalysisTaskNanoLoton::UserExec(Option_t *option) {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
                         fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
     if (fConfig->GetUsePhiSpinning()) {
-      fSample->SetBField(fEvent->GetMagneticField());
       fSample->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
     }
   }

@@ -25,7 +25,6 @@ class AliFemtoDreamControlSample {
     return "Control sample leaking";
   }
   ;
-  void SetBField(float bField) { fHigherMath->SetBField(bField); } ;
   TList* GetHistList() {
     return fHigherMath->GetHistList();
   }
