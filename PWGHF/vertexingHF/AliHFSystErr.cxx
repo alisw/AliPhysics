@@ -7737,11 +7737,15 @@ void AliHFSystErr::InitLctopKpi2016pPb() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-
-  for(Int_t i=3;i<=8;i++) fTrackingEff->SetBinContent(i,0.03); // 2-8
-  for(Int_t i=9;i<=24;i++) fTrackingEff->SetBinContent(i,0.06); // 8-24
-
-
+  fTrackingEff->SetBinContent(1,0.);
+  fTrackingEff->SetBinContent(2,0.);
+  for(Int_t i=3;i<=3;i++) fTrackingEff->SetBinContent(i,0.06); // 2-3
+  for(Int_t i=4;i<=4;i++) fTrackingEff->SetBinContent(i,0.06); // 3-4
+  for(Int_t i=5;i<=5;i++) fTrackingEff->SetBinContent(i,0.06); // 4-5
+  for(Int_t i=6;i<=6;i++) fTrackingEff->SetBinContent(i,0.06); // 5-6
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.06); // 6-8
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.06); // 8-12
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.06); // 12-24
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
@@ -7749,7 +7753,8 @@ void AliHFSystErr::InitLctopKpi2016pPb() {
   fRawYield->SetBinContent(2,0.);
   for(Int_t i=3;i<=3;i++) fRawYield->SetBinContent(i,0.08); // 2-3
   for(Int_t i=4;i<=4;i++) fRawYield->SetBinContent(i,0.06); // 3-4
-  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.03); // 4-6
+  for(Int_t i=5;i<=5;i++) fRawYield->SetBinContent(i,0.06); // 4-5
+  for(Int_t i=6;i<=6;i++) fRawYield->SetBinContent(i,0.1); // 5-6
   for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.06); // 6-8
   for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.06); // 8-12
   for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.1); // 12-24
@@ -7759,7 +7764,8 @@ void AliHFSystErr::InitLctopKpi2016pPb() {
   fCutsEff->SetBinContent(2,0.);
   for(Int_t i=3;i<=3;i++) fCutsEff->SetBinContent(i,0.10); // 2-3
   for(Int_t i=4;i<=4;i++) fCutsEff->SetBinContent(i,0.06); // 3-4
-  for(Int_t i=5;i<=6;i++) fCutsEff->SetBinContent(i,0.06); // 4-6
+  for(Int_t i=5;i<=5;i++) fCutsEff->SetBinContent(i,0.06); // 4-5
+  for(Int_t i=6;i<=6;i++) fCutsEff->SetBinContent(i,0.06); // 5-6
   for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.06); // 6-8
   for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.06); // 8-12
   for(Int_t i=13;i<=24;i++) fCutsEff->SetBinContent(i,0.06); // 12-24
@@ -7775,10 +7781,83 @@ void AliHFSystErr::InitLctopKpi2016pPb() {
   fMCPtShape->SetBinContent(2,0.);
   for(Int_t i=3;i<=3;i++) fMCPtShape->SetBinContent(i,0.01); // 2-3
   for(Int_t i=4;i<=4;i++) fMCPtShape->SetBinContent(i,0.01); // 3-4
-  for(Int_t i=5;i<=6;i++) fMCPtShape->SetBinContent(i,0.01); // 4-6
+  for(Int_t i=5;i<=5;i++) fMCPtShape->SetBinContent(i,0.01); // 4-5
+  for(Int_t i=6;i<=6;i++) fMCPtShape->SetBinContent(i,0.01); // 5-6
   for(Int_t i=7;i<=8;i++) fMCPtShape->SetBinContent(i,0.01); // 6-8
   for(Int_t i=9;i<=12;i++) fMCPtShape->SetBinContent(i,0.01); // 8-12
   for(Int_t i=13;i<=24;i++) fMCPtShape->SetBinContent(i,0.01); // 12-24
+
+  // BR
+  fBR= new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1; i<=24; i++) fBR->SetBinContent(i,0.05);
+
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopKpi2017pp() {
+  //
+  // Lc->pKpi std. cut method syst errors. Responsible: Chris Hills, Jaime Norman
+  //  2017 pp sample
+  //
+  //
+
+  SetNameTitle("AliHFSystErr","SystErrLctopKpi2017pp");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.037);
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  fTrackingEff->SetBinContent(1,0.);
+  for(Int_t i=2;i<=2;i++) fTrackingEff->SetBinContent(i,0.05); // 1-2
+  for(Int_t i=3;i<=3;i++) fTrackingEff->SetBinContent(i,0.06); // 2-3
+  for(Int_t i=4;i<=4;i++) fTrackingEff->SetBinContent(i,0.06); // 3-4
+  for(Int_t i=5;i<=5;i++) fTrackingEff->SetBinContent(i,0.07); // 4-5
+  for(Int_t i=6;i<=6;i++) fTrackingEff->SetBinContent(i,0.07); // 5-6
+  for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.07); // 6-8
+  for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.07); // 8-12
+  for(Int_t i=13;i<=24;i++) fTrackingEff->SetBinContent(i,0.07); // 12-24
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,0.);
+  for(Int_t i=2;i<=2;i++) fRawYield->SetBinContent(i,0.1); // 1-2
+  for(Int_t i=3;i<=3;i++) fRawYield->SetBinContent(i,0.1); // 2-3
+  for(Int_t i=4;i<=4;i++) fRawYield->SetBinContent(i,0.1); // 3-4
+  for(Int_t i=5;i<=5;i++) fRawYield->SetBinContent(i,0.1); // 4-5
+  for(Int_t i=6;i<=6;i++) fRawYield->SetBinContent(i,0.06); // 5-6
+  for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.08); // 6-8
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.08); // 8-12
+  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.16); // 12-24
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  fCutsEff->SetBinContent(1,0.);
+  for(Int_t i=2;i<=2;i++) fCutsEff->SetBinContent(i,0.06); // 1-2
+  for(Int_t i=3;i<=3;i++) fCutsEff->SetBinContent(i,0.06); // 2-3
+  for(Int_t i=4;i<=4;i++) fCutsEff->SetBinContent(i,0.06); // 3-4
+  for(Int_t i=5;i<=5;i++) fCutsEff->SetBinContent(i,0.06); // 4-5
+  for(Int_t i=6;i<=6;i++) fCutsEff->SetBinContent(i,0.06); // 5-6
+  for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.06); // 6-8
+  for(Int_t i=9;i<=12;i++) fCutsEff->SetBinContent(i,0.06); // 8-12
+  for(Int_t i=13;i<=24;i++) fCutsEff->SetBinContent(i,0.06); // 12-24
+
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05);
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  fMCPtShape->SetBinContent(1,0.);
+  for(Int_t i=2;i<=2;i++) fMCPtShape->SetBinContent(i,0.02); // 1-2
+  for(Int_t i=3;i<=3;i++) fMCPtShape->SetBinContent(i,0.0); // 2-3
+  for(Int_t i=4;i<=4;i++) fMCPtShape->SetBinContent(i,0.0); // 3-4
+  for(Int_t i=5;i<=5;i++) fMCPtShape->SetBinContent(i,0.0); // 4-5
+  for(Int_t i=6;i<=6;i++) fMCPtShape->SetBinContent(i,0.0); // 5-6
+  for(Int_t i=7;i<=8;i++) fMCPtShape->SetBinContent(i,0.0); // 6-8
+  for(Int_t i=9;i<=12;i++) fMCPtShape->SetBinContent(i,0.0); // 8-12
+  for(Int_t i=13;i<=24;i++) fMCPtShape->SetBinContent(i,0.0); // 12-24
 
   // BR
   fBR= new TH1F("fBR","fBR",24,0,24);
