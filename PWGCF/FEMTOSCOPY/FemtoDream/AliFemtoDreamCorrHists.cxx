@@ -606,11 +606,11 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
           TString MassQANamePart2 = Form("MassQA_Particle%d_2", iPar2);
           const float massPart1 = TDatabasePDG::Instance()->GetParticle(fPDGCode[iPar1])->Mass();
           const float massPart2 = TDatabasePDG::Instance()->GetParticle(fPDGCode[iPar2])->Mass();
-          fMassQADistPart1[Counter] = new TH2F(MassQANamePart1.Data(), MassQANamePart1.Data(), 100, massPart1-0.01, massPart1+0.01, 100, 0, 1);
+          fMassQADistPart1[Counter] = new TH2F(MassQANamePart1.Data(), MassQANamePart1.Data(), 100, massPart1-0.01, massPart1+0.01, *itNBins, *itKMin, *itKMax);
           fMassQADistPart1[Counter]->GetXaxis()->SetTitle(Form("M_{Particle %d} (GeV/#it{c}^{2})", iPar1));
           fMassQADistPart1[Counter]->GetYaxis()->SetTitle("#it{k}* (GeV/#it{c})");
           fPairQA[Counter]->Add(fMassQADistPart1[Counter]);
-          fMassQADistPart2[Counter] = new TH2F(MassQANamePart2.Data(), MassQANamePart2.Data(), 100, massPart2-0.01, massPart2+0.01, 100, 0, 1);
+          fMassQADistPart2[Counter] = new TH2F(MassQANamePart2.Data(), MassQANamePart2.Data(), 100, massPart2-0.01, massPart2+0.01, *itNBins, *itKMin, *itKMax);
           fMassQADistPart2[Counter]->GetXaxis()->SetTitle(Form("M_{Particle %d} (GeV/#it{c}^{2})", iPar2));
           fMassQADistPart2[Counter]->GetYaxis()->SetTitle("#it{k}* (GeV/#it{c})");
           fPairQA[Counter]->Add(fMassQADistPart2[Counter]);

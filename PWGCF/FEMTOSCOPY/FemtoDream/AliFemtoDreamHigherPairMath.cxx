@@ -116,7 +116,7 @@ void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
     AliWarning(
         "BField was most probably not set! PhiStar Calculation meaningless. \n");
   }
-  part->GetPhiAtRaidius().clear();
+  part->ResizePhiAtRadii(0);
   static float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225.,
       245. };
   std::vector<float> tmpVec;
