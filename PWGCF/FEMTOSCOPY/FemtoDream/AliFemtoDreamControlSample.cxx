@@ -90,6 +90,7 @@ void AliFemtoDreamControlSample::SetEvent(
     AliFemtoDreamEvent *evt) {
   fMult = FindBin(evt->GetMultiplicity());
   fCent = evt->GetV0MCentrality();
+  fHigherMath->SetBField(evt->GetMagneticField());
   int HistCounter = 0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   auto itSpec1 = Particles.begin();
