@@ -2256,7 +2256,7 @@ Bool_t AliAnalysisTaskDmesonJetsSub::AnalysisEngine::ExtractD0Efficiencies(const
  Double_t jetPtdet = DmesonJet.fJets[jetDef.GetName()].fMomentum.Pt();
  Double_t jetEtadet=  DmesonJet.fJets[jetDef.GetName()].fMomentum.Eta();
  if(TMath::Abs(jetEtadet)>0.5) return kFALSE;
- 
+ if(jetPtdet>100) return kFALSE;
 
  
    if (fMCMode != kNoMC) {
