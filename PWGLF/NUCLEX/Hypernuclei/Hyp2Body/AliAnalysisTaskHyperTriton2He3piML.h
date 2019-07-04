@@ -76,7 +76,7 @@ struct RTracklet {
 struct SHyperTritonHe3pi {
   int   fRecoIndex;  /// To connect with the reconstructed information
   int   fRecoTracklet; /// To connect with the reconstructed information of the tracklets
-  int   fPdgCode;
+  long fPdgCode;  
   float fDecayX;
   float fDecayY;
   float fDecayZ;
@@ -92,7 +92,7 @@ struct SHyperTritonHe3pi {
 
 struct SGenericV0 { /// For the other V0s that are reconstructed
   int   fRecoIndex;
-  int   fPdgCode;
+  long fPdgCode;
   float fDecayX;
   float fDecayY;
   float fDecayZ;
