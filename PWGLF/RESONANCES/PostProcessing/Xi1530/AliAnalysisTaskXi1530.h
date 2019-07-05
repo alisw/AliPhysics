@@ -207,8 +207,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi1530AOD(AliAODcascade* Xi, AliVTrack* pion);
-    Bool_t IsTrueXi(AliESDcascade* Xi);
-    Bool_t IsTrueXiAOD(AliAODcascade* Xi);
+    Bool_t IsTrueXi(UInt_t xiIndex);
     void FillMCinput(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
@@ -347,7 +346,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 22);
+    ClassDef(AliAnalysisTaskXi1530, 23);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -372,6 +371,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 20: Remove RunTable Class.
     // 21: Use AliEventCuts
     // 22: Remove some function thanks to AliEventCuts
+    // 23: Integrate true Xi checker(ESD/AOD)
 };
 
 #endif

@@ -965,7 +965,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                   {(int)kData, (double)fCent, Xicandidate->Pt(),
                                    Xicandidate->GetEffMassXi()});
                     if (IsMC)
-                        if (IsTrueXi(((AliESDEvent*)fEvt)->GetCascade(it))) {
+                        if (IsTrueXi(it)) {
                             FillTHnSparse(
                                 "hInvMass_dXi",
                                 {(int)kMCReco, (double)fCent, Xicandidate->Pt(),
@@ -1188,7 +1188,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
                                                 Xicandidate_aod->Pt2Xi(),
                                                 Xicandidate_aod->MassXi()});
                     if (IsMC)
-                        if (IsTrueXiAOD(((AliAODEvent*)fEvt)->GetCascade(it))) {
+                        if (IsTrueXi(it)) {
                             FillTHnSparse("hInvMass_dXi",
                                         {(int)kMCReco, (double)fCent,
                                         Xicandidate_aod->Pt2Xi(),
@@ -2767,101 +2767,107 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530AOD(AliAODcascade* Xi,
     }                              // D2esd->pion
     return TrueXi1530;
 }
-Bool_t AliAnalysisTaskXi1530::IsTrueXi(AliESDcascade* Xi) {
-    // Check if associated Xi1530 is true Xi1530 in MC set
-    if (!Xi)
-        return kFALSE;
+Bool_t AliAnalysisTaskXi1530::IsTrueXi(UInt_t xiIndex) {
+    // Check if associated Xi is true Xi in MC set
+    AliESDcascade* xiESD;
+    AliAODcascade* xiAOD;
 
     Bool_t TrueXi = kFALSE;
+    if (fEvt->IsA() == AliESDEvent::Class()) {
+        xiESD = ((AliESDEvent*)fEvt)->GetCascade(xiIndex);
+        if (!xiESD)
+            return kFALSE;
+        AliESDtrack* pTrackXi =
+            ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(xiESD->GetPindex()));
+        AliESDtrack* nTrackXi =
+            ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(xiESD->GetNindex()));
+        AliESDtrack* bTrackXi =
+            ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(xiESD->GetBindex()));
 
-    AliESDtrack* pTrackXi =
-        ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(Xi->GetPindex()));
-    AliESDtrack* nTrackXi =
-        ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(Xi->GetNindex()));
-    AliESDtrack* bTrackXi =
-        ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs(Xi->GetBindex()));
+        TParticle* MCXiD2esd =
+            (TParticle*)fMCEvent->GetTrack(abs(bTrackXi->GetLabel()))
+                ->Particle();
+        TParticle* MCLamD1esd;
+        TParticle* MCLamD2esd;
+        TParticle* MCLamesd;
+        TParticle* MCXiesd;
 
-    TParticle* MCXiD2esd =
-        (TParticle*)fMCEvent->GetTrack(abs(bTrackXi->GetLabel()))->Particle();
-    TParticle* MCLamD1esd;
-    TParticle* MCLamD2esd;
-    TParticle* MCLamesd;
-    TParticle* MCXiesd;
-
-    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
-        MCLamD1esd = (TParticle*)fMCEvent->GetTrack(abs(pTrackXi->GetLabel()))
-                         ->Particle();
-        MCLamD2esd = (TParticle*)fMCEvent->GetTrack(abs(nTrackXi->GetLabel()))
-                         ->Particle();
-        if (MCLamD1esd->GetMother(0) ==
-            MCLamD2esd->GetMother(0)) {  // Same mother(lambda)
-            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
-                 abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
-                (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
-                 abs(MCLamD2esd->GetPdgCode()) ==
-                     kProtonCode)) {  // Lamda daugthers check #1
-                MCLamesd = (TParticle*)fMCEvent
-                               ->GetTrack(abs(MCLamD1esd->GetMother(0)))
-                               ->Particle();
-                if (abs(MCLamesd->GetPdgCode()) ==
-                    kLambdaCode) {  // Lambda check
-                    if (MCLamesd->GetMother(0) ==
-                        MCXiD2esd->GetMother(
-                            0)) {  // Lambda+pion(D2esd) mother check
-                        MCXiesd = (TParticle*)fMCEvent
-                                      ->GetTrack(abs(MCLamesd->GetMother(0)))
-                                      ->Particle();
-                        if (abs(MCXiesd->GetPdgCode()) ==
-                            kXiCode) {  // Xi Check
-                            TrueXi = kTRUE;
+        if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
+            MCLamD1esd =
+                (TParticle*)fMCEvent->GetTrack(abs(pTrackXi->GetLabel()))
+                    ->Particle();
+            MCLamD2esd =
+                (TParticle*)fMCEvent->GetTrack(abs(nTrackXi->GetLabel()))
+                    ->Particle();
+            if (MCLamD1esd->GetMother(0) ==
+                MCLamD2esd->GetMother(0)) {  // Same mother(lambda)
+                if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
+                     abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
+                    (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
+                     abs(MCLamD2esd->GetPdgCode()) ==
+                         kProtonCode)) {  // Lamda daugthers check #1
+                    MCLamesd = (TParticle*)fMCEvent
+                                   ->GetTrack(abs(MCLamD1esd->GetMother(0)))
+                                   ->Particle();
+                    if (abs(MCLamesd->GetPdgCode()) ==
+                        kLambdaCode) {  // Lambda check
+                        if (MCLamesd->GetMother(0) ==
+                            MCXiD2esd->GetMother(
+                                0)) {  // Lambda+pion(D2esd) mother check
+                            MCXiesd =
+                                (TParticle*)fMCEvent
+                                    ->GetTrack(abs(MCLamesd->GetMother(0)))
+                                    ->Particle();
+                            if (abs(MCXiesd->GetPdgCode()) ==
+                                kXiCode) {  // Xi Check
+                                TrueXi = kTRUE;
+                            }
                         }
                     }
                 }
             }
         }
-    }
-    return TrueXi;
-}
-Bool_t AliAnalysisTaskXi1530::IsTrueXiAOD(AliAODcascade* Xi) {
-    // Check if associated Xi1530 is true Xi1530 in MC set
-    if (!Xi)
-        return kFALSE;
-    Bool_t TrueXi = kFALSE;
+    } else {  // AOD Case
+        xiAOD = ((AliAODEvent*)fEvt)->GetCascade(xiIndex);
+        if (!xiAOD)
+            return kFALSE;
+        AliAODTrack* pTrackXi = (AliAODTrack*)(xiAOD->GetDaughter(0));
+        AliAODTrack* nTrackXi = (AliAODTrack*)(xiAOD->GetDaughter(1));
+        AliAODTrack* bTrackXi =
+            (AliAODTrack*)(xiAOD->GetDecayVertexXi()->GetDaughter(0));
 
-    AliAODTrack* pTrackXi = (AliAODTrack*)(Xi->GetDaughter(0));
-    AliAODTrack* nTrackXi = (AliAODTrack*)(Xi->GetDaughter(1));
-    AliAODTrack* bTrackXi =
-        (AliAODTrack*)(Xi->GetDecayVertexXi()->GetDaughter(0));
+        AliAODMCParticle* MCXiD2esd =
+            (AliAODMCParticle*)fMCArray->At(abs(bTrackXi->GetLabel()));
+        AliAODMCParticle* MCLamD1esd;
+        AliAODMCParticle* MCLamD2esd;
+        AliAODMCParticle* MCLamesd;
+        AliAODMCParticle* MCXiesd;
 
-    AliAODMCParticle* MCXiD2esd =
-        (AliAODMCParticle*)fMCArray->At(abs(bTrackXi->GetLabel()));
-    AliAODMCParticle* MCLamD1esd;
-    AliAODMCParticle* MCLamD2esd;
-    AliAODMCParticle* MCLamesd;
-    AliAODMCParticle* MCXiesd;
-
-    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
-        MCLamD1esd = (AliAODMCParticle*)fMCArray->At(abs(pTrackXi->GetLabel()));
-        MCLamD2esd = (AliAODMCParticle*)fMCArray->At(abs(nTrackXi->GetLabel()));
-        if (MCLamD1esd->GetMother() ==
-            MCLamD2esd->GetMother()) {  // Same mother(lambda)
-            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
-                 abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
-                (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
-                 abs(MCLamD2esd->GetPdgCode()) ==
-                     kProtonCode)) {  // Lamda daugthers check #1
-                MCLamesd = (AliAODMCParticle*)fMCArray->At(
-                    abs(MCLamD1esd->GetMother()));
-                if (abs(MCLamesd->GetPdgCode()) ==
-                    kLambdaCode) {  // Lambda check
-                    if (MCLamesd->GetMother() ==
-                        MCXiD2esd
-                            ->GetMother()) {  // Lambda+pion(D2esd) mother check
-                        MCXiesd = (AliAODMCParticle*)fMCArray->At(
-                            abs(MCLamesd->GetMother()));
-                        if (abs(MCXiesd->GetPdgCode()) ==
-                            kXiCode) {  // Xi Check
-                            TrueXi = kTRUE;
+        if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {  // D2esd->pion
+            MCLamD1esd =
+                (AliAODMCParticle*)fMCArray->At(abs(pTrackXi->GetLabel()));
+            MCLamD2esd =
+                (AliAODMCParticle*)fMCArray->At(abs(nTrackXi->GetLabel()));
+            if (MCLamD1esd->GetMother() ==
+                MCLamD2esd->GetMother()) {  // Same mother(lambda)
+                if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
+                     abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
+                    (abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
+                     abs(MCLamD2esd->GetPdgCode()) ==
+                         kProtonCode)) {  // Lamda daugthers check #1
+                    MCLamesd = (AliAODMCParticle*)fMCArray->At(
+                        abs(MCLamD1esd->GetMother()));
+                    if (abs(MCLamesd->GetPdgCode()) ==
+                        kLambdaCode) {  // Lambda check
+                        if (MCLamesd->GetMother() ==
+                            MCXiD2esd->GetMother()) {  // Lambda+pion(D2esd)
+                                                       // mother check
+                            MCXiesd = (AliAODMCParticle*)fMCArray->At(
+                                abs(MCLamesd->GetMother()));
+                            if (abs(MCXiesd->GetPdgCode()) ==
+                                kXiCode) {  // Xi Check
+                                TrueXi = kTRUE;
+                            }
                         }
                     }
                 }
