@@ -189,7 +189,6 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   Bool_t Run();
 
   // Utility functions
-  AliParticleContainer * CreateParticleOrTrackContainer(const std::string & collectionName) const;
   // Determine if a jet has been matched
   bool CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet, const std::string & histName);
   // Apply artificial tracking inefficiency

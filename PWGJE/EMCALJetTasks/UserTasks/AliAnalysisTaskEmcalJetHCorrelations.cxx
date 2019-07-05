@@ -241,11 +241,11 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
 
   for(Int_t centralityBin = 0; centralityBin < kMaxCentralityBins; ++centralityBin){
     name = Form("fHistJetPt_%i",centralityBin);
-    fHistJetPt[centralityBin] = new TH1F(name,name,200,0,200);
+    fHistJetPt[centralityBin] = new TH1F(name,name,240,-40,200);
     fOutput->Add(fHistJetPt[centralityBin]);
 
     name = Form("fHistJetPtBias_%i",centralityBin);
-    fHistJetPtBias[centralityBin] = new TH1F(name,name,200,0,200);
+    fHistJetPtBias[centralityBin] = new TH1F(name,name,240,-40,200);
     fOutput->Add(fHistJetPtBias[centralityBin]);
   }
 
@@ -265,7 +265,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
     }
   }
 
-  UInt_t cifras = 0; // bit coded, see GetDimParams() below 
+  UInt_t cifras = 0; // bit coded, see GetDimParams() below
   if(fDoLessSparseAxes) {
     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
   } else {
@@ -275,11 +275,11 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
   fhnJH->Sumw2();
   fOutput->Add(fhnJH);
 
-  if(fDoEventMixing){    
+  if(fDoEventMixing){
     // The event plane angle does not need to be included because the semi-central determined that the EP angle didn't change
     // significantly for any of the EP orientations. However, it will be included so this can be demonstrated for the central
     // analysis if so desired.
-    if(fDoLessSparseAxes) { 
+    if(fDoLessSparseAxes) {
       cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
     } else {
       cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<7 | 1<<9;
@@ -301,7 +301,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects()
   while ((obj = next())) {
     fOutput->Add(obj);
   }
-  
+
   PostData(1, fOutput);
 
   // Event Mixing
@@ -425,6 +425,11 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   // Flags
   Bool_t biasedJet = kFALSE;
   Bool_t leadJet = kFALSE;
+  // Jet pt
+  Double_t jetPt = 0;
+  // Rho
+  // NOTE: Defaults to 0 if rho was not specified.
+  Double_t rhoVal = jets->GetRhoVal();
   // Relative angles and distances
   Double_t deltaPhi = 0;
   Double_t deltaEta = 0;
@@ -487,6 +492,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     }
 
     // Jet properties
+    jetPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rhoVal);
     // Determine if we have the lead jet
     leadJet = kFALSE;
     if (jet == leadingJet) leadJet = kTRUE;
@@ -495,16 +501,16 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
     // Fill jet properties
     fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
-    FillHist(fHistJetPt[fCentBin], jet->Pt());
+    FillHist(fHistJetPt[fCentBin], jetPt);
     if (biasedJet == kTRUE) {
-      FillHist(fHistJetPtBias[fCentBin], jet->Pt());
+      FillHist(fHistJetPtBias[fCentBin], jetPt);
 
-      const double triggerInfo[] = {eventActivity, jet->Pt(), epAngle};
+      const double triggerInfo[] = {eventActivity, jetPt, epAngle};
       fhnTrigger->Fill(triggerInfo);
     }
 
     // Cut on jet pt of 15 to reduce the size of the sparses
-    if (jet->Pt() > 15) {
+    if (jetPt > 15) {
 
       AliDebugStream(4) << "Passed min jet pt cut of 15. Jet: " << jet->toString().Data() << "\n";
       AliDebugStream(4) << "N accepted tracks: " << tracks->GetNAcceptedTracks() << "\n";
@@ -535,10 +541,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
         if (biasedJet == kTRUE) {
           if(fDoLessSparseAxes) { // check if we want all dimensions
-            double triggerEntries[] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
+            double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
-          } else { 
-            double triggerEntries[] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
+          } else {
+            double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
             FillHist(fhnJH, triggerEntries, 1.0/efficiency);
           }
         }
@@ -618,6 +624,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           }
 
           // Jet properties
+          jetPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rhoVal);
           // Determine if we have the lead jet
           leadJet = kFALSE;
           if (jet == leadingJet) { leadJet = kTRUE; }
@@ -625,7 +632,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
 
           // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
-          if (jet->Pt() < 15 || biasedJet == kFALSE) continue;
+          if (jetPt < 15 || biasedJet == kFALSE) continue;
 
           // Fill mixed-event histos here
           for (Int_t jMix=0; jMix < nMix; jMix++) {
@@ -651,10 +658,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
               GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
               if (fDoLessSparseAxes) {  // check if we want all the axis filled
-                double triggerEntries[] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
+                double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
                 FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
               } else {
-                double triggerEntries[] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
+                double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR, epAngle};
                 FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
               }
             }
@@ -674,7 +681,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   } // end of event mixing
 
   return kTRUE;
-}      
+}
 
 /**
  * Determine if a jet passes the track or cluster bias and is therefore a "biased" jet.
@@ -892,8 +899,8 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
 
     case 1:
       label = "Jet p_{T}";
-      nbins = 20;
-      xmin = 0.;
+      nbins = 22;
+      xmin = -40.;
       xmax = 200.;
       break;
 
@@ -923,7 +930,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       nbins = 72;
       xmin = -0.5*pi;
       xmax = 1.5*pi;
-      break;         
+      break;
 
     case 5:
       label = "Leading Jet";
@@ -1225,7 +1232,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::FillHist(TH1 * hist, Double_t fillVal
       if (yBinsContent.at(index-1) > 0) {
         // Determine the value to fill based on the center of the bins.
         // This in principle allows the binning between the correction and hist to be different
-        Double_t fillLocation = fJESCorrectionHist->GetYaxis()->GetBinCenter(index); 
+        Double_t fillLocation = fJESCorrectionHist->GetYaxis()->GetBinCenter(index);
         AliDebug(4, TString::Format("fillLocation: %f, weight: %f", fillLocation, yBinsContent.at(index-1)));
         // minus 1 since loop starts at 1
         hist->Fill(fillLocation, weight*yBinsContent.at(index-1));
@@ -1239,9 +1246,10 @@ void AliAnalysisTaskEmcalJetHCorrelations::FillHist(TH1 * hist, Double_t fillVal
 }
 
 /**
- * Utility function to fill a histogram with a given weight. If requested, it will also apply the JES correction derived weight
- * to the hist. It assumes that the corrected jet pt value is located in the second element of the fillValue (as defined in
- * GetDimParams()). If that is changed or the first entry is not included, then this function must be updated!
+ * Utility function to fill a histogram with a given weight. If requested, it will also apply the JES correction
+ * derived weight to the hist. It assumes that the corrected jet pt value is located in the second element of the
+ * fillValue (as defined in GetDimParams()). If that is changed or the first entry is not included, then this
+ * function must be updated!
  *
  * @param[in] hist Histogram to be filled.
  * @param[in] fillValue Array of values to be filled into the hist.
@@ -1276,7 +1284,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::FillHist(THnSparse * hist, Double_t *
       if (yBinsContent.at(index-1) > 0) {
         // Determine the value to fill based on the center of the bins.
         // This in principle allows the binning between the correction and hist to be different
-        fillValue[1] = fJESCorrectionHist->GetYaxis()->GetBinCenter(index); 
+        fillValue[1] = fJESCorrectionHist->GetYaxis()->GetBinCenter(index);
         AliDebug(4,TString::Format("fillValue[1]: %f, weight: %f", fillValue[1], yBinsContent.at(index-1)));
         // minus 1 since loop starts at 1
         hist->Fill(fillValue, weight*yBinsContent.at(index-1));
@@ -1504,10 +1512,9 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
 
   // Create containers for input/output
   mgr->ConnectInput (correlationTask, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer * cojeth = mgr->CreateContainer(correlationTask->GetName(),
-                TList::Class(),
-                AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer* cojeth =
+   mgr->CreateContainer(correlationTask->GetName(), TList::Class(), AliAnalysisManager::kOutputContainer,
+              Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectOutput(correlationTask, 1, cojeth);
 
   return correlationTask;
@@ -1542,13 +1549,13 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForStandardAnalysis(std::str
   if (trackName == "usedefault") {
     trackName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
   }
-  AliParticleContainer * particlesForJets = CreateParticleOrTrackContainer(trackName.c_str());
+  AliParticleContainer * particlesForJets = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(trackName.c_str());
   particlesForJets->SetName("particlesForJets");
   particlesForJets->SetMinPt(jetConstituentPtCut);
   particlesForJets->SetEtaLimits(-1.0*trackEta, trackEta);
   // Don't need to adopt the container - we'll just use it to find the right jet collection
   // For correlations
-  AliParticleContainer * particlesForCorrelations = CreateParticleOrTrackContainer(trackName.c_str());
+  AliParticleContainer * particlesForCorrelations = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(trackName.c_str());
   if (particlesForCorrelations)
   {
     particlesForCorrelations->SetName("tracksForCorrelations");
@@ -1622,13 +1629,13 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
   if (trackName == "usedefault") {
     trackName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
   }
-  AliParticleContainer * particlesForJets = CreateParticleOrTrackContainer(trackName.c_str());
+  AliParticleContainer * particlesForJets = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(trackName.c_str());
   particlesForJets->SetName("particlesForJets");
   particlesForJets->SetMinPt(jetConstituentPtCut);
   particlesForJets->SetEtaLimits(-1.0*trackEta, trackEta);
   // Don't need to adopt the container - we'll just use it to find the right jet collection
   // For correlations
-  AliParticleContainer * particlesForCorrelations = CreateParticleOrTrackContainer(trackName.c_str());
+  AliParticleContainer * particlesForCorrelations = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(trackName.c_str());
   // Ensure that we don't operate on a null pointer
   if (particlesForCorrelations)
   {
@@ -1667,27 +1674,6 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
   returnValue = true;
 
   return returnValue;
-}
-
-/**
- * Utility function to create a particle or track container given the collection name of the desired container.
- *
- * @param[in] collectionName Name of the particle or track collection name.
- *
- * @return A newly created particle or track container.
- */
-AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTrackContainer(const std::string & collectionName) const
-{
-  AliParticleContainer * partCont = 0;
-  if (collectionName == AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack)) {
-    AliTrackContainer * trackCont = new AliTrackContainer(collectionName.c_str());
-    partCont = trackCont;
-  }
-  else if (collectionName != "") {
-    partCont = new AliParticleContainer(collectionName.c_str());
-  }
-
-  return partCont;
 }
 
 /**
