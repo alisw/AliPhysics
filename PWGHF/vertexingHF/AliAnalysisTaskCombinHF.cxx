@@ -82,6 +82,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fMassVsPtVsYSig(0x0),
   fMassVsPtVsYRefl(0x0),
   fMassVsPtVsYBkg(0x0),
+  fBMohterPtGen(0x0),
   fNSelected(0x0),
   fNormRotated(0x0),
   fDeltaMass(0x0),
@@ -202,6 +203,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fMassVsPtVsYSig(0x0),
   fMassVsPtVsYRefl(0x0),
   fMassVsPtVsYBkg(0x0),
+  fBMohterPtGen(0x0),
   fNSelected(0x0),
   fNormRotated(0x0),
   fDeltaMass(0x0),
@@ -327,6 +329,7 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fMassVsPtVsYSig;
     delete fMassVsPtVsYRefl;
     delete fMassVsPtVsYBkg;
+    delete fBMohterPtGen;
     delete fNSelected;
     delete fNormRotated;
     delete fDeltaMass;
@@ -532,6 +535,9 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   
   fMassVsPtVsYBkg=new TH3F("hMassVsPtVsYBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,20,-1.,1.);
   fOutput->Add(fMassVsPtVsYBkg);
+
+  fBMohterPtGen=new TH1F("hBMohterPtGen","",100,0.,50.);
+  fOutput->Add(fBMohterPtGen);
   
   fNSelected=new TH1F("hNSelected","",100,-0.5,99.5);
   fOutput->Add(fNSelected);
@@ -591,10 +597,10 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fMassVsPtVsCosthStMELSpp);
   fOutput->Add(fMassVsPtVsCosthStMELSmm);
 
-  fHistonSigmaTPCPion=new TH1F("hnSigmaTPCPion","",100,-5.,5.);
-  fHistonSigmaTOFPion=new TH1F("hnSigmaTOFPion","",100,-5.,5.);
-  fHistonSigmaTPCKaon=new TH1F("hnSigmaTPCKaon","",100,-5.,5.);
-  fHistonSigmaTOFKaon=new TH1F("hnSigmaTOFKaon","",100,-5.,5.);
+  fHistonSigmaTPCPion=new TH2F("hnSigmaTPCPion"," ; p (GeV/c) ; n#sigma^{#pi}_{TPC}",20,0.,10.,100,-5.,5.);
+  fHistonSigmaTOFPion=new TH2F("hnSigmaTOFPion"," ; p (GeV/c) ; n#sigma^{#pi}_{TOF}",20,0.,10.,100,-5.,5.);
+  fHistonSigmaTPCKaon=new TH2F("hnSigmaTPCKaon"," ; p (GeV/c) ; n#sigma^{K}_{TPC}",20,0.,10.,100,-5.,5.);
+  fHistonSigmaTOFKaon=new TH2F("hnSigmaTOFKaon"," ; p (GeV/c) ; n#sigma^{K}_{TOF}",20,0.,10.,100,-5.,5.);
   fOutput->Add(fHistonSigmaTPCPion);
   fOutput->Add(fHistonSigmaTOFPion);
   fOutput->Add(fHistonSigmaTPCKaon);
@@ -803,20 +809,21 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     // PID
     if (fPIDstrategy == knSigma) {
       // nsigma PID
+      Double_t trmom=track->P();
       if(IsKaon(track)){
 	Double_t nstpc,nstof;
 	fPidHF->GetnSigmaTPC(track,AliPID::kKaon,nstpc);
 	fPidHF->GetnSigmaTOF(track,AliPID::kKaon,nstof);
-	fHistonSigmaTPCKaon->Fill(nstpc);
-	fHistonSigmaTOFKaon->Fill(nstof);
+	fHistonSigmaTPCKaon->Fill(trmom,nstpc);
+	fHistonSigmaTOFKaon->Fill(trmom,nstof);
 	status[iTr]+=2;
       }
       if(IsPion(track)){
 	Double_t nstpc,nstof;
 	fPidHF->GetnSigmaTPC(track,AliPID::kPion,nstpc);
 	fPidHF->GetnSigmaTOF(track,AliPID::kPion,nstof);
-	fHistonSigmaTPCPion->Fill(nstpc);
-	fHistonSigmaTOFPion->Fill(nstof);
+	fHistonSigmaTPCPion->Fill(trmom,nstpc);
+	fHistonSigmaTOFPion->Fill(trmom,nstof);
 	status[iTr]+=4;
       }
     }
@@ -1079,7 +1086,11 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC, AliAODMCHeade
 	    if(isEvSel && isInAcc) fPtVsYVsMultGenAccEvSelPrompt->Fill(ptgen,ygen,fMultiplicity);
 	  }else if(orig==5){
 	    fPtVsYVsMultGenFeeddw->Fill(ptgen,ygen,fMultiplicity);
-	    if(TMath::Abs(ygen)<0.5) fPtVsYVsMultGenLimAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	    if(TMath::Abs(ygen)<0.5){
+	      fPtVsYVsMultGenLimAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
+	      Double_t ptbmoth=AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,part);
+	      fBMohterPtGen->Fill(ptbmoth);
+	    }
 	    if(isInAcc) fPtVsYVsMultGenAccFeeddw->Fill(ptgen,ygen,fMultiplicity);
 	    if(isEvSel && isInAcc) fPtVsYVsMultGenAccEvSelFeeddw->Fill(ptgen,ygen,fMultiplicity);
 	  }
