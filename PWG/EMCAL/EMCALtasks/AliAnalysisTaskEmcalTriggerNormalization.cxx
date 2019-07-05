@@ -48,7 +48,8 @@ AliAnalysisTaskEmcalTriggerNormalization::AliAnalysisTaskEmcalTriggerNormalizati
     fTriggerCluster(),
     fTriggerClusterEMCAL(),
     fEMCALL0trigger(),
-    fMBTriggerClasses()
+    fMBTriggerClasses(),
+    fUseCentralityForpPb(false)
 {
 }
 
@@ -58,7 +59,8 @@ AliAnalysisTaskEmcalTriggerNormalization::AliAnalysisTaskEmcalTriggerNormalizati
     fTriggerCluster(),
     fTriggerClusterEMCAL(),
     fEMCALL0trigger(),
-    fMBTriggerClasses()
+    fMBTriggerClasses(),
+    fUseCentralityForpPb(false)
 {
   SetMakeGeneralHistograms(true);
 }
@@ -87,7 +89,7 @@ Bool_t AliAnalysisTaskEmcalTriggerNormalization::Run(){
   if(!fTriggerClusterEMCAL.length()) fTriggerClusterEMCAL = fTriggerCluster;
 
   double centralitypercentile = 99.;
-  if(this->GetBeamType() == AliAnalysisTaskEmcal::kAA) {
+  if(this->GetBeamType() == AliAnalysisTaskEmcal::kAA || (fUseCentralityForpPb && (GetBeamType() == AliAnalysisTaskEmcal::kpA))) {
     AliMultSelection *mult = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
     if(mult){
       centralitypercentile = mult->GetMultiplicityPercentile(fCentEst.Data());

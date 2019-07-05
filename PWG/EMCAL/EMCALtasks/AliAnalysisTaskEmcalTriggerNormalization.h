@@ -156,6 +156,15 @@ public:
    */
   void AddMBTriggerClass(const char *triggerclass) { fMBTriggerClasses.emplace_back(triggerclass); }
 
+  /**
+   * @brief Request normalization as function of mulitplicity for p-Pb
+   * 
+   * Attention: Relies on AliMultiplicitySelection. If not found an exception 
+   * is raised.
+   * 
+   * @param doRequest If true the multiplicity percentile is requested for pPb
+   */
+  void SetRequestCentralityForpPb(Bool_t doRequest) { fUseCentralityForpPb = doRequest; }
 
   /**
    * @brief Configure normalization task and add it to the analysis manager
@@ -305,7 +314,7 @@ private:
   std::string               fTriggerClusterEMCAL;   ///< Cluster of the EMCAL triggers (if different)
   std::string               fEMCALL0trigger;        ///< L0 trigger required for L1
   std::vector<std::string>  fMBTriggerClasses;      ///< List of valid min. bias trigger classes
-
+  Bool_t                    fUseCentralityForpPb;   ///< Request centrality also for p-Pb (from AliMultiplicitySelection)
 
   AliAnalysisTaskEmcalTriggerNormalization(const AliAnalysisTaskEmcalTriggerNormalization &);
   AliAnalysisTaskEmcalTriggerNormalization &operator=(const AliAnalysisTaskEmcalTriggerNormalization &);
