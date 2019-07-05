@@ -104,6 +104,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fNumberSecond(6), //number of correlation second correlator
  fMinNumberPart(10),
  bUseRatioWeight(kTRUE),
+ fDenominatorMinValue(1.0e-16),
  fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0),  //harmonics
  fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0),  //second set of harmonics
  fParticles(0),
@@ -213,6 +214,8 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fNumber(6),  //number of correlation first correlator
  fNumberSecond(6), //number of correlation second correlator
  fMinNumberPart(10),
+ bUseRatioWeight(kTRUE),
+ fDenominatorMinValue(1.0e-16),
  fh1(0), fh2(0), fh3(0), fh4(0), fh5(0), fh6(0), fh7(0), fh8(0), fh9(0), fh10(0),  //harmonics
  fa1(0), fa2(0), fa3(0), fa4(0), fa5(0), fa6(0), fa7(0), fa8(0), fa9(0), fa10(0),  //second set of harmonics
  fParticles(0), 
@@ -383,10 +386,12 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
     fRecursion[1][fNumberSecond-2]->Reset(); //Reset
 
     //~~~~~~~~~~~~~~~~~
-    if(TMath::Abs(SecondCorrelation)<1.0e-16){return;} //protection against 0, we will come back to this later
+    if(TMath::Abs(SecondCorrelation)>=fDenominatorMinValue){
 
     if(bUseRatioWeight){ fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),Weight_SecondCorrelation); } 
     else { fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),1.); } 
+
+    } //protection against 0, we will come back to this later
     
     fCentrality->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
     fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics

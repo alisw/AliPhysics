@@ -106,6 +106,8 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   void SetRatioWeight(Bool_t top)
   {this->bUseRatioWeight=top;}
 
+  void SetDenominatorMinValue(Double_t top) {this->fDenominatorMinValue=top; }
+
   void SetMinCent(Float_t top){this->fMinCentrality = top;} 
   Float_t GetMinCent() const {return this->fMinCentrality;}
 
@@ -190,13 +192,13 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   //3.) Variables for the correlation:
   Int_t fMaxCorrelator;          // maximum of correlation 
   TProfile *fRecursion[2][10];    //!  
-  Bool_t bUseWeights; 
-
+  Bool_t bUseWeights;  
   
   Int_t fNumber;           //number of correlation first correlator
   Int_t fNumberSecond;           //number of correlation second correlator
   Int_t fMinNumberPart;           //minimal number of particles to do correlation
   Bool_t bUseRatioWeight;	//use number of combination weight for EbE Ratio (default kTRUE)
+  Double_t fDenominatorMinValue;   //min value for the denominator in EbE Ratio (default 
 
   Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8, fh9, fh10;  //harmonics
   Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10;  //second set of harmonics
@@ -223,7 +225,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,16);
+  ClassDef(AliAnalysisTaskStudentsML,17);
 
 };
 
