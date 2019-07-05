@@ -103,3 +103,5 @@ install(TARGETS ${MODULETMVA}
   LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
+
+install(FILES LHC19c2a_TMVAClassification_BDT_2_4_noP.weights.xml DESTINATION PWGHF/vertexingHF/TMVA)
