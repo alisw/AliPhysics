@@ -39,7 +39,8 @@ public:
   virtual Bool_t IsSelected(TObject* obj);  // TObject should be an AliAODv0
   virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
 
-  void SetOnFlyStatus(Bool_t flyStat)                { fRejectOnFly = true; fOnFlyStatus = flyStat; }
+  void SaveOnlyOnTheFly()                            { fSelectOnFly = true; fOnFlyStatus = kFALSE; }
+  void SaveOnlyOffline()                             { fSelectOnFly = true; fOnFlyStatus = kTRUE; }
   void Setv0pTMin(Float_t pTMin)                     { fv0pTMin = pTMin;  }
   void Setv0EtaMax(Float_t EtaMax)                   { fv0EtaMax = EtaMax; }
   void SetTransverseRadius(Float_t min, Float_t max) { fTransverseRadiusMin = min; fTransverseRadiusMax = max; }
@@ -53,7 +54,7 @@ public:
   void SetRequireTPCRefitDaughters(Bool_t require)     { fCheckDaughterTPCRefit = require; }
   
 private:
-  Bool_t fRejectOnFly;
+  Bool_t fSelectOnFly;
   Bool_t fOnFlyStatus;
   Float_t fv0pTMin;
   Float_t fv0EtaMax;

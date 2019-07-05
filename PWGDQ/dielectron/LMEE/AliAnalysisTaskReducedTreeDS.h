@@ -31,6 +31,10 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
         return;
       }
     }
+    Bool_t IsPrimaryElectron(AliAODMCParticle *p);
+    Bool_t IsLF(AliAODMCParticle *parent);
+    Bool_t IsHF(AliAODMCParticle *parent);
+    Bool_t IsEWBoson(AliAODMCParticle *parent);//parent is electro-weak boson, i.e. W/Z, gamma
 
     void ClearVectorElement();
     void ClearVectorMemory();
@@ -48,6 +52,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     TClonesArray *fMCArray;
     Int_t fRunNumber;
     Float_t fMagneticField; //Bz in kG
+    UShort_t fBCNumber;//bunch crossing number
     AliMultSelection *fMultSelection; 
     Float_t fCentralityV0M;
     Float_t fCentralityV0A;
@@ -60,7 +65,9 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Int_t fNContributor;
     Int_t fNTPCCluster;
     Int_t fNTrackTPCout;
+    Int_t fNTrackTPConly;
     Int_t fNTrackTPC;//number of TPC track with kITSout
+    Int_t fNITSCluster[2];
     Int_t fNHybridTrack08;
     Int_t fNSPDTracklet05;//|eta| < 0.5
     Int_t fNSPDTracklet10;//|eta| < 1.0
@@ -148,7 +155,6 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     vector<Float_t> fV0PhivPair;//N
     vector<Float_t> fV0PointingAngle;//N
     vector<Float_t> fV0Chi2;//N
-    vector<vector<Float_t>> fV0legChi2TPCConstrainedVsGlobal;
     vector<vector<Float_t>> fV0Mass;//N x 4//K0S Lambda Anti-Lambda, Gamma
     vector<vector<Float_t>> fV0legDCAxy;//N x 2
     vector<vector<Float_t>> fV0legDCAz;//N x 2
@@ -192,7 +198,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 4);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 7);
 
 };
 

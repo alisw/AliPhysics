@@ -37,7 +37,7 @@ class AliJetContainer;
 /**
  * @class AliAnalysisTaskEmcalJetTagger
  * @brief Tagging jets  with jet from another source
- * @ingroup PWGJETASKS
+ * @ingroup PWGJEBASE
  * @author Martha Verweij
  * @since Nov 29th, 2013
  * 
@@ -282,18 +282,18 @@ class AliAnalysisTaskEmcalJetTagger : public AliAnalysisTaskEmcalJet {
   Double_t                            fExtraMarginAccBase;         ///< Extra margin to be added to the acceptance for the different acceptance types (base jet container)
   Double_t                            fExtraMarginAccTag;          ///< Extra margin to be added to the acceptance for the different acceptance types (tag jet container)
   Bool_t                              fInit;                       ///< true when the containers are initialized
-  TH3F                                **fh3PtJet1VsDeltaEtaDeltaPhi; //!<! pt jet 1 vs deta vs dphi
-  TH2F                                **fh2PtJet1VsDeltaR;         //!<! pt jet 1 vs dR
-  TH2F                                **fh2PtJet2VsFraction;       //!<! pt jet 1 vs shared fraction
+  TH3                                 **fh3PtJet1VsDeltaEtaDeltaPhi; //!<! pt jet 1 vs deta vs dphi
+  TH2                                 **fh2PtJet1VsDeltaR;         //!<! pt jet 1 vs dR
+  TH2                                 **fh2PtJet2VsFraction;       //!<! pt jet 1 vs shared fraction
+ 
+  TH2                                 **fh2PtJet1VsLeadPtAllSel;   //!<! all jets after std selection
+  TH2                                 **fh2PtJet1VsLeadPtTagged;   //!<! tagged jets
+  TH2                                 **fh2PtJet1VsPtJet2;         //!<! pT of base jet vs tagged jet
+  TH2                                 **fh2PtJet2VsRelPt;          //!<! pT of tagged jet vs pt base jet / pt tagged jet
   
-  TH2F                                **fh2PtJet1VsLeadPtAllSel;   //!<! all jets after std selection
-  TH2F                                **fh2PtJet1VsLeadPtTagged;   //!<! tagged jets
-  TH2F                                **fh2PtJet1VsPtJet2;         //!<! pT of base jet vs tagged jet
-  TH2F                                **fh2PtJet2VsRelPt;          //!<! pT of tagged jet vs pt base jet / pt tagged jet
-  
-  TH3F             *fh3PtJetDEtaDPhiConst;        //!pt jet vs delta eta vs delta phi of constituents
-  TH3F             *fh3PtJetAreaDRConst;          //!pt jet vs Area vs delta R of constituents
-  TH1              *fNAccJets;                    //! number of jets per event
+  TH3                                 *fh3PtJetDEtaDPhiConst;      //!<! pt jet vs delta eta vs delta phi of constituents
+  TH3                                 *fh3PtJetAreaDRConst;        //!<! pt jet vs Area vs delta R of constituents
+  TH1                                 *fNAccJets;                  //!<! number of jets per event
   AliAnalysisTaskEmcalJetTagger(const AliAnalysisTaskEmcalJetTagger&);            // not implemented
   AliAnalysisTaskEmcalJetTagger &operator=(const AliAnalysisTaskEmcalJetTagger&); // not implemented
 

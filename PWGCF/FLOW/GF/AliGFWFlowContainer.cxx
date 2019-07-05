@@ -44,12 +44,15 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
   fProf = new TProfile2D(Form("%s_CorrProfile",this->GetName()),"CorrProfile",nMultiBins, multiBins,inputList->GetEntries(),0.5,inputList->GetEntries()+0.5);
   for(Int_t i=0;i<inputList->GetEntries();i++)
     fProf->GetYaxis()->SetBinLabel(i+1,inputList->At(i)->GetName());
+  fProf->Sumw2();
   if(nRandom) {
     fNRandom=nRandom;
     fProfRand = new TObjArray();
     fProfRand->SetOwner(kTRUE);
-    for(Int_t i=0;i<nRandom;i++)
+    for(Int_t i=0;i<nRandom;i++) {
       fProfRand->Add((TProfile2D*)fProf->Clone(Form("%s_Rand_%i",fProf->GetName(),i)));
+      ((TProfile2D*)fProfRand->At(i))->Sumw2();
+    };
   };
 };
 void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Double_t MultiMin, Double_t MultiMax, Int_t nRandom) {
@@ -63,14 +66,17 @@ void AliGFWFlowContainer::Initialize(TObjArray *inputList, Int_t nMultiBins, Dou
   };
   fProf = new TProfile2D(Form("%s_CorrProfile",this->GetName()),"CorrProfile",nMultiBins, MultiMin,MultiMax,inputList->GetEntries(),0.5,inputList->GetEntries()+0.5);
   fProf->SetDirectory(0);
+  fProf->Sumw2();
   for(Int_t i=0;i<inputList->GetEntries();i++)
     fProf->GetYaxis()->SetBinLabel(i+1,inputList->At(i)->GetName());
   if(nRandom) {
     fNRandom=nRandom;
     fProfRand = new TObjArray();
     fProfRand->SetOwner(kTRUE);
-    for(Int_t i=0;i<nRandom;i++)
+    for(Int_t i=0;i<nRandom;i++) {
       fProfRand->Add((TProfile2D*)fProf->Clone(Form("%s_Rand_%i",fProf->GetName(),i)));
+      ((TProfile2D*)fProfRand->At(i))->Sumw2();
+    };
   };
 };
 Bool_t AliGFWFlowContainer::CreateBinsFromAxis(TAxis *inax) {
@@ -114,6 +120,44 @@ Int_t AliGFWFlowContainer::FillProfile(const char *hname, Double_t multi, Double
   };
   return 0;
 };
+void AliGFWFlowContainer::OverrideProfileErrors(TProfile2D *inpf) {
+  Int_t nBinsX = fProf->GetNbinsX();
+  Int_t nBinsY = fProf->GetNbinsY();
+  if((inpf->GetNbinsX()!= nBinsX) || (inpf->GetNbinsY() != nBinsY)) {
+    printf("Number of bins in two profiles do not match, not doing anything\n");
+    return;
+  };
+  if(!inpf->GetBinSumw2()->fArray) {
+    printf("Input profile has no BinSumw2()! Returning\n");
+    return;
+  }
+  if(!fProf->GetBinSumw2()->fArray) fProf->Sumw2();
+  Double_t *sumw2Prof = fProf->GetSumw2()->fArray;
+  Double_t *sumw2Targ = inpf->GetSumw2()->fArray;
+  Double_t *binsw2Prof= fProf->GetBinSumw2()->fArray;
+  Double_t *binsw2Targ= inpf->GetBinSumw2()->fArray;
+  Double_t *farrProf  = fProf->fArray;
+  Double_t *farrTarg  = inpf->fArray;
+  for(Int_t ix=1;ix<=nBinsX;ix++) {
+    Double_t xval = fProf->GetXaxis()->GetBinCenter(ix);
+    printf("Processing x-bin %i\n", ix);
+    for(Int_t iy=1;iy<=nBinsY;iy++) {
+      //printf("Processing bin [%i, %i] out of [%i, %i]\n",ix,iy,nBinsX, nBinsY);
+      Double_t yval = fProf->GetYaxis()->GetBinCenter(iy);
+      Int_t binno = fProf->FindBin(xval,yval);
+      Double_t h = fProf->GetBinContent(binno);
+      Double_t lEnt = inpf->GetBinEntries(binno);
+      fProf->SetBinEntries(binno,lEnt);
+      sumw2Prof[binno] = sumw2Targ[binno];
+      binsw2Prof[binno]= binsw2Targ[binno];
+      farrProf[binno]  = h*lEnt;
+      /*fProf->GetBinSumw2()->fArray[binno] = inpf->GetBinSumw2()->fArray[binno];
+      fProf->SetBinEntries(binno,inpf->GetBinEntries(binno));
+      fProf->GetSumw2()->fArray[binno] = inpf->GetSumw2()->fArray[binno];
+      fProf->SetBinContent(binno,h*fProf->GetBinEntries(binno));*/
+    }
+  }
+}
 Long64_t AliGFWFlowContainer::Merge(TCollection *collist) {
   Long64_t nmerged=0;
   AliGFWFlowContainer *l_FC = 0;
@@ -336,7 +380,7 @@ TH1D *AliGFWFlowContainer::ProfToHist(TProfile *inpf) {
   for(Int_t i=1;i<=rethist->GetNbinsX();i++) {
     if(inpf->GetBinContent(i)!=0) {
       rethist->SetBinContent(i,inpf->GetBinContent(i));
-      rethist->SetBinError(i,inpf->GetBinError(i));
+      rethist->SetBinError(i,inpf->GetBinError(i));//*TMath::Sqrt(inpf->GetBinEntries(i)));
     };
   };
   return rethist;
@@ -948,7 +992,8 @@ Double_t AliGFWFlowContainer::VDN8Value(Double_t d8, Double_t c8) {
   return d8/c8 * VN8Value(c8);
 };
 Double_t AliGFWFlowContainer::VDN8Error(Double_t d8, Double_t d8e, Double_t c8, Double_t c8e) {
-  if(c8>0) return 0;
+  if(c8>0) return 1;
+  if(d8==0) return 1;
   if(!fPropagateErrors) return 0;
   Double_t vdn8v = VDN8Value(d8,c8);
   Double_t dd = d8e/d8;

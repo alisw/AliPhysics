@@ -53,34 +53,16 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fExtraMarginAccBase(0.1),
   fExtraMarginAccTag(0.1),
   fInit(kFALSE),
-  fh3PtJet1VsDeltaEtaDeltaPhi(0),
-  fh2PtJet1VsDeltaR(0),
-  fh2PtJet2VsFraction(0),
-  fh2PtJet1VsLeadPtAllSel(0),
-  fh2PtJet1VsLeadPtTagged(0),
-  fh2PtJet1VsPtJet2(0),
-  fh2PtJet2VsRelPt(0),
-  fh3PtJetDEtaDPhiConst(0),
-  fh3PtJetAreaDRConst(0)
+  fh3PtJet1VsDeltaEtaDeltaPhi(nullptr),
+  fh2PtJet1VsDeltaR(nullptr),
+  fh2PtJet2VsFraction(nullptr),
+  fh2PtJet1VsLeadPtAllSel(nullptr),
+  fh2PtJet1VsLeadPtTagged(nullptr),
+  fh2PtJet1VsPtJet2(nullptr),
+  fh2PtJet2VsRelPt(nullptr),
+  fh3PtJetDEtaDPhiConst(nullptr),
+  fh3PtJetAreaDRConst(nullptr)
 {
-  fh3PtJet1VsDeltaEtaDeltaPhi  = new TH3F*[fNcentBins];
-  fh2PtJet1VsDeltaR            = new TH2F*[fNcentBins];
-  fh2PtJet2VsFraction          = new TH2F*[fNcentBins];
-  fh2PtJet1VsLeadPtAllSel      = new TH2F*[fNcentBins];
-  fh2PtJet1VsLeadPtTagged      = new TH2F*[fNcentBins];
-  fh2PtJet1VsPtJet2            = new TH2F*[fNcentBins];
-  fh2PtJet2VsRelPt             = new TH2F*[fNcentBins];
-
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
-    fh2PtJet1VsDeltaR[i]           = 0;
-    fh2PtJet2VsFraction[i]         = 0;
-    fh2PtJet1VsLeadPtAllSel[i]     = 0;
-    fh2PtJet1VsLeadPtTagged[i]     = 0;
-    fh2PtJet1VsPtJet2[i]           = 0;
-    fh2PtJet2VsRelPt[i]            = 0;
-  }
-
   SetMakeGeneralHistograms(kTRUE);
 }
 
@@ -99,36 +81,17 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fExtraMarginAccBase(0.1),
   fExtraMarginAccTag(0.1),
   fInit(kFALSE),
-  fh3PtJet1VsDeltaEtaDeltaPhi(0),
-  fh2PtJet1VsDeltaR(0),
-  fh2PtJet2VsFraction(0),
-  fh2PtJet1VsLeadPtAllSel(0),
-  fh2PtJet1VsLeadPtTagged(0),
-  fh2PtJet1VsPtJet2(0),
-  fh2PtJet2VsRelPt(0),
-  fh3PtJetDEtaDPhiConst(0),
-  fh3PtJetAreaDRConst(0)
+  fh3PtJet1VsDeltaEtaDeltaPhi(nullptr),
+  fh2PtJet1VsDeltaR(nullptr),
+  fh2PtJet2VsFraction(nullptr),
+  fh2PtJet1VsLeadPtAllSel(nullptr),
+  fh2PtJet1VsLeadPtTagged(nullptr),
+  fh2PtJet1VsPtJet2(nullptr),
+  fh2PtJet2VsRelPt(nullptr),
+  fh3PtJetDEtaDPhiConst(nullptr),
+  fh3PtJetAreaDRConst(nullptr)
 {
-  fh3PtJet1VsDeltaEtaDeltaPhi = new TH3F*[fNcentBins];
-  fh2PtJet1VsDeltaR           = new TH2F*[fNcentBins];
-  fh2PtJet2VsFraction         = new TH2F*[fNcentBins];
-  fh2PtJet1VsLeadPtAllSel     = new TH2F*[fNcentBins];
-  fh2PtJet1VsLeadPtTagged     = new TH2F*[fNcentBins];
-  fh2PtJet1VsPtJet2           = new TH2F*[fNcentBins];
-  fh2PtJet2VsRelPt            = new TH2F*[fNcentBins];
-
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
-    fh2PtJet1VsDeltaR[i]           = 0;
-    fh2PtJet2VsFraction[i]         = 0;
-    fh2PtJet1VsLeadPtAllSel[i]     = 0;
-    fh2PtJet1VsLeadPtTagged[i]     = 0;
-    fh2PtJet1VsPtJet2[i]           = 0;
-    fh2PtJet2VsRelPt[i]            = 0;
-  }
-
   SetMakeGeneralHistograms(kTRUE);
-  
 }
 
 AliAnalysisTaskEmcalJetTagger::~AliAnalysisTaskEmcalJetTagger()
@@ -158,6 +121,25 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   const Double_t maxDR       =  0.5;
   const Double_t minFraction =  -0.005;
   const Double_t maxFraction =  1.005;
+
+  // Prepare histogram containers
+  fh3PtJet1VsDeltaEtaDeltaPhi = new TH3*[fNcentBins];
+  fh2PtJet1VsDeltaR           = new TH2*[fNcentBins];
+  fh2PtJet2VsFraction         = new TH2*[fNcentBins];
+  fh2PtJet1VsLeadPtAllSel     = new TH2*[fNcentBins];
+  fh2PtJet1VsLeadPtTagged     = new TH2*[fNcentBins];
+  fh2PtJet1VsPtJet2           = new TH2*[fNcentBins];
+  fh2PtJet2VsRelPt            = new TH2*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+    fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
+    fh2PtJet1VsDeltaR[i]           = 0;
+    fh2PtJet2VsFraction[i]         = 0;
+    fh2PtJet1VsLeadPtAllSel[i]     = 0;
+    fh2PtJet1VsLeadPtTagged[i]     = 0;
+    fh2PtJet1VsPtJet2[i]           = 0;
+    fh2PtJet2VsRelPt[i]            = 0;
+  }
 
   TString histName = "";
   TString histTitle = "";

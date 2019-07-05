@@ -15,6 +15,12 @@
 
 class AliFemtoDreamCollConfig : public TNamed {
  public:
+  enum UncorrelatedMode {
+    kNone = 0,
+    kPhiSpin = 1,
+    kStravinsky = 2,
+    kCorrelatedPhi = 3
+  };
   AliFemtoDreamCollConfig();
   AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig& config);
   AliFemtoDreamCollConfig(const char *name, const char *title);
@@ -38,6 +44,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   void SetPtQA(bool doIt) {
     fPtQA = doIt;
+  }
+  void SetMassQA(bool doIt) {
+    fMassQA = doIt;
   }
   void SetMomentumResolution(bool doIt) {
     fMomentumResolution = doIt;
@@ -68,8 +77,8 @@ class AliFemtoDreamCollConfig : public TNamed {
     fGetTheControlSampel = use;
   }
   ;
-  void SetUseStravinskyMethod(bool use) {
-    fStravinsky = use;
+  void SetControlMethod(AliFemtoDreamCollConfig::UncorrelatedMode mode) {
+    fMode = mode;
   }
   ;
   void SetZBins(std::vector<float> ZBins);
@@ -90,6 +99,9 @@ class AliFemtoDreamCollConfig : public TNamed {
     fSpinningDepth = SpinningDepth;
   }
   ;
+  void SetCorrelationRange(float CorrRange) {
+    fCorrelationRange = CorrRange;
+  }
   void SetMinimalBookingME(bool doIt) {
     fMinimalBookingME = doIt;
   }
@@ -121,6 +133,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetDoPtQA() {
     return fPtQA;
   }
+  bool GetDoMassQA() {
+    return fMassQA;
+  }
   bool GetDoMomResolution() {
     return fMomentumResolution;
   }
@@ -141,8 +156,8 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fGetTheControlSampel;
   }
   ;
-  bool GetDoStravinsky() {
-    return fStravinsky;
+  AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode() {
+    return fMode;
   }
   ;
   bool GetdPhidEtaPlots() {
@@ -153,7 +168,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   }
   ;
   bool GetdPhidEtamTPlots() {
-    return (fdPhidEtaPlots&&fmTdEtadPhi);
+    return (fdPhidEtaPlots && fmTdEtadPhi);
   }
   bool GetMinimalBookingME() {
     return fMinimalBookingME;
@@ -205,21 +220,35 @@ class AliFemtoDreamCollConfig : public TNamed {
     return fSpinningDepth;
   }
   ;
-
+  int GetCorrelationRange() {
+    return fCorrelationRange;
+  }
+  ;
   void SetDeltaEtaMax(float delta) {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaEtaMax = delta;
   }
-  float GetDeltaEtaMax() const { return fDeltaEtaMax; }
+  float GetDeltaEtaMax() const {
+    return fDeltaEtaMax;
+  }
 
   void SetDeltaPhiMax(float delta) {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaPhiMax = delta;
   }
-  float GetDeltaPhiMax() const { return fDeltaPhiMax; }
-
-  void DoDeltaEtaDeltaPhiCut(bool doIt) { fDoDeltaEtaDeltaPhiCut = doIt; }
-  float GetDoDeltaEtaDeltaPhiCut() const { return fDoDeltaEtaDeltaPhiCut; }
+  float GetDeltaPhiMax() const {
+    return fDeltaPhiMax;
+  }
+  float GetSqDeltaPhiEtaMax() const {
+    return fDeltaEtaMax * fDeltaEtaMax + fDeltaPhiMax * fDeltaPhiMax;
+  }
+  ;
+  void DoDeltaEtaDeltaPhiCut(bool doIt) {
+    fDoDeltaEtaDeltaPhiCut = doIt;
+  }
+  float GetDoDeltaEtaDeltaPhiCut() const {
+    return fDoDeltaEtaDeltaPhiCut;
+  }
 
  private:
   bool fMultBinning;            //
@@ -227,13 +256,14 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fkTBinning;              //
   bool fmTBinning;              //
   bool fPtQA;                   //
+  bool fMassQA;                 //
   bool fMomentumResolution;     //
   bool fPhiEtaBinning;          //
   bool fdPhidEtaPlots;          //
   bool fdPhidEtaPlotsSmallK;    //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
-  bool fStravinsky;             //
+  AliFemtoDreamCollConfig::UncorrelatedMode fMode;  //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
   int fNumberRadii;             //
@@ -249,6 +279,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   TNtuple *fClosePairRej;       //
   int fMixingDepth;             //
   int fSpinningDepth;			      //
+  int fCorrelationRange;	      //
   bool fkTCentrality;           //
   bool fmTdEtadPhi;             //
   AliFemtoDreamEvent::MultEstimator fEst;  //
@@ -256,7 +287,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
 
-ClassDef(AliFemtoDreamCollConfig,11)
+ClassDef(AliFemtoDreamCollConfig,13)
   ;
 };
 

@@ -32,6 +32,8 @@ using std::vector;
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
 
+#include <AliLog.h>
+
 ClassImp(AliEventCutsContainer);
 ClassImp(AliEventCuts);
 
@@ -67,7 +69,6 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fCentralityFramework{0},
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
-  fSelectInelGt0{false},
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
@@ -97,6 +98,10 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fOverrideAutoTriggerMask{false},
   fOverrideAutoPileUpCuts{false},
   fMultSelectionEvCuts{false},  
+  fUseTimeRangeCut{false},
+  fSelectInelGt0{false},
+  fOverrideInelGt0{false},
+  fTimeRangeCut{},
   fCutStats{nullptr},
   fCutStatsAfterTrigger{nullptr},
   fCutStatsAfterMultSelection{nullptr},
@@ -129,10 +134,15 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// If not specified the cuts are set according to the run period
   const int current_run = ev->GetRunNumber();
-  if (!fManualMode && current_run != fCurrentRun) {
-    ::Info("AliEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
+  if (current_run != fCurrentRun) {
     fCurrentRun = current_run;
-    AutomaticSetup(ev);
+    if (!fManualMode) {
+      ::Info("AliEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
+      AutomaticSetup(ev);
+    }
+    if (fUseTimeRangeCut) {
+      fTimeRangeCut.InitFromRunNumber(fCurrentRun);
+    }
   }
 
   if (fSavePlots && !this->Last()) {
@@ -284,6 +294,16 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
 
+  /// Time Range masking
+  if (fUseTimeRangeCut) {
+    if ( fTimeRangeCut.CutEvent(ev) == kFALSE ) {
+      // good event: should be accepted
+      fFlag |= BIT(kTimeRangeCut);
+    }
+  } else {
+    fFlag |= BIT(kTimeRangeCut);
+  }
+
   /// Ignore SPD/tracks vertex position and reconstruction individual flags
   bool allcuts = CheckNormalisationMask(kPassesAllCuts);
   if (allcuts) {
@@ -363,6 +383,7 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "Multiplicity selection",
     "INEL > 0",
     "Correlations",
+    "TimeRangeCut",
     "All cuts"
   };
 
@@ -430,7 +451,7 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     TClonesArray* aodMC = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     fMC = (eventHandler || aodMC);
   }
-
+  
   if (fCurrentRun == -1 && fMC) {
     ::Info("AliEventCuts::AutomaticSetup","MCGEN train / Kinematics only production detected, disabling all the cuts.");
     fGreenLight = true;
@@ -669,7 +690,7 @@ void AliEventCuts::SetupRun2pp() {
   else if (fCentralityFramework == 1) {
     fCentEstimators[0] = "V0M";
     fCentEstimators[1] = "CL0";
-    fSelectInelGt0 = true;
+    fSelectInelGt0 = fOverrideInelGt0 ? fSelectInelGt0 : true;
   }
 
   fFB128vsTrklLinearCut[0] = 32.077;

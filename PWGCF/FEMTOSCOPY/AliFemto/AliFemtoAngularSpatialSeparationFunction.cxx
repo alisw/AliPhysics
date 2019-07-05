@@ -59,13 +59,10 @@ void AliFemtoAngularSpatialSeparationFunction::Finish()
 
 AliFemtoString AliFemtoAngularSpatialSeparationFunction::Report()
 {
-  string stemp = "BBbar spatial separation report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fAlphaNum->GetEntries());
-  stemp += ctemp;
+  AliFemtoString report = "BBbar spatial separation report:\n";
+  report += Form("Number of entries in numerator:\t%E\n",fAlphaNum->GetEntries());
 
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  return report;
 }
 
 void AliFemtoAngularSpatialSeparationFunction::AddFirstParticle(AliFemtoParticle *particle, bool mixing)
@@ -176,4 +173,3 @@ TList* AliFemtoAngularSpatialSeparationFunction::GetOutputList()
   tOutputList->Add(fAlphaDen);
   return tOutputList;
 }
-

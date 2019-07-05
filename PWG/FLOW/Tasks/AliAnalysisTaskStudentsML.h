@@ -20,10 +20,11 @@
 #include "TH1F.h"
 #include "TH1I.h"
 #include "TComplex.h"
-#include <TArrayF.h>
+#include <TArrayD.h>
 #include <vector>
 #include "TMath.h"
 #include "TF1.h"
+#include "TRandom3.h"
 
 //================================================================================================================
 
@@ -55,7 +56,7 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Bool_t GlobalQualityAssurance(AliAODEvent *aAODevent);
   Bool_t TrackSelection(AliAODTrack *aTrack); 
   virtual void CalculateQvectors();
-  virtual void Correlation();
+  virtual void Correlation(Int_t Number, Int_t h1, Int_t h2, Int_t h3, Int_t h4, Int_t h5, Int_t h6, Int_t h7, Int_t h8, Int_t h9, Int_t h10);
   // 3.) Methods called in Terminate():
   // ...
 
@@ -67,9 +68,17 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   TList* GetFinalResultsList() const {return this->fFinalResultsList;}
 
   void SetBoolMultCut(Bool_t top, Int_t otp){this->bMultCut = top; this->fSecondFilter=otp;} 
-  
-  void SetFilters(Int_t top){this->fMainFilter = top;} 
 
+  void SetUpperLineCut(Float_t slope, Float_t axis)
+  {this->fSlopeUpperLine = slope; this->fAxisUpperLine = axis; } 
+
+   void SetLowerLineCut(Float_t slope, Float_t axis)
+  {this->fSlopeLowerLine = slope; this->fAxisLowerLine = axis; } 
+  
+  void SetFilter(Int_t top){this->fMainFilter = top;} 
+
+  void SetCentralityEstimator(Bool_t Esti){this->fCentralityfromVZero = Esti; }
+ 
   void SetVertexX(Bool_t Cut, Double_t Min, Double_t Max)
   {this->bCutOnVertexX=Cut;  this->fMinVertexX=Min; this->fMaxVertexX=Max;}
 
@@ -85,17 +94,17 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   void SetPtCut(Bool_t Cut, Double_t Min, Double_t Max)
   {this->bCutOnPt=Cut;  this->fMinPtCut=Min; this->fMaxPtCut=Max;}
  
-  void SetCorrNumber(Int_t top){this->fNumber = top;} 
-  Int_t GetCorrNumber() const {return this->fNumber;}
-
   void SetMinNuPar(Int_t top){this->fMinNumberPart = top;} 
   Int_t GetMinNuPar() const {return this->fMinNumberPart;}
 
-  void SetCorrSet1(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h)
-  {this->fh1=a; this->fh2=b; this->fh3=c; this->fh4=d; this->fh5=e; this->fh6=f; this->fh7=g; this->fh8=h;}
+  void SetCorrSet1(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t i, Int_t j)
+  {this->fNumber=Number; this->fh1=a; this->fh2=b; this->fh3=c; this->fh4=d; this->fh5=e; this->fh6=f; this->fh7=g; this->fh8=h; this->fh9=i; this->fh10=j;}
 
-   void SetCorrSet2(Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h)
-  {this->fa1=a; this->fa2=b; this->fa3=c; this->fa4=d; this->fa5=e; this->fa6=f; this->fa7=g; this->fa8=h;}
+   void SetCorrSet2(Int_t Number, Int_t a, Int_t b, Int_t c, Int_t d, Int_t e, Int_t f, Int_t g, Int_t h, Int_t i, Int_t j)
+  {this->fNumberSecond=Number; this->fa1=a; this->fa2=b; this->fa3=c; this->fa4=d; this->fa5=e; this->fa6=f; this->fa7=g; this->fa8=h; this->fa9=i; this->fa10=j;}
+
+  void SetRatioWeight(Bool_t top)
+  {this->bUseRatioWeight=top;}
 
   void SetMinCent(Float_t top){this->fMinCentrality = top;} 
   Float_t GetMinCent() const {return this->fMinCentrality;}
@@ -144,6 +153,10 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Bool_t bMultCut;
   Int_t fMainFilter;           //for main filter selection (default: Hypbrid)
   Int_t fSecondFilter;           //for filter selection (default: global)
+  Float_t fSlopeUpperLine;           //slope of the upper line for multiplicity cut
+  Float_t fAxisUpperLine;           //axis intercept of the upper line for multiplicity cut
+  Float_t fSlopeLowerLine;           //slope of the lower line for multiplicity cut
+  Float_t fAxisLowerLine;           //axis intercept of the lower line for multiplicity cut
   
     //Global
   Float_t fMinCentrality;        // min centrality (default 0.)
@@ -157,6 +170,13 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   Double_t fMaxVertexY;               // max vertex cut Y (default -44)
   Double_t fMinVertexZ;               // min vertex cut Z (default -10 cm)
   Double_t fMaxVertexZ;               // max vertex cut Z (default +10 cm)
+  TH1F *fVertexXBefore;               // Histogram Vertex X before vertex cut
+  TH1F *fVertexXAfter;               // Histogram Vertex X after vertex cut
+  TH1F *fVertexYBefore;               // Histogram Vertex Y before vertex cut
+  TH1F *fVertexYAfter;               // Histogram Vertex Y after vertex cut
+  TH1F *fVertexZBefore;               // Histogram Vertex Z before vertex cut
+  TH1F *fVertexZAfter;               // Histogram Vertex Z after vertex cut
+  Bool_t fCentralityfromVZero;	     // if kTRUE: Use V0 as centrality estimator, if kFALSE: SPD Cluster
 
     //Physics-Selection
   Bool_t bCutOnEta;               // Bool to apply eta cuts (default kTRUE)
@@ -169,52 +189,44 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
 
   //3.) Variables for the correlation:
   Int_t fMaxCorrelator;          // maximum of correlation 
-  TProfile *fRecursion[2][8];    //!  
-  TProfile *fRecursionSecond[2][8];    //!
+  TProfile *fRecursion[2][10];    //!  
   Bool_t bUseWeights; 
 
   
-  Int_t fNumber;           //number of correlation
+  Int_t fNumber;           //number of correlation first correlator
+  Int_t fNumberSecond;           //number of correlation second correlator
   Int_t fMinNumberPart;           //minimal number of particles to do correlation
+  Bool_t bUseRatioWeight;	//use number of combination weight for EbE Ratio (default kTRUE)
 
-  Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8;  //harmonics
-  Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8;  //second set of harmonics
+  Int_t fh1, fh2, fh3, fh4, fh5, fh6, fh7, fh8, fh9, fh10;  //harmonics
+  Int_t fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8, fa9, fa10;  //second set of harmonics
 
-   
-  const Int_t kSum; 
-  const Int_t kMaxHarmonic; 
-  const Int_t kMaxPower; 
+
   Int_t fParticles;        // number of particles after all selections
   TArrayD *fAngles;              //! Azimuthal angles 
   TArrayD *fWeights;            //! Particle weights
   TArrayI *fBin;                   //! Bins for particle weight
   
-  TComplex fQvector[17][9];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+  TComplex fQvector[61][11];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
 
   // 4.) Final results:
    
   TProfile *fCentrality;         // final centrality result
   TProfile *fCentralitySecond;         // final centrality result for second harmonics 
   TProfile *fEvCentrality;         // final centrality result for event version
+  TProfile *fCentralitySecondSquare; // final centrality result for second harmonics to the power of 2
+  TProfile *fCentralitySecondSquareUnit; // final centrality result for second harmonics to the power of 2 with unit weights
+  TProfile *fCov;         // Covariance term between first set of harmonics and second set of harmonics
+  TProfile *fCovUnit;         // Covariance term between first set of harmonics and second set of harmonics
   TH1F *fCounterHistogram;       // for some checks
   TList *fFinalResultsList;      // list to hold all histograms with final results
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,10);
+  ClassDef(AliAnalysisTaskStudentsML,16);
 
 };
 
 //================================================================================================================
 
 #endif
-
-
-
-
-
-
-
-
-
-

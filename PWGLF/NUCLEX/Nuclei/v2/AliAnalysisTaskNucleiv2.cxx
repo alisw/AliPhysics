@@ -725,7 +725,7 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
 
   TString fDetTPCConfName[3];
   TString fDetV0ConfName[3];
-  TString fNormMethod="QoverQlength";
+  TString fNormMethod="QoverM";//"QoverQlength";
 
   fDetTPCConfName[0] = "TPC";
   fDetTPCConfName[1] = "TPCNegEta";
@@ -761,14 +761,14 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   Double_t Qx2  = 0, Qy2  = 0;
   // Double_t Qx2p = 0, Qy2p = 0;
   // Double_t Qx2n = 0, Qy2n = 0;
-
+  /*
   const AliQnCorrectionsQnVector* QnVectTPC  = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[0].Data()), "latest", "plain");     
   // const AliQnCorrectionsQnVector* QnVectTPCn = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), "latest", "plain");     
   // const AliQnCorrectionsQnVector* QnVectTPCp = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), "latest", "plain");     
   const AliQnCorrectionsQnVector* QnVectV0   = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[0].Data()), "latest", "raw");	   
   const AliQnCorrectionsQnVector* QnVectV0A  = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[1].Data()), "latest", "raw");	   
   const AliQnCorrectionsQnVector* QnVectV0C  = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[2].Data()), "latest", "raw");        
-
+  
   Qx2 = QnVectTPC->Qx(fHarmonic);
   Qy2 = QnVectTPC->Qy(fHarmonic);
 
@@ -787,8 +787,21 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   	  
   qxEP  = QnVectV0->Qx(fHarmonic);
   qyEP  = QnVectV0->Qy(fHarmonic);
+  */
 
-
+  //test different Q normalization
+  Qx2 = qnVectTPC[0]->Qx(fHarmonic);
+  Qy2 = qnVectTPC[0]->Qy(fHarmonic);
+  
+  qxEPa = qnVectV0[1]->Qx(fHarmonic); //V0A
+  qyEPa = qnVectV0[1]->Qy(fHarmonic);
+  	  
+  qxEPc = qnVectV0[2]->Qx(fHarmonic); //V0C
+  qyEPc = qnVectV0[2]->Qy(fHarmonic);
+  	  
+  qxEP  = qnVectV0[0]->Qx(fHarmonic); //V0
+  qyEP  = qnVectV0[0]->Qy(fHarmonic);
+  
   Double_t evPlAngV0A = eventplaneqncorrVZERO[1];
   Double_t evPlAngV0C = eventplaneqncorrVZERO[2];
   Double_t evPlAngV0  = eventplaneqncorrVZERO[0];

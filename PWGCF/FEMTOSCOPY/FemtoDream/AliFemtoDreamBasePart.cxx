@@ -394,7 +394,19 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
   fCharge.push_back(negTrack->Charge());
 }
 
-AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {}
+AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
+  fGTI= nullptr;
+  fVGTI = nullptr;
+  fEta.clear();
+  fTheta.clear();
+  fMCTheta.clear();
+  fPhi.clear();
+  fPhiAtRadius.clear();
+  fXYZAtRadius.clear();
+  fMCPhi.clear();
+  fIDTracks.clear();
+  fCharge.clear();
+}
 
 void AliFemtoDreamBasePart::SetMCParticle(AliAODMCParticle *mcPart,
                                           AliMCEvent *evt) {

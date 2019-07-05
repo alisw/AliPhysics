@@ -47,6 +47,7 @@ void AddTask_GammaConvCalo_pPb(
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   Int_t     enableMatBudWeightsPi0        = 0,        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
+  Bool_t    enableElecDeDxPostCalibration = kFALSE,
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
@@ -60,6 +61,7 @@ void AddTask_GammaConvCalo_pPb(
   TString fileNamePtWeights           = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights         = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
   TString fileNameMatBudWeights       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMAW:");
+  TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
 
   TString addTaskName                 = "AddTask_GammaConvCalo_pPb";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -177,6 +179,7 @@ void AddTask_GammaConvCalo_pPb(
   if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+  if(trainConfig >= 520 && trainConfig < 530) task->SetDoHBTHistoOutput(kTRUE);
 
   // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
@@ -1317,6 +1320,16 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("86010113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("a0110113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
     cuts.AddCutPCMCalo("a1210113","00200009327000008250400000","2446641054012200000","0h63103100000010"); //
+  // PCM-PHOS run2 HBT studies
+  } else if (trainConfig == 520) {  // PHOS  INT7
+    cuts.AddCutPCMCalo("80010113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); //
+  } else if (trainConfig == 521) {  // PHOS  INT7 with cents
+    cuts.AddCutPCMCalo("80110113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 0-10%
+    cuts.AddCutPCMCalo("81210113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 10-20%
+    cuts.AddCutPCMCalo("82410113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 20-40%
+    cuts.AddCutPCMCalo("84610113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 40-60%
+    cuts.AddCutPCMCalo("86810113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 60-80%
+    cuts.AddCutPCMCalo("88010113","00600009a27000006250800000","244664105a012200000","0h63103100000010"); // non lin 80-100%
 
   //PCM-PHOS run 2 MB systematics
   } else if(trainConfig == 530){//dEdx e-line variation and dE/dx pi-line variation
@@ -1374,7 +1387,9 @@ void AddTask_GammaConvCalo_pPb(
   } else if (trainConfig == 601) {  // PHOS PHI7
     cuts.AddCutPCMCalo("80062113","00200009327000008250400000","2446600051012200000","0h63103100000010");// PHI7 triggers
     cuts.AddCutPCMCalo("80062113","00200009327000008250400000","2446600011012200000","0h63103100000010");// PHI7 triggers
-
+  } else if (trainConfig == 602){ // No non-lin corr
+    cuts.AddCutPCMCalo("80010113","00200009327000008250400000","244660007a012200000","0h63103100000010"); // No NL
+    cuts.AddCutPCMCalo("80062113","00200009327000008250400000","244660007a012200000","0h63103100000010"); // No NL
 
   // ===============================================================================================
   // Run 2 data DMC clusters pPb 5TeV
@@ -2123,6 +2138,20 @@ void AddTask_GammaConvCalo_pPb(
     }
 
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (enableElecDeDxPostCalibration){
+      if (isMC == 0){
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+        }
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
+      } else{
+        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration=kFALSE;
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
+      }
+    }
     if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);

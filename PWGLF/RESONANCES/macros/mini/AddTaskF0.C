@@ -116,8 +116,8 @@ AliRsnMiniAnalysisTask * AddTaskF0
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
   //trigger 
-  //task->UseESDTriggerMask(triggerMask); //ESD
-  task->SelectCollisionCandidates(triggerMask); //AOD
+  task->UseESDTriggerMask(triggerMask); //ESD
+  //task->SelectCollisionCandidates(triggerMask); //AOD
   
   //-----------------------------------------------------------------------------------------------
   // -- MULTIPLICITY/CENTRALITY -------------------------------------------------------------------

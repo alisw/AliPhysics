@@ -122,6 +122,7 @@ public:
   void SetCustomTPCpid (Float_t *par, Float_t sigma);
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
+  void SetSigmaBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
   void SetPtWeightingFunction (int functionID, int nPars, float* pars) {
@@ -168,6 +169,8 @@ private:
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
 
+
+  TString               fCurrentFileName;       ///<  Currently analysed file name
   TF1                  *fTOFfunction;           //!<! TOF signal function
 
   TList                *fList;                  ///<  Output list
@@ -188,6 +191,8 @@ private:
 
   Float_t               fDCAzLimit;             ///<  Limits of the \f$DCA_{z}\f$ histograms
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
+  Float_t               fSigmaLimit;            ///<  Limits of the \f$n_{sigma}\f$ histograms
+  Int_t                 fSigmaNbins;            ///<  Number of bins used for \f$n_{sigma}\f$ distributions
 
   Float_t               fTOFlowBoundary;        ///<  Lower limit for the TOF mass spectra histograms
   Float_t               fTOFhighBoundary;       ///<  Upper limit for the TOF mass spectra histograms
@@ -270,7 +275,8 @@ private:
   TF1 *fTRDboundariesNeg[4]; //!<! Function with the phi limits of TRD boundaries as a function of pt
   int  fTRDvintage;          /// TRD configuration (year)
   bool fTRDin;               /// if true only tracks within TRD area are considered
-
+  int  fNanoPIDindexTPC;
+  int  fNanoPIDindexTOF;
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);
@@ -279,9 +285,9 @@ private:
 
 template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* track, bool nano) {
 
-  if (!nano && track->GetID() < 0) return;
+  if (track->GetID() < 0) return;
   Float_t dca[2] = {0.f,0.f};
-  if (!nano && !track->TestFilterBit(fFilterBit) && fFilterBit) return;
+  if (!track->TestFilterBit(fFilterBit) && fFilterBit) return;
   bool acceptedTrack = AcceptTrack(track,dca);
   float beta = HasTOF(track,fPID);
   if (beta > 1. - EPS) beta = -1;
@@ -372,8 +378,8 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 
     float tpc_n_sigma = GetTPCsigmas(track);
     float tof_n_sigma = iTof ? GetTOFsigmas(track) : -999.f;
-
     for (int iR = iTof; iR >= 0; iR--) {
+
       /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
       /// to compensate for the shift in the sigma (to be rechecked in case of update of TOF PID response)
       if (tpc_n_sigma > -2. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {

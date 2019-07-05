@@ -45,15 +45,19 @@ public:
     AliFemtoModelManager *mc_manager;
 
     /// Build Parameters object with default values
+    Parameters()
+      : bin_count(56)
+      , qmin(-0.14)
+      , qmax(0.14)
+      , prefix("")
+      , enable_extra_hists(false)
+      , enable_extra_denoms(false)
+      , mc_manager(NULL)
+      {}
+
     static Parameters Default()
     {
-      return {
-        56, -0.14, 0.14, // histogram bin-count & range
-        "CF_TrueQ3D",    // Prefix
-        false,           // Enable extra histograms
-        false,           // Enable extra denoms
-        NULL             // pointer to MC manager
-      };
+      return Parameters().NamePrefix("CF_TrueQ3D");
     }
 
     Parameters NamePrefix(const TString& prefix) const {

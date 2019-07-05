@@ -21,6 +21,7 @@
 #include "AliKFParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliESDtrack.h"
 
 //#include "AliCentralitySelectionTask.h"
 #include "AliMultSelection.h"
@@ -76,6 +77,7 @@ fTrkClsEta(0),
 fClsPhi(0),
 fClsEta(0),
 fClsE(0),
+fClsEnoTimeCut(0),
 //fClsEamDCal(0),
 //fClsEamEMCal(0),
 //fClsEAll(0),
@@ -125,6 +127,8 @@ fnSigaftM20EoPCut(0),
 fnSigaftSysM20EoPCut(0),
 fInclElecDCAnoSign(0),
 fElecEoPnoSig(0),
+fInclElecEoPnoShift(0),
+fHadronEoPnoShift(0),
 fInclElecEoP(0),
 fInclElecEoPNoM20(0),
 fTPCElecEoP(0),
@@ -208,6 +212,10 @@ fAllElecStack(0),
 fHFElecStack(0),
 fBElecStack(0),
 
+fAllElecStackDiffPID(0),
+fDElecStackDiffPID(0),
+fBElecStackDiffPID(0),
+
 fElecTPCTrk(0),
 fHFElecTPCTrk(0),
 fBElecTPCTrk(0),
@@ -215,6 +223,14 @@ fBElecTPCTrk(0),
 fElecAftTrkCuts(0),
 fHFElecAftTrkCuts(0),
 fBElecAftTrkCuts(0),
+
+fElecAftLooseTrkCuts(0),
+fHFElecAftLooseTrkCuts(0),
+fBElecAftLooseTrkCuts(0),
+
+fElecAftLooseTrkCutsDiffPID(0),
+fDElecAftLooseTrkCutsDiffPID(0),
+fBElecAftLooseTrkCutsDiffPID(0),
 
 fElecAftTrkMatch(0),
 fHFElecAftTrkMatch(0),
@@ -281,6 +297,7 @@ fTrkClsEta(0),
 fClsPhi(0),
 fClsEta(0),
 fClsE(0),
+fClsEnoTimeCut(0),
 //fClsEamDCal(0),
 //fClsEamEMCal(0),
 //fClsEAll(0),
@@ -330,6 +347,8 @@ fnSigaftM20EoPCut(0),
 fnSigaftSysM20EoPCut(0),
 fInclElecDCAnoSign(0),
 fElecEoPnoSig(0),
+fInclElecEoPnoShift(0),
+fHadronEoPnoShift(0),
 fInclElecEoP(0),
 fInclElecEoPNoM20(0),
 fTPCElecEoP(0),
@@ -411,6 +430,10 @@ fAllElecStack(0),
 fHFElecStack(0),
 fBElecStack(0),
 
+fAllElecStackDiffPID(0),
+fDElecStackDiffPID(0),
+fBElecStackDiffPID(0),
+
 fElecTPCTrk(0),
 fHFElecTPCTrk(0),
 fBElecTPCTrk(0),
@@ -418,6 +441,14 @@ fBElecTPCTrk(0),
 fElecAftTrkCuts(0),
 fHFElecAftTrkCuts(0),
 fBElecAftTrkCuts(0),
+
+fElecAftLooseTrkCuts(0),
+fHFElecAftLooseTrkCuts(0),
+fBElecAftLooseTrkCuts(0),
+
+fElecAftLooseTrkCutsDiffPID(0),
+fDElecAftLooseTrkCutsDiffPID(0),
+fBElecAftLooseTrkCutsDiffPID(0),
 
 fElecAftTrkMatch(0),
 fHFElecAftTrkMatch(0),
@@ -461,11 +492,14 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fOutputList->SetOwner(kTRUE);
     
     //create our histos and add them to the list
-    fNevents = new TH1F("fNevents", "No. of Events; Counts", 3,-0.5,2.5);
+    fNevents = new TH1F("fNevents", "No. of Events; Counts", 6,-0.5,5.5);
     fOutputList->Add(fNevents);
     fNevents->GetXaxis()->SetBinLabel(1,"All");
     fNevents->GetXaxis()->SetBinLabel(2,">2 Trks");
     fNevents->GetXaxis()->SetBinLabel(3,">2 Trks, Vtx_{z}<10cm");
+    fNevents->GetXaxis()->SetBinLabel(4,"Vtx_{z}<10cm");
+    fNevents->GetXaxis()->SetBinLabel(5,"Vtx_{z}<10cm, Pile-up cuts");
+    fNevents->GetXaxis()->SetBinLabel(6,">2 Trks, Vtx_{z}<10cm, Pile-Up cuts");
     
     fVtX = new TH1F("fVtX","X Vertex Position;Vtx_{X};Counts",50,-5,5);
     fOutputList->Add(fVtX);
@@ -497,8 +531,11 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fClsEta = new TH1F("fClsEta","Cluster #eta Distribution;#eta;Counts",100,-1.5,1.5);
     fOutputList->Add(fClsEta);
     
-    fClsE = new TH1F("fClsE","Cluster Energy, Matched to EMCal or DCal;Cluster E;Counts",250,0.,50);
+    fClsE = new TH1F("fClsE","Cluster Energy after matching;Cluster E;Counts",250,0.,50);
     fOutputList->Add(fClsE);
+    
+    fClsEnoTimeCut = new TH1F("fClsEnoTimeCut","Cluster Energy after matching, no cluster time cut;Cluster E;Counts",250,0.,50);
+    fOutputList->Add(fClsEnoTimeCut);
     
     /*if(fFlagClsTypeDCAL && !fFlagClsTypeEMC){
         fClsEamDCal = new TH1F("fClsEamDCal","Cluster Energy after track matching to DCal;Cluster E;Counts",250,0.,50);
@@ -663,6 +700,12 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fElecEoPnoSig = new TH2F("fElecEoPnoSig","Elec E/p, no nSig cut; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fElecEoPnoSig);
+    
+    fInclElecEoPnoShift = new TH2F("fInclElecEoPnoShift","Incl Elec E/p no Shift; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
+    fOutputList->Add(fInclElecEoPnoShift);
+    
+    fHadronEoPnoShift = new TH2F("fHadronEoPnoShift","Incl Elec E/p no Shift; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
+    fOutputList->Add(fHadronEoPnoShift);
     
     fInclElecEoP = new TH2F("fInclElecEoP","Incl Elec E/p; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fInclElecEoP);
@@ -1044,6 +1087,18 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fBElecStack = new TH1F("fBElecStack","B Elec from Stack; p_{T}(GeV/c); counts;",100,0,50.);
         fBElecStack->Sumw2();
         fOutputList->Add(fBElecStack);
+        
+        fAllElecStackDiffPID = new TH1F("fAllElecStackDiffPID","All Elec from Stack, Shingo mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fAllElecStackDiffPID->Sumw2();
+        fOutputList->Add(fAllElecStackDiffPID);
+        
+        fDElecStackDiffPID = new TH1F("fDElecStackDiffPID","D Elec from Stack, Shingo mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fDElecStackDiffPID->Sumw2();
+        fOutputList->Add(fDElecStackDiffPID);
+        
+        fBElecStackDiffPID = new TH1F("fBElecStackDiffPID","B Elec from Stack, Shingo mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fBElecStackDiffPID->Sumw2();
+        fOutputList->Add(fBElecStackDiffPID);
     
         fElecTPCTrk = new TH1F("fElecTPCTrk","Elec TPC tracks; p_{T}(GeV/c); counts;",100,0,50.);
         fElecTPCTrk->Sumw2();
@@ -1068,6 +1123,30 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fBElecAftTrkCuts = new TH1F("fBElecAftTrkCuts","B Elec after trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
         fBElecAftTrkCuts->Sumw2();
         fOutputList->Add(fBElecAftTrkCuts);
+        
+        fElecAftLooseTrkCuts = new TH1F("fElecAftLooseTrkCuts","Elec after loose trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
+        fElecAftLooseTrkCuts->Sumw2();
+        fOutputList->Add(fElecAftLooseTrkCuts);
+        
+        fHFElecAftLooseTrkCuts = new TH1F("fHFElecAftLooseTrkCuts","HF Elec after loose trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
+        fHFElecAftLooseTrkCuts->Sumw2();
+        fOutputList->Add(fHFElecAftLooseTrkCuts);
+        
+        fBElecAftLooseTrkCuts = new TH1F("fBElecAftLooseTrkCuts","B Elec after loose trk cuts; p_{T}(GeV/c); counts;",100,0,50.);
+        fBElecAftLooseTrkCuts->Sumw2();
+        fOutputList->Add(fBElecAftLooseTrkCuts);
+        
+        fElecAftLooseTrkCutsDiffPID = new TH1F("fElecAftLooseTrkCutsDiffPID","Elec after loose trk cuts, Shingo's mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fElecAftLooseTrkCutsDiffPID->Sumw2();
+        fOutputList->Add(fElecAftLooseTrkCutsDiffPID);
+        
+        fDElecAftLooseTrkCutsDiffPID = new TH1F("fDElecAftLooseTrkCutsDiffPID","D Elec after loose trk cuts, Shingo's mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fDElecAftLooseTrkCutsDiffPID->Sumw2();
+        fOutputList->Add(fDElecAftLooseTrkCutsDiffPID);
+        
+        fBElecAftLooseTrkCutsDiffPID = new TH1F("fBElecAftLooseTrkCutsDiffPID","B Elec after loose trk cuts, Shingo's mother PID; p_{T}(GeV/c); counts;",100,0,50.);
+        fBElecAftLooseTrkCutsDiffPID->Sumw2();
+        fOutputList->Add(fBElecAftLooseTrkCutsDiffPID);
     
         fElecAftTrkMatch = new TH1F("fElecAftTrkMatch","Elec after trk Match; p_{T}(GeV/c); counts;",100,0,50.);
         fElecAftTrkMatch->Sumw2();
@@ -1210,7 +1289,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     }*/
     
     
-    if (fFlagFillMCHistos && fFlagRunStackLoop) {
+    /*if (fFlagFillMCHistos && fFlagRunStackLoop) {
         Int_t eleinStack=0;
         if (fMCarray) {
             //cout<<"Test2..................................."<<endl;
@@ -1235,13 +1314,13 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
                 ilabelM = AODMCtrack->GetMother();
             
-                if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) {
+                if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary() && TMath::Abs(AODMCtrack->Eta()) <= 0.6) {
                     // cout<<"TESTINGGGGGGGGGGGG"<<endl;
                     fAllElecStack->Fill(AODMCtrack->Pt());
                     eleinStack++;
                 }
                 //
-                /*if(TMath::Abs(AODMCtrack->Y()) < 2.25) {
+                *//*if(TMath::Abs(AODMCtrack->Y()) < 2.25) {
                     if (TrackPDG>500 && TrackPDG<599) fBMesonPtATLAS->Fill(AODMCtrack->Pt());
                     if (TrackPDG == 521) fBPlusPtATLAS->Fill(AODMCtrack->Pt());
                 }
@@ -1275,7 +1354,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     if (TrackPDG == 521) fBPlusPtLHCb->Fill(AODMCtrack->Pt());
                 }*/
                 
-                if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
+                /*if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
                 if (TrackPDG>500 && TrackPDG<599) {
                     fBMesonPt->Fill(AODMCtrack->Pt());
                 }
@@ -1289,6 +1368,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 
                     AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
                     pidM = TMath::Abs(momPart->GetPdgCode());
+                    
+                    fAllElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    if(pidM==411 || pidM==421 || pidM==413 || pidM==423 || pidM==431 || pidM==433 || pidM==4122){
+                        fDElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    }
+                    if(pidM==511 || pidM==521 || pidM==513 || pidM==523 || pidM==531 || pidM==533){
+                        fBElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    }
                     
                     if(TrackPDG == 11 && pidM>400 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
                         fHFElecStack->Fill(AODMCtrack->Pt());
@@ -1349,7 +1436,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
             }
         }
-    }
+    }*/
     //cout << "Electron in stack -------------- " << eleinStack <<endl;
     ///////////////////
     // Trigger Check //
@@ -1379,16 +1466,181 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     Double_t NcontV = pVtx->GetNContributors();
     
-    //Making n track and vertex cut
-    fNevents->Fill(0);
+    //Making event cuts
+    fNevents->Fill(0); //all events
+    if(NcontV>=2) fNevents->Fill(1); //>2 Trks
+    if(NcontV>=2 && TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(2); //>2 Trks, with Vtx_Z cut
+    //if(TMath::Abs(pVtx->GetZ())<=10.0) fNevents->Fill(3); //with Vtx_Z cut
+    
+    //make cut in Vtx_Z
+    if(TMath::Abs(pVtx->GetZ())>10.0) return; //make cut in Vtx_Z
+    fNevents->Fill(3);
+    
+    //Pile-up cuts
+    // remove event 1
+    const AliVVertex *spdVtx = fAOD->GetPrimaryVertexSPD();
+    double covTrc[6],covSPD[6];
+    pVtx->GetCovarianceMatrix(covTrc);
+    spdVtx->GetCovarianceMatrix(covSPD);
+    double dz = pVtx->GetZ()-spdVtx->GetZ();
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+    //cout << TMath::Abs(dz) << " ; " << nsigTot << " ; " << nsigTrc << endl;
+    if (fEnablePileupCut1){
+        if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20)return;
+    }
+        
+    // remove event2
+    Int_t nTPCout=0;
+    Float_t mTotV0=0;
+    AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
+    Float_t mTotV0A=v0data->GetMTotV0A();
+    Float_t mTotV0C=v0data->GetMTotV0C();
+    mTotV0=mTotV0A+mTotV0C;
+    Int_t ntracksEv = fAOD->GetNumberOfTracks();
+    for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+        AliAODTrack * atrack = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if(!atrack) {AliFatal("Not a standard AOD");}
+        if(atrack->GetID()<0)continue;
+        if((atrack->GetFlags())&(AliVTrack::kTPCout)) nTPCout++;
+        else continue;
+    }
+    Float_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
+    if(fEnablePileupRejVZEROTPCout)
+    {
+        if(mTotV0<mV0Cut) return;
+    }
+    
+    fNevents->Fill(4); //with Vtx_Z cut + pile-up cuts
+    
+    //make cut in Ncontributors
     if(NcontV<2)return;
-    fNevents->Fill(1);
-    if(TMath::Abs(pVtx->GetZ())>10.0) return;
-    fNevents->Fill(2);
+    
+    fNevents->Fill(5); //with Vtx_Z cut + >2 Trks + pile-up cuts
     
     fVtX->Fill(pVtx->GetX());
     fVtY->Fill(pVtx->GetY());
     fVtZ->Fill(pVtx->GetZ());
+    
+    ///////////////////
+    //Loop over Stack//
+    ///////////////////
+    
+    if (fFlagFillMCHistos && fFlagRunStackLoop) {
+        Int_t eleinStack=0;
+        if (fMCarray) {
+            //cout<<"Test2..................................."<<endl;
+            // Make Pi0 and Eta Weight Sparse
+            GetPi0EtaWeight(fSprsPi0EtaWeightCal);
+            Int_t TrackPDG = -999;
+            Int_t ilabelM = -99;
+            Int_t ilabelGM = -99;
+            Int_t ilabelGGM = -99;
+            Int_t pidM, pidGM, pidGGM;
+            
+            for(int i=0; i<(fMCarray->GetEntries()); i++)
+            {
+                //cout<<"Test "<<fMCarray->GetEntries()<<" ..................................."<<i<<endl;
+                //if (i<fNpureMC) continue; //reject plain Hijing
+                
+                Bool_t fromDStar = kFALSE;
+                
+                AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(i);
+                
+                //-------Get PDG
+                TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
+                ilabelM = AODMCtrack->GetMother();
+                
+                if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary() && TMath::Abs(AODMCtrack->Eta()) <= 0.6) {
+                    // cout<<"TESTINGGGGGGGGGGGG"<<endl;
+                    fAllElecStack->Fill(AODMCtrack->Pt());
+                    eleinStack++;
+                }
+                
+                if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
+                if (TrackPDG>500 && TrackPDG<599) {
+                    fBMesonPt->Fill(AODMCtrack->Pt());
+                }
+                if (TrackPDG>5000 && TrackPDG<5999) {
+                    fBBaryonPt->Fill(AODMCtrack->Pt());
+                }
+                
+                //Fill Charm species pT histos
+                if (ilabelM>0 && TrackPDG == 11) {
+                    //cout<<"Test4..................................."<<endl;
+                    
+                    AliAODMCParticle *momPart = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
+                    pidM = TMath::Abs(momPart->GetPdgCode());
+                    
+                    fAllElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    if(pidM==411 || pidM==421 || pidM==413 || pidM==423 || pidM==431 || pidM==433 || pidM==4122){
+                        fDElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    }
+                    if(pidM==511 || pidM==521 || pidM==513 || pidM==523 || pidM==531 || pidM==533){
+                        fBElecStackDiffPID->Fill(AODMCtrack->Pt());
+                    }
+                    
+                    if(TrackPDG == 11 && pidM>400 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
+                        fHFElecStack->Fill(AODMCtrack->Pt());
+                        
+                    }
+                    if(TrackPDG == 11 && pidM>500 && pidM<600 && AODMCtrack->IsPhysicalPrimary()) {
+                        fBElecStack->Fill(AODMCtrack->Pt());
+                        fBMesonElecPt->Fill(AODMCtrack->Pt());
+                    }
+                    if(TrackPDG == 11 && pidM>5000 && pidM<5999 && AODMCtrack->IsPhysicalPrimary()) {
+                        fBBaryonElecPt->Fill(AODMCtrack->Pt());
+                    }
+                    
+                    if (pidM==413) fromDStar = kTRUE;
+                    if (pidM>500 && pidM<599) {
+                        continue; //reject beauty feed down
+                    }
+                    if (pidM>5000 && pidM<5999) {
+                        continue; //reject beauty feed down
+                    }
+                    
+                    ilabelGM = momPart->GetMother();
+                    if (ilabelGM>0) {
+                        AliAODMCParticle *gmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM);//get grandma particle
+                        pidGM = TMath::Abs(gmomPart->GetPdgCode());
+                        if (pidGM>500 && pidGM<599) {
+                            if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            continue; //reject beauty feed down
+                        }
+                        if (pidGM>5000 && pidGM<5999) {
+                            continue; //reject beauty feed down
+                        }
+                        ilabelGGM = gmomPart->GetMother();
+                        if (ilabelGGM>0) {
+                            AliAODMCParticle *ggmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGGM); //get great grandma particle
+                            pidGGM = TMath::Abs(ggmomPart->GetPdgCode());
+                            if (pidGGM>500 && pidGGM<599) {
+                                if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) fBMesonElecPt->Fill(AODMCtrack->Pt());
+                            }
+                        }
+                    }
+                }
+                if(TrackPDG>4000 && TrackPDG<4999) fCBaryonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==4122)fLambdaCPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==4132)fEtaCPt->Fill(AODMCtrack->Pt());
+                
+                if (TrackPDG<400 || TrackPDG>499) {
+                    continue; //reject stuff that's not in charm meson range
+                }
+                fDMesonPDG->Fill(TrackPDG);
+                fAllDMesonPt->Fill(AODMCtrack->Pt());
+                
+                if(TrackPDG==421) fD0MesonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==421 && fromDStar==kTRUE) fD0MesonFromDStarPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==411) fDPlusMesonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==431) fDsMesonPt->Fill(AODMCtrack->Pt());
+                if(TrackPDG==413) fDStarMesonPt->Fill(AODMCtrack->Pt());
+                // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
+            }
+        }
+    }
     
     //////////////////////
     // Find Kink Mother //
@@ -1441,6 +1693,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC){//if we want DCal
                 if(clsphi > 1.39 && clsphi < 3.265) {//EMCAL : 80 < phi < 187 but it's EMCal
                     continue; //leave out EMCal
+                }
+            }
+            
+            if (fApplyTimeCut) {
+                Float_t tof1 = clus->GetTOF()*1e+9; // ns
+                if(!fMCarray && fUseTender && fFlagFillMCHistos)
+                {
+                    if(tof1<-30 || tof1>30)continue; // timing cut on data
                 }
             }
             
@@ -1520,8 +1780,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         
         Double_t d0z0[2]={-999,-999}, cov[3];
         Double_t DCAxyCut = 2.4, DCAzCut = 3.2;
-        if(track->GetTPCNcls() < fNclusTPC) continue;
-        if(track->GetITSNcls() < 3) continue;
+        
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;
         
         double phiMatchIts = track->Phi();
@@ -1530,6 +1789,37 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
         }
         Double_t DCA = d0z0[0]*track->Charge()*MagSign;
+        
+        //Refit
+        if((!(track->GetStatus()&AliESDtrack::kITSrefit)|| (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+        
+        //Looser cuts to fill histo
+        if(track->GetTPCNcls()>=60 && track->GetITSNcls()>=2 && track->GetTPCNCrossedRows()>=80){
+            if(kTruElec == kTRUE) fElecAftLooseTrkCuts->Fill(track->Pt());
+            if(kTruHFElec == kTRUE) fHFElecAftLooseTrkCuts->Fill(track->Pt());
+            if(kTruBElec == kTRUE) fBElecAftLooseTrkCuts->Fill(track->Pt());
+        }
+        
+        //Looser cuts and Shingo's method of getting the mother PID
+        if(track->GetTPCNcls()>=60 && track->GetITSNcls()>=2 && track->GetTPCNCrossedRows()>=80){
+            if(pdg==11 && ilabelM>0){
+                fElecAftLooseTrkCutsDiffPID->Fill(track->Pt());
+                if(pidM==411 || pidM==421 || pidM==413 || pidM==423 || pidM==431 || pidM==433 || pidM==4122){
+                    fDElecAftLooseTrkCutsDiffPID->Fill(track->Pt());
+                }
+                if(pidM==511 || pidM==521 || pidM==513 || pidM==523 || pidM==531 || pidM==533){
+                    fBElecAftLooseTrkCutsDiffPID->Fill(track->Pt());
+                }
+            }
+        }
+            
+        //Tighter track cuts
+        if(track->GetTPCNcls() < fNclusTPC) continue;
+        if(track->GetITSNcls() < 3) continue;
+        if(track->GetTPCNCrossedRows() < fNCrossRows) continue;
+        if (fItsChi2>=0) {
+            if(track->GetITSchi2() > fItsChi2) continue;
+        }
         
         //fill the track histograms
         fTrkPt->Fill(track->Pt());
@@ -1602,6 +1892,16 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             
             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
                 if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+            
+            fClsEnoTimeCut->Fill(clustMatch->E());
+            
+            if (fApplyTimeCut) {
+                Float_t tof = clustMatch->GetTOF()*1e+9; // ns
+                if(!fMCarray && fUseTender && fFlagFillMCHistos)
+                {
+                    if(tof<-30 || tof>30)continue; // timing cut on data
+                }
+            }
             
             fClsE->Fill(clustMatch->E());
             
@@ -1902,6 +2202,33 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Double_t M20 = clustMatch->GetM20();
             Double_t M02 = clustMatch->GetM02();
             
+            if((nsigma>fMinNSigCut) && (nsigma<3)) {
+                if ((M20>0.01) && (M20<fMaxM20Cut)) {
+                    fInclElecEoPnoShift->Fill(track->Pt(),EovP);
+                }
+            }
+            if(nsigma<-4.) {
+                if(M20>0.01 && M20<fMaxM20Cut) {
+                    fHadronEoPnoShift->Fill(track->Pt(),EovP);
+                }
+            }
+            
+            if(fShiftEoP && fMCarray && fFlagFillMCHistos)  // E/p MC mean shift correction
+            {
+                if(fCentralityMin==30 && fCentralityMax==50)
+                {
+                    EovP += 0.04; //30-50%
+                }
+                else if(fCentralityMin==60 && fCentralityMax==80)
+                {
+                    EovP += 0.045; //60-80% (tuned up to 18 GeV/c)
+                }
+                else
+                {
+                    EovP += 0.0;
+                }
+            }
+            
             if(fFlagFillMCHistos && fFlagFillSprs) {
                 Double_t fvalueElectron[6] = {-999,-999,-999,-999,-999,-999};
                 fvalueElectron[0] = track->Pt();
@@ -1940,7 +2267,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(nsigma<-4.) {
                     if(M02>0.01 && M02<0.7) {
                         fHadronEoP->Fill(track->Pt(),EovP);
-                        if(EovP>fMinEoPCut && EovP<1.2){
+                        if(EovP>fMinEoPCut && EovP<fMaxEoPCut){
                             fHadronDCA->Fill(track->Pt(),DCA);
                         }
                     }
@@ -1949,7 +2276,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(nsigma<-4.) {
                     if(M20>0.01 && M20<fMaxM20Cut) {
                         fHadronEoP->Fill(track->Pt(),EovP);
-                        if(EovP>fMinEoPCut && EovP<1.2){
+                        if(EovP>fMinEoPCut && EovP<fMaxEoPCut){
                             fHadronDCA->Fill(track->Pt(),DCA);
                         }
                     }
@@ -1967,14 +2294,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             // Electron Cuts //
             ///////////////////
             if (fApplyM02Cut) {
-                if((EovP>0.9) && (EovP<1.2)) {
+                if((EovP>fMinEoPCut) && (EovP<fMaxEoPCut)) {
                     fnSigaftEoPCut->Fill(track->Pt(),nsigma);
                     if (M02>0.01 && M02<0.7) {
                         fnSigaftM20EoPCut->Fill(track->Pt(),nsigma);
                     }
                 }
             } else {
-                if((EovP>0.9) && (EovP<1.2)) {
+                if((EovP>fMinEoPCut) && (EovP<fMaxEoPCut)) {
                     fnSigaftEoPCut->Fill(track->Pt(),nsigma);
                     if (M20>0.01 && M20<0.35) {
                         fnSigaftM20EoPCut->Fill(track->Pt(),nsigma);
@@ -1982,12 +2309,12 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
             
-            if((EovP>fMinEoPCut) && (EovP<1.2)) {
+            if((EovP>fMinEoPCut) && (EovP<fMaxEoPCut)) {
                 fTPCElecEoP->Fill(track->Pt(),EovP);
                 fnSigaftSysEoPCut->Fill(track->Pt(),nsigma);
             }
             
-            if((EovP>fMinEoPCut) && (EovP<1.2)){
+            if((EovP>fMinEoPCut) && (EovP<fMaxEoPCut)){
                 if(kTruElec == kTRUE) fElecAftEoP->Fill(track->Pt());
                 if(kTruHFElec == kTRUE) fHFElecAftEoP->Fill(track->Pt());
                 if(kTruBElec == kTRUE) fBElecAftEoP->Fill(track->Pt());
@@ -2006,7 +2333,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if((nsigma>fMinNSigCut) && (nsigma<3)) fInclElecEoP->Fill(track->Pt(),EovP);
             
             //Apply E/p Cut for electrons
-            if((EovP<fMinEoPCut) || (EovP>1.2)) continue;
+            if((EovP<fMinEoPCut) || (EovP>fMaxEoPCut)) continue;
             fnSigaftSysM20EoPCut->Fill(track->Pt(),nsigma);
             
             if(kTruElec == kTRUE) fElecAftEMCeID->Fill(track->Pt());

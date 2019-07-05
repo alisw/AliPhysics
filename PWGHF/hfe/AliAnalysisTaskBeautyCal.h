@@ -266,6 +266,8 @@ private:
 
     TH2D        *fHistResD;
     TH2D        *fHistResB;
+    TH2D        *fHistEffde;
+    TH2D        *fHistEffbe;
     TH1D        *fHistHFEpos;
     TH1D        *fHistHFEneg;
     TH1D        *fHistHFmcCheck;

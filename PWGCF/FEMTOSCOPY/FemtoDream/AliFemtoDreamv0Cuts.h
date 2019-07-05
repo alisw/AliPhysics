@@ -79,12 +79,18 @@ class AliFemtoDreamv0Cuts {
   //Setters for the daughter track cuts
   void SetPosDaugterTrackCuts(AliFemtoDreamTrackCuts *cuts) {
     fPosCuts = cuts;
+    fCutDaughters = true;
   }
   ;
   void SetNegDaugterTrackCuts(AliFemtoDreamTrackCuts *cuts) {
     fNegCuts = cuts;
+    fCutDaughters = true;
   }
   ;
+  void SetCutDaughters(bool cut) {
+    fCutDaughters = cut;
+  }
+  bool GetCutDaughters() const { return fCutDaughters;};
   //Setters for PDG Codes of the daughters+v0
   void SetPDGCodev0(int pdgCode) {
     fPDGv0 = pdgCode;
@@ -161,6 +167,12 @@ class AliFemtoDreamv0Cuts {
     fCutInvMass = true;
   }
   ;
+  void SetCutWindow(float down, float up) {
+    fCutInvMass = false;
+    fCutInvMassSidebands = true;
+    fInvMassCutSBdown = down;
+    fInvMassCutSBup = up;
+  }
   void Init();
   void SetName(TString OutputName) {
     if (fHistList)
@@ -194,6 +206,9 @@ class AliFemtoDreamv0Cuts {
     return "v0Cuts";
   }
   ;
+  void SetArmenterosCut(bool doIt) {
+    fDoArmenterosCut = doIt;
+  }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
     fDoArmenterosCut = true;
@@ -226,6 +241,7 @@ class AliFemtoDreamv0Cuts {
   //Here the cut values for the Daughters are stored
   AliFemtoDreamTrackCuts *fPosCuts;   //
   AliFemtoDreamTrackCuts *fNegCuts;   //
+  bool fCutDaughters;
   //These are all the cuts directly linked to the v0
   bool fMinimalBooking;               //
   bool fMCData;                       //
@@ -266,6 +282,10 @@ class AliFemtoDreamv0Cuts {
   float fMinCPA;                     //
   bool fCutInvMass;                   //
   float fInvMassCutWidth;            //
+  bool fCutInvMassSidebands;         //
+  float fInvMassCutSBdown;           //
+  float fInvMassCutSBup;             //
+
   //Range for the axis of the hists
   float fAxisMinMass;                //
   float fAxisMaxMass;                //
@@ -275,7 +295,7 @@ class AliFemtoDreamv0Cuts {
   int fPDGv0;                         //
   int fPDGDaugP;                      //
   int fPDGDaugN;                      //
-ClassDef(AliFemtoDreamv0Cuts,5)
+ClassDef(AliFemtoDreamv0Cuts,6)
 };
 
 #endif /* ALIFEMTODREAMV0CUTS_H_ */

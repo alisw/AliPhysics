@@ -50,9 +50,7 @@
 
 #include <TROOT.h>
 #include <TBase64.h>
-
 #include <TNamed.h>
-#include <random>
 
 
 using AFAPP = AliFemtoAnalysisPionPion;
@@ -61,10 +59,16 @@ using AFAPP = AliFemtoAnalysisPionPion;
 struct MacroParams : public TNamed {
   MacroParams()
     : TNamed(AFAPP::make_random_string("macro_").Data(), "Macro Parameters")
+    , centrality_ranges()
+    , pair_codes()
+    , kt_ranges()
     {}
 
   MacroParams(const TString &name)
     : TNamed(name.Data(), "Macro Parameters")
+    , centrality_ranges()
+    , pair_codes()
+    , kt_ranges()
     {}
 
   std::vector<int> centrality_ranges;
@@ -85,7 +89,7 @@ struct MacroParams : public TNamed {
   int eventreader_read_full_mc { false };
   bool eventreader_epvzero { true };
   bool eventreader_vertex_shift { true };
-  bool eventreader_dca_globaltrack { true };
+  int eventreader_dca_globaltrack { 1 };
   bool eventreader_centrality_flattening { false };
   int eventreader_use_multiplicity { AliFemtoEventReaderAOD::kCentrality };
 
@@ -272,7 +276,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
                      NOPI = AliFemtoAnalysisPionPion::kNone;
 
   // loop over centrality ranges
-  for (int cent_it = 0; cent_it + 1 < macro_config.centrality_ranges.size(); cent_it += 2) {
+  for (size_t cent_it = 0; cent_it + 1 < macro_config.centrality_ranges.size(); cent_it += 2) {
 
     const int cent_low = macro_config.centrality_ranges[cent_it],
              cent_high = macro_config.centrality_ranges[cent_it + 1];
@@ -281,7 +285,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
                  cent_high_str = TString::Format("%0.2i", cent_high);
 
     // loop over pair types
-    for (int pair_it = 0; pair_it < macro_config.pair_codes.size(); ++pair_it) {
+    for (size_t pair_it = 0; pair_it < macro_config.pair_codes.size(); ++pair_it) {
 
       const int pair_code = macro_config.pair_codes[pair_it];
 
@@ -298,8 +302,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
         type_2 = PI_MINUS;
         break;
       default:
-        cout << "W-ConfigFemtoAnalysis: Invalid pair code " << pair_code << ". Skipping.\n";
-        continue;
+        throw std::runtime_error(Form("Invalid pair code %d", pair_code));
       }
 
       const TString pair_type_str =
@@ -464,7 +467,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       if (macro_config.do_moco6_cf) {
         AliFemtoModelCorrFctnTrueQ6D *moco6_cf = new AliFemtoModelCorrFctnTrueQ6D("MRC6D", macro_config.q3d_bin_count, macro_config.q3d_maxq);
-        moco6_cf->SetManager(model_manager);
         analysis->AddCorrFctn(moco6_cf);
       }
 
@@ -848,8 +850,13 @@ BuildConfiguration(const TString &text,
 
     cmd += ";";
 
-    cout << "I-BuildConfiguration: `" << cmd << "`\n";
-    gROOT->ProcessLineFast(cmd);
+    std::cout << "I-BuildConfiguration: `" << cmd << "`\n";
+    Int_t err = 0;
+    gROOT->ProcessLineFast(cmd, &err);
+
+    if (err != TInterpreter::EErrorCode::kNoError) {
+      throw std::runtime_error(Form("Bad configuration line: `%s`", cmd.Data()));
+    }
   }
 
   gDirectory->Remove(&a);

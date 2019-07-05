@@ -55,7 +55,6 @@ maxpt(5),
 dodNdeta(kTRUE),
 fTrackDensity(),
 fState(),
-fMaxConsequtiveStrips(2),
 fLowCutvalue(0),
 fTrackGammaToPi0(false),
 fStored(0)
@@ -250,17 +249,35 @@ void AliForwardFlowUtil::FillFromTrackrefsFMD(TH2D*& fwd)
 {
   Int_t nTracks   = fMCevent->GetNumberOfTracks();// stack->GetNtrack();
 
-  for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-    AliMCParticle* particle =
-      static_cast<AliMCParticle*>(fMCevent->GetTrack(iTr));
+  if (this->fSettings.fMaxConsequtiveStrips == 0) {
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* p = static_cast< AliMCParticle* >(fMCevent->GetTrack(iTr));
 
-    // Check if this charged and a primary
-    if (particle->Charge() == 0) continue;
+      // Ignore things that do not make a signal in the FMD
+      AliTrackReference* tr = this->IsHitFMD(p);
+      if (tr && p->Charge() != 0){
+        Double_t *etaPhi = new Double_t[2];
+        this->GetTrackRefEtaPhi(tr, etaPhi);
 
-    // IF the track corresponds to a primary, pass that as both
-    // arguments.
-    ProcessTrack(particle, fwd);
-  } // Loop over tracks
+        Double_t phi_tr = etaPhi[1];
+        Double_t eta_tr = etaPhi[0];
+        fwd->Fill(eta_tr,phi_tr,1);
+      }
+    }
+  }
+  else {
+    for (Int_t iTr = 0; iTr < nTracks; iTr++) {
+      AliMCParticle* particle =
+        static_cast<AliMCParticle*>(fMCevent->GetTrack(iTr));
+
+      // Check if this charged and a primary
+      if (particle->Charge() == 0) continue;
+
+      // IF the track corresponds to a primary, pass that as both
+      // arguments.
+      ProcessTrack(particle, fwd);
+    } // Loop over tracks
+  }
 }
 
 
@@ -405,7 +422,7 @@ AliForwardFlowUtil::ProcessRef(AliMCParticle* particle, AliTrackReference*ref,TH
 	s != fState.oldSector) {
       used = true;
     }
-    else if (nT > fMaxConsequtiveStrips) {
+    else if (nT > this->fSettings.fMaxConsequtiveStrips) {
 
       used = true;
     }
@@ -469,8 +486,6 @@ AliForwardFlowUtil::StoreParticle(AliMCParticle*       particle,
   Double_t eta_tr = etaPhi[0];
 
   fwd->Fill(eta_tr,phi_tr,1);
-  // if (dodNdeta) dNdeta->Fill(eta_tr,1);
-
   return;
 }
 

@@ -2193,16 +2193,16 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters()
       //
       Int_t    parentMult = 0;
       Int_t   *parentList   = recPoint->GetParents(parentMult);
-      Float_t *parentListDE = recPoint->GetParentsDE();         // deposited energy
-      
       clus->SetLabel(parentList, parentMult);
-      clus->SetClusterMCEdepFractionFromEdepArray(parentListDE);
       
       //
       // Set the cell energy deposition fraction map:
       //
       if( parentMult > 0 && fSetCellMCLabelFromEdepFrac )
       {
+        Float_t *parentListDE = recPoint->GetParentsDE();         // deposited energy
+        clus->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+        
         UInt_t * mcEdepFracPerCell = new UInt_t[ncellsTrue];
         
         // Get the digit that originated this cell cluster

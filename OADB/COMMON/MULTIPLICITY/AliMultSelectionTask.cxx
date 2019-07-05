@@ -107,6 +107,7 @@ fkCalibration ( kFALSE ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fk
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
+fkSkipVertexZ(kFALSE),
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
@@ -265,6 +266,7 @@ fkCalibration ( lCalib ), fkAddInfo(kTRUE), fkFilterMB(kTRUE), fkAttached(0), fk
 fkHighMultQABinning(kFALSE), fkGeneratorOnly(kFALSE), fkSkipMCHeaders(kFALSE), fkDebug(kTRUE),
 fkDebugAliCentrality ( kFALSE ), fkDebugAliPPVsMultUtils( kFALSE ), fkDebugIsMC ( kFALSE ), fkDebugAdditional2DHisto( kFALSE ),
 fkUseDefaultCalib (kFALSE), fkUseDefaultMCCalib (kFALSE),
+fkSkipVertexZ(kFALSE), 
 fDownscaleFactor(2.0), //2.0: no downscaling
 fRand(0),
 fkTrigger(AliVEvent::kINT7), fAlternateOADBForEstimators(""),
@@ -1751,7 +1753,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         if( lMultCuts->GetINELgtZEROCut() && ! fEvSel_INELgtZERO          )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejINELgtZERO);
         
-        if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut()      )
+        if( TMath::Abs(fEvSel_VtxZ->GetValue() ) > lMultCuts->GetVzCut() && !fkSkipVertexZ)
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejVzCut);
         
         if( lMultCuts->GetRejectPileupInMultBinsCut() && ! fEvSel_IsNotPileupInMultBins      )

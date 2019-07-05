@@ -104,6 +104,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           }
           RelativeK = RelativePairMomentum(itPart1->GetMomentum(), *itPDGPar1,
                                            itPart2->GetMomentum(), *itPDGPar2);
+
           if (fillHists && ResultsHist->GetEtaPhiPlots()) {
             DeltaEtaDeltaPhi(HistCounter, part1, part2, true, ResultsHist,
                              RelativeK);
@@ -149,6 +150,11 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           if (fillHists && ResultsHist->GetDoPtQA()) {
             ResultsHist->FillPtQADist(HistCounter, RelativeK, itPart1->GetPt(),
                                       itPart2->GetPt());
+          }
+          if (fillHists && ResultsHist->GetDoMassQA()) {
+            ResultsHist->FillMassQADist(HistCounter, RelativeK,
+                                        itPart1->GetInvMass(),
+                                        itPart2->GetInvMass());
           }
           ++itPart2;
         }

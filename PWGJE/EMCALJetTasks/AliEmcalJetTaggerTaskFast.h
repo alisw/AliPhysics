@@ -42,6 +42,7 @@ namespace EMCALJetTasks {
 /**
  * @class AliEmcalJetTaggerTaskFast
  * @brief Fast jet tagger for geometric matching of jets
+ * @ingroup PWGJEBASE
  * @author Martha Verweij
  * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
  * @since Nov 8, 2017

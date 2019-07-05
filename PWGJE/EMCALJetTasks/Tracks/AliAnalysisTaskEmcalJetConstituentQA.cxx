@@ -52,10 +52,10 @@
 #include "AliVTrack.h"
 
 /// \cond CLASSIMP
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetConstituentQA);
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetConstituentQA);
 /// \endcond
 
-using namespace EmcalTriggerJets;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalJetConstituentQA::AliAnalysisTaskEmcalJetConstituentQA():
   AliAnalysisTaskEmcalJet(),

@@ -535,7 +535,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
 
   Int_t nVar; 
   if (fUseMCInfo)  nVar = 52; //"full" tree if MC
-  else nVar = 34; //"reduced" tree if data
+  else nVar = 35; //"reduced" tree if data
   
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
@@ -596,7 +596,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
   }
   else {   // "light mode"
     fCandidateVariableNames[0] = "massLc2K0Sp";
-    fCandidateVariableNames[1] = "massLc2Lambdapi";
+    fCandidateVariableNames[1] = "alphaArm";
     fCandidateVariableNames[2] = "massK0S";
     fCandidateVariableNames[3] = "massLambda";
     fCandidateVariableNames[4] = "massLambdaBar";
@@ -629,7 +629,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::UserCreateOutputObjects() {
     fCandidateVariableNames[31] = "centrality"; 
     fCandidateVariableNames[32] = "NtrkAll";
     fCandidateVariableNames[33] = "origin";
- }
+    fCandidateVariableNames[34] = "ptArm";
+  }
   
   for(Int_t ivar=0; ivar < nVar; ivar++){
     fVariablesTreeSgn->Branch(fCandidateVariableNames[ivar].Data(), &fCandidateVariables[ivar], Form("%s/f",fCandidateVariableNames[ivar].Data()));
@@ -1925,7 +1926,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
     }      
     else { //remove MC-only variables from tree if data
       fCandidateVariables[0] = invmassLc;
-      fCandidateVariables[1] = invmassLc2Lpi;
+      fCandidateVariables[1] = v0part->AlphaV0();
       fCandidateVariables[2] = invmassK0s;
       fCandidateVariables[3] = invmassLambda;
       fCandidateVariables[4] = invmassLambdaBar;
@@ -1958,6 +1959,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVAApp::FillLc2pK0Sspectrum(AliAODRecoCascad
       fCandidateVariables[31] = fCentrality;
       fCandidateVariables[32] = fNTracklets_All;
       fCandidateVariables[33] = -1;
+      fCandidateVariables[34] = v0part->PtArmV0();
     }
     
     // fill multiplicity histograms for events with a candidate   

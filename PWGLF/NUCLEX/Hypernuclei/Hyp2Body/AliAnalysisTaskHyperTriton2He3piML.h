@@ -11,7 +11,7 @@ class TTree;
 #include <TString.h>
 #include <string>
 #include <vector>
-
+#include "AliVertexerHyperTriton2Body.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "Math/Vector4D.h"
@@ -35,8 +35,8 @@ struct RHyperTritonHe3pi {
   Double32_t fTPCmomHe3;            //[0.0,10.24,8]
   Double32_t fTPCmomPi;             //[0.0,10.24,8]
   Double32_t fChi2V0;               //[0.0,10.24,8] V0 fit chi2
-  Double32_t fDcaHe32PrimaryVertex; //[0.0,4.0,8] DCA of the negative prong to the PV
-  Double32_t fDcaPi2PrimaryVertex;  //[0.0,40.0,8]  DCA of the positive prong to the PV
+  Double32_t fDcaHe32PrimaryVertex; //[0.0,5.12,9] DCA of the negative prong to the PV
+  Double32_t fDcaPi2PrimaryVertex;  //[0.0,40.96,12]  DCA of the positive prong to the PV
   Double32_t fDcaV0daughters;       //[0.0,2.56,8] DCA between the two prongs
   Double32_t fLeastXedOverFindable; //[0.36,1.0,8] Min xed roads/findable clusters
   Double32_t fMaxChi2PerCluster;    //[0,6.4,8] Max chi2 per cluster in TPC
@@ -76,7 +76,7 @@ struct RTracklet {
 struct SHyperTritonHe3pi {
   int   fRecoIndex;  /// To connect with the reconstructed information
   int   fRecoTracklet; /// To connect with the reconstructed information of the tracklets
-  int   fPdgCode;
+  long fPdgCode;  
   float fDecayX;
   float fDecayY;
   float fDecayZ;
@@ -92,7 +92,7 @@ struct SHyperTritonHe3pi {
 
 struct SGenericV0 { /// For the other V0s that are reconstructed
   int   fRecoIndex;
-  int   fPdgCode;
+  long fPdgCode;
   float fDecayX;
   float fDecayY;
   float fDecayZ;
@@ -140,7 +140,7 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   bool fFillTracklet;
   bool fSaveFileNames;
   bool fPropagetToPV;
-
+  AliVertexerHyperTriton2Body fV0Vertexer;      //
  private:
   TList* fListHist;  //! List of Cascade histograms
   TTree* fTreeV0;    //! Output Tree, V0s
@@ -184,12 +184,13 @@ class AliAnalysisTaskHyperTriton2He3piML : public AliAnalysisTaskSE {
   std::vector<RTracklet> fRTracklets;           //!
   RCollision fRCollision;                       //!
 
+
   AliAnalysisTaskHyperTriton2He3piML(
       const AliAnalysisTaskHyperTriton2He3piML&);  // not implemented
   AliAnalysisTaskHyperTriton2He3piML& operator=(
       const AliAnalysisTaskHyperTriton2He3piML&);  // not implemented
 
-  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 1);
+  ClassDef(AliAnalysisTaskHyperTriton2He3piML, 3);
 };
 
 #endif

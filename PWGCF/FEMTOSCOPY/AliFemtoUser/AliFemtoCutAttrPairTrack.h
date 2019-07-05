@@ -567,7 +567,7 @@ public:
   AliFemtoConfigObject GetConfiguration() const
     {
       AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap()
-                                      ("_class", CRTP::ClassName());
+                                      ("_class", static_cast<const CRTP*>(this)->ClassName());
       CutAttrs::FillConfiguration(result);
       return result;
     }

@@ -13,10 +13,11 @@
 
 ClassImp(AliPHOSTriggerUtils)
 //-----------------------------------------------------------------------    
-AliPHOSTriggerUtils::AliPHOSTriggerUtils():TNamed(),
+AliPHOSTriggerUtils::AliPHOSTriggerUtils():TNamed(), 
 fbdrL(-1),
 fbdrR( 3),
 fRun(-1), 
+fFixedRun(kFALSE),
 fEvent(0x0),
 fGeom(0x0),
 fNtrg4x4(0)
@@ -31,6 +32,7 @@ TNamed(name, title),
 fbdrL(-1),
 fbdrR( 3),
 fRun(-1), 
+fFixedRun(kFALSE),
 fEvent(0x0),
 fGeom(new AliPHOSGeoUtils("IHEP","")),
 fNtrg4x4(0)
@@ -49,36 +51,62 @@ void AliPHOSTriggerUtils::SetEvent(AliVEvent * event){
   
   fEvent=event ;
 
-   Int_t runNumber=-999 ;
-   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event) ;
-   if(aod)
+  Int_t runNumber=-999 ;
+  AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event) ;
+  if(aod)
       runNumber = aod->GetRunNumber() ;
-   else{
+  else{
       AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event) ;
       if(esd)
          runNumber = esd->GetRunNumber() ;
-   }
-  //Check if run number changed and one should (re)read bad map
-  if(fRun!=runNumber){
-   fRun = runNumber ;
-     // 
-    AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
-    badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
-//    badmapContainer.InitFromFile("$PHOSTrigBadMaps.root","phosTrigBadMap");
-    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(runNumber,"phosTriggerBadMap");
-    if(!maps){
-      AliError(Form("Can not read Trigger Bad map for run %d. \n",runNumber)) ;    
+  }
+  if(fFixedRun){
+    Bool_t toRead= kTRUE ;  
+    for(Int_t mod=0; mod<5;mod++){
+      if(fPHOSBadMap[mod]) 
+        toRead = kFALSE ; //already read
     }
-    else{
-      AliInfo(Form("Setting PHOS Trigger bad map with name %s \n",maps->GetName())) ;
-      for(Int_t mod=0; mod<5;mod++){
-        if(fPHOSBadMap[mod]) 
-          delete fPHOSBadMap[mod] ;
-        TH2I * h = (TH2I*)maps->At(mod) ;      
-	if(h)
-          fPHOSBadMap[mod]=new TH2I(*h) ;
+    if(toRead){
+      AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
+      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRun,"phosTriggerBadMap");
+      if(!maps){
+        AliError(Form("Can not read Trigger Bad map for run %d. \n",fRun)) ;    
       }
-    }    
+      else{
+        AliInfo(Form("Setting PHOS Trigger bad map with name %s \n",maps->GetName())) ;
+        for(Int_t mod=0; mod<5;mod++){
+          if(fPHOSBadMap[mod]) 
+            delete fPHOSBadMap[mod] ;
+          TH2I * h = (TH2I*)maps->At(mod) ;      
+          if(h)
+            fPHOSBadMap[mod]=new TH2I(*h) ;
+        }
+      }  
+    }
+  }
+  else{ //use runnumber from header
+    //Check if run number changed and one should (re)read bad map
+    if(fRun!=runNumber){
+      fRun = runNumber ;
+      // 
+      AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
+      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRun,"phosTriggerBadMap");
+      if(!maps){
+        AliError(Form("Can not read Trigger Bad map for run %d. \n",fRun)) ;    
+      }
+      else{
+        AliInfo(Form("Setting PHOS Trigger bad map with name %s \n",maps->GetName())) ;
+        for(Int_t mod=0; mod<5;mod++){
+          if(fPHOSBadMap[mod]) 
+            delete fPHOSBadMap[mod] ;
+          TH2I * h = (TH2I*)maps->At(mod) ;      
+          if(h)
+            fPHOSBadMap[mod]=new TH2I(*h) ;
+        }
+      }  
+    }
   }
   
   
@@ -136,7 +164,7 @@ Int_t AliPHOSTriggerUtils::IsFiredTrigger(AliVCluster * clu){
      return 0 ;
   
    //Maximum energy tower
-   Int_t maxId, relid[4];
+   Int_t maxId=-1, relid[4];
    Double_t eMax = -111;
      
    AliVCaloCells * phsCells=fEvent->GetPHOSCells() ;
@@ -177,9 +205,9 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
   
    if(!fEvent)
      return 0 ;
-  
+     
    //Maximum energy tower
-   Int_t maxId, relid[4];
+   Int_t maxId=-1, relid[4];
    Double_t eMax = -111;
      
    AliVCaloCells * phsCells=fEvent->GetPHOSCells() ;
@@ -202,7 +230,7 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
     if(!TestBadMap(mod,ix,iz)){
       return 0 ;
     }
-  
+
     //Now etimate probability from the parameterization
     
     Int_t result = 0;
@@ -210,9 +238,16 @@ Int_t AliPHOSTriggerUtils::IsFiredTriggerMC(AliVCluster * clu){
       if(gRandom->Uniform()<TriggerProbabilityLHC13bcdef(clu->E(),mod)) result=1 ;
     }
     else{
-      for(Int_t bit=0; bit<4; bit++){
-        if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
-            result|=1<<bit ;
+      if(fRun>=282008 && fRun<=282441){ //LHC17pq
+        Int_t ddl = WhichDDL(mod, ix) ;  
+        Double_t rdm =gRandom->Uniform() ; 
+        if(rdm<TriggerProbabilityLHC17pq(clu->E(),ddl)) result=1 ;         
+      }
+      else{
+        for(Int_t bit=0; bit<4; bit++){
+          if(gRandom->Uniform()<TriggerProbability(clu->E(),mod,bit))
+             result|=1<<bit ;
+        }
       }
     }
     return result ;
@@ -236,6 +271,23 @@ Int_t AliPHOSTriggerUtils::FindBranch(Int_t nX, Int_t nZ) {
 
   return sm;
 }
+//______________________________________________________
+Int_t AliPHOSTriggerUtils::WhichDDL(Int_t module, Int_t cellx)
+{
+  const Int_t Nmod=5;//totally, 5 PHOS modules are designed.
+  Int_t ddl = -1;
+
+  if(cellx<1 || 64<cellx) return -1;
+
+  if(module<1 || 4<module){
+    return -1;
+  }
+  else{
+    ddl = (Nmod-module) * 4 + (cellx-1)/16;//convert offline module numbering to online.
+    return ddl;
+  }
+}
+
 //-----------------------------------------------------------------------  
 Bool_t AliPHOSTriggerUtils::TestBadMap(Int_t mod, Int_t ix,Int_t iz){
   //Test if this is good cell
@@ -299,4 +351,48 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC13bcdef(Double_t eClu, Int_t 
   }
   return 0 ;  
   
+}
+
+
+//-----------------------------------------------------------------------  
+Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17pq(Double_t x, Int_t ddl){
+  //Parameterization of turn-on curve for period LHC17pq
+  // Note that it is done for DDLs, not modules
+
+  if(ddl<8 || ddl>19) return 0.;
+  if(fRun>=282008 && fRun<=282343){ //LHC17p
+    switch(ddl){  
+    case 8 : return 7.944762e-01/(TMath::Exp((3.641718e+00-x)/2.650322e-01)+1.)+(1.-7.944762e-01)/(TMath::Exp((4.694861e+00-x)/2.650322e-01)+1.) ;
+    case 9 : return 9.166827e-01/(TMath::Exp((3.517378e+00-x)/2.592677e-01)+1.)+(1.-9.166827e-01)/(TMath::Exp((6.836709e+00-x)/2.592677e-01)+1.) ;
+    case 10 : return 9.530612e-01/(TMath::Exp((3.496633e+00-x)/2.656076e-01)+1.)+(1.-9.530612e-01)/(TMath::Exp((4.780714e+00-x)/2.656076e-01)+1.) ;
+    case 11 : return 8.475332e-01/(TMath::Exp((3.672446e+00-x)/2.545452e-01)+1.)+(1.-8.475332e-01)/(TMath::Exp((4.681494e+00-x)/2.545452e-01)+1.) ;
+    case 12 : return 1.009702e+00/(TMath::Exp((3.789344e+00-x)/3.089832e-01)+1.)+(1.-1.009702e+00)/(TMath::Exp((5.224435e+00-x)/3.089832e-01)+1.) ;
+    case 13 : return 9.043261e-01/(TMath::Exp((3.691091e+00-x)/2.750534e-01)+1.)+(1.-9.043261e-01)/(TMath::Exp((6.038003e+00-x)/2.750534e-01)+1.) ;
+    case 14 : return 9.368423e-01/(TMath::Exp((3.863201e+00-x)/3.307754e-01)+1.)+(1.-9.368423e-01)/(TMath::Exp((6.490584e+00-x)/3.307754e-01)+1.) ;
+    case 15 : return 8.929566e-01/(TMath::Exp((3.650563e+00-x)/2.849078e-01)+1.)+(1.-8.929566e-01)/(TMath::Exp((6.933385e+00-x)/2.849078e-01)+1.) ;
+    case 16 : return 8.097278e-01/(TMath::Exp((3.664689e+00-x)/2.879874e-01)+1.)+(1.-8.097278e-01)/(TMath::Exp((6.285455e+00-x)/2.879874e-01)+1.) ;
+    case 17 : return 7.103594e-01/(TMath::Exp((3.528692e+00-x)/2.930813e-01)+1.)+(1.-7.103594e-01)/(TMath::Exp((5.220063e+00-x)/2.930813e-01)+1.) ;
+    case 18 : return 9.025508e-01/(TMath::Exp((3.406599e+00-x)/3.195572e-01)+1.)+(1.-9.025508e-01)/(TMath::Exp((7.277194e+00-x)/3.195572e-01)+1.) ;
+    case 19 : return 7.898787e-01/(TMath::Exp((3.521535e+00-x)/2.833550e-01)+1.)+(1.-7.898787e-01)/(TMath::Exp((6.468302e+00-x)/2.833550e-01)+1.) ;
+    default: return 0.;
+    }
+  }
+  if(fRun>=282365 && fRun<=282441){ //LHC17q
+    switch(ddl){  
+    case 8 : return 7.670229e-01/(TMath::Exp((3.488723e+00-x)/2.742928e-01)+1.)+(1.-7.670229e-01)/(TMath::Exp((5.059602e+00-x)/2.742928e-01)+1.) ;
+    case 9 : return 8.151913e-01/(TMath::Exp((3.395833e+00-x)/2.143634e-01)+1.)+(1.-8.151913e-01)/(TMath::Exp((4.792992e+00-x)/2.143634e-01)+1.) ;
+    case 10 : return 8.780434e-01/(TMath::Exp((3.448331e+00-x)/2.344344e-01)+1.)+(1.-8.780434e-01)/(TMath::Exp((4.636605e+00-x)/2.344344e-01)+1.) ;
+    case 11 : return 7.220132e+00/(TMath::Exp((3.872164e+00-x)/3.007561e-01)+1.)+(1.-7.220132e+00)/(TMath::Exp((3.893820e+00-x)/3.007561e-01)+1.) ;
+    case 12 : return 5.536853e-01/(TMath::Exp((3.382345e+00-x)/2.497804e-01)+1.)+(1.-5.536853e-01)/(TMath::Exp((4.190075e+00-x)/2.497804e-01)+1.) ;
+    case 13 : return 5.150823e-01/(TMath::Exp((3.342826e+00-x)/1.628658e-01)+1.)+(1.-5.150823e-01)/(TMath::Exp((4.432898e+00-x)/1.628658e-01)+1.) ;
+    case 14 : return 5.384429e-01/(TMath::Exp((3.534127e+00-x)/3.184165e-01)+1.)+(1.-5.384429e-01)/(TMath::Exp((4.565801e+00-x)/3.184165e-01)+1.) ;
+    case 15 : return 7.354045e-01/(TMath::Exp((3.564357e+00-x)/3.220581e-01)+1.)+(1.-7.354045e-01)/(TMath::Exp((5.170461e+00-x)/3.220581e-01)+1.) ;
+    case 16 : return 6.502367e-01/(TMath::Exp((3.582700e+00-x)/3.271896e-01)+1.)+(1.-6.502367e-01)/(TMath::Exp((5.037315e+00-x)/3.271896e-01)+1.) ;
+    case 17 : return 1.164583e+00/(TMath::Exp((4.573204e+00-x)/6.050801e-01)+1.)+(1.-1.164583e+00)/(TMath::Exp((5.757209e+00-x)/6.050801e-01)+1.) ;
+    case 18 : return 2.307368e-01/(TMath::Exp((5.113748e+00-x)/2.183349e-01)+1.)+(1.-2.307368e-01)/(TMath::Exp((3.180296e+00-x)/2.183349e-01)+1.) ;
+    case 19 : return 4.047165e-01/(TMath::Exp((3.188518e+00-x)/1.792187e-01)+1.)+(1.-4.047165e-01)/(TMath::Exp((4.656638e+00-x)/1.792187e-01)+1.) ;
+    default: return 0.;
+    }
+  }
+  return 0.;
 }

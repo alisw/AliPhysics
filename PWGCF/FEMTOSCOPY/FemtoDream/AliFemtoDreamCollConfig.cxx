@@ -14,13 +14,14 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fkTBinning(false),
       fmTBinning(false),
       fPtQA(false),
+      fMassQA(false),
       fMomentumResolution(false),
       fPhiEtaBinning(false),
       fdPhidEtaPlots(false),
       fdPhidEtaPlotsSmallK(false),
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
-      fStravinsky(false),
+      fMode(AliFemtoDreamCollConfig::kNone),
       fMinimalBookingME(false),
       fMinimalBookingSample(false),
       fNumberRadii(0),
@@ -36,6 +37,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fClosePairRej(0),
       fMixingDepth(0),
       fSpinningDepth(0),
+      fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
       fEst(AliFemtoDreamEvent::kSPD),
@@ -53,13 +55,14 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fkTBinning(config.fkTBinning),
       fmTBinning(config.fmTBinning),
       fPtQA(config.fPtQA),
+      fMassQA(config.fMassQA),
       fMomentumResolution(config.fMomentumResolution),
       fPhiEtaBinning(config.fPhiEtaBinning),
       fdPhidEtaPlots(config.fdPhidEtaPlots),
       fdPhidEtaPlotsSmallK(config.fdPhidEtaPlotsSmallK),
       fMixedEventStatistics(config.fMixedEventStatistics),
       fGetTheControlSampel(config.fGetTheControlSampel),
-      fStravinsky(config.fStravinsky),
+      fMode(config.fMode),
       fMinimalBookingME(config.fMinimalBookingME),
       fMinimalBookingSample(config.fMinimalBookingSample),
       fNumberRadii(config.fNumberRadii),
@@ -75,6 +78,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fClosePairRej(config.fClosePairRej),
       fMixingDepth(config.fMixingDepth),
       fSpinningDepth(config.fSpinningDepth),
+      fCorrelationRange(config.fCorrelationRange),
       fkTCentrality(config.fkTCentrality),
       fmTdEtadPhi(config.fmTdEtadPhi),
       fEst(config.fEst),
@@ -91,13 +95,14 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fkTBinning(false),
       fmTBinning(false),
       fPtQA(false),
+      fMassQA(false),
       fMomentumResolution(false),
       fPhiEtaBinning(false),
       fdPhidEtaPlots(false),
       fdPhidEtaPlotsSmallK(false),
       fMixedEventStatistics(true),
       fGetTheControlSampel(false),
-      fStravinsky(false),
+      fMode(AliFemtoDreamCollConfig::kNone),
       fMinimalBookingME(false),
       fMinimalBookingSample(false),
       fNumberRadii(0),
@@ -113,6 +118,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fClosePairRej(nullptr),
       fMixingDepth(0),
       fSpinningDepth(0),
+      fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
       fEst(AliFemtoDreamEvent::kSPD),
@@ -139,12 +145,14 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fkTBinning = config.fkTBinning;
     this->fmTBinning = config.fmTBinning;
     this->fPtQA = config.fPtQA;
+    this->fMassQA = config.fMassQA;
     this->fMomentumResolution = config.fMomentumResolution;
     this->fPhiEtaBinning = config.fPhiEtaBinning;
     this->fdPhidEtaPlots = config.fdPhidEtaPlots;
     this->fdPhidEtaPlotsSmallK = config.fdPhidEtaPlotsSmallK;
     this->fMixedEventStatistics = config.fMixedEventStatistics;
     this->fGetTheControlSampel = config.fGetTheControlSampel;
+    this->fMode = config.fMode;
     this->fMinimalBookingME = config.fMinimalBookingME;
     this->fMinimalBookingSample = config.fMinimalBookingSample;
     this->fNumberRadii = config.fNumberRadii;
@@ -160,6 +168,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fClosePairRej = config.fClosePairRej;
     this->fMixingDepth = config.fMixingDepth;
     this->fSpinningDepth = config.fSpinningDepth;
+    this->fCorrelationRange = config.fCorrelationRange;
     this->fkTCentrality = config.fkTCentrality;
     this->fmTdEtadPhi = config.fmTdEtadPhi;
     this->fEst = config.fEst;
@@ -419,6 +428,7 @@ std::vector<int> AliFemtoDreamCollConfig::GetStandardPairs() {
   pairs.push_back(0);         // barXi barXi
   return pairs;
 }
+
 
 void AliFemtoDreamCollConfig::SetClosePairRejection(
     std::vector<bool> whichPairs) {

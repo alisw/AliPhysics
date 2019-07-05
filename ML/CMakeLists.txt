@@ -19,7 +19,7 @@ set(MODULE ML)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/ML
+include_directories(${AliPhysics_SOURCE_DIR}/ML
 )
 
 # Additional includes - alphabetical order except ROOT

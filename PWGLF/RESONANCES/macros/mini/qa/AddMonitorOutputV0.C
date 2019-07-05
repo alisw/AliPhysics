@@ -48,10 +48,10 @@ void AddMonitorOutputV0(Bool_t useMCMon, TObjArray *mon=0, TString v0name="K0S",
 
   //V0 Momentum
   AliRsnValueDaughter* axisV0MomP = new AliRsnValueDaughter("v0p", AliRsnValueDaughter::kV0P);
-  axisMomP->SetBins(0.0, 10.0, 0.02);
+  axisV0MomP->SetBins(0.0, 10.0, 0.02);
   //V0 pT
   AliRsnValueDaughter* axisV0MomPt = new AliRsnValueDaughter("v0pt", AliRsnValueDaughter::kV0Pt);
-  axisMomPt->SetBins(0.0,10.0,0.02);
+  axisV0MomPt->SetBins(0.0,10.0,0.02);
 
   //Mass
   AliRsnValueDaughter* axisMass = new AliRsnValueDaughter("Mass",AliRsnValueDaughter::kV0Mass);
@@ -71,19 +71,19 @@ void AddMonitorOutputV0(Bool_t useMCMon, TObjArray *mon=0, TString v0name="K0S",
   else axisAntiLambdaMass->SetBins(1.,2.,0.005);//misidentified
   //DCA
   AliRsnValueDaughter* axisDCA = new AliRsnValueDaughter("DCAtoVertex",AliRsnValueDaughter::kV0DCA);
-  axisDCA->SetBins(-4.0,0.4,0.001);
+  axisDCA->SetBins(0,4,0.001);
   //Radius
   AliRsnValueDaughter* axisRadius = new AliRsnValueDaughter("Radius",AliRsnValueDaughter::kV0Radius);
-  axisRadius->SetBins(0.0,200,0.2);
+  axisRadius->SetBins(0.0,200,0.1);
   //Lifetime
   AliRsnValueDaughter* axisLifetime = new AliRsnValueDaughter("Lifetime",AliRsnValueDaughter::kV0Lifetime);
   axisLifetime->SetBins(0.0,200,0.1);
   //Daughter DCA
   AliRsnValueDaughter* axisDDCA = new AliRsnValueDaughter("DaughtersDCA",AliRsnValueDaughter::kDaughterDCA);
-  axisDDCA->SetBins(-2.0,2,0.001);
+  axisDDCA->SetBins(0,2,0.001);
   //Cosine of Pointing Angle
   AliRsnValueDaughter* axisCPA = new AliRsnValueDaughter("CosPointAng",AliRsnValueDaughter::kCosPointAng);
-  axisCPA->SetBins(0.96,1.,0.001);
+  axisCPA->SetBins(0.96,1.,0.0002);
 
   //Negative Daughter pT
   AliRsnValueDaughter* axisNpt = new AliRsnValueDaughter("NegDaughterPt",AliRsnValueDaughter::kV0NPt);

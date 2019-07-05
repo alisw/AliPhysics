@@ -1257,18 +1257,18 @@ void AddTask_GammaConvV1_pPb(
         else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
       } else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
-    if (enableElecDeDxPostCalibration>0){
+    if (enableElecDeDxPostCalibration){
       if (isMC == 0){
-        if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNamedEdxPostCalib)){
-          analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
-        } else {
-          enableElecDeDxPostCalibration=kFALSE;
-          analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
         }
-            } else{
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
+      } else{
         cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
         enableElecDeDxPostCalibration=kFALSE;
-        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
     }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);

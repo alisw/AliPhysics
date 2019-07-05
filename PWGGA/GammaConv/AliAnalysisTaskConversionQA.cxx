@@ -525,6 +525,12 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
     }
   }
 
+  if(fConversionCuts->GetDoElecDeDxPostCalibration()){
+    if(!fConversionCuts->LoadElecDeDxPostCalibration(fInputEvent->GetRunNumber())){
+      AliFatal(Form("ERROR: LoadElecDeDxPostCalibration returned kFALSE for %d despite being requested!",fInputEvent->GetRunNumber()));
+    }
+  }
+
   for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
     AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
     if (gamma==NULL) continue;
@@ -595,11 +601,22 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   fDaughterProp(1) =  posTrack->Theta();
   fDaughterProp(8) =  negTrack->Theta();
   // dEdx TPC
+  Double_t electronNSigmaTPC = pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
+  Double_t electronNSigmaTPCCor=0.;
+  Double_t positronNSigmaTPC = pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+  Double_t positronNSigmaTPCCor=0.;
+  if(fConversionCuts->GetDoElecDeDxPostCalibration()){
+    electronNSigmaTPCCor = fConversionCuts->GetCorrectedElectronTPCResponse(negTrack->Charge(),electronNSigmaTPC,negTrack->P(),negTrack->Eta(),gamma->GetConversionRadius());
+    positronNSigmaTPCCor = fConversionCuts->GetCorrectedElectronTPCResponse(posTrack->Charge(),positronNSigmaTPC,posTrack->P(),posTrack->Eta(),gamma->GetConversionRadius());
+    fDaughterProp(3) =  positronNSigmaTPCCor;
+    fDaughterProp(10) = electronNSigmaTPCCor;
+  } else {
+    fDaughterProp(3) =  pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+    fDaughterProp(10) =  pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
+  }
   fDaughterProp(2) =  posTrack->GetTPCsignal();
-  fDaughterProp(3) =  pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
   fDaughterProp(22) =  pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kPion);
   fDaughterProp(9) =  negTrack->GetTPCsignal();
-  fDaughterProp(10) =  pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
   fDaughterProp(23) =  pidResonse->NumberOfSigmasTPC(negTrack,AliPID::kPion);
   Int_t nPosClusterITS = 0;
   Int_t nNegClusterITS = 0;

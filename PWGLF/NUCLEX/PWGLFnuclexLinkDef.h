@@ -11,6 +11,7 @@
 #pragma link C++ class AliAnalysisTaskLambdaNAOD+;
 /// * LambdaNN
 #pragma link C++ class AliAnalysisTaskLNNntuple+;
+#pragma link C++ class AliAnalysisTaskLNNv0Bkg+;
 /// * Ps
 #pragma link C++ class AliAnalysisTaskPsEfficiency+;
 /// * dStar
@@ -81,6 +82,8 @@
 #pragma link C++ class RCollision+;
 #pragma link C++ class RTracklet+;
 #pragma link C++ class std::vector<RTracklet>+;
+#pragma link C++ class SGenericV0+;
+#pragma link C++ class std::vector<SGenericV0>+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
@@ -93,6 +96,7 @@
 #endif
 
 /// * VertexerHyp3Body
+#pragma link C++ class AliVertexerHyperTriton2Body+;
 #pragma link C++ class AliVertexerHyperTriton3Body+;
 
 /// Utils
@@ -104,4 +108,6 @@
 /// * NanoAOD
 #pragma link C++ class AliNanoFilterPID+;
 #pragma link C++ class AliNanoSkimmingPID+;
+/// * ChunkFilter
+#pragma link C++ class AliAnalysisTaskFilterHe3+;
 #endif

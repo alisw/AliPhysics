@@ -24,15 +24,11 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   static AliSigma0AODPhotonMotherCuts *DefaultCuts();
 
   void SelectPhotonMother(AliVEvent *inputEvent, AliMCEvent *mcEvent,
-                          std::vector<AliFemtoDreamBasePart> &photonCandidates,
-                          std::vector<AliFemtoDreamBasePart> &lambdaCandidates);
-  void CleanUpClones(std::vector<AliFemtoDreamBasePart> &photonCandidates,
-                     std::vector<AliFemtoDreamBasePart> &lambdaCandidates);
-  void SingleV0QA(const std::vector<AliFemtoDreamBasePart> &photonCandidates,
-                  const std::vector<AliFemtoDreamBasePart> &lambdaCandidates);
-  void SigmaToLambdaGamma(
-      const std::vector<AliFemtoDreamBasePart> &photonCandidates,
-      const std::vector<AliFemtoDreamBasePart> &lambdaCandidates);
+                          const std::vector<AliFemtoDreamBasePart> &photonCandidates,
+                          const std::vector<AliFemtoDreamBasePart> &lambdaCandidates);
+  void CleanUpClones();
+  void SingleV0QA();
+  void SigmaToLambdaGamma();
   float GetMassSigmaPt(float pt) const;
   float GetArmenterosAlpha(const AliFemtoDreamBasePart &gamma,
                            const AliFemtoDreamBasePart &lambda,
@@ -84,6 +80,8 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   std::vector<AliFemtoDreamBasePart> &GetSidebandDown() {
     return fSidebandDown;
   }
+  std::vector<AliFemtoDreamBasePart> &GetLambda() { return fLambda; }
+  std::vector<AliFemtoDreamBasePart> &GetPhoton() { return fPhoton; }
 
  protected:
   TList *fHistograms;    //!
@@ -98,8 +96,13 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   TDatabasePDG fDataBasePDG;  //!
 
   std::vector<AliFemtoDreamBasePart> fSigma;         //!
+  std::vector<AliFemtoDreamBasePart> fLambda;         //!
+  std::vector<AliFemtoDreamBasePart> fPhoton;         //!
   std::vector<AliFemtoDreamBasePart> fSidebandUp;    //!
   std::vector<AliFemtoDreamBasePart> fSidebandDown;  //!
+
+  std::vector<AliFemtoDreamBasePart> fLambdaCandidates;         //!
+  std::vector<AliFemtoDreamBasePart> fPhotonCandidates;         //!
 
   int fPDG;           //
   int fPDGDaughter1;  //
@@ -180,7 +183,7 @@ class AliSigma0AODPhotonMotherCuts : public TObject {
   TH2F *fHistMCV0MotherCheck;  //!
 
  private:
-  ClassDef(AliSigma0AODPhotonMotherCuts, 2)
+  ClassDef(AliSigma0AODPhotonMotherCuts, 4)
 };
 
 #endif

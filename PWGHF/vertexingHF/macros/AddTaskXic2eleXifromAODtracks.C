@@ -1,12 +1,12 @@
 AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString finname="",
 								   Bool_t theMCon=kFALSE,
-									 Int_t iscoltype= 0,
+								   Int_t iscoltype= 0,
 								   Bool_t writeVariableTree=kTRUE,
-									 Bool_t domixing=kFALSE,
-									 Bool_t reconstructPrimVert=kFALSE,
+								   Bool_t domixing=kFALSE,
+								   Bool_t reconstructPrimVert=kFALSE,
 								   Bool_t writeEachVariableTree=kFALSE,
 								   Bool_t writeMCVariableTree=kFALSE,
-                   TString estimatorFilename="",
+				                   TString estimatorFilename="",
 								   Int_t nTour=0
 								   )
 
@@ -129,6 +129,15 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
     }
   }
 
+ 
+
+  
+
+	TF1 * weightfit = new TF1("weightfit","expo");
+	weightfit -> SetParameter(0,7.85860e-01);
+	weightfit -> SetParameter(1,-1.45351e-01);
+    task -> SetFunction(weightfit);
+    
   mgr->AddTask(task);
 
   // Create and connect containers for input/output  

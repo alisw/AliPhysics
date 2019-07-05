@@ -162,7 +162,7 @@ void AliSPDTriggerEfficiencyTask::UserExec(Option_t *){
   fVtxContributors = vertex->GetNContributors();
   
   // vertex selection
-  if (fVtxX<-0.5 || fVtxX>0.5 || fVtxY<-0.5 || fVtxY>1.0 || fVtxZ<-10 || fVtxZ>10 || fVtxContributors<2) 
+  if (fVtxX<-0.5 || fVtxX>0.5 || fVtxY<-0.5 || fVtxY>1.0 || fVtxContributors<2) 
   { PostData(1,fListOfHistos); return; }
   
   

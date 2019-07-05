@@ -7,7 +7,7 @@
 
 /**
  * @class AliEmcalCorrectionCellEmulateCrosstalk
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Correction component to emulate cell-level crosstalk in the EMCal correction framework.
  *
  * Performs energy smearing of cells to mimic T-card crosstalk. The original cell information in the event **will be overwritten**.

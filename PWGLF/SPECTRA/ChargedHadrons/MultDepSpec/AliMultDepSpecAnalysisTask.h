@@ -26,12 +26,14 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliEventCuts.h"
+#include "AliESDZDC.h"
 
 #include "AliVTrack.h"
 #include "AliESDtrack.h"
 #include "AliMCParticle.h"
 #include "AliESDtrackCuts.h"
 #include "AliVHeader.h"
+
 
 
 #include "AlidNdPtTools.h"
@@ -61,6 +63,8 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     void SetUseAOD(){fIsESD = kFALSE;}
     void SetMCSpectraWeights(AliMCSpectraWeights* mcSpectraWeights){fMCSpectraWeights = mcSpectraWeights;}
     void SetUseDataDrivenCorrections(Bool_t useDataDrivenCorrections = kTRUE){fMCUseDataDrivenCorrections = useDataDrivenCorrections;}
+    void SetUseZDCCut(Bool_t useZDC){fUseZDCCut = useZDC;}
+    void SetOverridePbPbEventCuts(Bool_t overridePbPbEventCuts){fOverridePbPbEventCuts = overridePbPbEventCuts;}
 
     void SetSecScalingSysFlag(Int_t sysFlag = 0){fMCSecScalingSysFlag = sysFlag;}
 
@@ -96,6 +100,8 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     Bool_t              fIsESD;			      ///< Flag for ESD usage
     Bool_t              fIsMC;            ///< Flag for MC usage
     Bool_t              fUseCent;         ///< Flag for Centrality usage
+    Bool_t              fUseZDCCut;         ///< Flag for zdc cut usage
+    Bool_t              fOverridePbPbEventCuts;         ///< override centrality cut in PbPb
     Bool_t              fMCUseDataDrivenCorrections; ///< Flag for data driven corrections usage
     Int_t               fMCSecScalingSysFlag; ///< Flag for secondary scaling systematics 0: nominal, -1,1 variations
     // Cuts
@@ -109,6 +115,7 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     Double_t              fMaxCent;       ///< Maximum centrality
 
     // Binning
+    TArrayD*             fBinsEventCuts;       ///< Array of bins for event cuts
     TArrayD*             fBinsMult;       ///< Array of bins in multiplicity
     TArrayD*             fBinsCent;       ///< Array of bins in centrality
     TArrayD*             fBinsPt;			    ///< Array of bins in pt
@@ -117,9 +124,13 @@ class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
     TArrayD*             fBinsPtReso;     ///< Array of bins for relative pt resoulution
 
     // Output Histograms
+    THnSparseF* fHistEventSelection;      //!<! Histogram of event selection
     THnSparseF* fHistEvents;              //!<! Histogram of measured event distribution
     THnSparseF* fHistTracks;              //!<! Histogram of measured tracks
     THnSparseF* fHistRelPtReso;           //!<! Histogram of relatvie pT resolution from covariance matrix
+
+    THnSparseF* fHistMCEventEfficiency;   //!<! Histogram of selelcted events vs Nch
+    THnSparseF* fHistMCEventEfficiencyScaled; //!<! Histogram of selelcted events vs Nch
 
     THnSparseF* fHistMCRelPtReso;         //!<! Histogram of relative pt resolution from mc
     THnSparseF* fHistMCMultCorrelMatrix;  //!<! Histogram of multilicity correlation

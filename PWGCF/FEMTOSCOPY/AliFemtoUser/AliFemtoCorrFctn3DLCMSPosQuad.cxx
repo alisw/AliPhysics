@@ -45,9 +45,9 @@ AliFemtoCorrFctn3DLCMSPosQuad::AliFemtoCorrFctn3DLCMSPosQuad(const TString &pref
                       nbins_long, -QlHi, QlHi);
     };
 
-  fNumerator = new_hist("Num", "Numerator)");
-  fDenominator = new_hist("Den", "Denominator");
-  fQinvWeight = new_hist("Qinv", "q_{inv} Weighted Denominator");
+  fNumerator = new_hist("Num", "Numerator; q_{out}; q_{side}; q_{long}");
+  fDenominator = new_hist("Den", "Denominator; q_{out}; q_{side}; q_{long}");
+  fQinvWeight = new_hist("Qinv", "q_{inv} Weighted Denominator; q_{out}; q_{side}; q_{long}");
   fQinvWeight->Sumw2();
 }
 
@@ -97,8 +97,11 @@ inline void fill_histograms(const AliFemtoPair &pair, TH3 &dest, TH3 *qinv_dest=
 AliFemtoString
 AliFemtoCorrFctn3DLCMSPosQuad::Report()
 {
-  TString report;
-  return AliFemtoString(report.Data());
+  AliFemtoString report("AliFemtoCorrFctn3DLCMSPosQuad Report\n");
+  report += Form("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
+  report += Form("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
+
+  return report;
 }
 
 

@@ -101,6 +101,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fMassVsPtVsCosthStME(0x0),
   fMassVsPtVsCosthStMELSpp(0x0),
   fMassVsPtVsCosthStMELSmm(0x0),
+  fHistonSigmaTPCPion(0x0),
+  fHistonSigmaTOFPion(0x0),
+  fHistonSigmaTPCKaon(0x0),
+  fHistonSigmaTOFKaon(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -111,7 +115,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fPhiMassCut(99999.),
   fCutCos3PiKPhiRFrame(-1.1),
   fCutCosPiDsLabFrame(1.1),
-  fPidHF(new AliAODPidHF()),
+  fPidHF(0x0),
   fAnalysisCuts(0x0),
   fMinMass(1.720),
   fMaxMass(2.150),
@@ -217,6 +221,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fMassVsPtVsCosthStME(0x0),
   fMassVsPtVsCosthStMELSpp(0x0),
   fMassVsPtVsCosthStMELSmm(0x0),
+  fHistonSigmaTPCPion(0x0),
+  fHistonSigmaTOFPion(0x0),
+  fHistonSigmaTPCKaon(0x0),
+  fHistonSigmaTOFKaon(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
   fTrackCutsPion(0x0),
@@ -227,7 +235,7 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fPhiMassCut(99999.),
   fCutCos3PiKPhiRFrame(-1),
   fCutCosPiDsLabFrame(1.1),
-  fPidHF(new AliAODPidHF()),
+  fPidHF(0x0),
   fAnalysisCuts(analysiscuts),
   fMinMass(1.720),
   fMaxMass(2.150),
@@ -276,7 +284,6 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fPionTracks(0x0)
 {
   /// standard constructor
-
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
   DefineOutput(3,TList::Class());
@@ -337,6 +344,10 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fMassVsPtVsCosthStME;
     delete fMassVsPtVsCosthStMELSpp;
     delete fMassVsPtVsCosthStMELSmm;
+    delete fHistonSigmaTPCPion;
+    delete fHistonSigmaTOFPion;
+    delete fHistonSigmaTPCKaon;
+    delete fHistonSigmaTOFKaon;
   }
 
   delete fOutput;
@@ -345,7 +356,6 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   delete fTrackCutsAll;
   delete fTrackCutsPion;
   delete fTrackCutsKaon;
-  delete fPidHF;
   delete fAnalysisCuts;
   if(fKaonTracks) fKaonTracks->Delete();
   if(fPionTracks) fPionTracks->Delete();
@@ -560,16 +570,16 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fEventsPerPool);
   fOutput->Add(fMixingsPerPool);
 
-  fMassVsPtVsCosthSt=new TH3F("hMassVsPtVsCosthSt","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStRot=new TH3F("hMassVsPtVsCosthStRot","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStLSpp=new TH3F("hMassVsPtVsCosthStLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStLSmm=new TH3F("hMassVsPtVsCosthStLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStSig=new TH3F("hMassVsPtVsCosthStSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStRefl=new TH3F("hMassVsPtVsCosthStRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStBkg=new TH3F("hMassVsPtVsCosthStBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStME=new TH3F("hMassVsPtVsCosthStME","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStMELSpp=new TH3F("hMassVsPtVsCosthStMELSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
-  fMassVsPtVsCosthStMELSmm=new TH3F("hMassVsPtVsCosthStMELSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,4,0.6,1.);
+  fMassVsPtVsCosthSt=new TH3F("hMassVsPtVsCosthSt","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStRot=new TH3F("hMassVsPtVsCosthStRot","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStLSpp=new TH3F("hMassVsPtVsCosthStLSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStLSmm=new TH3F("hMassVsPtVsCosthStLSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStSig=new TH3F("hMassVsPtVsCosthStSig","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStRefl=new TH3F("hMassVsPtVsCosthStRefl","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStBkg=new TH3F("hMassVsPtVsCosthStBkg","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStME=new TH3F("hMassVsPtVsCosthStME","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStMELSpp=new TH3F("hMassVsPtVsCosthStMELSpp","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
+  fMassVsPtVsCosthStMELSmm=new TH3F("hMassVsPtVsCosthStMELSmm","",nMassBins,fMinMass,maxm,nPtBins,0.,maxPt,6,0.4,1.);
   fOutput->Add(fMassVsPtVsCosthSt);
   fOutput->Add(fMassVsPtVsCosthStRot);
   fOutput->Add(fMassVsPtVsCosthStLSpp);
@@ -581,6 +591,15 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fMassVsPtVsCosthStMELSpp);
   fOutput->Add(fMassVsPtVsCosthStMELSmm);
 
+  fHistonSigmaTPCPion=new TH1F("hnSigmaTPCPion","",100,-5.,5.);
+  fHistonSigmaTOFPion=new TH1F("hnSigmaTOFPion","",100,-5.,5.);
+  fHistonSigmaTPCKaon=new TH1F("hnSigmaTPCKaon","",100,-5.,5.);
+  fHistonSigmaTOFKaon=new TH1F("hnSigmaTOFKaon","",100,-5.,5.);
+  fOutput->Add(fHistonSigmaTPCPion);
+  fOutput->Add(fHistonSigmaTOFPion);
+  fOutput->Add(fHistonSigmaTPCKaon);
+  fOutput->Add(fHistonSigmaTOFKaon);
+  
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
   fCounter->Init();
@@ -601,8 +620,9 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     tktosave->SetName(Form("%sForKaons",fTrackCutsKaon->GetName()));
     fListCuts->Add(tktosave);
   }
-  if(fPidHF){
-    AliAODPidHF* pidtosave=new AliAODPidHF(*fPidHF);
+  
+  if(fAnalysisCuts->GetPidHF()){
+    AliAODPidHF* pidtosave=new AliAODPidHF(*(fAnalysisCuts->GetPidHF()));
     fListCuts->Add(pidtosave);
   }
   TH1F* hCutValues = new TH1F("hCutValues","",6,0.5,6.5);
@@ -679,8 +699,6 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-  fPidHF->SetPidResponse(pidResp);
   
   
   fHistNEvents->Fill(0); // count event
@@ -708,6 +726,12 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     }
   }
 
+  // PID object should be taken AFTER IsEventSelected to have proper call to SetupPid !!
+  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+  fPidHF = fAnalysisCuts->GetPidHF();
+  fPidHF->SetPidResponse(pidResp);
+  //
+  
   Int_t ntracks=aod->GetNumberOfTracks();
   fVtxZ = aod->GetPrimaryVertex()->GetZ();
   fMultiplicity = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.); 
@@ -779,8 +803,22 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     // PID
     if (fPIDstrategy == knSigma) {
       // nsigma PID
-      if(IsKaon(track)) status[iTr]+=2;
-      if(IsPion(track)) status[iTr]+=4;
+      if(IsKaon(track)){
+	Double_t nstpc,nstof;
+	fPidHF->GetnSigmaTPC(track,AliPID::kKaon,nstpc);
+	fPidHF->GetnSigmaTOF(track,AliPID::kKaon,nstof);
+	fHistonSigmaTPCKaon->Fill(nstpc);
+	fHistonSigmaTOFKaon->Fill(nstof);
+	status[iTr]+=2;
+      }
+      if(IsPion(track)){
+	Double_t nstpc,nstof;
+	fPidHF->GetnSigmaTPC(track,AliPID::kPion,nstpc);
+	fPidHF->GetnSigmaTOF(track,AliPID::kPion,nstof);
+	fHistonSigmaTPCPion->Fill(nstpc);
+	fHistonSigmaTOFPion->Fill(nstof);
+	status[iTr]+=4;
+      }
     }
     else if (fPIDstrategy == kBayesianMaxProb || fPIDstrategy == kBayesianThres) {
       // Bayesian PID

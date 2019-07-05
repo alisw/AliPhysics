@@ -31,7 +31,8 @@ public:
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  virtual AliFemtoPairCut* Clone();
+  virtual AliFemtoShareQualityPairCut* Clone() const;
+
   void SetShareQualityMax(Double_t aAliFemtoShareQualityMax);
   Double_t GetAliFemtoShareQualityMax() const;
   Double_t GetShareQualityMax() const;
@@ -69,7 +70,8 @@ inline AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut(const AliFemtoSh
   fRemoveSameLabel(c.fRemoveSameLabel)
 { /* no-op */ }
 
-inline AliFemtoPairCut* AliFemtoShareQualityPairCut::Clone() {
+inline AliFemtoShareQualityPairCut* AliFemtoShareQualityPairCut::Clone() const
+{
   AliFemtoShareQualityPairCut* c = new AliFemtoShareQualityPairCut(*this);
   return c;
 }

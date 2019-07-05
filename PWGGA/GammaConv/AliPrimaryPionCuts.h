@@ -87,7 +87,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Bool_t PionIsSelectedAOD(AliAODTrack* lTrack);
 	static AliPrimaryPionCuts * GetStandardCuts2010PbPb();
 	static AliPrimaryPionCuts * GetStandardCuts2010pp();
-	void  SetStandardTrackCutsAODFiltering2010();
+	void  SetHybridTrackCutsAODFiltering(Int_t runflag);
 	void  SetPtDepDCACuts(Double_t pt);
 	Bool_t IsDCACutAccepted(AliAODTrack* lTrack);
 	Bool_t InitPIDResponse();
@@ -119,6 +119,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	void SetEtaShift(Double_t etaShift){fEtaShift = etaShift;}
 	Bool_t SetTOFPionPIDCut(Int_t TOFelectronPID);
 	Bool_t SetMassCut(Int_t massCut);
+	void SetPeriodName(TString periodName){fPeriodName = periodName;}
 	Double_t GetMassCut(){return fMassCut;}
 	
 	// Request Flags
@@ -126,6 +127,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
     Double_t GetNFindableClustersTPC(AliVTrack* lTrack);
 	Bool_t   DoWeights(){return fDoWeights;}
 	Bool_t 	 DoMassCut(){return fDoMassCut;}
+	Bool_t 	 RequireVertexConstrain(){return fRequireVertexConstrain;}
+	Bool_t 	 Use4VecForMass(){return fUse4VecForMass;}
 	
 	protected:
 
@@ -158,6 +161,8 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
 	Bool_t   fDoMassCut;
 	Double_t fMassCut;	
+	Bool_t fUse4VecForMass; // use only momentum 4vector to calculate inv mass
+	Bool_t fRequireVertexConstrain; // require contrain to primary vertex (only for AOD)
 	Bool_t   fDoWeights;
     Double_t fMaxDCAToVertexZ;
     Double_t fMaxDCAToVertexXY;
@@ -192,6 +197,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TH1F *fHistTrackSelectedPtWithoutITS;
 	
 	TString fStringITSClusterCut;
+	TString fPeriodName;
 	
 	private:
 
@@ -199,7 +205,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,8)
+    ClassDef(AliPrimaryPionCuts,10)
 };
 
 #endif

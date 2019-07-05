@@ -796,6 +796,7 @@ void AliCSEventCuts::SetActualSystemType() {
   case kLHC15oLIR:
   case kLHC15oHIR:
   case kLHC18q:
+  case kLHC18r:
     system = kPbPb;
     AliInfo("SYSTEM: Pb-Pb");
     break;
@@ -990,6 +991,7 @@ Bool_t AliCSEventCuts::UseNewMultiplicityFramework() const{
   case kLHC15oHIR:
   case kLHC17n:
   case kLHC18q:
+  case kLHC18r:
     AliInfo("Using NEW mulitplicity framework");
     return kTRUE;
   default:
@@ -1416,6 +1418,7 @@ void AliCSEventCuts::SetActualActiveTrigger()
     case kLHC16l:
     case kLHC17n:
     case kLHC18q:
+    case kLHC18r:
       fOfflineTriggerMask = AliVEvent::kINT7;
       AliInfo("Using AliVEvent::kINT7 as MB trigger");
       break;
@@ -1860,6 +1863,7 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-900+6.0*x");
       break;
     case kLHC18q:
+    case kLHC18r:
       f2015V0MtoTrkTPCout = new TFormula(Form("f2015V0MtoTrkTPCout_%s",GetCutsString()),"-1500.0+6.0*x");
       break;
     default:
@@ -2097,6 +2101,12 @@ void AliCSEventCuts::SetActualFilterTracksCuts() {
     basename = "2011";
     system = "Pb-Pb";
     period = "2018q";
+    break;
+  case kLHC18r:
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "Pb-Pb";
+    period = "2018r";
     break;
   default:
     fESDFB32 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();

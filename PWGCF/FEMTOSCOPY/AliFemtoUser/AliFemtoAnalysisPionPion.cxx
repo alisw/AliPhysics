@@ -382,6 +382,7 @@ AliFemtoAnalysisPionPion::DefaultConfig()
 AliFemtoAnalysisPionPion::CutParams::CutParams()
   : TNamed(AliFemtoAnalysisPionPion::make_random_string("cut_").Data(), "Cut Params")
   , cuts_use_attrs(false)
+  , mc_pion_only(false)
   , event_use_basic(false)
   , event_MultMin(default_event.multiplicity.first)
   , event_MultMax(default_event.multiplicity.second)
@@ -486,7 +487,8 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   }
 
   if (p.cuts_use_attrs) {
-    auto *cut = new AliFemtoTrackCutPionPionAK();
+    auto *cut = p.mc_pion_only ? new AliFemtoTrackCutPionPionIdealAK()
+                               : new AliFemtoTrackCutPionPionAK();
     cut->pt_range = {p.pion_1_PtMin, p.pion_1_PtMax};
     cut->eta_range = {p.pion_1_EtaMin, p.pion_1_EtaMax};
     cut->status = p.pion_1_status;
@@ -587,17 +589,14 @@ AliFemtoAnalysisPionPion::BuildEventCut(const AliFemtoAnalysisPionPion::CutParam
   }
 
   if (p.event_use_basic) {
-  AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
+    AliFemtoBasicEventCut *cut = new AliFemtoBasicEventCut();
 
-  cut->SetEventMult(p.event_MultMin,
-                    p.event_MultMax);
-  cut->SetVertZPos(p.event_VertexZMin,
-                   p.event_VertexZMax);
-  cut->SetEPVZERO(p.event_EP_VZeroMin,
-                  p.event_EP_VZeroMax);
-  cut->SetTriggerSelection(p.event_TriggerSelection);
-  cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
-  return cut;
+    cut->SetEventMult(p.event_MultMin, p.event_MultMax);
+    cut->SetVertZPos(p.event_VertexZMin, p.event_VertexZMax);
+    cut->SetEPVZERO(p.event_EP_VZeroMin, p.event_EP_VZeroMax);
+    cut->SetTriggerSelection(p.event_TriggerSelection);
+    cut->SetAcceptBadVertex(p.event_AcceptBadVertex);
+    return cut;
   }
 
   AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality();

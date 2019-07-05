@@ -166,6 +166,7 @@ fEOverPvsPt(0),
 fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
 fNCellsPerCluster(0),
+fDTBCperCluster(0),
 fPTbeforeNonLinScaling(0),
 fPT(0),
 fE(0),
@@ -390,6 +391,7 @@ fEOverPvsPt(0),
 fEOverPvsPtWithCPV(0),
 fClusEvsClusT(0),
 fNCellsPerCluster(0),
+fDTBCperCluster(0),
 fPTbeforeNonLinScaling(0),
 fPT(0),
 fE(0),
@@ -1022,10 +1024,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       fOutput->Add(fE);
     }
 
-    fNLM = new TH2F("hNLM_NC","NLM distribution for Clusters",10,0.,10.,100,0.,100.);
-    fNLM->Sumw2();
-    fOutput->Add(fNLM);
-
     if(fWho != 2){
       fTestIndex= new TH2F("hTestIndex","Test index for cluster",100,0.,100.,100,0.,100.);
       fTestIndex->SetXTitle("index");
@@ -1085,6 +1083,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 
     // Initialization of all the common THistos for the 3 different outputs
 
+  fNLM = new TH2F("hNLM_NC","Number of local maxima per cluster vs. cluster #it{p}_{T}",140, 0., 70., 30, 0., 30.);
+  fNLM->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  fNLM->SetYTitle("#it{n}_{LM}");
+  fNLM->Sumw2();
+  fOutput->Add(fNLM);
+
   fVz = new TH1F("hVz_NC","Vertex Z distribution",100,-50.,50.);
   fVz->Sumw2();
   fOutput->Add(fVz);
@@ -1111,8 +1115,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fCutFlowClusters->GetXaxis()->SetBinLabel(3, "Time cut");
   fCutFlowClusters->GetXaxis()->SetBinLabel(4, "Number of cells cut");
   fCutFlowClusters->GetXaxis()->SetBinLabel(5, "NLM cut");
-  fCutFlowClusters->GetXaxis()->SetBinLabel(6, "CPV cut");
-  fCutFlowClusters->GetXaxis()->SetBinLabel(7, "DTBC cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(6, "DTBC cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(7, "CPV cut");
   fCutFlowClusters->GetXaxis()->SetBinLabel(8, "Fiducial cut");
   fCutFlowClusters->GetXaxis()->SetBinLabel(9, "5 GeV lower cut");
   fCutFlowClusters->Sumw2();
@@ -1144,16 +1148,23 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fOutput->Add(fnPUevents);
   }
 
-  fClusEvsClusT = new TH2F("fClustTimeVSClustEn", "Cluster time vs. cluster #it{p}_{T}", 200, 0., 100., 320, -80., 80.);
-  fClusEvsClusT->SetXTitle("#it{p}_{T} (GeV/c)");
-  fClusEvsClusT->SetYTitle("Time_{clus} (ns)");
+  fClusEvsClusT = new TH2F("fClustTimeVSClustEn", "Cluster time vs. cluster #it{p}_{T}", 200, 0., 100., 800, -200., 200.);
+  fClusEvsClusT->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  fClusEvsClusT->SetYTitle("#it{t}_{clus} (ns)");
   fClusEvsClusT->Sumw2();
   fOutput->Add(fClusEvsClusT);
 
-  fNCellsPerCluster = new TH2F ("hNCellsPerCluster","Number of cells per cluster vs energy", 200, 0., 100., 100, 0., 100.); 
-  fNCellsPerCluster->SetXTitle("#it{E} (GeV)");
+  fNCellsPerCluster = new TH2F ("hNCellsPerCluster","Number of cells per cluster vs. cluster #it{p}_{T}", 140, 0., 70., 60, 0., 60.); 
+  fNCellsPerCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   fNCellsPerCluster->SetYTitle("#it{n}_{cells}");
+  fNCellsPerCluster->Sumw2();
   fOutput->Add(fNCellsPerCluster);
+
+  fDTBCperCluster = new TH2F ("hDTBCperCluster","Distance to bad channel per cluster vs. cluster #it{p}_{T}", 140, 0., 70., 60, 0., 60.); 
+  fDTBCperCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  fDTBCperCluster->SetYTitle("#it{d}_{BC}");
+  fDTBCperCluster->Sumw2();
+  fOutput->Add(fDTBCperCluster);
 
   fPT = new TH1F("hPt_NC","#it{p}_{T} distribution for clusters before candidate selection",200,0.,100.);
   fPT->Sumw2();
@@ -1375,7 +1386,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   Double_t coiTOF = coi->GetTOF()*1e9;
   index=coi->GetID();
   if(coi->GetM02()>=0.1)
-    fClusEvsClusT->Fill(vecCOI.Pt(),coiTOF);
+    fClusEvsClusT->Fill(vecCOI.Pt(), coiTOF);
   if(!fIsMC){
     if(coiTOF< -30. || coiTOF > 30.)
       return kFALSE;
@@ -1383,8 +1394,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   fPtaftTime->Fill(vecCOI.Pt());
   fCutFlowClusters->Fill(2.5);
-
-  fNCellsPerCluster->Fill(vecCOI.E(), coi->GetNCells());
+  fNCellsPerCluster->Fill(vecCOI.Pt(), coi->GetNCells());
 
   if((coi->GetNCells() < 2))
     return kFALSE;
@@ -1398,8 +1408,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
     nlm = GetNLM(coi,fCaloCells);
     AliDebug(1,Form("NLM = %d",nlm));
 
-    if(NonLinRecoEnergyScaling(coi, coi->GetNonLinCorrEnergy()) >= 5. && NonLinRecoEnergyScaling(coi, coi->GetNonLinCorrEnergy()) < 70. && fQA)
-      fNLM->Fill(nlm, NonLinRecoEnergyScaling(coi, coi->GetNonLinCorrEnergy()));
+    fNLM->Fill(vecCOI.Pt(), nlm);
 
     if(fIsNLMCut && fNLMCut>0 && fNLMmin>0){ // If the NLM cut is enabled, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
       if(nlm > fNLMCut || nlm < fNLMmin ){
@@ -1415,6 +1424,15 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   fPtaftNLM->Fill(vecCOI.Pt());
   fCutFlowClusters->Fill(4.5);
+  fDTBCperCluster->Fill(vecCOI.Pt(), coi->GetDistanceToBadChannel());
+
+  if(coi->GetDistanceToBadChannel() < 2)
+    return kFALSE;
+
+  fPtaftDTBC->Fill(vecCOI.Pt());
+  fCutFlowClusters->Fill(5.5);
+  if(fQA && fWho != 2)
+    fTestIndexE->Fill(vecCOI.Pt(),index);
 
   if(fTMClusterRejected){
     if(ClustTrackMatching(coi,kTRUE)){
@@ -1429,12 +1447,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   }
 
   fPtaftTM->Fill(vecCOI.Pt());
-  fCutFlowClusters->Fill(5.5);
-
-  if(coi->GetDistanceToBadChannel() < 2)
-    return kFALSE;
-
-  fPtaftDTBC->Fill(vecCOI.Pt());
   fCutFlowClusters->Fill(6.5);
 
   if(!CheckBoundaries(vecCOI))
@@ -1442,9 +1454,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 
   fPtaftFC->Fill(vecCOI.Pt());
   fCutFlowClusters->Fill(7.5);
-
-  if(fQA && fWho != 2)
-    fTestIndexE->Fill(vecCOI.Pt(),index);
 
   if(vecCOI.Pt() < fMinClusterEnergy)
     return kFALSE;

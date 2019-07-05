@@ -545,16 +545,13 @@ bool AliHFTreeHandler::SetPidVars(AliAODTrack* prongtracks[], AliPIDResponse* pi
     break;
     case 9: //kNsigmaDetAndCombPID
       for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
-        for(int iDet=kTPC; iDet<=kTOF; iDet++) {
-          if(!useDet[iDet]) continue;
-          for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
-            if(!useHypo[iPartHypo]) continue;
-            fPIDNsigmaVector[iProng][iDet][iPartHypo]=sig[iProng][iDet][iPartHypo];
-          }
-        }
         for(unsigned int iPartHypo=0; iPartHypo<knMaxHypo4Pid; iPartHypo++) {
           if(!useHypo[iPartHypo]) continue;
           fPIDNsigmaVector[iProng][kCombTPCTOF][iPartHypo]=sigComb[iProng][iPartHypo];
+          for(int iDet=kTPC; iDet<=kTOF; iDet++) {
+            if(!useDet[iDet]) continue;
+            fPIDNsigmaVector[iProng][iDet][iPartHypo]=sig[iProng][iDet][iPartHypo];
+          }
         }
       }
     break;

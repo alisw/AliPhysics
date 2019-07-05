@@ -118,12 +118,10 @@ void AliFemtoDreamv0::Setv0(AliESDEvent *evt, AliMCEvent *mcEvent, AliESDv0 *v0,
 void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
                             const AliFemtoDreamBasePart &negDaughter,
                             const bool ignoreFirstPos,
-                            const bool ignoreFirstNeg, const bool setDaughter, const AliAODEvent *evt) {
+                            const bool ignoreFirstNeg) {
   Reset();
   SetEventMultiplicity(posDaughter.GetEventMultiplicity());
   fIsReset = false;
-
-  if (setDaughter) SetDaughter(posDaughter, negDaughter);
 
   float posP[3], negP[3];
   posDaughter.GetMomentum().GetXYZ(posP);
@@ -209,11 +207,22 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   for (const auto &itPhiAtRadius : PhiAtRadiineg) {
     this->SetPhiAtRadius(itPhiAtRadius);
   }
+}
 
-  if(fIsMC) {
+void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
+                            const AliFemtoDreamBasePart &negDaughter,
+                            AliAODEvent *evt, const bool ignoreFirstPos,
+                            const bool ignoreFirstNeg, const bool setDaughter) {
+  Setv0(posDaughter, negDaughter, ignoreFirstPos, ignoreFirstNeg);
+
+  if (setDaughter) {
+    SetDaughter(posDaughter, negDaughter);
+  }
+
+  if (fIsMC) {
     const int posID = posDaughter.GetMotherID();
     const int negID = negDaughter.GetMotherID();
-    if(!evt) return;
+    if (!evt) return;
     TClonesArray *mcarray = dynamic_cast<TClonesArray*>(evt->FindListObject(
         AliAODMCParticle::StdBranchName()));
     if (!mcarray) {
@@ -253,6 +262,17 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   }
 }
 
+void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
+                            const AliFemtoDreamBasePart &negDaughter,
+                            AliVEvent *evt, const bool ignoreFirstPos,
+                            const bool ignoreFirstNeg, const bool setDaughter) {
+  Setv0(posDaughter, negDaughter, ignoreFirstPos, ignoreFirstNeg);
+
+  if (setDaughter) {
+    SetDaughter(posDaughter, negDaughter, evt);
+  }
+}
+
 void AliFemtoDreamv0::SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter) {
   const int negID = negDaughter.GetIDTracks().at(0);
   const int posID = posDaughter.GetIDTracks().at(0);
@@ -275,6 +295,38 @@ void AliFemtoDreamv0::SetDaughter(const AliFemtoDreamBasePart &posDaughter, cons
           && fGTI[negID]->Charge() > 0) {
         fnDaug->SetTrack(fGTI[posID]);
         fpDaug->SetTrack(fGTI[negID]);
+        this->fHasDaughter = true;
+      } else {
+        this->fHasDaughter = false;
+      }
+    } else {
+      this->fHasDaughter = false;
+    }
+  }
+}
+
+void AliFemtoDreamv0::SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter, AliVEvent *evt) {
+  const int negID = negDaughter.GetIDTracks().at(0);
+  const int posID = posDaughter.GetIDTracks().at(0);
+  if (negID >= fTrackBufferSize
+      || posID >= fTrackBufferSize) {
+    std::cout << "fVGTI too small, no Global Tracks to work with, PosID:  "
+              << posID << " and NegID: " << negID
+              << std::endl;
+    this->fHasDaughter = false;
+  } else {
+    fpDaug->SetGlobalTrackInfo(fVGTI, fTrackBufferSize);
+    fnDaug->SetGlobalTrackInfo(fVGTI, fTrackBufferSize);
+    if (fVGTI[posID] && fVGTI[negID]) {
+      if (fVGTI[posID]->Charge() > 0
+          && fVGTI[negID]->Charge() < 0) {
+        fnDaug->SetTrack(fVGTI[negID], evt);
+        fpDaug->SetTrack(fVGTI[posID], evt);
+        this->fHasDaughter = true;
+      } else if (fVGTI[posID]->Charge() < 0
+          && fVGTI[negID]->Charge() > 0) {
+        fnDaug->SetTrack(fVGTI[posID], evt);
+        fpDaug->SetTrack(fVGTI[negID], evt);
         this->fHasDaughter = true;
       } else {
         this->fHasDaughter = false;

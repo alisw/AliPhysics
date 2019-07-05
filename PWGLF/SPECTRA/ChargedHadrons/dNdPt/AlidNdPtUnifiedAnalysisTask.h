@@ -31,6 +31,7 @@ class AliAnalysisUtils;
 // class AliMCSpectraWeights;
 #include "THn.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 
 class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
   public:
@@ -154,7 +155,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     ///AliAODSelection
 //    AliAODtrackCuts *fAODtrackCuts;
     AliAnalysisUtils    *fUtils;
-
+    AliEventCuts       fAliEventCuts; ///!<! Check for appropriate cuts 
     //Particle composition
     // AliMCSpectraWeights *fMCSpectraWeights;
     // TString              fstCollisionSystem;
@@ -184,8 +185,9 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
     THnF        	*fHistMCTrigEvent;		///<  Histogram for triggered MC events (Zv,mult/cent)
     /// Track histogram
     THnF        	*fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
-    THnF            *fHistCentCorrelpt; ///< Histogram for correlation of centrality estimators (with pt)
-    THnF            *fHistCentCorrel;
+    THnSparseF            *fHistCentCorrelBeforeCuts;     
+    THnSparseF            *fHistCentCorrelAfterCuts;
+    THnSparseF            *fHistCentCorrelpt; ///< Histogram for correlation of centrality estimators (with pt)
 
     TH3D          *fDCAyEtaPt;                         /// DCAy:eta:pt
     TH3D          *fDCAyEtaPtMCPrim;              /// DCAy:eta:pt for primary particles

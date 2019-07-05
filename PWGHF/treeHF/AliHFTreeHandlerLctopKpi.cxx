@@ -32,15 +32,18 @@ AliHFTreeHandlerLctopKpi::AliHFTreeHandlerLctopKpi():
   fSigmaVertex(-9999.),
   fDist12toPrim(-9999.),
   fDist23toPrim(-9999.),
-  fNormd0MeasMinusExp(-9999.)
+  fNormd0MeasMinusExp(-9999.),
+  fSumImpParProngs(-9999.)
 {
   //
   // Default constructor
   //
 
   fNProngs=3; // --> cannot be changed
-  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fImpParProng[iProng] = -9999.;
+    fDCAProng[iProng] = -9999.;
+  }
 }
 
 //________________________________________________________________
@@ -49,15 +52,18 @@ AliHFTreeHandlerLctopKpi::AliHFTreeHandlerLctopKpi(int PIDopt):
   fSigmaVertex(-9999.),
   fDist12toPrim(-9999.),
   fDist23toPrim(-9999.),
-  fNormd0MeasMinusExp(-9999.)
+  fNormd0MeasMinusExp(-9999.),
+  fSumImpParProngs(-9999.)
 {
   //
   // Standard constructor
   //
 
   fNProngs=3; // --> cannot be changed
-  for(unsigned int iProng=0; iProng<fNProngs; iProng++) 
+  for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fImpParProng[iProng] = -9999.;
+    fDCAProng[iProng] = -9999.;
+  }
 }
 
 //________________________________________________________________
@@ -87,8 +93,10 @@ TTree* AliHFTreeHandlerLctopKpi::BuildTree(TString name, TString title)
   fTreeVar->Branch("dist_12",&fDist12toPrim);
   fTreeVar->Branch("dist_23",&fDist23toPrim);
   fTreeVar->Branch("max_norm_d0d0exp",&fNormd0MeasMinusExp);
+  fTreeVar->Branch("sum_d0d0_prongs",&fSumImpParProngs);
   for(unsigned int iProng=0; iProng<fNProngs; iProng++){
     fTreeVar->Branch(Form("imp_par_prong%d",iProng),&fImpParProng[iProng]);
+    fTreeVar->Branch(Form("dca_prong%d",iProng),&fDCAProng[iProng]);
   }
 
   //set single-track variables
@@ -125,7 +133,8 @@ bool AliHFTreeHandlerLctopKpi::SetVariables(int runnumber, unsigned int eventID,
   fImpParXY=cand->ImpParXY();
   fDCA=cand->GetDCA();
   fNormd0MeasMinusExp=ComputeMaxd0MeasMinusExp(cand,bfield);
-
+  fSumImpParProngs=cand->Getd0Prong(0)*cand->Getd0Prong(0)+cand->Getd0Prong(1)*cand->Getd0Prong(1)+cand->Getd0Prong(2)*cand->Getd0Prong(2);
+  
   //Lc -> pKpi variables
   if(masshypo==1){ //pKpi
     fInvMass=((AliAODRecoDecayHF3Prong*)cand)->InvMassLcpKpi();
@@ -139,6 +148,7 @@ bool AliHFTreeHandlerLctopKpi::SetVariables(int runnumber, unsigned int eventID,
   fDist23toPrim=((AliAODRecoDecayHF3Prong*)cand)->GetDist23toPrim();
   for(unsigned int iProng=0; iProng<fNProngs; iProng++) {
     fImpParProng[iProng]=cand->Getd0Prong(iProng);
+    fDCAProng[iProng]=cand->GetDCA(iProng);
   }
     
   //single track variables

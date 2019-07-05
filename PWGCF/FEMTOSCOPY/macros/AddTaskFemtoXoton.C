@@ -255,7 +255,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
 
   AliAnalysisDataContainer *coutputCascadeCuts;
-  TString CascadeCutsName = Form("%sCascadeCuts", addon.Data());
+  TString CascadeCutsName = Form("%sCascadeCuts%s", addon.Data(), suffix.Data());
   coutputCascadeCuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       CascadeCutsName.Data(),
@@ -265,7 +265,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   mgr->ConnectOutput(task, 4, coutputCascadeCuts);
 
   AliAnalysisDataContainer *coutputAntiCascadeCuts;
-  TString AntiCascadeCutsName = Form("%sAntiCascadeCuts", addon.Data());
+  TString AntiCascadeCutsName = Form("%sAntiCascadeCuts%s", addon.Data(), suffix.Data());
   coutputAntiCascadeCuts = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       AntiCascadeCutsName.Data(),
@@ -275,7 +275,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   mgr->ConnectOutput(task, 5, coutputAntiCascadeCuts);
 
   AliAnalysisDataContainer *coutputResults;
-  TString ResultsName = Form("%sResults", addon.Data());
+  TString ResultsName = Form("%sResults%s", addon.Data(), suffix.Data());
   coutputResults = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsName.Data(),
@@ -284,7 +284,7 @@ AliAnalysisTaskSE *AddTaskFemtoXoton(bool fullBlastQA = false,
   mgr->ConnectOutput(task, 6, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
-  TString ResultsQAName = Form("%sResultsQA", addon.Data());
+  TString ResultsQAName = Form("%sResultsQA%s", addon.Data(), suffix.Data());
   coutputResultsQA = mgr->CreateContainer(
       //@suppress("Invalid arguments") it works ffs
       ResultsQAName.Data(),

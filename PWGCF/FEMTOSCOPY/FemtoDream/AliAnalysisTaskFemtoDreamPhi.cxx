@@ -238,7 +238,7 @@ void AliAnalysisTaskFemtoDreamPhi::UserExec(Option_t *) {
   fPhiParticle->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (const auto &posK : Particles) {
     for (const auto &negK : AntiParticles) {
-      fPhiParticle->Setv0(posK, negK, false,false,true,Event);
+      fPhiParticle->Setv0(posK, negK, Event, false, false, true);
       fPhiParticle->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
 //      std::cout<<"ID mother kp: "<<posK.GetMotherID()<<endl;
 //      std::cout<<"ID mother km: "<<negK.GetMotherID()<<endl;

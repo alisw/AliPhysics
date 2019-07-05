@@ -168,6 +168,7 @@ template<>
 AliFemtoConfigObject
 AliFemtoConfigObject::From<AliFemtoTrackCut>(const AliFemtoTrackCut &obj)
 {
+  RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionIdealAK);
   RETURN_IF_CAST_FROM(AliFemtoTrackCutPionPionAK);
   RETURN_IF_CAST(AliFemtoESDTrackCut);
   RETURN_IF_CAST(AliFemtoAODTrackCut);
@@ -208,6 +209,7 @@ AliFemtoConfigObject::Into<AliFemtoTrackCut>(bool)
   }
 
   TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionAK);
+  TRY_CONSTRUCTING_INTO(AliFemtoTrackCutPionPionIdealAK);
   TRY_CONSTRUCTING_CLASS(AliFemtoAODTrackCut);
   TRY_CONSTRUCTING_CLASS(AliFemtoESDTrackCut);
 
@@ -284,10 +286,12 @@ AliFemtoConfigObject::Into<AliFemtoParticleCut>(bool)
   }
 
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionAK);
+  FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoTrackCutPionPionIdealAK);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoESDTrackCut);
   FORWARD_TO_BUILDER(AliFemtoTrackCut, AliFemtoAODTrackCut);
   FORWARD_TO_BUILDER(AliFemtoV0TrackCut, AliFemtoV0TrackCut);
   // FORWARD_TO_BUILDER(AliFemtoV0TrackCut, AliFemtoXiTrackCut);
+
 
   Warning("AliFemtoConfigObject::Construct<AliFemtoParticleCut>",
           "Could not load class '%s'", classname.c_str());
@@ -384,7 +388,7 @@ void
 AbstractConfiguration<AliFemtoCorrFctn>::Configure(AliFemtoCorrFctn &cf) const
 {
   if (!pair_cut_cfg.is_empty()) {
-    cf.SetPairSelectionCut(pair_cut_cfg.Clone().Into<AliFemtoPairCut>());
+    cf.SetPairSelectionCut(pair_cut_cfg.Copy().Into<AliFemtoPairCut>());
   }
 }
 

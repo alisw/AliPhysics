@@ -417,6 +417,11 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fTrackPID_P(0),
   fClusterIsoSumClusterEt(0),
   fClusterIsoSumTrackEt(0),
+  tClusterTimingEff(NULL),
+  fClusterTimeTag(0),
+  fClusterTimeProbe(0),
+  fClusterETag(0),
+  fClusterEProbe(0),
 //  fHistoTruePi0NonLinearity(NULL),
 //  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
@@ -810,6 +815,11 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fTrackPID_P(0),
   fClusterIsoSumClusterEt(0),
   fClusterIsoSumTrackEt(0),
+  tClusterTimingEff(NULL),
+  fClusterTimeTag(0),
+  fClusterTimeProbe(0),
+  fClusterETag(0),
+  fClusterEProbe(0),
 //  fHistoTruePi0NonLinearity(NULL),
 //  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
@@ -846,7 +856,14 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
-}
+  DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
+  DefineOutput(4, TTree::Class());
+  DefineOutput(5, TTree::Class());
+  DefineOutput(6, TTree::Class());
+  DefineOutput(7, TTree::Class());
+  DefineOutput(8, TTree::Class());
+  DefineOutput(9, TTree::Class());}
 
 AliAnalysisTaskGammaCalo::~AliAnalysisTaskGammaCalo()
 {
@@ -1336,6 +1353,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     tBckInvMassPtAlphaTheta         = new TTree*[fnCuts];
   }
 
+  if (fDoMesonQA == 5 && fIsMC == 0){
+    tClusterTimingEff               = new TTree*[fnCuts];
+  }
+
   if (fProduceTreeEOverP){
     fClusterTreeList                = new TList*[fnCuts];
     tClusterEOverP                  = new TTree*[fnCuts];
@@ -1775,6 +1796,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tBckInvMassPtAlphaTheta[iCut]->Branch("zVtx",&fInvMassTreeZVertex,"fInvMassTreeZVertex/F");
         tBckInvMassPtAlphaTheta[iCut]->Branch("Eta",&fInvMassTreeEta,"fInvMassTreeEta/F");
         fTreeList[iCut]->Add(tBckInvMassPtAlphaTheta[iCut]);
+      }
+
+      if (fDoMesonQA == 5 && fIsMC == 0){
+        tClusterTimingEff[iCut]   = new TTree(Form("%s_%s_%s ClusterTimingEff", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()), Form("%s_%s_%s ClusterTimingEff", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()));
+        tClusterTimingEff[iCut]->Branch("InvMass",&fInvMassTreeInvMass,"fInvMassTreeInvMass/F");
+        tClusterTimingEff[iCut]->Branch("Pt",&fInvMassTreePt,"fInvMassTreePt/F");
+        tClusterTimingEff[iCut]->Branch("ClusterTimeTag",&fClusterTimeTag,"fClusterTimeTag/F");
+        tClusterTimingEff[iCut]->Branch("ClusterTimeProbe",&fClusterTimeProbe,"fClusterTimeProbe/F");
+        tClusterTimingEff[iCut]->Branch("ClusterETag",&fClusterETag,"fClusterETag/F");
+        tClusterTimingEff[iCut]->Branch("ClusterEProbe",&fClusterEProbe,"fClusterEProbe/F");
       }
 
       if (fProduceTreeEOverP ){
@@ -3172,7 +3203,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fOutputLocalDebug.close();
   }
 
+  OpenFile(1);
   PostData(1, fOutputContainer);
+  Int_t nContainerOutput = 2;
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+      if(fDoMesonQA == 5 && fIsMC == 0){
+          OpenFile(nContainerOutput);
+          PostData(nContainerOutput, tClusterTimingEff[iCut]);
+          nContainerOutput++;
+      }
+  }
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaCalo::Notify()
@@ -4779,9 +4819,9 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
-                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                   if(DeltaPhi > M_PI) {
                     DeltaPhi = 2*M_PI - DeltaPhi;
                   }
@@ -4812,9 +4852,9 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
                 fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                 fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                 Double_t RJetPi0Cand;
-                for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                  Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                  Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                  Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                   if(DeltaPhi > M_PI) {
                     DeltaPhi = 2*M_PI - DeltaPhi;
                   }
@@ -4854,9 +4894,9 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
                   fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                   fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                   Double_t RJetPi0Cand;
-                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                  for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                     if(DeltaPhi > M_PI) {
                       DeltaPhi = 2*M_PI - DeltaPhi;
                     }
@@ -4881,9 +4921,9 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
                   fTrueVectorJetEta = fConvJetReader->GetTrueVectorJetEta();
                   fTrueVectorJetPhi = fConvJetReader->GetTrueVectorJetPhi();
                   Double_t RJetPi0Cand;
-                  for(Int_t i=0; i<fConvJetReader->GetTrueNJets(); i++){
-                    Double_t DeltaEta = fTrueVectorJetEta.at(i)-particle->Eta();
-                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(i)-particle->Phi());
+                  for(Int_t j=0; j<fConvJetReader->GetTrueNJets(); j++){
+                    Double_t DeltaEta = fTrueVectorJetEta.at(j)-particle->Eta();
+                    Double_t DeltaPhi = abs(fTrueVectorJetPhi.at(j)-particle->Phi());
                     if(DeltaPhi > M_PI) {
                       DeltaPhi = 2*M_PI - DeltaPhi;
                     }
@@ -5202,6 +5242,40 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             fInvMassTreeZVertex = fInputEvent->GetPrimaryVertex()->GetZ();
             fInvMassTreeEta = pi0cand->Eta();
             tSigInvMassPtAlphaTheta[fiCut]->Fill();
+          }
+
+          if (fDoMesonQA == 5 && fIsMC == 0 && ((pi0cand->M() > 0.05 && pi0cand->M() < 0.17) || (pi0cand->Pt() > 15. && pi0cand->M() > 0.45 && pi0cand->M() < 0.65 ))){
+
+            TClonesArray * arrClustersProcess = NULL;
+            arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+            AliVCluster* Cluster0 = NULL;
+            AliVCluster* Cluster1 = NULL;
+            if (gamma0->GetIsCaloPhoton() && gamma1->GetIsCaloPhoton()){
+              if(fInputEvent->IsA()==AliESDEvent::Class()){
+                if(arrClustersProcess){
+                  Cluster0 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
+                  Cluster1 = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
+                }else{
+                  Cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
+                  Cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+                }
+              } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+                if(arrClustersProcess){
+                  Cluster0 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma0->GetCaloClusterRef()));
+                  Cluster1 = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
+                } else{
+                  Cluster0 = fInputEvent->GetCaloCluster(gamma0->GetCaloClusterRef());
+                  Cluster1 = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+                }
+              }
+            }
+            fInvMassTreeInvMass = pi0cand->M();
+            fInvMassTreePt      = pi0cand->Pt();
+            fClusterTimeProbe   = Cluster1->GetTOF();
+            fClusterTimeTag     = Cluster0->GetTOF();
+            fClusterEProbe   = Cluster1->E();
+            fClusterETag     = Cluster0->E();
+            tClusterTimingEff[fiCut]->Fill();
           }
 
           if(fIsMC> 0){

@@ -1,4 +1,13 @@
 #include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamv0Cuts.h"
+#include "AliSigma0PhotonCuts.h"
+#include "AliSigma0AODPhotonMotherCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#include "AliAnalysisTaskNanoAODSigma0Femto.h"
 
 AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
                                              bool MomRes = false,
@@ -205,6 +214,15 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
   PDGParticles.push_back(3212);
+  if (suffix == "0" && fullBlastQA) {
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(3122);
+    PDGParticles.push_back(22);
+    PDGParticles.push_back(22);
+    PDGParticles.push_back(22);
+  }
 
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -224,7 +242,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   std::vector<float> kMax;
   std::vector<int> pairQA;
   std::vector<bool> closeRejection;
-  const int nPairs = 36;
+  const int nPairs = (suffix == "0" && fullBlastQA) ? 120 : 36;
   for (int i = 0; i < nPairs; ++i) {
     pairQA.push_back(0);
     closeRejection.push_back(false);
@@ -242,11 +260,8 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   NBins[0] = 250;  // pp
   NBins[8] = 250;  // barp barp
 
-  closeRejection[0] = true;  // pp
-  closeRejection[8] = true;  // barp barp
-
   // do extended QA for the pairs in default mode
-  if (suffix == "0") {
+  if (suffix == "0" && !fullBlastQA) {
     NBins[0] = 750;  // pp
     NBins[8] = 750;  // barp barp
 
@@ -254,6 +269,22 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     pairQA[2] = 14;   // pSigma
     pairQA[8] = 11;   // barp barp
     pairQA[10] = 14;  // barp bSigma
+  } else if (suffix == "0" && fullBlastQA) {
+    NBins[0] = 750;   // pp
+    NBins[14] = 750;  // barp barp
+
+    pairQA[0] = 11;   // pp
+    pairQA[2] = 14;   // pSigma
+    pairQA[8] = 12;   // pLambda(Sigma0)
+    pairQA[10] = 12;   // pLambda
+    pairQA[12] = 12;   // pPhoton(Sigma0)
+    pairQA[14] = 12;   // pPhoton
+    pairQA[15] = 11;  // barp barp
+    pairQA[17] = 14;  // barp bSigma
+    pairQA[23] = 12;   // barpbarLambda(barSigma0)
+    pairQA[25] = 12;   // barpbarLambda
+    pairQA[27] = 12;   // barpPhoton(Sigma0)
+    pairQA[28] = 12;   // barpPhoton
   }
 
   AliFemtoDreamCollConfig *config =
@@ -315,8 +346,9 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   }
 
   if (trigger == "kHighMultV0") {
-    config->SetDeltaEtaMax(0.01);
-    config->SetDeltaPhiMax(0.01);
+    // no close pair rejection since we don't care about pp
+    config->SetDeltaEtaMax(0.);
+    config->SetDeltaPhiMax(0.);
     config->SetClosePairRejection(closeRejection);
   }
 
@@ -324,8 +356,15 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     config->SetPhiEtaBinnign(true);
     config->SetkTBinning(true);
     config->SetmTBinning(true);
-    config->SetPtQA(true);
+    config->SetMassQA(true);
   }
+
+  config->SetUsePhiSpinning(true);
+  config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
+  config->SetCorrelationRange(0.1); // to be validated
+  config->SetSpinningDepth(1);      // to be validated
+
+  config->SetPtQA(true);
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -336,6 +375,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   if (suffix != "0") {
     config->SetMinimalBookingME(true);
+    config->SetMinimalBookingSample(true);
   }
 
   AliAnalysisTaskNanoAODSigma0Femto *task =
@@ -355,13 +395,17 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     task->SetLightweight(true);
   }
 
+  if (suffix == "0" && fullBlastQA) {
+    task->SetCheckDaughterCF(true);
+  }
+
   mgr->AddTask(task);
 
   TString addon = "";
   if (trigger == "kINT7") {
-    addon += "MB";
+    addon += "MBSigma0";
   } else if (trigger == "kHighMultV0") {
-    addon += "HM";
+    addon += "HMSigma0";
   }
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -446,6 +490,25 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
       Form("%s:%s", file.Data(), ResultQAName.Data()));
   mgr->ConnectOutput(task, 11, coutputResultQA);
 
+  AliAnalysisDataContainer *coutputResultsSample;
+  TString ResultsSampleName = Form("%sResultsSample%s", addon.Data(), suffix.Data());
+  coutputResultsSample = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+  mgr->ConnectOutput(task, 12, coutputResultsSample);
+
+  AliAnalysisDataContainer *coutputResultsSampleQA;
+  TString ResultsSampleQAName = Form("%sResultsSampleQA%s", addon.Data(), suffix.Data());
+  coutputResultsSampleQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
+  mgr->ConnectOutput(task, 13, coutputResultsSampleQA);
+
   if (isMC) {
     TString TrkCutsMCName =
         Form("%sTrackCutsMC%s", addon.Data(), suffix.Data());
@@ -453,7 +516,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
         mgr->CreateContainer(TrkCutsMCName.Data(), TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 12, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, 14, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName =
         Form("%sAntiTrackCutsMC%s", addon.Data(), suffix.Data());
@@ -461,14 +524,14 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 13, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, 15, coutputAntiTrkCutsMC);
 
     TString V0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
     AliAnalysisDataContainer *coutputV0CutsMC =
         mgr->CreateContainer(V0CutsMCName.Data(), TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), V0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 14, coutputV0CutsMC);
+    mgr->ConnectOutput(task, 16, coutputV0CutsMC);
 
     TString AntiV0CutsMCName =
         Form("%sAntiv0CutsMC%s", addon.Data(), suffix.Data());
@@ -476,7 +539,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiV0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 15, coutputAntiV0CutsMC);
+    mgr->ConnectOutput(task, 17, coutputAntiV0CutsMC);
   }
 
   return task;
