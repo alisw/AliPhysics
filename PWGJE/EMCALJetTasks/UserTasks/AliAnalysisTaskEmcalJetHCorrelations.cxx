@@ -1246,9 +1246,10 @@ void AliAnalysisTaskEmcalJetHCorrelations::FillHist(TH1 * hist, Double_t fillVal
 }
 
 /**
- * Utility function to fill a histogram with a given weight. If requested, it will also apply the JES correction derived weight
- * to the hist. It assumes that the corrected jet pt value is located in the second element of the fillValue (as defined in
- * GetDimParams()). If that is changed or the first entry is not included, then this function must be updated!
+ * Utility function to fill a histogram with a given weight. If requested, it will also apply the JES correction
+ * derived weight to the hist. It assumes that the corrected jet pt value is located in the second element of the
+ * fillValue (as defined in GetDimParams()). If that is changed or the first entry is not included, then this
+ * function must be updated!
  *
  * @param[in] hist Histogram to be filled.
  * @param[in] fillValue Array of values to be filled into the hist.
@@ -1548,13 +1549,13 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForStandardAnalysis(std::str
   if (trackName == "usedefault") {
     trackName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
   }
-  AliParticleContainer * particlesForJets = CreateParticleOrTrackContainer(trackName.c_str());
+  AliParticleContainer * particlesForJets = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(trackName.c_str());
   particlesForJets->SetName("particlesForJets");
   particlesForJets->SetMinPt(jetConstituentPtCut);
   particlesForJets->SetEtaLimits(-1.0*trackEta, trackEta);
   // Don't need to adopt the container - we'll just use it to find the right jet collection
   // For correlations
-  AliParticleContainer * particlesForCorrelations = CreateParticleOrTrackContainer(trackName.c_str());
+  AliParticleContainer * particlesForCorrelations = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(trackName.c_str());
   if (particlesForCorrelations)
   {
     particlesForCorrelations->SetName("tracksForCorrelations");
@@ -1628,13 +1629,13 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
   if (trackName == "usedefault") {
     trackName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
   }
-  AliParticleContainer * particlesForJets = CreateParticleOrTrackContainer(trackName.c_str());
+  AliParticleContainer * particlesForJets = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(trackName.c_str());
   particlesForJets->SetName("particlesForJets");
   particlesForJets->SetMinPt(jetConstituentPtCut);
   particlesForJets->SetEtaLimits(-1.0*trackEta, trackEta);
   // Don't need to adopt the container - we'll just use it to find the right jet collection
   // For correlations
-  AliParticleContainer * particlesForCorrelations = CreateParticleOrTrackContainer(trackName.c_str());
+  AliParticleContainer * particlesForCorrelations = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(trackName.c_str());
   // Ensure that we don't operate on a null pointer
   if (particlesForCorrelations)
   {
@@ -1673,27 +1674,6 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
   returnValue = true;
 
   return returnValue;
-}
-
-/**
- * Utility function to create a particle or track container given the collection name of the desired container.
- *
- * @param[in] collectionName Name of the particle or track collection name.
- *
- * @return A newly created particle or track container.
- */
-AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTrackContainer(const std::string & collectionName) const
-{
-  AliParticleContainer * partCont = 0;
-  if (collectionName == AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack)) {
-    AliTrackContainer * trackCont = new AliTrackContainer(collectionName.c_str());
-    partCont = trackCont;
-  }
-  else if (collectionName != "") {
-    partCont = new AliParticleContainer(collectionName.c_str());
-  }
-
-  return partCont;
 }
 
 /**

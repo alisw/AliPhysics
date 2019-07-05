@@ -190,21 +190,104 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
       fYAMLConfig.GetProperty({baseName, jetName, "R"}, R, true);
 
       // Create jet container and set the name
-      AliDebugStream(1) << "Creating jet from jet collection name " << collectionName << " with acceptance " << acceptance << " and R=" << R << "\n";
-      AliJetContainer * jetCont = AddJetContainer(collectionName.c_str(), acceptance.c_str(), R);
+      AliDebugStream(1) << "Creating jet from jet collection name " << collectionName << " with acceptance "
+               << acceptance << " and R=" << R << "\n";
+      AliJetContainer* jetCont = AddJetContainer(collectionName.c_str(), acceptance.c_str(), R);
       jetCont->SetName(jetName.c_str());
 
       // Leading hadron type
       int leadingHadronType = -1;
-      bool res = fYAMLConfig.GetProperty({baseName, jetName, "leadingHadronType"}, leadingHadronType, false);
+      bool res = fYAMLConfig.GetProperty({ baseName, jetName, "leadingHadronType" }, leadingHadronType, false);
       if (res) {
-        AliDebugStream(1) << "Setting leading hadron type of " << leadingHadronType << " for jet cont " << jetName << "\n";
+        AliDebugStream(1) << "Setting leading hadron type of " << leadingHadronType << " for jet cont "
+                 << jetName << "\n";
         jetCont->SetLeadingHadronType(leadingHadronType);
       }
     }
     else {
       AliInfoStream() << "Unable to find definition of jet container corresponding to \"" << jetName << "\"\n";
     }
+  }
+}
+
+/**
+ *
+ */
+void AliAnalysisTaskEmcalJetHPerformance::SetupParticleContainersFromYAMLConfig()
+{
+  std::string baseName = "particles";
+  // Retrieve the node just to see if it is exists. If so, then we can proceed
+  YAML::Node node;
+  fYAMLConfig.GetProperty(baseName, node);
+  // Iterate over all of the particle and track containers
+  for (const auto & n : node) {
+    std::string containerName = n.first.as<std::string>();
+
+    // Create the container.
+    std::string branchName = "";
+    fYAMLConfig.GetProperty({baseName, containerName, "branchName"}, branchName, true);
+    if (branchName == "usedefault") {
+      branchName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack);
+    }
+    AliParticleContainer * partCont = AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(branchName);
+    this->AdoptParticleContainer(partCont);
+
+    // Configure the container
+    // Need to include the namespace so that AliDebug will work properly...
+    std::string taskName = "PWGJE::EMCALJetTasks::";
+    taskName += GetName();
+    std::vector<std::string> baseNameWithContainer = { baseName, containerName };
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEMCalContainersFromYAMLConfig(baseNameWithContainer, containerName,
+                                       partCont, fYAMLConfig, taskName);
+
+    // Track specific properties
+    AliTrackContainer * trackCont = dynamic_cast<AliTrackContainer *>(partCont);
+    if (trackCont) {
+      AliAnalysisTaskEmcalJetHUtils::ConfigureTrackContainersFromYAMLConfig(baseNameWithContainer, trackCont,
+                                         fYAMLConfig, taskName);
+    }
+
+    AliDebugStream(2) << "Particle/track container: " << partCont->GetName()
+             << ", array class: " << partCont->GetClassName() << ", collection name: \""
+             << partCont->GetArrayName() << "\", min pt: " << partCont->GetMinPt() << "\n";
+  }
+}
+
+/**
+ *
+ */
+void AliAnalysisTaskEmcalJetHPerformance::SetupClusterContainersFromYAMLConfig()
+{
+  std::string baseName = "clusters";
+  // Retrieve the node just to see if it is exists. If so, then we can proceed
+  YAML::Node node;
+  fYAMLConfig.GetProperty(baseName, node);
+  // Iterate over all of the cluster containers
+  for (const auto & n : node) {
+    std::string containerName = n.first.as<std::string>();
+
+    // Create the container.
+    std::string branchName = "";
+    fYAMLConfig.GetProperty({baseName, containerName, "branchName"}, branchName, true);
+    if (branchName == "usedefault") {
+      branchName = AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kCluster);
+    }
+    AliClusterContainer * clusterCont = this->AddClusterContainer(branchName.c_str());
+
+    // Configure the container
+    // Need to include the namespace so that AliDebug will work properly...
+    std::string taskName = "PWGJE::EMCALJetTasks::";
+    taskName += GetName();
+    std::vector<std::string> baseNameWithContainer = { baseName, containerName };
+    AliAnalysisTaskEmcalJetHUtils::ConfigureEMCalContainersFromYAMLConfig(baseNameWithContainer, containerName,
+                                       clusterCont, fYAMLConfig, taskName);
+
+    // Cluster specific properties
+    AliAnalysisTaskEmcalJetHUtils::ConfigureClusterContainersFromYAMLConfig(baseNameWithContainer, clusterCont, fYAMLConfig, taskName);
+
+    AliDebugStream(2) << "Cluster container: " << clusterCont->GetName()
+             << ", array class: " << clusterCont->GetClassName() << ", collection name: \""
+             << clusterCont->GetArrayName() << "\", min pt: " << clusterCont->GetMinPt() << "\n";
   }
 }
 
@@ -228,6 +311,8 @@ bool AliAnalysisTaskEmcalJetHPerformance::Initialize()
   AliDebugStream(2) << "Configuring task from the YAML configuration.\n";
   RetrieveAndSetTaskPropertiesFromYAMLConfig();
   SetupJetContainersFromYAMLConfig();
+  SetupParticleContainersFromYAMLConfig();
+  SetupClusterContainersFromYAMLConfig();
   AliDebugStream(2) << "Finished configuring via the YAML configuration.\n";
 
   // Print the results of the initialization
@@ -347,7 +432,7 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
   TIter nextTrackColl(&fParticleCollArray);
   while ((trackCont = static_cast<AliTrackContainer*>(nextTrackColl()))) {
     std::string name = "QA/%s/fHistTrackPtEtaPhi";
-    std::string title = name + ";p_{#mathrm{T}} (GeV);#eta;#phi)";
+    std::string title = name + ";#it{p}_{T} (GeV);#eta;#phi";
     fHistManager.CreateTH3(TString::Format(name.c_str(), trackCont->GetName()),
                 TString::Format(title.c_str(), trackCont-> GetName()), 50, 0, 25, 40, -1, 1, 72, 0,
                 TMath::TwoPi());

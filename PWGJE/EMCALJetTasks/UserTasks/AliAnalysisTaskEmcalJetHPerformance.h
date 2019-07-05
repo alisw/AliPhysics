@@ -75,6 +75,8 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   // Configuration
   void RetrieveAndSetTaskPropertiesFromYAMLConfig();
   void SetupJetContainersFromYAMLConfig();
+  void SetupParticleContainersFromYAMLConfig();
+  void SetupClusterContainersFromYAMLConfig();
 
   // QA histograms
   void SetupQAHists();

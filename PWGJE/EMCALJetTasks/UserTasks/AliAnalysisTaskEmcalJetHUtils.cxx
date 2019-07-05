@@ -13,6 +13,10 @@
 
 #include "AliEmcalJet.h"
 #include "AliEmcalContainerUtils.h"
+#include "AliEmcalContainer.h"
+#include "AliParticleContainer.h"
+#include "AliTrackContainer.h"
+#include "AliClusterContainer.h"
 #include "AliEmcalParticleJetConstituent.h"
 #include "AliEmcalClusterJetConstituent.h"
 
@@ -119,7 +123,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
   bool useEventCutsAutomaticTriggerSelection = false;
   bool res = yamlConfig.GetProperty(std::vector<std::string>({baseName, "useAutomaticTriggerSelection"}), useEventCutsAutomaticTriggerSelection, false);
   if (res && useEventCutsAutomaticTriggerSelection) {
-    // Use the autmoatic selection. Nothing to be done.
+    // Use the automatic selection. Nothing to be done.
     AliInfoGeneralStream(taskName.c_str()) << "Using the automatic trigger selection from AliEventCuts.\n";
   }
   else {
@@ -171,6 +175,197 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
       AliDebugGeneralStream(taskName.c_str(), 3) << "Setting 15o pileup cuts to " << std::boolalpha << enablePileupCuts << ".\n";
       eventCuts.fUseVariablesCorrelationCuts = enablePileupCuts;
     }
+  }
+}
+
+/**
+ * Utility function to create a particle or track container given the collection name of the desired container.
+ *
+ * @param[in] collectionName Name of the particle or track collection name.
+ *
+ * @return A newly created particle or track container.
+ */
+AliParticleContainer * AliAnalysisTaskEmcalJetHUtils::CreateParticleOrTrackContainer(const std::string & collectionName)
+{
+  AliParticleContainer * partCont = nullptr;
+  if (collectionName == AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack)) {
+    AliTrackContainer * trackCont = new AliTrackContainer(collectionName.c_str());
+    partCont = trackCont;
+  }
+  else if (collectionName != "") {
+    partCont = new AliParticleContainer(collectionName.c_str());
+  }
+
+  return partCont;
+}
+
+/**
+ * Configure an EMCal container according to the specified YAML configuration.
+ *
+ * @param[in] baseName Name under which the config is stored, with the container name included.
+ * @param[in] containerName Name of the container.
+ * @param[in] cont Existing particle container.
+ * @param[in] yamlConfig YAML configuration to be used.
+ * @param[in] taskName Name of the task which is calling this function (for debugging purposes).
+ */
+void AliAnalysisTaskEmcalJetHUtils::ConfigureEMCalContainersFromYAMLConfig(std::vector<std::string> baseName,
+                                      std::string containerName,
+                                      AliEmcalContainer* cont,
+                                      PWG::Tools::AliYAMLConfiguration& yamlConfig,
+                                      std::string taskName)
+{
+  // Initial setup
+  cont->SetName(containerName.c_str());
+
+  // Set the properties
+  double tempDouble = -1.0;
+  bool tempBool = false;
+  std::vector<double> tempRange;
+  // Min Pt
+  bool result = yamlConfig.GetProperty(baseName, "minPt", tempDouble, false);
+  if (result) {
+    AliDebugGeneralStream(taskName.c_str(), 2) << cont->GetName() << ": Setting minPt of " << tempDouble << "\n";
+    cont->SetMinPt(tempDouble);
+  }
+  // Min E
+  result = yamlConfig.GetProperty(baseName, "minE", tempDouble, false);
+  if (result) {
+    AliDebugGeneralStream(taskName.c_str(), 2) << cont->GetName() << ": Setting minE of " << tempDouble << "\n";
+    cont->SetMinE(tempDouble);
+  }
+  // Eta min, max
+  result = yamlConfig.GetProperty(baseName, "etaLimits", tempRange, false);
+  if (result) {
+    if (tempRange.size() != 2) {
+      AliErrorGeneralStream(taskName.c_str()) << "Passed eta range with " << tempRange.size()
+                          << " entries, but 2 values are required. Ignoring values.\n";
+    } else {
+      AliDebugGeneralStream(taskName.c_str(), 2)
+       << "Setting eta range to [" << tempRange.at(0) << ", " << tempRange.at(1) << "]\n";
+      cont->SetEtaLimits(tempRange.at(0), tempRange.at(1));
+    }
+  }
+  // Phi min, max
+  result = yamlConfig.GetProperty(baseName, "phiLimits", tempRange, false);
+  if (result) {
+    if (tempRange.size() != 2) {
+      AliErrorGeneralStream(taskName.c_str()) << "Passed phi range with " << tempRange.size()
+                          << " entries, but 2 values are required. Ignoring values.\n";
+    } else {
+      AliDebugGeneralStream(taskName.c_str(), 2)
+       << "Setting phi range to [" << tempRange.at(0) << ", " << tempRange.at(1) << "]\n";
+      cont->SetPhiLimits(tempRange.at(0), tempRange.at(1));
+    }
+  }
+  // Embedded
+  result = yamlConfig.GetProperty(baseName, "embedding", tempBool, false);
+  if (result) {
+    AliDebugGeneralStream(taskName.c_str(), 2)
+     << cont->GetName() << ": Setting embedding to " << (tempBool ? "enabled" : "disabled") << "\n";
+    cont->SetIsEmbedding(tempBool);
+  }
+}
+
+/**
+ * Configure a track container according to the specified YAML configuration.
+ *
+ * @param[in] baseNameWithhContainer Name under which the config is stored, with the container name included.
+ * @param[in] trackCont Existing particle container.
+ * @param[in] yamlConfig YAML configuration to be used.
+ * @param[in] taskName Name of the task which is calling this function (for debugging purposes).
+ */
+void AliAnalysisTaskEmcalJetHUtils::ConfigureTrackContainersFromYAMLConfig(
+ std::vector<std::string> baseNameWithContainer, AliTrackContainer* trackCont,
+ PWG::Tools::AliYAMLConfiguration& yamlConfig, std::string taskName)
+{
+  // Initial setup
+  std::string tempString = "";
+
+  // Track selection
+  // AOD Filter bits as a sequence
+  std::vector<UInt_t> filterBitsVector;
+  bool result = yamlConfig.GetProperty(baseNameWithContainer, "aodFilterBits", filterBitsVector, false);
+  if (result) {
+    UInt_t filterBits = 0;
+    for (int filterBit : filterBitsVector) {
+      filterBits += filterBit;
+    }
+    AliDebugGeneralStream(taskName.c_str(), 2)
+     << trackCont->GetName() << ": Setting filterBits of " << filterBits << std::endl;
+    trackCont->SetAODFilterBits(filterBits);
+  }
+
+  // SetTrackFilterType enum
+  result = yamlConfig.GetProperty(baseNameWithContainer, "trackFilterType", tempString, false);
+  if (result) {
+    // Need to get the enumeration
+    AliEmcalTrackSelection::ETrackFilterType_t trackFilterType =
+     AliTrackContainer::fgkTrackFilterTypeMap.at(tempString);
+    AliDebugGeneralStream(taskName.c_str(), 2)
+     << trackCont->GetName() << ": Setting trackFilterType of " << trackFilterType << " (" << tempString << ")\n";
+    trackCont->SetTrackFilterType(trackFilterType);
+  }
+
+  // Track cuts period
+  result = yamlConfig.GetProperty(baseNameWithContainer, "trackCutsPeriod", tempString, false);
+  if (result) {
+    // Need to get the enumeration
+    AliDebugGeneralStream(taskName.c_str(), 2)
+     << trackCont->GetName() << ": Setting track cuts period to " << tempString << std::endl;
+    trackCont->SetTrackCutsPeriod(tempString.c_str());
+  }
+}
+
+/**
+ * Configure a cluster container according to the specified YAML configuration.
+ *
+ * @param[in] baseNameWithhContainer Name under which the config is stored, with the container name included.
+ * @param[in] clusterCont Existing cluster container.
+ * @param[in] yamlConfig YAML configuration to be used.
+ * @param[in] taskName Name of the task which is calling this function (for debugging purposes).
+ */
+void AliAnalysisTaskEmcalJetHUtils::ConfigureClusterContainersFromYAMLConfig(
+ std::vector<std::string> baseNameWithContainer, AliClusterContainer* clusterCont,
+ PWG::Tools::AliYAMLConfiguration& yamlConfig, std::string taskName)
+{
+  // Initial setup
+  double tempDouble = 0;
+  std::string tempString = "";
+  bool tempBool = false;
+
+  // Default energy
+  bool result = yamlConfig.GetProperty(baseNameWithContainer, "defaultClusterEnergy", tempString, false);
+  if (result) {
+    // Need to get the enumeration
+    AliVCluster::VCluUserDefEnergy_t clusterEnergyType =
+     AliClusterContainer::fgkClusterEnergyTypeMap.at(tempString);
+    AliDebugGeneralStream(taskName.c_str(), 2)
+     << clusterCont->GetName() << ": Setting cluster energy type to " << clusterEnergyType << std::endl;
+    clusterCont->SetDefaultClusterEnergy(clusterEnergyType);
+  }
+
+  // NonLinCorrEnergyCut
+  result = yamlConfig.GetProperty(baseNameWithContainer, "clusNonLinCorrEnergyCut", tempDouble, false);
+  if (result) {
+    AliDebugGeneralStream(taskName.c_str(), 2)
+     << clusterCont->GetName() << ": Setting clusNonLinCorrEnergyCut of " << tempDouble << std::endl;
+    clusterCont->SetClusNonLinCorrEnergyCut(tempDouble);
+  }
+
+  // HadCorrEnergyCut
+  result = yamlConfig.GetProperty(baseNameWithContainer, "clusHadCorrEnergyCut", tempDouble, false);
+  if (result) {
+    AliDebugGeneralStream(taskName.c_str(), 2)
+     << clusterCont->GetName() << ": Setting clusHadCorrEnergyCut of " << tempDouble << std::endl;
+    clusterCont->SetClusHadCorrEnergyCut(tempDouble);
+  }
+
+  // SetIncludePHOS
+  result = yamlConfig.GetProperty(baseNameWithContainer, "includePHOS", tempBool, false);
+  if (result) {
+    AliDebugGeneralStream(taskName.c_str(), 2) << clusterCont->GetName() << ": Setting Include PHOS to "
+                          << (tempBool ? "enabled" : "disabled") << std::endl;
+    clusterCont->SetIncludePHOS(tempBool);
   }
 }
 
