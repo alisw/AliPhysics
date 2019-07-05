@@ -5,7 +5,7 @@
  *      Author: me
  */
 #include "AliAnalysisTaskNanoLX.h"
-//#include "AliNanoAODTrack.h" //proton
+#include "AliNanoAODTrack.h"
 
 ClassImp(AliAnalysisTaskNanoLX)
 AliAnalysisTaskNanoLX::AliAnalysisTaskNanoLX()
@@ -167,7 +167,7 @@ void AliAnalysisTaskNanoLX::UserCreateOutputObjects() {
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                                 fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,
+    fPairCleaner = new AliFemtoDreamPairCleaner(0, 4,
                                                 fConfig->GetMinimalBookingME());
   }
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,
@@ -180,11 +180,10 @@ void AliAnalysisTaskNanoLX::UserCreateOutputObjects() {
   
   fv0 = new AliFemtoDreamv0();
   fv0->SetUseMCInfo(false);
-  //PDG Codes should be set assuming Lambda0 to also work for AntiLambda
-  fv0->SetPDGCode(3122);
-  fv0->SetPDGDaughterPos(2212);
+  fv0->SetPDGCode(fLambda->GetPDGv0());
+  fv0->SetPDGDaughterPos(fLambda->GetPDGPosDaug());
   fv0->GetPosDaughter()->SetUseMCInfo(false);
-  fv0->SetPDGDaughterNeg(211);
+  fv0->SetPDGDaughterNeg(fLambda->GetPDGNegDaug());
   fv0->GetNegDaughter()->SetUseMCInfo(false);
 
   fCascade = new AliFemtoDreamCascade();
@@ -282,9 +281,6 @@ void AliAnalysisTaskNanoLX::UserExec(Option_t *option) {
     return;
   }
 
-
-/*
-  // PROTON SELECTION
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
@@ -294,6 +290,7 @@ void AliAnalysisTaskNanoLX::UserExec(Option_t *option) {
     }
     StoreGlobalTrackReference(track);
   }
+/*
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
   const int multiplicity = fEvent->GetMultiplicity();
@@ -373,8 +370,6 @@ void AliAnalysisTaskNanoLX::UserExec(Option_t *option) {
   PostData(7, fResultsQA);
 }
 
-//_concerns protons only (?)_________________________________________________________________________ 
-/*
 void AliAnalysisTaskNanoLX::ResetGlobalTrackReference() {
   // see AliFemtoDreamAnalysis for details
   for (int i = 0; i < fTrackBufferSize; i++) {
@@ -413,4 +408,4 @@ void AliAnalysisTaskNanoLX::StoreGlobalTrackReference(AliVTrack *track) {
   }
   (fGTI[trackID]) = track;
 }
-*/
+

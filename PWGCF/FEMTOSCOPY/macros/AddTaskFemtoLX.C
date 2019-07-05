@@ -10,7 +10,6 @@
 #include "AliFemtoDreamv0Cuts.h"
 #include "AliFemtoDreamCollConfig.h"
 
-	std::cout<<"debugTask beginning"<<std::endl;
 
 AliAnalysisTaskSE *AddTaskFemtoLX(bool fullBlastQA = false,
                                      const char *cutVariation = "0") {
@@ -95,8 +94,6 @@ AliAnalysisTaskSE *AddTaskFemtoLX(bool fullBlastQA = false,
 
   if (suffix != "0" && suffix != "999") {
     evtCuts->SetMinimalBooking(true);
-    TrackCuts->SetMinimalBooking(true);
-    AntiTrackCuts->SetMinimalBooking(true);
     CascadeCuts->SetMinimalBooking(true);
     AntiCascadeCuts->SetMinimalBooking(true);
   }
@@ -136,25 +133,18 @@ AliAnalysisTaskSE *AddTaskFemtoLX(bool fullBlastQA = false,
 
   if (suffix != "0" && suffix != "999") {
     evtCuts->SetMinimalBooking(true);
-    TrackCuts->SetMinimalBooking(true);
-    AntiTrackCuts->SetMinimalBooking(true);
     v0Cuts->SetMinimalBooking(true);
     Antiv0Cuts->SetMinimalBooking(true);
   }
-
-  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
-                                                                "Femto");
-
 
   // Femto Collection
   std::vector<int> PDGParticles;
   //PDGParticles.push_back(2212); -- protons (check again) 
   //PDGParticles.push_back(2212);
-  PDGParticles.push_back(3312);//Xi
-  PDGParticles.push_back(3312);
   PDGParticles.push_back(3122);//Lambda
   PDGParticles.push_back(3122);
-
+  PDGParticles.push_back(3312);//Xi
+  PDGParticles.push_back(3312);
 
   std::vector<int> NBins;
   std::vector<float> kMin;
@@ -319,7 +309,7 @@ AliAnalysisTaskSE *AddTaskFemtoLX(bool fullBlastQA = false,
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), v0CutsName.Data()));
-  mgr->ConnectOutput(task, 4, coutputv0Cuts);
+  mgr->ConnectOutput(task, 2, coutputv0Cuts);
 
   AliAnalysisDataContainer *coutputAntiv0Cuts;
   TString Antiv0CutsName = Form("%sAntiv0Cuts%s", addon.Data(), suffix.Data());
@@ -329,7 +319,7 @@ AliAnalysisTaskSE *AddTaskFemtoLX(bool fullBlastQA = false,
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
       Form("%s:%s", file.Data(), Antiv0CutsName.Data()));
-  mgr->ConnectOutput(task, 5, coutputAntiv0Cuts);
+  mgr->ConnectOutput(task, 3, coutputAntiv0Cuts);
 
   AliAnalysisDataContainer *coutputCascadeCuts;
   TString CascadeCutsName = Form("%sCascadeCuts%s", addon.Data(), suffix.Data());
