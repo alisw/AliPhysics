@@ -188,7 +188,8 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param,
    fForceConv(kFALSE),
    fKeepParent(kFALSE),
    fKeepIfOneChildSelected(kFALSE),
-   fPDGcode(0)
+   fPDGcode(0),
+   fIncFortran(-1)
 {
   // Constructor
   // Gines Martinez 1/10/99
@@ -232,7 +233,8 @@ AliGenParam::AliGenParam(const char* name, Int_t npart, int pdg,
    fForceConv(kFALSE),
    fKeepParent(kFALSE),
    fKeepIfOneChildSelected(kFALSE),
-   fPDGcode(pdg)
+   fPDGcode(pdg),
+   fIncFortran(-1)
 {
   // Constructor
   // Gines Martinez 1/10/99
