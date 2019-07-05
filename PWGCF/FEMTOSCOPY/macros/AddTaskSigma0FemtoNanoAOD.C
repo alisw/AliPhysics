@@ -381,6 +381,13 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   AliAnalysisTaskNanoAODSigma0Femto *task =
       new AliAnalysisTaskNanoAODSigma0Femto("AliAnalysisTaskNanoAODSigma0Femto", isMC);
 
+  // ATTENTION ATTENTION!
+  // THIS IS A TEMPORARY TEST
+  // REMOVE ASAP
+  // LONG LIVE THE FEMTO JANITOR
+  task->SetGoDoThisFemtoJanitor(false);
+
+  
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
   task->SetAntiProtonCuts(AntiTrackCuts);
