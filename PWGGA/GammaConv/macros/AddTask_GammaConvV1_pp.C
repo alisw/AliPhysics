@@ -916,7 +916,11 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 423){   // AM split the RBin "a" in two
     cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-13
     cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5
-
+    cuts.AddCutPCM("00010113", "0dl00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-95
+  } else if (trainConfig == 424){   // AM split the RBin "a" in two
+    cuts.AddCutPCM("00010113", "0dj00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
+    cuts.AddCutPCM("00010113", "0dk00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 55-72
+    cuts.AddCutPCM("00010113", "0dg00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 95-180
 
   } else if (trainConfig == 440){ // as 400 to be used MBW
     cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
@@ -929,6 +933,12 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 443){ // as 423 to be used MBW
     cuts.AddCutPCM("00010113", "0dh00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-13
     cuts.AddCutPCM("00010113", "0di00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 13-33.5.
+    cuts.AddCutPCM("00010113", "0dl00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-95
+  } else if (trainConfig == 444){   // as 424 to be used with MBW
+    cuts.AddCutPCM("00010113", "0dj00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 33-55
+    cuts.AddCutPCM("00010113", "0dk00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 55-72
+    cuts.AddCutPCM("00010113", "0dg00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 95-180
+
 
   } else if (trainConfig == 450){ // PCM sphericity
     cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000");
@@ -937,6 +947,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("j0010113", "0d200009227300008250404000", "0152103500000000");
     cuts.AddCutPCM("q0010113", "0d200009227300008250404000", "0152103500000000");
     cuts.AddCutPCM("r0010113", "0d200009227300008250404000", "0152103500000000");
+
 
   //----------------------------- configuration for Jet analysis ----------------------------------------------------
   } else if ( trainConfig == 500){ // Jet analysis pp 5 TeV 2017
@@ -1004,6 +1015,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 614) { // ITS area with large weights split in two
     cuts.AddCutPCM("00010113", "0dh00089267300008250404000", "0152103500000000"); // eta < 0.8   5-13
     cuts.AddCutPCM("00010113", "0di00089267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5
+    cuts.AddCutPCM("00010113", "0dl00089267300008250404000", "0152103500000000"); // eta < 0.8  72-95
   } else if (trainConfig == 615) { // scan of meson alpha cut
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "0152100500000000"); // alpha <0.7
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "0152108500000000"); // alpha <0.6
@@ -1016,7 +1028,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 617) { // RBins studies,
     cuts.AddCutPCM("00010113", "0dj00089267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
     cuts.AddCutPCM("00010113", "0dk00089267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
-
+    cuts.AddCutPCM("00010113", "0dg00089267300008250404000", "0152103500000000"); // eta < 0.8  72-95 cm
 
  // Low B Field to be used with MBW
   } else if (trainConfig == 652) {
@@ -1069,6 +1081,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 664) { // asymetry cut removed from configs 702-703-704  and 753-754-755 on 14.06.2018 (cuts low pT)
     cuts.AddCutPCM("00010113", "0dh00089267300008250404000", "0152103500000000"); // eta < 0.8
     cuts.AddCutPCM("00010113", "0di00089267300008250404000", "0152103500000000"); // eta < 0.8
+    cuts.AddCutPCM("00010113", "0dl00089267300008250404000", "0152103500000000"); // eta < 0.8
   } else if (trainConfig == 665) { // scan of meson alpha cut
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "0152100500000000"); // alpha <0.7
     cuts.AddCutPCM("00010113", "0d200089267300008250404000", "0152108500000000"); // alpha <0.6
@@ -1081,6 +1094,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 667) { // RBins studies,
     cuts.AddCutPCM("00010113", "0dj00089267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
     cuts.AddCutPCM("00010113", "0dk00089267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
+    cuts.AddCutPCM("00010113", "0dg00089267300008250404000", "0152103500000000"); // eta < 0.8  72-95 cm
 
 
   // Material studies Ana-----nomB
@@ -1145,6 +1159,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 714) { // RBins studies, ITS with large weights spplited
     cuts.AddCutPCM("00010113", "0dh00009267300008250404000", "0152103500000000"); // eta < 0.8   5-13 cm
     cuts.AddCutPCM("00010113", "0di00009267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5 cm
+    cuts.AddCutPCM("00010113", "0dl00009267300008250404000", "0152103500000000"); // eta < 0.8  72-95 cm
   } else if (trainConfig == 715) { // scan of meson alpha cut
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "0152100500000000"); // alpha <0.7
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "0152108500000000"); // alpha <0.6
@@ -1157,6 +1172,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 717) { // RBins studies,
     cuts.AddCutPCM("00010113", "0dj00009267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
     cuts.AddCutPCM("00010113", "0dk00009267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
+    cuts.AddCutPCM("00010113", "0dg00009267300008250404000", "0152103500000000"); // eta < 0.8  95-180 cm
 
     // config like 70X but to be used with weights +50
   } else if (trainConfig == 752) { // as iConfig 702 to be used with MBW
@@ -1210,7 +1226,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 764) { // RBins studies, ITS with large weights spplited
     cuts.AddCutPCM("00010113", "0dh00009267300008250404000", "0152103500000000"); // eta < 0.8   5-13 cm
     cuts.AddCutPCM("00010113", "0di00009267300008250404000", "0152103500000000"); // eta < 0.8  13-33.5
-
+    cuts.AddCutPCM("00010113", "0dl00009267300008250404000", "0152103500000000"); // eta < 0.8  72-95
   } else if (trainConfig == 765) { // scan of meson alpha cut
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "0152100500000000"); // alpha <0.7
     cuts.AddCutPCM("00010113", "0d200009267300008250404000", "0152108500000000"); // alpha <0.6
@@ -1223,7 +1239,7 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 767) { // RBins studies,
     cuts.AddCutPCM("00010113", "0dj00009267300008250404000", "0152103500000000"); // eta < 0.8  33.5-55 cm
     cuts.AddCutPCM("00010113", "0dk00009267300008250404000", "0152103500000000"); // eta < 0.8  55-72 cm
-
+    cuts.AddCutPCM("00010113", "0dg00009267300008250404000", "0152103500000000"); // eta < 0.8  95-180 cm
 
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
   } else if (trainConfig == 1001){
