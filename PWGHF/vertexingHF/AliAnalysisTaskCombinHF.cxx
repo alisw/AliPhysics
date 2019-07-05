@@ -631,7 +631,7 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
     AliAODPidHF* pidtosave=new AliAODPidHF(*(fAnalysisCuts->GetPidHF()));
     fListCuts->Add(pidtosave);
   }
-  TH1F* hCutValues = new TH1F("hCutValues","",6,0.5,6.5);
+  TH1F* hCutValues = new TH1F("hCutValues","",7,0.5,7.5);
   hCutValues->SetBinContent(1,fFilterMask);
   hCutValues->GetXaxis()->SetBinLabel(1,"Filter bit");
   hCutValues->SetBinContent(2,(Float_t)fApplyCutCosThetaStar);
@@ -644,6 +644,8 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   hCutValues->GetXaxis()->SetBinLabel(5,"cos3piK (Ds)");
   hCutValues->SetBinContent(6,fCutCosPiDsLabFrame);
   hCutValues->GetXaxis()->SetBinLabel(6,"cospiDs (Ds)");
+  hCutValues->SetBinContent(7,fAnalysisCuts->GetUseTimeRangeCutForPbPb2018());
+  hCutValues->GetXaxis()->SetBinLabel(7,"TimeRangeCut");
   fListCuts->Add(hCutValues);
   PostData(3, fListCuts);
 
