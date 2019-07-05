@@ -180,6 +180,7 @@ private:
   TH3F *fMassVsPtVsYSig;   //!<! hist. of Y vs. Pt vs. Mass (signal)
   TH3F *fMassVsPtVsYRefl;  //!<! hist. of Y vs. Pt vs. Mass (reflections)
   TH3F *fMassVsPtVsYBkg;   //!<! hist. of Y vs. Pt vs. Mass (background)
+  TH1F *fBMohterPtGen;     //!<! hist. of beauty mother pt
   TH1F *fNSelected;        //!<! hist. of n. of selected D+
   TH1F *fNormRotated;      //!<! hist. rotated/selected D+
   TH1F *fDeltaMass;        //!<! hist. mass difference after rotations
@@ -199,10 +200,10 @@ private:
   TH3F *fMassVsPtVsCosthStME;       //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
   TH3F *fMassVsPtVsCosthStMELSpp;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
   TH3F *fMassVsPtVsCosthStMELSmm;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
-  TH1F *fHistonSigmaTPCPion;        //!<! hist. of nSigmaTPC pion 
-  TH1F *fHistonSigmaTOFPion;        //!<! hist. of nSigmaTOF pion 
-  TH1F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon 
-  TH1F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon 
+  TH2F *fHistonSigmaTPCPion;        //!<! hist. of nSigmaTPC pion
+  TH2F *fHistonSigmaTOFPion;        //!<! hist. of nSigmaTOF pion
+  TH2F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon
+  TH2F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
@@ -269,7 +270,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,23); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,24); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
