@@ -162,7 +162,6 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 }
                 else
                 {
-                    AliExternalTrackParam *ntp = &nt, *ptp = &pt;
                     AliTrackerBase::PropagateTrackTo(ntp, xn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE);
                     AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE);
                 }
@@ -187,8 +186,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 Int_t posCharge = (std::abs(fPID->NumberOfSigmasTPC(ptrk, AliPID::kHe3)) < 5) + 1;
                 Int_t negCharge = (std::abs(fPID->NumberOfSigmasTPC(ntrk, AliPID::kHe3)) < 5) + 1;
                 Double_t posMom[3], negMom[3];
-                ntrk->GetPxPyPz(negMom);
-                ptrk->GetPxPyPz(posMom);
+                vertex.GetNPxPyPz(negMom[0],negMom[1],negMom[2]);
+                vertex.GetPPxPyPz(posMom[0],posMom[1],posMom[2]);
                 Double_t momV0[3] = {posCharge * posMom[0] + negCharge * negMom[0], posCharge * posMom[1] + negCharge * negMom[1], posCharge * posMom[2] + negCharge * negMom[2]};
                 Double_t deltaPos[3]; //vector between the reference point and the V0 vertex
                 Double_t SPos[3];
@@ -200,7 +199,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 Double_t momV02 = momV0[0] * momV0[0] + momV0[1] * momV0[1] + momV0[2] * momV0[2];
                 Double_t deltaPos2 = deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1] + deltaPos[2] * deltaPos[2];
 
-                Float_t cpa = (deltaPos[0] * momV0[0] +
+                double cpa = (deltaPos[0] * momV0[0] +
                                deltaPos[1] * momV0[1] +
                                deltaPos[2] * momV0[2]) /
                               TMath::Sqrt(momV02 * deltaPos2);
@@ -214,10 +213,7 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 vertex.ChangeMassHypothesis(kK0Short);
 
                 //pre-select on pT
-                Double_t lMomX = 0., lMomY = 0., lMomZ = 0.;
-                Double_t lTransvMom = 0.;
-                vertex.GetPxPyPz(lMomX, lMomY, lMomZ);
-                lTransvMom = TMath::Sqrt(lMomX * lMomX + lMomY * lMomY);
+                double lTransvMom = std::hypot(momV0[0],momV0[1]);
                 if (lTransvMom < fMinPtV0)
                     continue;
                 if (lTransvMom > fMaxPtV0)
