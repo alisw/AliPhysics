@@ -27,8 +27,8 @@ class AliAnalysisTaskNanoLX : public AliAnalysisTaskSE {
   virtual ~AliAnalysisTaskNanoLX();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  //void ResetGlobalTrackReference();                  //concerns protons only (?)
-  //void StoreGlobalTrackReference(AliVTrack *track);
+  void ResetGlobalTrackReference();                  //concerns protons only (?)
+  void StoreGlobalTrackReference(AliVTrack *track);
   void SetRunTaskLightWeight(bool light) {
     fisLightWeight = light;
   }
