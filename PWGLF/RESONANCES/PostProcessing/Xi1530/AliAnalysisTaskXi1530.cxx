@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/06/30
+//  Last Modified Date: 2019/07/06
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1389,7 +1389,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              track1->M());
+                              pionmass);
 
                 vecsum = temp1 + temp2;  // temp1 = cascade, temp2=pion
                 // Y cut
@@ -1681,7 +1681,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     track1->GetID() == bTrackXi->GetID())
                     continue;
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              track1->M());
+                              pionmass);
                 vecsum = temp1 + temp2;  // two pion vector sum
 
                 if ((Xicandidate->Charge() == -1 && track1->Charge() == -1) ||
@@ -1994,7 +1994,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 }
                 */
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              track1->M());
+                              pionmass);
 
                 vecsum = temp1 + temp2;  // temp1 = cascade, temp2=pion
                 // Y cut
@@ -2283,7 +2283,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     track1->GetID() == bTrackXi->GetID())
                     continue;
                 temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(),
-                              track1->M());
+                              pionmass);
                 vecsum = temp1 + temp2;  // two pion vector sum
 
                 if ((Xicandidate->ChargeXi() == -1 && track1->Charge() == -1) ||
