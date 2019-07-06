@@ -45,13 +45,14 @@ protected:
     TH3F*  f3fHistCentVsInvMassLambda1point0;
     TH3F*  f3fHistCentVsInvMassLambda1point0Masscut;
     
-    
+    TH3F*  f3fHistCentVsInvMassLambda1point0Rap;
+    TH3F*  f3fHistCentVsInvMassLambda1point0MasscutRap;
     
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0;
     TH3F*  f3fHistCentVsInvMassAntiLambda1point0Masscut;
     
-     TH3F*  f3fHistCentVsInvMassLambda1point0bkg;
-     TH3F*  f3fHistCentVsInvMassAntiLambda1point0bkg;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0Rap;
+    TH3F*  f3fHistCentVsInvMassAntiLambda1point0MasscutRap;
     
     
     Float_t fCentrality;
@@ -64,6 +65,8 @@ protected:
     
     
     THnSparse *fPtBinNplusNminusCh;
+    THnSparse *fPtBinNplusNminusChRap;
+
     
     
     

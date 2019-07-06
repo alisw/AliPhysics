@@ -1,6 +1,6 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated jul 3: remove stack, DCA V0 to PV in default only, fix err in Xi bin
+// Updated jul 5 add prop LT cut
 
 
 #include "AliAnalysisManager.h"
@@ -386,15 +386,13 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     if(!(fInputHandler->IsEventSelected() & fEvSel)) return;
     
     
-    //    AliStack *stack = 0x0;
     
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     if(!mcH) return;
     fMCEvent=mcH->MCEvent();
     if(!fMCEvent) return;
     
-    //        stack = fMCEvent->Stack();
-    //        if(!stack) return;
+
     
     Double_t lMagneticField = -10;
     lMagneticField = fESD->GetMagneticField();
@@ -430,7 +428,6 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     if(fIsMC)
     {
         
-        //       nGen = stack->GetNtrack();
         nGen = fMCEvent->GetNumberOfTracks();
         
         for(Int_t iGen = 0; iGen < nGen; iGen++)
@@ -439,10 +436,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
             Double_t lThisRap  = 0;
             Float_t gpt = 0.0, eta = 0.0,abseta =0.0;
             
-            //          TParticle* mctrack = stack->Particle(iGen);
             AliMCParticle* mctrack = (AliMCParticle*)fMCEvent->GetTrack(iGen);
             if(!mctrack) continue;
-            //          if(!(stack->IsPhysicalPrimary(iGen))) continue;
             if(!(fMCEvent->IsPhysicalPrimary(iGen))) continue;
             
             TParticle *part = mctrack->Particle();
@@ -526,8 +521,8 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
     AliESDtrack *esdpTrack = 0x0;
     AliESDtrack *esdnTrack = 0x0;
     
-    Double_t fMinV0Pt = 0;
-    Double_t fMaxV0Pt = 5;
+    Double_t fMinV0Pt = 0.5;
+    Double_t fMaxV0Pt = 4.5;
     
     for(Int_t iV0 = 0; iV0 < nV0; iV0++)
     {
@@ -539,7 +534,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         
         Float_t invMassLambda = -999, invMassAntiLambda = -999;
         Float_t V0pt = -999, eta = -999, pmom = -999;
-        Float_t ppt = -999,  peta = -999, posprnsg = -999, pospion =-999, v0Radius =-999, lRapLambda=-999;
+        Float_t ppt = -999,  peta = -999, posprnsg = -999, pospion =-999, v0Radius =-999, v0DecayLength =-999, proLT =-999, lRapLambda=-999;
         Float_t npt = -999,  neta = -999, negprnsg = -999, negpion =-999;
         Bool_t  ontheflystat = kFALSE;
         Float_t dcaPosToVertex = -999, dcaNegToVertex = -999, dcaDaughters = -999, dcaV0ToVertex = -999, cosPointingAngle = -999;
@@ -557,10 +552,19 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         }
         esdv0->GetXYZ(vertx[0], vertx[1], vertx[2]); //decay vertex
         v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
+        v0DecayLength = TMath::Sqrt(TMath::Power(vertx[0] - vVtx[0],2) +
+                                    TMath::Power(vertx[1] - vVtx[1],2) +
+                                    TMath::Power(vertx[2] - vVtx[2],2 ));
         
         lRapLambda  = esdv0->RapLambda();
         V0pt = esdv0->Pt();
         if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
+        
+        Double_t tV0mom[3];
+        esdv0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
+        Double_t lV0TotalMomentum = TMath::Sqrt(
+                                                tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
+        v0DecayLength /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
         //--------------------------------------------------------------------Track selection-------------------------------------------------------------------------
         Float_t lPosTrackCrossedRows = esdpTrack->GetTPCClusterInfo(2,1);
         Float_t lNegTrackCrossedRows = esdnTrack->GetTPCClusterInfo(2,1);
@@ -572,8 +576,18 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         if( !(esdpTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         if( !(esdnTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         
-        if ( ( ( esdpTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( esdnTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+        //Extra track quality: min track length
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
         
+        if (esdpTrack->GetInnerParam()) lPosTrackLength = esdpTrack->GetLengthInActiveZone(1, 2.0, 220.0, fESD->GetMagneticField());
+        if (esdnTrack->GetInnerParam()) lNegTrackLength = esdnTrack->GetLengthInActiveZone(1, 2.0, 220.0, fESD->GetMagneticField());
+        
+        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
+        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        
+        if ( ( ( ( esdpTrack->GetTPCClusterInfo(2,1) ) < 80 ) || ( ( esdnTrack->GetTPCClusterInfo(2,1) ) < 80 ) ) && lSmallestTrackLength < 90 ) continue;
         if( esdpTrack->GetKinkIndex(0)>0 || esdnTrack->GetKinkIndex(0)>0 ) continue;
         
         if( esdpTrack->GetTPCNclsF()<=0 || esdnTrack->GetTPCNclsF()<=0 ) continue;
@@ -619,13 +633,17 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
         negprnsg = fPIDResponse->NumberOfSigmasTPC(esdnTrack, AliPID::kProton);
         pospion  = fPIDResponse->NumberOfSigmasTPC( esdpTrack, AliPID::kPion );
         negpion  = fPIDResponse->NumberOfSigmasTPC( esdnTrack, AliPID::kPion );
-        //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        proLT = v0DecayLength*invMassLambda;
+
         if(TMath::Abs(peta) > 0.8) continue;
         if(TMath::Abs(neta) > 0.8) continue;
-        if(cosPointingAngle < 0.99) continue;
+        if(cosPointingAngle < 0.98) continue;
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
         if(v0Radius > 200.) continue;
+        if(proLT > 25.) continue;
+
         
         if( ontheflystat == 0 )
         {
@@ -640,9 +658,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 if(TMath::Abs(esdpTrack->GetLabel()) >= nGen || TMath::Abs(esdnTrack->GetLabel()) >= nGen) continue;
                 Int_t lblPosV0Dghter = (Int_t) TMath::Abs( esdpTrack->GetLabel() );
                 Int_t lblNegV0Dghter = (Int_t) TMath::Abs( esdnTrack->GetLabel() );
-                
-                //                TParticle* esdGenTrackPos = stack->Particle( lblPosV0Dghter );
-                //                TParticle* esdGenTrackNeg = stack->Particle( lblNegV0Dghter );
+  
                 
                 AliMCParticle *esdGenTrackPos = (AliMCParticle*)fMCEvent->GetTrack(lblPosV0Dghter);
                 if(!esdGenTrackPos) continue;
@@ -655,7 +671,6 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                 
                 if( posTparticle == negTparticle && posTparticle > 0 )
                 {
-                    //                    TParticle *esdlthisV0 = stack->Particle(posTparticle);
                     AliMCParticle *esdlthisV0 = (AliMCParticle*)fMCEvent->GetTrack(posTparticle);
                     if(!esdlthisV0) continue;
                     TParticle *partRecMom = esdlthisV0->Particle();
@@ -668,9 +683,6 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     isSecFromWeakDecay = fMCEvent->IsSecondaryFromWeakDecay(posTparticle);
                     isPrim = fMCEvent->IsPhysicalPrimary(posTparticle);
                     
-                    //                    isSecFromMaterial = stack->IsSecondaryFromMaterial(posTparticle);
-                    //                    isSecFromWeakDecay = stack->IsSecondaryFromWeakDecay(posTparticle);
-                    //                    isPrim = stack->IsPhysicalPrimary(posTparticle);
                     
                     Int_t esdlthisV0parent = esdlthisV0->GetMother();
                     
@@ -678,12 +690,10 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     {
                         AliMCParticle *lbV0parent = (AliMCParticle*)fMCEvent->GetTrack(esdlthisV0parent);
                         
-                        //                        TParticle *lbV0parent = stack->Particle(esdlthisV0parent);
                         if(!lbV0parent) continue;
                         TParticle *partRecGMom = lbV0parent->Particle();
                         fTreeVariablePIDParent = partRecGMom->GetPdgCode();
                         fTreeVariablePtParent = partRecGMom->Pt();
-                        //                        isPrimParent =  stack->IsPhysicalPrimary(esdlthisV0parent);
                         isPrimParent =  fMCEvent->IsPhysicalPrimary(esdlthisV0parent);
                         
                     }
@@ -723,7 +733,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             ptChRecTag[iptbinRecTag] += 1;
                         }
                     }
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 2.5 && TMath::Abs(negpion)  <= 2.5) //tight
+                    if(dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 2.5 && TMath::Abs(negpion)  <= 2.5) //tight
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -740,7 +750,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 4 && TMath::Abs(negpion)  <= 4) //loose
+                    if(dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 4 && TMath::Abs(negpion)  <= 4) //loose
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -788,7 +798,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                     }
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 2.5 && TMath::Abs(pospion)  <= 2.5) //tight
+                    if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 2.5 && TMath::Abs(pospion)  <= 2.5) //tight
                     {
                         
                         if(fTreeVariablePID == -3122)
@@ -806,7 +816,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                             }
                         }
                     }
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 4 && TMath::Abs(pospion)  <= 4) //loose
+                    if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 4 && TMath::Abs(pospion)  <= 4) //loose
                     {
                         if(fTreeVariablePID == -3122)
                         {
@@ -825,7 +835,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     }
                     
                     ////DCA POS L
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.13  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
+                    if(dcaNegToVertex > 0.25 && dcaPosToVertex >  0.13  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -844,7 +854,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         
                     }
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.08  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
+                    if(dcaNegToVertex > 0.25 && dcaPosToVertex >  0.08  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -864,7 +874,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     
                     ////DCA POS L-bar
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.3 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
+                    if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.3 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
                     {
                         if(fTreeVariablePID == -3122)
                         {
@@ -882,7 +892,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                     }
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.2 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
+                    if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.2 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
                     {
                         
                         if(fTreeVariablePID == -3122)
@@ -901,7 +911,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                     }
                     //DCA L neg
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.3 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
+                    if(dcaNegToVertex > 0.3 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //tight
                     {
                         
                         if(fTreeVariablePID == 3122)
@@ -920,7 +930,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                     }
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.2 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
+                    if(dcaNegToVertex > 0.2 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3 && TMath::Abs(negpion)  <= 3) //loose
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -940,7 +950,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                     
                     //Bar-L Neg to PV
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.13 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
+                    if(dcaNegToVertex > 0.13 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //tight
                     {
                         if(fTreeVariablePID == -3122)
                         {
@@ -958,7 +968,7 @@ void AliAnalysisTaskNetLambdaMCTrad::UserExec(Option_t *)
                         }
                     }
                     
-                    if(dcaV0ToVertex < 0.25 && dcaNegToVertex > 0.08 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
+                    if(dcaNegToVertex > 0.08 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //loose
                     {
                         if(fTreeVariablePID == -3122)
                         {
