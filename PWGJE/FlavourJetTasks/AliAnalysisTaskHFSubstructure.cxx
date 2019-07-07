@@ -289,7 +289,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
   fFastJetWrapper->SetGhostArea(0.005);  
   fFastJetWrapper->SetR(fJetRadius);
   fFastJetWrapper->SetAlgorithm(fastjet::antikt_algorithm);
-  fFastJetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(0));
+  fFastJetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(1));
 
   fFastJetWrapper_Truth=new AliFJWrapper("fastjetwrapper_truth","fastjetwrapper_truth");
 
@@ -469,7 +469,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	std::vector<Double_t> Splittings_RadiatorpT;
 
 	Bool_t Is_D_SubJet=kFALSE;
-	fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best); 
+	fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(1), fastjet::Best); 
 	try{
 	  std::vector<fastjet::PseudoJet> Reclustered_Particles(fFastJetWrapper->GetJetConstituents(i_Jet));
 	  fastjet::ClusterSequence Cluster_Sequence_CA(Reclustered_Particles, Jet_Definition);
@@ -640,7 +640,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	std::vector<Double_t> Splittings_RadiatorE;
 	std::vector<Double_t> Splittings_RadiatorpT;
 
-	fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+	fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(1), fastjet::Best);
   
 	try{
 	  std::vector<fastjet::PseudoJet> Reclustered_Particles(fFastJetWrapper->GetJetConstituents(i_Jet));
@@ -763,7 +763,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       fFastJetWrapper_Truth->SetGhostArea(0.005);
       fFastJetWrapper_Truth->SetR(fJetRadius);
       fFastJetWrapper_Truth->SetAlgorithm(fastjet::antikt_algorithm);
-      fFastJetWrapper_Truth->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(0));
+      fFastJetWrapper_Truth->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(1));
       fFastJetWrapper_Truth->Clear();
       
       AliAODMCParticle* Truth_Particle=NULL; 
@@ -972,7 +972,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	  std::vector<Double_t> Splittings_RadiatorpT;
 
 	  Bool_t Is_D_SubJet=kFALSE;
-	  fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best); 
+	  fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(1), fastjet::Best); 
 	
 	  try{
 	    std::vector<fastjet::PseudoJet> Reclustered_Particles(fFastJetWrapper->GetJetConstituents(i_Jet));
@@ -1018,7 +1018,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 
 	  Bool_t Is_D_SubJet_Truth=kFALSE;
-	  fastjet::JetDefinition Jet_Definition_Truth(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best); 
+	  fastjet::JetDefinition Jet_Definition_Truth(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(1), fastjet::Best); 
   
 	  try{
 	    std::vector<fastjet::PseudoJet> Reclustered_Particles_Truth(fFastJetWrapper_Truth->GetJetConstituents(i_Jet_Truth));
@@ -1200,7 +1200,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 
 
 	Bool_t Is_D_SubJet_Truth=kFALSE;
-	fastjet::JetDefinition Jet_Definition_Truth(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+	fastjet::JetDefinition Jet_Definition_Truth(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(1), fastjet::Best);
 
 	std::vector<Double_t> Splittings_Zg_Truth;
 	std::vector<Double_t> Splittings_DeltaR_Truth;
@@ -1341,7 +1341,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       fFastJetWrapper_Truth->SetGhostArea(0.005);
       fFastJetWrapper_Truth->SetR(fJetRadius);
       fFastJetWrapper_Truth->SetAlgorithm(fastjet::antikt_algorithm);
-      fFastJetWrapper_Truth->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(0));
+      fFastJetWrapper_Truth->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(1));
       fFastJetWrapper_Truth->Clear();
       
       AliAODMCParticle* Truth_Particle=NULL;
@@ -1423,7 +1423,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
 	fhEvent->Fill(8); 
 
 	Bool_t Is_D_SubJet_Truth=kFALSE;
-	fastjet::JetDefinition Jet_Definition_Truth(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best); 
+	fastjet::JetDefinition Jet_Definition_Truth(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(1), fastjet::Best); 
 
 	std::vector<Double_t> Splittings_Zg_Truth;
 	std::vector<Double_t> Splittings_DeltaR_Truth;
@@ -1604,7 +1604,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       std::vector<Double_t> Splittings_RadiatorE;
       std::vector<Double_t> Splittings_RadiatorpT;
 
-      fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(0), fastjet::Best);
+      fastjet::JetDefinition Jet_Definition(fastjet::cambridge_algorithm, fJetRadius*2.5,static_cast<fastjet::RecombinationScheme>(1), fastjet::Best);
   
       try{
 	std::vector<fastjet::PseudoJet> Reclustered_Particles(fFastJetWrapper->GetJetConstituents(i_Jet));
