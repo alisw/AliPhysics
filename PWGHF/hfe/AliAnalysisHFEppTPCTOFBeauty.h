@@ -26,6 +26,7 @@ class AliESDtrack;
 class AliHFEcontainer;
 class AliHFEcuts;
 class AliHFEextraCuts;
+class AliHFEsignalCuts;
 class AliHFEpid;
 class AliHFEpidQAmanager;
 class AliCFManager;
@@ -109,10 +110,10 @@ public:
     void SetDcorrFunction21(TF1* DcorrF21) {fDcorr21 = DcorrF21;};
     void SetDcorrFunction22(TF1* DcorrF22) {fDcorr22 = DcorrF22;};
     
-    void SetHCFunction(TF1* HC) {fHC = HC;};
-    void GetGammaAndDalitzElectronTemplates(TClonesArray *fMCarray, AliVTrack *track, Double_t fpt, Double_t NewDCA);
-    void GetGammaAndDalitzElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2);
-    void GetHFElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2);
+   // void SetHCFunction(TF1* HC) {fHC = HC;};
+   // void GetGammaAndDalitzElectronTemplates(TClonesArray *fMCarray, AliVTrack *track, Double_t fpt, Double_t NewDCA);
+    //void GetGammaAndDalitzElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2, Int_t PhotonicType);
+    //void GetHFElectronTemplates2(TClonesArray *fMCarray2, AliVTrack *track2, Double_t fpt2, Double_t NewDCA2, Int_t PhotonicType);
     //Getters
     AliHFEpid *GetPID() const {return fPID;};
     //______________________________________________________________________
@@ -125,7 +126,7 @@ private:
     
     //Find Mothers (Find HFE and NonHFE from MC information)
     Bool_t FindMother(Int_t mcIndex);
-    
+    /*
    
     // Returns the resolution Gaus which is correction to the resolution in different phi regions
     Float_t GetDCAResolMC_phi1(Float_t x);
@@ -140,7 +141,7 @@ private:
     Float_t GetDCAMeanMC_phi3(Float_t x);
     Float_t GetDCAMeanMC_phi4(Float_t x);
     
-    
+    */
     
     //Select HFE for the reconstruction efficiency calculation
     Bool_t IsHFelectronsMC(AliVTrack *track);
@@ -195,7 +196,8 @@ private:
     TList       			*fOutputList;
     AliPIDResponse 			*fPidResponse;
     AliSelectNonHFE 		*fNonHFE;
-    AliHFEextraCuts 		*fExtraCuts;    
+    AliHFEextraCuts 		*fExtraCuts;  
+    AliHFEsignalCuts 		*fSignalCuts;    
     
     //For the case of AOD analysis
     Bool_t					fIsAOD;					//flag for AOD analysis
@@ -224,9 +226,9 @@ private:
     TH1F				*fPt_1;//!
     TH1F				*fPt_2;//!
     TH1F				*fNAnalizedTracks;//!
-    TH1F				*fNAnalizedTracksHijing;//!
-    TH1F				*fITSnClus_1;//!
-    TH1F				*fITSnClus_2;//!
+   // TH1F				*fNAnalizedTracksHijing;//!
+    //TH1F				*fITSnClus_1;//!
+   // TH1F				*fITSnClus_2;//!
     TH1F				*fTPCnClus_1;//!
     TH1F				*fTPCnClus_2;//!
     TH2F				*fTPCnsigma_p1;//!
@@ -241,12 +243,12 @@ private:
     TH2F                *fTOFnsigma_pt1;//!
     TH2F                *fTOFnsigma_pt2;//!
     TH2F                *fTOFnsigma_pt3;//!
-    TH2F                *fITSnsigma_p1;//!
-    TH2F                *fITSnsigma_p2;//!
-    TH2F                *fITSnsigma_p3;//!
-    TH2F                *fITSnsigma_pt1;//!
-    TH2F                *fITSnsigma_pt2;//!
-    TH2F                *fITSnsigma_pt3;//!
+    //TH2F                *fITSnsigma_p1;//!
+    //TH2F                *fITSnsigma_p2;//!
+    //TH2F                *fITSnsigma_p3;//!
+    //TH2F                *fITSnsigma_pt1;//!
+    //TH2F                *fITSnsigma_pt2;//!
+    //TH2F                *fITSnsigma_pt3;//!
     TH2F                *fTPCnsigma_TOFnsigma1;//!
     TH2F                *fTPCnsigma_TOFnsigma2;//!
     TH2F                *fTPCnsigma_TOFnsigma3;//!
@@ -256,8 +258,8 @@ private:
     TH2F                *fTPCnsigma_p_after_tof_pion;//!
     TH2F                *fTPCnsigma_p_after_tof_k;//!
     TH2F                *fTPCnsigma_pt_after_tof;//!
-    TH2F                *fTPCnsigma_p_after_tof_its;//!
-    TH2F                *fTPCnsigma_pt_after_tof_its;//!
+    //TH2F                *fTPCnsigma_p_after_tof_its;//!
+    //TH2F                *fTPCnsigma_pt_after_tof_its;//!
     TH1F                *fPtElec;//!
     TH1F                *fPElec;//!
     TH1F                *hPtD0;//!
@@ -300,7 +302,7 @@ private:
     TH1F				*fResGausCorr_phi3;//!
     TH1F				*fResGausCorr_phi4;//!*/
     TH2F				*fDCAxy_pt_had_onlyDCA_WoPID;//!
-    TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
+    //TH2F				*fDCAxy_pt_had_onlyDCA_Hijing;//!
     TH2F				*fDCAxy_pt_had_onlyDCA_Phytia;//!
     TH2F                *fDCAz_pt_ele;//!
     TH2F                *fDCAxy_pt_ele;//!
@@ -310,19 +312,19 @@ private:
     TH1F                *hCharmMotherPt_corr2;//! pt of mothers of eletrons from mesons D weighted
 	
 	TH2F                *hBeautyMotherPt;//!
-	TH2F 		    *hDCAPtProtons;//!
+	/*TH2F 		    *hDCAPtProtons;//!
 	TH2F 		    *hDCAPtProtons2;//!
-	TH2F 		    *hDCAPtProtons3;//!
+	TH2F 		    *hDCAPtProtons3;//!*/
 	TH2F                *hBeautyMotherPt2Daft;//!
 	TH1F                *hBeautyMotherPtbef;//!
 	TH1F                *hBeautyMotherPtaft;//!
 	TH2F			*fDCAxy_pt_Dalitz;//!
-    	TH2F			*fDCAxy_pt_DalitzFromFeeddown;//!
+    	/*TH2F			*fDCAxy_pt_DalitzFromFeeddown;//!
    	TH2F			*fDCAxy_pt_Conversions;//!
    	TH2F			*fDCAxy_pt_ConversionsFromFeeddown;//!
-    	TH2F			*fDCAxy_pt_ConversionsFromStrangeFeeddown;//!
+    	TH2F			*fDCAxy_pt_ConversionsFromStrangeFeeddown;//!*/
     	TH2F			*fDCAxy_pt_Dalitz2;//!
-    	TH2F			*fDCAxy_pt_DalitzFromFeeddown2;//!
+    	//TH2F			*fDCAxy_pt_DalitzFromFeeddown2;//!
     	TH2F			*fDCAxy_pt_Conversions2;//!
     	TH2F			*fDCAxy_pt_Beauty2;//!
     	TH2F			*fDCAxy_pt_Charm2;//!
@@ -363,7 +365,7 @@ private:
     TF1					*fDcorr20;
     TF1					*fDcorr21;
     TF1					*fDcorr22;
-    TF1					*fHC;
+   // TF1					*fHC;
     //For the HFE package
     AliHFEcuts 			*fCuts;            		// Cut Collection for HFE
     AliCFManager 		*fCFM;                  // Correction Framework Manager
@@ -403,7 +405,7 @@ private:
  
     THnSparseF           *fD0;//! DCA
     THnSparseF           *fD0Data;//! DCA data
-    THnSparseF           *fD0HC;//! DCA HC
+    //THnSparseF           *fD0HC;//! DCA HC
     //______________________________________________________________________
     
     AliAnalysisHFEppTPCTOFBeauty(const AliAnalysisHFEppTPCTOFBeauty&); 			// not implemented
