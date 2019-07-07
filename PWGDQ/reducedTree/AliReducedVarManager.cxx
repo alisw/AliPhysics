@@ -174,6 +174,8 @@ TH1* AliReducedVarManager::fgAvgMultVsVtxRunwise     [kNMultiplicityEstimators] 
 TH1* AliReducedVarManager::fgAvgMultVsRun            [kNMultiplicityEstimators] = {0x0};
 TH2* AliReducedVarManager::fgAvgMultVsVtxAndRun      [kNMultiplicityEstimators] = {0x0};
 
+TH1F* AliReducedVarManager::fgpT_reweight_centrality_0_10=0x0;
+
 Double_t AliReducedVarManager::fgRefMultVsVtxGlobal  [kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
 Double_t AliReducedVarManager::fgRefMultVsVtxRunwise [kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
 Double_t AliReducedVarManager::fgRefMultVsRun        [kNMultiplicityEstimators] [kNReferenceMultiplicities] = {0.};
@@ -1344,6 +1346,8 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
    values[kPxMC] = p->MCmom(0);
    values[kPyMC] = p->MCmom(1);
    values[kPzMC] = p->MCmom(2);
+   if(fgUsedVars[kPt_weight]) values[kPt_weight] =  calculate_weight_factor(values[kPtMC],values[kCentVZERO]);
+   
    if(fgUsedVars[kThetaMC]) values[kThetaMC] = p->ThetaMC();
    if(fgUsedVars[kEtaMC]) values[kEtaMC] = p->EtaMC();
    if(fgUsedVars[kPhiMC]) values[kPhiMC] = p->PhiMC();
@@ -2047,6 +2051,8 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
      values[kPxMC] = pMC.Px();
      values[kPyMC] = pMC.Py();
      values[kPzMC] = pMC.Pz();
+     if(fgUsedVars[kPt_weight]) values[kPt_weight] =  calculate_weight_factor(values[kPtMC],values[kCentVZERO]);
+     
      if(fgUsedVars[kThetaMC]) values[kThetaMC] = pMC.Theta();
      if(fgUsedVars[kEtaMC]) values[kEtaMC] = pMC.Eta();
      if(fgUsedVars[kPhiMC]) values[kPhiMC] = pMC.Phi();
@@ -3517,6 +3523,37 @@ void AliReducedVarManager::SetRunNumbers( TString runNumbers ){
   }
 }
 
+//___________________________________________________________________________________
+void AliReducedVarManager::Set_pT_re_weight(TH1F *pT_centrality_0_10)
+{
+  if(pT_centrality_0_10)
+    fgpT_reweight_centrality_0_10=pT_centrality_0_10;
+  else
+    {
+      cout<< "There is no pT reweight spectra, please double check !!!"<<endl;
+    }
+}
+//____________________________________________________________________________________
+Double_t AliReducedVarManager::calculate_weight_factor( Double_t McpT, Double_t Centrality)
+{
+  // currently only one pT shape was used, this can be used for pp, more centralitys bins for PbPb  
+  if(!fgpT_reweight_centrality_0_10){
+    cout<< "No pT reweight spectra !!"<<endl;
+    return 0.0;
+  }
+    
+  if(McpT<=fgpT_reweight_centrality_0_10->GetBinCenter(fgpT_reweight_centrality_0_10->GetNbinsX())) 
+    {
+      Int_t bin=fgpT_reweight_centrality_0_10->FindBin(McpT);
+      Double_t weight= fgpT_reweight_centrality_0_10->GetBinContent(bin);
+      return weight;
+    }
+  else
+    {
+      cout<< " pt out the range of the reweight "<<endl;
+      return 0.0;
+    }
+}
 //____________________________________________________________________________________
 void AliReducedVarManager::SetMultiplicityProfile(TH2* profile, Int_t estimator) {
    //
