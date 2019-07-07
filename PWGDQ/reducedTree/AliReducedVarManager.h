@@ -817,7 +817,8 @@ class AliReducedVarManager : public TObject {
   static Bool_t fgOptionRecenterVZEROqVec;         //option to do Q vector recentering for V0
   static Bool_t fgOptionRecenterTPCqVec;           //option to do Q vector recentering for TPC
   static Bool_t fgOptionEventRes;                 //option to divide by resolution
-  
+
+  static TH1F* fgpT_reweight_centrality_0_10;  // 
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
