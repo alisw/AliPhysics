@@ -107,6 +107,8 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
             AliESDtrack *ntrk = event->GetTrack(nidx);
             if (!ntrk)
                 continue;
+            float ndcaxy,ndcaz;
+            ntrk->GetImpactParameters(ndcaxy,ndcaz);
             for (auto &pidx : tracks[0][index > 0 ? 0 : 1])
             {
                 AliESDtrack *ptrk = event->GetTrack(pidx);
@@ -116,9 +118,10 @@ std::vector<AliESDv0> AliVertexerHyperTriton2Body::Tracks2V0vertices(AliESDEvent
                 Double_t lNegMassForTracking = ntrk->GetMassForTracking();
                 Double_t lPosMassForTracking = ptrk->GetMassForTracking();
 
-                if (TMath::Abs(ntrk->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField)) < fV0VertexerSels[1])
-                    if (TMath::Abs(ptrk->GetD(fPrimaryVertexX, fPrimaryVertexY, fMagneticField)) < fV0VertexerSels[2])
-                        continue;
+                float pdcaxy,pdcaz;
+                ptrk->GetImpactParameters(pdcaxy,pdcaz);
+                if (ndcaxy < fV0VertexerSels[1] && pdcaxy < fV0VertexerSels[2])
+                    continue;
 
                 AliExternalTrackParam nt(*ntrk), pt(*ptrk);
 
