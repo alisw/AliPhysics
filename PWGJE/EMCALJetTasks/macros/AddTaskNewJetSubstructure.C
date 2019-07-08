@@ -50,7 +50,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
   task->SetJetSelection(jetSelection);
   task->SetDerivativeSubtractionOrder(derivSubtrOrder);
   
-  if (jetSelection == AliAnalysisTaskNewJetSubstructure::kRecoil) task->SetPtTriggerSelections(minpTHTrigger, maxpTHTrigger);
+ 
 
   TString thename(njetsBase);
   //if(thename.Contains("Sub")) task->SetIsConstSub(kTRUE);
@@ -206,11 +206,7 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
   if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kDerivSub) contName1 += "_DerivSub";
   
   if (jetSelection == AliAnalysisTaskNewJetSubstructure::kInclusive) contName1 += "_Incl";
-  if (jetSelection == AliAnalysisTaskNewJetSubstructure::kRecoil) {
-
-  TString recoilTriggerString = Form("_Recoil_%.0f_%0.f", minpTHTrigger, maxpTHTrigger);
-  contName1 += recoilTriggerString;
-  }
+ 
 
 
     if (jetShapeType == AliAnalysisTaskNewJetSubstructure::kMCTrue) contName2 += "_MCTrue";
@@ -222,11 +218,6 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
   if (jetShapeSub == AliAnalysisTaskNewJetSubstructure::kDerivSub) contName2 += "_DerivSub";
   
   if (jetSelection == AliAnalysisTaskNewJetSubstructure::kInclusive) contName2 += "_Incl";
-  if (jetSelection == AliAnalysisTaskNewJetSubstructure::kRecoil) {
-
-  TString recoilTriggerString = Form("_Recoil_%.0f_%0.f", minpTHTrigger, maxpTHTrigger);
-  contName2 += recoilTriggerString;
-  }
 
 
 
