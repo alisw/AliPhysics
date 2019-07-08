@@ -33,6 +33,7 @@
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"
+#include "AliTimeRangeCut.h"
 
 #include "AliAODMCHeader.h"
 #include "AliAODHeader.h"
@@ -47,7 +48,6 @@
 
 #include "AliKFVertex.h"
 #include "AliDielectronPair.h"
-
 
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -79,6 +79,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
+  fTimeRangeCut(),
   fMCArray(0x0),
   fRunNumber(-1),
   fMagneticField(0),
@@ -112,6 +113,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fIskHighMult(kFALSE),
   fIskHighMultV0(kFALSE),
   fIskHighMultSPD(kFALSE),
+  fIsBadTimeRangeTPC(kFALSE),
   fIsQnTPCAvailable(kFALSE),
   fQ2vectorTPC(),
   fQ2vectorTPCNegEta(),
@@ -236,6 +238,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
+  fTimeRangeCut(),
   fMCArray(0x0),
   fRunNumber(-1),
   fMagneticField(0),
@@ -269,6 +272,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fIskHighMult(kFALSE),
   fIskHighMultV0(kFALSE),
   fIskHighMultSPD(kFALSE),
+  fIsBadTimeRangeTPC(kFALSE),
   fIsQnTPCAvailable(kFALSE),
   fQ2vectorTPC(),
   fQ2vectorTPCNegEta(),
@@ -433,6 +437,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fIskHighMult",&fIskHighMult,"fIskHighMult/O");
   fTree->Branch("fIskHighMultV0",&fIskHighMultV0,"fIskHighMultV0/O");
   fTree->Branch("fIskHighMultSPD",&fIskHighMultSPD,"fIskHighMultSPD/O");
+  fTree->Branch("fIsBadTimeRangeTPC",&fIsBadTimeRangeTPC,"fIsBadTimeRangeTPC/O");
 
   fTree->Branch("fIsQnTPCAvailable",&fIsQnTPCAvailable,"fIsQnTPCAvailable/O");
   fTree->Branch("fQ2vectorTPC",fQ2vectorTPC,"fQ2vectorTPC[2]/F");
@@ -601,6 +606,10 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   fIskHighMult    = SelectMask & AliVEvent::kHighMult;
   fIskHighMultV0  = SelectMask & AliVEvent::kHighMultV0;
   fIskHighMultSPD = SelectMask & AliVEvent::kHighMultSPD;
+
+  fIsBadTimeRangeTPC = kFALSE;
+  fTimeRangeCut.InitFromEvent(InputEvent());
+  fIsBadTimeRangeTPC = fTimeRangeCut.CutEvent(InputEvent());
 
   //AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();//for ESD
   //cout << "eventHandler = " << eventHandler << endl;
@@ -960,10 +969,10 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 
     if(v0->CosPointingAngle(secVtx) < 0.998) continue;
 
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron)) > 5.) continue;
-    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron)) > 5.) continue;
-    //if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron)) > fMaxTPCNsigmaEleCut) continue;
-    //if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron)) > fMaxTPCNsigmaEleCut) continue;
+    //if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron)) > 5.) continue;
+    //if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron)) > 5.) continue;
+    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legPos,AliPID::kElectron)) > fMaxTPCNsigmaEleCut) continue;
+    if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(legNeg,AliPID::kElectron)) > fMaxTPCNsigmaEleCut) continue;
 
     vector<Float_t> V0vec(3,0);
     V0vec[0] = v0->Pt();

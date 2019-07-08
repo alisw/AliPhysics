@@ -49,6 +49,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliVEvent *fEvent; 
     AliESDEvent *fESDEvent;
     AliAODEvent *fAODEvent;
+    AliTimeRangeCut fTimeRangeCut;
     TClonesArray *fMCArray;
     Int_t fRunNumber;
     Float_t fMagneticField; //Bz in kG
@@ -84,6 +85,8 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Bool_t fIskHighMult;
     Bool_t fIskHighMultV0;
     Bool_t fIskHighMultSPD;
+
+    Bool_t fIsBadTimeRangeTPC;
 
     Bool_t fIsQnTPCAvailable;
     Float_t fQ2vectorTPC[2];//Q vector for event plane of 2nd harmonics
@@ -198,7 +201,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 7);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 8);
 
 };
 
