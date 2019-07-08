@@ -547,7 +547,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             fEventCuts.PassedCut(AliEventCuts::kDAQincomplete);
 
         IsPS = IsSelectedTrig     // CINT7 Trigger selected
-               && !IncompleteDAQ  // No IncompleteDAQ
+               && IncompleteDAQ  // No IncompleteDAQ
                && IsNotPileUp;    // PileUp rejection
 
         IsINEL0Rec = IsPS && IsGoodVertex && IsVtxInZCut && IsINELg0;
