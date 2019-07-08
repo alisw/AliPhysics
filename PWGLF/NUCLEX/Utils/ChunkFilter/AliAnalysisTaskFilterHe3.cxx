@@ -71,7 +71,7 @@ AliAnalysisTaskFilterHe3::AliAnalysisTaskFilterHe3(const char* name): AliAnalysi
   DefineOutput(2, TTree::Class());
   //
   Double_t paramDandTdata[5] = {6.70549, 6.11866, 8.86205e-15, 2.34059, 1.07029};
-  Double_t paramHe3data[5]   = {1.74962,27.4992,4.00313e-15,2.48485,8.31768};  // Z=2 needs slight re-tuning
+  Double_t paramHe3data[5]   = {1.48718, 27.4992, 4.00313e-15, 2.48485, 8.31768};  // Z=2 needs slight re-tuning
   //
   Double_t paramDandTmc[5] = {20.1533, 2.58127, 0.00114169, 2.0373, 0.502123};
   Double_t paramHe3mc[5]   = {20.1533, 2.58127, 0.00114169, 2.0373, 0.502123}; // Z=2 needs slight re-tuning
