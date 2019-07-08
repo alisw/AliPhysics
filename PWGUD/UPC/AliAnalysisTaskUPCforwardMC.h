@@ -1011,6 +1011,20 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
         TH1F*                   fMCCosThetaHelicityFrameMyBinningH;   //!
 
                                 /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable SMALL binning.
+                                 * RECON level.
+                                 */
+        TH1F*                   fCosThetaHelicityFrameMyBinningSmallH;   //!
+
+                                /**
+                                 * This histogram shows CosTheta
+                                 * distribution with my variable SMALL binning.
+                                 * GENERATED level.
+                                 */
+        TH1F*                   fMCCosThetaHelicityFrameMyBinningSmallH;   //!
+
+                                /**
                                  * This histogram shows  Phi
                                  * distribution with my variable binning.
                                  * RECON level.
@@ -1127,7 +1141,7 @@ class AliAnalysisTaskUPCforwardMC : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforwardMC, 24);
+        ClassDef(AliAnalysisTaskUPCforwardMC, 25);
 };
 
 #endif
