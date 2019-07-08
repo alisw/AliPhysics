@@ -34,6 +34,11 @@ public:
   virtual ~AliFemtoPairCut();                        ///< destructor
   virtual AliFemtoPairCut* Clone() const { return NULL; }  ///< Clones the object. The default implementation simply returns NULL
 
+  /// Clones the object (non-const)
+  /// The default implementation calls the const version
+  virtual AliFemtoPairCut* Clone()
+    { return const_cast<const AliFemtoPairCut*>(this)->Clone(); }
+
   AliFemtoPairCut& operator=(const AliFemtoPairCut &aCut);
 
   virtual bool Pass(const AliFemtoPair* pair) = 0;  ///< true if pair passes, false if not
