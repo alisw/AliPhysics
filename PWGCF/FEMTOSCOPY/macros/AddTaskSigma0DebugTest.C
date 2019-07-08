@@ -85,27 +85,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
 
   AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
-  if (suffix == "2") {
-    photon->SetTransverseRadiusRejection(80, 90);
-  } else if (suffix == "3") {
-    photon->SetTransverseRadiusRejection(82.5, 90);
-  } else if (suffix == "4") {
-    photon->SetTransverseRadiusRejection(85, 90);
-  } else if (suffix == "5") {
-    photon->SetTransverseRadiusRejection(77.5, 90);
-  } else if (suffix == "6") {
-    photon->SetTransverseRadiusRejection(75, 90);
-  } else if (suffix == "7") {
-    photon->SetTransverseRadiusRejection(72.5, 90);
-  } else if (suffix == "8") {
-    photon->SetTransverseRadiusRejection(80, 85);
-  } else if (suffix == "9") {
-    photon->SetTransverseRadiusRejection(80, 87.5);
-  } else if (suffix == "10") {
-    photon->SetTransverseRadiusRejection(80, 92.5);
-  } else if (suffix == "11") {
-    photon->SetTransverseRadiusRejection(80, 95);
-  }
 
   AliSigma0AODPhotonMotherCuts *sigmaCuts =
       AliSigma0AODPhotonMotherCuts::DefaultCuts();
@@ -121,6 +100,61 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
   antiSigmaCuts->SetPDG(-3212, -3122, 22);
   if (suffix != "0" && suffix != "999") {
     antiSigmaCuts->SetLightweight(true);
+  }
+  if (suffix == "1") {
+    sigmaCuts->SetSigmaSideband(0.003, 0.01);
+    antiSigmaCuts->SetSigmaSideband(0.003, 0.01);
+  } else if (suffix == "2") {
+    sigmaCuts->SetSigmaSideband(0.003, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.003, 0.05);
+  } else if (suffix == "3") {
+    sigmaCuts->SetSigmaSideband(0.003, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.003, 0.1);
+  } else if (suffix == "4") {
+    sigmaCuts->SetSigmaSideband(0.002, 0.01);
+    antiSigmaCuts->SetSigmaSideband(0.002, 0.01);
+  } else if (suffix == "5") {
+    sigmaCuts->SetSigmaSideband(0.002, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.002, 0.05);
+  } else if (suffix == "6") {
+    sigmaCuts->SetSigmaSideband(0.002, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.002, 0.1);
+  } else if (suffix == "7") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.01);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.01);
+  } else if (suffix == "8") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
+  } else if (suffix == "9") {
+    sigmaCuts->SetSigmaSideband(0.005, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.1);
+  } else if (suffix == "10") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.01);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.01);
+  } else if (suffix == "11") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.05);
+  } else if (suffix == "12") {
+    sigmaCuts->SetSigmaSideband(0.01, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.01, 0.1);
+  } else if (suffix == "13") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.01);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.01);
+  } else if (suffix == "14") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
+  } else if (suffix == "15") {
+    sigmaCuts->SetSigmaSideband(0.025, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
+  } else if (suffix == "16") {
+    sigmaCuts->SetSigmaSideband(0.05, 0.01);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.01);
+  } else if (suffix == "17") {
+    sigmaCuts->SetSigmaSideband(0.05, 0.05);
+    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
+  } else if (suffix == "18") {
+    sigmaCuts->SetSigmaSideband(0.05, 0.1);
+    antiSigmaCuts->SetSigmaSideband(0.05, 0.1);
   }
 
   // Femto Collection
@@ -265,11 +299,6 @@ AliAnalysisTaskSE *AddTaskSigma0DebugTest(bool isMC = false,
 
   AliAnalysisTaskNanoAODSigma0Femto *task =
       new AliAnalysisTaskNanoAODSigma0Femto("AliAnalysisTaskNanoAODSigma0Femto", isMC);
-
-  // test what happens when the track cleaner is turned off
-  if (suffix == "1") {
-    task->SetGoDoThisFemtoJanitor(false);
-  }
 
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
