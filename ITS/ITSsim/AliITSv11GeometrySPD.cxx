@@ -417,7 +417,8 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     //TGeoMedium *medSPDal      = 0;//SPD support cone SDD mounting bracket Al
     TGeoMedium *medSPDcf     = GetMedium("SPD C (M55J)$", mgr);
     TGeoMedium *medSPDss     = GetMedium("INOX$", mgr);
-    TGeoMedium *medSPDcoolfl = GetMedium("Freon$", mgr); //ITSspdCoolingFluid
+//    TGeoMedium *medSPDcoolfl = GetMedium("Freon$", mgr); //ITSspdCoolingFluid
+    TGeoMedium *medSPDcoolfl = GetMedium("GASEOUS FREON$", mgr); //ITSspdCoolingFluid
     //
     const Double_t ksecDz           =  0.5 * 500.0 * fgkmm;
     //const Double_t ksecLen        = 30.0 * fgkmm;

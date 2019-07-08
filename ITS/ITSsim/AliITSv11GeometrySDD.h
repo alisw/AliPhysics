@@ -142,7 +142,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   TGeoVolume* fCommonVol[2];      //!  some common vol. used in several places
   TGeoMatrix* fCommonTr[2];       //!  some common transformations
 
-  static const Int_t fgkNladdSegCommonVol = 20;       //  Number of vol.
+  static const Int_t fgkNladdSegCommonVol = 19;       //  Number of vol.
   TGeoVolume* fLaddSegCommonVol[fgkNladdSegCommonVol];//! volumes in ladder
   TGeoMatrix* fLaddSegCommonTr[fgkNladdSegCommonVol]; //! their transf.
 
