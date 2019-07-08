@@ -1,3 +1,5 @@
+// WARNING This does not work yet. (Only TPC supported). Please avoid using this. Run the PID response during the filtering, and store the fields you need.
+
 void runOnNano_PIDResponse()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
