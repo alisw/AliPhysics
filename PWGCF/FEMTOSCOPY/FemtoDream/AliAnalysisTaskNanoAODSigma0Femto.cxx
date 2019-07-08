@@ -271,9 +271,9 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
       fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0lambda, 7);
       fPairCleaner->CleanTrackAndDecay(&Particles, &Decays, 8);
       fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiDecays, 9);
-      fPairCleaner->CleanTrackAndDecay(&Particles, &Gammas, 10);
-      fPairCleaner->CleanTrackAndDecay(&AntiParticles, &sigma0photon, 11);
-      fPairCleaner->CleanTrackAndDecay(&Particles, &antiSigma0photon, 12);
+      fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0photon, 10);
+      fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0photon, 11);
+      fPairCleaner->CleanTrackAndDecay(&Particles, &Gammas, 12);
       fPairCleaner->CleanTrackAndDecay(&AntiParticles, &Gammas, 13);
     }
   }
