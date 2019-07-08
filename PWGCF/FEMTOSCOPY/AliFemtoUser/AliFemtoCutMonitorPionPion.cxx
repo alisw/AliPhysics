@@ -232,6 +232,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   , fChi2Tpc(nullptr)
   , fChi2Its(nullptr)
   , fChiTpcIts(nullptr)
+  , fClsTpcIts(nullptr)
   , fdEdX(nullptr)
   , fTofVsP(nullptr)
   , fNsigTof(nullptr)
@@ -299,12 +300,16 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const bool passing,
   );
 
   fChiTpcIts = new TH2F(
-    "ChiTpcIts" + pf,
-    TString::Format(title_format,
-                    "#chi^{2} / N_{DoF} TPC vs ITS",
-                    "TPC; ITS;"),
+    hist_name("ChiTpcIts"),
+    hist_title("#chi^{2} / N_{DoF} TPC vs ITS", "TPC; ITS;"),
     144, 0.0, 6.1,
     144, 0.0, 7.1);
+
+  fClsTpcIts = new TH2F(
+    hist_name("ClsTpcIts"),
+    hist_title("N-Clusters ITS vs TPC", "TPC; ITS;"),
+    161, -0.5, 160.5,
+    11, -0.5, 10.5);
 
   fdEdX = new TH2F(
     hist_name("dEdX"),
@@ -461,6 +466,7 @@ AliFemtoCutMonitorPionPion::Pion::Pion(const Pion &orig):
   , fChi2Tpc(static_cast<TH1F*>(orig.fChi2Tpc->Clone()))
   , fChi2Its(static_cast<TH1F*>(orig.fChi2Its->Clone()))
   , fChiTpcIts(static_cast<TH2F*>(orig.fChiTpcIts->Clone()))
+  , fClsTpcIts(static_cast<TH2F*>(orig.fClsTpcIts->Clone()))
   , fdEdX(static_cast<TH2F*>(orig.fdEdX->Clone()))
   , fTofVsP(static_cast<TH2F*>(orig.fTofVsP->Clone()))
   , fNsigTof(static_cast<TH2F*>(orig.fNsigTof->Clone()))
@@ -487,6 +493,7 @@ AliFemtoCutMonitorPionPion::Pion::GetOutputList()
   output->Add(fChi2Tpc);
   output->Add(fChi2Its);
   output->Add(fChiTpcIts);
+  output->Add(fClsTpcIts);
   output->Add(fdEdX);
   output->Add(fTofVsP);
   output->Add(fNsigTof);
@@ -569,6 +576,8 @@ void AliFemtoCutMonitorPionPion::Pion::Fill(const AliFemtoTrack* track)
   fChi2Its->Fill(ITS_ncls > 0 ? track->ITSchi2() / ITS_ncls : -1.0);
 
   fChiTpcIts->Fill(track->TPCchi2perNDF(), track->ITSchi2perNDF());
+
+  fClsTpcIts->Fill(track->TPCncls(), track->ITSncls());
 
   fImpact->Fill(track->ImpactZ(), track->ImpactD());
   fEtaY->Fill(eta, rapidity);
