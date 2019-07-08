@@ -225,10 +225,15 @@ AliFemtoDreamv0Cuts *AliFemtoDreamv0Cuts::LambdaSigma0Cuts(bool isMC,
   LambdaCuts->SetPlotCPADist(CPAPlots);
   LambdaCuts->SetPlotContrib(SplitContrib);
 
+  // Changes w.r.t the default Lambda cuts
+  // 1. Kaon rejection only 1sigma of the peak
+  // 2. CPA > 0.999
+  // 3. Timing cut only for one daughter
+
   LambdaCuts->SetCheckOnFlyStatus(false);  //online = kTRUE, offline = kFALSE
   LambdaCuts->SetCutCharge(0);
   LambdaCuts->SetPtRange(0.3, 999.);
-  LambdaCuts->SetKaonRejection(0., 0.);
+  LambdaCuts->SetKaonRejection(0.492, 0.503);
   LambdaCuts->SetCutMaxDecayVtx(100);
   LambdaCuts->SetCutTransverseRadius(0.2, 100);
   LambdaCuts->SetCutDCADaugToPrimVtx(0.05);
@@ -236,7 +241,6 @@ AliFemtoDreamv0Cuts *AliFemtoDreamv0Cuts::LambdaSigma0Cuts(bool isMC,
   LambdaCuts->SetCutCPA(0.999);
   LambdaCuts->SetCutInvMass(0.006);
   LambdaCuts->SetAxisInvMassPlots(400, 1.0, 1.2);
-  LambdaCuts->SetKaonRejection(0.492, 0.503);
   LambdaCuts->SetDaughterTimingCut(OneDaughterCombined);
 
   return LambdaCuts;
