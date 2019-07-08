@@ -31,6 +31,17 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
+  // =====================================================================
+  // Proton cuts
+  const float ProtonPtlow = 0.4;
+  const float ProtonPtup = 0.6;
+  const float ProtonEtaLow = 0.75;
+  const float ProtonEtaUp = 0.85;
+  const float ProtonNsigmaLow = 2.5;
+  const float ProtonNsigmaUp = 3.5;
+  const float ProtonNClsLow = 70;
+  const float ProtonNClsUp = 90;
+
   // Track Cuts
   AliFemtoDreamTrackCuts *TrackCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
@@ -47,35 +58,145 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     AntiTrackCuts->SetMinimalBooking(true);
   }
   if (suffix == "1") {
-    TrackCuts->SetPtRange(0.4, 4.05);
-    AntiTrackCuts->SetPtRange(0.4, 4.05);
+    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
   } else if (suffix == "2") {
-    TrackCuts->SetPtRange(0.6, 4.05);
-    AntiTrackCuts->SetPtRange(0.6, 4.05);
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
   } else if (suffix == "3") {
-    TrackCuts->SetEtaRange(-0.7, 0.7);
-    AntiTrackCuts->SetEtaRange(-0.7, 0.7);
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
   } else if (suffix == "4") {
-    TrackCuts->SetEtaRange(-0.9, 0.9);
-    AntiTrackCuts->SetEtaRange(-0.9, 0.9);
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
   } else if (suffix == "5") {
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 2);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2);
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
   } else if (suffix == "6") {
-    TrackCuts->SetPID(AliPID::kProton, 0.75, 5);
-    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 5);
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
   } else if (suffix == "7") {
-    TrackCuts->SetNClsTPC(70);
-    AntiTrackCuts->SetNClsTPC(70);
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
   } else if (suffix == "8") {
-    TrackCuts->SetNClsTPC(90);
-    AntiTrackCuts->SetNClsTPC(90);
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
   } else if (suffix == "9") {
-    TrackCuts->SetFilterBit(96);
-    AntiTrackCuts->SetFilterBit(96);
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+  } else if (suffix == "10") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+  } else if (suffix == "11") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "12") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+  } else if (suffix == "13") {
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
+  } else if (suffix == "14") {
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+  } else if (suffix == "15") {
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+  } else if (suffix == "16") {
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "17") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+  } else if (suffix == "18") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+  } else if (suffix == "19") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "20") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "21") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
+  } else if (suffix == "22") {
+    TrackCuts->SetPtRange(ProtonPtup, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtup, 4.05);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaLow);
+  } else if (suffix == "23") {
+    TrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    AntiTrackCuts->SetPtRange(ProtonPtlow, 4.05);
+    TrackCuts->SetNClsTPC(ProtonNClsUp);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsUp);
+  } else if (suffix == "24") {
+    TrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaLow, ProtonEtaLow);
+    TrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+    AntiTrackCuts->SetPID(AliPID::kProton, 0.75, ProtonNsigmaUp);
+  } else if (suffix == "25") {
+    TrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    AntiTrackCuts->SetEtaRange(-ProtonEtaUp, ProtonEtaUp);
+    TrackCuts->SetNClsTPC(ProtonNClsLow);
+    AntiTrackCuts->SetNClsTPC(ProtonNClsLow);
   }
 
+  // =====================================================================
   // Lambda Cuts
+  const float LambdaPtLow = 0.24;
+  const float LambdaPtUp = 0.36;
+  const float LambdaCPALow = 0.995;
+  const float LambdaCPAUp = 0.99925;
+  const float LambdaEtaLow = 0.85;
+  const float LambdaNsigmaLow = 4;
+  const float LambdaNsigmaUp = 6;
+  const float LambdaNClsLow = 60;
+  const float LambdaNClsUp = 80;
+  const float LambdaMassUp = 0.008;
+
   AliFemtoDreamv0Cuts *v0Cuts =
       AliFemtoDreamv0Cuts::LambdaSigma0Cuts(isMC, false, false);
   AliFemtoDreamTrackCuts *Posv0Daug =
@@ -100,52 +221,216 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     v0Cuts->SetMinimalBooking(true);
     antiv0Cuts->SetMinimalBooking(true);
   }
-  if (suffix == "10") {
-    v0Cuts->SetPtRange(0.24, 999.9);
-    antiv0Cuts->SetPtRange(0.24, 999.9);
+  if (suffix == "1") {
+    v0Cuts->SetCutCPA(LambdaCPALow);
+    antiv0Cuts->SetCutCPA(LambdaCPALow);
+    Posv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Negv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    PosAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    NegAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+  } else if (suffix == "2") {
+    v0Cuts->SetPtRange(LambdaPtLow, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtLow, 999.f);
+    Posv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Negv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    PosAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    NegAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+  } else if (suffix == "3") {
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+  } else if (suffix == "4") {
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Posv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Negv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    PosAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    NegAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    v0Cuts->SetCutInvMass(LambdaMassUp);
+    antiv0Cuts->SetCutInvMass(LambdaMassUp);
+  } else if (suffix == "5") {
+    v0Cuts->SetCutCPA(LambdaCPALow);
+    antiv0Cuts->SetCutCPA(LambdaCPALow);
+  } else if (suffix == "6") {
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+    Posv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Negv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    PosAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    NegAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+  } else if (suffix == "7") {
+    v0Cuts->SetPtRange(LambdaPtLow, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtLow, 999.f);
+    Posv0Daug->SetNClsTPC(LambdaNClsUp);
+    Negv0Daug->SetNClsTPC(LambdaNClsUp);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsUp);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsUp);
+  } else if (suffix == "8") {
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
+  } else if (suffix == "9") {
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+  } else if (suffix == "10") {
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    Posv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Negv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    PosAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    NegAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
   } else if (suffix == "11") {
-    v0Cuts->SetPtRange(0.36, 999.9);
-    antiv0Cuts->SetPtRange(0.36, 999.9);
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    v0Cuts->SetCutCPA(LambdaCPALow);
+    antiv0Cuts->SetCutCPA(LambdaCPALow);
   } else if (suffix == "12") {
-    v0Cuts->SetCutCPA(0.995);
-    antiv0Cuts->SetCutCPA(0.995);
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+    Posv0Daug->SetNClsTPC(LambdaNClsUp);
+    Negv0Daug->SetNClsTPC(LambdaNClsUp);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsUp);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsUp);
   } else if (suffix == "13") {
-    v0Cuts->SetCutCPA(0.98);
-    antiv0Cuts->SetCutCPA(0.998);
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
   } else if (suffix == "14") {
-    Posv0Daug->SetPID(AliPID::kProton, 999.9, 3);
-    Negv0Daug->SetPID(AliPID::kPion, 999.9, 3);
-    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 3);
-    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 3);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Posv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Negv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    PosAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    NegAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
   } else if (suffix == "15") {
-    Posv0Daug->SetPID(AliPID::kProton, 999.9, 6);
-    Negv0Daug->SetPID(AliPID::kPion, 999.9, 6);
-    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 6);
-    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 6);
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
+    v0Cuts->SetCutInvMass(LambdaMassUp);
+    antiv0Cuts->SetCutInvMass(LambdaMassUp);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
   } else if (suffix == "16") {
-    v0Cuts->SetArmenterosCut(0., 0.15, 0.2, 1);
-    antiv0Cuts->SetArmenterosCut(0, 0.15, 0.2, 1);
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
   } else if (suffix == "17") {
-    Posv0Daug->SetNClsTPC(80);
-    Negv0Daug->SetNClsTPC(80);
-    PosAntiv0Daug->SetNClsTPC(80);
-    NegAntiv0Daug->SetNClsTPC(80);
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    v0Cuts->SetCutCPA(LambdaCPALow);
+    antiv0Cuts->SetCutCPA(LambdaCPALow);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
   } else if (suffix == "18") {
-    Posv0Daug->SetNClsTPC(60);
-    Negv0Daug->SetNClsTPC(60);
-    PosAntiv0Daug->SetNClsTPC(60);
-    NegAntiv0Daug->SetNClsTPC(60);
+    v0Cuts->SetCutCPA(LambdaCPALow);
+    antiv0Cuts->SetCutCPA(LambdaCPALow);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
   } else if (suffix == "19") {
-    Posv0Daug->SetEtaRange(-0.8, 0.8);
-    Negv0Daug->SetEtaRange(-0.8, 0.8);
-    PosAntiv0Daug->SetEtaRange(-0.8, 0.8);
-    NegAntiv0Daug->SetEtaRange(-0.8, 0.8);
+    v0Cuts->SetCutCPA(LambdaCPALow);
+    antiv0Cuts->SetCutCPA(LambdaCPALow);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
   } else if (suffix == "20") {
-    v0Cuts->SetCutInvMass(0.008);
-    antiv0Cuts->SetCutInvMass(0.008);
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
+    v0Cuts->SetCutInvMass(LambdaMassUp);
+    antiv0Cuts->SetCutInvMass(LambdaMassUp);
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+  } else if (suffix == "21") {
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    Posv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Negv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    PosAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    NegAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+  } else if (suffix == "22") {
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+  } else if (suffix == "23") {
+    v0Cuts->SetPtRange(LambdaPtLow, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtLow, 999.f);
+    Posv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    Negv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    PosAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+    NegAntiv0Daug->SetEtaRange(-LambdaEtaLow, LambdaEtaLow);
+  } else if (suffix == "24") {
+    v0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtUp, 999.f);
+    Posv0Daug->SetNClsTPC(LambdaNClsLow);
+    Negv0Daug->SetNClsTPC(LambdaNClsLow);
+    PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+    NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
+  } else if (suffix == "25") {
+    v0Cuts->SetPtRange(LambdaPtLow, 999.f);
+    antiv0Cuts->SetPtRange(LambdaPtLow, 999.f);
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
   }
-
-  AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -157,6 +442,127 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   antiv0Cuts->SetPDGCodePosDaug(211);   // Pion
   antiv0Cuts->SetPDGCodeNegDaug(2212);  // Proton
   antiv0Cuts->SetPDGCodev0(-3122);      // Lambda
+
+  // =====================================================================
+  // Photon Cuts
+  const float PhotonPtLow = 0.;
+  const float PhotonPtUp = 0.15;
+  const float PhotonDaughterPtLow = 0.0;
+  const float PhotonDaughterPtUp = 0.1;
+  const float PhotonCPALow = 0.995;
+  const float PhotonCPAUp = 0.99925;
+  const float PhotonDaughterEtaLow = 0.85;
+  const float PhotonNsigmaDownLow = -7;
+  const float PhotonNsigmaDownUp = -5;
+  const float PhotonNsigmaHighLow = 6;
+  const float PhotonNsigmaHighUp = 8;
+  const float PhotonFClsLow = 0.3;
+  const float PhotonFClsUp = 0.5;
+  const float PhotonPsiPairLow = 0.15;
+  const float PhotonPsiPairUp = 0.3;
+  const float PhotonArmenterosLow = 0.05;
+  const float PhotonArmenterosUp = 0.1;
+
+  AliSigma0PhotonCuts *photon = AliSigma0PhotonCuts::PhotonCuts();
+  if (suffix != "0") {
+    photon->SetLightweight(true);
+  }
+  if (suffix == "1") {
+    photon->SetElectronRatioFindable(PhotonFClsLow);
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+  } else if (suffix == "2") {
+    photon->SetArmenterosQtMax(PhotonArmenterosLow);
+    photon->SetPhotonPtMin(PhotonPtUp);
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+  } else if (suffix == "3") {
+    photon->SetElectronPtMin(PhotonDaughterPtUp);
+    photon->SetPsiPairMax(PhotonPsiPairLow);
+  } else if (suffix == "4") {
+    photon->SetElectronNSigmaTPCMax(PhotonNsigmaHighLow);
+    photon->SetElectronNSigmaTPCMin(PhotonNsigmaDownLow);
+  } else if (suffix == "5") {
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+    photon->SetCPAMin(PhotonCPAUp);
+  } else if (suffix == "6") {
+    photon->SetPhotonPtMin(PhotonPtLow);
+    photon->SetPsiPairMax(0.2);
+    photon->SetCPAMin(PhotonCPAUp);
+  } else if (suffix == "7") {
+    photon->SetArmenterosQtMax(PhotonArmenterosLow);
+    photon->SetElectronNSigmaTPCMax(PhotonNsigmaHighLow);
+    photon->SetElectronNSigmaTPCMin(PhotonNsigmaDownUp);
+  } else if (suffix == "8") {
+    photon->SetElectronRatioFindable(PhotonFClsLow);
+    photon->SetCPAMin(PhotonCPALow);
+    photon->SetPsiPairMax(PhotonPsiPairUp);
+  } else if (suffix == "9") {
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+    photon->SetElectronRatioFindable(PhotonFClsUp);
+  } else if (suffix == "10") {
+    photon->SetPhotonPtMin(PhotonPtUp);
+    photon->SetArmenterosQtMax(PhotonArmenterosUp);
+  } else if (suffix == "11") {
+    photon->SetElectronPtMin(PhotonDaughterPtLow);
+    photon->SetPsiPairMax(PhotonPsiPairLow);
+  } else if (suffix == "12") {
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+  } else if (suffix == "13") {
+    photon->SetPhotonPtMin(PhotonPtLow);
+    photon->SetArmenterosQtMax(PhotonArmenterosLow);
+    photon->SetElectronNSigmaTPCMax(PhotonNsigmaHighUp);
+    photon->SetElectronNSigmaTPCMin(PhotonNsigmaDownLow);
+    photon->SetCPAMin(PhotonCPAUp);
+  } else if (suffix == "14") {
+    photon->SetPsiPairMax(PhotonPsiPairLow);
+  } else if (suffix == "15") {
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+    photon->SetPsiPairMax(PhotonPsiPairUp);
+  } else if (suffix == "16") {
+    photon->SetPhotonPtMin(PhotonPtLow);
+    photon->SetElectronRatioFindable(PhotonFClsUp);
+  } else if (suffix == "17") {
+    photon->SetPhotonPtMin(PhotonPtUp);
+    photon->SetArmenterosQtMax(PhotonArmenterosUp);
+    photon->SetCPAMin(PhotonCPALow);
+  } else if (suffix == "18") {
+    photon->SetElectronPtMin(PhotonDaughterPtUp);
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+    photon->SetPsiPairMax(PhotonPsiPairUp);
+  } else if (suffix == "19") {
+    photon->SetElectronNSigmaTPCMax(PhotonNsigmaHighUp);
+    photon->SetElectronNSigmaTPCMin(PhotonNsigmaDownUp);
+  } else if (suffix == "20") {
+    photon->SetArmenterosQtMax(PhotonArmenterosUp);
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+    photon->SetPsiPairMax(PhotonPsiPairLow);
+  } else if (suffix == "21") {
+    photon->SetElectronRatioFindable(PhotonFClsLow);
+  } else if (suffix == "22") {
+    photon->SetPhotonPtMin(PhotonPtUp);
+    photon->SetCPAMin(PhotonCPALow);
+    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+  } else if (suffix == "23") {
+    photon->SetArmenterosQtMax(PhotonArmenterosLow);
+    photon->SetElectronPtMin(PhotonDaughterPtLow);
+    photon->SetCPAMin(PhotonCPALow);
+  } else if (suffix == "24") {
+    photon->SetElectronNSigmaTPCMax(PhotonNsigmaHighUp);
+    photon->SetElectronNSigmaTPCMin(PhotonNsigmaDownLow);
+    photon->SetPsiPairMax(PhotonPsiPairUp);
+  } else if (suffix == "25") {
+    photon->SetElectronPtMin(PhotonDaughterPtUp);
+    photon->SetElectronRatioFindable(PhotonFClsLow);
+  }
+
+
+  // =====================================================================
+  // Sigma Cuts
+  const float sidebandDownLow = 0.0035;
+  const float sidebandDownDefault = 0.005;
+  const float sidebandDownUp = 0.0075;
+  const float sidebandHighUp = 0.075;
+  const float sidebandHighDefault = 0.05;
+  const float sidebandHighLow = 0.035;
 
   AliSigma0AODPhotonMotherCuts *sigmaCuts =
       AliSigma0AODPhotonMotherCuts::DefaultCuts();
@@ -175,33 +581,45 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   }
 
   // vary the sidebands
-  if (suffix == "33") {
-    sigmaCuts->SetSigmaSideband(0.01, 0.075);
-    antiSigmaCuts->SetSigmaSideband(0.01, 0.075);
-  } else if (suffix == "34") {
-    sigmaCuts->SetSigmaSideband(0.01, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.01, 0.1);
-  } else if (suffix == "35") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.05);
-  } else if (suffix == "36") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.075);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.075);
-  } else if (suffix == "37") {
-    sigmaCuts->SetSigmaSideband(0.025, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.025, 0.1);
-  } else if (suffix == "38") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.025);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.025);
-  } else if (suffix == "39") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.05);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.05);
-  } else if (suffix == "40") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.075);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.075);
-  } else if (suffix == "41") {
-    sigmaCuts->SetSigmaSideband(0.005, 0.1);
-    antiSigmaCuts->SetSigmaSideband(0.005, 0.1);
+  if (suffix == "1") {
+    sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighLow);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighLow);
+  } else if (suffix == "3") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+  } else if (suffix == "5") {
+    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
+  } else if (suffix == "7") {
+    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
+  } else if (suffix == "9") {
+    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
+  } else if (suffix == "11") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
+  } else if (suffix == "13") {
+    sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighUp);
+  } else if (suffix == "15") {
+    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
+  } else if (suffix == "17") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighLow);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighLow);
+  } else if (suffix == "19") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+  } else if (suffix == "21") {
+    sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
+  } else if (suffix == "23") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+  } else if (suffix == "25") {
+    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
   }
 
   // Femto Collection
