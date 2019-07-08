@@ -154,10 +154,10 @@ fGeometry(0)
   TString str = "map";
 
   // 32 TRUs
-  Int_t iTRU = 0;
-  for (Int_t i = 0; i < fNTRU; i++) {
+  Int_t iTRU = 0; // iTRU is an index skipping fake TRUs
+  for (Int_t i = 0; i < fNTRU; i++) { // 'i' is the geometric index (0-51)
 
-    // Skip virtual TRUs
+    // Skip virtual TRUs in PHOS hole
     if (i == 34 || i == 35 ||
         i == 40 || i == 41 ||
         i == 46 || i == 47) {
@@ -201,9 +201,24 @@ fGeometry(0)
         default:
           AliError("TRU Initialization for this Trigger Mapping is not implemented!");
       }
-      AliEMCALTriggerTRU *mytru = new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, iTRU % 2);
+      // AliEMCALTriggerTRU initialization needs Map Type 0 for ASide and 1 for CSide ADC mappings
+      Int_t iMapType = 0;
 
-      AliDebug(999,Form("Building TRU %d with dimensions %d x %d\n",iTRU,int(rSize.X()),int(rSize.Y())));
+      if (iTriggerMapping == 1) iMapType = iTRU % 2; // Run 1 Geometry (TRUs alternate sides)
+      else if (iTriggerMapping == 2) {
+        iMapType = iTRU % 2;
+        if (i < 30) iMapType = (i % 6) / 3;
+        else if (i < 32) iMapType = i % 2;
+        else if (i < 50) iMapType = ((i - 2) % 6) / 3;
+        else if (i < 52) iMapType = i % 2;
+      } else {
+        AliFatal("Unknown Trigger Mapping requested. May need implementation.");
+      }
+
+      AliEMCALTriggerTRU *mytru = new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, iMapType);
+      //AliEMCALTriggerTRU *mytru = new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, iTRU % 2); // Run 1
+
+      AliDebug(999,Form("Building TRU %d with dimensions %d x %d and MapType %d\n",iTRU,int(rSize.X()),int(rSize.Y()),iMapType));
       if (truConf->GetGTHRL0() <= 1) { // Checking for the null L0 threshold
         if(dcsConf->IsTRUEnabled(iTRU)){
           AliError(Form("Active TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be properly simulated for this TRU.",iTRU));
@@ -254,7 +269,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
   // Digits to trigger
   Int_t pos, px, py, id; 
 
-  Int_t region[104][48], posMap[104][48];
+  Int_t region[104][48], posMap[104][48]; // [phi] [eta]
 
   for (Int_t i = 0; i < 104; i++) for (Int_t j = 0; j < 48; j++) 
   {
@@ -359,19 +374,20 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
       for (int j = 0; j < nPhi; j++) for (int k = 0; k < nEta; k++) reg[j][k] = 0;
 //			for (int j = 0; j < nEta; j++) for (int k = 0; k < nPhi; k++) reg[j][k] = 0;
           
+      // Loading information from TRU into matrix reg
       iTRU->GetL0Region(timeL0min, reg);
 
       for (int j = 0; j < iTRU->RegionSize()->X(); j++) // phi
       {  
         for (int k = 0; k < iTRU->RegionSize()->Y(); k++) // eta
         {
-          if (reg[j][k]
+          if (reg[j][k]  // (phi,eta)
 //					if (true 
             && 
-            fGeometry->GetAbsFastORIndexFromPositionInTRU(i, k, j, id)
+            fGeometry->GetAbsFastORIndexFromPositionInTRU(i, k, j, id)  // (iTRU, Eta, Phi, FastOR)
 //						fGeometry->GetAbsFastORIndexFromPositionInTRU(i, j, k, id)
             &&
-            fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, py, px))
+            fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, py, px)) // (FastOR, Eta, Phi)
   //					fGeometry->GetPositionInEMCALFromAbsFastORIndex(id, px, py))
           {
             pos = posMap[px][py];
