@@ -481,7 +481,7 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   }
 
   if(TESTBIT(fRequirements, kEMCALmatch)){
-    if(track->GetStatus() && AliESDtrack::kEMCALmatch) SETBIT(survivedCut, kEMCALmatch);
+    if(track->GetStatus() & AliESDtrack::kEMCALmatch) SETBIT(survivedCut, kEMCALmatch);
   }
 
   if(TESTBIT(fRequirements, kRejectKinkDaughter)){
@@ -573,9 +573,9 @@ void AliHFEextraCuts::FillQAhistosRec(AliVTrack *track, UInt_t when){
   TH1 *hStatusBits = dynamic_cast<TH1 *>(fQAlist->At(6 + when * fgkNQAhistos));
   if(hStatusBits) {
     hStatusBits->Fill(0);  // Fill first bin with all tracks
-    if(track->GetStatus() && AliESDtrack::kTOFpid) hStatusBits->Fill(1);
-    if(!(track->GetStatus() && AliESDtrack::kTOFmismatch)) hStatusBits->Fill(2);
-    if(track->GetStatus() && AliESDtrack::kEMCALmatch) hStatusBits->Fill(3);
+    if(track->GetStatus() & AliESDtrack::kTOFpid) hStatusBits->Fill(1);
+    if(!(track->GetStatus() & AliESDtrack::kTOFmismatch)) hStatusBits->Fill(2);
+    if(track->GetStatus() & AliESDtrack::kEMCALmatch) hStatusBits->Fill(3);
     if(GetTPCCountSharedMapBitsAboveThreshold(track)==0) hStatusBits->Fill(4);
   }
   if((htmp = dynamic_cast<TH1F *>(fQAlist->At(7 + when * fgkNQAhistos)))) htmp->Fill(track->GetTPCsignalN());
