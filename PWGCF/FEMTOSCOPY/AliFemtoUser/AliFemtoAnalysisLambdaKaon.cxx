@@ -2020,8 +2020,8 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
   tReturnParams.v0Type = 2;
 
   tReturnParams.mass = K0ShortMass;
-  tReturnParams.minInvariantMass = K0ShortMass-0.013677;
-  tReturnParams.maxInvariantMass = K0ShortMass+0.020323;
+  tReturnParams.minInvariantMass = K0ShortMass-0.017614; //0.480
+  tReturnParams.maxInvariantMass = K0ShortMass+0.017386; //0.515
 
   tReturnParams.useLooseInvMassCut = true;
   tReturnParams.minLooseInvMass = K0ShortMass-0.070;
