@@ -111,6 +111,7 @@ struct AnalysisParams
   bool removeMisidentifiedMCParticles;
   bool setV0SharedDaughterCut;
 
+  bool addCutMonitors;
   bool monitorEvCutPassOnly;
   bool monitorPart1CutPassOnly;
   bool monitorPart2CutPassOnly;
