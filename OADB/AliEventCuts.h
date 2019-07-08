@@ -86,6 +86,7 @@ class AliEventCuts : public TList {
     void   AddQAplotsToList(TList *qaList = 0x0, bool addCorrelationPlots = false);
     void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
+    void   OverrideCentralityFramework(int centFramework = 0) { fOverrideCentralityFramework = true; fCentralityFramework = centFramework; }
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupRun1PbPb();
     void   SetupLHC15o() { SetupRun2PbPb(); }
@@ -203,6 +204,7 @@ class AliEventCuts : public TList {
 
     bool          fSelectInelGt0;                 ///< Select only INEL > 0 events
     bool          fOverrideInelGt0;               ///< If the user ask for a configuration, let's not touch it
+    bool          fOverrideCentralityFramework;   ///< If the user ask (not) to run a centrality framework this should be onored by AliEventCuts 
 
     AliTimeRangeCut fTimeRangeCut;       ///< Time Range cut
 
@@ -226,7 +228,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts, 11)
+    ClassDef(AliEventCuts, 12)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {
