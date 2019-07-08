@@ -228,13 +228,14 @@ fGeometry(0)
       //AliEMCALTriggerTRU *mytru = new ((*fTRU)[i]) AliEMCALTriggerTRU(truConf, rSize, iTRU % 2); // Run 1
 
       AliDebug(999,Form("Building TRU %d with dimensions %d x %d and MapType %d\n",iTRU,int(rSize.X()),int(rSize.Y()),iMapType));
-      if (truConf->GetGTHRL0() <= 1) { // Checking for the null L0 threshold
-        if(dcsConf->IsTRUEnabled(iTRU)){
-          AliError(Form("Active TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be properly simulated for this TRU.",iTRU));
-        } else {
-          AliWarning(Form("Inactive TRU %d - L0 trigger will not be simulated for this TRU", iTRU));
+      if(dcsConf->IsTRUEnabled(fGeometry->GetOnlineIndexFromTRUIndex(iTRU))) {
+        if (truConf->GetGTHRL0() <= 1) { // Checking for the null L0 threshold
+          AliError(Form("Active TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be simulated for this TRU.",iTRU));
           mytru->SetActive(false);
-        }
+        } 
+      } else {
+        AliDebug(999,Form("Inactive TRU %d - L0 trigger will not be simulated for this TRU", iTRU));
+        mytru->SetActive(false);
       }
 
       AliEMCALTriggerTRU *oTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
