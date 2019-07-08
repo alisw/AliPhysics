@@ -201,8 +201,10 @@ private:
   TH3F *fMassVsPtVsCosthStMELSpp;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
   TH3F *fMassVsPtVsCosthStMELSmm;   //!<! hist. of Pt vs. Mass vs. cos(th*) (mixedevents)
   TH2F *fHistonSigmaTPCPion;        //!<! hist. of nSigmaTPC pion
+  TH2F *fHistonSigmaTPCPionGoodTOF; //!<! hist. of nSigmaTPC pion
   TH2F *fHistonSigmaTOFPion;        //!<! hist. of nSigmaTOF pion
   TH2F *fHistonSigmaTPCKaon;        //!<! hist. of nSigmaTPC kaon
+  TH2F *fHistonSigmaTPCKaonGoodTOF; //!<! hist. of nSigmaTPC kaon
   TH2F *fHistonSigmaTOFKaon;        //!<! hist. of nSigmaTOF kaon
   UInt_t fFilterMask; /// FilterMask
   AliESDtrackCuts* fTrackCutsAll; //// track selection
@@ -270,7 +272,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,24); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,25); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

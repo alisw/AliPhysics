@@ -103,8 +103,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fMassVsPtVsCosthStMELSpp(0x0),
   fMassVsPtVsCosthStMELSmm(0x0),
   fHistonSigmaTPCPion(0x0),
+  fHistonSigmaTPCPionGoodTOF(0x0),
   fHistonSigmaTOFPion(0x0),
   fHistonSigmaTPCKaon(0x0),
+  fHistonSigmaTPCKaonGoodTOF(0x0),
   fHistonSigmaTOFKaon(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
@@ -224,8 +226,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fMassVsPtVsCosthStMELSpp(0x0),
   fMassVsPtVsCosthStMELSmm(0x0),
   fHistonSigmaTPCPion(0x0),
+  fHistonSigmaTPCPionGoodTOF(0x0),
   fHistonSigmaTOFPion(0x0),
   fHistonSigmaTPCKaon(0x0),
+  fHistonSigmaTPCKaonGoodTOF(0x0),
   fHistonSigmaTOFKaon(0x0),
   fFilterMask(BIT(4)),
   fTrackCutsAll(0x0),
@@ -348,8 +352,10 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
     delete fMassVsPtVsCosthStMELSpp;
     delete fMassVsPtVsCosthStMELSmm;
     delete fHistonSigmaTPCPion;
+    delete fHistonSigmaTPCPionGoodTOF;
     delete fHistonSigmaTOFPion;
     delete fHistonSigmaTPCKaon;
+    delete fHistonSigmaTPCKaonGoodTOF;
     delete fHistonSigmaTOFKaon;
   }
 
@@ -598,12 +604,16 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fOutput->Add(fMassVsPtVsCosthStMELSmm);
 
   fHistonSigmaTPCPion=new TH2F("hnSigmaTPCPion"," ; p (GeV/c) ; n#sigma^{#pi}_{TPC}",20,0.,10.,100,-5.,5.);
+  fHistonSigmaTPCPionGoodTOF=new TH2F("hnSigmaTPCPionGoodTOF"," ; p (GeV/c) ; n#sigma^{#pi}_{TPC}",20,0.,10.,100,-5.,5.);
   fHistonSigmaTOFPion=new TH2F("hnSigmaTOFPion"," ; p (GeV/c) ; n#sigma^{#pi}_{TOF}",20,0.,10.,100,-5.,5.);
   fHistonSigmaTPCKaon=new TH2F("hnSigmaTPCKaon"," ; p (GeV/c) ; n#sigma^{K}_{TPC}",20,0.,10.,100,-5.,5.);
+  fHistonSigmaTPCKaonGoodTOF=new TH2F("hnSigmaTPCKaonGoodTOF"," ; p (GeV/c) ; n#sigma^{K}_{TPC}",20,0.,10.,100,-5.,5.);
   fHistonSigmaTOFKaon=new TH2F("hnSigmaTOFKaon"," ; p (GeV/c) ; n#sigma^{K}_{TOF}",20,0.,10.,100,-5.,5.);
   fOutput->Add(fHistonSigmaTPCPion);
+  fOutput->Add(fHistonSigmaTPCPionGoodTOF);
   fOutput->Add(fHistonSigmaTOFPion);
   fOutput->Add(fHistonSigmaTPCKaon);
+  fOutput->Add(fHistonSigmaTPCKaonGoodTOF);
   fOutput->Add(fHistonSigmaTOFKaon);
   
   //Counter for Normalization
@@ -812,11 +822,13 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
     if (fPIDstrategy == knSigma) {
       // nsigma PID
       Double_t trmom=track->P();
+      Bool_t okTOF=fPidHF->CheckTOFPIDStatus(track);
       if(IsKaon(track)){
 	Double_t nstpc,nstof;
 	fPidHF->GetnSigmaTPC(track,AliPID::kKaon,nstpc);
 	fPidHF->GetnSigmaTOF(track,AliPID::kKaon,nstof);
 	fHistonSigmaTPCKaon->Fill(trmom,nstpc);
+	if(okTOF) fHistonSigmaTPCKaonGoodTOF->Fill(trmom,nstpc);
 	fHistonSigmaTOFKaon->Fill(trmom,nstof);
 	status[iTr]+=2;
       }
@@ -825,6 +837,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
 	fPidHF->GetnSigmaTPC(track,AliPID::kPion,nstpc);
 	fPidHF->GetnSigmaTOF(track,AliPID::kPion,nstof);
 	fHistonSigmaTPCPion->Fill(trmom,nstpc);
+	if(okTOF) fHistonSigmaTPCPionGoodTOF->Fill(trmom,nstpc);
 	fHistonSigmaTOFPion->Fill(trmom,nstof);
 	status[iTr]+=4;
       }
