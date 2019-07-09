@@ -681,29 +681,29 @@ void AliSigma0PhotonCuts::InitCutHistograms(TString appendix) {
       100, 0, 10, 100, 0., .1);
   fHistograms->Add(fHistV0MassPt);
 
+  fHistNV0 = new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 15, 0,
+                      15);
+  fHistograms->Add(fHistNV0);
+
+  fHistCuts = new TH1F("fHistCuts", ";;Entries", 15, 0, 15);
+  fHistCuts->GetXaxis()->SetBinLabel(1, "Photon candidates");
+  fHistCuts->GetXaxis()->SetBinLabel(2, "V_{0} Matching");
+  fHistCuts->GetXaxis()->SetBinLabel(3, "Track Matching");
+  fHistCuts->GetXaxis()->SetBinLabel(4, "Armenteros");
+  fHistCuts->GetXaxis()->SetBinLabel(5, "#it{p}_{T} min");
+  fHistCuts->GetXaxis()->SetBinLabel(6, "#eta max");
+  fHistCuts->GetXaxis()->SetBinLabel(7, "#Psi_{pair}");
+  fHistCuts->GetXaxis()->SetBinLabel(8, "cos#alpha");
+  fHistCuts->GetXaxis()->SetBinLabel(9, "DCA_{z}");
+  fHistCuts->GetXaxis()->SetBinLabel(10, "DCA_{r}");
+  fHistCuts->GetXaxis()->SetBinLabel(11, "Electron #it{p}_{T} min");
+  fHistCuts->GetXaxis()->SetBinLabel(12, "Electron #eta max");
+  fHistCuts->GetXaxis()->SetBinLabel(13, "Electron ratio findable");
+  fHistCuts->GetXaxis()->SetBinLabel(14, "n#sigma TPC");
+  fHistCuts->GetXaxis()->SetBinLabel(15, "Transverse radius rejection");
+  fHistograms->Add(fHistCuts);
+
   if (!fIsLightweight) {
-    fHistCuts = new TH1F("fHistCuts", ";;Entries", 15, 0, 15);
-    fHistCuts->GetXaxis()->SetBinLabel(1, "Photon candidates");
-    fHistCuts->GetXaxis()->SetBinLabel(2, "V_{0} Matching");
-    fHistCuts->GetXaxis()->SetBinLabel(3, "Track Matching");
-    fHistCuts->GetXaxis()->SetBinLabel(4, "Armenteros");
-    fHistCuts->GetXaxis()->SetBinLabel(5, "#it{p}_{T} min");
-    fHistCuts->GetXaxis()->SetBinLabel(6, "#eta max");
-    fHistCuts->GetXaxis()->SetBinLabel(7, "#Psi_{pair}");
-    fHistCuts->GetXaxis()->SetBinLabel(8, "cos#alpha");
-    fHistCuts->GetXaxis()->SetBinLabel(9, "DCA_{z}");
-    fHistCuts->GetXaxis()->SetBinLabel(10, "DCA_{r}");
-    fHistCuts->GetXaxis()->SetBinLabel(11, "Electron #it{p}_{T} min");
-    fHistCuts->GetXaxis()->SetBinLabel(12, "Electron #eta max");
-    fHistCuts->GetXaxis()->SetBinLabel(13, "Electron ratio findable");
-    fHistCuts->GetXaxis()->SetBinLabel(14, "n#sigma TPC");
-    fHistCuts->GetXaxis()->SetBinLabel(15, "Transverse radius rejection");
-    fHistograms->Add(fHistCuts);
-
-    fHistNV0 = new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 15, 0,
-                        15);
-    fHistograms->Add(fHistNV0);
-
     fHistLambdaMass = new TH1F(
         "fHistLambdaMass",
         "; Invariant mass p#pi^{-} hypothesis (GeV/#it{c}^{2}); Entries", 125,
