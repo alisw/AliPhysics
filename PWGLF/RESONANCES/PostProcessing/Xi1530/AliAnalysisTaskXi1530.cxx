@@ -2006,9 +2006,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                                  (const char*)SysCheck.at(sys)));
                     continue;
                     }
-                if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut))
-                    continue;
                 if ((SysCheck.at(sys) == "XiMassWindowTight") &&
                     (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
                     continue;
