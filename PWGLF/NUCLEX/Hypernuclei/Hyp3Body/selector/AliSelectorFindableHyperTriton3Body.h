@@ -105,23 +105,28 @@ public:
   ULong_t fCurrentEventId = 0ull;
   int fLastMother         = -1;
 
-  TH2D *fHistInvMass[2][3][3]    = {{{nullptr}}};
-  TH1D *fHistPt[2][3][3]         = {{{nullptr}}};
-  TH1D *fHistDaughterPt[3][3][3] = {{{nullptr}}};
+  TH2D *fHistInvMass[3][3][3] = {{{nullptr}}};
+  TH1D *fHistPt[2][3]         = {{nullptr}};
+  TH1D *fHistDaughterPt[3][3] = {{nullptr}};
 
-  TH1D *fHistNclsITS[3][2]         = {{nullptr}};
-  TH1D *fHistNclsTPC[3][2]         = {{nullptr}};
-  TH1D *fHistNSigmaTPC[3][2]       = {{nullptr}};
-  TH1D *fHistNSigmaTOF[3][2]       = {{nullptr}};
-  TH1D *fHistCheckPID[4][2]        = {{nullptr}};
-  TH1D *fHistGlobalTrackChi2[3][2] = {{nullptr}};
-  TH1D *fHistResDecayVtx[3]        = {nullptr};
-  TH1D *fHistVertexChi2[2]         = {nullptr};
-  TH1D *fHistCosPAngle[2]          = {nullptr};
-  TH1D *fHistDCA2pV[3][2]          = {{nullptr}};
-  TH1D *fHistDCA2dV[3][2]          = {{nullptr}};
-  TH1D *fHistTrackDistance[3][2]   = {{nullptr}};
-  TH1D *fHistCT[2]        = {nullptr};
+  TH1D *fHistNclsITS[3]         = {nullptr};
+  TH1D *fHistNclsITSCheck       = nullptr;
+  TH1D *fHistNclsTPC[3]         = {nullptr};
+  TH1D *fHistNSigmaTPC[3]       = {nullptr};
+  TH1D *fHistNSigmaTOF[3]       = {nullptr};
+  TH1D *fHistCheckPID[4]        = {nullptr};
+  TH1D *fHistGlobalTrackChi2[3] = {nullptr};
+  TH1D *fHistResDecayVtx[3]     = {nullptr};
+  TH1D *fHistVertexChi2         = nullptr;
+  TH1D *fHistCosPAngle          = nullptr;
+  TH1D *fHistDCA2pvXY[3]        = {nullptr};
+  TH1D *fHistDCA2pvZ[3]         = {nullptr};
+  TH1D *fHistDCA2pv[3]          = {nullptr};
+  TH1D *fHistDCA2dvXY[3]        = {nullptr};
+  TH1D *fHistDCA2dvZ[3]         = {nullptr};
+  TH1D *fHistDCA2dv[3]          = {nullptr};
+  TH1D *fHistTrackDistance[3]   = {nullptr};
+  TH1D *fHistCT[2]              = {nullptr};
 
   ClassDef(AliSelectorFindableHyperTriton3Body, 0);
 };
