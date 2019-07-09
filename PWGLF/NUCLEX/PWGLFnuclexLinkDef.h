@@ -89,6 +89,11 @@
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3+;
 #pragma link C++ class AliAnalysisTaskHypertriton3ML+;
+#pragma link C++ class RHypertriton3+;
+#pragma link C++ class SHypertriton3+;
+#pragma link C++ class std::vector<RHypertriton3>+;
+#pragma link C++ class std::vector<SHypertriton3>+;
+#pragma link C++ class REvent+;
 
 /// Hyp3body Selector
 #ifdef __CLING__
