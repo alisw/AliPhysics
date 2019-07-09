@@ -702,7 +702,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
   if (!fMinimalBooking) {
-    Int_t PDGcode[5] = { 11, 13, 211, 321, 2212 };
+    Int_t PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020 };
     //this is not the correct way to do it, since there might be float counting
     if (fpTmin < Track->GetPt() && Track->GetPt() < fpTmax) {
       if (fetamin < Track->GetEta().at(0) && Track->GetEta().at(0) < fetamax) {
@@ -720,7 +720,7 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
     }
     if (Track->UseParticle()) {
       float pT = Track->GetPt();
-      int PDGcode[5] = { 11, 13, 211, 321, 2212 };
+      int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020};
 //Fill Identified
       fMCHists->FillMCIdent(pT);
       AliFemtoDreamBasePart::PartOrigin tmpOrg = Track->GetParticleOrigin();
@@ -1129,8 +1129,8 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::OmegaBachKaonCuts(
 }
 
 int AliFemtoDreamTrackCuts::GetPDGCode() {
-  int PDGcode[5] = { 11, 13, 211, 321, 2212 };
-  if (fParticleID < 5) {
+  int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020 };
+  if (fParticleID < 6) {
     return fCharge * PDGcode[fParticleID];
   } else {
     return 0;

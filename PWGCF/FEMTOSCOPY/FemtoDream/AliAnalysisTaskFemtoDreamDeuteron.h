@@ -22,7 +22,7 @@
 class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFemtoDreamDeuteron();
-  AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC);
+  AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC, const char* CentEst);
   virtual ~AliAnalysisTaskFemtoDreamDeuteron();
   Float_t GetMass2sq(AliFemtoDreamTrack *track);
   void InitHistograms(AliFemtoDreamTrackCuts *trkCuts, char *trkCutsName, char *MCName);
@@ -43,6 +43,7 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   bool fIsMC;                               //
+  const char* fCentEst;			    //
   TList *fOutput;                           //!  No need to stream this, are compiled
   AliFemtoDreamEvent *fEvent;               //!  on Runtime
   AliFemtoDreamTrack *fTrack;               //!
