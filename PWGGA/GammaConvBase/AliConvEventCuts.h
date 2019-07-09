@@ -280,7 +280,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17pq,             //!< pp 5 TeV
         // MC Xe-Xe
         kLHC17XeXeHi,         //!< MC for Xe-Xe 5.44 TeV HIJING
-        // 5 TeV MC 2016
+        // 5 TeV MC 2017
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC18j2,             //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
@@ -710,7 +710,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,69)
+      ClassDef(AliConvEventCuts,70)
       /// \endcond
 };
 
