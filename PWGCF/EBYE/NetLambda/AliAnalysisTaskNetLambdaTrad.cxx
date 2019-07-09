@@ -1,7 +1,8 @@
 
+
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Naomi Umaka Apr 2018
-// Updated jul 5
+// Updated jul 8
 
 
 #include "AliAnalysisManager.h"
@@ -137,7 +138,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     f3fHistCentVsInvMassAntiLambda1point0MasscutRap = new TH3F("f3fHistCentVsInvMassAntiLambda1point0MasscutRap","Cent vs. #bar{#Lambda} Inv Mass vs. pT",CentbinNum, CentBins, Massbinnumb,MassBins,fNptBins, LambdaPtBins);
     fListHist->Add(f3fHistCentVsInvMassAntiLambda1point0MasscutRap);
     
-
+    
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     //THNSPARSE BINNING
     
@@ -172,14 +173,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     
     Int_t ptChEta1point0[dim];
     Int_t ptChEta1point0Rap[dim];
-
+    
     
     
     for(Int_t idx = 0; idx < dim; idx++)
     {
         ptChEta1point0[idx] = 0.;
         ptChEta1point0Rap[idx] = 0.;
-
+        
     }
     
     if (!fInputEvent) return;
@@ -240,7 +241,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         Float_t invMassLambda = -999, invMassAntiLambda = -999;
         Float_t V0pt = -999, eta = -999, pmom = -999;
-        Float_t ppt = -999,  peta = -999, posprnsg = -999, pospion =-999, v0Radius =-999, v0DecayLength =-999, proLT =-999, lRapLambda=-999;
+        Float_t ppt = -999,  peta = -999, posprnsg = -999, pospion =-999, v0Radius =-999, v0DecayLength =-999, proLT =-999, proLTbar =-999, lRapLambda= -999;
         Float_t npt = -999,  neta = -999, negprnsg = -999, negpion =-999;
         Bool_t  ontheflystat = kFALSE;
         Float_t dcaPosToVertex = -999, dcaNegToVertex = -999, dcaDaughters = -999, dcaV0ToVertex = -999, cosPointingAngle = -999;
@@ -260,8 +261,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
         
         v0DecayLength = TMath::Sqrt(TMath::Power(vertx[0] - vVtx[0],2) +
-                                            TMath::Power(vertx[1] - vVtx[1],2) +
-                                            TMath::Power(vertx[2] - vVtx[2],2 ));
+                                    TMath::Power(vertx[1] - vVtx[1],2) +
+                                    TMath::Power(vertx[2] - vVtx[2],2 ));
         
         lRapLambda  = esdv0->RapLambda();
         V0pt = esdv0->Pt();
@@ -300,7 +301,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
         
         if ( ( ( ( esdpTrack->GetTPCClusterInfo(2,1) ) < 80 ) || ( ( esdnTrack->GetTPCClusterInfo(2,1) ) < 80 ) ) && lSmallestTrackLength < 90 ) continue;
-
+        
         if( esdpTrack->GetKinkIndex(0)>0 || esdnTrack->GetKinkIndex(0)>0 ) continue;
         
         if( esdpTrack->GetTPCNclsF()<=0 || esdnTrack->GetTPCNclsF()<=0 ) continue;
@@ -313,7 +314,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
         if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
         
-     
+        
         //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         
         pmom = esdv0->P();
@@ -347,6 +348,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         negpion  = fPIDResponse->NumberOfSigmasTPC( esdnTrack, AliPID::kPion );
         
         proLT = v0DecayLength*invMassLambda;
+        proLTbar = v0DecayLength*invMassAntiLambda;
 
         
         if(TMath::Abs(peta) > 0.8) continue;
@@ -355,8 +357,6 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if(dcaDaughters > 0.8) continue;
         if(v0Radius < 5.0) continue;
         if(v0Radius > 200.) continue;
-        if(proLT > 25.) continue;
-
         
         
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -364,16 +364,16 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
-            if(dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.) //Default
+            if(proLT < 25. && dcaNegToVertex > 0.25 && dcaPosToVertex >  0.1  && TMath::Abs(posprnsg)  <= 3. && TMath::Abs(negpion)  <= 3.) //Default
             {
                 if(TMath::Abs(eta) < 0.5)
                 {
                     f3fHistCentVsInvMassLambda1point0->Fill(fCentrality,invMassLambda,V0pt);
                     if(invMassLambda > 1.11 && invMassLambda < 1.122)
                     {
-        
-                    ptChEta1point0[iptbin] += 1;
-                    f3fHistCentVsInvMassLambda1point0Masscut->Fill(fCentrality,invMassLambda,V0pt);
+                        
+                        ptChEta1point0[iptbin] += 1;
+                        f3fHistCentVsInvMassLambda1point0Masscut->Fill(fCentrality,invMassLambda,V0pt);
                         
                     }
                 }
@@ -392,15 +392,15 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             
             
             // Bar-L
-            if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
+            if(proLTbar < 25. && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.25 && TMath::Abs(negprnsg)  <= 3. && TMath::Abs(pospion)  <= 3.) //default
             {
                 if(TMath::Abs(eta) < 0.5)
                 {
                     f3fHistCentVsInvMassAntiLambda1point0->Fill(fCentrality,invMassAntiLambda,V0pt);
                     if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.122)
                     {
-                    ptChEta1point0[iptbin+fNptBins] += 1;
-                    f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
+                        ptChEta1point0[iptbin+fNptBins] += 1;
+                        f3fHistCentVsInvMassAntiLambda1point0Masscut->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
                 }
                 if(TMath::Abs(lRapLambda) < 0.5)
@@ -412,7 +412,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         f3fHistCentVsInvMassAntiLambda1point0MasscutRap->Fill(fCentrality,invMassAntiLambda,V0pt);
                     }
                 }
-              
+                
             }
             
         }// zero onfly V0
