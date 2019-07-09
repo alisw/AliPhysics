@@ -292,6 +292,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoPionSpectrum(NULL),
   fHistoProtonSpectrum(NULL),
   fHistoKaonSpectrum(NULL),
+  fHistoNPionSpectrum(NULL),
+  fHistoEtaSpectrum(NULL),
+  fHistoDMesonSpectrum(NULL),
   tTreeSphericity(NULL),
   fRecSph(0),
   fTrueSph(0),
@@ -690,6 +693,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoPionSpectrum(NULL),
   fHistoProtonSpectrum(NULL),
   fHistoKaonSpectrum(NULL),
+  fHistoNPionSpectrum(NULL),
+  fHistoEtaSpectrum(NULL),
+  fHistoDMesonSpectrum(NULL),
   tTreeSphericity(NULL),
   fRecSph(0),
   fTrueSph(0),
@@ -1281,27 +1287,39 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoJetJetNTrials     = new TH1F*[fnCuts];
   }
 
+  Bool_t EnableSphericity = kFALSE;
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
+      EnableSphericity = kTRUE;
+    }
+  }
+
   fHistoNGoodESDTracks        = new TH1F*[fnCuts];
   fHistoVertexZ               = new TH1F*[fnCuts];
   fHistoNGammaCandidates      = new TH1F*[fnCuts];
   fHistoNGammaCandidatesBasic = new TH1F*[fnCuts];
-  fHistoEventSphericity       = new TH1F*[fnCuts];
-  fHistoEventSphericityAxis   = new TH1F*[fnCuts];
-  fHistoEventSphericityvsNtracks    = new TH2F*[fnCuts];
-  fHistoEventSphericityvsNJets      = new TH2F*[fnCuts];
-  if(fIsMC >0){
-    fHistoTrueSphericityvsRecSphericity     = new TH2F*[fnCuts];
-    fHistoTrueMultiplicityvsRecMultiplicity = new TH2F*[fnCuts];
-    if(fDoTrueSphericity){
-        tTreeSphericity                         = new TTree*[fnCuts];
+  if(EnableSphericity){
+    fHistoEventSphericity       = new TH1F*[fnCuts];
+    fHistoEventSphericityAxis   = new TH1F*[fnCuts];
+    fHistoEventSphericityvsNtracks    = new TH2F*[fnCuts];
+    fHistoEventSphericityvsNJets      = new TH2F*[fnCuts];
+    if(fIsMC >0){
+      fHistoTrueSphericityvsRecSphericity     = new TH2F*[fnCuts];
+      fHistoTrueMultiplicityvsRecMultiplicity = new TH2F*[fnCuts];
+      if(fDoTrueSphericity){
+          tTreeSphericity                         = new TTree*[fnCuts];
+      }
+      fHistoPionSpectrum                      = new TH1F*[fnCuts];
+      fHistoProtonSpectrum                    = new TH1F*[fnCuts];
+      fHistoKaonSpectrum                      = new TH1F*[fnCuts];
+      fHistoNPionSpectrum                     = new TH1F*[fnCuts];
+      fHistoEtaSpectrum                       = new TH1F*[fnCuts];
+      fHistoDMesonSpectrum                    = new TH1F*[fnCuts];
     }
-    fHistoPionSpectrum                      = new TH1F*[fnCuts];
-    fHistoProtonSpectrum                    = new TH1F*[fnCuts];
-    fHistoKaonSpectrum                      = new TH1F*[fnCuts];
+    fHistoEventSphericityvsHighpt           = new TH2F*[fnCuts];
+    fHistoEventSphericityvsTotalpt          = new TH2F*[fnCuts];
+    fHistoEventSphericityvsMeanpt           = new TH2F*[fnCuts];
   }
-  fHistoEventSphericityvsHighpt           = new TH2F*[fnCuts];
-  fHistoEventSphericityvsTotalpt          = new TH2F*[fnCuts];
-  fHistoEventSphericityvsMeanpt           = new TH2F*[fnCuts];
   if(!fDoLightOutput){
     fHistoNGoodESDTracksVsNGammaCandidates  = new TH2F*[fnCuts];
     fHistoSPDClusterTrackletBackground      = new TH2F*[fnCuts];
@@ -1505,6 +1523,18 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoKaonSpectrum[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoKaonSpectrum[iCut]->GetYaxis()->SetTitle("Number of charged kaons");
         fESDList[iCut]->Add(fHistoKaonSpectrum[iCut]);
+        fHistoNPionSpectrum[iCut]     = new TH1F("Neutral pion spectrum", "Neutral pion spectrum", 200, 0, 20);
+        fHistoNPionSpectrum[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoNPionSpectrum[iCut]->GetYaxis()->SetTitle("Number of neutral pions");
+        fESDList[iCut]->Add(fHistoNPionSpectrum[iCut]);
+        fHistoEtaSpectrum[iCut]     = new TH1F("Eta spectrum", "Eta spectrum", 200, 0, 20);
+        fHistoEtaSpectrum[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoEtaSpectrum[iCut]->GetYaxis()->SetTitle("Number of Etas");
+        fESDList[iCut]->Add(fHistoEtaSpectrum[iCut]);
+        fHistoDMesonSpectrum[iCut]     = new TH1F("D meson spectrum", "Charged kaon spectrum", 200, 0, 20);
+        fHistoDMesonSpectrum[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoDMesonSpectrum[iCut]->GetYaxis()->SetTitle("Number of D mesons");
+        fESDList[iCut]->Add(fHistoDMesonSpectrum[iCut]);
         if(fDoTrueSphericity){
             tTreeSphericity[iCut] = new TTree("Sphericity correlations", "Sphericity correlations");
             tTreeSphericity[iCut]->Branch("RecSph",&fRecSph,"fRecSph/F");
@@ -1597,6 +1627,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoPionSpectrum[iCut]->Sumw2();
         fHistoProtonSpectrum[iCut]->Sumw2();
         fHistoKaonSpectrum[iCut]->Sumw2();
+        fHistoNPionSpectrum[iCut]->Sumw2();
+        fHistoEtaSpectrum[iCut]->Sumw2();
+        fHistoDMesonSpectrum[iCut]->Sumw2();
       }
       fHistoVertexZ[iCut]->Sumw2();
       fHistoNGammaCandidates[iCut]->Sumw2();
@@ -6551,13 +6584,20 @@ void AliAnalysisTaskGammaCalo::ProcessAODSphericityParticles()
       if(!particle->IsPhysicalPrimary()) continue;
       if(!particle->Pt()) continue;
       if(TMath::Abs(particle->Eta())>0.8) continue;
-      if(particle->GetPdgCode() == 211 || particle->GetPdgCode() == -211){
+      if(particle->GetPdgCode() == 211 || particle->GetPdgCode() == -211){ //pi+-
           fHistoPionSpectrum[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
-      }else if(particle->GetPdgCode() == 2212 || particle->GetPdgCode() == -2212){
+      }else if(particle->GetPdgCode() == 2212 || particle->GetPdgCode() == -2212){ //proton anti-proton
           fHistoProtonSpectrum[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
-      }else if(particle->GetPdgCode() == 321 || particle->GetPdgCode() == -321){
+      }else if(particle->GetPdgCode() == 321 || particle->GetPdgCode() == -321){ // K+-
           fHistoKaonSpectrum[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
+      }else if(particle->GetPdgCode() == 111){ //neutral pion
+          fHistoNPionSpectrum[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
+      }else if(particle->GetPdgCode() == 221){ // eta
+          fHistoEtaSpectrum[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
+      }else if(particle->GetPdgCode() == 421){ // D0 meson
+          fHistoDMesonSpectrum[fiCut]->Fill(particle->Pt(), fWeightJetJetMC);
       }
+
   }
   return;
 }
