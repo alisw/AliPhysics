@@ -75,24 +75,6 @@ struct TrackMC {
   int motherId;
 };
 
-// bool IsHyperTriton3(AliMCEvent *mcEvent, const AliVParticle *vPart) {
-//   bool returnValue = false;
-//   int nDaughters   = 0;
-//   int vPartPDG     = vPart->PdgCode();
-//   int vPartLabel   = vPart->GetLabel();
-//   if (mcEvent->IsPhysicalPrimary(vPartLabel)) {
-//     if (std::abs(vPartPDG) == 1010010030) {
-//       for (int iD = vPart->GetDaughterFirst(); iD <= vPart->GetDaughterLast(); iD++) {
-//         AliVParticle *dPart = mcEvent->GetTrack(iD);
-//         int dPartPDG        = dPart->PdgCode();
-//         if (std::abs(dPartPDG) != 11) nDaughters++;
-//       }
-//     }
-//     if (nDaughters == 3) returnValue = true;
-//   }
-//   return returnValue;
-// }
-
 bool IsHyperTriton3Daughter(AliMCEvent *mcEvent, const AliVParticle *vPart) {
 
   int nDaughters = 0;
