@@ -13,6 +13,7 @@ ClassImp(AliAnalysisTaskFemtoDreamDeuteron)
 AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
 :AliAnalysisTaskSE()
 ,fIsMC(false)
+,fCentEst("kInt7")
 ,fOutput()
 ,fEvent()
 ,fTrack()
@@ -38,9 +39,10 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
 
 }
 
-AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC)
+AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC, const char *CentEst)
 :AliAnalysisTaskSE(name)
 ,fIsMC(isMC)
+,fCentEst(CentEst)
 ,fOutput()
 ,fEvent()
 ,fTrack()
@@ -135,7 +137,11 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   // ALICE DPG), and there is no need for this
   //2. Do you want the QA from the AliEventCuts?
   //3. The trigger, if you ever switch to High Multiplicity, you need to change this
-  fEvent=new AliFemtoDreamEvent(false,true,AliVEvent::kINT7);
+  if(strcmp(fCentEst,"kInt7")==0){
+	fEvent=new AliFemtoDreamEvent(false,true,AliVEvent::kINT7);
+  }else if(strcmp(fCentEst,"kHM")==0){
+	fEvent=new AliFemtoDreamEvent(false,true,AliVEvent::kHighMultV0);
+  }
   fOutput->Add(fEvent->GetEvtCutList());
   //Nothing special about the Femto Track, we just initialize it
   fTrack=new AliFemtoDreamTrack();

@@ -263,7 +263,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
    */
   //now we create the task
   AliAnalysisTaskFemtoDreamDeuteron *task=
-      new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault",isMC);
+      new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault",isMC, CentEst);
   //THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   //kINT7 == Minimum bias
   //kHighMultV0 high multiplicity triggered by the V0 detector
