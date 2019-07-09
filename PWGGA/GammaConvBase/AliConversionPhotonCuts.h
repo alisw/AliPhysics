@@ -261,7 +261,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Int_t GetDoElecDeDxPostCalibration() {return fDoElecDeDxPostCalibration;}
     void  SetElecDeDxPostCalibrationCustomFile(TString filename){fFileNameElecDeDxPostCalibration = filename; return;};
     Bool_t  LoadElecDeDxPostCalibration(Int_t runNumber);
-    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
+    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl);
 
 
   protected:
@@ -408,10 +408,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TString           fFileNameElecDeDxPostCalibration;     ///< name of recalibration file (if no special non-OADB is required)
     Int_t             fRecalibCurrentRun;                   ///< runnumber for correct loading of recalib from OADB
     Int_t             fnRBins;                              //
-    TH2F**            fHistoEleMapMean;  //[fnRBins]
-    TH2F**            fHistoEleMapWidth; //[fnRBins]
-    TH2F**            fHistoPosMapMean;  //[fnRBins]
-    TH2F**            fHistoPosMapWidth; //[fnRBins]
+    TH2S**            fHistoEleMapRecalib;  //[fnRBins]
+    TH2S**            fHistoPosMapRecalib;  //[fnRBins]
     Double_t          fGoodRegionCMin;                      ///< regions WITHOUT strong space charge distortions on C side
     Double_t          fGoodRegionAMin;                      ///<
     Double_t          fBadRegionCMin;                       ///< regions WITH strong space charge distortions on C side
