@@ -5,6 +5,8 @@ if(CMAKE_Fortran_COMPILER)
   add_subdirectory(AliFemto)
 endif(CMAKE_Fortran_COMPILER)
 
+include_directories(${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
+
 add_subdirectory(AliFemtoUser)
 add_subdirectory(Chaoticity)
 add_subdirectory(ESE)

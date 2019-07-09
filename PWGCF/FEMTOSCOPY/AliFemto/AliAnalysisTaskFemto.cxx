@@ -21,6 +21,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliFemtoEventReaderNanoAODChain.h"
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -289,6 +290,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
     }
   }
 
+
   if (auto *femtoReaderAOD = dynamic_cast<AliFemtoEventReaderAODChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -404,6 +406,46 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
   }
 
 
+
+  if (auto *femtoReaderNanoAOD = dynamic_cast<AliFemtoEventReaderNanoAODChain *>(fReader)) {
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    
+    if (!aodH) {
+      TObject *handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
+      if (fVerbose)
+        AliInfo("Has output handler ");
+      if (handler && handler->InheritsFrom("AliAODHandler")) {
+        if (fVerbose)
+          AliInfo("Selected NanoAOD analysis");
+
+        //fAOD = ((AliAODHandler *)handler)->GetAOD();
+
+
+	fNanoAODheader = dynamic_cast<AliNanoAODHeader *>(fVEvent->GetHeader());
+	if (!fNanoAODheader) AliFatal("Not a standard NanoAOD");
+	femtoReaderNanoAOD->SetAODheader(fNanoAODheader);
+
+	
+        fAnalysisType = 3;
+      } else {
+        if (fVerbose)
+          AliWarning("Selected NanoAOD reader but no AOD handler found");
+	}
+
+    } else {
+      if (fVerbose)
+        AliInfo("Selected NanoAOD analysis");
+      fAnalysisType = 3;
+      fVEvent = aodH->GetEvent();
+
+     
+
+    }
+  }
+
+
+
+  
   if (auto *femtoReaderAODKine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -479,6 +521,8 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskFemto::Exec(Option_t *)
 {
+
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   auto *event_handler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
 
@@ -592,13 +636,17 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     PostData(0, fOutputList);
   }
 
+
   if (fAnalysisType == 2) {
+
     if (!fAOD) {
       if (fVerbose)
-        AliWarning("fAOD not available");
+	AliWarning("fAOD not available");
       return;
     }
 
+
+    
     // Get AOD
 //     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(event_handler);
 
@@ -610,7 +658,6 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
 
 //       fAOD = aodH->GetEvent();
 //     }
-
 
 
 
@@ -630,6 +677,8 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
           fManager->ProcessEvent();
         }
 
+
+	
         else if (auto *fstd = dynamic_cast<AliFemtoEventReaderStandard *>(fReader)) {
           // Process the event
           fstd->SetAODSource(fAOD);
@@ -648,6 +697,25 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     // Post the output histogram list
     PostData(0, fOutputList);
   }
+
+
+
+    if (fAnalysisType == 3) {
+      
+      if (auto *faodc = dynamic_cast<AliFemtoEventReaderNanoAODChain *>(fReader)) {
+	// Process the event
+	if (!fVEvent)
+	  {
+	    return;
+	  }
+
+	//cout<<"fVEvent: "<<fVEvent<<endl;
+	faodc->SetInputEvent(fVEvent);
+          fManager->ProcessEvent();
+      }
+      // Post the output histogram list
+      PostData(0, fOutputList);
+    }
 }
 
 //________________________________________________________________________
@@ -687,6 +755,15 @@ void AliAnalysisTaskFemto::SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReade
     AliInfo("Selecting Femto reader for AOD\n");
   fReader = aReader;
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskFemto::SetFemtoReaderNanoAOD(AliFemtoEventReaderNanoAODChain *aReader)
+{
+  if (fVerbose)
+    AliInfo("Selecting Femto reader for NanoAOD\n");
+  fReader = aReader;
+}
+
 void AliAnalysisTaskFemto::SetFemtoReaderStandard(AliFemtoEventReaderStandard *aReader)
 {
   if (fVerbose)
@@ -740,6 +817,9 @@ void AliAnalysisTaskFemto::SetFemtoManager(AliFemtoManager *aManager)
   }
   else if (dynamic_cast<AliFemtoEventReaderAODChain*>(eventReader) != NULL) {
     SetFemtoReaderAOD((AliFemtoEventReaderAODChain *) eventReader);
+  }
+  else if (dynamic_cast<AliFemtoEventReaderNanoAODChain*>(eventReader) != NULL) {
+    SetFemtoReaderNanoAOD((AliFemtoEventReaderNanoAODChain *) eventReader);
   }
   else if (dynamic_cast<AliFemtoEventReaderStandard*>(eventReader) != NULL) {
     SetFemtoReaderStandard((AliFemtoEventReaderStandard *) eventReader);

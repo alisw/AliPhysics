@@ -9,7 +9,6 @@
 
 #include "AliNanoAODHeader.h"
 #include "AliNanoAODTrack.h"
-
 #include "AliAODConversionPhoton.h"
 
 #include "AliLog.h"

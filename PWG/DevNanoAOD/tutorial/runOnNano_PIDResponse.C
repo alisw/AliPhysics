@@ -17,7 +17,7 @@ void runOnNano_PIDResponse()
   
   // Create chain of input files
   TChain * chain = new TChain("aodTree");
-  chain->Add("AliAOD.NanoAOD.root");
+  chain->Add("~/Dropbox/Nasze_pPb/DEtaDPhi/2019/nanoAODs/SimplestConfig/AliAOD.NanoAOD.root");
 
   TStopwatch watch;
   mgr->StartAnalysis("local", chain, 1000);
