@@ -1287,30 +1287,39 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoJetJetNTrials     = new TH1F*[fnCuts];
   }
 
+  Bool_t EnableSphericity = kFALSE;
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetUseSphericity()!=0){
+      EnableSphericity = kTRUE;
+    }
+  }
+
   fHistoNGoodESDTracks        = new TH1F*[fnCuts];
   fHistoVertexZ               = new TH1F*[fnCuts];
   fHistoNGammaCandidates      = new TH1F*[fnCuts];
   fHistoNGammaCandidatesBasic = new TH1F*[fnCuts];
-  fHistoEventSphericity       = new TH1F*[fnCuts];
-  fHistoEventSphericityAxis   = new TH1F*[fnCuts];
-  fHistoEventSphericityvsNtracks    = new TH2F*[fnCuts];
-  fHistoEventSphericityvsNJets      = new TH2F*[fnCuts];
-  if(fIsMC >0){
-    fHistoTrueSphericityvsRecSphericity     = new TH2F*[fnCuts];
-    fHistoTrueMultiplicityvsRecMultiplicity = new TH2F*[fnCuts];
-    if(fDoTrueSphericity){
-        tTreeSphericity                         = new TTree*[fnCuts];
+  if(EnableSphericity){
+    fHistoEventSphericity       = new TH1F*[fnCuts];
+    fHistoEventSphericityAxis   = new TH1F*[fnCuts];
+    fHistoEventSphericityvsNtracks    = new TH2F*[fnCuts];
+    fHistoEventSphericityvsNJets      = new TH2F*[fnCuts];
+    if(fIsMC >0){
+      fHistoTrueSphericityvsRecSphericity     = new TH2F*[fnCuts];
+      fHistoTrueMultiplicityvsRecMultiplicity = new TH2F*[fnCuts];
+      if(fDoTrueSphericity){
+          tTreeSphericity                         = new TTree*[fnCuts];
+      }
+      fHistoPionSpectrum                      = new TH1F*[fnCuts];
+      fHistoProtonSpectrum                    = new TH1F*[fnCuts];
+      fHistoKaonSpectrum                      = new TH1F*[fnCuts];
+      fHistoNPionSpectrum                     = new TH1F*[fnCuts];
+      fHistoEtaSpectrum                       = new TH1F*[fnCuts];
+      fHistoDMesonSpectrum                    = new TH1F*[fnCuts];
     }
-    fHistoPionSpectrum                      = new TH1F*[fnCuts];
-    fHistoProtonSpectrum                    = new TH1F*[fnCuts];
-    fHistoKaonSpectrum                      = new TH1F*[fnCuts];
-    fHistoNPionSpectrum                     = new TH1F*[fnCuts];
-    fHistoEtaSpectrum                       = new TH1F*[fnCuts];
-    fHistoDMesonSpectrum                    = new TH1F*[fnCuts];
+    fHistoEventSphericityvsHighpt           = new TH2F*[fnCuts];
+    fHistoEventSphericityvsTotalpt          = new TH2F*[fnCuts];
+    fHistoEventSphericityvsMeanpt           = new TH2F*[fnCuts];
   }
-  fHistoEventSphericityvsHighpt           = new TH2F*[fnCuts];
-  fHistoEventSphericityvsTotalpt          = new TH2F*[fnCuts];
-  fHistoEventSphericityvsMeanpt           = new TH2F*[fnCuts];
   if(!fDoLightOutput){
     fHistoNGoodESDTracksVsNGammaCandidates  = new TH2F*[fnCuts];
     fHistoSPDClusterTrackletBackground      = new TH2F*[fnCuts];
