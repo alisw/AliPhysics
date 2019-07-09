@@ -1407,8 +1407,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->GetEffMassXi();
-                if ((SysCheck.at(sys) == "XiMassWindowLoose") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)) {
+                if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
+                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)) {
                     AliInfo(Form("XiMassWindowLoose! %s",
                                  (const char*)SysCheck.at(sys)));
                     continue;
@@ -2000,8 +2000,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->MassXi();
-                if ((SysCheck.at(sys) == "XiMassWindowLoose") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)){
+                if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
+                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)){
                     AliInfo(Form("XiMassWindowLoose! %s",
                                  (const char*)SysCheck.at(sys)));
                     continue;
