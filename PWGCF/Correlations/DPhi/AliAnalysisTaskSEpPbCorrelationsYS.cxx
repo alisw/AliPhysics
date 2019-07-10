@@ -151,6 +151,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fHistzvertex(0),
       fHistCentrality(0),
       fHistCentrality_beforecut(0),
+      fHistCentzvertex(0),
       mixedDist(0),
       mixedDist2(0),
       fHistLeadQA(0),      
@@ -172,6 +173,11 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS()
       fhistfmd(0),
       fhistits(0), 
       fhSecFMD(0),
+      fHist_NeventRun(0),
+      fHist_V0AMultRun(0),
+      fHist_V0CMultRun(0),
+      fHist_FMDAMultRun(0),
+      fHist_FMDCMultRun(0),
       fFMDV0(0),
       fFMDV0_post(0),
       fFMDV0A(0),
@@ -337,6 +343,7 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fHistzvertex(0),
       fHistCentrality(0),
       fHistCentrality_beforecut(0),
+      fHistCentzvertex(0),
       mixedDist(0),
       mixedDist2(0),
       fHistLeadQA(0),  
@@ -358,6 +365,11 @@ AliAnalysisTaskSEpPbCorrelationsYS::AliAnalysisTaskSEpPbCorrelationsYS(const cha
       fhistfmd(0),
       fhistits(0),
       fhSecFMD(0),
+      fHist_NeventRun(0),
+      fHist_V0AMultRun(0),
+      fHist_V0CMultRun(0),
+      fHist_FMDAMultRun(0),
+      fHist_FMDCMultRun(0),
       fFMDV0(0),
       fFMDV0_post(0),
       fFMDV0A(0),
@@ -533,12 +545,11 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fHist_Stat = new TH1F("fHist_Stat", "Stat Histogram", 11, -0.5, 10.5);
    fHist_Stat->GetXaxis()->SetBinLabel(1, "All Events");
    fHist_Stat->GetXaxis()->SetBinLabel(2, "Analyzed Events");
-   fHist_Stat->GetXaxis()->SetBinLabel(3, "Trigger OK");
+   fHist_Stat->GetXaxis()->SetBinLabel(3, "MultSelection OK");
    fHist_Stat->GetXaxis()->SetBinLabel(4, "Vertex OK");
    fHist_Stat->GetXaxis()->SetBinLabel(5, "Centrality OK");
-   fHist_Stat->GetXaxis()->SetBinLabel(6, "Pile-Up rejected");
-   fHist_Stat->GetXaxis()->SetBinLabel(7, "SPD vetex OK");
-   fHist_Stat->GetXaxis()->SetBinLabel(8, "FMD multi cut");
+   fHist_Stat->GetXaxis()->SetBinLabel(6, "FMD OK");
+   fHist_Stat->GetXaxis()->SetBinLabel(7, "FMD multi cut");
    fOutputList->Add(fHist_Stat);
 
    fHist_V0Stat = new TH1F("fHist_V0Stat", "Stat Histogram", 16, -0.5, 15.5);
@@ -565,26 +576,16 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 
    fHistCentrality_beforecut = new TH1F("fHistCentrality_beforecut", ";centrality;count", 100, 0, 100);
    fOutputList->Add(fHistCentrality_beforecut);
-   
+  
+   fHistCentzvertex = new TH2F("fHistCentzvertex", "Cent;VZ;count", 100,0, 100, 60, -15, 15);
+   fOutputList->Add(fHistCentzvertex);
+
+
    TTree *settingsTree = new TTree("UEAnalysisSettings", "Analysis Settings in UE estimation");
    settingsTree->Branch("fZVertex", &fZVertex, "fZVertex/D");
    settingsTree->Branch("fEtaMax", &fEtaMax, "fEtaMax/D");
    settingsTree->Branch("fPtMin", &fPtMin, "fPtMin/D");
    settingsTree->Branch("fMaxnSigmaTPCTOF", &fMaxnSigmaTPCTOF, "fMaxnSigmaTPCTOF/D");
-
-   // V0 Particle
-   settingsTree->Branch("fEtaMinV0", &fEtaMinV0, "fEtaMinV0/D");
-   settingsTree->Branch("fdcaDaughtersToPrimVtx", &fdcaDaughtersToPrimVtx, "fdcaDaughtersToPrimVtx/D");
-   settingsTree->Branch("fdcaBetweenDaughters", &fdcaBetweenDaughters, "fdcaBetweenDaughters/D");
-   settingsTree->Branch("fRadiMin", &fRadiMin, "fRadiMin/D");
-   settingsTree->Branch("fRadiMax", &fRadiMax, "fRadiMax/D");
-   settingsTree->Branch("fcutcTauK0", &fcutcTauK0, "fcutcTauK0");
-   settingsTree->Branch("fcutcTauLam", &fcutcTauLam, "fcutcTauLam");
-   settingsTree->Branch("fcosMinK0s", &fcosMinK0s, "fcosMinK0s");
-   settingsTree->Branch("fcosMinLambda", &fcosMinLambda, "fcosMinLambda");
-   settingsTree->Branch("fMaxnSigmaTPCV0", &fMaxnSigmaTPCV0, "fMaxnSigmaTPCV0");
-   // Phi
-   settingsTree->Branch("ffilterbit", &ffilterbit, "ffilterbit/I");
 
    //  settingsTree->Branch("fanamode",&fAnaMode,"fAnaMode/B");
    //  settingsTree->Branch("fanalysisasso",&fanalysisasso,"fanalysisasso/I");
@@ -701,6 +702,19 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        fOutputList2->Add(fhrefphiFMD[i]);
      }
    }
+
+	 fHist_NeventRun=new TH1F("fHist_NeventRun","fHist_NeventRun",200,-0.5,199.5);
+	 fOutputList2->Add(fHist_NeventRun);
+
+	 fHist_V0AMultRun=new TH1F("fHist_V0AMultRun","fHist_V0AMultRun",200,-0.5,199.5);
+	 fOutputList2->Add(fHist_V0AMultRun);
+	 fHist_V0CMultRun=new TH1F("fHist_V0CMultRun","fHist_V0CMultRun",200,-0.5,199.5);
+	 fOutputList2->Add(fHist_V0CMultRun);
+	 fHist_FMDAMultRun=new TH1F("fHist_FMDAMultRun","fHist_FMDAMultRun",200,-0.5,199.5);
+	 fOutputList2->Add(fHist_FMDAMultRun);
+	 fHist_FMDCMultRun=new TH1F("fHist_FMDCMultRun","fHist_FMDCMultRun",200,-0.5,199.5);
+	 fOutputList2->Add(fHist_FMDCMultRun);
+
 
 
    if(fAnaMode=="TPCFMD" || fAnaMode=="TPCFMDC" || fAnaMode=="ITSFMD" || fAnaMode=="ITSFMDC" || fAnaMode=="FMDFMD" || fAnaMode=="SECA"|| fAnaMode=="SECC"){
@@ -1655,7 +1669,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    */
    
    if(fcollisiontype=="pPb") fHistCentrality_beforecut->Fill(lCentrality);
-   fHist_Stat->Fill(5);
+   //   fHist_Stat->Fill(5);
    DumpTObjTable("After event selection");
    MakeAna();
       
@@ -1775,7 +1789,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
      
      delete hphiacceptance;
 
-     if(nFMD_fwd_hits==0 || nFMD_bwd_hits==0){
+     if(nFMD_fwd_hits==0. || nFMD_bwd_hits==0.){
        selectedTracksLeading->Clear();
        delete selectedTracksLeading;
        selectedTracksAssociated->Clear();
@@ -1785,7 +1799,7 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
        PostData(3, fOutputList2);
        return;} //events cuts
    
-   fHist_Stat->Fill(6);
+   fHist_Stat->Fill(5);
    
    DumpTObjTable("End of fill fmd tracks");
    
@@ -1794,42 +1808,38 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
    fFMDV0->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
    fFMDV0A->Fill(nFMD_fwd_hits, nV0A_hits);
    fFMDV0C->Fill(nFMD_bwd_hits, nV0C_hits);
-   if(fAnaMode!="TPCTPC"){
+   fHist_NeventRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()));
+   fHist_V0AMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nV0A_hits);
+   fHist_V0CMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nV0C_hits);
+   fHist_FMDAMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nFMD_fwd_hits);
+   fHist_FMDCMultRun->Fill(ConvertRunNumber(fEvent->GetRunNumber()),nFMD_bwd_hits);
+
+
+   //   if(fAnaMode!="TPCTPC"){
      if(fFMDcut){
-       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
-	 selectedTracksLeading->Clear();
-	 delete selectedTracksLeading;
-	 selectedTracksAssociated->Clear();
-	 delete selectedTracksAssociated;
-	 PostData(1, fOutputList);
-	 PostData(2, fOutputList1);
-	 PostData(3, fOutputList2);
-	 return;
+	   //       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 20) {
+	   if((nV0A_hits<(1.3*nFMD_fwd_hits-200)) || (nV0C_hits<(2.*nFMD_bwd_hits-200)) ){
+		 selectedTracksLeading->Clear();
+		 delete selectedTracksLeading;
+		 selectedTracksAssociated->Clear();
+		 delete selectedTracksAssociated;
+		 PostData(1, fOutputList);
+		 PostData(2, fOutputList1);
+		 PostData(3, fOutputList2);
+		 return;
        }
      }
-       /*
-     }else{
-       if (nV0A_hits + nV0C_hits < 1.5*(nFMD_fwd_hits + nFMD_bwd_hits) - 100){
-	 selectedTracksLeading->Clear();
-	 delete selectedTracksLeading;
-	 selectedTracksAssociated->Clear();
-	 delete selectedTracksAssociated;
-	 PostData(1, fOutputList);
-	 PostData(2, fOutputList1);
-	 PostData(3, fOutputList2);
-	 return;
-       } //events cuts
-     }
-       */
-   }
+	 //}
    
    fFMDV0_post->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
    fFMDV0A_post->Fill(nFMD_fwd_hits, nV0A_hits);
    fFMDV0C_post->Fill(nFMD_bwd_hits, nV0C_hits);
  }
-fHist_Stat->Fill(7);
+fHist_Stat->Fill(6);
 if(fcollisiontype=="pPb") fHistCentrality->Fill(lCentrality);
-fHistzvertex->Fill(tPrimaryVtxPosition[2]);
+ fHistzvertex->Fill(tPrimaryVtxPosition[2]);
+ fHistCentzvertex->Fill(lCentrality, tPrimaryVtxPosition[2]);
+ 
 DumpTObjTable("End of FMD vs V0 cuts");
 
 
@@ -3792,4 +3802,51 @@ void AliAnalysisTaskSEpPbCorrelationsYS::DumpTObjTable(const char* note)
   }
   //  gObjectTable->Print();
 }
+
+ Int_t AliAnalysisTaskSEpPbCorrelationsYS::ConvertRunNumber(Int_t run){
+  switch(run){	
+  case  265309 : return 0;
+  case  265332 : return 1;
+  case  265334 : return 2;
+  case  265336 : return 3;
+  case  265338 : return 4;
+  case  265339 : return 5;
+  case  265342 : return 6;
+  case  265343 : return 7;
+  case  265344 : return 8;
+  case  265377 : return 9;
+  case  265378 : return 10;
+  case  265381 : return 11;
+  case  265383 : return 12;
+  case  265384 : return 13;
+  case  265385 : return 14;
+  case  265387 : return 15;
+  case  265388 : return 16;
+  case  265419 : return 17;
+  case  265420 : return 18;
+  case  265421 : return 19;
+  case  265422 : return 20;
+  case  265424 : return 21;
+  case  265425 : return 22;
+  case  265426 : return 23;
+  case  265427 : return 24;
+  case  265435 : return 25;
+  case  265499 : return 26;
+  case  265500 : return 27;
+  case  265501 : return 28;
+  case  265521 : return 29;
+  case  265525 : return 30;
+  case  267166 : return 31; //16t
+  case  267165 : return 32; //16t
+  case  267164 : return 33; //16t
+  case  267163 : return 34; //16t
+  case  267161 : return 35; //16t
+
+  default : return 199;
+
+
+  } 
+
+}
+
 
