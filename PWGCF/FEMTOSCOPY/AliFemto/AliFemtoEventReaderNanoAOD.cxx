@@ -413,13 +413,28 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 
     norm_mult = tracksPrim;
 
-    string multString = "MultSelection."+fEstEventMult;
-    int nMultString = multString.length(); 
-    char multChar[nMultString + 1]; 
-    strcpy(multChar, multString.c_str()); 
-    
-    static const Int_t kRefMult = fAODheader->GetVarIndex(multChar);
-    norm_mult  = fAODheader->GetVar(kRefMult);
+    if(fEstEventMult == "RefMult08")
+      {
+	static const Int_t kRefMult = fAODheader->GetVarIndex("MultSelection.RefMult08");
+	norm_mult  = fAODheader->GetVar(kRefMult);
+      }
+    else if(fEstEventMult == "TRK")
+      {
+	norm_mult = 10*fAODheader->GetCentr("TRK");
+      }
+    else if(fEstEventMult == "CL0")
+      {
+	norm_mult = 10*fAODheader->GetCentr("CL0");
+      }
+    else if(fEstEventMult == "CL1")
+      {
+	norm_mult = 10*fAODheader->GetCentr("CL0");
+      }
+    else if(fEstEventMult == "V0M")
+      {
+	norm_mult = 10*fAODheader->GetCentr("V0M");
+      }
+      
     tEvent->SetNormalizedMult(norm_mult);
 
     AliFemtoTrack *trackCopy = CopyAODtoFemtoTrack(aodtrack);
@@ -452,11 +467,10 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 	static const Int_t kcstNSigmaTPCE  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kElectron);
 
 	
-	const float nsigmaTPCK = aodtrack->GetVar(kcstNSigmaTPCK); 
-	const float nsigmaTPCPi = aodtrack->GetVar(kcstNSigmaTPCPi); 
+	const float nsigmaTPCK = aodtrack->GetVar(kcstNSigmaTPCK);
+	const float nsigmaTPCPi = aodtrack->GetVar(kcstNSigmaTPCPi);
 	const float nsigmaTPCP = aodtrack->GetVar(kcstNSigmaTPCPr);
-	const float nsigmaTPCE = aodtrack->GetVar(kcstNSigmaTPCE);
-
+	const float nsigmaTPCE = aodtrack->GetVar(kcstNSigmaTPCE); 
 
 	trackCopy->SetNSigmaTPCPi(nsigmaTPCPi);
 	trackCopy->SetNSigmaTPCK(nsigmaTPCK);
