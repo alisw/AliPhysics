@@ -337,7 +337,7 @@ void SetSignalsMC(AliDielectron* die){
   eleFinalStateFromB->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   eleFinalStateFromB->SetMotherPDGs(502, 502);
   eleFinalStateFromB->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  //eleFinalStateFromB->SetFillPureMCStep(kTRUE);
+  eleFinalStateFromB->SetCheckCorrelatedHF(kTRUE);
   die->AddSignalMC(eleFinalStateFromB);
 
   // Electrons from open charm mesons and baryons
@@ -347,7 +347,7 @@ void SetSignalsMC(AliDielectron* die){
   eleFinalStateFromD->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
   eleFinalStateFromD->SetMotherPDGs(402, 402);
   eleFinalStateFromD->SetCheckBothChargesMothers(kTRUE,kTRUE);
-  //eleFinalStateFromD->SetFillPureMCStep(kTRUE);
+  eleFinalStateFromD->SetCheckCorrelatedHF(kTRUE);
   die->AddSignalMC(eleFinalStateFromD);
 
   /* // D+- meson (1)(1) */
