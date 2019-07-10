@@ -811,7 +811,7 @@ Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge
       BinCl = i;
     }
   }
-  if (BinCl == -1 || BinCl == -1>3){
+  if (BinCl == -1 || BinCl >  3){
     cout<< " no valid TPC cluster number ..., not recalibrating"<< endl;
     return CornSig;// do nothing if correction map is not avaible
   }
@@ -1660,7 +1660,6 @@ Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, Ali
   Double_t CentrnSig[2] ={-1.,-1.};//negative, positive
   Double_t P[2]         ={-1.,-1.};
   Double_t Eta[2]       ={-1.,-1.};
-  Double_t R            =-1.;
 
   Float_t KappaPlus, KappaMinus, Kappa;
   if(fDoElecDeDxPostCalibration){
@@ -1670,7 +1669,6 @@ Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, Ali
     P[1]        =posTrack->P();
     Eta[0]      =negTrack->Eta();
     Eta[1]      =posTrack->Eta();
-    R           =gamma->GetConversionRadius();
     KappaMinus = GetCorrectedElectronTPCResponse(negTrack->Charge(),CentrnSig[0],P[0],Eta[0],negTrack->GetTPCNcls());
     KappaPlus =  GetCorrectedElectronTPCResponse(posTrack->Charge(),CentrnSig[1],P[1],Eta[1],posTrack->GetTPCNcls());
   }else{
@@ -1737,12 +1735,10 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   Double_t electronNSigmaTPCCor=0.;
   Double_t P=0.;
   Double_t Eta=0.;
-  Double_t R=0.;
 
   if(fDoElecDeDxPostCalibration){
     P = fCurrentTrack->P();
     Eta = fCurrentTrack->Eta();
-    R = photon->GetConversionRadius();
     electronNSigmaTPCCor = GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,fCurrentTrack->GetTPCNcls());
   }
 
