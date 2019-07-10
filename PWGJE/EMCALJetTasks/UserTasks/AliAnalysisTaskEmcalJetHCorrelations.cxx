@@ -71,7 +71,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
   fRandom(0),
-  fSingleTrackEfficiencyCorrectionType(AliAnalysisTaskEmcalJetHCorrelations::kEffDisable),
+  fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kDisableEff),
   fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
   fJESCorrectionHist(nullptr),
@@ -107,7 +107,7 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
   fRandom(0),
-  fSingleTrackEfficiencyCorrectionType(AliAnalysisTaskEmcalJetHCorrelations::kEffDisable),
+  fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kDisableEff),
   fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
   fJESCorrectionHist(nullptr),
@@ -206,6 +206,14 @@ void AliAnalysisTaskEmcalJetHCorrelations::RetrieveAndSetTaskPropertiesFromYAMLC
   // General task options
   baseName = "general";
   fYAMLConfig.GetProperty({baseName, "nCentBins"}, fNcentBins, false);
+
+  // Efficiency
+  std::string tempStr = "";
+  baseName = "efficiency";
+  res = fYAMLConfig.GetProperty({baseName, "periodIdentifier"}, tempStr, false);
+  if (res) {
+    fEfficiencyPeriodIdentifier = AliAnalysisTaskEmcalJetHUtils::fgkEfficiencyPeriodIdentifier.at(tempStr);
+  }
 }
 
 /**
@@ -1016,186 +1024,17 @@ TObjArray* AliAnalysisTaskEmcalJetHCorrelations::CloneAndReduceTrackList(std::ve
 }
 
 /**
- * Utility function to apply the efficiency correction. This function always uses fBeamType, which
- * is preferred when speed is desired (ie for analysis). The function below is used for external
- * testing of the efficiency correction.
+ * Utility function to apply the determine the single track efficiency.
  *
- * @param trackETA Eta of the track
- * @param trackPT pT of the track
+ * @param trackEta Eta of the track
+ * @param trackPt pT of the track
  *
- * @return Track efficiency of the track (the entry should be weighted as 1/(return value))
+ * @return Track efficiency of the track (the entry in a histogram should be weighted as 1/(return value))
  */
-Double_t AliAnalysisTaskEmcalJetHCorrelations::EffCorrection(Double_t trackETA, Double_t trackPT) const {
-  return EffCorrection(trackETA, trackPT, fBeamType);
-}
-
-/**
- * Determine the efficiency correction for a given track pT and eta. fDoEffCorrection determines
- * the mode of the correction:
- * - 0 disables the correction.
- * - 1 enables the correction. In Pb-Pb, this will automatically select the proper efficiency based
- *   on run list (Good vs Semi-good) and centrality.
- * - 2-9 Explicitly select an Pb-Pb efficiency correction function. It will not be automatically
- *   selected later!
- *
- * @param trackETA Eta of the track.
- * @param trackPT pT of the track.
- * @param beamType Type of collision system.
- *
- * @return Track efficiency of the track (the entry should be weighted as 1/(return value))
- */
-Double_t AliAnalysisTaskEmcalJetHCorrelations::EffCorrection(Double_t trackETA, Double_t trackPT, AliAnalysisTaskEmcal::BeamType beamType) const
-{
-  // default (current) parameters
-  // x-variable = track pt, y-variable = track eta
-  Double_t x = trackPT;
-  Double_t y = trackETA;
-  double etaaxis = 0;
-  double ptaxis = 0;
-
-  // Efficiency paramaters
-  double TRefficiency = -1;
-  int effSwitch = 1;
-
-  if (fSingleTrackEfficiencyCorrectionType == AliAnalysisTaskEmcalJetHCorrelations::kEffAutomaticConfiguration) {
-    if (beamType == AliAnalysisTaskEmcal::kAA) {
-      // Setup for Pb--Pb
-      int runQuality = -1;
-      // Semi-Good OROC C08 Runlists
-      if (fCurrentRunNumber == 169975 || fCurrentRunNumber == 169981 || fCurrentRunNumber == 170038 || fCurrentRunNumber == 170040 || fCurrentRunNumber == 170083 || fCurrentRunNumber == 170084 || fCurrentRunNumber == 170085 || fCurrentRunNumber == 170088 || fCurrentRunNumber == 170089 || fCurrentRunNumber == 170091 || fCurrentRunNumber == 170152 || fCurrentRunNumber == 170155 || fCurrentRunNumber == 170159 || fCurrentRunNumber == 170163 || fCurrentRunNumber == 170193 || fCurrentRunNumber == 170195 || fCurrentRunNumber == 170203 || fCurrentRunNumber == 170204 || fCurrentRunNumber == 170228 || fCurrentRunNumber == 170230 || fCurrentRunNumber == 170268 || fCurrentRunNumber == 170269 || fCurrentRunNumber == 170270 || fCurrentRunNumber == 170306 || fCurrentRunNumber == 170308 || fCurrentRunNumber == 170309) runQuality = 0;
-
-      // Good Runlists
-      if (fCurrentRunNumber == 167902 || fCurrentRunNumber == 167903 || fCurrentRunNumber == 167915 || fCurrentRunNumber == 167920 || fCurrentRunNumber == 167987 || fCurrentRunNumber == 167988 || fCurrentRunNumber == 168066 || fCurrentRunNumber == 168068 || fCurrentRunNumber == 168069 || fCurrentRunNumber == 168076 || fCurrentRunNumber == 168104 || fCurrentRunNumber == 168107 || fCurrentRunNumber == 168108 || fCurrentRunNumber == 168115 || fCurrentRunNumber == 168212 || fCurrentRunNumber == 168310 || fCurrentRunNumber == 168311 || fCurrentRunNumber == 168322 || fCurrentRunNumber == 168325 || fCurrentRunNumber == 168341 || fCurrentRunNumber == 168342 || fCurrentRunNumber == 168361 || fCurrentRunNumber == 168362 || fCurrentRunNumber == 168458 || fCurrentRunNumber == 168460 || fCurrentRunNumber == 168461 || fCurrentRunNumber == 168464 || fCurrentRunNumber == 168467 || fCurrentRunNumber == 168511 || fCurrentRunNumber == 168512 || fCurrentRunNumber == 168777 || fCurrentRunNumber == 168826 || fCurrentRunNumber == 168984 || fCurrentRunNumber == 168988 || fCurrentRunNumber == 168992 || fCurrentRunNumber == 169035 || fCurrentRunNumber == 169091 || fCurrentRunNumber == 169094 || fCurrentRunNumber == 169138 || fCurrentRunNumber == 169143 || fCurrentRunNumber == 169144 || fCurrentRunNumber == 169145 || fCurrentRunNumber == 169148 || fCurrentRunNumber == 169156 || fCurrentRunNumber == 169160 || fCurrentRunNumber == 169167 || fCurrentRunNumber == 169238 || fCurrentRunNumber == 169411 || fCurrentRunNumber == 169415 || fCurrentRunNumber == 169417 || fCurrentRunNumber == 169835 || fCurrentRunNumber == 169837 || fCurrentRunNumber == 169838 || fCurrentRunNumber == 169846 || fCurrentRunNumber == 169855 || fCurrentRunNumber == 169858 || fCurrentRunNumber == 169859 || fCurrentRunNumber == 169923 || fCurrentRunNumber == 169956 || fCurrentRunNumber == 170027 || fCurrentRunNumber == 170036 || fCurrentRunNumber == 170081) runQuality = 1;
-
-      // Determine which efficiency to use.
-      // This is just a way to map all possible values of the cent bin and runQuality to a unique flag.
-      // 4 is the number of cent bins, and we want to index the effSwitch starting at 2.
-      if (runQuality != -1) {
-        effSwitch = 2 + runQuality*4 + fCentBin;
-      }
-    }
-    else if (beamType == AliAnalysisTaskEmcal::kpA) {
-      // pA
-      AliErrorStream() << "Single track efficiency for pA is not available.\n";
-      return 0;
-    }
-    else if (beamType == AliAnalysisTaskEmcal::kpp) {
-      // Setup for pp
-      effSwitch = 10;
-    }
-    else {
-      AliErrorStream() << "Beam type " << fBeamType << " is not defined\n";
-      return 0;
-    }
-  }
-  else if (fSingleTrackEfficiencyCorrectionType == AliAnalysisTaskEmcalJetHCorrelations::kEffPP) {
-    // Manually set to pp (for example, during embedding)
-    effSwitch = 10;
-  }
-  else if (fSingleTrackEfficiencyCorrectionType == AliAnalysisTaskEmcalJetHCorrelations::kEffDisable) {
-    // Use the default value, which is to have a constant efficiency of 1
-    effSwitch = 1;
-  }
-  else {
-    AliErrorStream() << "Single track efficiency correction type " << fSingleTrackEfficiencyCorrectionType << " is not recongized!\n";
-  }
-
-  AliDebugStream(5) << "Using efficiency switch value of " << effSwitch << "\n";
-
-  switch(effSwitch) {
-    case 1 :
-      // first switch value - TRefficiency not used so = 1
-      // In this case, the run number isn't in any run list, so efficiency = 1
-      TRefficiency = 1.0;
-      break;
-
-    case 2 :
-      // Parameter values for Semi-GOOD TPC (LHC11h) runs (0-10%):
-      ptaxis = (x<2.9)*(p0_10SG[0]*exp(-pow(p0_10SG[1]/x,p0_10SG[2])) + p0_10SG[3]*x) + (x>=2.9)*(p0_10SG[4] + p0_10SG[5]*x + p0_10SG[6]*x*x);
-      etaaxis = (y<-0.07)*(p0_10SG[7]*exp(-pow(p0_10SG[8]/TMath::Abs(y+0.91),p0_10SG[9])) + p0_10SG[10]*y) + (y>=-0.07 && y<=0.4)*(p0_10SG[11] + p0_10SG[12]*y + p0_10SG[13]*y*y) + (y>0.4)*(p0_10SG[14]*exp(-pow(p0_10SG[15]/TMath::Abs(-y+0.91),p0_10SG[16])));
-      TRefficiency = ptaxis*etaaxis;
-      break;
-
-    case 3 :
-      // Parameter values for Semi-GOOD TPC (LHC11h) runs (10-30%):
-      ptaxis = (x<2.9)*(p10_30SG[0]*exp(-pow(p10_30SG[1]/x,p10_30SG[2])) + p10_30SG[3]*x) + (x>=2.9)*(p10_30SG[4] + p10_30SG[5]*x + p10_30SG[6]*x*x);
-      etaaxis = (y<-0.07)*(p10_30SG[7]*exp(-pow(p10_30SG[8]/TMath::Abs(y+0.91),p10_30SG[9])) + p10_30SG[10]*y) + (y>=-0.07 && y<=0.4)*(p10_30SG[11] + p10_30SG[12]*y + p10_30SG[13]*y*y) + (y>0.4)*(p10_30SG[14]*exp(-pow(p10_30SG[15]/TMath::Abs(-y+0.91),p10_30SG[16])));
-      TRefficiency = ptaxis*etaaxis;
-      break;
-
-    case 4 :
-      // Parameter values for Semi-GOOD TPC (LHC11h) runs (30-50%):
-      ptaxis = (x<2.9)*(p30_50SG[0]*exp(-pow(p30_50SG[1]/x,p30_50SG[2])) + p30_50SG[3]*x) + (x>=2.9)*(p30_50SG[4] + p30_50SG[5]*x + p30_50SG[6]*x*x);
-      etaaxis = (y<-0.07)*(p30_50SG[7]*exp(-pow(p30_50SG[8]/TMath::Abs(y+0.91),p30_50SG[9])) + p30_50SG[10]*y) + (y>=-0.07 && y<=0.4)*(p30_50SG[11] + p30_50SG[12]*y + p30_50SG[13]*y*y) + (y>0.4)*(p30_50SG[14]*exp(-pow(p30_50SG[15]/TMath::Abs(-y+0.91),p30_50SG[16])));
-      TRefficiency = ptaxis*etaaxis;
-      break;
-
-    case 5 :
-      // Parameter values for Semi-GOOD TPC (LHC11h) runs (50-90%):
-      ptaxis = (x<2.9)*(p50_90SG[0]*exp(-pow(p50_90SG[1]/x,p50_90SG[2])) + p50_90SG[3]*x) + (x>=2.9)*(p50_90SG[4] + p50_90SG[5]*x + p50_90SG[6]*x*x);
-      etaaxis = (y<-0.07)*(p50_90SG[7]*exp(-pow(p50_90SG[8]/TMath::Abs(y+0.91),p50_90SG[9])) + p50_90SG[10]*y) + (y>=-0.07 && y<=0.4)*(p50_90SG[11] + p50_90SG[12]*y + p50_90SG[13]*y*y) + (y>0.4)*(p50_90SG[14]*exp(-pow(p50_90SG[15]/TMath::Abs(-y+0.91),p50_90SG[16])));
-      TRefficiency = ptaxis*etaaxis;
-      break;
-
-    case 6 :
-      // Parameter values for GOOD TPC (LHC11h) runs (0-10%):
-      ptaxis = (x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x) + (x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x);
-      etaaxis = (y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.91),p0_10G[9])) + p0_10G[10]*y) + (y>=0.0 && y<=0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y) + (y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.91),p0_10G[16])));
-      TRefficiency = ptaxis*etaaxis;
-      break;
-
-    case 7 :
-      // Parameter values for GOOD TPC (LHC11h) runs (10-30%):
-      ptaxis = (x<2.9)*(p10_30G[0]*exp(-pow(p10_30G[1]/x,p10_30G[2])) + p10_30G[3]*x) + (x>=2.9)*(p10_30G[4] + p10_30G[5]*x + p10_30G[6]*x*x);
-      etaaxis = (y<0.0)*(p10_30G[7]*exp(-pow(p10_30G[8]/TMath::Abs(y+0.91),p10_30G[9])) + p10_30G[10]*y) + (y>=0.0 && y<=0.4)*(p10_30G[11] + p10_30G[12]*y + p10_30G[13]*y*y) + (y>0.4)*(p10_30G[14]*exp(-pow(p10_30G[15]/TMath::Abs(-y+0.91),p10_30G[16])));
-      TRefficiency = ptaxis*etaaxis;
-      break;
-
-    case 8 :
-      // Parameter values for GOOD TPC (LHC11h) runs (30-50%):
-      ptaxis = (x<2.9)*(p30_50G[0]*exp(-pow(p30_50G[1]/x,p30_50G[2])) + p30_50G[3]*x) + (x>=2.9)*(p30_50G[4] + p30_50G[5]*x + p30_50G[6]*x*x);
-      etaaxis = (y<0.0)*(p30_50G[7]*exp(-pow(p30_50G[8]/TMath::Abs(y+0.91),p30_50G[9])) + p30_50G[10]*y) + (y>=0.0 && y<=0.4)*(p30_50G[11] + p30_50G[12]*y + p30_50G[13]*y*y) + (y>0.4)*(p30_50G[14]*exp(-pow(p30_50G[15]/TMath::Abs(-y+0.91),p30_50G[16])));
-      TRefficiency = ptaxis*etaaxis;
-      break;
-
-    case 9 :
-      // Parameter values for GOOD TPC (LHC11h) runs (50-90%):
-      ptaxis = (x<2.9)*(p50_90G[0]*exp(-pow(p50_90G[1]/x,p50_90G[2])) + p50_90G[3]*x) + (x>=2.9)*(p50_90G[4] + p50_90G[5]*x + p50_90G[6]*x*x);
-      etaaxis = (y<0.0)*(p50_90G[7]*exp(-pow(p50_90G[8]/TMath::Abs(y+0.91),p50_90G[9])) + p50_90G[10]*y) + (y>=0.0 && y<=0.4)*(p50_90G[11] + p50_90G[12]*y + p50_90G[13]*y*y) + (y>0.4)*(p50_90G[14]*exp(-pow(p50_90G[15]/TMath::Abs(-y+0.91),p50_90G[16])));
-      TRefficiency = ptaxis*etaaxis;
-      break;
-
-    case 10 :
-      {
-        // Track efficiency for pp
-        // Calculated using LHC12f1a. See analysis note for more details!
-        // If the trackPt > 6 GeV, then all we need is this coefficient
-        Double_t coefficient = 0.898052;                                                // p6
-        if (trackPT < 6) {
-          coefficient =  (1 + -0.442232 * trackPT                                     // p0
-                   +  0.501831 * std::pow(trackPT, 2)                        // p1
-                   + -0.252024 * std::pow(trackPT, 3)                        // p2
-                   +  0.062964 * std::pow(trackPT, 4)                        // p3
-                   + -0.007681 * std::pow(trackPT, 5)                        // p4
-                   +  0.000365 * std::pow(trackPT, 6));                      // p5
-        }
-
-        // Calculate track eff
-        TRefficiency = coefficient * (1 +  0.402825 * std::abs(trackETA)                // p7
-                        + -2.213152 * std::pow(trackETA, 2)             // p8
-                        +  4.311098 * std::abs(std::pow(trackETA, 3))   // p9
-                        + -2.778200 * std::pow(trackETA, 4));           // p10
-        break;
-      }
-
-    default :
-      // no Efficiency Switch option selected.. therefore don't correct, and set eff = 1
-      // ie. The efficiency correction is disabled.
-      AliErrorStream() << "No single track efficiency setting selected! Please select one.\n";
-      TRefficiency = 0.;
-  }
-
-  return TRefficiency;
+Double_t AliAnalysisTaskEmcalJetHCorrelations::EffCorrection(Double_t trackEta, Double_t trackPt) const {
+  return AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(
+   trackPt, trackEta, fCentBin, fEfficiencyPeriodIdentifier,
+   "PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations");
 }
 
 /**
@@ -1434,7 +1273,6 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
    const Bool_t lessSparseAxes,
    const Bool_t widerTrackBin,
    // Corrections
-   const AliAnalysisTaskEmcalJetHCorrelations::ESingleTrackEfficiency_t singleTrackEfficiency,
    const Bool_t JESCorrection,
    const char * JESCorrectionFilename,
    const char * JESCorrectionHistName,
@@ -1495,7 +1333,6 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
   correlationTask->SetDoLessSparseAxes(lessSparseAxes);
   correlationTask->SetDoWiderTrackBin(widerTrackBin);
   // Corrections
-  correlationTask->SetSingleTrackEfficiencyType(singleTrackEfficiency);
   if (JESCorrection == kTRUE)
   {
     Bool_t result = correlationTask->RetrieveAndInitializeJESCorrectionHist(JESCorrectionFilename, JESCorrectionHistName, correlationTask->GetTrackBias(), correlationTask->GetClusterBias());
@@ -1714,6 +1551,9 @@ std::string AliAnalysisTaskEmcalJetHCorrelations::toString() const
   tempSS << "\tRequire an additional match to a part level jet: " << fRequireMatchedPartLevelJet << "\n";
   tempSS << "\tMinimum shared momentum fraction: " << fMinSharedMomentumFraction << "\n";
   tempSS << "\tMax matched jet distance: " << fMaxMatchedJetDistance << "\n";
+  tempSS << "Efficiency\n";
+  tempSS << "\tSingle track efficiency identifier: " << fEfficiencyPeriodIdentifier << "\n";
+  tempSS << "\tArtifical track inefficiency: " << fArtificialTrackInefficiency << "\n";
 
   return tempSS.str();
 }
