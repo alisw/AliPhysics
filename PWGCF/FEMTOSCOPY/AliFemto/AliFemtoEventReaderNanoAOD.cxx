@@ -300,7 +300,7 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
 
 
 
-  AliNanoAODHeader *header = dynamic_cast<AliNanoAODHeader *>(fEvent->GetHeader());
+  //AliNanoAODHeader *header = dynamic_cast<AliNanoAODHeader *>(fEvent->GetHeader());
   //assert(header && "Not a standard AOD");
 
   //tEvent->SetReactionPlaneAngle(header->GetQTheta(0) / 2.0);
@@ -418,11 +418,8 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
     char multChar[nMultString + 1]; 
     strcpy(multChar, multString.c_str()); 
     
-    norm_mult  = header->GetVarIndex(multChar);
-    //norm_mult  = header->GetVarIndex("MultSelection.RefMult08");
-    cout<<"header: "<<header<<endl;
-    cout<<"multChar: "<<multChar<<endl;
-    cout<<"norm_mult: "<<norm_mult<<endl;
+    static const Int_t kRefMult = fAODheader->GetVarIndex("MultSelection.RefMult08");
+    norm_mult  = fAODheader->GetVar(kRefMult);
     tEvent->SetNormalizedMult(norm_mult);
 
     AliFemtoTrack *trackCopy = CopyAODtoFemtoTrack(aodtrack);

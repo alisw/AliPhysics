@@ -44,6 +44,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   fAOD(NULL),
   fAODpidUtil(NULL),
   fAODheader(NULL),
+  fNanoAODheader(NULL),
   fStack(NULL),
   fOutputList(NULL),
   fReader(NULL),
@@ -88,6 +89,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   fAOD(NULL),
   fAODpidUtil(NULL),
   fAODheader(NULL),
+  fNanoAODheader(NULL),
   fStack(NULL),
   fOutputList(NULL),
   fReader(NULL),
@@ -130,6 +132,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   fAOD(aFemtoTask.fAOD),
   fAODpidUtil(aFemtoTask.fAODpidUtil),
   fAODheader(aFemtoTask.fAODheader),
+  fNanoAODheader(aFemtoTask.fNanoAODheader),
   fStack(aFemtoTask.fStack),
   fOutputList(aFemtoTask.fOutputList),
   fReader(aFemtoTask.fReader),
@@ -219,6 +222,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
   fAOD = nullptr;
   fAODpidUtil = nullptr;
   fAODheader = nullptr;
+  fNanoAODheader = nullptr;
   fAnalysisType = 0;
 
   TTree *tree = dynamic_cast<TTree *>(GetInputData(0));
@@ -289,7 +293,6 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
       //       }
     }
   }
-
 
   if (auto *femtoReaderAOD = dynamic_cast<AliFemtoEventReaderAODChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -405,15 +408,14 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
     }
   }
 
-
-
   if (auto *femtoReaderNanoAOD = dynamic_cast<AliFemtoEventReaderNanoAODChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    
+    AliAnalysisTaskSE::ConnectInputData();    
     if (!aodH) {
       TObject *handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
-      if (fVerbose)
+      if (fVerbose) {
         AliInfo("Has output handler ");
+      }
       if (handler && handler->InheritsFrom("AliAODHandler")) {
         if (fVerbose)
           AliInfo("Selected NanoAOD analysis");
@@ -436,16 +438,11 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
       if (fVerbose)
         AliInfo("Selected NanoAOD analysis");
       fAnalysisType = 3;
-      fVEvent = aodH->GetEvent();
-
-     
+    
 
     }
   }
 
-
-
-  
   if (auto *femtoReaderAODKine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
@@ -521,8 +518,6 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskFemto::Exec(Option_t *)
 {
-
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   auto *event_handler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
 
@@ -636,7 +631,6 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     PostData(0, fOutputList);
   }
 
-
   if (fAnalysisType == 2) {
 
     if (!fAOD) {
@@ -644,22 +638,6 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
 	AliWarning("fAOD not available");
       return;
     }
-
-
-    
-    // Get AOD
-//     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(event_handler);
-
-//     if (!aodH) {
-//       AliWarning("Could not get AODInputHandler");
-//       return;
-//     }
-//     else {
-
-//       fAOD = aodH->GetEvent();
-//     }
-
-
 
     if (fVerbose) {
       AliInfo(Form("Tracks in AOD: %d \n", fAOD->GetNumberOfTracks()));
@@ -677,8 +655,6 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
           fManager->ProcessEvent();
         }
 
-
-	
         else if (auto *fstd = dynamic_cast<AliFemtoEventReaderStandard *>(fReader)) {
           // Process the event
           fstd->SetAODSource(fAOD);
@@ -698,24 +674,24 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
     PostData(0, fOutputList);
   }
 
-
-
     if (fAnalysisType == 3) {
       
       if (auto *faodc = dynamic_cast<AliFemtoEventReaderNanoAODChain *>(fReader)) {
 	// Process the event
-	if (!fVEvent)
+	if (!fInputEvent)
 	  {
 	    return;
 	  }
 
-	//cout<<"fVEvent: "<<fVEvent<<endl;
-	faodc->SetInputEvent(fVEvent);
-          fManager->ProcessEvent();
+	faodc->SetInputEvent(fInputEvent);
+	AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
+	faodc->SetAODheader(nanoHeader);
+        fManager->ProcessEvent();
       }
       // Post the output histogram list
       PostData(0, fOutputList);
     }
+  
 }
 
 //________________________________________________________________________
