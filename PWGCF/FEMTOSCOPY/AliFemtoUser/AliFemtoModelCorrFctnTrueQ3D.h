@@ -55,6 +55,28 @@ public:
       , mc_manager(NULL)
       {}
 
+    Parameters(const Parameters &orig)
+      : bin_count(orig.bin_count)
+      , qmin(orig.qmin)
+      , qmax(orig.qmax)
+      , prefix(orig.prefix)
+      , enable_extra_hists(orig.enable_extra_hists)
+      , enable_extra_denoms(orig.enable_extra_denoms)
+      , mc_manager(orig.mc_manager)
+      { }
+
+    Parameters& operator=(const Parameters &rhs)
+      {
+        bin_count = rhs.bin_count;
+        qmin = rhs.qmin;
+        qmax = rhs.qmax;
+        prefix = rhs.prefix;
+        enable_extra_hists = rhs.enable_extra_hists;
+        enable_extra_denoms = rhs.enable_extra_denoms;
+        mc_manager = rhs.mc_manager;
+        return *this;
+      }
+
     static Parameters Default()
     {
       return Parameters().NamePrefix("CF_TrueQ3D");
