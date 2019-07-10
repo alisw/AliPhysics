@@ -170,7 +170,7 @@ class AliAnalysisTaskStudentsMW : public AliAnalysisTaskSE{
 
   // 4.) Final results:
    
-  TProfile *fCentrality;         // final centrality result
+  TProfile *fCentralityres;         // final centrality result
   TProfile *fCentralitySecond;         // final centrality result for second harmonics 
   TProfile *fCentralitySecondSquare; // final centrality result for second harmonics to the power of 2
   TProfile *fCov;         // Covariance term between first set of harmonics and second set of harmonics
@@ -180,21 +180,11 @@ class AliAnalysisTaskStudentsMW : public AliAnalysisTaskSE{
    
   // new end
 
-  ClassDef(AliAnalysisTaskStudentsMW,5);
+  ClassDef(AliAnalysisTaskStudentsMW,6);
 
 };
 
 //================================================================================================================
 
 #endif
-
-
-
-
-
-
-
-
-
-
 
