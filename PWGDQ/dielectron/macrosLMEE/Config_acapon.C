@@ -4,7 +4,7 @@
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 //#include <PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C>
 #endif
-void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning = kFALSE);
+void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning = kFALSE, TString cutDefinition);
 TVectorD* BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD* GetVector(Int_t var, Bool_t useRun1binning = kFALSE);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
@@ -389,6 +389,10 @@ AliDielectron* Config_acapon(TString cutDefinition,
   else if(cutDefinition == "kV0_MVAePID"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kCutSet1));
   }
+  // Cut set to check V0 features in MC (for testing)
+  else if(cutDefinition == "kV0_allAcc"){
+    die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(LMEECutLib::kV0_allAcc, LMEECutLib::kV0_allAcc) );
+  }
   // ######## Different R factor bin mixing schemes #################
   else if(cutDefinition == "kMixScheme1"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
@@ -448,14 +452,14 @@ AliDielectron* Config_acapon(TString cutDefinition,
     die->SetMixingHandler(mix);
   }
 
-  InitHistograms(die, doPairing, trackVarPlots, whichDetPlots, v0plots, plots3D, useRun1binning);
+  InitHistograms(die, doPairing, trackVarPlots, whichDetPlots, v0plots, plots3D, useRun1binning, cutDefinition);
 
   return die;
 }
 
 //______________________________________________________________________________________
 
-void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning){
+void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning, TString cutDefinition){
 
     // Setup histogram Manager
     AliDielectronHistos *histos = new AliDielectronHistos(die->GetName(),die->GetTitle());
@@ -781,6 +785,18 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0C);
     }// End doMixing histograms
 
+    // V0 feature histograms
+    if(cutDefinition == "kV0_allAcc"){
+      histos->UserHistogram("Pair", "CosPointingAngle", "", BinsToVector(100, 0, 1),    AliDielectronVarManager::kCosPointingAngle);
+      histos->UserHistogram("Pair", "Chi2NDF",          "", BinsToVector(100, 0, 100),  AliDielectronVarManager::kChi2NDF);
+      histos->UserHistogram("Pair", "LegDist",          "", BinsToVector(400, 0, 1),    AliDielectronVarManager::kLegDist);
+      histos->UserHistogram("Pair", "R",                "", BinsToVector(1000, 0, 200), AliDielectronVarManager::kR);
+      histos->UserHistogram("Pair", "PsiTrack",         "", BinsToVector(100, 0, TMath::Pi()), AliDielectronVarManager::kPsiPair);
+      histos->UserHistogram("Pair", "kM",               "", BinsToVector(2000, 0, 20),  AliDielectronVarManager::kM);
+
+      histos->UserHistogram("Pair", "ArmAlpha_armPt", "", BinsToVector(400, -2.5, 2.5), BinsToVector(500, 0, 3),
+                            AliDielectronVarManager::kArmAlpha, AliDielectronVarManager::kArmPt);
+    }
     die->SetHistogramManager(histos);
 }
 
