@@ -63,8 +63,6 @@ AliAnalysisTaskStudentsMW::AliAnalysisTaskStudentsMW(const char *name, Bool_t us
  fTotalMultAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion(NULL),
  fMultiHistoBeforeMultCut(NULL),
- fVertexZbefore(NULL),
- fVertexZafter(NULL),
  //SelectionCuts
  fMainFilter(0),
 
@@ -93,7 +91,7 @@ AliAnalysisTaskStudentsMW::AliAnalysisTaskStudentsMW(const char *name, Bool_t us
  fAngles(NULL),
  fWeights(NULL),
  fBin(NULL),
- fCentrality(NULL),
+ fCentralityres(NULL),
  fCentralitySecond(NULL),
  fCentralitySecondSquare(NULL),
  fCov(NULL),
@@ -158,8 +156,6 @@ AliAnalysisTaskStudentsMW::AliAnalysisTaskStudentsMW():
  fTotalMultAfterTrackSeletion(NULL),
  fMultiHistoAfterTrackSeletion(NULL),
  fMultiHistoBeforeMultCut(NULL),
- fVertexZbefore(NULL),
- fVertexZafter(NULL),
  //SelectionCuts
  fMainFilter(0),
 
@@ -188,7 +184,7 @@ AliAnalysisTaskStudentsMW::AliAnalysisTaskStudentsMW():
  fAngles(NULL),
  fWeights(NULL),
  fBin(NULL),
- fCentrality(NULL),
+ fCentralityres(NULL),
  fCentralitySecond(NULL),
  fCentralitySecondSquare(NULL),
  fCov(NULL),
@@ -270,12 +266,12 @@ void AliAnalysisTaskStudentsMW::UserExec(Option_t *)
 
  AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
 
- fVertexZbefore->Fill(avtx->GetZ());
+ fVertexZBefore->Fill(avtx->GetZ());
 
  if(avtx->GetZ() < fMinVertexZ) return;
  if(avtx->GetZ() > fMaxVertexZ) return;
  
- fVertexZafter->Fill(avtx->GetZ());
+ fVertexZAfter->Fill(avtx->GetZ());
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
@@ -360,7 +356,7 @@ void AliAnalysisTaskStudentsMW::UserExec(Option_t *)
 
     //~~~~~~~~~~~~~~~~~
     
-    fCentrality->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
+    fCentralityres->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
     fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics
 
    fCentralitySecondSquare->Fill(0.5,SecondCorrelation*SecondCorrelation,Weight_SecondCorrelation*Weight_SecondCorrelation);
@@ -463,12 +459,15 @@ void AliAnalysisTaskStudentsMW::BookControlHistograms()
  // a) Book histogram to hold pt spectra;
  // b) ...
 
- // a) Book histogram to hold pt spectra:
+ // a) Book histogram to hold pt spectra and centrality:
  fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbins,fMinBin,fMaxBin);
  fPtHist->SetStats(kFALSE);
  fPtHist->SetFillColor(kBlue-10);
  fPtHist->GetXaxis()->SetTitle("p_{t}");
  fControlHistogramsList->Add(fPtHist);
+
+ fCentralityHist = new TH1F("fCentralityHist","ams->GetMultiplicityPercentile()",100,0.,100.);
+ fControlHistogramsList->Add(fCentralityHist);
 
  // b) Book histogram to hold phi distribution before track selection:
  fPhiHistBeforeTrackSeletion = new TH1F("fPhiHistBeforeTrackSeletion","Phi Distribution",1000,0.,6.3);
@@ -538,11 +537,11 @@ void AliAnalysisTaskStudentsMW::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
   
- fCentrality = new TProfile("fCentrality","Result Analysis First Set Correlators",1,0.,1.); //centrality dependet output
- fCentrality->GetXaxis()->SetTitle("");
- fCentrality->GetYaxis()->SetTitle("flow");
- fCentrality->Sumw2();
- fFinalResultsList->Add(fCentrality);
+ fCentralityres = new TProfile("fCentrality","Result Analysis First Set Correlators",1,0.,1.); //centrality dependet output
+ fCentralityres->GetXaxis()->SetTitle("");
+ fCentralityres->GetYaxis()->SetTitle("flow");
+ fCentralityres->Sumw2();
+ fFinalResultsList->Add(fCentralityres);
 
  fCentralitySecond = new TProfile("fCentralitySecond","Result Analysis Second Set Correlators",1,0.,1.); //centrality dependet output
  fCentralitySecond->GetXaxis()->SetTitle("");
@@ -825,10 +824,4 @@ void AliAnalysisTaskStudentsMW::Correlation(Int_t Number, Int_t h1, Int_t h2, In
  }//void Correlation() 
 
 //========================================================================================================================
-
-
-
-
-
-
 
