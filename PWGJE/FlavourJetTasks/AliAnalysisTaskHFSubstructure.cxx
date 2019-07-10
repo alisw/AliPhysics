@@ -900,7 +900,7 @@ Bool_t AliAnalysisTaskHFSubstructure::FillHistograms()
       D_Candidate_LorentzVector.SetPtEtaPhiM(D_Candidate->Pt(), D_Candidate->Eta(), D_Candidate->Phi(), Inv_Mass_D);
       //if (TMath::Abs(D_Candidate->Eta())>0.9) continue;
       Dmeson_Eta=TMath::Abs(D_Candidate->Eta());
-      Dmeson_Y=TMath::Abs(D_Candidate->Y());
+      Dmeson_Y=TMath::Abs(D_Candidate->Y(fCandidatePDG));
       fFastJetWrapper->AddInputVector(D_Candidate_LorentzVector.Px(), D_Candidate_LorentzVector.Py(), D_Candidate_LorentzVector.Pz(), D_Candidate_LorentzVector.E(), 0);
 
     
