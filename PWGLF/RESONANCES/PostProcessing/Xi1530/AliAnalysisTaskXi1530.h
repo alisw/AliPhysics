@@ -337,6 +337,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
     Bool_t fSimplieEventCut = kFALSE;
+    Bool_t IsNano = kFALSE;
     TString MultiplicityEstimator = "V0M";
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
@@ -346,7 +347,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 23);
+    ClassDef(AliAnalysisTaskXi1530, 24);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -372,6 +373,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 21: Use AliEventCuts
     // 22: Remove some function thanks to AliEventCuts
     // 23: Integrate true Xi checker(ESD/AOD)
+    // 24: Add IsNano boolean variable
 };
 
 #endif
