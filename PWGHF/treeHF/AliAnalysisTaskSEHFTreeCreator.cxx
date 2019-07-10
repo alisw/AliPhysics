@@ -838,6 +838,7 @@ void AliAnalysisTaskSEHFTreeCreator::UserCreateOutputObjects()
         TString nameoutput = "tree_LctopKpi_gen";
         fTreeHandlerGenLctopKpi = new AliHFTreeHandlerLctopKpi(0);
         fGenTreeLctopKpi = (TTree*)fTreeHandlerGenLctopKpi->BuildTreeMCGen(nameoutput,nameoutput);
+        fTreeHandlerGenLctopKpi->AddBranchResonantDecay(fGenTreeLctopKpi);
         fGenTreeLctopKpi->SetMaxVirtualSize(1.e+8/nEnabledTrees);
         fTreeEvChar->AddFriend(fGenTreeLctopKpi);
       }
@@ -2192,6 +2193,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                   bool isrefl=kFALSE;
                   Int_t labDp=-1;
                   Float_t ptGenLcpKpi = -99.;
+                  int restype = -1;
                   if(ispKpi) {
                     //read MC
                     if(fReadMC){
@@ -2210,18 +2212,19 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                                 isPrimary=kFALSE;
                                 isFeeddown=kTRUE;
                             }
-                            //check daughters
-                            Int_t labDauLc0=((AliAODTrack*)lctopkpi->GetDaughter(0))->GetLabel();
-                            Int_t labDauLc1=((AliAODTrack*)lctopkpi->GetDaughter(1))->GetLabel();
-                            Int_t labDauLc2=((AliAODTrack*)lctopkpi->GetDaughter(2))->GetLabel();
-                            AliAODMCParticle* pDauLc0=(AliAODMCParticle*)arrMC->UncheckedAt(TMath::Abs(labDauLc0));
-                            AliAODMCParticle* pDauLc1=(AliAODMCParticle*)arrMC->UncheckedAt(TMath::Abs(labDauLc1));
-                            AliAODMCParticle* pDauLc2=(AliAODMCParticle*)arrMC->UncheckedAt(TMath::Abs(labDauLc2));
-                            Int_t pdgDauLc0=TMath::Abs(pDauLc0->GetPdgCode());
-                            Int_t pdgDauLc1=TMath::Abs(pDauLc1->GetPdgCode());
-                            Int_t pdgDauLc2=TMath::Abs(pDauLc2->GetPdgCode());
-                            if(pdgDauLc0==211 && pdgDauLc1==321 && pdgDauLc2==2212) isrefl=kTRUE;
                         }
+                        //check daughters
+                        Int_t labDauLc0=((AliAODTrack*)lctopkpi->GetDaughter(0))->GetLabel();
+                        Int_t labDauLc1=((AliAODTrack*)lctopkpi->GetDaughter(1))->GetLabel();
+                        Int_t labDauLc2=((AliAODTrack*)lctopkpi->GetDaughter(2))->GetLabel();
+                        AliAODMCParticle* pDauLc0=(AliAODMCParticle*)arrMC->UncheckedAt(TMath::Abs(labDauLc0));
+                        AliAODMCParticle* pDauLc1=(AliAODMCParticle*)arrMC->UncheckedAt(TMath::Abs(labDauLc1));
+                        AliAODMCParticle* pDauLc2=(AliAODMCParticle*)arrMC->UncheckedAt(TMath::Abs(labDauLc2));
+                        Int_t pdgDauLc0=TMath::Abs(pDauLc0->GetPdgCode());
+                        Int_t pdgDauLc1=TMath::Abs(pDauLc1->GetPdgCode());
+                        Int_t pdgDauLc2=TMath::Abs(pDauLc2->GetPdgCode());
+                        if(pdgDauLc0==211 && pdgDauLc1==321 && pdgDauLc2==2212) isrefl=kTRUE;
+                        restype = fTreeHandlerLctopKpi->GetLcResonantDecay(arrMC,partDp);
                       }
                       else isbkg=kTRUE;
                       if(issignal || isbkg) fTreeHandlerLctopKpi->SetCandidateType(issignal,isbkg,isPrimary,isFeeddown,isrefl);
@@ -2232,6 +2235,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCutspKpi,isSelTopopKpi,isSelPIDpKpi,isSelTracksAnCuts);
                         fTreeHandlerLctopKpi->SetVariables(fRunNumber,fEventID,ptGenLcpKpi,lctopkpi,bfield,1,fPIDresp);
+                        fTreeHandlerLctopKpi->SetVariableResonantDecay(restype);
                         fTreeHandlerLctopKpi->FillTree();
                     }
                   } // end pKpi
@@ -2241,6 +2245,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                   isbkg=kFALSE;
                   isrefl=kFALSE;
                   labDp=-1;
+                  restype = -1;
                   if(ispiKp) {
                     //read MC
                     if(fReadMC){
@@ -2271,6 +2276,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                             Int_t pdgDauLc1=TMath::Abs(pDauLc1->GetPdgCode());
                             Int_t pdgDauLc2=TMath::Abs(pDauLc2->GetPdgCode());
                             if(pdgDauLc0==2212 && pdgDauLc1==321 && pdgDauLc2==211) isrefl=kTRUE;
+                            restype = fTreeHandlerLctopKpi->GetLcResonantDecay(arrMC,partDp);
                       }
                       else isbkg=kTRUE;
                       if(issignal || isbkg) fTreeHandlerLctopKpi->SetCandidateType(issignal,isbkg,isPrimary,isFeeddown,isrefl);
@@ -2281,6 +2287,7 @@ void AliAnalysisTaskSEHFTreeCreator::Process3Prong(TClonesArray *array3Prong, Al
                     if(!fReadMC || (issignal || isbkg)) {
                         fTreeHandlerLctopKpi->SetIsSelectedStd(isSelAnCutspiKp,isSelTopopiKp,isSelPIDpiKp,isSelTracksAnCuts);
                         fTreeHandlerLctopKpi->SetVariables(fRunNumber,fEventID,ptGenLcpKpi,lctopkpi,bfield,2,fPIDresp);
+                        fTreeHandlerLctopKpi->SetVariableResonantDecay(restype);
                         fTreeHandlerLctopKpi->FillTree();
                     }
                   } // end fill piKpi
@@ -2666,6 +2673,8 @@ void AliAnalysisTaskSEHFTreeCreator::ProcessMCGen(TClonesArray *arrayMC){
             fTreeHandlerGenLctopKpi->SetDauInAcceptance(isDaugInAcc);
             fTreeHandlerGenLctopKpi->SetCandidateType(kTRUE,kFALSE,isPrimary,isFeeddown,kFALSE);
             fTreeHandlerGenLctopKpi->SetMCGenVariables(fRunNumber,fEventID, mcPart);
+            int resdecay = fTreeHandlerGenLctopKpi->GetLcResonantDecay(arrayMC,mcPart);
+            fTreeHandlerGenLctopKpi->SetMCGenVariableResonantDecay(resdecay);
             fTreeHandlerGenLctopKpi->FillTree();
           }
         }
