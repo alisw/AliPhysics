@@ -246,23 +246,12 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
   THnSparse             *fhnJH;                    //!<! JetH THnSparse
   THnSparse             *fhnTrigger;               //!<! JetH trigger sparse
 
-  // Pb-Pb Efficiency correction coefficients
-  static Double_t p0_10SG[17];                    ///< 0-10% centrality semi-good runs
-  static Double_t p10_30SG[17];                   ///< 10-30% centrality semi-good runs
-  static Double_t p30_50SG[17];                   ///< 30-50% centrality semi-good runs
-  static Double_t p50_90SG[17];                   ///< 50-90% centrality semi-good runs
-  // Good Runs
-  static Double_t p0_10G[17];                     ///< 0-10% centrality good runs
-  static Double_t p10_30G[17];                    ///< 10-30% centrality good runs
-  static Double_t p30_50G[17];                    ///< 30-50% centrality good runs
-  static Double_t p50_90G[17];                    ///< 50-90% centrality good runs
-
  private:
 
   AliAnalysisTaskEmcalJetHCorrelations(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
   AliAnalysisTaskEmcalJetHCorrelations& operator=(const AliAnalysisTaskEmcalJetHCorrelations&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 19);
+  ClassDef(AliAnalysisTaskEmcalJetHCorrelations, 20);
 };
 
 } /* namespace EMCALJetTasks */
