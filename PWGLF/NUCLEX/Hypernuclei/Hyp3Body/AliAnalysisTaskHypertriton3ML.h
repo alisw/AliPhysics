@@ -21,8 +21,6 @@ class TTree;
 class AliPIDResponse;
 class AliESDtrack;
 
-typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
-
 struct RHypertriton3 {
   float fDecayVtxX;
   float fDecayVtxY;
@@ -80,6 +78,8 @@ struct RHypertriton3 {
   Double32_t fTrackChi2Pi;  // [0.0,10.24,8]
 
   Double32_t fDecayVertexChi2NDF; // [0.0,10.24,8]
+
+  bool fIsMatter;
 };
 
 struct REvent {
@@ -110,16 +110,6 @@ struct SHypertriton3 {
   float fPxPi;
   float fPyPi;
   float fPzPi;
-
-  float fPosXDeu;
-  float fPosYDeu;
-  float fPosZDeu;
-  float fPosXP;
-  float fPosYP;
-  float fPosZP;
-  float fPosXPi;
-  float fPosYPi;
-  float fPosZPi;
 };
 
 class AliAnalysisTaskHypertriton3ML : public AliAnalysisTaskSE {
@@ -134,6 +124,8 @@ public:
 
   static AliAnalysisTaskHypertriton3ML *AddTask(bool isMC = false, TString suffix = "");
 
+  void SetOnlyTrueCandidates(bool trueCand) { fOnlyTrueCandidates = trueCand; }
+
   void SetMinCandidatePt(float lPtMin) { fMinCanidatePtToSave = lPtMin; }
   void SetMaxCandidatePt(float lPtMax) { fMaxCanidatePtToSave = lPtMax; }
 
@@ -143,14 +135,18 @@ public:
     fMaxNSigmaTPCPi  = nSigmaPi;
   }
 
+  void SetMinDCA2PrimaryVtx(float dcaDeu, float dcaP, float dcaPi) {
+    fMinDCA2PrimaryVtxDeu = dcaDeu;
+    fMinDCA2PrimaryVtxP   = dcaP;
+    fMinDCA2PrimaryVtxPi  = dcaPi;
+  }
+
   void SetMinITSnCluster(float nClsMin) { fMinITSNcluster = nClsMin; }
   void SetMinTPCcluster(unsigned char minCls) { fMinTPCNcluster = minCls; }
 
   AliEventCuts fEventCuts; /// Event cuts class
 
   AliVertexerHyperTriton3Body fVertexer; //
-
-  bool fOnlyTrueCandidates;
 
 private:
   TList *fListHist; //! List of Cascade histograms
@@ -160,6 +156,7 @@ private:
   AliPIDResponse *fPIDResponse;        //! PID response object
 
   bool fMC;
+  bool fOnlyTrueCandidates;
 
   /// Control histograms to monitor the filtering
   TH2D *fHistNSigmaDeu;  //! # sigma TPC fot the deuteron
@@ -178,19 +175,21 @@ private:
   float fMaxNSigmaTPCP;   // nSigma TPC limit for proton
   float fMaxNSigmaTPCPi;  // nSigma TPC limit for pion
 
-  float fMinPTOFDeu; // minimum momentum for using TOF for deuteron
-  float fMinPTOFP;   // minimum momentum for using TOF for proton
+  float fMinCosPA; // minimum cos(poninting angle) accepted
 
-  float fMaxNSigmaTOFDeu; // nSigma TOF limit for deuteron
-  float fMaxNSigmaTOFP;   // nSigma TOF limit for proton
-
-  float fMinCosPA;
+  float fMinDCA2PrimaryVtxDeu;
+  float fMinDCA2PrimaryVtxP;
+  float fMinDCA2PrimaryVtxPi;
 
   TObjString fCurrentFileName; //!
 
   std::vector<SHypertriton3> fSHypertriton; //!
   std::vector<RHypertriton3> fRHypertriton; //!
   REvent fREvent;                           //!
+
+  std::vector<AliESDtrack *> fDeuVector;
+  std::vector<AliESDtrack *> fPVector;
+  std::vector<AliESDtrack *> fPiVector;
 
   AliAnalysisTaskHypertriton3ML(const AliAnalysisTaskHypertriton3ML &);            // not implemented
   AliAnalysisTaskHypertriton3ML &operator=(const AliAnalysisTaskHypertriton3ML &); // not implemented
