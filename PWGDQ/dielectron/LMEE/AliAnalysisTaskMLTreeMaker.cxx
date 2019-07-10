@@ -410,6 +410,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigTOF", &EsigTOF);
   
   fTree->Branch("PsigTPC", &PsigTPC);
+  fTree->Branch("PsigITS", &PsigITS);
   
   fTree->Branch("NCrossedRowsTPC", &NCrossedRowsTPC);
   fTree->Branch("NClustersTPC", &NClustersTPC);
@@ -888,6 +889,9 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       
       Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
       PsigTPC.push_back(tempPsigTPC);
+      
+      Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 2);
+      PsigITS.push_back(tempPsigITS);
       
 //      if(fPionSigmas){
 //        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);

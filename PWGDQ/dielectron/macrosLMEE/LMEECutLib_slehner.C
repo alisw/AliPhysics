@@ -165,17 +165,17 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Double_t centMin, Double_t cent
 
 
 AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel, Bool_t useAODFilterCuts) {
-   
+
+  cout<<"!!!!LMEE_CutLib_slehner: setting PID cuts "<<sel<<endl;
+  ::Info("LMEE_CutLib_slehner","setting PID cuts %d",sel);  
+  
   //ITS tracklets
   if(sel==-999){
-    ::Info("LMEE_CutLib_slehner","setting PID cuts for ITS tracklets");
-//    pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE);
-
+    ::Info("LMEE_CutLib_slehner","setting PID cuts -999 for ITS tracklets");
   }
   else if(sel==-998){
-    ::Info("LMEE_CutLib_slehner","setting PID cuts for ITS tracklets");
+    ::Info("LMEE_CutLib_slehner","setting PID cuts -998 for ITS tracklets");
     pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -1.0, 1. , 0. ,100., kFALSE);
-
   }
   else{  
   ::Info("LMEE_CutLib_slehner","setting PID cuts");
@@ -449,22 +449,22 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID,  Int_t MV
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
   AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD"); 
   
+  cout<<"!!!!LMEE_CutLib_slehner: setting Track cuts "<<selTr<<endl;
+  ::Info("LMEE_CutLib_slehner","setting Track cuts %d",selTr);
+  
   //ITS tracklets
   if(selTr==-999){
-  ::Info("LMEE_CutLib_slehner","setting Track cuts for ITS tracklets");
-    trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kITSonly);
+    trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kITSonly+AliDielectronTrackCuts::kTPCqual);
     trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
     trackCuts->AddCut(GetPIDCutsAna(-999,kFALSE));     
   }
-  if(selTr==-998){
-  ::Info("LMEE_CutLib_slehner","setting Track cuts for ITS tracklets");
-    trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kITSonly);
+  else if(selTr==-998){
+    trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kITSonly+AliDielectronTrackCuts::kTPCqual);
     trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
     trackCuts->AddCut(GetPIDCutsAna(-998,kFALSE));     
   }
   //normal global tracks
   else{
-    ::Info("LMEE_CutLib_slehner","setting Track cuts");
     trkCutsFilter->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
     trkCutsFilter->SetRequireITSRefit(kTRUE);
     trkCutsFilter->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
