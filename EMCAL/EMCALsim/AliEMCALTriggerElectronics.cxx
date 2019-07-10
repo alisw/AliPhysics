@@ -90,6 +90,15 @@ fGeometry(0)
   fMedianMode = stuConf->GetMedianMode();
   AliEMCALTriggerSTUDCSConfig* stuConfDCal = 0;
 
+  if (iTriggerMapping == 1) {
+    // In Run 1, the patch size was stored in the FW version number, not OCDB
+    Int_t fFW = stuConf->GetFw();
+    if ((fFW >> 16) == 2) {
+      stuConf->SetPatchSize(2);
+      AliDebug(999,TString::Format("Patch size has been set to 16x16 (value 2) based on the EMCALSTU firmware version. This should only occur for Run 1"));
+    }
+  }
+
   if (iTriggerMapping >= 2) {
     rSize.Set( 40., 48. );  // This should be accurate
     stuConfDCal = dcsConf->GetSTUDCSConfig(true);

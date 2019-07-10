@@ -120,7 +120,8 @@ void AliEMCALTriggerSTUDCSConfig::GetSegmentation(TVector2& v1, TVector2& v2, TV
   v2.Set(2., 2.);
   v3.Set(4., 4.);
   
-  Double_t js = 2 + (fFw >> 16);
+  //Double_t js = 2 + (fFw >> 16); // Old method for getting patch size, valid in Run 1
+  Double_t js = 2 + fPatchSize; // Patch Size = 0 or 2, from OCDB
   v4.Set(js, js);
 }
 
