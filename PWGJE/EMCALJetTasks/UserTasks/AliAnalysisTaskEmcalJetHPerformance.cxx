@@ -48,6 +48,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance():
   fEmbeddedCellsName("emcalCells"),
   fPreviousEventTrigger(0),
   fPreviousEmbeddedEventSelected(false),
+  fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kDisableEff),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
@@ -69,6 +70,7 @@ AliAnalysisTaskEmcalJetHPerformance::AliAnalysisTaskEmcalJetHPerformance(const c
   fEmbeddedCellsName("emcalCells"),
   fPreviousEventTrigger(0),
   fPreviousEmbeddedEventSelected(false),
+  fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kDisableEff),
   fResponseMatrixFillMap(),
   fResponseFromThreeJetCollections(true),
   fMinFractionShared(0.),
@@ -109,6 +111,21 @@ AliAnalysisTaskEmcalJetHPerformance & AliAnalysisTaskEmcalJetHPerformance::opera
 {
   swap(*this, other);
   return *this;
+}
+
+/**
+ * Utility function to apply the determine the single track efficiency.
+ *
+ * @param trackEta Eta of the track
+ * @param trackPt pT of the track
+ *
+ * @return Track efficiency of the track (the entry in a histogram should be weighted as 1/(return value))
+ */
+double AliAnalysisTaskEmcalJetHPerformance::DetermineTrackingEfficiency(double trackPt, double trackEta)
+{
+  return AliAnalysisTaskEmcalJetHUtils::DetermineTrackingEfficiency(
+   trackPt, trackEta, fCentBin, fEfficiencyPeriodIdentifier,
+   "PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance");
 }
 
 /**
@@ -156,6 +173,13 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
   fYAMLConfig.GetProperty({baseName, "cellsName"}, fCaloCellsName, false);
   // Defaults to "emcalCells" if not set.
   fYAMLConfig.GetProperty({baseName, "embeddedCellsName"}, fEmbeddedCellsName, false);
+  // Efficiency
+  std::string tempStr = "";
+  baseName = "efficiency";
+  res = fYAMLConfig.GetProperty({baseName, "periodIdentifier"}, tempStr, false);
+  if (res) {
+    fEfficiencyPeriodIdentifier = AliAnalysisTaskEmcalJetHUtils::fgkEfficiencyPeriodIdentifier.at(tempStr);
+  }
 
   // Response matrix properties
   baseName = "responseMatrix";
@@ -436,6 +460,11 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
     fHistManager.CreateTH3(TString::Format(name.c_str(), trackCont->GetName()),
                 TString::Format(title.c_str(), trackCont-> GetName()), 50, 0, 25, 40, -1, 1, 72, 0,
                 TMath::TwoPi());
+    name = "QA/%s/fHistTrackPtEtaPhiEfficiencyCorrected";
+    title = name + ";#it{p}_{T} (GeV);#eta;#phi";
+    fHistManager.CreateTH3(TString::Format(name.c_str(), trackCont->GetName()),
+                TString::Format(title.c_str(), trackCont-> GetName()), 50, 0, 25, 40, -1, 1, 72, 0,
+                TMath::TwoPi());
   }
 
   // Clusters
@@ -670,6 +699,9 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
     {
       fHistManager.FillTH3(TString::Format("QA/%s/fHistTrackPtEtaPhi", trackCont->GetName()), track->Pt(),
                  track->Eta(), track->Phi());
+      fHistManager.FillTH3(TString::Format("QA/%s/fHistTrackPtEtaPhiEfficiencyCorrected", trackCont->GetName()),
+                 track->Pt(), track->Eta(), track->Phi(),
+                 DetermineTrackingEfficiency(track->Pt(), track->Eta()));
     }
   }
 
@@ -927,6 +959,8 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
   }
   tempSS << "AliEventCuts\n";
   tempSS << "\tEnabled: " << !fUseBuiltinEventSelection << "\n";
+  tempSS << "Efficiency\n";
+  tempSS << "\tSingle track efficiency identifier: " << fEfficiencyPeriodIdentifier << "\n";
   tempSS << "QA Hists:\n";
   tempSS << "\tEnabled: " << fCreateQAHists << "\n";
   tempSS << "Response matrix:\n";
@@ -997,6 +1031,9 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHPerformance & first, PWG
   swap(first.fCreateQAHists, second.fCreateQAHists);
   swap(first.fCreateResponseMatrix, second.fCreateResponseMatrix);
   swap(first.fEmbeddedCellsName, second.fEmbeddedCellsName);
+  swap(first.fPreviousEventTrigger, second.fPreviousEventTrigger);
+  swap(first.fPreviousEmbeddedEventSelected, second.fPreviousEmbeddedEventSelected);
+  swap(first.fEfficiencyPeriodIdentifier, second.fEfficiencyPeriodIdentifier);
   swap(first.fResponseMatrixFillMap, second.fResponseMatrixFillMap);
   swap(first.fResponseFromThreeJetCollections, second.fResponseFromThreeJetCollections);
   swap(first.fMinFractionShared, second.fMinFractionShared);

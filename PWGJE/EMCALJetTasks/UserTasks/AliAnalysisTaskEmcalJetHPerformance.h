@@ -72,6 +72,9 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
 
   Bool_t Run();
 
+  // Helper functions
+  double DetermineTrackingEfficiency(double trackPt, double trackEta);
+
   // Configuration
   void RetrieveAndSetTaskPropertiesFromYAMLConfig();
   void SetupJetContainersFromYAMLConfig();
@@ -108,8 +111,9 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
 
   // QA variables
   std::string fEmbeddedCellsName;     ///<  Set the embedded cells collection name
-  UInt_t fPreviousEventTrigger;       ///<  Physics selection (offline trigger) of the previous event for determine why a small unumber of embedded event are double counted.
-  bool fPreviousEmbeddedEventSelected;///<  True if the previous embedded event was selected. Used to determine why a small unumber of embedded event are double counted.
+  UInt_t fPreviousEventTrigger;       ///<  Physics selection (offline trigger) of the previous event for determine why a small number of embedded event are double counted.
+  bool fPreviousEmbeddedEventSelected;///<  True if the previous embedded event was selected. Used to determine why a small number of embedded event are double counted.
+  AliAnalysisTaskEmcalJetHUtils::EEfficiencyPeriodIdentifier_t fEfficiencyPeriodIdentifier;  ///<  Identifies the period for determining the efficiency correction to apply
 
   // Response matrix variables
   // Response matrix fill map
@@ -124,7 +128,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   double fMinFractionShared;             ///<  Minimum fraction of shared jet pt required for matching a hybrid jet to detector level
   AliAnalysisTaskEmcalJetHUtils::ELeadingHadronBiasType_t fLeadingHadronBiasType; ///<  Leading hadron in jet bias type (either charged, neutral, or both)
 
-  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 4);
+  ClassDef(AliAnalysisTaskEmcalJetHPerformance, 5);
 };
 
 } /* namespace EMCALJetTasks */
