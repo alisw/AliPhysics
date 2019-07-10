@@ -180,7 +180,7 @@ class AliAnalysisTaskStudentsMW : public AliAnalysisTaskSE{
    
   // new end
 
-  ClassDef(AliAnalysisTaskStudentsMW,5);
+  ClassDef(AliAnalysisTaskStudentsMW,6);
 
 };
 
