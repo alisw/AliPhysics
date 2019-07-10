@@ -5,24 +5,24 @@
 
 
 /*
-Bool_t Config_pipi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_pikx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_pik0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_kxkx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_kxk0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_pkx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_pk0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_Lambdapi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_Lambdap(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-
-Bool_t Config_LambdaLambda(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_XiPi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_Xikx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_Xik0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-Bool_t Config_XiP(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
-*/
+ Bool_t Config_pipi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_pikx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_pik0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_kxkx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_kxk0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_pkx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_pk0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_Lambdapi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_Lambdakx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_Lambdak0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_Lambdap(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ 
+ Bool_t Config_LambdaLambda(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_XiPi(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_Xikx(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_Xik0(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ Bool_t Config_XiP(AliRsnMiniAnalysisTask*,TString,Bool_t,Int_t,Int_t,Int_t,Int_t);
+ */
 void AddMonitorOutput_P(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_Pt(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
 void AddMonitorOutput_Eta(TString s="",TObjArray* m=0,TString o="",AliRsnLoopDaughter* l=0);
@@ -3747,14 +3747,14 @@ Bool_t Config_Xikx(
 
 
 Bool_t Config_Xik0(
-                  AliRsnMiniAnalysisTask *task,
-                  TString     lname,
-                  Bool_t      isMC,
-                  Int_t       system,
-                  Int_t       EventCuts,
-                  Int_t       TrackCutsXi,
-                  Int_t       TrackCutsK
-                  ){
+                   AliRsnMiniAnalysisTask *task,
+                   TString     lname,
+                   Bool_t      isMC,
+                   Int_t       system,
+                   Int_t       EventCuts,
+                   Int_t       TrackCutsXi,
+                   Int_t       TrackCutsK
+                   ){
     bool isPP=false;
     if(!system) isPP=true;
     int trigger=EventCuts%10;
@@ -4067,7 +4067,8 @@ Bool_t Config_XiP(
     
     Int_t iCutQ=task->AddTrackCuts(cutSetQ);
     Int_t iCutP=task->AddTrackCuts(cutSetP);
-    
+    Int_t fineBin=(TrackCutsP%100000)/10000; //option for 2 MeV bins
+
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityTrackcut");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
@@ -4335,8 +4336,14 @@ Bool_t Config_XiP(
         out->SetMotherPDG(ipdg);
         out->SetMotherMass(mass);
         
-        if(xID==imID) out->AddAxis(imID,200,2.1,3.1);// axis X: invmass or resolution
-        else out->AddAxis(resID,200,-0.02,0.02);
+        if(!fineBin){
+            if(xID==imID) out->AddAxis(imID,200,2.1,3.1);// axis X: invmass or resolution
+            else out->AddAxis(resID,200,-0.02,0.02);}
+        
+        else {
+            if(xID==imID) out->AddAxis(imID,500,2.1,3.1);// axis X: invmass or resolution
+            else out->AddAxis(resID,200,-0.02,0.02);}
+        
         out->AddAxis(ptID,200,0.0,20.0);// axis Y: transverse momentum
         out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
     }
