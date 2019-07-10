@@ -8,8 +8,8 @@
 // the rate
 //-------------------------------------------------------
 
-void QA_rate_vs_sep(Int_t Fill, char *rate_name, char *rate_type,
-		    char *sep_type, Int_t scan_type, Int_t scan, Int_t bc)
+void QA_rate_vs_sep(Int_t Fill, const char *rate_name, const char *rate_type,
+		    const char *sep_type, Int_t scan_type, Int_t scan, Int_t bc)
 // scan_type: 1 => x-scan; 2 => y-scan
 {
   

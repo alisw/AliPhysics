@@ -10,7 +10,7 @@
 // trigger,  and scan
 //-------------------------------------------------------
 
-void Create_one_pileup_corrected_rate_file(Int_t scan_type, Int_t scan, char *rate_name, Double_t ratioA, Double_t ratioC)
+void Create_one_pileup_corrected_rate_file(Int_t scan_type, Int_t scan, const char *rate_name, Double_t ratioA, Double_t ratioC)
 // scan_type: 1 => x-scan; 2 => y-scan
 // ratioA/ratioC -> parameters for the pileup correction
 
@@ -97,7 +97,7 @@ void Create_one_pileup_corrected_rate_file(Int_t scan_type, Int_t scan, char *ra
 // Create pileup corrected  rate files
 //-------------------------------------------------------
 
-void Create_pileup_corrected_rate_file(Int_t Fill, char *rate_name, Double_t ratioA, Double_t ratioC)
+void Create_pileup_corrected_rate_file(Int_t Fill, const char *rate_name, Double_t ratioA, Double_t ratioC)
 {
   cout << " This will take a while, be patient " << endl;
   // get name of files and set pointers to trees

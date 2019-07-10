@@ -6,7 +6,7 @@
 //-------------------------------------------------------
 // accessing the rates
 
-void GetRate(Double_t *rate, char *rate_name, char *rate_type, Int_t scan, Int_t scan_type, Int_t bc)
+void GetRate(Double_t *rate, const char *rate_name, const char *rate_type, Int_t scan, Int_t scan_type, Int_t bc)
 {
   char *file_name = new char[kg_string_size];
   if (scan_type == 1) sprintf(file_name,"../Fill-%d/%sRate_%s_x_Scan_%d.root",g_vdm_Fill,rate_type,rate_name,scan);
@@ -25,7 +25,7 @@ void GetRate(Double_t *rate, char *rate_name, char *rate_type, Int_t scan, Int_t
 // Note that it uses fBCT corrected rates.
 //-------------------------------------------------------
 
-void QA_corr_vs_sep(Int_t Fill, char *rate_name, Int_t scan, Int_t scan_type, Int_t bc)
+void QA_corr_vs_sep(Int_t Fill, const char *rate_name, Int_t scan, Int_t scan_type, Int_t bc)
 // scan_type: 1 => x-scan; 2 => y-scan
 
 {

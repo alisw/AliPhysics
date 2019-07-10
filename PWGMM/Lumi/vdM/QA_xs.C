@@ -9,8 +9,8 @@
 // the cross section
 //-------------------------------------------------------
 
-void QA_xs(Int_t Fill, char *rate_name, char *rate_type,
-	   char *sep_type, char *intensity_type, Int_t fit_type, Int_t scan)
+void QA_xs(Int_t Fill, const char *rate_name, const char *rate_type,
+	   const char *sep_type, const char *intensity_type, Int_t fit_type, Int_t scan)
 {
   
   // initialize
