@@ -396,9 +396,11 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
     fCentrality->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
     fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics
 
-   fCentralitySecondSquare->Fill(0.5,SecondCorrelation*SecondCorrelation,Weight_SecondCorrelation*Weight_SecondCorrelation);
+   fCentralitySecondSquare->Fill(0.5,SecondCorrelation*SecondCorrelation,TMath::Binomial(fParticles,fNumberSecond+fNumberSecond)*TMath::Factorial(fNumberSecond+fNumberSecond));
+   fCentralitySecondSquare->Fill(1.5,SecondCorrelation*SecondCorrelation,Weight_SecondCorrelation*Weight_SecondCorrelation);
    fCentralitySecondSquareUnit->Fill(0.5,SecondCorrelation*SecondCorrelation,1.);
-   fCov->Fill(0.5,FirstCorrelation*SecondCorrelation,Weight_FirstCorrelation*Weight_SecondCorrelation);
+   fCov->Fill(0.5,FirstCorrelation*SecondCorrelation,TMath::Binomial(fParticles,fNumber+fNumberSecond)*TMath::Factorial(fNumber+fNumberSecond));
+   fCov->Fill(1.5,FirstCorrelation*SecondCorrelation,Weight_FirstCorrelation*Weight_SecondCorrelation);
    fCovUnit->Fill(0.5,FirstCorrelation*SecondCorrelation,1.);
 
   } //if(fParticles>=fMinNumberPart)
@@ -630,7 +632,7 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
  fEvCentrality->Sumw2();  
  fFinalResultsList->Add(fEvCentrality);
 
- fCentralitySecondSquare = new TProfile("fCentralitySecondSquare","Result Analysis Second Set Correlators Squared",1,0.,1.); //centrality dependet output
+ fCentralitySecondSquare = new TProfile("fCentralitySecondSquare","Result Analysis Second Set Correlators Squared",2,0.,2.); //centrality dependet output
  fCentralitySecondSquare->GetXaxis()->SetTitle("");
  fCentralitySecondSquare->Sumw2();  
  fFinalResultsList->Add(fCentralitySecondSquare);
@@ -640,7 +642,7 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
  fCentralitySecondSquareUnit->Sumw2();  
  fFinalResultsList->Add(fCentralitySecondSquareUnit);
 
- fCov = new TProfile("fCov","Result Analysis Covariance Term",1,0.,1.); //centrality dependet output
+ fCov = new TProfile("fCov","Result Analysis Covariance Term",2,0.,2.); //centrality dependet output
  fCov->GetXaxis()->SetTitle("");
  fCov->Sumw2();  
  fFinalResultsList->Add(fCov);
