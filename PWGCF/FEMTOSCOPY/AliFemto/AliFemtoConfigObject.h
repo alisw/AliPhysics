@@ -1167,7 +1167,9 @@ private:
   void _MoveConstructValue(AliFemtoConfigObject &&);
 #endif
 
+  /// \cond CLASSIMP
   ClassDef(AliFemtoConfigObject, 1);
+  /// \endcond
 };
 
 

@@ -281,9 +281,6 @@ ConfigFemtoAnalysis(const TString& param_str="")
     const int cent_low = macro_config.centrality_ranges[cent_it],
              cent_high = macro_config.centrality_ranges[cent_it + 1];
 
-    const TString cent_low_str = TString::Format("%0.2i", cent_low),
-                 cent_high_str = TString::Format("%0.2i", cent_high);
-
     // loop over pair types
     for (size_t pair_it = 0; pair_it < macro_config.pair_codes.size(); ++pair_it) {
 
@@ -311,7 +308,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       // build unique analysis name from centrality and pair types
       const TString analysis_name = TString::Format(
-        "PiPiAnalysis_%0.2i_%0.2i_%s", cent_low, cent_high, pair_type_str.Data()
+        "PiPiAnalysis_%02d_%02d_%s", cent_low, cent_high, pair_type_str.Data()
       );
 
       analysis_config.pion_type_1 = type_1;
@@ -756,7 +753,7 @@ BuildConfiguration(const TString &text,
     case '{':
     {
       UInt_t rangeend = line.Index("}");
-      if (rangeend == -1) {
+      if (rangeend == static_cast<UInt_t>(-1)) {
         rangeend = line.Length();
       }
       TString centrality_ranges = line(1, rangeend - 1);
@@ -770,9 +767,9 @@ BuildConfiguration(const TString &text,
         TObjArray *subrange = range_group->String().Tokenize(":");
         TIter next_subrange(subrange);
         TObjString *subrange_it = (TObjString *)next_subrange();
-        TString prev = TString::Format("%0.2d", subrange_it->String().Atoi());
+        TString prev = TString::Format("%02d", subrange_it->String().Atoi());
         while ((subrange_it = (TObjString *)next_subrange())) {
-          TString next = TString::Format("%0.2d", subrange_it->String().Atoi());
+          TString next = TString::Format("%02d", subrange_it->String().Atoi());
 
           cmd = macro_varname + "->centrality_ranges.push_back(" + prev + ");";
           gROOT->ProcessLineFast(cmd);
@@ -788,7 +785,7 @@ BuildConfiguration(const TString &text,
     case '(':
     {
       UInt_t rangeend = line.Index(")");
-      if (rangeend == -1) {
+      if (rangeend == static_cast<UInt_t>(-1)) {
         std::cerr << "W-ConfigFemtoAnalysis: " << "Expected closing parens ')' in configuration string. Using rest of line as kT-bins\n";
         rangeend = line.Length();
       }

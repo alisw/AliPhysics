@@ -40,6 +40,24 @@ public:
       , mc_manager(NULL)
       { }
 
+    Parameters(const Parameters &orig)
+      : bin_count(orig.bin_count)
+      , qmin(orig.qmin)
+      , qmax(orig.qmax)
+      , prefix(orig.prefix)
+      , mc_manager(orig.mc_manager)
+      { }
+
+    Parameters& operator=(const Parameters &rhs)
+      {
+        bin_count = rhs.bin_count;
+        qmin = rhs.qmin;
+        qmax = rhs.qmax;
+        prefix = rhs.prefix;
+        mc_manager = rhs.mc_manager;
+        return *this;
+      }
+
     /// Build Parameters object with default values
     static Parameters Default()
       {
