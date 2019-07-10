@@ -22,7 +22,7 @@
 /// \author Adam Kisiel <Adam.Kisiel@cern.ch>, OSU
 ///
 
-#pragma once 
+#pragma once
 
 #ifndef ALIANALYSISTASKFEMTO_H
 #define ALIANALYSISTASKFEMTO_H
@@ -125,12 +125,12 @@ public:
 protected:
   AliESDEvent          *fESD;          //!<! ESD object
   AliESDpid            *fESDpid;       //!<! ESDpid object
-  AliVEvent          *fVEvent;          //!<! AliVEvent object
+  AliVEvent            *fVEvent;       //!<! AliVEvent object
   AliAODEvent          *fAOD;          //!<! AOD object
   AliAODpidUtil        *fAODpidUtil;   ///<  AliAODpidUtil object
-  AliAODHeader         *fAODheader;    ///<  AliAODHeader object (to get reference multiplicity in pp)
-  AliNanoAODHeader         *fNanoAODheader;    ///<  AliNanoAODHeader object
-  
+  AliAODHeader         *fAODheader;     ///< AliAODHeader object (to get reference multiplicity in pp)
+  AliNanoAODHeader     *fNanoAODheader; //!<! AliNanoAODHeader object
+
   AliStack             *fStack;        //!<! Stack from Kinematics
   TList                *fOutputList;   ///<  AliFemto results list
   AliFemtoEventReader  *fReader;       //!<! Reference to the reader

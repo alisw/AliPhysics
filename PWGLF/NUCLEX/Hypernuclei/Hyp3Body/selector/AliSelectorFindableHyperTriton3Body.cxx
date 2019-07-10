@@ -142,25 +142,6 @@ void AliSelectorFindableHyperTriton3Body::SlaveBegin(TTree * /*tree*/) {
   GetOutputList()->Add(fHistCheckPID[3][0]);
   GetOutputList()->Add(fHistCheckPID[3][1]);
 
-  // pass selections histogram
-  // fHistPassCheck[0] = new TH1D("fHistCheckPass", "", 6, 0, 6);
-  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(1, "no selection");
-  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(2, "track and charge");
-  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(3, "PID");
-  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(4, "good decay vertex");
-  // fHistPassCheck[0]->GetXaxis()->SetBinLabel(5, "#it{cos#theta_{pointing}} selection");
-  // fHistPassCheck[0]->GetXaxis()->LabelsOption("v");
-  // GetOutputList()->Add(fHistPassCheck[0]);
-
-  // fHistPassCheck[1] = new TH1D("fHistCheckFakePass", "", 6, 0, 6);
-  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(1, "no selection");
-  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(2, "track and charge");
-  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(3, "PID");
-  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(4, "good decay vertex");
-  // fHistPassCheck[1]->GetXaxis()->SetBinLabel(5, "#it{cos#theta_{pointing}} selection");
-  // fHistPassCheck[1]->GetXaxis()->LabelsOption("v");
-  // GetOutputList()->Add(fHistPassCheck[1]);
-
   /// Chi2 vertex and cos(theta_pointing) distributions
   for (int iFake = 0; iFake < 2; iFake++) {
     fHistVertexChi2[iFake] = new TH1D(Form("fHistVertexChi2%s", lFake[iFake]), "", 100, 0, 200);

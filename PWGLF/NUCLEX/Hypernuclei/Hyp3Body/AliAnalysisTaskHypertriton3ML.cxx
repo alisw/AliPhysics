@@ -1,230 +1,493 @@
-/**************************************************************************
- * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-///////////////////////////////////////////////////////////////////////////
-// AliAnalysisTaskHypertriton3ML class
-// analysis task for the study of the production of hypertriton
-// which decays in 3 prongs: d+p+pi^-
-// This task is optimized for ESDs.root
-//
-// Author:
-// P. Fecchio, pfecchio@cern.ch
-///////////////////////////////////////////////////////////////////////////
-
-/// ROOT includes
-#include <TChain.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TList.h>
-#include <TObjArray.h>
-#include <TVector3.h>
-
-/// AliRoot icludes
-#include "AliAnalysisTaskSE.h"
-#include "AliESD.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliESDVertex.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
-#include "AliInputEventHandler.h"
-#include "AliPID.h"
-#include "AliPIDResponse.h"
-#include "AliPhysicsSelection.h"
-#include "TLorentzVector.h"
-
 #include "AliAnalysisTaskHypertriton3ML.h"
 
-// #include <string>
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisManager.h"
+#include "AliESDEvent.h"
+#include "AliESDtrack.h"
+#include "AliExternalTrackParam.h"
+#include "AliInputEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliMultiplicity.h"
+#include "AliPDG.h"
+#include "AliPID.h"
+#include "AliPIDResponse.h"
+#include "AliVVertex.h"
+#include "AliVertexerHyperTriton3Body.h"
+
 #include <Riostream.h>
-#include <climits>
+#include <TChain.h>
+#include <TFile.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TList.h>
+#include <TMath.h>
+#include <TRandom3.h>
+
+#include <array>
+#include <map>
+#include <stdio.h>
+#include <unordered_map>
 #include <vector>
 
-const char *kDataMC[2]                  = {"", "MC"};
-const char *kAM                         = "AM";
-const char *kSpecNames[4]               = {"pion", "proton", "deuteron", "hyper-triton"};
-const AliPID::EParticleType kSpecies[3] = {AliPID::kDeuteron, AliPID::kProton, AliPID::kPion};
-const float kDeuteronMass               = 1.87561297416687012f;
-const float kProtonMass                 = 9.38271999359130859e-01f;
-const float kPionMass                   = 1.39569997787475586e-01f;
-
-ClassImp(AliAnalysisTaskHypertriton3ML)
-
-    using std::cout;
+using std::cout;
 using std::endl;
 
-//________________________________________________________________________
-AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML()
-    : AliAnalysisTaskSE(),
-      // parameter settings
-      fIsMC{0}, fNSigma{0., 0., 0.}, //
-      // support objects
-      fESDevent{nullptr},      //
-      fEventCuts{},            //
-      fTrackCuts{nullptr},     //
-      fPrimaryVertex{nullptr}, //
-      fPIDResponse{nullptr},   //
+ClassImp(AliAnalysisTaskHypertriton3ML);
 
-      fMagneticField{0.0}, //
-      // setting parameters
-      fCosPoiningAngleLimit{0}, //
-      // output objects
-      fMInvBackgroundStd{nullptr},  //
-      fMInvBackgroundCuts{nullptr}, //
-      fHistCosPAngle{nullptr},      //
-      fOutputList{nullptr} {
-  // Constructor
+namespace {
+
+bool IsHyperTriton3(AliMCEvent *mcEvent, const AliVParticle *vPart) {
+  bool returnValue = false;
+  int nDaughters   = 0;
+
+  int vPartPDG   = vPart->PdgCode();
+  int vPartLabel = vPart->GetLabel();
+
+  if (mcEvent->IsPhysicalPrimary(vPartLabel)) {
+    if (std::abs(vPartPDG) != 1010010030) return false;
+
+    for (int iD = vPart->GetDaughterFirst(); iD <= vPart->GetDaughterLast(); iD++) {
+      AliVParticle *dPart = mcEvent->GetTrack(iD);
+
+      int dPartPDG = dPart->PdgCode();
+      if (std::abs(dPartPDG) != 11) nDaughters++;
+    }
+    if (nDaughters == 3) returnValue = true;
+  }
+  return returnValue;
 }
 
-//________________________________________________________________________
-AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool isMC, TString taskname)
-    : AliAnalysisTaskSE(taskname.Data()),
-      // parameter settings
-      fIsMC{false}, fNSigma{3., 3., 3.}, //
-      // support objects
-      fESDevent{nullptr},      //
-      fEventCuts{},            //
-      fTrackCuts{nullptr},     //
-      fPrimaryVertex{nullptr}, //
-      fPIDResponse{nullptr},   //
-      fMagneticField{0.0},     //
-      // setting parameters
-      fCosPoiningAngleLimit{0.8}, //
-      // output objects
-      fMInvBackgroundStd{nullptr},  //
-      fMInvBackgroundCuts{nullptr}, //
-      fHistCosPAngle{nullptr},      //
-      fOutputList{nullptr} {
+bool IsHyperTriton3Daughter(AliMCEvent *mcEvent, const AliVParticle *vPart) {
+
+  int nDaughters = 0;
+
+  int lLabelMother = vPart->GetMother();
+  if (lLabelMother < 0 || !mcEvent->IsPhysicalPrimary(lLabelMother)) return false;
+
+  AliVParticle *vMotherPart = mcEvent->GetTrack(lLabelMother);
+  int lMotherPDG            = vMotherPart->PdgCode();
+  if (std::abs(lMotherPDG) != 1010010030) return false;
+
+  for (int iD = vMotherPart->GetDaughterFirst(); iD <= vMotherPart->GetDaughterLast(); iD++) {
+    AliVParticle *dPart = mcEvent->GetTrack(iD);
+    int dPartPDG        = dPart->PdgCode();
+    if (std::abs(dPartPDG) != 11) nDaughters++;
+  }
+  if (nDaughters != 3) return false;
+
+  return true;
+}
+
+int IsTrueHyperTriton3Candidate(AliESDtrack *t1, AliESDtrack *t2, AliESDtrack *t3, AliMCEvent *mcEvent) {
+  if (!mcEvent) return 0;
+
+  int lab1 = std::abs(t1->GetLabel());
+  int lab2 = std::abs(t2->GetLabel());
+  int lab3 = std::abs(t3->GetLabel());
+
+  if (mcEvent->IsPhysicalPrimary(lab1)) return -1;
+  if (mcEvent->IsPhysicalPrimary(lab2)) return -1;
+  if (mcEvent->IsPhysicalPrimary(lab3)) return -1;
+
+  AliVParticle *part1 = mcEvent->GetTrack(lab1);
+  AliVParticle *part2 = mcEvent->GetTrack(lab2);
+  AliVParticle *part3 = mcEvent->GetTrack(lab3);
+
+  if (!part1) return -1;
+  if (!part2) return -1;
+  if (!part3) return -1;
+
+  int mom1 = part1->GetMother();
+  int mom2 = part2->GetMother();
+  int mom3 = part3->GetMother();
+
+  if (mom1 != mom2 || mom1 != mom3 || mom2 != mom3) return -1;
+
+  AliVParticle *mom = mcEvent->GetTrack(mom1);
+  if (!mom) return -1;
+
+  return (IsHyperTriton3(mcEvent, mom)) ? mom1 : -1;
+}
+
+bool HasTOF(AliVTrack *track) {
+  const bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  const bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  const float len       = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime && (len > 350.);
+}
+
+} // namespace
+
+AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
+    : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{},
+      fOnlyTrueCandidates{false}, fListHist{nullptr}, fTreeHyp3{nullptr}, fInputHandler{nullptr},
+      fPIDResponse{nullptr}, fMC{mc}, fHistNSigmaDeu{nullptr}, fHistNSigmaP{nullptr}, fHistNSigmaPi{nullptr},
+      fHistInvMass{nullptr}, fHistTPCdEdx{nullptr}, fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.},
+      fMinITSNcluster{1}, fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{5.0}, fMaxNSigmaTPCP{5.0}, fMaxNSigmaTPCPi{5.0},
+      fMinPTOFDeu{1.2}, fMinPTOFP{-1.}, fMaxNSigmaTOFDeu{5.0}, fMaxNSigmaTOFP{5.0}, fMinCosPA{0.9},
+      fCurrentFileName{""}, fSHypertriton{}, fRHypertriton{}, fREvent{} {
+
+  // Standard output
   DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TTree::Class());
-  // ESD Track cuts
-  if (!fTrackCuts) fTrackCuts = new AliESDtrackCuts();
-  fTrackCuts->SetMinNClustersTPC(80);
-  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fTrackCuts->SetMaxChi2PerClusterTPC(4);
-  fTrackCuts->SetRequireTPCRefit(kTRUE);
-  fTrackCuts->SetEtaRange(-0.9, 0.9);
+  DefineOutput(1, TList::Class()); // Basic Histograms
+  DefineOutput(2, TTree::Class()); // Hypertriton Candidates Tree output
 }
 
-//________________________________________________________________________
 AliAnalysisTaskHypertriton3ML::~AliAnalysisTaskHypertriton3ML() {
-  // destructor
-  if (fESDevent) delete fESDevent;
-  if (fTrackCuts) delete fTrackCuts;
-  if (fPrimaryVertex) delete fPrimaryVertex;
-  if (fPIDResponse) delete fPIDResponse;
+  if (fListHist) {
+    delete fListHist;
+    fListHist = nullptr;
+  }
+
+  if (fTreeHyp3) {
+    delete fTreeHyp3;
+    fTreeHyp3 = nullptr;
+  }
 }
 
-//________________________________________________________________________
 void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  fInputHandler           = (AliInputEventHandler *)(man->GetInputEventHandler());
+  fPIDResponse            = fInputHandler->GetPIDResponse();
 
-  AliAnalysisManager *fMgr = AliAnalysisManager::GetAnalysisManager();
-  if (!fMgr) AliFatal("Could not find analysis manager.");
-  AliInputEventHandler *fHandl = (AliInputEventHandler *)fMgr->GetInputEventHandler();
-  if (!fHandl) AliFatal("No input event handler.");
-  fPIDResponse = dynamic_cast<AliPIDResponse *>(fHandl->GetPIDResponse());
-  fHandl->SetNeedField();
+  fInputHandler->SetNeedField();
 
-  // create the output tree
-  fHypTree = new TTree("fHypTree", "hyper-triton candidates");
-  fHypTree->Branch("MagField", &fMagneticField);
+  fTreeHyp3 = new TTree("fHypertritonTree", "Hypertriton3 Candidates");
+  fTreeHyp3->Branch("RCollision", &fREvent);
+  fTreeHyp3->Branch("RHypertriton", &fRHypertriton);
+  if (man->GetMCtruthEventHandler()) fTreeHyp3->Branch("SHypertriton", &fSHypertriton);
 
-  // Create a TList with Histograms
-  fOutputList = new TList();
-  fOutputList->SetOwner(true);
-  fOutputList->SetName("clistHypertriton");
-  fEventCuts.AddQAplotsToList(fOutputList);
+  fListHist = new TList();
+  fListHist->SetOwner();
+  fEventCuts.AddQAplotsToList(fListHist);
 
-  // binning della 3 body?
-  fMInvBackgroundStd =
-      new TH1D(Form("fMInvBackgroundStd%s", kDataMC[fIsMC]), ";m (dp#pi) [GeV/#it{c}^{2}];Counts", 200, 2.95, 3.35);
-  fMInvBackgroundCuts =
-      new TH1D(Form("fMInvBackgroundCuts%s", kDataMC[fIsMC]), ";m (dp#pi) [GeV/#it{c}^{2}];Counts", 200, 2.95, 3.35);
-  fHistCosPAngle = new TH1D("fCosPointingAngle", ";#it{cos#theta_{pointing}} ;Counts", 200, -1, 1);
+  fHistNSigmaDeu = new TH2D("fHistNSigmaDeu", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Deuteron; Counts", 100, 0., 10.,
+                            80, -5.0, 5.0);
+  fHistNSigmaP =
+      new TH2D("fHistNSigmaP", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Proton; Counts", 100, 0., 10., 80, -5.0, 5.0);
+  fHistNSigmaPi =
+      new TH2D("fHistNSigmaPi", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0., 10., 80, -5.0, 5.0);
 
-  // pt distridution of the daughter particles
-  for (int i = 0; i < 3; ++i) {
-    fHistPtStd[i]  = new TH1D(Form("fHistPt_%s_std", kSpecNames[i]), "", 100, 0, 10);
-    fHistPtCuts[i] = new TH1D(Form("fHistPt_%s_cuts", kSpecNames[i]), "", 100, 0, 10);
-    fOutputList->Add(fHistPtStd[i]);
-    fOutputList->Add(fHistPtCuts[i]);
-  }
+  fHistInvMass = new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c^2}); Counts", 100, 0, 10,
+                          30, 2.96, 3.05);
 
-  // Adding output to list
-  fOutputList->Add(fMInvBackgroundStd);
-  fOutputList->Add(fMInvBackgroundCuts);
-  fOutputList->Add(fHistCosPAngle);
+  fHistTPCdEdx[0] = new TH2D("fHistTPCdEdxM", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
+  fHistTPCdEdx[1] = new TH2D("fHistTPCdEdxAntiA", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
 
-  PostData(1, fOutputList);
-  PostData(2, fHypTree);
-}
+  fListHist->Add(fHistNSigmaDeu);
+  fListHist->Add(fHistNSigmaP);
+  fListHist->Add(fHistNSigmaPi);
 
-//________________________________________________________________________
+  fListHist->Add(fHistInvMass);
+
+  fListHist->Add(fHistTPCdEdx[0]);
+  fListHist->Add(fHistTPCdEdx[1]);
+
+  PostData(1, fListHist);
+  PostData(2, fTreeHyp3);
+
+  AliPDG::AddParticlesToPdgDataBase();
+} // end UserCreateOutputObjects
+
 void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
-  // main loop called for each analized event
-
-  AliVEvent *fEv = dynamic_cast<AliESDEvent *>(InputEvent());
-  if (!fEv) {
-    ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec", "AliESDEvent not found.");
+  AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
+  if (!esdEvent) {
+    ::Fatal("AliAnalysisTaskHypertriton3ML::UserExec", "AliESDEvent not found.");
     return;
   }
 
-  AliMCEvent *fMCEvent = MCEvent();
-  if (!fMCEvent && fIsMC) {
-    ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec", "Could not retrieve MC event");
+  AliMCEvent *mcEvent = MCEvent();
+  if (!mcEvent && fMC) {
+    ::Fatal("AliAnalysisTaskHypertriton3ML::UserExec", "Could not retrieve MC event");
     return;
   }
 
-  fMagneticField = (float)fEv->GetMagneticField();
-
-  // Use the event cut class to apply the required selections
-  if (!fEventCuts.AcceptEvent(fEv)) {
-    PostData(1, fOutputList);
-    PostData(2, fHypTree);
-    return;
+  if (!fEventCuts.AcceptEvent(esdEvent)) {
+    PostData(1, fListHist);
+    PostData(2, fTreeHyp3);
   }
 
-  fHypTree->Fill();
+  fREvent.fCent = fEventCuts.GetCentrality();
 
-  PostData(1, fOutputList);
-  PostData(2, fHypTree);
+  double primaryVtx[3];
+  fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVtx);
+
+  fREvent.fX = primaryVtx[0];
+  fREvent.fY = primaryVtx[1];
+  fREvent.fZ = primaryVtx[2];
+
+  unsigned char tgr = 0x0;
+
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) tgr = 1;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) tgr = 2;
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral) tgr = 4;
+
+  fREvent.fTrigger = tgr;
+
+  std::unordered_map<int, int> mcMap;
+
+  if (fMC) {
+    fSHypertriton.clear();
+    // fSGenericV0.clear();
+
+    for (int iTrack = 0; iTrack < mcEvent->GetNumberOfTracks(); iTrack++) {
+      AliVParticle *part = mcEvent->GetTrack(iTrack);
+
+      if (!part) {
+        ::Warning("AliAnalysisTaskHypertriton3ML::UserExec",
+                  "Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skipping.", iTrack);
+        continue;
+      }
+
+      if (std::abs(part->Y()) > 1.) continue;
+      if (!IsHyperTriton3(mcEvent, part)) continue;
+
+      double decayVtx[3]{0.0, 0.0, 0.0};
+
+      AliVParticle *deu{nullptr}, *p{nullptr}, *pi{nullptr};
+
+      for (int iD = part->GetDaughterFirst(); iD <= part->GetDaughterLast(); ++iD) {
+        AliVParticle *daughter = mcEvent->GetTrack(iD);
+
+        if (mcEvent->IsSecondaryFromWeakDecay(iD) && daughter) {
+          decayVtx[0] = daughter->Xv();
+          decayVtx[1] = daughter->Yv();
+          decayVtx[2] = daughter->Zv();
+
+          if (std::abs(daughter->PdgCode()) == AliPID::ParticleCode(AliPID::kDeuteron)) deu = daughter;
+          if (std::abs(daughter->PdgCode()) == AliPID::ParticleCode(AliPID::kProton)) p = daughter;
+          if (std::abs(daughter->PdgCode()) == AliPID::ParticleCode(AliPID::kPion)) pi = daughter;
+        }
+      }
+      if (deu == nullptr) continue;
+
+      SHypertriton3 hyp3s;
+
+      hyp3s.fPdgCode = part->PdgCode();
+
+      hyp3s.fDecayVtxX = decayVtx[0] - part->Xv();
+      hyp3s.fDecayVtxY = decayVtx[1] - part->Yv();
+      hyp3s.fDecayVtxZ = decayVtx[2] - part->Zv();
+
+      hyp3s.fPxDeu = deu->Px();
+      hyp3s.fPyDeu = deu->Py();
+      hyp3s.fPzDeu = deu->Pz();
+      hyp3s.fPxP   = p->Px();
+      hyp3s.fPyP   = p->Py();
+      hyp3s.fPzP   = p->Pz();
+      hyp3s.fPxPi  = pi->Px();
+      hyp3s.fPyPi  = pi->Py();
+      hyp3s.fPzPi  = pi->Pz();
+
+      // servono o no?
+      // hyp3s.fPosXDeu = deu->
+      // hyp3s.fPosYDeu = deu->
+      // hyp3s.fPosZDeu = deu->
+      // hyp3s.fPosXP = p->
+      // hyp3s.fPosYP = p->
+      // hyp3s.fPosZP = p->
+      // hyp3s.fPosXPi = pi->
+      // hyp3s.fPosYPi = pi->
+      // hyp3s.fPosZPi = pi->
+
+      hyp3s.fRecoIndex = -1;
+
+      mcMap[iTrack] = fSHypertriton.size();
+      fSHypertriton.push_back(hyp3s);
+    }
+  }
+
+  fRHypertriton.clear();
+
+  int nTracks = esdEvent->GetNumberOfTracks();
+
+  for (int iTrack = 0; iTrack < nTracks; iTrack++) {
+    AliESDtrack *track1 = esdEvent->GetTrack(iTrack);
+    if (!track1) continue;
+
+    // maybe TPCrefit tracks only
+    if (((track1->GetStatus() & AliVTrack::kTPCrefit) == 0 && (track1->GetStatus() & AliVTrack::kITSrefit) == 0) ||
+        (track1->GetKinkIndex(0) > 0) || (track1->GetITSNcls() < fMinITSNcluster) ||
+        (track1->GetTPCNcls() < fMinTPCNcluster))
+      continue;
+
+    float nSigmaDeu = fPIDResponse->NumberOfSigmasTPC(track1, AliPID::kDeuteron);
+    if (std::abs(nSigmaDeu) > fMaxNSigmaTPCDeu) continue;
+
+    for (int jTrack = 0; jTrack < nTracks; jTrack++) {
+      AliESDtrack *track2 = esdEvent->GetTrack(jTrack);
+      if (!track2) continue;
+
+      if (((track2->GetStatus() & AliVTrack::kTPCrefit) == 0 && (track2->GetStatus() & AliVTrack::kITSrefit) == 0) ||
+          (track2->GetKinkIndex(0) > 0) || (track2->GetITSNcls() < fMinITSNcluster) ||
+          (track2->GetTPCNcls() < fMinTPCNcluster))
+        continue;
+
+      float nSigmaP = fPIDResponse->NumberOfSigmasTPC(track2, AliPID::kProton);
+      if (std::abs(nSigmaP) > fMaxNSigmaTPCP) continue;
+
+      for (int kTrack = 0; kTrack < nTracks; kTrack++) {
+        AliESDtrack *track3 = esdEvent->GetTrack(kTrack);
+        if (!track3) continue;
+
+        if (((track3->GetStatus() & AliVTrack::kTPCrefit) == 0 && (track3->GetStatus() & AliVTrack::kITSrefit) == 0) ||
+            (track3->GetKinkIndex(0) > 0) || (track3->GetITSNcls() < fMinITSNcluster) ||
+            (track3->GetTPCNcls() < fMinTPCNcluster))
+          continue;
+
+        float nSigmaPi = fPIDResponse->NumberOfSigmasTPC(track3, AliPID::kPion);
+        if (std::abs(nSigmaPi) > fMaxNSigmaTPCPi) continue;
+
+        if (track1 == track2 || track2 == track3) continue;
+
+        int momLab = IsTrueHyperTriton3Candidate(track1, track2, track3, mcEvent);
+        if ((momLab == -1) && fOnlyTrueCandidates) continue;
+
+        double b = esdEvent->GetMagneticField();
+
+        // decay vertex reconstruction
+        bool recoVertex = fVertexer.FindDecayVertex(track1, track2, track3, b);
+        if (!recoVertex) continue;
+
+        AliESDVertex *decayVertex = static_cast<AliESDVertex *>(fVertexer.GetCurrentVertex());
+
+        double decayLenght[3] = {0., 0., 0.};
+        decayVertex->GetXYZ(decayLenght);
+
+        for (int i = 0; i < 3; i++) {
+          decayLenght[i] -= primaryVtx[i];
+        }
+
+        double pDeu[3], pP[3], pPi[3], pHyper[3], dcaDeu[2], dcaP[2], dcaPi[2];
+        track1->PropagateToDCA(decayVertex, b, 100., dcaDeu);
+        track2->PropagateToDCA(decayVertex, b, 100., dcaP);
+        track3->PropagateToDCA(decayVertex, b, 100., dcaPi);
+
+        track1->GetPxPyPz(pDeu);
+        track2->GetPxPyPz(pP);
+        track3->GetPxPyPz(pPi);
+
+        for (int i = 0; i < 3; i++) {
+          pHyper[i] = pDeu[i] + pP[i] + pPi[i];
+        }
+
+        double dTotHyper = std::sqrt(decayLenght[0] * decayLenght[0] + decayLenght[1] * decayLenght[1] +
+                                     decayLenght[2] * decayLenght[2]);
+        double pTotHyper = std::sqrt(pHyper[0] * pHyper[0] + pHyper[1] * pHyper[1] + pHyper[2] * pHyper[2]);
+
+        double cosPA = 0.;
+
+        for (int i = 0; i < 3; i++) {
+          cosPA += pHyper[i] * decayLenght[i];
+        }
+
+        cosPA /= (dTotHyper * pTotHyper);
+        if (cosPA < fMinCosPA) continue;
+
+        if (fMC) {
+          fSHypertriton[mcMap[momLab]].fRecoIndex = (fRHypertriton.size());
+        }
+
+        RHypertriton3 hyp3r;
+
+        hyp3r.fDecayVtxX = decayVertex->GetX();
+        hyp3r.fDecayVtxY = decayVertex->GetY();
+        hyp3r.fDecayVtxZ = decayVertex->GetZ();
+
+        hyp3r.fPxDeu = pDeu[0];
+        hyp3r.fPyDeu = pDeu[1];
+        hyp3r.fPzDeu = pDeu[2];
+        hyp3r.fPxP   = pP[0];
+        hyp3r.fPyP   = pP[1];
+        hyp3r.fPzP   = pP[2];
+        hyp3r.fPxPi  = pPi[0];
+        hyp3r.fPyPi  = pPi[1];
+        hyp3r.fPzPi  = pPi[2];
+
+        hyp3r.fPosXDeu = track1->GetX();
+        hyp3r.fPosYDeu = track2->GetY();
+        hyp3r.fPosZDeu = track3->GetZ();
+        hyp3r.fPosXP   = track1->GetX();
+        hyp3r.fPosYP   = track2->GetY();
+        hyp3r.fPosZP   = track3->GetZ();
+        hyp3r.fPosXPi  = track1->GetX();
+        hyp3r.fPosYPi  = track2->GetY();
+        hyp3r.fPosZPi  = track3->GetZ();
+
+        hyp3r.fDCAxyDeu = dcaDeu[0];
+        hyp3r.fDCAzDeu  = dcaDeu[1];
+        hyp3r.fDCAxyP   = dcaP[0];
+        hyp3r.fDCAzP    = dcaP[1];
+        hyp3r.fDCAxyPi  = dcaPi[0];
+        hyp3r.fDCAzPi   = dcaPi[1];
+
+        hyp3r.fNClusterTPCDeu = track1->GetTPCNcls();
+        hyp3r.fNClusterTPCP = track2->GetTPCNcls();
+        hyp3r.fNClusterTPCPi = track3->GetTPCNcls();
+
+        hyp3r.fITSClusterMapDeu = track1->GetITSClusterMap();
+        hyp3r.fITSClusterMapP = track2->GetITSClusterMap();
+        hyp3r.fITSClusterMapPi = track3->GetITSClusterMap();
+
+        hyp3r.fNSigmaTPCDeu = nSigmaDeu;
+        hyp3r.fNSigmaTPCP = nSigmaP;
+        hyp3r.fNSigmaTPCPi = nSigmaPi;
+
+        hyp3r.fHasTOFDeu = HasTOF(track1);
+        hyp3r.fHasTOFP = HasTOF(track2);
+        hyp3r.fHasTOFPi = HasTOF(track3);
+
+        hyp3r.fNSigmaTOFDeu = fPIDResponse->NumberOfSigmasTOF(track1,AliPID::kDeuteron);
+        hyp3r.fNSigmaTOFP = fPIDResponse->NumberOfSigmasTOF(track1,AliPID::kProton);
+        hyp3r.fNSigmaTOFPi = fPIDResponse->NumberOfSigmasTOF(track3,AliPID::kPion);
+
+        hyp3r.fTrackChi2Deu = track1->GetTPCchi2();
+        hyp3r.fTrackChi2P = track2->GetTPCchi2();
+        hyp3r.fTrackChi2Pi = track3->GetTPCchi2();
+        hyp3r.fDecayVertexChi2NDF =  decayVertex->GetChi2perNDF();
+
+        fRHypertriton.push_back(hyp3r);
+      }
+    }
+  }
+
+  fTreeHyp3->Fill();
+
+  PostData(1, fListHist);
+  PostData(2, fTreeHyp3);
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskHypertriton3ML::Terminate(Option_t *) {
-  // Merge output
-  // Called once at the end of the query
+void AliAnalysisTaskHypertriton3ML::Terminate(Option_t *) {}
 
-  fOutputList = dynamic_cast<TList *>(GetOutputData(1));
-  if (!fOutputList) {
-    printf("ERROR: fOutputList not available\n");
-    return;
+AliAnalysisTaskHypertriton3ML *AliAnalysisTaskHypertriton3ML::AddTask(bool isMC, TString suffix) {
+  // Get the current analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskHyperTriton2BodyML", "No analysis manager found.");
+    return nullptr;
   }
 
-  printf("end of Terminate");
-  return;
-
-} // end of Terminate
-
-//________________________________________________________________________
-bool AliAnalysisTaskHypertriton3ML::PassPIDSelection(AliESDtrack *track, AliPID::EParticleType specie,
-                                                     float nSigmaCut) {
-  // Method that return true if the ESD track pass all the PID requirements for the specified specie
-  if (abs(fPIDResponse->NumberOfSigmasTPC(track, specie)) < nSigmaCut) {
-    return true;
+  // Check the analysis type using the event handlers connected to the analysis
+  // manager.
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskHyperTriton2BodyML", "This task requires an input event handler");
+    return nullptr;
   }
-  return false;
+
+  TString tskname = "AliAnalysisTaskHypertriton3ML";
+  tskname.Append(suffix.Data());
+  AliAnalysisTaskHypertriton3ML *task = new AliAnalysisTaskHypertriton3ML(isMC, tskname.Data());
+
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
+      Form("%s_summary", tskname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+
+  AliAnalysisDataContainer *coutput2 =
+      mgr->CreateContainer(Form("HyperTritonTree%s", suffix.Data()), TTree::Class(),
+                           AliAnalysisManager::kOutputContainer, Form("HyperTritonTree.root:%s", suffix.Data()));
+  coutput2->SetSpecialOutput();
+
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, coutput1);
+  mgr->ConnectOutput(task, 2, coutput2);
+  return task;
 }

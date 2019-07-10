@@ -82,7 +82,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fDoLightOutput(kFALSE),
   fEventQuality(-1),
   fIsHeavyIon(0),
-  fDetectorCentrality(0),
+  fDetectorCentrality(-1),
   fModCentralityClass(0),
   fEnableVertexCut(kTRUE),
   fMaxVertexZ(10),
@@ -1177,11 +1177,13 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     // steps of 10%
     fIsHeavyIon=1;
     fDetectorCentrality=0;
+    fModCentralityClass=0;
     break;
   case 2: // CL1 PbPb & XeXe
     // steps of 10%
     fIsHeavyIon=1;
     fDetectorCentrality=1;
+    fModCentralityClass=0;
     break;
   case 3: // V0M PbPb & XeXe
     // steps of 5%
@@ -1220,11 +1222,13 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     // steps of 10%
     fIsHeavyIon=2;
     fDetectorCentrality=0;
+    fModCentralityClass=0;
     break;
   case 9: // pPb CL1
     // steps of 10%
     fIsHeavyIon=2;
     fDetectorCentrality=1;
+    fModCentralityClass=0;
     break;
   case 10: // a: pPb V0A
     // steps of 5%
@@ -1258,6 +1262,7 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     // steps of 10%
     fIsHeavyIon=2;
     fDetectorCentrality=2;
+    fModCentralityClass=0;
     break;
   case 15: // f: pPb ZNA
     // steps of 5%
@@ -1266,66 +1271,53 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fDetectorCentrality=2;
     fModCentralityClass=1;
     break;
-  case 16: // g: pPb CL1
+  case 16: // g: pPb ZNA
     // steps of 1%
     // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
     fIsHeavyIon=2;
     fDetectorCentrality=2;
     fModCentralityClass=2;
     break;
-  case 17: // h: pp -> Sphericity < 0.5
+  case 17: // h: pp -> Sphericity cuts
     fIsHeavyIon=0;
     fUseSphericity=1;
     break;
-  case 18: // i: pp -> Sphericity > 0.5
+  case 18: // i: pp -> Sphericity cuts & mult < 20
     fIsHeavyIon=0;
     fUseSphericity=2;
     break;
-  case 19: // j: pp -> 0 < Sphericity > 1.0
+  case 19: // j: pp -> Sphericity cuts & mult > 20
     fIsHeavyIon=0;
     fUseSphericity=3;
     break;
-  case 20: // k: pp -> 0 < Sphericity < 1.0  + mult cut < 20
+  case 20: // k: pp -> Sphericity cuts & axis in EMCal
     fIsHeavyIon=0;
     fUseSphericity=4;
     break;
-  case 21: // l: pp ->0 < Sphericity < 1.0 + mult cut > 20
+  case 21: // l: pp -> Sphericity cuts & axis not in EMCal
     fIsHeavyIon=0;
     fUseSphericity=5;
     break;
-  case 22: // m: pp -> Sphericity < 0.5 + mult cut < 20
+  case 22: // m: pp -> Multiplicity V0M in 1% bins
     fIsHeavyIon=0;
-    fUseSphericity=6;
+    fDetectorCentrality=0;
+    fModCentralityClass=2;
     break;
-  case 23: // n: pp -> Sphericity < 0.5 + mult cut > 20
+  case 23: // n: pp -> Multiplicity V0M in 10% bins
     fIsHeavyIon=0;
-    fUseSphericity=7;
+    fDetectorCentrality=0;
+    fModCentralityClass=0;
     break;
-  case 24: // o: pp -> Sphericity > 0.5 + mult cut < 20
+  case 24: // o: pp -> Multiplicity CL1 in 1% bins
     fIsHeavyIon=0;
-    fUseSphericity=8;
+    fDetectorCentrality=3;
+    fModCentralityClass=2;
     break;
-  case 25: // p: pp -> Sphericity > 0.5 + mult cut > 20
+  case 25: // p: pp -> Multiplicity CL1 in 10% bins
     fIsHeavyIon=0;
-    fUseSphericity=9;
+    fDetectorCentrality=3;
+    fModCentralityClass=0;
     break;
-  case 26: // q: pp -> Sphericity < 0.3
-    fIsHeavyIon=0;
-    fUseSphericity=10;
-    break;
-  case 27: // r: pp -> Sphericity > 0.7
-    fIsHeavyIon=0;
-    fUseSphericity=11;
-    break;
-  case 28: // s: pp -> Sphericity < 0.5 + Sphericity axis in EMCal coverage
-    fIsHeavyIon=0;
-    fUseSphericity=12;
-    break;
-  case 29: // t: pp -> Sphericity < 0.5 + Sphericity axis not in EMCal coverage
-    fIsHeavyIon=0;
-    fUseSphericity=13;
-    break;
-
   default:
     AliError(Form("SetHeavyIon not defined %d",isHeavyIon));
     return kFALSE;
@@ -2632,6 +2624,8 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
             return MultSelection->GetMultiplicityPercentile("ZNC",kTRUE);
           else
             return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
+        } else if(fDetectorCentrality==3){
+          return MultSelection->GetMultiplicityPercentile("SPDTracklets",kTRUE);
         }
       }
     }else{
@@ -2666,15 +2660,26 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
             } else{
         if(fDetectorCentrality==0){
           if(fIsHeavyIon==2){
-            return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
+            if (runnumber > 266329 && runnumber < 267139)
+              return MultSelection->GetMultiplicityPercentile("V0C");// default for Pbp
+            else
+              return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
           } else if ( fPeriodEnum == kLHC18qr ) {
             return MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
           } else {
             return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
           }
-        }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
-        else if(fDetectorCentrality==2) return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
-      }
+        }else if(fDetectorCentrality==1){
+          return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+        }else if(fDetectorCentrality==2) {
+          if (runnumber > 266329 && runnumber < 267139)
+            return MultSelection->GetMultiplicityPercentile("ZNC",kTRUE);
+          else
+            return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
+        } else if(fDetectorCentrality==3){
+          return MultSelection->GetMultiplicityPercentile("SPDTracklets",kTRUE);
+        }
+    }
     }else{
       if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
     }
@@ -2690,7 +2695,7 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
   if(!fIsHeavyIon){
     if ((fCentralityMin == 0 && fCentralityMax == 0) || (fCentralityMin > fCentralityMax) ){
       return kTRUE;
-    } else {
+    } else if (fUseSphericity == 0 && fDetectorCentrality == -1){
       Int_t primaryTracksPP[9] = { 0,   2,   5,    10,   15,
                                   30,  50,  100,  1000
                                   };
@@ -5367,87 +5372,29 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   }
 
   if(fUseSphericity > 0){
+    Double_t eventSphericity  = -1;
+    Int_t nPrimTracks         = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
+    Double_t InAcceptance     = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->IsSphericityAxisInEMCalAcceptance();
     if(fUseSphericityTrue){
-        Double_t eventSphericityTrue = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericityTrue();
-        if(eventSphericityTrue == -1) return 14;
-        if(fUseSphericity == 1 && eventSphericityTrue>0.5){
+      eventSphericity         = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericityTrue();
+    } else if(!fUseSphericityTrue){
+      eventSphericity         = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
+    }
+    if (eventSphericity == -1) return 14;
+
+    if (fUseSphericity == 2){
+      if (nPrimTracks > 20) return 14;
+    } else if (fUseSphericity == 3){
+      if (nPrimTracks <= 20) return 14;
+    } else if (fUseSphericity == 4){
+      if (!InAcceptance) return 14;
+    } else if (fUseSphericity == 5){
+      if (InAcceptance) return 14;
+    }
+
+    if ((fCentralityMin < fCentralityMax) ){
+      if ( eventSphericity < (Double_t)fCentralityMin/10 || eventSphericity > (Double_t)fCentralityMax/10)
         return 14;
-        }
-        if(fUseSphericity == 2 && eventSphericityTrue<0.5){
-        return 14;
-        }
-        if(fUseSphericity == 3 && eventSphericityTrue==-1){
-        return 14;
-        }
-        Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
-        if(fUseSphericity == 4 && (eventSphericityTrue==-1 || nPrimTracks > 20)){
-        return 14;
-        }
-        if(fUseSphericity == 5 && (eventSphericityTrue==-1 || nPrimTracks < 20)){
-        return 14;
-        }
-        if(fUseSphericity == 6 && (eventSphericityTrue>0.5 || nPrimTracks > 20)){
-        return 14;
-        }
-        if(fUseSphericity == 7 && (eventSphericityTrue>0.5 || nPrimTracks < 20)){
-        return 14;
-        }
-        if(fUseSphericity == 8 && (eventSphericityTrue<0.5 || nPrimTracks > 20)){
-        return 14;
-        }
-        if(fUseSphericity == 9 && (eventSphericityTrue<0.5 || nPrimTracks < 20)){
-        return 14;
-        }
-        if(fUseSphericity == 10 && eventSphericityTrue>0.3){
-        return 14;
-        }
-        if(fUseSphericity == 11 && eventSphericityTrue<0.7){
-        return 14;
-        }
-    }else if(!fUseSphericityTrue){
-        Double_t eventSphericity = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetSphericity();
-        if(eventSphericity == -1) return 14;
-        if(fUseSphericity == 1 && eventSphericity>0.5){
-        return 14;
-        }
-        if(fUseSphericity == 2 && eventSphericity<0.5){
-        return 14;
-        }
-        if(fUseSphericity == 3 && eventSphericity==-1){
-        return 14;
-        }
-        Int_t nPrimTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
-        if(fUseSphericity == 4 && (eventSphericity==-1 || nPrimTracks > 20)){
-        return 14;
-        }
-        if(fUseSphericity == 5 && (eventSphericity==-1 || nPrimTracks < 20)){
-        return 14;
-        }
-        if(fUseSphericity == 6 && (eventSphericity>0.5 || nPrimTracks > 20)){
-        return 14;
-        }
-        if(fUseSphericity == 7 && (eventSphericity>0.5 || nPrimTracks < 20)){
-        return 14;
-        }
-        if(fUseSphericity == 8 && (eventSphericity<0.5 || nPrimTracks > 20)){
-        return 14;
-        }
-        if(fUseSphericity == 9 && (eventSphericity<0.5 || nPrimTracks < 20)){
-        return 14;
-        }
-        if(fUseSphericity == 10 && eventSphericity>0.3){
-        return 14;
-        }
-        if(fUseSphericity == 11 && eventSphericity<0.7){
-        return 14;
-        }
-        Double_t InAcceptance = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->IsSphericityAxisInEMCalAcceptance();
-        if(fUseSphericity == 12 && (eventSphericity>0.3 || !InAcceptance)){
-        return 14;
-        }
-        if(fUseSphericity == 13 && (eventSphericity>0.3 || InAcceptance)){
-        return 14;
-        }
     }
   }
 
