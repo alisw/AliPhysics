@@ -410,6 +410,7 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("EsigTOF", &EsigTOF);
   
   fTree->Branch("PsigTPC", &PsigTPC);
+  fTree->Branch("PsigITS", &PsigITS);
   
   fTree->Branch("NCrossedRowsTPC", &NCrossedRowsTPC);
   fTree->Branch("NClustersTPC", &NClustersTPC);
@@ -553,23 +554,31 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   n= acceptedTracks;
   if(acceptedTracks){
 
+if ((AliAnalysisManager::GetAnalysisManager()->GetTask("AnalysisTaskZDCEP")) != NULL){  
   if(FillZDCEventPlane(ZDCev)){  
     ZDCepC=ZDCev[0];
     ZDCepA=ZDCev[1];
   }
+}  
   else{
     ZDCepC=-999;
     ZDCepA=-999;
   }      
- 
-//  man=AliAnalysisManager::GetAnalysisManager(); 
-  AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections"));  
-  AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-  TList *qnlist = flowQnVectorMgr->GetQnVectorList();
-//  TList *qnlist = (TList*) event->FindListObject("qnVectorList");    
-  if(qnlist != NULL)  AliAnalysisTaskMLTreeMaker::FillQnEventplanes(qnlist);
-//  else cout<<"No qnVectorList found!"<<endl;
-  
+
+  if ((AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections")) != NULL){  
+    AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections"));  
+    AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+    TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+  //  TList *qnlist = (TList*) event->FindListObject("qnVectorList");    
+    if(qnlist != NULL)  AliAnalysisTaskMLTreeMaker::FillQnEventplanes(qnlist);
+    else {
+      std::cout<<"No qnVectorList found!"<<std::endl;
+      TPCep=-99;
+    }
+  }  
+  else {
+    TPCep=-99;
+  }
   fTree->Fill();
   fQAHist->Fill("Events_track_and_cent_selected",1);
   }
@@ -881,6 +890,9 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
       PsigTPC.push_back(tempPsigTPC);
       
+      Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 2);
+      PsigITS.push_back(tempPsigITS);
+      
 //      if(fPionSigmas){
 //        Double_t tempPsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2);
 //        Double_t tempPsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 2);
@@ -1081,6 +1093,8 @@ Bool_t AliAnalysisTaskMLTreeMaker::FillZDCEventPlane(Double_t* ZDCevArr){
       anEvent->GetZDC2Qsub(vQarray);
      } else { 
       Printf("AliAnalysisTaskMLTreeMaker::FillZDCEventPlane: Flowevent not found. Aborting!\n");
+      ZDCevArr[0]=-99;      
+      ZDCevArr[0]=-99;      
       return kFALSE;
     }
   } 

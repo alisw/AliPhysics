@@ -23,19 +23,14 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
   Int_t MVACut=0;
   
 //  for(int glcut = 0; glcut <=30; ++glcut){
-  for(int glcut = 0; glcut <=0; ++glcut){
-    ////////DEFINE THE CUTS AS FUNCTION OF GLCUT//////
-    if(glcut>0 && glcut<21) continue;
-    PIDCut=glcut-10;
+  for(int glcut = -999; glcut <=-999; ++glcut){
+
+    PIDCut=glcut;
     trackCut=glcut;
-    if(glcut==0) trackCut=-1;
-    if(glcut==0) PIDCut=0;
-    
-//    for(MVACut = 0; MVACut<10;MVACut++){
-    for(MVACut = 0; MVACut<1;MVACut++){
+
+    MVACut = 0;
       
       TString name=TString::Format("DieleTr%d_PID%d_MVA%d",trackCut,PIDCut, MVACut);
-      //    cout<<"Diele name: "<<name.Data()<<endl;    
       AliDielectron * diel_low = new AliDielectron(Form("%s",name.Data()), Form("Name: %s",name.Data()));
       if(!diel_low){
         Printf("=======================================");
@@ -43,7 +38,7 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
         Printf("=======================================");
         return NULL; 
       }  
-      if(hasMC) SetupMCsignals(diel_low);
+
       if(kMix && !hasMC ){ // need second since there is a problem when mixing MC events (TRef?)
         AliDielectronMixingHandler *mix = new AliDielectronMixingHandler;
 
@@ -52,12 +47,6 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
         mix->SetDepth(15);
         mix->SetMixType(AliDielectronMixingHandler::kAll);
         diel_low->SetMixingHandler(mix);
-      }
-
-      if(usePIDCorr){
-       SetITSCorr(diel_low,hasMC);
-       SetTPCCorr(diel_low,hasMC);
-//       SetTOFCorr(diel_low,hasMC);
       }
 
       diel_low->SetUseKF(kFALSE);   //keep this one, otherwise masses are slightly wrong and R factors very wrong!
@@ -84,11 +73,8 @@ void Config_slehner_diele_TMVA(AliAnalysisTaskMultiDielectron *task,Bool_t usePI
       std::cout << "CutTr: "<<trackCut<<" CutPID: "<<PIDCut<<" MVAcut: "<<-1+MVACut*0.2<<" being added"<< std::endl;
       diel_low->GetTrackFilter().AddCuts(SetupTrackCutsAndSettings(trackCut, PIDCut, MVACut, useAODFilterCuts,TMVAweight));   
       
-
-      
       task->AddDielectron(diel_low);
       printf("successfully added AliDielectron: %s\n",diel_low->GetName());           
-      }
 
   }
  return;
