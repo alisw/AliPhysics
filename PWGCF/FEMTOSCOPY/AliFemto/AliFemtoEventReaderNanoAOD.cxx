@@ -418,7 +418,7 @@ AliFemtoEvent *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoEvent()
     char multChar[nMultString + 1]; 
     strcpy(multChar, multString.c_str()); 
     
-    static const Int_t kRefMult = fAODheader->GetVarIndex("MultSelection.RefMult08");
+    static const Int_t kRefMult = fAODheader->GetVarIndex(multChar);
     norm_mult  = fAODheader->GetVar(kRefMult);
     tEvent->SetNormalizedMult(norm_mult);
 
