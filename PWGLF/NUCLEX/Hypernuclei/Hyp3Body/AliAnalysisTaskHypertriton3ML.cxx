@@ -185,8 +185,6 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
 
   fREvent.fCent = fEventCuts.GetCentrality();
 
-  const AliVVertex *primaryVtx = static_cast<const AliVVertex *>(fEventCuts.GetPrimaryVertex());
-
   double primaryVtxPos[3];
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVtxPos);
 
@@ -280,34 +278,33 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         (track->GetTPCNcls() < fMinTPCNcluster))
       continue;
 
+    float dca[2];
+    track->GetImpactParameters(dca[0],dca[1]);
+    double dcaNorm = std::hypot(dca[0], dca[1]);
+
+    if (fOnlyTrueCandidates) {
+      int lab = std::abs(track->GetLabel());
+      if (!mcEvent->IsSecondaryFromWeakDecay(lab))
+        continue;
+      AliVParticle* part = mcEvent->GetTrack(lab);
+      AliVParticle* moth = mcEvent->GetTrack(part->GetMother());
+      if (std::abs(moth->PdgCode()) != 1010010030) continue;
+    }
+
+
     float nSigmaDeu = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
-    if (std::abs(nSigmaDeu) < fMaxNSigmaTPCDeu) {
-      double dcaPrimaryDeu[2];
-      track->PropagateToDCA(primaryVtx, b, 1000., dcaPrimaryDeu);
-      double dcaPrimaryDeuNorm = std::sqrt(dcaPrimaryDeu[0] * dcaPrimaryDeu[0] + dcaPrimaryDeu[1] * dcaPrimaryDeu[1]);
-      if (dcaPrimaryDeuNorm < fMinDCA2PrimaryVtxDeu) {
-        fDeuVector.push_back(track);
-      }
+    if (std::abs(nSigmaDeu) < fMaxNSigmaTPCDeu && dcaNorm > fMinDCA2PrimaryVtxDeu) {
+      fDeuVector.push_back(track);
     }
 
     float nSigmaP = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-    if (std::abs(nSigmaP) < fMaxNSigmaTPCP) {
-      double dcaPrimaryP[2];
-      track->PropagateToDCA(primaryVtx, b, 1000., dcaPrimaryP);
-      double dcaPrimaryPNorm = std::sqrt(dcaPrimaryP[0] * dcaPrimaryP[0] + dcaPrimaryP[1] * dcaPrimaryP[1]);
-      if (dcaPrimaryPNorm < fMinDCA2PrimaryVtxP) {
-        fPVector.push_back(track);
-      }
+    if (std::abs(nSigmaP) < fMaxNSigmaTPCP && dcaNorm > fMinDCA2PrimaryVtxP) {
+      fPVector.push_back(track);
     }
 
     float nSigmaPi = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-    if (std::abs(nSigmaPi) < fMaxNSigmaTPCPi) {
-      double dcaPrimaryPi[2];
-      track->PropagateToDCA(primaryVtx, b, 1000., dcaPrimaryPi);
-      double dcaPrimaryPiNorm = std::sqrt(dcaPrimaryPi[0] * dcaPrimaryPi[0] + dcaPrimaryPi[1] * dcaPrimaryPi[1]);
-      if (dcaPrimaryPiNorm < fMinDCA2PrimaryVtxPi) {
-        fPiVector.push_back(track);
-      }
+    if (std::abs(nSigmaPi) < fMaxNSigmaTPCPi && dcaNorm > fMinDCA2PrimaryVtxPi) {
+      fPiVector.push_back(track);
     }
   }
 
@@ -315,15 +312,17 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     float nSigmaDeu = fPIDResponse->NumberOfSigmasTPC(deu, AliPID::kDeuteron);
 
     for (const auto &p : fPVector) {
+      if (deu == p) continue;
       if (p->Charge() * deu->Charge() < 0) continue;
       float nSigmaP = fPIDResponse->NumberOfSigmasTPC(p, AliPID::kProton);
 
       for (const auto &pi : fPiVector) {
+        if (p == pi || deu == pi) continue;
         if (pi->Charge() * p->Charge() > 0) continue;
+
         float nSigmaPi = fPIDResponse->NumberOfSigmasTPC(pi, AliPID::kPion);
 
         int momLab = IsTrueHyperTriton3Candidate(deu, p, pi, mcEvent);
-        if (momLab != -1) cout << momLab << endl;
         if ((momLab == -1) && fOnlyTrueCandidates) continue;
 
         bool recoVertex = fVertexer.FindDecayVertex(deu, p, pi, b);
