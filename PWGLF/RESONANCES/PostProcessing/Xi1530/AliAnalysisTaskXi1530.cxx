@@ -175,9 +175,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     // TrackCuts for Xi1530--------------------------------------------------
     // Primary pion cut(Xi1530pion)
     fTrackCuts = new AliESDtrackCuts();
-    fTrackCuts->GetStandardITSTPCTrackCuts2011(kTRUE, kTRUE);
-    fTrackCuts->SetEtaRange(-0.8, 0.8);
-    fTrackCuts->SetPtRange(0.15, 1e20);
+    fTrackCuts->GetStandardITSTPCTrackCuts2011(kTRUE);
 
     // secondary particle cut(Xi daugthers)
     fTrackCuts2 = new AliESDtrackCuts();
@@ -192,8 +190,8 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
 
     // secondary particle cut(Xi daugthers) for systematic study
     fTrackCuts3 = new AliESDtrackCuts();
-    fTrackCuts3->GetStandardITSTPCTrackCuts2011(kFALSE, kTRUE);  // not primary
-    fTrackCuts3->SetPtRange(0.15, 1e20);
+    fTrackCuts3->GetStandardITSTPCTrackCuts2011(kFALSE);  // not primary
+
     // ----------------------------------------------------------------------
 
     fHistos = new THistManager("Xi1530hists");
@@ -462,7 +460,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
 
     // NanoAOD --------------------------------------------------------------
     AliNanoAODHeader* nanoHeader =
-        dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
+        dynamic_cast<AliNanoAODHeader*>(event->GetHeader());
+    if ((!IsNano) && (nanoHeader))
+        IsNano = true;
     // ----------------------------------------------------------------------
 
     // Connect to ESD tree --------------------------------------------------
@@ -494,7 +494,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
     Double_t intensity = 0.;
     bField = fEvt->GetMagneticField();  // bField for track DCA
 
-    if (!nanoHeader) {
+    if (!IsNano) {
         IsEvtSelected = fEventCuts.AcceptEvent(event);
         // Preparation for MC
         // ---------------------------------------------------
@@ -730,21 +730,14 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
             track = (AliAODTrack*)fEvt->GetTrack(it);
             if (!track)
                 continue;
-            if (!((AliAODTrack*)track)->TestFilterBit(fFilterBit))
+            if ((!IsNano) &&
+                (!((AliAODTrack*)track)->TestFilterBit(fFilterBit)))
                 continue;
         }  // AOD Case
 
         Double_t fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
         Double_t pionZ = abs(track->GetZ() - fZ);
         Double_t pionPt = track->Pt();
-
-        if (fQA) {
-            fHistos->FillTH2("hPhiEta", track->Phi(), track->Eta());
-            fHistos->FillTH2("hTPCPIDXi1530Pion", track->GetTPCmomentum(),
-                             track->GetTPCsignal());
-            fHistos->FillTH1("hTPCPIDsignalXi1530Pion", fTPCNSigPion);
-            fHistos->FillTH1("hDCADist_Xi1530pion_to_PV", pionZ);
-        }  // Before cut
 
         if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose)
             continue;
@@ -755,6 +748,13 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
         if (pionPt < 0.15)
             continue;
         // if (fabs(track->M() - pionmass) > 0.007) continue;
+        if (fQA) {
+            fHistos->FillTH2("hPhiEta", track->Phi(), track->Eta());
+            fHistos->FillTH2("hTPCPIDXi1530Pion", track->GetTPCmomentum(),
+                             track->GetTPCsignal());
+            fHistos->FillTH1("hTPCPIDsignalXi1530Pion", fTPCNSigPion);
+            fHistos->FillTH1("hDCADist_Xi1530pion_to_PV", pionZ);
+        }  // After default cut
 
         goodtrackindices.push_back(it);
     }
@@ -1305,8 +1305,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
                     (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)) {
-                    AliInfo(
-                        Form("pion PID! %s", (const char*)SysCheck.at(sys)));
+                    AliInfo(Form("pion PID! %f %s",
+                                 fTPCNSigPion, (const char*) SysCheck.at(sys)));
                     continue;
                 }
 
@@ -1318,18 +1318,20 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     if ((abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) ||
                         (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) ||
                         (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)) {
-                        AliInfo(
-                            Form("Xi PID! %s", (const char*)SysCheck.at(sys)));
+                        AliInfo(Form("Xi PID! %f %f %f %s", fTPCNSigProton,
+                                     fTPCNSigLambdaPion,
+                                     fTPCNSigBachelorPion, (const char*)
+                                         SysCheck.at(sys)));
                         continue;
                     }
                 }
                 if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
-                    if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight)
-                        continue;
-                    if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_tight)
-                        continue;
-                    if (abs(fTPCNSigBachelorPion) >
-                        fTPCNsigBachelorPionCut_tight)
+                    if ((abs(fTPCNSigProton) > 
+                         fTPCNsigLambdaProtonCut_tight) ||
+                        (abs(fTPCNSigLambdaPion) >
+                         fTPCNsigLambdaPionCut_tight) ||
+                        (abs(fTPCNSigBachelorPion) >
+                         fTPCNsigBachelorPionCut_tight))
                         continue;
                 }
 
@@ -1337,7 +1339,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 Double_t pionZ = abs(track1->GetZ() - fZ);
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)) {
-                    AliInfo(Form("pionZ! %s", (const char*)SysCheck.at(sys)));
+                    AliInfo(Form("pionZ! %f %s",
+                                 pionZ, (const char*) SysCheck.at(sys)));
                     continue;
                 }
                 if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
@@ -1350,7 +1353,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 Double_t fDCADist_Xi = fabs(Xicandidate->GetDcaXiDaughters());
                 if ((SysCheck.at(sys) != "DCADistLambdaDaughtersLoose") &&
                     (fDCADist_Lambda > fDCADist_LambdaDaughtersCut)) {
-                    AliInfo(Form("DCADistLambdaDaughtersLoose! %s",
+                    AliInfo(Form("DCADistLambdaDaughters! %f %s",
+                                 fDCADist_Lambda,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1359,7 +1363,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
                 if ((SysCheck.at(sys) != "DCADistXiDaughtersLoose") &&
                     (fDCADist_Xi > fDCADist_XiDaughtersCut)) {
-                    AliInfo(Form("DCADistXiDaughtersLoose! %s",
+                    AliInfo(Form("DCADistXiDaughters! %f %s", fDCADist_Xi,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1372,7 +1376,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     fabs(Xicandidate->GetD(PVx, PVy, PVz));
                 if ((SysCheck.at(sys) != "DCADistLambdaPVLoose") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)) {
-                    AliInfo(Form("DCADistLambdaPVLoose! %s",
+                    AliInfo(Form("DCADistLambdaPV! %f %s", fDCADist_Lambda_PV,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1388,7 +1392,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 if ((SysCheck.at(sys) != "V0CosineOfPointingAngleLoose") &&
                     (fLambdaCPA < fV0CosineOfPointingAngleCut)) {
-                    AliInfo(Form("V0CosineOfPointingAngleLoose! %s",
+                    AliInfo(Form("V0CosineOfPointingAngle! %f %s", fLambdaCPA,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1397,7 +1401,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
                 if ((SysCheck.at(sys) != "CascadeCosineOfPointingAngleLoose") &&
                     (fXiCPA < fCascadeCosineOfPointingAngleCut)) {
-                    AliInfo(Form("CascadeCosineOfPointingAngleLoose! %s",
+                    AliInfo(Form("CascadeCosineOfPointingAngle! %f %s", fXiCPA,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1407,9 +1411,12 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->GetEffMassXi();
-                if ((SysCheck.at(sys) == "XiMassWindowLoose") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)) {
-                    AliInfo(Form("XiMassWindowLoose! %s",
+                if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) {
+                    continue;
+                }
+                if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
+                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)) {
+                    AliInfo(Form("XiMassWindow! %f %s", fMass_Xi,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1890,8 +1897,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 // Xi1530Pion PID
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
                     (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)){
-                    AliInfo(
-                        Form("pion PID! %s", (const char*)SysCheck.at(sys)));
+                    AliInfo(Form("pion PID! %f %s", fTPCNSigPion,
+                                 (const char*)SysCheck.at(sys)));
                     continue;
                 }
 
@@ -1903,26 +1910,28 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     if ((abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) ||
                         (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) ||
                         (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut) ){
-                        AliInfo(Form("Xi PID! %s",
+                        AliInfo(Form("Xi PID! %f %f %f %s", fTPCNSigProton,
+                                     fTPCNSigLambdaPion, fTPCNSigBachelorPion,
                                      (const char*)SysCheck.at(sys)));
                         continue;
                     }
                 }
                 if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
-                    if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight)
-                        continue;
-                    if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_tight)
-                        continue;
-                    if (abs(fTPCNSigBachelorPion) >
-                        fTPCNsigBachelorPionCut_tight)
-                        continue;
+                    if ((abs(fTPCNSigProton) > 
+                         fTPCNsigLambdaProtonCut_tight) ||
+                        (abs(fTPCNSigLambdaPion) >
+                         fTPCNsigLambdaPionCut_tight) ||
+                        (abs(fTPCNSigBachelorPion) >
+                         fTPCNsigBachelorPionCut_tight))
+                            continue;
                 }
 
                 // Xi1530Pion DCA zVetex Check
                 Double_t pionZ = abs(track1->GetZ() - fZ);
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)){
-                    AliInfo(Form("pionZ! %s", (const char*)SysCheck.at(sys)));
+                    AliInfo(Form("pionZ! %f %s", pionZ,
+                                 (const char*)SysCheck.at(sys)));
                     continue;
                 }
                 if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") &&
@@ -1934,7 +1943,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 Double_t fDCADist_Xi = fabs(Xicandidate->DcaXiDaughters());
                 if ((SysCheck.at(sys) != "DCADistLambdaDaughtersLoose") &&
                     (fDCADist_Lambda > fDCADist_LambdaDaughtersCut)){
-                    AliInfo(Form("DCADistLambdaDaughtersLoose! %s",
+                    AliInfo(Form("DCADistLambdaDaughters! %f %s",
+                                 fDCADist_Lambda,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1944,7 +1954,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
                 if ((SysCheck.at(sys) != "DCADistXiDaughtersLoose") &&
                     (fDCADist_Xi > fDCADist_XiDaughtersCut)){
-                    AliInfo(Form("DCADistXiDaughtersLoose! %s",
+                    AliInfo(Form("DCADistXiDaughters! %f %s", fDCADist_Xi,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1960,7 +1970,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     fabs(Xicandidate->DcaXiToPrimVertex(PVx, PVy, PVz));
                 if ((SysCheck.at(sys) != "DCADistLambdaPVLoose") &&
                     (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)){
-                    AliInfo(Form("DCADistLambdaPVLoose! %s",
+                    AliInfo(Form("DCADistLambdaPV! %f %s", fDCADist_Lambda_PV,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1981,7 +1991,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 if ((SysCheck.at(sys) != "V0CosineOfPointingAngleLoose") &&
                     (fLambdaCPA < fV0CosineOfPointingAngleCut)){
-                    AliInfo(Form("V0CosineOfPointingAngleLoose! %s",
+                    AliInfo(Form("V0CosineOfPointingAngle! %f %s", fLambdaCPA,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -1990,7 +2000,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
                 if ((SysCheck.at(sys) != "CascadeCosineOfPointingAngleLoose") &&
                     (fXiCPA < fCascadeCosineOfPointingAngleCut)){
-                    AliInfo(Form("CascadeCosineOfPointingAngleLoose! %s",
+                    AliInfo(Form("CascadeCosineOfPointingAngle! %f %s", fXiCPA,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                 }
@@ -2000,15 +2010,15 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->MassXi();
-                if ((SysCheck.at(sys) == "XiMassWindowLoose") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose)){
-                    AliInfo(Form("XiMassWindowLoose! %s",
+                if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) {
+                    continue;
+                }
+                if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
+                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)){
+                    AliInfo(Form("XiMassWindow! %f %s", fMass_Xi,
                                  (const char*)SysCheck.at(sys)));
                     continue;
                     }
-                if ((SysCheck.at(sys) != "XiMassWindowLoose") &&
-                    (fabs(fMass_Xi - Ximass) > fXiMassWindowCut))
-                    continue;
                 if ((SysCheck.at(sys) == "XiMassWindowTight") &&
                     (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
                     continue;
