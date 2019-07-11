@@ -1,4 +1,4 @@
-AliAnalysisTask_JPsi_EMCal* AddTask_JPsi_EMCal(
+AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
 			Bool_t 	isMC 			= kFALSE, 
 			Bool_t 	isAOD 			= kTRUE,
@@ -6,14 +6,15 @@ AliAnalysisTask_JPsi_EMCal* AddTask_JPsi_EMCal(
 			Int_t trigger_index=3,
             Int_t config=0,
             Bool_t     isTender             = kFALSE,
-            TString estimator="profile_SPD_16l",
-            TString estimatorV0="2dprofile_V0_16l",
+            TString estimator="profile_SPD_from_c1",
+            TString estimatorV0="profile2D",
             Bool_t local = kTRUE,
             Bool_t alienconf = kFALSE,
             Bool_t V0correction = kFALSE,
-            Bool_t SPDcorrection = kFALSE,
+            Bool_t SPDcorrection = kTRUE,
             TString cfg = "Config_JPsi_EMCal"
 			
+                                               //kFALSE, kFALSE, "16l", 4, 0, kFALSE, "profile_SPD_16l", "2dprofile_V0_16l", kFALSE, kFALSE, kFALSE, kFALSE, "Config_JPsi_EMCal"
 )
 {
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -120,10 +121,11 @@ AliAnalysisTask_JPsi_EMCal* AddTask_JPsi_EMCal(
 //TString estimatorFilename="estimators.root";
    
     if(SPDcorrection){
+        printf("SPD correction enabled\n");
         TString estimatorFilename("");
     
         if(local){
-            estimatorFilename="profile_SPD_16l.root";
+            estimatorFilename="profile_SPD_from_c1.root";
         }
         else if(!alienconf){
             estimatorFilename=alirootPath.Data();
@@ -159,23 +161,48 @@ AliAnalysisTask_JPsi_EMCal* AddTask_JPsi_EMCal(
         }
         // task->SetReferenceMultiplicity(refMult);
         //const Char_t* profilebasename="SPDmult10";
-        const Char_t* profilebasename="profile_SPD";
+        //const Char_t* profilebasename="profile_SPD";
     
         // const Char_t* periodNames[2] = {"LHC16l", "LHC16k"};
         //const Char_t* periodNames[1] = {"LHC16l"};
-        const Char_t* periodNames[1] = {"16l"};
+        //const Char_t* periodNames[1] = {"16l"};
         //TProfile* multEstimatorAvg[2];
-        TProfile* multEstimatorAvg[1];
+        
+        TProfile2D* multEstimatorAvg[1];
         for(Int_t ip=0; ip<1; ip++) {
-            cout<< " Estimator used (test): "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-            multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+            cout<< " Estimator SPD used: " << Form("%s",estimatorFilename.Data())<<endl;
+            multEstimatorAvg[ip] = (TProfile2D*)(fileEstimator->Get("profile")->Clone("profile_clone"));
+            
+            //multEstimatorAvg[ip] = (TProfile2D*)(fileEstimator->Get("RunGroup_Vtx_Mult"));
+        /*
+            printf("TEST\n\n");
+            estimator_test = (TProfile2D*)(fileEstimator->Get("profile"));
+            
+            TH1F *hx0= (TH1F*) estimator_test->ProfileX();
+            TH1F *hy0= (TH1F*) estimator_test->ProfileY();
+            
+            Int_t BinX=hx0->FindBin(4);
+            Int_t BinY=hy0->FindBin(-2.977679);
+            
+            printf("TEST AddTask print values (estimator without clone):    binX = %d, binY=%d \n", BinX, BinY);
+            
+            TH1F *hx1= (TH1F*) multEstimatorAvg[ip]->ProfileX();
+            TH1F *hy1= (TH1F*) multEstimatorAvg[ip]->ProfileY();
+            
+            Int_t BinX=hx1->FindBin(4);
+            Int_t BinY=hy1->FindBin(-2.977679);
+            
+            printf("TEST AddTask print values (estimator USED):    binX = %d, binY=%d \n", BinX, BinY);
+         */
+            
+            
             if (!multEstimatorAvg[ip]) {
-                AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+                AliFatal(Form("SPD Multiplicity estimator not found! Please check your estimator file"));
             return;
             }
         }
     
-        task->SetMultiProfileLHC16l(multEstimatorAvg[0]);
+        task->SetMultiProfileSPD(multEstimatorAvg[0]);
         
     }//close if SPDcorrection
     
@@ -184,11 +211,11 @@ AliAnalysisTask_JPsi_EMCal* AddTask_JPsi_EMCal(
     
   // TString estimatorV0Filename="2dprofile_V0_16l.root";
     if(V0correction){
-    
+        printf("V0 correction enabled\n");
         TString estimatorV0Filename("");
     
         if(local){
-            estimatorV0Filename="2dprofile_V0_16l.root";
+            estimatorV0Filename="profile2D.root";
         }
         else if(!alienconf){
             estimatorV0Filename=alirootPath.Data();
@@ -224,14 +251,31 @@ AliAnalysisTask_JPsi_EMCal* AddTask_JPsi_EMCal(
     
         TProfile2D* multEstimatorV0[1];
         for(Int_t iv=0; iv<1; iv++) {
-            cout<< " Estimator V0 used (test): "<<Form("%s",estimatorV0Filename.Data())<<endl;
-            multEstimatorV0[iv] = (TProfile2D*)(fileEstimatorV0->Get("2dprofile_V0_16l;1")->Clone("2dprofile_V0_16l_clone"));
+            cout<< " Estimator V0 used: "<<Form("%s",estimatorV0Filename.Data())<<endl;
+            multEstimatorV0[iv] = (TProfile2D*)(fileEstimatorV0->Get("RunID_vtx_v0m")->Clone("RunID_vtx_v0m_clone"));
+            
+            /*
+            TH1F *hx= (TH1F*) multEstimatorV0[iv]->ProfileX();
+            TH1F *hy= (TH1F*) multEstimatorV0[iv]->ProfileY();
+            
+            
+            Int_t BinX=hx->FindBin(258454);
+            Int_t BinY=hy->FindBin(-1.0);
+            
+            printf("run= %d, vtx=%f ==>   Bins inside task are binx = %d, biny = %d \n", 258454, -1, BinX, BinY);
+        
+            
+            Double_t localV0 = multEstimatorV0[iv]->GetBinContent(BinX, BinY);//first argument is run number/group, second is vertex on Y axis
+            printf("AddTask_localV0 = %f\n", localV0);
+            */
+            
+            
             if (!multEstimatorV0[iv]) {
                 AliFatal("Multiplicity estimator for V0 not found! Please check your estimator file");
                 return;
             }
         }
-        task->SetMultiProfileV0LHC16l(multEstimatorV0[0]);
+        task->SetMultiProfileV0(multEstimatorV0[0]);
     }//close if V0 correction
 	
 	mgr->AddTask(task);

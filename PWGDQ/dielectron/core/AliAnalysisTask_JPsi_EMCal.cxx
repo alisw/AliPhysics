@@ -62,11 +62,11 @@
 #include "AliAODMCHeader.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
-#include "AliHFEcontainer.h"
-#include "AliHFEcuts.h"
-#include "AliHFEpid.h"
-#include "AliHFEpidBase.h"
-#include "AliHFEpidQAmanager.h"
+//#include "AliHFEcontainer.h"
+//#include "AliHFEcuts.h"
+//#include "AliHFEpid.h"
+//#include "AliHFEpidBase.h"
+//#include "AliHFEpidQAmanager.h"
 #include "AliHFEtools.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
@@ -193,7 +193,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fRefMult(12.00)
 ,gRandom(new TRandom3(0))
 
-,fRefMult_V0(86.0)
+,fRefMult_V0(139.0)
 ,gRandom_V0(new TRandom3(0))
 
 
@@ -253,7 +253,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fEtaPhi_dcal(0)
 
 //For the HFE package
-,fCuts(0)
+//,fCuts(0)
 //,fCFM(0)
 //,fPID(new AliHFEpid("hfePid"))
 //,fPIDqa(0)
@@ -304,6 +304,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 //with weight
 //KF
+/*
 ,fHist_InvMass_pt_ULS_KF_weight(0)
 
 
@@ -320,7 +321,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fHist_InvMass_pt_ULS_KF_V0multi_4_weight(0)
 ,fHist_InvMass_pt_ULS_KF_V0multi_5_weight(0)
 
-
+*/
 
 //generators
 //BB
@@ -483,7 +484,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fRefMult(12.00)
 ,gRandom(new TRandom3(0))
 
-,fRefMult_V0(86.0)
+,fRefMult_V0(139.0)
 ,gRandom_V0(new TRandom3(0))
 
 ,fClus(0)
@@ -542,7 +543,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fNClusters(0)
 
 //For the HFE package
-,fCuts(0)
+//,fCuts(0)
 //,fCFM(0)
 //,fPID(new AliHFEpid("hfePid"))
 //,fPIDqa(0)
@@ -591,6 +592,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fHist_InvMass_pt_ULS_KF_V0multi_4(0)
 ,fHist_InvMass_pt_ULS_KF_V0multi_5(0)
 
+/*
 //with weight
 //KF
 ,fHist_InvMass_pt_ULS_KF_weight(0)
@@ -608,7 +610,7 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fHist_InvMass_pt_ULS_KF_V0multi_3_weight(0)
 ,fHist_InvMass_pt_ULS_KF_V0multi_4_weight(0)
 ,fHist_InvMass_pt_ULS_KF_V0multi_5_weight(0)
-
+*/
 
 //generators
 //BB
@@ -731,15 +733,15 @@ void AliAnalysisTask_JPsi_EMCal::Init()
     
     for(Int_t i=0; i<nProfiles; i++){
         if(fMultEstimatorAvg[i]){
-            TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
-            hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
+            TProfile2D* hprof=new TProfile2D(*fMultEstimatorAvg[i]);
+            hprof->SetName("ProfileSPD \n");
             fListProfiles->Add(hprof);
         }
     }
     for(Int_t i=0; i<nProfilesV0; i++){
         if(fMultEstimatorV0[i]){
             TProfile2D* hprofV0=new TProfile2D(*fMultEstimatorV0[i]);
-            hprofV0->SetName(Form("ProfileV0%s\n",period[i].Data()));
+            hprofV0->SetName("ProfileV0 \n");
             fListProfiles->Add(hprofV0);
             
         }
@@ -966,6 +968,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     //multiplicity histos
     
     //KFParticle
+    /*
     fHist_InvMass_pt_ULS_KF_weight = new TH2F("fHist_InvMass_pt_ULS_KF_weight","Invariant mass e^{-}e^{+} ;p_{T} (GeV/c); M_{e^{-}e^{+}}",300,0,30,500,0,5);
     fOutputList->Add(fHist_InvMass_pt_ULS_KF_weight);
     
@@ -994,6 +997,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_4_weight);
     fOutputList->Add(fHist_InvMass_pt_ULS_KF_V0multi_5_weight);
 
+    */
     
 	
 	//=================================================================================================================================================================
@@ -1248,12 +1252,12 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     
     //=======
     //correction for multiplicity
-    TProfile* estimatorAvg = GetEstimatorHistogram(fAOD);
+    TProfile2D* estimatorAvg = GetEstimatorHistogram(fAOD);
     //if(!isMC){
         if(estimatorAvg){
             //printf("Estimator SPD exists!\n");
             //correctednAcc=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,nAcc,Zvertex1,fRefMult));
-            fSPDMult_corr = AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(estimatorAvg,nAcc,fZvtx,fRefMult);
+            fSPDMult_corr = AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(estimatorAvg,nAcc,fZvtx,fRefMult, fAOD->GetRunNumber());
         
             //countCorr=static_cast<Int_t>(AliVertexingHFUtils::GetCorrectedNtracklets(estimatorAvg,countMult,Zvertex1,fRefMult));
         }
@@ -1264,7 +1268,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     //}
 
  
-   // printf("SPD =%f, SPD_corrected =%f\n", SPDMult, fSPDMult_corr);
+    //printf("SPD =%f, SPD_corrected =%f\n", SPDMult, fSPDMult_corr);
     
 
     //V0M Correction
@@ -2417,7 +2421,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
                                 //  printf("weigh=% f \n", weight);
                                  // printf("passed first histo \n");
-                                  fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
+                                 // fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
                                   //printf("passed second histo \n");
                               }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
@@ -2437,7 +2441,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
                                   if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
                                   if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
-                                  
+                                  /*
                                   //with weight
                                   if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
                                   if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
@@ -2450,6 +2454,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                   if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
                                   if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
                                   if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
+                                   */
+                                  
                                   
                                 }
 							
@@ -2593,7 +2599,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                              if(charge1*charge2 <0){
                                  fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                                 fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
+                                // fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
                              }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                              
@@ -2611,7 +2617,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                  if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3->Fill(pt_kf,imass);
                                  if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
-                                 
+                                 /*
                                  //with weight
                                  if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
                                  if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
@@ -2624,6 +2630,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                  if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
                                  if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
                                  if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
+                                 */
                                  
                                  
                              }
@@ -2764,7 +2771,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
 								//KFParticle
                             if(charge1*charge2 <0){
                                 fHist_InvMass_pt_ULS_KF->Fill(pt_kf,imass);//multi integrated
-                                fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
+                               // fHist_InvMass_pt_ULS_KF_weight->Fill(pt_kf,imass,weight);//multi integrated with weight
                             }
 							if(charge1*charge2 >0) fHist_InvMass_pt_LS_KF->Fill(pt_kf,imass);
                             
@@ -2783,6 +2790,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4->Fill(pt_kf,imass);
                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5->Fill(pt_kf,imass);
                                 
+                                /*
                                 //with weight
                                 if(fSPDMult_corr>0 && fSPDMult_corr < 15)   fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight->Fill(pt_kf,imass,weight);
                                 if(fSPDMult_corr>=15 && fSPDMult_corr < 25) fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight->Fill(pt_kf,imass,weight);
@@ -2795,6 +2803,8 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                                 if(fV0Mult_corr2>=150 && fV0Mult_corr2<225) fHist_InvMass_pt_ULS_KF_V0multi_3_weight->Fill(pt_kf,imass,weight);
                                 if(fV0Mult_corr2>=225 && fV0Mult_corr2<300) fHist_InvMass_pt_ULS_KF_V0multi_4_weight->Fill(pt_kf,imass,weight);
                                 if(fV0Mult_corr2>=300 && fV0Mult_corr2<680) fHist_InvMass_pt_ULS_KF_V0multi_5_weight->Fill(pt_kf,imass,weight);
+                                 */
+                                
                                 
                             }
                             
@@ -3186,24 +3196,65 @@ Bool_t AliAnalysisTask_JPsi_EMCal::FindMother(Int_t mcIndex)
 	}
 }
 //____________________________________________________________________________
-TProfile* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram(const AliAODEvent* fAOD)
+TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
     
    // printf("Inside 'GetEstimatorHistogram \n'");
-    Int_t runNo  = fAOD->GetRunNumber();
+   // Int_t runNo  = fAOD->GetRunNumber();
     //cout<<"run number"<<runNo<<endl;
-    Int_t period = -1;
+   Int_t period = -1;
+    //Int_t group_number = -1;
     
     //period = 0;
-    
+    /*
     if (runNo>258883 && runNo<260187) period = 0;//16l  259668
     if (runNo>256504 && runNo<258574) period = 1;//16k
     if (period < 0 || period > 1) return 0;
+    */
+    /*
+    //run groups from Steffen (period here means group of runs)
+    if (runNo>0 && runNo<271868) group_number = 0;
+    if (runNo>=271868 && runNo< 273591) group_number =  1;
+    if (runNo>=273591 && runNo< 276644) group_number =  0;
+    if (runNo>=276644 && runNo< 285009) group_number =  2;
+    if (runNo>=285009 && runNo< 288743) group_number =  3;
+    if (runNo>=288743 && runNo< 288861) group_number =  4;
+    if (runNo>=288861 && runNo< 288943) group_number =  5;
+    if (runNo>=288943 && runNo< 290549) group_number =  4;
+    if (runNo>=290549 && runNo< 291285) group_number =  6;
+    if (runNo>=291285 && runNo< 291416) group_number =  7;
+    if (runNo>=291416 && runNo< 291690) group_number =  8;
+    if (runNo>=291690 && runNo< 291942) group_number =  9;
+    if (runNo>=291942 && runNo< 292012) group_number =  10;
+    if (runNo>=292012 && runNo< 292163) group_number =  11;
+    if (runNo>=292163 && runNo< 292265) group_number =  12;
+    if (runNo>=292265 && runNo< 292809) group_number =  11;
+    if (runNo>=292809 && runNo< 293357) group_number =  13;
+    if (runNo>=293357) group_number =  4;
+    */
     
-   
-    
+    /* 0          --> 0
+     271868     --> 1
+     273591     --> 0
+     276644     --> 2
+     285009     --> 3
+     288743     --> 4
+     288861     --> 5
+     288943     --> 4
+     290549     --> 6
+     291285     --> 7
+     291416     --> 8
+     291690     --> 9
+     291942     --> 10
+     292012     --> 11
+     292163     --> 12
+     292265     --> 11
+     292809     --> 13
+     293357     --> 4
+     */
+ 
    // cout<<"using period = 0 for all (just a test)"<<period<<endl;
-    period = 0;
+    period = 0;//same file for all periods
     
     return fMultEstimatorAvg[period];
 }
@@ -3212,15 +3263,16 @@ TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram_V0(const AliAODEve
 {
     
     //printf("Inside 'GetEstimatorHistogram_V0 \n'");
-    Int_t runNo  = fAOD->GetRunNumber();
+   // Int_t runNo  = fAOD->GetRunNumber();
     //cout<<"run number"<<runNo<<endl;
     Int_t period = -1;
     
     //period = 0;
-    
+    /*
     if (runNo>258883 && runNo<260187) period = 0;//16l  259668
     if (runNo>256504 && runNo<258574) period = 1;//16k
     if (period < 0 || period > 1) return 0;
+     */
     
     
     
@@ -3230,8 +3282,10 @@ TProfile2D* AliAnalysisTask_JPsi_EMCal::GetEstimatorHistogram_V0(const AliAODEve
     return fMultEstimatorV0[period];
 }
 //______________________________________________________________________________
-Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult)
+Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult, Int_t runNo)
 {
+    
+   //printf("Inside 'GetTrackletsMeanCorrection' for run number %d and vertex =%f \n ", runNo, vtxZ);
     
     if(TMath::Abs(vtxZ)>10.0){
         //    printf("ERROR: Z vertex out of range for correction of multiplicity\n");
@@ -3242,15 +3296,53 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile* estima
         printf("ERROR: Missing TProfile for correction of multiplicity\n");
         return uncorrectedNacc;
     }
+    Int_t group_number=-1;
+    
+    //run groups from Steffen
+    if (runNo>0 && runNo<271868) group_number = 0;
+    if (runNo>=271868 && runNo< 273591) group_number =  1;
+    if (runNo>=273591 && runNo< 276644) group_number =  0;
+    if (runNo>=276644 && runNo< 285009) group_number =  2;
+    if (runNo>=285009 && runNo< 288743) group_number =  3;
+    if (runNo>=288743 && runNo< 288861) group_number =  4;
+    if (runNo>=288861 && runNo< 288943) group_number =  5;
+    if (runNo>=288943 && runNo< 290549) group_number =  4;
+    if (runNo>=290549 && runNo< 291285) group_number =  6;
+    if (runNo>=291285 && runNo< 291416) group_number =  7;
+    if (runNo>=291416 && runNo< 291690) group_number =  8;
+    if (runNo>=291690 && runNo< 291942) group_number =  9;
+    if (runNo>=291942 && runNo< 292012) group_number =  10;
+    if (runNo>=292012 && runNo< 292163) group_number =  11;
+    if (runNo>=292163 && runNo< 292265) group_number =  12;
+    if (runNo>=292265 && runNo< 292809) group_number =  11;
+    if (runNo>=292809 && runNo< 293357) group_number =  13;
+    if (runNo>=293357) group_number =  4;
+    
+   // printf("Group number =%d\n", group_number);
+    
+    TH1F *hx0= (TH1F*) estimatorAvg->ProfileX();
+    TH1F *hy0= (TH1F*) estimatorAvg->ProfileY();
+    
+    Int_t BinX=hx0->FindBin(group_number);
+    Int_t BinY=hy0->FindBin(vtxZ);
+    
+   // printf("TEST2: binX = %d, binY=%d \n", BinX, BinY);
+    
+    
+    delete hx0;
+    delete hy0;
+    
+    
    
     
-    Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
+    Double_t localAvg = estimatorAvg->GetBinContent(BinX, BinY);
+   // printf("LocalAvg = %f  \n", localAvg);
     
     if(localAvg==0){
-        //printf("LocalAvg = %f for vertex = %f  \n", localAvg, vtxZ);
+        
         return uncorrectedNacc;
     }
-    
+    //printf("LocalAvg = %f for vertex= %f and group number =%d \n", localAvg, vtxZ, group_number);
     
     Double_t deltaM = 0;
     deltaM = uncorrectedNacc*(refMult/localAvg - 1);
@@ -3261,7 +3353,7 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile* estima
     
     if(correctedNacc<0) correctedNacc=0;
     
-  //  printf("Inside 'GetTrackletsMeanCorrection' (end) \n");
+   // printf("Inside 'GetTrackletsMeanCorrection' after 2D correction: old = %f and new = %f \n",uncorrectedNacc, correctedNacc);
     
     return correctedNacc;
     
@@ -3271,33 +3363,44 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetTrackletsMeanCorrection(TProfile* estima
 Double_t AliAnalysisTask_JPsi_EMCal::GetV0MeanCorrection(TProfile2D* estimatorV0, Double_t uncorrectedV0, Double_t vtxZ, Double_t refMult_V0, Int_t run_number)
 {
     
-    
+    //printf("Inside GetV0MeanCorrection \n");
     if(TMath::Abs(vtxZ)>10.0){
         //    printf("ERROR: Z vertex out of range for correction of multiplicity\n");
         return uncorrectedV0;
     }
-    
     
     if(!estimatorV0){
         printf("ERROR: Missing TProfile for correction of multiplicity\n");
         return uncorrectedV0;
     }
   
-    TH1F *hx= (TH1F*) estimatorV0->ProfileX();
+    //TH1F *hx= (TH1F*) estimatorV0->ProfileX();
     TH1F *hy= (TH1F*) estimatorV0->ProfileY();
     
-   // Int_t BinX=(estimatorV0->ProfileX())->FindBin(run_number);
-   // Int_t BinY=(estimatorV0->ProfileY())->FindBin(vtxZ);
+    //profile as a function of integer from 0 to 1552. Finding relationship with run number:
+    Int_t runs[1552]={252235,252248,252271,252310,252317,252319,252322,252325,252330,253437,253478,253481,253482,253488,253517,253529,253530,253563,253589,253591,254128,254147,254148,254149,254174,254175,254178,254193,254199,254204,254205,254293,254302,254303,254304,254330,254331,254332,254418,254419,254422,254604,254606,254608,254629,254630,254632,254640,254644,254646,254648,254649,254651,254652,254653,254654,255079,255082,255085,255086,255091,255111,255154,255159,255162,255167,255171,255173,255174,255176,255177,255240,255242,255247,255248,255249,255251,255252,255255,255256,255275,255276,255280,255283,255350,255351,255352,255398,255402,255407,255415,255418,255419,255420,255421,255440,255442,255447,255463,255465,255466,255467,255539,255540,255541,255542,255543,255577,255582,255583,255591,255614,255615,255616,255617,255618,256204,256207,256210,256212,256213,256215,256219,256222,256223,256227,256228,256231,256281,256282,256283,256284,256287,256289,256290,256292,256295,256297,256298,256299,256302,256307,256309,256311,256356,256357,256361,256362,256363,256364,256365,256366,256368,256371,256372,256373,256415,256417,256418,256420,256941,256942,256944,257011,257012,257021,257026,257028,257077,257080,257082,257083,257084,257086,257092,257095,257100,257136,257137,257139,257140,257141,257142,257144,257145,257204,257206,257209,257224,257260,257318,257320,257322,257330,257358,257364,257433,257457,257468,257474,257487,257488,257490,257491,257492,257530,257531,257537,257539,257540,257541,257560,257561,257562,257566,257587,257588,257590,257592,257594,257595,257601,257604,257605,257606,257630,257632,257635,257636,257642,257644,257682,257684,257685,257687,257688,257689,257691,257692,257694,257697,257724,257725,257727,257733,257734,257735,257737,257754,257757,257765,257773,257797,257798,257799,257800,257803,257804,257850,257851,257853,257855,257893,257936,257937,257939,257957,257958,257963,257979,257986,257989,257992,258003,258008,258012,258014,258017,258019,258039,258041,258042,258045,258048,258049,258053,258059,258060,258062,258063,258107,258108,258109,258113,258114,258117,258178,258197,258198,258202,258203,258204,258256,258257,258258,258270,258271,258273,258274,258278,258299,258301,258302,258303,258306,258307,258332,258336,258359,258387,258391,258393,258426,258452,258454,258456,258477,258499,258537,258962,258964,259088,259090,259091,259096,259099,259117,259118,259162,259164,259204,259257,259261,259263,259264,259269,259270,259271,259272,259273,259274,259302,259303,259305,259307,259334,259336,259339,259340,259341,259342,259378,259382,259388,259389,259394,259395,259396,259473,259477,259747,259748,259750,259751,259752,259756,259781,259788,259789,259822,259841,259842,259860,259866,259867,259868,259888,262424,262425,262426,262428,262705,262706,262708,262713,262717,262719,262723,262725,262727,262760,262768,262776,262777,262778,262841,262842,262844,262847,262849,262853,262855,262858,263487,263490,263496,263497,263529,263647,263652,263653,263654,263657,263662,263663,263682,263689,263690,263691,263737,263738,263739,263741,263743,263744,263784,263785,263786,263787,263790,263792,263793,263803,263810,263861,263863,263866,263905,263916,263917,263920,263923,263977,263978,263981,263984,263985,264033,264035,264076,264078,264082,264085,264086,264109,264110,264129,264137,264138,264139,264164,264168,264188,264190,264194,264197,264198,264232,264233,264235,264238,264259,264260,264261,264262,264264,264265,264266,264267,264273,264277,264279,264281,264305,264306,264312,264336,264341,264345,264346,264347,271868,271870,271871,271873,271874,271880,271881,271886,272018,272020,272036,272038,272039,272040,272041,272042,272076,272100,272101,272123,272151,272152,272153,272154,272155,272156,272194,272335,272340,272359,272360,272388,272389,272394,272395,272399,272400,272411,272413,272461,272462,272463,272466,272468,272521,272574,272575,272577,272585,272607,272608,272610,272620,272690,272691,272692,272712,272746,272747,272749,272760,272763,272764,272782,272783,272784,272828,272829,272833,272834,272836,272870,272871,272873,272880,272903,272905,272932,272933,272934,272935,272939,272947,272949,272976,272983,272985,273009,273010,273077,273099,273100,273103,273591,273592,273593,273653,273654,273687,273689,273690,273695,273709,273711,273719,273824,273825,273885,273886,273887,273889,273918,273942,273943,273946,273985,273986,274058,274064,274092,274094,274125,274147,274148,274174,274212,274232,274258,274259,274263,274264,274266,274268,274269,274270,274271,274276,274278,274280,274281,274283,274329,274351,274352,274360,274363,274364,274385,274386,274387,274388,274389,274390,274442,274593,274594,274595,274596,274601,274653,274657,274667,274669,274671,274690,274708,274801,274802,274803,274806,274807,274811,274815,274817,274821,274822,274877,274878,274882,274886,274978,274979,275067,275068,275073,275075,275076,275150,275151,275173,275174,275177,275180,275184,275188,275283,275314,275322,275324,275326,275328,275332,275333,275360,275361,275369,275372,275394,275395,275401,275404,275406,275443,275448,275452,275453,275456,275457,275459,275467,275471,275472,275515,275558,275559,275612,275617,275621,275622,275623,275624,275647,275648,275650,275657,275661,275664,275847,275924,275925,276012,276013,276017,276019,276020,276040,276041,276045,276097,276098,276099,276102,276104,276135,276140,276145,276166,276169,276170,276177,276178,276205,276230,276257,276259,276290,276291,276292,276294,276297,276302,276307,276312,276348,276351,276435,276437,276438,276439,276462,276506,276507,276508,276551,276552,276556,276557,276608,276644,276670,276671,276672,276674,276675,276762,276916,276917,276920,276967,276969,276970,276971,276972,277015,277016,277017,277037,277073,277076,277079,277082,277087,277091,277117,277121,277155,277180,277182,277183,277184,277188,277189,277193,277194,277196,277197,277256,277257,277262,277293,277310,277312,277314,277360,277383,277384,277385,277386,277389,277416,277417,277418,277472,277473,277476,277477,277478,277479,277530,277531,277534,277536,277537,277574,277575,277576,277577,277721,277722,277723,277725,277745,277746,277747,277749,277794,277795,277799,277800,277801,277802,277805,277834,277836,277841,277842,277845,277847,277848,277870,277876,277897,277898,277899,277900,277901,277903,277904,277907,277930,277952,277987,277989,277991,277996,278121,278122,278123,278126,278127,278158,278163,278164,278166,278167,278189,278191,278215,278216,278914,278915,278936,278939,278941,278959,278960,278963,278964,278999,279000,279005,279007,279008,279035,279036,279041,279043,279044,279068,279069,279073,279074,279075,279106,279107,279117,279118,279122,279123,279130,279155,279157,279199,279201,279207,279208,279232,279234,279235,279238,279242,279264,279265,279267,279268,279270,279273,279274,279309,279310,279312,279342,279344,279348,279349,279354,279355,279391,279410,279435,279439,279441,279483,279487,279488,279491,279550,279559,279630,279632,279641,279642,279676,279677,279679,279682,279683,279684,279687,279688,279689,279715,279718,279719,279747,279749,279773,279826,279827,279830,279853,279854,279879,279880,280051,280052,280066,280107,280108,280111,280114,280118,280126,280131,280134,280135,280140,280282,280283,280284,280285,280286,280290,280310,280312,280348,280349,280350,280351,280374,280375,280403,280406,280412,280413,280415,280419,280443,280445,280446,280447,280448,280490,280499,280518,280519,280546,280547,280550,280551,280574,280575,280576,280581,280583,280613,280634,280636,280637,280639,280645,280647,280671,280679,280681,280705,280706,280729,280753,280754,280755,280756,280757,280761,280762,280763,280764,280765,280766,280767,280768,280786,280787,280792,280793,280842,280844,280845,280847,280848,280849,280854,280856,280880,280881,280890,280897,280936,280940,280943,280947,280990,280994,280996,280997,280998,280999,281032,281033,281035,281036,281060,281061,281062,281080,281081,281179,281180,281181,281189,281190,281191,281212,281213,281240,281241,281242,281243,281244,281271,281273,281275,281277,281301,281321,281415,281441,281443,281444,281446,281449,281450,281475,281477,281509,281511,281557,281562,281563,281568,281569,281574,281583,281592,281633,281892,281893,281894,281895,281915,281916,281918,281920,281928,281931,281932,281939,281940,281953,281956,281961,282528,282544,282545,282546,282573,282575,282579,282580,282606,282607,282608,282609,282618,282620,282622,282629,282651,282653,282666,282667,282668,282670,282671,282673,282676,282677,282700,282702,282703,282704,285978,285979,285980,286014,286025,286064,286124,286127,286129,286130,286159,286198,286199,286201,286202,286203,286229,286230,286231,286254,286255,286257,286258,286261,286263,286282,286284,286287,286288,286289,286308,286309,286310,286311,286312,286314,286336,286337,286340,286341,286345,286348,286349,286350,286380,286426,286427,286428,286454,286455,286482,286501,286502,286508,286509,286511,286566,286567,286568,286569,286591,286592,286594,286633,286653,286661,286695,286731,286799,286801,286805,286809,286810,286846,286848,286850,286852,286874,286876,286877,286907,286908,286910,286911,286930,286931,286932,286933,286936,286937,288861,288862,288863,288864,288868,288902,288903,288908,288909,290323,290324,290327,290350,290374,290375,290376,290399,290401,290404,290411,290412,290423,290425,290426,290427,290428,290456,290458,290459,290467,290469,290499,290500,290501,290549,290550,290553,290588,290590,290627,290632,290645,290658,290660,290665,290687,290689,290692,290696,290699,290721,290764,290766,290769,290774,290776,290787,290790,290841,290843,290846,290848,290860,290862,290886,290887,290888,290892,290894,290895,290932,290935,290941,290943,290944,290948,290974,290975,290976,290979,290980,291002,291003,291004,291005,291006,291035,291037,291041,291065,291066,291069,291093,291100,291101,291110,291111,291116,291143,291188,291209,291240,291257,291263,291265,291266,291282,291283,291284,291285,291286,291360,291361,291362,291363,291375,291377,291397,291399,291400,291402,291416,291417,291419,291420,291424,291446,291447,291451,291453,291456,291457,291481,291482,291484,291485,291590,291614,291615,291618,291622,291624,291626,291690,291692,291694,291697,291698,291702,291706,291729,291755,291756,291760,291762,291766,291768,291769,291795,291796,291803,291942,291944,291945,291946,291948,291953,291976,291977,291982,292012,292040,292060,292061,292062,292067,292075,292077,292080,292081,292106,292107,292108,292109,292114,292115,292140,292160,292161,292162,292163,292164,292166,292167,292168,292192,292218,292240,292241,292242,292265,292269,292270,292273,292274,292298,292397,292398,292405,292406,292428,292429,292430,292432,292434,292456,292457,292460,292461,292495,292496,292497,292500,292521,292523,292524,292526,292553,292554,292557,292559,292560,292563,292584,292586,292693,292695,292696,292698,292701,292704,292737,292739,292744,292747,292748,292750,292752,292754,292758,292803,292804,292809,292810,292811,292831,292832,292834,292836,292839};
     
-    Int_t BinX=hx->FindBin(run_number);
+   
+    Int_t BinX=-99;
+    for(Int_t i=0;i<1552;i++){
+        if(runs[i] == run_number){
+           // printf("==============================  (%d)  position for runs[%d]= %d  is %d\n",run_number, i,runs[i], i);
+            BinX=i;
+        }
+    }
+   // printf("TEST_V0: binx for run %d is %d \n", run_number, BinX);
+    
+    //Int_t BinX=hx->FindBin(run_number);
     Int_t BinY=hy->FindBin(vtxZ);
     
-    delete hx;
+    //printf("run= %d, vtx=%f ==>   Bins inside task are binx = %d, biny = %d \n", run_number, vtxZ, BinX, BinY);
+    
+    //delete hx;
     delete hy;
     
     
     Double_t localV0 = estimatorV0->GetBinContent(BinX, BinY);//first argument is run number/group, second is vertex on Y axis
-   // printf("localV0 = %f\n", localV0);
+   // printf("TEST_V0: localV0 = %f\n", localV0);
     
     if(localV0==0){
        // printf("LocalV0 = 0 for vertex = %f and  run =  %d \n", vtxZ, run_number);
@@ -3313,7 +3416,7 @@ Double_t AliAnalysisTask_JPsi_EMCal::GetV0MeanCorrection(TProfile2D* estimatorV0
     
     if(correctedV0<0) correctedV0=0;
     
- //   printf("Inside 'GetV0MeanCorrection' (end) \n");
+  // printf("Inside 'GetV0MeanCorrection' (end) \n");
     
     return correctedV0;
     
