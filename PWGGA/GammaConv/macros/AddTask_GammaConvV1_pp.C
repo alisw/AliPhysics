@@ -852,13 +852,15 @@ void AddTask_GammaConvV1_pp(
 
   // ---------------------------------- cut selection for pp 5 TeV 2017 ------------------------------------
   } else if (trainConfig == 400){
-    cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+    cuts.AddCutPCM("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND- OLD
 
   } else if (trainConfig == 401){
     cuts.AddCutPCM("00057113", "0d200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EMC7
     cuts.AddCutPCM("00083113", "0d200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG1
     cuts.AddCutPCM("00085113", "0d200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG2
     cuts.AddCutPCM("00062113", "0d200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - PHI7
+  } else if (trainConfig == 402){
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
 
   // systematic variations for 5 TeV 2017
   } else if (trainConfig == 403){
