@@ -1,4 +1,4 @@
-	AliAnalysisPseudoRapidityDensityTemp* AddTaskTemp(const char* taskname, const char* option){
+	AliAnalysisPseudoRapidityDensity* AddTaskPseudoRapidityDensity(const char* taskname, const char* option){
 		
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -8,7 +8,7 @@
         return 0x0;
     }
 
-		AliAnalysisPseudoRapidityDensityTemp *task = new AliAnalysisPseudoRapidityDensityTemp(taskname, option);
+		AliAnalysisPseudoRapidityDensity *task = new AliAnalysisPseudoRapidityDensity(taskname, option);
 		AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 		AliAnalysisDataContainer *coutput = mgr->CreateContainer("output", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 		mgr->AddTask(task);
