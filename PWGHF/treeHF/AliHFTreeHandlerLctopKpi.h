@@ -28,10 +28,10 @@ class AliHFTreeHandlerLctopKpi : public AliHFTreeHandler
   public:
 
     enum resdecaytype {
-      kNonResonant = BIT(0),
-      kL1520       = BIT(1),
-      kKstar       = BIT(2),
-      kDelta       = BIT(3)
+      kNonResonant = 1,
+      kL1520 = 2,
+      kKstar = 3,
+      kDelta = 4
     };
 
     AliHFTreeHandlerLctopKpi();
