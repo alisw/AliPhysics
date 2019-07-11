@@ -30,7 +30,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  rTPC/AliAnalysisTaskPPvsRT.cxx
   UeSpherocity/AliAnalysisTaskUeSpherocity.cxx
 )
 
@@ -92,5 +91,4 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros
-install(DIRECTORY rTPC DESTINATION  PWGMM/UE)
 install(DIRECTORY UeSpherocity DESTINATION  PWGMM/UE)
