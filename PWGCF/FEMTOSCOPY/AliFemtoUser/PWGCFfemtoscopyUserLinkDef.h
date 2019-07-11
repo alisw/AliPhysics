@@ -182,3 +182,4 @@
 
 #pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle+;
 #pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle::ParentPIDInfo+;
+#pragma link C++ class AliFemtoCorrFctnPairsForCorrFit;
