@@ -595,7 +595,17 @@ void AliDecayerPythia::ForceDecay()
         ForceHadronicD(0,0,4);
         break;
      case kEtaPrime:
-	ForceParticleDecay(331,22,2);
+	if(gRandom->Rndm()<0.5) {
+		products1[0]=211;
+		products1[1]=-211;
+		products1[2]=221;
+		mult1[0]=1;
+		mult1[1]=1;
+		mult1[2]=1;
+        	ForceParticleDecay(331,products1,mult1,1);
+	} else {
+		ForceParticleDecay(331,22,2);
+	}
 	break;
     }
 }
