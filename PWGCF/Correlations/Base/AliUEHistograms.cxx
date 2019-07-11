@@ -212,7 +212,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
   
-  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 5, -0.5, 4.5, 100, -0.1, 0.1);
+  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 5, -0.5, 4.5, 500, -0.5, 0.5);
   
   TH1::AddDirectory(oldStatus);
 }
