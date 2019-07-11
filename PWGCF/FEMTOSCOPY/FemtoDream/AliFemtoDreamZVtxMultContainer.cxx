@@ -22,7 +22,9 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer()
       fDeltaPhiMax(0.f),
       fDeltaPhiEtaMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false) {
-
+  TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
+                                        kTRUE, 0.0, 3, "Nucleus", 1000010020);
+  TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
 }
 
 AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
@@ -37,6 +39,9 @@ AliFemtoDreamZVtxMultContainer::AliFemtoDreamZVtxMultContainer(
       fDeltaPhiEtaMax(
           fDeltaPhiMax * fDeltaPhiMax + fDeltaEtaMax * fDeltaEtaMax),
       fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()) {
+  TDatabasePDG::Instance()->AddParticle("deuteron", "deuteron", 1.8756134,
+                                        kTRUE, 0.0, 3, "Nucleus", 1000010020);
+  TDatabasePDG::Instance()->AddAntiParticle("anti-deuteron", -1000010020);
 }
 
 AliFemtoDreamZVtxMultContainer::~AliFemtoDreamZVtxMultContainer() {
