@@ -127,8 +127,8 @@ public:
   void   SetCutOnPhi(Float_t cutOnPhi) { fCutOnPhiV = cutOnPhi; }
   void   SetCutOnRho(bool cutOnRho) { fCutOnRho = cutOnRho; }
   void   SetCutOnRho(Float_t cutOnRho) { fCutOnRhoV = cutOnRho; }
-  void   SetCutOnLambda(bool cutOnLambda) { fCutOnLambdaV = cutOnLambda; }
-  void   SetCutOnK0s(bool cutOnK0s) { fCutOnK0sV = cutOnK0s; }
+  void   SetCutOnLambda(Float_t cutOnLambda) { fCutOnLambdaV = cutOnLambda; }
+  void   SetCutOnK0s(Float_t cutOnK0s) { fCutOnK0sV = cutOnK0s; }
   void   SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
   void   SetFillpT(Bool_t flag) { fFillpT = flag; }
