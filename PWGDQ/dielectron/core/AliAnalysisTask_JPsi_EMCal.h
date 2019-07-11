@@ -25,10 +25,10 @@ class TRandom3;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
-class AliHFEcontainer;
-class AliHFEcuts;
-class AliHFEpid;
-class AliHFEpidQAmanager;
+//class AliHFEcontainer;
+//class AliHFEcuts;
+//class AliHFEpid;
+//class AliHFEpidQAmanager;
 class AliCFManager;
 class AliPIDResponse;
 class AliCentrality;
@@ -43,7 +43,7 @@ class TObjArray;
 //______________________________________________________________________
 //Library
 #include "AliAnalysisTaskSE.h"
-#include "AliHFEpid.h"
+//#include "AliHFEpid.h"
 #include "AliLog.h"
 //______________________________________________________________________
 
@@ -97,14 +97,16 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     void SetDCACut(Double_t DCAxyCut,Double_t DCAzCut ) {fDCAxyCut = DCAxyCut; fDCAzCut = DCAzCut;};
     
     //SPD corrections
-    void SetMultiProfileLHC16l(TProfile * hprof){
-        if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
-        fMultEstimatorAvg[0]=new TProfile(*hprof);
+    void SetMultiProfileSPD(TProfile2D * hprof){
+        //for(Int_t i=0;i<1;i++){
+            if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+            fMultEstimatorAvg[0]=new TProfile2D(*hprof);
+        //}
     }
-    Double_t         GetTrackletsMeanCorrection(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult); /*const*/
+    Double_t         GetTrackletsMeanCorrection(TProfile2D* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult, Int_t run_number); /*const*/
     
     //V0 correction
-    void SetMultiProfileV0LHC16l(TProfile2D * hprofV0){
+    void SetMultiProfileV0(TProfile2D * hprofV0){
         if(fMultEstimatorV0[0]) delete fMultEstimatorV0[0];
         fMultEstimatorV0[0]=new TProfile2D(*hprofV0);
     }
@@ -188,9 +190,9 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     Bool_t              fIsDCalCls;
     
     //SPD corrections
-    TProfile*        fMultEstimatorAvg[1];
+    TProfile2D*        fMultEstimatorAvg[1];
     Double_t         fRefMult;
-    TProfile*        GetEstimatorHistogram(const AliAODEvent *fAOD);
+    TProfile2D*        GetEstimatorHistogram(const AliAODEvent *fAOD);
     TRandom3*        gRandom;//!< random number generator
 	
     
@@ -317,7 +319,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	
 		
 //For the HFE package
-	AliHFEcuts 			*fCuts;                 		// Cut Collection for HFE
+	//AliHFEcuts 			*fCuts;                 		// Cut Collection for HFE
 	//AliCFManager 		*fCFM;                  		// Correction Framework Manager
 	//AliHFEpid 			*fPID;                  		// PID
 	//AliHFEpidQAmanager 	*fPIDqa;						// PID QA manager
@@ -353,7 +355,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	TH2F				*fHist_InvMass_pt_ULS_KF;
 	TH2F				*fHist_InvMass_pt_LS_KF;
     
-    TH2F                *fHist_InvMass_pt_ULS_KF_weight;
+   // TH2F                *fHist_InvMass_pt_ULS_KF_weight;
     
     //multiplicity histos
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_1;
@@ -372,7 +374,7 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     //KF
     
     
-    
+    /*
     //multiplicity histos
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_1_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_SPDmulti_2_weight;
@@ -385,7 +387,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_3_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_4_weight;
     TH2F                *fHist_InvMass_pt_ULS_KF_V0multi_5_weight;
-	
+	*/
+    
 	//generators
 	//BB
 	TH2F				*fHist_InvMass_pt_ULS_KF_BB;
