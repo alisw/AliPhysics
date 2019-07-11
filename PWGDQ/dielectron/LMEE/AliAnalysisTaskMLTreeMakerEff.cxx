@@ -384,7 +384,7 @@ void AliAnalysisTaskMLTreeMakerEff::UserCreateOutputObjects() {
   fList->Add(fQAHist);
   
  
-      
+  fTree->Branch("#tracks", &n);      
   fTree->Branch("Pdg_Mother", &pdgmother);
   fTree->Branch("Mother_label", &motherlabel);
   fTree->Branch("Has_Mother", &hasmother);
