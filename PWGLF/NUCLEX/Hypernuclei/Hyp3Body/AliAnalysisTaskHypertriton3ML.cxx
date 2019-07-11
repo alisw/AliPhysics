@@ -97,11 +97,11 @@ bool HasTOF(AliVTrack *track) {
 AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fListHist{nullptr}, fTreeHyp3{nullptr},
       fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false}, fHistNSigmaDeu{nullptr},
-      fHistNSigmaP{nullptr}, fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fHistTPCdEdx{nullptr},
-      fMinCanidatePtToSave{0.1}, fMaxCanidatePtToSave{100.}, fMinITSNcluster{1}, fMinTPCNcluster{70},
-      fMaxNSigmaTPCDeu{5.0}, fMaxNSigmaTPCP{5.0}, fMaxNSigmaTPCPi{5.0}, fMinCosPA{0.9}, fMinDCA2PrimaryVtxDeu{0.005},
-      fMinDCA2PrimaryVtxP{0.005}, fMinDCA2PrimaryVtxPi{0.01}, fCurrentFileName{""}, fSHypertriton{},
-      fRHypertriton{}, fREvent{}, fDeuVector{}, fPVector{}, fPiVector{} {
+      fHistNSigmaP{nullptr}, fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fMinCanidatePtToSave{0.1},
+      fMaxCanidatePtToSave{100.}, fMinITSNcluster{1}, fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{5.0}, fMaxNSigmaTPCP{5.0},
+      fMaxNSigmaTPCPi{5.0}, fMinCosPA{0.9}, fMinDCA2PrimaryVtxDeu{0.005}, fMinDCA2PrimaryVtxP{0.005},
+      fMinDCA2PrimaryVtxPi{0.01}, fCurrentFileName{""}, fSHypertriton{}, fRHypertriton{}, fREvent{},
+      fDeuVector{}, fPVector{}, fPiVector{} {
 
   // Standard output
   DefineInput(0, TChain::Class());
@@ -144,20 +144,14 @@ void AliAnalysisTaskHypertriton3ML::UserCreateOutputObjects() {
   fHistNSigmaPi =
       new TH2D("fHistNSigmaPi", ";#it{p}_{T} (GeV/#it{c});n_{#sigma} TPC Pion; Counts", 100, 0., 10., 80, -5.0, 5.0);
 
-  fHistInvMass = new TH2D("fHistInvMass", ";#it{p}_{T} (GeV/#it{c});Invariant Mass(GeV/#it{c^2}); Counts", 100, 0, 10,
-                          30, 2.96, 3.05);
-
-  fHistTPCdEdx[0] = new TH2D("fHistTPCdEdxM", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
-  fHistTPCdEdx[1] = new TH2D("fHistTPCdEdxA", ";#it{p} (GeV/#it{c}); dE/dx; Counts", 256, 0, 10.24, 4096, 0, 2048);
+  fHistInvMass = new TH2D("fHistInvMass", ";Invariant Mass(GeV/#it{c^2}); #it{p}_{T} (GeV/#it{c}); Counts", 30, 2.96,
+                          3.05, 100, 0, 10);
 
   fListHist->Add(fHistNSigmaDeu);
   fListHist->Add(fHistNSigmaP);
   fListHist->Add(fHistNSigmaPi);
 
   fListHist->Add(fHistInvMass);
-
-  fListHist->Add(fHistTPCdEdx[0]);
-  fListHist->Add(fHistTPCdEdx[1]);
 
   PostData(1, fListHist);
   PostData(2, fTreeHyp3);
@@ -279,18 +273,16 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
       continue;
 
     float dca[2];
-    track->GetImpactParameters(dca[0],dca[1]);
+    track->GetImpactParameters(dca[0], dca[1]);
     double dcaNorm = std::hypot(dca[0], dca[1]);
 
-    if (fOnlyTrueCandidates) {
+    if (fMC && fOnlyTrueCandidates) {
       int lab = std::abs(track->GetLabel());
-      if (!mcEvent->IsSecondaryFromWeakDecay(lab))
-        continue;
-      AliVParticle* part = mcEvent->GetTrack(lab);
-      AliVParticle* moth = mcEvent->GetTrack(part->GetMother());
+      if (!mcEvent->IsSecondaryFromWeakDecay(lab)) continue;
+      AliVParticle *part = mcEvent->GetTrack(lab);
+      AliVParticle *moth = mcEvent->GetTrack(part->GetMother());
       if (std::abs(moth->PdgCode()) != 1010010030) continue;
     }
-
 
     float nSigmaDeu = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
     if (std::abs(nSigmaDeu) < fMaxNSigmaTPCDeu && dcaNorm > fMinDCA2PrimaryVtxDeu) {
@@ -337,31 +329,35 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
           decayLenght[i] -= primaryVtxPos[i];
         }
 
-        double pDeu[3], pP[3], pPi[3], pHyper[3], dcaDecayDeu[2], dcaDecayP[2], dcaDecayPi[2];
+        double dcaDecayDeu[2], dcaDecayP[2], dcaDecayPi[2];
 
-        deu->PropagateToDCA(decayVtx, b, 100., dcaDecayDeu);
-        p->PropagateToDCA(decayVtx, b, 100., dcaDecayP);
-        pi->PropagateToDCA(decayVtx, b, 100., dcaDecayPi);
+        deu->PropagateToDCA(decayVtx, b, 1000., dcaDecayDeu);
+        p->PropagateToDCA(decayVtx, b, 1000., dcaDecayP);
+        pi->PropagateToDCA(decayVtx, b, 1000., dcaDecayPi);
 
-        deu->GetPxPyPz(pDeu);
-        p->GetPxPyPz(pP);
-        pi->GetPxPyPz(pPi);
+        LVector_t deu4Vector, p4Vector, pi4Vector, hyp4Vector;
 
-        for (int i = 0; i < 3; i++) {
-          pHyper[i] = pDeu[i] + pP[i] + pPi[i];
-        }
+        deu4Vector.SetCoordinates(deu->Px(), deu->Py(), deu->Pz(), AliPID::ParticleMass(AliPID::kDeuteron));
+        p4Vector.SetCoordinates(p->Px(), p->Py(), p->Pz(), AliPID::ParticleMass(AliPID::kProton));
+        pi4Vector.SetCoordinates(pi->Px(), pi->Py(), pi->Pz(), AliPID::ParticleMass(AliPID::kPion));
+
+        hyp4Vector = deu4Vector + p4Vector + pi4Vector;
+
+        float hypPt = hyp4Vector.Pt();
+        float hypM  = hyp4Vector.M();
+
+        if ((hypPt < fMinCanidatePtToSave) || (fMaxCanidatePtToSave < hypPt)) continue;
+        if (hypM < 2.9 || hypM > 3.2) continue;
+
+        fHistInvMass->Fill(hypM, hypPt);
 
         double dTotHyper = std::sqrt(decayLenght[0] * decayLenght[0] + decayLenght[1] * decayLenght[1] +
                                      decayLenght[2] * decayLenght[2]);
-        double pTotHyper = std::sqrt(pHyper[0] * pHyper[0] + pHyper[1] * pHyper[1] + pHyper[2] * pHyper[2]);
 
-        double cosPA = 0.;
+        double cosPA =
+            hyp4Vector.Px() * decayLenght[0] + hyp4Vector.Py() * decayLenght[1] + hyp4Vector.Pz() * decayLenght[2];
 
-        for (int i = 0; i < 3; i++) {
-          cosPA += pHyper[i] * decayLenght[i];
-        }
-
-        cosPA /= (dTotHyper * pTotHyper);
+        cosPA /= (dTotHyper * hyp4Vector.P());
         if (cosPA < fMinCosPA) continue;
 
         if (fMC) {
@@ -374,15 +370,15 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         hyp3r.fDecayVtxY = decayVtx->GetY();
         hyp3r.fDecayVtxZ = decayVtx->GetZ();
 
-        hyp3r.fPxDeu = pDeu[0];
-        hyp3r.fPyDeu = pDeu[1];
-        hyp3r.fPzDeu = pDeu[2];
-        hyp3r.fPxP   = pP[0];
-        hyp3r.fPyP   = pP[1];
-        hyp3r.fPzP   = pP[2];
-        hyp3r.fPxPi  = pPi[0];
-        hyp3r.fPyPi  = pPi[1];
-        hyp3r.fPzPi  = pPi[2];
+        hyp3r.fPxDeu = deu->Px();
+        hyp3r.fPyDeu = p->Py();
+        hyp3r.fPzDeu = pi->Pz();
+        hyp3r.fPxP   = deu->Px();
+        hyp3r.fPyP   = p->Py();
+        hyp3r.fPzP   = pi->Pz();
+        hyp3r.fPxPi  = deu->Px();
+        hyp3r.fPyPi  = p->Py();
+        hyp3r.fPzPi  = pi->Pz();
 
         hyp3r.fPosXDeu = deu->GetX();
         hyp3r.fPosYDeu = p->GetY();
@@ -421,14 +417,18 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         hyp3r.fNSigmaTOFP   = fPIDResponse->NumberOfSigmasTOF(p, AliPID::kProton);
         hyp3r.fNSigmaTOFPi  = fPIDResponse->NumberOfSigmasTOF(pi, AliPID::kPion);
 
-        hyp3r.fTrackChi2Deu       = deu->GetTPCchi2();
-        hyp3r.fTrackChi2P         = p->GetTPCchi2();
-        hyp3r.fTrackChi2Pi        = pi->GetTPCchi2();
+        hyp3r.fTrackChi2Deu       = deu->GetTPCchi2() / (deu->GetTPCNcls() + 1.e-16);
+        hyp3r.fTrackChi2P         = p->GetTPCchi2() / (p->GetTPCNcls() + 1.e-16);
+        hyp3r.fTrackChi2Pi        = pi->GetTPCchi2() / (pi->GetTPCNcls() + 1.e-16);
         hyp3r.fDecayVertexChi2NDF = decayVtx->GetChi2perNDF();
 
         hyp3r.fIsMatter = deu->Charge() > 0;
 
         fRHypertriton.push_back(hyp3r);
+
+        fHistNSigmaDeu->Fill(deu->Pt(), nSigmaDeu);
+        fHistNSigmaP->Fill(p->Pt(), nSigmaP);
+        fHistNSigmaPi->Fill(pi->Pt(), nSigmaPi);
       }
     }
   }
