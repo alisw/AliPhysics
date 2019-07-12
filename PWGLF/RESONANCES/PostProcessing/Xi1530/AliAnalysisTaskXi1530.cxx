@@ -174,8 +174,7 @@ AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530() {
 void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     // TrackCuts for Xi1530--------------------------------------------------
     // Primary pion cut(Xi1530pion)
-    fTrackCuts = new AliESDtrackCuts();
-    fTrackCuts->GetStandardITSTPCTrackCuts2011(kTRUE);
+    fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
 
     // secondary particle cut(Xi daugthers)
     fTrackCuts2 = new AliESDtrackCuts();
@@ -914,7 +913,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection() {
 
             // CPA cut
             Double_t fLambdaCPA =
-                Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
+                Xicandidate->GetV0CosineOfPointingAngle();
             Double_t fXiCPA =
                 Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
             if (fQA) {
@@ -1386,7 +1385,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // CPA Check
                 Double_t fLambdaCPA =
-                    Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
+                    Xicandidate->GetV0CosineOfPointingAngle();
                 Double_t fXiCPA =
                     Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
 
@@ -1774,7 +1773,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
                 // CPA Check
                 Double_t fLambdaCPA =
-                    Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
+                    Xicandidate->GetV0CosineOfPointingAngle();
                 Double_t fXiCPA =
                     Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
 
