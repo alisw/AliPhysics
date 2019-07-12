@@ -98,10 +98,10 @@ AliAnalysisTaskHypertriton3ML::AliAnalysisTaskHypertriton3ML(bool mc, std::strin
     : AliAnalysisTaskSE(name.data()), fEventCuts{}, fVertexer{}, fListHist{nullptr}, fTreeHyp3{nullptr},
       fInputHandler{nullptr}, fPIDResponse{nullptr}, fMC{mc}, fOnlyTrueCandidates{false}, fHistNSigmaDeu{nullptr},
       fHistNSigmaP{nullptr}, fHistNSigmaPi{nullptr}, fHistInvMass{nullptr}, fMinCanidatePtToSave{0.1},
-      fMaxCanidatePtToSave{100.}, fMinITSNcluster{1}, fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{5.0}, fMaxNSigmaTPCP{5.0},
-      fMaxNSigmaTPCPi{5.0}, fMinCosPA{0.9}, fMinDCA2PrimaryVtxDeu{0.005}, fMinDCA2PrimaryVtxP{0.005},
-      fMinDCA2PrimaryVtxPi{0.01}, fCurrentFileName{""}, fSHypertriton{}, fRHypertriton{}, fREvent{},
-      fDeuVector{}, fPVector{}, fPiVector{} {
+      fMaxCanidatePtToSave{100.}, fMinITSNcluster{1}, fMinTPCNcluster{70}, fMaxNSigmaTPCDeu{4.0}, fMaxNSigmaTPCP{4.0},
+      fMaxNSigmaTPCPi{3.0}, fMaxNSigmaTOFDeu{4.}, fMaxNSigmaTOFP{4.}, fMaxNSigmaTOFPi{4.}, fMinCosPA{0.9},
+      fMinDCA2PrimaryVtxDeu{0.05}, fMinDCA2PrimaryVtxP{0.05}, fMinDCA2PrimaryVtxPi{0.1}, fMaxPtPion{1.},
+      fSHypertriton{}, fRHypertriton{}, fREvent{}, fDeuVector{}, fPVector{}, fPiVector{} {
 
   // Standard output
   DefineInput(0, TChain::Class());
@@ -284,19 +284,31 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
       if (std::abs(moth->PdgCode()) != 1010010030) continue;
     }
 
-    float nSigmaDeu = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
-    if (std::abs(nSigmaDeu) < fMaxNSigmaTPCDeu && dcaNorm > fMinDCA2PrimaryVtxDeu) {
-      fDeuVector.push_back(track);
+    float nSigmaTPCDeu = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
+    if (std::abs(nSigmaTPCDeu) < fMaxNSigmaTPCDeu && dcaNorm > fMinDCA2PrimaryVtxDeu) {
+      if (HasTOF(track)) {
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron)) < fMaxNSigmaTOFDeu) fDeuVector.push_back(track);
+      } else {
+        fDeuVector.push_back(track);
+      }
     }
 
-    float nSigmaP = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-    if (std::abs(nSigmaP) < fMaxNSigmaTPCP && dcaNorm > fMinDCA2PrimaryVtxP) {
-      fPVector.push_back(track);
+    float nSigmaTPCP = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+    if (std::abs(nSigmaTPCP) < fMaxNSigmaTPCP && dcaNorm > fMinDCA2PrimaryVtxP) {
+      if (HasTOF(track)) {
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)) < fMaxNSigmaTOFP) fPVector.push_back(track);
+      } else {
+        fPVector.push_back(track);
+      }
     }
 
-    float nSigmaPi = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-    if (std::abs(nSigmaPi) < fMaxNSigmaTPCPi && dcaNorm > fMinDCA2PrimaryVtxPi) {
-      fPiVector.push_back(track);
+    float nSigmaTPCPi = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+    if (std::abs(nSigmaTPCPi) < fMaxNSigmaTPCPi && dcaNorm > fMinDCA2PrimaryVtxPi && track->Pt() < fMaxPtPion) {
+      if (HasTOF(track)) {
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion)) < fMaxNSigmaTOFPi) fPiVector.push_back(track);
+      } else {
+        fPiVector.push_back(track);
+      }
     }
   }
 

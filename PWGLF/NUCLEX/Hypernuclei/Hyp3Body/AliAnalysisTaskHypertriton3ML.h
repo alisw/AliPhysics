@@ -137,6 +137,12 @@ public:
     fMaxNSigmaTPCPi  = nSigmaPi;
   }
 
+  void SetMaxTOFsigmas(float nSigmaDeu, float nSigmaP, float nSigmaPi) {
+    fMaxNSigmaTOFDeu = nSigmaDeu;
+    fMaxNSigmaTOFP   = nSigmaP;
+    fMaxNSigmaTOFPi  = nSigmaPi;
+  }
+
   void SetMinDCA2PrimaryVtx(float dcaDeu, float dcaP, float dcaPi) {
     fMinDCA2PrimaryVtxDeu = dcaDeu;
     fMinDCA2PrimaryVtxP   = dcaP;
@@ -145,6 +151,8 @@ public:
 
   void SetMinITSnCluster(float nClsMin) { fMinITSNcluster = nClsMin; }
   void SetMinTPCcluster(unsigned char minCls) { fMinTPCNcluster = minCls; }
+
+  void SetMaxPtPion(float piPtMax) { fMaxPtPion = piPtMax; }
 
   AliEventCuts fEventCuts; /// Event cuts class
 
@@ -165,6 +173,7 @@ private:
   TH2D *fHistNSigmaP;   //! # sigma TPC proton for the positive prong
   TH2D *fHistNSigmaPi;  //! # sigma TPC pion for the negative prong
   TH2D *fHistInvMass;   //! # Invariant mass histogram
+
   float fMinCanidatePtToSave; // min candidate pt to save
   float fMaxCanidatePtToSave; // max candidate pt to save
 
@@ -175,13 +184,17 @@ private:
   float fMaxNSigmaTPCP;   // nSigma TPC limit for proton
   float fMaxNSigmaTPCPi;  // nSigma TPC limit for pion
 
+  float fMaxNSigmaTOFDeu; // nSigma TOF limit for deuteron
+  float fMaxNSigmaTOFP;   // nSigma TOF limit for proton
+  float fMaxNSigmaTOFPi;  // nSigma TOF limit for pion
+
   float fMinCosPA; // minimum cos(poninting angle) accepted
 
   float fMinDCA2PrimaryVtxDeu;
   float fMinDCA2PrimaryVtxP;
   float fMinDCA2PrimaryVtxPi;
 
-  TObjString fCurrentFileName; //!
+  float fMaxPtPion;
 
   std::vector<SHypertriton3> fSHypertriton; //!
   std::vector<RHypertriton3> fRHypertriton; //!
