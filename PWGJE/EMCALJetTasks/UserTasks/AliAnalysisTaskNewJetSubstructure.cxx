@@ -74,6 +74,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure() :
   fEtaCutValue(0.02),
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
+  fPtJet(0x0),
   fHLundIterative(0x0),
   fHCheckResolutionSubjets(0x0),
   fTreeSubstructure(0)
@@ -111,6 +112,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(const char 
   fEtaCutValue(0.02),
   fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
+  fPtJet(0x0),
   fHLundIterative(0x0),
   fHCheckResolutionSubjets(0x0),  
   fTreeSubstructure(0)
@@ -141,6 +143,9 @@ AliAnalysisTaskNewJetSubstructure::~AliAnalysisTaskNewJetSubstructure()
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
+  fPtJet= new TH1F("fPtJet", "fPtJet", 100, 0, 200);
+  fOutput->Add(fPtJet); 
+  
   //log(1/theta),log(kt),jetpT,depth, tf, omega// 
    const Int_t dimSpec   = 6;
    const Int_t nBinsSpec[6]     = {50,100,100,20,100,100};
