@@ -112,10 +112,6 @@ class AliAnalysisTaskStudentsMW : public AliAnalysisTaskSE{
   Float_t fMinCentrality;        // min centrality
   Float_t fMaxCentrality;        // max centrality
 
-  TH1F *fMultHist;  
-  TH1F *fPhiHist;  
-  TH1F *fEtaHist;  
-
   TH1F *fPhiHistBeforeTrackSeletion;                // atrack->Phi() - Distribution before Track Selection
   TH1F *fEtaHistBeforeTrackSeletion;                // atrack->Eta() - Distribution before Track Selection
   TH1F *fTotalMultBeforeTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
@@ -124,9 +120,7 @@ class AliAnalysisTaskStudentsMW : public AliAnalysisTaskSE{
   TH1F *fEtaHistAfterTrackSeletion;                // atrack->Eta() - Distribution before Track Selection
   TH1F *fTotalMultAfterTrackSeletion;         // total number of Multiplicity for a centrality before Track Selection
   TH1F *fMultiHistoAfterTrackSeletion;             // multiplicity distribution before Track Selection
-  TH1F *fMultiHistoBeforeMultCut;             // multiplicity distribution before high multiplicity outlier removel
-  TH1F *fVertexZbefore;
-  TH1F *fVertexZafter;
+  TH1F *fMultiHistoBeforeMultCut;             // multiplicity distribution before high multiplicity 
   
   //2.) SelectionCuts
   Int_t fMainFilter;           //for main filter selection (default: Hypbrid)
@@ -180,7 +174,7 @@ class AliAnalysisTaskStudentsMW : public AliAnalysisTaskSE{
    
   // new end
 
-  ClassDef(AliAnalysisTaskStudentsMW,6);
+  ClassDef(AliAnalysisTaskStudentsMW,7);
 
 };
 
