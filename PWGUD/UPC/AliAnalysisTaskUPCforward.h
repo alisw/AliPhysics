@@ -134,6 +134,13 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                                      TLorentzVector possibleJPsi );
 
                                 /**
+                                 * This function computes the acceptance
+                                 * value to fix the weight of the entry
+                                 * to the CosTheta in the helicity frame.
+                                 */
+        Double_t                AccEffCorrection( Double_t CosThetaToBeWeighted );
+
+                                /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
@@ -1348,6 +1355,15 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  */
         TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH[17];  //!
 
+                                /**
+                                 * This histogram shows the angular distribution
+                                 * of the positive muon in the HELICITY frame.
+                                 * COS(THETA) distribution.
+                                 * Already corrected by ACCxEFF thanks to
+                                 * a weight...
+                                 */
+        TH1F*                   fCosThetaHelicityFrameJPsiAlreadyCorrectedH;       //!
+
         //_______________________________
         // CUTS
         /*
@@ -1408,7 +1424,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 31);
+        ClassDef(AliAnalysisTaskUPCforward, 32);
 };
 
 #endif

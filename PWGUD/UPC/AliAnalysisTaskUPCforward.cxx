@@ -278,7 +278,8 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward()
                                                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaHelicityFrameJPsiAlreadyCorrectedH(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -451,7 +452,8 @@ AliAnalysisTaskUPCforward::AliAnalysisTaskUPCforward(const char* name)
                                                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMyStrictVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0 },
       fInvariantMassDistributionOnlyPhiForSignalExtractionHelicityFrameMyStrictVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+      fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+      fCosThetaHelicityFrameJPsiAlreadyCorrectedH(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
 
@@ -1284,6 +1286,9 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
                 );
     fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH[iCosThetaBins]);
   }
+
+  fCosThetaHelicityFrameJPsiAlreadyCorrectedH = new TH1F("fCosThetaHelicityFrameJPsiAlreadyCorrectedH", "fCosThetaHelicityFrameJPsiAlreadyCorrectedH", 100, -1., 1.);
+  fOutputList->Add(fCosThetaHelicityFrameJPsiAlreadyCorrectedH);
 
 
   //_______________________________
@@ -2696,6 +2701,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
   if ( possibleJPsiCopy.Pt() < 0.25 ) {
         Double_t CosThetaHelicityFrameValue6 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
         Double_t PhiHelicityFrameValue6      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
+        Double_t WeightFromAcceptance        =      AccEffCorrection( CosThetaHelicityFrameValue6 );
+        fCosThetaHelicityFrameJPsiAlreadyCorrectedH->Fill( CosThetaHelicityFrameValue6, 1/WeightFromAcceptance );
         for(Int_t iCosThetaBins = 0; iCosThetaBins < 17; iCosThetaBins++) {
           if( controlFlag9 == 1) break;
           if( CosThetaHelicityFrameValue6 < MyVariableCosThetaBinning1Dv3[iCosThetaBins + 1] ){
@@ -3067,6 +3074,27 @@ Double_t AliAnalysisTaskUPCforward::CosPhiHelicityFrame(  TLorentzVector muonPos
   //
   Double_t phi = TMath::ATan2((pMu1Dimu.Vect()).Dot(yaxis),(pMu1Dimu.Vect()).Dot(xaxis));
   return   phi;
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskUPCforward::AccEffCorrection( Double_t CosThetaToBeWeighted )
+{
+  Double_t val = 0;
+  Double_t par[13] = { 1.84270e-04, 1.35000e-02, 2.52572e+00, 4.49481e-01, 7.71374e-01,
+                       4.10537e-01,-1.91331e-03,-4.33903e+00, 4.44258e-01,-7.64919e-01,
+                       4.32631e-04, 1.48228e-02, 2.75000e+00 };
+  if (        CosThetaToBeWeighted < -0.550 ) {
+    val = par[0] + par[1] * ( CosThetaToBeWeighted + 0.650 ) + par[2] * ( CosThetaToBeWeighted + 0.650 ) * ( CosThetaToBeWeighted + 0.650 );
+  } else if ( CosThetaToBeWeighted < -0.125 ) {
+    val = par[3] + par[4] * CosThetaToBeWeighted;
+  } else if ( CosThetaToBeWeighted <  0.125 ) {
+    val = par[5] + par[6] * CosThetaToBeWeighted + par[7] * CosThetaToBeWeighted * CosThetaToBeWeighted;
+  } else if ( CosThetaToBeWeighted <  0.550 ) {
+    val = par[8] + par[9] * CosThetaToBeWeighted;
+  } else {
+    val = par[10] + par[11] * ( CosThetaToBeWeighted - 0.650 ) + par[12] * ( CosThetaToBeWeighted - 0.650 ) * ( CosThetaToBeWeighted - 0.650 );
+  }
+  return val;
+
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskUPCforward::Terminate(Option_t *)
