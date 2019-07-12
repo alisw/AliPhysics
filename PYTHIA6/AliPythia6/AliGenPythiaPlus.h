@@ -160,6 +160,16 @@ class AliGenPythiaPlus : public AliGenMC
     //---------------------------------------------------------  
 
   
+    // Trigger on a minimum multiplicity
+    virtual void  SetTriggerChargedMultiplicity(Int_t multiplicity, Float_t etamax = 0, Float_t ptmin = -1.) 
+    {fTriggerMultiplicity = multiplicity; fTriggerMultiplicityEta = etamax; 
+      fTriggerMultiplicityPtMin = ptmin;}
+    
+    // Trigger on a minimum multiplicity for a given eta range
+    virtual void  SetTriggerMultiplicityEtaRange(Int_t multiplicity, Float_t etamin = 0., Float_t etamax = 0., Float_t ptmin = -1.) 
+    {fTriggerMultiplicity = multiplicity; fTriggerMultiplicityEtaMin = etamin; fTriggerMultiplicityEtaMax = etamax; 
+      fTriggerMultiplicityPtMin = ptmin;}
+
     // Trigger on a single particle (not related to calorimeter trigger above)
     virtual void    SetTriggerParticle(Int_t particle = 0, Float_t etamax = 0.9) 
 	{fTriggerParticle = particle; fTriggerEta = etamax;}
@@ -310,6 +320,11 @@ class AliGenPythiaPlus : public AliGenMC
     Bool_t  fHFoff;                 // Flag for switching heafy flavor production off
     Int_t   fTriggerParticle;       // Trigger on this particle ...
     Float_t fTriggerEta;            // .. within |eta| < fTriggerEta
+    Int_t       fTriggerMultiplicity;       // Trigger on events with a minimum charged multiplicity
+    Float_t     fTriggerMultiplicityEta;    // in a given eta range
+    Float_t     fTriggerMultiplicityEtaMin;    // in a given eta min
+    Float_t     fTriggerMultiplicityEtaMax;    // in a given eta max
+    Float_t     fTriggerMultiplicityPtMin;  // above this pT 
     CountMode_t fCountMode;         // Options for counting when the event will be finished.     
     // fCountMode = kCountAll         --> All particles that end up in the
     //                                    stack are counted
@@ -354,7 +369,7 @@ class AliGenPythiaPlus : public AliGenMC
     AliGenPythiaPlus(const AliGenPythiaPlus &Pythia);
     AliGenPythiaPlus & operator=(const AliGenPythiaPlus & rhs);
 
-    ClassDef(AliGenPythiaPlus, 5)
+    ClassDef(AliGenPythiaPlus, 6)
 
 };
 #endif

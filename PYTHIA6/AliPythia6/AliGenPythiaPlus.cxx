@@ -99,7 +99,12 @@ AliGenPythiaPlus::AliGenPythiaPlus():
     fNewMIS(kFALSE),   
     fHFoff(kFALSE),    
     fTriggerParticle(0),
-    fTriggerEta(0.9),     
+    fTriggerEta(0.9),
+    fTriggerMultiplicity(0),
+    fTriggerMultiplicityEta(0),
+    fTriggerMultiplicityEtaMin(0),
+    fTriggerMultiplicityEtaMax(0),
+    fTriggerMultiplicityPtMin(0),  
     fCountMode(kCountAll),      
     fHeader(0),  
     fRL(0),      
@@ -199,6 +204,11 @@ AliGenPythiaPlus::AliGenPythiaPlus(AliPythiaBase* pythia)
      fHFoff(kFALSE),    
      fTriggerParticle(0),
      fTriggerEta(0.9),     
+     fTriggerMultiplicity(0),
+     fTriggerMultiplicityEta(0),
+     fTriggerMultiplicityEtaMin(0),
+     fTriggerMultiplicityEtaMax(0),
+     fTriggerMultiplicityPtMin(0),  
      fCountMode(kCountAll),      
      fHeader(0),  
      fRL(0),      
@@ -887,6 +897,42 @@ Int_t  AliGenPythiaPlus::GenerateMB()
         delete[] pParent;
         return 0;
       }
+    }
+    
+    // Check for minimum multiplicity
+    if (fTriggerMultiplicity > 0) {
+      Int_t multiplicity = 0;
+      for (i = 0; i < np; i++) {
+	TParticle *  iparticle = (TParticle *) fParticles.At(i);
+	
+	Int_t statusCode = iparticle->GetStatusCode();
+	
+	// Initial state particle
+	if (statusCode != 1)
+	  continue;
+	// eta cut
+	if (fTriggerMultiplicityEta > 0 && TMath::Abs(iparticle->Eta()) > fTriggerMultiplicityEta)
+	  continue;
+	//multiplicity check for a given eta range
+	if ((fTriggerMultiplicityEtaMin != fTriggerMultiplicityEtaMax) && 
+	    (iparticle->Eta() < fTriggerMultiplicityEtaMin || iparticle->Eta() > fTriggerMultiplicityEtaMax))
+	  continue;
+	// pt cut
+	if (iparticle->Pt() < fTriggerMultiplicityPtMin) 
+	    continue;
+
+	TParticlePDG* pdgPart = iparticle->GetPDG();
+	if (pdgPart && pdgPart->Charge() == 0)
+	  continue;
+	
+	++multiplicity;
+      }
+
+      if (multiplicity < fTriggerMultiplicity) {
+	delete [] pParent;
+	return 0;
+      }
+      Printf("Triggered on event with multiplicity of %d >= %d", multiplicity, fTriggerMultiplicity);
     }
     
     if (fTriggerParticle) {
