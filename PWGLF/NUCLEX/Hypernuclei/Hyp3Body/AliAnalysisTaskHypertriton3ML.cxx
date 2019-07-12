@@ -287,7 +287,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     float nSigmaTPCDeu = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kDeuteron);
     if (std::abs(nSigmaTPCDeu) < fMaxNSigmaTPCDeu && dcaNorm > fMinDCA2PrimaryVtxDeu) {
       if (HasTOF(track)) {
-        if (fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron) < fMaxNSigmaTOFDeu) fDeuVector.push_back(track);
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kDeuteron)) < fMaxNSigmaTOFDeu) fDeuVector.push_back(track);
       } else {
         fDeuVector.push_back(track);
       }
@@ -296,7 +296,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     float nSigmaTPCP = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
     if (std::abs(nSigmaTPCP) < fMaxNSigmaTPCP && dcaNorm > fMinDCA2PrimaryVtxP) {
       if (HasTOF(track)) {
-        if (fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton) < fMaxNSigmaTOFP) fPVector.push_back(track);
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton)) < fMaxNSigmaTOFP) fPVector.push_back(track);
       } else {
         fPVector.push_back(track);
       }
@@ -305,7 +305,7 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
     float nSigmaTPCPi = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
     if (std::abs(nSigmaTPCPi) < fMaxNSigmaTPCPi && dcaNorm > fMinDCA2PrimaryVtxPi && track->Pt() < fMaxPtPion) {
       if (HasTOF(track)) {
-        if (fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion) < fMaxNSigmaTOFPi) fPiVector.push_back(track);
+        if (std::abs(fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion)) < fMaxNSigmaTOFPi) fPiVector.push_back(track);
       } else {
         fPiVector.push_back(track);
       }
