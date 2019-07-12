@@ -677,19 +677,13 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
 
   NBins[0] = 250;  // pp
   NBins[8] = 250;  // barp barp
+  pairQA[0] = 11;   // pp
+  pairQA[8] = 11;   // pbarpbar
+  pairQA[2] = 14;  // pSigma
+  pairQA[10] = 14;  // barp bSigma
 
   // do extended QA for the pairs in default mode
-  if (suffix == "0" && !fullBlastQA) {
-    NBins[0] = 750;  // pp
-    NBins[8] = 750;  // barp barp
-
-    pairQA[0] = 11;   // pp
-    pairQA[2] = 14;   // pSigma
-    pairQA[8] = 11;   // barp barp
-    pairQA[10] = 14;  // barp bSigma
-  } else if (suffix == "0" && fullBlastQA) {
-    NBins[0] = 750;   // pp
-    NBins[14] = 750;  // barp barp
+  if (suffix == "0" && fullBlastQA) {
 
     pairQA[0] = 11;   // pp
     pairQA[2] = 14;   // pSigma
@@ -774,7 +768,6 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     config->SetPhiEtaBinnign(true);
     config->SetkTBinning(true);
     config->SetmTBinning(true);
-    config->SetMassQA(true);
   }
 
   config->SetUsePhiSpinning(true);
@@ -783,6 +776,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   config->SetSpinningDepth(1);      // to be validated
 
   config->SetPtQA(true);
+  config->SetMassQA(true);
   config->SetdPhidEtaPlots(false);
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
@@ -791,8 +785,8 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   config->SetMixingDepth(10);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  config->SetMinimalBookingME(false);
   if (suffix != "0") {
-    config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
 
