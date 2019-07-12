@@ -39,8 +39,8 @@ AliAnalysisTaskNewJetSubstructure* AddTaskNewJetSubstructure(const char * njetsB
       return NULL;
     }
 
-  TString wagonName1 = Form("JetQGTaggings_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
-  TString wagonName2 = Form("JetQGTaggings_%s_TC%s%sTree",njetsBase,trigClass.Data(),tag.Data());
+  TString wagonName1 = Form("JetSubstructure_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
+  TString wagonName2 = Form("JetSubstructure_%s_TC%s%sTree",njetsBase,trigClass.Data(),tag.Data());
   //Configure jet tagger task
   AliAnalysisTaskNewJetSubstructure *task = new AliAnalysisTaskNewJetSubstructure(wagonName1.Data());
 
