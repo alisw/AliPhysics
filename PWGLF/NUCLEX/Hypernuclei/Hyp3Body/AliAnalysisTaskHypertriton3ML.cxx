@@ -383,23 +383,23 @@ void AliAnalysisTaskHypertriton3ML::UserExec(Option_t *) {
         hyp3r.fDecayVtxZ = decayVtx->GetZ();
 
         hyp3r.fPxDeu = deu->Px();
-        hyp3r.fPyDeu = p->Py();
-        hyp3r.fPzDeu = pi->Pz();
-        hyp3r.fPxP   = deu->Px();
+        hyp3r.fPyDeu = deu->Py();
+        hyp3r.fPzDeu = deu->Pz();
+        hyp3r.fPxP   = p->Px();
         hyp3r.fPyP   = p->Py();
-        hyp3r.fPzP   = pi->Pz();
-        hyp3r.fPxPi  = deu->Px();
-        hyp3r.fPyPi  = p->Py();
+        hyp3r.fPzP   = p->Pz();
+        hyp3r.fPxPi  = pi->Px();
+        hyp3r.fPyPi  = pi->Py();
         hyp3r.fPzPi  = pi->Pz();
 
         hyp3r.fPosXDeu = deu->GetX();
-        hyp3r.fPosYDeu = p->GetY();
-        hyp3r.fPosZDeu = pi->GetZ();
-        hyp3r.fPosXP   = deu->GetX();
+        hyp3r.fPosYDeu = deu->GetY();
+        hyp3r.fPosZDeu = deu->GetZ();
+        hyp3r.fPosXP   = p->GetX();
         hyp3r.fPosYP   = p->GetY();
-        hyp3r.fPosZP   = pi->GetZ();
-        hyp3r.fPosXPi  = deu->GetX();
-        hyp3r.fPosYPi  = p->GetY();
+        hyp3r.fPosZP   = p->GetZ();
+        hyp3r.fPosXPi  = pi->GetX();
+        hyp3r.fPosYPi  = pi->GetY();
         hyp3r.fPosZPi  = pi->GetZ();
 
         hyp3r.fDCAxyDeu = dcaDecayDeu[0];
