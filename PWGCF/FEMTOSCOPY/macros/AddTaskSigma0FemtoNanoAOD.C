@@ -369,8 +369,8 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
     NegAntiv0Daug->SetNClsTPC(LambdaNClsLow);
   } else if (suffix == "18") {
-    v0Cuts->SetCutCPA(LambdaCPALow);
-    antiv0Cuts->SetCutCPA(LambdaCPALow);
+    v0Cuts->SetCutCPA(LambdaCPAUp);
+    antiv0Cuts->SetCutCPA(LambdaCPAUp);
     Posv0Daug->SetNClsTPC(LambdaNClsLow);
     Negv0Daug->SetNClsTPC(LambdaNClsLow);
     PosAntiv0Daug->SetNClsTPC(LambdaNClsLow);
@@ -426,10 +426,10 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     antiv0Cuts->SetPtRange(LambdaPtLow, 999.f);
     v0Cuts->SetCutCPA(LambdaCPAUp);
     antiv0Cuts->SetCutCPA(LambdaCPAUp);
-    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
-    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
-    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaLow);
-    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaLow);
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, LambdaNsigmaUp);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, LambdaNsigmaUp);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -448,7 +448,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   const float PhotonPtLow = 0.;
   const float PhotonPtUp = 0.15;
   const float PhotonDaughterPtLow = 0.0;
-  const float PhotonDaughterPtUp = 0.1;
+  const float PhotonDaughterPtUp = 0.075;
   const float PhotonCPALow = 0.995;
   const float PhotonCPAUp = 0.99925;
   const float PhotonDaughterEtaLow = 0.85;
@@ -476,7 +476,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     photon->SetElectronEtaMax(PhotonDaughterEtaLow);
   } else if (suffix == "3") {
     photon->SetElectronPtMin(PhotonDaughterPtUp);
-    photon->SetPsiPairMax(PhotonPsiPairLow);
+    photon->SetPsiPairMax(PhotonPsiPairUp);
   } else if (suffix == "4") {
     photon->SetElectronNSigmaTPCMax(PhotonNsigmaHighLow);
     photon->SetElectronNSigmaTPCMin(PhotonNsigmaDownLow);
@@ -525,8 +525,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     photon->SetArmenterosQtMax(PhotonArmenterosUp);
     photon->SetCPAMin(PhotonCPALow);
   } else if (suffix == "18") {
-    photon->SetElectronPtMin(PhotonDaughterPtUp);
-    photon->SetElectronEtaMax(PhotonDaughterEtaLow);
+    photon->SetElectronPtMin(PhotonDaughterPtLow);
     photon->SetPsiPairMax(PhotonPsiPairUp);
   } else if (suffix == "19") {
     photon->SetElectronNSigmaTPCMax(PhotonNsigmaHighUp);
