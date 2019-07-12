@@ -158,6 +158,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void ExcludeSecondariesInMC()  {fExcludeSecondariesInMC = kTRUE;}
   void ExcludeWeakDecaysInMC() {fExcludeWeakDecaysInMC = kTRUE;}
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
+  void ExcludeResonancesLabelCut() {fExcludeResonancesLabel = kTRUE;}
   void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
   void ExcludeParticlesExtra() {fExcludeParticlesExtra = kTRUE;}
   void ExcludeResonancePDGInMC(Double_t pdgValue) {fExcludeResonancePDGInMC = pdgValue;}
@@ -590,6 +591,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fExcludeSecondariesInMC;//flag to exclude the secondaries from material and weak decays in the MCAODrec analysis
   Bool_t fExcludeWeakDecaysInMC;//flag to exclude the weak decay products (if not done by IsPhysicalPrimary) from the MC analysis
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
+  Bool_t fExcludeResonancesLabel;//flag to exclude the resonances using mother's label;
   Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
   Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC and MCAODrec
