@@ -583,42 +583,78 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
   if (suffix == "1") {
     sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighLow);
     antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighLow);
+  } else if (suffix == "2") {
+    sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
   } else if (suffix == "3") {
     sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
     antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+  } else if (suffix == "4") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
   } else if (suffix == "5") {
-    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
-    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
+    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighUp);
+  } else if (suffix == "6") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
   } else if (suffix == "7") {
     sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
     antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
+  } else if (suffix == "8") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
   } else if (suffix == "9") {
     sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
     antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
+  } else if (suffix == "10") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
   } else if (suffix == "11") {
     sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
     antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
+  } else if (suffix == "12") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
   } else if (suffix == "13") {
     sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighUp);
     antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighUp);
+  } else if (suffix == "14") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
   } else if (suffix == "15") {
-    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
-    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
+    sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
+  } else if (suffix == "16") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
   } else if (suffix == "17") {
     sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighLow);
     antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighLow);
+  } else if (suffix == "18") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
   } else if (suffix == "19") {
     sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
     antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+  } else if (suffix == "20") {
+    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighLow);
   } else if (suffix == "21") {
+    sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
+  } else if (suffix == "22") {
     sigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
     antiSigmaCuts->SetSigmaSideband(sidebandDownLow, sidebandHighDefault);
   } else if (suffix == "23") {
     sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
     antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighUp);
+  } else if (suffix == "24") {
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighLow);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighLow);
   } else if (suffix == "25") {
-    sigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
-    antiSigmaCuts->SetSigmaSideband(sidebandDownDefault, sidebandHighDefault);
+    sigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
+    antiSigmaCuts->SetSigmaSideband(sidebandDownUp, sidebandHighDefault);
   }
 
   // Femto Collection
