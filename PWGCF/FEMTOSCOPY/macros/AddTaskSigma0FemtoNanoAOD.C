@@ -805,7 +805,7 @@ AliAnalysisTaskSE *AddTaskSigma0FemtoNanoAOD(bool isMC = false,
     config->SetmTBinning(true);
   }
 
-  config->SetUsePhiSpinning(true);
+  config->SetUsePhiSpinning(false);
   config->SetControlMethod(AliFemtoDreamCollConfig::kCorrelatedPhi);
   config->SetCorrelationRange(0.1); // to be validated
   config->SetSpinningDepth(1);      // to be validated
