@@ -583,7 +583,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   
   // Create histograms 
   
-  fHistEventMultiplicity   = new TH1F( "fHistEventMultiplicity" , "Nb of Events" , 12 , 0.5,12.5);
+  fHistEventMultiplicity   = new TH1F( "fHistEventMultiplicity" , "Nb of Events" , 13 , 0.5,13.5);
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(1,"All Events");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(2,"Events w/PV and PID response");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(3,"Events w/|Vz|<10cm");
@@ -595,6 +595,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(9,"MB Events");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(10,"kInt7 Events");
   fHistEventMultiplicity->GetXaxis()->SetBinLabel(11,"HM Events");
+  fHistEventMultiplicity->GetXaxis()->SetBinLabel(12,"Is Selected Events");
   fOutputContainer->Add(fHistEventMultiplicity);
 
   hmult = new TH1I("hmult","Multiplicity distribution (after cuts on event)",30000,-100,200);
@@ -745,7 +746,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
          fHistSparseSignal = new TTree("fHistSparseSignal","fHistSparseSignal");
 	 /*1 */   fHistSparseSignal->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
 	 /*2 */   fHistSparseSignal->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
-	 /*3 */   fHistSparseSignal->Branch("tCentrality",         &tCentrality        , "tCentrality/I" );
+	 /*3 */   fHistSparseSignal->Branch("tCentrality",         &tCentrality        , "tCentrality/F" );
 	 /*4 */   fHistSparseSignal->Branch("tDCAxyP1",            &tDCAxyP1           , "tDCAxyP1/F" );
 	 /*5 */   fHistSparseSignal->Branch("tDCAzP1",             &tDCAzP1            , "tDCAzP1/F" ); 
 	 /*6 */   fHistSparseSignal->Branch("tDCAxyP2",            &tDCAxyP2           , "tDCAxyP2/F" ); 
@@ -769,7 +770,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
 	 fHistSparseBkg = new TTree("fHistSparseBkg","fHistSparseBkg");
 	 /*1 */   fHistSparseBkg->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
 	 /*2 */   fHistSparseBkg->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
-	 /*3 */   fHistSparseBkg->Branch("tCentrality",         &tCentrality        , "tCentrality/I" );
+	 /*3 */   fHistSparseBkg->Branch("tCentrality",         &tCentrality        , "tCentrality/F" );
 	 /*4 */   fHistSparseBkg->Branch("tDCAxyP1",            &tDCAxyP1           , "tDCAxyP1/F" );
 	 /*5 */   fHistSparseBkg->Branch("tDCAzP1",             &tDCAzP1            , "tDCAzP1/F" ); 
 	 /*6 */   fHistSparseBkg->Branch("tDCAxyP2",            &tDCAxyP2           , "tDCAxyP2/F" ); 
@@ -796,7 +797,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
     fHistSparseSignal = new TTree("fHistSparseSignal","fHistSparseSignal");
     /*1 */   fHistSparseSignal->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
     /*2 */   fHistSparseSignal->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
-    /*3 */   fHistSparseSignal->Branch("tCentrality",         &tCentrality        , "tCentrality/I" );
+    /*3 */   fHistSparseSignal->Branch("tCentrality",         &tCentrality        , "tCentrality/F" );
     /*4 */   fHistSparseSignal->Branch("tDCAxyP1",            &tDCAxyP1           , "tDCAxyP1/F" );
     /*5 */   fHistSparseSignal->Branch("tDCAzP1",             &tDCAzP1            , "tDCAzP1/F" ); 
     /*6 */   fHistSparseSignal->Branch("tDCAxyP2",            &tDCAxyP2           , "tDCAxyP2/F" ); 
@@ -830,7 +831,7 @@ void AliAnalysisTaskKPFemto::UserCreateOutputObjects() {
     fHistSparseBkg = new TTree("fHistSparseBkg","fHistSparseBkg");
     /*1 */   fHistSparseBkg->Branch("tSignP1",             &tSignP1            , "tSignP1/I" );
     /*2 */   fHistSparseBkg->Branch("tSignP2",             &tSignP2            , "tSignP2/I" );
-    /*3 */   fHistSparseBkg->Branch("tCentrality",         &tCentrality        , "tCentrality/I" );
+    /*3 */   fHistSparseBkg->Branch("tCentrality",         &tCentrality        , "tCentrality/F" );
     /*4 */   fHistSparseBkg->Branch("tDCAxyP1",            &tDCAxyP1           , "tDCAxyP1/F" );
     /*5 */   fHistSparseBkg->Branch("tDCAzP1",             &tDCAzP1            , "tDCAzP1/F" ); 
     /*6 */   fHistSparseBkg->Branch("tDCAxyP2",            &tDCAxyP2           , "tDCAxyP2/F" ); 
@@ -1052,6 +1053,14 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     hmult->Fill(lcentrality);
   }
 
+  if ( lcentrality > 199 ){
+    //Event didn't pass Event Selections
+    PostData(1,fOutputContainer );
+    PostData(2, fHistSparseSignal );
+    PostData(3, fHistSparseBkg );
+    return;
+  }
+  
   // cout<<lcentrality<<endl;
 
   if (lcentrality<fCentrLowLim||lcentrality>=fCentrUpLim){   
@@ -1100,9 +1109,9 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     if(fYear == 2010 && isSelectedMB )
       isSelected = kTRUE;
     else if(fYear != 2010 && fHMtrigger == kFALSE && isSelectedInt7)
-	isSelected = kTRUE;
+      isSelected = kTRUE;
     else if(fYear != 2010 && fHMtrigger == kTRUE && isSelectedHM)
-	isSelected = kTRUE;
+      isSelected = kTRUE;
     else 
       isSelected = kFALSE;
   }
@@ -1167,6 +1176,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
     }
     
   }
+
+  fHistEventMultiplicity->Fill(12); // is event selected for the analysis
   
   // cout<<"nTracks: "<<ntracks<<" centrality "<<lcentrality<<endl;
   Double_t fSphericityvalue = CalculateSphericityofEvent(fAODevent);
@@ -2312,7 +2323,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       }
     }
     //--------------------------------------------------------------
-    DoPairsh1h2((Int_t)lcentrality, fieldsign,fSphericityvalue);  
+    DoPairsh1h2(lcentrality, fieldsign,fSphericityvalue);  
     //DoPairsh1h2(centralityBin, fieldsign,fSphericityvalue);  
   }
   // Post output data
@@ -2325,7 +2336,7 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 //----------------------------------------------------------------------------------------------------
   
 //void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Float_t lcentrality, int fieldsignf, double fSphericityvalue) {
-void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Int_t lcentrality, int fieldsign, const Double_t fSphericityvalue) {
+void AliAnalysisTaskKPFemto::DoPairsh1h2 ( const Float_t lcentrality, int fieldsign, const Double_t fSphericityvalue) {
 
   // UInt_t dimsparse;
   // if(!fReadMCTruth) dimsparse=16;

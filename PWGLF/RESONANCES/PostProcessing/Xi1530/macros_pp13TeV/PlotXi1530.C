@@ -2,7 +2,8 @@
 #include <TFile.h>
 #include <TStyle.h>
 #include <TString.h>
-
+#include <AliPWGFunc.h>
+#include "DrawingHelper.C"
 // Save?
 bool savefile = true;
 bool corey = false;
@@ -10,8 +11,6 @@ TString savetype = "pdf";
 TString savepath = "./data";
 
 //functions
-void SaveCanvas(TCanvas* c, TString name, TString path, TString type);
-void SavePad(TPad* p, TString name, TString path, TString type);
 double myLevyPt(Double_t* x, Double_t* par);
 void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     // Default Canvas
@@ -19,7 +18,8 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     Double_t h = 1080;
 
     //Default draw range
-    vector<double> DrawRange = {1.484, 1.592};
+    //vector<double> DrawRange = {1.484, 1.592};
+    vector<double> DrawRange = {1.484, 1.8};
     string ftemp = finputfile.Data();
 
     savepath =
@@ -430,6 +430,19 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     hXiSpectrum->Draw("E");
     SaveCanvas(clogy, "hXiSpectrum", Form("%s/", savepath.Data()), savetype);
 
+    AliPWGFunc * fm = new AliPWGFunc;
+    fm->SetVarType(AliPWGFunc::VarType_t(AliPWGFunc::kdNdpt));
+    TF1* func = 0;
+    
+    func = fm->GetLevi (1.5318, 0.4, 750,3);
+    func->SetParLimits(1,0.0001,20000);
+    /*
+    func = fm->GetBGBW(1.5318 ,0.6,0.3, 1, 1e5);// beta, T, n, norm 
+    func->SetParLimits(1, 0.1, 0.99);
+    func->SetParLimits(2, 0.01, 1);
+    func->SetParLimits(3, 0.01, 2);
+    */
+    /*
     TF1* myLevy = new TF1("myLevy", myLevyPt, 0, 8.5, 3);
     myLevy->SetParName(0, "dN/dy");
     myLevy->SetParName(1, "C");
@@ -440,12 +453,20 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     myLevy->SetParLimits(0, .001, .2);
     myLevy->SetParLimits(1, .1, 1);
     myLevy->SetParLimits(2, 1, 500);
-    hXiSpectrum->Fit(myLevy, "IME", "", 0.8, 8.8);
-
+    */
+    hXiSpectrum->Fit(func, "IME", "", 0.8, 8.8);
+    /*
     TF1* Levy_full = new TF1("myLevy", myLevyPt, 0, 8.5, 3);
-    Levy_full->SetParameter(0, myLevy->GetParameter(0));
-    Levy_full->SetParameter(1, myLevy->GetParameter(1));
-    Levy_full->SetParameter(2, myLevy->GetParameter(2));
+    Levy_full->SetParameter(0, func->GetParameter(0));
+    Levy_full->SetParameter(1, func->GetParameter(1));
+    Levy_full->SetParameter(2, func->GetParameter(2));
+    */
+    TF1* Levy_full = fm->GetLevi (1.5318, 0.4, 750,3);
+    //TF1* Levy_full = fm->GetBGBW(1.5318 ,0.6,0.3, 1, 1e5);// beta, T, n, norm 
+    Levy_full->SetParameter(0, func->GetParameter(0));
+    Levy_full->SetParameter(1, func->GetParameter(1));
+    Levy_full->SetParameter(2, func->GetParameter(2));
+    Levy_full->SetRange(0,10);
     hXiSpectrum->Draw("E");
     Levy_full->Draw("same");
 
@@ -462,38 +483,33 @@ void PlotXi1530(TString finputfile, char const* options = "SAVE") {
     t->DrawLatex(
         0.59, 0.67,
         Form("#bf{dN/dy: %.3f #pm %.3f (x10^{-3})}",
-             myLevy->GetParameter(0) * 1e3, myLevy->GetParError(0) * 1e3));
+             func->GetParameter(0) * 1e3, func->GetParError(0) * 1e3));
     t->DrawLatex(
         0.59, 0.62,
-        Form("#bf{C: %.2f #pm %.2f (x10^{-3})}", myLevy->GetParameter(1) * 1e3,
-             myLevy->GetParError(1) * 1e3));
+        Form("#bf{n: %.2f #pm %.2f}", func->GetParameter(1),
+             func->GetParError(1)));
     t->DrawLatex(0.59, 0.57,
-                 Form("#bf{n: %.2f #pm %.2f}", myLevy->GetParameter(2),
-                      myLevy->GetParError(2)));
+                 Form("#bf{T: %.2f #pm %.2f}", func->GetParameter(2),
+                      func->GetParError(2)));
     SaveCanvas(clogy, "hSpectra_Fit", Form("%s/", savepath.Data()), savetype);
-}
 
-void SaveCanvas(TCanvas* c,
-                TString name = "temp",
-                TString path = "figs/",
-                TString type = "pdf") {
-    // Save canvas with path. if path is not there, make a folder.
-    if (savefile) {
-        if (gSystem->Exec(Form("ls %s", path.Data())) == 256) {
-            gSystem->Exec(Form("mkdir -p %s", path.Data()));
-        }
-        c->SaveAs(Form("%s%s.%s", path.Data(), name.Data(), type.Data()));
+    cout << "===========================" << endl;
+    cout << "\\begin{table}[]" << endl;
+    cout << "\\centering" << endl;
+    cout << "\\begin{tabular}{|l|l|}" << endl;
+    cout << "\\hline" << endl;
+    cout << "\\ensuremath{p_{\\mathrm{T}}} & Raw yield \\\\ \\hline"
+         << endl;
+    for (int bin = 1; bin < hDataRawYield->GetNbinsX(); bin++) {
+        cout << "$" << ptbin[bin-1] << " - " << ptbin[bin] << "$ & $"
+             << hDataRawYield->GetBinContent(bin) << " \\pm "
+             << hDataRawYield->GetBinError(bin) << "$ \\\\" << endl;
     }
-}
-void SavePad(TPad* p,
-             TString name = "temp",
-             TString path = "figs/",
-             TString type = "pdf") {
-    // Save Pad with path.
-    TCanvas* ctemp = new TCanvas();
-    TPad* clone = (TPad*)p->DrawClone();
-    clone->SetPad(0, 0, 1, 1);
-    SaveCanvas(ctemp, name, path, type);
+    cout << "\\hline" << endl;
+    cout << "\\end{tabular}" << endl;
+    cout << "\\caption{Rawyield in " << multi_start << " - " << multi_end << " bin}" << endl;
+    cout << "\\label{tab:rawyield" << multi_start << multi_end << "}" << endl;
+    cout << "\\end{table}" << endl;
 }
 double myLevyPt(Double_t* x, Double_t* par) {
     double lMass = 1.5318;  // Xi mass

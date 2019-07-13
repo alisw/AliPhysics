@@ -32,7 +32,7 @@ class AliAnalysisTaskSpectra : public AliAnalysisTaskMKBase
         virtual void            AnaEvent();                      //called once for every selected event                
         virtual void            AnaTrack(Int_t flag = 0);        //called once for every track in DATA+MC event
         virtual void            AnaTrackMC(Int_t flag = 0);      //called once for every track in DATA event
-        virtual void            AnaMCParticle(Int_t flag = 0);   //called once for every track in MC event        
+        virtual void            AnaParticleMC(Int_t flag = 0);   //called once for every track in MC event        
         
         static AliAnalysisTaskSpectra* AddTaskSpectra(const char* name = "TaskSpectra", const char* outfile = 0);
 

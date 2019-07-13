@@ -137,6 +137,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16c3b,
       k16c3c,
       kPPb5T13P4DPMJet,
+      kLHC19a4,
       // pp 2.76TeV 2013
       k15g2,
       kPP2T13P1JJ,
@@ -159,6 +160,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17l3b,
       k18j2,
       k18b8,
+      k18b10,
+      k18l2,
       // PbPb 5 TeV 2015
       kPbPb5T15HIJING,
       k16k3b,
@@ -202,6 +205,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP13T17P1Pyt8Str,
       kPP13T17P1Pyt8LowB,
       kPP13T17P1JJ,
+      kPP13T17b1JJdecay,
+      kPP13T17c1JJdecay,
+      // pp 13 TeV 2018
+      kPP13T18P1JJ,
       // Xe-Xe MC
       kXeXe5T17HIJING,
       //
@@ -233,7 +240,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17XeXe5440GeV,
       k17pp5TeV,
       k18pp13TeV,
-      k18pp13TeVLow
+      k18pp13TeVLow,
+      k18PbPb5TeV
     };
 
 
@@ -622,7 +630,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,85)
+    ClassDef(AliCaloPhotonCuts,88)
 };
 
 #endif

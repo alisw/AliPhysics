@@ -343,7 +343,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
     AliWarning("Results List not Available");
     fResults = new TList();
     fResults->SetOwner();
-    fResults->SetName("ResultsSample");
+    fResults->SetName("Results");
   }
   if (fAnalysis->GetResultSampleList()) {
     fResultsSample = fAnalysis->GetResultSampleList();

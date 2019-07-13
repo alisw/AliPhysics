@@ -121,6 +121,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         
         virtual void          BaseAnaTrack(Int_t flag = 0);      // wraps AnaTracK, to be used for mult counting
         virtual void          BaseAnaParticleMC(Int_t flag = 0); // wraps AnaParticleMC, to be used for mult counting
+        virtual void          BaseAddOutput();  //used to
         
         //         
         virtual Bool_t          InitEvent();   // loads event-related properties
@@ -136,6 +137,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         virtual Bool_t          InitTrackCuts(); //check all track cuts and set corresponding variables
         virtual Bool_t          InitTrackIP();  //initialize inner params 
         virtual Bool_t          InitTrackTPC();  //initialize inner params tpc
+        virtual Bool_t          InitTrackPID(); //initilaize PID related quantities
         
         virtual Bool_t          InitMCTrack();
         
@@ -260,6 +262,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         // track related properties
         AliESDtrack*                    fESDTrack;                  //!<! current esd track                                                 --
         Double_t                        fPt;                        //!<! track pT                                                          --InitTrack()
+        Double_t                        fP;                         //!<! track p                                                           --InitTrack()
         Double_t                        fEta;                       //!<! track Eta                                                         --InitTrack()
         Double_t                        fPhi;                       //!<! track Phi                                                         --InitTrack()
         Float_t                         fDCA[2];                    //!<! impact parameter (DCA)                                            --InitTrack()
@@ -333,7 +336,7 @@ class AliAnalysisTaskMKBase : public AliAnalysisTaskSE
         AliAnalysisTaskMKBase& operator=(const AliAnalysisTaskMKBase&); // not implemented
         
     /// \cond CLASSIMP      
-    ClassDef(AliAnalysisTaskMKBase, 5);
+    ClassDef(AliAnalysisTaskMKBase, 6);
     /// \endcond
     
 };

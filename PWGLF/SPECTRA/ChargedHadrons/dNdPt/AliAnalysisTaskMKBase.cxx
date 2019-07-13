@@ -139,6 +139,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase()
     , fIsEventAccepted(kFALSE)
     , fESDTrack(0)
     , fPt(0)
+    , fP(0)
     , fEta(0)
     , fPhi(0)
     , fDCA{0,0}
@@ -310,6 +311,7 @@ AliAnalysisTaskMKBase::AliAnalysisTaskMKBase(const char* name)
     , fIsEventAccepted(kFALSE)
     , fESDTrack(0)
     , fPt(0)
+    , fP(0)
     , fEta(0)
     , fPhi(0)
     , fDCA{0,0}
@@ -386,13 +388,8 @@ AliAnalysisTaskMKBase::~AliAnalysisTaskMKBase()
 }
 
 //_____________________________________________________________________________
-
-void AliAnalysisTaskMKBase::UserCreateOutputObjects()
+void AliAnalysisTaskMKBase::BaseAddOutput()
 {
-    // create output list
-    fOutputList = new TList(); 
-    fOutputList->SetOwner(kTRUE); 
-    
     // create defualt event histograms    
     
     fLogHist = CreateLogHist("fLogHist");
@@ -421,8 +418,21 @@ void AliAnalysisTaskMKBase::UserCreateOutputObjects()
     
     fTrigHistSelected = CreateLogHist("fTrigHistSelected");
     fOutputList->Add(fTrigHistSelected);
+    
+}
 
+//_____________________________________________________________________________
 
+void AliAnalysisTaskMKBase::UserCreateOutputObjects()
+{
+    // create output list
+    fOutputList = new TList(); 
+    fOutputList->SetOwner(kTRUE); 
+    
+    //add default histograms
+    BaseAddOutput();
+    
+    //add user histograms
     AddOutput();
     // postdata 
     PostData(1, fOutputList);
@@ -892,9 +902,10 @@ Bool_t AliAnalysisTaskMKBase::InitEventVZERO()
 Bool_t AliAnalysisTaskMKBase::InitTrack()
 {    
     if (!fESDTrack) { return kFALSE; }
-    fPt = fESDTrack->Pt();
+    fPt  = fESDTrack->Pt();
     fEta = fESDTrack->Eta();
     fPhi = fESDTrack->Phi();
+    fP   = fESDTrack->GetP();
     fChargeSign = fESDTrack->Charge();
     fESDTrack->GetImpactParameters(fDCA,fDCACov);
     fDCAr = fDCA[0];
@@ -910,6 +921,7 @@ Bool_t AliAnalysisTaskMKBase::InitTrack()
     InitTrackCuts();
     InitTrackIP();
     InitTrackTPC();
+    InitTrackPID();
     
     if (fIsMC) { InitMCTrack(); }
     
@@ -922,6 +934,14 @@ Bool_t AliAnalysisTaskMKBase::InitTrackCuts()
 {        
     fAcceptTrackM = (fESDtrackCutsM)?  fESDtrackCutsM->AcceptTrack(fESDTrack) : kFALSE;
     for (int i=0; i<10; i++) { fAcceptTrack[i] = (fESDtrackCuts[i])? fESDtrackCuts[i]->AcceptTrack(fESDTrack) : kFALSE;}   
+    return kTRUE;
+}
+
+//_____________________________________________________________________________
+
+Bool_t AliAnalysisTaskMKBase::InitTrackPID()
+{        
+    // TODO to be implemented for track pid information
     return kTRUE;
 }
 

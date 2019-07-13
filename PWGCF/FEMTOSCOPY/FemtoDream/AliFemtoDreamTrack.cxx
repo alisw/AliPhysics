@@ -406,8 +406,8 @@ void AliFemtoDreamTrack::SetESDTrackingInformationOmega() {
 
 //_______________________________________________
 void AliFemtoDreamTrack::SetESDPIDInformation() {
-  AliPID::EParticleType particleID[5] = { AliPID::kElectron, AliPID::kMuon,
-      AliPID::kPion, AliPID::kKaon, AliPID::kProton };
+  AliPID::EParticleType particleID[6] = { AliPID::kElectron, AliPID::kMuon,
+      AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron };
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   if (man) {
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
@@ -434,7 +434,7 @@ void AliFemtoDreamTrack::SetESDPIDInformation() {
   this->fstatusTOF = statusTOF;
   this->fdEdxTPC = fESDTrack->GetTPCsignal();
   this->fbetaTOF = GetBeta(fESDTrack);
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     if (statusITS == AliPIDResponse::kDetPidOk) {
       (this->fnSigmaITS)[i] = fPIDResponse->NumberOfSigmas(AliPIDResponse::kITS,
                                                            fESDTrack,
@@ -473,15 +473,16 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
 
   // loop over the 6 ITS Layrs and check for a hit!
   for (int i = 0; i < 6; ++i) {
-    fITSHit.push_back(fVTrack->HasPointOnITSLayer(i));
-    if (fVTrack->HasPointOnITSLayer(i)) {
+    fITSHit.push_back(fVGlobalTrack->HasPointOnITSLayer(i));
+    if (fVGlobalTrack->HasPointOnITSLayer(i)) {
       this->fHasITSHit = true;
     }
   }
-  if (fVTrack->IsOn(AliVTrack::kTPCrefit)) {
-    fTPCRefit = true;
-  }
-  if (fVTrack->GetTOFBunchCrossing() == 0) {
+//  if (fVTrack->IsOn(AliVTrack::kTPCrefit)) {
+//    //doesn't seem to work for nanos.
+//    fTPCRefit = true;
+//  }
+  if (fVGlobalTrack->GetTOFBunchCrossing() == 0) {
     this->fTOFTiming = true;
   } else {
     this->fTOFTiming = false;
@@ -496,21 +497,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   this->SetMomTPC(globalNanoTrack->GetTPCmomentum());
   this->fdcaXY = nanoTrack->DCA();
   this->fdcaZ = nanoTrack->ZAtDCA();
-  double dcaVals[2] = {-99., -99.};
-  double pos[3] = {0., 0., 0.};
-  double covar[3] = {0., 0., 0.};
-  AliNanoAODTrack copy(*globalNanoTrack);
-  copy.GetPosition(pos);
-  if (pos[0] * pos[0] + pos[1] * pos[1] <= 3. * 3. &&
-      copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(),
-                          10, dcaVals, covar)) {
-    this->fdcaXYProp = dcaVals[0];
-    this->fdcaZProp = dcaVals[1];
-  } else {
-    this->fdcaXYProp = -99;
-    this->fdcaZProp = -99;
-  }
-
+  globalNanoTrack->GetImpactParameters(fdcaXYProp, fdcaZProp);
   SetPhiAtRadii(event->GetMagneticField());
 
   // PID stuff
@@ -520,9 +507,11 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
     return;
   }
 
-  AliPID::EParticleType particleID[5] = {AliPID::kElectron, AliPID::kMuon,
+//  this->fdEdxTPC = nanoTrack->GetTPCsignal();
+  this->fdEdxTPC =0;
+  AliPID::EParticleType particleID[6] = {AliPID::kElectron, AliPID::kMuon,
                                          AliPID::kPion, AliPID::kKaon,
-                                         AliPID::kProton};
+                                         AliPID::kProton, AliPID::kDeuteron};
 
   this->fstatusTPC =
       (std::abs(globalNanoTrack->GetVar(AliNanoAODTrack::GetPIDIndex(
@@ -537,7 +526,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
           ? AliPIDResponse::kDetPidOk
           : AliPIDResponse::kDetNoSignal;
 
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     this->fnSigmaTPC[i] = globalNanoTrack->GetVar(AliNanoAODTrack::GetPIDIndex(
         AliNanoAODTrack::kSigmaTPC, particleID[i]));
     this->fnSigmaTOF[i] = globalNanoTrack->GetVar(AliNanoAODTrack::GetPIDIndex(
@@ -552,9 +541,8 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   }
 
   // TODO
-  //  this->fdEdxTPC = fVTrack->GetTPCsignal();
   //  this->fbetaTOF = GetBeta(fVTrack);
-  // For the moment we don't need ITS PID
+  //   For the moment we don't need ITS PID
   //  this->fstatusITS = statusITS;
   //          this->fnSigmaITS)[i] =
   //    AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaITS,
@@ -584,18 +572,19 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   double dcaVals[2] = { -99., -99. };
   double pos[3] = { 0., 0., 0. };
   double covar[3] = { 0., 0., 0. };
-  AliAODTrack copy(*fAODGlobalTrack);
-  fAODGlobalTrack->GetPosition(pos);
-  if (pos[0] * pos[0] + pos[1] * pos[1] <= 3. * 3.
-      && copy.PropagateToDCA(copy.GetAODEvent()->GetPrimaryVertex(),
-                             copy.GetAODEvent()->GetMagneticField(), 10,
-                             dcaVals, covar)) {
-    this->fdcaXYProp = dcaVals[0];
-    this->fdcaZProp = dcaVals[1];
-  } else {
-    this->fdcaXYProp = -99;
-    this->fdcaZProp = -99;
-  }
+  fAODGlobalTrack->GetImpactParameters(fdcaXYProp,fdcaZProp);
+//  AliAODTrack copy(*fAODGlobalTrack);
+//  fAODGlobalTrack->GetPosition(pos);
+//  if (pos[0] * pos[0] + pos[1] * pos[1] <= 3. * 3.
+//      && copy.PropagateToDCA(copy.GetAODEvent()->GetPrimaryVertex(),
+//                             copy.GetAODEvent()->GetMagneticField(), 10,
+//                             dcaVals, covar)) {
+//    this->fdcaXYProp = dcaVals[0];
+//    this->fdcaZProp = dcaVals[1];
+//  } else {
+//    this->fdcaXYProp = -99;
+//    this->fdcaZProp = -99;
+//  }
   //loop over the 6 ITS Layrs and check for a hit!
   for (int i = 0; i < 6; ++i) {
     fITSHit.push_back(fAODGlobalTrack->HasPointOnITSLayer(i));
@@ -605,6 +594,8 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   }
   if (fAODTrack->IsOn(AliAODTrack::kTPCrefit)) {
     fTPCRefit = true;
+  } else {
+    fTPCRefit = false;
   }
   if (fAODGlobalTrack->GetTOFBunchCrossing() == 0) {
     this->fTOFTiming = true;
@@ -689,8 +680,8 @@ void AliFemtoDreamTrack::SetGlobalCoordAtRadii(const float bfield) {
 }
 
 void AliFemtoDreamTrack::SetAODPIDInformation() {
-  AliPID::EParticleType particleID[5] = { AliPID::kElectron, AliPID::kMuon,
-      AliPID::kPion, AliPID::kKaon, AliPID::kProton };
+  AliPID::EParticleType particleID[6] = { AliPID::kElectron, AliPID::kMuon,
+      AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron };
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   if (man) {
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
@@ -717,7 +708,7 @@ void AliFemtoDreamTrack::SetAODPIDInformation() {
   this->fstatusTOF = statusTOF;
   this->fdEdxTPC = fAODGlobalTrack->GetTPCsignal();
   this->fbetaTOF = GetBeta(fAODGlobalTrack);
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     if (statusITS == AliPIDResponse::kDetPidOk) {
       (this->fnSigmaITS)[i] = fPIDResponse->NumberOfSigmas(AliPIDResponse::kITS,
                                                            fAODGlobalTrack,
@@ -753,6 +744,7 @@ void AliFemtoDreamTrack::SetMCInformation() {
   if (fAODGlobalTrack->GetLabel() > 0) {
     AliAODMCParticle * mcPart = (AliAODMCParticle*) mcarray->At(
         fAODGlobalTrack->GetLabel());
+    this->SetID(fAODGlobalTrack->GetLabel());
     if (!(mcPart)) {
       this->fIsSet = false;
     } else {
@@ -788,6 +780,7 @@ void AliFemtoDreamTrack::SetMCInformation() {
       }
       if (mcMother) {
         this->SetMotherPDG(mcMother->GetPdgCode());
+        this->SetMotherID(lastMother);
       }
     }
   } else {

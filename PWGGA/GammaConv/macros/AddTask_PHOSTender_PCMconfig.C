@@ -25,6 +25,19 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
     return NULL;
   }
 
+  std::cout << "=============================================================" << std::endl;
+  std::cout << "======INFO: AddPHOSTender_PCMConfig:        =================" << std::endl;
+  std::cout << "options: " << options.Data() << std::endl;
+  std::cout << "pass: " << pass << std::endl;
+  std::cout << "isMC: " << isMC << std::endl;
+  std::cout << "forceBadChannelMap: " << forceBadChannelMap << std::endl;
+  std::cout << "specificBCMap: " << specificBCMap.Data() << std::endl;
+  std::cout << "nonLinName: " << nonLinName.Data() << std::endl;
+  std::cout << "isRun2: " << isRun2 << std::endl;
+  std::cout << "enableSpecialNL: " << enableSpecialNL << std::endl;
+  std::cout << "=============================================================" << std::endl;
+
+
   // create and add task
   AliPHOSTenderTask * tenderTask = new AliPHOSTenderTask(taskName.Data()) ;
   AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply(tenderName.Data()) ;
@@ -63,7 +76,7 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
       PHOSSupply->SetMCProduction(options.Data()) ;
     }
   }
-  if (isRun2 && !isMC)
+  if (isRun2 && isMC)
     PHOSSupply->ApplyZeroSuppression(0.020);
 
 

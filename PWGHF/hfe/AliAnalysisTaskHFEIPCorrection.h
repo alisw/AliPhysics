@@ -44,6 +44,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TObjArray * fOutputContainer; // ! output data container
   
   Bool_t PassesTrackCuts(AliAODTrack *track);
+  Bool_t PassesTrackCutsNoFirst(AliAODTrack *track);
   Bool_t PassesElectronPID(AliAODTrack *track, AliPIDResponse *pid);
   Bool_t PassesPionPID(AliAODTrack *track, AliPIDResponse *pid);
   Bool_t PassesKaonPID(AliAODTrack *track, AliPIDResponse *pid);
@@ -59,10 +60,6 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   
   AliAnalysisTaskHFEIPCorrection(const AliAnalysisTaskHFEIPCorrection&); // not implemented
   AliAnalysisTaskHFEIPCorrection& operator=(const AliAnalysisTaskHFEIPCorrection&); // not implemented
-  TH2D * EPCent;
-  TH2D * EPCentCorrected;
-  TH2D * EPCentV0A;
-  TH2D * EPCentV0C;
   
   
   TH2D * fIPData;
@@ -73,13 +70,22 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH1D * EP2040V0C;
   
   TH2D * TPCnSigma;
-  
+
+  TH2D * EPCent;
+  TH2D * EPCentCorrected;
+  TH2D * EPCentV0A;
+  TH2D * EPCentV0C;
+
   TH1D * DeltaPhi;
+  AliHFEextraCuts * fExtraCuts;
 
   TH2D * fpTIP2040IP;
   TH2D * fpTIP2040OOP;
   TH2D * fpTIP3050IP;
   TH2D * fpTIP3050OOP;
+  
+  TH1D * EventSelectionSteps;
+
   TH3D * fPionV0pTRNoCuts;
   TH3D * fPionV0pTRWithCuts;
   TH3D * fPionV0pTRNoCutsIP;
@@ -88,8 +94,22 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH3D * fPionV0pTRWithCutsOOP;
   TH2D * fPionV0pTTPC;
   TH2D * fPionV0pTTPCWithCuts;
+  TH2D * fPionV0pTTPCIP;
+  TH2D * fPionV0pTTPCOOP;
+  TH2D * fPionV0pTTPCIPWTOF;
+  TH2D * fPionV0pTTPCOOPWTOF;
+  TH2D * fPionV0pTTPCIPnoFirst;
+  TH2D * fPionV0pTTPCOOPnoFirst;
+  TH2D * fPionV0pTTPCIPWTOFnoFirst;
+  TH2D * fPionV0pTTPCOOPWTOFnoFirst;
 
-  TH1D * EventSelectionSteps;
+  TH3D * fEPLowHighCent;
+  TH3D * fEPLowVZEROCent;
+  TH3D * fEPHighVZEROCent;
+  TH3D * fEPLowHighCent2;
+  TH3D * fEPLowVZEROCent2;
+  TH3D * fEPHighVZEROCent2;
+  
   TH3D * fDCARegionRun;
   TH3D * fDCAPhiZHadrons;
   TH3D * fDCAPhiZHadronsEarlyRuns;
@@ -110,13 +130,13 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH2D * fDCAKaons; // Should have less contamination, but have higher mass
   TH3D * fDCAWErrKaons;
   TH3D * fDCAKaonsFineBins;
+
   
   //AliHFEcuts * hfetrackCuts;           // Track cuts
-  AliHFEextraCuts * fExtraCuts;
   AliAODv0KineCuts * fAODV0Cuts;
   TRandom3 * fRd;
   
-  ClassDef(AliAnalysisTaskHFEIPCorrection, 1); // example of analysis
+  ClassDef(AliAnalysisTaskHFEIPCorrection, 1);
 };
 
 #endif

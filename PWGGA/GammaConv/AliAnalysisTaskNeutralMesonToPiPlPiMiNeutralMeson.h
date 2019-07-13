@@ -131,7 +131,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
 
     Bool_t KinematicCut(AliAODConversionMother *negpion, AliAODConversionMother *pospion, AliAODConversionMother *neutpion, AliAODConversionMother *omega);
     void RelabelAODPhotonCandidates(Bool_t mode);
-
+    AliExternalTrackParam* GetConstrainedParameterAOD(const AliAODTrack* aodTr, const AliAODVertex* vtx, double bz);
+    Double32_t CalculateP2(Double_t xyz[3],Double_t pxpypz[3]); 
 
 
     AliV0ReaderV1*                    fV0Reader;                                          //!<! V0Reader for basic conversion photon selection
@@ -360,7 +361,24 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TProfile**                      fProfileEtaShift;                                     //!<! profile for eta shift bookkeeping
     TH2F**                          fHistoSPDClusterTrackletBackground;                   //!<! array of histos with SPD tracklets vs SPD clusters for background rejection
 
+    // virtual candidate histos
+    TH1F**                          fHistovParticleChi2PerNDF;
+    TH1F**                          fHistovParticleChi2PerNDFBothConstrained;
+    TH1F**                          fHistovParticleChi2PerNDFOneConstrained;
+    TH1F**                          fHistovParticledS;
+    TH1F**                          fHistovParticledSBothConstrained;
+    TH1F**                          fHistovParticledSOneConstrained;
 
+    // truth for virtual candidate histos
+    TH1F**                          fHistoTruevParticleChi2PerNDF;
+    TH1F**                          fHistoTruevParticleFromSameMotherChi2PerNDF;
+    TH1F**                          fHistoTruevParticleFromHNMChi2PerNDF;
+
+    TH1F**                          fHistoTruevParticledS;
+    TH1F**                          fHistoTruevParticleFromSameMotherdS;
+    TH1F**                          fHistoTruevParticleFromHNMdS;
+
+    // 2D histo
     TRandom3                        fRandom;                                              ///< random number
     Int_t                           fnCuts;                                               ///< number of cuts to be run in parallel
     Int_t                           fiCut;                                                ///< current cut
@@ -387,7 +405,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 5);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 6);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

@@ -385,8 +385,8 @@ void AliXiStarPbPb::XiStarInit()
     fMultBins = 10;
     
     
-    if(fMCcase) fEventsToMix = 2;
-    else fEventsToMix = 0; //5
+    if(fMCcase) fEventsToMix = 0;
+    else fEventsToMix = 2; //5
     
     fMultLimits[0]=0, fMultLimits[1]=1250, fMultLimits[2]=2500, fMultLimits[3]=3750, fMultLimits[4]=5000, fMultLimits[5]=6250, fMultLimits[6]=7500, fMultLimits[7]=8750, fMultLimits[8]=10000, fMultLimits[9]=13000, fMultLimits[10]=20000;
     
@@ -815,8 +815,8 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     //
     
-    TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-    TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution",100,0,10,10,0,100, 300,1.4,1.7);
+    TH3F *fMCinputTotalXiStar1 = new TH3F("fMCinputTotalXiStar1","Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+    TH3F *fMCinputTotalXiStarbar1 = new TH3F("fMCinputTotalXiStarbar1","Invariant Mass Distribution",100,0,10,100,0,100, 75,1.4,1.7);
     fOutputList->Add(fMCinputTotalXiStar1);
     fOutputList->Add(fMCinputTotalXiStarbar1);
     
@@ -855,8 +855,8 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     //
     
-    TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-    TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
+    TH3F *fMCinputTotalXiStar3 = new TH3F("fMCinputTotalXiStar3","Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+    TH3F *fMCinputTotalXiStarbar3 = new TH3F("fMCinputTotalXiStarbar3","Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
     fOutputList->Add(fMCinputTotalXiStar3);
     fOutputList->Add(fMCinputTotalXiStarbar3);
     
@@ -906,18 +906,18 @@ void AliXiStarPbPb::UserCreateOutputObjects()
         *nameXiMinusPiMinus += cv;
         *nameXiPlusPiPlus += cv;
         *nameXiPlusPiMinus += cv;
-        *nameXiMinusPiPlusbkg += cv;
-        *nameXiMinusPiMinusbkg += cv;
-        *nameXiPlusPiPlusbkg += cv;
-        *nameXiPlusPiMinusbkg += cv;
-        CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-        CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-        CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-        CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-        CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-        CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-        CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-        CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution",100,0,10,10,0,100, 300,1.4,1.7);
+        //*nameXiMinusPiPlusbkg += cv;
+        //*nameXiMinusPiMinusbkg += cv;
+        //*nameXiPlusPiPlusbkg += cv;
+        //*nameXiPlusPiMinusbkg += cv;
+        CutVar[cv].fXiMinusPiPlus  = new TH3F(nameXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiMinusPiMinus = new TH3F(nameXiMinusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiPlusPiPlus   = new TH3F(nameXiPlusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiPlusPiMinus  = new TH3F(nameXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiMinusPiPlusbkg  = new TH3F(nameXiMinusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiMinusPiMinusbkg = new TH3F(nameXiMinusPiMinusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiPlusPiPlusbkg   = new TH3F(nameXiPlusPiPlusbkg->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fXiPlusPiMinusbkg  = new TH3F(nameXiPlusPiMinusbkg->Data(),"Invariant Mass Distribution",100,0,10,100,0,100, 75,1.4,1.7);
         
         fOutputList->Add(CutVar[cv].fXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fXiMinusPiMinus);
@@ -934,8 +934,8 @@ void AliXiStarPbPb::UserCreateOutputObjects()
         TString *nameMCrecXiPlusPiMinus = new TString("fMCrecXiPlusPiMinus_");
         *nameMCrecXiMinusPiPlus += cv;
         *nameMCrecXiPlusPiMinus += cv;
-        CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
-        CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,10,0,100, 300,1.4,1.7);
+        CutVar[cv].fMCrecXiMinusPiPlus  = new TH3F(nameMCrecXiMinusPiPlus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
+        CutVar[cv].fMCrecXiPlusPiMinus  = new TH3F(nameMCrecXiPlusPiMinus->Data(),"Invariant Mass Distribution", 100,0,10,100,0,100, 75,1.4,1.7);
         fOutputList->Add(CutVar[cv].fMCrecXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fMCrecXiPlusPiMinus);
         //
@@ -1236,8 +1236,8 @@ void AliXiStarPbPb::Exec(Option_t *)
         else negativeTracks++;
         
         if(fTempStruct[myTracks].fNclusTPC < 60) continue;
-        //if(fTempStruct[myTracks].fDCAZ > 2.) continue;
-        //if(fTempStruct[myTracks].fEta > 0.8) continue;
+        if(fTempStruct[myTracks].fDCAZ > 1.) continue;
+        if(fTempStruct[myTracks].fEta > 0.8) continue;
         myTracks++;
     }
     
@@ -1738,9 +1738,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                         if(fDecayParameters[8]>(0.0234 + 0.045/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;
                     } // 9 sigma
                     if(cv==6){
-                       // if(fDecayParameters[8]>(0.0286 + 0.055/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;
-                        if(fDecayParameters[8]>0.5) continue;
-
+                        if(fDecayParameters[8]>(0.0286 + 0.055/pow((fEvt+EN)->fTracks[l].fPt,1.01))) continue;
                     } //11 sigma
                     
                     if(fDecayParameters[9] > fCutValues[cv][9]) continue;// DCAV proton-pion
@@ -1811,8 +1809,6 @@ void AliXiStarPbPb::Exec(Option_t *)
                     
                     
                     if(EN==0){
-                        
-                        
                         if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiMinusPiMinus->Fill(xiStarPt, centralityV0M, xiStarMass);
                             
@@ -1823,17 +1819,14 @@ void AliXiStarPbPb::Exec(Option_t *)
                         }
                         else if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiPlusPiMinus->Fill(xiStarPt, centralityV0M, xiStarMass);
-                            
                         }
                         else {
                             CutVar[cv].fXiPlusPiPlus->Fill(xiStarPt, centralityV0M, xiStarMass);
                         }
-                    }else {
-                        
-                        
+                    }
+                    else {
                         if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiMinusPiMinusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
-                            
                         }
                         else if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1){
                             CutVar[cv].fXiMinusPiPlusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
@@ -1843,7 +1836,6 @@ void AliXiStarPbPb::Exec(Option_t *)
                         }
                         else {
                             CutVar[cv].fXiPlusPiPlusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
-                            
                         }
                     }
                     

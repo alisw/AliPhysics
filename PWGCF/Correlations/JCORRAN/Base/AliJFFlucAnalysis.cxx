@@ -6,26 +6,6 @@
 #include <TClonesArray.h>
 #include "AliJBaseTrack.h"
 #include "AliJFFlucAnalysis.h"
-//#include "AliJCorrelations.h"
-//#include "AliAnalysisManager.h"
-//#include "AliAODEvent.h"
-//#include "AliAODTrack.h"
-//#include "AliVVertex.h"
-//#include "AliAODMCParticle.h"
-//#include "AliAODMCHeader.h"
-//#include "AliMCEventHandler.h"
-//#include "AliMCEvent.h"
-//#include "AliStack.h"
-//#include "AliHeader.h"
-//#include "AliGenEventHeader.h"
-//#include "AliGenCocktailEventHeader.h"
-//#include "AliGenPythiaEventHeader.h"
-//#include "AliInputEventHandler.h"
-//#include "AliESDVertex.h"
-//#include "AliVParticle.h"
-//#include "AliCentrality.h"
-//#include "AliEventplane.h"
-//#include "AliJHistManager.h"
 #include "AliJEfficiency.h"
 #pragma GCC diagnostic warning "-Wall"
 
@@ -66,6 +46,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_cn_2c_eta10(),
 	fh_cn_cn_2c_eta10()*/
 {
+	subeventMask = SUBEVENT_A|SUBEVENT_B;
 	flags = 0;
 	fEta_min = 0;
 	fEta_max = 0;
@@ -112,6 +93,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 {
 	cout << "analysis task created " << endl;
 
+	subeventMask = SUBEVENT_A|SUBEVENT_B;
 	flags = 0;
 	fEta_min = 0;
 	fEta_max = 0;
@@ -435,6 +417,8 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	const TComplex (*pQq)[kNH][nKL] = QvectorQCeta10;
 
 	for(int i = 0; i < 2; ++i){
+		if((subeventMask & (1<<i)) == 0)
+			continue;
 		//Double_t ref_2p = N[i][0]*N[i][1];//TwoGap(pQq,i,0,0).Re();
 		Double_t ref_2p = TwoGap(pQq,i,0,0).Re();
 		Double_t ref_3p = ThreeGap(pQq,i,0,0,0).Re();

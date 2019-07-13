@@ -1388,10 +1388,6 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds
       fIsSelectedCandidate=fCuts->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
 
-      if(fUseRejectionMethod){
-        if ((d->Pt() * 1000.) - (Int_t)(d->Pt() * 1000) > fRejectionFactor)
-        continue;
-      }
 
       if(fFillVarHists) {
         //if(!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate)) {
@@ -1413,6 +1409,10 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       }
 
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
+      if(fUseRejectionMethod){
+        if ((d->Pt() * 1000.) - (Int_t)(d->Pt() * 1000) > fRejectionFactor)
+        continue;
+      }
       FillCandVariables(aod,d,mcArray,mcHeader,fCuts);
       if(fFillSparses) NormIPvar(aod, d,mcArray);
       if (fPIDCheck) {

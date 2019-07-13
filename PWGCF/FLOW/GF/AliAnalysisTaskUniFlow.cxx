@@ -154,7 +154,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow() : AliAnalysisTaskSE(),
   fFlowUseWeights{kFALSE},
   fFlowUse3Dweights{kFALSE},
   fFlowRunByRunWeights{kTRUE},
-  fFlowWeightsApplyForReco{kFALSE},
+  fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
   fColSystem{kPPb},
   fTrigger{AliVEvent::kINT7},
@@ -406,7 +406,7 @@ AliAnalysisTaskUniFlow::AliAnalysisTaskUniFlow(const char* name, ColSystem colSy
   fFlowUseWeights{bUseWeights},
   fFlowUse3Dweights{kFALSE},
   fFlowRunByRunWeights{kTRUE},
-  fFlowWeightsApplyForReco{kFALSE},
+  fFlowWeightsApplyForReco{kTRUE},
   fFlowWeightsTag{},
   fColSystem{colSys},
   fTrigger{AliVEvent::kINT7},
@@ -1446,9 +1446,12 @@ void AliAnalysisTaskUniFlow::ProcessMC() const
         Bool_t bIsPhysPrimary = trackMC->IsPhysicalPrimary();
         Bool_t bIsWithinPOIs = IsWithinPOIs(trackMC);
 
-        if(bCharged && bIsPhysPrimary) {
-            if(IsWithinRefs(trackMC)) { fh2MCPtEtaGen[kRefs]->Fill(dPt, dEta); }
-            if(bIsWithinPOIs) { fh2MCPtEtaGen[kCharged]->Fill(dPt,dEta); }
+
+        if(bCharged && bIsPhysPrimary && bIsWithinPOIs) {
+            // if(IsWithinRefs(trackMC)) { fh2MCPtEtaGen[kRefs]->Fill(dPt, dEta); }
+            // if(bIsWithinPOIs) { fh2MCPtEtaGen[kCharged]->Fill(dPt,dEta); }
+
+            fh2MCPtEtaGen[kCharged]->Fill(dPt,dEta); // Fill for both Charged & Refs
         }
 
         if(!bIsWithinPOIs) { continue; }
@@ -1458,6 +1461,8 @@ void AliAnalysisTaskUniFlow::ProcessMC() const
         for(Int_t spec(kPion); spec < Int_t(kUnknown); ++spec) {
             if(iPDG == fPDGCode[spec]) { species = PartSpecies(spec); }
         }
+
+        if(species == kUnknown) { continue; }
 
         if(species == kPhi && (trackMC->GetMother() == -1)) {
             fh2MCPtEtaGen[species]->Fill(dPt, dEta);
@@ -1486,7 +1491,7 @@ void AliAnalysisTaskUniFlow::FilterCharged() const
     // Checking if selected track is eligible for Ref. flow
     if(IsWithinRefs(track)) {
         fVector[kRefs]->push_back(track);
-        if(fMC) { fh2MCPtEtaReco[kRefs]->Fill(track->Pt(), track->Eta()); }
+        // if(fMC) { fh2MCPtEtaReco[kRefs]->Fill(track->Pt(), track->Eta()); }
     }
 
     // Checking if selected track is within POIs pt,eta acceptance
@@ -4278,18 +4283,12 @@ void AliAnalysisTaskUniFlow::UserCreateOutputObjects()
 
   if(fMC) {
     // NUE weights
-    for(Int_t iSpec(0); iSpec < kUnknown; ++iSpec) {
+    for(Int_t iSpec(kCharged); iSpec < kUnknown; ++iSpec) {
         // if(!fProcessSpec[iSpec]) { continue; }
 
-        Int_t iNumBinsPt = fFlowPOIsPtBinNum;
-        Double_t dPtLow = fFlowPOIsPtMin;
+        Double_t dPtLow = 0.0;
         Double_t dPtHigh = fFlowPOIsPtMax;
-
-        if(iSpec == kRefs) {
-            iNumBinsPt = iFlowRFPsPtBinNum;
-            dPtLow = fFlowRFPsPtMin;
-            dPtHigh = fFlowRFPsPtMax;
-        }
+        Int_t iNumBinsPt = floor(fFlowPOIsPtMax / 0.1 + 0.5);
 
         fh2MCPtEtaGen[iSpec] = new TH2D(Form("fh2MCPtEtaGen%s",GetSpeciesName(iSpec)),Form("MC %s (Gen); #it{p}_{T} (GeV/#it{c}); #it{#eta}", GetSpeciesLabel(iSpec)), iNumBinsPt,dPtLow,dPtHigh, fFlowEtaBinNum,-fFlowEtaMax,fFlowEtaMax);
         fListMC->Add(fh2MCPtEtaGen[iSpec]);

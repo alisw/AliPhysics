@@ -17,6 +17,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fMinimalBooking(false),
       fMCData(false),
       fDCAPlots(false),
+      fTOFM(false),
       fDoMultBinning(false),
       fCheckMother(false),
       fCombSigma(false),
@@ -71,6 +72,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fMinimalBooking(cuts.fMinimalBooking),
       fMCData(cuts.fMCData),
       fDCAPlots(cuts.fDCAPlots),
+      fTOFM(cuts.fTOFM),
       fDoMultBinning(cuts.fDoMultBinning),
       fCheckMother(cuts.fCheckMother),
       fCombSigma(cuts.fCombSigma),
@@ -128,6 +130,7 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fMinimalBooking = cuts.fMinimalBooking;
   this->fMCData = cuts.fMCData;
   this->fDCAPlots = cuts.fDCAPlots;
+  this->fTOFM= cuts.fTOFM;
   this->fDoMultBinning = cuts.fDoMultBinning;
   this->fCheckMother = cuts.fCheckMother;
   this->fCombSigma = cuts.fCombSigma;
@@ -277,24 +280,24 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
         fHists->FillTrackCounter(5);
     }
   }
-  if (pass && fCheckPileUpTOF) {
-    if (!Track->GetTOFTimingReuqirement()) {
+  if (pass && fCheckPileUpSPDTOF) {
+    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasSPDHit())) {
       pass = false;
     } else {
       if (!fMinimalBooking)
         fHists->FillTrackCounter(6);
     }
   }
-  if (pass && fCheckPileUp) {
-    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasITSHit())) {
+  if (pass && fCheckPileUpTOF) {
+    if (!Track->GetTOFTimingReuqirement()) {
       pass = false;
     } else {
       if (!fMinimalBooking)
         fHists->FillTrackCounter(7);
     }
   }
-  if (pass && fCheckPileUpSPDTOF) {
-    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasSPDHit())) {
+  if (pass && fCheckPileUp) {
+    if (!(Track->GetTOFTimingReuqirement() || Track->GetHasITSHit())) {
       pass = false;
     } else {
       if (!fMinimalBooking)
@@ -493,16 +496,16 @@ bool AliFemtoDreamTrackCuts::SmallestNSig(AliFemtoDreamTrack *Track) {
   bool pass = true;
   //check before if TPC and TOF PID are available
   //This should just be for PID of high pT particles
-  AliPID::EParticleType type[5] = { AliPID::kElectron, AliPID::kMuon,
-      AliPID::kPion, AliPID::kKaon, AliPID::kProton };
-  float nSigmaComb[5];
+  AliPID::EParticleType type[6] = { AliPID::kElectron, AliPID::kMuon,
+      AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron };
+  float nSigmaComb[6];
   //Form the combination:
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     nSigmaComb[i] = TMath::Sqrt(
         pow((Track->GetnSigmaTPC(i)), 2.) + pow((Track->GetnSigmaTOF(i)), 2.));
   }
   int index = 0;
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 0; i < 6; ++i) {
     if (nSigmaComb[index] > nSigmaComb[i]) {
       index = i;
     }
@@ -578,7 +581,7 @@ bool AliFemtoDreamTrackCuts::DCACuts(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::Init(TString name) {
   if (!fMinimalBooking) {
-    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma);
+    fHists = new AliFemtoDreamTrackHist(fDCAPlots, fCombSigma, fTOFM);
     if (fMCData) {
       fMCHists = new AliFemtoDreamTrackMCHist(fContribSplitting, fDCAPlots,
                                               fDoMultBinning, fCheckMother);
@@ -595,6 +598,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
     std::vector<float> phi = Track->GetPhi();
     float pT = Track->GetPt();
     float p = Track->GetMomTPC();
+    float Pprim = Track->GetP();
     for (int i = 0; i < 2; ++i) {
       if (i == 0 || (i == 1 && Track->UseParticle())) {
         fHists->FilletaCut(i, eta.at(0));
@@ -670,6 +674,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
         }
         fHists->FillTPCdedx(i, p, Track->GetdEdxTPC());
         fHists->FillTOFbeta(i, p, Track->GetbetaTOF());
+
         fHists->FillNSigTPC(i, p, (Track->GetnSigmaTPC(fParticleID)));
         fHists->FillNSigTPCMod(i, p, (Track->GetnSigmaTPC(fParticleID)));
         fHists->FillNSigTOF(i, p, (Track->GetnSigmaTOF(fParticleID)));
@@ -682,6 +687,10 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
           fHists->FillNSigComb(pT, Track->GetnSigmaTPC(fParticleID),
                                Track->GetnSigmaTOF(fParticleID));
         }
+        //Fill These After
+        if (i == 1 && fTOFM) {
+            fHists->FillTOFMass(Pprim, Track->GetbetaTOF());
+        }
       }
     }
   } else {
@@ -693,7 +702,7 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
 
 void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
   if (!fMinimalBooking) {
-    Int_t PDGcode[5] = { 11, 13, 211, 321, 2212 };
+    Int_t PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020 };
     //this is not the correct way to do it, since there might be float counting
     if (fpTmin < Track->GetPt() && Track->GetPt() < fpTmax) {
       if (fetamin < Track->GetEta().at(0) && Track->GetEta().at(0) < fetamax) {
@@ -711,7 +720,7 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
     }
     if (Track->UseParticle()) {
       float pT = Track->GetPt();
-      int PDGcode[5] = { 11, 13, 211, 321, 2212 };
+      int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020};
 //Fill Identified
       fMCHists->FillMCIdent(pT);
       AliFemtoDreamBasePart::PartOrigin tmpOrg = Track->GetParticleOrigin();
@@ -964,8 +973,34 @@ AliFemtoDreamTrackCuts *AliFemtoDreamTrackCuts::PrimKaonCuts(
   trackCuts->SetDCAVtxXY(0.1);
   trackCuts->SetCutSharedCls(true);
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.80);
-  trackCuts->SetPID(AliPID::kKaon, 0.5);
+  trackCuts->SetPID(AliPID::kKaon, 0.4, 5);
   // trackCuts->SetRejLowPtPionsTOF(false);
+  trackCuts->SetCutSmallestSig(true);
+
+  return trackCuts;
+}
+
+AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
+    bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting) {
+  AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
+  //you can leave DCA cut active, this will still be filled
+  //over the whole DCA_xy range
+  trackCuts->SetPlotDCADist(DCAPlots);
+  trackCuts->SetPlotCombSigma(CombSigma);
+  trackCuts->SetPlotContrib(ContribSplitting);
+  trackCuts->SetIsMonteCarlo(isMC);
+
+  trackCuts->SetFilterBit(128);
+  trackCuts->SetPtRange(0.4, 4.);
+  trackCuts->SetEtaRange(-0.8, 0.8);
+  trackCuts->SetNClsTPC(80);
+  trackCuts->SetDCAReCalculation(true);  //Get the dca from the PropagateToVetex
+  trackCuts->SetDCAVtxZ(0.2);
+  trackCuts->SetDCAVtxXY(0.1);
+  trackCuts->SetCutSharedCls(true);
+  trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
+  trackCuts->SetPID(AliPID::kDeuteron, 1.4);
+  trackCuts->SetRejLowPtPionsTOF(true);
   trackCuts->SetCutSmallestSig(true);
 
   return trackCuts;
@@ -1094,8 +1129,8 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::OmegaBachKaonCuts(
 }
 
 int AliFemtoDreamTrackCuts::GetPDGCode() {
-  int PDGcode[5] = { 11, 13, 211, 321, 2212 };
-  if (fParticleID < 5) {
+  int PDGcode[6] = { 11, 13, 211, 321, 2212, 1000010020 };
+  if (fParticleID < 6) {
     return fCharge * PDGcode[fParticleID];
   } else {
     return 0;

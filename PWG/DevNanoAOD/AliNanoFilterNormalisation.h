@@ -36,6 +36,9 @@ class AliNanoFilterNormalisation : public TNamed {
   TH2D* fCandidateEvents; ///->
   TH2D* fSelectedEvents;  ///->
 
+  AliNanoFilterNormalisation& operator=(const AliNanoFilterNormalisation&);
+  AliNanoFilterNormalisation(const AliNanoFilterNormalisation&);
+
   ClassDef(AliNanoFilterNormalisation,1);
 
 };

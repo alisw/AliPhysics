@@ -233,6 +233,7 @@ class AliBalancePsi : public TObject {
   void UseHBTCut(Double_t setHBTCutValue = 0.02) {
     fHBTCut = kTRUE; fHBTCutValue = setHBTCutValue;}
   void UseSameLabelMCCut() {fSameLabelMCCut = kTRUE;}
+  void UseResonancesLabelCut() {fResonancesLabelCut = kTRUE;}
   void UseConversionCut(Double_t setInvMassCutConversion = 0.04) {
     fConversionCut = kTRUE; fInvMassCutConversion = setInvMassCutConversion; }
   void UseMomentumDifferenceCut(Double_t gDeltaPtCutMin) {
@@ -290,6 +291,7 @@ class AliBalancePsi : public TObject {
   Bool_t fHBTCut;//cut for two-track efficiency (like HBT group)
   Double_t fHBTCutValue;// value for two-track efficiency cut (default = 0.02 from dphicorrelations)
   Bool_t fSameLabelMCCut; //apply cut to exclude particles reconstructed as two but with same MC label kFALSE as default
+  Bool_t fResonancesLabelCut;//apply cut on the label of the mother to exclude particles coming from the decay of the same mother
   Bool_t fConversionCut;//conversion cut
   Double_t fInvMassCutConversion;//invariant mass for conversion cut
   Bool_t fQCut;//cut on momentum difference to suppress femtoscopic effect correlations
@@ -302,7 +304,7 @@ class AliBalancePsi : public TObject {
 
   AliBalancePsi & operator=(const AliBalancePsi & ) {return *this;}
 
-  ClassDef(AliBalancePsi, 4)
+  ClassDef(AliBalancePsi, 5)
 };
 
 #endif

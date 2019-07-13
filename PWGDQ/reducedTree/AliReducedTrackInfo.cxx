@@ -66,6 +66,7 @@ AliReducedTrackInfo::AliReducedTrackInfo() :
   fTRDGTUpt(0.),
   fTRDGTUsagitta(2.0),
   fTRDGTUPID(0.),
+  fEMCALnSigEle(-999),
   fCaloClusterId(-999),
   fTrackParam(),
   fCovMatrix(),
@@ -135,6 +136,7 @@ AliReducedTrackInfo::AliReducedTrackInfo(const AliReducedTrackInfo &c) :
   fTRDGTUpt(c.fTRDGTUpt),
   fTRDGTUsagitta(c.fTRDGTUsagitta),
   fTRDGTUPID(c.fTRDGTUPID),
+  fEMCALnSigEle(c.fEMCALnSigEle),
   fCaloClusterId(c.fCaloClusterId),
   fMCGeneratorIndex(c.fMCGeneratorIndex)
 {

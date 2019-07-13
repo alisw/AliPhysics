@@ -30,6 +30,7 @@ Long64_t AliNanoFilterNormalisation::Merge(TCollection* hlist) {
       fCandidateEvents->Add(xh->GetCandidateEventsHistogram());
       fSelectedEvents->Add(xh->GetSelectedEventsHistogram());
     }
+    return hlist->GetEntries();
   }
   return 0ll;
 }

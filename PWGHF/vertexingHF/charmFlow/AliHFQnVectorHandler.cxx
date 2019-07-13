@@ -1048,90 +1048,90 @@ bool AliHFQnVectorHandler::OpenInfoCalbration()
     fHistMultV0 = ((TH1D*) cont->GetObject(fRun));
             
     for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
-        AliOADBContainer* contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa2m_%d", iZvtx));
+        AliOADBContainer* contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%dm_%d", fHarmonic, iZvtx));
         if(!contQx2am){
-            AliWarning("OADB object fqxa2m is not available in the file\n");
+            AliWarning(Form("OADB object fqxa%dm is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQx2am->GetObject(fRun))){
-            AliWarning(Form("OADB object fqxa2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxa%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQx2mV0A[iZvtx] = ((TH1D*) contQx2am->GetObject(fRun));
         
-        AliOADBContainer* contQy2am = (AliOADBContainer*) fOADBFile->Get(Form("fqya2m_%d", iZvtx));
+        AliOADBContainer* contQy2am = (AliOADBContainer*) fOADBFile->Get(Form("fqya%dm_%d", fHarmonic, iZvtx));
         if(!contQy2am){
-            AliWarning("OADB object fqya2m is not available in the file\n");
+            AliWarning(Form("OADB object fqya%dm is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQy2am->GetObject(fRun))){
-            AliWarning(Form("OADB object fqya2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqya%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQy2mV0A[iZvtx] = ((TH1D*) contQy2am->GetObject(fRun));
         
-        AliOADBContainer* contQx2as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa2s_%d", iZvtx));
+        AliOADBContainer* contQx2as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa%ds_%d", fHarmonic, iZvtx));
         if(!contQx2as){
-            AliWarning("OADB object fqxa2s is not available in the file\n");
+            AliWarning(Form("OADB object fqxa%ds is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQx2as->GetObject(fRun))){
-            AliWarning(Form("OADB object fqxa2s is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxa%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQx2sV0A[iZvtx] = ((TH1D*) contQx2as->GetObject(fRun));
         
-        AliOADBContainer* contQy2as = (AliOADBContainer*) fOADBFile->Get(Form("fqya2s_%d", iZvtx));
+        AliOADBContainer* contQy2as = (AliOADBContainer*) fOADBFile->Get(Form("fqya%ds_%d", fHarmonic, iZvtx));
         if(!contQy2as){
-            AliWarning("OADB object fqya2s is not available in the file\n");
+            AliWarning(Form("OADB object fqya%ds is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQy2as->GetObject(fRun))){
-            AliWarning(Form("OADB object fqya2s is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqya%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQy2sV0A[iZvtx] = ((TH1D*) contQy2as->GetObject(fRun));
         
-        AliOADBContainer* contQx2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc2m_%d", iZvtx));
+        AliOADBContainer* contQx2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%dm_%d", fHarmonic, iZvtx));
         if(!contQx2cm){
-            AliWarning("OADB object fqxc2m is not available in the file\n");
+            AliWarning(Form("OADB object fqxc%dm is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQx2cm->GetObject(fRun))){
-            AliWarning(Form("OADB object fqxc2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxc%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQx2mV0C[iZvtx] = ((TH1D*) contQx2cm->GetObject(fRun));
         
-        AliOADBContainer* contQy2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc2m_%d", iZvtx));
+        AliOADBContainer* contQy2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%dm_%d", fHarmonic, iZvtx));
         if(!contQy2cm){
-            AliWarning("OADB object fqyc2m is not available in the file\n");
+            AliWarning(Form("OADB object fqyc%dm is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQy2cm->GetObject(fRun))){
-            AliWarning(Form("OADB object fqyc2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqyc%dm is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQy2mV0C[iZvtx] = ((TH1D*) contQy2cm->GetObject(fRun));
 
-        AliOADBContainer* contQx2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc2s_%d", iZvtx));
+        AliOADBContainer* contQx2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc%ds_%d", fHarmonic, iZvtx));
         if(!contQx2cs){
-            AliWarning("OADB object fqxc2s is not available in the file\n");
+            AliWarning(Form("OADB object fqxc%ds is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQx2cs->GetObject(fRun))){
-            AliWarning(Form("OADB object fqxc2s is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxc%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQx2sV0C[iZvtx] = ((TH1D*) contQx2cs->GetObject(fRun));
         
-        AliOADBContainer* contQy2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc2s_%d", iZvtx));
+        AliOADBContainer* contQy2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc%ds_%d", fHarmonic, iZvtx));
         if(!contQy2cs){
-            AliWarning("OADB object fqyc2s is not available in the file\n");
+            AliWarning(Form("OADB object fqyc%ds is not available in the file\n", fHarmonic));
             return false;
         }
         if(!(contQy2cs->GetObject(fRun))){
-            AliWarning(Form("OADB object fqyc2s is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqyc%ds is not available for run %i\n", fHarmonic, fRun));
             return false;
         }
         fQy2sV0C[iZvtx] = ((TH1D*) contQy2cs->GetObject(fRun));   

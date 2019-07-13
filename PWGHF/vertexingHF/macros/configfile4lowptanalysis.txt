@@ -1,8 +1,8 @@
 InputFiles:
-    DataFile: DataTrains/AnalysisResults18qr_trains1421-1417.root
-    SuffixData: 010V0M_Pt400_SPDany_3SigPID_FidY
-    MCFile: MCtrains/AnalysisResults18qr_trains979-980.root
-    SuffixMC: 010V0M_Pt400_SPDany_3SigPID_FidY
+    DataFile: DataTrains/AnalysisResults18qr_trains1445-1444.root
+    SuffixData: 010V0M_Pt400_SPDany_3SigPIDnSigmaTuned_FidY
+    MCFile: MCtrains/AnalysisResults18qr_LHC19c3a_train1084.root
+    SuffixMC: OnlySig_010V0M_CosThSt_Pt400_SPDany_3SigPID_FidY
     AcceptanceFile: Acceptance_Toy_D0Kpi_yfidPtDep_etaDau09_ptDau100_FONLL5ptshape.root
     Meson: Dzero
 
@@ -28,11 +28,13 @@ BackgroundOptions:
     NormalizationOption: 1
     RangeForNormalization: 0.05
     UseEvMixWithLS: 1
+    UseGeomMeanLS: 1
+    RenormalizeLS: 1
     SmoothLS: 0
     TryDirectFit: 1
     MinSBFit: [ 1.76,1.76,1.76,1.76,1.76,1.74,1.74,1.72,1.72,1.72,1.72,1.72,1.72,1.72 ]
     MaxSBFit: [ 1.94,1.94,1.94,1.94,1.94,1.96,1.96,1.98,1.98,1.98,2.00,2.00,2.00,2.00 ]
-    PolDegreeSB: [ 4,4,4,4,4,2,2,2,2,2,2,2,2,2 ]
+    PolDegreeSB: [ 4,4,4,4,4,4,4,4,4,4,4,4,4,2 ]
 
 FitConfiguration:
     FitOption: E
@@ -43,3 +45,5 @@ FitConfiguration:
     BackgroundFuncOptionForBinCount: 1
     NumOfSigmaForBinCount: 4.
     
+Cuts:
+    CosThetaStar: 1.1

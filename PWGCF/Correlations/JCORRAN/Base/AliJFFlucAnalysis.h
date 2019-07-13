@@ -1,17 +1,12 @@
 #ifndef AliJFFlucAnalysis_cxx
 #define AliJFFlucAnalysis_cxx
 
-//#include <TVector.h>
-//#include <TObjArray.h>
-#include "AliAnalysisTaskSE.h"
-#include "AliGenEventHeader.h"
+#include <AliAnalysisTaskSE.h>
 #include "AliJEfficiency.h"
 #include "AliJHistManager.h"
-#include "AliVVertex.h"
 #include <TComplex.h>
 
 class TClonesArray;
-class AliJBaseTrack;
 class AliJEfficiency;
 
 class AliJFFlucAnalysis : public AliAnalysisTaskSE {
@@ -47,7 +42,7 @@ public:
 		fQC_eta_gap_half = QC_eta_gap_half;
 		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
 	}
-	void SetPhiWeights(TH3D *p){
+	void SetPhiWeights(TH1 *p){
 		pPhiWeights = p;
 	}
 
@@ -72,9 +67,14 @@ public:
 	// Getter for single vn
 	Double_t Get_vn( int ih, int imethod ){ return fSingleVn[ih][imethod]; } // method 0:SP, 1:QC(with eta gap), 2:QC(without eta gap)
 
+	enum SUBEVENT{
+		SUBEVENT_A = 0x1,
+		SUBEVENT_B = 0x2
+	};
+	void SelectSubevents(UInt_t nsubeventMask){
+		subeventMask = nsubeventMask;
+	}
 	enum{
-		//FLUC_PHI_MODULATION = 0x1,
-		//FLUC_PHI_INVERSE = 0x2,
 		FLUC_PHI_CORRECTION = 0x2,
 		FLUC_SCPT = 0x4,
 		FLUC_EBE_WEIGHTING = 0x8
@@ -101,7 +101,7 @@ private:
 	TClonesArray *fInputList;
 	AliJEfficiency *fEfficiency;
 	const double *fVertex;//!
-	TH3D *pPhiWeights;//!
+	TH1 *pPhiWeights;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int fCBin;
@@ -111,6 +111,7 @@ private:
 	float fGlbtrks;
 	float fFB32trks;
 	float fFB32TOFtrks;
+	UInt_t subeventMask;
 	UInt_t flags;
 	Double_t fSingleVn[kNH][3]; // 3 methods
 

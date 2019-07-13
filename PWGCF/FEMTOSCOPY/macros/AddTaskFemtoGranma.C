@@ -15,6 +15,7 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
     bool InvMassPairs=false, //11
     bool kTCentBins=false,//12
     bool DeltaEtaDeltaPhiCut=false,//13
+    bool DoSphericityCuts=false, //14
     const char *swuffix = "") {
 
 
@@ -54,25 +55,32 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetMultVsCentPlots(true);
+  evtCuts->SetDoSphericityCuts(DoSphericityCuts);
 
+  if(DoSphericityCuts){
   if (suffix=="1") {
     evtCuts->SetSphericityCuts(0.,0.3);
   }
-
   if (suffix=="2") {
     evtCuts->SetSphericityCuts(0.3,0.7);
   }
-
   if (suffix=="3") {
     evtCuts->SetSphericityCuts(0.7,1.0);
-  }
-
-  if (suffix=="4") {
-    evtCuts->SetSphericityCuts(0.,1.0);
-  }
-
+  }//4 is reserved to the full sphericity range
   if (suffix=="5") {
+    evtCuts->SetSphericityCuts(0.7,0.8);
+  }
+  if (suffix=="6") {
+    evtCuts->SetSphericityCuts(0.8,0.9);
+  }
+  if (suffix=="7") {
     evtCuts->SetSphericityCuts(0.9,1.0);
+  }
+}
+else
+  {
+    suffix="4";
+    evtCuts->SetSphericityCuts(0.,1.0);
   }
 
   AliAnalysisTaskGrandma *task = new AliAnalysisTaskGrandma("myFirstTask",
@@ -212,7 +220,6 @@ AliAnalysisTaskSE* AddTaskFemtoGranma(
   centBins.push_back(90);
   config->SetCentBins(centBins);
   config->SetkTCentralityBinning(kTCentBins);
-  config->SetInvMassPairs(InvMassPairs);
 
 
 if(isMC)

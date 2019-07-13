@@ -24,5 +24,6 @@
 
 #pragma link C++ class AliAnalysisTaskNanoAODskimming+;
 #pragma link C++ class AliNanoFilterNormalisation+;
+#pragma link C++ class AliAnalysisTaskNanoAODnormalisation+;
 
 #endif

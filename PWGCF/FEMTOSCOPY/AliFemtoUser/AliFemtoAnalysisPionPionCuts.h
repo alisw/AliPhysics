@@ -15,6 +15,8 @@
 #include "AliFemtoCutAttrTrack.h"
 #include "AliFemtoCutAttrPairTrack.h"
 
+#include "AliFemtoModelHiddenInfo.h"
+
 #include <TList.h>
 
 
@@ -93,7 +95,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoEventCutPionPionAK"; }
 };
 
@@ -109,13 +111,17 @@ public:
   AliFemtoTrackCutPionPionAK()
     : fNumPass(0)
     , fNumFail(0)
-    {}
+    {
+      SetMass(0.139570);
+    }
 
   AliFemtoTrackCutPionPionAK(AliFemtoConfigObject &cfg)
     : Super(cfg)
     , fNumPass(0)
     , fNumFail(0)
-    {}
+    {
+      SetMass(0.139570);
+    }
 
   virtual ~AliFemtoTrackCutPionPionAK()
     { }
@@ -132,11 +138,41 @@ public:
       return passes;
     }
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoTrackCutPionPionAK"; }
 
   ULong_t fNumPass,
           fNumFail;
+};
+
+
+/// Cut on MonteCarlo PDG code to select *only* pions
+///
+class AliFemtoTrackCutPionPionIdealAK : public AliFemtoTrackCutPionPionAK {
+public:
+
+  AliFemtoTrackCutPionPionIdealAK()
+    : AliFemtoTrackCutPionPionAK()
+    {}
+
+  AliFemtoTrackCutPionPionIdealAK(AliFemtoConfigObject &cfg)
+    : AliFemtoTrackCutPionPionAK(cfg)
+    {}
+
+  virtual ~AliFemtoTrackCutPionPionIdealAK() {}
+
+  virtual bool Pass(const AliFemtoTrack *track)
+    {
+      const AliFemtoModelHiddenInfo *info = static_cast<AliFemtoModelHiddenInfo*>(track->GetHiddenInfo());
+      const Int_t pid = info->GetPDGPid();
+      if (std::abs(pid) != 211) {
+        return false;
+      }
+      return AliFemtoTrackCutPionPionAK::Pass(track);
+    }
+
+  virtual const char* ClassName() const
+    { return "AliFemtoTrackCutPionPionIdealAK"; }
 };
 
 
@@ -164,7 +200,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoPairCutPionPionAKAvgSep"; }
 };
 
@@ -196,7 +232,7 @@ public:
 
   virtual void AppendSettings(TCollection &) const;
 
-  static const char* ClassName()
+  virtual const char* ClassName() const
     { return "AliFemtoPairCutPionPionAKDetaDphi"; }
 };
 
@@ -209,6 +245,9 @@ template <>
 AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoTrackCutPionPionAK &cut);
 
 template <>
+AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoTrackCutPionPionIdealAK &cut);
+
+template <>
 AliFemtoConfigObject AliFemtoConfigObject::From(const AliFemtoPairCutPionPionAKAvgSep &cut);
 
 template <>
@@ -219,6 +258,9 @@ AliFemtoEventCutPionPionAK* AliFemtoConfigObject::Into<AliFemtoEventCutPionPionA
 
 template <>
 AliFemtoTrackCutPionPionAK* AliFemtoConfigObject::Into<AliFemtoTrackCutPionPionAK>(bool);
+
+template <>
+AliFemtoTrackCutPionPionIdealAK* AliFemtoConfigObject::Into<AliFemtoTrackCutPionPionIdealAK>(bool);
 
 template <>
 AliFemtoPairCutPionPionAKAvgSep* AliFemtoConfigObject::Into<AliFemtoPairCutPionPionAKAvgSep>(bool);

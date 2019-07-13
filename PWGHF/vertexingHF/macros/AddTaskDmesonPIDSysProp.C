@@ -36,9 +36,19 @@ AliAnalysisTaskSEDmesonPIDSysProp *AddTaskDmesonPIDSysProp(int ch = AliAnalysisT
     AliRDHFCuts* analysiscuts = (AliRDHFCuts*)filecuts->Get(cutobjname.Data());    
     if(analysiscuts) Printf("Cut file found!");    
     
-    AliAnalysisTaskSEDmesonPIDSysProp *Task = new AliAnalysisTaskSEDmesonPIDSysProp(ch, analysiscuts, PIDsystfilename);
+    TFile* PIDsystfile = TFile::Open(PIDsystfilename.Data());
+    if(!PIDsystfile ||(PIDsystfile && !PIDsystfile->IsOpen())){
+        ::Fatal("AddTaskSingleTrackPIDSysPropagation", "Impossible to load single-track systematic file, check if it is correct! Exit.\n");
+    }
+    else printf("Single-track systematic file correctly found\n");
+
+    AliAnalysisTaskSEDmesonPIDSysProp *Task = new AliAnalysisTaskSEDmesonPIDSysProp(ch, analysiscuts);
     Task->SetDebugLevel(1);
     Task->SetPIDStrategy(pid);
+    bool loadfile = Task->LoadEffSystFile(PIDsystfile);
+    if(!loadfile) {
+        ::Fatal("AddTaskSingleTrackPIDSysPropagation", "Histos with single-track systematic not found: analysis will not start!\n");
+    }
     mgr->AddTask(Task);
 
     // Create containers for input/output

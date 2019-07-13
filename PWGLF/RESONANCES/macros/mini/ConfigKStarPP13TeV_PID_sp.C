@@ -9,6 +9,12 @@ Modified for Spherocity analysis by Arvind Khuntia
 Bool_t ConfigKStarPP13TeV_PID_sp
 (  
     AliRsnMiniAnalysisTask *task,
+    Int_t                  sp_bin,
+    Double_t               sp_min,
+    Double_t               sp_max,
+    Int_t                  m_bin,
+    Double_t               m_min,
+    Double_t               m_max,
     Bool_t                 useHIST,
     Bool_t                 isMC, 
     Bool_t                 isPP,
@@ -133,10 +139,10 @@ Bool_t ConfigKStarPP13TeV_PID_sp
      out->AddAxis(centID, 100, 0.0, 100.0);
    else
      //out->AddAxis(centID, 400, 0.0, 400.0);
-     out->AddAxis(centID, 110, 0.0, 110.0);
+     out->AddAxis(centID, m_bin, m_min, m_max);
 
   
-    if(!useHIST) out->AddAxis(SpherocityID, 500, 0., 1.0);//AK    
+    out->AddAxis(SpherocityID, sp_bin,sp_min, sp_max);//AK    
     // axis W: pseudorapidity
     // out->AddAxis(etaID, 20, -1.0, 1.0);
     // axis J: rapidity
@@ -157,9 +163,9 @@ Bool_t ConfigKStarPP13TeV_PID_sp
     if (!isPP){
       outm->AddAxis(centID, 100, 0.0, 100.0);
     }   else    { 
-      outm->AddAxis(centID, 400, 0.0, 400.0);
+      outm->AddAxis(centID, m_bin, m_min, m_max);
     }
-     if(!useHIST) outm->AddAxis(SpherocityID, 500, 0., 1.0);
+      outm->AddAxis(SpherocityID, sp_bin,sp_min, sp_max);
     
     //get mothers for antiK* PDG = -313
      if(!useHIST)  AliRsnMiniOutput *outam = task->CreateOutput(Form("antiKs_Mother%s", suffix), "SPARSE", "MOTHER"); 
@@ -174,9 +180,9 @@ Bool_t ConfigKStarPP13TeV_PID_sp
     if (!isPP){
       outam->AddAxis(centID, 100, 0.0, 100.0);
     }   else    { 
-      outam->AddAxis(centID, 400, 0.0, 400.0);
+      outam->AddAxis(centID, m_bin, m_min, m_max);
     }
-     if(!useHIST)  outam->AddAxis(SpherocityID, 500, 0., 1.0);
+       outam->AddAxis(SpherocityID, sp_bin,sp_min, sp_max);
     //get phase space of the decay from mothers
     AliRsnMiniOutput *outps = task->CreateOutput(Form("Ks_phaseSpace%s", suffix), "HIST", "TRUE");
     outps->SetDaughter(0, AliRsnDaughter::kKaon);
@@ -219,10 +225,10 @@ Bool_t ConfigKStarPP13TeV_PID_sp
       if (!isPP){
 	outreflex->AddAxis(centID, 100, 0.0, 100.0);
       }   else    { 
-	outreflex->AddAxis(centID, 400, 0.0, 400.0);
+	outreflex->AddAxis(centID, m_bin, m_min, m_max);
       }
 
-      if(!useHIST) outreflex->AddAxis(SpherocityID, 500, 0., 1.0);//AK
+      outreflex->AddAxis(SpherocityID, sp_bin,sp_min, sp_max);//AK
       
       if(!useHIST)  AliRsnMiniOutput *outareflex = task->CreateOutput(Form("antiKs_reflex%s", suffix), "SPARSE", "TRUE");
       if(useHIST)   AliRsnMiniOutput *outareflex = task->CreateOutput(Form("antiKs_reflex%s", suffix), "HIST", "TRUE");//AK
@@ -238,9 +244,9 @@ Bool_t ConfigKStarPP13TeV_PID_sp
       if (!isPP){
 	outareflex->AddAxis(centID, 100, 0.0, 100.0);
       }   else    { 
-	outareflex->AddAxis(centID, 400, 0.0, 400.0);
+	outareflex->AddAxis(centID,m_bin, m_min, m_max);
       }
-      if(!useHIST) outareflex->AddAxis(SpherocityID, 500, 0., 1.0);//AK
+      outareflex->AddAxis(SpherocityID, sp_bin,sp_min, sp_max);//AK
 
     }//end reflections
   }//end MC

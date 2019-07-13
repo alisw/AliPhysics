@@ -88,6 +88,8 @@ class AliAnalysisTaskNucleiv2pPb : public AliAnalysisTaskSE {
     // For SP resolution
     
     TH2F *hQVzAQVzCvsCentrality;
+    TH2F *hQVzAQTPCvsCentrality;
+    TH2F *hQVzCQTPCvsCentrality;
     
     // For NUA correction
     

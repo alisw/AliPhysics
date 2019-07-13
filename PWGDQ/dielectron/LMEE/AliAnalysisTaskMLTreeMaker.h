@@ -177,11 +177,21 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Int_t runn;
   Int_t n;
   Double_t cent;
+  Double_t ZDCepA;
+  Double_t ZDCepC;
+  Double_t TPCep;
+  Double_t TPCepA;
+  Double_t TPCepC;
+  
+  TList* fQnList;
+  AliAnalysisManager *man;
+
   
   Double_t IsEventAccepted(AliVEvent *event);
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   Bool_t GetDCA(const AliVEvent* event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0);
-  
+  Bool_t FillZDCEventPlane(Double_t* ZDCevArr);
+  void FillQnEventplanes(TList* qnlist);
   AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
 
   AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented

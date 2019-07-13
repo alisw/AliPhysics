@@ -166,7 +166,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
 /// \param cutsString : A string with additional cuts ("Smearing","MCEnScale")
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
-/// \param year: The year the data was taken, used to configure time cut
+/// \param year: The year the data was taken, used to configure time cut and fiducial cut
 /// \param simulation : A bool identifying the data as simulation
 ///
 void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader, 
@@ -176,8 +176,13 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
   reader->SetEMCALEMin(0.3);
   reader->SetEMCALEMax(1000);
   
-  if      ( calorimeter == "EMCAL" ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70,  80, 187) ;
-  else if ( calorimeter == "DCAL"  ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70, 260, 327) ; 
+  if      ( calorimeter == "EMCAL" )
+  {
+     if     ( year > 2014 ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 185.8) ; //12 SM
+    else if ( year > 2010 ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 178.8) ; //10 SM
+    else                    reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67,  81.2, 118.8) ; // 4 SM
+  }
+  else if ( calorimeter == "DCAL"  ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.67, 261.2, 325.8) ; 
   
   // Use other cluster array than default:
   reader->SetEMCALClusterListName(clustersArray);
@@ -259,15 +264,17 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param year: The year the data was taken, used to configure fiducial cut
 ///
 void ConfigurePHOSClusterCuts ( AliCaloTrackReader* reader, 
-                                TString calorimeter )
+                                TString calorimeter, Int_t year )
 {
   reader->SetPHOSEMin(0.3);
   reader->SetPHOSEMax(1000);
   
-  reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250, 320) ; 
-
+  if ( year > 2014 ) reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 250.5, 319.5) ; 
+  else               reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.125, 260.5, 319.5) ; 
+  
   if ( calorimeter == "PHOS" )
   { // Should be on if QA is activated with correlation on
     reader->SwitchOnPHOSCells();
@@ -397,7 +404,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   
   ConfigureTrackCuts       (reader, inputDataType, cutsString);
   
-  ConfigurePHOSClusterCuts (reader, calorimeter);
+  ConfigurePHOSClusterCuts (reader, calorimeter, year);
 
   ConfigureEMCALClusterCuts(reader, calorimeter, cutsString, clustersArray, year, simulation);
 

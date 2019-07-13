@@ -49,6 +49,7 @@ set(SRCS
     AliAnaConvIsolation.cxx
     AliAnalysisTaskConvCaloCalibration.cxx
     AliAnalysisTaskConversionQA.cxx
+    AliAnalysisTaskConversionTree.cxx
     AliAnalysisTaskConvJet.cxx
     AliAnalysisTaskClusterQA.cxx
     AliAnalysisTaskdPhi.cxx
@@ -77,6 +78,7 @@ set(SRCS
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
+    AliAnalysisTaskOmegaMCStudies.cxx
     AliAnalysisTaskGammaCocktailMC.cxx
     AliAnalysisTaskGammaTriggerQA.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx

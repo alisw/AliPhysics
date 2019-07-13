@@ -61,7 +61,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fcovmat{-1},
   fTOFchi2{-1},
   fTOFsignalDz{-1},
-  fTOFsignalDx{-1}
+  fTOFsignalDx{-1},
+  fStatus{-1}
 { 
   /// default ctor
 
@@ -118,7 +119,8 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fcovmat{-1},
   fTOFchi2{-1},
   fTOFsignalDz{-1},
-  fTOFsignalDx{-1}
+  fTOFsignalDx{-1},
+  fStatus{-1}
 {
   /// ctor
 
@@ -194,6 +196,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "TOFchi2"          ) fTOFchi2           = index++;
     else if(var == "TOFsignalDz"      ) fTOFsignalDz       = index++;
     else if(var == "TOFsignalDx"      ) fTOFsignalDx       = index++;
+    else if(var == "Status"         ) { fStatus            = indexInt; indexInt+=2; }
 
     else if (var.BeginsWith("cst") || var.BeginsWith("PID.")) {
       Info("AliNanoAODTrackMapping::AliNanoAODTrackMapping", "ADDING %i %i %s",index,fMapCstVar[var],var.Data());
@@ -256,6 +259,7 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "TOFchi2"          ) return fTOFchi2          ;
     else if(varName == "TOFsignalDz"      ) return fTOFsignalDz      ;
     else if(varName == "TOFsignalDx"      ) return fTOFsignalDx      ;
+    else if(varName == "Status"           ) return fStatus           ;
 
     std::map<TString,Int_t>::iterator it = fMapCstVar.find(varName); // FIXME: do I need to delete "it"?
     if(it != fMapCstVar.end()) {
@@ -324,7 +328,7 @@ const char * AliNanoAODTrackMapping::GetVarName(Int_t index) const {
 	      if(it->second == index) return it->first.Data();
       }      
     }
-    AliFatal("Invalid Index");
+    AliFatal(Form("Invalid index %d", index));
     return 0;
 }
 
@@ -339,7 +343,9 @@ const char * AliNanoAODTrackMapping::GetVarNameInt(Int_t index) const {
     else if(index == fTRDnClusters     )  return "TRDnClusters"     ;
     else if(index == fTPCnclsS         )  return "TPCnclsS"         ;
     else if(index == fFilterMap        )  return "FilterMap"        ;
-    AliFatal("Invalid Index");
+    else if(index == fStatus           )  return "Status"           ;
+    else if(fStatus != -1 && index == fStatus+1)  return "Status"   ;
+    AliFatal(Form("Invalid index %d", index));
     return 0;
 }
 

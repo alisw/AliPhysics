@@ -68,6 +68,7 @@ set(SRCS
   Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
   Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
   Correlations/AliAnalysisTaskV0ChCorrelations.cxx
+  Correlations/AliAnalysisTaskhStrCorr.cxx
   Cascades/AliAnalysisTaskCheckCascadepp.cxx
   Cascades/AliAnalysisTaskCheckPerformanceCascadepp.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx

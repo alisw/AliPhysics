@@ -41,38 +41,32 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
                                                                                             fEventCuts=conversionCuts           ;
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }
-    void SetClusterCutsEMC                     ( AliCaloPhotonCuts* clusterCuts,
+    void SetClusterCutsEMC                  ( AliCaloPhotonCuts* clusterCuts,
                                               Bool_t IsHeavyIon )                         {
                                                                                             fClusterCutsEMC=clusterCuts           ;
                                                                                             fIsHeavyIon = IsHeavyIon            ;
                                                                                           }
-    void SetClusterCutsDMC                     ( AliCaloPhotonCuts* clusterCuts,
-                                              Bool_t IsHeavyIon )                         {
-                                                                                            fClusterCutsDMC=clusterCuts           ;
-                                                                                            fIsHeavyIon = IsHeavyIon            ;
-                                                                                          }
-    void SetMesonCuts                     ( AliConversionMesonCuts* mesonCuts,
-                                              Bool_t IsHeavyIon )                         {
-                                                                                            fMesonCuts=mesonCuts           ;
-                                                                                            fIsHeavyIon = IsHeavyIon            ;
-                                                                                          }
-
+    // void SetMesonCuts                     ( AliConversionMesonCuts* mesonCuts,
+    //                                           Bool_t IsHeavyIon )                         {
+    //                                                                                         fMesonCuts=mesonCuts           ;
+    //                                                                                         fIsHeavyIon = IsHeavyIon            ;
+    //                                                                                       }
     void FillType                           ( Double_t fillTree,
                                               Bool_t fillHistorams)                       {
                                                                                             ffillTree = fillTree                ;
                                                                                             ffillHistograms = fillHistorams     ;
                                                                                           }
-    void SetIsMC                            ( Bool_t isMC )                               { fIsMC                 = isMC        ; }
+    void SetIsMC                            ( Int_t isMC )                                { fIsMC                 = isMC        ; }
     void SetDoAdditionalHistos              ( Bool_t val )                                { fSaveAdditionalHistos = val        ; }
     void SetSaveEventProperties             ( Bool_t val  )                               { fSaveEventProperties  = val         ; }
     void SetSaveClusterCells                ( Bool_t val  )                               { fSaveCells            = val         ; }
-    void SetSaveSurroundingCells            ( Bool_t val  )                               { fSaveSurroundingCells         = val         ; }
-    void SetSaveSurroundingTracks            ( Bool_t val  )                               { fSaveTracks         = val         ; }
-    void SetMaxConeRadius                      ( Float_t val  )                                { fConeRadius    = val         ; }
-    void SetMinTrackPt                      ( Float_t val  )                                { fMinTrackPt    = val         ; }
-    void SetMinClusterEnergy                      ( Float_t val  )                                { fMinClusterEnergy    = val         ; }
-    void SetMinMaxNLMCut                    ( Int_t valmin, Int_t valmax  )               { fMinNLMCut    = valmin              ;
-                                                                                            fMaxNLMCut    = valmax              ; }
+    void SetSaveSurroundingCells            ( Bool_t val  )                               { fSaveSurroundingCells = val         ; }
+    void SetSaveSurroundingTracks           ( Bool_t val  )                               { fSaveTracks           = val         ; }
+    void SetMaxConeRadius                   ( Float_t val  )                              { fConeRadius           = val         ; }
+    void SetMinTrackPt                      ( Float_t val  )                              { fMinTrackPt           = val         ; }
+    void SetMinClusterEnergy                ( Float_t val  )                              { fMinClusterEnergy     = val         ; }
+    void SetMinMaxNLMCut                    ( Int_t valmin, Int_t valmax  )               { fMinNLMCut            = valmin      ;
+                                                                                            fMaxNLMCut            = valmax      ; }
     void SetSaveMCInformation               ( Bool_t val  )                               { fSaveMCInformation    = val         ; }
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
@@ -81,8 +75,9 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t MakePhotonCandidates(AliVCluster* clus, AliVCaloCells* cells, Long_t indexCluster);
     void ProcessTracksAndMatching(AliVCluster* clus, Long_t indexCluster);
     Int_t  GetMCClusterFlag(AliVCluster* clus, AliVCaloCells* cells);
-   Float_t GetCentrality(AliVEvent *event);
-    void ResetBuffer();
+    Float_t GetCentrality(AliVEvent *event);
+    //  Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
+    // Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
   private:
         
     AliAnalysisTaskClusterQA     ( const AliAnalysisTaskClusterQA& ); // Prevent copy-construction
@@ -98,16 +93,17 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     void ProcessTrueQAAOD           ( AliAODConversionPhoton *TruePhotonCandidate,
                                       AliAODTrack *elec,
                                       AliAODTrack *posi );
-    Int_t ProcessTrueClusterCandidates(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
+    Int_t ProcessTrueClusterCandidates(AliAODConversionPhoton *TrueClusterCandidate, AliVCluster* cluster,
                                         AliAODConversionPhoton *TrueSubClusterCandidate1,
                                         AliAODConversionPhoton *TrueSubClusterCandidate2);
-    Int_t ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton *TrueClusterCandidate, Float_t m02,
+    Int_t ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton *TrueClusterCandidate, AliVCluster* cluster,
                                         AliAODConversionPhoton *TrueSubClusterCandidate1,
                                         AliAODConversionPhoton *TrueSubClusterCandidate2);
     UInt_t IsTruePhotonESD          ( AliAODConversionPhoton *TruePhotonCandidate );
     UInt_t IsTruePhotonAOD          ( AliAODConversionPhoton *TruePhotonCandidate );
     void CountTracks                ();
     void SetLogBinningXTH2          ( TH2* histoRebin );
+    void ResetBuffer();
         
   protected:
     AliV0ReaderV1*              fV0Reader;                  //
@@ -116,8 +112,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     AliConversionPhotonCuts*    fConversionCuts;            // Cuts used by the V0Reader
     AliConvEventCuts*           fEventCuts;                 // Cuts used by the V0Reader
     AliCaloPhotonCuts*          fClusterCutsEMC;               // Cuts used by the V0Reader
-    AliCaloPhotonCuts*          fClusterCutsDMC;               // Cuts used by the V0Reader
-    AliConversionMesonCuts*     fMesonCuts;               // Cuts used by the V0Reader
+    // AliConversionMesonCuts*     fMesonCuts;                  // MesonCutObject
     Int_t                       fMinNLMCut;                   ///< save MC information
     Int_t                       fMaxNLMCut;                   ///< save MC information
     AliVEvent*                  fInputEvent;                //
@@ -129,7 +124,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Double_t                    ffillTree;                  //
     Bool_t                      ffillHistograms;            //
     TList*                      fOutputList;                //
-    Bool_t                      fIsMC;                      //
+    Int_t                       fIsMC;                      //
     Bool_t                      fCorrectForNonlinearity;                      //
     
     // Save flags
@@ -148,13 +143,15 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     std::vector<Float_t> fExtractionPercentagePtBins;     ///< pT-bins associated with fExtractionPercentages
     
     // Buffers that will be added to the tree
-    ULong64_t       fBuffer_EventID;                     //!<! array buffer
+    Float_t         fBuffer_EventWeight;                     //!<! array buffer
     Float_t         fBuffer_ClusterE;                     //!<! array buffer
     Float_t         fBuffer_ClusterPhi;                   //!<! array buffer
     Float_t         fBuffer_ClusterEta;                   //!<! array buffer
     Bool_t          fBuffer_ClusterIsEMCAL;                   //!<! array buffer
+    Int_t           fBuffer_ClusterSupMod;                   //!<! array buffer
     Int_t           fBuffer_MC_Cluster_Flag;                   //!<! array buffer
     Int_t           fBuffer_ClusterNumCells;              //!<! array buffer
+    // Int_t           fBuffer_ClusterNLM;              //!<! array buffer
     Int_t           fBuffer_LeadingCell_ID;              //!<! array buffer
     Float_t         fBuffer_LeadingCell_E;              //!<! array buffer
     Float_t         fBuffer_LeadingCell_Eta;              //!<! array buffer
@@ -162,12 +159,14 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_ClusterM02;              //!<! array buffer
     Float_t         fBuffer_ClusterM20;              //!<! array buffer
 
-    Float_t         fBuffer_Event_Vertex_X;               //!<! array buffer
-    Float_t         fBuffer_Event_Vertex_Y;               //!<! array buffer
-    Float_t         fBuffer_Event_Vertex_Z;               //!<! array buffer
+    // Float_t         fBuffer_Event_Vertex_X;               //!<! array buffer
+    // Float_t         fBuffer_Event_Vertex_Y;               //!<! array buffer
+    // Float_t         fBuffer_Event_Vertex_Z;               //!<! array buffer
     Float_t         fBuffer_Event_Multiplicity;             //!<! array buffer
     Int_t           fBuffer_Event_NumActiveCells;          //!<! array buffer
 
+    // Int_t*          fBuffer_ClusterNLM_ID;                      //!<! array buffer
+    // Float_t*          fBuffer_ClusterNLM_E;                      //!<! array buffer
     Int_t*          fBuffer_Cells_ID;                      //!<! array buffer
     Float_t*        fBuffer_Cells_E;                      //!<! array buffer
     Float_t*        fBuffer_Cells_RelativeEta;                      //!<! array buffer
@@ -188,21 +187,13 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     
     Int_t           fBuffer_Cluster_MC_Label;              //!<! array buffer
     Int_t           fBuffer_Mother_MC_Label;              //!<! array buffer
+    Float_t         fBuffer_Cluster_MC_EFracFirstLabel;              //!<! array buffer
+    Float_t         fBuffer_Cluster_MC_EFracLeadingPi0;              //!<! array buffer
+    Float_t         fBuffer_Cluster_MC_LeadingPi0_Pt;              //!<! array buffer
+    Float_t         fBuffer_Cluster_MC_LeadingPi0_E;              //!<! array buffer
 
-    TH2F*           hNCellsInClustersVsCentrality;
-    TH2F*           hNActiveCellsVsCentrality;
-    TH2F*           hNActiveCellsAbove50MeVVsCentrality;
-    TH2F*           hNActiveCellsAbove80MeVVsCentrality;
-    TH2F*           hNActiveCellsAbove100MeVVsCentrality;
-    TH2F*           hNActiveCellsAbove150MeVVsCentrality;
-    TH2F*           hECellsInClustersVsCentrality;
-    TH2F*           hEActiveCellsVsCentrality;
-    TH2F*           hEActiveCells50MeVVsCentrality;
-    TH2F*           hEActiveCells80MeVVsCentrality;
-    TH2F*           hEActiveCells100MeVVsCentrality;
-    TH2F*           hEActiveCells150MeVVsCentrality;
     
-    ClassDef(AliAnalysisTaskClusterQA, 8);
+    ClassDef(AliAnalysisTaskClusterQA, 13);
 };
 
 const Int_t kMaxActiveCells = 18000;

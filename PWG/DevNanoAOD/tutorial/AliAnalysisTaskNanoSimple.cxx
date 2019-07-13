@@ -94,6 +94,8 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     
     // for custom variables, cast to nano AOD track
     AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
+    //Printf("  DCA = %f", nanoTrack->DCA());
+
     // NOTE Access to custom variables. Use static here for caching of index
     static Bool_t bPIDAvailable = AliNanoAODTrack::InitPIDIndex();
     static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
@@ -101,14 +103,25 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
     if (nanoTrack && bPIDAvailable)
       Printf("  TPC_sigma_proton = %f  hasTOF = %d  TOF_sigma_proton = %f", nanoTrack->GetVar(kcstNSigmaTPCPr), nanoTrack->HasTOFPID(), nanoTrack->GetVar(kcstNSigmaTOFPr));
 
-//     Printf("  DCA = %f", nanoTrack->DCA());
+    // Applying PID response on nano track
+    static AliPIDResponse* pidResponse = 0;
+    if (!pidResponse) {
+      AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+      AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
+      pidResponse = inputHandler->GetPIDResponse();
+    }
+    if (pidResponse)
+      Printf("  TPC_sigma_proton = %f", pidResponse->NumberOfSigmasTPC(track, AliPID::kProton));
+      //Printf("  TPC_sigma_proton = %f               TOF_sigma_proton = %f", pidResponse->NumberOfSigmasTPC(track, AliPID::kProton), pidResponse->NumberOfSigmasTOF(track, AliPID::kProton));
   }
   
   // V0 access - as usual
   AliAODEvent* aod = dynamic_cast<AliAODEvent*> (fInputEvent);
   if (aod->GetV0s()) {
     for (int i = 0; i < aod->GetNumberOfV0s(); i++) {
-      Printf("V0 %d: dca = %f   daughter pT = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex(), ((AliVTrack*) aod->GetV0(i)->GetDaughter(0))->Pt());
+      Printf("V0 %d: dca = %f", i, aod->GetV0(i)->DcaV0ToPrimVertex());
+      for (int j=0; j<aod->GetV0(i)->GetNDaughters(); j++)
+        Printf("  Daughter %d pT = %f", j, ((AliVTrack*) aod->GetV0(i)->GetDaughter(j))->Pt());
     }
   }
 
@@ -116,11 +129,12 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   if (aod->GetCascades()) {
     for (int i = 0; i < aod->GetNumberOfCascades(); i++) {
       AliAODcascade* cascade = aod->GetCascade(i);
-      Printf("Cascade %d: xi mass = %f", i, cascade->MassXi());
+      Printf("Cascade %d: xi mass = %f xiX = %f", i, cascade->MassXi(), cascade->DecayVertexXiX());
       for (int j=0; j<cascade->GetNDaughters(); j++)
         Printf("  Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDaughter(j))->Pt());
       for (int j=0; j<cascade->GetDecayVertexXi()->GetNDaughters(); j++)
-        Printf("  Xi Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDecayVertexXi()->GetDaughter(j))->Pt());
+        if (dynamic_cast<AliVTrack*> (cascade->GetDecayVertexXi()->GetDaughter(j)))
+          Printf("  Xi Daughter %d pT = %f", j, ((AliVTrack*) cascade->GetDecayVertexXi()->GetDaughter(j))->Pt());
     }
   }
   
@@ -129,7 +143,17 @@ void  AliAnalysisTaskNanoSimple::UserExec(Option_t */*option*/)
   if (conversionPhotons) {
     for (int i = 0; i < conversionPhotons->GetEntries(); i++) {
       auto photon = dynamic_cast<AliAODConversionPhoton*> (conversionPhotons->At(i));
-      Printf("Conversion photon candidate %d: mass = %e \t pT = %f", i, photon->GetPhotonMass(), photon->GetPhotonPt());
+      Printf("Conversion photon candidate %d: mass = %e \t pT = %f ids = %d %d", i, photon->GetPhotonMass(), photon->GetPhotonPt(), photon->GetTrackLabelPositive(), photon->GetTrackLabelNegative());
+      Int_t tracksFound = 0;
+      for (unsigned int i = 0; i < nTracks; i++) {
+        AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(i);
+        if (track->GetID() == photon->GetTrackLabelPositive() || track->GetID() == photon->GetTrackLabelNegative()) {
+          Printf("  Track %d: pT = %f", i, track->Pt());
+          tracksFound++;
+        }
+      }
+      if (tracksFound != 2)
+        AliFatal("Track missing");
     }
   }
   

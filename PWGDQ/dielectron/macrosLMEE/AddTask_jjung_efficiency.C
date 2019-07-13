@@ -66,6 +66,23 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(TString name = "na
   task->SetMinEtaGen(minGenEta);
   task->SetMaxEtaGen(maxGenEta);
 
+  // #########################################################
+  // #########################################################
+  // 4D single efficiency from pairs
+  task->SetWriteLegsFromPair(WriteLegsFromPair);
+  task->SetPtMinLegsFromPair(ptMinLegsFromPair);
+  task->SetPtMaxLegsFromPair(ptMaxLegsFromPair);
+  task->SetPtNBinsLegsFromPair(ptNBinsLegsFromPair);
+  task->SetEtaMinLegsFromPair(etaMinLegsFromPair);
+  task->SetEtaMaxLegsFromPair(etaMaxLegsFromPair);
+  task->SetEtaNBinsLegsFromPair(etaNBinsLegsFromPair);
+  task->SetPhiMinLegsFromPair(phiMinLegsFromPair);
+  task->SetPhiMaxLegsFromPair(phiMaxLegsFromPair);
+  task->SetPhiNBinsLegsFromPair(phiNBinsLegsFromPair);
+  task->SetOpAngleMinLegsFromPair(opAngleMinLegsFromPair);
+  task->SetOpAngleMaxLegsFromPair(opAngleMaxLegsFromPair);
+  task->SetOpAngleNBinsLegsFromPair(opAngleNBinsLegsFromPair);
+
 
   // #########################################################
   // #########################################################

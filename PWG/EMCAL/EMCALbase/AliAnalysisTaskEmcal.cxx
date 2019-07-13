@@ -1052,9 +1052,10 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType() const
   } else {
     Int_t runNumber = InputEvent()->GetRunNumber();
     // All run number ranges taken from the RCT
-    if ((runNumber >= 136833 && runNumber <= 139517) ||  // LHC10h
-        (runNumber >= 167693 && runNumber <= 170593) || // LHC11h
-        (runNumber >= 244824 && runNumber <= 246994)) { // LHC15o
+    if ((runNumber >= 136833 && runNumber <= 139517) ||   // LHC10h
+        (runNumber >= 167693 && runNumber <= 170593) ||   // LHC11h
+        (runNumber >= 244824 && runNumber <= 246994) ||   // LHC15o
+        (runNumber >= 295581 && runNumber <= 297624)) {   // LHC18p-q
       return kAA;
     } else if ((runNumber >= 188356 && runNumber <= 188366) ||   // LHC12g
                (runNumber >= 195164 && runNumber <= 197388) ||  // LHC13b-f
