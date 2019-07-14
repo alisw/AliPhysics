@@ -216,6 +216,10 @@ for(int iHisto=0; iHisto<3; iHisto++){
 		fHistEvPlane[iDet] = nullptr;
 	}
 
+
+	DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
+	DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
+
 }
 
 
