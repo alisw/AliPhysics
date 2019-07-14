@@ -1900,9 +1900,11 @@ void AliCSEventCuts::SetActual2015PileUpRemoval()
     case kLHC15oHIR:
     case kLHC17n:
     case kLHC18q:
-    case kLHC18r:
       AliError("Run2 pileup removal based on number of total TPC clusters still not configured. Fix it!!!");
       fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+2.8*x");
+      break;
+    case kLHC18r:
+      fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-4000.000000+x*0.012500+x/1000.0*x/1000.0*0.001300");
       break;
     default:
       fRun2V0MBasedPileUpCorrelation = new TFormula(Form("Run2V0MBasedPileUpCorrelation_%s",GetCutsString()),"-1000+2.8*x");
