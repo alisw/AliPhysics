@@ -2082,6 +2082,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Copy IR information for this event
         fTreeVariableClosestNonEmptyBC = fClosestNonEmptyBC;
         
+        //This is the flag for ITS||TOF requirement cross-check 
+        Bool_t lITSorTOFsatisfied = kFALSE; 
+        if( 
+            (fTreeVariableNegTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
+        if( 
+            (TMath::Abs(fTreeVariableNegTOFExpTDiff+2500.) > 1e-6) || 
+            (TMath::Abs(fTreeVariablePosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
         
         //------------------------------------------------
         // Fill Tree!
@@ -2301,6 +2309,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 (
                  lV0Result->GetCutMinCrossedRowsOverLength()<0 ||
                  (lLeastNcrOverLength>lV0Result->GetCutMinCrossedRowsOverLength())
+                 )&&
+                //Check 17: ITS or TOF required 
+                (
+                 lV0Result->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
                  )
                 )//end major if
             {
