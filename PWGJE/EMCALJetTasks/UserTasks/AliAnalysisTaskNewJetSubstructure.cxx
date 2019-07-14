@@ -70,6 +70,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure() :
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fDoAreaIterative(kTRUE),
+  fPowerAlgo(1),
   fPhiCutValue(0.02),
   fEtaCutValue(0.02),
   fMagFieldPolarity(1),
@@ -108,6 +109,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(const char 
   fHardCutoff(0),
   fDoTwoTrack(kFALSE),
   fDoAreaIterative(kTRUE),
+  fPowerAlgo(1),
   fPhiCutValue(0.02),
   fEtaCutValue(0.02),
   fMagFieldPolarity(1),
@@ -555,11 +557,11 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(AliEmcalJet *f
       fInputVectors.push_back(PseudoTracks);
      
     }
-    fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+    fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
     fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
    
   
-  fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+    fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
   fastjet::AreaDefinition fAreaDef(fastjet::passive_area,ghost_spec); 
   try {
     fastjet::ClusterSequenceArea fClustSeqSA(fInputVectors, fJetDef, fAreaDef);
@@ -666,11 +668,11 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,AliJe
       fInputVectors.push_back(PseudoTracks);
      
     }
-    fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+    fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
     fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
    
   
-  fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+    fastjet::JetDefinition fJetDef(jetalgo, 1.,fPowerAlgo, static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
   fastjet::AreaDefinition fAreaDef(fastjet::passive_area,ghost_spec); 
   try {
     fastjet::ClusterSequenceArea fClustSeqSA(fInputVectors, fJetDef, fAreaDef);
