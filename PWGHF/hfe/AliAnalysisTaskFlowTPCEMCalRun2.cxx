@@ -40,7 +40,6 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliAnalysisTaskFlowTPCEMCalRun2.h"
 //#include "AliAnalysisTaskQnVectorAnalysis.h"
 //#include "AliAnalysisTaskFlowVectorCorrections.h"
 #include "AliQnCorrectionsManager.h"
@@ -53,17 +52,19 @@
 //#include "AliAODHandler.h"
 //#include "AliAODVertex.h"
 
+#include "AliAnalysisTaskFlowTPCEMCalRun2.h"
+
 //using std::cout;
 //using std::endl;
 
-class AliAnalysisTaskFlowTPCEMCalRun2;    // your analysis class
+//class AliAnalysisTaskFlowTPCEMCalRun2;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout'
 
 ClassImp(AliAnalysisTaskFlowTPCEMCalRun2) // classimp: necessary for root
 
 //_____________________________________________________________________________
-AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysisTaskSE(),
+AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *name) : AliAnalysisTaskSE(name),
 	fAOD(0), 
 	fOutputList(0), 
 	fVevent(0),
@@ -219,7 +220,7 @@ for(int iHisto=0; iHisto<3; iHisto++){
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2(const char *name) : AliAnalysisTaskSE(name), 
+AliAnalysisTaskFlowTPCEMCalRun2::AliAnalysisTaskFlowTPCEMCalRun2() : AliAnalysisTaskSE("HFEflowRun2"), 
 	fAOD(0), 
 	fOutputList(0), 
 	fVevent(0), 
