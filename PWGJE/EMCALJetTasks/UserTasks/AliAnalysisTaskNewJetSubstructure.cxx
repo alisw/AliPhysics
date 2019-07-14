@@ -152,7 +152,7 @@ AliAnalysisTaskNewJetSubstructure::~AliAnalysisTaskNewJetSubstructure()
    const Int_t dimSpec   = 7;
    const Int_t nBinsSpec[7]     = {50,100,100,20,100,50,100};
    const Double_t lowBinSpec[7] = {0.,-10,0,0,0,0,0};
-   const Double_t hiBinSpec[7]  = {5.,10.,100,20,200,100,200};
+   const Double_t hiBinSpec[7]  = {5.,10.,100,20,200,100,50};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -704,7 +704,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,AliJe
 	 double y = log(1./delta_R);
 	 double form=2*0.197*j2.e()/(xkt*xkt); 
          double rad=j2.e();
-         double z=j1.perp()/(j2.perp()+j1.perp());
+         double z=j2.perp()/(j2.perp()+j1.perp());
 	 if(z>fHardCutoff) nsd=nsd+1;
          if(z>fHardCutoff && flagSubjet==0){
 	   zg=z;
