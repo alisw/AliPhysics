@@ -69,6 +69,7 @@ class AliAnalysisTaskNewJetSubstructure : public AliAnalysisTaskEmcalJet {
    void SetHardCutoff(Float_t t)                            {fHardCutoff = t;}
    void SetDoTwoTrack(Bool_t t)                             {fDoTwoTrack = t;}
    void SetDoAreaIterative(Bool_t t)                        {fDoAreaIterative =t;}
+   void SetPowerAlgorithm(Float_t t)                        {fPowerAlgo = t;} 
    void SetMagFieldPol(Float_t t)                           {fMagFieldPolarity=t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
@@ -111,6 +112,7 @@ class AliAnalysisTaskNewJetSubstructure : public AliAnalysisTaskEmcalJet {
   Float_t                             fHardCutoff;                   //hard cutoff in the iterative declustering 
   Bool_t                              fDoTwoTrack;                    //switch to consider 2 track effects
   Bool_t                              fDoAreaIterative;               //subtract the area in the declustering
+  Float_t                             fPowerAlgo;                //power of the generickt algorithm 
   Float_t                             fPhiCutValue;                  //cuts from HBT
   Float_t                             fEtaCutValue;                  //cuts from HBT
   Float_t                             fMagFieldPolarity;             //polarity, to calculate phimin 
