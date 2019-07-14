@@ -400,7 +400,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms()
       if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
 
   
-      fShapesVar[1] = ptSubtracted;
+      fShapesVar[0] = ptSubtracted;
       IterativeParents(jet1,jetCont);
      
       
@@ -631,10 +631,10 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(AliEmcalJet *f
       
       jj=jet_sub1;}
 
-     fShapesVar[2]=xktg;
-     fShapesVar[3]=nsd;
-     fShapesVar[4]=zg;
-     fShapesVar[5]=Rg;
+     fShapesVar[1]=xktg;
+     fShapesVar[2]=nsd;
+     fShapesVar[3]=zg;
+     fShapesVar[4]=Rg;
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -715,10 +715,10 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,AliJe
       
       jj=j1;} 
 
-     fShapesVar[2]=xktg;
-     fShapesVar[3]=nsd;
-     fShapesVar[4]=zg;
-     fShapesVar[5]=Rg;
+     fShapesVar[1]=xktg;
+     fShapesVar[2]=nsd;
+     fShapesVar[3]=zg;
+     fShapesVar[4]=Rg;
 
 } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
