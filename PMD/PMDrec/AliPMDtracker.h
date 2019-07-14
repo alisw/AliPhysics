@@ -37,7 +37,9 @@ class AliPMDtracker:public TObject
   virtual ~AliPMDtracker();
 
   void LoadClusters(TTree *treein);
-  void Clusters2Tracks(AliESDEvent *event);
+
+  void Clusters2Tracks(AliESDEvent *event, Int_t gRecoMode);
+
   void AssignTrPidToCluster(Int_t nentry, Int_t *itra, Int_t *ipid,
 			    Float_t *cadc, Int_t &trackno, Int_t &trackpid);
 

@@ -90,17 +90,61 @@ void AliPMDReconstructor::Reconstruct(TTree *digitsTree,
 void AliPMDReconstructor::FillESD(AliRawReader* /*rawReader*/,
 				  TTree* clustersTree, AliESDEvent* esd) const
 {
-    static AliPMDtracker pmdtracker;
-    pmdtracker.LoadClusters(clustersTree);
-    pmdtracker.Clusters2Tracks(esd);
+  /*
+    Modification by S. K. Prasad on 05-07-2019
+    Added to assign a flag to gRecoMode according to beam type
+    which will be used while writing the ESD file in AliPMDtracker class.
+    These lines are copied from "AliPMDReconstructor::Reconstruct(...)" added 
+    earlier by Satyajit Jena.
+  */
+  
+  Int_t gRecoMode = 1;
+  TString beamType = GetRunInfo()->GetBeamType();
+  
+  if (((beamType.CompareTo("pp"))==0) || 
+      ((beamType.CompareTo("p-p"))==0)||
+      ((beamType.CompareTo("PP"))==0) || 
+      ((beamType.CompareTo("P-P"))==0)) {
+    gRecoMode=1;
+  }
+  
+  else if ((beamType.CompareTo("A-A")) == 0 || 
+	   (beamType.CompareTo("AA")) == 0) {
+    gRecoMode=2;
+  }
+  static AliPMDtracker pmdtracker;
+  pmdtracker.LoadClusters(clustersTree);
+  pmdtracker.Clusters2Tracks(esd, gRecoMode);
 }
 // ------------------------------------------------------------------------ //
 void AliPMDReconstructor::FillESD(TTree * /*digitsTree*/,
 				  TTree* clustersTree, AliESDEvent* esd) const
 {
-    static AliPMDtracker pmdtracker;
-    pmdtracker.LoadClusters(clustersTree);
-    pmdtracker.Clusters2Tracks(esd);
+  /*
+    Modification by S. K. Prasad on 05-07-2019
+    Added to assign a flag to gRecoMode according to beam type
+    which will be used while writing the ESD file in AliPMDtracker class.
+    These lines are copied from "AliPMDReconstructor::Reconstruct(...)" added 
+    earlier by Satyajit Jena.
+  */
+  Int_t gRecoMode = 1;
+  TString beamType = GetRunInfo()->GetBeamType();
+  
+  if (((beamType.CompareTo("pp"))==0) || 
+      ((beamType.CompareTo("p-p"))==0)||
+      ((beamType.CompareTo("PP"))==0) || 
+      ((beamType.CompareTo("P-P"))==0)) {
+    gRecoMode=1;
+  }
+  
+  else if ((beamType.CompareTo("A-A")) == 0 || 
+	   (beamType.CompareTo("AA")) == 0) {
+    gRecoMode=2;
+  }
+  
+  static AliPMDtracker pmdtracker;
+  pmdtracker.LoadClusters(clustersTree);
+  pmdtracker.Clusters2Tracks(esd, gRecoMode);
 }
 
 
