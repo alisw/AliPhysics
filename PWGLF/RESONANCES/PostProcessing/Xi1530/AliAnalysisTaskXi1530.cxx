@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/07/06
+//  Last Modified Date: 2019/07/14
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -692,7 +692,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             else
                 this->FillTracksAOD();  // Fill the histogram(AOD)
         }
-        if (fsetmixing && goodtrackindices.size())
+        if (fsetmixing && checkPionTrack)
             FillTrackToEventPool();  // use only pion track pool.
     }
     // ***********************************************************************
@@ -716,6 +716,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     const UInt_t ntracks = fEvt->GetNumberOfTracks();
     goodtrackindices.clear();
     AliVTrack* track;
+    Double_t trackPos[3];
 
     for (UInt_t it = 0; it < ntracks; it++) {
         if (fEvt->IsA() == AliESDEvent::Class()) {
@@ -729,13 +730,14 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
             track = (AliAODTrack*)fEvt->GetTrack(it);
             if (!track)
                 continue;
-            if ((!IsNano) &&
-                (!((AliAODTrack*)track)->TestFilterBit(fFilterBit)))
+            if (!((AliAODTrack*)track)->TestFilterBit(fFilterBit)){
+                AliInfo("Track can't pass the filter bit!");
                 continue;
+            }
         }  // AOD Case
-
+        track->GetXYZ(trackPos);
         Double_t fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
-        Double_t pionZ = abs(track->GetZ() - fZ);
+        Double_t pionZ = abs(trackPos[2] - fZ);
         Double_t pionPt = track->Pt();
 
         if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose)
@@ -1323,7 +1325,9 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 }
 
                 // Xi1530Pion DCA zVetex Check
-                Double_t pionZ = abs(track1->GetZ() - fZ);
+                Double_t trackPos[3];
+                track1->GetXYZ(trackPos);
+                Double_t pionZ = abs(trackPos[2] - fZ);
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)) {
                     AliInfo(Form("pionZ! %f %s", pionZ,
@@ -1764,7 +1768,9 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 // Xi1530Pion DCA zVetex Check
-                Double_t pionZ = abs(track1->GetZ() - fZ);
+                Double_t trackPos[3];
+                track1->GetXYZ(trackPos);
+                Double_t pionZ = abs(trackPos[2] - fZ);
                 if (pionZ > fXi1530PionZVertexCut)
                     continue;
 
@@ -1928,7 +1934,9 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 }
 
                 // Xi1530Pion DCA zVetex Check
-                Double_t pionZ = abs(track1->GetZ() - fZ);
+                Double_t trackPos[3];
+                track1->GetXYZ(trackPos);
+                Double_t pionZ = abs(trackPos[2] - fZ);
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)){
                     AliInfo(Form("pionZ! %f %s", pionZ,
@@ -2366,7 +2374,9 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
 
                 // Xi1530Pion DCA zVetex Check
-                Double_t pionZ = abs(track1->GetZ() - fZ);
+                Double_t trackPos[3];
+                track1->GetXYZ(trackPos);
+                Double_t pionZ = abs(trackPos[2] - fZ);
                 if (pionZ > fXi1530PionZVertexCut)
                     continue;
 
