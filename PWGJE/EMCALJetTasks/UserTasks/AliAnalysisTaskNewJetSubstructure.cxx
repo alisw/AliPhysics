@@ -149,10 +149,10 @@ AliAnalysisTaskNewJetSubstructure::~AliAnalysisTaskNewJetSubstructure()
   fOutput->Add(fPtJet); 
   
   //log(1/theta),log(kt),jetpT,depth, tf, omega// 
-   const Int_t dimSpec   = 6;
-   const Int_t nBinsSpec[6]     = {50,100,100,20,100,100};
-   const Double_t lowBinSpec[6] = {0.,-10,0,0,0,0};
-   const Double_t hiBinSpec[6]  = {5.,10.,100,20,100,100};
+   const Int_t dimSpec   = 7;
+   const Int_t nBinsSpec[7]     = {50,100,100,20,100,50,100};
+   const Double_t lowBinSpec[7] = {0.,-10,0,0,0,0,0};
+   const Double_t hiBinSpec[7]  = {5.,10.,100,20,200,100,200};
    fHLundIterative = new THnSparseF("fHLundIterative",
                    "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
@@ -582,7 +582,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(AliEmcalJet *f
    double zg=0;
    double xktg=0;
    double z=0;
-   
+   double cumtf=0;
    fastjet::PseudoJet area1,area2;
    
     while(jj.has_parents(j1,j2) && z<fHardCutoff){
@@ -622,9 +622,9 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(AliEmcalJet *f
 	   xktg=xkt;
 	   Rg=delta_R;
 	   flagSubjet=1;}
-	 
-    Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,form,rad};  
-    fHLundIterative->Fill(LundEntries);
+	 if(lnpt_rel>0) cumtf=cumtf+form;   
+	 Double_t LundEntries[7] = {y,lnpt_rel,fOutputJets[0].perp(),nall,form,rad,cumtf};  
+         fHLundIterative->Fill(LundEntries);
      
 
 
@@ -691,7 +691,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,AliJe
    double Rg=0;
    double zg=0;
    double xktg=0;
-   
+   double cumtf=0;
     while(jj.has_parents(j1,j2)){
       nall=nall+1;
   
@@ -711,8 +711,9 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,AliJe
 	   xktg=xkt;
 	   Rg=delta_R;
 	   flagSubjet=1;}
+	 if(lnpt_rel>0) cumtf=cumtf+form;   
 	 
-    Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),nall,form,rad};  
+	 Double_t LundEntries[7] = {y,lnpt_rel,fOutputJets[0].perp(),nall,form,rad, cumtf};  
     fHLundIterative->Fill(LundEntries);
       
       jj=j1;} 
