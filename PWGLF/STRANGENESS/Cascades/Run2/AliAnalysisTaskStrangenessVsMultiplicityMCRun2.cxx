@@ -5091,6 +5091,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarAmplitudeV0A = fAmplitudeV0A;
         fTreeCascVarAmplitudeV0C = fAmplitudeV0C;
         
+        //This is the flag for ITS||TOF requirement cross-check 
+        Bool_t lITSorTOFsatisfied = kFALSE; 
+        if( 
+            (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) ||
+            (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit) ) lITSorTOFsatisfied = kTRUE; 
+        if( 
+            (TMath::Abs(fTreeCascVarBachTOFExpTDiff+2500.) > 1e-6) || 
+            (TMath::Abs(fTreeCascVarNegTOFExpTDiff+2500.)  > 1e-6) ||  
+            (TMath::Abs(fTreeCascVarPosTOFExpTDiff+2500.)  > 1e-6) ) lITSorTOFsatisfied = kTRUE;  
+        
         //Valid or not valid
         Bool_t lValidXiMinus, lValidXiPlus, lValidOmegaMinus, lValidOmegaPlus;
         lValidXiMinus = kTRUE;
@@ -5565,6 +5576,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 (
                  lCascadeResult->GetCutLeastNumberOfCrossedRows()<0 ||
                  (lLeastNbrCrossedRows>lCascadeResult->GetCutLeastNumberOfCrossedRows())
+                 )&&
+                //Check 20: ITS or TOF required 
+                (
+                 lCascadeResult->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
                  )
                 )//end major if
             {
