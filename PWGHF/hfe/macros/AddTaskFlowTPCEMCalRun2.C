@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 //class AliRDHFCuts;
-AliAnalysisTaskFlowTPCEMCalRun2* AddFlowTPCEMCalRun2(TString name = "name")
+AliAnalysisTask *AddTaskFlowTPCEMCalRun2(TString ContNameExt= "semicentral")
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -20,7 +20,7 @@ AliAnalysisTaskFlowTPCEMCalRun2* AddFlowTPCEMCalRun2(TString name = "name")
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
-    AliAnalysisTaskFlowTPCEMCalRun2* task = new AliAnalysisTaskFlowTPCEMCalRun2(name.Data());   
+    AliAnalysisTaskFlowTPCEMCalRun2* task = new AliAnalysisTaskFlowTPCEMCalRun2("task");   
     if(!task) return 0x0;
     // add your task to the manager
     mgr->AddTask(task);
