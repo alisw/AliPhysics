@@ -5464,9 +5464,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 1:
       label_case_01:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // standard kPi0MCv5 for MC and kSDMv5 for data from Jason
-        energy *= FunctionNL_kPi0MCv5(energy);
-        if(isMC == 0) energy *= FunctionNL_kSDMv5(energy);
+        // official TB parametrization from Martin
+        if(isMC == 0) energy *= FunctionNL_MartinTB_100MeV_Data(energy);
+        else energy *= FunctionNL_kPi0MCMod(energy, 1.004055, 1.009121, 0.083153, 1.444362, 0.100294, 416.897753, 324.246101); // once available, use "energy *= FunctionNL_MartinTB_100MeV_MC(energy);"
       } else if ( fClusterType == 2 ){
           // Nonlin from PHOS group only MC part
           if(isMC != 0) {
@@ -6866,6 +6866,16 @@ Float_t AliCaloPhotonCuts::FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t 
 //************************************************************************
 // predefined functions:
 //________________________________________________________________________
+// official and final testbeam parametrization by Martin
+Float_t AliCaloPhotonCuts::FunctionNL_MartinTB_100MeV_MC(Float_t e){
+  return ( 1.014 * exp( 0.03329 / e ) ) + ( ( -0.3853 / ( 0.5423 * 2. * TMath::Pi() ) * exp( -( e + 0.4335 ) * ( e + 0.4335 ) / (2. * 0.5423 * 0.5423 ) ) ) );
+}
+
+// official and final testbeam parametrization by Martin
+Float_t AliCaloPhotonCuts::FunctionNL_MartinTB_100MeV_Data(Float_t e){
+  return ( 0.944965 + 0.0172497 * TMath::Log(e) ) / ( 1 + ( 0.0807799 * TMath::Exp( ( e - 128.776 ) / 68.2001 ) ) );
+}
+
 Float_t AliCaloPhotonCuts::FunctionNL_kPi0MCv1(Float_t e){
   return ( 1.014 * exp( 0.03329 / e ) ) + ( ( -0.3853 / ( 0.5423 * 2. * TMath::Pi() ) * exp( -( e + 0.4335 ) * ( e + 0.4335 ) / (2. * 0.5423 * 0.5423 ) ) ) );
 }

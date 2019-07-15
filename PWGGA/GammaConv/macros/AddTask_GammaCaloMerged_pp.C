@@ -1532,6 +1532,15 @@ void AddTask_GammaCaloMerged_pp(
   } else if (generatorName.Contains("LHC14e2c")){
     energy            = "8TeV";
     mcName            = "Phojet_LHC14e2c";
+  } else if (generatorName.Contains("LHC16c2")){
+    energy            = "8TeV";
+    mcName            = "LHC16c2";
+  } else if (generatorName.Contains("LHC16h3")){
+    energy            = "5TeV";
+    mcName            = "PythiaJets_LHC16h3";
+  } else if (generatorName.Contains("LHC18b8")){
+    energy            = "5TeV";
+    mcName            = "PythiaJets_LHC18b8";
   }
 
   EventCutList->SetOwner(kTRUE);
@@ -1571,7 +1580,7 @@ void AddTask_GammaCaloMerged_pp(
     mcInputNamePi0          = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
     mcInputNameEta          = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
 
-    if (doWeightingPart) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNamePtWeights, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
+    if (doWeightingPart) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNamePtWeights, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
