@@ -34,7 +34,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   TString customBCmap         = "",       // location of custom bad channel map (full path including file)
   Bool_t useNewRWTempCalib    = kFALSE,   // switch for usage of new temperature calib parameters (available for run1 and run2)
   TString customSMtemps       = "",       // location of custom SM-wise temperature OADB file (full path including file)
-  TString customTempParams    = ""        // location of custom temperature calibration parameters OADB file (full path including file)
+  TString customTempParams    = "",        // location of custom temperature calibration parameters OADB file (full path including file)
+  Bool_t useOneHistAllBCS     = kFALSE    // flag to use on histogram for the all the BCs
 ) 
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -91,6 +92,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
                                         fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
                                         cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut, diffEAggregation);
   #endif
+
+  EMCALSupply->SwitchUseMergedBCs(useOneHistAllBCS);
 
   if (pass) 
     EMCALSupply->SetPass(pass);
@@ -162,7 +165,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
       EMCALSupply->SetRecoUtils(ru);
     }
   }
-  
+
   mgr->AddTask(ana);
 
   // Create ONLY the output containers for the data produced by the task.

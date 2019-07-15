@@ -56,6 +56,10 @@ Bool_t AliEmcalCorrectionCellTimeCalib::Initialize()
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
     
+
+  if (fDoMergedBCs)
+    fRecoUtils->SetUseOneHistForAllBCs(fDoMergedBCs);
+
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
   return kTRUE;
@@ -205,29 +209,44 @@ Int_t AliEmcalCorrectionCellTimeCalib::InitTimeCalibration()
   
   arrayBCpass->Print();
   
-  for(Int_t i = 0; i < 4; i++)
-  {
-    TH1F *h = fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i);
+  if(!fDoMergedBCs){
+    for(Int_t i = 0; i < 4; i++)
+    {
+      TH1F *h = (TH1F*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(i);
+      if (h)
+        delete h;
+    
+      h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
+    
+      if (!h)
+      {
+        AliError(Form("Can not get hAllTimeAvBC%d",i));
+        continue;
+      }
+    
+      // Shift parameters for bc0 and bc1 in this pass
+      if ( pass=="spc_calo" && (i==0 || i==1) ) 
+      {
+        for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
+          h->SetBinContent(icell,h->GetBinContent(icell)-100);
+      }
+    
+      h->SetDirectory(0);
+      fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+    }
+  }else{
+  
+    TH1S *h = (TH1S*)fRecoUtils->GetEMCALChannelTimeRecalibrationFactors(0);//HG cells
     if (h)
       delete h;
-    
-    h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
-    
+  
+    h = (TH1S*)arrayBCpass->FindObject("hAllTimeAv");
+  
     if (!h)
-    {
-      AliError(Form("Can not get hAllTimeAvBC%d",i));
-      continue;
-    }
-    
-    // Shift parameters for bc0 and bc1 in this pass
-    if ( pass=="spc_calo" && (i==0 || i==1) ) 
-    {
-      for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
-        h->SetBinContent(icell,h->GetBinContent(icell)-100);
-    }
+      AliError("Can not get hAllTimeAv");
     
     h->SetDirectory(0);
-    fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
+    fRecoUtils->SetEMCALChannelTimeRecalibrationFactors(0,h);//HG cells
   }
   
   return 1;
