@@ -105,205 +105,268 @@ void AliPMDClusteringV1::DoClust(Int_t idet, Int_t ismn,
 {
   // main function to call other necessary functions to do clustering
   //
-
-  AliPMDcluster *pmdcl = 0;
-
-  const float ktwobysqrt3 = 1.1547; // 2./sqrt(3.)
-  const Int_t kNmaxCell   = 19;     // # of cells surrounding a cluster center
-
-  Int_t    i = 0,  j = 0, nmx1 = 0;
-  Int_t    incr = 0, id = 0, jd = 0;
-  Int_t    celldataX[kNmaxCell], celldataY[kNmaxCell];
-  Int_t    celldataTr[kNmaxCell], celldataPid[kNmaxCell];
-  Float_t  celldataAdc[kNmaxCell];
-  Float_t  clusdata[6] = {0.,0.,0.,0.,0.,0.};
-  Double_t cutoff, ave;
-  Double_t edepcell[kNMX];
-  Double_t cellenergy[kNMX];
+  /*
+    Modification by S. K. Prasad on 05-07-2019
+    Added following block to pass on  the cell 
+    level information without   performing any 
+    clustering     for PbPb (fClusParam == 2). 
+    Clustering can be performed later on as a    
+    part of Physics analysis.With this change 
+    the ESD for   PbPb will      contain cell 
+    information.
+    local variable  stored information  ESD nomenclature
+    --------------  ------------------  ------------------
+    clusdataAA[0]      cell-row           clusterX
+    clusdataAA[1]      cell-col           clusterY
+    clusdataAA[2]      cell-adc           clusterADC
+    clusdataAA[3]      ncell (= 1)        clusterCells
+    clusdataAA[4]      track no.          clusterSigmaX
+    clusdataAA[5]      track PID          clusterSgmaY
+    
+    This change does not apply to pp and pPb.
+  */
+  if (fClusParam == 2){
+    AliPMDcluster *pmdclAA      = 0;
+    AliPMDcludata *pmdcludataAA = 0;
+    
+    const Int_t kNcellAA                = 1;//Number of cells in a cluster is 1 because each cell is a cluster
+    Int_t       celldataXAA[kNcellAA]   = {-1};//cell row
+    Int_t       celldataYAA[kNcellAA]   = {-1};//cell col
+    Int_t       celldataTrAA[kNcellAA]  = {-1};//cell Track number
+    Int_t       celldataPidAA[kNcellAA] = {-1};//cell Track PID
+    Float_t     celldataAdcAA[kNcellAA] = {-1};//cell ADC
+    Float_t     clusdataAA[6]           = {-1.,-1.,-1.,-1.,-1.,-1.};//cluster information, in this case cell information
+    Int_t       clxyAA[kNcellAA]        = {-1};//cell row, col are folded into this variable
+    
+    const Int_t kRow = 48;//number of rows in a module
+    const Int_t kCol = 96;//number of coloumns in a module
+    Float_t cellADCcutOff = 4.;//cell level ADC cut off
+    
+    for(Int_t irow=0; irow<kRow; irow++){
+      for(Int_t icol=0; icol<kCol; icol++){
+	if(celladc[irow][icol] > cellADCcutOff){//writing information for all cells with ADC > 4 
+	  clusdataAA[0] = irow;//row 
+	  clusdataAA[1] = icol;//col
+	  clusdataAA[2] = celladc[irow][icol];//ADC
+	  clusdataAA[3] = 1.;//number of cells in a cluster, 1 in this case as each cell is a cluster
+	  clusdataAA[4] = celltrack[irow][icol];//Track number
+	  clusdataAA[5] = cellpid[irow][icol];//Track PID
+	  clxyAA[0]      = irow*10000 + icol;//folded cell row, col information
+	  pmdcludataAA = new AliPMDcludata(clusdataAA,clxyAA);
+	  fPMDclucont  -> Add(pmdcludataAA);
+	  celldataXAA[0]   = irow;//row
+	  celldataYAA[0]   = icol;//col
+	  celldataTrAA[0]  = celltrack[irow][icol];//Track number
+	  celldataPidAA[0] = cellpid[irow][icol];//Track PID
+	  celldataAdcAA[0] = celladc[irow][icol];//ADC
+	  pmdclAA          = new AliPMDcluster(idet, ismn, clusdataAA, celldataXAA, celldataYAA,
+					       celldataTrAA, celldataPidAA, celldataAdcAA);
+	  pmdcont->Add(pmdclAA);
+	}//if loop
+      }//icol loop
+    }//irow loop
+  }//if fClusParam == 2
   
-  // ndimXr and ndimYr are different because of different module size
-
-  Int_t ndimXr = 0;
-  Int_t ndimYr = 0;
-
-  if (ismn < 12)
-    {
-      ndimXr = 96;
-      ndimYr = 48;
-    }
-  else if (ismn >= 12 && ismn <= 23)
-    {
-      ndimXr = 48;
-      ndimYr = 96;
-    }
-
-  for (i = 0; i < kNMX; i++)
-  {
-      cellenergy[i] = 0.;
-  }
-
-  Int_t kk = 0;
-  for (i = 0; i < kNDIMX; i++)
-    {
-      for (j = 0; j < kNDIMY; j++)
-	{
-	  edepcell[kk] = 0.;
-	  kk++;
-	}
-    }
-
-  for (id = 0; id < ndimXr; id++)
-    {
-      for (jd = 0; jd < ndimYr; jd++)
-	{
-	  j = jd;
-	  i = id+(ndimYr/2-1)-(jd/2);
-
-	  Int_t ij = i + j*kNDIMX;
-	  
-	  if (ismn < 12)
-	    {
-	      cellenergy[ij]    = celladc[jd][id];
-	    }
-	  else if (ismn >= 12 && ismn <= 23)
-	    {
-	      cellenergy[ij]    = celladc[id][jd];
-	    }
-	}
-    }
-  
-  for (i = 0; i < kNMX; i++)
-    {
-      edepcell[i] = cellenergy[i];
-    }
-
-  Bool_t jsort = true;
-  // the dimension of iord1 is increased twice
-  Int_t iord1[2*kNMX];
-  TMath::Sort((Int_t)kNMX,edepcell,iord1,jsort);// order the data
-  cutoff = fCutoff;                             // cutoff to discard cells
-  ave  = 0.;
-  nmx1 = -1;
-  for(i = 0;i < kNMX; i++)
-    {
-      if(edepcell[i] > 0.) 
-	{
-	  ave += edepcell[i];
-	}
-      if(edepcell[i] > cutoff )
-	{
-	  nmx1++;
-	}
-    }
-  
-  AliDebug(1,Form("Number of cells having energy >= %f are %d",cutoff,nmx1));
-
-  if (nmx1 == 0) nmx1 = 1;
-  ave = ave/nmx1;
-  AliDebug(1,Form("Number of cells in a SuperM = %d and Average = %f",
-		  kNMX,ave));
-  
-  incr = CrClust(ave, cutoff, nmx1,iord1, edepcell );
-  RefClust(incr,edepcell);
-  Int_t nentries1 = fPMDclucont->GetEntries();
-  AliDebug(1,Form("Detector Plane = %d  Serial Module No = %d Number of clusters = %d",idet, ismn, nentries1));
-  AliDebug(1,Form("Total number of clusters/module = %d",nentries1));
-  
-  for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
-    {
-      AliPMDcludata *pmdcludata = 
-	(AliPMDcludata*)fPMDclucont->UncheckedAt(ient1);
-      Float_t cluXC    = pmdcludata->GetClusX();
-      Float_t cluYC    = pmdcludata->GetClusY();
-      Float_t cluADC   = pmdcludata->GetClusADC();
-      Float_t cluCELLS = pmdcludata->GetClusCells();
-      Float_t cluSIGX  = pmdcludata->GetClusSigmaX();
-      Float_t cluSIGY  = pmdcludata->GetClusSigmaY();
-      
-      Float_t cluY0    = ktwobysqrt3*cluYC;
-      Float_t cluX0    = cluXC - cluY0/2.;
-      
-      // 
-      // Cluster X centroid is back transformed
-      //
-
-      if (ismn < 12)
-	{
-	  clusdata[0] = cluX0 - (24-1) + cluY0/2.;
-	}
-      else if ( ismn >= 12 && ismn <= 23)
-	{
-	  clusdata[0] = cluX0 - (48-1) + cluY0/2.;
-	}	  
-
-      clusdata[1]     = cluY0;
-      clusdata[2]     = cluADC;
-      clusdata[3]     = cluCELLS;
-      clusdata[4]     = cluSIGX;
-      clusdata[5]     = cluSIGY;
-
-      //
-      // Cells associated with a cluster
-      //
-
-      for (Int_t ihit = 0; ihit < kNmaxCell; ihit++)
-	{
-	  Int_t cellrow = pmdcludata->GetCellXY(ihit)/10000;
-	  Int_t cellcol = pmdcludata->GetCellXY(ihit)%10000;
-
-	  if (ismn < 12)
-	    {
-	      celldataX[ihit] = cellrow - (24-1) + int(cellcol/2.);
-	    }
-	  else if (ismn >= 12 && ismn <= 23)
-	    {
-	      celldataX[ihit] = cellrow - (48-1) + int(cellcol/2.);
-	    }
-	  
-	  celldataY[ihit] = cellcol;
-	  
-	  Int_t irow = celldataX[ihit];
-	  Int_t icol = celldataY[ihit];
-
-	  if (ismn < 12)
-	    {
-	      if ((irow >= 0 && irow < 96) && (icol >= 0 && icol < 48))
-		{
-		  celldataTr[ihit]  = celltrack[icol][irow];
-		  celldataPid[ihit] = cellpid[icol][irow];
-		  celldataAdc[ihit] = (Float_t) celladc[icol][irow];
-		}
-	      else
-		{
-		  celldataTr[ihit]  = -1;
-		  celldataPid[ihit] = -1;
-		  celldataAdc[ihit] = -1;
-		}
-	    }
-	  else if (ismn >= 12 && ismn < 24)
-	    {
-	      if ((irow >= 0 && irow < 48) && (icol >= 0 && icol < 96))
-		{
-		  celldataTr[ihit]  = celltrack[irow][icol];
-		  celldataPid[ihit] = cellpid[irow][icol];
-		  celldataAdc[ihit] = (Float_t) celladc[irow][icol];
-
-		}
-	      else
-		{
-		  celldataTr[ihit]  = -1;
-		  celldataPid[ihit] = -1;
-		  celldataAdc[ihit] = -1;
-		}
-	    }
-	  
-	}
-      
-      pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY,
-				celldataTr, celldataPid, celldataAdc);
-      pmdcont->Add(pmdcl);
-    }
-  
+  else {
+    
+    AliPMDcluster *pmdcl = 0;
+    
+    const float ktwobysqrt3 = 1.1547; // 2./sqrt(3.)
+    const Int_t kNmaxCell   = 19;     // # of cells surrounding a cluster center
+    
+    Int_t    i = 0,  j = 0, nmx1 = 0;
+    Int_t    incr = 0, id = 0, jd = 0;
+    Int_t    celldataX[kNmaxCell], celldataY[kNmaxCell];
+    Int_t    celldataTr[kNmaxCell], celldataPid[kNmaxCell];
+    Float_t  celldataAdc[kNmaxCell];
+    Float_t  clusdata[6] = {0.,0.,0.,0.,0.,0.};
+    Double_t cutoff, ave;
+    Double_t edepcell[kNMX];
+    Double_t cellenergy[kNMX];
+    
+    // ndimXr and ndimYr are different because of different module size
+    
+    Int_t ndimXr = 0;
+    Int_t ndimYr = 0;
+    
+    if (ismn < 12)
+      {
+	ndimXr = 96;
+	ndimYr = 48;
+      }
+    else if (ismn >= 12 && ismn <= 23)
+      {
+	ndimXr = 48;
+	ndimYr = 96;
+      }
+    
+    for (i = 0; i < kNMX; i++)
+      {
+	cellenergy[i] = 0.;
+      }
+    
+    Int_t kk = 0;
+    for (i = 0; i < kNDIMX; i++)
+      {
+	for (j = 0; j < kNDIMY; j++)
+	  {
+	    edepcell[kk] = 0.;
+	    kk++;
+	  }
+      }
+    
+    for (id = 0; id < ndimXr; id++)
+      {
+	for (jd = 0; jd < ndimYr; jd++)
+	  {
+	    j = jd;
+	    i = id+(ndimYr/2-1)-(jd/2);
+	    
+	    Int_t ij = i + j*kNDIMX;
+	    
+	    if (ismn < 12)
+	      {
+		cellenergy[ij]    = celladc[jd][id];
+	      }
+	    else if (ismn >= 12 && ismn <= 23)
+	      {
+		cellenergy[ij]    = celladc[id][jd];
+	      }
+	  }
+      }
+    
+    for (i = 0; i < kNMX; i++)
+      {
+	edepcell[i] = cellenergy[i];
+      }
+    
+    Bool_t jsort = true;
+    // the dimension of iord1 is increased twice
+    Int_t iord1[2*kNMX];
+    TMath::Sort((Int_t)kNMX,edepcell,iord1,jsort);// order the data
+    cutoff = fCutoff;                             // cutoff to discard cells
+    ave  = 0.;
+    nmx1 = -1;
+    for(i = 0;i < kNMX; i++)
+      {
+	if(edepcell[i] > 0.) 
+	  {
+	    ave += edepcell[i];
+	  }
+	if(edepcell[i] > cutoff )
+	  {
+	    nmx1++;
+	  }
+      }
+    
+    AliDebug(1,Form("Number of cells having energy >= %f are %d",cutoff,nmx1));
+    
+    if (nmx1 == 0) nmx1 = 1;
+    ave = ave/nmx1;
+    AliDebug(1,Form("Number of cells in a SuperM = %d and Average = %f",
+		    kNMX,ave));
+    
+    incr = CrClust(ave, cutoff, nmx1,iord1, edepcell );
+    RefClust(incr,edepcell);
+    Int_t nentries1 = fPMDclucont->GetEntries();
+    AliDebug(1,Form("Detector Plane = %d  Serial Module No = %d Number of clusters = %d",idet, ismn, nentries1));
+    AliDebug(1,Form("Total number of clusters/module = %d",nentries1));
+    
+    for (Int_t ient1 = 0; ient1 < nentries1; ient1++)
+      {
+	AliPMDcludata *pmdcludata = 
+	  (AliPMDcludata*)fPMDclucont->UncheckedAt(ient1);
+	Float_t cluXC    = pmdcludata->GetClusX();
+	Float_t cluYC    = pmdcludata->GetClusY();
+	Float_t cluADC   = pmdcludata->GetClusADC();
+	Float_t cluCELLS = pmdcludata->GetClusCells();
+	Float_t cluSIGX  = pmdcludata->GetClusSigmaX();
+	Float_t cluSIGY  = pmdcludata->GetClusSigmaY();
+	
+	Float_t cluY0    = ktwobysqrt3*cluYC;
+	Float_t cluX0    = cluXC - cluY0/2.;
+	
+	// 
+	// Cluster X centroid is back transformed
+	//
+	
+	if (ismn < 12)
+	  {
+	    clusdata[0] = cluX0 - (24-1) + cluY0/2.;
+	  }
+	else if ( ismn >= 12 && ismn <= 23)
+	  {
+	    clusdata[0] = cluX0 - (48-1) + cluY0/2.;
+	  }	  
+	
+	clusdata[1]     = cluY0;
+	clusdata[2]     = cluADC;
+	clusdata[3]     = cluCELLS;
+	clusdata[4]     = cluSIGX;
+	clusdata[5]     = cluSIGY;
+	
+	//
+	// Cells associated with a cluster
+	//
+	
+	for (Int_t ihit = 0; ihit < kNmaxCell; ihit++)
+	  {
+	    Int_t cellrow = pmdcludata->GetCellXY(ihit)/10000;
+	    Int_t cellcol = pmdcludata->GetCellXY(ihit)%10000;
+	    
+	    if (ismn < 12)
+	      {
+		celldataX[ihit] = cellrow - (24-1) + int(cellcol/2.);
+	      }
+	    else if (ismn >= 12 && ismn <= 23)
+	      {
+		celldataX[ihit] = cellrow - (48-1) + int(cellcol/2.);
+	      }
+	    
+	    celldataY[ihit] = cellcol;
+	    
+	    Int_t irow = celldataX[ihit];
+	    Int_t icol = celldataY[ihit];
+	    
+	    if (ismn < 12)
+	      {
+		if ((irow >= 0 && irow < 96) && (icol >= 0 && icol < 48))
+		  {
+		    celldataTr[ihit]  = celltrack[icol][irow];
+		    celldataPid[ihit] = cellpid[icol][irow];
+		    celldataAdc[ihit] = (Float_t) celladc[icol][irow];
+		  }
+		else
+		  {
+		    celldataTr[ihit]  = -1;
+		    celldataPid[ihit] = -1;
+		    celldataAdc[ihit] = -1;
+		  }
+	      }
+	    else if (ismn >= 12 && ismn < 24)
+	      {
+		if ((irow >= 0 && irow < 48) && (icol >= 0 && icol < 96))
+		  {
+		    celldataTr[ihit]  = celltrack[irow][icol];
+		    celldataPid[ihit] = cellpid[irow][icol];
+		    celldataAdc[ihit] = (Float_t) celladc[irow][icol];
+		    
+		  }
+		else
+		  {
+		    celldataTr[ihit]  = -1;
+		    celldataPid[ihit] = -1;
+		    celldataAdc[ihit] = -1;
+		  }
+	      }
+	    
+	  }
+	
+	pmdcl = new AliPMDcluster(idet, ismn, clusdata, celldataX, celldataY,
+				  celldataTr, celldataPid, celldataAdc);
+	pmdcont->Add(pmdcl);
+      }
+  }//else
   fPMDclucont->Delete();
 }
 // ------------------------------------------------------------------------ //
