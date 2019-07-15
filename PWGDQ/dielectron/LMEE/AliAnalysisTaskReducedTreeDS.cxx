@@ -62,7 +62,7 @@
 
 using namespace std;
 
-//event property and single electron tree.
+//event properties and electrons tree.
 //Daiki Sekihata
 //daiki.sekihata@cern.ch
 
@@ -157,6 +157,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fIsTOFAvailable(0),
   fTrackMCMomentum(0),
   fTrackMCProdVtx(0),
+  fTrackMCGeneratorIndex(0),
   fTrackMCIndex(0),
   fTrackMCPdgCode(0),
   fTrackMCMotherIndex(0),
@@ -194,6 +195,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fV0legIsTOFAvailable(0),
   fV0MClegMomentum(0),
   fV0MClegProdVtx(0),
+  fV0MClegGeneratorIndex(0),
   fV0MClegIndex(0),
   fV0MClegPdgCode(0),
   fV0MClegMotherIndex(0),
@@ -203,6 +205,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS():
   fMCVertex(),
   fMCMomentum(0),
   fMCProdVtx(0),
+  fMCGeneratorIndex(0),
   fMCIndex(0),
   fMCPdgCode(0),
   fMCMotherIndex(0),
@@ -316,6 +319,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fIsTOFAvailable(0),
   fTrackMCMomentum(0),
   fTrackMCProdVtx(0),
+  fTrackMCGeneratorIndex(0),
   fTrackMCIndex(0),
   fTrackMCPdgCode(0),
   fTrackMCMotherIndex(0),
@@ -353,6 +357,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fV0legIsTOFAvailable(0),
   fV0MClegMomentum(0),
   fV0MClegProdVtx(0),
+  fV0MClegGeneratorIndex(0),
   fV0MClegIndex(0),
   fV0MClegPdgCode(0),
   fV0MClegMotherIndex(0),
@@ -362,6 +367,7 @@ AliAnalysisTaskReducedTreeDS::AliAnalysisTaskReducedTreeDS(const char *name):
   fMCVertex(),
   fMCMomentum(0),
   fMCProdVtx(0),
+  fMCGeneratorIndex(0),
   fMCIndex(0),
   fMCPdgCode(0),
   fMCMotherIndex(0),
@@ -490,6 +496,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   //MC info for reconstructed tracks
   fTree->Branch("fTrackMCMomentum",&fTrackMCMomentum);
   fTree->Branch("fTrackMCProdVtx",&fTrackMCProdVtx);
+  fTree->Branch("fTrackMCGeneratorIndex",&fTrackMCGeneratorIndex);
   fTree->Branch("fTrackMCIndex",&fTrackMCIndex);
   fTree->Branch("fTrackMCPdgCode",&fTrackMCPdgCode);
   fTree->Branch("fTrackMCMotherIndex",&fTrackMCMotherIndex);
@@ -534,6 +541,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   //MC info for reconstructed V0s
   fTree->Branch("fV0MClegMomentum",&fV0MClegMomentum);
   fTree->Branch("fV0MClegProdVtx",&fV0MClegProdVtx);
+  fTree->Branch("fV0MClegGeneratorIndex",&fV0MClegGeneratorIndex);
   fTree->Branch("fV0MClegIndex",&fV0MClegIndex);
   fTree->Branch("fV0MClegPdgCode",&fV0MClegPdgCode);
   fTree->Branch("fV0MClegMotherIndex",&fV0MClegMotherIndex);
@@ -545,6 +553,7 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
   fTree->Branch("fMCVertex",fMCVertex,"fMCVertex[3]/F");
   fTree->Branch("fMCMomentum",&fMCMomentum);
   fTree->Branch("fMCProdVtx",&fMCProdVtx);
+  fTree->Branch("fMCGeneratorIndex",&fMCGeneratorIndex);
   fTree->Branch("fMCIndex",&fMCIndex);
   fTree->Branch("fMCPdgCode",&fMCPdgCode);
   fTree->Branch("fMCMotherIndex",&fMCMotherIndex);
@@ -572,7 +581,6 @@ void AliAnalysisTaskReducedTreeDS::UserCreateOutputObjects()
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 {
-
   // Main loop
   // Called for each event
 
@@ -702,7 +710,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
   const Int_t Ntrack = fEvent->GetNumberOfTracks();
   fNHybridTrack08 = 0;
   if(fESDEvent){
-    AliInfo("So far, ESD is not supported. return.");
+    AliInfo("So far, ESD is not supported.");
   }//end of ESD
   else if(fAODEvent){
     for(Int_t itrack=0;itrack<Ntrack;itrack++){
@@ -731,7 +739,7 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
     if(TMath::Abs(track->Eta()) > fMaxEtaCut) continue;
 
     if(fESDEvent){
-      AliInfo("So far, ESD is not supported. return.");
+      AliInfo("So far, ESD is not supported.");
     }//end of ESD
     else if(fAODEvent){
       AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
@@ -830,9 +838,10 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
       Int_t label = TMath::Abs(track->GetLabel());
       AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(label);
       Int_t pdg = p->GetPdgCode();
+      Int_t genID = p->GetGeneratorIndex();
+      fTrackMCGeneratorIndex.push_back(genID);
       fTrackMCIndex.push_back(label);
       fTrackMCPdgCode.push_back(pdg);
-
 
       vector<Float_t>vec_mc(3,0);
       vec_mc[0] = p->Pt();
@@ -859,18 +868,14 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
         //printf("mother_index = %d , mother_pdg = %d\n",mother_index,mother_pdg);
 
         //check first mother
-        Int_t first_mother_index     = mp->GetMother();
-        Int_t first_mother_index_tmp = first_mother_index;
-        Int_t first_mother_pdg   = 0;//pdgcode 0 does not exist.
-        while(first_mother_index > -1){
-          first_mother_index_tmp = first_mother_index;
+        Int_t first_mother_index = GetFirstMother(p);
+        Int_t first_mother_pdg   = mp->GetPdgCode();
+        if(first_mother_index > -1){
           AliAODMCParticle *fmp = (AliAODMCParticle*)fMCArray->At(first_mother_index);
-          first_mother_index = fmp->GetMother();
-          first_mother_pdg   = fmp->GetPdgCode();
-        }//end of mother loop
-        fTrackMCFirstMotherIndex.push_back(first_mother_index_tmp);
+          first_mother_pdg = fmp->GetPdgCode();
+        }
+        fTrackMCFirstMotherIndex.push_back(first_mother_index);
         fTrackMCFirstMotherPdgCode.push_back(first_mother_pdg);
-        //printf("first_mother_index_tmp = %d , first_mother_pdg = %d\n",first_mother_index_tmp,first_mother_pdg);
       }
       else{//no mother, i.e. no first mother, too.
         fTrackMCMotherIndex.push_back(mother_index);
@@ -1168,6 +1173,12 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
       fV0MClegIndex.push_back(leglabel_tmp);
       leglabel_tmp.clear();
 
+      vector<Int_t> leggenID_tmp(2,0);
+      leggenID_tmp[0] = pPos->GetGeneratorIndex();
+      leggenID_tmp[1] = pNeg->GetGeneratorIndex();
+      fV0MClegGeneratorIndex.push_back(leggenID_tmp);
+      leggenID_tmp.clear();
+
       vector<Int_t> legpdg_tmp(2,0);
       legpdg_tmp[0] = pPos->GetPdgCode();
       legpdg_tmp[1] = pNeg->GetPdgCode();
@@ -1222,32 +1233,26 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
       if(leg_mother_index_tmp[0] > -1){//check mother for pos leg
         AliAODMCParticle *mpPos = (AliAODMCParticle*)fMCArray->At(leg_mother_index_tmp[0]);
         leg_mother_pdg_tmp[0] = mpPos->GetPdgCode();
+        leg_first_mother_pdg_tmp[0] = mpPos->GetPdgCode();
 
-        Int_t first_mother_index_tmp = mpPos->GetMother();
-        leg_first_mother_index_tmp[0] = first_mother_index_tmp;
-        while(first_mother_index_tmp > -1){
-          leg_first_mother_index_tmp[0] = first_mother_index_tmp;
-          AliAODMCParticle *fmpPos = (AliAODMCParticle*)fMCArray->At(first_mother_index_tmp);
-          first_mother_index_tmp      = fmpPos->GetMother();
+        leg_first_mother_index_tmp[0] = GetFirstMother(pPos);
+        if(leg_first_mother_index_tmp[0] > -1){
+          AliAODMCParticle *fmpPos = (AliAODMCParticle*)fMCArray->At(leg_first_mother_index_tmp[0]);
           leg_first_mother_pdg_tmp[0] = fmpPos->GetPdgCode();
-        }//end of mother loop
-
+        }
       }//end of check mother for pos leg
 
       if(leg_mother_index_tmp[1] > -1){//check mother for neg leg
         AliAODMCParticle *mpNeg = (AliAODMCParticle*)fMCArray->At(leg_mother_index_tmp[1]);
         leg_mother_pdg_tmp[1] = mpNeg->GetPdgCode();
+        leg_first_mother_pdg_tmp[1] = mpNeg->GetPdgCode();
 
-        Int_t first_mother_index_tmp = mpNeg->GetMother();
-        leg_first_mother_index_tmp[1] = first_mother_index_tmp;
-        while(first_mother_index_tmp > -1){
-          leg_first_mother_index_tmp[1] = first_mother_index_tmp;
-          AliAODMCParticle *fmpNeg = (AliAODMCParticle*)fMCArray->At(first_mother_index_tmp);
-          first_mother_index_tmp      = fmpNeg->GetMother();
+        leg_first_mother_index_tmp[1] = GetFirstMother(pNeg);
+        if(leg_first_mother_index_tmp[1] > -1){
+          AliAODMCParticle *fmpNeg = (AliAODMCParticle*)fMCArray->At(leg_first_mother_index_tmp[1]);
           leg_first_mother_pdg_tmp[1] = fmpNeg->GetPdgCode();
-        }//end of mother loop
-
-      }//end of check mother for pos leg
+        }
+      }//end of check mother for neg leg
 
       fV0MClegMotherIndex.push_back(leg_mother_index_tmp);
       fV0MClegMotherPdgCode.push_back(leg_mother_pdg_tmp);
@@ -1272,7 +1277,6 @@ void AliAnalysisTaskReducedTreeDS::UserExec(Option_t *option)
 //_______________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
 {
-
   const Int_t Ntrack = fMCArray->GetEntries();
   AliInfo(Form("Ntrack in MC = %d",Ntrack));
 
@@ -1285,77 +1289,99 @@ void AliAnalysisTaskReducedTreeDS::ProcessMC(Option_t *option)
 
   Int_t pdg = -1;
   Float_t pT = 0, eta = 0, phi = 0;
+  Int_t genID = -1;
 
-  for(Int_t itrack=0;itrack<Ntrack;itrack++){
-    AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(itrack);
-    pdg = p->GetPdgCode();
-    pT  = p->Pt();
-    eta = p->Eta();//pseudo-rapidity
-    phi = p->Phi();
+  AliAODMCHeader* mcHeader = (AliAODMCHeader*)fAODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  TList *headerList = mcHeader->GetCocktailHeaders();
+  const Int_t Ngen = headerList->GetEntries();
+  AliInfo(Form("N generators = %d",Ngen)); 
 
-    if(pT < fMinPtCut) continue;
-    if(TMath::Abs(eta) > fMaxEtaCut) continue;//select only electrons in |eta| < 0.8
-    if(TMath::Abs(pdg) != 11) continue; //select only electrons
+  Int_t begin = 0;
+  Int_t end   = 0; 
 
-    //Double_t dx = p->Xv() - fMCVertex[0];
-    //Double_t dy = p->Yv() - fMCVertex[1];
-    ////Double_t dz = p->Zv() - fMCVertex[2];
-    //Double_t R   = TMath::Sqrt(dx*dx + dy*dy);
-    ////Double_t Rho = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
-    //if(R > 1.) continue;//select electrons from primary vertex.
+  for(Int_t igen=0;igen<Ngen;igen++){
+    AliGenEventHeader *gh = (AliGenEventHeader*)headerList->At(igen);
+    end += gh->NProduced();//only generated by event generator (not GEANT)
 
-    if(!IsPrimaryElectron(p)) continue;
+    TString genname = gh->GetName();
+    AliInfo(Form("Generator name = %s , NProduced = %d.",genname.Data(),gh->NProduced()));
+    //printf("particle loop runs from %d to %d\n",begin,end);
 
-    vector<Float_t> prodvtx(3,0);
-    prodvtx[0] = p->Xv();
-    prodvtx[1] = p->Yv();
-    prodvtx[2] = p->Zv();
-    fMCProdVtx.push_back(prodvtx);
-    prodvtx.clear();
+    for(Int_t itrack=begin;itrack<end;itrack++){
+      AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(itrack);
+      pdg = p->GetPdgCode();
+      pT  = p->Pt();
+      eta = p->Eta();//pseudo-rapidity
+      phi = p->Phi();
 
-    vector<Float_t> vec(3,0);
-    vec[0] = pT;
-    vec[1] = eta;
-    vec[2] = phi;
-    fMCMomentum.push_back(vec);
-    vec.clear();
+      //if(pT < 0.1) continue;
+      //if(TMath::Abs(eta) > 1.0) continue;
+      if(TMath::Abs(pdg) != 11) continue;//select only electrons
 
-    fMCIndex.push_back(itrack);
-    fMCPdgCode.push_back(pdg);//11 or -11
+      //Double_t dx = p->Xv() - fMCVertex[0];
+      //Double_t dy = p->Yv() - fMCVertex[1];
+      ////Double_t dz = p->Zv() - fMCVertex[2];
+      //Double_t R   = TMath::Sqrt(dx*dx + dy*dy);
+      ////Double_t Rho = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
+      //if(R > 1.) continue;//select electrons from primary vertex.
 
-    //check mother
-    Int_t mother_index = p->GetMother();
-    Int_t mother_pdg   = 0;//pdgcode 0 does not exist.
-    if(mother_index > -1){
-      AliAODMCParticle *mp = (AliAODMCParticle*)fMCArray->At(mother_index);
-      mother_pdg = mp->GetPdgCode();
-      fMCMotherIndex.push_back(mother_index);
-      fMCMotherPdgCode.push_back(mother_pdg);
-      //printf("mother_index = %d , mother_pdg = %d\n",mother_index,mother_pdg);
+      if(!IsPrimaryElectron(p)) continue;
 
-      //check first mother
-      Int_t first_mother_index     = mp->GetMother();
-      Int_t first_mother_index_tmp = first_mother_index;
-      Int_t first_mother_pdg   = 0;//pdgcode 0 does not exist.
-      while(first_mother_index > -1){
-        first_mother_index_tmp = first_mother_index;
-        AliAODMCParticle *fmp = (AliAODMCParticle*)fMCArray->At(first_mother_index);
-        first_mother_index = fmp->GetMother();
-        first_mother_pdg   = fmp->GetPdgCode();
-      }//end of mother loop
-      fMCFirstMotherIndex.push_back(first_mother_index_tmp);
-      fMCFirstMotherPdgCode.push_back(first_mother_pdg);
-      //printf("first_mother_index_tmp = %d , first_mother_pdg = %d\n",first_mother_index_tmp,first_mother_pdg);
-    }
-    else{//no mother, i.e. no first mother, too.
-      fMCMotherIndex.push_back(mother_index);
-      fMCMotherPdgCode.push_back(mother_pdg);//pdgcode 0 does not exist.
+      vector<Float_t> prodvtx(3,0);
+      prodvtx[0] = p->Xv();
+      prodvtx[1] = p->Yv();
+      prodvtx[2] = p->Zv();
+      fMCProdVtx.push_back(prodvtx);
+      prodvtx.clear();
 
-      fMCFirstMotherIndex.push_back(mother_index);
-      fMCFirstMotherPdgCode.push_back(mother_pdg);//pdgcode 0 does not exist.
-    }
+      vector<Float_t> vec(3,0);
+      vec[0] = pT;
+      vec[1] = eta;
+      vec[2] = phi;
+      fMCMomentum.push_back(vec);
+      vec.clear();
 
-  }//end of MC track loop
+      genID = p->GetGeneratorIndex();
+      fMCGeneratorIndex.push_back(genID);
+      fMCIndex.push_back(itrack);
+      fMCPdgCode.push_back(pdg);//11 or -11
+
+      //check mother
+      Int_t mother_index = p->GetMother();
+      Int_t mother_pdg   = 0;//pdgcode 0 does not exist.
+      Int_t first_mother_index = p->GetMother();
+      Int_t first_mother_pdg   = 0;
+      if(mother_index > -1){
+        AliAODMCParticle *mp = (AliAODMCParticle*)fMCArray->At(mother_index);
+        mother_pdg = mp->GetPdgCode();
+        fMCMotherIndex.push_back(mother_index);
+        fMCMotherPdgCode.push_back(mother_pdg);
+        //printf("mother_index = %d , mother_pdg = %d\n",mother_index,mother_pdg);
+
+        //check first mother
+        first_mother_index = GetFirstMother(p);
+        first_mother_pdg   = mp->GetPdgCode();
+        if(first_mother_index > -1){
+          AliAODMCParticle *fmp = (AliAODMCParticle*)fMCArray->At(first_mother_index);
+          first_mother_pdg = fmp->GetPdgCode();
+        } 
+        fMCFirstMotherIndex.push_back(first_mother_index);
+        fMCFirstMotherPdgCode.push_back(first_mother_pdg);
+      }
+      else{//no mother, i.e. no first mother, too.
+        fMCMotherIndex.push_back(mother_index);
+        fMCMotherPdgCode.push_back(mother_pdg);//pdgcode 0 does not exist.
+
+        fMCFirstMotherIndex.push_back(mother_index);
+        fMCFirstMotherPdgCode.push_back(mother_pdg);//pdgcode 0 does not exist.
+      }
+      //printf("genID = %d , id = %d (PDG=%d) , mother_id = %d (PDG=%d) , first_mother_id = %d (PDG=%d)\n",igen,itrack,pdg,mother_index,mother_pdg,first_mother_index,first_mother_pdg);
+
+    }//end of MC generated track loop
+
+    begin = end;
+
+  }//end of generator loop
 
 }
 //_______________________________________________________________________________________________
@@ -1364,57 +1390,72 @@ Bool_t AliAnalysisTaskReducedTreeDS::IsPrimaryElectron(AliAODMCParticle *p)
   Int_t pdg = p->GetPdgCode();
   if(TMath::Abs(pdg) != 11) return kFALSE;//not electron
 
-  Int_t mother_index = p->GetMother();
-  if(mother_index < 0){
-    AliInfo("there is no mother for this electron. return kFALSE.");
-    return kFALSE;
-  }
-  else{
-    AliAODMCParticle *mp = (AliAODMCParticle*)fMCArray->At(mother_index);
-    //Bool_t isEW = IsEWBoson(mp);//not necessary
-    Bool_t isLF = IsLF(mp);
-    Bool_t isHF = IsHF(mp);
+  //Bool_t isEW = IsEWBoson(p);//not necessary
+  Bool_t isLF = IsLF(p);
+  Bool_t isHF = IsSemileptonicDecayFromHF(p);
 
-    //if(isEW || isLF || isHF) return kTRUE;
-    if(isLF || isHF) return kTRUE;
-    else return kFALSE; 
-  }
+  //if(isEW || isLF || isHF) return kTRUE;
+  if(isLF || isHF) return kTRUE;
+  else return kFALSE; 
 }
 //_______________________________________________________________________________________________
-Bool_t AliAnalysisTaskReducedTreeDS::IsEWBoson(AliAODMCParticle *mp)
+Bool_t AliAnalysisTaskReducedTreeDS::IsEWBoson(AliAODMCParticle *p)
 {
-  Int_t pdg = TMath::Abs(mp->GetPdgCode());
-  if(pdg == 22){
+  Int_t pdg = p->GetPdgCode();
+  if(TMath::Abs(pdg) != 11) return kFALSE;//not electron
+
+  Int_t mother_index = p->GetMother();
+  if(mother_index < 0) return kFALSE;
+  AliAODMCParticle *mp = (AliAODMCParticle*)fMCArray->At(mother_index);
+  Int_t mother_pdg = mp->GetPdgCode();
+
+  if(mother_pdg == 22){
     AliInfo("mother is photon. return kTRUE.");
     return kTRUE;
   }
-  else if(pdg == 23){
-    AliInfo("mother is Z bonson. return kTRUE.");
+  else if(mother_pdg == 23){
+    AliInfo("mother is Z boson. return kTRUE.");
     return kTRUE;
   }
-  else if(pdg == 24){
-    AliInfo("mother is W bonson. return kTRUE.");
+  else if(mother_pdg == 24){
+    AliInfo("mother is W boson. return kTRUE.");
     return kTRUE;
   }
   return kFALSE;
 }
 //_______________________________________________________________________________________________
-Bool_t AliAnalysisTaskReducedTreeDS::IsLF(AliAODMCParticle *mp)
+Bool_t AliAnalysisTaskReducedTreeDS::IsLF(AliAODMCParticle *p)
 {
-  //return kFALSE;//only for protection
+  Int_t pdg = p->GetPdgCode();
+  if(TMath::Abs(pdg) != 11) return kFALSE;//not electron
 
-  const Int_t meson[] = {111, 221, 331, 113, 223, 333};//pi0, eta, eta', rho(770), omega(782), phi(1020)
+  //J/psi is in LF injected M.C.
+  const Int_t meson[] = {111, 221, 331, 113, 223, 333, 443};//pi0, eta, eta', rho(770), omega(782), phi(1020), J/psi
   const Int_t Nm = sizeof(meson)/sizeof(meson[0]);
+
+  Int_t mother_index = p->GetMother();
+  if(mother_index < 0) return kFALSE;
+  AliAODMCParticle *mp = (AliAODMCParticle*)fMCArray->At(mother_index);
+  Int_t mother_pdg = mp->GetPdgCode();
+
+  Int_t first_mother_index = GetFirstMother(p);
+  Int_t first_mother_pdg = 0;
+
+  if(mother_index != first_mother_index) return kFALSE;//reject vector meson->pi0->e
+
+  if(first_mother_index > -1){
+    AliAODMCParticle *fmp = (AliAODMCParticle*)fMCArray->At(first_mother_index);
+    first_mother_pdg = fmp->GetPdgCode();
+  }
 
   Double_t dx = mp->Xv() - fMCVertex[0];
   Double_t dy = mp->Yv() - fMCVertex[1];
   Double_t R   = TMath::Sqrt(dx*dx + dy*dy);
   //AliInfo(Form("R in X-Y plane = %e cm.",R));
-  if(R > 1.) return kFALSE;//select electrons from primary vertex.//1cm
+  //if(R > 1.) return kFALSE;//select electrons from primary vertex.//1cm
 
-  Int_t pdg = mp->GetPdgCode();
   for(Int_t i=0;i<Nm;i++){
-    if(TMath::Abs(pdg) == meson[i]){
+    if(TMath::Abs(mother_pdg) == meson[i]){
       AliInfo(Form("Match with %d at Rxy = %e cm. return kTRUE.",meson[i],R));
       return kTRUE;
     }
@@ -1423,28 +1464,35 @@ Bool_t AliAnalysisTaskReducedTreeDS::IsLF(AliAODMCParticle *mp)
   return kFALSE;
 }
 //_______________________________________________________________________________________________
-Bool_t AliAnalysisTaskReducedTreeDS::IsHF(AliAODMCParticle *mp)
+Bool_t AliAnalysisTaskReducedTreeDS::IsSemileptonicDecayFromHF(AliAODMCParticle *p)
 {
-  //the last digit of pdg code is 2s+1.
-  Int_t pdg = mp->GetPdgCode();//charge sign does not matter here.
+  Int_t pdg = p->GetPdgCode();
+  if(TMath::Abs(pdg) != 11) return kFALSE;//not electron
 
-  if(TMath::Abs(pdg) < 100){
+  Int_t mother_index = p->GetMother();
+  if(mother_index < 0) return kFALSE;
+  AliAODMCParticle *mp = (AliAODMCParticle*)fMCArray->At(mother_index);
+  Int_t mother_pdg = mp->GetPdgCode();
+
+  //the last digit of pdg code is 2s+1.
+
+  if(TMath::Abs(mother_pdg) < 100){
     //AliInfo(Form("PDG code %d is not a hadron. return kFALSE.",pdg));
     return kFALSE;
   }
  
-  if(pdg == 130 || pdg==310){//standard rule 2s+1 is broken for K0S and K0L.
+  if(mother_pdg == 130 || mother_pdg == 310){//standard rule 2s+1 is broken for K0S and K0L.
     //AliInfo("reject K0S - K0L mixing");
     return kFALSE;
   }
  
-  TString str = TString::Itoa(pdg,10);
+  TString str = TString::Itoa(mother_pdg,10);
   Int_t len = str.Length();
   Double_t dx = mp->Xv() - fMCVertex[0];
   Double_t dy = mp->Yv() - fMCVertex[1];
   Double_t R  = TMath::Sqrt(dx*dx + dy*dy);
 
-  if(pdg %2 == 0){//baryon
+  if(mother_pdg %2 == 0){//baryon
     TString str_q1 = str[len-4];
     TString str_q2 = str[len-3];
     TString str_q3 = str[len-2];
@@ -1454,26 +1502,27 @@ Bool_t AliAnalysisTaskReducedTreeDS::IsHF(AliAODMCParticle *mp)
     Int_t q3 = str_q3.Atoi();
 
     if(q1==5 || q2==5 || q3==5){
-      AliInfo(Form("Bottom baryon %d is matched at Rxy = %e. return kTRUE.",pdg,R));
+      AliInfo(Form("Bottom baryon %d is matched at Rxy = %e. return kTRUE.",mother_pdg,R));
       return kTRUE;
     }
     if(q1==4 || q2==4 || q3==5){
-      AliInfo(Form("Charmed baryon %d is matched at Rxy = %e. return kTRUE.",pdg,R));
+      AliInfo(Form("Charmed baryon %d is matched at Rxy = %e. return kTRUE.",mother_pdg,R));
       return kTRUE;
     }
   }
   else{//meson
     TString str_q1 = str[len-3];
     TString str_q2 = str[len-2];
+    //reject quarkonia
 
     Int_t q1 = str_q1.Atoi();
     Int_t q2 = str_q2.Atoi();
-    if(q1==5 || q2==5){
-      AliInfo(Form("Bottom meson %d is matched at Rxy = %e. return kTRUE.",pdg,R));
+    if(q1==5 ^ q2==5){
+      AliInfo(Form("Bottom meson %d is matched at Rxy = %e. return kTRUE.",mother_pdg,R));
       return kTRUE;
     }
-    if(q1==4 || q2==4){
-      AliInfo(Form("Charmed meson %d is matched at Rxy = %e. return kTRUE.",pdg,R));
+    if(q1==4 ^ q2==4){
+      AliInfo(Form("Charmed meson %d is matched at Rxy = %e. return kTRUE.",mother_pdg,R));
       return kTRUE;
     }
   }
@@ -1615,6 +1664,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
 
   fTrackMCMomentum.clear();
   fTrackMCProdVtx.clear();
+  fTrackMCGeneratorIndex.clear();
   fTrackMCIndex.clear();
   fTrackMCPdgCode.clear();
   fTrackMCMotherIndex.clear();
@@ -1656,6 +1706,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
 
   fV0MClegMomentum.clear();
   fV0MClegProdVtx.clear();
+  fV0MClegGeneratorIndex.clear();
   fV0MClegIndex.clear();
   fV0MClegPdgCode.clear();
   fV0MClegMotherIndex.clear();
@@ -1666,6 +1717,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorElement()
   //clear MC variables
   fMCMomentum.clear();
   fMCProdVtx.clear();
+  fMCGeneratorIndex.clear();
   fMCIndex.clear();
   fMCPdgCode.clear();
   fMCMotherIndex.clear();
@@ -1719,6 +1771,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   //MC track info
   vector<vector<Float_t>>().swap(fTrackMCMomentum);
   vector<vector<Float_t>>().swap(fTrackMCProdVtx);
+  vector<Int_t>().swap(fTrackMCGeneratorIndex);
   vector<Int_t>().swap(fTrackMCIndex);
   vector<Int_t>().swap(fTrackMCPdgCode);
   vector<Int_t>().swap(fTrackMCMotherIndex);
@@ -1760,6 +1813,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   //MC V0 info //be carefull, there is no TRUE V0 object!
   vector<vector<vector<Float_t>>>().swap(fV0MClegMomentum);
   vector<vector<vector<Float_t>>>().swap(fV0MClegProdVtx);
+  vector<vector<Int_t>>().swap(fV0MClegGeneratorIndex);
   vector<vector<Int_t>>().swap(fV0MClegIndex);
   vector<vector<Int_t>>().swap(fV0MClegPdgCode);
   vector<vector<Int_t>>().swap(fV0MClegMotherIndex);
@@ -1770,6 +1824,7 @@ void AliAnalysisTaskReducedTreeDS::ClearVectorMemory()
   //MC variables for true electrons
   vector<vector<Float_t>>().swap(fMCMomentum);
   vector<vector<Float_t>>().swap(fMCProdVtx);
+  vector<Int_t>().swap(fMCGeneratorIndex);
   vector<Int_t>().swap(fMCIndex);
   vector<Int_t>().swap(fMCPdgCode);
   vector<Int_t>().swap(fMCMotherIndex);
