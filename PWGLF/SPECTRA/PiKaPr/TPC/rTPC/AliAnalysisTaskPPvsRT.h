@@ -54,6 +54,7 @@ public:
     virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
     virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
     virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
+    virtual void  SetMeanChT(const Double_t meanChT){fMeanChT = meanChT;}
     virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
     virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
     virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
@@ -61,7 +62,7 @@ public:
     virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
     virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
     virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
-    virtual void  SetPeriod(Int_t isLHC16l) { fLHC16l = isLHC16l; }
+    virtual void  SetPeriod(const char* period) { fPeriod = period; }
     
 private:
 
@@ -86,8 +87,8 @@ private:
     Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
     Float_t GetMaxDCApTDep( TF1 *fcut, Double_t pt );
     virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
-    Double_t EtaCalibration(const Int_t centrality, const Double_t Eta);
-    Double_t EtaCalibrationEl(const Int_t centrality, const Double_t Eta);
+    Double_t EtaCalibration(const Double_t Eta);
+    Double_t EtaCalibrationEl(const Double_t Eta);
     
     static const Double_t fgkClight;   // Speed of light (cm/ps)
     
@@ -104,6 +105,7 @@ private:
     AliAnalysisFilter* fTrackFilter;
     AliAnalysisUtils* utils;
     TString       fAnalysisType;        //  "ESD" or "AOD"
+    const Char_t* fPeriod;        //  "ESD" or "AOD"
     Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
     Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
     TRandom*      fRandom;              //! random number generator
@@ -122,7 +124,7 @@ private:
     const Double_t fDeDxMIPMax;
     const Double_t fdEdxHigh;
     const Double_t fdEdxLow;
-    const Double_t fMeanChT;
+    Double_t fMeanChT;
     
     //
     // Help variables
@@ -144,7 +146,6 @@ private:
     Bool_t       fdEdxCalibrated;
     Bool_t       fMakePid;
     Bool_t       fLowPt;
-    Int_t  fLHC16l;
     TH1F* fMultN;
     TH1F* fPtN;
     TH1F* fDphiN;
@@ -166,50 +167,51 @@ private:
     
     // Histograms for PreCalibration
     
-    TH2D *hMIPVsEta[3][6];
-    TProfile *pMIPVsEta[3][6];
-    TH2D *hMIPVsEtaV0s[6];
-    TProfile *pMIPVsEtaV0s[6];
-    TH2D *hPlateauVsEta[6];
-    TProfile *pPlateauVsEta[6];
-    TH2D *hPhi[6];
-    TH2D     *hMIPVsPhi[6][4];
-    TProfile *pMIPVsPhi[6][4];
-    TH2D     *hPlateauVsPhi[6][4];
-    TProfile *pPlateauVsPhi[6][4];
+    TH2D *hMIPVsEta[3][5];
+    TProfile *pMIPVsEta[3][5];
+    TH2D *hMIPVsEtaV0s[5];
+    TProfile *pMIPVsEtaV0s[5];
+    TH2D *hPlateauVsEta[5];
+    TProfile *pPlateauVsEta[5];
+    TH2D *hPhi[5];
+    TH1D *hphi[3][5];
+    TH2D     *hMIPVsPhi[5][4];
+    TProfile *pMIPVsPhi[5][4];
+    TH2D     *hPlateauVsPhi[5][4];
+    TProfile *pPlateauVsPhi[5][4];
     
     
     // Histograms for PostCalibration
     
     
     TH2D *hPtVsP[4];
-    TH1D *hPtAll[3][6];
-    TH2D *hDeDxVsP[3][6][4];
-    TH2D *hnSigmaPi[6][4];
-    TH2D *hnSigmak[6][4];
-    TH2D *hnSigmap[6][4];
+    TH1D *hPtAll[3][5];
+    TH2D *hDeDxVsP[3][5][4];
+    TH2D *hnSigmaPi[5][4];
+    TH2D *hnSigmak[5][4];
+    TH2D *hnSigmap[5][4];
     
-    TH2D* histPiV0[6][4];
-    TH1D* histpPiV0[6][4];
-    TH2D* histPV0[6][4];
-    TH1D* histpPV0[6][4];
-    TH2D* histPiTof[6][4];
-    TH1D* histpPiTof[6][4];
-    TH2D* histEV0[6][4];
+    TH2D* histPiV0[5][4];
+    TH1D* histpPiV0[5][4];
+    TH2D* histPV0[5][4];
+    TH1D* histpPV0[5][4];
+    TH2D* histPiTof[5][4];
+    TH1D* histpPiTof[5][4];
+    TH2D* histEV0[5][4];
     
-    TH1D* hMcIn[6][7];
-    TH1D* hMcOut[6][7];
-    TH2D* hDCAxyVsPtPi[6];
-    TH2D* hDCAxyVsPtPiC[6];
-    TH2D* hDCAxyVsPtp[6];
-    TH2D* hDCAxyVsPtpC[6];
-    TH2D* hDCApTPrim[6][7];
-    TH2D* hDCApTWDec[6][7];
-    TH2D* hDCApTMate[6][7];
+    TH1D* hMcIn[5][7];
+    TH1D* hMcOut[5][7];
+    TH2D* hDCAxyVsPtPi[5];
+    TH2D* hDCAxyVsPtPiC[5];
+    TH2D* hDCAxyVsPtp[5];
+    TH2D* hDCAxyVsPtpC[5];
+    TH2D* hDCApTPrim[5][7];
+    TH2D* hDCApTWDec[5][7];
+    TH2D* hDCApTMate[5][7];
     
-    TH2D* hDCApTPrim2[6][7];
-    TH2D* hDCApTWDec2[6][7];
-    TH2D* hDCApTMate2[6][7];
+    TH2D* hDCApTPrim2[5][7];
+    TH2D* hDCApTWDec2[5][7];
+    TH2D* hDCApTMate2[5][7];
     TF1* fEtaCalibration;
     TF1* fEtaCalibrationEl;
     TF1* fcutDCAxy;

@@ -14,7 +14,8 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
 		Bool_t MakePid = kFALSE,
-		const Int_t LHC16l = 1  // 1-LHC16l 0-LHC16k 
+		const Char_t* Period = "l",
+		const Double_t MeanCh = 1.1
 		)   
 {
 
@@ -55,17 +56,16 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	if(!task) return 0x0;
 
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-//	task->SelectCollisionCandidates(AliVEvent::kAnyINT);
 	task->SetAnalysisType(type);
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
-	task->SetPeriod(LHC16l);
+	task->SetPeriod(Period);
+	task->SetMeanChT(MeanCh);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
 		task->SetMinCent(0.0);
 		task->SetMaxCent(90.0);
-//		task->SetCentralityEstimator(centralityEstimator);
 	}
 	else
 		task->SetAnalysisPbPb(kFALSE);
@@ -73,14 +73,10 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-//	task->SetVtxCut(10.0);
-//	task->SetTrigger(AliVEvent::kINT7);
-//	task->SetPileUpRej(ispileuprej);
 	//Set Filtesr
 	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
 	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
-//	task->SetStoreMcIn(AnalysisMC);     // def: kFALSE
 	task->SetAnalysisTask(PostCalib);
 	task->SetAnalysisPID(MakePid);
 
