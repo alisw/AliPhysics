@@ -2203,6 +2203,15 @@ void AddTask_GammaConvCalo_pp(
   } else if (generatorName.Contains("LHC14e2c")){
     energy = "8TeV";
     mcName = "Phojet_LHC14e2c";
+  } else if (generatorName.Contains("LHC16c2")){
+    energy            = "8TeV";
+    mcName            = "LHC16c2";
+  } else if (generatorName.Contains("LHC16h3")){
+    energy            = "5TeV";
+    mcName            = "PythiaJets_LHC16h3";
+  } else if (generatorName.Contains("LHC18b8")){
+    energy            = "5TeV";
+    mcName            = "PythiaJets_LHC18b8";
   }
 
   EventCutList->SetOwner(kTRUE);

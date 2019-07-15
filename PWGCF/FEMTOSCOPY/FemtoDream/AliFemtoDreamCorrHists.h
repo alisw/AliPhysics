@@ -13,6 +13,7 @@
 #include "TList.h"
 
 #include "AliFemtoDreamCollConfig.h"
+#include "AliFemtoDreamBasePart.h"
 
 class AliFemtoDreamCorrHists {
  public:
@@ -98,9 +99,23 @@ class AliFemtoDreamCorrHists {
   void FillMassQADist(int i, float kstar, float invMass1, float invMass2) {
     if(fMassQADistPart1[i] && fMassQADistPart2[i]) {
       fMassQADistPart1[i]->Fill(invMass1, kstar);
-      fMassQADistPart2[i]->Fill(invMass2, kstar);
+      fMassQADistPart2[i]->Fill(invMass2, kstar);      
     }
-  }
+
+}
+
+  void FillPairInvMassQAD(int i, AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2) {
+    if(fPairInvMassQAD[i]) {
+ 	TVector3 momPart1 = part1.GetMomentum();
+        TVector3 momPart2 = part2.GetMomentum();
+        TLorentzVector trackPos, trackNeg;
+          trackPos.SetXYZM(momPart1.Px(), momPart1.Py(), momPart1.Pz(), part1.GetInvMass());
+          trackNeg.SetXYZM(momPart2.Px(), momPart2.Py(), momPart2.Pz(), part2.GetInvMass());
+         TLorentzVector trackSum = trackPos + trackNeg;
+    
+       fPairInvMassQAD[i]->Fill(trackSum.M());
+       }
+ }
   void FillMixedEventMultDist(int i, int iMult, float RelK) {
     if (fMixedEventMultDist[i])
       fMixedEventMultDist[i]->Fill(RelK, iMult);
@@ -206,6 +221,7 @@ class AliFemtoDreamCorrHists {
   TH2F **fPtQADist;
   TH2F **fMassQADistPart1;
   TH2F **fMassQADistPart2;
+  TH1F **fPairInvMassQAD;
   TH2F **fPairCounterSE;
   TH1F **fMixedEventDist;
   TH2F **fMixedEventMultDist;
@@ -242,7 +258,7 @@ class AliFemtoDreamCorrHists {
   std::vector<int> fPDGCode;
   std::vector<float> fmTdEtadPhiBins;
   std::vector<unsigned int> fWhichPairs;
-  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,7)
+  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,8)
   ;
 };
 
