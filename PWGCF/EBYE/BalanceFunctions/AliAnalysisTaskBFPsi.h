@@ -158,11 +158,16 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void ExcludeSecondariesInMC()  {fExcludeSecondariesInMC = kTRUE;}
   void ExcludeWeakDecaysInMC() {fExcludeWeakDecaysInMC = kTRUE;}
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
-  void ExcludeResonancesLabelCut() {fExcludeResonancesLabel = kTRUE;}
   void ExcludeElectronsInMC()  {fExcludeElectronsInMC = kTRUE;}
   void ExcludeParticlesExtra() {fExcludeParticlesExtra = kTRUE;}
   void ExcludeResonancePDGInMC(Double_t pdgValue) {fExcludeResonancePDGInMC = pdgValue;}
   void IncludeResonancePDGInMC(Double_t pdgValue) {fIncludeResonancePDGInMC = pdgValue;}
+
+
+  void ExcludeResonancesLabelCut(Int_t gPdgResonanceCode) {
+     fExcludeResonancesLabel = kTRUE;
+     fMotherPDGCodeToExclude = gPdgResonanceCode;
+  }
 
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
@@ -596,6 +601,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC and MCAODrec
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
+  Int_t fMotherPDGCodeToExclude; // exclude the resonance with this PDG with the label cut from the MC analysis 
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
 
