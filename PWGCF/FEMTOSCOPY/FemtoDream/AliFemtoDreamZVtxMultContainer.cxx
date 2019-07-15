@@ -160,6 +160,8 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
             ResultsHist->FillMassQADist(HistCounter, RelativeK,
                                         itPart1->GetInvMass(),
                                         itPart2->GetInvMass());
+	    ResultsHist->FillPairInvMassQAD(HistCounter, part1, part2);
+
           }
           ++itPart2;
         }
