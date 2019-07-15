@@ -1290,6 +1290,24 @@ void AliAnalysisTaskUPCforward::UserCreateOutputObjects()
   fCosThetaHelicityFrameJPsiAlreadyCorrectedH = new TH1F("fCosThetaHelicityFrameJPsiAlreadyCorrectedH", "fCosThetaHelicityFrameJPsiAlreadyCorrectedH", 100, -1., 1.);
   fOutputList->Add(fCosThetaHelicityFrameJPsiAlreadyCorrectedH);
 
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 50; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[iCosThetaBins]);
+  }
+
+  for(Int_t iCosThetaBins = 0; iCosThetaBins < 100; iCosThetaBins++ ){
+    fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[iCosThetaBins] = new TH1F(
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH_%d", iCosThetaBins),
+                Form("fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH_%d", iCosThetaBins),
+                2000, 0, 20
+                );
+    fOutputList->Add(fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[iCosThetaBins]);
+  }
+
 
   //_______________________________
   // - End of the function
@@ -2693,6 +2711,8 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
    */
   Bool_t controlFlag9  = 0;
   Bool_t controlFlag10 = 0;
+  Bool_t controlFlag11 = 0;
+  Bool_t controlFlag12 = 0;
   Double_t MyVariableCosThetaBinning1Dv3[] = { -0.65,  -0.5,  -0.425, -0.35,
                                                -0.275, -0.2,  -0.125, -0.075,
                                                -0.025,  0.025, 0.075,  0.125,
@@ -2702,12 +2722,28 @@ void AliAnalysisTaskUPCforward::UserExec(Option_t *)
         Double_t CosThetaHelicityFrameValue6 = CosThetaHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
         Double_t PhiHelicityFrameValue6      =   CosPhiHelicityFrame( muonsCopy2[0], muonsCopy2[1], possibleJPsiCopy );
         Double_t WeightFromAcceptance        =      AccEffCorrection( CosThetaHelicityFrameValue6 );
-        fCosThetaHelicityFrameJPsiAlreadyCorrectedH->Fill( CosThetaHelicityFrameValue6, 1/WeightFromAcceptance );
+        if ( ( possibleJPsiCopyMag > 2.85 ) && ( possibleJPsiCopyMag < 3.35 ) ) {
+          fCosThetaHelicityFrameJPsiAlreadyCorrectedH->Fill( CosThetaHelicityFrameValue6, 1/WeightFromAcceptance );
+        }
         for(Int_t iCosThetaBins = 0; iCosThetaBins < 17; iCosThetaBins++) {
           if( controlFlag9 == 1) break;
           if( CosThetaHelicityFrameValue6 < MyVariableCosThetaBinning1Dv3[iCosThetaBins + 1] ){
             fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameMySeventeenBinsVariableBinningH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
             controlFlag9 = 1;
+          }
+        }
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 50; iCosThetaBins++) {
+          if( controlFlag11 == 1) break;
+          if( (CosThetaHelicityFrameValue6 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/50. ) {
+            fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag11 = 1;
+          }
+        }
+        for(Int_t iCosThetaBins = 0; iCosThetaBins < 100; iCosThetaBins++) {
+          if( controlFlag12 == 1) break;
+          if( (CosThetaHelicityFrameValue6 + 1.) < 2.*((Double_t)iCosThetaBins + 1.)/100. ) {
+            fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[iCosThetaBins]->Fill(possibleJPsiCopyMag);
+            controlFlag12 = 1;
           }
         }
   }

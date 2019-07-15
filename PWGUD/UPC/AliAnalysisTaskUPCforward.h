@@ -1361,8 +1361,13 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  * COS(THETA) distribution.
                                  * Already corrected by ACCxEFF thanks to
                                  * a weight...
+                                 *
+                                 * Plus the distributions in invariant mass
+                                 * for signal extraction.
                                  */
         TH1F*                   fCosThetaHelicityFrameJPsiAlreadyCorrectedH;       //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedFiftyH[50];  //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaForSignalExtractionHelicityFrameForAlreadyCorrectedHundredH[100];  //!
 
         //_______________________________
         // CUTS
@@ -1424,7 +1429,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 32);
+        ClassDef(AliAnalysisTaskUPCforward, 33);
 };
 
 #endif
