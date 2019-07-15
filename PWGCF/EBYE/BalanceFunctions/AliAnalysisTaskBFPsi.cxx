@@ -262,6 +262,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fExcludeParticlesExtra(kFALSE),
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
+  fMotherPDGCodeToExclude(-1),
   fExcludeResonancePDGInMC(-1),
   fIncludeResonancePDGInMC(-1),
   fExcludeInjectedSignals(kFALSE),
@@ -4070,19 +4071,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
               
 	        Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
               
-	        if(TMath::Abs(fPDGCodeToBeAnalyzed)==211){
- 	          if(pdgCodeOfMother == 113)
-	            kMotherLabel = TMath::Abs(motherTrack->GetLabel());
-               }
-	        else if (TMath::Abs(fPDGCodeToBeAnalyzed)==321){
-                  if(pdgCodeOfMother == 333)
-                    kMotherLabel = TMath::Abs(motherTrack->GetLabel());
-	        }
+                  if(TMath::Abs(fMotherPDGCodeToExclude) == TMath::Abs(pdgCodeOfMother))
+                      kMotherLabel = TMath::Abs(motherTrack->GetLabel());
+ 	
               }
             }
           }
         }
-
 
 	//Exclude resonances with a specific PDG value
 	if(fExcludeResonancePDGInMC > -1) {
