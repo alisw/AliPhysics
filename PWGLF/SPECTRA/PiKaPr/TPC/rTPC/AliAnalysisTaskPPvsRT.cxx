@@ -83,9 +83,9 @@ using namespace std;
 //static const Double_t AliAnalysisTaskPPvsRT::fgkClight = 2.99792458e-2;
 static float Magf                    = 1;
 static const int nHists              = 4;
-static const int nRt                 = 6;
-static const int CentMin[nRt]   = {0,1,2,3,4,0};
-static const int CentMax[nRt]   = {1,2,3,4,10,10};
+static const int nRt                 = 5;
+static const int CentMin[nRt]   = {0,1,2,3,0};
+static const int CentMax[nRt]   = {1,2,3,10,10};
 
 ClassImp(AliAnalysisTaskPPvsRT)
 AliAnalysisTaskPPvsRT::AliAnalysisTaskPPvsRT():
@@ -103,6 +103,7 @@ fTrackFilterTPC(0x0),
 fTrackFilter(0x0),
 utils(0x0),
 fAnalysisType("ESD"),
+fPeriod("z"),
 fAnalysisMC(kFALSE),
 fAnalysisPbPb(kFALSE),
 fRandom(0x0),
@@ -130,7 +131,7 @@ fVtxMC(0x0),
 fdEdxCalibrated(0x0),
 fMakePid(0x0),
 fLowPt(0x0),
-fLHC16l(0x0),
+//fLHC16l(0x0),
 fMultN(0x0),
 fPtN(0x0),
 fDphiN(0x0),
@@ -164,6 +165,7 @@ fcutHigh(0x0)
     for(Int_t r= 0; r < 3; r++){
         hMIPVsEta[r][i]=0;
         pMIPVsEta[r][i]=0;
+	hphi[r][i]=0;
         hPtAll[r][i]=0;
 	}
         
@@ -234,6 +236,7 @@ fTrackFilterTPC(0x0),
 fTrackFilter(0x0),
 utils(0x0),
 fAnalysisType("ESD"),
+fPeriod("z"),
 fAnalysisMC(kFALSE),
 fAnalysisPbPb(kFALSE),
 fRandom(0x0),
@@ -261,7 +264,7 @@ fVtxMC(0x0),
 fdEdxCalibrated(0x0),
 fMakePid(0x0),
 fLowPt(0x0),
-fLHC16l(0x0),
+//fLHC16l(0x0),
 fMultN(0x0),
 fPtN(0x0),
 fDphiN(0x0),
@@ -292,6 +295,7 @@ fcutHigh(0x0)
     for(Int_t r= 0; r < 3; r++){
         hMIPVsEta[r][i]=0;
         pMIPVsEta[r][i]=0;
+	hphi[r][i]=0;
         hPtAll[r][i]=0;
 	}
         
@@ -527,6 +531,8 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
     for(Int_t r = 0; r<3; ++r){
         hMIPVsEta[r][i] = new TH2D(Form("hMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
         pMIPVsEta[r][i] = new TProfile(Form("pMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8, fDeDxMIPMin, fDeDxMIPMax);
+        hphi[r][i] = new TH1D(Form("hphi_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #phi; Entries",64,0.0,2*TMath::Pi());
+	hphi[r][i]->Sumw2();
         hPtAll[r][i] = new TH1D(Form("hPt_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),";#it{p}_{T};Counts",nPtBins,ptBins);
         hPtAll[r][i]->Sumw2();
 		}
@@ -599,6 +605,7 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
 	for(Int_t r =0; r < 3; r++){
             fListOfObjects->Add(hMIPVsEta[r][i]);
             fListOfObjects->Add(pMIPVsEta[r][i]);
+            fListOfObjects->Add(hphi[r][i]);
 		}
 
             fListOfObjects->Add(hPlateauVsEta[i]);
@@ -615,6 +622,7 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
             if(fMakePid){
 		for(Int_t r =0; r < 3; r++)
                 fListOfObjects->Add(hPtAll[r][i]);
+					
                 if(fLowPt){
                     fListOfObjects->Add(hDCAxyVsPtPi[i]);
                     fListOfObjects->Add(hDCAxyVsPtp[i]);
@@ -842,6 +850,7 @@ void AliAnalysisTaskPPvsRT::UserExec(Option_t *)
         if(fAnalysisMC)
             ProcessMCTruthESD();
         
+        printf("pT_Leading  = %f\n",LeadingTrack->Pt());
         cout << "RT :: " << BinRT << endl;
         
     }
@@ -894,7 +903,6 @@ AliESDtrack* AliAnalysisTaskPPvsRT::GetLeadingTrack(){
         if(!trk)
             continue;
         
-        printf("Finding Leading pT = %f\n",trk->Pt());
         PtTrks[it] = trk->Pt();
     }
     
@@ -908,12 +916,10 @@ AliESDtrack* AliAnalysisTaskPPvsRT::GetLeadingTrack(){
         
         if(trk->Pt() == LeadingPt){
             LeadingTrk = (AliESDtrack*)(fTrks->At(it));
-            printf("pT_Leading  = %f\n", LeadingPt);
             break;
         }
     }
     
-    printf("pT_Leading_2 = %f\n", LeadingTrk->Pt());
     if(LeadingTrk->Pt() < 5.0)
         return 0x0;
     
@@ -1136,10 +1142,8 @@ Int_t AliAnalysisTaskPPvsRT::GetBinRT(TList* listT){
         rt = 1;
     else if(rt >= 2 && rt < 3)
         rt = 2;
-    else if(rt >= 3 && rt < 4)
-        rt = 3;
     else
-        rt = 4;
+        rt = 3;
     
     return rt;
 }
@@ -1284,12 +1288,8 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
         if(!PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), Magf, fcutLow, fcutHigh))
             continue;
         
-        if(fdEdxCalibrated){
-            if(fLHC16l == 1)
-                dedx *= 50/EtaCalibration(0,eta);
-            else
-                dedx *= 50/EtaCalibration(1,eta);
-        }
+        if(fdEdxCalibrated)
+                dedx *= 50/EtaCalibration(eta);
         
         Short_t pidCode     = 0;
         if(fAnalysisMC) {
@@ -1308,43 +1308,43 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
                     if( TMath::Abs(dcaxy) < GetMaxDCApTDep(fcutDCAxy,pt) ){
                         hMcOut[Cent][0]->Fill(esdTrack->Pt());
                         hMcOut[Cent][pidCode]->Fill(esdTrack->Pt());
-                        hMcOut[5][0]->Fill(esdTrack->Pt());
-                        hMcOut[5][pidCode]->Fill(esdTrack->Pt());
+                        hMcOut[4][0]->Fill(esdTrack->Pt());
+                        hMcOut[4][pidCode]->Fill(esdTrack->Pt());
                     }
                     
                     hDCApTPrim[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTPrim[5][0]->Fill(pt,dcaxy);
+                    hDCApTPrim[4][0]->Fill(pt,dcaxy);
                     hDCApTPrim[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTPrim[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTPrim[4][pidCode]->Fill(pt,dcaxy);
                     
                     hDCApTPrim2[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTPrim2[5][0]->Fill(pt,dcaxy);
+                    hDCApTPrim2[4][0]->Fill(pt,dcaxy);
                     hDCApTPrim2[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTPrim2[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTPrim2[4][pidCode]->Fill(pt,dcaxy);
                 }	// Primary particles MC
                 
                 if( fMCStack->IsSecondaryFromWeakDecay(label) ){
                     hDCApTWDec[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTWDec[5][0]->Fill(pt,dcaxy);
+                    hDCApTWDec[4][0]->Fill(pt,dcaxy);
                     hDCApTWDec[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTWDec[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTWDec[4][pidCode]->Fill(pt,dcaxy);
                     
                     hDCApTWDec2[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTWDec2[5][0]->Fill(pt,dcaxy);
+                    hDCApTWDec2[4][0]->Fill(pt,dcaxy);
                     hDCApTWDec2[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTWDec2[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTWDec2[4][pidCode]->Fill(pt,dcaxy);
                 }	// Weak Decay MC
                 
                 if( fMCStack->IsSecondaryFromMaterial(label) ){
                     hDCApTMate[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTMate[5][0]->Fill(pt,dcaxy);
+                    hDCApTMate[4][0]->Fill(pt,dcaxy);
                     hDCApTMate[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTMate[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTMate[4][pidCode]->Fill(pt,dcaxy);
                     
                     hDCApTMate2[Cent][0]->Fill(pt,dcaxy);
-                    hDCApTMate2[5][0]->Fill(pt,dcaxy);
+                    hDCApTMate2[4][0]->Fill(pt,dcaxy);
                     hDCApTMate2[Cent][pidCode]->Fill(pt,dcaxy);
-                    hDCApTMate2[5][pidCode]->Fill(pt,dcaxy);
+                    hDCApTMate2[4][pidCode]->Fill(pt,dcaxy);
                 }	// Material Inte MC
             }	//mcTrack
         }	//fAnalysis MC
@@ -1371,15 +1371,15 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
                 if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                     hMIPVsEta[region][Cent]->Fill(eta,dedxUnc);
                     pMIPVsEta[region][Cent]->Fill(eta,dedxUnc);
-                    hMIPVsEta[region][5]->Fill(eta,dedxUnc);
-                    pMIPVsEta[region][5]->Fill(eta,dedxUnc);
+                    hMIPVsEta[region][4]->Fill(eta,dedxUnc);
+                    pMIPVsEta[region][4]->Fill(eta,dedxUnc);
                 }
                 if( dedxUnc > 70 && dedxUnc < 90 ){
                     if(TMath::Abs(beta-1)<0.1){
                         hPlateauVsEta[Cent]->Fill(eta,dedxUnc);
                         pPlateauVsEta[Cent]->Fill(eta,dedxUnc);
-                        hPlateauVsEta[5]->Fill(eta,dedxUnc);
-                        pPlateauVsEta[5]->Fill(eta,dedxUnc);
+                        hPlateauVsEta[4]->Fill(eta,dedxUnc);
+                        pPlateauVsEta[4]->Fill(eta,dedxUnc);
                     }
                 }
             }
@@ -1389,22 +1389,24 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
                 if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                     hMIPVsEta[region][Cent]->Fill(eta,dedx);
                     pMIPVsEta[region][Cent]->Fill(eta,dedx);
-                    hMIPVsEta[region][5]->Fill(eta,dedx);
-                    pMIPVsEta[region][5]->Fill(eta,dedx);
+                    hMIPVsEta[region][4]->Fill(eta,dedx);
+                    pMIPVsEta[region][4]->Fill(eta,dedx);
                 }
                 if( dedxUnc > 70 && dedxUnc < 90 ){
                     if(TMath::Abs(beta-1)<0.1){
                         hPlateauVsEta[Cent]->Fill(eta,dedx);
                         pPlateauVsEta[Cent]->Fill(eta,dedx);
-                        hPlateauVsEta[5]->Fill(eta,dedx);
-                        pPlateauVsEta[5]->Fill(eta,dedx);
+                        hPlateauVsEta[4]->Fill(eta,dedx);
+                        pPlateauVsEta[4]->Fill(eta,dedx);
                     }
                 }
             }
         }
         
         hPtAll[region][Cent]->Fill(pt);
-        hPtAll[region][5]->Fill(pt);
+        hPtAll[region][4]->Fill(pt);
+	hphi[region][Cent]->Fill(phi);
+	hphi[region][4]->Fill(phi);
         
         Int_t nh = -1;
         if(TMath::Abs(eta)<0.2)
@@ -1421,28 +1423,28 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
         
         if(beta>1){
             histPiTof[Cent][nh]->Fill(momentum, dedx);
-            histPiTof[5][nh]->Fill(momentum, dedx);
+            histPiTof[4][nh]->Fill(momentum, dedx);
         }
         
         if( momentum <= 0.6 && momentum >= 0.4  ){
             if( dedx < fDeDxMIPMax && dedx > fDeDxMIPMin ){
                 hMIPVsPhi[Cent][nh]->Fill(phi,dedx);
                 pMIPVsPhi[Cent][nh]->Fill(phi,dedx);
-                hMIPVsPhi[5][nh]->Fill(phi,dedx);
-                pMIPVsPhi[5][nh]->Fill(phi,dedx);
+                hMIPVsPhi[4][nh]->Fill(phi,dedx);
+                pMIPVsPhi[4][nh]->Fill(phi,dedx);
             }
             if( dedx > 70 && dedx < 90 ){
                 if(TMath::Abs(beta-1)<0.1){
                     hPlateauVsPhi[Cent][nh]->Fill(phi,dedx);
                     pPlateauVsPhi[Cent][nh]->Fill(phi,dedx);
-                    hPlateauVsPhi[5][nh]->Fill(phi,dedx);
-                    pPlateauVsPhi[5][nh]->Fill(phi,dedx);
+                    hPlateauVsPhi[4][nh]->Fill(phi,dedx);
+                    pPlateauVsPhi[4][nh]->Fill(phi,dedx);
                 }
             }
         }
         
         hDeDxVsP[region][Cent][nh]->Fill(momentum,dedx);
-        hDeDxVsP[region][5][nh]->Fill(momentum,dedx);
+        hDeDxVsP[region][4][nh]->Fill(momentum,dedx);
         
         hnSigmaPi[Cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
         hnSigmak[Cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
@@ -1659,20 +1661,16 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                         Double_t dedxUnc  = track->GetTPCsignal();
                         
                         
-                        if(fdEdxCalibrated){
-                            if(fLHC16l == 1)
-                                dedx   *= 50.0/EtaCalibration(0,eta);
-                            else
-                                dedx   *= 50.0/EtaCalibration(1,eta);
-                        }
+                        if(fdEdxCalibrated)
+                                dedx   *= 50.0/EtaCalibration(eta);
                         
                         if(fillPos&&fillNeg){
                             if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
                                 if(momentum<0.6&&momentum>0.4){
                                     hMIPVsEtaV0s[Cent]->Fill(eta,dedx);
                                     pMIPVsEtaV0s[Cent]->Fill(eta,dedx);
-                                    hMIPVsEtaV0s[5]->Fill(eta,dedx);
-                                    pMIPVsEtaV0s[5]->Fill(eta,dedx);
+                                    hMIPVsEtaV0s[4]->Fill(eta,dedx);
+                                    pMIPVsEtaV0s[4]->Fill(eta,dedx);
                                 }
                             }
                         }
@@ -1694,11 +1692,11 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                         
                         if(fillPos&&fillNeg){
                             histPiV0[Cent][nh]->Fill(momentum, dedx);
-                            histPiV0[5][nh]->Fill(momentum, dedx);
+                            histPiV0[4][nh]->Fill(momentum, dedx);
                         }
                         else{
                             histPV0[Cent][nh]->Fill(momentum, dedx);
-                            histPV0[5][nh]->Fill(momentum, dedx);
+                            histPV0[4][nh]->Fill(momentum, dedx);
                         }
                     }//end loop over two tracks
                     
@@ -1713,15 +1711,8 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                     
                     if( dmassK>0.01 && dmassL>0.01 && dmassAL>0.01 ) {
                         if( dmassG<0.01 && dmassG>0.0001 ) {
-                            if(fLHC16l == 1){
-                                if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationEl(0,nTrack->Eta())) < 5)
+                                if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationEl(nTrack->Eta())) < 5)
                                     fillPos = kTRUE;
-                            }
-                            else{
-                                if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationEl(1,nTrack->Eta())) < 5)
-                                    fillPos = kTRUE;
-                                cout << "-------------------LHC16k"  << endl;
-                            }
                         } else {
                             continue;
                         }
@@ -1743,12 +1734,8 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                     Double_t phi      = track->Phi();
                     Double_t momentum = track->P();
                     
-                    if(fdEdxCalibrated){
-                        if(fLHC16l == 1)
-                            dedx *= 50/EtaCalibration(0,eta);
-                        else
-                            dedx *= 50/EtaCalibration(1,eta);
-                    }
+                    if(fdEdxCalibrated)
+                            dedx *= 50/EtaCalibration(eta);
                     
                     if(!PhiCut(track->Pt(), phi, track->Charge(), Magf, fcutLow, fcutHigh))
                         continue;
@@ -1769,7 +1756,7 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                     
                     cout<<"Cent :: "<<Cent<<"Eta  :: "<<eta<<"dedx :: "<<dedx<<endl;
                     histEV0[Cent][nh]->Fill(momentum, dedx);
-                    histEV0[5][nh]->Fill(momentum, dedx);
+                    histEV0[4][nh]->Fill(momentum, dedx);
                     
                 };
                     break;
@@ -1894,86 +1881,135 @@ void AliAnalysisTaskPPvsRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
     fTrackFilter->AddCuts(esdTrackCuts);
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t Cent, const Double_t eta){
+Double_t AliAnalysisTaskPPvsRT::EtaCalibration(const Double_t eta){
     
-    const Double_t aPos[nRt]      = {49.9799,49.9659,0,0,0};
-    const Double_t bPos[nRt]      = {2.99619,2.91366,0,0,0};
-    const Double_t cPos[nRt]      = {-45.718,-45.5994,0,0,0};
-    const Double_t dPos[nRt]      = {290.013,290.042,0,0,0};
-    const Double_t ePos[nRt]      = {-1018.42,-1014.49,0,0,0};
-    const Double_t fPos[nRt]      = {1948.68,1931.84,0,0,0};
-    const Double_t gPos[nRt]      = {-1864.06,-1839.36,0,0,0};
-    const Double_t hPos[nRt]      = {692.752,680.421,0,0,0};
+	          		  //16h,16i,16j,16k,16l,16o,16p
+    const Double_t aPos[] = {0,0,0,49.9659,49.9799,0,0};
+    const Double_t bPos[] = {0,0,0,2.91366,2.99619,0,0};
+    const Double_t cPos[] = {0,0,0,-45.5994,-45.718,0,0};
+    const Double_t dPos[] = {0,0,0,290.042,290.013,0,0};
+    const Double_t ePos[] = {0,0,0,-1014.49,-1018.42,0,0};
+    const Double_t fPos[] = {0,0,0,1931.84,1948.68,0,0};
+    const Double_t gPos[] = {0,0,0,-1839.36,-1864.06,0,0};
+    const Double_t hPos[] = {0,0,0,680.421,692.752,0,0};
     
-    const Double_t aNeg[nRt]      = {50.078,50.046,0,0,0};
-    const Double_t bNeg[nRt]      = {6.67199,6.79992,0,0,0};
-    const Double_t cNeg[nRt]      = {103.662,109.86,0,0,0};
-    const Double_t dNeg[nRt]      = {611.034,668.241,0,0,0};
-    const Double_t eNeg[nRt]      = {1695.63,1916.44,0,0,0};
-    const Double_t fNeg[nRt]      = {2395.88,2815.04,0,0,0};
-    const Double_t gNeg[nRt]      = {1669.22,2057.21,0,0,0};
-    const Double_t hNeg[nRt]      = {455.362,595.391,0,0,0};
+    const Double_t aNeg[] = {0,0,0,50.046,50.078,0,0};
+    const Double_t bNeg[] = {0,0,0,6.79992,6.67199,0,0};
+    const Double_t cNeg[] = {0,0,0,109.86,103.662,0,0};
+    const Double_t dNeg[] = {0,0,0,668.241,611.034,0,0};
+    const Double_t eNeg[] = {0,0,0,1916.44,1695.63,0,0};
+    const Double_t fNeg[] = {0,0,0,2815.04,2395.88,0,0};
+    const Double_t gNeg[] = {0,0,0,2057.21,1669.22,0,0};
+    const Double_t hNeg[] = {0,0,0,595.391,455.362,0,0};
     
+        Int_t period = -1;
+        if(!strcmp(fPeriod,"h"))
+                period = 0;
+        else if(!strcmp(fPeriod,"i"))
+                period = 1;
+        else if(!strcmp(fPeriod,"j"))
+                period = 2;
+        else if(!strcmp(fPeriod,"k"))
+                period = 3;
+        else if(!strcmp(fPeriod,"l"))
+                period = 4;
+        else if(!strcmp(fPeriod,"o"))
+                period = 5;
+        else 
+                period = 6;
+	
+
+       if(period<0){
+	
+    cout << "Index Period: " << period << endl;
+	period = 0;
+	}
+           
+
+    cout << "Selected Period: " << fPeriod << endl;
+    cout << "Index Period: " << period << endl;
     
     for(Int_t i=0; i<8; ++i)
         fEtaCalibration->SetParameter(i,0);
     
     if(eta<0){
-        fEtaCalibration->SetParameter(0,aNeg[Cent]);
-        fEtaCalibration->SetParameter(1,bNeg[Cent]);
-        fEtaCalibration->SetParameter(2,cNeg[Cent]);
-        fEtaCalibration->SetParameter(3,dNeg[Cent]);
-        fEtaCalibration->SetParameter(4,eNeg[Cent]);
-        fEtaCalibration->SetParameter(5,fNeg[Cent]);
-        fEtaCalibration->SetParameter(6,gNeg[Cent]);
-        fEtaCalibration->SetParameter(7,hNeg[Cent]);
+        fEtaCalibration->SetParameter(0,aNeg[period]);
+        fEtaCalibration->SetParameter(1,bNeg[period]);
+        fEtaCalibration->SetParameter(2,cNeg[period]);
+        fEtaCalibration->SetParameter(3,dNeg[period]);
+        fEtaCalibration->SetParameter(4,eNeg[period]);
+        fEtaCalibration->SetParameter(5,fNeg[period]);
+        fEtaCalibration->SetParameter(6,gNeg[period]);
+        fEtaCalibration->SetParameter(7,hNeg[period]);
     }
     else{
-        fEtaCalibration->SetParameter(0,aPos[Cent]);
-        fEtaCalibration->SetParameter(1,bPos[Cent]);
-        fEtaCalibration->SetParameter(2,cPos[Cent]);
-        fEtaCalibration->SetParameter(3,dPos[Cent]);
-        fEtaCalibration->SetParameter(4,ePos[Cent]);
-        fEtaCalibration->SetParameter(5,fPos[Cent]);
-        fEtaCalibration->SetParameter(6,gPos[Cent]);
-        fEtaCalibration->SetParameter(7,hPos[Cent]);
+        fEtaCalibration->SetParameter(0,aPos[period]);
+        fEtaCalibration->SetParameter(1,bPos[period]);
+        fEtaCalibration->SetParameter(2,cPos[period]);
+        fEtaCalibration->SetParameter(3,dPos[period]);
+        fEtaCalibration->SetParameter(4,ePos[period]);
+        fEtaCalibration->SetParameter(5,fPos[period]);
+        fEtaCalibration->SetParameter(6,gPos[period]);
+        fEtaCalibration->SetParameter(7,hPos[period]);
     }
     
     return fEtaCalibration->Eval(eta);
     
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Int_t Cent, const Double_t eta){
+Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Double_t eta){
     
-    const Double_t aPosEl[nRt]    = {80.1263,79.9957,0,0,0};
-    const Double_t bPosEl[nRt]    = {5.28525,7.03079,0,0,0};
-    const Double_t cPosEl[nRt]    = {-32.7731,-42.9098,0,0,0};
-    const Double_t dPosEl[nRt]    = {68.4524,88.7057,0,0,0};
-    const Double_t ePosEl[nRt]    = {-44.1566,-56.6554,0,0,0};
+	          		  //16h,16i,16j,16k,16l,16o,16p
+    const Double_t aPosEl[]    = {0,0,0,79.9957,80.1263,0,0};
+    const Double_t bPosEl[]    = {0,0,0,7.03079,5.28525,0,0};
+    const Double_t cPosEl[]    = {0,0,0,-42.9098,-32.7731,0,0};
+    const Double_t dPosEl[]    = {0,0,0,88.7057,68.4524,0,0};
+    const Double_t ePosEl[]    = {0,0,0,-56.6554,-44.1566,0,0};
     
-    const Double_t aNegEl[nRt]    = {79.8351,79.7387,0,0,0};
-    const Double_t bNegEl[nRt]    = {-8.46921,-8.60021,0,0,0};
-    const Double_t cNegEl[nRt]    = {-44.5947,-44.1718,0,0,0};
-    const Double_t dNegEl[nRt]    = {-86.2242,-84.4984,0,0,0};
-    const Double_t eNegEl[nRt]    = {-53.6285,-51.945,0,0,0};
+    const Double_t aNegEl[]    = {0,0,0,79.7387,79.8351,0,0};
+    const Double_t bNegEl[]    = {0,0,0,-8.60021,-8.46921,0,0};
+    const Double_t cNegEl[]    = {0,0,0,-44.1718,-44.5947,0,0};
+    const Double_t dNegEl[]    = {0,0,0,-84.4984,-86.2242,0,0};
+    const Double_t eNegEl[]    = {0,0,0,-51.945,-53.6285,0,0};
     
+        Int_t period = -1;
+        if(!strcmp(fPeriod,"h"))
+                period = 0;
+        else if(!strcmp(fPeriod,"i"))
+                period = 1;
+        else if(!strcmp(fPeriod,"j"))
+                period = 2;
+        else if(!strcmp(fPeriod,"k"))
+                period = 3;
+        else if(!strcmp(fPeriod,"l"))
+                period = 4;
+        else if(!strcmp(fPeriod,"o"))
+                period = 5;
+        else 
+                period = 6;
+
+       if(period<0){
+	
+    cout << "Index Period: " << period << endl;
+	period = 0;
+	}
     
     for(Int_t i=0; i<5; ++i)
         fEtaCalibrationEl->SetParameter(i,0);
     
     if(eta<0){
-        fEtaCalibrationEl->SetParameter(0,aNegEl[Cent]);
-        fEtaCalibrationEl->SetParameter(1,bNegEl[Cent]);
-        fEtaCalibrationEl->SetParameter(2,cNegEl[Cent]);
-        fEtaCalibrationEl->SetParameter(3,dNegEl[Cent]);
-        fEtaCalibrationEl->SetParameter(4,eNegEl[Cent]);
+        fEtaCalibrationEl->SetParameter(0,aNegEl[period]);
+        fEtaCalibrationEl->SetParameter(1,bNegEl[period]);
+        fEtaCalibrationEl->SetParameter(2,cNegEl[period]);
+        fEtaCalibrationEl->SetParameter(3,dNegEl[period]);
+        fEtaCalibrationEl->SetParameter(4,eNegEl[period]);
     }
     else{
-        fEtaCalibrationEl->SetParameter(0,aPosEl[Cent]);
-        fEtaCalibrationEl->SetParameter(1,bPosEl[Cent]);
-        fEtaCalibrationEl->SetParameter(2,cPosEl[Cent]);
-        fEtaCalibrationEl->SetParameter(3,dPosEl[Cent]);
-        fEtaCalibrationEl->SetParameter(4,ePosEl[Cent]);
+        fEtaCalibrationEl->SetParameter(0,aPosEl[period]);
+        fEtaCalibrationEl->SetParameter(1,bPosEl[period]);
+        fEtaCalibrationEl->SetParameter(2,cPosEl[period]);
+        fEtaCalibrationEl->SetParameter(3,dPosEl[period]);
+        fEtaCalibrationEl->SetParameter(4,ePosEl[period]);
     }
     
     return fEtaCalibrationEl->Eval(eta);
