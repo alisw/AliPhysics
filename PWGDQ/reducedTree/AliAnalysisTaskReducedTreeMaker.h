@@ -7,6 +7,7 @@
 
 #include <TList.h>
 #include <AliAnalysisTaskSE.h>
+#include <AliTimeRangeCut.h>
 #include <AliSignalMC.h>
 
 class AliAnalysisCuts;
@@ -218,6 +219,8 @@ public:
 
   AliReducedBaseEvent *fReducedEvent;     //! reduced event wise information
   TBits* fUsedVars;                       // used variables for the AliDielectronVarManager
+  
+  AliTimeRangeCut     fTimeRangeCut;      //! time range selection based on OADB
   
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information
