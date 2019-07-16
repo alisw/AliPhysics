@@ -130,7 +130,6 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
   //
   DefineOutput(1,TList::Class());
   DefineOutput(2,TNtuple::Class());
-  DefineOutput(3,TNtuple::Class());
   //DefineOutput(3,TNtuple::Class());
   //DefineOutput(4,TNtuple::Class());
   //DefineOutput(5,TNtuple::Class());
