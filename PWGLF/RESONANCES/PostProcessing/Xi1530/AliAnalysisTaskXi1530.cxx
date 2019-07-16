@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/07/14
+//  Last Modified Date: 2019/07/16
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -1224,16 +1224,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
     TLorentzVector vecsum;  // Xi1530 candidate
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
 
-    // The following CovMatrix is set so that PropogateToDCA() ignores track
-    // errors. Only used to propagate Xi to third pion for XiStar reconstruction
-    // Origin: AliPhysics/PWGLF/RESONANCES/extra/AliXiStar.cxx (Dhevan
-    // Gangadharan)
-    Double_t fCovMatrix[21], xiVtx[3], xiP[3], PiX[3];
-    for (Int_t i = 0; i < 21; i++)
-        fCovMatrix[i] = 0;
-    fCovMatrix[0] = 1, fCovMatrix[2] = 1, fCovMatrix[5] = 1, fCovMatrix[9] = 1,
-    fCovMatrix[14] = 1, fCovMatrix[20] = 1;
-    AliESDtrack* fXiTrack = new AliESDtrack();  // As a ESD Track
     // for DCA value
     Float_t b[2];
     Float_t bCov[3];
@@ -1277,16 +1267,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
 
             temp1.SetXYZM(Xicandidate->Px(), Xicandidate->Py(),
                           Xicandidate->Pz(), Xicandidate->GetEffMassXi());
-
-            // for PropogateToDCA
-            xiVtx[0] = Xicandidate->Xv();
-            xiVtx[1] = Xicandidate->Yv();
-            xiVtx[2] = Xicandidate->Zv();
-            xiP[0] = Xicandidate->Px();
-            xiP[1] = Xicandidate->Py();
-            xiP[2] = Xicandidate->Pz();
-            fXiTrack->Set(xiVtx, xiP, fCovMatrix,
-                          Short_t(Xicandidate->Charge()));
 
             for (UInt_t j = 0; j < ntracks; j++) {
                 track1 = (AliVTrack*)fEvt->GetTrack(goodtrackindices[j]);
@@ -1454,15 +1434,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if ((vecsum.Rapidity() > fXi1530RapidityCut_high) ||
                     (vecsum.Rapidity() < fXi1530RapidityCut_low))
                     continue;
-
-                // PropagateToDCA cut
-                ((AliESDtrack*)track1)->GetXYZ(PiX);
-                AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
-                if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) {
-                    AliInfo(Form("PropagateToDCA! %s",
-                                 (const char*)SysCheck.at(sys)));
-                    continue;
-                }
 
                 // Opening Angle - Not using in normal mode
                 if (fExoticFinder) {
@@ -1733,15 +1704,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 ((AliESDEvent*)fEvt)
                     ->GetTrack(TMath::Abs(Xicandidate->GetBindex()));
 
-            xiVtx[0] = Xicandidate->Xv();
-            xiVtx[1] = Xicandidate->Yv();
-            xiVtx[2] = Xicandidate->Zv();
-            xiP[0] = Xicandidate->Px();
-            xiP[1] = Xicandidate->Py();
-            xiP[2] = Xicandidate->Pz();
-            fXiTrack->Set(xiVtx, xiP, fCovMatrix,
-                          Short_t(Xicandidate->Charge()));
-
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
                 track1 = trackpool.at(jt);
                 if (track1->GetID() == pTrackXi->GetID() ||
@@ -1817,12 +1779,6 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)
                     continue;
 
-                // PropagateToDCA cut
-                ((AliESDtrack*)track1)->GetXYZ(PiX);
-                AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
-                if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3)))
-                    continue;
-
                 FillTHnSparse("hInvMass",
                               {(double)kDefaultOption, (double)kMixing,
                                (double)fCent, vecsum.Pt(), vecsum.M()});
@@ -1840,16 +1796,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     TLorentzVector vecsum;  // Xi1530 candidate
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
 
-    // The following CovMatrix is set so that PropogateToDCA() ignores track
-    // errors. Only used to propagate Xi to third pion for XiStar reconstruction
-    // Origin: AliPhysics/PWGLF/RESONANCES/extra/AliXiStar.cxx (Dhevan
-    // Gangadharan)
-    Double_t fCovMatrix[21], xiVtx[3], xiP[3], PiX[3];
-    for (Int_t i = 0; i < 21; i++)
-        fCovMatrix[i] = 0;
-    fCovMatrix[0] = 1, fCovMatrix[2] = 1, fCovMatrix[5] = 1, fCovMatrix[9] = 1,
-    fCovMatrix[14] = 1, fCovMatrix[20] = 1;
-    AliESDtrack* fXiTrack = new AliESDtrack();  // As a ESD Track
     // for DCA value
     Float_t b[2];
     Float_t bCov[3];
@@ -1887,15 +1833,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
 
             temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
                           Xicandidate->MomXiZ(), Xicandidate->MassXi());
-            // for PropogateToDCA
-            xiVtx[0] = Xicandidate->DecayVertexXiX();
-            xiVtx[1] = Xicandidate->DecayVertexXiY();
-            xiVtx[2] = Xicandidate->DecayVertexXiZ();
-            xiP[0] = Xicandidate->MomXiX();
-            xiP[1] = Xicandidate->MomXiY();
-            xiP[2] = Xicandidate->MomXiZ();
-            fXiTrack->Set(xiVtx, xiP, fCovMatrix,
-                          Short_t(Xicandidate->ChargeXi()));
 
             for (UInt_t j = 0; j < ntracks; j++) {
                 track1 = (AliVTrack*)fEvt->GetTrack(goodtrackindices[j]);
@@ -2067,15 +2004,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 if ((vecsum.Rapidity() > fXi1530RapidityCut_high) ||
                     (vecsum.Rapidity() < fXi1530RapidityCut_low))
                     continue;
-
-                // PropagateToDCA cut
-                ((AliAODTrack*)track1)->GetXYZ(PiX);
-                AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
-                if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))){
-                    AliInfo(Form("PropagateToDCA! %s",
-                                 (const char*)SysCheck.at(sys)));
-                    continue;
-                }
 
                 // Opening Angle - Not using in normal mode
                 if (fExoticFinder) {
@@ -2340,15 +2268,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
             AliAODTrack* bTrackXi =
                 (AliAODTrack*)(Xicandidate->GetDecayVertexXi()->GetDaughter(0));
 
-            xiVtx[0] = Xicandidate->DecayVertexXiX();
-            xiVtx[1] = Xicandidate->DecayVertexXiY();
-            xiVtx[2] = Xicandidate->DecayVertexXiZ();
-            xiP[0] = Xicandidate->MomXiX();
-            xiP[1] = Xicandidate->MomXiY();
-            xiP[2] = Xicandidate->MomXiZ();
-            fXiTrack->Set(xiVtx, xiP, fCovMatrix,
-                          Short_t(Xicandidate->ChargeXi()));
-
+            
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
                 track1 = (AliVTrack*)trackpool.at(jt);
                 if (track1->GetID() == pTrackXi->GetID() ||
@@ -2427,12 +2347,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 // Xi Mass Window Check
                 Double_t fMass_Xi = Xicandidate->MassXi();
                 if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut)
-                    continue;
-
-                // PropagateToDCA cut
-                ((AliAODTrack*)track1)->GetXYZ(PiX);
-                AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
-                if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3)))
                     continue;
 
                 FillTHnSparse("hInvMass",
