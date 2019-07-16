@@ -5464,9 +5464,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     case 1:
       label_case_01:
       if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
-        // official TB parametrization from Martin
-        if(isMC == 0) energy *= FunctionNL_MartinTB_100MeV_Data(energy);
-        else energy *= FunctionNL_kPi0MCMod(energy, 1.004055, 1.009121, 0.083153, 1.444362, 0.100294, 416.897753, 324.246101); // once available, use "energy *= FunctionNL_MartinTB_100MeV_MC(energy);"
+        // official TB parametrization from Martin (for now applied on data AND MC)
+        energy *= FunctionNL_MartinTB_100MeV_Data(energy);
       } else if ( fClusterType == 2 ){
           // Nonlin from PHOS group only MC part
           if(isMC != 0) {
