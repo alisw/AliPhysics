@@ -20,6 +20,7 @@
 // J. Norman, jaime.norman@cern.ch
 // G. Luparello, grazia.luparello@cern.ch
 // J. Mulligan, james.mulligan@berkeley.edu
+// N. Zardoshti, nima.zardoshti@cern.ch
 ///*************************************************************************
 
 #include <TROOT.h>
@@ -64,9 +65,13 @@ class AliRhoParameter;
 class AliAnalysisTaskSEHFTreeCreator : public AliAnalysisTaskSE
 {
 public:
-
-
-    
+  
+  enum JetAlgorithm{
+    antikt,
+    kt,
+    ca
+  };
+   
     AliAnalysisTaskSEHFTreeCreator();
     AliAnalysisTaskSEHFTreeCreator(const char *name,TList *cutsList, int fillNJetTrees, bool fillJetConstituentTrees);
     virtual ~AliAnalysisTaskSEHFTreeCreator();
@@ -113,6 +118,14 @@ public:
     void SetFillpTD(bool b) { fFillpTD = b; }
     void SetFillMass(bool b) { fFillMass = b; }
     void SetFillMatchingJetID(bool b) { fFillMatchingJetID = b; }
+
+    void SetFillJets(bool b) {fFillJets = b; }
+    void SetDoJetSubstructure(bool b) {fDoJetSubstructure = b; }
+    void SetJetRadius(Double_t d) {fJetRadius = d; }
+    void SetJetSubRadius(Double_t d) {fSubJetRadius = d; }
+    void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
+    void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
+    void SetMinJetPt(Double_t d) {fMinJetPt = d; }
   
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
@@ -270,6 +283,12 @@ private:
     Int_t                   fLc2V0bachelorCalcSecoVtx;             /// option to calculate the secondary vertex for Lc2V0bachelor. False by default, has to be added to AddTask in case we want to start using it.
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
+
+    Double_t                fJetRadius;                            //Setting the radius for jet finding
+    Double_t                fSubJetRadius;                         //Setting the radius for subjet finding
+    Int_t                   fJetAlgorithm;                         //Setting the jet finding algorithm
+    Int_t                   fSubJetAlgorithm;                      //Setting the jet finding algorithm
+    Double_t                fMinJetPt;                             //Setting the jet finding min pT
   
     // Particles (tracks / MC particles)
     // Add a single AliTrackContainer and/or AliMCParticleContainer to select particles
@@ -322,6 +341,11 @@ private:
     bool                    fFillpTD;                              ///< pT,D
     bool                    fFillMass;                             ///< Mass
     bool                    fFillMatchingJetID;                    ///< jet matching
+
+
+    
+    bool                    fFillJets;                             //FillJetInfo
+    bool                    fDoJetSubstructure;                    //FillJetSubstructure
   
     bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
     int fSystemForNsigmaTPCDataCorr; /// system for data-driven NsigmaTPC correction

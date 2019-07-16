@@ -6,6 +6,8 @@
 
 
 #pragma link C++ class   AliAnalysisTaskSEHFTreeCreator+;
+#pragma link C++ class   AliHFJet+;
+#pragma link C++ class   AliHFJetFinder+;
 #pragma link C++ class   AliHFTreeHandler+;
 #pragma link C++ class   AliHFTreeHandlerD0toKpi+; 
 #pragma link C++ class   AliHFTreeHandlerDplustoKpipi+;

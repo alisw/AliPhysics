@@ -41,6 +41,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
 
   AliAnalysisTaskSEHFTreeCreator.cxx
+  AliHFJet.cxx
+  AliHFJetFinder.cxx
   AliHFTreeHandler.cxx
   AliHFTreeHandlerD0toKpi.cxx
   AliHFTreeHandlerDplustoKpipi.cxx
@@ -52,8 +54,15 @@ set(SRCS
   AliJetTreeHandler.cxx
   AliParticleTreeHandler.cxx
   AliTrackletTreeHandler.cxx
-
   )
+
+if(FASTJET_FOUND)
+
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+
+endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -68,8 +77,20 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF PWGEMCALbase PWGJETFW PWGTools)
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF PWGEMCALbase PWGJETFW PWGJEEMCALJetTasks PWGTools)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    siscone_spherical
+    siscone
+    fastjettools
+    fastjet
+    )
+endif(FASTJET_FOUND)
 
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
