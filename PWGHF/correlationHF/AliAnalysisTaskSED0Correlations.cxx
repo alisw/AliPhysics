@@ -1019,7 +1019,13 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
                 ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
               }
-	      CalculateCorrelations(d,labD0,mcArray);
+	      if(fFillTrees==kNoTrees) CalculateCorrelations(d,labD0,mcArray);
+              if(fFillTrees==kFillCutOptTree) { 
+                AliAODMCParticle *partD0 = (AliAODMCParticle*)mcArray->At(labD0);
+                if (partD0->GetPdgCode()==421) fIsSelectedCandidate = 1;
+                else fIsSelectedCandidate = 2;
+                FillTreeD0ForCutOptim(d,aod);
+              }
 	    }
           }
         }

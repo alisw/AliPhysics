@@ -32,15 +32,37 @@ public:
     TString prefix;
     AliFemtoModelManager *mc_manager;
 
+    Parameters()
+      : bin_count(57)
+      , qmin(-0.1425)
+      , qmax(0.1425)
+      , prefix("")
+      , mc_manager(NULL)
+      { }
+
+    Parameters(const Parameters &orig)
+      : bin_count(orig.bin_count)
+      , qmin(orig.qmin)
+      , qmax(orig.qmax)
+      , prefix(orig.prefix)
+      , mc_manager(orig.mc_manager)
+      { }
+
+    Parameters& operator=(const Parameters &rhs)
+      {
+        bin_count = rhs.bin_count;
+        qmin = rhs.qmin;
+        qmax = rhs.qmax;
+        prefix = rhs.prefix;
+        mc_manager = rhs.mc_manager;
+        return *this;
+      }
+
     /// Build Parameters object with default values
     static Parameters Default()
-    {
-      return {
-        57, -0.1425, 0.1425,  // histogram bin-count & range
-        "CF_Q3DByParent",     // name
-        NULL                  // pointer to MC manager
-      };
-    }
+      {
+        return Parameters().NamePrefix("CF_Q3DByParent");
+      }
 
     #define ImplSetter(__name, __type, __target) \
       Parameters __name(__type var) const  \

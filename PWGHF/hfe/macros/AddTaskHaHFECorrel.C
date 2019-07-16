@@ -43,6 +43,7 @@
     Error("AddTaskHaHFECorrel", "No task found.");
   }
   //taskMB->SelectCollisionCandidates(AliVEvent::kINT7);
+
   
   // Load correction weights for pi0, eta
   if (IsMC) {
@@ -63,7 +64,7 @@
     else printf("Could not open Pi0Eta correction file \n");
     TH1::AddDirectory(kTRUE);
   }
-
+  
 
 
 

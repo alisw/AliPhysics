@@ -30,6 +30,8 @@
 #include "AliAODMCHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
 
 #include "AliAnalysisTaskTrackingEffPID.h"
 
@@ -79,11 +81,16 @@ AliAnalysisTaskTrackingEffPID::AliAnalysisTaskTrackingEffPID() :
   fGenerToExclude{""},
   fKeepOnlyInjected{false},
   fKeepOnlyUE{false},
+  fUseImpPar{false},
+  fSelectPtHardRange{false},
+  fMinPtHard{0.},
+  fMaxPtHard{99999.},
   fOutputList{0x0},
   fListCuts{0x0},
   fHistNEvents{0x0},
   fHistNParticles{0x0},
-  fHistNTracks{0x0}
+  fHistNTracks{0x0},
+  hHistXsecVsPtHard{0x0}
 {
   // default: use the filter bit 4 cuts
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
@@ -138,6 +145,9 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   fHistNTracks->GetXaxis()->SetBinLabel(5,"Species sel.");
   fOutputList->Add(fHistNTracks);
 
+  hHistXsecVsPtHard = new TH1D("hXsecVsPtHard", " ; pthard (GeV/c) ; Xsec", 200,0.,100.);
+  fOutputList->Add(hHistXsecVsPtHard);
+  
   TString axTit[5]={"#eta","#varphi","#it{p}_{T} (GeV/#it{c})","Multiplicity","z_{vertex} (cm)"};
   const int nPtBins=32;
   const int nMultBins=10;
@@ -164,7 +174,14 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
     multBins[10]=7500.;
   }
   xmax[3]=multBins[nMultBins];
-
+  if(fUseImpPar){
+    // use impact parameter instead of multiplicity
+    axTit[3]="b (fm)";
+    nbins[3]=15;
+    xmin[3]=0.;
+    xmax[3]=15.;
+  }
+  
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       fGenerated[iSpecies][iCharge] = new THnSparseF(Form("hGen_%s_%s",AliPID::ParticleShortName(iSpecies),charge[iCharge].Data()),
@@ -190,12 +207,14 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
       fReconstructedTOF[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
       fReconstructedPID[iSpecies][iCharge]->GetAxis(2)->Set(nPtBins,ptBins);
 
-      fGenerated[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-      fGeneratedEvSel[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-      fReconstructed[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-      fReconstructedTOF[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-      fReconstructedPID[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
-
+      if(!fUseImpPar){
+	fGenerated[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+	fGeneratedEvSel[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+	fReconstructed[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+	fReconstructedTOF[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+	fReconstructedPID[iSpecies][iCharge]->GetAxis(3)->Set(nMultBins,multBins);
+      }
+      
       fOutputList->Add(fGenerated[iSpecies][iCharge]);
       fOutputList->Add(fGeneratedEvSel[iSpecies][iCharge]);
       fOutputList->Add(fReconstructed[iSpecies][iCharge]);
@@ -246,7 +265,8 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
 
   // check the generator name
   TList *lh=0x0;
-  if(fSelectOnGenerator || fKeepOnlyInjected || fKeepOnlyUE){
+  double imppar=-999.;
+  if(fSelectOnGenerator || fKeepOnlyInjected || fKeepOnlyUE || fUseImpPar || fSelectPtHardRange){
     if(isAOD){
       AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
       lh=mcHeader->GetCocktailHeaders();
@@ -255,6 +275,31 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
       if(genname.Contains("CocktailEventHeader")){
 	AliGenCocktailEventHeader *cockhead=(AliGenCocktailEventHeader*)fMCEvent->GenEventHeader();
 	lh=cockhead->GetHeaders();
+      }
+    }
+    if(fSelectPtHardRange && lh){
+      Int_t nh=lh->GetEntries();
+      for(Int_t i=0;i<nh;i++){
+	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+	TString genname=gh->GetName();
+	if(genname.Contains("ythia") || genname.Contains("YTHIA")){
+	  AliGenPythiaEventHeader* pyth=(AliGenPythiaEventHeader*)lh->At(i);
+	  double ptha=pyth->GetPtHard();
+	  double xsec=pyth->GetXsection();
+	  if(ptha<fMinPtHard || ptha>fMaxPtHard) return;
+	  hHistXsecVsPtHard->SetBinContent(hHistXsecVsPtHard->GetXaxis()->FindBin(ptha),xsec);
+	}
+      }
+    }
+    if(fUseImpPar && lh){
+      Int_t nh=lh->GetEntries();
+      for(Int_t i=0;i<nh;i++){
+	AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+	TString genname=gh->GetName();
+	if(genname.Contains("hijing") || genname.Contains("Hijing")){
+	  AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lh->At(i);
+	  imppar=hijh->ImpactParameter();
+	}
       }
     }
     if(fSelectOnGenerator && lh){
@@ -347,6 +392,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     }
     fHistNParticles->Fill(2);
     double arrayForSparse[5]={part->Eta(),part->Phi(),part->Pt(),multEstim,zMCVertex};
+    if(fUseImpPar) arrayForSparse[3]=imppar;
     const int pdg = std::abs(part->PdgCode());
     const int iCharge = part->Charge() > 0 ? 1 : 0;
     for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
@@ -417,6 +463,7 @@ void AliAnalysisTaskTrackingEffPID::UserExec(Option_t *){
     const double eta = fUseGeneratedKine ? mcPart->Eta() : track->Eta();
     const double phi = fUseGeneratedKine ? mcPart->Phi() : track->Phi();
     double arrayForSparseData[5]={eta,phi,pt,multEstim,zMCVertex};
+    if(fUseImpPar) arrayForSparseData[3]=imppar;
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;

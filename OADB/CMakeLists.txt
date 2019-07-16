@@ -43,6 +43,8 @@ set(SRCS
     AliOADBTriggerAnalysis.cxx
     AliPPVsMultUtils.cxx
     AliEventCuts.cxx
+    AliTimeRangeMasking.cxx
+    AliTimeRangeCut.cxx
     COMMON/MULTIPLICITY/AliMultVariable.cxx
     COMMON/MULTIPLICITY/AliMultEstimator.cxx
     COMMON/MULTIPLICITY/AliMultInput.cxx

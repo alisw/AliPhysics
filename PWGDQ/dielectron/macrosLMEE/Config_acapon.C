@@ -4,7 +4,7 @@
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 //#include <PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C>
 #endif
-void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning = kFALSE);
+void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning = kFALSE, TString cutDefinition);
 TVectorD* BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD* GetVector(Int_t var, Bool_t useRun1binning = kFALSE);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
@@ -389,6 +389,10 @@ AliDielectron* Config_acapon(TString cutDefinition,
   else if(cutDefinition == "kV0_MVAePID"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kCutSet1));
   }
+  // Cut set to check V0 features in MC (for testing)
+  else if(cutDefinition == "kV0_allAcc"){
+    die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(LMEECutLib::kV0_allAcc, LMEECutLib::kV0_allAcc) );
+  }
   // ######## Different R factor bin mixing schemes #################
   else if(cutDefinition == "kMixScheme1"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
@@ -448,14 +452,14 @@ AliDielectron* Config_acapon(TString cutDefinition,
     die->SetMixingHandler(mix);
   }
 
-  InitHistograms(die, doPairing, trackVarPlots, whichDetPlots, v0plots, plots3D, useRun1binning);
+  InitHistograms(die, doPairing, trackVarPlots, whichDetPlots, v0plots, plots3D, useRun1binning, cutDefinition);
 
   return die;
 }
 
 //______________________________________________________________________________________
 
-void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning){
+void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning, TString cutDefinition){
 
     // Setup histogram Manager
     AliDielectronHistos *histos = new AliDielectronHistos(die->GetName(),die->GetTitle());
@@ -511,15 +515,24 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
     histos->UserHistogram("Event","SPD clusters vs tracklets","",75,0,150,30,0,60,AliDielectronVarManager::kNaccTrcklts10,AliDielectronVarManager::kITSLayerFirstCls);
 
     //--------- V0 plots ------------------------//
-    histos->UserHistogram("Event","MultV0","Multiplicity V0;V0M amplitude",4000,-0.5,3999.5,AliDielectronVarManager::kMultV0);
-    histos->UserHistogram("Event","EqMultV0","Equalized Multiplicity V0;Equalized V0M amplitude",4000,-0.5,3999.5,AliDielectronVarManager::kEqMultV0);
-    histos->UserHistogram("Event","ChMultV0","Charged Multiplicity V0;Charged V0M amplitude",1000,-0.5,999.5,AliDielectronVarManager::kVZEROchMult);
-    histos->UserHistogram("Event","CentralityV0M","Centrality V0;V0M percentile",300,-50,250,AliDielectronVarManager::kCentralityNew);
-    histos->UserHistogram("Event","CentralityV0Mzoomed","Centrality V0 zoomed;V0M percentile",200,0,2,AliDielectronVarManager::kCentralityNew);
+    histos->UserHistogram("Event","MultV0","Multiplicity V0;V0M amplitude",                       4000, -0.5, 3999.5, AliDielectronVarManager::kMultV0);
+    histos->UserHistogram("Event","EqMultV0","Equalized Multiplicity V0;Equalized V0M amplitude", 4000, -0.5, 3999.5, AliDielectronVarManager::kEqMultV0);
+    histos->UserHistogram("Event","ChMultV0","Charged Multiplicity V0;Charged V0M amplitude",     1000, -0.5, 999.5,  AliDielectronVarManager::kVZEROchMult);
+    histos->UserHistogram("Event","CentralityV0M","Centrality V0;V0M percentile",   102, -1, 101, AliDielectronVarManager::kCentralityNew);
+    histos->UserHistogram("Event","CentralityV0A","Centrality V0;V0A percentile",   102, -1, 101, AliDielectronVarManager::kCentralityV0A);
+    histos->UserHistogram("Event","CentralityV0C","Centrality V0;V0C percentile",   102, -1, 101, AliDielectronVarManager::kCentralityV0C);
+    histos->UserHistogram("Event","CentralityZNA","Centrality V0;V0ZNA percentile", 102, -1, 101, AliDielectronVarManager::kCentralityZNA);
+    histos->UserHistogram("Event","CentralitySPD","Centrality V0;V0SPD percentile", 102, -1, 101, AliDielectronVarManager::kCentralitySPD);
+    histos->UserHistogram("Event","CentralityCL0","Centrality V0;CL0 percentile",   102, -1, 101, AliDielectronVarManager::kCentralityCL0);
+    histos->UserHistogram("Event","CentralityCL1","Centrality V0;CL1 percentile",   102, -1, 101, AliDielectronVarManager::kCentralityCL1);
 
-    //-------For spectra scaling
-    histos->UserHistogram("Event","RefMultVsMult","#Charged Tracks Multiplicity (%);Ref. Mult",
-                          100, 0, 100, 600, 0, 600, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultTPConly);
+    // 2D V0 plots
+    histos->UserHistogram("Event","V0AvsV0C","V0A;V0C",
+                          102, -1, 101, 102, -1, 101, AliDielectronVarManager::kCentralityV0C, AliDielectronVarManager::kCentralityV0A);
+    histos->UserHistogram("Event","V0MvsV0C","V0M;V0C",
+                          102, -1, 101, 102, -1, 101, AliDielectronVarManager::kCentralityV0C, AliDielectronVarManager::kCentralityNew);
+    histos->UserHistogram("Event","V0MvsV0A","V0M;V0A",
+                          102, -1, 101, 102, -1, 101, AliDielectronVarManager::kCentralityV0A, AliDielectronVarManager::kCentralityNew);
     histos->UserHistogram("Event","RefMulTPConlytVsMult","#Charged Tracks Multiplicity (%);Ref. Mult TPC only",
                           100, 0, 100, 600, 0, 600, AliDielectronVarManager::kCentralityNew, AliDielectronVarManager::kRefMultTPConly);
     histos->UserHistogram("Event","RefMulOvRefMultTPConlytVsMult","#Charged Tracks Multiplicity (%);Ref. Mult Over Ref Mult TPC only",
@@ -761,11 +774,29 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
         /*                       AliDielectronVarManager::kOpeningAngle, AliDielectronVarManager::kPhivPair); */
 
         // Multiplicity
-        histos->UserHistogram("Pair", "InvMass_PairPt_Centrality", ";Inv. Mass (GeV);Pair Pt (GeV);Centrality",
+        histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0M", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0M",
                               GetVector(kMee, useRun1binning), GetVector(kPtee), GetVector(kCent),
                               AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
+        histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0A", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0A",
+                              GetVector(kMee, useRun1binning), GetVector(kPtee), GetVector(kCent),
+                              AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0A);
+        histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0C", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0C",
+                              GetVector(kMee, useRun1binning), GetVector(kPtee), GetVector(kCent),
+                              AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0C);
     }// End doMixing histograms
 
+    // V0 feature histograms
+    if(cutDefinition == "kV0_allAcc"){
+      histos->UserHistogram("Pair", "CosPointingAngle", "", BinsToVector(100, 0, 1),    AliDielectronVarManager::kCosPointingAngle);
+      histos->UserHistogram("Pair", "Chi2NDF",          "", BinsToVector(100, 0, 100),  AliDielectronVarManager::kChi2NDF);
+      histos->UserHistogram("Pair", "LegDist",          "", BinsToVector(400, 0, 1),    AliDielectronVarManager::kLegDist);
+      histos->UserHistogram("Pair", "R",                "", BinsToVector(1000, 0, 200), AliDielectronVarManager::kR);
+      histos->UserHistogram("Pair", "PsiTrack",         "", BinsToVector(100, 0, TMath::Pi()), AliDielectronVarManager::kPsiPair);
+      histos->UserHistogram("Pair", "kM",               "", BinsToVector(2000, 0, 20),  AliDielectronVarManager::kM);
+
+      histos->UserHistogram("Pair", "ArmAlpha_armPt", "", BinsToVector(400, -2.5, 2.5), BinsToVector(500, 0, 3),
+                            AliDielectronVarManager::kArmAlpha, AliDielectronVarManager::kArmPt);
+    }
     die->SetHistogramManager(histos);
 }
 

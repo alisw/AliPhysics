@@ -75,8 +75,9 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t MakePhotonCandidates(AliVCluster* clus, AliVCaloCells* cells, Long_t indexCluster);
     void ProcessTracksAndMatching(AliVCluster* clus, Long_t indexCluster);
     Int_t  GetMCClusterFlag(AliVCluster* clus, AliVCaloCells* cells);
-   Float_t GetCentrality(AliVEvent *event);
-    void ResetBuffer();
+    Float_t GetCentrality(AliVEvent *event);
+    //  Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
+    // Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
   private:
         
     AliAnalysisTaskClusterQA     ( const AliAnalysisTaskClusterQA& ); // Prevent copy-construction
@@ -102,6 +103,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     UInt_t IsTruePhotonAOD          ( AliAODConversionPhoton *TruePhotonCandidate );
     void CountTracks                ();
     void SetLogBinningXTH2          ( TH2* histoRebin );
+    void ResetBuffer();
         
   protected:
     AliV0ReaderV1*              fV0Reader;                  //
@@ -149,6 +151,7 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t           fBuffer_ClusterSupMod;                   //!<! array buffer
     Int_t           fBuffer_MC_Cluster_Flag;                   //!<! array buffer
     Int_t           fBuffer_ClusterNumCells;              //!<! array buffer
+    // Int_t           fBuffer_ClusterNLM;              //!<! array buffer
     Int_t           fBuffer_LeadingCell_ID;              //!<! array buffer
     Float_t         fBuffer_LeadingCell_E;              //!<! array buffer
     Float_t         fBuffer_LeadingCell_Eta;              //!<! array buffer
@@ -156,12 +159,14 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Float_t         fBuffer_ClusterM02;              //!<! array buffer
     Float_t         fBuffer_ClusterM20;              //!<! array buffer
 
-    Float_t         fBuffer_Event_Vertex_X;               //!<! array buffer
-    Float_t         fBuffer_Event_Vertex_Y;               //!<! array buffer
-    Float_t         fBuffer_Event_Vertex_Z;               //!<! array buffer
+    // Float_t         fBuffer_Event_Vertex_X;               //!<! array buffer
+    // Float_t         fBuffer_Event_Vertex_Y;               //!<! array buffer
+    // Float_t         fBuffer_Event_Vertex_Z;               //!<! array buffer
     Float_t         fBuffer_Event_Multiplicity;             //!<! array buffer
     Int_t           fBuffer_Event_NumActiveCells;          //!<! array buffer
 
+    // Int_t*          fBuffer_ClusterNLM_ID;                      //!<! array buffer
+    // Float_t*          fBuffer_ClusterNLM_E;                      //!<! array buffer
     Int_t*          fBuffer_Cells_ID;                      //!<! array buffer
     Float_t*        fBuffer_Cells_E;                      //!<! array buffer
     Float_t*        fBuffer_Cells_RelativeEta;                      //!<! array buffer
@@ -184,9 +189,11 @@ class AliAnalysisTaskClusterQA : public AliAnalysisTaskSE{
     Int_t           fBuffer_Mother_MC_Label;              //!<! array buffer
     Float_t         fBuffer_Cluster_MC_EFracFirstLabel;              //!<! array buffer
     Float_t         fBuffer_Cluster_MC_EFracLeadingPi0;              //!<! array buffer
+    Float_t         fBuffer_Cluster_MC_LeadingPi0_Pt;              //!<! array buffer
+    Float_t         fBuffer_Cluster_MC_LeadingPi0_E;              //!<! array buffer
 
     
-    ClassDef(AliAnalysisTaskClusterQA, 10);
+    ClassDef(AliAnalysisTaskClusterQA, 13);
 };
 
 const Int_t kMaxActiveCells = 18000;

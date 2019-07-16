@@ -108,6 +108,14 @@ public:
 	void SetQCetaCut( Double_t QC_eta_min, Double_t QC_eta_max){
 					fQC_eta_min=QC_eta_min; fQC_eta_max=QC_eta_max;
 					cout << "setting : QC eta range " << fQC_eta_min << "~" << fQC_eta_max << endl;}
+	enum SUBEVENT{
+		SUBEVENT_A = 0x1,
+		SUBEVENT_B = 0x2
+	};
+	void SelectSubevents(UInt_t nsubeventMask){
+		subeventMask = nsubeventMask;
+		cout << "setting subevent mask = " << hex << subeventMask << endl;
+	}
 
 	enum{
 		FLUC_MC = 0x1,
@@ -153,6 +161,8 @@ private:
 
 	 Double_t fQC_eta_min;
 	 Double_t fQC_eta_max;
+
+	 UInt_t subeventMask;
 
 	 TString fCentDetName;
 	 //TString fInFileName;

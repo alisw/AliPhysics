@@ -38,7 +38,7 @@ public:
     virtual bool Pass(const AliFemtoPair* pair);
     virtual AliFemtoString Report();
     virtual TList *ListSettings();
-    virtual AliFemtoPairCut* Clone() const;
+    virtual AliFemtoPairCutAntiGamma* Clone() const;
     void SetMaxEEMinv(Double_t maxeeminv);
     void SetMaxThetaDiff(Double_t maxdtheta);
     void SetTPCEntranceSepMinimum(double dtpc);
@@ -75,7 +75,9 @@ private:
 #endif
 };
 
-inline AliFemtoPairCut* AliFemtoPairCutAntiGamma::Clone() const
-  { AliFemtoPairCutAntiGamma* c = new AliFemtoPairCutAntiGamma(*this); return c;}
+inline AliFemtoPairCutAntiGamma* AliFemtoPairCutAntiGamma::Clone() const
+{
+  return new AliFemtoPairCutAntiGamma(*this);
+}
 
 #endif

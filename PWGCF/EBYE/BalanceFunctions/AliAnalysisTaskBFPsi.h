@@ -60,6 +60,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   void SetInputListForNUACorr(TString fileNUA);
   void SetInputListForNUECorr(TString fileNUE);
+
+  void SetInputListForNUECorr3D(TString fileNUE);
  
   Double_t GetNUACorrection(Int_t gRun, Short_t vCharge, Double_t vVz, Float_t vEta, Float_t vPhi );
   Double_t GetNUECorrection(Int_t gCentrality, Short_t vCharge, Double_t vPt);
@@ -161,6 +163,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void ExcludeResonancePDGInMC(Double_t pdgValue) {fExcludeResonancePDGInMC = pdgValue;}
   void IncludeResonancePDGInMC(Double_t pdgValue) {fIncludeResonancePDGInMC = pdgValue;}
 
+
+  void ExcludeResonancesLabelCut(Int_t gPdgResonanceCode) {
+     fExcludeResonancesLabel = kTRUE;
+     fMotherPDGCodeToExclude = gPdgResonanceCode;
+  }
+
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
     fPDGCodeToBeAnalyzed = gPdgCode;
@@ -178,6 +186,15 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fUseNUADeep = kTRUE;
   }
 
+  void SetUseRaaGeoCut(Float_t deadZoneWidth = 3, Float_t cutGeoNcrNclLength = 130, Float_t cutGeoNcrNclGeom1Pt = 1.5, Float_t cutGeoNcrNclFractionNcr = 0.85, Float_t cutGeoNcrNclFractionNcl = 0.7){
+    fUseRaaGeoCut=kTRUE;
+    fDeadZoneWidth = deadZoneWidth; 
+    fCutGeoNcrNclLength = cutGeoNcrNclLength;
+    fCutGeoNcrNclGeom1Pt = cutGeoNcrNclGeom1Pt;
+    fCutGeoNcrNclFractionNcr = cutGeoNcrNclFractionNcr;
+    fCutGeoNcrNclFractionNcl = cutGeoNcrNclFractionNcl;
+  }
+  
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
@@ -406,6 +423,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistRefTracks;//reference track multiplicities (QA histogram)
   TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
   TH2F *fHistEtavZ;//eta vs Vz (QA histos)
+  TH2F *fHistPtPhi;//pt vs phi for GeOCut PbPb2018
   TH1F *fHistPdgMC;
   TH1F *fHistPdgMCAODrec;//pdg code of accepted tracks in MCAODrec
   TH1F *fHistSphericity; //sphericity of accepted tracks
@@ -542,6 +560,14 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   
   Int_t fnAODtrackCutBit;//track cut bit from track selection (only used for AODs)
 
+  Bool_t fUseRaaGeoCut; //flag to switch on GeoCut for 2018PbPb data pass1
+  Float_t fDeadZoneWidth; //parameters of the cut as implemented in AliESDtrackCuts.h, default values implemented as suggested by DPG and D mesons analysis
+  Float_t fCutGeoNcrNclLength;
+  Float_t fCutGeoNcrNclGeom1Pt;
+  Float_t fCutGeoNcrNclFractionNcr;
+  Float_t fCutGeoNcrNclFractionNcl;
+
+
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
   Double_t fEtaMin;//only used for AODs
@@ -570,10 +596,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Bool_t fExcludeSecondariesInMC;//flag to exclude the secondaries from material and weak decays in the MCAODrec analysis
   Bool_t fExcludeWeakDecaysInMC;//flag to exclude the weak decay products (if not done by IsPhysicalPrimary) from the MC analysis
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products (and conversion) from the MC analysis
+  Bool_t fExcludeResonancesLabel;//flag to exclude the resonances using mother's label;
   Bool_t fExcludeElectronsInMC;//flag to exclude the electrons from the MC analysis
   Bool_t fExcludeParticlesExtra;//flag to exclude particles from the MC analysis (extra)
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC and MCAODrec
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
+  Int_t fMotherPDGCodeToExclude; // exclude the resonance with this PDG with the label cut from the MC analysis 
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
 
@@ -607,7 +635,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 18); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 19); // example of analysis
 };
 
 

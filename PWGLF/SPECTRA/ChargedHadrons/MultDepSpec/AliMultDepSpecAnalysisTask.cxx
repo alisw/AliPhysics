@@ -19,6 +19,8 @@ ClassImp(AliMultDepSpecAnalysisTask);
    fIsESD(kTRUE),
    fIsMC(kFALSE),
    fUseCent(kFALSE),
+   fUseZDCCut(kFALSE),
+   fOverridePbPbEventCuts(kFALSE),
    fMCUseDataDrivenCorrections(kFALSE),
    fMCSecScalingSysFlag(0),
    // Cut Parameters
@@ -28,8 +30,8 @@ ClassImp(AliMultDepSpecAnalysisTask);
    fMinPt(0.0),
    fMaxPt(50.0),
    fMaxZv(10.0),
-   fMinCent(0.0),
-   fMaxCent(100.0),
+   fMinCent(-1000.0),
+   fMaxCent(1000.0),
    //Arrays for Binning
    fBinsEventCuts(nullptr),
    fBinsMult(nullptr),
@@ -109,6 +111,8 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fIsESD(kTRUE),
   fIsMC(kFALSE),
   fUseCent(kFALSE),
+  fUseZDCCut(kFALSE),
+  fOverridePbPbEventCuts(kFALSE),
   fMCUseDataDrivenCorrections(kFALSE),
   fMCSecScalingSysFlag(0),
   // Cut Parameters
@@ -118,8 +122,8 @@ AliMultDepSpecAnalysisTask::AliMultDepSpecAnalysisTask(const char* name) : AliAn
   fMinPt(0.0),
   fMaxPt(50.0),
   fMaxZv(10.0),
-  fMinCent(0.0),
-  fMaxCent(100.0),
+  fMinCent(-1000.0),
+  fMaxCent(1000.0),
   //Arrays for Binning
   fBinsEventCuts(nullptr),
   fBinsMult(nullptr),
@@ -280,8 +284,14 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects(){
   }
 
   // override event automatic event selection settings
-  fEventCuts.SetMaxVertexZposition(fMaxZv);
-  if(fUseCent) fEventCuts.SetCentralityRange(fMinCent, fMaxCent);
+  if(fOverridePbPbEventCuts)
+  {
+    fEventCuts.SetManualMode();
+    fEventCuts.SetupLHC15o(); // first set default values and then override
+    fEventCuts.SetCentralityRange(fMinCent, fMaxCent);
+    fEventCuts.fUseEstimatorsCorrelationCut = false;
+  }
+  //fEventCuts.SetMaxVertexZposition(fMaxZv); // has no effect in automatic mode...
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerMask);
 
   if(fIsESD) InitESDTrackCuts();
@@ -347,7 +357,6 @@ Bool_t AliMultDepSpecAnalysisTask::InitEvent()
     }
 
     fCent = ((fBinsCent->GetSize()-1) > 1) ? GetCentrality(fEvent) : 50;
-
     // event info for random seeds
     fRunNumber = fEvent->GetRunNumber();
     AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(fEvent);
@@ -355,6 +364,13 @@ Bool_t AliMultDepSpecAnalysisTask::InitEvent()
     fTimeStamp = esdEvent->GetTimeStamp();
     //esdEvent->GetHeader()->GetEventIdAsLong();
 
+    if(fUseZDCCut)
+    {
+      AliESDZDC* zdc = esdEvent->GetESDZDC();
+      Double_t znaEnergy = zdc->GetZNAEnergy();
+      Double_t zncEnergy = zdc->GetZNCEnergy();
+      if ( (znaEnergy <  3503.0) || (zncEnergy <  3609.0) ) {return kFALSE;}
+    }
     Bool_t acceptEvent = fEventCuts.AcceptEvent(fEvent);
 
     LoopMeas(kTRUE); // set measured multiplicity fMeasMult, fMeasMultScaled
@@ -686,12 +702,9 @@ Bool_t AliMultDepSpecAnalysisTask::AcceptTrackQuality(AliVTrack* track){
  ******************************************************************************/
 Double_t AliMultDepSpecAnalysisTask::GetCentrality(AliVEvent* event)
 {
-  Double_t centrality = -1;
   AliMultSelection* multSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
   if(!multSelection){AliError("No MultSelection found!"); return 999;}
-  centrality = multSelection->GetMultiplicityPercentile("V0M");
-  if(centrality > 100) {AliError("Centrality determination does not work proprely!"); return 999;}
-  return centrality;
+  return multSelection->GetMultiplicityPercentile("V0M");
 }
 
 /***************************************************************************//**
@@ -929,8 +942,8 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
 
   Double_t cutVertexZ = 10.0;
 
-  Double_t cutCentLow = 0.0;
-  Double_t cutCentHigh = 100.0;
+  Double_t cutCentLow = -1000.0;
+  Double_t cutCentHigh = 1000.0;
 
   Double_t cutPtLow = 0.15;
   Double_t cutPtHigh = 50.0;
@@ -944,6 +957,9 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
   Bool_t useCent = kFALSE;
   if(controlstring.Contains("useCent")) useCent = kTRUE;
   Double_t centBinEdges[9] = {0., 5., 10., 20., 40., 60., 80., 90., 100.};
+
+  Bool_t overridePbPbEventCuts = kFALSE;
+  Bool_t useZDC = kFALSE;
 
 
   // colison system specific settings
@@ -962,7 +978,13 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
   else if(controlstring.Contains("PbPb")) {
     colsys = "PbPb";
     maxMult = 4500;
+    overridePbPbEventCuts = kTRUE;
+    useZDC = kTRUE;
   }
+
+  if(controlstring.Contains("autoEventCutsPbPb")) overridePbPbEventCuts = kFALSE;
+  if(controlstring.Contains("noZDC")) useZDC = kFALSE;
+
 
   AliMCSpectraWeights* pccWeights = nullptr;
   if(isMC && pccTrainOutputPath != ""){
@@ -992,6 +1014,8 @@ AliMultDepSpecAnalysisTask* AliMultDepSpecAnalysisTask::AddTaskMultDepSpec(TStri
     else task->SetUseAOD();
 
     task->SetBinsMult(maxMult);
+    task->SetUseZDCCut(useZDC);
+    task->SetOverridePbPbEventCuts(overridePbPbEventCuts);
 
     if(useCent){
       task->SetMinCent(cutCentLow);

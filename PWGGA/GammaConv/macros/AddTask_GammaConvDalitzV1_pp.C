@@ -358,6 +358,11 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250400000", "204c4640263202223710", "0152103500000000"); // no double counting
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152101500000000"); // meson alpha pt dep
     cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152107500000000"); // meson alpha < 0.85
+  } else if (trainConfig == 416) {//Primary cut, dE/dx sigma, min pT, max pT for pions.
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640863202223710", "0152103500000000");//Standard with kBoth on electrons
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640863002223710", "0152103500000000");//No PsiPair cut with kBoth on electrons
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263202223710", "0152103500000000");//Standard
+    cuts.AddCutPCMDalitz("00010113", "0d200009227300008250404000", "204c4640263002223710", "0152103500000000");//No PsiPair on electrons
 
     //  6XX for lowB,    65X  lowB and MBW
   } else if (trainConfig == 606) {  // low B   eta<0.8

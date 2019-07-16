@@ -34,7 +34,9 @@
 class THistManager;
 class TRandom;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+
+namespace EMCALJetTasks{
 
 class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
 public:
@@ -47,6 +49,7 @@ public:
   void SetTriggerName(const char *name)          { fTriggerSelectionString = name; }
   void SetFractionResponseClosure(double fraction);
   void SetFillHSparse(Bool_t doFill)             { fFillHSparse = doFill; }
+  void SetEnergyScaleShift(Double_t scaleshift)  { fScaleShift = scaleshift; }
 
   static AliAnalysisTaskEmcalJetEnergyScale *AddTaskJetEnergyScale(
     AliJetContainer::EJetType_t       jetType,
@@ -72,6 +75,7 @@ private:
   TString                     fNameTriggerDecisionContainer;  ///< Global trigger decision container
   Double_t                    fFractionResponseClosure;       ///< Fraction of jets used for response in closure test
   Bool_t                      fFillHSparse;                   ///< Fill THnSparses
+  Double_t                    fScaleShift;                    ///< Shift of the jet energy scale (fixed)
   TRandom                     *fSampleSplitter;               //!<! Sample splitter
 
   AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &);
@@ -79,6 +83,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalJetEnergyScale, 1);
 };
+
+}
 
 }
 #endif // ALIANALYSISTASKEMCALJETENERGYSCALE_H

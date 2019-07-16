@@ -130,6 +130,29 @@ public:
 
 	void SetDoTaggedJetsDRM(Bool_t value){fDoTaggedDRM = value;}
 
+        Int_t FindVertices6Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount);
+
+        Int_t FindVertices5Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount);
+
+        Int_t FindVertices4Prong(const AliEmcalJet* jet,
+                                           TClonesArray*      fTrackArrayIn,
+                                           AliAODEvent*       aodEvent,
+                                           AliESDVertex*      primaryESDVertex,
+                                           Double_t           magZkG,
+                                           TClonesArray*      arrayVtxHF,
+                                           Int_t&             nDauRejCount);
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -381,6 +404,12 @@ private:
         TH2D * fhistSVEnergyFraction_udsgThird;//!
         TH2D * fhistSVEnergyFraction_cThird;//!
         TH2D * fhistSVEnergyFraction_bThird;//!
+
+        TH2D * fhistSVnProngs;//!
+        TH2D * fhistSVnProngs_Unidentified;//!
+        TH2D * fhistSVnProngs_udsg;//!
+        TH2D * fhistSVnProngs_c;//!
+        TH2D * fhistSVnProngs_b;//!
 
 
 	//Jet Probability Histograms
@@ -671,6 +700,13 @@ private:
 
   AliHFJetsTaggingVertex*  fVtxTagger3Prong;//!
   AliHFJetsTaggingVertex*  fVtxTagger2Prong;//!
+
+  AliRDHFJetsCutsVertex* fjetCuts3Prong;//! SV cuts
+  AliRDHFJetsCutsVertex* fjetCuts2Prong;//! SV cuts
+
+  TObjArray* fTrackArray;//! Tracks selected for the SV reconstruction
+
+  AliESDtrackCuts* fEsdTrackCuts;//! cuts used on the track selected for the SV reconstruction
 
   TH3D* fHistSV2Prong;//!
   TH3D* fHistSV2ProngUnidentified;//!

@@ -3,6 +3,6 @@
 #include <string>
 #endif
 
-AliAnalysisTaskNanoAODskimming* AddTaskNanoAODskimming(std::string name = "NanoAODskimming") {
+AliAnalysisTaskNanoAODskimming* AddTaskNanoAODskimming(std::string name = "NanoAODSkimming") {
   return AliAnalysisTaskNanoAODskimming::AddTask(name); 
 }

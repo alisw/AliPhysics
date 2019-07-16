@@ -19,11 +19,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_acapon_Efficiency(TString names    
 {
 
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
-  
+
   TObjArray *arrNames = names.Tokenize(";");
   Int_t nDie          = arrNames->GetEntries();
   Printf("Number of implemented cuts: %i", nDie);
-  
+
   std::string resoFilenameFromAlien = "/alice/cern.ch/user/a/acapon/ResolutionFiles/";
   resoFilenameFromAlien.append(resoFilename);
 

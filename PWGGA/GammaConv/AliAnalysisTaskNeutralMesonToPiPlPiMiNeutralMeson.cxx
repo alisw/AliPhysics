@@ -255,6 +255,18 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoNGoodESDTracks(nullptr),
   fProfileEtaShift(nullptr),
   fHistoSPDClusterTrackletBackground(nullptr),
+  fHistovParticleChi2PerNDF(nullptr),
+  fHistovParticleChi2PerNDFBothConstrained(nullptr),
+  fHistovParticleChi2PerNDFOneConstrained(nullptr),
+  fHistovParticledS(nullptr),
+  fHistovParticledSBothConstrained(nullptr),
+  fHistovParticledSOneConstrained(nullptr),
+  fHistoTruevParticleChi2PerNDF(nullptr),
+  fHistoTruevParticleFromSameMotherChi2PerNDF(nullptr),
+  fHistoTruevParticleFromHNMChi2PerNDF(nullptr),
+  fHistoTruevParticledS(nullptr),
+  fHistoTruevParticleFromSameMotherdS(nullptr),
+  fHistoTruevParticleFromHNMdS(nullptr),
   fRandom(0),
   fnCuts(0),
   fiCut(0),
@@ -480,6 +492,18 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoNGoodESDTracks(nullptr),
   fProfileEtaShift(nullptr),
   fHistoSPDClusterTrackletBackground(nullptr),
+  fHistovParticleChi2PerNDF(nullptr),
+  fHistovParticleChi2PerNDFBothConstrained(nullptr),
+  fHistovParticleChi2PerNDFOneConstrained(nullptr),
+  fHistovParticledS(nullptr),
+  fHistovParticledSBothConstrained(nullptr),
+  fHistovParticledSOneConstrained(nullptr),
+  fHistoTruevParticleChi2PerNDF(nullptr),
+  fHistoTruevParticleFromSameMotherChi2PerNDF(nullptr),
+  fHistoTruevParticleFromHNMChi2PerNDF(nullptr),
+  fHistoTruevParticledS(nullptr),
+  fHistoTruevParticleFromSameMotherdS(nullptr),
+  fHistoTruevParticleFromHNMdS(nullptr),
   fRandom(0),
   fnCuts(0),
   fiCut(0),
@@ -749,6 +773,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fProfileEtaShift              = new TProfile*[fnCuts];
     fHistoSPDClusterTrackletBackground = new TH2F*[fnCuts];
 
+    fHistovParticleChi2PerNDF = new TH1F*[fnCuts];
+    fHistovParticleChi2PerNDFBothConstrained  = new TH1F*[fnCuts];
+    fHistovParticleChi2PerNDFOneConstrained = new TH1F*[fnCuts];
+    fHistovParticledS  = new TH1F*[fnCuts];
+    fHistovParticledSBothConstrained  = new TH1F*[fnCuts];
+    fHistovParticledSOneConstrained  = new TH1F*[fnCuts];
     if (fNDMRecoMode < 2){
       fHistoConvGammaPt           = new TH1F*[fnCuts];
       fHistoConvGammaEta          = new TH1F*[fnCuts];
@@ -874,6 +904,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoNGoodESDTracks[iCut]  = new TH1I("GoodESDTracks","GoodESDTracks",200,0,200);
     fHistoNGoodESDTracks[iCut]->GetXaxis()->SetTitle("N_{good ESD tracks}");
     fHistoNGoodESDTracks[iCut]->GetYaxis()->SetTitle("N_{events}");
+    fHistoNGoodESDTracks[iCut]->Sumw2();
     fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
     if(!fDoLightOutput){
       fProfileEtaShift[iCut]        = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
@@ -881,105 +912,163 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoSPDClusterTrackletBackground[iCut] = new TH2F("SPD tracklets vs SPD clusters","SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
       fHistoSPDClusterTrackletBackground[iCut]->GetXaxis()->SetTitle("N_{SPD tracklets}");
       fHistoSPDClusterTrackletBackground[iCut]->GetYaxis()->SetTitle("N_{SPD clusters}");
+      fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
+
+      fHistovParticleChi2PerNDF[iCut] = new TH1F("fHistovParticleChi2PerNDF","fHistovParticleChi2PerNDF",300,0,300);
+      fHistovParticleChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
+      fHistovParticleChi2PerNDF[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistovParticleChi2PerNDF[iCut]);
+
+      fHistovParticleChi2PerNDFBothConstrained[iCut] = new TH1F("fHistovParticleChi2PerNDFBothConstrained","fHistovParticleChi2PerNDFBothConstrained",300,0,300);
+      fHistovParticleChi2PerNDFBothConstrained[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
+      fHistovParticleChi2PerNDFBothConstrained[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistovParticleChi2PerNDFBothConstrained[iCut]);
+
+      fHistovParticleChi2PerNDFOneConstrained[iCut] = new TH1F("fHistovParticleChi2PerNDFOneConstrained","fHistovParticleChi2PerNDFOneConstrained",300,0,300);
+      fHistovParticleChi2PerNDFOneConstrained[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
+      fHistovParticleChi2PerNDFOneConstrained[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistovParticleChi2PerNDFOneConstrained[iCut]);
+
+      fHistovParticledS[iCut] = new TH1F("fHistovParticledS","fHistovParticledS",400,-4,4);
+      fHistovParticledS[iCut]->GetXaxis()->SetTitle("dS");
+      fHistovParticledS[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistovParticledS[iCut]);
+
+      fHistovParticledSBothConstrained[iCut] = new TH1F("fHistovParticledSBothConstrained","fHistovParticledSBothConstrained",400,-4,4);
+      fHistovParticledSBothConstrained[iCut]->GetXaxis()->SetTitle("dS");
+      fHistovParticledSBothConstrained[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistovParticledSBothConstrained[iCut]);
+
+      fHistovParticledSOneConstrained[iCut] = new TH1F("fHistovParticledSOneConstrained","fHistovParticledSOneConstrained",400,-4,4);
+      fHistovParticledSOneConstrained[iCut]->GetXaxis()->SetTitle("dS");
+      fHistovParticledSOneConstrained[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistovParticledSOneConstrained[iCut]);
+      
       if (fNDMRecoMode < 2){
         fHistoConvGammaPt[iCut]     = new TH1F("ESD_ConvGamma_Pt","ESD_ConvGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
+        fHistoConvGammaPt[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
         fHistoConvGammaEta[iCut]    = new TH1F("ESD_ConvGamma_Eta","ESD_ConvGamma_Eta",600,-1.5,1.5);
         fHistoConvGammaEta[iCut]->GetXaxis()->SetTitle("#eta");
         fHistoConvGammaEta[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
+        fHistoConvGammaEta[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoConvGammaEta[iCut]);
       }
       if (fNDMRecoMode > 0){
         fHistoClusterGammaPt[iCut]  = new TH1F("ESD_ClusterGamma_Pt","ESD_ClusterGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoClusterGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoClusterGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
+        fHistoClusterGammaPt[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoClusterGammaPt[iCut]);
         fHistoClusterGammaEta[iCut] = new TH1F("ESD_ClusterGamma_Eta","ESD_ClusterGamma_Eta",600,-1.5,1.5);
         fHistoClusterGammaEta[iCut]->GetXaxis()->SetTitle("#eta");
         fHistoClusterGammaEta[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
+        fHistoClusterGammaEta[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoClusterGammaEta[iCut]);
       }
+      
       fHistoNegPionPt[iCut]         = new TH1F("ESD_PrimaryNegPions_Pt","ESD_PrimaryNegPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoNegPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoNegPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+      fHistoNegPionPt[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoNegPionPt[iCut]);
       fHistoPosPionPt[iCut]         = new TH1F("ESD_PrimaryPosPions_Pt","ESD_PrimaryPosPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoPosPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoPosPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+      fHistoPosPionPt[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoPosPionPt[iCut]);  
       fHistoNegPionPhi[iCut]        = new TH1F("ESD_PrimaryNegPions_Phi","ESD_PrimaryNegPions_Phi",360,0,2*TMath::Pi());
       fHistoNegPionPhi[iCut]->GetXaxis()->SetTitle("#phi");
       fHistoNegPionPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+      fHistoNegPionPhi[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoNegPionPhi[iCut]);
       fHistoPosPionPhi[iCut]        = new TH1F("ESD_PrimaryPosPions_Phi","ESD_PrimaryPosPions_Phi",360,0,2*TMath::Pi());
       fHistoPosPionPhi[iCut]->GetXaxis()->SetTitle("#phi");
       fHistoPosPionPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+      fHistoPosPionPhi[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoPosPionPhi[iCut]);
       fHistoPionPionInvMassPt[iCut] = new TH2F("ESD_PiPlusPiNeg_InvMassPt","ESD_PiPlusPiNeg_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoPionPionInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
       fHistoPionPionInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistoPionPionInvMassPt[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoPionPionInvMassPt[iCut]);
 
       if ( fDoMesonQA>0 ) {
         fHistoNegPionEta[iCut]        = new TH1F("ESD_PrimaryNegPions_Eta","ESD_PrimaryNegPions_Eta",600,-1.5,1.5);
         fHistoNegPionEta[iCut]->GetXaxis()->SetTitle("#eta");
         fHistoNegPionEta[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+        fHistoNegPionEta[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoNegPionEta[iCut]);
         fHistoPosPionEta[iCut]        = new TH1F("ESD_PrimaryPosPions_Eta","ESD_PrimaryPosPions_Eta",600,-1.5,1.5);
         fHistoPosPionEta[iCut]->GetXaxis()->SetTitle("#eta");
         fHistoPosPionEta[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+        fHistoPosPionEta[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoPosPionEta[iCut]);
         fHistoNegPionClsTPC[iCut]     = new TH2F("ESD_PrimaryNegPions_ClsTPC","ESD_PrimaryNegPions_ClsTPC",100,0,1,400,0.,10.);
         fHistoNegPionClsTPC[iCut]->GetXaxis()->SetTitle("N_{findable cls. TPC #pi^{-}}");
         fHistoNegPionClsTPC[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoNegPionClsTPC[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoNegPionClsTPC[iCut]);
         fHistoPosPionClsTPC[iCut]     = new TH2F("ESD_PrimaryPosPions_ClsTPC","ESD_PrimaryPosPions_ClsTPC",100,0,1,400,0.,10.);
         fHistoPosPionClsTPC[iCut]->GetXaxis()->SetTitle("N_{findable cls. TPC #pi^{+}}");
         fHistoPosPionClsTPC[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoPosPionClsTPC[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoPosPionClsTPC[iCut]);
         fHistoPionDCAxy[iCut]         = new TH2F("ESD_PrimaryPions_DCAxy","ESD_PrimaryPions_DCAxy",800,-4.0,4.0,400,0.,10.);
         fHistoPionDCAxy[iCut]->GetXaxis()->SetTitle("DCA_{xy}");
         fHistoPionDCAxy[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoPionDCAxy[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoPionDCAxy[iCut]);
         fHistoPionDCAz[iCut]          = new TH2F("ESD_PrimaryPions_DCAz","ESD_PrimaryPions_DCAz",800,-4.0,4.0,400,0.,10.);
         fHistoPionDCAz[iCut]->GetXaxis()->SetTitle("DCA_{z}");
         fHistoPionDCAz[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoPionDCAz[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoPionDCAz[iCut]);
         fHistoPionTPCdEdxNSigma[iCut] = new TH2F("ESD_PrimaryPions_TPCdEdx","ESD_PrimaryPions_TPCdEdx",150,0.05,20,400,-10,10);
         fHistoPionTPCdEdxNSigma[iCut]->GetXaxis()->SetTitle("p (GeV/c)");
         fHistoPionTPCdEdxNSigma[iCut]->GetYaxis()->SetTitle("#sigma_{PID,TPC}");
+        fHistoPionTPCdEdxNSigma[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoPionTPCdEdxNSigma[iCut]);
         fHistoPionTPCdEdx[iCut]       = new TH2F("ESD_PrimaryPions_TPCdEdxSignal","ESD_PrimaryPions_TPCdEdxSignal" ,150,0.05,20.0,800,0.0,200);
         fHistoPionTPCdEdx[iCut]->GetXaxis()->SetTitle("p (GeV/c)");
         fHistoPionTPCdEdx[iCut]->GetYaxis()->SetTitle("dE/dx signal (au)");
+        fHistoPionTPCdEdx[iCut]->Sumw2();
         fESDList[iCut]->Add(fHistoPionTPCdEdx[iCut]);
       }
       fHistoGammaGammaInvMassPt[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt","ESD_GammaGamma_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
       fHistoGammaGammaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistoGammaGammaInvMassPt[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoGammaGammaInvMassPt[iCut]);
 
       fHistoGammaGammaInvMassPtBeforeCuts[iCut]               = new TH2F("ESD_GammaGamma_InvMass_Pt_Before_Cuts","ESD_GammaGamma_InvMass_Pt_Before_Cuts",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
       fHistoGammaGammaInvMassPtBeforeCuts[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+      fHistoGammaGammaInvMassPtBeforeCuts[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoGammaGammaInvMassPtBeforeCuts[iCut]);
     }
     fHistoMotherInvMassPt[iCut]                   = new TH2F("ESD_Mother_InvMass_Pt","ESD_Mother_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoMotherInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoMotherInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoMotherInvMassPt[iCut]->Sumw2();
     fESDList[iCut]->Add(fHistoMotherInvMassPt[iCut]);
     fHistoMotherInvMassPtRejectedKinematic[iCut]  = new TH2F("ESD_Mother_InvMass_Pt_KinematicRejected","ESD_Mother_InvMass_Pt_KinematicRejected",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoMotherInvMassPtRejectedKinematic[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoMotherInvMassPtRejectedKinematic[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoMotherInvMassPtRejectedKinematic[iCut]->Sumw2();
     fESDList[iCut]->Add(fHistoMotherInvMassPtRejectedKinematic[iCut]);
 
     fHistoBackInvMassPtGroup1[iCut] = new TH2F("ESD_Background_1_InvMass_Pt","ESD_Background_1_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoBackInvMassPtGroup1[iCut]->Sumw2();
     fHistoBackInvMassPtGroup2[iCut] = new TH2F("ESD_Background_2_InvMass_Pt","ESD_Background_2_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoBackInvMassPtGroup2[iCut]->Sumw2();
     fHistoBackInvMassPtGroup3[iCut]  = new TH2F("ESD_Background_3_InvMass_Pt","ESD_Background_3_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoBackInvMassPtGroup3[iCut]->Sumw2();
     fHistoBackInvMassPtGroup4[iCut]  = new TH2F("ESD_Background_4_InvMass_Pt","ESD_Background_4_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
+    fHistoBackInvMassPtGroup4[iCut]->Sumw2();
     fHistoBackInvMassPtGroup1[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup1[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
     fHistoBackInvMassPtGroup2[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
@@ -998,12 +1087,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoMotherLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_Background_LikeSign_InvMass_Pt","ESD_Background_LikeSign_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoMotherLikeSignBackInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{#pm} #pi^{#pm} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoMotherLikeSignBackInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoMotherLikeSignBackInvMassPt[iCut]->Sumw2();
     if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing()){
       fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassPt[iCut]);
     }
     fHistoMotherInvMassSubNDM[iCut]                       = new TH2F("ESD_InvMass_Mother_Sub_InvMass_Neutral_Pt","ESD_InvMass_Mother_Sub_InvMass_Neutral_Pt",HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoMotherInvMassSubNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - (M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
     fHistoMotherInvMassSubNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoMotherInvMassSubNDM[iCut]->Sumw2();
     fESDList[iCut]->Add(fHistoMotherInvMassSubNDM[iCut]);
 
     fHistoBackInvMassPtGroup1SubNDM[iCut]   = new TH2F("ESD_Background_1_InvMass_Sub_InvMass_Neutral_Pt","ESD_Background_1_InvMass_Sub_InvMass_Neutral_Pt",
@@ -1017,12 +1108,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
     fHistoBackInvMassPtGroup1SubNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - (M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup1SubNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoBackInvMassPtGroup1SubNDM[iCut]->Sumw2();
     fHistoBackInvMassPtGroup2SubNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - (M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup2SubNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoBackInvMassPtGroup2SubNDM[iCut]->Sumw2();
     fHistoBackInvMassPtGroup3SubNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - (M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup3SubNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoBackInvMassPtGroup3SubNDM[iCut]->Sumw2();
     fHistoBackInvMassPtGroup4SubNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - (M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup4SubNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoBackInvMassPtGroup4SubNDM[iCut]->Sumw2();
     if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing())&&(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation())){
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup4SubNDM[iCut]);
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup1SubNDM[iCut]);
@@ -1033,12 +1128,14 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
                                                                 HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoMotherLikeSignBackInvMassSubNDMPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{#pm} #pi^{#pm} %s} - M_{%s} (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data()));
     fHistoMotherLikeSignBackInvMassSubNDMPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoMotherLikeSignBackInvMassSubNDMPt[iCut]->Sumw2();
     if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing()){
       fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassSubNDMPt[iCut]);
     }
     fHistoMotherInvMassFixedPzNDM[iCut]                     = new TH2F("ESD_InvMass_Mother_FixedPz_Neutral_Pt","ESD_Mother_InvMass_FixedPz_Neutral_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoMotherInvMassFixedPzNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoMotherInvMassFixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoMotherInvMassFixedPzNDM[iCut]->Sumw2();
     fESDList[iCut]->Add(fHistoMotherInvMassFixedPzNDM[iCut]);
 
     fHistoBackInvMassPtGroup1FixedPzNDM[iCut] = new TH2F("ESD_Background_1_InvMass_FixedPz_Neutral_Pt","ESD_Background_1_InvMass_FixedPz_Neutral_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
@@ -1047,12 +1144,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoBackInvMassPtGroup4FixedPzNDM[iCut]  = new TH2F("ESD_Background_4_InvMass_FixedPz_Neutral_Pt","ESD_Background_4_InvMass_FixedPz_Neutral_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoBackInvMassPtGroup1FixedPzNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup1FixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoBackInvMassPtGroup1FixedPzNDM[iCut]->Sumw2();
     fHistoBackInvMassPtGroup2FixedPzNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup2FixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoBackInvMassPtGroup2FixedPzNDM[iCut]->Sumw2();
     fHistoBackInvMassPtGroup3FixedPzNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup3FixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoBackInvMassPtGroup3FixedPzNDM[iCut]->Sumw2();
     fHistoBackInvMassPtGroup4FixedPzNDM[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoBackInvMassPtGroup4FixedPzNDM[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoBackInvMassPtGroup4FixedPzNDM[iCut]->Sumw2();
     if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing()) && (((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation())){
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup1FixedPzNDM[iCut]);
       fESDList[iCut]->Add(fHistoBackInvMassPtGroup2FixedPzNDM[iCut]);
@@ -1062,6 +1163,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoMotherLikeSignBackInvMassFixedPzNDMPt[iCut]  = new TH2F("ESD_Background_LikeSign_InvMass_FixedPz_Neutral_Pt","ESD_Background_LikeSign_InvMass_FixedPz_Neutral_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
     fHistoMotherLikeSignBackInvMassFixedPzNDMPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{#pm} #pi^{#pm} %s} (GeV/c^{2})",NameNDMLatex.Data()));
     fHistoMotherLikeSignBackInvMassFixedPzNDMPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistoMotherLikeSignBackInvMassFixedPzNDMPt[iCut]->Sumw2();
     if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing()){
       fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassFixedPzNDMPt[iCut]);
     }
@@ -1069,34 +1171,42 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoAngleHNMesonPiPlPiMi[iCut]      = new TH2F(Form("ESD_Mother_Angle%sNegPionsPosPions_Pt",NameNeutralMesonAnalyzed.Data()),Form("ESD_Mother_Angle%sNegPionsPosPions_Pt",NameNeutralMesonAnalyzed.Data()),HistoNPtBins,HistoPtRange[0],HistoPtRange[1],360,0,TMath::Pi());
       fHistoAngleHNMesonPiPlPiMi[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoAngleHNMesonPiPlPiMi[iCut]->GetYaxis()->SetTitle("#angle (meson,#pi^{+}#pi^{-})");
+      fHistoAngleHNMesonPiPlPiMi[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAngleHNMesonPiPlPiMi[iCut]);
       fHistoAngleHNMesonPiMi[iCut]          = new TH2F(Form("ESD_Mother_Angle%sNegPions_Pt",NameNeutralMesonAnalyzed.Data()),Form("ESD_Mother_Angle%sNegPions_Pt",NameNeutralMesonAnalyzed.Data()),HistoNPtBins,HistoPtRange[0],HistoPtRange[1],360,0,TMath::Pi());
       fHistoAngleHNMesonPiMi[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoAngleHNMesonPiMi[iCut]->GetYaxis()->SetTitle("#angle (meson,#pi^{-})");
+      fHistoAngleHNMesonPiMi[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAngleHNMesonPiMi[iCut]);
       fHistoAngleHNMesonPiPl[iCut]          = new TH2F(Form("ESD_Mother_Angle%sPosPions_Pt",NameNeutralMesonAnalyzed.Data()),Form("ESD_Mother_Angle%sPosPions_Pt",NameNeutralMesonAnalyzed.Data()),HistoNPtBins,HistoPtRange[0],HistoPtRange[1],360,0,TMath::Pi());
       fHistoAngleHNMesonPiPl[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoAngleHNMesonPiPl[iCut]->GetYaxis()->SetTitle("#angle (meson,#pi^{+})");
+      fHistoAngleHNMesonPiPl[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAngleHNMesonPiPl[iCut]);
       fHistoAngleHNMesonNDM[iCut]        = new TH2F(Form("ESD_Mother_Angle%s%s_Pt",NameNeutralMesonAnalyzed.Data(),NameNDM.Data()),Form("ESD_Mother_Angle%s%s_Pt",NameNeutralMesonAnalyzed.Data(),NameNDM.Data()),HistoNPtBins,HistoPtRange[0],HistoPtRange[1],360,0,TMath::Pi());
       fHistoAngleHNMesonNDM[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoAngleHNMesonNDM[iCut]->GetYaxis()->SetTitle(Form("#angle (meson,%s)",NameNDMLatex.Data()));
+      fHistoAngleHNMesonNDM[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAngleHNMesonNDM[iCut]);
       fHistoAnglePiPlNDM[iCut]         = new TH2F(Form("ESD_Mother_AnglePosPions%s_Pt",NameNDM.Data()),Form("ESD_Mother_AnglePosPions%s_Pt",NameNDM.Data()),HistoNPtBins,HistoPtRange[0],HistoPtRange[1],360,0,TMath::Pi());
       fHistoAnglePiPlNDM[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoAnglePiPlNDM[iCut]->GetYaxis()->SetTitle(Form("#angle (#pi^{+},%s)",NameNDMLatex.Data()));
+      fHistoAnglePiPlNDM[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAnglePiPlNDM[iCut]);
       fHistoAnglePiPlPiMi[iCut]           = new TH2F("ESD_Mother_AnglePosPionsNegPions_Pt","ESD_Mother_AnglePosPionsNegPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1],360,0,TMath::Pi());
       fHistoAnglePiPlPiMi[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoAnglePiPlPiMi[iCut]->GetYaxis()->SetTitle("#angle (#pi^{+},#pi^{-})");
+      fHistoAnglePiPlPiMi[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAnglePiPlPiMi[iCut]);
       fHistoAngleNDMPiMi[iCut]         = new TH2F(Form("ESD_Mother_Angle%sNegPions_Pt",NameNDM.Data()),Form("ESD_Mother_Angle%sNegPions_Pt",NameNDM.Data()),HistoNPtBins,HistoPtRange[0],HistoPtRange[1],360,0,TMath::Pi());
       fHistoAngleNDMPiMi[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoAngleNDMPiMi[iCut]->GetYaxis()->SetTitle(Form("#angle (%s,#pi^{-})",NameNDMLatex.Data()));
+      fHistoAngleNDMPiMi[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAngleNDMPiMi[iCut]);
       fHistoAngleSum[iCut]                = new TH2F("ESD_Mother_AngleSum_Pt","ESD_Mother_AngleSum_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1],720,0,2*TMath::Pi());
       fHistoAngleSum[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
       fHistoAngleSum[iCut]->GetYaxis()->SetTitle("#sum #angle");
+      fHistoAngleSum[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAngleSum[iCut]);
     }
     if ( fDoMesonQA>0 && (!fDoLightOutput) ) {
@@ -1237,6 +1347,15 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt            = new TH2F*[fnCuts];
         fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt       = new TH2F*[fnCuts];
         fHistoTruePiPlPiMiNDMContaminationInvMassPt            = new TH2F*[fnCuts];
+        
+        fHistoTruevParticleChi2PerNDF = new TH1F*[fnCuts];
+        fHistoTruevParticleFromSameMotherChi2PerNDF = new TH1F*[fnCuts];
+        fHistoTruevParticleFromHNMChi2PerNDF = new TH1F*[fnCuts];
+        fHistoTruevParticledS = new TH1F*[fnCuts];
+        fHistoTruevParticleFromSameMotherdS = new TH1F*[fnCuts];
+        fHistoTruevParticleFromHNMdS = new TH1F*[fnCuts];
+
+
         if (fDoMesonQA>1){
           fTrueTreeList                                           = new TList*[fnCuts];
           fTreePiPiSameMother                                     = new TTree*[fnCuts];
@@ -1281,231 +1400,285 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoMCAllGammaPt[iCut]          = new TH1F("MC_AllGamma_Pt","MC_AllGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoMCAllGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma}");
+        fHistoMCAllGammaPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllGammaPt[iCut]);
         if (fNDMRecoMode < 2){
           fHistoMCConvGammaPt[iCut]       = new TH1F("MC_ConvGamma_Pt","MC_ConvGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoMCConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoMCConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
+          fHistoMCConvGammaPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCConvGammaPt[iCut]);
         }
         fHistoMCGammaFromNeutralMesonPt[iCut]     = new TH1F("MC_GammaFromNeutralMeson_Pt","MC_GammaFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoMCGammaFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCGammaFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#gamma}");
+        fHistoMCGammaFromNeutralMesonPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCGammaFromNeutralMesonPt[iCut]);
         fHistoMCAllPosPionsPt[iCut]               = new TH1F("MC_AllPosPions_Pt","MC_AllPosPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoMCAllPosPionsPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllPosPionsPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+        fHistoMCAllPosPionsPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllPosPionsPt[iCut]);
         fHistoMCAllNegPionsPt[iCut]               = new TH1F("MC_AllNegPions_Pt","MC_AllNegPions_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoMCAllNegPionsPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCAllNegPionsPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+        fHistoMCAllNegPionsPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCAllNegPionsPt[iCut]);        
         fHistoMCNegPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Pt","MC_NegPionsFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCNegPionsFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+        fHistoMCNegPionsFromNeutralMesonPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCNegPionsFromNeutralMesonPt[iCut]);
         fHistoMCPosPionsFromNeutralMesonPt[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Pt","MC_PosPionsFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoMCPosPionsFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+        fHistoMCPosPionsFromNeutralMesonPt[iCut]->Sumw2();
         fMCList[iCut]->Add(fHistoMCPosPionsFromNeutralMesonPt[iCut]);
         if (fDoMesonQA>0){
           fHistoMCAllMesonPt[iCut]                  = new TH1F("MC_AllNDM_Pt", "MC_AllNDM_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistoMCAllMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoMCAllMesonPt[iCut]->GetYaxis()->SetTitle(Form("N_{%s}}", NameNDMLatex.Data()));
+          fHistoMCAllMesonPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCAllMesonPt[iCut]);
           fHistoMCAllMesonEta[iCut]                 = new TH1F("MC_AllNDM_Eta", "MC_AllNDM_Eta", 200, -2, 2);
           fHistoMCAllMesonEta[iCut]->GetXaxis()->SetTitle("#eta");
           fHistoMCAllMesonEta[iCut]->GetYaxis()->SetTitle(Form("N_{%s}}", NameNDMLatex.Data()));
+          fHistoMCAllMesonEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCAllMesonEta[iCut]);
           fHistoMCAllMesonPhi[iCut]                 = new TH1F("MC_AllNDM_Phi", "MC_AllNDM_Phi", 200, 0, TMath::TwoPi());
           fHistoMCAllMesonPhi[iCut]->GetXaxis()->SetTitle("#varphi");
           fHistoMCAllMesonPhi[iCut]->GetYaxis()->SetTitle(Form("N_{%s}}", NameNDMLatex.Data()));
+          fHistoMCAllMesonPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCAllMesonPhi[iCut]);
           fHistoMCMesonFromNeutralMesonPt[iCut]     = new TH1F("MC_NDMFromNeutralMeson_Pt", "MC_NDMFormNeutralMeson_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistoMCMesonFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoMCMesonFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle(Form("N_{%s}}", NameNDMLatex.Data()));
+          fHistoMCMesonFromNeutralMesonPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCMesonFromNeutralMesonPt[iCut]);
           fHistoMCMesonFromNeutralMesonEta[iCut]    = new TH1F("MC_NDMFromNeutralMeson_Eta", "MC_NDMFromNeutralMeson_Eta", 200, -2, 2);
           fHistoMCMesonFromNeutralMesonEta[iCut]->GetXaxis()->SetTitle("#eta");
           fHistoMCMesonFromNeutralMesonEta[iCut]->GetYaxis()->SetTitle(Form("N_{%s}}", NameNDMLatex.Data()));
+          fHistoMCMesonFromNeutralMesonEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCMesonFromNeutralMesonEta[iCut]);
           fHistoMCMesonFromNeutralMesonPhi[iCut]    = new TH1F("MC_NDMFromNeutralMeson_Phi", "MC_NDMFromNeutralMeson_Phi", 200, 0, TMath::TwoPi());
           fHistoMCMesonFromNeutralMesonPhi[iCut]->GetXaxis()->SetTitle("#varphi");
           fHistoMCMesonFromNeutralMesonPhi[iCut]->GetYaxis()->SetTitle(Form("N_{%s}}", NameNDMLatex.Data()));
+          fHistoMCMesonFromNeutralMesonPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCMesonFromNeutralMesonPhi[iCut]);
           fHistoMCAllPosPionsEta[iCut]               = new TH1F("MC_AllPosPions_Eta","MC_AllPosPions_Eta", 200, -2., 2.);
           fHistoMCAllPosPionsEta[iCut]->GetXaxis()->SetTitle("#eta");
           fHistoMCAllPosPionsEta[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+          fHistoMCAllPosPionsEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCAllPosPionsEta[iCut]);
           fHistoMCAllPosPionsPhi[iCut]               = new TH1F("MC_AllPosPions_Phi","MC_AllPosPions_Phi", 200, 0., TMath::TwoPi());
           fHistoMCAllPosPionsPhi[iCut]->GetXaxis()->SetTitle("#phi");
           fHistoMCAllPosPionsPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+          fHistoMCAllPosPionsPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCAllPosPionsPhi[iCut]);
           fHistoMCAllNegPionsEta[iCut]               = new TH1F("MC_AllNegPions_Eta","MC_AllNegPions_Eta", 200, -2., 2.);
           fHistoMCAllNegPionsEta[iCut]->GetXaxis()->SetTitle("#eta");
           fHistoMCAllNegPionsEta[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+          fHistoMCAllNegPionsEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCAllNegPionsEta[iCut]);
           fHistoMCAllNegPionsPhi[iCut]               = new TH1F("MC_AllNegPions_Phi","MC_AllNegPions_Phi", 200, 0., TMath::TwoPi());
           fHistoMCAllNegPionsPhi[iCut]->GetXaxis()->SetTitle("#phi");
           fHistoMCAllNegPionsPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+          fHistoMCAllNegPionsPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCAllNegPionsPhi[iCut]);
           fHistoMCPosPionsFromNeutralMesonEta[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Eta","MC_PosPionsFromNeutralMeson_Eta", 200, -2., 2.);
           fHistoMCPosPionsFromNeutralMesonEta[iCut]->GetXaxis()->SetTitle("#eta");
           fHistoMCPosPionsFromNeutralMesonEta[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+          fHistoMCPosPionsFromNeutralMesonEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCPosPionsFromNeutralMesonEta[iCut]);
           fHistoMCPosPionsFromNeutralMesonPhi[iCut]  = new TH1F("MC_PosPionsFromNeutralMeson_Phi","MC_PosPionsFromNeutralMeson_Phi", 200, 0., TMath::TwoPi());
           fHistoMCPosPionsFromNeutralMesonPhi[iCut]->GetXaxis()->SetTitle("#phi");
           fHistoMCPosPionsFromNeutralMesonPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+          fHistoMCPosPionsFromNeutralMesonPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCPosPionsFromNeutralMesonPhi[iCut]);
           fHistoMCNegPionsFromNeutralMesonEta[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Eta","MC_NegPionsFromNeutralMeson_Eta", 200, -2., 2.);
           fHistoMCNegPionsFromNeutralMesonEta[iCut]->GetXaxis()->SetTitle("#eta");
           fHistoMCNegPionsFromNeutralMesonEta[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+          fHistoMCNegPionsFromNeutralMesonEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCNegPionsFromNeutralMesonEta[iCut]);
           fHistoMCNegPionsFromNeutralMesonPhi[iCut]  = new TH1F("MC_NegPionsFromNeutralMeson_Phi","MC_NegPionsFromNeutralMeson_Phi", 200, 0., TMath::TwoPi());
           fHistoMCNegPionsFromNeutralMesonPhi[iCut]->GetXaxis()->SetTitle("#phi");
           fHistoMCNegPionsFromNeutralMesonPhi[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+          fHistoMCNegPionsFromNeutralMesonPhi[iCut]->Sumw2();
 
           fMCList[iCut]->Add(fHistoMCNegPionsFromNeutralMesonPhi[iCut]);
           fHistoMCHeavyAllPt[iCut]                            = new TH1F("MC_HeavyAll_Pt", "MC_HeavyAll_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistoMCHeavyAllPt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistoMCHeavyAllPt[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyAllPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyAllPt[iCut]);
           fHistoMCHeavyAllEta[iCut]                           = new TH1F("MC_HeavyAll_Eta", "MC_HeavyAll_Eta", 200, -2., 2.);
           fHistoMCHeavyAllEta[iCut]->SetXTitle("#eta");
           fHistoMCHeavyAllEta[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyAllEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyAllEta[iCut]);
           fHistoMCHeavyAllPhi[iCut]                           = new TH1F("MC_HeavyAll_Phi", "MC_HeavyAll_Phi", 200, 0., TMath::TwoPi());
           fHistoMCHeavyAllPhi[iCut]->SetXTitle("#phi{t} (GeV/c");
           fHistoMCHeavyAllPhi[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyAllPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyAllPhi[iCut]);
           fHistoMCHeavyChannelPt[iCut]                        = new TH1F("MC_HeavyChannel_Pt", "MC_HeavyChannel_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistoMCHeavyChannelPt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistoMCHeavyChannelPt[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyChannelPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyChannelPt[iCut]);
           fHistoMCHeavyChannelEta[iCut]                       = new TH1F("MC_HeavyChannel_Eta", "MC_HeavyChannel_Eta", 200, -2., 2.);
           fHistoMCHeavyAllEta[iCut]->SetXTitle("#eta");
           fHistoMCHeavyAllEta[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyAllEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyChannelEta[iCut]);
           fHistoMCHeavyChannelPhi[iCut]                       = new TH1F("MC_HeavyChannel_Phi", "MC_HeavyChannel_Phi", 200, 0., TMath::TwoPi());
           fHistoMCHeavyChannelPhi[iCut]->SetXTitle("#phi{t} (GeV/c");
           fHistoMCHeavyChannelPhi[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyChannelPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyChannelPhi[iCut]);
           fHistMCChannelNDMFromHeavyPt[iCut]                  = new TH1F("MC_NDMFromHeavyChannel_Pt", "MC_NDMFromHeavyChannel_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCChannelNDMFromHeavyPt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistMCChannelNDMFromHeavyPt[iCut]->SetYTitle(Form("N_{%s}", NameNDMLatex.Data()));
+          fHistMCChannelNDMFromHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelNDMFromHeavyPt[iCut]);
           fHistMCChannelNDMFromHeavyEta[iCut]                 = new TH1F("MC_NDMFromHeavyChannel_Eta", "MC_NDMFromHeavyChannel_Eta", 200, -2., 2.);
           fHistMCChannelNDMFromHeavyEta[iCut]->SetXTitle("#eta");
           fHistMCChannelNDMFromHeavyEta[iCut]->SetYTitle(Form("N_{%s}", NameNDMLatex.Data()));
+          fHistMCChannelNDMFromHeavyEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelNDMFromHeavyEta[iCut]);
           fHistMCChannelNDMFromHeavyPhi[iCut]                 = new TH1F("MC_NDMFromHeavyChannel_Phi", "MC_NDMFromHeavyChannel_Phi", 200, 0., TMath::TwoPi());
           fHistMCChannelNDMFromHeavyPhi[iCut]->SetXTitle("#phi");
           fHistMCChannelNDMFromHeavyPhi[iCut]->SetYTitle(Form("N_{%s}", NameNDMLatex.Data()));
+          fHistMCChannelNDMFromHeavyPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelNDMFromHeavyPhi[iCut]);
           fHistMCChannelPiPlusFromHeavyPt[iCut]               = new TH1F("MC_PiPlusFromHeavyChannel_Pt", "MC_PiPlusFromHeavyChannel_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCChannelPiPlusFromHeavyPt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistMCChannelPiPlusFromHeavyPt[iCut]->SetYTitle("N_{#pi^{+}}");
+          fHistMCChannelPiPlusFromHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiPlusFromHeavyPt[iCut]);
           fHistMCChannelPiPlusFromHeavyEta[iCut]              = new TH1F("MC_PiPlusFromHeavyChannel_Eta", "MC_PiPlusFromHeavyChannel_Eta", 200, -2., 2.);
           fHistMCChannelPiPlusFromHeavyEta[iCut]->SetXTitle("#eta");
           fHistMCChannelPiPlusFromHeavyEta[iCut]->SetYTitle("N_{#pi^{+}}");
+          fHistMCChannelPiPlusFromHeavyEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiPlusFromHeavyEta[iCut]);
           fHistMCChannelPiPlusFromHeavyPhi[iCut]              = new TH1F("MC_PiPlusFromHeavyChannel_Phi", "MC_PiPlusFromHeavyChannel_Phi", 200, 0., TMath::TwoPi());
           fHistMCChannelPiPlusFromHeavyPhi[iCut]->SetXTitle("#phi");
           fHistMCChannelPiPlusFromHeavyPhi[iCut]->SetYTitle("N_{#pi^{+}}");
+          fHistMCChannelPiPlusFromHeavyPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiPlusFromHeavyPhi[iCut]);
           fHistMCChannelPiMinusFromHeavyPt[iCut]              = new TH1F("MC_PiMinusFromHeavyChannel_Pt", "MC_PiMinusFromHeavyChannel_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCChannelPiMinusFromHeavyPt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistMCChannelPiMinusFromHeavyPt[iCut]->SetYTitle("N_{#pi^{-}}");
+          fHistMCChannelPiMinusFromHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiMinusFromHeavyPt[iCut]);
           fHistMCChannelPiMinusFromHeavyEta[iCut]             = new TH1F("MC_PiMinusFromHeavyChannel_Eta", "MC_PiMinusFromHeavyChannel_Eta", 200, -2., 2.);
           fHistMCChannelPiMinusFromHeavyEta[iCut]->SetXTitle("#eta");
           fHistMCChannelPiMinusFromHeavyEta[iCut]->SetYTitle("N_{#pi^{-}}");
+          fHistMCChannelPiMinusFromHeavyEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiMinusFromHeavyEta[iCut]);
           fHistMCChannelPiPMinusFromHeavyPhi[iCut]            = new TH1F("MC_PiMinusFromHeavyChannel_Phi", "MC_PiMinusFromHeavyChannel_Phi", 200, 0., TMath::TwoPi());
           fHistMCChannelPiPMinusFromHeavyPhi[iCut]->SetXTitle("#phi");
           fHistMCChannelPiPMinusFromHeavyPhi[iCut]->SetYTitle("N_{#pi^{-}}");
+          fHistMCChannelPiPMinusFromHeavyPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiPMinusFromHeavyPhi[iCut]);
         
           fHistMCChannelNDMPtHeavyPt[iCut]                    = new TH2F("MC_CorrPtNDMHeavyChannel", "MC_CorrPtNDMHeavyChannel", HistoNPtBins, HistoPtRange[0], HistoPtRange[1], HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCChannelNDMPtHeavyPt[iCut]->SetXTitle(Form("p_{t, %s} (GeV/c)", NameNeutralMesonAnalyzedLatex.Data()));
           fHistMCChannelNDMPtHeavyPt[iCut]->SetYTitle(Form("p_{t, %s} (GeV/c)", NameNDMLatex.Data()));
           fHistMCChannelNDMPtHeavyPt[iCut]->SetZTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistMCChannelNDMPtHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelNDMPtHeavyPt[iCut]);
           fHistMCChannelPiPlusPtHeavyPt[iCut]                 = new TH2F("MC_CorrPtPiPlusHeavyChannel", "MC_CorrPtPiPlusHeavyChannel", HistoNPtBins, HistoPtRange[0], HistoPtRange[1], HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCChannelPiPlusPtHeavyPt[iCut]->SetXTitle(Form("p_{t, %s} (GeV/c)", NameNeutralMesonAnalyzedLatex.Data()));
           fHistMCChannelPiPlusPtHeavyPt[iCut]->SetYTitle("p_{t, #pi^{-}%s} (GeV/c)");
           fHistMCChannelPiPlusPtHeavyPt[iCut]->SetZTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistMCChannelPiPlusPtHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiPlusPtHeavyPt[iCut]);
           fHistMCChannelPiMinusPtHeavyPt[iCut]                = new TH2F("MC_CorrPtPiMinusHeavyChannel", "MC_CorrPtPiMinusHeavyChannel", HistoNPtBins, HistoPtRange[0], HistoPtRange[1], HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCChannelPiMinusPtHeavyPt[iCut]->SetXTitle(Form("p_{t, %s} (GeV/c)", NameNeutralMesonAnalyzedLatex.Data()));
           fHistMCChannelPiMinusPtHeavyPt[iCut]->SetYTitle("p_{t, #pi^{-}%s} (GeV/c)");
           fHistMCChannelPiMinusPtHeavyPt[iCut]->SetZTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistMCChannelPiMinusPtHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCChannelPiMinusPtHeavyPt[iCut]);
 
           fHistoMCHeavyReconstructiblePt[iCut]                        = new TH1F("MC_HeavyReconstructible_Pt", "MC_HeavyReconstructible_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistoMCHeavyReconstructiblePt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistoMCHeavyReconstructiblePt[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyReconstructiblePt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyReconstructiblePt[iCut]);
           fHistoMCHeavyReconstructibleEta[iCut]                       = new TH1F("MC_HeavyReconstructible_Eta", "MC_HeavyReconstructible_Eta", 200, -2., 2.);
           fHistoMCHeavyAllEta[iCut]->SetXTitle("#eta");
           fHistoMCHeavyAllEta[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyAllEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyReconstructibleEta[iCut]);
           fHistoMCHeavyReconstructiblePhi[iCut]                       = new TH1F("MC_HeavyReconstructible_Phi", "MC_HeavyReconstructible_Phi", 200, 0., TMath::TwoPi());
           fHistoMCHeavyReconstructiblePhi[iCut]->SetXTitle("#phi{t} (GeV/c");
           fHistoMCHeavyReconstructiblePhi[iCut]->SetYTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistoMCHeavyReconstructiblePhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistoMCHeavyReconstructiblePhi[iCut]);
           fHistMCReconstructibleNDMFromHeavyPt[iCut]                  = new TH1F("MC_NDMFromHeavyReconstructible_Pt", "MC_NDMFromHeavyReconstructible_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCReconstructibleNDMFromHeavyPt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistMCReconstructibleNDMFromHeavyPt[iCut]->SetYTitle(Form("N_{%s}", NameNDMLatex.Data()));
+          fHistMCReconstructibleNDMFromHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructibleNDMFromHeavyPt[iCut]);
           fHistMCReconstructibleNDMFromHeavyEta[iCut]                 = new TH1F("MC_NDMFromHeavyReconstructible_Eta", "MC_NDMFromHeavyReconstructible_Eta", 200, -2., 2.);
           fHistMCReconstructibleNDMFromHeavyEta[iCut]->SetXTitle("#eta");
           fHistMCReconstructibleNDMFromHeavyEta[iCut]->SetYTitle(Form("N_{%s}", NameNDMLatex.Data()));
+          fHistMCReconstructibleNDMFromHeavyEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructibleNDMFromHeavyEta[iCut]);
           fHistMCReconstructibleNDMFromHeavyPhi[iCut]                 = new TH1F("MC_NDMFromHeavyReconstructible_Phi", "MC_NDMFromHeavyReconstructible_Phi", 200, 0., TMath::TwoPi());
           fHistMCReconstructibleNDMFromHeavyPhi[iCut]->SetXTitle("#phi");
           fHistMCReconstructibleNDMFromHeavyPhi[iCut]->SetYTitle(Form("N_{%s}", NameNDMLatex.Data()));
+          fHistMCReconstructibleNDMFromHeavyPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructibleNDMFromHeavyPhi[iCut]);
           fHistMCReconstructiblePiPlusFromHeavyPt[iCut]               = new TH1F("MC_PiPlusFromHeavyReconstructible_Pt", "MC_PiPlusFromHeavyReconstructible_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCReconstructiblePiPlusFromHeavyPt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistMCReconstructiblePiPlusFromHeavyPt[iCut]->SetYTitle("N_{#pi^{+}}");
+          fHistMCReconstructiblePiPlusFromHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructiblePiPlusFromHeavyPt[iCut]);
           fHistMCReconstructiblePiPlusFromHeavyEta[iCut]              = new TH1F("MC_PiPlusFromHeavyReconstructible_Eta", "MC_PiPlusFromHeavyReconstructible_Eta", 200, -2., 2.);
           fHistMCReconstructiblePiPlusFromHeavyEta[iCut]->SetXTitle("#eta");
           fHistMCReconstructiblePiPlusFromHeavyEta[iCut]->SetYTitle("N_{#pi^{+}}");
+          fHistMCReconstructiblePiPlusFromHeavyEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructiblePiPlusFromHeavyEta[iCut]);
           fHistMCReconstructiblePiPlusFromHeavyPhi[iCut]              = new TH1F("MC_PiPlusFromHeavyReconstructible_Phi", "MC_PiPlusFromHeavyReconstructible_Phi", 200, 0., TMath::TwoPi());
           fHistMCReconstructiblePiPlusFromHeavyPhi[iCut]->SetXTitle("#phi");
           fHistMCReconstructiblePiPlusFromHeavyPhi[iCut]->SetYTitle("N_{#pi^{+}}");
+          fHistMCReconstructiblePiPlusFromHeavyPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructiblePiPlusFromHeavyPhi[iCut]);
           fHistMCReconstructiblePiMinusFromHeavyPt[iCut]              = new TH1F("MC_PiMinusFromHeavyReconstructible_Pt", "MC_PiMinusFromHeavyReconstructible_Pt", HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCReconstructiblePiMinusFromHeavyPt[iCut]->SetXTitle("p_{t} (GeV/c)");
           fHistMCReconstructiblePiMinusFromHeavyPt[iCut]->SetYTitle("N_{#pi^{-}}");
+          fHistMCReconstructiblePiMinusFromHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructiblePiMinusFromHeavyPt[iCut]);
           fHistMCReconstructiblePiMinusFromHeavyEta[iCut]             = new TH1F("MC_PiMinusFromHeavyReconstructible_Eta", "MC_PiMinusFromHeavyReconstructible_Eta", 200, -2., 2.);
           fHistMCReconstructiblePiMinusFromHeavyEta[iCut]->SetXTitle("#eta");
           fHistMCReconstructiblePiMinusFromHeavyEta[iCut]->SetYTitle("N_{#pi^{-}}");
+          fHistMCReconstructiblePiMinusFromHeavyEta[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructiblePiMinusFromHeavyEta[iCut]);
           fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]            = new TH1F("MC_PiMinusFromHeavyReconstructible_Phi", "MC_PiMinusFromHeavyReconstructible_Phi", 200, 0., TMath::TwoPi());
           fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]->SetXTitle("#phi");
           fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]->SetYTitle("N_{#pi^{-}}");
+          fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructiblePiPMinusFromHeavyPhi[iCut]);        
 
           fHistMCReconstructibleNDMPtHeavyPt[iCut]                    = new TH2F("MC_CorrPtNDMHeavyReconstructible", "MC_CorrPtNDMHeavyReconstructible", HistoNPtBins, HistoPtRange[0], HistoPtRange[1], HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCReconstructibleNDMPtHeavyPt[iCut]->SetXTitle(Form("p_{t, %s} (GeV/c)", NameNeutralMesonAnalyzedLatex.Data()));
           fHistMCReconstructibleNDMPtHeavyPt[iCut]->SetYTitle(Form("p_{t, %s} (GeV/c)", NameNDMLatex.Data()));
           fHistMCReconstructibleNDMPtHeavyPt[iCut]->SetZTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistMCReconstructibleNDMPtHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructibleNDMPtHeavyPt[iCut]);
           fHistMCReconstructiblePiPlusPtHeavyPt[iCut]                 = new TH2F("MC_CorrPtPiPlusHeavyReconstructible", "MC_CorrPtPiPlusHeavyReconstructible", HistoNPtBins, HistoPtRange[0], HistoPtRange[1], HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCReconstructiblePiPlusPtHeavyPt[iCut]->SetXTitle(Form("p_{t, %s} (GeV/c)", NameNeutralMesonAnalyzedLatex.Data()));
           fHistMCReconstructiblePiPlusPtHeavyPt[iCut]->SetYTitle("p_{t, #pi^{-}%s} (GeV/c)");
           fHistMCReconstructiblePiPlusPtHeavyPt[iCut]->SetZTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistMCReconstructiblePiPlusPtHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructiblePiPlusPtHeavyPt[iCut]);
           fHistMCReconstructiblePiMinusPtHeavyPt[iCut]                = new TH2F("MC_CorrPtPiMinusHeavyReconstructible", "MC_CorrPtPiMinusHeavyReconstructible", HistoNPtBins, HistoPtRange[0], HistoPtRange[1], HistoNPtBins, HistoPtRange[0], HistoPtRange[1]);
           fHistMCReconstructiblePiMinusPtHeavyPt[iCut]->SetXTitle(Form("p_{t, %s} (GeV/c)", NameNeutralMesonAnalyzedLatex.Data()));
           fHistMCReconstructiblePiMinusPtHeavyPt[iCut]->SetYTitle("p_{t, #pi^{-}%s} (GeV/c)");
           fHistMCReconstructiblePiMinusPtHeavyPt[iCut]->SetZTitle(Form("N_{%s}", NameNeutralMesonAnalyzedLatex.Data()));
+          fHistMCReconstructiblePiMinusPtHeavyPt[iCut]->Sumw2();
           fMCList[iCut]->Add(fHistMCReconstructiblePiMinusPtHeavyPt[iCut]);
         }
       }
@@ -1531,51 +1704,62 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTrueConvGammaPt[iCut]                 = new TH1F("ESD_TrueConvGamma_Pt","ESD_TrueConvGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTrueConvGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTrueConvGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
+          fHistoTrueConvGammaPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
           fHistoDoubleCountTrueConvGammaRPt[iCut]     = new TH2F("ESD_TrueDoubleCountConvGamma_R_Pt","ESD_TrueDoubleCountConvGamma_R_Pt",800,0,200,HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoDoubleCountTrueConvGammaRPt[iCut]->GetXaxis()->SetTitle("R_{conv} (cm)");
           fHistoDoubleCountTrueConvGammaRPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoDoubleCountTrueConvGammaRPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoDoubleCountTrueConvGammaRPt[iCut]);
           fHistoTrueConvGammaFromNeutralMesonPt[iCut] = new TH1F("ESD_TrueConvGammaFromNeutralMeson_Pt","ESD_TrueConvGammaFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTrueConvGammaFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTrueConvGammaFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,conv}");
+          fHistoTrueConvGammaFromNeutralMesonPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTrueConvGammaFromNeutralMesonPt[iCut]);
         }
         if (fNDMRecoMode > 0){
           fHistoTrueClusterGammaPt[iCut]                  = new TH1F("ESD_TrueClusterGamma_Pt","ESD_TrueClusterGamma_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTrueClusterGammaPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTrueClusterGammaPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
+          fHistoTrueClusterGammaPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTrueClusterGammaPt[iCut]);
           fHistoTrueClusterGammaFromNeutralMesonPt[iCut]  = new TH1F("ESD_TrueClusterGammaFromNeutralMeson_Pt","ESD_TrueClusterGammaFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTrueClusterGammaFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTrueClusterGammaFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#gamma,cluster}");
+          fHistoTrueClusterGammaFromNeutralMesonPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTrueClusterGammaFromNeutralMesonPt[iCut]);
         }
         fHistoTruePosPionPt[iCut]                       = new TH1F("ESD_TruePosPion_Pt","ESD_TruePosPion_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoTruePosPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTruePosPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+        fHistoTruePosPionPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTruePosPionPt[iCut]);
         fHistoTrueNegPionPt[iCut]                       = new TH1F("ESD_TrueNegPion_Pt","ESD_TrueNegPion_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoTrueNegPionPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTrueNegPionPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+        fHistoTrueNegPionPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueNegPionPt[iCut]);
 
         fHistoTrueNegPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TrueNegPionFromNeutralMeson_Pt","ESD_TrueNegPionFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoTrueNegPionFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTrueNegPionFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{-}}");
+        fHistoTrueNegPionFromNeutralMesonPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueNegPionFromNeutralMesonPt[iCut]);
         fHistoTruePosPionFromNeutralMesonPt[iCut]       = new TH1F("ESD_TruePosPionFromNeutralMeson_Pt","ESD_TruePosPionFromNeutralMeson_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoTruePosPionFromNeutralMesonPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         fHistoTruePosPionFromNeutralMesonPt[iCut]->GetYaxis()->SetTitle("N_{#pi^{+}}");
+        fHistoTruePosPionFromNeutralMesonPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTruePosPionFromNeutralMesonPt[iCut]);
 
         fHistoDoubleCountTruePi0InvMassPt[iCut]         = new TH2F("ESD_TrueDoubleCountPi0_InvMass_Pt","ESD_TrueDoubleCountPi0_InvMass_Pt",800,0,0.8,HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoDoubleCountTruePi0InvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
         fHistoDoubleCountTruePi0InvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoDoubleCountTruePi0InvMassPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoDoubleCountTruePi0InvMassPt[iCut]);
         fHistoDoubleCountTrueHNMInvMassPt[iCut]         = new TH2F("ESD_TrueDoubleCountHNM_InvMass_Pt","ESD_TrueDoubleCountHNM_InvMass_Pt",800,0,0.8,HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoDoubleCountTrueHNMInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#eta} (GeV/c^{2})");
         fHistoDoubleCountTrueHNMInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoDoubleCountTrueHNMInvMassPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoDoubleCountTrueHNMInvMassPt[iCut]);
       }
       fHistoTrueMotherPiPlPiMiNDMInvMassPt[iCut]       = new TH2F("ESD_TrueMotherPiPlPiMiNDM_InvMass_Pt","ESD_TrueMotherPiPlPiMiNDM_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
@@ -1600,101 +1784,154 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTrueMotherGammaGammaInvMassPt[iCut]           = new TH2F("ESD_TrueMotherGG_InvMass_Pt","ESD_TrueMotherGG_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoTrueMotherGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
         fHistoTrueMotherGammaGammaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoTrueMotherGammaGammaInvMassPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueMotherGammaGammaInvMassPt[iCut]);
         fHistoTrueMotherGammaGammaFromHNMInvMassPt[iCut]    = new TH2F("ESD_TrueMotherGGFromHNM_InvMass_Pt","ESD_TrueMotherGGFromHNM_InvMass_Pt",HistoNMassBinsDecayMeson,HistoMassRangeNDM[0],HistoMassRangeNDM[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
         fHistoTrueMotherGammaGammaFromHNMInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
         fHistoTrueMotherGammaGammaFromHNMInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoTrueMotherGammaGammaFromHNMInvMassPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueMotherGammaGammaFromHNMInvMassPt[iCut]);
         fHistoTrueAngleSum[iCut]                            = new TH2F("ESD_TrueMother_AngleSum_Pt","ESD_TrueMother_AngleSum_Pt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1],720,0,2*TMath::Pi());
         fHistoTrueAngleSum[iCut]->GetXaxis()->SetTitle("#sum #angle");
         fHistoTrueAngleSum[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+        fHistoTrueAngleSum[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueAngleSum[iCut]);
 
         fHistoTrueHNMesonPtvsNDMPt[iCut]                            = new TH2F("ESD_TrueMother_HNMesonPtvsNDMPt","ESD_TrueMother_HNMesonPtvsNDMPt",HistoNPtBins,HistoPtRange[0],HistoPtRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
       fHistoTrueHNMesonPtvsNDMPt[iCut]->GetXaxis()->SetTitle("p_{T} (GeV/c) of HNM");
         fHistoTrueHNMesonPtvsNDMPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c) of NDM");
+        fHistoTrueHNMesonPtvsNDMPt[iCut]->Sumw2();
         fTrueList[iCut]->Add(fHistoTrueHNMesonPtvsNDMPt[iCut]);
 
         if (fDoMesonQA>0){
           fHistoTruePionPionInvMassPt[iCut]                 = new TH2F("ESD_TruePiPlusPiNeg_InvMassPt","ESD_TruePiPlusPiNeg_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePionPionInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePionPionInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePionPionInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePionPionInvMassPt[iCut]);
           fHistoTruePionPionFromSameMotherInvMassPt[iCut]   = new TH2F("ESD_TruePiPlusPiNegFromSameMother_InvMassPt","ESD_TruePiPlusPiNegFromSameMother_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePionPionFromSameMotherInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePionPionFromSameMotherInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePionPionFromSameMotherInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePionPionFromSameMotherInvMassPt[iCut]);
           fHistoTruePionPionFromHNMInvMassPt[iCut]          = new TH2F("ESD_TruePiPlusPiNegFromHNM_InvMassPt","ESD_TruePiPlusPiNegFromHNM_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePionPionFromHNMInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePionPionFromHNMInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePionPionFromHNMInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePionPionFromHNMInvMassPt[iCut]);
 
+          fHistoTruevParticleChi2PerNDF[iCut] = new TH1F("fHistoTruevParticleChi2PerNDF","fHistoTruevParticleChi2PerNDF",300,0,300);
+          fHistoTruevParticleChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
+          fHistoTruevParticleChi2PerNDF[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruevParticleChi2PerNDF[iCut]);
+          
+          fHistoTruevParticleFromSameMotherChi2PerNDF[iCut] = new TH1F("fHistoTruevParticleFromSameMotherChi2PerNDF","fHistoTruevParticleFromSameMotherChi2PerNDF",300,0,300);
+          fHistoTruevParticleFromSameMotherChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
+          fHistoTruevParticleFromSameMotherChi2PerNDF[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruevParticleFromSameMotherChi2PerNDF[iCut]);
+          
+          fHistoTruevParticleFromHNMChi2PerNDF[iCut] = new TH1F("fHistoTruevParticleFromHNMChi2PerNDF","fHistoTruevParticleFromHNMChi2PerNDF",300,0,300);
+          fHistoTruevParticleFromHNMChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
+          fHistoTruevParticleFromHNMChi2PerNDF[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruevParticleFromHNMChi2PerNDF[iCut]);
+          
+          fHistoTruevParticledS[iCut] = new TH1F("fHistoTruevParticledS","fHistoTruevParticledS",500,-4,4);
+          fHistoTruevParticledS[iCut]->GetXaxis()->SetTitle("dS");
+          fHistoTruevParticledS[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruevParticledS[iCut]);
+          
+          fHistoTruevParticleFromSameMotherdS[iCut] = new TH1F("fHistoTruevParticleFromSameMotherdS","fHistoTruevParticleFromSameMotherdS",400,-4,4);
+          fHistoTruevParticleFromSameMotherdS[iCut]->GetXaxis()->SetTitle("dS");
+          fHistoTruevParticleFromSameMotherdS[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruevParticleFromSameMotherdS[iCut]);
+
+          fHistoTruevParticleFromHNMdS[iCut] = new TH1F("fHistoTruevParticleFromHNMdS","fHistoTruevParticleFromHNMdS",400,-4,4);
+          fHistoTruevParticleFromHNMdS[iCut]->GetXaxis()->SetTitle("dS");
+          fHistoTruevParticleFromHNMdS[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruevParticleFromHNMdS[iCut]);
+         
           fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]    = new TH2F("ESD_TruePiPlPiMiSameMotherFromEta_InvMassPt","ESD_TruePiPlPiMiSameMotherFromEta_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt[iCut]);
           fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiSameMotherFromOmega_InvMassPt","ESD_TruePiPlPiMiSameMotherFromOmega_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt[iCut]);
           fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[iCut]    = new TH2F("ESD_TruePiPlPiMiSameMotherFromRho_InvMassPt","ESD_TruePiPlPiMiSameMotherFromRho_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt[iCut]);
           fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiMiSameMotherFromEtaPrime_InvMassPt","ESD_TruePiPlPiMiSameMotherFromEtaPrime_InvMassPt",
                                                                                  HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromEtaPrimeInvMassPt[iCut]);
           fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[iCut]    = new TH2F("ESD_TruePiPlPiMiSameMotherFromK0s_InvMassPt","ESD_TruePiPlPiMiSameMotherFromK0s_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromK0sInvMassPt[iCut]);
           fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[iCut]    = new TH2F("ESD_TruePiPlPiMiSameMotherFromK0l_InvMassPt","ESD_TruePiPlPiMiSameMotherFromK0l_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiSameMotherFromK0lInvMassPt[iCut]);
 
           fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[iCut]  = new TH2F("ESD_TruePiMiPiZeroSameMotherFromEta_InvMassPt","ESD_TruePiMiPiZeroSameMotherFromEta_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiMiPiZeroSameMotherFromEtaInvMassPt[iCut]);
           fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[iCut] = new TH2F("ESD_TruePiMiPiZeroSameMotherFromOmega_InvMassPt","ESD_TruePiMiPiZeroSameMotherFromOmega_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiMiPiZeroSameMotherFromOmegaInvMassPt[iCut]);
           fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut]  = new TH2F("ESD_TruePiMiPiZeroSameMotherFromRho_InvMassPt","ESD_TruePiMiPiZeroSameMotherFromRho_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut]);
           fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[iCut]  = new TH2F("ESD_TruePiMiPiZeroSameMotherFromK0l_InvMassPt","ESD_TruePiMiPiZeroSameMotherFromK0l_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiMiPiZeroSameMotherFromK0lInvMassPt[iCut]);
 
           fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiZeroSameMotherFromEta_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromEta_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromEtaInvMassPt[iCut]);
           fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[iCut] = new TH2F("ESD_TruePiPlPiZeroSameMotherFromOmega_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromOmega_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromOmegaInvMassPt[iCut]);
           fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiZeroSameMotherFromRho_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromRho_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiMiPiZeroSameMotherFromRhoInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromRhoInvMassPt[iCut]);
           fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiZeroSameMotherFromK0l_InvMassPt","ESD_TruePiPlPiZeroSameMotherFromK0l_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiZeroSameMotherFromK0lInvMassPt[iCut]);
           fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMPureCombinatorical_InvMassPt","ESD_TruePiPlPiMiNDMPureCombinatorical_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMPureCombinatoricalInvMassPt[iCut]);
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]  = new TH2F("ESD_TruePiPlPiMiNDMContamination_InvMassPt","ESD_TruePiPlPiMiNDMContamination_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+}#pi^{-}%s} (GeV/c^{2})",NameNDMLatex.Data()));
           fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePiPlPiMiNDMContaminationInvMassPt[iCut]);
           if(fDoMesonQA>1){
             fTrueTreeList[iCut]                               = new TList();
@@ -1836,7 +2073,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
 
   fNumberOfESDTracks = fV0Reader->GetNumberOfPrimaryTracks();
   //AddTaskContainers(); //Add conatiner
-
   if(fIsMC && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
     RelabelAODPhotonCandidates(kTRUE);    // In case of AODMC relabeling MC
     fV0Reader->RelabelAODs(kTRUE);
@@ -3199,6 +3435,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
 //________________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
 
+  Bool_t use4vecformass = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->Use4VecForMass();
+
   Double_t magField = fInputEvent->GetMagneticField();
   if( magField  < 0.0 ){
     magField =  1.0;
@@ -3324,25 +3562,38 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
       }
     }
   }
-
+ // AliInfo(Form("Number of good neg pions: %i \t pos pions = %i", lGoodNegPionIndexPrev.size(), lGoodPosPionIndexPrev.size()));
 
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
     
-    AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
-    //AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
+    //AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
+    AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliVTrack *posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
-      AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
-      //AliKFParticle posPionCandidateKF( *posPionCandidate, 211 );
-      AliKFConversionPhoton virtualPhoton(negPionCandidateKF,posPionCandidateKF);
-      
-      // removed to achieve AOD compabilit
-      //AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());   
-			// primaryVertexImproved+=*virtualPhoton;
-      //virtualPhoton.SetProductionVertex(primaryVertexImproved);
+      //AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
+      AliKFParticle posPionCandidateKF( *posPionCandidate, 211 );
+      // AliInfo(Form("virtualPhoton distance before pi+ pi- = %f", negPionCandidateKF.GetDistanceFromParticle(posPionCandidateKF)));
 
+      AliKFConversionPhoton virtualPhoton(negPionCandidateKF,posPionCandidateKF);
+     
+     // AliInfo(Form(" GetPrimaryVertex() x=%f y=%f z=%f",primx,primy,primz));   
+     // virtualPhoton->SetProductionVertex(primaryVertex);
       virtualPhoton.SetTrackLabels( lGoodPosPionIndexPrev[j], lGoodNegPionIndexPrev[i]);
+      
+      TLorentzVector posPionVec4;
+      TLorentzVector negPionVec4;
+      TLorentzVector virtPionVec4; 
+      TLorentzVector posKFPionVec4;
+      TLorentzVector negKFPionVec4;
+      TLorentzVector virtKFPionVec4; 
+
+      if(use4vecformass){
+        posKFPionVec4.SetPxPyPzE(posPionCandidateKF.Px(),posPionCandidateKF.Py(),posPionCandidateKF.Pz(),posPionCandidateKF.E());
+        negKFPionVec4.SetPxPyPzE(negPionCandidateKF.Px(),negPionCandidateKF.Py(),negPionCandidateKF.Pz(),negPionCandidateKF.E());
+        virtKFPionVec4 = posKFPionVec4 + negKFPionVec4;
+      }
+
       Int_t labeln=0;
       Int_t labelp=0;
       Int_t motherlabelp = 0;
@@ -3363,33 +3614,59 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
         virtualPhoton.SetMCLabelNegative(labeln);
 
       }
-
       AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(&virtualPhoton); //To apply mass 2 pion mass cut
+      if(use4vecformass){
+        vParticle->SetPxPyPzE(virtKFPionVec4.Px(),virtKFPionVec4.Py(),virtKFPionVec4.Pz(),virtKFPionVec4.E());
+        // set mass to one calculated from four vector, not from parameters
+        vParticle->SetMass(vParticle->M());
+      }
       if(!fDoLightOutput){
+        Double_t ds,dsp;
+        posPionCandidateKF.GetDStoParticle(negPionCandidateKF,ds,dsp);
+        Float_t chi2 = virtualPhoton.GetChi2perNDF();
+        if(chi2>299) chi2 = 299; // to illustrate overflow bin
+        fHistovParticleChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+        fHistovParticledS[fiCut]->Fill(ds,fWeightJetJetMC);
         if (fMCEvent &&(fDoMesonQA>0)){
           if (fPositiveMCParticle && fNegativeMCParticle ) {
             if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
               if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
                 if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
                   fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                  fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                  fHistoTruevParticledS[fiCut]->Fill(ds,fWeightJetJetMC);
                   if (motherlabeln == motherlabelp){
                     fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                    fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds,fWeightJetJetMC);
                     switch( fSelectedHeavyNeutralMeson ) {
                     case 0: // ETA MESON
-                      if( IsEtaPiPlPiMiPiZeroDaughter(labeln) )
-                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      if( IsEtaPiPlPiMiPiZeroDaughter(labeln) ){
+                        fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
+                      }
                       break;
                     case 1: // OMEGA MESON
-                      if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) )
-                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) ){
+                        fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
+                      }
                       break;
                     case 2: // ETA PRIME MESON
-                      if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) )
+                      if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
+                      }
                       break;
                     case 3: // D0 MESON
-                      if( IsD0PiPlPiMiPiZeroDaughter(labeln) )
+                      if( IsD0PiPlPiMiPiZeroDaughter(labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
+                      }
                       break;
                     default:
                       AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -3400,24 +3677,40 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
             } else {
               if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
                 fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                fHistoTruevParticledS[fiCut]->Fill(ds,fWeightJetJetMC);
                 if (motherlabeln == motherlabelp){
                   fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                  fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                  fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds,fWeightJetJetMC);
                   switch( fSelectedHeavyNeutralMeson ) {
                   case 0: // ETA MESON
-                    if( IsEtaPiPlPiMiPiZeroDaughter(labeln) )
-                    fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    if( IsEtaPiPlPiMiPiZeroDaughter(labeln) ){
+                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
+                    }
                     break;
                   case 1: // OMEGA MESON
-                    if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) )
-                    fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) ){
+                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
+                    }
                     break;
                   case 2: // ETA PRIME MESON
-                    if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) )
+                    if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) ){
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
+                    }
                     break;
                   case 3: // D0 MESON
-                    if( IsD0PiPlPiMiPiZeroDaughter(labeln) )
+                    if( IsD0PiPlPiMiPiZeroDaughter(labeln) ){
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2,fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds,fWeightJetJetMC);
+                    }
                     break;
                   default:
                     AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -3429,20 +3722,24 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
         }
       }
 
+      Bool_t survivesMassCut = kFALSE;
+
       if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
         if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
+          survivesMassCut = kTRUE;
+        } 
+      } else{
+        survivesMassCut = kTRUE;
+      }
+
+
+      if(survivesMassCut){
           fGoodVirtualParticles->Add( vParticle );
           if(!fDoLightOutput){
             fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
           }
-        }else{
+      }else{
           delete vParticle;
-        }
-      } else {
-        fGoodVirtualParticles->Add( vParticle );
-        if(!fDoLightOutput){
-          fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-        }
       }
 
       Double_t clsToFPos = -1.0;
@@ -3504,6 +3801,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
 //________________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD(){
 
+  Bool_t use4vecformass = ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->Use4VecForMass();
+ 
   Double_t magField = fInputEvent->GetMagneticField();
   if( magField  < 0.0 ){
     magField =  1.0;
@@ -3634,38 +3933,40 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
     }
   }
 
+//AliInfo(Form("Number of good neg pions: %i \t pos pions = %i", lGoodNegPionIndexPrev.size(), lGoodPosPionIndexPrev.size()));
 
   for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
     AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
+    AliAODTrack* negPionCandidateAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i])); 
+    AliKFParticle negPionCandidateKF( *negPionCandidate, 211 );
 
-    Double_t xyzNeg[3] = {0}, pxpypzNeg[3] = {0}, cvNeg[21] = {0};
-    negPionCandidate->GetPxPyPz(pxpypzNeg);
-    negPionCandidate->GetXYZ(xyzNeg);
-    negPionCandidate->GetCovarianceXYZPxPyPz(cvNeg);
-
-    AliExternalTrackParam*  trackParamNeg = new AliExternalTrackParam(xyzNeg,pxpypzNeg,cvNeg,negPionCandidate->Charge());
-    AliKFParticle negPionCandidateKF( *trackParamNeg, 211 );
-    delete trackParamNeg;
     for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
       AliVTrack *posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
-      Double_t xyzPos[3] = {0}, pxpypzPos[3] = {0}, cvPos[21] = {0};
-      posPionCandidate->GetPxPyPz(pxpypzPos);
-      posPionCandidate->GetXYZ(xyzPos);
-      posPionCandidate->GetCovarianceXYZPxPyPz(cvPos);
-
-      AliExternalTrackParam*    trackParamPos = new AliExternalTrackParam(xyzPos,pxpypzPos,cvPos,posPionCandidate->Charge());
-      
-      AliKFParticle posPionCandidateKF( *trackParamPos, 211 ); 
-      delete trackParamPos;
+      AliAODTrack* posPionCandidateAOD = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j])); 
+      AliKFParticle posPionCandidateKF( *posPionCandidate, 211 ); 
       AliKFConversionPhoton* virtualPhoton = NULL;
       virtualPhoton = new AliKFConversionPhoton(negPionCandidateKF,posPionCandidateKF);
-     
-      // removed to achieve AOD compability
-      //AliKFVertex primaryVertexImproved(*fInputEvent->GetPrimaryVertex());
+
+      //AliKFVertex primaryVertex(*fInputEvent->GetPrimaryVertex());
       // primaryVertexImproved+=*virtualPhoton;
-      //virtualPhoton->SetProductionVertex(primaryVertexImproved);
+     // virtualPhoton->SetProductionVertex(primaryVertex);
+
       virtualPhoton->SetTrackLabels( lGoodPosPionIndexPrev[j], lGoodNegPionIndexPrev[i]);
-      Int_t labeln=0;
+
+      TLorentzVector posPionVec4;
+      TLorentzVector negPionVec4;
+      TLorentzVector virtPionVec4; 
+      TLorentzVector posKFPionVec4;
+      TLorentzVector negKFPionVec4;
+      TLorentzVector virtKFPionVec4; 
+
+      if(use4vecformass){
+        posKFPionVec4.SetPxPyPzE(posPionCandidateKF.Px(),posPionCandidateKF.Py(),posPionCandidateKF.Pz(),posPionCandidateKF.E());
+        negKFPionVec4.SetPxPyPzE(negPionCandidateKF.Px(),negPionCandidateKF.Py(),negPionCandidateKF.Pz(),negPionCandidateKF.E());
+        virtKFPionVec4 = posKFPionVec4 + negKFPionVec4;
+      }
+
+      Int_t labeln=0;    
       Int_t labelp=0;
       Int_t motherlabelp = 0;
       Int_t motherlabeln = 0;
@@ -3685,33 +3986,76 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
         virtualPhoton->SetMCLabelNegative(labeln);
 
       }
-
+      // AliInfo(Form("virtualPhoton chi2 = %f", virtualPhoton->GetChi2perNDF()));
+      //AliInfo(Form("virtualPhoton distance pi+ pi- = %f", negPionCandidateKF.GetDeviationFromParticle(posPionCandidateKF)));
+ 
       AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To apply mass 2 pion mass cut
+      
+      if(use4vecformass){
+        vParticle->SetPxPyPzE(virtKFPionVec4.Px(),virtKFPionVec4.Py(),virtKFPionVec4.Pz(),virtKFPionVec4.E());
+        vParticle->SetMass(vParticle->M());
+      }
       if(!fDoLightOutput){
+        Bool_t isPiMiGlobalC = negPionCandidateAOD->IsGlobalConstrained();
+        Bool_t isPiPlGlobalC = posPionCandidateAOD->IsGlobalConstrained();
+      
+        Double_t ds,dsp;
+        posPionCandidateKF.GetDStoParticle(negPionCandidateKF,ds,dsp);
+        //AliInfo(Form("ds = %f dsp = %f", ds,dsp));
+        //AliInfo(Form("Is pi+ constrained = %i Is pi- constrained = %i",isPiPlGlobalC,isPiMiGlobalC));
+        Float_t chi2 = virtualPhoton->GetChi2perNDF();
+     
+        if(chi2>299) chi2 = 299; // to illustrate overflow bin
+        fHistovParticleChi2PerNDF[fiCut]->Fill(chi2);
+        fHistovParticledS[fiCut]->Fill(ds);
+      
+        if(isPiMiGlobalC == isPiPlGlobalC){
+          fHistovParticleChi2PerNDFBothConstrained[fiCut]->Fill(chi2);    
+          fHistovParticledSBothConstrained[fiCut]->Fill(ds);
+        } else{
+          fHistovParticleChi2PerNDFOneConstrained[fiCut]->Fill(chi2);
+          fHistovParticledSOneConstrained[fiCut]->Fill(ds);
+        }
         if (fMCEvent &&(fDoMesonQA>0)){
           if (fPositiveMCParticle && fNegativeMCParticle ) {
             if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
               if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
                 if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
                   fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                  fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2);
+                  fHistoTruevParticledS[fiCut]->Fill(ds);
                   if (motherlabeln == motherlabelp){
                     fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2);
+                    fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds);
                     switch( fSelectedHeavyNeutralMeson ) {
                     case 0: // ETA MESON
-                      if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) )
-                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) ){
+                        fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      }
                       break;
                     case 1: // OMEGA MESON
-                      if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) )
-                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) ){
+                        fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      }
                       break;
                     case 2: // ETA PRIME MESON
-                      if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray,labeln) )
+                      if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray,labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      }
                       break;
                     case 3: // D0 MESON
-                      if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) )
+                      if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                        fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
+                        fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      }
                       break;
                     default:
                       AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -3722,24 +4066,40 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
             } else {
               if(TMath::Abs(fNegativeMCParticle->GetPdgCode())==211 && TMath::Abs(fPositiveMCParticle->GetPdgCode())==211){  // Pions ...
                 fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2);
+                fHistoTruevParticledS[fiCut]->Fill(ds);
                 if (motherlabeln == motherlabelp){
                   fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                  fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2);
+                  fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds);
                   switch( fSelectedHeavyNeutralMeson ) {
                   case 0: // ETA MESON
-                    if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) )
-                    fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) ){
+                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                    }
                     break;
                   case 1: // OMEGA MESON
-                    if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) )
-                    fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    if( IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) ){
+                      fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                    }
                     break;
                   case 2: // ETA PRIME MESON
-                    if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray,labeln) )
+                    if( IsEtaPrimePiPlPiMiEtaDaughterAOD(AODMCTrackArray,labeln) ){
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                    }
                     break;
                   case 3: // D0 MESON
-                    if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) )
+                    if( IsD0PiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) ){
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
+                      fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                    }
                     break;
                   default:
                     AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
@@ -3750,21 +4110,24 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
           }
         }
       }
+      Bool_t survivesMassCut = kFALSE;
+
       if (((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->DoMassCut()){
         if (vParticle->GetMass() < ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetMassCut()){
+          survivesMassCut = kTRUE;
+        } 
+      } else{
+        survivesMassCut = kTRUE;
+      }
+
+      if(survivesMassCut){
           fGoodVirtualParticles->Add( vParticle );
           if(!fDoLightOutput){
             fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
           }
-        }else{
+      }else{
           delete vParticle;
           vParticle=0x0;
-        }
-      } else {
-        fGoodVirtualParticles->Add( vParticle );
-        if(!fDoLightOutput){
-          fHistoPionPionInvMassPt[fiCut]->Fill( vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
-        }
       }
 
       Double_t clsToFPos = -1.0;
@@ -4238,16 +4601,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
               if(particle->GetMother() >-1){
                 if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetPdgCode() ==fPDGCodeNDM){
                   AliAODMCParticle *particleNDM = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(particle->GetMother()));
-                  fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
-                  fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);
-                  fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
+                  if (fDoMesonQA>0){
+                    fHistoMCAllMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);
+                    fHistoMCAllMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);                    
+                    fHistoMCAllMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);
+                  }
                   if ((static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() > -1){
                     if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetPdgCode() == fPDGCodeAnalyzedMeson ){
                       if ( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At( (static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother())))->GetMother() )))->GetNDaughters() ==3 ) {
                         fHistoMCGammaFromNeutralMesonPt[fiCut]->Fill(particle->Pt(), fWeightJetJetMC); // All photons from eta or omega via pi0
-                        fHistoMCMesonFromNeutralMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);   // ALl meson mothers (pi0/eta) from analyzed heavy meson
-                        fHistoMCMesonFromNeutralMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
-                        fHistoMCMesonFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
+                        if(fDoMesonQA > 0) {
+                          fHistoMCMesonFromNeutralMesonPt[fiCut]->Fill(particleNDM->Pt(), fWeightJetJetMC);   // ALl meson mothers (pi0/eta) from analyzed heavy meson
+                          fHistoMCMesonFromNeutralMesonEta[fiCut]->Fill(particleNDM->Eta(), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
+                          fHistoMCMesonFromNeutralMesonPhi[fiCut]->Fill(TVector2::Phi_0_2pi(particleNDM->Phi()), fWeightJetJetMC);   // All meson mothers (pi0/eta) from analyzed heavy meson
+                        }
                       }
                     }
                   }
@@ -5688,5 +6055,88 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::RelabelAODPhotonCandidat
     }
   }
 }
+//________________________________________________________________________
+AliExternalTrackParam* AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GetConstrainedParameterAOD(const AliAODTrack* aodTr, const AliAODVertex* vtx, double bz)
+{
+  double chi2;
+  AliExternalTrackParam* par = new AliExternalTrackParam();
+  par->CopyFromVTrack(aodTr);
+  double dz[2];
+  if (!par->PropagateToDCA(vtx,bz,999.,dz,0)) {
+    delete par;
+    chi2 = 1e9;
+    return 0;
+  }
+  Double_t covar[6]; vtx->GetCovarianceMatrix(covar);
+  Double_t p[2]= { par->GetParameter()[0]-dz[0], par->GetParameter()[1]-dz[1]};
+  Double_t c[3]= { covar[2],0.,covar[5] };
+  chi2 = par->GetPredictedChi2(p,c);
+  if (chi2>1e9 || !par->Update(p,c)) {
+    AliFatal(Form("Propagation failed with chi2 = %f",chi2));
+    delete par;
+    return 0;
+  }
+  return par;
+}
 
+//_____________________________________________________________________________
+Double32_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateP2(Double_t xyz[3],Double_t pxpypz[3]) 
+{
+  //
+  // create external track parameters from the global parameters
+  // x,y,z,px,py,pz and their 6x6 covariance matrix
+  // A.Dainese 10.10.08
 
+  // Calculate alpha: the rotation angle of the corresponding local system.
+  //
+  // For global radial position inside the beam pipe, alpha is the
+  // azimuthal angle of the momentum projected on (x,y).
+  //
+  // For global radial position outside the ITS, alpha is the
+  // azimuthal angle of the centre of the TPC sector in which the point
+  // xyz lies
+  //
+  const double kSafe = 1e-5;
+  Double32_t p2;
+  Double32_t fAlpha;
+  Double_t radPos2 = xyz[0]*xyz[0]+xyz[1]*xyz[1];  
+  Double_t radMax  = 45.; // approximately ITS outer radius
+  if (radPos2 < radMax*radMax) { // inside the ITS     
+     fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
+  } else { // outside the ITS
+     Float_t phiPos = TMath::Pi()+TMath::ATan2(-xyz[1], -xyz[0]);
+     fAlpha = 
+     TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+  }
+  //
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  // protection:  avoid alpha being too close to 0 or +-pi/2
+  if (TMath::Abs(sn)<2*kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha< TMath::Pi()/2. ?  2*kSafe : -2*kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? -2*kSafe :  2*kSafe;
+    cs=TMath::Cos(fAlpha);
+    sn=TMath::Sin(fAlpha);
+  }
+  else if (TMath::Abs(cs)<2*kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha> TMath::Pi()/2. ? 2*kSafe : -2*kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? 2*kSafe : -2*kSafe;
+    cs=TMath::Cos(fAlpha);
+    sn=TMath::Sin(fAlpha);
+  }
+  // Get the vertex of origin and the momentum
+  TVector3 ver(xyz[0],xyz[1],xyz[2]);
+  TVector3 mom(pxpypz[0],pxpypz[1],pxpypz[2]);
+  //
+  // Rotate to the local coordinate system
+  ver.RotateZ(-fAlpha);
+  mom.RotateZ(-fAlpha);
+
+  //
+  // x of the reference plane
+
+   p2= TMath::Sin(mom.Phi());
+  //
+  if      (TMath::Abs( 1-p2) < kSafe) p2= 1.- kSafe; //Protection
+  else if (TMath::Abs(-1-p2) < kSafe) p2=-1.+ kSafe; //Protection
+  return p2;
+}

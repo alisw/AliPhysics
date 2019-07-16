@@ -137,6 +137,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16c3b,
       k16c3c,
       kPPb5T13P4DPMJet,
+      kLHC19a4,
       // pp 2.76TeV 2013
       k15g2,
       kPP2T13P1JJ,
@@ -160,6 +161,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k18j2,
       k18b8,
       k18b10,
+      k18l2,
       // PbPb 5 TeV 2015
       kPbPb5T15HIJING,
       k16k3b,
@@ -203,6 +205,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP13T17P1Pyt8Str,
       kPP13T17P1Pyt8LowB,
       kPP13T17P1JJ,
+      kPP13T17b1JJdecay,
+      kPP13T17c1JJdecay,
+      // pp 13 TeV 2018
+      kPP13T18P1JJ,
       // Xe-Xe MC
       kXeXe5T17HIJING,
       //
@@ -234,7 +240,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17XeXe5440GeV,
       k17pp5TeV,
       k18pp13TeV,
-      k18pp13TeVLow
+      k18pp13TeVLow,
+      k18PbPb5TeV
     };
 
 
@@ -297,13 +304,15 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t     FunctionNL_kPi0MCv5(Float_t e);
     Float_t     FunctionNL_kPi0MCv6(Float_t e);
     Float_t     FunctionNL_kPi0MCMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
+    Float_t     FunctionNL_MartinTB_100MeV_MC(Float_t e);
+    Float_t     FunctionNL_MartinTB_100MeV_Data(Float_t e);
     Float_t     FunctionNL_kSDMv5(Float_t e);
     Float_t     FunctionNL_kSDMv6(Float_t e);
     Float_t     FunctionNL_kTestBeamv2(Float_t e);
     Float_t     FunctionNL_kTestBeamv3(Float_t e);
     Float_t     FunctionNL_kTestBeamv4(Float_t e);
     Float_t     FunctionNL_kTestBeamMod(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
-
+    
     void        InitCutHistograms(TString name="");
     void        SetFillCutHistograms(TString name="")           {if(!fHistograms){InitCutHistograms(name);} return;}
     TList*      GetCutHistograms()                              {return fHistograms;}
@@ -623,7 +632,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,86)
+    ClassDef(AliCaloPhotonCuts,89)
 };
 
 #endif

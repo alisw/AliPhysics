@@ -200,10 +200,12 @@ void AliAnalysisTaskNanoAODFilter::FinishTaskOutput() {
 
   // copy production version info
   AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  TObject* prodInfo = inputHandler->GetUserInfo()->FindObject("alirootVersion");
-  if (prodInfo)
-    extNanoAOD->GetTree()->GetUserInfo()->Add(prodInfo->Clone());
-
+  if (inputHandler->GetUserInfo()) {
+    TObject* prodInfo = inputHandler->GetUserInfo()->FindObject("alirootVersion");
+    if (prodInfo)
+      extNanoAOD->GetTree()->GetUserInfo()->Add(prodInfo->Clone());
+  }
+  
   Printf("****************************************************************");
   extNanoAOD->GetTree()->GetUserInfo()->Add(AliNanoAODTrackMapping::GetInstance(fReplicator->GetVarListTrack()));
   AliNanoAODTrackMapping::GetInstance()->Print();

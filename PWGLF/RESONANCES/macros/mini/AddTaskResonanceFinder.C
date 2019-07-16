@@ -8213,7 +8213,7 @@ Bool_t Config_k0kxpi(
     sprintf(suffix,"_%s",lname.Data());
     Bool_t enableMonitor=kTRUE;
 
-    Double_t mass=1.4088;//eta(1405)
+    Double_t mass=1.2819;//f1(1285)
 
     // set daughter cuts :
     Int_t TrackCutsPi=0;
@@ -8324,68 +8324,40 @@ Bool_t Config_k0kxpi(
     }
 
     // AliRsnMiniResonanceFinder
-    AliRsnCutMiniPair* cutMassPiK=new AliRsnCutMiniPair("cutMassPiK",AliRsnCutMiniPair::kMassRange);
-    cutMassPiK->SetRangeD(0,1e6);
-    AliRsnCutSet* cutsPiK=new AliRsnCutSet("pairCutsPiK",AliRsnTarget::kMother);
-    cutsPiK->AddCut(cutMassPiK);
-    cutsPiK->SetCutScheme(TString::Format("%s",cutMassPiK->GetName()));
+    AliRsnCutMiniPair* cutMassKxK0=new AliRsnCutMiniPair("cutMassKxK0",AliRsnCutMiniPair::kMassRange);
+    cutMassKxK0->SetRangeD(0,1.07);
+    AliRsnCutSet* cutsKxK0=new AliRsnCutSet("pairCutsKxK0",AliRsnTarget::kMother);
+    cutsKxK0->AddCut(cutMassKxK0);
+    cutsKxK0->SetCutScheme(TString::Format("%s",cutMassKxK0->GetName()));
 
-    AliRsnMiniResonanceFinder* pairfinder[4];
+    AliRsnMiniResonanceFinder* pairfinder[2];
 
-    // pi- K+ pairs
-    Int_t i=0,iCutPair[4];
-    pairfinder[i]=new AliRsnMiniResonanceFinder(Form("%s_PimKpFinder",task->GetName()));
+    // K+ K0S pairs
+    Int_t i=0,iCutPair[2];
+    pairfinder[i]=new AliRsnMiniResonanceFinder(Form("%s_KpK0Finder",task->GetName()));
     pairfinder[i]->SetCutID(0,iCutK);
     pairfinder[i]->SetDaughter(0,AliRsnDaughter::kKaon);
     pairfinder[i]->SetCharge(0,'+');
-    pairfinder[i]->SetCutID(1,iCutPi);
-    pairfinder[i]->SetDaughter(1,AliRsnDaughter::kPion);
-    pairfinder[i]->SetCharge(1,'-');
-    pairfinder[i]->SetResonanceMass(0.895810);//dummy
-    pairfinder[i]->SetResonancePDG(313);
-    pairfinder[i]->SetPairCuts(cutsPiK);
+    pairfinder[i]->SetCutID(1,iCutK0s);
+    pairfinder[i]->SetDaughter(1,AliRsnDaughter::kKaon0);
+    pairfinder[i]->SetCharge(1,'0');
+    pairfinder[i]->SetResonanceMass(0.98);
+    pairfinder[i]->SetResonancePDG(9000211);
+    pairfinder[i]->SetPairCuts(cutsKxK0);
     iCutPair[i]=task->AddResonanceFinder(pairfinder[i]);
 
-    //pi+ K- pairs
+    // K- K0S pairs
     i=1;
-    pairfinder[i]=new AliRsnMiniResonanceFinder(Form("%s_PipKmFinder",task->GetName()));
+    pairfinder[i]=new AliRsnMiniResonanceFinder(Form("%s_KmK0Finder",task->GetName()));
     pairfinder[i]->SetCutID(0,iCutK);
     pairfinder[i]->SetDaughter(0,AliRsnDaughter::kKaon);
     pairfinder[i]->SetCharge(0,'-');
-    pairfinder[i]->SetCutID(1,iCutPi);
-    pairfinder[i]->SetDaughter(1,AliRsnDaughter::kPion);
-    pairfinder[i]->SetCharge(1,'+');
-    pairfinder[i]->SetResonanceMass(0.895810);
-    pairfinder[i]->SetResonancePDG(-313);
-    pairfinder[i]->SetPairCuts(cutsPiK);
-    iCutPair[i]=task->AddResonanceFinder(pairfinder[i]);
-
-    //K+ pi+ pairs
-    i=2;
-    pairfinder[i]=new AliRsnMiniResonanceFinder(Form("%s_PipKpFinder",task->GetName()));
-    pairfinder[i]->SetCutID(0,iCutK);
-    pairfinder[i]->SetDaughter(0,AliRsnDaughter::kKaon);
-    pairfinder[i]->SetCharge(0,'+');
-    pairfinder[i]->SetCutID(1,iCutPi);
-    pairfinder[i]->SetDaughter(1,AliRsnDaughter::kPion);
-    pairfinder[i]->SetCharge(1,'+');
-    pairfinder[i]->SetResonanceMass(0.895810);
-    pairfinder[i]->SetResonancePDG(313);
-    pairfinder[i]->SetPairCuts(cutsPiK);
-    iCutPair[i]=task->AddResonanceFinder(pairfinder[i]);
-
-    //K- pi- pairs
-    i=3;
-    pairfinder[i]=new AliRsnMiniResonanceFinder(Form("%s_PimKmFinder",task->GetName()));
-    pairfinder[i]->SetCutID(0,iCutK);
-    pairfinder[i]->SetDaughter(0,AliRsnDaughter::kKaon);
-    pairfinder[i]->SetCharge(0,'-');
-    pairfinder[i]->SetCutID(1,iCutPi);
-    pairfinder[i]->SetDaughter(1,AliRsnDaughter::kPion);
-    pairfinder[i]->SetCharge(1,'-');
-    pairfinder[i]->SetResonanceMass(0.895810);
-    pairfinder[i]->SetResonancePDG(313);
-    pairfinder[i]->SetPairCuts(cutsPiK);
+    pairfinder[i]->SetCutID(1,iCutK0s);
+    pairfinder[i]->SetDaughter(1,AliRsnDaughter::kKaon0);
+    pairfinder[i]->SetCharge(1,'0');
+    pairfinder[i]->SetResonanceMass(0.98);
+    pairfinder[i]->SetResonancePDG(-9000211);
+    pairfinder[i]->SetPairCuts(cutsKxK0);
     iCutPair[i]=task->AddResonanceFinder(pairfinder[i]);
 
     // triplet cuts
@@ -8436,110 +8408,112 @@ Bool_t Config_k0kxpi(
     // -- Create all needed outputs -----------------------------------------------------------------
     // use an array for more compact writing, which are different on mixing and charges
 
-    Int_t xID,cut2,pairID,ipdg;
+    Int_t xID,cut2,pairID;
+    Char_t charge1;
     TString name,comp;
     AliRsnMiniOutput* out;
 
     for(i=0;i<12;i++){
         if(!i){
             xID=imID;
-            name.Form("K0_PimKp");
+            name.Form("Pim_KpK0");
             comp.Form("PAIR");
+            charge1='-';
             cut2=iCutPair[0];
             pairID=0;
-            ipdg=3124;
         }else if(i==1){
             xID=imID;
-            name.Form("K0_PipKm");
+            name.Form("Pip_KmK0");
             comp.Form("PAIR");
+            charge1='+';
             cut2=iCutPair[1];
             pairID=0;
-            ipdg=3124;
         }else if(i==2){
             xID=imID;
-            name.Form("K0_PipKp");
+            name.Form("Pip_KpK0");
             comp.Form("PAIR");
-            cut2=iCutPair[2];
+            charge1='+';
+            cut2=iCutPair[0];
             pairID=0;
-            ipdg=3124;
         }else if(i==3){
             xID=imID;
-            name.Form("K0_PimKm");
+            name.Form("Pim_KmK0");
             comp.Form("PAIR");
-            cut2=iCutPair[3];
+            charge1='-';
+            cut2=iCutPair[1];
             pairID=0;
-            ipdg=3124;
         }else if(i==4){
             xID=imID;
-            name.Form("K0_PimKpMix");
+            name.Form("Pim_KpK0Mix");
             comp.Form("MIX");
+            charge1='-';
             cut2=iCutPair[0];
             pairID=1;
-            ipdg=3124;
         }else if(i==5){
             xID=imID;
-            name.Form("K0_PipKmMix");
+            name.Form("Pip_KmK0Mix");
             comp.Form("MIX");
+            charge1='+';
             cut2=iCutPair[1];
             pairID=1;
-            ipdg=3124;
         }else if(i==6){
             xID=imID;
-            name.Form("K0_PipKpMix");
+            name.Form("Pip_KpK0Mix");
             comp.Form("MIX");
-            cut2=iCutPair[2];
+            charge1='+';
+            cut2=iCutPair[0];
             pairID=1;
-            ipdg=3124;
         }else if(i==7){
             xID=imID;
-            name.Form("K0_PimKmMix");
+            name.Form("Pim_KmK0Mix");
             comp.Form("MIX");
-            cut2=iCutPair[3];
+            charge1='-';
+            cut2=iCutPair[1];
             pairID=1;
-            ipdg=3124;
         }else if(i==8){
             xID=imID;
-            name.Form("K0_PimKpRotated");
+            name.Form("Pim_KpK0Rotated");
             comp.Form("ROTATE1");
+            charge1='-';
             cut2=iCutPair[0];
             pairID=0;
-            ipdg=3124;
         }else if(i==9){
             xID=imID;
-            name.Form("K0_PipKmRotated");
+            name.Form("Pip_KmK0Rotated");
             comp.Form("ROTATE1");
+            charge1='+';
             cut2=iCutPair[1];
             pairID=0;
-            ipdg=3124;
         }else if(i==10){
             xID=imID;
-            name.Form("K0_PipKpRotated");
+            name.Form("Pip_KpK0Rotated");
             comp.Form("ROTATE1");
-            cut2=iCutPair[2];
+            charge1='+';
+            cut2=iCutPair[0];
             pairID=0;
-            ipdg=3124;
         }else if(i==11){
             xID=imID;
-            name.Form("K0_PimKmRotated");
+            name.Form("Pim_KmK0Rotated");
             comp.Form("ROTATE1");
-            cut2=iCutPair[3];
+            charge1='-';
+            cut2=iCutPair[1];
             pairID=0;
-            ipdg=3124;
         }
 
         out=task->CreateOutput(Form("k0kxpi_%s%s",name.Data(),suffix),"HIST",comp.Data());
-        out->SetDaughter(0,AliRsnDaughter::kKaon0);
-        out->SetCutID(0,iCutK0s);
-        out->SetCharge(0,'0');
+        out->SetDaughter(0,AliRsnDaughter::kPion);
+        out->SetCutID(0,iCutPi);
+        out->SetCharge(0,charge1);
 
-        out->SetDaughter(1,AliRsnDaughter::kKstar0);
+        out->SetDaughter(1,AliRsnDaughter::kKstarpm);//dummy
         out->SetCutID(1,cut2);
-        out->SetCharge(1,'0');
+        if(cut2==iCutPair[0]) out->SetCharge(1,'+');
+        else out->SetCharge(1,'-');
         out->SetUseStoredMass(1);
 
         if(!pairID) out->SetPairCuts(cutsPairSame);
         else out->SetPairCuts(cutsPairMix);
-        out->SetMotherPDG(ipdg);
+        out->SetMotherPDG(20223);
         out->SetMotherMass(mass);
         if(xID==imID) out->AddAxis(imID,280,1.1,2.5);
         else out->AddAxis(resID,200,-0.02,0.02);

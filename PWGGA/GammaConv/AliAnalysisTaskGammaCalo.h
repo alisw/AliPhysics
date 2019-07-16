@@ -364,6 +364,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoPionSpectrum;                                   //! array of histos with charged pion spectrum
     TH1F**                fHistoProtonSpectrum;                                 //! array of histos with proton spectrum
     TH1F**                fHistoKaonSpectrum;                                   //! array of histos with charged kaon spectrum
+    TH1F**                fHistoNPionSpectrum;                                  //! array of histos with Neutral pion spectrum
+    TH1F**                fHistoEtaSpectrum;                                    //! array of histos with Eta spectrum
+    TH1F**                fHistoDMesonSpectrum;                                 //! array of histos with D0 meson spectrum
     TTree**               tTreeSphericity;                                      //! array of trees with sphericity correlations
     Float_t               fRecSph;                                              //! Reconstructed sphericity
     Float_t               fTrueSph;                                             //! True Sphericity
@@ -546,7 +549,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 69);
+    ClassDef(AliAnalysisTaskGammaCalo, 70);
 };
 
 #endif

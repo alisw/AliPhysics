@@ -56,6 +56,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNEventsVsCL1(0x0),
   fHistWhyRej(0x0),
   fHistNEventsVsWhyRej(0x0),
+  fHistNEventsVsTime(0x0),
   fHistNTrackletsBeforePileup(0x0),
   fHistNTrackletsAfterPileup(0x0),
   fHistNCL1BeforePileup(0x0),
@@ -69,8 +70,14 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistNTracksBC0VsV0Cent(0x0),
   fHistNTrackletsVsV0Cent(0x0),
   fHistNTrackletsGoldenVsV0Cent(0x0),
-  fHistNTrackletsGoldenVsV0CentVsZvert(0x0),
+  fHistNTrackletsGoldenVsV0CentVsZvert(0x0),  
   fHistPhiTrackelts(0x0),
+  fHistNCL0VsV0Cent(0x0),
+  fHistNCL1VsV0Cent(0x0),
+  fHistT0AmplVsV0Ampl(0x0),
+  fHistT0AmplVsV0Cent(0x0),
+  fHistT0AmplVsNCL0(0x0),
+  fHistT0AmplVsCL0Cent(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
   fHistNTracksBC0VsNTracksFB4(0x0),
@@ -79,6 +86,8 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel():
   fHistZVertexSPDAfterCuts(0x0),
   fHistZVertexSPDBadTrackVert(0x0),
   fEventProp(0x0),
+  fNtupleEvProp(0x0),
+  fEnableEvPropNtuple(kFALSE),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
   fUseAliEventCuts(kFALSE),
@@ -104,6 +113,7 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNEventsVsCL1(0x0),
   fHistWhyRej(0x0),
   fHistNEventsVsWhyRej(0x0),
+  fHistNEventsVsTime(0x0),
   fHistNTrackletsBeforePileup(0x0),
   fHistNTrackletsAfterPileup(0x0),
   fHistNCL1BeforePileup(0x0),
@@ -119,6 +129,12 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistNTrackletsGoldenVsV0Cent(0x0),
   fHistNTrackletsGoldenVsV0CentVsZvert(0x0),
   fHistPhiTrackelts(0x0),
+  fHistNCL0VsV0Cent(0x0),
+  fHistNCL1VsV0Cent(0x0),
+  fHistT0AmplVsV0Ampl(0x0),
+  fHistT0AmplVsV0Cent(0x0),
+  fHistT0AmplVsNCL0(0x0),
+  fHistT0AmplVsCL0Cent(0x0),
   fHistNTracksTPCoutVsNTracklets(0x0),
   fHistNTracksFB4VsNTracklets(0x0),
   fHistNTracksBC0VsNTracksFB4(0x0),
@@ -127,6 +143,8 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
   fHistZVertexSPDAfterCuts(0x0),
   fHistZVertexSPDBadTrackVert(0x0),
   fEventProp(0x0),
+  fNtupleEvProp(0x0),
+  fEnableEvPropNtuple(kFALSE),
   fNtupleZvtxDistVsWhyRej(0x0),
   fEnableVertexNtuple(kFALSE),
   fUseAliEventCuts(kFALSE),
@@ -137,9 +155,8 @@ AliAnalysisTaskCheckEvSel::AliAnalysisTaskCheckEvSel(Bool_t readMC, Int_t system
 
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,AliNormalizationCounter::Class());
-  if(fEnableVertexNtuple){
-    DefineOutput(3,TNtuple::Class());  
-  }
+  DefineOutput(3,TNtuple::Class());
+  DefineOutput(4,TNtuple::Class());
 }
 
 //________________________________________________________________________
@@ -154,6 +171,7 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNEventsVsCL1;
     delete fHistWhyRej;
     delete fHistNEventsVsWhyRej;
+    delete fHistNEventsVsTime;
     delete fHistNTrackletsBeforePileup;
     delete fHistNTrackletsAfterPileup;
     delete fHistNCL1BeforePileup;
@@ -169,6 +187,12 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
     delete fHistNTrackletsGoldenVsV0Cent;
     delete fHistNTrackletsGoldenVsV0CentVsZvert;
     delete fHistPhiTrackelts;
+    delete fHistNCL0VsV0Cent;
+    delete fHistNCL1VsV0Cent;
+    delete fHistT0AmplVsV0Ampl;
+    delete fHistT0AmplVsV0Cent;
+    delete fHistT0AmplVsNCL0;
+    delete fHistT0AmplVsCL0Cent;
     delete fHistNTracksTPCoutVsNTracklets;
     delete fHistNTracksFB4VsNTracklets;
     delete fHistNTracksBC0VsNTracksFB4;
@@ -181,6 +205,8 @@ AliAnalysisTaskCheckEvSel::~AliAnalysisTaskCheckEvSel()
   delete fOutput;
   delete fCounter;
   if(fNtupleZvtxDistVsWhyRej) delete fNtupleZvtxDistVsWhyRej;
+  if(fNtupleEvProp) delete fNtupleEvProp;
+
 }
 
 //________________________________________________________________________
@@ -198,22 +224,25 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
   
-  fHistNEvents = new TH1F("hNEvents", "number of events ",20,-0.5,19.5);
+  fHistNEvents = new TH1F("hNEvents", "number of events ",21,-0.5,20.5);
   ConfigureEvSelAxis(fHistNEvents->GetXaxis());
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
   
-  fHistNEventsVsCent = new TH2F("hNEventsVsCent", " ; ; Centrality ",20,-0.5,19.5,101,0.,101.);
+  fHistNEventsVsCent = new TH2F("hNEventsVsCent", " ; ; Centrality ",21,-0.5,20.5,101,0.,101.);
   ConfigureEvSelAxis(fHistNEventsVsCent->GetXaxis());
   fOutput->Add(fHistNEventsVsCent);
 
-  fHistNEventsVsCL1 = new TH2F("hNEventsVsCL1", " ; ; N_{CL1}",20,-0.5,19.5,200,-0.5,2*maxMult-0.5);
+  fHistNEventsVsCL1 = new TH2F("hNEventsVsCL1", " ; ; N_{CL1}",21,-0.5,20.5,200,-0.5,2*maxMult-0.5);
   ConfigureEvSelAxis(fHistNEventsVsCL1->GetXaxis());
   fOutput->Add(fHistNEventsVsCL1);
 
+  fHistNEventsVsTime = new TH1F("hNEventsVsTime", " ; Timestamp",44640,1541462400,1544140800);
+  fOutput->Add(fHistNEventsVsTime);
+  
   fHistWhyRej = new TH1F("hWhyRej"," ; WhyRej",11,-0.5,10.5);
   fOutput->Add(fHistWhyRej);
-  fHistNEventsVsWhyRej = new TH2F("hNEventsVsWhyRej", " ; ; WhyRej ",20,-0.5,19.5,11,-0.5,10.5);
+  fHistNEventsVsWhyRej = new TH2F("hNEventsVsWhyRej", " ; ; WhyRej ",21,-0.5,20.5,11,-0.5,10.5);
   ConfigureEvSelAxis(fHistNEventsVsWhyRej->GetXaxis());
   fOutput->Add(fHistNEventsVsWhyRej);
 
@@ -256,6 +285,19 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
 
   fHistPhiTrackelts = new TH1F("hPhiTrackelts"," ; #varphi (rad)",200,0.,2.*TMath::Pi());
   fOutput->Add(fHistPhiTrackelts);
+
+  fHistNCL0VsV0Cent = new TH2F("hNCL0VsV0Cent"," ; Centrality ; N_{CL0}",105,0.,105.,200,-0.5,2*maxMult-0.5);
+  fHistNCL1VsV0Cent = new TH2F("hNCL1VsV0Cent"," ; Centrality ; N_{CL1}",105,0.,105.,200,-0.5,2*maxMult-0.5);
+  fHistT0AmplVsV0Ampl = new TH2F("hT0AmplVsV0Ampl"," ; V0 amplitude ; T0 amplitude",200,0.,60000,200,0.,2000.);
+  fHistT0AmplVsV0Cent = new TH2F("hT0AmplVsV0Cent"," ; Centrality ; T0 amplitude",105,0.,105.,200,0.,2000.);
+  fHistT0AmplVsNCL0 = new TH2F("hT0AmplVsNCL0"," ; N_{CL0} ; T0 amplitude",200,-0.5,2*maxMult-0.5,200,0.,2000.);
+  fHistT0AmplVsCL0Cent = new TH2F("hT0AmplVsCL0Cent"," ; Centrality CL0 ; T0 amplitude",105,0.,105.,200,0.,2000.);
+  fOutput->Add(fHistNCL0VsV0Cent);
+  fOutput->Add(fHistNCL1VsV0Cent);
+  fOutput->Add(fHistT0AmplVsV0Ampl);
+  fOutput->Add(fHistT0AmplVsV0Cent);
+  fOutput->Add(fHistT0AmplVsNCL0);
+  fOutput->Add(fHistT0AmplVsCL0Cent);
   
   fHistZVertexSPDBeforeCuts = new TH2F("hZVertexSPDBeforeCuts"," ; z_{SPDvertex} ; z_{TRKvertex}",400,-20.,20.,400,-20.,20.);
   fOutput->Add(fHistZVertexSPDBeforeCuts);
@@ -282,22 +324,19 @@ void AliAnalysisTaskCheckEvSel::UserCreateOutputObjects()
   fEventProp->GetAxis(7)->SetTitle("nGener golden SPD eta<1");
   fOutput->Add(fEventProp);
   
+  PostData(1,fOutput);
+
   TString normName="NormalizationCounter";
   AliAnalysisDataContainer *cont = GetOutputSlot(2)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
   fCounter->Init();
+  PostData(2,fCounter);
 
-  PostData(1,fOutput);
-
-
-  
-  if(fEnableVertexNtuple) {
-    OpenFile(3); // 3 is the slot number of the ntuple
-    
-    fNtupleZvtxDistVsWhyRej = new TNtuple("fNtupleZvtxDistVsWhyRej","fNtupleZvtxDistVsWhyRej","zSPDvertex:zTRKvertex:NcontributorszSPD:NcontributorszTRK:whyrejection:vtxtype");
-  }
-
+  fNtupleEvProp = new TNtuple("fNtupleEvProp","ntupleEvProp","zSPDvert:centrV0:centrCL0:V0ampl:T0ampl:nTracklets:nClSPD0:nClSPD1:nTracksFB4");
+  PostData(3,fNtupleEvProp);
+  fNtupleZvtxDistVsWhyRej = new TNtuple("ntupleZvtxDistVsWhyRej","fNtupleZvtxDistVsWhyRej","zSPDvertex:zTRKvertex:NcontributorszSPD:NcontributorszTRK:whyrejection:vtxtype");
+  PostData(4,fNtupleZvtxDistVsWhyRej);
 
 }
 
@@ -310,21 +349,22 @@ void AliAnalysisTaskCheckEvSel::ConfigureEvSelAxis(TAxis* ax){
   ax->SetBinLabel(3,"nEvents with good AOD");
   ax->SetBinLabel(4,"Rejected due to trigger");
   ax->SetBinLabel(5,"Rejected due to phys sel");
-  ax->SetBinLabel(6,"Rejected due to bad centrality estimator");
-  ax->SetBinLabel(7,"Rejected due to centrality flattening");
-  ax->SetBinLabel(8,"Rejected due to centrality out of range");
-  ax->SetBinLabel(9,"Rejected due to not reco vertex");
-  ax->SetBinLabel(10,"Rejected for contr vertex");
-  ax->SetBinLabel(11,"Rejected for bad track vertex");
-  ax->SetBinLabel(12,"Rejected for vertex out of accept");
-  ax->SetBinLabel(13,"Rejected for pileup events");
-  ax->SetBinLabel(14,"Rejected due to centrality correlations");
-  ax->SetBinLabel(15,"Rejected due to mult vs. V0 cut");
-  ax->SetBinLabel(16,"Passing Phys sel + trigger");
-  ax->SetBinLabel(17,"Passing Phys sel + trigger + Pileup");
-  ax->SetBinLabel(18,"Passing Phys sel + trigger + Pileup + zVertex");
-  ax->SetBinLabel(19,"Passing Phys sel + trigger + Pileup + zVertex + Centrality");
-  ax->SetBinLabel(20,"Passing IsEventSelected");
+  ax->SetBinLabel(6,"Rejected due time range cut");
+  ax->SetBinLabel(7,"Rejected due to bad centrality estimator");
+  ax->SetBinLabel(8,"Rejected due to centrality flattening");
+  ax->SetBinLabel(9,"Rejected due to centrality out of range");
+  ax->SetBinLabel(10,"Rejected due to not reco vertex");
+  ax->SetBinLabel(11,"Rejected for contr vertex");
+  ax->SetBinLabel(12,"Rejected for bad track vertex");
+  ax->SetBinLabel(13,"Rejected for vertex out of accept");
+  ax->SetBinLabel(14,"Rejected for pileup events");
+  ax->SetBinLabel(15,"Rejected due to centrality correlations");
+  ax->SetBinLabel(16,"Rejected due to mult vs. V0 cut");
+  ax->SetBinLabel(17,"Passing Phys sel + trigger");
+  ax->SetBinLabel(18,"Passing Phys sel + trigger + Pileup");
+  ax->SetBinLabel(19,"Passing Phys sel + trigger + Pileup + zVertex");
+  ax->SetBinLabel(20,"Passing Phys sel + trigger + Pileup + zVertex + Centrality");
+  ax->SetBinLabel(21,"Passing IsEventSelected");
   ax->SetNdivisions(1,kFALSE);
 }
 //________________________________________________________________________
@@ -417,9 +457,15 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     }
   }
 
+  Double_t ncl0 = aod->GetNumberOfITSClusters(0);
   Double_t ncl1 = aod->GetNumberOfITSClusters(1);
   Double_t zvSPD=vertexSPD->GetZ();
   Double_t zvTRK=vertex->GetZ();
+  AliAODVZERO* vzer=(AliAODVZERO*)aod->GetVZEROData();
+  Float_t v0ampl=vzer->GetMTotV0A()+vzer->GetMTotV0C();
+  AliAODTZERO* tz=aod->GetTZEROData();
+  Double_t t0ampl=0;
+  for(Int_t j=0; j<24; j++) t0ampl+=tz->GetAmp(j);
 
   if(!isEvSel)fHistWhyRej->Fill(wrej); 
     
@@ -438,19 +484,20 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
       
     Float_t vec4ntuple[6] = {(Float_t)zvSPD,(Float_t)zvTRK,(Float_t)vertexSPD->GetNContributors(),(Float_t)vertex->GetNContributors(),wrej4ntuple,vertextype};
     fNtupleZvtxDistVsWhyRej->Fill(vec4ntuple);
-    PostData(3,fNtupleZvtxDistVsWhyRej);
+    PostData(4,fNtupleZvtxDistVsWhyRej);
   }
   if(fAnalysisCuts->IsEventRejectedDueToTrigger()) fHistNEventsVsWhyRej->Fill(3,wrej);
   if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) fHistNEventsVsWhyRej->Fill(4,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToCentrality()) fHistNEventsVsWhyRej->Fill(5,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToCentralityFlattening()) fHistNEventsVsWhyRej->Fill(6,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) fHistNEventsVsWhyRej->Fill(8,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToVertexContributors()) fHistNEventsVsWhyRej->Fill(9,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()) fHistNEventsVsWhyRej->Fill(10,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) fHistNEventsVsWhyRej->Fill(11,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToPileup()) fHistNEventsVsWhyRej->Fill(12,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToCentralityEstimCorrel()) fHistNEventsVsWhyRej->Fill(13,wrej);
-  if(fAnalysisCuts->IsEventRejectedDueToTRKV0CentralityCorrel()) fHistNEventsVsWhyRej->Fill(14,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToTimeRangeCut()) fHistNEventsVsWhyRej->Fill(5,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToCentrality()) fHistNEventsVsWhyRej->Fill(6,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToCentralityFlattening()) fHistNEventsVsWhyRej->Fill(7,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) fHistNEventsVsWhyRej->Fill(9,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToVertexContributors()) fHistNEventsVsWhyRej->Fill(10,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()) fHistNEventsVsWhyRej->Fill(11,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) fHistNEventsVsWhyRej->Fill(12,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToPileup()) fHistNEventsVsWhyRej->Fill(13,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToCentralityEstimCorrel()) fHistNEventsVsWhyRej->Fill(14,wrej);
+  if(fAnalysisCuts->IsEventRejectedDueToTRKV0CentralityCorrel()) fHistNEventsVsWhyRej->Fill(15,wrej);
 
   fHistZVertexSPDBeforeCuts->Fill(zvSPD,zvTRK);
   
@@ -481,24 +528,25 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
   fHistNEventsVsCL1->Fill(2,ncl1);
 
   Int_t binToFill=-1;
-  if(fAnalysisCuts->IsEventRejectedDueToTrigger() || fAnalysisCuts->IsEventRejectedDuePhysicsSelection()){
+  if(fAnalysisCuts->IsEventRejectedDueToTrigger() || fAnalysisCuts->IsEventRejectedDuePhysicsSelection() || fAnalysisCuts->IsEventRejectedDueToTimeRangeCut() ){
     if(fAnalysisCuts->IsEventRejectedDueToTrigger()) binToFill=3;
     if(fAnalysisCuts->IsEventRejectedDuePhysicsSelection()) binToFill=4;
+    if(fAnalysisCuts->IsEventRejectedDueToTimeRangeCut()) binToFill=5;
   }else{
     if(fAnalysisCuts->IsEventRejectedDueToCentrality() || fAnalysisCuts->IsEventRejectedDueToCentralityFlattening()){
-      if(wrej==3) binToFill=5;
-      else if(wrej==4) binToFill=6;
-      else binToFill=7;
+      if(wrej==3) binToFill=6;
+      else if(wrej==4) binToFill=7;
+      else binToFill=8;
     }else{
       if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex() || fAnalysisCuts->IsEventRejectedDueToVertexContributors() || fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()){
-	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) binToFill=8;
-	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors()) binToFill=9;
-	if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()) binToFill=10;
+	if(fAnalysisCuts->IsEventRejectedDueToNotRecoVertex()) binToFill=9;
+	if(fAnalysisCuts->IsEventRejectedDueToVertexContributors()) binToFill=10;
+	if(fAnalysisCuts->IsEventRejectedDueToBadTrackVertex()) binToFill=11;
       }else{
-	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) binToFill=11;
-	else if(fAnalysisCuts->IsEventRejectedDueToPileup()) binToFill=12;
-	else if(fAnalysisCuts->IsEventRejectedDueToCentralityEstimCorrel()) binToFill=13;
-	else if(fAnalysisCuts->IsEventRejectedDueToTRKV0CentralityCorrel())  binToFill=14;
+	if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()) binToFill=12;
+	else if(fAnalysisCuts->IsEventRejectedDueToPileup()) binToFill=13;
+	else if(fAnalysisCuts->IsEventRejectedDueToCentralityEstimCorrel()) binToFill=14;
+	else if(fAnalysisCuts->IsEventRejectedDueToTRKV0CentralityCorrel())  binToFill=15;
       }
     }
   }
@@ -508,25 +556,25 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNEventsVsCL1->Fill(binToFill,ncl1);
   }
   if(fAnalysisCuts->IsEventRejectedDueToTrigger()==0 && fAnalysisCuts->IsEventRejectedDuePhysicsSelection()==0){
-    fHistNEvents->Fill(15);
-    fHistNEventsVsCent->Fill(15,centr);
-    fHistNEventsVsCL1->Fill(15,ncl1);
-    fHistNEventsVsWhyRej->Fill(15,wrej);    
+    fHistNEvents->Fill(16);
+    fHistNEventsVsCent->Fill(16,centr);
+    fHistNEventsVsCL1->Fill(16,ncl1);
+    fHistNEventsVsWhyRej->Fill(16,wrej);    
     if(fAnalysisCuts->IsEventRejectedDueToPileup()==0){
-      fHistNEvents->Fill(16);
-      fHistNEventsVsCent->Fill(16,centr);
-      fHistNEventsVsCL1->Fill(16,ncl1);
-      fHistNEventsVsWhyRej->Fill(16,wrej);
+      fHistNEvents->Fill(17);
+      fHistNEventsVsCent->Fill(17,centr);
+      fHistNEventsVsCL1->Fill(17,ncl1);
+      fHistNEventsVsWhyRej->Fill(17,wrej);
       if(fAnalysisCuts->IsEventRejectedDueToZVertexOutsideFiducialRegion()==0){
-	fHistNEvents->Fill(17);
-	fHistNEventsVsCent->Fill(17,centr);
-	fHistNEventsVsCL1->Fill(17,ncl1);
-	fHistNEventsVsWhyRej->Fill(17,wrej);
+	fHistNEvents->Fill(18);
+	fHistNEventsVsCent->Fill(18,centr);
+	fHistNEventsVsCL1->Fill(18,ncl1);
+	fHistNEventsVsWhyRej->Fill(18,wrej);
 	if(fAnalysisCuts->IsEventRejectedDueToCentrality()==0 && fAnalysisCuts->IsEventRejectedDueToCentralityFlattening()==0){
-	  fHistNEvents->Fill(18);
-	  fHistNEventsVsCent->Fill(18,centr);
-	  fHistNEventsVsCL1->Fill(18,ncl1);
-	  fHistNEventsVsWhyRej->Fill(18,wrej);
+	  fHistNEvents->Fill(19);
+	  fHistNEventsVsCent->Fill(19,centr);
+	  fHistNEventsVsCL1->Fill(19,ncl1);
+	  fHistNEventsVsWhyRej->Fill(19,wrej);
 	}
       }
     }
@@ -536,12 +584,16 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNCL1BeforePileup->Fill(ncl1);
   }
   if(isEvSel){
-    fHistNEvents->Fill(19);
-    fHistNEventsVsCent->Fill(19,centr);
-    fHistNEventsVsCL1->Fill(19,ncl1);
-    fHistNEventsVsWhyRej->Fill(19,wrej);
+    fHistNEvents->Fill(20);
+    fHistNEventsVsCent->Fill(20,centr);
+    fHistNEventsVsCL1->Fill(20,ncl1);
+    fHistNEventsVsWhyRej->Fill(20,wrej);
     fHistNTrackletsAfterPileup->Fill(ntrkl);
     fHistNCL1AfterPileup->Fill(ncl1);
+    Int_t runNumb=aod->GetRunNumber();
+    if(fAnalysisCuts->GetUseTimeRangeCutForPbPb2018() && runNumb >= 295369 && runNumb <= 297624){
+      fHistNEventsVsTime->Fill(aod->GetTimeStamp());
+    }
   }
 
   if(fAnalysisCuts->GetUseCentrality()>0 && fAnalysisCuts->IsEventSelectedInCentrality(aod)!=0) return;
@@ -584,7 +636,12 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     fHistNTracksTPCoutVsNTracklets->Fill(ntracksTPCout,ntrkl);
     fHistNTracksFB4VsNTracklets->Fill(ntracksFB4,ntrkl);
     fHistNTracksBC0VsNTracksFB4->Fill(ntracksBC0,ntracksFB4);
-  
+    fHistNCL0VsV0Cent->Fill(centr,ncl0);
+    fHistNCL1VsV0Cent->Fill(centr,ncl1);
+    fHistT0AmplVsV0Cent->Fill(centr,t0ampl);
+    fHistT0AmplVsV0Ampl->Fill(v0ampl,t0ampl);
+    fHistT0AmplVsNCL0->Fill(ncl0,t0ampl);
+    fHistT0AmplVsCL0Cent->Fill(centrCL0,t0ampl);
     Double_t vec4Sp[8];
     vec4Sp[0]=centr;
     vec4Sp[1]=zvSPD;
@@ -595,6 +652,14 @@ void AliAnalysisTaskCheckEvSel::UserExec(Option_t */*option*/){
     vec4Sp[6]=nGenerGoldenSPDEta14;
     vec4Sp[7]=nGenerGoldenSPDEta1;
     fEventProp->Fill(vec4Sp);
+    if(fEnableEvPropNtuple){
+      Float_t vec4ep[9]={(Float_t)zvSPD,(Float_t)centr,(Float_t)centrCL0,
+			 (Float_t)v0ampl,(Float_t)t0ampl,
+			 (Float_t)ntrkl,(Float_t)ncl0,(Float_t)ncl1,
+			 (Float_t)ntracksFB4};
+      fNtupleEvProp->Fill(vec4ep);
+      PostData(3,fNtupleEvProp);
+    }
   }
 
   PostData(1,fOutput);

@@ -131,8 +131,8 @@ AliAnalysisHFEppTPCTOFBeauty* ConfigHFEppTPCTOFBeauty(Bool_t isMCc, Bool_t isAOD
    
    // Function for obtaining the Hadron Contamination 
     
-   		TF1 *fHadCont = new TF1("fHadCont","5.00674e+00*TMath::Landau(x[0],1.03540e+01,2.60371e+00) + 5.67850e-02*TMath::Gaus(x[0], 1.00000e+00, 9.25799e-02)",1.0,10.0);  
-		task->SetHCFunction(fHadCont);
+   		//TF1 *fHadCont = new TF1("fHadCont","5.00674e+00*TMath::Landau(x[0],1.03540e+01,2.60371e+00) + 5.67850e-02*TMath::Gaus(x[0], 1.00000e+00, 9.25799e-02)",1.0,10.0);  
+		//task->SetHCFunction(fHadCont);
     
     if(isMCc){
     ///B correction

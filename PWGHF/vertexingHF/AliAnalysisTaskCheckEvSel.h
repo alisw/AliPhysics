@@ -41,7 +41,10 @@ public:
     else AliError("Wrong option for cut on zVertexSPD");
   }
   void SetUseAliEventCuts(Bool_t opt=kTRUE){fUseAliEventCuts=opt;}
+  void SetEnableEvPropNtuple(Bool_t dontuple) {fEnableEvPropNtuple=dontuple;}
   void SetEnableVertexNtuple(Bool_t dontuple) {fEnableVertexNtuple=dontuple;}
+
+  AliRDHFCuts* GetCutObject() { return (AliRDHFCuts*)fAnalysisCuts;}
   
 private:
 
@@ -62,6 +65,7 @@ private:
   TH2F *fHistNEventsVsCL1;               //!<! hist. for No. of events
   TH1F *fHistWhyRej;                     //!<! hist. for No. of events
   TH2F *fHistNEventsVsWhyRej;            //!<! hist. for No. of events
+  TH1F *fHistNEventsVsTime;              //!<! hist. for No. of events
   TH1F *fHistNTrackletsBeforePileup;     //!<! hist. for No. of tracklets
   TH1F *fHistNTrackletsAfterPileup;      //!<! hist. for No. of tracklets
   TH1F *fHistNCL1BeforePileup;           //!<! hist. for No. of tracklets
@@ -77,6 +81,12 @@ private:
   TH2F *fHistNTrackletsGoldenVsV0Cent;   //!<! Centrality-multiplicity correl
   TH3F *fHistNTrackletsGoldenVsV0CentVsZvert; //!<! Centrality-multiplicity correl
   TH1F *fHistPhiTrackelts;               //!<! Control plot
+  TH2F *fHistNCL0VsV0Cent;                //!<! pileup control plot
+  TH2F *fHistNCL1VsV0Cent;                //!<! pileup control plot
+  TH2F *fHistT0AmplVsV0Ampl;             //!<! pileup control plot
+  TH2F *fHistT0AmplVsV0Cent;             //!<! pileup control plot
+  TH2F *fHistT0AmplVsNCL0;               //!<! pileup control plot
+  TH2F *fHistT0AmplVsCL0Cent;               //!<! pileup control plot
   TH2F *fHistNTracksTPCoutVsNTracklets;  //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksFB4VsNTracklets;     //!<! Centrality-multiplicity correl
   TH2F *fHistNTracksBC0VsNTracksFB4;     //!<! Centrality-multiplicity correl
@@ -85,6 +95,8 @@ private:
   TH2F* fHistZVertexSPDAfterCuts;        //!<! z-vertex distr.
   TH2F* fHistZVertexSPDBadTrackVert;     //!<! z-vertex distr.
   THnSparseF* fEventProp;                //!<! event properties
+  TNtuple* fNtupleEvProp;                //!<! ntuple of event props
+  Bool_t fEnableEvPropNtuple;            /// flag to enable ntuple
   TNtuple* fNtupleZvtxDistVsWhyRej;      //!<! ntuple of ZvtxTRK vs. ZvtxSPD vs. Ncontributors vs. whyrej flag
   Bool_t fEnableVertexNtuple;            /// flag to enable ntuple for primary vertex studies
   Bool_t fUseAliEventCuts;               /// flag to use AliEventCuts for selection
@@ -93,7 +105,7 @@ private:
 
   AliRDHFCutsD0toKpi *fAnalysisCuts;  /// Cuts for candidates
 
-  ClassDef(AliAnalysisTaskCheckEvSel,10);
+  ClassDef(AliAnalysisTaskCheckEvSel,13);
 };
 
 #endif

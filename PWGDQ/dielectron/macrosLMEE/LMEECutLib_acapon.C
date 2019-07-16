@@ -13,6 +13,7 @@ class LMEECutLib {
     kV0_trackCuts,
     kPdgSel,
     kMCsel,
+    kV0_allAcc,
     kResolutionTrackCuts,
     // Linearly increasing cuts over MVA output
     kPIDcut1,
@@ -1228,21 +1229,21 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
       // Cut on the angle between the total momentum vector of the daughter
       // tracks and a line connecting the primary and secondary vertices
-      gammaV0cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0,  kFALSE);
-      gammaV0cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0, 10.0, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0, 10.0);
       // Restrict distance between legs
-      gammaV0cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0, 0.25, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0, 0.25);
       // Require minimum distance to secondary vertex
-      gammaV0cuts->AddCut(AliDielectronVarManager::kR, 3.0, 90.0, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kR, 3.0, 90.0);
       // Angle between daughter momentum plane and plane perpendicular to magnetic field
-      gammaV0cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0, 0.05);
       // Mass cut on V0 (mother) particle
-      gammaV0cuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.05);
       // Armenteros-Podolanksi variables
       // Pt
-      gammaV0cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0, 0.05, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0, 0.05);
       // Longitudinal momentum asymmentry between daughter particles
-      gammaV0cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35, 0.35, kFALSE);
+      gammaV0cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35, 0.35);
       // Default setting is to exclude V0 tracks
       gammaV0cuts->SetExcludeTracks(kFALSE);
       // Standard track cut variables
@@ -1253,6 +1254,20 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
       trackCuts->AddCut(gammaV0cuts);
       trackCuts->AddCut(trackCutsV0);
       trackCuts->AddCut(GetPIDCuts(PIDcuts));
+      trackCuts->Print();
+      return trackCuts;
+    case kV0_allAcc: // Cut setting to check MC V0 features
+      // No V0 track cuts applied as want to see distributions
+      gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
+      // Default setting is to exclude V0 tracks
+      gammaV0cuts->SetExcludeTracks(kFALSE);
+      /* // Standard track cut variables */
+      trackCutsV0->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0.0, 4.0);
+      trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCr, 100.0, 160.0);
+      trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
+      trackCuts->AddCut(gammaV0cuts);
+      trackCuts->AddCut(trackCutsV0);
+      /* trackCuts->AddCut(GetPIDCuts(PIDcuts)); */
       trackCuts->Print();
       return trackCuts;
     case kMCsel:

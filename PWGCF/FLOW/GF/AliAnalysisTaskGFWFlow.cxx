@@ -150,7 +150,6 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     // OAforPt->Add(new TNamed("MidV44","MidV44"));
     // for(Int_t i=0;i<fPtAxis->GetNbins();i++)
     //   OAforPt->Add(new TNamed(Form("MidV44_pt_%i",i+1),"MidV44_pTDiff"));
-
     //2SENeg:
     OAforPt->Add(new TNamed("Mid2SENV22","Mid2SENV22"));
     for(Int_t i=0;i<fPtAxis->GetNbins();i++)
@@ -268,14 +267,12 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     //   OAforPt->Add(new TNamed(Form("MidGapPV44_pt_%i",i+1),"MidGapPV44_pTDiff"));
 
 
-
-
     //Multi bins:
-    Double_t multibins[] = {5,10,20,30,40,50,60,70,80};
+    Double_t multibins[] = {5,10,20,30,40,50,60,70};
     fFC = new AliGFWFlowContainer();
     fFC->SetName(Form("FC%s",fSelections[fCurrSystFlag]->GetSystPF()));
     fFC->SetXAxis(fPtAxis);
-    fFC->Initialize(OAforPt,8,multibins,fCurrSystFlag?1:10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
+    fFC->Initialize(OAforPt,7,multibins,10); //Statistics only required for nominal profiles, so do not create randomized profiles for systematics
     //Powers per harmonic:
     Int_t NoGap[] = {9,0,8,6,7,0,6,0,5,4};
     Int_t WithGap[] = {5,0,2,2,3,0,6,0,5,4};
@@ -293,8 +290,6 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fGFW->AddRegion("refGapNeg",10,WithGap,-0.8,-0.5,1,2);
     fGFW->AddRegion("poiGapPos",10,WithGap,0.5,0.8,1+fPtAxis->GetNbins(),1);
     fGFW->AddRegion("refGapPos",10,WithGap,0.5,0.8,1,2);
-
-
   };
   if(fProduceWeights) PostData(1,fWeightList);
   else PostData(1,fFC);
@@ -331,6 +326,7 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
   if(fCurrSystFlag==fTotTrackFlags+4) cent = lMultSel->GetMultiplicityPercentile("CL1"); //CL1 flag is EvFlag 4 = N_TrackFlags + 4
   if(fCurrSystFlag==fTotTrackFlags+5) cent = lMultSel->GetMultiplicityPercentile("CL0"); //CL0 flag is EvFlag 5 = N_TrackFlags + 5
   if(cent<5) return; //Do not consider 0-5%
+  if(cent>70) return; //Also, peripheral cutoff
   Double_t vz = fAOD->GetPrimaryVertex()->GetZ();
   Int_t vtxb = GetVtxBit(fAOD);
   if(!vtxb) return; //If no vertex pass, then do not consider further
@@ -435,8 +431,9 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     // mywatchStore.Start(kFALSE);
     Bool_t filled;
     for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
-      //printf("Index %i\n",l_ind);
-      filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn);
+      //Bool_t DisableOL=kFALSE;
+      //if(l_ind<14) DisableOL = (l_ind%2); //Only for 1, 3, 5 ... 13
+      filled = FillFCs(corrconfigs.at(l_ind),cent,rndmn);//,DisableOL);
     };
     // mywatchStore.Stop();
     PostData(1,fFC);
@@ -604,8 +601,9 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(TString head, TString hn, Double_t cent, 
   dnx = fGFW->Calculate(hn,kTRUE).Re();
   if(dnx==0) return kFALSE;
   if(!diff) {
-    val = fGFW->Calculate(hn).Re();
-    fFC->FillProfile(head.Data(),cent,val/dnx,dnx,rndmn);
+    val = fGFW->Calculate(hn).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(head.Data(),cent,val,dnx,rndmn);
     return kTRUE;
   };
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
@@ -613,27 +611,33 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(TString head, TString hn, Double_t cent, 
     tss.Prepend(Form("(%i) ",i-1));
     dnx = fGFW->Calculate(tss,kTRUE).Re();
     if(dnx==0) continue;
-    val = fGFW->Calculate(tss).Re();
-    fFC->FillProfile(Form("%s_pt_%i",head.Data(),i),cent,val/dnx,dnx,rndmn);
+    val = fGFW->Calculate(tss).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(Form("%s_pt_%i",head.Data(),i),cent,val,dnx,rndmn);
   };
   return kTRUE;
 };
-Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn) {
+Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t DisableOverlap) {
   Double_t dnx, val;
   dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re();
-    fFC->FillProfile(corconf.Head.Data(),cent,val/dnx,dnx,rndmn);
+    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
     return kTRUE;
   };
+  /*Int_t binDisableOLFrom = fPtAxis->GetNbins()+1;
+  if(DisableOverlap)
+    binDisableOLFrom = fPtAxis->FindBin(fRFpTMax); //To stay in the right bin*/
+  Bool_t NeedToDisable=kFALSE;
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
-    //TString tss(hn);
-    //tss.Prepend(Form("(%i) ",i-1));
-    dnx = fGFW->Calculate(corconf,i-1,kTRUE).Re();
+    //if(DisableOverlap) NeedToDisable=(i>=binDisableOLFrom);
+    dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).Re();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i-1,kFALSE).Re();
-    fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val/dnx,dnx,rndmn);
+    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).Re()/dnx;
+    if(TMath::Abs(val)<1)
+      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
   };
   return kTRUE;
 };

@@ -92,6 +92,8 @@ fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
 fRecalIP(kTRUE),
+fDeltaEta(0.05),
+fDeltaPhi(0.05),
 fTPCnSigma(-999.0),
 fTPCnSigmaMin(-1),
 fTPCnSigmaMax(3),
@@ -325,6 +327,8 @@ fcentMim(0),
 fcentMax(0),
 fCentralityEstimator("V0M"),
 fRecalIP(kTRUE),
+fDeltaEta(0.05),
+fDeltaPhi(0.05),
 fTPCnSigma(-999.0),
 fTPCnSigmaMin(-1),
 fTPCnSigmaMax(3),
@@ -1454,7 +1458,7 @@ void AliAnalysisTaskHFEBESpectraEMC::UserExec(Option_t *)
             fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
             fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);
             
-            if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
+            if(TMath::Abs(fPhiDiff) > fDeltaPhi || TMath::Abs(fEtaDiff)> fDeltaEta) continue;
             
             /////////////////////////////////
             //Select EMCAL or DCAL clusters//

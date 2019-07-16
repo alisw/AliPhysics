@@ -149,8 +149,8 @@ void AliAnalysisTaskDgTree::UserCreateOutputObjects(){
   fTree->Branch("fTracklets",&fTracklets);
   fTree->Branch("fMcParticles",&fMcParticles);
   fTree->Branch("fMcEventWeight",&fMcEventWeight);
-  // fTree->Branch("fChunkFileName",&fChunkFileName);
-  // fTree->Branch("fEventInFile",&fEventInFile);
+  fTree->Branch("fChunkFileName",&fChunkFileName);
+  fTree->Branch("fEventInFile",&fEventInFile);
   fTree->Branch("fRunNumber",&fRunNumber);
   fTree->Branch("fPeriod",&fPeriod);
   fTree->Branch("fOrbit",&fOrbit);
@@ -354,8 +354,8 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
   if (isESD) {
     const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(fInputEvent);
     AliESDZDC* esdZDC = esd->GetESDZDC();
-    for (Int_t i=0;i<4;i++) fZNATDC[i] = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i);
-    for (Int_t i=0;i<4;i++) fZNCTDC[i] = esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i);
+    for (Int_t i=0;i<4;i++) fZNATDC[i] = esdZDC->IsZNAhit() ? esdZDC->GetZDCTDCCorrected(esdZDC->GetZNATDCChannel(),i) : 999;
+    for (Int_t i=0;i<4;i++) fZNCTDC[i] = esdZDC->IsZNChit() ? esdZDC->GetZDCTDCCorrected(esdZDC->GetZNCTDCChannel(),i) : 999; 
   } else if (fInputEvent->GetDataLayoutType()==AliVEvent::kAOD){
     const AliAODEvent* aod = dynamic_cast<const AliAODEvent*>(fInputEvent);
     AliAODZDC* aodZDC = aod->GetZDCData();
@@ -427,7 +427,7 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
     ULong_t status = track->GetStatus();
     float* fstatus          = (float *) &status;
     float* ffilterMap       = (float *) &filterMap;
-    float* fipart           = (float *) &fipart;
+    float* fipart           = (float *) &ipart;
     float* findexITSModule0 = (float *) &indexITSModule0;
     float* findexITSModule1 = (float *) &indexITSModule1;
     float* findexITSModule6 = (float *) &indexITSModule6;
@@ -480,6 +480,8 @@ void AliAnalysisTaskDgTree::UserExec(Option_t *){
       part->SetAt(isPrimary,0);
       part->SetAt(mcpart->GetMother(),1);
     }
+  } else if (fClassesFired.String().Contains("CTRUE-B")) {
+    // keep all events
   } else {
     if (fSATracks->GetEntriesFast()!=0) { PostData(1,fListOfHistos);  return; }
     if (fTracks->GetEntriesFast()<2)    { PostData(1,fListOfHistos);  return; }

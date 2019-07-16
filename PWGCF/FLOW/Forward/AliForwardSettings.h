@@ -78,6 +78,8 @@ class AliForwardSettings : public TObject {
   Bool_t sec_corr;
   Bool_t a5;
   TString fileName;
+  Int_t fMaxConsequtiveStrips;
+
   // return true if good event
 
   // flags used for method of cumulant

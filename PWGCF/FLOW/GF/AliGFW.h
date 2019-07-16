@@ -54,7 +54,7 @@ class AliGFW {
   AliGFWCumulant GetCumulant(Int_t index) { return fCumulants.at(index); };
   TComplex Calculate(TString config, Bool_t SetHarmsToZero=kFALSE);
   CorrConfig GetCorrelatorConfig(TString config, TString head = "", Bool_t ptdif=kFALSE);
-  TComplex Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero);
+  TComplex Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
  private:
   Bool_t fInitialized;
   void SplitRegions();

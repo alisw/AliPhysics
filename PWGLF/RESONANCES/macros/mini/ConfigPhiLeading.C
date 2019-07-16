@@ -1,4 +1,4 @@
-Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Double_t nSigmaKaon = -1)
+Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Bool_t isPP = kFALSE, Double_t nSigmaKaon = -1)
 {
 
     // -- Values ------------------------------------------------------------------------------------
@@ -6,6 +6,8 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Doub
     /* transv. momentum */ Int_t ptID = task->CreateValue(AliRsnMiniValue::kPt, kFALSE);
     /* angel to leading */ Int_t alID = task->CreateValue(AliRsnMiniValue::kAngleLeading, kFALSE);
     /* pt of leading    */ Int_t ptlID = task->CreateValue(AliRsnMiniValue::kLeadingPt, kFALSE);
+    /* multiplicity     */ Int_t multID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
+
     Printf("%f", nSigmaKaon);
     // Cuts
 
@@ -59,9 +61,13 @@ Bool_t ConfigPhiLeading(AliRsnMiniAnalysisTask *task, Bool_t isMC = kFALSE, Doub
         out->SetMotherMass(motherMass[i]);
 
         out->AddAxis(imID, 215, 0.985, 1.2);
-        out->AddAxis(ptID, 200, 0., 20.);                                 //default use mother pt
-        out->AddAxis(alID, 100, -0.25 * TMath::Pi(), 1.75 * TMath::Pi()); //-pi/4, 7/4pi
+        out->AddAxis(ptID, 40, 0., 20.);
+        if(!isPP ) out->AddAxis(multID,100,0.,100.);
+        else out->AddAxis(multID, 20, 0., 200.); 
+
+        out->AddAxis(alID, 72, -0.5 * TMath::Pi(), 1.5 * TMath::Pi()); 
         out->AddAxis(ptlID, 40, 0., 20.); 
+        
     }
     return kTRUE;
 }

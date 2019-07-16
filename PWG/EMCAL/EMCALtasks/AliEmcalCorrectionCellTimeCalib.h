@@ -5,7 +5,7 @@
 
 /**
  * @class AliEmcalCorrectionCellTimeCalib
- * @ingroup EMCALCOREFW
+ * @ingroup EMCALCORRECTIONFW
  * @brief Time calibration correction component in the EMCal correction framework.
  *
  * Performs time calibration of cells, using OADB calibration. The original cell information in the event **will be overwritten**.

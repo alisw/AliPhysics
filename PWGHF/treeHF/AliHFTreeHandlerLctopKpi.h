@@ -26,6 +26,14 @@
 class AliHFTreeHandlerLctopKpi : public AliHFTreeHandler
 {
   public:
+
+    enum resdecaytype {
+      kNonResonant = 1,
+      kL1520 = 2,
+      kKstar = 3,
+      kDelta = 4
+    };
+
     AliHFTreeHandlerLctopKpi();
     AliHFTreeHandlerLctopKpi(int PIDopt);
 
@@ -33,17 +41,25 @@ class AliHFTreeHandlerLctopKpi : public AliHFTreeHandler
 
     virtual TTree* BuildTree(TString name="tree", TString title="tree");
     virtual bool SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo=0, AliPIDResponse *pidrespo=0x0);
+    void SetVariableResonantDecay(int restype) {fResonantDecayType = restype;}
+    void SetMCGenVariableResonantDecay(int restype) {fResonantDecayTypeMC = restype;}
+    void AddBranchResonantDecay(TTree *t);
+    int GetLcResonantDecay(TClonesArray *arrMC, AliAODMCParticle *mcPart);
 
   private:
 
     float fImpParProng[knMaxProngs]; ///prong impact parameter
+    float fDCAProng[knMaxProngs]; ///prong DCA (pr0pr1, pr0pr2, pr1pr2)
     float fSigmaVertex; ///candidate sigma vertex
     float fDist12toPrim; ///candidate distance between track 1-2 vertex to primary vertex
     float fDist23toPrim; ///candidate distance between track 2-3 vertex to primary vertex
     float fNormd0MeasMinusExp; ///candidate topomatic variable
+    float fSumImpParProngs; ///sum of prong impact parameter squared
+    int fResonantDecayType; ///resonant decay type reco
+    int fResonantDecayTypeMC; ///resonant decay type MC
 
     /// \cond CLASSIMP
-    ClassDef(AliHFTreeHandlerLctopKpi,3); /// 
+    ClassDef(AliHFTreeHandlerLctopKpi,5); ///
     /// \endcond
 };
 #endif

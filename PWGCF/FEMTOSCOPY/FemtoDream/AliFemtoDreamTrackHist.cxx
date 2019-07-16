@@ -16,6 +16,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
       fConfig(0),
       fCutCounter(0),
       fDCAXYPtBins(0),
+      fTOFMass(0),
       fNSigCom(0) {
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;
@@ -45,7 +46,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fITShrdClsPileUp[i] = nullptr;
   }
 }
-AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
+AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool TOFM)
     : fMinimalBooking(false),
       fMultRangeLow(27),
       fMultRangeHigh(55) {
@@ -138,7 +139,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
     fTrackCutQA[i]->Add(fpTPCDist[i]);
 
     TString etaName = Form("EtaDist_%s", sName[i].Data());
-    fetaDist[i] = new TH1F(etaName.Data(), etaName.Data(), 200, -10., 10.);
+    fetaDist[i] = new TH1F(etaName.Data(), etaName.Data(), 200, -2., 2.);
     fetaDist[i]->GetXaxis()->SetTitle("#eta");
     fTrackCutQA[i]->Add(fetaDist[i]);
 
@@ -379,6 +380,19 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig)
   } else {
     fDCAXYPtBins = 0;
   }
+
+  if (TOFM)
+  {
+  TString TOFMassName = Form("TOFMass");
+  fTOFMass = new TH2F(TOFMassName.Data(), TOFMassName.Data(), ptBins,
+                         ptmin, ptmax, 1400, 0., 1.1);
+  fTOFMass->GetXaxis()->SetTitle("p_{primary}");
+  fTOFMass->GetYaxis()->SetTitle("m_{TOF}");
+  fHistList->Add(fTOFMass);
+  } else {
+      fTOFMass = nullptr;
+  }
+
 }
 
 AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
@@ -388,6 +402,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
       fConfig(0),
       fCutCounter(0),
       fDCAXYPtBins(0),
+      fTOFMass(0),
       fNSigCom(0) {
   for (int i = 0; i < 2; ++i) {
     fTrackCutQA[i] = nullptr;

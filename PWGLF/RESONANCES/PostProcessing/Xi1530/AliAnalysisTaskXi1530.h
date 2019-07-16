@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKXi1530_H
-#define ALIANALYSISTASKXi1530_H
+#ifndef AliAnalysisTaskXi1530_H
+#define AliAnalysisTaskXi1530_H
 //
 // Class AliAnalysisTaskXi1530
 //
@@ -11,6 +11,8 @@
 #include <AliAnalysisTaskSE.h>
 #include <THnSparse.h>
 #include <deque>
+#include "AliEventCuts.h"
+
 class AliAnalysisTask;
 class AliESDtrackCuts;
 class AliESDEvent;
@@ -19,21 +21,6 @@ class AliAODEvent;
 class AliPIDResponse;
 class AliPIDCombined;
 class THistManager;
-
-class AliAnalysisTaskXi1530RunTable {
-   public:
-    enum { kPP, kPA, kAA, kUnknownCollType };
-    AliAnalysisTaskXi1530RunTable();
-    AliAnalysisTaskXi1530RunTable(Int_t runnumber);
-    ~AliAnalysisTaskXi1530RunTable();
-
-    Bool_t IsPP() { return fCollisionType == kPP; }
-    Bool_t IsPA() { return fCollisionType == kPA; }
-    Bool_t IsAA() { return fCollisionType == kAA; }
-
-   private:
-    Int_t fCollisionType = kPP;  //! Is proton-proton collisions?
-};
 
 class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
    public:
@@ -63,6 +50,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
 
     void SetOption(char* option) { fOption = option; }
     void SetFilterBit(UInt_t filterbit) { fFilterBit = filterbit; }
+    void SetFilterBit_Xi(UInt_t filterbit) { fFilterBit_Xi = filterbit; }
     void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
     void SetIsAA(Bool_t isaa) { IsAA = isaa; }
     void SetIsMC(Bool_t ismc) { IsMC = ismc; }
@@ -210,23 +198,22 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         fXiMassWindowCut = 0.015;
         fTPCNsigXi1530PionCut = 1.5;
     }
+    void SetUseSimpleEventCut(Bool_t fInput) { fSimplieEventCut = fInput; };
 
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
     void FillTracks();
+    void FillTracksAOD();
 
-    Double_t GetMultiplicty(AliVEvent* fEvt);
-    Bool_t SelectVertex2015pp(AliESDEvent* esd,
-                              Bool_t checkSPDres,
-                              Bool_t requireSPDandTrk,
-                              Bool_t checkProximity);
-    Bool_t IsGoodSPDvertexRes(const AliESDVertex* spdVertex);
-    Bool_t IsMCEventTrueINEL0();
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
-    Bool_t IsTrueXi(AliESDcascade* Xi);
+    Bool_t IsTrueXi1530AOD(AliAODcascade* Xi, AliVTrack* pion);
+    Bool_t IsTrueXi(UInt_t xiIndex);
     void FillMCinput(AliMCEvent* fMCEvent, Int_t check);
+    void FillMCinputAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
+    void FillMCinputdXiAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillTrackToEventPool();
+    double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
     TAxis AxisVar(TString name, std::vector<Double_t> bin);
@@ -252,6 +239,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
                            std::vector<Double_t> x,
                            Double_t w = 1.);
 
+    AliEventCuts fEventCuts;  // Event cuts
+
    private:
     typedef std::vector<AliVTrack*> tracklist;
     typedef std::deque<tracklist> eventpool;
@@ -263,8 +252,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     AliESDtrackCuts* fTrackCuts2 = nullptr;  //!
     AliESDtrackCuts* fTrackCuts3 = nullptr;  //!
     AliVEvent* fEvt = nullptr;               //!
-    UInt_t fFilterBit;
-    AliAnalysisTaskXi1530RunTable* fRunTable = nullptr;  //!
+    UInt_t fFilterBit = 32;
+    UInt_t fFilterBit_Xi = 128;  // not using for the moment.
 
     Double_t fCent = -1;
     Double_t ftrackmult = -1;
@@ -347,17 +336,18 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     Bool_t IsPrimaryMC = kTRUE;
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
+    Bool_t fSimplieEventCut = kFALSE;
+    Bool_t IsNano = kFALSE;
     TString MultiplicityEstimator = "V0M";
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
     AliMCEvent* fMCEvent = nullptr;    //!
-    Int_t fNTracks = 0;
-    Int_t fNCascade = 0;
+
     Double_t PVx = 999;
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 16);
+    ClassDef(AliAnalysisTaskXi1530, 24);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -376,6 +366,14 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     // 14: Modify Fill MC input function for the Signal Loss
     // 15: Separate Rapidity cut option for pA analysis.
     // 16: Add option for using different Multiplicity Estimators(Default: V0M).
+    // 17: Add Simple event cut option to use AliMultSelection cut only
+    // 18: Enable AOD functionality
+    // 19: Update default filterbit
+    // 20: Remove RunTable Class.
+    // 21: Use AliEventCuts
+    // 22: Remove some function thanks to AliEventCuts
+    // 23: Integrate true Xi checker(ESD/AOD)
+    // 24: Add IsNano boolean variable
 };
 
 #endif

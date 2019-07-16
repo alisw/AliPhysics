@@ -938,6 +938,24 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       
       break;
     }
+    case kBeamTestNS:
+    {
+      // New parametrization of testbeam data points, 
+      // includes also points for E>100 GeV.
+      // See EMCal meeting 07/12/2018 slides
+      // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+      
+//      fNonLinearityParams[0] = 0.986154;
+//      fNonLinearityParams[1] = 0.214860;
+//      fNonLinearityParams[2] = 0.717724;
+//      fNonLinearityParams[3] = 0.069200;
+//      fNonLinearityParams[4] = 155.497605;
+//      fNonLinearityParams[5] = 48.868069;
+//      fNonLinearityParams[6] = 0.972947;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
       
     case kSDMv5:
     {
@@ -998,6 +1016,24 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster)
       //fNonLinearityParams[4] =  244.586;
       //fNonLinearityParams[5] =  116.938;
       //fNonLinearityParams[6] =  1.00437;
+      energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
+      
+      break;
+    }
+      
+    case kPi0MCNS:
+    {
+      // New parametrization of testbeam MC points,
+      // includes also points for E>100 GeV.
+      // See EMCal meeting 07/12/2018 slides
+      // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+      //fNonLinearityParams[0] =  1.009121;
+      //fNonLinearityParams[1] =  0.083153;
+      //fNonLinearityParams[2] =  1.444362;
+      //fNonLinearityParams[3] =  0.100294;
+      //fNonLinearityParams[4] =  416.897753;
+      //fNonLinearityParams[5] =  324.246101;
+      //fNonLinearityParams[6] =  1.004055;
       energy *= fNonLinearityParams[6]/(fNonLinearityParams[0]*(1./(1.+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]))*1./(1.+fNonLinearityParams[3]*exp((energy-fNonLinearityParams[4])/fNonLinearityParams[5]))));
       
       break;
@@ -1185,6 +1221,22 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[5] = 47.18;
     fNonLinearityParams[6] = 0.97;
   }
+
+  if (fNonLinearityFunction == kBeamTestNS) {
+    
+    // New parametrization of testbeam data points, 
+    // includes also points for E>100 GeV.
+    // See EMCal meeting 07/12/2018 slides
+    // https://indico.cern.ch/event/761682/contributions/3245317/attachments/1767706/2870846/2018_12_pp5TeV_NonlinearityStudies_update.pdf
+    
+     fNonLinearityParams[0] = 0.986154;
+     fNonLinearityParams[1] = 0.214860;
+     fNonLinearityParams[2] = 0.717724;
+     fNonLinearityParams[3] = 0.069200;
+     fNonLinearityParams[4] = 155.497605;
+     fNonLinearityParams[5] = 48.868069;
+     fNonLinearityParams[6] = 0.972947;
+  }
   
   if (fNonLinearityFunction == kSDMv5) {
     fNonLinearityParams[0] =  1.0;
@@ -1224,6 +1276,16 @@ void AliEMCALRecoUtils::InitNonLinearityParam()
     fNonLinearityParams[4] = 244.586;   
     fNonLinearityParams[5] = 116.938;   
     fNonLinearityParams[6] = 1.00437;   
+  }
+
+  if (fNonLinearityFunction == kPi0MCNS) {
+    fNonLinearityParams[0] =  1.009121;
+    fNonLinearityParams[1] =  0.083153;
+    fNonLinearityParams[2] =  1.444362;
+    fNonLinearityParams[3] =  0.100294;
+    fNonLinearityParams[4] =  416.897753;
+    fNonLinearityParams[5] =  324.246101;
+    fNonLinearityParams[6] =  1.004055;
   }
 
 if (fNonLinearityFunction == kPCMv1) {
