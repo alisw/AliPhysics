@@ -2021,12 +2021,14 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     sign = kLS;  // like sign bg
 
                 // Phi, Eta
-                Double_t Xi_momsum = TMath::Sqrt(
-                    xiP[0] * xiP[0] + xiP[1] * xiP[1] + xiP[2] * xiP[2]);
-                Double_t Xi_eta =
-                    0.5 * TMath::Log((Xi_momsum + xiP[2]) /
-                                     (Xi_momsum - xiP[2] + 1.e-13));
-                Double_t Xi_phi = TMath::Pi() + TMath::ATan2(-xiP[1], -xiP[0]);
+                Double_t xiPx = Xicandidate->Px();
+                Double_t xiPy = Xicandidate->Py();
+                Double_t xiPz = Xicandidate->Pz();
+                Double_t Xi_momsum =
+                    TMath::Sqrt(xiPx * xiPx + xiPy * xiPy + xiPz * xiPz);
+                Double_t Xi_eta = 0.5 * TMath::Log((Xi_momsum + xiPz) /
+                                                   (Xi_momsum - xiPz + 1.e-13));
+                Double_t Xi_phi = TMath::Pi() + TMath::ATan2(-xiPy, -xiPx);
 
                 Double_t LambdaX = Xicandidate->DecayVertexV0X();
                 Double_t LambdaY = Xicandidate->DecayVertexV0Y();
