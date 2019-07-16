@@ -445,8 +445,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     fHistos->CreateTH1("hTotalInvMass_LS", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_Mix", "", 2000, 0.5, 2.5, "s");
 
-    fHistos->CreateTH1("hX", "", 400, -2, 2, "s");
-    fHistos->CreateTH1("hY", "", 400, -2, 2, "s");
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
     PostData(1, fHistos->GetListOfHistograms());
