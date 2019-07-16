@@ -19,24 +19,31 @@ ClassImp(AliFemtoCorrFctnPairsForCorrFit)
 //____________________________
 AliFemtoCorrFctnPairsForCorrFit::AliFemtoCorrFctnPairsForCorrFit(const char* title):
 AliFemtoCorrFctn(),
-  mNtuple(0)
+  mNtuple(0),
+  hKstar(0)
 {
-  mNtuple = new TNtuple("pair", "pair", "px1:py1:pz1:e1:px2:py2:pz2:e2");
+  mNtuple = new TNtuple(Form("pair%s",title), Form("pair%s",title), "px1:py1:pz1:e1:px2:py2:pz2:e2");
+  hKstar = new TH1F(Form("kstar%s",title), Form("kstar%s",title),400,0,2);
 }
 
 //____________________________
 AliFemtoCorrFctnPairsForCorrFit::AliFemtoCorrFctnPairsForCorrFit(const AliFemtoCorrFctnPairsForCorrFit& aCorrFctn) :
   AliFemtoCorrFctn(),  
-  mNtuple(0)
+  mNtuple(0),
+  hKstar(0)
 {
   // copy constructor
   if (mNtuple) delete mNtuple;
   mNtuple = dynamic_cast<TNtuple*>(aCorrFctn.mNtuple->Clone());
+
+  if (hKstar) delete hKstar;
+  hKstar = dynamic_cast<TH1F*>(aCorrFctn.hKstar->Clone());
 }
 //____________________________
 AliFemtoCorrFctnPairsForCorrFit::~AliFemtoCorrFctnPairsForCorrFit(){
   // destructor
   delete  mNtuple;
+  delete hKstar;
 }
 //_________________________
 AliFemtoCorrFctnPairsForCorrFit& AliFemtoCorrFctnPairsForCorrFit::operator=(const AliFemtoCorrFctnPairsForCorrFit& aCorrFctn)
@@ -47,6 +54,9 @@ AliFemtoCorrFctnPairsForCorrFit& AliFemtoCorrFctnPairsForCorrFit::operator=(cons
   
   if (mNtuple) delete mNtuple;
    mNtuple = dynamic_cast<TNtuple*>(aCorrFctn.mNtuple->Clone());
+   
+  if (hKstar) delete hKstar;
+  hKstar = dynamic_cast<TH1F*>(aCorrFctn.hKstar->Clone());
   
   return *this;
 }
@@ -72,31 +82,30 @@ AliFemtoString AliFemtoCorrFctnPairsForCorrFit::Report(){
 //____________________________
 void AliFemtoCorrFctnPairsForCorrFit::AddRealPair( AliFemtoPair* pair){
 
-  double PionMass = 0.13957018;//0.13956995;
-  double KaonMass = 0.493677;
  
- double px1 = pair->Track1()->Track()->P().x();
- double py1 = pair->Track1()->Track()->P().y();
- double pz1 = pair->Track1()->Track()->P().z();
  
- double px2 = pair->Track2()->Track()->P().x();
- double py2 = pair->Track2()->Track()->P().y();
- double pz2 = pair->Track2()->Track()->P().z();
- 
- const AliFemtoThreeVector p1 =  pair->Track1()->Track()->P();
- const AliFemtoThreeVector p2 =  pair->Track2()->Track()->P();
- double e1 = TMath::Sqrt(PionMass*PionMass + p1.Mag2());
- double e2 = TMath::Sqrt(KaonMass*KaonMass + p2.Mag2());
-
- double tKStar = fabs(pair->KStar());
- 
- mNtuple->Fill(px1, py1, pz1, e1, px2, py2, pz2, e2); 
- 
-
 }
 //____________________________
 void AliFemtoCorrFctnPairsForCorrFit::AddMixedPair( AliFemtoPair* pair){
 
+  double px1 = pair->Track1()->Track()->P().x();
+  double py1 = pair->Track1()->Track()->P().y();
+  double pz1 = pair->Track1()->Track()->P().z();
+  Double_t e1 = pair->Track1()->FourMomentum().e();
+ 
+  double px2 = pair->Track2()->Track()->P().x();
+  double py2 = pair->Track2()->Track()->P().y();
+  double pz2 = pair->Track2()->Track()->P().z();
+  Double_t e2 = pair->Track2()->FourMomentum().e();
+
+  double tKStar = fabs(pair->KStar());
+  hKstar->Fill(tKStar);
+  int bin = hKstar->FindBin(tKStar);
+  if(tKStar<0.21 && hKstar->GetBinContent(bin) < 40000)
+    mNtuple->Fill(px1, py1, pz1, e1, px2, py2, pz2, e2); 
+ 
+
+  
 }
 //____________________________
 
@@ -104,6 +113,7 @@ void AliFemtoCorrFctnPairsForCorrFit::WriteHistos()
 {
   // Write out result histograms
   mNtuple->Write();
+  hKstar->Write();
 }
 
 TList* AliFemtoCorrFctnPairsForCorrFit::GetOutputList()
@@ -112,6 +122,6 @@ TList* AliFemtoCorrFctnPairsForCorrFit::GetOutputList()
   TList *tOutputList = new TList();
 
   tOutputList->Add(mNtuple);
-
+  tOutputList->Add(hKstar);
   return tOutputList;
 }
