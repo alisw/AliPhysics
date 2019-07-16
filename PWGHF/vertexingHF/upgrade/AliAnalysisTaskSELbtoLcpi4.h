@@ -73,8 +73,8 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   
   Int_t CheckMCLc(AliAODRecoDecayHF3Prong *d, TClonesArray* arrayMC);
   Int_t CheckMCpartPIONaf(AliAODTrack *p, TClonesArray* arrayMC);
-  void  FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d);
-  void  FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d);
+  void  FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d, Int_t Lc,AliAODEvent *ev);
+  void  FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d,Int_t Lc,AliAODEvent *ev);
   void FillHistos(AliAODRecoDecayHF3Prong* d,TClonesArray* arrayMC,AliAODEvent *ev,AliAODMCHeader *mcHeader);
   Bool_t CheckGenerator(AliAODTrack *p,AliAODRecoDecayHF3Prong *d,AliAODMCHeader *mcHeader,TClonesArray* arrayMC);
   Int_t IsSelectedLbMY(TObject* obj,Int_t selectionLevel,Int_t lb,Int_t isRot, Bool_t isHijing) const; 
@@ -107,8 +107,7 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   TH1I      *fSelMC;
   TH1I      *fCountLc;
   TNtuple *fNtupleLambdabUPG; //! output ntuple 
-  TNtuple *fNtupleLambdacUPG; 
-   //TNtuple *fNtupleDiffD0rot; //! output ntuple 
+   //TNtuple *fNtupleDiffD0rot; //! output ntuple
   //TH2F *fMassHistBDT[8*kMaxPtBins]; //!hist. for inv mass vs BDT response
 
 
