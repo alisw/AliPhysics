@@ -4660,8 +4660,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
     //Explore TOF information use
     for(Int_t i = 0 ; i < lNPart ; i ++){
         //Create a new object from default
-        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_AtLeastOneTOF",lParticleNameV0[i].Data() ) );
-        lV0Result[lNV0]->SetCutAtLeastOneTOF(kTRUE);
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_ITSorTOF",lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0]->SetCutITSorTOF(kTRUE);
         
         //Add result to pool
         lNV0++;
@@ -5738,8 +5738,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     
     //Explore TOF info use
     for(Int_t i = 0 ; i < 4 ; i ++){
-        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_AtLeastOneTOF",lParticleName[i].Data() ) );
-        lCascadeResult[lN] -> SetCutAtLeastOneTOF(kTRUE);
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSorTOF",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutITSorTOF(kTRUE);
         //Add result to pool
         lN++;
     }
