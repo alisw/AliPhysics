@@ -7,6 +7,7 @@
 
 #include <TList.h>
 #include <AliAnalysisTaskSE.h>
+#include <AliTimeRangeCut.h>
 #include <AliSignalMC.h>
 
 class AliAnalysisCuts;
@@ -26,7 +27,6 @@ class AliReducedPairInfo;
 class AliAnalysisUtils;
 class AliFlowTrackCuts;
 class AliMCEvent;
-class AliTimeRangeCut;
 //class AliFlowBayesianPID;
 
 //_________________________________________________________________________
