@@ -695,7 +695,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t*) {
             else
                 this->FillTracksAOD();  // Fill the histogram(AOD)
         }
-        if (fsetmixing && checkPionTrack)
+        if (fsetmixing && goodtrackindices.size())
             FillTrackToEventPool();  // use only pion track pool.
     }
     // ***********************************************************************
