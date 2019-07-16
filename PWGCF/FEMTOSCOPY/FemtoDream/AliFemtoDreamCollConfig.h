@@ -23,7 +23,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   };
   AliFemtoDreamCollConfig();
   AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig& config);
-  AliFemtoDreamCollConfig(const char *name, const char *title);
+  AliFemtoDreamCollConfig(const char *name, const char *title, bool QACouts = false);
   AliFemtoDreamCollConfig &operator=(const AliFemtoDreamCollConfig& config);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt) {
@@ -87,7 +87,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetNBinsHist(std::vector<int> NBins);
   void SetMinKRel(std::vector<float> minKRel);
   void SetMaxKRel(std::vector<float> maxKRel);
-  void SetCentBins(std::vector<float> CentBins);
+  void SetCentBins(std::vector<int> CentBins);
   void SetmTdEtadPhiBins(std::vector<float> mTBins);
   void SetExtendedQAPairs(std::vector<int> whichPairs);
   void SetClosePairRejection(std::vector<bool> whichPairs);
@@ -187,24 +187,25 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   std::vector<float> GetZVtxBins();
   int GetNZVtxBins() {
-    return (fZVtxBins->GetEntries() - 1);
+    return ((int) fZVtxBins.size() - 1);
   }
   ;
   std::vector<int> GetMultBins();
   int GetNMultBins() {
-    return fMultBins->GetEntries();
+    return (int) fMultBins.size();
   }
   ;
   std::vector<int> GetPDGCodes();
   int GetNParticles() {
-    return fPDGParticleSpecies->GetEntries();
+//    return fPDGParticleSpecies->GetEntries();
+    return (int) fPDGParticleSpecies.size();
   }
   ;
   int GetNParticleCombinations();
   std::vector<int> GetNBinsHist();
   std::vector<float> GetMinKRel();
   std::vector<float> GetMaxKRel();
-  std::vector<float> GetCentBins();
+  std::vector<int> GetCentBins();
   std::vector<float> GetmTBins();
   std::vector<unsigned int> GetWhichPairs();
   std::vector<bool> GetClosePairRej();
@@ -267,16 +268,16 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
   int fNumberRadii;             //
-  TNtuple *fZVtxBins;           //
-  TNtuple *fMultBins;           //
-  TNtuple *fPDGParticleSpecies;  //
-  TNtuple *fNBinsHists;         //
-  TNtuple *fMinK_rel;           //
-  TNtuple *fMaxK_rel;           //
-  TNtuple *fCentBins;           //
-  TNtuple *fmTBins;             //
-  TNtuple *fWhichQAPairs;       //
-  TNtuple *fClosePairRej;       //
+  std::vector<float> fZVtxBins;           //
+  std::vector<int> fMultBins;           //
+  std::vector<int> fPDGParticleSpecies;  //
+  std::vector<int> fNBinsHists;         //
+  std::vector<float> fMinK_rel;           //
+  std::vector<float> fMaxK_rel;           //
+  std::vector<int> fCentBins;           //
+  std::vector<float> fmTBins;             //
+  std::vector<unsigned int> fWhichQAPairs;       //
+  std::vector<bool> fClosePairRej;       //
   int fMixingDepth;             //
   int fSpinningDepth;			      //
   int fCorrelationRange;	      //
@@ -286,8 +287,8 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
-
-ClassDef(AliFemtoDreamCollConfig,13)
+  bool fCoutVariables;
+ClassDef(AliFemtoDreamCollConfig,14)
   ;
 };
 
