@@ -8,6 +8,7 @@ class TF1;
 class TH2F;
 class TH2D;
 class TH1D;
+class TH3D;
 class TRandom3;
 class TLorentzVector;
 class TArrayD;
@@ -356,6 +357,9 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhRecoilJetPtTTHinMB_V0Mnorm1[fkTTbins];        //! pT spectrum of recoil jets associated to semi-inclusive hadron TT in MB versus V0M/mean
    TH2D* fhRecoilJetPtTTHinMB_V0Mnorm2[fkTTbins];        //! pT spectrum of recoil jets associated to semi-inclusive hadron TT in MB versus (V0A/mean+V0C/mean)/2
 
+   TH3D* fhRecoilJetPhiTTHinMB_V0Mnorm1[fkTTbins];           //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias 
+   TH3D* fhRecoilJetPhiTTHinMB_V0Mnorm1_PartLevel[fkTTbins]; //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  minimum bias particle level 
+
    TH2D* fhRecoilJetPtTTHinMB_V0M_PartLevel[fkTTbins];     //! pT spectrum of recoil jets associated to semi-inclusive hadron TT in MB versus V0M   
    TH2D* fhRecoilJetPtTTHinMB_V0Mnorm1_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT in MB versus V0M/mean
    TH2D* fhRecoilJetPtTTHinMB_V0Mnorm2_PartLevel[fkTTbins]; //! pT spectrum of recoil jets associated to semi-inclusive hadron TT in MB versus (V0A/mean+V0C/mean)/2
@@ -364,6 +368,8 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    TH2D* fhRecoilJetPtTTHinHM_CentV0M[fkTTbins];        //! pT spectrum of recoil jets associated to semi-inclusive hadron TT in HM versus V0M centrality  
    TH2D* fhRecoilJetPtTTHinHM_V0Mnorm1[fkTTbins];       //! pT spectrum of recoil jets associated to semi-inclusive hadron TT in HM versus V0M/mean
    TH2D* fhRecoilJetPtTTHinHM_V0Mnorm2[fkTTbins];       //! pT spectrum of recoil jets associated to semi-inclusive hadron TT in HM versus (V0A/mean+V0C/mean)/2
+
+   TH3D* fhRecoilJetPhiTTHinHM_V0Mnorm1[fkTTbins];       //! recoil jet  (V0M/mean , recoil jet pT,  delta phi)  high multiplicity
 
    //recoil jet yields with EMCAL cluster TT
    TH2D* fhRecoilJetPtTTCinMB_V0M[fkTTbins];             //! pT spectrum of recoil jets associated to semi-inclusive emcal TT in MB versus V0M   
@@ -499,7 +505,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 12); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 13); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 #endif
