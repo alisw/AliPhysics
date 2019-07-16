@@ -54,6 +54,13 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   void SetFillNtupleSignal(Bool_t val = kTRUE) {fFillNtupleSignal = val;}
   void SetFillNtupleBackgroundRotated(Bool_t val = kTRUE) {fFillNtupleBackgroundRotated = val;}
   void SetFillNtupleBackgroundNonRotated(Bool_t val = kTRUE) {fFillNtupleBackgroundNonRotated = val;}
+  
+  //set parameters
+   void SetCutsond0Lcdaughters(Bool_t val = kTRUE) {fCutsond0Lcdaughters = val; return;}
+   void ApplyD0CutLcdaughters(Double_t cut[2]){if(cut!=NULL){fCutD0Daughter[0]=cut[0]; fCutD0Daughter[1]=cut[1];}
+   else {std::cout<<"Null pointer for d0 Lc daughter cuts"<<std::endl;}}
+   void SetPtConfiguration(Double_t ptcuts[7]){if(ptcuts!=NULL){for (int i=0;i<7 ;i++){fCutsPerPt[i]=ptcuts[i];}}
+   else{std::cout<<"Null pointer for pt cuts cuts"<<std::endl;}}
 
  private:
   AliAnalysisTaskSELbtoLcpi4(const AliAnalysisTaskSELbtoLcpi4&);
@@ -66,12 +73,11 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   
   Int_t CheckMCLc(AliAODRecoDecayHF3Prong *d, TClonesArray* arrayMC);
   Int_t CheckMCpartPIONaf(AliAODTrack *p, TClonesArray* arrayMC);
-  void  FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d);
-  void  FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d);
+  void  FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d, Int_t Lc,AliAODEvent *ev);
+  void  FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC,AliAODTrack *p,AliAODRecoDecayHF3Prong *d,Int_t Lc,AliAODEvent *ev);
   void FillHistos(AliAODRecoDecayHF3Prong* d,TClonesArray* arrayMC,AliAODEvent *ev,AliAODMCHeader *mcHeader);
   Bool_t CheckGenerator(AliAODTrack *p,AliAODRecoDecayHF3Prong *d,AliAODMCHeader *mcHeader,TClonesArray* arrayMC);
-  Int_t IsSelectedLbMY(TObject* obj,Int_t selectionLevel,Int_t lb,Int_t isRot, Bool_t isHijing) const;
-  void CheckMCKine(TClonesArray *mcs); 
+  Int_t IsSelectedLbMY(TObject* obj,Int_t selectionLevel,Int_t lb,Int_t isRot, Bool_t isHijing) const; 
   Bool_t CountLc(AliAODRecoDecayHF3Prong* Lc, AliAODTrack* pion, TClonesArray* arrayMC,Int_t motherLabelLc,Int_t motherLabelpione);
   Bool_t IsCandidateInjected(AliAODRecoDecayHF *part, AliAODMCHeader *header,TClonesArray *arrayMC);
   Int_t IsTrackInjected(AliAODTrack *part,AliAODMCHeader *header,TClonesArray *arrayMC);
@@ -100,8 +106,8 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   TH1F     *fInvMassLbSign5;     //!histogram with invariant mass of Lb signal its upgrade
   TH1I      *fSelMC;
   TH1I      *fCountLc;
-   TNtuple *fNtupleLambdacUPG; //! output ntuple  
-   //TNtuple *fNtupleDiffD0rot; //! output ntuple 
+  TNtuple *fNtupleLambdabUPG; //! output ntuple 
+   //TNtuple *fNtupleDiffD0rot; //! output ntuple
   //TH2F *fMassHistBDT[8*kMaxPtBins]; //!hist. for inv mass vs BDT response
 
 
@@ -111,7 +117,9 @@ class AliAnalysisTaskSELbtoLcpi4:public AliAnalysisTaskSE {
   Bool_t fFillNtupleSignal; /// flag to fill ntuple with signal candidates
   Bool_t fFillNtupleBackgroundRotated; /// flag to fill ntuple with background rotated candidates
   Bool_t fFillNtupleBackgroundNonRotated; /// flag to fill ntuple with background non rotated candidates
-
+  Double_t fCutD0Daughter[2];
+  Bool_t fCutsond0Lcdaughters;
+  Double_t fCutsPerPt[7];
   ClassDef(AliAnalysisTaskSELbtoLcpi4,2);
 };
 
