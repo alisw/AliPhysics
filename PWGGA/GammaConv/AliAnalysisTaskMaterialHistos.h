@@ -43,6 +43,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
                                                                        fEventCutArray              = CutArray;}
         void SetConversionCutList(Int_t nCuts, TList *CutArray)       {fnCuts                      = nCuts;
                                                                        fConversionCutArray         = CutArray;}
+	void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) {fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
 
 
 
@@ -165,13 +166,14 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH3F**            hElectrondEdxMapsR2;         //!
 		TH3F**            hPositrondEdxMapsR3;         //!
 		TH3F**            hElectrondEdxMapsR3;         //!
+		Bool_t            fDoMaterialBudgetWeightingOfGammasForTrueMesons;
 		//Bool_t            fDoHistosForMaterial;             // flag for using Trees for Material Budget evaluation
 
 		AliAnalysisTaskMaterialHistos(const AliAnalysisTaskMaterialHistos&); // not implemented
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 21);
+        ClassDef(AliAnalysisTaskMaterialHistos, 22);
 };
 
 #endif
