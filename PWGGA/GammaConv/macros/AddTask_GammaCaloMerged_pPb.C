@@ -1105,15 +1105,24 @@ void AddTask_GammaCaloMerged_pPb(
   if (periodNameV0Reader.Contains("LHC18b9")||periodNameV0Reader.Contains("LHC17g8")){
     TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
     TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
-    if (doWeightingPart==4) { // all headers
+    if (doWeightingPart==4 || doWeightingPart==6) { // all headers
       HeaderList->Add(HeaderPMB);
       HeaderList->Add(HeaderP8J);
-    } else if (doWeightingPart==5) { // only MB header
+    } else if (doWeightingPart==5 || doWeightingPart==7) { // only MB header
       HeaderList->Add(HeaderPMB);
     } else { // only JJ header
       HeaderList->Add(HeaderP8J);
     }
   }
+
+  TString energy      = "";
+  TString mcName      = "";
+  TString mcNameAdd   = "";
+  if (generatorName.Contains("LHC18b9")){
+    energy            = "8.16TeV";
+    mcName            = "EPOSJJ_LHC18b9";
+  }
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts          = new AliConvEventCuts*[numberOfCuts];
   ClusterCutList->SetOwner(kTRUE);
@@ -1141,6 +1150,17 @@ void AddTask_GammaCaloMerged_pPb(
     }
 
     analysisEventCuts[i]          = new AliConvEventCuts();
+
+    // definition of weighting input
+    TString fitNamePi0      = Form("Pi0_Fit_Data_%s",energy.Data());
+    TString fitNameEta      = Form("Eta_Fit_Data_%s",energy.Data());
+
+    TString mcInputNamePi0  = "";
+    TString mcInputNameEta  = "";
+    mcInputNamePi0          = Form("Pi0_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+    mcInputNameEta          = Form("Eta_%s%s_%s", mcName.Data(), mcNameAdd.Data(), energy.Data() );
+
+    if (doWeightingPart > 5) analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNamePtWeights, mcInputNamePi0, mcInputNameEta, "",fitNamePi0,fitNameEta);
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);

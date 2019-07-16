@@ -21,6 +21,8 @@ class TTree;
 class AliPIDResponse;
 class AliESDtrack;
 
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
+
 struct RHypertriton3 {
   float fDecayVtxX;
   float fDecayVtxY;
@@ -73,11 +75,11 @@ struct RHypertriton3 {
   bool fHasTOFP;
   bool fHasTOFPi;
 
-  Double32_t fTrackChi2Deu; // [0.0,10.24,8]
-  Double32_t fTrackChi2P;   // [0.0,10.24,8]
-  Double32_t fTrackChi2Pi;  // [0.0,10.24,8]
+  Double32_t fTrackChi2Deu; // [0.0,10,24,10]
+  Double32_t fTrackChi2P;   // [0.0,10,24,10]
+  Double32_t fTrackChi2Pi;  // [0.0,10,24,10]
 
-  Double32_t fDecayVertexChi2NDF; // [0.0,10.24,8]
+  Double32_t fDecayVertexChi2NDF; // [0.0,102,4,10]
 
   bool fIsMatter;
 };
@@ -135,6 +137,12 @@ public:
     fMaxNSigmaTPCPi  = nSigmaPi;
   }
 
+  void SetMaxTOFsigmas(float nSigmaDeu, float nSigmaP, float nSigmaPi) {
+    fMaxNSigmaTOFDeu = nSigmaDeu;
+    fMaxNSigmaTOFP   = nSigmaP;
+    fMaxNSigmaTOFPi  = nSigmaPi;
+  }
+
   void SetMinDCA2PrimaryVtx(float dcaDeu, float dcaP, float dcaPi) {
     fMinDCA2PrimaryVtxDeu = dcaDeu;
     fMinDCA2PrimaryVtxP   = dcaP;
@@ -143,6 +151,8 @@ public:
 
   void SetMinITSnCluster(float nClsMin) { fMinITSNcluster = nClsMin; }
   void SetMinTPCcluster(unsigned char minCls) { fMinTPCNcluster = minCls; }
+
+  void SetMaxPtPion(float piPtMax) { fMaxPtPion = piPtMax; }
 
   AliEventCuts fEventCuts; /// Event cuts class
 
@@ -159,11 +169,10 @@ private:
   bool fOnlyTrueCandidates;
 
   /// Control histograms to monitor the filtering
-  TH2D *fHistNSigmaDeu;  //! # sigma TPC fot the deuteron
-  TH2D *fHistNSigmaP;    //! # sigma TPC proton for the positive prong
-  TH2D *fHistNSigmaPi;   //! # sigma TPC pion for the negative prong
-  TH2D *fHistInvMass;    //! # Invariant mass histogram
-  TH2D *fHistTPCdEdx[2]; //! # TPC dE/dx for
+  TH2D *fHistNSigmaDeu; //! # sigma TPC for the deuteron
+  TH2D *fHistNSigmaP;   //! # sigma TPC proton for the positive prong
+  TH2D *fHistNSigmaPi;  //! # sigma TPC pion for the negative prong
+  TH2D *fHistInvMass;   //! # Invariant mass histogram
 
   float fMinCanidatePtToSave; // min candidate pt to save
   float fMaxCanidatePtToSave; // max candidate pt to save
@@ -175,13 +184,17 @@ private:
   float fMaxNSigmaTPCP;   // nSigma TPC limit for proton
   float fMaxNSigmaTPCPi;  // nSigma TPC limit for pion
 
+  float fMaxNSigmaTOFDeu; // nSigma TOF limit for deuteron
+  float fMaxNSigmaTOFP;   // nSigma TOF limit for proton
+  float fMaxNSigmaTOFPi;  // nSigma TOF limit for pion
+
   float fMinCosPA; // minimum cos(poninting angle) accepted
 
   float fMinDCA2PrimaryVtxDeu;
   float fMinDCA2PrimaryVtxP;
   float fMinDCA2PrimaryVtxPi;
 
-  TObjString fCurrentFileName; //!
+  float fMaxPtPion;
 
   std::vector<SHypertriton3> fSHypertriton; //!
   std::vector<RHypertriton3> fRHypertriton; //!

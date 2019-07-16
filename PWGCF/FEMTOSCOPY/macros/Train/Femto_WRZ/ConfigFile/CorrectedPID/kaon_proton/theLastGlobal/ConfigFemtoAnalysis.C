@@ -65,7 +65,7 @@ AliFemtoEventReaderAODChain* GetReader2011(bool mcAnalysis);
 AliFemtoEventReaderAODMultSelection* GetReader2015(bool mcAnalysis)
 {
   AliFemtoEventReaderAODMultSelection* Reader = new AliFemtoEventReaderAODMultSelection();
-  Reader->SetFilterMask(96);
+  Reader->SetFilterMask(128);
   //Reader->SetReadV0(1);
   Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
   Reader->SetEPVZERO(kTRUE);

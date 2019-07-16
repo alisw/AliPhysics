@@ -33,8 +33,20 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     }
     Bool_t IsPrimaryElectron(AliAODMCParticle *p);
     Bool_t IsLF(AliAODMCParticle *parent);
-    Bool_t IsHF(AliAODMCParticle *parent);
+    Bool_t IsSemileptonicDecayFromHF(AliAODMCParticle *parent);
     Bool_t IsEWBoson(AliAODMCParticle *parent);//parent is electro-weak boson, i.e. W/Z, gamma
+
+    Int_t GetFirstMother(AliAODMCParticle *p){
+      Int_t first_mother_index     = p->GetMother();
+      Int_t first_mother_index_tmp = p->GetMother();
+
+      while(first_mother_index_tmp > -1){
+        first_mother_index = first_mother_index_tmp;
+        AliAODMCParticle *fmp = (AliAODMCParticle*)fMCArray->At(first_mother_index);
+        first_mother_index_tmp = fmp->GetMother();
+      }//end of mother loop
+      return first_mother_index;
+    }
 
     void ClearVectorElement();
     void ClearVectorMemory();
@@ -139,6 +151,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     //MC track info
     vector<vector<Float_t>>fTrackMCMomentum;
     vector<vector<Float_t>>fTrackMCProdVtx;//production vertex in MC for track
+    vector<Int_t>fTrackMCGeneratorIndex;
     vector<Int_t>fTrackMCIndex;
     vector<Int_t>fTrackMCPdgCode;
     vector<Int_t>fTrackMCMotherIndex;
@@ -180,6 +193,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     //MC V0 info //be carefull, there is no TRUE V0 object!
     vector<vector<vector<Float_t>>> fV0MClegMomentum;//N x 2
     vector<vector<vector<Float_t>>> fV0MClegProdVtx;//N x 2
+    vector<vector<Int_t>> fV0MClegGeneratorIndex;//N x 2
     vector<vector<Int_t>> fV0MClegIndex;//N x 2
     vector<vector<Int_t>> fV0MClegPdgCode;//N x 2
     vector<vector<Int_t>> fV0MClegMotherIndex;//N x 2
@@ -191,6 +205,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     Float_t fMCVertex[3];//true vertex in MC
     vector<vector<Float_t>> fMCMomentum;
     vector<vector<Float_t>> fMCProdVtx;//production vertex of true electrons
+    vector<Int_t> fMCGeneratorIndex;
     vector<Int_t> fMCIndex;
     vector<Int_t> fMCPdgCode;
     vector<Int_t> fMCMotherIndex;
@@ -201,7 +216,7 @@ class AliAnalysisTaskReducedTreeDS : public AliAnalysisTaskSE {
     AliAnalysisTaskReducedTreeDS(const AliAnalysisTaskReducedTreeDS&); // not implemented
     AliAnalysisTaskReducedTreeDS& operator=(const AliAnalysisTaskReducedTreeDS&); // not implemented
 
-    ClassDef(AliAnalysisTaskReducedTreeDS, 8);
+    ClassDef(AliAnalysisTaskReducedTreeDS, 9);
 
 };
 

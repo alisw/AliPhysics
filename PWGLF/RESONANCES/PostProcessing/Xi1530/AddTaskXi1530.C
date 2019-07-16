@@ -1,7 +1,7 @@
 AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
-                                     , const char *option = "LHC16k"
+                                     , const char *option = "SYS_Mix"
                                      , int nmix=20
-                                     , const char* suffix = "")
+                                     , const char* suffix = "MB")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -11,7 +11,7 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
         return 0x0;
     }
     TString foption = option;
-    AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(Form("%s%s", taskname,suffix), Form("%s_%s", taskname, option));
+    AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(Form("%s%s", taskname,suffix), option);
     taskXi1530->fEventCuts.fCentralityFramework = 1;
     std::cout << "AliAnaylsisTaskXi1530:: Option: " << option << std::endl;
     if(foption.Contains("MC")){
@@ -39,6 +39,7 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
         std::cout << "AliAnaylsisTaskXi1530:: Ap mode " << std::endl;
     }
     if(foption.Contains("Mix")){
+        taskXi1530->SetnMix(nmix);
         taskXi1530->SetMixing(kTRUE); // default: kFALSE
         std::cout << "AliAnaylsisTaskXi1530:: Event Mix(" << nmix << ") mode " << std::endl;
     } 
@@ -60,7 +61,6 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
         taskXi1530->SetExoticFinder(kTRUE);  // default: kFALSE
         std::cout << "AliAnaylsisTaskXi1530:: ExoticFinder mode " << std::endl;
     }
-    taskXi1530 -> SetnMix(nmix);
     
     if(!taskXi1530) return 0x0;
     mgr->AddTask(taskXi1530);

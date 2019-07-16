@@ -824,9 +824,9 @@ void AliVertexerHyperTriton2Body::SelectTracks(AliESDEvent *event, std::vector<i
         const int index = int(esdTrack->GetSign() < 0.);
         if (std::abs(fPID->NumberOfSigmasTPC(esdTrack, AliPID::kHe3)) < 5 &&
             fHe3Cuts->AcceptTrack(esdTrack))
-            tracks[0][index].push_back(i);
+            tracks[index][0].push_back(i);
         else if (fPiCuts->AcceptTrack(esdTrack))
-            tracks[1][index].push_back(i);
+            tracks[index][1].push_back(i);
     }
 }
 
@@ -864,13 +864,13 @@ void AliVertexerHyperTriton2Body::SelectTracksMC(AliESDEvent *event, AliMCEvent 
         if (pion == 1)
         {
             if (fPiCuts->AcceptTrack(esdTrack))
-                tracks[pion][index].push_back(i);
+                tracks[index][pion].push_back(i);
         }
 
         else
         {
             if (fHe3Cuts->AcceptTrack(esdTrack))
-                tracks[pion][index].push_back(i);
+                tracks[index][pion].push_back(i);
         }
     }
 }

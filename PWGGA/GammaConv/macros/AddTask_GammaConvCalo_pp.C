@@ -1648,7 +1648,7 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 813){ // new default 2019 june 21
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
   } else if ( trainConfig == 814){ // No non-lin corr, use with Run2Tune / Run2TuneMC
-    cuts.AddCutPCMCalo("00010113","00200009327000008250400000","244665107a012200000","0h63103100000010"); // No NL
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","244660007a012200000","0h63103100000010"); // No NL
   } else if ( trainConfig == 815){ // Sphericity PCMPHOS
     cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","244665107a012200000","0h63103100000010"); // No NL
     cuts.AddCutPCMCalo("h0510113","00200009f9730000dge0400000","244665107a012200000","0h63103100000010"); // No NL
@@ -1717,7 +1717,7 @@ void AddTask_GammaConvCalo_pp(
 
   //PCM-PHOS pp HBT studies <- reserved 850 to 860
   } else if ( trainConfig == 850){ // Default cut, with TM
-    cuts.AddCutPCMCalo("00010113","00600009a27000006250800000","244665107a012200000","0h63103100000010"); // INT7
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","244665107a012200000","0h63103100000010"); // INT7
 
   //*************************************************************************************************
   // 13 TeV PHOS - setup
@@ -2203,6 +2203,15 @@ void AddTask_GammaConvCalo_pp(
   } else if (generatorName.Contains("LHC14e2c")){
     energy = "8TeV";
     mcName = "Phojet_LHC14e2c";
+  } else if (generatorName.Contains("LHC16c2")){
+    energy            = "8TeV";
+    mcName            = "LHC16c2";
+  } else if (generatorName.Contains("LHC16h3")){
+    energy            = "5TeV";
+    mcName            = "PythiaJets_LHC16h3";
+  } else if (generatorName.Contains("LHC18b8")){
+    energy            = "5TeV";
+    mcName            = "PythiaJets_LHC18b8";
   }
 
   EventCutList->SetOwner(kTRUE);

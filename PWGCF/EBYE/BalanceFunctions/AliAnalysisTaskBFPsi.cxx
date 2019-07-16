@@ -257,10 +257,12 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fExcludeSecondariesInMC(kFALSE),
   fExcludeWeakDecaysInMC(kFALSE),
   fExcludeResonancesInMC(kFALSE),
+  fExcludeResonancesLabel(kFALSE),
   fExcludeElectronsInMC(kFALSE),
   fExcludeParticlesExtra(kFALSE),
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1),
+  fMotherPDGCodeToExclude(-1),
   fExcludeResonancePDGInMC(-1),
   fIncludeResonancePDGInMC(-1),
   fExcludeInjectedSignals(kFALSE),
@@ -1195,7 +1197,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
   if((lMultiplicityVar = IsEventAccepted(eventMain)) < 0){ 
     return;
   }
-    
+  
   // get the reaction plane
   if(fEventClass != "Multiplicity" && gAnalysisLevel!="AODnano") {
     gReactionPlane = GetEventPlane(eventMain);
@@ -1278,7 +1280,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 	  fHistMixEvents->Fill(lMultiplicityVar, nMix);
 	  fHistMixTracks->Fill(lMultiplicityVar, pool->NTracksInPool());
 
-	  // Fill mixed-event histos here  
+	  // Fill mixed-event histos here 
 	  for (Int_t jMix=0; jMix<nMix; jMix++) 
 	    {
 	      TObjArray* tracksMixed = pool->GetEvent(jMix);
@@ -3980,10 +3982,10 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  if(!particle) continue;
 	  
 	  Int_t gPdgCode = particle->GetPdgCode();
-	  if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+         if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
 	    continue;
-	}
-	
+ 	}
+
 	//Use the acceptance parameterization
 	if(fAcceptanceParameterization) {
 	  Double_t gRandomNumber = gRandom->Rndm();
@@ -4052,6 +4054,30 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 
 
+	//Exclude resonances using mother's label
+       Int_t kMotherLabel = -1.;
+
+       if(fExcludeResonancesLabel) {
+
+          TParticle *particle = track->Particle();
+          if(!particle) continue;
+
+          Int_t gMotherIndex = particle->GetFirstMother();
+          if(gMotherIndex != -1) {
+            AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(event->GetTrack(gMotherIndex));
+            if(motherTrack) {
+              TParticle *motherParticle = motherTrack->Particle();
+              if(motherParticle) {
+              
+	        Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+              
+                  if(TMath::Abs(fMotherPDGCodeToExclude) == TMath::Abs(pdgCodeOfMother))
+                      kMotherLabel = TMath::Abs(motherTrack->GetLabel());
+ 	
+              }
+            }
+          }
+        }
 
 	//Exclude resonances with a specific PDG value
 	if(fExcludeResonancePDGInMC > -1) {
@@ -4224,10 +4250,16 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 	
 	if(fUseRapidity){// use rapidity instead of pseudorapidity in correlation histograms
-	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction)); 
-	} 
+	  if(fExcludeResonancesLabel)
+	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, -1, kMotherLabel));
+	  else
+         tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, -1));
+       } 
 	else{
-	  tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction)); 
+         if(fExcludeResonancesLabel) 
+	  tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction, -1, kMotherLabel));
+	  else 
+	  tracksAccepted->Add(new AliBFBasicParticle(vY, vPhi, vPt, vCharge, correction, -1)); 
 	}
 	nAcceptedTracks += 1;
       } //track loop

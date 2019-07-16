@@ -67,7 +67,7 @@ void runCorrelationsStudiesConfigMacro() {
 
   /* the number of files we want to test */
   nNoOfInputFiles = 30;
-  nNoOfTestFiles = 2;
+  nNoOfTestFiles = 4;
 
   /* load the run numbers */
   // load2010bTestRunNumber();
@@ -90,7 +90,7 @@ void runCorrelationsStudiesConfigMacro() {
   // load2017nRunNumbers();
   // loadAMPT2760RunNumbers();
   // load2018qRunNumbers();
-  load2018rMCRunNumbers();
+  load2018rRunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
 

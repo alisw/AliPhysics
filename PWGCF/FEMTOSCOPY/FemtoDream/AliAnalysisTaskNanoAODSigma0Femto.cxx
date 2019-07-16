@@ -181,6 +181,9 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   if (!fEvtCuts->isSelected(fEvent))
     return;
 
+  // Reset the pair cleaner
+  fPairCleaner->ResetArray();
+
   // PROTON SELECTION
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
@@ -232,10 +235,18 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
   std::vector<AliFemtoDreamBasePart> Gammas;
   fPhotonCuts->PhotonCuts(aod, fMCEvent, fGammaArray, Gammas);
 
-  // Sigma0 selection
-  fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, Decays);
+  // Do some cleaning already here
+  if (fFemtoJanitor) {
+    fPairCleaner->CleanDecay(&Decays, 0);
+    fPairCleaner->CleanDecay(&AntiDecays, 1);
+    fPairCleaner->CleanDecay(&Gammas, 2);
+    fPairCleaner->CleanDecayAndDecay(&Decays, &AntiDecays, 3);
+    fPairCleaner->CleanDecayAndDecay(&Decays, &Gammas, 4);
+    fPairCleaner->CleanDecayAndDecay(&AntiDecays, &Gammas, 5);
+  }
 
   // Sigma0 selection
+  fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, Decays);
   fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, Gammas, AntiDecays);
 
   std::vector<AliFemtoDreamBasePart> sigma0particles, sigma0sidebandUp,
@@ -258,7 +269,6 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserExec(Option_t * /*option*/) {
     CastToVector(antiSigma0photon, fAntiSigmaCuts->GetPhoton());
   }
 
-  fPairCleaner->ResetArray();
   if (fFemtoJanitor) {
     fPairCleaner->CleanTrackAndDecay(&Particles, &sigma0particles, 0);
     fPairCleaner->CleanTrackAndDecay(&AntiParticles, &antiSigma0particles, 1);
@@ -395,7 +405,7 @@ void AliAnalysisTaskNanoAODSigma0Femto::UserCreateOutputObjects() {
   fLambda->GetNegDaughter()->SetUseMCInfo(fIsMC);
 
   const int nPairs = (fCheckDaughterCF) ? 14 : 6;
-  fPairCleaner = new AliFemtoDreamPairCleaner(nPairs, 0,
+  fPairCleaner = new AliFemtoDreamPairCleaner(nPairs, 6,
                                               fConfig->GetMinimalBookingME());
   fPartColl = new AliFemtoDreamPartCollection(fConfig,
                                               fConfig->GetMinimalBookingME());
