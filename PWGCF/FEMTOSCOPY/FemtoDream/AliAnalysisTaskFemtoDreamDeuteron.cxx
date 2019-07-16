@@ -104,7 +104,6 @@ void AliAnalysisTaskFemtoDreamDeuteron::InitHistograms(AliFemtoDreamTrackCuts *t
 }
 
 void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
-std::cout << "In user create output objects \n"; 
   fOutput = new TList();
   fOutput->SetName("Output"); // Every output objects needs a name, be careful names can collide!
   fOutput->SetOwner();        // This tells ROOT that this list belongs to the top list / top object
@@ -268,7 +267,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
         }
         if (fTrackCutsProtonDCA->isSelected(fTrack)) {
           //.. we add it to our particle buffer
-	  //fTrack->SetCPA(gRandom->Uniform());
+	  fTrack->SetCPA(gRandom->Uniform());
           DCAProtons.push_back(*fTrack);
         }
         if (fTrackCutsProtonMass->isSelected(fTrack)) {
