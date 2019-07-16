@@ -175,7 +175,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     // TrackCuts for Xi1530--------------------------------------------------
     // Primary pion cut(Xi1530pion)
     fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
-
+    fTrackCuts->SetPtRange(0.15, 1e20);
+    fTrackCuts->SetEtaRange(-fXi1530PionEtaCut, fXi1530PionEtaCut);
+    fTrackCuts->SetMaxDCAToVertexZ(fXi1530PionZVertexCut_loose);
     // secondary particle cut(Xi daugthers)
     fTrackCuts2 = new AliESDtrackCuts();
     // fTrackCuts2 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not
@@ -442,6 +444,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects() {
     fHistos->CreateTH1("hTotalInvMass_data", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_LS", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_Mix", "", 2000, 0.5, 2.5, "s");
+
+    fHistos->CreateTH1("hX", "", 400, -2, 2, "s");
+    fHistos->CreateTH1("hY", "", 400, -2, 2, "s");
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -716,7 +721,11 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
     const UInt_t ntracks = fEvt->GetNumberOfTracks();
     goodtrackindices.clear();
     AliVTrack* track;
-    Double_t trackPos[3];
+    fTrackCuts->SetMaxDCAToVertexZ(fXi1530PionZVertexCut_loose);
+
+    Float_t b[2];
+    Float_t bCov[3];
+    Double_t pionZ;
 
     for (UInt_t it = 0; it < ntracks; it++) {
         if (fEvt->IsA() == AliESDEvent::Class()) {
@@ -725,6 +734,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
                 continue;
             if (!fTrackCuts->AcceptTrack((AliESDtrack*)track))
                 continue;
+            ((AliESDtrack*)track)->GetImpactParameters(b, bCov);
         }  // ESD Case
         else {
             track = (AliAODTrack*)fEvt->GetTrack(it);
@@ -734,19 +744,20 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection() {
                 AliInfo("Track can't pass the filter bit!");
                 continue;
             }
+            ((AliAODTrack*)track)->GetImpactParameters(b, bCov);
+            Double_t pionPt = track->Pt();
+            
+            if (abs(track->Eta()) > fXi1530PionEtaCut)
+                continue;
+            if (pionZ > fXi1530PionZVertexCut_loose)
+                continue;
+            if (pionPt < 0.15)
+                continue;
         }  // AOD Case
-        track->GetXYZ(trackPos);
+        pionZ = b[1];
         Double_t fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
-        Double_t pionZ = abs(trackPos[2] - fZ);
-        Double_t pionPt = track->Pt();
 
         if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose)
-            continue;
-        if (abs(track->Eta()) > fXi1530PionEtaCut)
-            continue;
-        if (pionZ > fXi1530PionZVertexCut_loose)
-            continue;
-        if (pionPt < 0.15)
             continue;
         // if (fabs(track->M() - pionmass) > 0.007) continue;
         if (fQA) {
@@ -1223,6 +1234,10 @@ void AliAnalysisTaskXi1530::FillTracks() {
     fCovMatrix[0] = 1, fCovMatrix[2] = 1, fCovMatrix[5] = 1, fCovMatrix[9] = 1,
     fCovMatrix[14] = 1, fCovMatrix[20] = 1;
     AliESDtrack* fXiTrack = new AliESDtrack();  // As a ESD Track
+    // for DCA value
+    Float_t b[2];
+    Float_t bCov[3];
+    Double_t pionZ;
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
@@ -1325,9 +1340,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                 }
 
                 // Xi1530Pion DCA zVetex Check
-                Double_t trackPos[3];
-                track1->GetXYZ(trackPos);
-                Double_t pionZ = abs(trackPos[2] - fZ);
+                ((AliESDtrack*)track1)->GetImpactParameters(b, bCov);
+                Double_t pionZ = b[1];
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)) {
                     AliInfo(Form("pionZ! %f %s", pionZ,
@@ -1442,7 +1456,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 // PropagateToDCA cut
-                track1->GetXYZ(PiX);
+                ((AliESDtrack*)track1)->GetXYZ(PiX);
                 AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
                 if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) {
                     AliInfo(Form("PropagateToDCA! %s",
@@ -1768,9 +1782,8 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 // Xi1530Pion DCA zVetex Check
-                Double_t trackPos[3];
-                track1->GetXYZ(trackPos);
-                Double_t pionZ = abs(trackPos[2] - fZ);
+                ((AliESDtrack*)track1)->GetImpactParameters(b, bCov);
+                Double_t pionZ = b[1];
                 if (pionZ > fXi1530PionZVertexCut)
                     continue;
 
@@ -1805,7 +1818,7 @@ void AliAnalysisTaskXi1530::FillTracks() {
                     continue;
 
                 // PropagateToDCA cut
-                track1->GetXYZ(PiX);
+                ((AliESDtrack*)track1)->GetXYZ(PiX);
                 AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
                 if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3)))
                     continue;
@@ -1837,6 +1850,10 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
     fCovMatrix[0] = 1, fCovMatrix[2] = 1, fCovMatrix[5] = 1, fCovMatrix[9] = 1,
     fCovMatrix[14] = 1, fCovMatrix[20] = 1;
     AliESDtrack* fXiTrack = new AliESDtrack();  // As a ESD Track
+    // for DCA value
+    Float_t b[2];
+    Float_t bCov[3];
+    Double_t pionZ;
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
@@ -1869,7 +1886,6 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 bTrackXi, AliPID::kPion);  // bachelor is always pion
 
             temp1.SetXYZM(Xicandidate->MomXiX(), Xicandidate->MomXiY(),
-
                           Xicandidate->MomXiZ(), Xicandidate->MassXi());
             // for PropogateToDCA
             xiVtx[0] = Xicandidate->DecayVertexXiX();
@@ -1934,9 +1950,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                 }
 
                 // Xi1530Pion DCA zVetex Check
-                Double_t trackPos[3];
-                track1->GetXYZ(trackPos);
-                Double_t pionZ = abs(trackPos[2] - fZ);
+                ((AliAODTrack*)track1)->GetImpactParameters(b, bCov);
+                Double_t pionZ = b[1];
                 if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") &&
                     (pionZ > fXi1530PionZVertexCut)){
                     AliInfo(Form("pionZ! %f %s", pionZ,
@@ -2054,7 +2069,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
 
                 // PropagateToDCA cut
-                track1->GetXYZ(PiX);
+                ((AliAODTrack*)track1)->GetXYZ(PiX);
                 AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
                 if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))){
                     AliInfo(Form("PropagateToDCA! %s",
@@ -2374,9 +2389,8 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
 
                 // Xi1530Pion DCA zVetex Check
-                Double_t trackPos[3];
-                track1->GetXYZ(trackPos);
-                Double_t pionZ = abs(trackPos[2] - fZ);
+                ((AliAODTrack*)track1)->GetImpactParameters(b, bCov);
+                Double_t pionZ = b[1];
                 if (pionZ > fXi1530PionZVertexCut)
                     continue;
 
@@ -2416,7 +2430,7 @@ void AliAnalysisTaskXi1530::FillTracksAOD() {
                     continue;
 
                 // PropagateToDCA cut
-                track1->GetXYZ(PiX);
+                ((AliAODTrack*)track1)->GetXYZ(PiX);
                 AliVertex* XiStarVtx = new AliVertex(PiX, 0, 0);
                 if (!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3)))
                     continue;
