@@ -22,10 +22,10 @@
 class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskFemtoDreamDeuteron();
-  AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC, const char* CentEst);
+  AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC);
   virtual ~AliAnalysisTaskFemtoDreamDeuteron();
   Float_t GetMass2sq(AliFemtoDreamTrack *track);
-  void InitHistograms(AliFemtoDreamTrackCuts *trkCuts, char *trkCutsName, char *MCName);
+  void InitHistograms(AliFemtoDreamTrackCuts *trkCuts, TString trkCutsName, TString MCName);
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *){};
@@ -43,7 +43,6 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   bool fIsMC;                               //
-  const char* fCentEst;			    //
   TList *fOutput;                           //!  No need to stream this, are compiled
   AliFemtoDreamEvent *fEvent;               //!  on Runtime
   AliFemtoDreamTrack *fTrack;               //!
@@ -65,7 +64,7 @@ class AliAnalysisTaskFemtoDreamDeuteron : public AliAnalysisTaskSE {
   TH2F* fPRestMass; //!
   TH2F* fAntiPRestMass; //! 
   int fTrackBufferSize;                     //
-  ClassDef(AliAnalysisTaskFemtoDreamDeuteron,1)
+  ClassDef(AliAnalysisTaskFemtoDreamDeuteron,3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOTUTORIAL_H_ */
