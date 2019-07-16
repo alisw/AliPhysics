@@ -26,6 +26,7 @@ class AliReducedPairInfo;
 class AliAnalysisUtils;
 class AliFlowTrackCuts;
 class AliMCEvent;
+class AliTimeRangeCut;
 //class AliFlowBayesianPID;
 
 //_________________________________________________________________________
@@ -218,6 +219,8 @@ public:
 
   AliReducedBaseEvent *fReducedEvent;     //! reduced event wise information
   TBits* fUsedVars;                       // used variables for the AliDielectronVarManager
+  
+  AliTimeRangeCut     fTimeRangeCut;      //! time range selection based on OADB
   
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information

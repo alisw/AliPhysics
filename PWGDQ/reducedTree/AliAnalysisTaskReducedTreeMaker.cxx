@@ -69,6 +69,7 @@
 #include <AliCentrality.h>
 #include "AliMagF.h"
 #include "TGeoGlobalMagField.h"
+#include "AliTimeRangeCut.h"
 #include "AliDielectronVarManager.h"
 //#include "AliFlowTrackCuts.h"
 #include "AliReducedEventInfo.h"
@@ -157,7 +158,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fTree(0x0),
   fNevents(0),
   fReducedEvent(0x0),
-  fUsedVars(0x0)
+  fUsedVars(0x0),
+  fTimeRangeCut()
 {
   //
   // Constructor
@@ -232,7 +234,8 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fTree(0x0),
   fNevents(0),
   fReducedEvent(0x0),
-  fUsedVars(0x0)
+  fUsedVars(0x0),
+  fTimeRangeCut()
 {
   //
   // Constructor
@@ -1060,7 +1063,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     if(fAnalysisUtils->IsPileUpMV(event))              // multi-vertexer pileup, with min weighted distance 5
       fReducedEvent->fEventTag |= (ULong64_t(1)<<4);
   }
-  
+    
   if(event->IsPileupFromSPD(3,0.6,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<5);
   if(event->IsPileupFromSPD(4,0.6,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<6);
   if(event->IsPileupFromSPD(5,0.6,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<7);
@@ -1069,6 +1072,12 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   if(event->IsPileupFromSPD(4,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<10);
   if(event->IsPileupFromSPD(5,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<11);
   if(event->IsPileupFromSPD(6,0.8,3.,2.,5.)) fReducedEvent->fEventTag |= (ULong64_t(1)<<12);
+  
+  // Apply the time range cut needed to reject events with bad TPC pid in some chambers
+  // For details see: https://indico.cern.ch/event/830757/contributions/3479738/attachments/1873483/3083952/IArsene_DPG_2019July3.pdf
+  fTimeRangeCut.InitFromEvent(InputEvent());
+  if(fTimeRangeCut.CutEvent(InputEvent())) fReducedEvent->fEventTag |= (ULong64_t(1)<<15);
+  
   
   fReducedEvent->fRunNo       = event->GetRunNumber();
   AliVVertex* eventVtx = 0x0;
