@@ -142,15 +142,18 @@ Int_t AliDirList::Write(const char *name, Int_t, Int_t)
    Int_t sum = 0;
    if (name && name[0] != '\0')
       SetName(name);
-   fDir = gDirectory->GetDirectory(GetName());
+   TDirectory *crtdir = gDirectory;
+   fDir = crtdir->GetDirectory(GetName());
    if (!fDir)
-      fDir = gDirectory->mkdir(GetName());
+      fDir = crtdir->mkdir(GetName());
    if (!fDir->InheritsFrom(TDirectoryFile::Class())) {
       Error("Write", "Current directory not connected to a file. List not written");
+      crtdir->cd();
       return 0;
    }
    fDir->cd();
    for (auto &h : fList)
       sum += h.Get()->Write();
+   crtdir->cd();
    return sum;
 }
