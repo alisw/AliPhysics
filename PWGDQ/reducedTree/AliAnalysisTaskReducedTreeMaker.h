@@ -7,6 +7,7 @@
 
 #include <TList.h>
 #include <AliAnalysisTaskSE.h>
+#include <AliTimeRangeCut.h>
 #include <AliSignalMC.h>
 
 class AliAnalysisCuts;
@@ -68,6 +69,7 @@ public:
   
   // Cuts for selection of event to be written to tree
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
+  void SetTimeRangeReject(Bool_t reject=kTRUE) {fTimeRangeReject = reject;}
   // Cuts for selecting tracks included in the tree
   void SetTrackFilter(AliAnalysisCuts * const filter);
   void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE);
@@ -218,6 +220,9 @@ public:
 
   AliReducedBaseEvent *fReducedEvent;     //! reduced event wise information
   TBits* fUsedVars;                       // used variables for the AliDielectronVarManager
+  
+  AliTimeRangeCut     fTimeRangeCut;      //! time range selection based on OADB
+  Bool_t              fTimeRangeReject;   //  do not accept events if these are marked by fTimeRangeCut
   
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information

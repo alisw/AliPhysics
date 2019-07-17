@@ -54,7 +54,6 @@ public:
     virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
     virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
     virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
-    virtual void  SetMeanChT(const Double_t meanChT){fMeanChT = meanChT;}
     virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
     virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
     virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
@@ -62,13 +61,12 @@ public:
     virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
     virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
     virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
-    virtual void  SetPeriod(const char* period) { fPeriod = period; }
+    virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
+    virtual void  SetMeanCh(const Double_t MeanCh) { fMeanChT = MeanCh; }
     
 private:
 
 
-//    virtual void AnalyzeESD();
-//    TObjArray* PrefilteredTracks(AliESDEvent* esd);
     AliESDtrack* GetLeadingTrack();
     TParticle* GetLeadingTrackMC(TObjArray* fTrks);
     TObjArray* SortRegions(AliESDtrack* Ltrk);
@@ -87,8 +85,9 @@ private:
     Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
     Float_t GetMaxDCApTDep( TF1 *fcut, Double_t pt );
     virtual void SetTrackCuts(AliAnalysisFilter* fTrackFilter);
-    Double_t EtaCalibration(const Double_t Eta);
-    Double_t EtaCalibrationEl(const Double_t Eta);
+    Double_t EtaCalibration(const Int_t centrality, const Double_t Eta);
+    Double_t EtaCalibrationEl(const Int_t centrality, const Double_t Eta);
+    Int_t GetIndex();
     
     static const Double_t fgkClight;   // Speed of light (cm/ps)
     
@@ -105,7 +104,6 @@ private:
     AliAnalysisFilter* fTrackFilter;
     AliAnalysisUtils* utils;
     TString       fAnalysisType;        //  "ESD" or "AOD"
-    const Char_t* fPeriod;        //  "ESD" or "AOD"
     Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
     Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
     TRandom*      fRandom;              //! random number generator
@@ -124,6 +122,7 @@ private:
     const Double_t fDeDxMIPMax;
     const Double_t fdEdxHigh;
     const Double_t fdEdxLow;
+    TString  fPeriod;
     Double_t fMeanChT;
     
     //
@@ -146,6 +145,7 @@ private:
     Bool_t       fdEdxCalibrated;
     Bool_t       fMakePid;
     Bool_t       fLowPt;
+//    Int_t  fLHC16l;
     TH1F* fMultN;
     TH1F* fPtN;
     TH1F* fDphiN;
@@ -174,7 +174,6 @@ private:
     TH2D *hPlateauVsEta[5];
     TProfile *pPlateauVsEta[5];
     TH2D *hPhi[5];
-    TH1D *hphi[3][5];
     TH2D     *hMIPVsPhi[5][4];
     TProfile *pMIPVsPhi[5][4];
     TH2D     *hPlateauVsPhi[5][4];
@@ -228,3 +227,4 @@ private:
 };
 
 #endif
+

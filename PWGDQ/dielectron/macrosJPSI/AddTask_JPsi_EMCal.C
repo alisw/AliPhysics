@@ -12,7 +12,9 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
             Bool_t alienconf = kFALSE,
             Bool_t V0correction = kFALSE,
             Bool_t SPDcorrection = kTRUE,
-            TString cfg = "Config_JPsi_EMCal"
+            TString cfg = "Config_JPsi_EMCal",
+            Bool_t is_ESparse,
+            Bool_t is_MSparse
 			
                                                //kFALSE, kFALSE, "16l", 4, 0, kFALSE, "profile_SPD_16l", "2dprofile_V0_16l", kFALSE, kFALSE, kFALSE, kFALSE, "Config_JPsi_EMCal"
 )
@@ -77,7 +79,7 @@ AliAnalysisTask_JPsi_EMCal *AddTask_JPsi_EMCal(
 
   
 	//gROOT->LoadMacro("Config_JPsi_EMCal.C");
-	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender);
+	AliAnalysisTask_JPsi_EMCal *task = Config_JPsi_EMCal(isMC,isAOD, period,trigger_index, config, isTender, is_ESparse, is_MSparse);
 	
 	//_______________________
 	//Trigger

@@ -197,13 +197,8 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
   {
     printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Apply time cut:");
     reader->SwitchOnUseEMCALTimeCut();
-    reader->SetEMCALTimeCut(-25,20);
-    if ( year > 2013 ) 
-    {
-      reader->SetEMCALTimeCut(-20,15);
-      printf(" -20 ns < t < 15 ns\n");
-    }
-    else printf(" -25 ns < t < 20 ns\n");
+    reader->SetEMCALTimeCut(-30,30); // rather open, until high pT calibration is improved
+    printf(" -30 ns < t < 30 ns\n");
   }
   
   if ( calorimeter == "EMCAL" || calorimeter == "DCAL" )

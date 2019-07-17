@@ -10,13 +10,16 @@ Bool_t isAOD = kTRUE,
 char * period  = "16l",
 Int_t trigger_index=0,
 Int_t config=0,
-Bool_t isTender
+Bool_t isTender,
+Bool_t is_ESparse,
+Bool_t is_MSparse
+                                              
 )
 
 {
 ////____________
 ///Task config
-    printf("Config loaded properly\n");
+   // printf("Config loaded properly\n");
 	AliAnalysisTask_JPsi_EMCal *task = new AliAnalysisTask_JPsi_EMCal();
 	printf("task loaded ------------------------ %p\n ", task);
     
@@ -26,6 +29,10 @@ Bool_t isTender
 	if(period == "11d")task->SetPeriod2011();
     
     if(isTender) task->SetUseTender();
+    
+    if(is_ESparse)task->Set_Fill_ESparse();
+    if(is_MSparse)task->Set_Fill_MSparse();
+    
     
     //event cuts
     task->SetVertexCut(10.0);
@@ -116,10 +123,10 @@ Bool_t isTender
     
 ///_______________________________________________________________________________________________________________
 
-	printf("*************************************\n");
-	printf("Configuring standard Task:\n");
+	//printf("*************************************\n");
+	//printf("Configuring standard Task:\n");
 	//pid->PrintStatus();
-	printf("*************************************\n");
+	//printf("*************************************\n");
 
 	return task;
 }

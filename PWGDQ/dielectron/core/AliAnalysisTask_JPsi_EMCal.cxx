@@ -114,6 +114,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 
 ,fIsMC(0)
 ,fUseTender(kFALSE)
+,fFill_ESparse(kFALSE)
+,fFill_MSparse(kFALSE)
 
 //new Tender organization, using global variables
 ,fTenderClusterName("caloClusters")
@@ -225,8 +227,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal(const char *name)
 ,fVtxZ_V0(0)
 ,fVtxZ_SPD(0)
 ,fV0_SPD(0)
-,fV0(0)
-,fSPD(0)
+,fV0_nch(0)
+,fSPD_nch(0)
 
 
 ,fNClusters(0)
@@ -405,6 +407,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 
 ,fIsMC(0)
 ,fUseTender(kFALSE)
+,fFill_ESparse(kFALSE)
+,fFill_MSparse(kFALSE)
 
 //new Tender organization, uisng global variables
 ,fTenderClusterName("caloClusters")
@@ -537,8 +541,8 @@ AliAnalysisTask_JPsi_EMCal::AliAnalysisTask_JPsi_EMCal()
 ,fVtxZ_V0(0)
 ,fVtxZ_SPD(0)
 ,fV0_SPD(0)
-,fV0(0)
-,fSPD(0)
+,fV0_nch(0)
+,fSPD_nch(0)
 
 ,fNClusters(0)
 
@@ -843,20 +847,20 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     //=================================================================================================================================================================
     // Multiplicity histos
     
-    fVtxZ_V0 = new TH2F("fVtxZ_V0","V0 multi vs. VtxZ ;VtxZ; V0 multiplicity",600,-30,30,1500,0,1500);
+    fVtxZ_V0 = new TH2F("fVtxZ_V0","V0 multi vs. VtxZ ;VtxZ; V0 multiplicity",400,-20,20,500,0,1000);
     fOutputList->Add(fVtxZ_V0);
     
-    fVtxZ_SPD = new TH2F("fVtxZ_SPD","SPD multi vs. VtxZ ;VtxZ; SPD multiplicity",600,-30,30,500,0,500);
+    fVtxZ_SPD = new TH2F("fVtxZ_SPD","SPD multi vs. VtxZ ;VtxZ; SPD multiplicity",400,-20,20,250,0,500);
     fOutputList->Add(fVtxZ_SPD);
     
-    fV0_SPD = new TH2F("fV0_SPD","SPD multi vs. V0 ;V0; SPD multiplicity",500,0,500,1500,0,1500);
+    fV0_SPD = new TH2F("fV0_SPD","SPD multi vs. V0 ;V0; SPD multiplicity",250,0,500,50,0,100);
     fOutputList->Add(fV0_SPD);
     
-    fV0 = new TH1F("fV0","V0 ;V0 multiplicity",1500,0,1500);
-    fOutputList->Add(fV0);
+    fV0_nch = new TH2F("fV0_nch","V0 ;nch;V0 multiplicity",500, 0,1000,500,0,1000);
+    fOutputList->Add(fV0_nch);
     
-    fSPD = new TH1F("fSPD","SPD ;SPD multiplicity",500,0,500);
-    fOutputList->Add(fSPD);
+    fSPD_nch = new TH2F("fSPD_nch","SPD ;nch;SPD multiplicity",500, 0,1000,500,0,1000);
+    fOutputList->Add(fSPD_nch);
     
     
 	//=================================================================================================================================================================
@@ -1100,7 +1104,7 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     fvalueMulti = new Double_t[6];
 	
     //electron Sparse
-	Int_t bins[9]={600,300,400,200,200, 200, 120, 6,6}; // pt, TPCnsig, E/p, M20, M02, E, V0, SPD
+	Int_t bins[9]={30,60,20,20,20, 40, 6, 6,6}; // pt, TPCnsig, E/p, M20, M02, E,phi, V0, SPD
 	Double_t xmin[9]={0,-15,0,0,0,0,0,0,0};
 	Double_t xmax[9]={30,15,2,2,2,40,6, 450, 90};
 	fSparseElectron = new THnSparseD ("Electron","Electron",9,bins,xmin,xmax);
@@ -1108,9 +1112,9 @@ void AliAnalysisTask_JPsi_EMCal::UserCreateOutputObjects()
     
     
     //multi Sparse
-    Int_t binsm[6]    =          {200,1000,200,1000,200,1000};
+    Int_t binsm[6]    =          {20,50,20,50,20,100};
     Double_t xminm[6]    =    {-10,0,0,0,0,0};
-    Double_t xmaxm[6]    =    { 10,1000,200,1000,200,1000};
+    Double_t xmaxm[6]    =    { 10,500,200,500,200,1000};
     fSparseMulti         = new THnSparseD ("Multiplicity","Multiplicity;zvtx;V0M;SPDTracklets;Corrected_V0M;Corrected_SPDTracklets;ncharge;",6,binsm,xminm,xmaxm);
     fOutputList->Add(fSparseMulti);
 			
@@ -1241,13 +1245,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     
     //printf("Multiplicity from V0 = %d, multiplicity from SPD =%d, VertexZ = %f\n", fV0Mult, fSPDMult, fZvtx);
     
-    // Multiplicity histos without correction
-    fVtxZ_V0->Fill(fZvtx, fV0Mult);
-    fVtxZ_SPD->Fill(fZvtx, fSPDMult);
-    fV0_SPD->Fill(fV0Mult,fSPDMult);
     
-    fV0->Fill(fV0Mult);
-    fSPD->Fill(fSPDMult);
     
     
     //=======
@@ -1587,9 +1585,17 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
     fvalueMulti[5] = Nch;
     
     
-    fSparseMulti->Fill(fvalueMulti);    // multiplicity from tracklets
+    if(fFill_MSparse)fSparseMulti->Fill(fvalueMulti);    // multiplicity from tracklets
+    
+    // Multiplicity histos WITH correctionS
+    fVtxZ_V0->Fill(fZvtx, fV0Mult_corr2);
+    fVtxZ_SPD->Fill(fZvtx, fSPDMult_corr);
+    fV0_SPD->Fill(fV0Mult_corr2,fSPDMult_corr);
     
     
+    
+    fV0_nch->Fill(Nch, fV0Mult_corr2);
+    fSPD_nch->Fill(Nch,fSPDMult_corr);
     
 	
 //______________________________________________________________________
@@ -2116,7 +2122,7 @@ void AliAnalysisTask_JPsi_EMCal::UserExec(Option_t *)
                 fvalueElectron[7] = fV0Mult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
                 fvalueElectron[8] = fSPDMult;//to check RF in bins of multiplicity (bins not exactly same as in the analysis...)
 				
-				fSparseElectron->Fill(fvalueElectron);
+				if(fFill_ESparse)fSparseElectron->Fill(fvalueElectron);
 				
 			}
 		}

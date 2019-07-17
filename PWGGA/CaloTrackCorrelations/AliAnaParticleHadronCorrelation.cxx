@@ -2687,7 +2687,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],sz.Data()),
          Form("#Delta #varphi vs #Delta #eta vs #it{p}_{T}^{trig} for associated #it{p}_{T} bin [%2.1f,%2.1f]%s", 
               fAssocPtBinLimit[i], fAssocPtBinLimit[i+1],tz.Data()),
-         fNTrigPtBins ,fTrigPtBinLimit[0] , fTrigPtBinLimit[fNTrigPtBins], 
+         nptbins      ,ptmin      ,ptmax      , 
          ndeltaphibins,deltaphimin,deltaphimax,
          ndeltaetabins,deltaetamin,deltaetamax);
         fhDeltaPhiDeltaEtaAssocPtBin[bin]->SetYTitle("#Delta #varphi (rad)");

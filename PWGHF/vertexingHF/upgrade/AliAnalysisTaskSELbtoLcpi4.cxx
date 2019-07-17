@@ -71,15 +71,19 @@ ClassImp(AliAnalysisTaskSELbtoLcpi4);
   fInvMassLbSign5(0),
   fSelMC(0),
   fCountLc(0),
-  fNtupleLambdacUPG(0),
+  fNtupleLambdabUPG(0),
   //fNtupleDiffD0rot(0)
   fFillNtupleSignal(kFALSE), 
   fFillNtupleBackgroundRotated(kFALSE),
-  fFillNtupleBackgroundNonRotated(kFALSE)
+  fFillNtupleBackgroundNonRotated(kFALSE),
+  fCutsond0Lcdaughters(kFALSE)
 {
   //
   // Default constructor.
   //
+  for(Int_t icut=0; icut<2; icut++) fCutD0Daughter[icut]=0.;
+  for(Int_t icut=0; icut<7; icut++) fCutsPerPt[icut]=0.;
+
 }
 
 AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
@@ -106,14 +110,16 @@ AliAnalysisTaskSELbtoLcpi4::AliAnalysisTaskSELbtoLcpi4(const char *name,
   fInvMassLbSign5(0),
   fSelMC(0),
   fCountLc(0),
-  fNtupleLambdacUPG(0),
+  fNtupleLambdabUPG(0),
   //fNtupleDiffD0rot(0)
   fFillNtupleSignal(kFALSE), 
   fFillNtupleBackgroundRotated(kFALSE),
-  fFillNtupleBackgroundNonRotated(kFALSE)
+  fFillNtupleBackgroundNonRotated(kFALSE),
+  fCutsond0Lcdaughters(kFALSE)
 {
   //SetPtBinLimit(fRDCutsAnalysisLc->GetNPtBins()+1,fRDCutsAnalysisLc->GetPtBinLimits());
-
+    for(Int_t icut=0; icut<2; icut++) fCutD0Daughter[icut]=0.;
+    for(Int_t icut=0; icut<7; icut++) fCutsPerPt[icut]=0.;
   //
   // Constructor to be used to create the task.
   // The the URIs specify the resolution files to be used. 
@@ -236,8 +242,12 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
   // AOD primary vertex
   fvtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   if(!fvtx1) return;
+  if(array3Prong==NULL) return;
   Int_t n3Prong = array3Prong->GetEntriesFast();
-
+  //if (array3Prong)std::cout<<"the array is there"<<std::endl;
+  //if(!array3Prong==NULL)
+  //Int_t n3Prong = array3Prong->GetEntriesFast();
+ // else{return;}
 
   AliAODMCHeader *mcHeader = 0;
   mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
@@ -267,7 +277,11 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
     //Additional Cut on Lc 
     // d0p and d0pi of Lc
     //large pt cuts on the d0's of the Lc daughters //keep them out for the moment
-    if(TMath::Abs(d->Getd0Prong(0))<0.002 || (TMath::Abs(d->Getd0Prong(2))<0.002))continue;
+   if (fCutsond0Lcdaughters)
+   {   
+      if(TMath::Abs(d->Getd0Prong(0))<fCutD0Daughter[0] || (TMath::Abs(d->Getd0Prong(2))<fCutD0Daughter[1])) continue;
+   }
+     // if(TMath::Abs(d->Getd0Prong(0))<0.002 || (TMath::Abs(d->Getd0Prong(2))<0.002))continue;
     //Dist12 and Dist23 and DecayLength on Lc are hardcoded at 0.5
     //     if(d->GetDist12toPrim()>1.) continue;
     //     if(d->GetDist23toPrim()>1.) continue;
@@ -282,16 +296,17 @@ void AliAnalysisTaskSELbtoLcpi4::UserExec(Option_t*) {
 void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesArray* arrayMC,AliAODEvent *ev,AliAODMCHeader *mcHeader){
   Int_t countLc=0;
   //lc preliminary large pt cuts:
-  if(d->Pt()>30. || d->Pt()<2.)return;
+  if(d->Pt()>fCutsPerPt[1] || d->Pt()<fCutsPerPt[2]) return;
+  
   //check ID d prongs
   Int_t idProng1 = d->GetProngID(0);
   Int_t idProng2 = d->GetProngID(1);
   Int_t idProng3 = d->GetProngID(2);
 
+  Int_t lc=0;
+
   Int_t labLb=CheckMCLc(d,arrayMC);//after track cuts
-  
-  //AliExternalTrackParam *LcCand_old = new AliExternalTrackParam(d);
-  
+
   AliExternalTrackParam *LcCand = new AliExternalTrackParam;
   LcCand->CopyFromVTrack(d);
 
@@ -313,10 +328,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       HPiAODtrk=0;
       continue;
     }
-   /* if(HPiAODtrk->Pt()>14. || HPiAODtrk->Pt()<2){
-     HPiAODtrk=0;
-      continue;
-    }*/
+  
     //basic PID pion 
     Double_t nsigmatofPi= fPIDResponse->NumberOfSigmasTOF(HPiAODtrk,AliPID::kPion); 
     if(nsigmatofPi>-990. && (nsigmatofPi<-3 || nsigmatofPi>3)){HPiAODtrk=0;continue;}
@@ -347,7 +359,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       continue;
     }
       
-    if(chargedHPi->Pt()>14. || chargedHPi->Pt()<1.){
+    if(chargedHPi->Pt()>fCutsPerPt[3] || chargedHPi->Pt()<fCutsPerPt[4]){
        HPiAODtrk=0;
        delete chargedHPi;
        continue;
@@ -364,9 +376,9 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       HPiAODtrk=0;
       delete chargedHPi;
       continue;
-   }//keep this out because i want large cuts on the d0's of the Lb daughters //wrong I keep them otherwise errors
+   }
       */
-    //end cuts
+ 
     // Construction of Secondary vertex
     //cout << "Building Secondary Vertex" << endl;
 
@@ -427,7 +439,8 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
 
     // Create lbcandidate as AliAODRecoDecayHF2Prong
     AliAODRecoDecayHF2Prong *lbcandProng = new AliAODRecoDecayHF2Prong(vtxAODNew,px,py,pz,d0,d0err,dcaCand);
-    if(lbcandProng->Pt()<4.){//FOR THE MOMENT ONLY CANDIDATES WITH pt>4GeV/c
+    //if(lbcandProng->Pt()<4.){//FOR THE MOMENT ONLY CANDIDATES WITH pt>4GeV/c //old configuration
+    if(lbcandProng->Pt()>fCutsPerPt[5]||lbcandProng->Pt()<fCutsPerPt[6]){
       HPiAODtrk=0;
       delete chargedHPi;
       recoArray->Clear();
@@ -455,7 +468,11 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       Float_t DCALc=d->GetDCA();
       ((TH1F*)fOutput->FindObject("fDCALc"))->Fill(DCALc);
       fSelMC->Fill(8);
+      lc=1;
     }
+
+
+
     Bool_t isHijing = CheckGenerator(HPiAODtrk,d,mcHeader,arrayMC);
     // JJJ - check whether bkg from hijing
     if(lb==0 && !isHijing) continue;
@@ -475,12 +492,12 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
         dgLabelsnr[i] = trknr->GetLabel();
       }
       Int_t LabelPionnr= HPiAODtrk->GetLabel();
-      FillLbHistsnr(lbcandProng,lb,mcHeader,arrayMC,HPiAODtrk,d);
+      FillLbHistsnr(lbcandProng,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev);
     }
     lbcandProng->UnsetOwnPrimaryVtx();
    
     Int_t nRot=13.;
-    //if(lbcandProng->Pt()>=7. && lbcandProng->Pt()<14.)nRot=20.;
+    if(lbcandProng->Pt()>10.)nRot=20.;
     TObjArray *tob=GetArrayCandRotated(ev,lbcandProng,arrayMC,nRot);
 
     Int_t candidates = tob->GetEntriesFast();
@@ -531,7 +548,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillHistos(AliAODRecoDecayHF3Prong* d,TClonesAr
       }
       Int_t LabelPion= HPiAODtrk->GetLabel();
       // if(CountLc(d,HPiAODtrk,arrayMC,labPi2,labLb))countLc++;
-      FillLbHists(lb2,lb,mcHeader,arrayMC,HPiAODtrk,d);
+      FillLbHists(lb2,lb,mcHeader,arrayMC,HPiAODtrk,d, lc, ev);
 
 //      cout << "__________________________________________*Done*__________________________________________" << endl;
       lb2->UnsetOwnPrimaryVtx();
@@ -613,10 +630,12 @@ void AliAnalysisTaskSELbtoLcpi4::UserCreateOutputObjects()
   fOutput->Add(fInvMassLbSign4);
   fOutput->Add(fInvMassLbSign5);
 
-  fNtupleLambdacUPG = new TNtuple("fNtupleLambdacUPG"," Lb ","massCand:ptLc:pt_Prong0:pt_Prong1:d0_Prong1:d0_Prong0:cosThetaStar:Ct:Prodd0:cosp:cospXY:NormDL:ImpPar:dca:signal:rotated");
-  PostData(2,fNtupleLambdacUPG);
+    fNtupleLambdabUPG = new TNtuple("fNtupleLambdabUPG"," Lb ","massCand:ptLb:pt_Prong0:pt_Prong1:d0_Prong1:d0_Prong0:cosThetaStar:Ct:Prodd0:cosp:cospXY:NormDL:ImpPar:dca:signal:rotated:ptLc:d0_Prong0Lc:d0_Prong1Lc:d0_Prong2Lc:pt_Prong0Lc:pt_Prong1Lc:pt_Prong2Lc:dist12Lc:sigmavertLc:distprimsecLc:costhetapointLc:dcaLc:signalLc");
+  PostData(2,fNtupleLambdabUPG);
 
-
+  /*fNtupleLambdacUPG = new TNtuple("fNtupleLambdacUPG"," Lc ","ptLc:d0_Prong0:d0_Prong1:d0_Prong2:pt_Prong0:pt_Prong1:pt_Prong2:dist12:sigmavert:distprimsec:costhetapoint:dca:signal");
+  PostData(3,fNtupleLambdacUPG);
+   */
 //  fNtupleDiffD0rot = new TNtuple("fNtupleDiffD0rot"," diff d0 rot vs angle ","d0_1:d0_2:d0_3:d0_4:d0_5:d0_6:d0_7:d0_8:d0_9:d0_10:d0_11:d0_12:d0_13");
 //  PostData(7,fNtupleDiffD0rot);
 
@@ -940,7 +959,7 @@ void AliAnalysisTaskSELbtoLcpi4::Terminate(Option_t */*option*/)
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
   fHistNEventsCuts = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEventsCuts"));
   fHistNEventsCutsLb = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEventsCutsLb"));
-  fNtupleLambdacUPG = dynamic_cast<TNtuple*>(GetOutputData(2));
+  fNtupleLambdabUPG = dynamic_cast<TNtuple*>(GetOutputData(2));
   if (!fOutput) {
     printf("ERROR: fOutput not available\n");
     return;
@@ -949,7 +968,7 @@ void AliAnalysisTaskSELbtoLcpi4::Terminate(Option_t */*option*/)
   return;
 }
 //------------------------------------------------------------------------
-void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d){
+void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d, Int_t lc, AliAODEvent *ev){
   //ptlb cut
 
   Bool_t gen = CheckGenerator(pion,d,mcHeader,arrayMC);
@@ -971,7 +990,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   if(ptCandlb>=14.) iPtBinlb=5;
 
   //fill ntuple
-  Float_t lbVarC[16] = {0};
+  Float_t lbVarC[29] = {0};
   lbVarC[0] = massCandLb;
   lbVarC[1] = ptCandlb;
   lbVarC[2] = part->PtProng(0);
@@ -988,6 +1007,19 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
   lbVarC[13] = part->GetDCA();
   lbVarC[14] = lb;
   lbVarC[15] = 1; // rotated
+  lbVarC[16] = d->Pt();
+  lbVarC[17] = d->Getd0Prong(0);
+  lbVarC[18] = d->Getd0Prong(1);
+  lbVarC[19] = d->Getd0Prong(2);
+  lbVarC[20] = d->PtProng(0);
+  lbVarC[21] = d->PtProng(1);
+  lbVarC[22] = d->PtProng(2);
+  lbVarC[23] = d->GetDist12toPrim();
+  lbVarC[24] = d->GetSigmaVert(ev);
+  lbVarC[25] = d->GetDist23toPrim();
+  lbVarC[26] = d->CosPointingAngle();
+  lbVarC[27] = d->GetDCA();
+  lbVarC[28] = lc;
 
   if(lb==1){ //
     if(iPtBinlb==0)((TH1F*)fOutput->FindObject("fMassUpg_pt0lb"))->Fill(massCandLb);
@@ -996,8 +1028,6 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
     if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lb"))->Fill(massCandLb);
     if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lb"))->Fill(massCandLb);
     if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lb"))->Fill(massCandLb);
-      if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fd0Lcprong0"))->Fill(d->Getd0Prong(0));
-      if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fd0Lcprong1"))->Fill(d->Getd0Prong(2));
       
       
     // note - don't fill rotated signal (not needed)
@@ -1011,12 +1041,10 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHists(AliAODRecoDecayHF2Prong *part,Int_t
       if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbbgOnly"))->Fill(massCandLb);
       if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbbgOnly"))->Fill(massCandLb);
       if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbbgOnly"))->Fill(massCandLb);
-      if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fd0Lcprong0Bg"))->Fill(d->Getd0Prong(0));
-      if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fd0Lcprong1Bg"))->Fill(d->Getd0Prong(2));
         
         if(fFillNtupleBackgroundRotated) {
-        fNtupleLambdacUPG->Fill(lbVarC);
-        PostData(2,fNtupleLambdacUPG); 
+        fNtupleLambdabUPG->Fill(lbVarC);
+        PostData(2,fNtupleLambdabUPG); 
       }
     }
   }
@@ -1152,7 +1180,7 @@ Int_t AliAnalysisTaskSELbtoLcpi4::CheckMCLc(AliAODRecoDecayHF3Prong *d,TClonesAr
   if(pdgsl[0]==2212 && pdgsl[1]==321 && pdgsl[2]==211) massl=d->InvMassLcpKpi();
 
   Double_t ptCandl = d->Pt();
-  //    printf(" massa candidata %f e pt candidata  %f \n ", massl, ptCandl);
+  
   if(ptCandl<2.) iPtBinl=0;
   if(ptCandl>=2. && ptCandl<4.) iPtBinl=1;
   if(ptCandl>=4. && ptCandl<6.) iPtBinl=2;
@@ -1400,145 +1428,6 @@ Int_t AliAnalysisTaskSELbtoLcpi4::IsSelectedLbMY(TObject* obj,Int_t selectionLev
 
 //__________________________________________________________________________________
 
-void AliAnalysisTaskSELbtoLcpi4::CheckMCKine(TClonesArray *mcs){
-
-  //mc array truth check
-  Int_t ncdau=0;
-  for(Int_t ic=0; ic<mcs->GetEntries(); ++ic){//parto dalle particelle figlie
-    AliAODMCParticle *mcd=static_cast<AliAODMCParticle*>(mcs->At(ic));
-    if((TMath::Abs(mcd->GetPdgCode()))==4122){
-      fHistNEvents->Fill(1);
-      if(mcd->GetMother()>-1){
-        Int_t labM = mcd->GetMother();//madre lc
-        if(labM<0) continue;
-        AliAODMCParticle *partM= (AliAODMCParticle*)mcs->At(labM);//corrispondente MC di madre lc
-        if(!partM) continue;
-        if(TMath::Abs(partM->GetPdgCode())==5122)fHistNEvents->Fill(3);
-      }
-    }
-    if((TMath::Abs(mcd->GetPdgCode()))==5122)fHistNEvents->Fill(2);
-    if(mcd->GetMother()>-1){
-      Int_t labM = mcd->GetMother();//madre generic part
-      if(labM<0) continue;
-      AliAODMCParticle *partM= (AliAODMCParticle*)mcs->At(labM);//corrispondente MC di madre generic part
-      if(!partM) continue;
-      if(TMath::Abs(partM->GetPdgCode())==4122){//sono nel caso in cui la madre della ESD e' una Lc
-        Float_t tmp[8];
-        Double_t ptLcPrompt=partM->Pt();
-        if(partM->GetMother()==-1)tmp[7]=ptLcPrompt;
-        //vedo se la lc ha una madre lb
-        if(partM->GetMother()>-1){
-          Int_t labMM = partM->GetMother();//madre lc
-          if(labMM<0) continue;
-          AliAODMCParticle *partMM= (AliAODMCParticle*)mcs->At(labMM);//corrispondente MC di madre lc
-          if(!partMM) continue;
-          if(TMath::Abs(partMM->GetPdgCode())==5122){
-            ncdau=partMM->GetNDaughters();
-            if(ncdau==2){//2 figlie delle lb mcd=figlie lc partM=lc partMM=lb
-              AliAODMCParticle *part0dLb=(AliAODMCParticle*)mcs->At(partMM->GetDaughterLabel(0));
-              AliAODMCParticle *part1dLb=(AliAODMCParticle*)mcs->At(partMM->GetDaughterLabel(1));
-              if(part0dLb && part1dLb){
-                Int_t pdgcode0=part0dLb->GetPdgCode();
-                Int_t pdgcode1=part1dLb->GetPdgCode();
-                if((pdgcode0==4122 && pdgcode1==-211) || (pdgcode1==-4122 && pdgcode0==211) || (pdgcode0==-4122 && pdgcode1==211) || (pdgcode1==4122 && pdgcode0==-211)){
-                  Int_t ngood0=0;
-                  Int_t ngood1=0;
-                  Int_t n3ok0=0;
-                  Int_t n3ok1=0;
-                  AliAODMCParticle* partdLc=0x0;
-                  Int_t PdgcodedLc =-1;
-                  Double_t pt_pion;
-                  Double_t pt_kaon;
-                  Double_t pt_proton;
-                  Double_t pt_lc;
-                  Double_t pt_pionP;
-                  Double_t pt_lb;
-                  Double_t ctLambdaC;
-
-                  if(TMath::Abs(pdgcode0)==4122){//check su lc in figlie giuste e accettanza
-                    Int_t  ndlc0=part0dLb->GetNDaughters();
-                    if(ndlc0==3){
-                      for(Int_t i0=part0dLb->GetDaughterLabel(0);i0<=part0dLb->GetDaughterLabel(1);i0++){//
-                        partdLc = dynamic_cast<AliAODMCParticle*>(mcs->At(i0));
-                        if(partdLc==0x0)continue;
-                        PdgcodedLc = TMath::Abs(partdLc->GetPdgCode());
-                        if(PdgcodedLc==211 || PdgcodedLc==321 || PdgcodedLc==2212){
-                          n3ok0++;
-                          if(TMath::Abs(partdLc->Eta())<=0.9){
-                            ngood0++;
-                            if(PdgcodedLc==211){
-                              pt_pion=partdLc->Pt();
-                            }
-                            if(PdgcodedLc==321){
-                              pt_kaon=partdLc->Pt();
-                            }
-                            if(PdgcodedLc==2212){
-                              pt_proton=partdLc->Pt();
-                            }
-                          }//0.9 eta
-                        }//daugh ok
-                      }//loop daugh
-                    }//3 daugh
-                  }//se la figlia 0 e' una lc
-                  if(TMath::Abs(pdgcode1)==4122){//check su lc in figlie giuste e accettanza
-                    Int_t  ndlc1=part1dLb->GetNDaughters();
-                    if(ndlc1==3){
-                      for(Int_t i1=part1dLb->GetDaughterLabel(0);i1<=part1dLb->GetDaughterLabel(1);i1++){//
-                        partdLc = dynamic_cast<AliAODMCParticle*>(mcs->At(i1));
-                        if(partdLc==0x0)continue;
-                        PdgcodedLc = TMath::Abs(partdLc->GetPdgCode());
-                        if(PdgcodedLc==211 || PdgcodedLc==321 || PdgcodedLc==2212){
-                          n3ok1++;
-                          if(TMath::Abs(partdLc->Eta())<=0.9){
-                            ngood1++;
-                            if(PdgcodedLc==211){
-                              pt_pion=partdLc->Pt();
-                            }
-                            if(PdgcodedLc==321){
-                              pt_kaon=partdLc->Pt();
-                            }
-                            if(PdgcodedLc==2212){
-                              pt_proton=partdLc->Pt();
-                            }
-                          }//0.9 eta
-                        }//daugh ok
-                      }//loop daugh
-                    }//3 daugh
-                  }//se la figlia 1 e' una lc
-                  if(n3ok0==3 || n3ok1==3) fHistNEvents->Fill(4);
-                  if((ngood0==3 && TMath::Abs(part1dLb->Eta())<=0.9) || (ngood1==3 && TMath::Abs(part0dLb->Eta())<=0.9)){
-                    fHistNEvents->Fill(5);//3 figlie giuste nell accettanza e pione nell accettanza!
-                    if(TMath::Abs(pdgcode0)==4122){
-                      pt_lc=part0dLb->Pt();
-                      pt_pionP=part1dLb->Pt();
-                      ctLambdaC=(TMath::Sqrt((partdLc->Xv()-part0dLb->Xv())*(partdLc->Xv()-part0dLb->Xv())+(partdLc->Yv()-part0dLb->Yv())*(partdLc->Yv()-part0dLb->Yv()))*2.28646)/(TMath::Abs(part0dLb->Pt()));
-                    }
-                    if(TMath::Abs(pdgcode1)==4122){
-                      pt_lc=part1dLb->Pt();
-                      pt_pionP=part0dLb->Pt();
-                      ctLambdaC=(TMath::Sqrt((partdLc->Xv()-part1dLb->Xv())*(partdLc->Xv()-part1dLb->Xv())+(partdLc->Yv()- part1dLb->Yv())*(partdLc->Yv()-part1dLb->Yv()))*2.28646)/(TMath::Abs(part1dLb->Pt()));
-                    }
-                    //pion from lb pt and d0
-
-                    pt_lb=partMM->Pt();//pt lb
-
-                    // PostData(3,fNtupleLambdacUPG);
-
-                  }//ngood e pioni
-                }//if pion and lambdac
-              }//daughters exist
-            }//if daught ==2 
-          }//if lb is the mother of lc
-        }//if lc not prompt
-      }//if lc is mother
-    }//if esd particle is not prompt
-  }//loop  mc array
-
-  return;
-}
-
-//___________________________________________________________
-
 Bool_t AliAnalysisTaskSELbtoLcpi4::CountLc(AliAODRecoDecayHF3Prong* Lc,AliAODTrack* pion, TClonesArray* arrayMC,Int_t motherLabelLc,Int_t motherLabelpione)
 {//if Lc is signal how many time is attached to pion to form background
   const Int_t pdgdaughtersLc[3]={2212,321,211};
@@ -1780,7 +1669,7 @@ AliAODVertex* AliAnalysisTaskSELbtoLcpi4::RecalculateVertex(const AliVVertex *pr
 }
 
 //___________________________
-void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d){
+void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int_t lb,AliAODMCHeader *mcHeader,TClonesArray* arrayMC, AliAODTrack *pion,AliAODRecoDecayHF3Prong *d, Int_t lc,AliAODEvent *ev){
   //ptlb cut
 
 
@@ -1806,7 +1695,7 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   if(ptCandlb<2. || ptCandlb>999.) return;
 
   //fill ntuple
-  Float_t lbVarC[16] = {0};
+  Float_t lbVarC[29] = {0};
   lbVarC[0] = massCandLb;
   lbVarC[1] = ptCandlb;
   lbVarC[2] = part->PtProng(0);
@@ -1823,6 +1712,19 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
   lbVarC[13] = part->GetDCA();
   lbVarC[14] = lb;
   lbVarC[15] = 0; // not rotated
+  lbVarC[16] = d->Pt();
+  lbVarC[17] = d->Getd0Prong(0);
+  lbVarC[18] = d->Getd0Prong(1);
+  lbVarC[19] = d->Getd0Prong(2);
+  lbVarC[20] = d->PtProng(0);
+  lbVarC[21] = d->PtProng(1);
+  lbVarC[22] = d->PtProng(2);
+  lbVarC[23] = d->GetDist12toPrim();
+  lbVarC[24] = d->GetSigmaVert(ev);
+  lbVarC[25] = d->GetDist23toPrim();
+  lbVarC[26] = d->CosPointingAngle();
+  lbVarC[27] = d->GetDCA();
+  lbVarC[28] = lc;
 
   if(lb==1){
     if(iPtBinlb==0)fInvMassLbSign0->Fill(massCandLb);
@@ -1837,12 +1739,10 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
     if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbNR"))->Fill(massCandLb);
     if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbNR"))->Fill(massCandLb);
     if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbNR"))->Fill(massCandLb);
-      if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fd0Lcprong0nr"))->Fill(d->Getd0Prong(0));
-      if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fd0Lcprong1nr"))->Fill(d->Getd0Prong(2));
       
       if(fFillNtupleSignal) {
-      fNtupleLambdacUPG->Fill(lbVarC);
-      PostData(2,fNtupleLambdacUPG);
+      fNtupleLambdabUPG->Fill(lbVarC);
+      PostData(2,fNtupleLambdabUPG);
     }
   }
   if(lb!=1){
@@ -1854,12 +1754,10 @@ void AliAnalysisTaskSELbtoLcpi4::FillLbHistsnr(AliAODRecoDecayHF2Prong *part,Int
       if(iPtBinlb==3)((TH1F*)fOutput->FindObject("fMassUpg_pt3lbbgNR"))->Fill(massCandLb);
       if(iPtBinlb==4)((TH1F*)fOutput->FindObject("fMassUpg_pt4lbbgNR"))->Fill(massCandLb);
       if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fMassUpg_pt5lbbgNR"))->Fill(massCandLb);
-        if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fd0Lcprong0Bgnr"))->Fill(d->Getd0Prong(0));
-        if(iPtBinlb==5)((TH1F*)fOutput->FindObject("fd0Lcprong1Bgnr"))->Fill(d->Getd0Prong(2));
         
         if(fFillNtupleBackgroundNonRotated) {
-        fNtupleLambdacUPG->Fill(lbVarC);
-        PostData(2,fNtupleLambdacUPG);
+        fNtupleLambdabUPG->Fill(lbVarC);
+        PostData(2,fNtupleLambdabUPG);
       }
     }
   }
@@ -1915,8 +1813,5 @@ Bool_t AliAnalysisTaskSELbtoLcpi4::IsCandidateInjected(AliAODRecoDecayHF *part, 
 }
 
 //____________________________________________________________
-
-
-
 
 

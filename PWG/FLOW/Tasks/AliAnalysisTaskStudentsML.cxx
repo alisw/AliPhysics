@@ -364,6 +364,11 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
     Double_t Weight_FirstCorrelation=0.;
     Double_t SecondCorrelation=0.;
     Double_t Weight_SecondCorrelation=0.;
+
+    Double_t FirstCorrelation_Im=0.;
+    Double_t Weight_FirstCorrelation_Im=0.;
+    Double_t SecondCorrelation_Im=0.;
+    Double_t Weight_SecondCorrelation_Im=0.;
     
     //~~~~~~~~~~~~~~~~~
 
@@ -371,6 +376,8 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
 
     FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(1);
     Weight_FirstCorrelation=fRecursion[0][fNumber-2]->GetBinContent(2);
+    FirstCorrelation_Im=fRecursion[1][fNumber-2]->GetBinContent(1);
+    Weight_FirstCorrelation_Im=fRecursion[1][fNumber-2]->GetBinContent(2);
 
     fRecursion[0][fNumber-2]->Reset(); //Reset
     fRecursion[1][fNumber-2]->Reset(); //Reset
@@ -381,6 +388,8 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
 
     SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(1);
     Weight_SecondCorrelation=fRecursion[0][fNumberSecond-2]->GetBinContent(2);
+    SecondCorrelation_Im=fRecursion[1][fNumberSecond-2]->GetBinContent(1);
+    Weight_SecondCorrelation_Im=fRecursion[1][fNumberSecond-2]->GetBinContent(2);
     
     fRecursion[0][fNumberSecond-2]->Reset(); //Reset
     fRecursion[1][fNumberSecond-2]->Reset(); //Reset
@@ -392,9 +401,12 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
     else { fEvCentrality->Fill(0.5,(FirstCorrelation)/(SecondCorrelation),1.); } 
 
     } //protection against 0, we will come back to this later
-    
+
     fCentrality->Fill(0.5,FirstCorrelation,Weight_FirstCorrelation); //safe output first set of harmonics
-    fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics
+    fCentralitySecond->Fill(0.5,SecondCorrelation,Weight_SecondCorrelation); //safe output second set of harmonics    
+
+    fCentrality->Fill(1.5,FirstCorrelation_Im,Weight_FirstCorrelation_Im); //safe output first set of harmonics
+    fCentralitySecond->Fill(1.5,SecondCorrelation_Im,Weight_SecondCorrelation_Im); //safe output second set of harmonics
 
    fCentralitySecondSquare->Fill(0.5,SecondCorrelation*SecondCorrelation,TMath::Binomial(fParticles,fNumberSecond+fNumberSecond)*TMath::Factorial(fNumberSecond+fNumberSecond));
    fCentralitySecondSquare->Fill(1.5,SecondCorrelation*SecondCorrelation,Weight_SecondCorrelation*Weight_SecondCorrelation);
@@ -615,13 +627,13 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
   
- fCentrality = new TProfile("fCentrality","Result Analysis First Set Correlators",1,0.,1.); //centrality dependet output
+ fCentrality = new TProfile("fCentrality","Result Analysis First Set Correlators",2,0.,2.); //centrality dependet output
  fCentrality->GetXaxis()->SetTitle("");
  fCentrality->GetYaxis()->SetTitle("flow");
  fCentrality->Sumw2();
  fFinalResultsList->Add(fCentrality);
 
- fCentralitySecond = new TProfile("fCentralitySecond","Result Analysis Second Set Correlators",1,0.,1.); //centrality dependet output
+ fCentralitySecond = new TProfile("fCentralitySecond","Result Analysis Second Set Correlators",2,0.,2.); //centrality dependet output
  fCentralitySecond->GetXaxis()->SetTitle("");
  fCentralitySecond->GetYaxis()->SetTitle("flow");
  fCentralitySecond->Sumw2(); 

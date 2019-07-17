@@ -74,7 +74,10 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 	void SetEMCalTriggerDG2() { fEMCDG2=kTRUE; };
 	
 	void SetUseTender() { fUseTender=kTRUE;};
-	
+    
+    void Set_Fill_ESparse() {fFill_ESparse=kTRUE;};
+    void Set_Fill_MSparse() {fFill_MSparse=kTRUE;};
+
 	//Setters analysis cuts
     
     //event cut
@@ -142,6 +145,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
 
     Bool_t				fIsMC;
 	Bool_t				fUseTender;
+    Bool_t              fFill_ESparse;
+    Bool_t              fFill_MSparse;
     
     //new organization of tender using global variables
     TString        fTenderClusterName;//
@@ -310,8 +315,8 @@ class AliAnalysisTask_JPsi_EMCal : public AliAnalysisTaskSE
     TH2F                 *fVtxZ_V0;
     TH2F                 *fVtxZ_SPD;
     TH2F                 *fV0_SPD;
-    TH1F                 *fV0;
-    TH1F                 *fSPD;
+    TH2F                 *fV0_nch;
+    TH2F                 *fSPD_nch;
     
     
     TH1F				**fNClusters;

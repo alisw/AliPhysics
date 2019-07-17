@@ -72,7 +72,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
   const int numOfkTbins = 2;
 
   int runmults[numOfMultBins] = {runcentrality0, runcentrality1, runcentrality2, runcentrality3, runcentrality4, runcentrality5, runcentrality6};
-  int multbins[numOfMultBins + 1] = {0.001, 50, 100, 200, 300, 400, 500, 900};
+  int multbins[numOfMultBins + 1] = {0.001, 900, 100, 200, 300, 400, 500, 900};
   
   int runch[numOfChTypes] = {1, 1, 1, 1};
   const char *chrgs[numOfChTypes] = { "PIpKp", "PImKm", "PIpKm","PImKp"};
@@ -91,9 +91,10 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
   int nbinssh = 100;
 
-  AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
-  Reader->SetFilterBit(7);
-  Reader->SetCentralityPreSelection(0.001, 950);
+  AliFemtoEventReaderNanoAODChain *Reader = new AliFemtoEventReaderNanoAODChain();
+  Reader->SetFilterMask(1);
+  Reader->SetUseMultiplicity("V0M");
+  //Reader->SetCentralityPreSelection(0.001, 950);
 
   AliFemtoManager* Manager=new AliFemtoManager();
   Manager->SetEventReader(Reader);
@@ -166,8 +167,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 
 
 	  //Mix events with respect to the z position of the primary vertex and event total multipliticy:
-	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(7, -7.0, 7.0, 4, multbins[imult], multbins[imult+1]);
-	  anetaphitpc[aniter]->SetNumEventsToMix(3);
+	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
+	  anetaphitpc[aniter]->SetNumEventsToMix(5);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
 	  anetaphitpc[aniter]->SetVerboseMode(kFALSE);
 	  
@@ -307,8 +308,8 @@ AliFemtoManager* ConfigFemtoAnalysis(int runcentrality0, int runcentrality1, int
 	    //sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 	  }
 	  else if ( runtype==2 ){
-	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
-	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
+	    //sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
+	    //qpcetaphitpc[aniter]->SetShareFractionMax(0.05);
 	    sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
 	    sqpcetaphitpc[aniter]->SetTPCEntranceSepMinimum(0.0);
 	  }
