@@ -103,6 +103,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fMaximumEventWeight(1e6),
   fInhibit(kFALSE),
   fLocalInitialized(kFALSE),
+  fWarnMissingCentrality(kTRUE),
   fDataType(kAOD),
   fGeom(0),
   fCaloCells(0),
@@ -181,6 +182,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fMaximumEventWeight(1e6),
   fInhibit(kFALSE),
   fLocalInitialized(kFALSE),
+  fWarnMissingCentrality(kTRUE),
   fDataType(kAOD),
   fGeom(0),
   fCaloCells(0),
@@ -1053,7 +1055,7 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
       fCent = MultSelection->GetMultiplicityPercentile(fCentEst.Data());
     }
     else {
-      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      if(fWarnMissingCentrality) AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
     }
   }
   else if (fCentralityEstimation == kOldCentrality) {
@@ -1063,7 +1065,7 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
       fCent = aliCent->GetCentralityPercentile(fCentEst.Data());
     }
     else {
-      AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
+      if(fWarnMissingCentrality) AliWarning(Form("%s: Could not retrieve centrality information! Assuming 99", GetName()));
     }
   }
   if (!fCentBins.empty() && fCentralityEstimation != kNoCentrality) {
