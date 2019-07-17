@@ -14,8 +14,8 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 		Bool_t PostCalib = kFALSE,
 		Bool_t LowpT = kFALSE,
 		Bool_t MakePid = kFALSE,
-		const Char_t* Period = "l",
-		const Double_t MeanCh = 1.1
+		const Char_t* Period   = "l",
+		const Double_t MeanCh = 7.266
 		)   
 {
 
@@ -60,7 +60,7 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	task->SetAnalysisMC(AnalysisMC);
 	task->SetAddLowPt(LowpT);
 	task->SetPeriod(Period);
-	task->SetMeanChT(MeanCh);
+	task->SetMeanCh(MeanCh);
 
 	if(system==1){
 		task->SetAnalysisPbPb(kTRUE);
@@ -73,7 +73,6 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	task->SetNcl(70);
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
-	//Set Filtesr
 	task->SetTrackFilterGolden(trackFilterGolden);
 	task->SetTrackFilterTPC(trackFilterTPC);
 	task->SetTrackFilter2015PbPb(trackFilterGolden2015PbPb);
@@ -90,3 +89,4 @@ AliAnalysisTaskPPvsRT* AddTaskPPvsRT(
 	// when you will run your analysis in an analysis train on grid
 	return task;
 }
+

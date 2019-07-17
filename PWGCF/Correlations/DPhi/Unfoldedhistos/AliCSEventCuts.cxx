@@ -2248,7 +2248,7 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
       AliESDtrackCuts::MultEstTrackType estType = esdEvent->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
       fReferenceMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent,estType,0.8);
       fNoOfESDTracks = esdEvent->GetNumberOfTracks();
-      fNoOfTotalTPCClusters = aodEvent->GetNumberOfTPCClusters();
+      fNoOfTotalTPCClusters = esdEvent->GetNumberOfTPCClusters();
       nTracks = fNoOfESDTracks;
     }
 

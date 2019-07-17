@@ -103,7 +103,6 @@ fTrackFilterTPC(0x0),
 fTrackFilter(0x0),
 utils(0x0),
 fAnalysisType("ESD"),
-fPeriod("z"),
 fAnalysisMC(kFALSE),
 fAnalysisPbPb(kFALSE),
 fRandom(0x0),
@@ -117,6 +116,7 @@ fDeDxMIPMin(40),
 fDeDxMIPMax(60),
 fdEdxHigh(200),
 fdEdxLow(40),
+fPeriod("l"),
 fMeanChT(7.11),
 fMcProcessType(-999),
 fTriggeredEventMB(-999),
@@ -131,7 +131,6 @@ fVtxMC(0x0),
 fdEdxCalibrated(0x0),
 fMakePid(0x0),
 fLowPt(0x0),
-//fLHC16l(0x0),
 fMultN(0x0),
 fPtN(0x0),
 fDphiN(0x0),
@@ -165,7 +164,6 @@ fcutHigh(0x0)
     for(Int_t r= 0; r < 3; r++){
         hMIPVsEta[r][i]=0;
         pMIPVsEta[r][i]=0;
-	hphi[r][i]=0;
         hPtAll[r][i]=0;
 	}
         
@@ -236,7 +234,6 @@ fTrackFilterTPC(0x0),
 fTrackFilter(0x0),
 utils(0x0),
 fAnalysisType("ESD"),
-fPeriod("z"),
 fAnalysisMC(kFALSE),
 fAnalysisPbPb(kFALSE),
 fRandom(0x0),
@@ -250,6 +247,7 @@ fDeDxMIPMin(40),
 fDeDxMIPMax(60),
 fdEdxHigh(200),
 fdEdxLow(40),
+fPeriod("l"),
 fMeanChT(7.11),
 fMcProcessType(-999),
 fTriggeredEventMB(-999),
@@ -264,7 +262,6 @@ fVtxMC(0x0),
 fdEdxCalibrated(0x0),
 fMakePid(0x0),
 fLowPt(0x0),
-//fLHC16l(0x0),
 fMultN(0x0),
 fPtN(0x0),
 fDphiN(0x0),
@@ -295,7 +292,6 @@ fcutHigh(0x0)
     for(Int_t r= 0; r < 3; r++){
         hMIPVsEta[r][i]=0;
         pMIPVsEta[r][i]=0;
-	hphi[r][i]=0;
         hPtAll[r][i]=0;
 	}
         
@@ -531,8 +527,6 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
     for(Int_t r = 0; r<3; ++r){
         hMIPVsEta[r][i] = new TH2D(Form("hMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; dE/dx_{MIP, primary tracks}",50,-0.8,0.8,fDeDxMIPMax-fDeDxMIPMin, fDeDxMIPMin, fDeDxMIPMax);
         pMIPVsEta[r][i] = new TProfile(Form("pMIPVsEta_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8, fDeDxMIPMin, fDeDxMIPMax);
-        hphi[r][i] = new TH1D(Form("hphi_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),"; #phi; Entries",64,0.0,2*TMath::Pi());
-	hphi[r][i]->Sumw2();
         hPtAll[r][i] = new TH1D(Form("hPt_%s_%d_%d",Region[r],CentMin[i],CentMax[i]),";#it{p}_{T};Counts",nPtBins,ptBins);
         hPtAll[r][i]->Sumw2();
 		}
@@ -605,7 +599,6 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
 	for(Int_t r =0; r < 3; r++){
             fListOfObjects->Add(hMIPVsEta[r][i]);
             fListOfObjects->Add(pMIPVsEta[r][i]);
-            fListOfObjects->Add(hphi[r][i]);
 		}
 
             fListOfObjects->Add(hPlateauVsEta[i]);
@@ -622,7 +615,6 @@ void AliAnalysisTaskPPvsRT::UserCreateOutputObjects()
             if(fMakePid){
 		for(Int_t r =0; r < 3; r++)
                 fListOfObjects->Add(hPtAll[r][i]);
-					
                 if(fLowPt){
                     fListOfObjects->Add(hDCAxyVsPtPi[i]);
                     fListOfObjects->Add(hDCAxyVsPtp[i]);
@@ -826,10 +818,11 @@ void AliAnalysisTaskPPvsRT::UserExec(Option_t *)
     
     if (fAnalysisType == "ESD"){
         
+
         AliESDtrack* LeadingTrack = GetLeadingTrack();
         if(!LeadingTrack)
             return;
-        
+
         TObjArray* RegionsArray = SortRegions(LeadingTrack);
         TList *listToward = (TList*)RegionsArray->At(0);
         TList *listAway   = (TList*)RegionsArray->At(1);
@@ -846,12 +839,17 @@ void AliAnalysisTaskPPvsRT::UserExec(Option_t *)
         ProduceArrayTrksESD(1,listAway,BinRT);
         ProduceArrayTrksESD(2,listTrans,BinRT);
         ProduceArrayV0ESD( fESD, 0);
+
+
+	printf("********* Info about Event **********\n");
+        printf("pT_Leading :: %f\n", LeadingTrack->Pt());
+        cout << "Bin_RT    :: " << BinRT << endl;
+	cout << "MeanChT   :: " << fMeanChT << endl;
+	cout << "Period    :: " << fPeriod << endl;
+	printf("*************************************\n");
         
         if(fAnalysisMC)
             ProcessMCTruthESD();
-        
-        printf("pT_Leading  = %f\n",LeadingTrack->Pt());
-        cout << "RT :: " << BinRT << endl;
         
     }
     
@@ -902,7 +900,7 @@ AliESDtrack* AliAnalysisTaskPPvsRT::GetLeadingTrack(){
         AliESDtrack* trk = (AliESDtrack*)(fTrks->At(it));
         if(!trk)
             continue;
-        
+
         PtTrks[it] = trk->Pt();
     }
     
@@ -1142,8 +1140,10 @@ Int_t AliAnalysisTaskPPvsRT::GetBinRT(TList* listT){
         rt = 1;
     else if(rt >= 2 && rt < 3)
         rt = 2;
-    else
+    else if(rt >= 3 && rt < 4)
         rt = 3;
+    else
+        rt = 4;
     
     return rt;
 }
@@ -1287,9 +1287,13 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
         
         if(!PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), Magf, fcutLow, fcutHigh))
             continue;
-        
-        if(fdEdxCalibrated)
-                dedx *= 50/EtaCalibration(eta);
+
+        if(fdEdxCalibrated){
+	Int_t index = -1;    
+	index = GetIndex();
+                dedx *= 50/EtaCalibration(index,eta);
+        printf("Index -----> %d\n",index);
+		}
         
         Short_t pidCode     = 0;
         if(fAnalysisMC) {
@@ -1405,8 +1409,6 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
         
         hPtAll[region][Cent]->Fill(pt);
         hPtAll[region][4]->Fill(pt);
-	hphi[region][Cent]->Fill(phi);
-	hphi[region][4]->Fill(phi);
         
         Int_t nh = -1;
         if(TMath::Abs(eta)<0.2)
@@ -1447,8 +1449,11 @@ void AliAnalysisTaskPPvsRT::ProduceArrayTrksESD(const int region, TList *lt, con
         hDeDxVsP[region][4][nh]->Fill(momentum,dedx);
         
         hnSigmaPi[Cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+        hnSigmaPi[4][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
         hnSigmak[Cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
+        hnSigmak[4][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
         hnSigmap[Cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
+        hnSigmap[4][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
         
         
     }//end of track loop
@@ -1660,9 +1665,12 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                         Double_t dedx     = track->GetTPCsignal();
                         Double_t dedxUnc  = track->GetTPCsignal();
                         
-                        
-                        if(fdEdxCalibrated)
-                                dedx   *= 50.0/EtaCalibration(eta);
+                      
+                        if(fdEdxCalibrated){
+				Int_t index = -1;    
+				index = GetIndex();
+                                dedx   *= 50.0/EtaCalibration(index,eta);
+                        }
                         
                         if(fillPos&&fillNeg){
                             if( dedxUnc < fDeDxMIPMax && dedxUnc > fDeDxMIPMin ){
@@ -1711,7 +1719,9 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                     
                     if( dmassK>0.01 && dmassL>0.01 && dmassAL>0.01 ) {
                         if( dmassG<0.01 && dmassG>0.0001 ) {
-                                if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationEl(nTrack->Eta())) < 5)
+				Int_t index = -1;    
+				index = GetIndex();
+                                if( TMath::Abs(nTrack->GetTPCsignal()-EtaCalibrationEl(index,nTrack->Eta())) < 5)
                                     fillPos = kTRUE;
                         } else {
                             continue;
@@ -1734,8 +1744,11 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                     Double_t phi      = track->Phi();
                     Double_t momentum = track->P();
                     
-                    if(fdEdxCalibrated)
-                            dedx *= 50/EtaCalibration(eta);
+                    if(fdEdxCalibrated){
+				Int_t index = -1;    
+				index = GetIndex();
+                            dedx *= 50/EtaCalibration(index,eta);
+                    }
                     
                     if(!PhiCut(track->Pt(), phi, track->Charge(), Magf, fcutLow, fcutHigh))
                         continue;
@@ -1754,7 +1767,6 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
                     if(nh<0)
                         continue;
                     
-                    cout<<"Cent :: "<<Cent<<"Eta  :: "<<eta<<"dedx :: "<<dedx<<endl;
                     histEV0[Cent][nh]->Fill(momentum, dedx);
                     histEV0[4][nh]->Fill(momentum, dedx);
                     
@@ -1774,14 +1786,10 @@ void AliAnalysisTaskPPvsRT::ProduceArrayV0ESD( AliESDEvent *ESDevent, const Int_
         delete posPKF;
         delete negAPKF;
         
-        
-        
     }
     
-    
     delete myPrimaryVertex;
-    
-    
+
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskPPvsRT::selectVertex2015pp(AliESDEvent *esd,
@@ -1845,7 +1853,6 @@ Bool_t AliAnalysisTaskPPvsRT::PhiCut(Double_t pt, Double_t phi, Double_t q, Floa
     if(pt < 2.0)
         return kTRUE;
     
-    //Double_t phi = track->Phi();
     if(mag < 0)    // for negatve polarity field
         phi = TMath::TwoPi() - phi;
     if(q < 0) // for negatve charge
@@ -1858,8 +1865,7 @@ Bool_t AliAnalysisTaskPPvsRT::PhiCut(Double_t pt, Double_t phi, Double_t q, Floa
        && phi>phiCutLow->Eval(pt))
         return kFALSE; // reject track
     
-    //    hPhi[cent]->Fill(pt, phi);
-    hPhi[5]->Fill(pt, phi);
+    hPhi[4]->Fill(pt, phi);
     
     return kTRUE;
 }
@@ -1881,137 +1887,112 @@ void AliAnalysisTaskPPvsRT::SetTrackCuts(AliAnalysisFilter* fTrackFilter){
     fTrackFilter->AddCuts(esdTrackCuts);
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPPvsRT::EtaCalibration(const Double_t eta){
-    
-	          		  //16h,16i,16j,16k,16l,16o,16p
-    const Double_t aPos[] = {0,0,0,49.9659,49.9799,0,0};
-    const Double_t bPos[] = {0,0,0,2.91366,2.99619,0,0};
-    const Double_t cPos[] = {0,0,0,-45.5994,-45.718,0,0};
-    const Double_t dPos[] = {0,0,0,290.042,290.013,0,0};
-    const Double_t ePos[] = {0,0,0,-1014.49,-1018.42,0,0};
-    const Double_t fPos[] = {0,0,0,1931.84,1948.68,0,0};
-    const Double_t gPos[] = {0,0,0,-1839.36,-1864.06,0,0};
-    const Double_t hPos[] = {0,0,0,680.421,692.752,0,0};
-    
-    const Double_t aNeg[] = {0,0,0,50.046,50.078,0,0};
-    const Double_t bNeg[] = {0,0,0,6.79992,6.67199,0,0};
-    const Double_t cNeg[] = {0,0,0,109.86,103.662,0,0};
-    const Double_t dNeg[] = {0,0,0,668.241,611.034,0,0};
-    const Double_t eNeg[] = {0,0,0,1916.44,1695.63,0,0};
-    const Double_t fNeg[] = {0,0,0,2815.04,2395.88,0,0};
-    const Double_t gNeg[] = {0,0,0,2057.21,1669.22,0,0};
-    const Double_t hNeg[] = {0,0,0,595.391,455.362,0,0};
-    
-        Int_t period = -1;
-        if(!strcmp(fPeriod,"h"))
-                period = 0;
-        else if(!strcmp(fPeriod,"i"))
-                period = 1;
-        else if(!strcmp(fPeriod,"j"))
-                period = 2;
-        else if(!strcmp(fPeriod,"k"))
-                period = 3;
-        else if(!strcmp(fPeriod,"l"))
-                period = 4;
-        else if(!strcmp(fPeriod,"o"))
-                period = 5;
-        else 
-                period = 6;
-	
+Double_t AliAnalysisTaskPPvsRT::EtaCalibration( const Int_t indx, const Double_t eta){
 
-       if(period<0){
-	
-    cout << "Index Period: " << period << endl;
-	period = 0;
-	}
-           
-
-    cout << "Selected Period: " << fPeriod << endl;
-    cout << "Index Period: " << period << endl;
+    const Double_t aPos[nRt+2]      = {0,0,0,49.9799,49.9659,0,0};
+    const Double_t bPos[nRt+2]      = {0,0,0,2.99619,2.91366,0,0};
+    const Double_t cPos[nRt+2]      = {0,0,0,-45.718,-45.5994,0,0};
+    const Double_t dPos[nRt+2]      = {0,0,0,290.013,290.042,0,0};
+    const Double_t ePos[nRt+2]      = {0,0,0,-1018.42,-1014.49,0,0};
+    const Double_t fPos[nRt+2]      = {0,0,0,1948.68,1931.84,0,0};
+    const Double_t gPos[nRt+2]      = {0,0,0,-1864.06,-1839.36,0,0};
+    const Double_t hPos[nRt+2]      = {0,0,0,692.752,680.421,0,0};
+    
+    const Double_t aNeg[nRt+2]      = {0,0,0,50.078,50.046,0,0};
+    const Double_t bNeg[nRt+2]      = {0,0,0,6.67199,6.79992,0,0};
+    const Double_t cNeg[nRt+2]      = {0,0,0,103.662,109.86,0,0};
+    const Double_t dNeg[nRt+2]      = {0,0,0,611.034,668.241,0,0};
+    const Double_t eNeg[nRt+2]      = {0,0,0,1695.63,1916.44,0,0};
+    const Double_t fNeg[nRt+2]      = {0,0,0,2395.88,2815.04,0,0};
+    const Double_t gNeg[nRt+2]      = {0,0,0,1669.22,2057.21,0,0};
+    const Double_t hNeg[nRt+2]      = {0,0,0,455.362,595.391,0,0};
+    
     
     for(Int_t i=0; i<8; ++i)
         fEtaCalibration->SetParameter(i,0);
     
     if(eta<0){
-        fEtaCalibration->SetParameter(0,aNeg[period]);
-        fEtaCalibration->SetParameter(1,bNeg[period]);
-        fEtaCalibration->SetParameter(2,cNeg[period]);
-        fEtaCalibration->SetParameter(3,dNeg[period]);
-        fEtaCalibration->SetParameter(4,eNeg[period]);
-        fEtaCalibration->SetParameter(5,fNeg[period]);
-        fEtaCalibration->SetParameter(6,gNeg[period]);
-        fEtaCalibration->SetParameter(7,hNeg[period]);
+        fEtaCalibration->SetParameter(0,aNeg[indx]);
+        fEtaCalibration->SetParameter(1,bNeg[indx]);
+        fEtaCalibration->SetParameter(2,cNeg[indx]);
+        fEtaCalibration->SetParameter(3,dNeg[indx]);
+        fEtaCalibration->SetParameter(4,eNeg[indx]);
+        fEtaCalibration->SetParameter(5,fNeg[indx]);
+        fEtaCalibration->SetParameter(6,gNeg[indx]);
+        fEtaCalibration->SetParameter(7,hNeg[indx]);
     }
     else{
-        fEtaCalibration->SetParameter(0,aPos[period]);
-        fEtaCalibration->SetParameter(1,bPos[period]);
-        fEtaCalibration->SetParameter(2,cPos[period]);
-        fEtaCalibration->SetParameter(3,dPos[period]);
-        fEtaCalibration->SetParameter(4,ePos[period]);
-        fEtaCalibration->SetParameter(5,fPos[period]);
-        fEtaCalibration->SetParameter(6,gPos[period]);
-        fEtaCalibration->SetParameter(7,hPos[period]);
+        fEtaCalibration->SetParameter(0,aPos[indx]);
+        fEtaCalibration->SetParameter(1,bPos[indx]);
+        fEtaCalibration->SetParameter(2,cPos[indx]);
+        fEtaCalibration->SetParameter(3,dPos[indx]);
+        fEtaCalibration->SetParameter(4,ePos[indx]);
+        fEtaCalibration->SetParameter(5,fPos[indx]);
+        fEtaCalibration->SetParameter(6,gPos[indx]);
+        fEtaCalibration->SetParameter(7,hPos[indx]);
     }
     
     return fEtaCalibration->Eval(eta);
     
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Double_t eta){
+Double_t AliAnalysisTaskPPvsRT::EtaCalibrationEl(const Int_t indx, const Double_t eta){
     
-	          		  //16h,16i,16j,16k,16l,16o,16p
-    const Double_t aPosEl[]    = {0,0,0,79.9957,80.1263,0,0};
-    const Double_t bPosEl[]    = {0,0,0,7.03079,5.28525,0,0};
-    const Double_t cPosEl[]    = {0,0,0,-42.9098,-32.7731,0,0};
-    const Double_t dPosEl[]    = {0,0,0,88.7057,68.4524,0,0};
-    const Double_t ePosEl[]    = {0,0,0,-56.6554,-44.1566,0,0};
+    const Double_t aPosEl[nRt+2]    = {0,0,0,80.1263,79.9957,0,0};
+    const Double_t bPosEl[nRt+2]    = {0,0,0,5.28525,7.03079,0,0};
+    const Double_t cPosEl[nRt+2]    = {0,0,0,-32.7731,-42.9098,0,0};
+    const Double_t dPosEl[nRt+2]    = {0,0,0,68.4524,88.7057,0,0};
+    const Double_t ePosEl[nRt+2]    = {0,0,0,-44.1566,-56.6554,0,0};
     
-    const Double_t aNegEl[]    = {0,0,0,79.7387,79.8351,0,0};
-    const Double_t bNegEl[]    = {0,0,0,-8.60021,-8.46921,0,0};
-    const Double_t cNegEl[]    = {0,0,0,-44.1718,-44.5947,0,0};
-    const Double_t dNegEl[]    = {0,0,0,-84.4984,-86.2242,0,0};
-    const Double_t eNegEl[]    = {0,0,0,-51.945,-53.6285,0,0};
+    const Double_t aNegEl[nRt+2]    = {0,0,0,79.8351,79.7387,0,0};
+    const Double_t bNegEl[nRt+2]    = {0,0,0,-8.46921,-8.60021,0,0};
+    const Double_t cNegEl[nRt+2]    = {0,0,0,-44.5947,-44.1718,0,0};
+    const Double_t dNegEl[nRt+2]    = {0,0,0,-86.2242,-84.4984,0,0};
+    const Double_t eNegEl[nRt+2]    = {0,0,0,-53.6285,-51.945,0,0};
     
-        Int_t period = -1;
-        if(!strcmp(fPeriod,"h"))
-                period = 0;
-        else if(!strcmp(fPeriod,"i"))
-                period = 1;
-        else if(!strcmp(fPeriod,"j"))
-                period = 2;
-        else if(!strcmp(fPeriod,"k"))
-                period = 3;
-        else if(!strcmp(fPeriod,"l"))
-                period = 4;
-        else if(!strcmp(fPeriod,"o"))
-                period = 5;
-        else 
-                period = 6;
-
-       if(period<0){
-	
-    cout << "Index Period: " << period << endl;
-	period = 0;
-	}
     
     for(Int_t i=0; i<5; ++i)
         fEtaCalibrationEl->SetParameter(i,0);
     
     if(eta<0){
-        fEtaCalibrationEl->SetParameter(0,aNegEl[period]);
-        fEtaCalibrationEl->SetParameter(1,bNegEl[period]);
-        fEtaCalibrationEl->SetParameter(2,cNegEl[period]);
-        fEtaCalibrationEl->SetParameter(3,dNegEl[period]);
-        fEtaCalibrationEl->SetParameter(4,eNegEl[period]);
+        fEtaCalibrationEl->SetParameter(0,aNegEl[indx]);
+        fEtaCalibrationEl->SetParameter(1,bNegEl[indx]);
+        fEtaCalibrationEl->SetParameter(2,cNegEl[indx]);
+        fEtaCalibrationEl->SetParameter(3,dNegEl[indx]);
+        fEtaCalibrationEl->SetParameter(4,eNegEl[indx]);
     }
     else{
-        fEtaCalibrationEl->SetParameter(0,aPosEl[period]);
-        fEtaCalibrationEl->SetParameter(1,bPosEl[period]);
-        fEtaCalibrationEl->SetParameter(2,cPosEl[period]);
-        fEtaCalibrationEl->SetParameter(3,dPosEl[period]);
-        fEtaCalibrationEl->SetParameter(4,ePosEl[period]);
+        fEtaCalibrationEl->SetParameter(0,aPosEl[indx]);
+        fEtaCalibrationEl->SetParameter(1,bPosEl[indx]);
+        fEtaCalibrationEl->SetParameter(2,cPosEl[indx]);
+        fEtaCalibrationEl->SetParameter(3,dPosEl[indx]);
+        fEtaCalibrationEl->SetParameter(4,ePosEl[indx]);
     }
     
     return fEtaCalibrationEl->Eval(eta);
     
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskPPvsRT::GetIndex()
+{
+
+Int_t indx = -1;
+
+if(fPeriod=="h")
+indx = 0;
+else if(fPeriod=="i")
+indx = 1;
+else if(fPeriod=="j")
+indx = 2;
+else if(fPeriod=="l")
+indx = 3;
+else if(fPeriod=="k")
+indx = 4;
+else if(fPeriod=="o")
+indx = 5;
+else
+indx = 6;
+
+return indx;
+
 }

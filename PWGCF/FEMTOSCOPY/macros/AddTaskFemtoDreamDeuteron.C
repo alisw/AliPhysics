@@ -8,6 +8,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
     bool ContributionSplitting = false//5
 )
 {
+
   //Framework specific blabla
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -159,8 +160,10 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   //First we need to tell him about the particles we mix, from the
   //PDG code the mass is obtained.
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(211);
-  PDGParticles.push_back(211);
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(1000010020);
+  PDGParticles.push_back(1000010020);
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -210,13 +213,34 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
   NBins.push_back(750);
   NBins.push_back(750);
   NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
+  NBins.push_back(750);
   std::vector<float> kMin;
   //minimum k* value
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
+  kMin.push_back(0.);
   //maximum k* value
   std::vector<float> kMax;
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
+  kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
   kMax.push_back(3.);
@@ -263,7 +287,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamDeuteron(
    */
   //now we create the task
   AliAnalysisTaskFemtoDreamDeuteron *task=
-      new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault",isMC, CentEst);
+      new AliAnalysisTaskFemtoDreamDeuteron("FemtoDreamDefault",isMC);
   //THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   //kINT7 == Minimum bias
   //kHighMultV0 high multiplicity triggered by the V0 detector

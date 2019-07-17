@@ -724,8 +724,6 @@ AliFemtoTrack *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoTrack(AliNanoAODTrack *
 AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
 {
   AliFemtoV0 *tFemtoV0 = new AliFemtoV0();
-
-
   tFemtoV0->SetdecayLengthV0(tAODv0->DecayLength(fVe1));
   tFemtoV0->SetdecayVertexV0X(tAODv0->DecayVertexV0X());
   tFemtoV0->SetdecayVertexV0Y(tAODv0->DecayVertexV0Y());
@@ -748,14 +746,6 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   tFemtoV0->SetmomNeg(momneg);
   tFemtoV0->SetradiusV0(tAODv0->RadiusV0());
   tFemtoV0->SetprimaryVertex(fVe1);
-
-  //jest cos takiego w AliFemtoV0.h czego nie ma w AliAODv0.h
-  //void SettpcHitsPos(const int& i);
-  //void SettpcHitsNeg(const int& i);
-
-  //void SetTrackTopologyMapPos(unsigned int word, const unsigned long& m);
-  //void SetTrackTopologyMapNeg(unsigned int word, const unsigned long& m);
-
   tFemtoV0->SetmomV0X(tAODv0->MomV0X());
   tFemtoV0->SetmomV0Y(tAODv0->MomV0Y());
   tFemtoV0->SetmomV0Z(tAODv0->MomV0Z());
@@ -772,16 +762,10 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   tFemtoV0->SetmassK0Short(tAODv0->MassK0Short());
   tFemtoV0->SetrapLambda(tAODv0->RapLambda());
   tFemtoV0->SetrapK0Short(tAODv0->RapK0Short());
-
   tFemtoV0->SetptV0(tAODv0->Pt());
-
-
   tFemtoV0->SetptotV0(::sqrt(tAODv0->Ptot2V0()));
   tFemtoV0->SetidNeg(tAODv0->GetNegID());
-  //cout<<"tAODv0->GetNegID(): "<<tAODv0->GetNegID()<<endl;
-  //cout<<"tFemtoV0->IdNeg(): "<<tFemtoV0->IdNeg()<<endl;
   tFemtoV0->SetidPos(tAODv0->GetPosID());
-
   tFemtoV0->SetEtaV0(tAODv0->Eta());
   tFemtoV0->SetPhiV0(tAODv0->Phi());
   tFemtoV0->SetCosPointingAngle(tAODv0->CosPointingAngle(fVe1));
@@ -805,7 +789,27 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
      tFemtoV0->SetptNeg(trackneg->Pt());
      tFemtoV0->SetTPCNclsPos(trackpos->GetTPCNcls());
      tFemtoV0->SetTPCNclsNeg(trackneg->GetTPCNcls());
+     tFemtoV0->SetNdofPos(trackpos->Chi2perNDF());
      tFemtoV0->SetNdofNeg(trackneg->Chi2perNDF());
+
+     static const Int_t kcstNSigmaTPCPi  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kPion);
+     static const Int_t kcstNSigmaTPCK  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kKaon);
+     static const Int_t kcstNSigmaTPCPr = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, AliPID::kProton);
+
+     const float nsigmaTPCPipos = trackpos->GetVar(kcstNSigmaTPCPi);
+     const float nsigmaTPCPineg = trackneg->GetVar(kcstNSigmaTPCPi);
+     const float nsigmaTPCKpos = trackpos->GetVar(kcstNSigmaTPCK);
+     const float nsigmaTPCKneg = trackneg->GetVar(kcstNSigmaTPCK);
+     const float nsigmaTPCPpos = trackpos->GetVar(kcstNSigmaTPCPr);
+     const float nsigmaTPCPneg = trackneg->GetVar(kcstNSigmaTPCPr);
+
+     tFemtoV0->SetPosNSigmaTPCPi(nsigmaTPCPipos);
+     tFemtoV0->SetNegNSigmaTPCPi(nsigmaTPCPineg);
+     tFemtoV0->SetPosNSigmaTPCK(nsigmaTPCKpos);
+     tFemtoV0->SetNegNSigmaTPCK(nsigmaTPCKneg);
+     tFemtoV0->SetPosNSigmaTPCP(nsigmaTPCPpos);
+     tFemtoV0->SetNegNSigmaTPCP(nsigmaTPCPneg);
+
 
      float bfield = 5 * fMagFieldSign;
      float globalPositionsAtRadiiPos[9][3];
@@ -856,14 +860,39 @@ AliFemtoV0 *AliFemtoEventReaderNanoAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
    tmpVec.SetY(tpcExitNeg[1]);
    tmpVec.SetZ(tpcExitNeg[2]);
    tFemtoV0->SetNominalTpcExitPointNeg(tmpVec);
+
    tFemtoV0->SetTPCMomentumPos(trackpos->GetTPCmomentum());
    tFemtoV0->SetTPCMomentumNeg(trackneg->GetTPCmomentum());
-
    tFemtoV0->SetdedxPos(trackpos->GetTPCsignal());
    tFemtoV0->SetdedxNeg(trackneg->GetTPCsignal());
 
-   Float_t probMisPos = 1.0;
-   Float_t probMisNeg = 1.0;
+  static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kPion);
+ 	static const Int_t kcstNSigmaTOFK  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kKaon);
+ 	static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
+
+  const float nsigmaTOFPipos = trackpos->GetVar(kcstNSigmaTOFPi);
+  const float nsigmaTOFKpos = trackpos->GetVar(kcstNSigmaTOFK);
+  const float nsigmaTOFPpos = trackpos->GetVar(kcstNSigmaTOFPr);
+  const float nsigmaTOFPineg = trackneg->GetVar(kcstNSigmaTOFPi);
+  const float nsigmaTOFKneg = trackneg->GetVar(kcstNSigmaTOFK);
+  const float nsigmaTOFPneg = trackneg->GetVar(kcstNSigmaTOFPr);
+
+  tFemtoV0->SetPosNSigmaTOFPi(nsigmaTOFPipos);
+  tFemtoV0->SetPosNSigmaTOFK(nsigmaTOFKpos);
+  tFemtoV0->SetPosNSigmaTOFP(nsigmaTOFPpos);
+  tFemtoV0->SetNegNSigmaTOFPi(nsigmaTOFPineg);
+  tFemtoV0->SetNegNSigmaTOFK(nsigmaTOFKneg);
+  tFemtoV0->SetNegNSigmaTOFP(nsigmaTOFPneg);
+
+
+  double TOFSignalPos = trackpos->GetTOFsignal();
+  double TOFSignalNeg = trackneg->GetTOFsignal();
+  tFemtoV0->SetTOFPionTimePos(TOFSignalPos);
+  tFemtoV0->SetTOFKaonTimePos(TOFSignalPos);
+  tFemtoV0->SetTOFProtonTimePos(TOFSignalPos);
+  tFemtoV0->SetTOFPionTimeNeg(TOFSignalNeg);
+  tFemtoV0->SetTOFKaonTimeNeg(TOFSignalNeg);
+  tFemtoV0->SetTOFProtonTimeNeg(TOFSignalNeg);
 
    }
 

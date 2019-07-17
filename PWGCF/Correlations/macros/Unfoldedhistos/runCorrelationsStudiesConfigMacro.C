@@ -40,6 +40,7 @@ void loadAMPT2760RunNumbers();
 void load2018qRunNumbers();
 void load2018rRunNumbers();
 void load2018rMCRunNumbers();
+void load2018rESDRunNumbers();
 
 void runCorrelationsStudiesConfigMacro() {
 
@@ -90,7 +91,7 @@ void runCorrelationsStudiesConfigMacro() {
   // load2017nRunNumbers();
   // loadAMPT2760RunNumbers();
   // load2018qRunNumbers();
-  load2018rRunNumbers();
+  load2018rESDRunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
 
@@ -925,6 +926,45 @@ void load2018rRunNumbers() {
   szDataDir = "/alice/data/2018/LHC18r";
   /* 2018q uncalibrated pass 1 */
   szDataPattern = "*/pass1/AOD/*/AliAOD.root";
+
+  /* the list of runs to analyze 2018r */
+  for (Int_t i = 0; i < 2 /*nruns*/; i++) {
+    sprintf(buffer,"%d",runsno[i]);
+    listOfActiveRuns.Add(new TObjString(buffer));
+  }
+}
+
+void load2018rESDRunNumbers() {
+  const Int_t nruns = 92;
+  char buffer[256];
+  int runsno[nruns] = {
+      297595, 297590, 297588, 297558, 297544, 297542, 297541, 297540, 297537, 297512,
+      297483, 297481, 297479, 297452, 297451, 297450, 297446, 297442, 297441, 297415,
+      297414, 297413, 297406, 297405, 297380, 297379, 297372, 297367, 297366, 297363,
+      297336, 297335, 297333, 297332, 297317, 297315, 297312, 297311, 297310, 297278,
+      297222, 297221, 297218, 297196, 297195, 297193, 297133, 297132, 297129, 297128,
+      297124, 297123, 297119, 297118, 297117, 297085, 297035, 297031, 296966, 296941,
+      296938, 296935, 296934, 296932, 296931, 296930, 296903, 296900, 296899, 296894,
+      296852, 296851, 296850, 296848, 296839, 296838, 296836, 296835, 296799, 296794,
+      296793, 296790, 296787, 296786, 296785, 296784, 296781, 296752, 296694, 296693,
+      296691, 296690
+  };
+
+  bUseESD                    = kTRUE;
+  bUseAOD                    = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudies_LHC2018r";
+
+  bMC = kFALSE;
+
+  /* reco pass */
+  szpass = "1";
+
+  /* 2018q */
+  szDataDir = "/alice/data/2018/LHC18r";
+  /* 2018q uncalibrated pass 1 */
+  szDataPattern = "*/pass1/*/AliESDs.root";
 
   /* the list of runs to analyze 2018r */
   for (Int_t i = 0; i < 2 /*nruns*/; i++) {

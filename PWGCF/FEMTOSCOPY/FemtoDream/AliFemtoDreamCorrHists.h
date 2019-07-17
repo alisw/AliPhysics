@@ -258,8 +258,8 @@ class AliFemtoDreamCorrHists {
   std::vector<int> fPDGCode;
   std::vector<float> fmTdEtadPhiBins;
   std::vector<unsigned int> fWhichPairs;
-  std::vector<float> fCentBins;ClassDef(AliFemtoDreamCorrHists,8)
-  ;
+  std::vector<int> fCentBins;
+  ClassDef(AliFemtoDreamCorrHists,8);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */

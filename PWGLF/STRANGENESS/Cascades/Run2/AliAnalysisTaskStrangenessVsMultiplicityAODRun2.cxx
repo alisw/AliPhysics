@@ -115,14 +115,14 @@ class AliAODv0;
 #include "AliEventCuts.h"
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
-#include "AliAnalysisTaskStrangenessVsMultiplicityRun2.h"
+#include "AliAnalysisTaskStrangenessVsMultiplicityAODRun2.h"
 
 using std::cout;
 using std::endl;
 
-ClassImp(AliAnalysisTaskStrangenessVsMultiplicityRun2)
+ClassImp(AliAnalysisTaskStrangenessVsMultiplicityAODRun2)
 
-AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2()
+AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AliAnalysisTaskStrangenessVsMultiplicityAODRun2()
 : AliAnalysisTaskSE(), fListHist(0), fListK0Short(0), fListLambda(0), fListAntiLambda(0),
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
@@ -478,7 +478,7 @@ fHistCentrality(0)
     
 }
 
-AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
+AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AliAnalysisTaskStrangenessVsMultiplicityAODRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
 : AliAnalysisTaskSE(name), fListHist(0), fListK0Short(0), fListLambda(0), fListAntiLambda(0),
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
@@ -895,7 +895,7 @@ fHistCentrality(0)
 }
 
 
-AliAnalysisTaskStrangenessVsMultiplicityRun2::~AliAnalysisTaskStrangenessVsMultiplicityRun2()
+AliAnalysisTaskStrangenessVsMultiplicityAODRun2::~AliAnalysisTaskStrangenessVsMultiplicityAODRun2()
 {
     //------------------------------------------------
     // DESTRUCTOR
@@ -957,7 +957,7 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::~AliAnalysisTaskStrangenessVsMulti
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserCreateOutputObjects()
 {
     //------------------------------------------------
     // fTreeEvent: EbyE information
@@ -1461,7 +1461,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
 {
     
     // Main loop
@@ -3601,7 +3601,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::Terminate(Option_t *)
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::Terminate(Option_t *)
 {
     // Draw result to the screen
     // Called once at the end of the query
@@ -3609,17 +3609,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::Terminate(Option_t *)
     TList *cRetrievedList = 0x0;
     cRetrievedList = (TList*)GetOutputData(1);
     if(!cRetrievedList) {
-        Printf("ERROR - AliAnalysisTaskStrangenessVsMultiplicityRun2 : ouput data container list not available\n");
+        Printf("ERROR - AliAnalysisTaskStrangenessVsMultiplicityAODRun2 : ouput data container list not available\n");
         return;
     }
     
     fHistEventCounter = dynamic_cast<TH1D*> (  cRetrievedList->FindObject("fHistEventCounter")  );
     if (!fHistEventCounter) {
-        Printf("ERROR - AliAnalysisTaskStrangenessVsMultiplicityRun2 : fHistEventCounter not available");
+        Printf("ERROR - AliAnalysisTaskStrangenessVsMultiplicityAODRun2 : fHistEventCounter not available");
         return;
     }
     
-    TCanvas *canCheck = new TCanvas("AliAnalysisTaskStrangenessVsMultiplicityRun2","V0 Multiplicity",10,10,510,510);
+    TCanvas *canCheck = new TCanvas("AliAnalysisTaskStrangenessVsMultiplicityAODRun2","V0 Multiplicity",10,10,510,510);
     canCheck->cd(1)->SetLogy();
     
     fHistEventCounter->SetMarkerStyle(22);
@@ -3627,7 +3627,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::Terminate(Option_t *)
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskStrangenessVsMultiplicityRun2::MyRapidity(Double_t rE, Double_t rPz) const
+Double_t AliAnalysisTaskStrangenessVsMultiplicityAODRun2::MyRapidity(Double_t rE, Double_t rPz) const
 {
     // Local calculation for rapidity
     Double_t ReturnValue = -100;
@@ -3638,7 +3638,7 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityRun2::MyRapidity(Double_t rE, D
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliV0Result *lV0Result )
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddConfiguration( AliV0Result *lV0Result )
 {
     if ( lV0Result->GetMassHypothesis () == AliV0Result::kK0Short ){
         if (!fListK0Short){
@@ -3667,7 +3667,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliV0Result
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliCascadeResult *lCascadeResult )
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddConfiguration( AliCascadeResult *lCascadeResult )
 {
     if ( lCascadeResult->GetMassHypothesis () == AliCascadeResult::kXiMinus ){
         if (!fListXiMinus){
@@ -3704,7 +3704,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliCascadeR
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::SetupStandardVertexing()
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::SetupStandardVertexing()
 //Meant to store standard re-vertexing configuration
 {
     //Tell the task to re-run vertexers
@@ -3729,7 +3729,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::SetupStandardVertexing()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::SetupLooseVertexing()
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::SetupLooseVertexing()
 //Meant to store standard re-vertexing configuration
 {
     //Tell the task to re-run vertexers
@@ -3754,7 +3754,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::SetupLooseVertexing()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQAV0(Int_t lRecNumberOfSteps)
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddTopologicalQAV0(Int_t lRecNumberOfSteps)
 //Add all configurations to do QA of topological variables for the V0 analysis
 {
     // STEP 1: Decide on binning (needed to improve on memory consumption)
@@ -3908,7 +3908,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQAV0(Int_t lRec
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t lRecNumberOfSteps, TString lSweepOptions )
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddTopologicalQACascade(Int_t lRecNumberOfSteps, TString lSweepOptions )
 //Add all configurations to do QA of topological variables for the V0 analysis
 {
     // STEP 1: Decide on binning (needed to improve on memory consumption)
@@ -4363,7 +4363,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bool_t lUseFull, Bool_t lDoSweepLooseTight, Int_t lSweepFullNumb)
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddStandardV0Configuration(Bool_t lUseFull, Bool_t lDoSweepLooseTight, Int_t lSweepFullNumb)
 //Meant to add some standard V0 analysis Configuration + its corresponding systematics
 {
     //======================================================
@@ -5051,7 +5051,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0RadiusSweep()
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddStandardV0RadiusSweep()
 //Meant to do radius sweep for debugging purposes
 {
     //======================================================
@@ -5323,7 +5323,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0RadiusSweep()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfiguration(Bool_t lUseFull, Bool_t lDoSystematics)
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddStandardCascadeConfiguration(Bool_t lUseFull, Bool_t lDoSystematics)
 //Meant to add some standard cascade analysis Configuration + its corresponding systematics
 {
     // STEP 1: Decide on binning (needed to improve on memory consumption)
@@ -6106,7 +6106,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
 
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfiguration276TeV()
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddCascadeConfiguration276TeV()
 //Adds 2.76 TeV cascade analysis configuration
 {
     // STEP 1: Decide on binning (needed to improve on memory consumption)
@@ -6207,7 +6207,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfiguration276TeV
 
 //________________________________________________________________________
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfigurationPreliminaryCrosscheck()
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::AddCascadeConfigurationPreliminaryCrosscheck()
 //Adds cross-checks needed for preliminary validation
 {
     // STEP 1: Decide on binning (needed to improve on memory consumption)
@@ -6465,7 +6465,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfigurationPrelim
 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskStrangenessVsMultiplicityRun2::GetDCAz(AliESDtrack *lTrack)
+Float_t AliAnalysisTaskStrangenessVsMultiplicityAODRun2::GetDCAz(AliESDtrack *lTrack)
 //Encapsulation of DCAz calculation
 {
     Float_t b[2];
@@ -6483,7 +6483,7 @@ Float_t AliAnalysisTaskStrangenessVsMultiplicityRun2::GetDCAz(AliESDtrack *lTrac
 
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskStrangenessVsMultiplicityRun2::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent)
+Float_t AliAnalysisTaskStrangenessVsMultiplicityAODRun2::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent)
 //Encapsulation of CosPA calculation (warning: considers AliESDtrack clones)
 {
     Float_t lCosPA = -1;
@@ -6515,7 +6515,7 @@ Float_t AliAnalysisTaskStrangenessVsMultiplicityRun2::GetCosPA(AliESDtrack *lPos
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::CheckChargeV0(AliESDv0 *v0)
+void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::CheckChargeV0(AliESDv0 *v0)
 {
     // This function checks charge of negative and positive daughter tracks.
     // If incorrectly defined (onfly vertexer), swaps out.

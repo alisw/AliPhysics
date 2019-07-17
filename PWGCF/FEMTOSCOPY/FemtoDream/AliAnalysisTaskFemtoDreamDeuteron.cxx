@@ -13,7 +13,6 @@ ClassImp(AliAnalysisTaskFemtoDreamDeuteron)
 AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
 :AliAnalysisTaskSE()
 ,fIsMC(false)
-,fCentEst("kInt7")
 ,fOutput()
 ,fEvent()
 ,fTrack()
@@ -39,10 +38,9 @@ AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron()
 
 }
 
-AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC, const char *CentEst)
+AliAnalysisTaskFemtoDreamDeuteron::AliAnalysisTaskFemtoDreamDeuteron(const char *name, bool isMC)
 :AliAnalysisTaskSE(name)
 ,fIsMC(isMC)
-,fCentEst(CentEst)
 ,fOutput()
 ,fEvent()
 ,fTrack()
@@ -82,7 +80,7 @@ Float_t AliAnalysisTaskFemtoDreamDeuteron::GetMass2sq(AliFemtoDreamTrack *track)
     return mass2sq;
 }
 
-void AliAnalysisTaskFemtoDreamDeuteron::InitHistograms(AliFemtoDreamTrackCuts *trkCuts, char *trkCutsName, char *MCName) {
+void AliAnalysisTaskFemtoDreamDeuteron::InitHistograms(AliFemtoDreamTrackCuts *trkCuts, TString trkCutsName, TString MCName) {
   if (!trkCuts) {
     // If the track cuts didn't arrive here, we can go home
     AliFatal("Track Cuts not set!");
@@ -93,14 +91,14 @@ void AliAnalysisTaskFemtoDreamDeuteron::InitHistograms(AliFemtoDreamTrackCuts *t
    //worker node.
   trkCuts->Init();
   //To avoid collision in the output list, we rename the List carrying all the histograms of this object
-  trkCuts->SetName(trkCutsName);
+  trkCuts->SetName(trkCutsName.Data());
   //Now connect the output of the Track Cuts to the output
   fOutput->Add(trkCuts->GetQAHists());
   //If we are running over MC more histos are created and we get them seperately
   //This is done, since later you might want to use seperate output slots, so you
   //do not overload one slot.
   if (trkCuts->GetIsMonteCarlo()) {
-    trkCuts->SetMCName(MCName);
+    trkCuts->SetMCName(MCName.Data());
     fOutput->Add(trkCuts->GetMCQAHists());
   }
 }
@@ -137,11 +135,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   // ALICE DPG), and there is no need for this
   //2. Do you want the QA from the AliEventCuts?
   //3. The trigger, if you ever switch to High Multiplicity, you need to change this
-  if(strcmp(fCentEst,"kInt7")==0){
-	fEvent=new AliFemtoDreamEvent(false,true,AliVEvent::kINT7);
-  }else if(strcmp(fCentEst,"kHM")==0){
-	fEvent=new AliFemtoDreamEvent(false,true,AliVEvent::kHighMultV0);
-  }
+  fEvent=new AliFemtoDreamEvent(false,true,GetCollisionCandidates());
   fOutput->Add(fEvent->GetEvtCutList());
   //Nothing special about the Femto Track, we just initialize it
   fTrack=new AliFemtoDreamTrack();
@@ -181,7 +175,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserCreateOutputObjects() {
   //3. Minimal booking == true means no histograms are created and filled
   //might be handy for systematic checks, in order to reduce the memory
   //usage
-  fPairCleaner=new AliFemtoDreamPairCleaner(1,0,false);
+  fPairCleaner=new AliFemtoDreamPairCleaner(2,4,false);
   //The output histograms have to also be added to the output
   fOutput->Add(fPairCleaner->GetHistList());
   //1. fConfig: This is the config object from your AddTask where all the things are
@@ -273,6 +267,7 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
         }
         if (fTrackCutsProtonDCA->isSelected(fTrack)) {
           //.. we add it to our particle buffer
+	  fTrack->SetCPA(gRandom->Uniform());
           DCAProtons.push_back(*fTrack);
         }
         if (fTrackCutsProtonMass->isSelected(fTrack)) {
@@ -292,14 +287,25 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
       //calculating the results. First we need to ensure to not have any Autocorrelations by
       //selecting a track twice. Now this is hypothetical, because we are selecting opposite
       //charged particles, but imagine you want to use p+K^+ (Check for this is not yet implemented)!
-      fPairCleaner->CleanTrackAndDecay(&DCADeuterons,&DCAAntiDeuterons,0);
+
+      fPairCleaner->CleanTrackAndDecay(&DCAProtons, &DCADeuterons,0);
+      fPairCleaner->CleanTrackAndDecay(&DCAAntiProtons, &DCAAntiDeuterons,1);
+ 
+      fPairCleaner->CleanDecay(&DCAProtons,0);
+      fPairCleaner->CleanDecay(&DCAAntiProtons,1);
+      fPairCleaner->CleanDecay(&DCADeuterons,2);
+      fPairCleaner->CleanDecay(&DCAAntiDeuterons,3);
+
       //The cleaner tags particles as 'bad' for use, these we don't want to give to our particle
       //pairer, that's why we call store particles, which only takes the particles marked 'good' from
       //our buffer vector.
       //First we need to reset any particles in the array!
       fPairCleaner->ResetArray();
+      fPairCleaner->StoreParticle(DCAProtons);
+      fPairCleaner->StoreParticle(DCAAntiProtons);
       fPairCleaner->StoreParticle(DCADeuterons);
       fPairCleaner->StoreParticle(DCAAntiDeuterons);
+
       //Now we can give our particlers to the particle collection where the magic happens.
       //The arguments one by one:
       //1. A vector of a vector of cleaned particles fresh from the laundromat.
@@ -310,10 +316,10 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t *) {
       //do a binning there - kind of similar to a multiplicity binning.
       fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
                          fEvent->GetRefMult08(),fEvent->GetV0MCentrality());
-      //For this porpouse you are done, now you only need to post the output.
-      PostData(1,fOutput);
     }
   }
+ //For this porpouse you are done, now you only need to post the output.
+      PostData(1,fOutput);
 }
 
 void AliAnalysisTaskFemtoDreamDeuteron::ResetGlobalTrackReference(){
