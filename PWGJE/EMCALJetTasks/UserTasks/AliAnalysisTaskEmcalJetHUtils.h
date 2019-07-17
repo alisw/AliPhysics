@@ -108,9 +108,12 @@ class AliAnalysisTaskEmcalJetHUtils {
   static const double LHC15oParam_30_50_eta[13];                  //!<! 30-50% eta parameters
   static const double LHC15oParam_50_90_eta[13];                  //!<! 50-90% eta parameters
   // Helper functions for determining the LHC15o tracking efficiency
-  static double LHC15oLowPtEfficiency(const double trackPt, const double params[10], const int index);
-  static double LHC15oHighPtEfficiency(const double trackPt, const double params[10], const int index);
-  static double LHC15oEtaEfficiency(const double trackEta, const double params[13], const int index);
+  static double LHC15oPtEfficiency(const double trackPt, const double params[10]);
+  static double LHC15oLowPtEfficiencyImpl(const double trackPt, const double params[10], const int index);
+  static double LHC15oHighPtEfficiencyImpl(const double trackPt, const double params[10], const int index);
+  static double LHC15oEtaEfficiency(const double trackEta, const double params[13]);
+  static double LHC15oEtaEfficiencyImpl(const double trackEta, const double params[13], const int index);
+
 };
 
 } /* namespace EMCALJetTasks */

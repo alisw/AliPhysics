@@ -74,28 +74,28 @@ const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_0_10_pt[10] = { 0.8350, 
                                     0.1506 * 0.001, -0.0023 * 0.001 };
 const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_0_10_eta[13] = { 1.0086,  0.0074, 0.2404, -0.1230, -0.0107,
                                      0.0427,  0.8579, 0.0088, 0.4697,  0.0772,
-                                     -0.0352, 0.0645, 0.8599 };
+                                     -0.0352, 0.0645, 0.7716 };
 // 10-30% centrality
 const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_10_30_pt[10] = {
   0.8213, 0.0527, 0.0867, 0.1970, 1.1518, 0.7469, 0.0300, -0.0038, 0.1704 * 0.001, -0.0026 * 0.001
 };
 const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_10_30_eta[13] = { 0.9726,  0.0066, 0.2543, -0.1167, -0.0113,
                                      0.0400,  0.8729, 0.0122, 0.4537,  0.0965,
-                                     -0.0328, 0.0623, 0.8739 };
+                                     -0.0328, 0.0623, 0.7658 };
 // 30-50% centrality
 const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_30_50_pt[10] = {
   0.8381, 0.0648, 0.1052, 0.1478, 1.0320, 0.7628, 0.0263, -0.0032, 0.1443 * 0.001, -0.0023 * 0.001
 };
 const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_30_50_eta[13] = { 0.9076,  0.0065, 0.3216, -0.1130, -0.0107,
                                      0.0456,  0.8521, 0.0073, 0.4764,  0.0668,
-                                     -0.0363, 0.0668, 0.8528 };
+                                     -0.0363, 0.0668, 0.7748 };
 // 50-90% centrality
 const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_50_90_pt[10] = {
   0.8437, 0.0668, 0.1083, 0.2000, 0.9741, 0.7677, 0.0255, -0.0030, 0.1260 * 0.001, -0.0019 * 0.001
 };
 const double AliAnalysisTaskEmcalJetHUtils::LHC15oParam_50_90_eta[13] = { 1.1259,  0.0105, 0.1961, -0.1330, -0.0103,
                                      0.0440,  0.8421, 0.0066, 0.5061,  0.0580,
-                                     -0.0379, 0.0651, 0.8465 };
+                                     -0.0379, 0.0651, 0.7786 };
 
 /**
  * Determine leading hadron pt in a jet. This is inspired by AliJetContainer::GetLeadingHadronMomentum(), but
@@ -552,28 +552,42 @@ double AliAnalysisTaskEmcalJetHUtils::LHC11hTrackingEfficiency(const double trac
 }
 
 /**
- * Determine the pt efficiency axis for low pt tracks in LHC15o.
+ * Determine the pt efficiency axis for LHC15o. This is the main interface
+ * for getting the efficiency.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC15oPtEfficiency(const double trackPt, const double params[10])
+{
+  return ((trackPt <= 3.5) * LHC15oLowPtEfficiencyImpl(trackPt, params, 0) +
+      (trackPt > 3.5) * LHC15oHighPtEfficiencyImpl(trackPt, params, 5));
+}
+
+/**
+ * Determine the pt efficiency axis for low pt tracks in LHC15o. Implementation function.
  *
  * @param[in] trackEta Track eta.
  * @param[in] params Parameters for use with the function.
  * @param[in] index Index where it should begin accessing the parameters.
  * @returns The efficiency associated with the eta parameterization.
  */
-double AliAnalysisTaskEmcalJetHUtils::LHC15oLowPtEfficiency(const double trackPt, const double params[10], const int index)
+double AliAnalysisTaskEmcalJetHUtils::LHC15oLowPtEfficiencyImpl(const double trackPt, const double params[10], const int index)
 {
   return (params[index + 0] + -1.0 * params[index + 1] / trackPt) +
       params[index + 2] * TMath::Gaus(trackPt, params[index + 3], params[index + 4]);
 }
 
 /**
- * Determine the pt efficiency axis for high pt tracks in LHC15o.
+ * Determine the pt efficiency axis for high pt tracks in LHC15o. Implementation function.
  *
  * @param[in] trackEta Track eta.
  * @param[in] params Parameters for use with the function.
  * @param[in] index Index where it should begin accessing the parameters.
  * @returns The efficiency associated with the eta parameterization.
  */
-double AliAnalysisTaskEmcalJetHUtils::LHC15oHighPtEfficiency(const double trackPt, const double params[10], const int index)
+double AliAnalysisTaskEmcalJetHUtils::LHC15oHighPtEfficiencyImpl(const double trackPt, const double params[10], const int index)
 {
   return params[index + 0] + params[index + 1] * trackPt + params[index + 2] * std::pow(trackPt, 2) +
       params[index + 3] * std::pow(trackPt, 3) + params[index + 4] * std::pow(trackPt, 4);
@@ -584,14 +598,31 @@ double AliAnalysisTaskEmcalJetHUtils::LHC15oHighPtEfficiency(const double trackP
  *
  * @param[in] trackEta Track eta.
  * @param[in] params Parameters for use with the function.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskEmcalJetHUtils::LHC15oEtaEfficiency(const double trackEta, const double params[13])
+{
+  // Just modify the arguments - the function is the same.
+  return ((trackEta <= -0.04) * LHC15oEtaEfficiencyImpl(trackEta, params, 0) +
+      (trackEta > -0.04) * LHC15oEtaEfficiencyImpl(trackEta, params, 6));
+}
+
+/**
+ * Determine the eta efficiency axis for LHC15o. Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
  * @param[in] index Index where it should begin accessing the parameters.
  * @returns The efficiency associated with the eta parameterization.
  */
-double AliAnalysisTaskEmcalJetHUtils::LHC15oEtaEfficiency(const double trackEta, const double params[13],
-                             const int index)
+double AliAnalysisTaskEmcalJetHUtils::LHC15oEtaEfficiencyImpl(const double trackEta, const double params[13],
+                               const int index)
 {
+  // We need to multiply the track eta by -1 if we are looking at eta > 0 (which corresponds to
+  // the second set of parameters, such that the index is greater than 0).
+  int sign = index > 0 ? -1 : 1;
   return (params[index + 0] *
-       std::exp(-1.0 * std::pow(params[index + 1] / std::abs(trackEta + 0.91), params[index + 2])) +
+       std::exp(-1.0 * std::pow(params[index + 1] / std::abs(sign * trackEta + 0.91), params[index + 2])) +
       params[index + 3] * trackEta + params[index + 4] * TMath::Gaus(trackEta, -0.04, params[index + 5])) /
       params[12];
 }
@@ -607,79 +638,39 @@ double AliAnalysisTaskEmcalJetHUtils::LHC15oEtaEfficiency(const double trackEta,
  */
 double AliAnalysisTaskEmcalJetHUtils::LHC15oTrackingEfficiency(const double trackPt, const double trackEta, const int centralityBin, const std::string & taskName)
 {
-  // Setup
-  double etaAxis = 0;
-  double ptAxis = 0;
-  double efficiency = 1;
-
+  // We use the switch to determine the parameters needed to call the functions.
   // Assumes that the centrality bins follow (as defined in AliAnalysisTaskEmcal)
   // 0 = 0-10%
   // 1 = 10-30%
   // 2 = 30-50%
   // 3 = 50-90%
+  const double* ptParams = nullptr;
+  const double* etaParams = nullptr;
   switch (centralityBin) {
-    case 0 :
-      // 0-10%
-      ptAxis = (trackPt <= 3.5) * LHC15oLowPtEfficiency(trackPt, LHC15oParam_0_10_pt, 0) +
-           (trackPt > 3.5) * LHC15oHighPtEfficiency(trackPt, LHC15oParam_0_10_pt, 5);
-      // Just modify the arguments - the function is the same.
-      etaAxis =
-       (trackEta <= -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_0_10_eta, 0) +
-       (trackEta > -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_0_10_eta, 6);
-      /*ptAxis = (trackPt <= 3.5) * LHC15oLowPtEfficiency(trackPt, LHC15oParam_0_10_pt[0], LHC15oParam_0_10_pt[1],
-                               LHC15oParam_0_10_pt[2], LHC15oParam_0_10_pt[3],
-                               LHC15oParam_0_10_pt[4]) +
-           (trackPt > 3.5) * LHC15oHighPtEfficiency(trackPt, LHC15oParam_0_10_pt[5], LHC15oParam_0_10_pt[6],
-                               LHC15oParam_0_10_pt[7], LHC15oParam_0_10_pt[8],
-                               LHC15oParam_0_10_pt[9]);
-      // Just modify the arguments - the function is the same.
-      etaAxis =
-       (trackEta <= -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_0_10_eta[0], LHC15oParam_0_10_eta[1],
-                            LHC15oParam_0_10_eta[2], LHC15oParam_0_10_eta[3],
-                            LHC15oParam_0_10_eta[4], LHC15oParam_0_10_eta[5]) +
-       (trackEta > -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_0_10_eta[6], LHC15oParam_0_10_eta[7],
-                            LHC15oParam_0_10_eta[8], LHC15oParam_0_10_eta[9],
-                            LHC15oParam_0_10_eta[10], LHC15oParam_0_10_eta[11]);*/
-      efficiency = ptAxis * etaAxis;
+    case 0:
+      ptParams = LHC15oParam_0_10_pt;
+      etaParams = LHC15oParam_0_10_eta;
       break;
-
-    case 1 :
-      // 10-30%
-      ptAxis = (trackPt <= 3.5) * LHC15oLowPtEfficiency(trackPt, LHC15oParam_10_30_pt, 0) +
-           (trackPt > 3.5) * LHC15oHighPtEfficiency(trackPt, LHC15oParam_10_30_pt, 5);
-      // Just modify the arguments - the function is the same.
-      etaAxis =
-       (trackEta <= -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_10_30_eta, 0) +
-       (trackEta > -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_10_30_eta, 6);
-      efficiency = ptAxis * etaAxis;
+    case 1:
+      ptParams = LHC15oParam_10_30_pt;
+      etaParams = LHC15oParam_10_30_eta;
       break;
-
     case 2:
-      // 30-50%
-      ptAxis = (trackPt <= 3.5) * LHC15oLowPtEfficiency(trackPt, LHC15oParam_30_50_pt, 0) +
-           (trackPt > 3.5) * LHC15oHighPtEfficiency(trackPt, LHC15oParam_30_50_pt, 5);
-      // Just modify the arguments - the function is the same.
-      etaAxis =
-       (trackEta <= -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_30_50_eta, 0) +
-       (trackEta > -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_30_50_eta, 6);
-      efficiency = ptAxis * etaAxis;
+      ptParams = LHC15oParam_30_50_pt;
+      etaParams = LHC15oParam_30_50_eta;
       break;
-
     case 3:
-      // 50-90%
-      ptAxis = (trackPt <= 3.5) * LHC15oLowPtEfficiency(trackPt, LHC15oParam_50_90_pt, 0) +
-           (trackPt > 3.5) * LHC15oHighPtEfficiency(trackPt, LHC15oParam_50_90_pt, 5);
-      // Just modify the arguments - the function is the same.
-      etaAxis =
-       (trackEta <= -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_50_90_eta, 0) +
-       (trackEta > -0.04) * LHC15oEtaEfficiency(trackEta, LHC15oParam_50_90_eta, 6);
-      efficiency = ptAxis * etaAxis;
+      ptParams = LHC15oParam_50_90_pt;
+      etaParams = LHC15oParam_50_90_eta;
       break;
-
     default:
-      AliErrorGeneralStream(taskName.c_str()) << "Invalid centrality for determine tracking efficiency.\n";
-      efficiency = 0;
+      AliFatalGeneral(taskName.c_str(), "Invalid centrality for determine tracking efficiency.\n");
   }
+
+  // Calculate the efficiency using the parameters.
+  double ptAxis = LHC15oPtEfficiency(trackPt, ptParams);
+  double etaAxis = LHC15oEtaEfficiency(trackEta, etaParams);
+  double efficiency = ptAxis * etaAxis;
 
   return efficiency;
 }
