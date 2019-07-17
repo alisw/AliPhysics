@@ -24,6 +24,27 @@ class AliReducedBaseEvent : public TObject {
      kUseReducedTracks            // use AliReducedTrackInfo for the track array
   };
   
+  // bits toggled in the fEventTag data member
+  enum EventTagBits {      
+     kAnaUtils2013pPb=0,   // 0 - 2013 p-Pb event selection
+     kAnaUtilPileupMV,     // 1 - multi-vertexer (MV) pileup 
+     kAnaUtilPileupMV2,    // 2 - MV pileup without bunch-crossing check
+     kAnaUtilPileupMV3,    // 3 - MV pileup with min weighted distance 10 (instead of 15)
+     kAnaUtilPileupMV4,    // 4 - MV pileup with min weighted distance 5 (instead of 15)
+     kIsPileupFromSPD1,    // 5 - event->IsPileupFromSPD(3,0.6,3.,2.,5.)
+     kIsPileupFromSPD2,    // 6 - event->IsPileupFromSPD(4,0.6,3.,2.,5.)
+     kIsPileupFromSPD3,    // 7 - event->IsPileupFromSPD(5,0.6,3.,2.,5.)
+     kIsPileupFromSPD4,    // 8 - event->IsPileupFromSPD(6,0.6,3.,2.,5.)
+     kIsPileupFromSPD5,    // 9 - event->IsPileupFromSPD(3,0.8,3.,2.,5.)
+     kIsPileupFromSPD6,    // 10 - event->IsPileupFromSPD(4,0.8,3.,2.,5.)
+     kIsPileupFromSPD7,    // 11 - event->IsPileupFromSPD(5,0.8,3.,2.,5.)
+     kIsPileupFromSPD8,    // 12 - event->IsPileupFromSPD(6,0.8,3.,2.,5.)
+     kVtxDistanceSelected, // 13 - Improved cut on the distance between SPD and track vertices 
+     kUnbiasedEvent,       // 14 - event selected for writing in the trees on a random basis 
+     kTimeRange,           // 15 - selected by AliTimeRangeCut (to be rejected)
+     kNEventTagBits
+  };
+  
  public:
   AliReducedBaseEvent();
   AliReducedBaseEvent(const Char_t* name, Int_t trackOption=kNoInit, Int_t track2Option=kNoInit);

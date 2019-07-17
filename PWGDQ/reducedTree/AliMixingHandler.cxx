@@ -173,10 +173,6 @@ void AliMixingHandler::Init() {
   
   fPoolSize.Set(fNParallelCuts*size);
   for(Int_t i=0;i<fNParallelCuts*size;++i) fPoolSize[i] = 0;
-    
-  // Initialize the random number generator for event/track downscaling
-  TTimeStamp time;
-  gRandom->SetSeed(time.GetNanoSec());
   
   fIsInitialized = kTRUE;
 }
